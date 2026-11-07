@@ -210,9 +210,11 @@ let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view
 
 /* mannequin */
 function mannequin(o){const ids=new Set(),defs=[];
-const F=(i,z)=>{if(!i)return'#cfcac0';if(!i.swatch)return COLORS[primaryCol(i)];if(!ids.has(i.id)){ids.add(i.id);defs.push(`<pattern id="p${i.id}" width="${z}" height="${z}" patternUnits="userSpaceOnUse"><image href="${i.swatch}" width="${z}" height="${z}"/></pattern>`)}return`url(#p${i.id})`};
+const F=(i,z)=>{if(!i)return'#cfcac0';if(!i.swatch)return COLORS[primaryCol(i)];if(!ids.has(i.id)){ids.add(i.id);defs.push(`<pattern id="p${i.id}" x="0" y="0" width="1" height="1" patternUnits="objectBoundingBox"><image href="${i.swatch}" preserveAspectRatio="none" width="100%" height="100%"/></pattern>`)}return`url(#p${i.id})`};
 const J=F(o.top,44),P=F(o.bot,44),S=F(o.shirt,40),T=F(o.tie,26),sk=o.socks?COLORS[primaryCol(o.socks)]:'#cfcac0',sh=o.shoes?COLORS[primaryCol(o.shoes)]:'#cfcac0',wm=o.watch?METAL[o.watch.metal]||METAL.other:0,cm=o.clip?METAL[o.clip.metal]||METAL.other:0,sk2='#d8d3c9';
-return`<svg viewBox="0 0 220 522" role="img" aria-label="Outfit on a mannequin"><defs>${defs.join('')}</defs>
+return`<svg viewBox="0 0 220 522" role="img" aria-label="Outfit on a mannequin"><defs>${defs.join('')}
+<linearGradient id="shading" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff" stop-color-opacity="0.15"/><stop offset="100%" stop-color="#000" stop-color-opacity="0.25"/></linearGradient>
+</defs>
 <ellipse cx="110" cy="516" rx="72" ry="4" fill="#0003"/>
 <ellipse cx="110" cy="38" rx="21" ry="26" fill="${sk2}"/><rect x="101" y="60" width="18" height="22" fill="#cfc9be"/>
 <ellipse cx="41" cy="290" rx="9" ry="14" fill="${sk2}"/><ellipse cx="179" cy="290" rx="9" ry="14" fill="${sk2}"/>
@@ -228,8 +230,9 @@ ${wm?`<rect x="168" y="277" width="22" height="8" rx="2" fill="${wm}" stroke="#0
 <path d="M64 98L98 84L110 170V300H62L56 112ZM156 98L122 84L110 170V300H158L164 112Z" fill="${J}" stroke="#0006"/>
 <path d="M98 84L110 170L90 132L84 100ZM122 84L110 170L130 132L136 100Z" fill="${J}" stroke="#0006"/>
 <path d="M70 200h20M130 200h20" stroke="#0005"/><circle cx="107" cy="205" r="2" fill="#0007"/>
-${cm?`<rect x="104" y="132" width="12" height="3" rx="1" fill="${cm}" stroke="#0006" stroke-width=".5"/>`:''}</svg>`}
-
+${cm?`<rect x="104" y="132" width="12" height="3" rx="1" fill="${cm}" stroke="#0006" stroke-width=".5"/>`:''}
+<path d="M64 98L98 84L110 170V300H62L56 112ZM156 98L122 84L110 170V300H158L164 112Z" fill="url(#shading)" pointer-events="none"/>
+</svg>`}
 /* views */
 const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top],...(o.suitDay?[]:[['Pants',o.bot]]),['Shirt',o.shirt],['Tie',o.tie],['Tie clip',o.clip],['Watch',o.watch],['Belt',o.belt],['Socks',o.socks],['Shoes',o.shoes]]
 .map(([l,i])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot" style='background:${bg(i)}'></span><span class="cap">${desc(i)}</span>`:'<span class="mut">Add one on the Add tab</span>'}</div>`).join('');
