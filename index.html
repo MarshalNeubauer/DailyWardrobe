@@ -33,12 +33,15 @@ nav button.on{color:var(--ink);box-shadow:inset 0 3px var(--acc)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
 .chip{border-radius:99px;white-space:nowrap;padding:5px 12px}.chip.on{background:var(--ink);color:var(--bg)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.gi,.card{background:var(--card);border-radius:14px;padding:10px;margin:10px 0}.gi{margin:0}
+.gi,.card{background:var(--card);border-radius:14px;padding:12px;margin:10px 0}.gi{margin:0}
 .gi img.ph{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}
-.card label{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
-select,input[type="text"]{padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--bg);max-width:60%;width:100%}
-.rv{display:flex;gap:10px;align-items:flex-start}.rv .ph{width:62%;border-radius:8px}.sw{width:56px;height:56px;border-radius:8px;border:1px solid #0003}
+.card label{display:flex;justify-content:space-between;align-items:center;margin:6px 0;font-size:14px}
+select,input[type="text"],input[type="range"]{padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--bg);max-width:65%;width:100%}
+input[type="range"]{padding:0;accent-color:var(--acc)}
+.sw-box{display:flex;align-items:center;gap:12px;background:var(--bg);padding:8px;border-radius:10px;margin:8px 0;border:1px solid var(--line)}
+.sw{width:64px;height:64px;border-radius:8px;border:1px solid #0003;flex:none;background-size:cover}
 .btns{display:flex;gap:8px;margin:10px 0 4px}
+#modal-backdrop,#settings-modal{display:none}
 </style></head><body>
 <header><h1>Daily Wardrobe</h1><button onclick="openSettings()" aria-label="Settings">⚙</button></header>
 <main>
@@ -50,8 +53,8 @@ select,input[type="text"]{padding:7px;border-radius:8px;border:1px solid var(--l
 </main>
 <nav><button id="n-today" onclick="show('today')">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-add" onclick="show('add')">Add</button></nav>
 
-<div id="modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;" onclick="closeSettings()"></div>
-<div id="settings-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:90%;max-width:400px;z-index:1000;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+<div id="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;pointer-events:none;" onclick="closeSettings()"></div>
+<div id="settings-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:90%;max-width:400px;z-index:1000;box-shadow:0 10px 30px rgba(0,0,0,0.5);pointer-events:none;">
 <h2>Settings</h2>
 <p class="mut"><small>Configure your Cloudflare Worker backend for AI photo recognition.</small></p>
 <label style="display:block;margin:10px 0">Worker URL:<br><input type="text" id="cfg-url" placeholder="https://your-worker.workers.dev"></label>
@@ -71,16 +74,16 @@ const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',1);r.onupgraden
 const tx=async(m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction('items',m);const q=f(t.objectStore('items'));t.oncomplete=()=>ok(q.result);t.onerror=no})};
 const put=i=>tx('readwrite',s=>s.put(i)),del=id=>tx('readwrite',s=>s.delete(id));
 
-/* settings management */
+/* settings management with strict pointer event toggling */
 function openSettings(){
   if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
   if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
-  if($('#settings-modal')) $('#settings-modal').style.display='block';
-  if($('#modal-backdrop')) $('#modal-backdrop').style.display='block';
+  if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
+  if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
 }
 function closeSettings(){
-  if($('#settings-modal')) $('#settings-modal').style.display='none';
-  if($('#modal-backdrop')) $('#modal-backdrop').style.display='none';
+  if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
+  if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
 }
 function saveSettings(){
   if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
@@ -89,14 +92,33 @@ function saveSettings(){
   renderAdd();
 }
 
-/* photo analysis via Cloudflare Worker */
-function swatchOf(c,cx,cy){const s=Math.min(c.width,c.height)*.28,o=document.createElement('canvas');o.width=o.height=128;o.getContext('2d').drawImage(c,Math.max(0,Math.min(c.width-s,cx*c.width-s/2)),Math.max(0,Math.min(c.height-s,cy*c.height-s/2)),s,s,0,0,128,128);return o}
-function analyze(o){const d=o.getContext('2d').getImageData(0,0,128,128).data,L=new Float32Array(16384);let r=0,g=0,b=0,m=0;
-for(let i=0;i<16384;i++){r+=d[i*4];g+=d[i*4+1];b+=d[i*4+2];L[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];m+=L[i]}m/=16384;
-let v=0;for(const x of L)v+=(x-m)**2;const sd=Math.sqrt(v/16384);let gx=0,gy=0;
-for(let y=1;y<127;y++)for(let x=1;x<127;x++){gx+=Math.abs(L[y*128+x+1]-L[y*128+x-1]);gy+=Math.abs(L[y*128+x+128]-L[y*128+x-128])}
-const ratio=Math.max(gx,gy)/(Math.min(gx,gy)+1);
-return{primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:sd<7?'solid':sd<13?'texture':ratio>2.2?'stripe':'check'}}
+/* precision swatch generator with zoom & pan */
+function generateSwatch(q){
+  if(!q.big) return '';
+  const canvas=q.big;
+  const zoom=Number(q.zoom)||1;
+  const cx=Number(q.cx)||0.5;
+  const cy=Number(q.cy)||0.5;
+  
+  const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/zoom);
+  const o=document.createElement('canvas');
+  o.width=o.height=128;
+  
+  const sx=Math.max(0,Math.min(canvas.width-sampleSize,cx*canvas.width-sampleSize/2));
+  const sy=Math.max(0,Math.min(canvas.height-sampleSize,cy*canvas.height-sampleSize/2));
+  
+  o.getContext('2d').drawImage(canvas, sx, sy, sampleSize, sampleSize, 0, 0, 128, 128);
+  q.swatch=o.toDataURL('image/png');
+  return q.swatch;
+}
+
+function updateSwatchParam(i, param, val){
+  queue[i][param]=Number(val);
+  generateSwatch(queue[i]);
+  // Update live swatch preview element without re-rendering the whole queue (preserves slider focus)
+  const swEl = $(`#swatch-img-${i}`);
+  if(swEl) swEl.style.backgroundImage = `url(${queue[i].swatch})`;
+}
 
 async function ask(c){
   try {
@@ -137,26 +159,26 @@ const loadImg=f=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.
 function shrink(img,max){const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c}
 
 async function fill(q,ai){
-  const sw=swatchOf(q.big,q.cx,q.cy),a=analyze(sw);
-  q.swatch=sw.toDataURL('image/png');
+  q.zoom=1; q.cx=0.5; q.cy=0.5;
+  generateSwatch(q);
   q.ai=!!(ai&&ai.type);
   q.type=q.ai?ai.type:'suit';
-  q.primaryColor=ai&&COLORS[ai.primaryColor]?ai.primaryColor:a.primaryColor;
+  q.primaryColor=ai&&COLORS[ai.primaryColor]?ai.primaryColor:'grey';
   q.secondaryColor=ai&&ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null;
   q.tertiaryColor=ai&&ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null;
-  q.pattern=ai&&PATS.includes(ai.pattern)?ai.pattern:a.pattern;
+  q.pattern=ai&&PATS.includes(ai.pattern)?ai.pattern:'solid';
   q.metal=ai&&METAL[ai.metal]?ai.metal:'silver';
 }
 
 async function addFiles(files){
   for(const f of files){
-    const q={id:crypto.randomUUID(),busy:1,cx:.5,cy:.5};
+    const q={id:crypto.randomUUID(),busy:1};
     queue.push(q);
     renderAdd();
     try{
       const img=await loadImg(f);
-      q.big=shrink(img,640);
-      q.photo=shrink(img,360).toDataURL('image/jpeg',.7);
+      q.big=shrink(img,800);
+      q.photo=shrink(img,360).toDataURL('image/jpeg',.8);
       const aiResult=await ask(q.big);
       fill(q,aiResult);
     }catch(e){q.err=1}
@@ -165,10 +187,15 @@ async function addFiles(files){
   }
 }
 
-function tap(e,i){const r=e.target.getBoundingClientRect(),q=queue[i];q.cx=(e.clientX-r.left)/r.width;q.cy=(e.clientY-r.top)/r.height;const sw=swatchOf(q.big,q.cx,q.cy);q.swatch=sw.toDataURL('image/png');renderAdd()}
 const setq=(i,k,v)=>{queue[i][k]=v==='none'?null:v;if(k==='type')renderAdd()};
-async function save(i){const q=queue[i],f=FABRIC.includes(q.type),it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
-if(f)it.swatch=q.swatch;if(q.type==='watch'||q.type==='tieclip')it.metal=q.metal;await put(it);items.push(it);queue.splice(i,1);renderAdd()}
+async function save(i){
+  const q=queue[i],f=FABRIC.includes(q.type);
+  generateSwatch(q);
+  const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
+  if(f)it.swatch=q.swatch;
+  if(q.type==='watch'||q.type==='tieclip')it.metal=q.metal;
+  await put(it);items.push(it);queue.splice(i,1);renderAdd();
+}
 async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);renderWardrobe()}
 
 /* matching logic & helpers with safe fallbacks */
@@ -263,6 +290,7 @@ function planHtml(p){
 }
 
 function renderToday(){
+  closeSettings();
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   let h=`<h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</h2>`;
@@ -276,6 +304,7 @@ function mv(n){view.m+=n;if(view.m>11){view.m=0;view.y++}if(view.m<0){view.m=11;
 function pick(t){sel=new Date(t);renderToday();scrollTo(0,0)}
 
 function renderWardrobe(){
+  closeSettings();
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
@@ -285,10 +314,22 @@ function renderWardrobe(){
 const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select>`;
 
 function renderAdd(){
+  closeSettings();
   const workerSet = !!localStorage.getItem('worker_url');
   if($('#note')) $('#note').textContent = workerSet ? 'Photos are analyzed securely via your Cloudflare Worker AI.' : 'Worker URL not set! Tap ⚙ in the top right to configure your Cloudflare Worker.';
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?'<div class="card">Analyzing photo with Cloudflare AI…</div>':q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
-`<div class="card"><div class="rv"><img class="ph" src="${q.photo}" alt="" onclick="tap(event,${i})">${FABRIC.includes(q.type)?`<div><img class="sw" src="${q.swatch}" alt="Swatch"><small>Tap the photo to move the swatch.</small></div>`:''}</div>
+`<div class="card">
+<div class="rv"><img class="ph" src="${q.photo}" alt=""></div>
+${FABRIC.includes(q.type)?`
+<div class="sw-box">
+  <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
+  <div style="flex:1;font-size:13px">
+    <b>Precision Swatch Inspector</b>
+    <label>Zoom: <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label>
+    <label>X-Pos: <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label>
+    <label>Y-Pos: <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label>
+  </div>
+</div>`:''}
 <label>Item ${S(Object.entries(TYPES),q.type,'type',i)}</label>
 <label>Primary Colour ${S(Object.keys(COLORS).map(c=>[c,c]),q.primaryColor,'primaryColor',i)}</label>
 <label>Secondary Colour ${S([['none','None'], ...Object.keys(COLORS).map(c=>[c,c])],q.secondaryColor||'none','secondaryColor',i)}</label>
