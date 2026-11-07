@@ -44,10 +44,12 @@ input[type="range"]{padding:0;accent-color:var(--acc)}
 .sw{width:64px;height:64px;border-radius:8px;border:1px solid #0003;flex:none;background-size:cover}
 .btns{display:flex;gap:8px;margin:10px 0 4px}
 #modal-backdrop,#settings-modal{display:none}
-#today{touch-action:pan-y}
-@keyframes swl{from{transform:translateX(26px);opacity:.35}to{transform:none;opacity:1}}
-@keyframes swr{from{transform:translateX(-26px);opacity:.35}to{transform:none;opacity:1}}
-#today.swl{animation:swl .22s ease-out}#today.swr{animation:swr .22s ease-out}
+/* day swipe: only the outfit moves, inside a clipped stage, so the page never gets wider than the screen
+   (a wider page makes iOS Safari zoom out and back in) */
+html,body{overflow-x:hidden;overflow-x:clip}
+.stage{overflow:hidden;touch-action:pan-y;margin:0 -16px;padding:0 16px}
+.slide{will-change:transform}
+button{touch-action:manipulation}
 .thumb{width:100%;aspect-ratio:1;border-radius:8px;background:var(--bg)}.thumb svg{width:100%;height:100%;display:block}
 .rv .thumb{max-width:220px;margin:0 auto}
 </style></head><body>
@@ -798,7 +800,9 @@ function renderToday(){
   if(sel.getDay()>4)h+='<p class="mut">Nothing is scheduled on Fridays and Saturdays.</p>';
   else if(!items.length)h+='<p class="mut">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else if(o)h+=`<div class="man" id="mannequin-container"></div>${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}<div class="list">${slots(o)}</div>`;
-  $('#today').innerHTML=h+planHtml(p);
+  // everything after the date bar is the swipeable outfit
+  const cut=h.indexOf('</div>')+6;
+  $('#today').innerHTML=h.slice(0,cut)+`<div class="stage" id="stage"><div class="slide" id="slide">${h.slice(cut)}</div></div>`+planHtml(p);
   if(o && items.length && sel.getDay()<=4) {
     renderMannequinCanvas(o, $('#mannequin-container'));
   }
@@ -807,16 +811,42 @@ function renderToday(){
 function mv(n){view.m+=n;if(view.m>11){view.m=0;view.y++}if(view.m<0){view.m=11;view.y--}const d=new Date(view.y,view.m,1);while(d.getDay()>4)d.setDate(d.getDate()+1);sel=d;renderToday()}
 function pick(t){sel=new Date(t);renderToday();scrollTo(0,0)}
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed */
-function stepDay(n){
+/* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed.
+   from: where the new day's outfit slides in from (px, sign = side); 0 = no animation */
+function stepDay(n,from){
   const d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate());
   do d.setDate(d.getDate()+n);while(d.getDay()>4);
   sel=d;view={y:d.getFullYear(),m:d.getMonth()};renderToday();
-  const t=$('#today');t.classList.remove('swl','swr');void t.offsetWidth;t.classList.add(n>0?'swl':'swr');
+  const sl=$('#slide');if(!sl)return;
+  const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x)return;
+  sl.style.transition='none';sl.style.transform=`translateX(${x}px)`;sl.style.opacity='0';
+  void sl.offsetWidth;
+  sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';
 }
-(()=>{let st=null;const el=$('#today');
-  // ignore touches that start at the screen edge, where iOS uses the swipe for back/forward
-  el.addEventListener('touchstart',e=>{const t=e.touches[0];st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24?null:{x:t.clientX,y:t.clientY}},{passive:true});
-  el.addEventListener('touchend',e=>{if(!st)return;const t=e.changedTouches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;st=null;if(Math.abs(dx)>50&&Math.abs(dx)>1.5*Math.abs(dy))stepDay(dx<0?1:-1)},{passive:true});
+(()=>{const el=$('#today');let st=null;
+  const slide=()=>$('#slide');
+  el.addEventListener('touchstart',e=>{
+    const t=e.touches[0];
+    // ignore multi-touch and touches that start at the screen edge (iOS back/forward gesture)
+    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24||!e.target.closest('#stage')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0};
+  },{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8))st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';
+    if(st.lock!=='x')return;
+    e.preventDefault(); // horizontal drag is ours: no page pan, no zoom bounce
+    st.dx=dx;const sl=slide();if(sl){sl.style.transition='none';sl.style.transform=`translateX(${dx}px)`;sl.style.opacity=String(1-Math.min(.5,Math.abs(dx)/innerWidth))}
+  },{passive:false});
+  const end=()=>{
+    if(!st)return;const {lock,dx,t}=st;st=null;const sl=slide();if(lock!=='x'||!sl)return;
+    const fast=Math.abs(dx)/Math.max(1,Date.now()-t)>.5;
+    if(Math.abs(dx)>70||(fast&&Math.abs(dx)>30)){
+      const n=dx<0?1:-1,w=sl.offsetWidth||innerWidth;
+      sl.style.transition='transform .16s ease-in,opacity .16s';sl.style.transform=`translateX(${dx<0?-w:w}px)`;sl.style.opacity='0';
+      setTimeout(()=>stepDay(n,(dx<0?1:-1)*w*.6),160);
+    }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}
+  };
+  el.addEventListener('touchend',end,{passive:true});el.addEventListener('touchcancel',end,{passive:true});
   document.addEventListener('keydown',e=>{if(el.hidden||e.target.closest('input,select,textarea'))return;if(e.key==='ArrowRight')stepDay(1);if(e.key==='ArrowLeft')stepDay(-1)});
 })();
 
