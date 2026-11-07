@@ -14,6 +14,11 @@ COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'ligh
 normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
 let items=[];
+/* outfit history (one record per date, see planner.js) and the current date (overridable in tests) */
+let dayRecs={},TODAY_OVERRIDE=null;
+const todayDate=()=>{const d=TODAY_OVERRIDE?new Date(TODAY_OVERRIDE):new Date();d.setHours(0,0,0,0);return d};
+const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip'];
+const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip'})[s]||s;
 
 /* matching logic & helpers */
 const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';

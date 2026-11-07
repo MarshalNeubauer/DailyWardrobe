@@ -119,15 +119,19 @@ function watchFit(w,shoe,belt){
   return v;
 }
 
-function outfit(suitDay,n,by,last){const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
+function outfit(suitDay,n,by,last,rec){const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
+// a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
+const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
+const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
+  const s=skip[slot]||[],left=all.filter(i=>!s.includes(i.id));return left.length?left:all};
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
-const top=best(by(suitDay?'suit':'blazer'),i=>rest(i)*3);
+const top=best(pool(suitDay?'suit':'blazer','top'),i=>rest(i)*3);
 // trousers, shirt and tie are scored together as one outfit. Rotation only chooses among outfits within 5 points
 // of the best one, so variety never costs a clearly better combination.
 // Large wardrobes: keep only the 4 best trousers and 10 best shirts for this jacket (rotation included), then try every tie.
 const topN=(arr,n,f)=>arr.length<=n?arr:arr.map(i=>[f(i)+rb(i),i]).sort((a,b)=>b[0]-a[0]).slice(0,n).map(x=>x[1]);
-const Ps=suitDay?[null]:topN(by('pants'),4,pt=>pairScore(top,pt)),Ss=topN(by('shirt'),10,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])),Ts=by('tie'),cands=[];
+const Ps=suitDay?[null]:topN(pool('pants','bot'),4,pt=>pairScore(top,pt)),Ss=topN(pool('shirt','shirt'),10,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])),Ts=pool('tie','tie'),cands=[];
 for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(const x of Ts.length?Ts:[null]){
   const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay);
   cands.push({q,pt,sh,x,r:(pt?rb(pt):0)+(sh?rb(sh):0)+(x?rb(x):0)});
@@ -135,7 +139,7 @@ for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(cons
 const qmax=Math.max(...cands.map(c=>c.q)),pick1=cands.filter(c=>c.q>=qmax-5).sort((a,b)=>(b.q+1.5*b.r)-(a.q+1.5*a.r))[0];
 const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
 // shoes, belt and watch are chosen together so the belt always matches the shoes and the metals agree
-const S=by('shoes'),B=by('belt'),W=by('watch');let pick=null;
+const S=pool('shoes','shoes'),B=pool('belt','belt'),W=pool('watch','watch');let pick=null;
 for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.length?W:[null]){
   let t=0;
   if(s)t+=shoeScore(top,bot,s)+shoeFormality(s,suitDay)+rb(s);
@@ -144,8 +148,8 @@ for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.len
   if(!pick||t>pick.t)pick={t,s,b,w};
 }
 const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
-const socks=best(by('socks'),s=>sockScore(bot,shoes,s));
-const clip=best(by('tieclip'),c=>(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0));
+const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s));
+const clip=best(pool('tieclip','clip'),c=>(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0));
 // say so when the wardrobe can't make a correct combination, instead of silently mismatching
 const notes=[];
 // clothing: only reached when the wardrobe had no compliant combination for this jacket
@@ -207,6 +211,18 @@ function rateOutfit(o){
   const label=score>=90?'Excellent':score>=80?'Very good':score>=70?'Good':score>=55?'Fair':'Needs work';
   return {score,label,checks:C};
 }
-function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={};
-for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w<5)plan[key(d)]=outfit(w<4,di(d),by,last)}return plan}
+/* A saved day: past days (and any day marked worn) are frozen to what was shown, so wardrobe changes never rewrite history.
+   Rotation counts frozen days unless they're marked "didn't wear". */
+function frozenOutfit(rec,n,last){
+  const o={suitDay:!!rec.suitDay,frozen:true,worn:rec.worn,notes:[]};
+  for(const s of SLOTS){const id=rec.ids[s],it=id&&items.find(i=>i.id===id);o[s]=it?{...it,rest:Math.min(n-(last[it.id]??-1e5),60)}:null}
+  if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
+  return o;
+}
+function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={},T=todayDate();
+for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w>=5)continue;
+  const k=key(d),rec=dayRecs[k];
+  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);continue}
+  const o=outfit(w<4,di(d),by,last,rec);o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o}
+return plan}
 

@@ -67,3 +67,6 @@ button{touch-action:manipulation}
 }
 .thumb{width:100%;aspect-ratio:1;border-radius:8px;background:var(--bg)}.thumb svg{width:100%;height:100%;display:block}
 .rv .thumb{max-width:220px;margin:0 auto}
+.row .swap{margin-left:auto;flex:none;border:0;background:none;color:var(--mut);font-size:20px;padding:2px 6px;line-height:1}
+.row .swap:active{color:var(--ink)}
+.dayact{flex-wrap:wrap;align-items:center;margin:4px 0 10px}.dayact .chip{border:1px solid var(--line);display:inline-flex;align-items:center;padding:7px 12px;font-weight:600}.dayact .chip.on{background:#2f7a4f;color:#fff;border-color:#2f7a4f}
