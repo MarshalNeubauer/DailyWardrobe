@@ -115,7 +115,6 @@ function generateSwatch(q){
 function updateSwatchParam(i, param, val){
   queue[i][param]=Number(val);
   generateSwatch(queue[i]);
-  // Update live swatch preview element without re-rendering the whole queue (preserves slider focus)
   const swEl = $(`#swatch-img-${i}`);
   if(swEl) swEl.style.backgroundImage = `url(${queue[i].swatch})`;
 }
@@ -235,7 +234,7 @@ function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id
 for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w<5)plan[key(d)]=outfit(w<4,di(d),by,last)}return plan}
 let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
 
-/* mannequin with high quality fabric texture rendering */
+/* mannequin with clean texture rendering */
 function mannequin(o){
   const ids=new Set(),defs=[];
   const F=(i,z)=>{
@@ -252,9 +251,7 @@ function mannequin(o){
   const sh=o.shoes?COLORS[primaryCol(o.shoes)]||'#cfcac0':'#cfcac0';
   const wm=o.watch?METAL[o.watch.metal]||METAL.other:0,cm=o.clip?METAL[o.clip.metal]||METAL.other:0,sk2='#d8d3c9';
   
-  return`<svg viewBox="0 0 220 522" role="img" aria-label="Outfit on a mannequin"><defs>${defs.join('')}
-  <linearGradient id="lighting" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#000" stop-color-opacity="0.25"/><stop offset="25%" stop-color="#fff" stop-color-opacity="0.1"/><stop offset="75%" stop-color="#fff" stop-color-opacity="0.05"/><stop offset="100%" stop-color="#000" stop-color-opacity="0.3"/></linearGradient>
-  </defs>
+  return`<svg viewBox="0 0 220 522" role="img" aria-label="Outfit on a mannequin"><defs>${defs.join('')}</defs>
   <ellipse cx="110" cy="516" rx="72" ry="4" fill="#0003"/>
   <ellipse cx="110" cy="38" rx="21" ry="26" fill="${sk2}"/><rect x="101" y="60" width="18" height="22" fill="#cfc9be"/>
   <ellipse cx="41" cy="290" rx="9" ry="14" fill="${sk2}"/><ellipse cx="179" cy="290" rx="9" ry="14" fill="${sk2}"/>
@@ -271,7 +268,6 @@ function mannequin(o){
   <path d="M98 84L110 170L90 132L84 100ZM122 84L110 170L130 132L136 100Z" fill="${J}" stroke="#0006"/>
   <path d="M70 200h20M130 200h20" stroke="#0005"/><circle cx="107" cy="205" r="2" fill="#0007"/>
   ${cm?`<rect x="104" y="132" width="12" height="3" rx="1" fill="${cm}" stroke="#0006" stroke-width=".5"/>`:''}
-  <path d="M58 102L38 110L30 268H52L66 130ZM162 102L182 110L190 268H168L154 130ZM64 98L98 84L110 170V300H62L56 112ZM156 98L122 84L110 170V300H158L164 112Z" fill="url(#lighting)" style="mix-blend-mode: overlay;" pointer-events="none"/>
   </svg>`;
 }
 
