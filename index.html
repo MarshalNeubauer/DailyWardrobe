@@ -21,7 +21,7 @@ header button{background:none;border:0;color:inherit;font-size:22px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:900}
 nav button{flex:1;border:0;border-radius:0;background:none;padding:16px 0;font-weight:600;color:var(--mut)}
 nav button.on{color:var(--ink);box-shadow:inset 0 3px var(--acc)}
-.man canvas{display:block;margin:6px auto;width:min(250px,68vw);height:auto}
+.man svg{display:block;margin:6px auto;width:min(260px,70vw);height:auto}
 .list{background:var(--card);border-radius:14px;padding:6px 14px;margin:8px 0 20px}
 .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
 .row .mut{width:68px;flex:none}
@@ -228,144 +228,136 @@ function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id
 for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w<5)plan[key(d)]=outfit(w<4,di(d),by,last)}return plan}
 let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
 
-/* HTML5 Canvas Mannequin Renderer with Advanced 3D Lighting & Shading */
-async function renderMannequinCanvas(o, containerEl) {
-  containerEl.innerHTML = '<canvas id="man-canvas" width="220" height="522"></canvas>';
-  const canvas = $('#man-canvas');
-  const ctx = canvas.getContext('2d');
+/* Vector mannequin: resolution-independent SVG with procedural fabric patterns */
+const hexRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const rgbHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+const lum=h=>{const [r,g,b]=hexRgb(h);return (.2126*r+.7152*g+.0722*b)/255};
+const mix=(h,t,k)=>{const a=hexRgb(h),b=hexRgb(t);return rgbHex(a.map((v,i)=>v+(b[i]-v)*k))};
+const colOf=i=>COLORS[primaryCol(i)]||'#8b8f96';
+const accentOf=i=>{const s=i&&i.secondaryColor&&COLORS[i.secondaryColor];if(s)return s;const b=colOf(i);return lum(b)>.55?mix(b,'#000',.35):mix(b,'#fff',.45)};
+const mirror=d=>d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g,(_,x,y)=>`${+(240-x).toFixed(2)},${y}`);
 
-  // Helper to load image for canvas pattern
-  const loadPatternImage = src => new Promise(resolve => {
-    if(!src) return resolve(null);
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
+/* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
+function fabricDef(id,item,role){
+  const b=colOf(item),a=accentOf(item),p=item.pattern||'solid',wool=role==='top'||role==='bot';
+  const twill=`<path d="M-2,2 L2,-2 M0,4 L4,0 M2,6 L6,2" stroke="${lum(b)>.5?'#000':'#fff'}" stroke-opacity="${wool?.07:.04}" stroke-width=".6"/>`;
+  const tile=(w,h,body,tf='')=>`<pattern id="${id}" patternUnits="userSpaceOnUse" width="${w}" height="${h}"${tf?` patternTransform="${tf}"`:''}><rect width="${w}" height="${h}" fill="${b}"/>${body}</pattern>`;
+  if(p==='stripe'){
+    if(role==='tie')return tile(12,12,`<rect x="0" width="4" height="12" fill="${a}"/><rect x="6" width="1" height="12" fill="${a}" opacity=".7"/>`,'rotate(40)');
+    if(role==='shirt')return tile(4,4,`<rect width="1.3" height="4" fill="${a}" opacity=".85"/>`);
+    return tile(8,4,`${twill}<rect x="0" width=".6" height="4" fill="${a}" opacity=".8"/>`);
+  }
+  if(p==='check'){
+    if(role==='shirt')return tile(6,6,`<rect width="3" height="6" fill="${a}" opacity=".45"/><rect width="6" height="3" fill="${a}" opacity=".45"/>`);
+    if(role==='tie')return tile(6,6,`<rect width="2" height="6" fill="${a}" opacity=".6"/><rect width="6" height="2" fill="${a}" opacity=".6"/>`,'rotate(45)');
+    return tile(16,16,`${twill}<rect width=".7" height="16" fill="${a}" opacity=".75"/><rect width="16" height=".7" fill="${a}" opacity=".75"/><rect x="8" width=".4" height="16" fill="${a}" opacity=".35"/><rect y="8" width="16" height=".4" fill="${a}" opacity=".35"/>`);
+  }
+  if(p==='polka-dot'){
+    const s=role==='tie'?9:role==='shirt'?5:10,r=role==='tie'?1.4:role==='shirt'?.7:.9;
+    return tile(s,s,`<circle cx="${s/4}" cy="${s/4}" r="${r}" fill="${a}"/><circle cx="${s*3/4}" cy="${s*3/4}" r="${r}" fill="${a}"/>`);
+  }
+  if(p==='paisley'){
+    const drop=`<path d="M0,-3.2 C2.6,-3.2 3.2,0 1.6,2 C0.4,3.4 -2.4,3.2 -2.6,1 C-2.8,-1 -1.2,-1.4 -0.6,-0.6 C0.2,0.4 -1.2,1 -1.4,0.4" fill="none" stroke="${a}" stroke-width=".7"/><circle cx="0.3" cy="0.2" r=".5" fill="${a}"/>`;
+    return tile(14,14,`<g transform="translate(4,4)">${drop}</g><g transform="translate(11,11) rotate(180)">${drop}</g>`);
+  }
+  if(p==='texture'){
+    return tile(3,3,`<path d="M0,3 L3,0" stroke="#000" stroke-opacity=".14" stroke-width=".7"/><path d="M-1,1 L1,-1 M2,4 L4,2" stroke="#fff" stroke-opacity=".08" stroke-width=".5"/>`);
+  }
+  return wool?tile(4,4,twill):tile(4,4,'');
+}
 
-  const topImg = o.top ? await loadPatternImage(o.top.swatch) : null;
-  const botImg = o.bot ? await loadPatternImage(o.bot.swatch) : null;
-  const shirtImg = o.shirt ? await loadPatternImage(o.shirt.swatch) : null;
-  const tieImg = o.tie ? await loadPatternImage(o.tie.swatch) : null;
+function renderMannequinCanvas(o, containerEl){
+  const FORM='#dcd6cb',FORM_D='#b9b2a5';
+  const defs=[],fill={};
+  for(const [role,item] of [['top',o.top],['bot',o.bot],['shirt',o.shirt],['tie',o.tie]]){
+    if(!item)continue;
+    defs.push(fabricDef('fab-'+role,item,role));fill[role]=`url(#fab-${role})`;
+  }
+  const F=r=>fill[r]||(r==='shirt'?'#f4f3ee':FORM);
+  const shade='url(#shade)',seam='stroke="#000" stroke-opacity=".28" stroke-width=".8" stroke-linejoin="round"';
+  const both=d=>d+' '+mirror(d);
+  const part=(d,f,extra='')=>`<path d="${d}" fill="${f}" ${seam} ${extra}/><path d="${d}" fill="${shade}" pointer-events="none"/>`;
 
-  // Floor shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.15)';
-  ctx.beginPath();
-  ctx.ellipse(110, 516, 72, 4, 0, 0, Math.PI * 2);
-  ctx.fill();
+  /* geometry (viewBox 240x600, figure centred on x=120) */
+  const torso='M106,90 C92,93 76,98 63,105 C58,140 64,190 75,240 C79,270 78,300 76,336 L164,336 C162,300 161,270 165,240 C176,190 182,140 177,105 C164,98 148,93 134,90 Z';
+  const sleeveL='M63,105 C53,109 49,122 47,142 L41,312 L67,316 L74,172 C77,142 75,118 63,105 Z';
+  const legL='M79,302 L120,302 L118,553 L86,553 Z';
+  const cuffL='M41,307 L67,311 L66,323 L41,319 Z';
+  const lapelL='M108,92 L120,228 C108,206 97,178 89,150 L86,124 L96,121 L93,112 L103,97 Z';
+  const collarL='M120,97 L109,84 L103,89 L110,116 Z';
+  const shoeL='M86,550 L118,550 L119,562 C119,569 113,571 106,571 L76,571 C70,571 69,566 72,562 C75,557 80,555 86,553 Z';
+  const vee='M106,90 L134,90 L120,230 Z';
+  const hemGap='M120,298 C119,316 114,328 104,337 L136,337 C126,328 121,316 120,298 Z';
 
-  // Head and neck
-  ctx.fillStyle = '#d8d3c9';
-  ctx.beginPath();
-  ctx.arc(110, 38, 21, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillRect(101, 60, 18, 22);
+  let s=`<svg viewBox="0 0 240 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outfit preview"><defs>
+  <linearGradient id="shade" x1="0" x2="1" y1="0" y2="0">
+    <stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".32" stop-color="#fff" stop-opacity=".10"/>
+    <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
+  <radialGradient id="formg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#f1ede6"/><stop offset=".7" stop-color="${FORM}"/><stop offset="1" stop-color="${FORM_D}"/></radialGradient>
+  <radialGradient id="shine" cx=".35" cy=".35" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  ${defs.join('')}</defs>`;
 
-  // Hands
-  ctx.beginPath();
-  ctx.arc(41, 290, 9, 0, Math.PI * 2);
-  ctx.arc(179, 290, 9, 0, Math.PI * 2);
-  ctx.fillStyle = '#d8d3c9';
-  ctx.fill();
+  s+=`<ellipse cx="120" cy="574" rx="66" ry="7" fill="url(#floor)"/>`;
+  /* head, neck, hands */
+  s+=`<ellipse cx="120" cy="46" rx="22" ry="27" fill="url(#formg)"/><path d="M110,66 L130,66 L133,94 L107,94 Z" fill="url(#formg)"/>`;
+  s+=`<ellipse cx="54" cy="334" rx="9" ry="12" fill="url(#formg)"/><ellipse cx="186" cy="334" rx="9" ry="12" fill="url(#formg)"/>`;
 
-  // Draw Function with Fill/Pattern & 3D Lighting Overlay
-  const drawGarment = (pathFn, item, fallbackColor) => {
-    ctx.save();
-    ctx.beginPath();
-    pathFn(ctx);
-    ctx.closePath();
+  /* trousers */
+  s+=part(both(legL),F('bot'));
+  s+=`<path d="${both('M100,330 L102,546')}" stroke="#000" stroke-opacity=".22" stroke-width=".8" fill="none"/>`;
+  s+=`<path d="${both('M101,330 L103,546')}" stroke="#fff" stroke-opacity=".12" stroke-width=".6" fill="none"/>`;
+  /* socks + shoes */
+  if(o.socks)s+=`<path d="${both('M89,546 L116,546 L116,553 L89,553 Z')}" fill="${colOf(o.socks)}"/>`;
+  const shoeC=o.shoes?colOf(o.shoes):'#2b2b2e';
+  s+=`<path d="${both(shoeL)}" fill="${shoeC}" ${seam}/><path d="${both(shoeL)}" fill="url(#shine)"/>`;
+  s+=`<path d="${both('M78,566 L118,566')}" stroke="#000" stroke-opacity=".35" stroke-width="1.2"/>`;
 
-    if (item && item.swatch && ((item === o.top && topImg) || (item === o.bot && botImg) || (item === o.shirt && shirtImg) || (item === o.tie && tieImg))) {
-      const img = item === o.top ? topImg : item === o.bot ? botImg : item === o.shirt ? shirtImg : tieImg;
-      const pat = ctx.createPattern(img, 'repeat');
-      ctx.fillStyle = pat;
-    } else {
-      ctx.fillStyle = item ? (COLORS[primaryCol(item)] || fallbackColor) : fallbackColor;
-    }
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+  if(o.top){
+    /* shirt cuffs under the sleeves */
+    s+=part(both(cuffL),F('shirt'));
+    /* jacket body */
+    s+=part(torso,F('top'));
+    /* shirt V, tie, collar */
+    s+=`<path d="${vee}" fill="${F('shirt')}"/><path d="${vee}" fill="url(#shade)" opacity=".5"/>`;
+    s+=`<path d="M120,118 L120,230" stroke="#000" stroke-opacity=".15" stroke-width=".7"/>`;
+  }else{
+    /* no jacket: shirt is the outer layer */
+    s+=part(both(sleeveL),F('shirt'));
+    s+=part(torso,F('shirt'));
+    s+=`<path d="M120,112 L120,336" stroke="#000" stroke-opacity=".2" stroke-width="1"/>`;
+    for(let y=140;y<330;y+=34)s+=`<circle cx="120" cy="${y}" r="1.6" fill="#fff" stroke="#000" stroke-opacity=".25" stroke-width=".4"/>`;
+  }
+  if(o.tie){
+    const knot='M112,94 L128,94 L125,110 L115,110 Z';
+    const blade='M115,110 L125,110 L130,212 L120,224 L110,212 Z';
+    s+=part(blade,F('tie'));s+=part(knot,F('tie'));
+    s+=`<path d="M119,111 C119,118 120,124 120,130" stroke="#000" stroke-opacity=".3" stroke-width=".8" fill="none"/>`;
+  }
+  s+=part(both(collarL),F('shirt'));
 
-    // 3D Contour Lighting Gradient (Overlay Blend)
-    ctx.globalCompositeOperation = 'overlay';
-    const grad = ctx.createLinearGradient(30, 0, 190, 0);
-    grad.addColorStop(0, 'rgba(0,0,0,0.3)');
-    grad.addColorStop(0.3, 'rgba(255,255,255,0.15)');
-    grad.addColorStop(0.7, 'rgba(255,255,255,0.05)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.35)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    pathFn(ctx);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
-  };
-
-  // 1. Pants / Bottoms
-  drawGarment(c => {
-    c.moveTo(64, 296); c.lineTo(110, 296); c.lineTo(106, 470); c.lineTo(72, 470); c.closePath();
-    c.moveTo(110, 296); c.lineTo(156, 296); c.lineTo(148, 470); c.lineTo(114, 470); c.closePath();
-  }, o.bot, '#cfcac0');
-
-  // Socks & Shoes
-  const skCol = o.socks ? COLORS[primaryCol(o.socks)] || '#cfcac0' : '#cfcac0';
-  const shCol = o.shoes ? COLORS[primaryCol(o.shoes)] || '#cfcac0' : '#cfcac0';
-  ctx.fillStyle = skCol;
-  ctx.fillRect(78, 468, 22, 22);
-  ctx.fillRect(120, 468, 22, 22);
-
-  ctx.fillStyle = shCol;
-  ctx.beginPath();
-  ctx.moveTo(76, 488); ctx.lineTo(102, 488); ctx.lineTo(102, 503); ctx.quadraticCurveTo(102, 511, 92, 511); ctx.lineTo(56, 511); ctx.quadraticCurveTo(54, 499, 68, 496); ctx.closePath();
-  ctx.moveTo(144, 488); ctx.lineTo(118, 488); ctx.lineTo(118, 503); ctx.quadraticCurveTo(118, 511, 128, 511); ctx.lineTo(164, 511); ctx.quadraticCurveTo(166, 499, 152, 496); ctx.closePath();
-  ctx.fill();
-
-  // 2. Shirt
-  drawGarment(c => {
-    c.moveTo(92, 78); c.lineTo(128, 78); c.lineTo(150, 100); c.lineTo(150, 270); c.lineTo(70, 270); c.lineTo(70, 100); c.closePath();
-  }, o.shirt, '#f6f6f3');
-
-  // Shirt Collar & Cuffs
-  ctx.fillStyle = o.shirt ? COLORS[primaryCol(o.shirt)] || '#f6f6f3' : '#f6f6f3';
-  ctx.beginPath();
-  ctx.moveTo(98, 78); ctx.lineTo(110, 98); ctx.lineTo(88, 96); ctx.closePath();
-  ctx.moveTo(122, 78); ctx.lineTo(110, 98); ctx.lineTo(132, 96); ctx.closePath();
-  ctx.fill();
-
-  ctx.fillRect(30, 266, 22, 7);
-  ctx.fillRect(168, 266, 22, 7);
-
-  // 3. Tie
-  if (o.tie) {
-    drawGarment(c => {
-      c.moveTo(104, 92); c.lineTo(116, 92); c.lineTo(114, 103); c.lineTo(106, 103); c.closePath();
-      c.moveTo(106, 103); c.lineTo(114, 103); c.lineTo(121, 191); c.lineTo(110, 206); c.lineTo(99, 191); c.closePath();
-    }, o.tie, '#3f6fb5');
+  if(o.top){
+    /* lapels, closure, hem opening */
+    s+=part(both(lapelL),F('top'));
+    s+=`<path d="${both('M109,98 C111,140 115,190 120,228')}" stroke="#fff" stroke-opacity=".18" stroke-width="1" fill="none"/>`;
+    s+=`<path d="${hemGap}" fill="${F('bot')}"/>`;
+    s+=`<path d="M120,228 L120,298 C119,316 114,328 104,337 M120,298 C121,316 126,328 136,337" stroke="#000" stroke-opacity=".38" stroke-width=".9" fill="none"/>`;
+    /* pockets */
+    s+=`<path d="${both('M80,286 L106,288 L106,296 L80,294 Z')}" fill="${F('top')}" ${seam}/>`;
+    s+=`<path d="M138,160 L160,157 L160,161 L138,164 Z" fill="${F('top')}" ${seam}/>`;
+    /* buttons */
+    const btn=lum(colOf(o.top))>.5?'#3a3530':'#141414';
+    for(const y of [242,276])s+=`<circle cx="122" cy="${y}" r="2.6" fill="${btn}"/><circle cx="121.4" cy="${y-.6}" r="1" fill="#fff" opacity=".18"/>`;
+    /* sleeves last so they overlap the body */
+    s+=part(both(sleeveL),F('top'));
+    for(const x of [58,61,64])s+=`<circle cx="${x}" cy="${306-(x-58)*.2}" r="1.1" fill="${btn}"/><circle cx="${240-x}" cy="${306-(x-58)*.2}" r="1.1" fill="${btn}"/>`;
   }
 
-  // 4. Suit / Blazer Top
-  drawGarment(c => {
-    c.moveTo(58, 102); c.lineTo(38, 110); c.lineTo(30, 268); c.lineTo(52, 268); c.lineTo(66, 130); c.closePath();
-    c.moveTo(162, 102); c.lineTo(182, 110); c.lineTo(190, 268); c.lineTo(168, 268); c.lineTo(154, 130); c.closePath();
-    c.moveTo(64, 98); c.lineTo(98, 84); c.lineTo(110, 170); c.lineTo(110, 300); c.lineTo(62, 300); c.lineTo(56, 112); c.closePath();
-    c.moveTo(156, 98); c.lineTo(122, 84); c.lineTo(110, 170); c.lineTo(110, 300); c.lineTo(158, 300); c.lineTo(164, 112); c.closePath();
-  }, o.top, '#1b2a4a');
+  /* accessories */
+  if(o.clip&&o.tie){const m=METAL[o.clip.metal]||METAL.other;s+=`<rect x="111" y="170" width="18" height="2.4" rx="1" fill="${m}" stroke="#000" stroke-opacity=".3" stroke-width=".4"/>`}
+  if(o.watch){const m=METAL[o.watch.metal]||METAL.other;s+=`<rect x="178" y="320" width="16" height="5" rx="1.5" fill="${m}"/><circle cx="186" cy="322.5" r="5" fill="${m}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/><circle cx="186" cy="322.5" r="3.4" fill="#0f1820"/>`}
 
-  // Watch & Tie Clip
-  if (o.watch) {
-    const wm = METAL[o.watch.metal] || METAL.other;
-    ctx.fillStyle = wm;
-    ctx.fillRect(168, 277, 22, 8);
-    ctx.beginPath(); ctx.arc(179, 281, 6.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(179, 281, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#101820'; ctx.fill();
-  }
-  if (o.clip) {
-    const cm = METAL[o.clip.metal] || METAL.other;
-    ctx.fillStyle = cm;
-    ctx.fillRect(104, 132, 12, 3);
-  }
+  containerEl.innerHTML=s+'</svg>';
 }
 
 /* views */
