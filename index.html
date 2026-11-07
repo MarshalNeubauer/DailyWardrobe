@@ -20,11 +20,15 @@
 <nav><button id="n-today" onclick="show('today')">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-add" onclick="show('add')">Add</button></nav>
 
 <div id="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;pointer-events:none;" onclick="closeSettings()"></div>
-<div id="settings-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:90%;max-width:400px;z-index:1000;box-shadow:0 10px 30px rgba(0,0,0,0.5);pointer-events:none;">
+<div id="settings-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:90%;max-width:400px;z-index:1000;box-shadow:0 10px 30px rgba(0,0,0,0.5);pointer-events:none;max-height:90vh;overflow:auto;">
 <h2>Settings</h2>
 <p class="mut"><small>Configure your Cloudflare Worker backend for AI photo recognition.</small></p>
 <label style="display:block;margin:10px 0">Worker URL:<br><input type="text" id="cfg-url" placeholder="https://your-worker.workers.dev"></label>
 <label style="display:block;margin:10px 0">App Token:<br><input type="text" id="cfg-token" placeholder="Your secret token"></label>
+<h3 style="margin:16px 0 4px">Backup &amp; sync</h3>
+<p class="mut" style="margin:0 0 6px"><small id="sync-status"></small></p>
+<p class="mut" style="margin:0"><small>Your wardrobe is backed up to your Cloudflare Worker and kept in sync across your devices. Needs the WARDROBE KV binding and APP_TOKEN on the worker.</small></p>
+<div class="btns" style="flex-wrap:wrap"><button onclick="syncNow()">Sync now</button><button onclick="downloadBackup()">Download backup</button><label class="btn" style="margin:0;padding:8px 14px">Restore file<input type="file" accept="application/json,.json" hidden onchange="restoreBackup(this.files[0]);this.value=''"></label></div>
 <div class="btns"><button class="pri" onclick="saveSettings()">Save</button><button onclick="closeSettings()">Cancel</button></div>
 </div>
 
@@ -33,4 +37,5 @@
 <script src="detect.js"></script>
 <script src="draw.js"></script>
 <script src="app.js"></script>
+<script src="sync.js"></script>
 </body></html>

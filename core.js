@@ -48,3 +48,22 @@ const BANDS=[['bracelet','Metal bracelet'],['leather','Leather strap']],BEZELS=[
 const watchOpts=w=>({dial:w&&w.dial||'white',band:w&&w.band||'bracelet',bezel:w&&w.bezel||'fluted',style:w&&w.watchStyle||'annual-calendar'});
 const METAL_TONES={gold:['#fbefc4','#d4b04a','#8a6d12'],silver:['#f7f8f9','#c4c8cd','#767b82'],other:['#d2d4d7','#868a90','#45494e']};
 
+/* ---- backup / sync merge ----
+   Merge two wardrobe snapshots {items, tombstones, days, settings}: the newest version of each item wins, and a deletion
+   (tombstone) wins over any older edit. Days (outfit history) merge the same way by date; settings by their timestamp. */
+const stamp=i=>i&&(i.updated||i.added)||0;
+function mergeState(a,b){
+  a=a||{};b=b||{};const items={},tomb={...(a.tombstones||{})};
+  for(const [id,t] of Object.entries(b.tombstones||{}))tomb[id]=Math.max(tomb[id]||0,t);
+  for(const it of [...(a.items||[]),...(b.items||[])]){const cur=items[it.id];if(!cur||stamp(it)>stamp(cur))items[it.id]=it}
+  for(const id of Object.keys(items))if(tomb[id]&&tomb[id]>=stamp(items[id]))delete items[id];
+  const cutoff=Date.now()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
+  const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];if(!cur||(d.updated||0)>(cur.updated||0))days[d.date]=d}
+  const settings=a.settings&&b.settings?((a.settings.updated||0)>=(b.settings.updated||0)?a.settings:b.settings):(a.settings||b.settings||null);
+  return {items:Object.values(items),tombstones:tomb,days:Object.values(days),settings};
+}
+/* compact fingerprint of a snapshot, to tell whether a merge changed anything */
+function stateSig(s){
+  s=s||{};const by=(arr,k,v)=>(arr||[]).map(x=>x[k]+':'+v(x)).sort().join(',');
+  return [by(s.items,'id',stamp),Object.entries(s.tombstones||{}).map(e=>e.join(':')).sort().join(','),by(s.days,'date',d=>d.updated||0),s.settings?s.settings.updated||0:''].join('|');
+}

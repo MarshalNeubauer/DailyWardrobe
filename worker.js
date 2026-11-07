@@ -5,6 +5,8 @@
 //   APP_TOKEN       secret; must match the App Token in the app's settings (recommended — without it anyone can use your quota)
 //   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin)
 //   MODEL           optional, defaults to @cf/meta/llama-3.2-11b-vision-instruct
+//   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
+//                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
 //
 // Pattern lists must stay in sync with PATS_BY in index.html.
 const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
@@ -59,20 +61,47 @@ dial, band, bezel — watches only, otherwise null:
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 
+/* GET /sync returns the stored backup {rev, saved, data}; PUT /sync {baseRev, data} stores a new one.
+   baseRev must equal the stored rev, otherwise 409 with the current backup so the app can merge and retry
+   (two devices syncing at once never overwrite each other). */
+const SYNC_KEY = 'wardrobe:v1';
+async function handleSync(req, env, json) {
+  if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to enable backups.' }, 403);
+  if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.WARDROBE) return json({ error: 'Add a KV namespace binding named WARDROBE to the worker to enable backups.' }, 501);
+  if (req.method === 'GET') {
+    const stored = await env.WARDROBE.get(SYNC_KEY, 'json');
+    return json(stored || { rev: 0, saved: 0, data: null });
+  }
+  if (req.method === 'PUT') {
+    const text = await req.text();
+    if (text.length > 24 * 1024 * 1024) return json({ error: 'backup too large (over 24 MB)' }, 413);
+    let body;
+    try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+    const cur = (await env.WARDROBE.get(SYNC_KEY, 'json')) || { rev: 0, saved: 0, data: null };
+    if ((body.baseRev ?? -1) !== cur.rev) return json({ error: 'conflict', ...cur }, 409);
+    const next = { rev: cur.rev + 1, saved: Date.now(), data: body.data };
+    await env.WARDROBE.put(SYNC_KEY, JSON.stringify(next));
+    return json({ rev: next.rev, saved: next.saved });
+  }
+  return json({ error: 'method not allowed' }, 405);
+}
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
     const cors = {
       'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
       'Access-Control-Allow-Headers': 'content-type,x-app-token',
-      'Access-Control-Allow-Methods': 'POST,OPTIONS',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
     };
     const json = (body, status = 200) =>
       new Response(JSON.stringify(body), { status, headers: { ...cors, 'content-type': 'application/json' } });
 
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
     if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) return json({ error: 'forbidden origin' }, 403);
+    if (new URL(req.url).pathname.replace(/\/+$/, '') === '/sync') return handleSync(req, env, json);
+    if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
     let body;
     try { body = await req.json(); } catch { return json({ error: 'bad json' }, 400); }

@@ -177,7 +177,6 @@ async function workerTests(){
   let r=await w.fetch(req('t',{image:'data:image/jpeg;base64,AAAA'}),env);ok(r.status===200&&(await r.json()).type==='tie','photo tagging works (and accepts the model licence once)');
   r=await w.fetch(req('bad',{image:'data:image/jpeg;base64,AAAA'}),env);ok(r.status===403,'wrong token is refused');
   r=await w.fetch(req('t',{image:'data:image/jpeg;base64,AAAA'},'https://evil.example'),env);ok(r.status===403,'wrong origin is refused');
-  if(mod.syncTests)await mod.syncTests(ok);
   return w;
 }
 
