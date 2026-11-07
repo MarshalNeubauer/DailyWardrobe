@@ -2,9 +2,11 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#101820">
+<!-- The app has its own dark theme; tell dark-mode extensions not to recolour it (they invert the mannequin's colours). -->
+<meta name="color-scheme" content="light dark"><meta name="darkreader-lock">
 <title>Daily Wardrobe</title>
 <style>
-:root{--bg:#e8ebec;--card:#fbfbf8;--ink:#101820;--mut:#5d6872;--acc:#d9a21b;--line:#cdd3d6}
+:root{color-scheme:light dark;--bg:#e8ebec;--card:#fbfbf8;--ink:#101820;--mut:#5d6872;--acc:#d9a21b;--line:#cdd3d6}
 @media(prefers-color-scheme:dark){:root{--bg:#0d141b;--card:#16202a;--ink:#e9eef0;--mut:#93a0aa;--line:#26333f}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
