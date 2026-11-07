@@ -184,8 +184,49 @@ async function rm(id){if(!confirm('Delete this item?'))return;await del(id);item
 let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
 
 /* views */
-const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top],...(o.suitDay?[]:[['Pants',o.bot]]),['Shirt',o.shirt],['Tie',o.tie],['Tie clip',o.clip],['Watch',o.watch],['Belt',o.belt],['Socks',o.socks],['Shoes',o.shoes]]
-.map(([l,i])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot" style='background:${bg(i)}'></span><span class="cap">${desc(i)}</span>`:'<span class="mut none">Add one on the Add tab</span>'}</div>`).join('');
+const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top,'top'],...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip'],['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes']]
+.map(([l,i,s])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot" style='background:${bg(i)}'></span><span class="cap">${desc(i)}</span>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:'<span class="mut none">Add one on the Add tab</span>'}</div>`).join('');
+
+/* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
+const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
+const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+let swapMsg='';
+async function saveDay(rec,quiet){rec.updated=Date.now();dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync()}
+/* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
+async function recordDays(p){
+  const T=todayDate(),tk=key(T);let changed=false;
+  for(const [k,o] of Object.entries(p)){
+    if(!SLOTS.some(s=>o[s])||o.frozen)continue;const d=keyDate(k);
+    if(d<T&&!dayRecs[k]){await saveDay({date:k,ids:idsOf(o),suitDay:o.suitDay,auto:true},true);changed=true}
+    else if(k===tk){const r=dayRecs[k],ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)){await saveDay({...(r||{date:k}),ids,suitDay:o.suitDay},true);changed=true}}
+  }
+  if(changed&&window.scheduleSync)scheduleSync();
+}
+async function swapSlot(slot){
+  const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
+  const cur=o[slot]&&o[slot].id,pool=items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay));
+  if(pool.length<2){swapMsg=`That's your only ${(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to swap.`;renderToday();return}
+  const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay};
+  const skip={...(rec.skip||{})};skip[slot]=[...new Set([...(skip[slot]||[]),cur].filter(Boolean))];
+  if(pool.every(i=>skip[slot].includes(i.id)))skip[slot]=[cur];       // tried them all: start the cycle again
+  // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
+  const follow={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks']}[slot]||[];
+  const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
+  rec.skip=skip;rec.force=force;swapMsg='';await saveDay(rec);renderToday();
+}
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;swapMsg='';await saveDay(n);renderToday()}
+async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,worn:v});renderToday()}
+function dayActions(o){
+  const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
+  let h='';
+  if(past||isToday){
+    if(o.worn===true)h+=`<span class="chip on">✓ Worn</span><button onclick="setWorn(undefined)">Undo</button>`;
+    else if(o.worn===false)h+=`<span class="chip">Not worn</span><button onclick="setWorn(undefined)">Undo</button>`;
+    else h+=`<button class="pri" onclick="setWorn(true)">✓ Wore this</button><button onclick="setWorn(false)">Didn't wear</button>`;
+  }
+  if(!o.frozen&&o.overrides)h+=`<button onclick="resetDay()">Reset changes</button>`;
+  return (h?`<div class="btns dayact">${h}</div>`:'')+(past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
+}
 
 /* outfit score card with an expandable breakdown */
 function scoreCard(o){
@@ -214,10 +255,12 @@ function renderToday(){
   else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else{stage='<div class="man" id="mannequin-container"></div>';
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${scoreCard(o)}<div class="list">${slots(o)}</div>${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+    side=`${scoreCard(o)}<div class="list">${slots(o)}</div>${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${planHtml(p)}</div></div>`;
   if(o && items.length && sel.getDay()<=4) {
     renderMannequinCanvas(o, $('#mannequin-container'));
+  }
+  if(items.length){recordDays(p);
   }
 }
 
@@ -307,7 +350,9 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd};if(f[t])f[t]();
 }
 
-db.then(()=>tx('readonly',s=>s.getAll())).then(r=>{items=r||[];show('today')}).catch(e=>{items=[];show('today')});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll())])).then(([r,d])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));show('today')}).catch(e=>{console.warn(e);items=[];show('today')});
 
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
+/* sync brought new data: refresh the in-memory outfit history too */
+function onSyncedData(m){dayRecs=Object.fromEntries((m.days||[]).map(d=>[d.date,d]))}
