@@ -828,7 +828,8 @@ function stepDay(n,from){
   el.addEventListener('touchstart',e=>{
     const t=e.touches[0];
     // ignore multi-touch and touches that start at the screen edge (iOS back/forward gesture)
-    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24||!e.target.closest('#stage')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0};
+    // the gesture can start anywhere on Today (e.g. a Saturday shows only a one-line message); only the outfit moves
+    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0};
   },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
