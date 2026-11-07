@@ -1,5 +1,10 @@
-// Cloudflare Worker: keeps your Anthropic API key off GitHub.
-// Environment: ANTHROPIC_API_KEY (secret), APP_TOKEN (secret), ALLOWED_ORIGIN (e.g. https://YOURNAME.github.io), MODEL (optional)
+// Cloudflare Worker (Workers AI) for photo recognition.
+//
+// Bindings / variables (Worker > Settings):
+//   AI              Workers AI binding, variable name "AI"   (required)
+//   APP_TOKEN       secret; must match the App Token in the app's settings (recommended — without it anyone can use your quota)
+//   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin)
+//   MODEL           optional, defaults to @cf/meta/llama-3.2-11b-vision-instruct
 //
 // Pattern lists must stay in sync with PATS_BY in index.html.
 const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
@@ -41,48 +46,68 @@ Use "solid" for suits, blazers and trousers whose weave is only visible up close
 
 metal — for tieclip and watch: gold, silver or other. Otherwise null.`;
 
-const json = (body, cors, status = 200) =>
-  new Response(typeof body === 'string' ? body : JSON.stringify(body), { status, headers: { ...cors, 'content-type': 'application/json' } });
+const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 
 export default {
   async fetch(req, env) {
+    const origin = req.headers.get('Origin') || '';
     const cors = {
-      'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN,
+      'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
       'Access-Control-Allow-Headers': 'content-type,x-app-token',
       'Access-Control-Allow-Methods': 'POST,OPTIONS',
     };
+    const json = (body, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { ...cors, 'content-type': 'application/json' } });
+
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (req.method !== 'POST' || req.headers.get('Origin') !== env.ALLOWED_ORIGIN) return json({ error: 'forbidden' }, cors, 403);
+    if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
+    if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) return json({ error: 'forbidden origin' }, 403);
 
     let body;
-    try { body = await req.json(); } catch { return json({ error: 'bad json' }, cors, 400); }
+    try { body = await req.json(); } catch { return json({ error: 'bad json' }, 400); }
 
     // The app sends the token both as a header and in the body.
-    const token = req.headers.get('x-app-token') || body.appToken;
-    if (token !== env.APP_TOKEN) return json({ error: 'forbidden' }, cors, 403);
+    const token = req.headers.get('x-app-token') || body.appToken || '';
+    if (env.APP_TOKEN && token !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
 
-    // Accept either a data URL ("data:image/jpeg;base64,...") or raw base64 plus media_type.
-    let data = String(body.image || ''), media_type = body.media_type || 'image/jpeg';
-    const du = /^data:(image\/[\w.+-]+);base64,(.*)$/s.exec(data);
-    if (du) { media_type = du[1]; data = du[2]; }
-    if (!data) return json({ error: 'no image' }, cors, 400);
+    // The model wants the image as a data URI inside the user message.
+    let image = String(body.image || '');
+    if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
+    if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
 
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({
-        model: env.MODEL || 'claude-sonnet-5-5',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type, data } },
+    const model = env.MODEL || DEFAULT_MODEL;
+    const input = {
+      max_tokens: 300,
+      temperature: 0.1,
+      messages: [
+        { role: 'system', content: 'You are a menswear expert who labels clothing photos. You answer with JSON only.' },
+        { role: 'user', content: [
           { type: 'text', text: PROMPT },
-        ] }],
-      }),
-    });
-    const j = await r.json();
-    if (!r.ok) return json({ error: 'upstream', detail: j.error?.message || r.status }, cors, 502);
-    const text = (j.content || []).map(c => c.text || '').join('');
+          { type: 'image_url', image_url: { url: image } },
+        ] },
+      ],
+    };
+
+    let out;
+    try {
+      out = await env.AI.run(model, input);
+    } catch (e) {
+      // Llama 3.2 Vision is gated: the account must accept Meta's licence once (error 5016). Do that and retry.
+      if (/5016|agree/i.test(String(e && e.message))) {
+        await env.AI.run(model, { prompt: 'agree' });
+        try { out = await env.AI.run(model, input); }
+        catch (e2) { return json({ error: 'ai', detail: String(e2 && e2.message) }, 502); }
+      } else {
+        return json({ error: 'ai', detail: String(e && e.message) }, 502);
+      }
+    }
+
+    const raw = out && out.response;
+    if (raw && typeof raw === 'object') return json(raw);
+    const text = String(raw || '');
     const m = text.match(/\{[\s\S]*\}/);
-    return json(m ? m[0] : '{}', cors);
+    if (!m) return json({ error: 'no json in model output', detail: text.slice(0, 300) }, 502);
+    try { return json(JSON.parse(m[0])); }
+    catch { return json({ error: 'unparseable model output', detail: m[0].slice(0, 300) }, 502); }
   },
 };
