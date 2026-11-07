@@ -14,15 +14,23 @@
 
 ## Project
 
-- `index.html`: the entire app (HTML, CSS, JS in one file, no build step). Wardrobe items are stored in the browser's IndexedDB on the user's device.
-  - **Outfit planning:** `outfit()` / `buildPlan()` choose each day's outfit.
-  - **Mannequin:** `renderMannequinCanvas()` draws the outfit as an SVG figure. `fabricDef()` builds each garment's fabric pattern.
-  - **Pattern detection:** `detectPattern()` reads stripe and check layouts from the item photo when an item is saved. Colours always come from the item's tagged colours, matched by brightness rank, never from the photo.
-  - **Pattern lists:** `PATS_BY` holds the per-type pattern lists. Keep them in sync with the prompt in `worker.js`.
-- `worker.js`: Cloudflare Worker using Workers AI (`env.AI`, Llama 3.2 Vision) to tag photos. The user deploys it manually in the Cloudflare dashboard; merging doesn't deploy it.
+Static app served from `main` by GitHub Pages (no build step). Classic scripts loaded in order, sharing one global scope:
+
+| File | Contents |
+|---|---|
+| `index.html` | markup and script tags |
+| `styles.css` | styles |
+| `core.js` | colours, types, item helpers (no DOM; also loaded by background workers) |
+| `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM) |
+| `detect.js` | stripe/check detection from photos (canvas) |
+| `draw.js` | SVG mannequin, accessories, wardrobe thumbnails |
+| `app.js` | IndexedDB storage, forms, screens, swipe gestures |
+| `worker.js` | Cloudflare Worker (Workers AI tagging); the user deploys it by hand, merging doesn't deploy it |
+
+Colours always come from the item's tagged colours, matched by brightness rank, never from the photo. Pattern lists in `PATS_BY` (core.js) must stay in sync with the prompt in `worker.js`.
 
 ## Testing
 
-There is no test suite. Verify changes by loading `index.html` in headless Chromium (Playwright is preinstalled), seeding `items`, calling `renderToday()`, and checking screenshots and console errors.
+`npm test` (or `node tests/run.js`) serves the repo, drives it in headless Chromium and checks rendering, swipe/layout on phone and iPhone Duo viewports, the planner against an independent rule checklist, belts/leather/metals, the outfit score, photo-less adding, pattern detection, and `worker.js` with mocked bindings. GitHub Actions runs it on every PR (`.github/workflows/test.yml`). Add a check for every behaviour you change; extra suites can go in `tests/*.test.js`.
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.
