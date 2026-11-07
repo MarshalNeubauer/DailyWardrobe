@@ -330,8 +330,8 @@ async function renderMannequinCanvas(o, containerEl) {
   // Shirt Collar & Cuffs
   ctx.fillStyle = o.shirt ? COLORS[primaryCol(o.shirt)] || '#f6f6f3' : '#f6f6f3';
   ctx.beginPath();
-  ctx.moveTo(98, 78); ctx.lineTo(110, 98); ctx.lineTo(88, 96); c.closePath?.();
-  ctx.moveTo(122, 78); ctx.lineTo(110, 98); ctx.lineTo(132, 96); c.closePath?.();
+  ctx.moveTo(98, 78); ctx.lineTo(110, 98); ctx.lineTo(88, 96); ctx.closePath();
+  ctx.moveTo(122, 78); ctx.lineTo(110, 98); ctx.lineTo(132, 96); ctx.closePath();
   ctx.fill();
 
   ctx.fillRect(30, 266, 22, 7);
