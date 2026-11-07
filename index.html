@@ -594,7 +594,7 @@ function drawOxfordSide(item,P){
   const U='M5,39 C2,34 4,30 12,28.5 C24,26.5 34,23 41,18 C45,15 48,13 52,12.5 L83,11 C90,10.8 94.5,14 95,21 L95,39 Z';
   const lay=leatherLayers(P,item,U,{x:16,y:31,r:16,rot:-12}),lace=item?mix(colOf(item),'#000',.45):'#111';
   let eyelets='';for(let k=0;k<5;k++){const x=53+k*2.6,y=13.4-k*.12;eyelets+=`<circle cx="${x}" cy="${y+1.4}" r=".55" fill="#000" opacity=".55"/>`}
-  return `<defs>${lay.defs}</defs><ellipse cx="50" cy="47" rx="46" ry="2.4" fill="#000" opacity=".14"/>`+
+  return `<defs>${lay.defs}</defs>`+
     `<path d="M4,39 C4,43.5 6.5,45.5 12,45.5 L58,45.5 C64,43 70,43 74,45.5 L94,45.5 L95.5,39 Z" fill="${lay.sole}"/>${lay.body}`+
     `<path d="M6,39.6 L94,39.6" stroke="#fff" stroke-opacity=".22" stroke-width=".35" stroke-dasharray=".8 .6"/>`+
     `<path d="M21,27.3 C19,31 19,36 21,39" fill="none" stroke="#000" stroke-opacity=".4" stroke-width=".6"/>`+
@@ -610,7 +610,7 @@ function drawSock(color,P){
   const d='M4,0 L20,0 L20,44 C20,50 23,53 29,55 L33,56.5 C39.5,58.5 40.5,68 32,69 L11,69 C3,69 1,63 4,56 Z';
   const ink=lum(color)>.55?'#000':'#fff';let ribs='';for(let x=6;x<19;x+=1.6)ribs+=`M${x.toFixed(1)},7 L${x.toFixed(1)},46 `;
   return `<defs><linearGradient id="${P}sh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".25"/><stop offset=".4" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>`+
-    `<ellipse cx="22" cy="73" rx="17" ry="2.2" fill="#000" opacity=".14"/>`+
+    ``+
     `<path d="${d}" fill="${color}" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`+
     `<path d="${ribs}" stroke="${ink}" stroke-opacity=".13" stroke-width=".5"/>`+
     `<path d="M4,0 L20,0 L20,6 L4,6 Z" fill="#000" opacity=".1"/><path d="M4,6 L20,6" stroke="${ink}" stroke-opacity=".2" stroke-width=".5"/>`+
@@ -631,7 +631,7 @@ function drawWatch(w,P){
    <radialGradient id="${P}cs" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="${mL}"/><stop offset="1" stop-color="${mD}"/></radialGradient>
    <radialGradient id="${P}dl" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="${mix(dial,'#fff',.4)}"/><stop offset="1" stop-color="${mix(dial,'#000',.07)}"/></radialGradient>
    <linearGradient id="${P}gl" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
-  </defs><ellipse cx="2.5" cy="52" rx="15" ry="2.6" fill="#000" opacity=".16"/>`;
+  </defs>`;
   if(o.band==='bracelet'){
     // three-piece links: brushed outer links, polished centre link
     for(const sg of [-1,1])for(let k=0;k<6;k++){
@@ -687,7 +687,7 @@ function drawBelt(item,P){
   return `<defs>${buckleDefs(P,metal)}
     <linearGradient id="${P}sv" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>
     <linearGradient id="${P}sh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".3"/><stop offset=".2" stop-color="#000" stop-opacity="0"/><stop offset=".8" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient></defs>`+
-    `<ellipse cx="1" cy="12" rx="30" ry="2.4" fill="#000" opacity=".14"/>`+
+    ``+
     `<path d="${strap}" fill="${c}" stroke="${edge}" stroke-width=".5"/>`+
     `<path d="M-30,-2.9 Q0,-4.6 30,-2.9 M-30,3.9 Q0,2.2 30,3.9" fill="none" stroke="${st}" stroke-opacity=".6" stroke-width=".3" stroke-dasharray=".9 .6"/>`+
     `<ellipse cx="-17" cy=".2" rx=".9" ry="1.15" fill="${edge}"/><ellipse cx="-22" cy=".4" rx=".9" ry="1.15" fill="${edge}"/>`+
@@ -748,10 +748,8 @@ function renderMannequinCanvas(o, containerEl){
     <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
   <radialGradient id="shine" cx=".35" cy=".35" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
   <pattern id="silk" patternUnits="userSpaceOnUse" width="1.4" height="1.4" patternTransform="rotate(45)"><rect width=".7" height=".7" fill="#000" opacity=".16"/><rect x=".7" y=".7" width=".7" height=".7" fill="#fff" opacity=".07"/></pattern>
-  <radialGradient id="floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
   ${defs.join('')}</defs>`;
 
-  s+=`<ellipse cx="120" cy="574" rx="66" ry="7" fill="url(#floor)"/>`;
 
   /* oxfords first, then the trousers resting on them with a slight break */
   s+=drawOxfordFront(o.shoes,'shL')+`<g transform="translate(240,0) scale(-1,1)">${drawOxfordFront(o.shoes,'shR')}</g>`;
