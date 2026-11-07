@@ -23,7 +23,7 @@ header button{background:none;border:0;color:inherit;font-size:22px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:900}
 nav button{flex:1;border:0;border-radius:0;background:none;padding:16px 0;font-weight:600;color:var(--mut)}
 nav button.on{color:var(--ink);box-shadow:inset 0 3px var(--acc)}
-.man>svg{display:block;margin:6px auto;width:min(330px,88vw);height:auto}
+.man>svg{display:block;margin:6px auto;width:min(330px,88vw);height:auto;max-height:calc(100svh - 250px)} /* whole outfit fits above the tab bar */
 .list{background:var(--card);border-radius:14px;padding:6px 14px;margin:8px 0 20px}
 .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
 .row .mut{width:68px;flex:none}
@@ -702,7 +702,7 @@ function renderMannequinCanvas(o, containerEl){
   const opening=(cx,cy,rx,tilt)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="2.3" transform="rotate(${tilt} ${cx} ${cy})" fill="#1b1d21" opacity=".8"/>`;
   const hemGap='M120,298 C119,316 114,328 104,337 L136,337 C126,328 121,316 120,298 Z';
 
-  let s=`<svg viewBox="-34 0 308 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outfit preview"><defs>
+  let s=`<svg viewBox="-34 70 308 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outfit preview"><defs>
   <linearGradient id="shade" x1="0" x2="1" y1="0" y2="0">
     <stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".32" stop-color="#fff" stop-opacity=".10"/>
     <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
