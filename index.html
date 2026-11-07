@@ -2,9 +2,11 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#101820">
+<!-- The app has its own dark theme; tell dark-mode extensions not to recolour it (they invert the mannequin's colours). -->
+<meta name="color-scheme" content="light dark"><meta name="darkreader-lock">
 <title>Daily Wardrobe</title>
 <style>
-:root{--bg:#e8ebec;--card:#fbfbf8;--ink:#101820;--mut:#5d6872;--acc:#d9a21b;--line:#cdd3d6}
+:root{color-scheme:light dark;--bg:#e8ebec;--card:#fbfbf8;--ink:#101820;--mut:#5d6872;--acc:#d9a21b;--line:#cdd3d6}
 @media(prefers-color-scheme:dark){:root{--bg:#0d141b;--card:#16202a;--ink:#e9eef0;--mut:#93a0aa;--line:#26333f}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
@@ -119,6 +121,102 @@ function generateSwatch(q){
   return q.swatch;
 }
 
+/* Stripe layout detection: reads angle, band order and band widths from a photo region */
+const STRIPE_PATS=['stripe','pinstripe','chalk-stripe'];
+function analyzeStripes(src,sx,sy,size,nColors){
+  const N=Math.max(48,Math.min(256,Math.round(size)));
+  const cv=document.createElement('canvas');cv.width=cv.height=N;
+  const g=cv.getContext('2d',{willReadFrequently:true});g.drawImage(src,sx,sy,size,size,0,0,N,N);
+  const d=g.getImageData(0,0,N,N).data,L=new Float32Array(N*N);
+  for(let i=0;i<N*N;i++)L[i]=(.2126*d[i*4]+.7152*d[i*4+1]+.0722*d[i*4+2])/255;
+  // two box-blur passes suppress the weave texture so the stripes dominate
+  const blur=a=>{const o=new Float32Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){let s=0,c=0;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const X=x+i,Y=y+j;if(X>=0&&Y>=0&&X<N&&Y<N){s+=a[Y*N+X];c++}}o[y*N+x]=s/c}return o};
+  const B=blur(blur(L));
+  // structure tensor -> dominant gradient direction (perpendicular to the stripes)
+  let jxx=0,jyy=0,jxy=0;
+  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++){
+    const p=(X,Y)=>B[Y*N+X];
+    const gx=(p(x+1,y-1)+2*p(x+1,y)+p(x+1,y+1))-(p(x-1,y-1)+2*p(x-1,y)+p(x-1,y+1));
+    const gy=(p(x-1,y+1)+2*p(x,y+1)+p(x+1,y+1))-(p(x-1,y-1)+2*p(x,y-1)+p(x+1,y-1));
+    jxx+=gx*gx;jyy+=gy*gy;jxy+=gx*gy;
+  }
+  const coh=Math.sqrt((jxx-jyy)**2+4*jxy*jxy)/((jxx+jyy)||1);
+  if(coh<.25)return null;
+  let th=.5*Math.atan2(2*jxy,jxx-jyy);
+  if(th<=-Math.PI/2)th+=Math.PI;if(th>Math.PI/2)th-=Math.PI;
+  // project every pixel onto the gradient axis -> 1-D brightness profile.
+  // Unblurred: averaging along the stripe length already removes the weave texture and keeps thin lines sharp.
+  const R=Math.ceil(N*Math.SQRT1_2)+1,len=2*R;
+  const project=ang=>{const sum=new Float64Array(len),cnt=new Float64Array(len),cs=Math.cos(ang),sn=Math.sin(ang);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){const t=Math.floor((x-N/2)*cs+(y-N/2)*sn+R);sum[t]+=L[y*N+x];cnt[t]++}
+    const pr=[];for(let i=0;i<len;i++)if(cnt[i]>=N/3)pr.push(sum[i]/cnt[i]);return pr};
+  // the tensor angle can be ~1-2 degrees off, which smears thin lines; keep the angle with the sharpest profile
+  const sharp=pr=>{const m=pr.reduce((a,b)=>a+b,0)/pr.length;return pr.reduce((a,v)=>a+(v-m)**2,0)/pr.length};
+  let bestTh=th,bestV=-1;
+  for(let dd=-4;dd<=4;dd+=.25){const ang=th+dd*Math.PI/180,v=sharp(project(ang));if(v>bestV){bestV=v;bestTh=ang}}
+  th=bestTh;if(th<=-Math.PI/2)th+=Math.PI;if(th>Math.PI/2)th-=Math.PI;
+  const prof=project(th);
+  if(prof.length<24)return null;
+  const mean=prof.reduce((a,b)=>a+b,0)/prof.length,P=prof.map(v=>v-mean);
+  // period from autocorrelation
+  const ac=lag=>{let a=0,b=0,c=0;for(let i=0;i+lag<P.length;i++){a+=P[i]*P[i+lag];b+=P[i]*P[i];c+=P[i+lag]*P[i+lag]}return a/(Math.sqrt(b*c)||1)};
+  const maxLag=Math.floor(P.length*.67),r=[];for(let l=0;l<=maxLag;l++)r.push(l<5?-1:ac(l));
+  let best=-1,T=0;for(let l=6;l<maxLag;l++)if(r[l]>r[l-1]&&r[l]>=r[l+1]&&r[l]>best){best=r[l];T=l}
+  if(!T||best<.35)return null;
+  const half=Math.round(T/2);if(half>=6&&r[half]>.9*best&&r[half]>=r[half-1]&&r[half]>=r[half+1])T=half;
+  const y0=r[T-1],y1=r[T],y2=r[T+1]||y1,den=y0-2*y1+y2,Tf=T+(den?.5*(y0-y2)/den:0);
+  // fold the profile over one period
+  const M=Math.max(12,Math.round(Tf)),fs=new Float64Array(M),fc=new Float64Array(M);
+  prof.forEach((v,i)=>{const k=Math.floor(((i%Tf)/Tf)*M)%M;fs[k]+=v;fc[k]++});
+  const F=[...fs].map((v,k)=>v/(fc[k]||1));
+  // 1-D k-means on brightness with k = number of tagged colours
+  const k=Math.max(2,Math.min(3,nColors)),lo=Math.min(...F),hi=Math.max(...F);
+  if(hi-lo<.06)return null;
+  let C=k===2?[lo,hi]:[lo,(lo+hi)/2,hi],lab=new Array(M).fill(0);
+  for(let it=0;it<20;it++){
+    lab=F.map(v=>{let bi=0;for(let j=1;j<k;j++)if(Math.abs(v-C[j])<Math.abs(v-C[bi]))bi=j;return bi});
+    C=C.map((c,j)=>{const m=F.filter((_,i)=>lab[i]===j);return m.length?m.reduce((a,b)=>a+b,0)/m.length:c});
+  }
+  const order=C.map((c,j)=>[c,j]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]),rank=[];order.forEach((j,ri)=>rank[j]=ri);
+  lab=lab.map(j=>rank[j]); // 0 = darkest
+  // runs, merging slivers
+  let runs=[];for(let i=0;i<M;i++){if(runs.length&&runs[runs.length-1][0]===lab[i])runs[runs.length-1][1]++;else runs.push([lab[i],1])}
+  if(runs.length>1&&runs[0][0]===runs[runs.length-1][0]){runs[0][1]+=runs.pop()[1]}
+  const minW=Math.max(1,M*.025);
+  for(let pass=0;pass<3;pass++){
+    runs=runs.filter((rn,i)=>{if(rn[1]<minW&&runs.length>2){const nb=runs[(i+runs.length-1)%runs.length];nb[1]+=rn[1];return false}return true});
+    const m=[];for(const rn of runs){if(m.length&&m[m.length-1][0]===rn[0])m[m.length-1][1]+=rn[1];else m.push(rn)}
+    if(m.length>1&&m[0][0]===m[m.length-1][0]){m[0][1]+=m.pop()[1]}runs=m;
+  }
+  if(runs.length<2||runs.length>14)return null;
+  return {a:Math.round(th*180/Math.PI),runs:runs.map(([c,w])=>[c,w/M]),coh:+coh.toFixed(2),period:+Tf.toFixed(1),N};
+}
+/* map brightness ranks onto the item's colour roles (p/s/t) by luminance */
+function stripesForItem(res,item){
+  if(!res)return null;
+  const roles=[['p',item.primaryColor],['s',item.secondaryColor],['t',item.tertiaryColor]].filter(x=>x[1]&&COLORS[x[1]]);
+  roles.sort((a,b)=>lum(COLORS[a[1]])-lum(COLORS[b[1]]));
+  const k=Math.max(...res.runs.map(r=>r[0]))+1;
+  const pick=rk=>roles[Math.round(rk*(roles.length-1)/Math.max(1,k-1))][0];
+  let bands=res.runs.map(([rk,f])=>[pick(rk),+f.toFixed(3)]);
+  // start the repeat at the widest primary band
+  let si=0,bw=-1;bands.forEach((b,i)=>{if(b[0]==='p'&&b[1]>bw){bw=b[1];si=i}});
+  bands=bands.slice(si).concat(bands.slice(0,si));
+  return {a:res.a,b:bands};
+}
+
+/* stripe layout for a queued item, from the full-resolution photo */
+function detectQueued(q,it){
+  if(!q.big||!STRIPE_PATS.includes(it.pattern))return null;
+  const big=q.big,mn=Math.min(big.width,big.height),cx=(Number(q.cx)||.5)*big.width,cy=(Number(q.cy)||.5)*big.height;
+  const n=[it.primaryColor,it.secondaryColor,it.tertiaryColor].filter(Boolean).length;
+  for(const sz of [mn*(.5/(Number(q.zoom)||1)),mn*.7]){
+    const sx=Math.max(0,Math.min(big.width-sz,cx-sz/2)),sy=Math.max(0,Math.min(big.height-sz,cy-sz/2));
+    const r=stripesForItem(analyzeStripes(big,sx,sy,sz,n),it);if(r)return r;
+  }
+  return null;
+}
+
 function updateSwatchParam(i, param, val){
   queue[i][param]=Number(val);
   generateSwatch(queue[i]);
@@ -197,6 +295,7 @@ async function save(i){
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
   if(f)it.swatch=q.swatch;
   if(q.type==='watch'||q.type==='tieclip')it.metal=q.metal;
+  try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){}
   await put(it);items.push(it);queue.splice(i,1);renderAdd();
 }
 let editing=null;
@@ -205,6 +304,7 @@ function editForm(i){
   const cols=Object.keys(COLORS).map(c=>[c,c]),opt=[['none','None'],...cols];
   return `<div class="card" style="margin:8px 0 0;padding:8px">${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',opt,i.secondaryColor||'none')}${E(i.id,'tertiaryColor',opt,i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${i.type==='watch'||i.type==='tieclip'?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
+  ${STRIPE_PATS.includes(i.pattern)?`<p class="mut" style="margin:6px 0;font-size:14px">Stripe layout: ${i.stripes?`read from photo (${i.stripes.b.length} bands, ${Math.abs(i.stripes.a)}°)`:'generic'}</p><div class="btns"><button onclick="redetect('${i.id}')">Read stripes from photo</button>${i.stripes?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
   <div class="btns"><button class="pri" onclick="editing=null;renderWardrobe()">Done</button></div></div>`;
 }
 async function sete(id,k,v){
@@ -214,6 +314,17 @@ async function sete(id,k,v){
   if(k==='primaryColor')delete it.color;
   await put(it);cache={};renderWardrobe();
 }
+async function redetect(id){
+  const it=items.find(x=>x.id===id);if(!it)return;
+  const n=[it.primaryColor,it.secondaryColor,it.tertiaryColor].filter(Boolean).length;
+  const load=src=>new Promise(r=>{if(!src)return r(null);const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src});
+  let st=null;
+  const sw=await load(it.swatch);if(sw)st=stripesForItem(analyzeStripes(sw,0,0,sw.width,n),it);
+  if(!st){const ph=await load(it.photo);if(ph){const mn=Math.min(ph.width,ph.height)*.7;st=stripesForItem(analyzeStripes(ph,(ph.width-mn)/2,(ph.height-mn)/2,mn,n),it)}}
+  if(!st){alert('Could not find a clear repeating stripe in the photo. Re-adding it with the swatch centred on the stripes usually works.');return}
+  it.stripes=st;await put(it);cache={};renderWardrobe();
+}
+async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;await put(it);cache={};renderWardrobe()}
 async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);renderWardrobe()}
 
 /* matching logic & helpers */
@@ -271,6 +382,12 @@ function fabricDef(id,item,role){
   const twill=`<path d="M-2,2 L2,-2 M0,4 L4,0 M2,6 L6,2" stroke="${ink}" stroke-opacity="${wool?.07:.04}" stroke-width=".6"/>`;
   const tile=(w,h,body,tf='')=>`<pattern id="${id}" patternUnits="userSpaceOnUse" width="${w}" height="${h}"${tf?` patternTransform="${tf}"`:''}><rect width="${w}" height="${h}" fill="${b}"/>${body}</pattern>`;
   const fine=role==='shirt'||role==='tie';
+  /* stripe layout read from the item's photo takes precedence over the generic stripe tiles */
+  if(item.stripes&&STRIPE_PATS.includes(p)&&item.stripes.b&&item.stripes.b.length>1){
+    const T=role==='tie'?8:role==='shirt'?5:10,col={p:b,s:a,t:c};let x=0;
+    const bands=item.stripes.b.map(([r,f])=>{const w=f*T,o=`<rect x="${x.toFixed(3)}" width="${(w+.05).toFixed(3)}" height="${T}" fill="${col[r]||b}"/>`;x+=w;return o}).join('');
+    return tile(T,T,(wool?twill:'')+bands,role==='tie'?`rotate(${item.stripes.a})`:'');
+  }
   switch(p){
     /* --- stripes --- */
     case 'pinstripe':
@@ -370,6 +487,7 @@ function renderMannequinCanvas(o, containerEl){
     <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
   <radialGradient id="formg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#f1ede6"/><stop offset=".7" stop-color="${FORM}"/><stop offset="1" stop-color="${FORM_D}"/></radialGradient>
   <radialGradient id="shine" cx=".35" cy=".35" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <pattern id="silk" patternUnits="userSpaceOnUse" width="1.4" height="1.4" patternTransform="rotate(45)"><rect width=".7" height=".7" fill="#000" opacity=".16"/><rect x=".7" y=".7" width=".7" height=".7" fill="#fff" opacity=".07"/></pattern>
   <radialGradient id="floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
   ${defs.join('')}</defs>`;
 
@@ -407,6 +525,7 @@ function renderMannequinCanvas(o, containerEl){
     const knot='M112,94 L128,94 L125,110 L115,110 Z';
     const blade='M115,110 L125,110 L130,212 L120,224 L110,212 Z';
     s+=part(blade,F('tie'));s+=part(knot,F('tie'));
+    s+=`<path d="${blade}" fill="url(#silk)"/><path d="${knot}" fill="url(#silk)"/>`;
     s+=`<path d="M119,111 C119,118 120,124 120,130" stroke="#000" stroke-opacity=".3" stroke-width=".8" fill="none"/>`;
   }
   s+=part(both(collarL),F('shirt'));
