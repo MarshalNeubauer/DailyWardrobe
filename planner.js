@@ -79,8 +79,17 @@ function outfitScore(o){
   if(o.tie&&o.tie.pattern==='knit'&&o.suitDay)v-=4;         // knit ties are a touch casual for a suit
   return v;
 }
-function clothesScore(top,bot,shirt,tie,suitDay){
+/* formal days: dark solid suits, white shirts (French cuffs welcome), quiet ties */
+function formalTop(i){const c=pcol(i),p=i.pattern||'solid';let v=['navy','charcoal','black'].includes(c)?30:c==='grey'?8:-25;
+  if(['windowpane','glen-check','houndstooth','check','tweed'].includes(p))v-=30;else if(p==='chalk-stripe')v-=10;else if(p==='pinstripe')v-=4;return v}
+function formalShirt(s){let v=({white:6,lightblue:2})[primaryCol(s)]??-8;if(patInfo(s,'shirt'))v-=6;if(s.cuff==='french')v+=4;return v}
+function formalTie(t){let v=0;const pi=patInfo(t,'tie');if(pi&&pi.scale>=2)v-=6;if(t.pattern==='knit')v-=12;
+  v+=['burgundy','navy','grey','charcoal','black','purple','silver'].includes(pcol(t))?3:-3;return v}
+function clothesScore(top,bot,shirt,tie,suitDay,day){
   let v=0;
+  if(day){const s=day.clim.season;v+=(suitDay?0:seasonFit(bot,s))+seasonFit(shirt,s)+seasonFit(tie,s);
+    if(day.formal){if(shirt)v+=formalShirt(shirt);if(tie)v+=formalTie(tie)}
+    if(shirt&&shirt.cuff==='french'&&!day.hasLinks)v-=12;}     // French cuffs need cufflinks
   if(!suitDay&&bot)v+=pairScore(top,bot);
   if(shirt)v+=shirtScore(top,shirt);
   if(tie)v+=tieScore(top,shirt,tie);
@@ -119,21 +128,22 @@ function watchFit(w,shoe,belt){
   return v;
 }
 
-function outfit(suitDay,n,by,last,rec){const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
+function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
 const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
   const s=skip[slot]||[],left=all.filter(i=>!s.includes(i.id));return left.length?left:all};
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
-const top=best(pool(suitDay?'suit':'blazer','top'),i=>rest(i)*3);
+// suits rotate (least recently worn first); season and formality can override a few days of rest
+const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0));
 // trousers, shirt and tie are scored together as one outfit. Rotation only chooses among outfits within 5 points
 // of the best one, so variety never costs a clearly better combination.
 // Large wardrobes: keep only the 4 best trousers and 10 best shirts for this jacket (rotation included), then try every tie.
 const topN=(arr,n,f)=>arr.length<=n?arr:arr.map(i=>[f(i)+rb(i),i]).sort((a,b)=>b[0]-a[0]).slice(0,n).map(x=>x[1]);
 const Ps=suitDay?[null]:topN(pool('pants','bot'),4,pt=>pairScore(top,pt)),Ss=topN(pool('shirt','shirt'),10,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])),Ts=pool('tie','tie'),cands=[];
 for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(const x of Ts.length?Ts:[null]){
-  const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay);
+  const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day);
   cands.push({q,pt,sh,x,r:(pt?rb(pt):0)+(sh?rb(sh):0)+(x?rb(x):0)});
 }
 const qmax=Math.max(...cands.map(c=>c.q)),pick1=cands.filter(c=>c.q>=qmax-5).sort((a,b)=>(b.q+1.5*b.r)-(a.q+1.5*a.r))[0];
@@ -142,14 +152,22 @@ const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
 const S=pool('shoes','shoes'),B=pool('belt','belt'),W=pool('watch','watch');let pick=null;
 for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.length?W:[null]){
   let t=0;
-  if(s)t+=shoeScore(top,bot,s)+shoeFormality(s,suitDay)+rb(s);
+  if(s){t+=shoeScore(top,bot,s)+shoeFormality(s,suitDay)+rb(s);
+    if(day.clim.rain&&finish(s.leather)==='suede')t-=25;             // suede and rain don't mix
+    if(day.formal){const g=leatherGroup(primaryCol(s)),f=finish(s.leather);t+=(f==='suede'||f==='grain')?-20:g==='black'?8:g==='burgundy'?3:-4}}
   if(b){if(!s)continue;const f=beltFit(s,b);if(f===null)continue;t+=12+f+rb(b)}else if(B.length&&s)t-=30; // no matching belt: allowed, but last resort
   if(w)t+=watchFit(w,s,b)+rb(w);
   if(!pick||t>pick.t)pick={t,s,b,w};
 }
 const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
 const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s));
-const clip=best(pool('tieclip','clip'),c=>(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0));
+const metalPref=c=>(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0);
+const clip=best(pool('tieclip','clip'),metalPref);
+// cufflinks only (and always) with French cuffs
+const french=shirt&&shirt.cuff==='french',links=french?best(pool('cufflinks','links'),metalPref):null;
+// coat when the forecast (or the season) calls for one: raincoat for rain unless it's very cold, otherwise an overcoat
+const clim=day.clim,needCoat=clim.cold||clim.rain,prefer=clim.rain&&!clim.veryCold?'raincoat':'overcoat';
+const coat=needCoat?best([...pool('overcoat','coat'),...pool('raincoat','coat')],c=>(c.type===prefer?10:0)+seasonFit(c,clim.season)+(['navy','charcoal','tan','grey','black'].includes(pcol(c))?3:0)+(shoes&&pcol(c)==='black'&&leatherGroup(primaryCol(shoes))!=='black'?-4:0)):null;
 // say so when the wardrobe can't make a correct combination, instead of silently mismatching
 const notes=[];
 // clothing: only reached when the wardrobe had no compliant combination for this jacket
@@ -160,7 +178,11 @@ if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50)notes.push(`None of your shoes suit
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(primaryCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
 if(watch&&belt&&metalOf(watch)!==metalOf(belt))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
-return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,notes}}
+if(french&&!links)notes.push('French-cuff shirt, but no cufflinks in your wardrobe. Add a pair.');
+if(clim.rain&&shoes&&finish(shoes.leather)==='suede')notes.push('Rain is forecast and only suede shoes suited this outfit. Smooth leather would hold up better.');
+if(needCoat&&!coat)notes.push(clim.rain?'Rain is forecast and there is no raincoat in your wardrobe.':'It will be cold and there is no overcoat in your wardrobe.');
+if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
+return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,notes,clim,formal:!!day.formal}}
 /* ---- outfit score ----
    A readable 0-100 rating of the planned outfit against the same rules the planner uses.
    Each check earns points out of a maximum; checks that don't apply (no belt owned, suit days have no separate trousers)
@@ -172,6 +194,7 @@ function rateOutfit(o){
   if(shirt){const raw=primaryCol(shirt);let v=({white:10,lightblue:10,pink:8,cream:8,lightgrey:7,blue:6})[raw]??2,why=v<10?`a ${raw} shirt is less classic than white or light blue`:'';
     if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same colour as the jacket'}
     else if(top&&LUM(shirt)<LUM(top)+20){v-=5;why='shirt is darker than the jacket'}
+    if(shirt.cuff==='french'&&!o.links){v-=5;why=(why?why+'; ':'')+'French cuffs without cufflinks'}
     add('Shirt',v,10,why)}
   if(shirt&&tie){const raw=primaryCol(shirt),d=LUM(shirt)-LUM(tie);let v=0,why=[];
     if(d>=25)v+=8;else why.push('tie is not darker than the shirt');
@@ -207,6 +230,17 @@ function rateOutfit(o){
   {const main=[top,bot,shirt,tie].filter(Boolean).map(pcol),n=new Set(main).size;let v=5,why='';
     if(top&&shirt&&tie&&pcol(top)===pcol(shirt)&&pcol(shirt)===pcol(tie)){v=0;why='jacket, shirt and tie are all one colour'}else if(n>4){v=2;why='more than four main colours'}
     if(main.length)add('Overall harmony',v,5,why)}
+  if(o.formal){let v=0;const why=[];
+    if(top&&formalTop(top)>=25)v+=3;else why.push('a darker solid suit is more formal');
+    if(shirt&&primaryCol(shirt)==='white')v+=3;else if(shirt&&primaryCol(shirt)==='lightblue'){v+=1;why.push('white is the formal shirt')}else why.push('white is the formal shirt');
+    if(tie&&formalTie(tie)>=0)v+=2;else why.push('a quieter tie is more formal');
+    if(shoes&&leatherGroup(primaryCol(shoes))==='black'&&finish(shoes.leather)==='smooth')v+=2;else why.push('black smooth-leather shoes are the formal choice');
+    add('Formality',v,10,why.join('; '))}
+  if(o.clim){const c=o.clim,s=c.season;let v=5;const why=[];
+    if((c.cold||c.rain)&&!o.coat&&items.some(i=>i.type==='overcoat'||i.type==='raincoat')){v-=2;why.push('no coat for the weather')}
+    if(c.rain&&shoes&&finish(shoes.leather)==='suede'){v-=2;why.push('suede shoes in the rain')}
+    const off=[top,o.suitDay?null:o.bot,shirt,tie].filter(i=>i&&seasonFit(i,s)<-10);if(off.length){v-=2;why.push(`${off.map(nm).join(', ')} out of season`)}
+    if(c.wx||off.length)add('Weather',v,5,why.join('; '))}
   const max=C.reduce((a,c)=>a+c.max,0),got=C.reduce((a,c)=>a+c.pts,0),score=max?Math.round(100*got/max):0;
   const label=score>=90?'Excellent':score>=80?'Very good':score>=70?'Good':score>=55?'Fair':'Needs work';
   return {score,label,checks:C};
@@ -214,15 +248,16 @@ function rateOutfit(o){
 /* A saved day: past days (and any day marked worn) are frozen to what was shown, so wardrobe changes never rewrite history.
    Rotation counts frozen days unless they're marked "didn't wear". */
 function frozenOutfit(rec,n,last){
-  const o={suitDay:!!rec.suitDay,frozen:true,worn:rec.worn,notes:[]};
+  const o={suitDay:!!rec.suitDay,frozen:true,worn:rec.worn,formal:!!rec.formal,notes:[]};
   for(const s of SLOTS){const id=rec.ids[s],it=id&&items.find(i=>i.id===id);o[s]=it?{...it,rest:Math.min(n-(last[it.id]??-1e5),60)}:null}
   if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
   return o;
 }
 function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={},T=todayDate();
-for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w>=5)continue;
+const hasLinks=by('cufflinks').length>0;
+for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
   const k=key(d),rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);continue}
-  const o=outfit(w<4,di(d),by,last,rec);o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o}
+  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o}
 return plan}
 

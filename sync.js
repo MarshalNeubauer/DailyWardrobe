@@ -1,6 +1,6 @@
 /* Daily Wardrobe: backup and sync through the Cloudflare worker (KV), plus download/restore of a backup file.
    Runs at start-up, a few seconds after any change, when the app comes back to the foreground, and on demand. */
-let syncing=false,syncTimer=null,syncAgain=false;
+let syncing=false,syncTimer=null,syncAgain=false,syncRun=null;
 const syncUrl=()=>{const u=(localStorage.getItem('worker_url')||'').trim();if(!u)return null;try{return new URL('sync',u.endsWith('/')?u:u+'/').href}catch{return null}};
 async function localState(){
   const [its,days,tombstones,settings]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('tombstones'),metaGet('settings')]);
@@ -21,11 +21,15 @@ function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0;
   el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Set the Worker URL to turn on backup.');
   if(last&&!syncing&&!/failed|turn on/i.test(el.textContent))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} items`}
+/* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
 async function syncNow(){
+  if(syncRun){await syncRun.catch(()=>{});if(syncRun)await syncRun.catch(()=>{})}
+  syncRun=syncOnce();try{return await syncRun}finally{syncRun=null}
+}
+async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Set the Worker URL to turn on backup.');return false}
   if(!token){setSyncStatus('Add your App Token (the APP_TOKEN secret on the worker) to turn on backup.');return false}
-  if(syncing){syncAgain=true;return false}
   syncing=true;setSyncStatus('Syncing…');
   try{
     for(let attempt=0;attempt<3;attempt++){
@@ -41,7 +45,7 @@ async function syncNow(){
     }
     throw new Error('another device kept saving at the same time; try again');
   }catch(e){setSyncStatus('Backup failed: '+(e.message||e));return false}
-  finally{syncing=false;if(syncAgain){syncAgain=false;scheduleSync()}}
+  finally{syncing=false}
 }
 function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,2500)}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});

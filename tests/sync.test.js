@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
-    await p.reload();await p.waitForTimeout(600);return {ctx,p,errs}};
+    await p.reload();await p.waitForFunction(()=>window.appReady);return {ctx,p,errs}};
   const sync=p=>p.evaluate(()=>syncNow());
   const add=(p,fields)=>p.evaluate(async f=>{const it={id:crypto.randomUUID(),type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),...f};await put(it);items.push(it);return it.id},fields);
   const names=p=>p.evaluate(()=>items.map(i=>i.type+':'+i.primaryColor).sort().join(','));
@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   // backup file round trip onto a fresh device with sync off
   const file=path.join(os.tmpdir(),'dw-backup-test.json');
   const data=await A.p.evaluate(async()=>JSON.stringify({app:'daily-wardrobe',version:1,...await localState()}));fs.writeFileSync(file,data);
-  const C=await browser.newContext();const cp=await C.newPage();cp.on('dialog',d=>d.accept());await cp.goto(url);await cp.waitForTimeout(400);
+  const C=await browser.newContext();const cp=await C.newPage();cp.on('dialog',d=>d.accept());await cp.goto(url);await cp.waitForFunction(()=>window.appReady);
   await cp.evaluate(()=>openSettings());await cp.setInputFiles('#settings-modal input[type=file]',file);await cp.waitForTimeout(600);
   ok((await names(cp))===(await names(A.p))&&(await names(cp)).length>0,'Download backup → Restore file reproduces the wardrobe on a new device');
   fs.unlinkSync(file);

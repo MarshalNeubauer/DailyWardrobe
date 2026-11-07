@@ -48,7 +48,7 @@ suite('tie is clipped to the V when a jacket is worn',async({page})=>{
 suite('swipe moves only the outfit, across viewports',async({browser,url})=>{
   const views={'iPhone 13':[390,844],'Duo folded':[466,678],'Duo unfolded':[626,890],'Duo landscape':[890,626]};
   for(const [name,[w,h]] of Object.entries(views)){
-    const ctx=await browser.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true});const p=await ctx.newPage();await p.goto(url);await p.waitForTimeout(300);
+    const ctx=await browser.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true});const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);await p.waitForTimeout(150);
     const probe=()=>p.evaluate(()=>{const r=s=>{const b=document.querySelector(s).getBoundingClientRect();return Math.round(b.x)+','+Math.round(b.y)};return {date:document.querySelector('#today .day h2').textContent,nav:r('#today .day'),list:r('#today .list'),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,slide:document.querySelector('#slide').style.transform}});
     const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
@@ -145,7 +145,7 @@ suite('add an item without a photo; it persists',async({page})=>{
   await page.selectOption('#queue .card >> nth=0 >> select[onchange*="\'leather\'"]','suede');
   await page.click('#queue .card >> nth=0 >> text=Confirm');
   await page.waitForFunction(()=>items.some(i=>i.type==='belt'));await page.waitForTimeout(200);
-  await page.reload();await page.waitForTimeout(400);
+  await page.reload();await page.waitForFunction(()=>window.appReady);
   const it=await page.evaluate(()=>items.find(i=>i.type==='belt'));
   ok(it&&it.leather==='suede'&&!it.photo,'photo-less belt saved with its leather and survives a reload');
   await page.click('#n-wardrobe');ok(await page.$('.gi .thumb svg')!==null,'wardrobe shows a drawn thumbnail');
@@ -187,7 +187,7 @@ async function workerTests(){
     console.log('\n• '+name);
     const ctx=await browser.newContext({...devices['iPhone 13']});const page=await ctx.newPage();const errs=[];
     page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-    await page.goto(url);await page.waitForTimeout(400);
+    await page.goto(url);await page.waitForFunction(()=>window.appReady);
     try{await fn({page,ctx,browser,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
     if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
     await ctx.close();

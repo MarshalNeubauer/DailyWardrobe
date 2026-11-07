@@ -14,7 +14,7 @@ const PROMPT = `Identify the single clothing item in this photo. Reply with one 
 
 type — one of:
   suit (suit jacket, or a jacket and trousers of the same cloth), blazer (odd jacket / sport coat), pants (dress trousers),
-  shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks
+  shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks, cufflinks, overcoat (wool topcoat), raincoat (trench or mac)
 
 primaryColor — the dominant colour of the main fabric (the leather for shoes and belts, the strap for watches). One of:
   black, charcoal, darkgrey, grey, lightgrey, white, cream, lightblue, blue, navy, brown, tan, olive, green, burgundy, oxblood, red,
@@ -45,11 +45,11 @@ pattern — pick the closest value from the list for the item's type:
     alternating colours forming checks), check (any other check or plaid), herringbone, oxford (basket-weave texture), twill, other
   tie:
     solid, stripe (diagonal/regimental), polka-dot, paisley, check, foulard (small repeating geometric motif), knit, other
-  tieclip, watch, shoes, belt, socks: solid
+  tieclip, watch, shoes, belt, socks, cufflinks, overcoat, raincoat: solid
 
 Use "solid" for suits, blazers and trousers whose weave is only visible up close and does not match a listed pattern.
 
-metal — for tieclip and watch: gold, silver or other (the case and bracelet metal for watches). Otherwise null.
+metal — for tieclip, watch, cufflinks and belt (the buckle): gold, silver or other (the case and bracelet metal for watches). Otherwise null.
 
 leather — shoes and belts: calf (smooth, moderate shine), cordovan (dense, deep glossy shine with rolling creases), suede (matte napped),
   patent (mirror gloss), pebble-grain (large tumbled grain), scotch-grain (fine embossed grain). Otherwise null.
