@@ -8,7 +8,7 @@
 //
 // Pattern lists must stay in sync with PATS_BY in index.html.
 const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
-{"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"..."}
+{"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
 
 type — one of:
   suit (suit jacket, or a jacket and trousers of the same cloth), blazer (odd jacket / sport coat), pants (dress trousers),
@@ -44,7 +44,15 @@ pattern — pick the closest value from the list for the item's type:
 
 Use "solid" for suits, blazers and trousers whose weave is only visible up close and does not match a listed pattern.
 
-metal — for tieclip and watch: gold, silver or other. Otherwise null.`;
+metal — for tieclip and watch: gold, silver or other (the case and bracelet metal for watches). Otherwise null.
+
+leather — shoes only: calf (smooth, moderate shine), cordovan (dense, deep glossy shine with rolling creases), suede (matte napped),
+  patent (mirror gloss), pebble-grain (large tumbled grain), scotch-grain (fine embossed grain). Otherwise null.
+
+dial, band, bezel — watches only, otherwise null:
+  dial: the dial colour, from the colour list above.
+  band: bracelet (metal links) or leather (strap).
+  bezel: fluted (finely ridged ring around the crystal) or smooth.`;
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 
