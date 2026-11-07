@@ -518,7 +518,7 @@ function fabricDef(id,item,role){
 }
 
 function renderMannequinCanvas(o, containerEl){
-  const FORM='#dcd6cb',FORM_D='#b9b2a5';
+  const FORM='#dcd6cb';
   const defs=[],fill={};
   for(const [role,item] of [['top',o.top],['bot',o.bot],['shirt',o.shirt],['tie',o.tie]]){
     if(!item)continue;
@@ -538,29 +538,36 @@ function renderMannequinCanvas(o, containerEl){
   const collarL='M120,97 L109,84 L103,89 L110,116 Z';
   const shoeL='M86,550 L118,550 L119,562 C119,569 113,571 106,571 L76,571 C70,571 69,566 72,562 C75,557 80,555 86,553 Z';
   const vee='M106,90 L134,90 L120,230 Z';
+  /* ghost mannequin: no head or hands; show the inside back of the collar and dark sleeve openings instead */
+  const neckBack=()=>`<path d="M104,91 C106,79 134,79 136,91 L133,92 C130,84 110,84 107,92 Z" fill="${F('shirt')}" ${seam}/><path d="M104,91 C106,79 134,79 136,91 L133,92 C130,84 110,84 107,92 Z" fill="#000" opacity=".12"/><ellipse cx="120" cy="90.5" rx="13" ry="4.2" fill="#1b1d21" opacity=".78"/>`;
+  const opening=(cx,cy,rx,tilt)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="2.3" transform="rotate(${tilt} ${cx} ${cy})" fill="#1b1d21" opacity=".8"/>`;
   const hemGap='M120,298 C119,316 114,328 104,337 L136,337 C126,328 121,316 120,298 Z';
 
   let s=`<svg viewBox="0 0 240 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outfit preview"><defs>
   <linearGradient id="shade" x1="0" x2="1" y1="0" y2="0">
     <stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".32" stop-color="#fff" stop-opacity=".10"/>
     <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
-  <radialGradient id="formg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#f1ede6"/><stop offset=".7" stop-color="${FORM}"/><stop offset="1" stop-color="${FORM_D}"/></radialGradient>
   <radialGradient id="shine" cx=".35" cy=".35" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
   <pattern id="silk" patternUnits="userSpaceOnUse" width="1.4" height="1.4" patternTransform="rotate(45)"><rect width=".7" height=".7" fill="#000" opacity=".16"/><rect x=".7" y=".7" width=".7" height=".7" fill="#fff" opacity=".07"/></pattern>
   <radialGradient id="floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
   ${defs.join('')}</defs>`;
 
   s+=`<ellipse cx="120" cy="574" rx="66" ry="7" fill="url(#floor)"/>`;
-  /* head, neck, hands */
-  s+=`<ellipse cx="120" cy="46" rx="22" ry="27" fill="url(#formg)"/><path d="M110,66 L130,66 L133,94 L107,94 Z" fill="url(#formg)"/>`;
-  s+=`<ellipse cx="54" cy="334" rx="9" ry="12" fill="url(#formg)"/><ellipse cx="186" cy="334" rx="9" ry="12" fill="url(#formg)"/>`;
 
+  /* socks: when the outfit has socks, the trousers get a no-break hem so a band of sock shows above the shoe */
+  const hem=o.socks?541:553;
+  if(o.socks){
+    const sock='M89.5,536 L115.5,536 L116,553 L89,553 Z';
+    s+=`<path d="${both(sock)}" fill="${colOf(o.socks)}" ${seam}/><path d="${both(sock)}" fill="url(#shade)"/>`;
+    s+=`<path d="${both('M89.5,544 L115.8,544')}" stroke="#000" stroke-opacity=".12" stroke-width=".6"/>`;
+  }
   /* trousers */
-  s+=part(both(legL),F('bot'));
-  s+=`<path d="${both('M100,330 L102,546')}" stroke="#000" stroke-opacity=".22" stroke-width=".8" fill="none"/>`;
-  s+=`<path d="${both('M101,330 L103,546')}" stroke="#fff" stroke-opacity=".12" stroke-width=".6" fill="none"/>`;
-  /* socks + shoes */
-  if(o.socks)s+=`<path d="${both('M89,546 L116,546 L116,553 L89,553 Z')}" fill="${colOf(o.socks)}"/>`;
+  const leg=o.socks?'M79,302 L120,302 L118.1,541 L85.7,541 Z':legL;
+  s+=part(both(leg),F('bot'));
+  s+=`<path d="${both(`M100,330 L102,${hem-7}`)}" stroke="#000" stroke-opacity=".22" stroke-width=".8" fill="none"/>`;
+  s+=`<path d="${both(`M101,330 L103,${hem-7}`)}" stroke="#fff" stroke-opacity=".12" stroke-width=".6" fill="none"/>`;
+  if(o.socks)s+=`<path d="${both('M85.9,540.3 L118,540.3')}" stroke="#000" stroke-opacity=".3" stroke-width="1"/>`;
+  /* shoes */
   const shoeC=o.shoes?colOf(o.shoes):'#2b2b2e';
   s+=`<path d="${both(shoeL)}" fill="${shoeC}" ${seam}/><path d="${both(shoeL)}" fill="url(#shine)"/>`;
   s+=`<path d="${both('M78,566 L118,566')}" stroke="#000" stroke-opacity=".35" stroke-width="1.2"/>`;
@@ -568,14 +575,18 @@ function renderMannequinCanvas(o, containerEl){
   if(o.top){
     /* shirt cuffs under the sleeves */
     s+=part(both(cuffL),F('shirt'));
+    s+=opening(53.5,321,12.4,9)+opening(186.5,321,12.4,-9);
     /* jacket body */
     s+=part(torso,F('top'));
     /* shirt V, tie, collar */
     s+=`<path d="${vee}" fill="${F('shirt')}"/><path d="${vee}" fill="url(#shade)" opacity=".5"/>`;
+    s+=neckBack();
     s+=`<path d="M120,118 L120,230" stroke="#000" stroke-opacity=".15" stroke-width=".7"/>`;
   }else{
     /* no jacket: shirt is the outer layer */
     s+=part(both(sleeveL),F('shirt'));
+    s+=opening(54,314,12.8,9)+opening(186,314,12.8,-9);
+    s+=neckBack();
     s+=part(torso,F('shirt'));
     s+=`<path d="M120,112 L120,336" stroke="#000" stroke-opacity=".2" stroke-width="1"/>`;
     for(let y=140;y<330;y+=34)s+=`<circle cx="120" cy="${y}" r="1.6" fill="#fff" stroke="#000" stroke-opacity=".25" stroke-width=".4"/>`;
@@ -611,7 +622,11 @@ function renderMannequinCanvas(o, containerEl){
 
   /* accessories */
   if(o.clip&&o.tie){const m=METAL[o.clip.metal]||METAL.other;s+=`<rect x="111" y="170" width="18" height="2.4" rx="1" fill="${m}" stroke="#000" stroke-opacity=".3" stroke-width=".4"/>`}
-  if(o.watch){const m=METAL[o.watch.metal]||METAL.other;s+=`<rect x="178" y="320" width="16" height="5" rx="1.5" fill="${m}"/><circle cx="186" cy="322.5" r="5" fill="${m}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/><circle cx="186" cy="322.5" r="3.4" fill="#0f1820"/>`}
+  if(o.watch){
+    // no hand any more: the watch sits on the visible shirt cuff, following the cuff's tilt
+    const m=METAL[o.watch.metal]||METAL.other,wy=o.top?317:310;
+    s+=`<g transform="rotate(-9 186 ${wy})"><rect x="175" y="${wy-2}" width="22" height="4" rx="1.2" fill="${m}" stroke="#000" stroke-opacity=".3" stroke-width=".4"/><circle cx="186" cy="${wy}" r="4.4" fill="${m}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/><circle cx="186" cy="${wy}" r="3" fill="#0f1820"/><circle cx="185.2" cy="${wy-.8}" r=".9" fill="#fff" opacity=".25"/></g>`;
+  }
 
   containerEl.innerHTML=s+'</svg>';
 }
