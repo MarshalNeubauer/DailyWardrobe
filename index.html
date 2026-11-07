@@ -26,7 +26,7 @@ nav button.on{color:var(--ink);box-shadow:inset 0 3px var(--acc)}
 .man>svg{display:block;margin:6px auto;width:min(330px,88vw);height:auto;max-height:calc(100svh - 250px)} /* whole outfit fits above the tab bar */
 .list{background:var(--card);border-radius:14px;padding:6px 14px;margin:8px 0 20px}
 .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
-.row .mut{width:68px;flex:none}
+.row .mut{width:68px;flex:none}.row .mut.none{width:auto;flex:1}
 .dot{width:24px;height:24px;border-radius:6px;border:1px solid #0003;flex:none;background-size:cover}
 .warn{background:#d9a21b22;border-left:4px solid var(--acc);padding:8px 12px;border-radius:4px}
 .nav{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
@@ -50,6 +50,19 @@ html,body{overflow-x:hidden;overflow-x:clip}
 .stage{overflow:hidden;touch-action:pan-y;margin:0 -16px;padding:0 16px}
 .slide{will-change:transform}
 button{touch-action:manipulation}
+.stage .empty{padding:48px 0;text-align:center}
+/* wide screens, e.g. iPhone Duo unfolded (~7.6in) or a tablet: mannequin on the left, list and plan on the right.
+   The fold crease falls in the gap between the columns. Folded (cover screen) keeps the phone layout. */
+@media (min-width:600px){
+  main{max-width:1080px}
+  .daygrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+  .daygrid .stage{margin:0;padding:0;position:sticky;top:8px}
+  .daygrid .side{padding-top:8px}
+  .man>svg{width:100%;max-width:440px;max-height:calc(100svh - 240px)}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+  #add{max-width:620px;margin:auto}
+  .gi[style*="grid-column"]{max-width:620px}
+}
 .thumb{width:100%;aspect-ratio:1;border-radius:8px;background:var(--bg)}.thumb svg{width:100%;height:100%;display:block}
 .rv .thumb{max-width:220px;margin:0 auto}
 </style></head><body>
@@ -780,7 +793,7 @@ function renderMannequinCanvas(o, containerEl){
 
 /* views */
 const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top],...(o.suitDay?[]:[['Pants',o.bot]]),['Shirt',o.shirt],['Tie',o.tie],['Tie clip',o.clip],['Watch',o.watch],['Belt',o.belt],['Socks',o.socks],['Shoes',o.shoes]]
-.map(([l,i])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot" style='background:${bg(i)}'></span><span class="cap">${desc(i)}</span>`:'<span class="mut">Add one on the Add tab</span>'}</div>`).join('');
+.map(([l,i])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot" style='background:${bg(i)}'></span><span class="cap">${desc(i)}</span>`:'<span class="mut none">Add one on the Add tab</span>'}</div>`).join('');
 
 function planHtml(p){
   const f=new Date(view.y,view.m,1),days=[];
@@ -796,13 +809,15 @@ function renderToday(){
   closeSettings();
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  let h=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
-  if(sel.getDay()>4)h+='<p class="mut">Nothing is scheduled on Fridays and Saturdays.</p>';
-  else if(!items.length)h+='<p class="mut">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
-  else if(o)h+=`<div class="man" id="mannequin-container"></div>${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}<div class="list">${slots(o)}</div>`;
-  // everything after the date bar is the swipeable outfit
-  const cut=h.indexOf('</div>')+6;
-  $('#today').innerHTML=h.slice(0,cut)+`<div class="stage" id="stage"><div class="slide" id="slide">${h.slice(cut)}</div></div>`+planHtml(p);
+  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  // only the stage (the mannequin) slides on a swipe; the date bar and the item list stay put and just update
+  let stage='',side='';
+  if(sel.getDay()>4)stage='<p class="mut empty">Nothing is scheduled on Fridays and Saturdays.</p>';
+  else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
+  else{stage='<div class="man" id="mannequin-container"></div>';
+    // the rest warning goes below the list so the list never shifts when it appears or disappears
+    side=`<div class="list">${slots(o)}</div>${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${planHtml(p)}</div></div>`;
   if(o && items.length && sel.getDay()<=4) {
     renderMannequinCanvas(o, $('#mannequin-container'));
   }
