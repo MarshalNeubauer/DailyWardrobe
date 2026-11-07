@@ -297,3 +297,6 @@ function show(t){
 }
 
 db.then(()=>tx('readonly',s=>s.getAll())).then(r=>{items=r||[];show('today')}).catch(e=>{items=[];show('today')});
+
+/* service worker: fresh files on every load, offline fallback (only over http/https) */
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
