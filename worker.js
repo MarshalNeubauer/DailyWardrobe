@@ -15,7 +15,10 @@ type — one of:
   shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks
 
 primaryColor — the dominant colour of the main fabric (the leather for shoes and belts, the strap for watches). One of:
-  black, charcoal, grey, white, cream, lightblue, blue, navy, brown, tan, olive, green, burgundy, red, purple, pink, gold, silver
+  black, charcoal, darkgrey, grey, lightgrey, white, cream, lightblue, blue, navy, brown, tan, olive, green, burgundy, oxblood, red,
+  purple, pink, gold, silver
+  (charcoal is near-black grey; darkgrey sits between charcoal and grey; lightgrey is pale grey; oxblood is a deep brownish red,
+  the colour of cordovan "color 8" shoes, darker and browner than burgundy)
 
 secondaryColor — the colour of the stripe, check line, dot or motif, from the same list. "none" if the item is plain.
 tertiaryColor — a third distinct colour in the pattern (e.g. the second line colour of a tattersall), or "none".
@@ -46,7 +49,7 @@ Use "solid" for suits, blazers and trousers whose weave is only visible up close
 
 metal — for tieclip and watch: gold, silver or other (the case and bracelet metal for watches). Otherwise null.
 
-leather — shoes only: calf (smooth, moderate shine), cordovan (dense, deep glossy shine with rolling creases), suede (matte napped),
+leather — shoes and belts: calf (smooth, moderate shine), cordovan (dense, deep glossy shine with rolling creases), suede (matte napped),
   patent (mirror gloss), pebble-grain (large tumbled grain), scotch-grain (fine embossed grain). Otherwise null.
 
 dial, band, bezel — watches only, otherwise null:

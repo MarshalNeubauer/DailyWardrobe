@@ -87,16 +87,16 @@ button{touch-action:manipulation}
 
 <script>
 const TYPES={suit:'Suit',blazer:'Blazer',pants:'Dress pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks'};
-const COLORS={black:'#16161a',charcoal:'#3b3f46',grey:'#8b8f96',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',navy:'#1b2a4a',brown:'#5a3a22',tan:'#b8946a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb'};
+const COLORS={black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',navy:'#1b2a4a',brown:'#5a3a22',tan:'#b8946a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb'};
 const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{const suiting=['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','other'];
   return{suit:suiting,blazer:suiting,pants:suiting,shirt:['solid','stripe','pinstripe','gingham','tattersall','check','herringbone','oxford','twill','other'],tie:['solid','stripe','polka-dot','paisley','check','foulard','knit','other']}})(),
 PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'oxford',plaid:'check'},tie:{texture:'knit',dots:'polka-dot',plaid:'check'}},
 normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pants'?'suit':t]||{};p=String(p||'').toLowerCase().trim().replace(/[\s_]+/g,'-');return l.includes(p)?p:l.includes(g[p])?g[p]:'solid'},
 patLabel=p=>String(p||'').replace(/-/g,' '),
-COL_ALIAS={gray:'grey',lightgray:'grey',lightgrey:'grey',silvergrey:'silver',silvergray:'silver',darkgray:'charcoal',darkgrey:'charcoal',slate:'charcoal',
+COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'lightgrey',silvergrey:'silver',silvergray:'silver',darkgray:'darkgrey',slate:'darkgrey',mediumgrey:'grey',mediumgray:'grey',
   lightblue:'lightblue',skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
   darkblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'tan',camel:'tan',sand:'tan',taupe:'tan',
-  darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',wine:'burgundy',oxblood:'burgundy',darkred:'burgundy',
+  darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',wine:'burgundy',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
   yellow:'gold',mustard:'gold',lavender:'purple',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
@@ -368,7 +368,7 @@ async function save(i){
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
   if(f)it.swatch=q.swatch;
   if(q.type==='watch'||q.type==='tieclip'||q.type==='belt')it.metal=q.metal;
-  if(q.type==='shoes')it.leather=q.leather||'calf';
+  if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;
   try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
@@ -380,7 +380,7 @@ function editForm(i){
   const cols=Object.keys(COLORS).map(c=>[c,c]),opt=[['none','None'],...cols];
   return `<div class="card" style="margin:8px 0 0;padding:8px">${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',opt,i.secondaryColor||'none')}${E(i.id,'tertiaryColor',opt,i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${i.type==='watch'||i.type==='tieclip'||i.type==='belt'?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
-  ${i.type==='shoes'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
+  ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?E(i.id,'dial',cols,watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
   ${DETECT_PATS.includes(i.pattern)?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="redetect('${i.id}')">Read pattern from photo</button>${i.stripes?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
   <div class="btns"><button class="pri" onclick="editing=null;renderWardrobe()">Done</button></div></div>`;
@@ -388,7 +388,7 @@ function editForm(i){
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
   it[k]=v==='none'?null:v;
-  if(k==='type'){it.pattern=normPat(v,it.pattern);if((v==='watch'||v==='tieclip')&&!it.metal)it.metal='silver';if(v==='shoes'&&!it.leather)it.leather='calf'}
+  if(k==='type'){it.pattern=normPat(v,it.pattern);if((v==='watch'||v==='tieclip')&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';if(v==='belt'&&!it.metal)it.metal='silver'}
   if(k==='primaryColor')delete it.color;
   await put(it);cache={};renderWardrobe();
 }
@@ -418,7 +418,7 @@ const colorDesc = i => {
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
   return cols.join(' & ');
 };
-const desc=i=>i?(i.type==='watch'&&watchOpts(i).band==='bracelet'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+(i.type==='shoes'?' '+patLabel(i.leather||'calf'):'')+(i.metal?(i.type==='watch'&&watchOpts(i).band==='bracelet'?'':' · ')+i.metal:'')+(i.type==='watch'?` · ${watchOpts(i).dial} dial · ${watchOpts(i).band}`:''):'';
+const desc=i=>i?(i.type==='watch'&&watchOpts(i).band==='bracelet'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal?(i.type==='watch'&&watchOpts(i).band==='bracelet'?'':' · ')+i.metal:'')+(i.type==='watch'?` · ${watchOpts(i).dial} dial · ${watchOpts(i).band}`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+' '+(TYPES[i.type]||'item').toLowerCase():'none';
 const bg=i=>i?(i.swatch?`url(${i.swatch})`:COLORS[primaryCol(i)]||METAL[i.metal]||'#ccc'):'#ccc';
 
@@ -426,23 +426,70 @@ const LUM=i=>{const h=COLORS[primaryCol(i)];return h?(parseInt(h.slice(1,3),16)*
 const WEAVES=['texture','twill','herringbone','birdseye','nailhead','sharkskin','tweed','oxford','knit'];
 const pw=i=>!i||!i.pattern||i.pattern==='solid'?0:WEAVES.includes(i.pattern)?.5:1;
 const clash=(a,b)=>a&&b&&pw(a)>=1&&pw(b)>=1?(a.pattern===b.pattern?-40:-25):0;
+/* colour families for the rules: dark grey behaves like charcoal, light grey like grey, oxblood like burgundy */
+const FAM={darkgrey:'charcoal',lightgrey:'grey',oxblood:'burgundy'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
 const HARM={navy:['burgundy','red','gold','grey','lightblue','green','purple','pink'],charcoal:['burgundy','red','purple','navy','lightblue','pink'],grey:['navy','burgundy','blue','purple','pink'],black:['red','grey','burgundy','purple'],brown:['green','gold','navy','tan','burgundy','cream'],tan:['navy','brown','burgundy','green'],olive:['brown','burgundy','navy','gold','cream'],blue:['navy','burgundy','grey','gold']};
-const SH={black:['black','charcoal','grey','navy'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black']};
-const shirtScore=(t,s)=>{if(!t)return 0;const pc=primaryCol(s),tc=primaryCol(t);let v=({white:4,lightblue:3,cream:1,pink:1})[pc]??-6;if(pc===tc)v-=25;if(tc==='black'&&pc!=='white')v-=8;return v+clash(t,s)};
-function tieScore(t,sh,x){let v=0;if(t){const xc=primaryCol(x),tc=primaryCol(t);if(xc===tc)v-=15;if(HARM[tc])v+=HARM[tc].includes(xc)?5:-2;v+=clash(t,x)/2}
-if(sh){const xc=primaryCol(x),shc=primaryCol(sh);if(xc===shc)v-=15;if(xc==='blue'&&shc==='lightblue')v-=6;if(Math.abs(LUM(x)-LUM(sh))>60)v+=3;v+=clash(sh,x)/2}if(pw(t)+pw(sh)>=2&&pw(x)>=1)v-=30;return v}
-const pairScore=(t,p)=>{if(!t)return 0;const tc=primaryCol(t),pc=primaryCol(p);let v=0;if(pc===tc)v-=30;if((tc==='black')!==(pc==='black'))v-=20;if(!['grey','charcoal','tan','navy','olive','brown','black'].includes(pc))v-=20;return v+clash(t,p)};
+/* acceptable shoe colours for each trouser colour, best first */
+const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black','burgundy']};
+const shirtScore=(t,s)=>{if(!t)return 0;const pc=pcol(s),tc=pcol(t);let v=({white:4,lightblue:3,cream:1,pink:1})[primaryCol(s)]??-6;if(pc===tc)v-=25;if(tc==='black'&&primaryCol(s)!=='white')v-=8;return v+clash(t,s)};
+function tieScore(t,sh,x){let v=0;if(t){const xc=pcol(x),tc=pcol(t);if(xc===tc)v-=15;if(HARM[tc])v+=HARM[tc].includes(xc)?5:-2;v+=clash(t,x)/2}
+if(sh){const xc=pcol(x),shc=pcol(sh);if(xc===shc)v-=15;if(xc==='blue'&&shc==='lightblue')v-=6;if(Math.abs(LUM(x)-LUM(sh))>60)v+=3;v+=clash(sh,x)/2}if(pw(t)+pw(sh)>=2&&pw(x)>=1)v-=30;return v}
+const pairScore=(t,p)=>{if(!t)return 0;const tc=pcol(t),pc=pcol(p);let v=0;if(pc===tc)v-=30;if((tc==='black')!==(pc==='black'))v-=20;if(!['grey','charcoal','tan','navy','olive','brown','black'].includes(pc))v-=20;return v+clash(t,p)};
 const WARM=['brown','tan','olive'];
-const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=primaryCol(s),bc=primaryCol(b),tc=t?primaryCol(t):'';const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;if(t&&((WARM.includes(tc)&&sc==='black')||(tc==='black'&&['brown','tan'].includes(sc))))v-=50;return v};
-const beltScore=(sh,b)=>!sh?0:primaryCol(b)===primaryCol(sh)?10:['brown','tan'].includes(primaryCol(b))&&['brown','tan'].includes(primaryCol(sh))?5:-10;
-const sockScore=(bot,sh,s)=>{const sc=primaryCol(s),botc=bot?primaryCol(bot):'',shc=sh?primaryCol(sh):'';let v=s.pattern==='solid'?2:0;if(bot&&sc===botc)v+=8;else if(sh&&sc===shc)v+=4;else if(bot)v+=(WARM.includes(botc)?['brown','tan','olive']:['black','navy','charcoal','grey']).includes(sc)?3:-8;if(bot&&['white','cream','pink','lightblue'].includes(sc))v-=10;return v};
+const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b),tc=t?pcol(t):'';const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;if(t&&((WARM.includes(tc)&&sc==='black')||(tc==='black'&&sc!=='black')))v-=50;return v};
+const sockScore=(bot,sh,s)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?pcol(sh):'';let v=s.pattern==='solid'?2:0;if(bot&&sc===botc)v+=8;else if(sh&&sc===shc)v+=4;else if(bot)v+=(WARM.includes(botc)?['brown','tan','olive']:['black','navy','charcoal','grey']).includes(sc)?3:-8;if(bot&&['white','cream','pink','lightblue'].includes(primaryCol(s)))v-=10;return v};
 
-function outfit(suitDay,n,by,last){const rest=i=>Math.min(n-(last[i.id]??-1e5),60);
-const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+Math.min(rest(i),10)*.4;if(s>bs){bs=s;b=i}}if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
+/* ---- leather goods ----
+   Belt and shoes must be the same colour group (black / brown / tan / burgundy-oxblood) and a compatible finish:
+   suede with suede, smooth with smooth or grain. Patent is black-tie only. Metals (buckle, watch, tie clip) should agree. */
+const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',burgundy:'burgundy',oxblood:'burgundy'})[c]||c;
+const finish=l=>l==='suede'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':'smooth';
+const metalOf=i=>i&&i.metal||'silver';
+function beltFit(shoe,belt){
+  if(leatherGroup(primaryCol(belt))!==leatherGroup(primaryCol(shoe)))return null;
+  const fs=finish(shoe.leather),fb=finish(belt.leather);
+  if(fs===fb)return 3;
+  if((fs==='smooth'&&fb==='grain')||(fs==='grain'&&fb==='smooth'))return 0;
+  return null; // suede vs smooth, patent vs anything else
+}
+function shoeFormality(shoe,suitDay){
+  const f=finish(shoe.leather);
+  if(f==='patent')return -200;               // evening wear: only if nothing else exists
+  if(f==='suede')return suitDay?-15:0;       // fine with a blazer, too casual with a suit
+  if(f==='grain')return suitDay?-8:0;
+  return 2;                                  // smooth calf / cordovan
+}
+function watchFit(w,shoe,belt){
+  let v=0;const o=watchOpts(w);
+  if(o.band==='leather'&&shoe)v+=leatherGroup(primaryCol(w))===leatherGroup(primaryCol(shoe))?8:-20;
+  if(belt)v+=metalOf(w)===metalOf(belt)?6:-6;
+  return v;
+}
+
+function outfit(suitDay,n,by,last){const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
+const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
+const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 const top=best(by(suitDay?'suit':'blazer'),i=>rest(i)*3),bot=suitDay?top:best(by('pants'),p=>pairScore(top,p));
-const shirt=best(by('shirt'),s=>shirtScore(top,s)),tie=best(by('tie'),t=>tieScore(top,shirt,t)),shoes=best(by('shoes'),s=>shoeScore(top,bot,s));
-const belt=best(by('belt'),b=>beltScore(shoes,b)),socks=best(by('socks'),s=>sockScore(bot,shoes,s)),watch=best(by('watch'),()=>0);
-const clip=best(by('tieclip'),c=>watch&&c.metal===watch.metal?6:0);return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip}}
+const shirt=best(by('shirt'),s=>shirtScore(top,s)),tie=best(by('tie'),t=>tieScore(top,shirt,t));
+// shoes, belt and watch are chosen together so the belt always matches the shoes and the metals agree
+const S=by('shoes'),B=by('belt'),W=by('watch');let pick=null;
+for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.length?W:[null]){
+  let t=0;
+  if(s)t+=shoeScore(top,bot,s)+shoeFormality(s,suitDay)+rb(s);
+  if(b){if(!s)continue;const f=beltFit(s,b);if(f===null)continue;t+=12+f+rb(b)}else if(B.length&&s)t-=30; // no matching belt: allowed, but last resort
+  if(w)t+=watchFit(w,s,b)+rb(w);
+  if(!pick||t>pick.t)pick={t,s,b,w};
+}
+const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
+const socks=best(by('socks'),s=>sockScore(bot,shoes,s));
+const clip=best(by('tieclip'),c=>(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0));
+// say so when the wardrobe can't make a correct combination, instead of silently mismatching
+const notes=[];
+if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50)notes.push(`None of your shoes suit ${primaryCol(bot)} trousers.`);
+if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
+if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(primaryCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
+if(watch&&belt&&metalOf(watch)!==metalOf(belt))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
+return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,notes}}
 function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={};
 for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w<5)plan[key(d)]=outfit(w<4,di(d),by,last)}return plan}
 let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
@@ -847,7 +894,7 @@ function renderToday(){
   else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else{stage='<div class="man" id="mannequin-container"></div>';
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`<div class="list">${slots(o)}</div>${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+    side=`<div class="list">${slots(o)}</div>${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${planHtml(p)}</div></div>`;
   if(o && items.length && sel.getDay()<=4) {
     renderMannequinCanvas(o, $('#mannequin-container'));
@@ -929,7 +976,7 @@ ${FABRIC.includes(q.type)&&q.big?`
 <label>Secondary Colour ${S([['none','None'], ...Object.keys(COLORS).map(c=>[c,c])],q.secondaryColor||'none','secondaryColor',i)}</label>
 <label>Tertiary Colour ${S([['none','None'], ...Object.keys(COLORS).map(c=>[c,c])],q.tertiaryColor||'none','tertiaryColor',i)}</label>
 ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c=>[c,patLabel(c)]),q.pattern,'pattern',i)}</label>`:''}${q.type==='watch'||q.type==='tieclip'||q.type==='belt'?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
-${q.type==='shoes'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
+${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(Object.keys(COLORS).map(c=>[c,c]),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
 <div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':'<small>Cloudflare AI.</small>'}</div>`).join('');
 }
