@@ -21,7 +21,7 @@ header button{background:none;border:0;color:inherit;font-size:22px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:900}
 nav button{flex:1;border:0;border-radius:0;background:none;padding:16px 0;font-weight:600;color:var(--mut)}
 nav button.on{color:var(--ink);box-shadow:inset 0 3px var(--acc)}
-.man svg{display:block;margin:6px auto;width:min(250px,68vw)}
+.man canvas{display:block;margin:6px auto;width:min(250px,68vw);height:auto}
 .list{background:var(--card);border-radius:14px;padding:6px 14px;margin:8px 0 20px}
 .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
 .row .mut{width:68px;flex:none}
@@ -74,7 +74,7 @@ const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',1);r.onupgraden
 const tx=async(m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction('items',m);const q=f(t.objectStore('items'));t.oncomplete=()=>ok(q.result);t.onerror=no})};
 const put=i=>tx('readwrite',s=>s.put(i)),del=id=>tx('readwrite',s=>s.delete(id));
 
-/* settings management with strict pointer event toggling */
+/* settings management */
 function openSettings(){
   if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
   if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
@@ -92,21 +92,18 @@ function saveSettings(){
   renderAdd();
 }
 
-/* precision swatch generator with zoom & pan */
+/* precision swatch generator */
 function generateSwatch(q){
   if(!q.big) return '';
   const canvas=q.big;
   const zoom=Number(q.zoom)||1;
   const cx=Number(q.cx)||0.5;
   const cy=Number(q.cy)||0.5;
-  
   const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/zoom);
   const o=document.createElement('canvas');
   o.width=o.height=128;
-  
   const sx=Math.max(0,Math.min(canvas.width-sampleSize,cx*canvas.width-sampleSize/2));
   const sy=Math.max(0,Math.min(canvas.height-sampleSize,cy*canvas.height-sampleSize/2));
-  
   o.getContext('2d').drawImage(canvas, sx, sy, sampleSize, sampleSize, 0, 0, 128, 128);
   q.swatch=o.toDataURL('image/png');
   return q.swatch;
@@ -115,15 +112,14 @@ function generateSwatch(q){
 function updateSwatchParam(i, param, val){
   queue[i][param]=Number(val);
   generateSwatch(queue[i]);
-  const swEl = $(`#swatch-img-${i}`);
-  if(swEl) swEl.style.backgroundImage = `url(${queue[i].swatch})`;
+  const swEl=$(`#swatch-img-${i}`);
+  if(swEl) swEl.style.backgroundImage=`url(${queue[i].swatch})`;
 }
 
 async function ask(c){
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
-    
     const dataUrl=c.toDataURL('image/jpeg',.8);
     const res=await fetch(workerUrl,{
       method:'POST',
@@ -132,7 +128,6 @@ async function ask(c){
     });
     if(!res.ok) return null;
     const result=await res.json();
-    
     let parsed;
     try {
       const cleanText=(result.response||'').replace(/```json/g,'').replace(/```/g, '').trim();
@@ -140,7 +135,6 @@ async function ask(c){
     } catch(e) {
       parsed=result;
     }
-
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
       primaryColor:COLORS[parsed.primaryColor||parsed.color]?parsed.primaryColor||parsed.color:'grey',
@@ -197,7 +191,7 @@ async function save(i){
 }
 async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);renderWardrobe()}
 
-/* matching logic & helpers with safe fallbacks */
+/* matching logic & helpers */
 const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
 const colorDesc = i => {
   if(!i) return '';
@@ -234,41 +228,144 @@ function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id
 for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w<5)plan[key(d)]=outfit(w<4,di(d),by,last)}return plan}
 let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
 
-/* mannequin with clean texture rendering */
-function mannequin(o){
-  const ids=new Set(),defs=[];
-  const F=(i,z)=>{
-    if(!i)return'#cfcac0';
-    if(!i.swatch)return COLORS[primaryCol(i)]||'#cfcac0';
-    if(!ids.has(i.id)){
-      ids.add(i.id);
-      defs.push(`<pattern id="p${i.id}" width="120" height="120" patternUnits="userSpaceOnUse"><image href="${i.swatch}" width="120" height="120" preserveAspectRatio="xMidYMid slice"/></pattern>`);
+/* HTML5 Canvas Mannequin Renderer with Advanced 3D Lighting & Shading */
+async function renderMannequinCanvas(o, containerEl) {
+  containerEl.innerHTML = '<canvas id="man-canvas" width="220" height="522"></canvas>';
+  const canvas = $('#man-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Helper to load image for canvas pattern
+  const loadPatternImage = src => new Promise(resolve => {
+    if(!src) return resolve(null);
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+
+  const topImg = o.top ? await loadPatternImage(o.top.swatch) : null;
+  const botImg = o.bot ? await loadPatternImage(o.bot.swatch) : null;
+  const shirtImg = o.shirt ? await loadPatternImage(o.shirt.swatch) : null;
+  const tieImg = o.tie ? await loadPatternImage(o.tie.swatch) : null;
+
+  // Floor shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(110, 516, 72, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Head and neck
+  ctx.fillStyle = '#d8d3c9';
+  ctx.beginPath();
+  ctx.arc(110, 38, 21, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(101, 60, 18, 22);
+
+  // Hands
+  ctx.beginPath();
+  ctx.arc(41, 290, 9, 0, Math.PI * 2);
+  ctx.arc(179, 290, 9, 0, Math.PI * 2);
+  ctx.fillStyle = '#d8d3c9';
+  ctx.fill();
+
+  // Draw Function with Fill/Pattern & 3D Lighting Overlay
+  const drawGarment = (pathFn, item, fallbackColor) => {
+    ctx.save();
+    ctx.beginPath();
+    pathFn(ctx);
+    ctx.closePath();
+
+    if (item && item.swatch && ((item === o.top && topImg) || (item === o.bot && botImg) || (item === o.shirt && shirtImg) || (item === o.tie && tieImg))) {
+      const img = item === o.top ? topImg : item === o.bot ? botImg : item === o.shirt ? shirtImg : tieImg;
+      const pat = ctx.createPattern(img, 'repeat');
+      ctx.fillStyle = pat;
+    } else {
+      ctx.fillStyle = item ? (COLORS[primaryCol(item)] || fallbackColor) : fallbackColor;
     }
-    return`url(#p${i.id})`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 3D Contour Lighting Gradient (Overlay Blend)
+    ctx.globalCompositeOperation = 'overlay';
+    const grad = ctx.createLinearGradient(30, 0, 190, 0);
+    grad.addColorStop(0, 'rgba(0,0,0,0.3)');
+    grad.addColorStop(0.3, 'rgba(255,255,255,0.15)');
+    grad.addColorStop(0.7, 'rgba(255,255,255,0.05)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    pathFn(ctx);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
   };
-  const J=F(o.top,44),P=F(o.bot,44),S=F(o.shirt,40),T=F(o.tie,26);
-  const sk=o.socks?COLORS[primaryCol(o.socks)]||'#cfcac0':'#cfcac0';
-  const sh=o.shoes?COLORS[primaryCol(o.shoes)]||'#cfcac0':'#cfcac0';
-  const wm=o.watch?METAL[o.watch.metal]||METAL.other:0,cm=o.clip?METAL[o.clip.metal]||METAL.other:0,sk2='#d8d3c9';
-  
-  return`<svg viewBox="0 0 220 522" role="img" aria-label="Outfit on a mannequin"><defs>${defs.join('')}</defs>
-  <ellipse cx="110" cy="516" rx="72" ry="4" fill="#0003"/>
-  <ellipse cx="110" cy="38" rx="21" ry="26" fill="${sk2}"/><rect x="101" y="60" width="18" height="22" fill="#cfc9be"/>
-  <ellipse cx="41" cy="290" rx="9" ry="14" fill="${sk2}"/><ellipse cx="179" cy="290" rx="9" ry="14" fill="${sk2}"/>
-  <path d="M64 296H110L106 470H72ZM110 296H156L148 470H114Z" fill="${P}" stroke="#0005"/>
-  <rect x="78" y="468" width="22" height="22" fill="${sk}"/><rect x="120" y="468" width="22" height="22" fill="${sk}"/>
-  <path d="M76 488H102V503Q102 511 92 511H56Q54 499 68 496ZM144 488H118V503Q118 511 128 511H164Q166 499 152 496Z" fill="${sh}" stroke="#0006"/>
-  <path d="M92 78H128L150 100V270H70V100Z" fill="${S}" stroke="#0004"/>
-  <path d="M98 78L110 98L88 96ZM122 78L110 98L132 96Z" fill="${S}" stroke="#0005"/>
-  ${o.tie?`<path d="M104 92h12l-2 11h-8zM106 103h8l7 88-11 15-11-15z" fill="${T}" stroke="#0005"/>`:''}
-  <path d="M58 102L38 110L30 268H52L66 130ZM162 102L182 110L190 268H168L154 130Z" fill="${J}" stroke="#0005"/>
-  <rect x="30" y="266" width="22" height="7" fill="${S}" stroke="#0004"/><rect x="168" y="266" width="22" height="7" fill="${S}" stroke="#0004"/>
-  ${wm?`<rect x="168" y="277" width="22" height="8" rx="2" fill="${wm}" stroke="#0006"/><circle cx="179" cy="281" r="6.5" fill="${wm}" stroke="#0007"/><circle cx="179" cy="281" r="3.5" fill="#101820"/>`:''}
-  <path d="M64 98L98 84L110 170V300H62L56 112ZM156 98L122 84L110 170V300H158L164 112Z" fill="${J}" stroke="#0006"/>
-  <path d="M98 84L110 170L90 132L84 100ZM122 84L110 170L130 132L136 100Z" fill="${J}" stroke="#0006"/>
-  <path d="M70 200h20M130 200h20" stroke="#0005"/><circle cx="107" cy="205" r="2" fill="#0007"/>
-  ${cm?`<rect x="104" y="132" width="12" height="3" rx="1" fill="${cm}" stroke="#0006" stroke-width=".5"/>`:''}
-  </svg>`;
+
+  // 1. Pants / Bottoms
+  drawGarment(c => {
+    c.moveTo(64, 296); c.lineTo(110, 296); c.lineTo(106, 470); c.lineTo(72, 470); c.closePath();
+    c.moveTo(110, 296); c.lineTo(156, 296); c.lineTo(148, 470); c.lineTo(114, 470); c.closePath();
+  }, o.bot, '#cfcac0');
+
+  // Socks & Shoes
+  const skCol = o.socks ? COLORS[primaryCol(o.socks)] || '#cfcac0' : '#cfcac0';
+  const shCol = o.shoes ? COLORS[primaryCol(o.shoes)] || '#cfcac0' : '#cfcac0';
+  ctx.fillStyle = skCol;
+  ctx.fillRect(78, 468, 22, 22);
+  ctx.fillRect(120, 468, 22, 22);
+
+  ctx.fillStyle = shCol;
+  ctx.beginPath();
+  ctx.moveTo(76, 488); ctx.lineTo(102, 488); ctx.lineTo(102, 503); ctx.quadraticCurveTo(102, 511, 92, 511); ctx.lineTo(56, 511); ctx.quadraticCurveTo(54, 499, 68, 496); ctx.closePath();
+  ctx.moveTo(144, 488); ctx.lineTo(118, 488); ctx.lineTo(118, 503); ctx.quadraticCurveTo(118, 511, 128, 511); ctx.lineTo(164, 511); ctx.quadraticCurveTo(166, 499, 152, 496); ctx.closePath();
+  ctx.fill();
+
+  // 2. Shirt
+  drawGarment(c => {
+    c.moveTo(92, 78); c.lineTo(128, 78); c.lineTo(150, 100); c.lineTo(150, 270); c.lineTo(70, 270); c.lineTo(70, 100); c.closePath();
+  }, o.shirt, '#f6f6f3');
+
+  // Shirt Collar & Cuffs
+  ctx.fillStyle = o.shirt ? COLORS[primaryCol(o.shirt)] || '#f6f6f3' : '#f6f6f3';
+  ctx.beginPath();
+  ctx.moveTo(98, 78); ctx.lineTo(110, 98); ctx.lineTo(88, 96); c.closePath?.();
+  ctx.moveTo(122, 78); ctx.lineTo(110, 98); ctx.lineTo(132, 96); c.closePath?.();
+  ctx.fill();
+
+  ctx.fillRect(30, 266, 22, 7);
+  ctx.fillRect(168, 266, 22, 7);
+
+  // 3. Tie
+  if (o.tie) {
+    drawGarment(c => {
+      c.moveTo(104, 92); c.lineTo(116, 92); c.lineTo(114, 103); c.lineTo(106, 103); c.closePath();
+      c.moveTo(106, 103); c.lineTo(114, 103); c.lineTo(121, 191); c.lineTo(110, 206); c.lineTo(99, 191); c.closePath();
+    }, o.tie, '#3f6fb5');
+  }
+
+  // 4. Suit / Blazer Top
+  drawGarment(c => {
+    c.moveTo(58, 102); c.lineTo(38, 110); c.lineTo(30, 268); c.lineTo(52, 268); c.lineTo(66, 130); c.closePath();
+    c.moveTo(162, 102); c.lineTo(182, 110); c.lineTo(190, 268); c.lineTo(168, 268); c.lineTo(154, 130); c.closePath();
+    c.moveTo(64, 98); c.lineTo(98, 84); c.lineTo(110, 170); c.lineTo(110, 300); c.lineTo(62, 300); c.lineTo(56, 112); c.closePath();
+    c.moveTo(156, 98); c.lineTo(122, 84); c.lineTo(110, 170); c.lineTo(110, 300); c.lineTo(158, 300); c.lineTo(164, 112); c.closePath();
+  }, o.top, '#1b2a4a');
+
+  // Watch & Tie Clip
+  if (o.watch) {
+    const wm = METAL[o.watch.metal] || METAL.other;
+    ctx.fillStyle = wm;
+    ctx.fillRect(168, 277, 22, 8);
+    ctx.beginPath(); ctx.arc(179, 281, 6.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(179, 281, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#101820'; ctx.fill();
+  }
+  if (o.clip) {
+    const cm = METAL[o.clip.metal] || METAL.other;
+    ctx.fillStyle = cm;
+    ctx.fillRect(104, 132, 12, 3);
+  }
 }
 
 /* views */
@@ -292,8 +389,11 @@ function renderToday(){
   let h=`<h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</h2>`;
   if(sel.getDay()>4)h+='<p class="mut">Nothing is scheduled on Fridays and Saturdays.</p>';
   else if(!items.length)h+='<p class="mut">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
-  else if(o)h+=`<div class="man">${mannequin(o)}</div>${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}<div class="list">${slots(o)}</div>`;
+  else if(o)h+=`<div class="man" id="mannequin-container"></div>${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}<div class="list">${slots(o)}</div>`;
   $('#today').innerHTML=h+planHtml(p);
+  if(o && items.length && sel.getDay()<=4) {
+    renderMannequinCanvas(o, $('#mannequin-container'));
+  }
 }
 
 function mv(n){view.m+=n;if(view.m>11){view.m=0;view.y++}if(view.m<0){view.m=11;view.y--}const d=new Date(view.y,view.m,1);while(d.getDay()>4)d.setDate(d.getDate()+1);sel=d;renderToday()}
