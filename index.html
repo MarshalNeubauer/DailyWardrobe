@@ -50,6 +50,16 @@ html,body{overflow-x:hidden;overflow-x:clip}
 .stage{overflow:hidden;touch-action:pan-y;margin:0 -16px;padding:0 16px}
 .slide{will-change:transform}
 button{touch-action:manipulation}
+/* outfit score */
+.score{background:var(--card);border-radius:14px;padding:10px 14px;margin:8px 0}
+.score summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}.score summary::-webkit-details-marker{display:none}
+.score .num{font-size:28px;font-weight:800;min-width:56px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff}
+.score.good .num,.sc.good{background:#2f7a4f}.score.ok .num,.sc.ok{background:#b5841a}.score.low .num,.sc.low{background:#a23b3b}
+.score .lbl{display:flex;flex-direction:column}.score .lbl small{color:var(--mut)}
+.score ul{list-style:none;margin:10px 0 2px;padding:0}
+.score li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
+.score li small{grid-column:1/-1;color:var(--mut)}.score li.miss span:first-child{color:var(--ink)}.score .pts{color:var(--mut);font-variant-numeric:tabular-nums}
+.sc{flex:none;min-width:30px;height:22px;border-radius:6px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:center}
 .stage .empty{padding:48px 0;text-align:center}
 /* wide screens, e.g. iPhone Duo unfolded (~7.6in) or a tablet: mannequin on the left, list and plan on the right.
    The fold crease falls in the gap between the columns. Folded (cover screen) keeps the phone layout. */
@@ -583,6 +593,56 @@ if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were av
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(primaryCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
 if(watch&&belt&&metalOf(watch)!==metalOf(belt))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
 return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,notes}}
+/* ---- outfit score ----
+   A readable 0-100 rating of the planned outfit against the same rules the planner uses.
+   Each check earns points out of a maximum; checks that don't apply (no belt owned, suit days have no separate trousers)
+   are left out, and the score is the share of available points earned. */
+function rateOutfit(o){
+  const nice=t=>String(t||'').replace(/lightblue/g,'light blue').replace(/lightgrey/g,'light grey').replace(/darkgrey/g,'dark grey');
+  const C=[],add=(label,pts,max,why)=>C.push({label,pts:Math.max(0,Math.min(max,pts)),max,why:pts<max?nice(why):''});
+  const {top,shirt,tie,shoes,belt,socks,watch,clip}=o,bot=o.suitDay?null:o.bot,trousers=o.bot||top;
+  if(shirt){const raw=primaryCol(shirt);let v=({white:10,lightblue:10,pink:8,cream:8,lightgrey:7,blue:6})[raw]??2,why=v<10?`a ${raw} shirt is less classic than white or light blue`:'';
+    if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same colour as the jacket'}
+    else if(top&&LUM(shirt)<LUM(top)+20){v-=5;why='shirt is darker than the jacket'}
+    add('Shirt',v,10,why)}
+  if(shirt&&tie){const raw=primaryCol(shirt),d=LUM(shirt)-LUM(tie);let v=0,why=[];
+    if(d>=25)v+=8;else why.push('tie is not darker than the shirt');
+    if(pcol(tie)!==pcol(shirt))v+=2;else why.push('tie and shirt are the same colour');
+    if(raw==='white'||!TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[raw].includes(pcol(tie)))v+=5;else{v+=1;why.push(`${primaryCol(tie)} is an unusual tie colour on a ${raw} shirt`)}
+    add('Tie and shirt',v,15,why.join('; '))}
+  if(tie&&top){const tc=pcol(top),xc=pcol(tie);let v,why='';
+    if(xc===tc){if(tc==='black'){v=0;why='black tie on a black suit reads as funeral wear'}else if(pw(tie)>0||LUM(tie)<LUM(top)-15)v=10;else{v=6;why='tonal tie blends into the jacket'}}
+    else if(!HARM[tc]||HARM[tc].includes(xc))v=10;else{v=4;why=`${primaryCol(tie)} is not a classic partner for a ${primaryCol(top)} jacket`}
+    add('Tie and jacket',v,10,why)}
+  {const parts=[[top,'top'],[bot,'bot'],[shirt,'shirt'],[tie,'tie']],P=parts.map(([i,r])=>patInfo(i,r)).filter(Boolean);let v=10,why='';
+    if(P.length>=3){v=0;why='three bold patterns compete'}
+    else if(P.length===2){if(P[0].type!==P[1].type){v=9;why='two different patterns: fine, slightly busier than one'}else if(P[0].scale!==P[1].scale){v=7;why='two patterns of the same type (different scale)'}else{v=3;why='two patterns of the same type and scale'}}
+    if(top||shirt||tie)add('Patterns',v,10,why)}
+  if(bot&&top){const list=BLAZER_TROUSERS[pcol(top)];let v,why='';const k=list?list.indexOf(pcol(bot)):-1;
+    v=k===0?10:k===1?9:k===2?8:k>2?7:3;if(k<0)why=`${primaryCol(bot)} trousers are not a classic match for a ${primaryCol(top)} jacket`;
+    if(Math.abs(LUM(top)-LUM(bot))<35){v-=4;why=(why?why+'; ':'')+'jacket and trousers lack contrast'}
+    add('Trousers',v,10,why)}
+  if(shoes&&trousers){const s=shoeScore(top,trousers,shoes),k=(SH[pcol(trousers)]||['black','brown']).indexOf(pcol(shoes));
+    add('Shoes',s<=-50?0:k===0?10:k===1?9:k===2?8:7,10,s<=-50?`${primaryCol(shoes)} shoes don't suit ${primaryCol(trousers)} trousers`:`${primaryCol(shoes)} shoes are a good but not the first choice with ${primaryCol(trousers)}`)}
+  if(shoes&&items.some(i=>i.type==='belt')){const f=belt?beltFit(shoes,belt):null;
+    add('Belt',!belt?0:f===null?0:f>0?10:8,10,!belt?'no belt matches the shoes':f===null?'belt does not match the shoes':'belt finish differs slightly from the shoes')}
+  if(shoes){const f=finish(shoes.leather);let v=5,why='';
+    if(f==='patent'){v=0;why='patent shoes are for black tie'}else if(f==='suede'&&o.suitDay){v=2;why='suede is casual for a suit'}else if(f==='grain'&&o.suitDay){v=3;why='grain leather is casual for a suit'}
+    add('Leather formality',v,5,why)}
+  {const ms=[watch,belt,clip].filter(Boolean).map(metalOf);
+    if(ms.length>=2)add('Metals',new Set(ms).size===1?5:2,5,'watch, buckle and tie clip metals differ');}
+  if(socks&&trousers){const sc=pcol(socks),bc=pcol(trousers);let v,why='';
+    if(sc===bc)v=5;else if(shoes&&sc===pcol(shoes)){v=4;why='socks match the shoes rather than the trousers'}
+    else if(['white','cream','pink','lightblue'].includes(primaryCol(socks))&&LUM(trousers)<120){v=0;why='light socks with dark trousers'}
+    else{v=3;why='socks don\'t match the trousers'}
+    add('Socks',v,5,why)}
+  {const main=[top,bot,shirt,tie].filter(Boolean).map(pcol),n=new Set(main).size;let v=5,why='';
+    if(top&&shirt&&tie&&pcol(top)===pcol(shirt)&&pcol(shirt)===pcol(tie)){v=0;why='jacket, shirt and tie are all one colour'}else if(n>4){v=2;why='more than four main colours'}
+    if(main.length)add('Overall harmony',v,5,why)}
+  const max=C.reduce((a,c)=>a+c.max,0),got=C.reduce((a,c)=>a+c.pts,0),score=max?Math.round(100*got/max):0;
+  const label=score>=90?'Excellent':score>=80?'Very good':score>=70?'Good':score>=55?'Fair':'Needs work';
+  return {score,label,checks:C};
+}
 function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={};
 for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(w<5)plan[key(d)]=outfit(w<4,di(d),by,last)}return plan}
 let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
@@ -966,13 +1026,19 @@ function renderMannequinCanvas(o, containerEl){
 const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top],...(o.suitDay?[]:[['Pants',o.bot]]),['Shirt',o.shirt],['Tie',o.tie],['Tie clip',o.clip],['Watch',o.watch],['Belt',o.belt],['Socks',o.socks],['Shoes',o.shoes]]
 .map(([l,i])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot" style='background:${bg(i)}'></span><span class="cap">${desc(i)}</span>`:'<span class="mut none">Add one on the Add tab</span>'}</div>`).join('');
 
+/* outfit score card with an expandable breakdown */
+function scoreCard(o){
+  const r=rateOutfit(o),tone=r.score>=80?'good':r.score>=65?'ok':'low';
+  return `<details class="score ${tone}"><summary><span class="num">${r.score}</span><span class="lbl"><b>${r.label}</b><small>Outfit score · tap for why</small></span></summary><ul>${r.checks.map(c=>`<li class="${c.pts===c.max?'ok':'miss'}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></details>`;
+}
 function planHtml(p){
   const f=new Date(view.y,view.m,1),days=[];
   for(const d=new Date(f);d.getMonth()===view.m;d.setDate(d.getDate()+1))if(d.getDay()<5)days.push(new Date(d));
   return `<div class="nav"><button onclick="mv(-1)" aria-label="Previous month">‹</button><h2>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><button onclick="mv(1)" aria-label="Next month">›</button></div>`+
   days.map(d=>{
     const o=p[key(d)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null};
-    return `<div class="pl ${key(d)===key(sel)?'on':''}" onclick="pick(${d.getTime()})"><b>${d.toLocaleDateString(undefined,{weekday:'short',day:'numeric'})}</b><span class="cap">${o.suitDay?nm(o.top):nm(o.top)+' + '+nm(o.bot)}, ${o.shirt?primaryCol(o.shirt)+' shirt':'no shirt'}, ${o.tie?desc(o.tie)+' tie':'no tie'}</span></div>`;
+    const sc=o.shirt||o.top?rateOutfit(o).score:null;
+    return `<div class="pl ${key(d)===key(sel)?'on':''}" onclick="pick(${d.getTime()})">${sc===null?'':`<span class="sc ${sc>=80?'good':sc>=65?'ok':'low'}">${sc}</span>`}<b>${d.toLocaleDateString(undefined,{weekday:'short',day:'numeric'})}</b><span class="cap">${o.suitDay?nm(o.top):nm(o.top)+' + '+nm(o.bot)}, ${o.shirt?primaryCol(o.shirt)+' shirt':'no shirt'}, ${o.tie?desc(o.tie)+' tie':'no tie'}</span></div>`;
   }).join('');
 }
 
@@ -987,7 +1053,7 @@ function renderToday(){
   else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else{stage='<div class="man" id="mannequin-container"></div>';
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`<div class="list">${slots(o)}</div>${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+    side=`${scoreCard(o)}<div class="list">${slots(o)}</div>${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${planHtml(p)}</div></div>`;
   if(o && items.length && sel.getDay()<=4) {
     renderMannequinCanvas(o, $('#mannequin-container'));
