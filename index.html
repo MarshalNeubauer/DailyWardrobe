@@ -69,7 +69,13 @@ const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{cons
   return{suit:suiting,blazer:suiting,pants:suiting,shirt:['solid','stripe','pinstripe','gingham','tattersall','check','herringbone','oxford','twill','other'],tie:['solid','stripe','polka-dot','paisley','check','foulard','knit','other']}})(),
 PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'oxford',plaid:'check'},tie:{texture:'knit',dots:'polka-dot',plaid:'check'}},
 normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pants'?'suit':t]||{};p=String(p||'').toLowerCase().trim().replace(/[\s_]+/g,'-');return l.includes(p)?p:l.includes(g[p])?g[p]:'solid'},
-patLabel=p=>String(p||'').replace(/-/g,' '),FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
+patLabel=p=>String(p||'').replace(/-/g,' '),
+COL_ALIAS={gray:'grey',lightgray:'grey',lightgrey:'grey',silvergrey:'silver',silvergray:'silver',darkgray:'charcoal',darkgrey:'charcoal',slate:'charcoal',
+  lightblue:'lightblue',skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
+  darkblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'tan',camel:'tan',sand:'tan',taupe:'tan',
+  darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',wine:'burgundy',oxblood:'burgundy',darkred:'burgundy',
+  yellow:'gold',mustard:'gold',lavender:'purple',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
+normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
 let items=[],flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
@@ -142,9 +148,9 @@ async function ask(c){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
       pattern:normPat(TYPES[parsed.type]?parsed.type:'suit',parsed.pattern),
-      primaryColor:COLORS[parsed.primaryColor||parsed.color]?parsed.primaryColor||parsed.color:'grey',
-      secondaryColor:(parsed.secondaryColor&&parsed.secondaryColor!=='none'&&COLORS[parsed.secondaryColor])?parsed.secondaryColor:null,
-      tertiaryColor:(parsed.tertiaryColor&&parsed.tertiaryColor!=='none'&&COLORS[parsed.tertiaryColor])?parsed.tertiaryColor:null,
+      primaryColor:normCol(parsed.primaryColor||parsed.color)||'grey',
+      secondaryColor:normCol(parsed.secondaryColor),
+      tertiaryColor:normCol(parsed.tertiaryColor),
       metal:METAL[parsed.metal]?parsed.metal:'silver'
     };
   } catch(e) {
@@ -193,6 +199,21 @@ async function save(i){
   if(q.type==='watch'||q.type==='tieclip')it.metal=q.metal;
   await put(it);items.push(it);queue.splice(i,1);renderAdd();
 }
+let editing=null;
+const E=(id,k,list,v)=>`<label>${k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
+function editForm(i){
+  const cols=Object.keys(COLORS).map(c=>[c,c]),opt=[['none','None'],...cols];
+  return `<div class="card" style="margin:8px 0 0;padding:8px">${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',opt,i.secondaryColor||'none')}${E(i.id,'tertiaryColor',opt,i.tertiaryColor||'none')}
+  ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${i.type==='watch'||i.type==='tieclip'?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
+  <div class="btns"><button class="pri" onclick="editing=null;renderWardrobe()">Done</button></div></div>`;
+}
+async function sete(id,k,v){
+  const it=items.find(x=>x.id===id);if(!it)return;
+  it[k]=v==='none'?null:v;
+  if(k==='type'){it.pattern=normPat(v,it.pattern);if((v==='watch'||v==='tieclip')&&!it.metal)it.metal='silver'}
+  if(k==='primaryColor')delete it.color;
+  await put(it);cache={};renderWardrobe();
+}
 async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);renderWardrobe()}
 
 /* matching logic & helpers */
@@ -239,12 +260,13 @@ const rgbHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16
 const lum=h=>{const [r,g,b]=hexRgb(h);return (.2126*r+.7152*g+.0722*b)/255};
 const mix=(h,t,k)=>{const a=hexRgb(h),b=hexRgb(t);return rgbHex(a.map((v,i)=>v+(b[i]-v)*k))};
 const colOf=i=>COLORS[primaryCol(i)]||'#8b8f96';
+const thirdOf=i=>i&&i.tertiaryColor&&COLORS[i.tertiaryColor]||null;
 const accentOf=i=>{const s=i&&i.secondaryColor&&COLORS[i.secondaryColor];if(s)return s;const b=colOf(i);return lum(b)>.55?mix(b,'#000',.35):mix(b,'#fff',.45)};
 const mirror=d=>d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g,(_,x,y)=>`${+(240-x).toFixed(2)},${y}`);
 
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
 function fabricDef(id,item,role){
-  const b=colOf(item),a=accentOf(item),p=item.pattern||'solid',wool=role==='top'||role==='bot';
+  const b=colOf(item),a=accentOf(item),t3=thirdOf(item),c=t3||a,p=item.pattern||'solid',wool=role==='top'||role==='bot';
   const dk='#000',lt='#fff',ink=lum(b)>.5?'#000':'#fff';
   const twill=`<path d="M-2,2 L2,-2 M0,4 L4,0 M2,6 L6,2" stroke="${ink}" stroke-opacity="${wool?.07:.04}" stroke-width=".6"/>`;
   const tile=(w,h,body,tf='')=>`<pattern id="${id}" patternUnits="userSpaceOnUse" width="${w}" height="${h}"${tf?` patternTransform="${tf}"`:''}><rect width="${w}" height="${h}" fill="${b}"/>${body}</pattern>`;
@@ -252,13 +274,15 @@ function fabricDef(id,item,role){
   switch(p){
     /* --- stripes --- */
     case 'pinstripe':
-      return fine?tile(3,3,`<rect width=".5" height="3" fill="${a}" opacity=".9"/>`):tile(8,4,`${twill}<rect width=".55" height="4" fill="${a}" opacity=".85"/>`);
+      if(fine)return t3?tile(6,3,`<rect width=".5" height="3" fill="${a}" opacity=".9"/><rect x="3" width=".5" height="3" fill="${c}" opacity=".9"/>`):tile(3,3,`<rect width=".5" height="3" fill="${a}" opacity=".9"/>`);
+      return t3?tile(16,4,`${twill}<rect width=".55" height="4" fill="${a}" opacity=".85"/><rect x="8" width=".55" height="4" fill="${c}" opacity=".85"/>`):tile(8,4,`${twill}<rect width=".55" height="4" fill="${a}" opacity=".85"/>`);
     case 'chalk-stripe':
-      return tile(12,4,`${twill}<rect x="-.2" width="1.4" height="4" fill="${a}" opacity=".38"/><rect x=".2" width=".6" height="4" fill="${a}" opacity=".3"/>`);
+      return t3?tile(24,4,`${twill}<rect x="-.2" width="1.4" height="4" fill="${a}" opacity=".38"/><rect x="11.8" width="1.4" height="4" fill="${c}" opacity=".38"/>`):tile(12,4,`${twill}<rect x="-.2" width="1.4" height="4" fill="${a}" opacity=".38"/><rect x=".2" width=".6" height="4" fill="${a}" opacity=".3"/>`);
     case 'stripe':
-      if(role==='tie')return tile(12,12,`<rect width="4" height="12" fill="${a}"/><rect x="6" width="1" height="12" fill="${a}" opacity=".7"/>`,'rotate(40)');
-      if(role==='shirt')return tile(4,4,`<rect width="1.4" height="4" fill="${a}" opacity=".85"/>`);
-      return tile(8,4,`${twill}<rect width=".6" height="4" fill="${a}" opacity=".8"/>`);
+      if(role==='tie')return t3?tile(13,13,`<rect width="4.5" height="13" fill="${a}"/><rect x="6.5" width="1.6" height="13" fill="${c}"/><rect x="10" width="1.6" height="13" fill="${c}"/>`,'rotate(40)')
+                              :tile(12,12,`<rect width="4" height="12" fill="${a}"/><rect x="6" width="1" height="12" fill="${a}" opacity=".7"/>`,'rotate(40)');
+      if(role==='shirt')return t3?tile(8,4,`<rect width="1.4" height="4" fill="${a}" opacity=".85"/><rect x="4" width="1.4" height="4" fill="${c}" opacity=".85"/>`):tile(4,4,`<rect width="1.4" height="4" fill="${a}" opacity=".85"/>`);
+      return t3?tile(16,4,`${twill}<rect width=".6" height="4" fill="${a}" opacity=".8"/><rect x="8" width=".6" height="4" fill="${c}" opacity=".8"/>`):tile(8,4,`${twill}<rect width=".6" height="4" fill="${a}" opacity=".8"/>`);
     /* --- weaves (read as near-solid at a distance) --- */
     case 'herringbone':{
       const w=fine?4:6,h=fine?2:3;
@@ -277,7 +301,7 @@ function fabricDef(id,item,role){
     case 'knit':
       return tile(3,2.4,`<path d="M0,0 L1.5,1.2 L3,0" fill="none" stroke="${dk}" stroke-opacity=".28" stroke-width=".55"/><path d="M0,1.2 L1.5,2.4 L3,1.2" fill="none" stroke="${lt}" stroke-opacity=".12" stroke-width=".45"/>`);
     case 'tweed':{
-      const fleck=[[1,2,a],[6,1,lt],[3,7,'#000'],[8,5,a],[5,4,lt],[9,9,'#000'],[2,9,a],[7,8,lt]];
+      const fleck=[[1,2,a],[6,1,lt],[3,7,'#000'],[8,5,c],[5,4,lt],[9,9,'#000'],[2,9,c],[7,8,a]];
       return tile(10,10,`${twill}${fleck.map(([x,y,c])=>`<rect x="${x}" y="${y}" width="1.1" height=".5" fill="${c}" opacity=".35" transform="rotate(${(x*37)%60-30} ${x} ${y})"/>`).join('')}`);
     }
     /* --- checks --- */
@@ -287,30 +311,30 @@ function fabricDef(id,item,role){
       return tile(8,8,`<rect width="4" height="4" fill="${a}"/><svg x="4" y="0" width="4" height="4">${st}</svg><svg x="0" y="4" width="4" height="4">${st}</svg>`,fine?'scale(.6)':'scale(.85)');
     }
     case 'glen-check':
-      return tile(16,16,`<path d="M0,1 H8 M0,3 H8 M0,5 H8 M0,7 H8 M9,8 V16 M11,8 V16 M13,8 V16 M15,8 V16" stroke="${ink}" stroke-opacity=".18" stroke-width=".8"/><path d="M8,0 L16,8 M10,0 L16,6 M12,0 L16,4 M8,2 L14,8 M8,4 L12,8 M0,8 L8,16 M0,10 L6,16 M0,12 L4,16 M2,8 L8,14 M4,8 L8,12" stroke="${ink}" stroke-opacity=".14" stroke-width=".6"/><rect x="15.4" width=".6" height="16" fill="${a}" opacity=".7"/><rect y="15.4" width="16" height=".6" fill="${a}" opacity=".7"/>`);
+      return tile(16,16,`<path d="M0,1 H8 M0,3 H8 M0,5 H8 M0,7 H8 M9,8 V16 M11,8 V16 M13,8 V16 M15,8 V16" stroke="${ink}" stroke-opacity=".18" stroke-width=".8"/><path d="M8,0 L16,8 M10,0 L16,6 M12,0 L16,4 M8,2 L14,8 M8,4 L12,8 M0,8 L8,16 M0,10 L6,16 M0,12 L4,16 M2,8 L8,14 M4,8 L8,12" stroke="${ink}" stroke-opacity=".14" stroke-width=".6"/><rect x="15.4" width=".6" height="16" fill="${a}" opacity=".7"/><rect y="15.4" width="16" height=".6" fill="${c}" opacity=".7"/>`);
     case 'windowpane':
-      return tile(18,18,`${twill}<rect width=".7" height="18" fill="${a}" opacity=".8"/><rect width="18" height=".7" fill="${a}" opacity=".8"/>`);
+      return tile(18,18,`${twill}<rect width=".7" height="18" fill="${a}" opacity=".8"/><rect width="18" height=".7" fill="${c}" opacity=".8"/>`);
     case 'gingham':
-      return tile(6,6,`<rect width="3" height="6" fill="${a}" opacity=".45"/><rect width="6" height="3" fill="${a}" opacity=".45"/>`);
+      return tile(6,6,`<rect width="3" height="6" fill="${a}" opacity=".45"/><rect width="6" height="3" fill="${c}" opacity=".45"/>`);
     case 'tattersall':{
       const c2=item.tertiaryColor&&COLORS[item.tertiaryColor]||mix(a,b,.4);
       return tile(8,8,`<rect width=".6" height="8" fill="${a}"/><rect width="8" height=".6" fill="${a}"/><rect x="4" width=".6" height="8" fill="${c2}"/><rect y="4" width="8" height=".6" fill="${c2}"/>`);
     }
     case 'check':
-      if(role==='shirt')return tile(6,6,`<rect width="3" height="6" fill="${a}" opacity=".45"/><rect width="6" height="3" fill="${a}" opacity=".45"/>`);
-      if(role==='tie')return tile(6,6,`<rect width="2" height="6" fill="${a}" opacity=".6"/><rect width="6" height="2" fill="${a}" opacity=".6"/>`,'rotate(45)');
-      return tile(16,16,`${twill}<rect width=".7" height="16" fill="${a}" opacity=".75"/><rect width="16" height=".7" fill="${a}" opacity=".75"/><rect x="8" width=".4" height="16" fill="${a}" opacity=".35"/><rect y="8" width="16" height=".4" fill="${a}" opacity=".35"/>`);
+      if(role==='shirt')return tile(6,6,`<rect width="3" height="6" fill="${a}" opacity=".45"/><rect width="6" height="3" fill="${c}" opacity=".45"/>`);
+      if(role==='tie')return tile(6,6,`<rect width="2" height="6" fill="${a}" opacity=".6"/><rect width="6" height="2" fill="${c}" opacity=".6"/>`,'rotate(45)');
+      return tile(16,16,`${twill}<rect width=".7" height="16" fill="${a}" opacity=".75"/><rect width="16" height=".7" fill="${a}" opacity=".75"/><rect x="8" width=".4" height="16" fill="${c}" opacity=".45"/><rect y="8" width="16" height=".4" fill="${c}" opacity=".45"/>`);
     /* --- tie motifs --- */
     case 'polka-dot':{
       const s=role==='tie'?9:role==='shirt'?5:10,r=role==='tie'?1.4:role==='shirt'?.7:.9;
-      return tile(s,s,`<circle cx="${s/4}" cy="${s/4}" r="${r}" fill="${a}"/><circle cx="${s*3/4}" cy="${s*3/4}" r="${r}" fill="${a}"/>`);
+      return tile(s,s,`<circle cx="${s/4}" cy="${s/4}" r="${r}" fill="${a}"/><circle cx="${s*3/4}" cy="${s*3/4}" r="${r}" fill="${c}"/>`);
     }
     case 'foulard':{
-      const m=`<path d="M0,-1.8 L1.8,0 L0,1.8 L-1.8,0 Z" fill="${a}"/><circle r=".6" fill="${b}"/>`;
+      const m=`<path d="M0,-1.8 L1.8,0 L0,1.8 L-1.8,0 Z" fill="${a}"/><circle r=".6" fill="${t3||b}"/>`;
       return tile(8,8,`<g transform="translate(2,2)">${m}</g><g transform="translate(6,6)">${m}</g>`);
     }
     case 'paisley':{
-      const drop=`<path d="M0,-3.2 C2.6,-3.2 3.2,0 1.6,2 C0.4,3.4 -2.4,3.2 -2.6,1 C-2.8,-1 -1.2,-1.4 -0.6,-0.6 C0.2,0.4 -1.2,1 -1.4,0.4" fill="none" stroke="${a}" stroke-width=".7"/><circle cx="0.3" cy="0.2" r=".5" fill="${a}"/>`;
+      const drop=`<path d="M0,-3.2 C2.6,-3.2 3.2,0 1.6,2 C0.4,3.4 -2.4,3.2 -2.6,1 C-2.8,-1 -1.2,-1.4 -0.6,-0.6 C0.2,0.4 -1.2,1 -1.4,0.4" fill="none" stroke="${a}" stroke-width=".7"/><circle cx="0.3" cy="0.2" r=".6" fill="${c}"/>`;
       return tile(14,14,`<g transform="translate(4,4)">${drop}</g><g transform="translate(11,11) rotate(180)">${drop}</g>`);
     }
   }
@@ -447,7 +471,7 @@ function renderWardrobe(){
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
-  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2><div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"><img class="ph" src="${i.photo}" alt=""><b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small><div class="btns"><button onclick="rm('${i.id}')">Delete</button></div></div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
+  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2><div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''}><img class="ph" src="${i.photo}" alt=""><b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small><div class="btns"><button onclick="editing=editing==='${i.id}'?null:'${i.id}';renderWardrobe()">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
 }
 
 const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select>`;
