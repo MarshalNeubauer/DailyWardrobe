@@ -251,6 +251,12 @@ function itemThumb(i){
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawOxfordSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(28 13) scale(1.05)">${drawSock(colOf(i),P)}</g>`;
   else if(i.type==='belt')g=`<g transform="translate(50 50) scale(1.42)">${drawBelt(i,P)}</g>`;
+  else if(i.type==='overcoat'||i.type==='raincoat'){const c=colOf(i),e=mix(c,'#000',.35),rain=i.type==='raincoat';
+    g=`<path d="M38,14 L50,20 L62,14 L78,22 L84,90 L16,90 L22,22 Z" fill="${c}" stroke="${e}" stroke-width=".8"/><path d="M38,14 L50,40 L62,14" fill="none" stroke="${e}" stroke-width=".8"/>`+
+      `<path d="M50,40 L50,90" stroke="${e}" stroke-width=".8"/>${rain?`<path d="M18,52 L82,52" stroke="${e}" stroke-width="2.4"/><rect x="45" y="49" width="10" height="6" rx="1" fill="none" stroke="${METAL.silver}" stroke-width="1.2"/>`:''}`+
+      [46,58,70].map(y=>`<circle cx="45" cy="${y}" r="1.4" fill="${e}"/><circle cx="55" cy="${y}" r="1.4" fill="${e}"/>`).join('')}
+  else if(i.type==='cufflinks'){const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver;
+    g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="12" fill="${mM}" stroke="${mD}" stroke-width="1.2"/><circle cx="${x-3}" cy="47" r="4" fill="${mL}"/><circle cx="${x}" cy="50" r="7.5" fill="none" stroke="${mD}" stroke-width=".6"/>`).join('')}
   else if(i.type==='tieclip'){const m=METAL[i.metal]||METAL.other;g=`<rect x="12" y="45" width="76" height="9" rx="3" fill="${m}" stroke="#000" stroke-opacity=".3"/><rect x="14" y="47" width="72" height="2" rx="1" fill="#fff" opacity=".45"/>`}
   else g=`<rect x="10" y="10" width="80" height="80" rx="8" fill="${colOf(i)}"/>`;
   return `<div class="ph thumb"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${TYPES[i.type]||'Item'}">${g}</svg></div>`;
@@ -355,6 +361,8 @@ function renderMannequinCanvas(o, containerEl){
   }
 
   /* accessories */
+  if(o.links){const [mL,mM,mD]=METAL_TONES[o.links.metal]||METAL_TONES.silver,y=o.top?317:310;
+    for(const x of [44.5,195.5])s+=`<circle cx="${x}" cy="${y}" r="2.4" fill="${mM}" stroke="${mD}" stroke-width=".5"/><circle cx="${x-.7}" cy="${y-.7}" r=".8" fill="${mL}"/>`}
   if(o.watch)s+=`<g transform="translate(231,318) scale(.8)">${drawWatch(o.watch,'wt-')}</g>`;
   if(o.clip&&o.tie){const m=METAL[o.clip.metal]||METAL.other;s+=`<rect x="111" y="170" width="18" height="2.4" rx="1" fill="${m}" stroke="#000" stroke-opacity=".3" stroke-width=".4"/>`}
 

@@ -1,7 +1,7 @@
 // Outfit history: past days are frozen, single pieces can be swapped, and the worn log drives rotation.
 module.exports=async({ok,chromium,url,WARDROBES})=>{
   const browser=await chromium.launch();const ctx=await browser.newContext();const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-  await p.goto(url);await p.waitForTimeout(400);
+  await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const ids=o=>JSON.stringify(SLOTS_IDS(o));
   await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,15);view={y:2026,m:10};show('today')})()`);
   await p.waitForTimeout(500);
@@ -10,10 +10,10 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   ok(recs>=10,`viewing the app records past days (${recs} saved)`);
 
   // adding clearly better items must not rewrite the past
-  const past=await snap('2026-11-10'),futureBefore=await snap('2026-11-18');
+  const past=await snap('2026-11-10'),fut=()=>p.evaluate(()=>{const P=planFor();return JSON.stringify(Object.keys(P).filter(k=>keyDate(k)>todayDate()).map(k=>SLOTS.map(s=>P[k][s]&&P[k][s].id)))}),futureBefore=await fut();
   await p.evaluate(()=>{for(let i=0;i<6;i++)items.push({id:'zz-new-tie-'+i,type:'tie',primaryColor:['burgundy','navy','green','gold','purple','grey'][i],pattern:'solid',added:Date.now()},{id:'zz-new-shirt-'+i,type:'shirt',primaryColor:i%2?'white':'lightblue',pattern:'solid',added:Date.now()});cache={}});
   ok(JSON.stringify(await snap('2026-11-10'))===JSON.stringify(past),'past days stay exactly as they were after the wardrobe changes');
-  ok(JSON.stringify(await snap('2026-11-18'))!==JSON.stringify(futureBefore),'future days do pick up new items');
+  ok(await fut()!==futureBefore&&(await fut()).includes('zz-new'),'future days do pick up new items');
 
   // swap one piece on a future day
   await p.evaluate(()=>{sel=new Date(2026,10,18);view={y:2026,m:10};renderToday()});await p.waitForTimeout(150);
@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   ok(JSON.stringify(await snap('2026-11-15'))===JSON.stringify(todayIds),'"Wore this" locks today even if the wardrobe changes');
   // persistence: records survive a reload
   const nRecs=await p.evaluate(()=>Object.keys(dayRecs).length);
-  await p.reload();await p.waitForTimeout(600);
+  await p.reload();await p.waitForFunction(()=>window.appReady);
   ok(await p.evaluate(n=>Object.keys(dayRecs).length===n&&dayRecs['2026-11-15']&&dayRecs['2026-11-15'].worn===true,nRecs),'history survives a reload');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();

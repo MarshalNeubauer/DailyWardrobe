@@ -70,3 +70,6 @@ button{touch-action:manipulation}
 .row .swap{margin-left:auto;flex:none;border:0;background:none;color:var(--mut);font-size:20px;padding:2px 6px;line-height:1}
 .row .swap:active{color:var(--ink)}
 .dayact{flex-wrap:wrap;align-items:center;margin:4px 0 10px}.dayact .chip{border:1px solid var(--line);display:inline-flex;align-items:center;padding:7px 12px;font-weight:600}.dayact .chip.on{background:#2f7a4f;color:#fff;border-color:#2f7a4f}
+.days{display:flex;gap:4px;flex-wrap:wrap}.dtog{padding:6px 9px;font-size:14px;border-radius:8px}.dtog.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.day h2 .wx{display:block;font-size:13px;font-weight:600;color:var(--mut);text-align:center;margin-top:2px}
+.day h2{text-align:center}.dayact .chip.formal{background:#1b2a4a;border-color:#1b2a4a}

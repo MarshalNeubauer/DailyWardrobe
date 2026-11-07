@@ -1,5 +1,5 @@
 /* Daily Wardrobe: shared constants and item helpers (no DOM access; also loaded by the analysis worker) */
-const TYPES={suit:'Suit',blazer:'Blazer',pants:'Dress pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks'};
+const TYPES={suit:'Suit',blazer:'Blazer',pants:'Dress pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat'};
 const COLORS={black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',navy:'#1b2a4a',brown:'#5a3a22',tan:'#b8946a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb'};
 const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{const suiting=['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','other'];
   return{suit:suiting,blazer:suiting,pants:suiting,shirt:['solid','stripe','pinstripe','gingham','tattersall','check','herringbone','oxford','twill','other'],tie:['solid','stripe','polka-dot','paisley','check','foulard','knit','other']}})(),
@@ -17,8 +17,28 @@ let items=[];
 /* outfit history (one record per date, see planner.js) and the current date (overridable in tests) */
 let dayRecs={},TODAY_OVERRIDE=null;
 const todayDate=()=>{const d=TODAY_OVERRIDE?new Date(TODAY_OVERRIDE):new Date();d.setHours(0,0,0,0);return d};
-const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip'];
-const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip'})[s]||s;
+const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip','links','coat'];
+const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip',links:'cufflinks'})[s]||s;
+const METAL_TYPES=['watch','tieclip','belt','cufflinks'],SEASON_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];
+const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather']],CUFFS=[['button','Button cuffs'],['french','French cuffs']];
+
+/* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
+   temperature units and the weather location */
+let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,updated:0};
+const isWorkday=d=>settings.workdays.includes(d.getDay());
+const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+/* forecast by date key: {tmax,tmin,pop,rain,code} in °C, filled from Open-Meteo by app.js */
+let weather={};
+/* the day's climate: from the forecast when there is one, otherwise from the calendar (hemisphere from the location) */
+function dayClimate(d){
+  const w=weather[key(d)];
+  if(w){const t=w.tmax;return {wx:w,season:t>=24?'warm':t<=12?'cold':'mild',rain:(w.pop||0)>=50||(w.rain||0)>=2,cold:t<10,veryCold:t<4}}
+  const south=settings.location&&settings.location.lat<0,m=(d.getMonth()+(south?6:0))%12;
+  const season=[11,0,1].includes(m)?'cold':[5,6,7].includes(m)?'warm':'mild';
+  return {wx:null,season,rain:false,cold:season==='cold',veryCold:false};
+}
+const itemSeason=i=>i&&(i.season||(i.pattern==='tweed'?'cold':'all'));
+const seasonFit=(i,season)=>{const s=itemSeason(i);if(!i||!s||s==='all'||s===season)return 0;return season==='mild'?-4:-15};
 
 /* matching logic & helpers */
 const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
@@ -29,7 +49,7 @@ const colorDesc = i => {
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
   return cols.join(' & ');
 };
-const desc=i=>i?(i.type==='watch'&&watchOpts(i).band==='bracelet'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal?(i.type==='watch'&&watchOpts(i).band==='bracelet'?'':' · ')+i.metal:'')+(i.type==='watch'?` · ${watchOpts(i).dial} dial · ${watchOpts(i).band}`:''):'';
+const desc=i=>i?((i.type==='watch'&&watchOpts(i).band==='bracelet')||i.type==='cufflinks'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal?((i.type==='watch'&&watchOpts(i).band==='bracelet')||i.type==='cufflinks'?'':' · ')+i.metal:'')+(i.type==='watch'?` · ${watchOpts(i).dial} dial · ${watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+' '+(TYPES[i.type]||'item').toLowerCase():'none';
 const bg=i=>i?(i.swatch?`url(${i.swatch})`:COLORS[primaryCol(i)]||METAL[i.metal]||'#ccc'):'#ccc';
 
