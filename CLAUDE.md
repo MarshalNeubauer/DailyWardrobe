@@ -24,8 +24,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 | `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM) |
 | `detect.js` | stripe/check detection from photos (canvas) |
 | `draw.js` | SVG mannequin, accessories, wardrobe thumbnails |
-| `app.js` | IndexedDB storage, forms, screens, swipe gestures |
-| `worker.js` | Cloudflare Worker (Workers AI tagging); the user deploys it by hand, merging doesn't deploy it |
+| `analysis.js` | "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker) |
+| `app.js` | IndexedDB storage (items, day history, settings), forms, screens, swipe gestures, weather |
+| `sync.js` | backup/sync through the worker's `/sync` endpoint (KV), backup file download/restore |
+| `sw.js` | service worker: network-first app files, offline fallback. Add new app files to `ASSETS` and bump `CACHE` |
+| `worker.js` | Cloudflare Worker: Workers AI tagging and `/sync` (KV binding `WARDROBE`, requires `APP_TOKEN`); the user deploys it by hand, merging doesn't deploy it |
 
 Colours always come from the item's tagged colours, matched by brightness rank, never from the photo. Pattern lists in `PATS_BY` (core.js) must stay in sync with the prompt in `worker.js`.
 
