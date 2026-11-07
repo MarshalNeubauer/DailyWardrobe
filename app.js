@@ -2,14 +2,24 @@
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
 /* storage */
-const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',1);r.onupgradeneeded=()=>r.result.createObjectStore('items',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=no});
-const tx=async(m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction('items',m);const q=f(t.objectStore('items'));t.oncomplete=()=>ok(q.result);t.onerror=no})};
-const put=i=>tx('readwrite',s=>s.put(i)),del=id=>tx('readwrite',s=>s.delete(id));
+// stores: items (wardrobe), days (outfit history, keyed by date), meta (key/value: deletion tombstones, settings, sync state)
+const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
+  r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});
+    if(!d.objectStoreNames.contains('days'))d.createObjectStore('days',{keyPath:'date'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'k'})};
+  r.onsuccess=()=>ok(r.result);r.onerror=no});
+const txs=async(store,m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result);t.onerror=no})};
+const tx=(m,f)=>txs('items',m,f);
+const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=(k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
+// every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
+const putRaw=i=>tx('readwrite',s=>s.put(i));
+const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>window.scheduleSync&&scheduleSync());return r};
+const del=async id=>{await tx('readwrite',s=>s.delete(id));const t=await metaGet('tombstones')||{};t[id]=Date.now();await metaPut('tombstones',t);window.scheduleSync&&scheduleSync()};
 
 /* settings management */
 function openSettings(){
   if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
   if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
+  if(window.showSyncStatus)showSyncStatus();
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
 }
@@ -22,6 +32,7 @@ function saveSettings(){
   if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim());
   closeSettings();
   renderAdd();
+  if(window.syncNow)syncNow();
 }
 
 /* precision swatch generator */
