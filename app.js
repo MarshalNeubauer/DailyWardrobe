@@ -10,10 +10,14 @@ const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
 const txs=async(store,m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result);t.onerror=no})};
 const tx=(m,f)=>txs('items',m,f);
 const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=(k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
+/* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
+const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
+  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=no})};
+const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
 const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>window.scheduleSync&&scheduleSync());return r};
-const del=async id=>{await tx('readwrite',s=>s.delete(id));const t=await metaGet('tombstones')||{};t[id]=Date.now();await metaPut('tombstones',t);window.scheduleSync&&scheduleSync()};
+const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
 /* settings management */
 function openSettings(){

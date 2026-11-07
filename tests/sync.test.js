@@ -28,7 +28,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await B.p.evaluate(async id=>{const it=items.find(i=>i.id===id);it.primaryColor='green';await put(it)},id);await sync(B.p);await sync(A.p);
   ok((await names(A.p))==='tie:green','an edit on B reaches A');
   await A.p.evaluate(async id=>{await del(id);items=items.filter(i=>i.id!==id)},id);await sync(A.p);await sync(B.p);
-  ok((await names(B.p))==='','a deletion on A reaches B (and stays deleted)');
+  {const nb=await names(B.p);if(nb!==''&&process.env.SYNC_DEBUG)console.log('DEBUG B:',nb,'A:',await names(A.p),'statusA:',await A.p.evaluate(()=>localStorage.getItem('sync_status')),'statusB:',await B.p.evaluate(()=>localStorage.getItem('sync_status')),'kv:',JSON.stringify(JSON.parse(store.get('wardrobe:v1')).data.tombstones),JSON.stringify(JSON.parse(store.get('wardrobe:v1')).data.items.map(i=>[i.id.slice(0,4),i.updated])));
+  ok(nb==='','a deletion on A reaches B (and stays deleted)');}
   // both devices edit while out of touch, then sync: nothing is lost
   await add(A.p,{type:'shirt',primaryColor:'white'});await add(B.p,{type:'belt',primaryColor:'black'});
   await sync(A.p);await sync(B.p);await sync(A.p);
@@ -40,6 +41,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await add(A.p,{type:'suit',primaryColor:'navy'});await sync(A.p);await B.p.click('#n-wardrobe');await sync(B.p);
   ok((await B.p.textContent('#wardrobe')).includes('Suit'),'the open screen refreshes when synced items arrive');
 
+  // a delete and an edit made while a sync is still in flight must not be undone by that sync
+  const [d1,e1]=[await add(A.p,{type:'tie',primaryColor:'gold'}),await add(A.p,{type:'tie',primaryColor:'purple'})];await sync(A.p);
+  await A.p.evaluate(async([d1,e1])=>{const run=syncNow();await del(d1);items=items.filter(i=>i.id!==d1);const it=items.find(i=>i.id===e1);it.primaryColor='pink';await put(it);await run;await syncNow()},[d1,e1]);
+  await sync(B.p);
+  const race=await Promise.all([names(A.p),names(B.p)]);
+  ok(!race[0].includes('tie:gold')&&race[0].includes('tie:pink')&&race[1]===race[0],'a delete and an edit made during a sync survive it, on both devices');
   // misconfiguration messages
   env={APP_TOKEN:'secret'};await sync(A.p);
   ok((await A.p.evaluate(()=>localStorage.getItem('sync_status')))?.includes('WARDROBE'),'missing KV binding: tells you to add WARDROBE');
@@ -50,7 +57,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await A.p.evaluate(()=>localStorage.setItem('app_token','secret'));
 
   // backup file round trip onto a fresh device with sync off
-  const file=path.join(os.tmpdir(),'dw-backup-test.json');
+  const file=path.join(os.tmpdir(),`dw-backup-test-${process.pid}-${Date.now()}.json`);
   const data=await A.p.evaluate(async()=>JSON.stringify({app:'daily-wardrobe',version:1,...await localState()}));fs.writeFileSync(file,data);
   const C=await browser.newContext();const cp=await C.newPage();cp.on('dialog',d=>d.accept());await cp.goto(url);await cp.waitForFunction(()=>window.appReady);
   await cp.evaluate(()=>openSettings());await cp.setInputFiles('#settings-modal input[type=file]',file);await cp.waitForTimeout(600);
