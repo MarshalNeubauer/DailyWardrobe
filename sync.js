@@ -6,16 +6,27 @@ async function localState(){
   const [its,days,tombstones,settings]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('tombstones'),metaGet('settings')]);
   return {items:its||[],days:days||[],tombstones:tombstones||{},settings:settings||null};
 }
-/* write a merged snapshot into local storage and refresh the screen */
+/* write a merged snapshot into local storage and refresh the screen.
+   Local edits can happen while a sync is in flight, so every write re-checks current storage first:
+   nothing newer is overwritten, a deletion made meanwhile is never undone, and tombstones are combined, not replaced. */
 async function applyMerged(m,local){
+  const tomb=await addTombstones(m.tombstones||{});     // combined atomically with any deletion made meanwhile
   const have=Object.fromEntries(local.items.map(i=>[i.id,i]));
-  for(const it of m.items)if(!have[it.id]||stamp(have[it.id])!==stamp(it))await putRaw(it);
+  for(const it of m.items){
+    if(have[it.id]&&stamp(have[it.id])===stamp(it))continue;
+    if(tomb[it.id]&&tomb[it.id]>=stamp(it))continue;                     // deleted here meanwhile
+    // write only if storage doesn't already hold a newer version (checked in the same transaction)
+    await atomic('items',it.id,cur=>cur&&stamp(cur)>=stamp(it)?null:{put:it});
+  }
   const keep=new Set(m.items.map(i=>i.id));
-  for(const it of local.items)if(!keep.has(it.id))await tx('readwrite',s=>s.delete(it.id));
+  for(const it of local.items)if(!keep.has(it.id))await atomic('items',it.id,cur=>cur&&stamp(cur)<=stamp(it)?{del:true}:null);
   const haveDays=Object.fromEntries(local.days.map(d=>[d.date,d]));
-  for(const d of m.days)if(!haveDays[d.date]||(haveDays[d.date].updated||0)!==(d.updated||0))await txs('days','readwrite',s=>s.put(d));
-  await metaPut('tombstones',m.tombstones);if(m.settings)await metaPut('settings',m.settings);
-  if(stateSig(m)!==stateSig(local)){items=m.items;cache={};if(window.onSyncedData)onSyncedData(m);const v=['today','wardrobe','add'].find(t=>!$('#'+t).hidden);if(v&&v!=='add')show(v)}
+  for(const d of m.days)if(!haveDays[d.date]||(haveDays[d.date].updated||0)!==(d.updated||0)){
+    await atomic('days',d.date,cur=>!cur||(cur.updated||0)<(d.updated||0)?{put:d}:null)}
+  if(m.settings){const cs=await metaGet('settings');if(!cs||(cs.updated||0)<=(m.settings.updated||0))await metaPut('settings',m.settings)}
+  const now=await localState();
+  if(stateSig(now)!==stateSig(local)){items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);const v=['today','wardrobe','add'].find(t=>!$('#'+t).hidden);if(v&&v!=='add')show(v)}
+  return now;
 }
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0;
@@ -36,12 +47,15 @@ async function syncOnce(){
       const r=await fetch(url,{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(remote.error||'HTTP '+r.status);
       const local=await localState(),merged=mergeState(local,remote.data||{});
-      await applyMerged(merged,local);
-      if(remote.data&&stateSig(merged)===stateSig(remote.data)){localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus();return true}
-      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,data:merged})});
+      // upload what is actually stored now (it may include edits made during this sync)
+      const now=mergeState(await applyMerged(merged,local),remote.data||{});
+      if(remote.data&&stateSig(now)===stateSig(remote.data)){localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus();return true}
+      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,data:now})});
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));if(!p.ok)throw new Error(pr.error||'HTTP '+p.status);
-      localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus();return true;
+      localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus();
+      if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
+      return true;
     }
     throw new Error('another device kept saving at the same time; try again');
   }catch(e){setSyncStatus('Backup failed: '+(e.message||e));return false}

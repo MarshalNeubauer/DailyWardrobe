@@ -10,10 +10,14 @@ const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
 const txs=async(store,m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result);t.onerror=no})};
 const tx=(m,f)=>txs('items',m,f);
 const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=(k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
+/* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
+const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
+  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=no})};
+const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
 const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>window.scheduleSync&&scheduleSync());return r};
-const del=async id=>{await tx('readwrite',s=>s.delete(id));const t=await metaGet('tombstones')||{};t[id]=Date.now();await metaPut('tombstones',t);window.scheduleSync&&scheduleSync()};
+const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
 /* settings management */
 function openSettings(){
@@ -318,7 +322,7 @@ function renderWardrobe(){
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
-  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2><div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''}>${i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small><div class="btns"><button onclick="editing=editing==='${i.id}'?null:'${i.id}';renderWardrobe()">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
+  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''}>${i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small><div class="btns"><button onclick="editing=editing==='${i.id}'?null:'${i.id}';renderWardrobe()">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
 }
 
 const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select>`;
@@ -398,4 +402,35 @@ async function loadWeather(force){
     d.time.forEach((t,i)=>{const [y,m,dd]=t.split('-').map(Number);days[key(new Date(y,m-1,dd))]={tmax:d.temperature_2m_max[i],tmin:d.temperature_2m_min[i],pop:d.precipitation_probability_max[i]??0,rain:d.precipitation_sum[i]??0,code:d.weather_code[i]??0}});
     weather=days;localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));cache={};if(!$('#today').hidden)renderToday()}
   catch(e){console.warn('weather unavailable',e)}
+}
+
+/* ---- what to buy ---- */
+let shop=null,shopBusy=null;
+const shopSig=()=>items.map(i=>i.id+':'+stamp(i)).sort().join(',')+'|'+JSON.stringify([settings.workdays,settings.blazerDays]);
+function shopCard(){
+  let body='';
+  if(shopBusy)body=`<p class="mut"><small>${shopBusy}</small></p>`;
+  else if(shop&&shop.sig===shopSig()){const r=shop.res,b=r.base;
+    body=`<p class="mut"><small>Next 8 weeks (${b.days} workdays): average score ${b.avg}, ${b.problems} day${b.problems===1?'':'s'} with a problem, ${b.rest} day${b.rest===1?'':'s'} where a suit hasn't rested ${COOL} days.</small></p>`+
+      (r.recs.length?`<p class="mut"><small>In order of need: each step assumes you bought the ones above it. Buying all ${r.recs.length}: average ${r.after.avg}, ${r.after.problems} problem day${r.after.problems===1?'':'s'}, ${r.after.rest} short-rest day${r.after.rest===1?'':'s'}.</small></p><ol class="recs">${r.recs.map((x,i)=>`<li><div class="rec-img">${itemThumb(x.items[0])}</div><div class="rec-txt"><b class="cap">${x.name}</b><small>${x.why.join(' · ')}</small>
+        <button onclick="boughtRec(${i})">I bought this</button></div><span class="sc ${x.gain>=5?'good':x.gain>=2?'ok':'low'}" title="improvement">${i+1}</span></li>`).join('')}</ol>`
+      :'<p><small>Nothing on the standard list would make a real difference. Your wardrobe covers the next 8 weeks well.</small></p>');
+  }else if(items.length)body='<p class="mut"><small>Plans your next 8 weeks with each likely purchase and ranks what would improve your outfits most.</small></p>';
+  return items.length?`<div class="card shop"><div class="shop-head"><b>What to buy</b><button onclick="analyzeWardrobe()" ${shopBusy?'disabled':''}>${shop&&shop.sig===shopSig()?'Re-check':'Analyze my wardrobe'}</button></div>${body}</div>`:'';
+}
+function analyzeWardrobe(){
+  const sig=shopSig(),payload={list:items,settings,weather,today:TODAY_OVERRIDE,weeks:8};
+  const finish=res=>{shopBusy=null;shop={sig,res};if(!$('#wardrobe').hidden)renderWardrobe()};
+  const progress=(i,n)=>{shopBusy=`Checking ${i+1} of ${n} possible purchases…`;const el=$('#wardrobe .shop small');if(el)el.textContent=shopBusy};
+  shopBusy='Starting…';renderWardrobe();
+  let w=null;try{w=new Worker('analysis-worker.js')}catch(e){}
+  if(w){w.onmessage=e=>{const d=e.data;if(d.progress)progress(...d.progress);else{w.terminate();if(d.error){shopBusy=null;alert('Analysis failed: '+d.error);renderWardrobe()}else finish(d.done)}};
+    w.onerror=()=>{w.terminate();runOnMainThread()};w.postMessage(JSON.parse(JSON.stringify(payload)));}
+  else runOnMainThread();
+  function runOnMainThread(){setTimeout(()=>finish(runAnalysis(items,todayDate(),8,progress)),30)}  // fallback where workers aren't available
+}
+async function boughtRec(i){
+  const rec=shop&&shop.res.recs[i];if(!rec)return;
+  for(const x of rec.items){const it={...x,id:crypto.randomUUID(),added:Date.now()};await put(it);items.push(it)}
+  cache={};shop=null;renderWardrobe();analyzeWardrobe();
 }
