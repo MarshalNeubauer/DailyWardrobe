@@ -583,9 +583,12 @@ function renderMannequinCanvas(o, containerEl){
   if(o.tie){
     const knot='M112,94 L128,94 L125,110 L115,110 Z';
     const blade='M115,110 L125,110 L130,212 L120,224 L110,212 Z';
+    // with a jacket on, the tie is only visible through the V opening; clip it so the tip never pokes past the lapels
+    s+=o.top?`<clipPath id="vee-clip"><path d="${vee}"/></clipPath><g clip-path="url(#vee-clip)">`:'<g>';
     s+=part(blade,F('tie'));s+=part(knot,F('tie'));
     s+=`<path d="${blade}" fill="url(#silk)"/><path d="${knot}" fill="url(#silk)"/>`;
     s+=`<path d="M119,111 C119,118 120,124 120,130" stroke="#000" stroke-opacity=".3" stroke-width=".8" fill="none"/>`;
+    s+='</g>';
   }
   s+=part(both(collarL),F('shirt'));
 
