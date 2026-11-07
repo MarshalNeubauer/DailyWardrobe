@@ -675,19 +675,29 @@ function drawWatch(w,P){
   return s;
 }
 
-/* belt rolled into a coil, seen from above at an angle, centred on 0,0 (about 58 x 32) */
+/* polished buckle metal: diagonal gradient in the buckle's metal (silver, gold or gunmetal) */
+const buckleDefs=(P,metal)=>{const [mL,mM,mD]=METAL_TONES[metal]||METAL_TONES.silver;
+  return `<linearGradient id="${P}bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${mL}"/><stop offset=".35" stop-color="#fff"/><stop offset=".55" stop-color="${mM}"/><stop offset="1" stop-color="${mD}"/></linearGradient>`};
+
+/* a buckled section of belt: buckle in the middle with a little leather either side, centred on 0,0 (about 62 x 20) */
 function drawBelt(item,P){
-  const c=item?colOf(item):'#3a2414',[mL,mM,mD]=METAL_TONES[item&&item.metal]||METAL_TONES.silver;
-  const edge=mix(c,'#000',.4),st=mix(c,'#fff',.4);
-  const ring=(rx,ry)=>`<ellipse rx="${rx}" ry="${ry}" fill="none" stroke="${edge}" stroke-width="6.6"/><ellipse rx="${rx}" ry="${ry}" fill="none" stroke="${c}" stroke-width="5.4"/>`+
-    `<ellipse rx="${rx+1.9}" ry="${ry+1.9}" fill="none" stroke="${st}" stroke-opacity=".55" stroke-width=".3" stroke-dasharray=".9 .6"/><ellipse rx="${rx-1.9}" ry="${Math.max(.5,ry-1.9)}" fill="none" stroke="${st}" stroke-opacity=".55" stroke-width=".3" stroke-dasharray=".9 .6"/>`;
-  return `<defs><radialGradient id="${P}bh" cx=".35" cy=".3" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-    <linearGradient id="${P}bm" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${mL}"/><stop offset=".5" stop-color="${mM}"/><stop offset="1" stop-color="${mD}"/></linearGradient></defs>`+
-    `<ellipse cx="1" cy="17" rx="28" ry="3" fill="#000" opacity=".14"/>`+ring(13,5.2)+ring(19.5,8.6)+ring(26,12)+
-    `<ellipse rx="29" ry="15" fill="url(#${P}bh)"/>`+
-    // strap tip passing through the buckle, then the buckle frame and prong
-    `<path d="M5,13.5 L22,8.4 C24,7.8 25,9.6 23.4,10.8 L8,16.4 Z" fill="${c}" stroke="${edge}" stroke-width=".5"/>`+
-    `<g transform="rotate(-18 12 12.6)"><rect x="7.2" y="8.4" width="9.6" height="8.4" rx="2" fill="none" stroke="url(#${P}bm)" stroke-width="1.7"/><path d="M7.4,12.6 L15.6,12.6" stroke="url(#${P}bm)" stroke-width="1"/></g>`;
+  const c=item?colOf(item):'#3a2414',metal=item&&item.metal||'silver',[mL,mM,mD]=METAL_TONES[metal]||METAL_TONES.silver;
+  const edge=mix(c,'#000',.45),st=mix(c,'#fff',.4);
+  const strap='M-31,-4.6 Q0,-6.4 31,-4.6 L31,5.6 Q0,3.8 -31,5.6 Z';
+  return `<defs>${buckleDefs(P,metal)}
+    <linearGradient id="${P}sv" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>
+    <linearGradient id="${P}sh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".3"/><stop offset=".2" stop-color="#000" stop-opacity="0"/><stop offset=".8" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient></defs>`+
+    `<ellipse cx="1" cy="12" rx="30" ry="2.4" fill="#000" opacity=".14"/>`+
+    `<path d="${strap}" fill="${c}" stroke="${edge}" stroke-width=".5"/>`+
+    `<path d="M-30,-2.9 Q0,-4.6 30,-2.9 M-30,3.9 Q0,2.2 30,3.9" fill="none" stroke="${st}" stroke-opacity=".6" stroke-width=".3" stroke-dasharray=".9 .6"/>`+
+    `<ellipse cx="-17" cy=".2" rx=".9" ry="1.15" fill="${edge}"/><ellipse cx="-22" cy=".4" rx=".9" ry="1.15" fill="${edge}"/>`+
+    `<path d="M11.6,-6.2 L15.2,-6.2 L15.2,6.6 L11.6,6.6 Z" fill="${mix(c,'#000',.15)}" stroke="${edge}" stroke-width=".45"/>`+
+    `<path d="${strap}" fill="url(#${P}sv)"/><path d="${strap}" fill="url(#${P}sh)"/>`+
+    // buckle frame, inner highlight and prong
+    `<rect x="-8" y="-8.2" width="16" height="16.4" rx="3" fill="none" stroke="${mD}" stroke-width="3.1"/>`+
+    `<rect x="-8" y="-8.2" width="16" height="16.4" rx="3" fill="none" stroke="url(#${P}bm)" stroke-width="2.4"/>`+
+    `<rect x="-7.1" y="-7.3" width="14.2" height="14.6" rx="2.4" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".35"/>`+
+    `<path d="M-8,.4 L3.2,.4" stroke="${mD}" stroke-width="1.5" stroke-linecap="round"/><path d="M-8,.1 L3,.1" stroke="url(#${P}bm)" stroke-width="1" stroke-linecap="round"/>`;
 }
 
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
@@ -701,7 +711,7 @@ function itemThumb(i){
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawOxfordSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(28 13) scale(1.05)">${drawSock(colOf(i),P)}</g>`;
-  else if(i.type==='belt')g=`<g transform="translate(50 48) scale(1.5)">${drawBelt(i,P)}</g>`;
+  else if(i.type==='belt')g=`<g transform="translate(50 50) scale(1.42)">${drawBelt(i,P)}</g>`;
   else if(i.type==='tieclip'){const m=METAL[i.metal]||METAL.other;g=`<rect x="12" y="45" width="76" height="9" rx="3" fill="${m}" stroke="#000" stroke-opacity=".3"/><rect x="14" y="47" width="72" height="2" rx="1" fill="#fff" opacity=".45"/>`}
   else g=`<rect x="10" y="10" width="80" height="80" rx="8" fill="${colOf(i)}"/>`;
   return `<div class="ph thumb"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${TYPES[i.type]||'Item'}">${g}</svg></div>`;
@@ -732,7 +742,7 @@ function renderMannequinCanvas(o, containerEl){
   const opening=(cx,cy,rx,tilt)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="2.3" transform="rotate(${tilt} ${cx} ${cy})" fill="#1b1d21" opacity=".8"/>`;
   const hemGap='M120,298 C119,316 114,328 104,337 L136,337 C126,328 121,316 120,298 Z';
 
-  let s=`<svg viewBox="-66 70 340 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outfit preview"><defs>
+  let s=`<svg viewBox="-40 70 314 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outfit preview"><defs>
   <linearGradient id="shade" x1="0" x2="1" y1="0" y2="0">
     <stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".32" stop-color="#fff" stop-opacity=".10"/>
     <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
@@ -749,10 +759,10 @@ function renderMannequinCanvas(o, containerEl){
   s+=`<path d="${both('M100,330 L102,548')}" stroke="#000" stroke-opacity=".22" stroke-width=".8" fill="none"/>`;
   s+=`<path d="${both('M101,330 L103,548')}" stroke="#fff" stroke-opacity=".12" stroke-width=".6" fill="none"/>`;
   /* floating accessories, positioned from the wearer's point of view:
-     sock beside the right foot (viewer's left) with its toe pointing the same way as that shoe,
-     belt coiled beside the left foot, watch beside the left wrist */
-  if(o.socks)s+=`<g transform="translate(59,378) scale(-2.8,2.8)">${drawSock(colOf(o.socks),'sk-')}</g>`;
-  if(o.belt)s+=`<g transform="translate(216,553)">${drawBelt(o.belt,'bt-')}</g>`;
+     sock beside the right foot (viewer's left) with its toe pointing the same way as that shoe;
+     watch beside the left wrist with the buckled belt just below it */
+  if(o.socks)s+=`<g transform="translate(58,433) scale(-2,2)">${drawSock(colOf(o.socks),'sk-')}</g>`;
+  if(o.belt)s+=`<g transform="translate(231,386)">${drawBelt(o.belt,'bt-')}</g>`; // just below the watch
 
   if(o.top){
     /* shirt cuffs under the sleeves */
@@ -776,7 +786,7 @@ function renderMannequinCanvas(o, containerEl){
     if(o.belt){const bc=colOf(o.belt),[bL,bM,bD]=METAL_TONES[o.belt.metal]||METAL_TONES.silver;
       s+=`<path d="M78.6,298.4 L161.4,298.4 L161.2,305.6 L78.8,305.6 Z" fill="${bc}" ${seam}/><path d="M80,299.6 H160 M80,304.4 H160" stroke="${mix(bc,'#fff',.4)}" stroke-opacity=".5" stroke-width=".3" stroke-dasharray=".9 .6"/>`+
          `<path d="M78.6,298.4 L161.4,298.4 L161.2,305.6 L78.8,305.6 Z" fill="url(#shade)"/>`+
-         `<rect x="114" y="297.4" width="11" height="9.2" rx="1.8" fill="none" stroke="${bM}" stroke-width="1.5"/><path d="M114.2,302 L121,302" stroke="${bD}" stroke-width=".9"/>`;}
+         `<defs>${buckleDefs('wb-',o.belt.metal)}</defs><rect x="114" y="297.4" width="11" height="9.2" rx="1.8" fill="none" stroke="${bD}" stroke-width="2"/><rect x="114" y="297.4" width="11" height="9.2" rx="1.8" fill="none" stroke="url(#wb-bm)" stroke-width="1.5"/><path d="M114.2,302 L121,302" stroke="url(#wb-bm)" stroke-width=".9"/>`;}
   }
   if(o.tie){
     const knot='M112,94 L128,94 L125,110 L115,110 Z';
