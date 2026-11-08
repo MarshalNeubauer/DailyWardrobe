@@ -1,5 +1,9 @@
 :root{color-scheme:light dark;--bg:#e8ebec;--card:#fbfbf8;--ink:#101820;--mut:#5d6872;--acc:#d9a21b;--line:#cdd3d6}
-@media(prefers-color-scheme:dark){:root{--bg:#0d141b;--card:#16202a;--ink:#e9eef0;--mut:#93a0aa;--line:#26333f}}
+/* theme: follows the device unless the header button picks light or dark (data-theme on <html>) */
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d141b;--card:#16202a;--ink:#e9eef0;--mut:#93a0aa;--line:#26333f}}
+:root[data-theme=dark]{color-scheme:dark;--bg:#0d141b;--card:#16202a;--ink:#e9eef0;--mut:#93a0aa;--line:#26333f}
+:root[data-theme=light]{color-scheme:light}
+.hbtns{display:flex;gap:4px;align-items:center}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 header{display:flex;justify-content:space-between;align-items:center;padding:calc(16px + env(safe-area-inset-top)) 18px 14px;background:#101820 repeating-linear-gradient(90deg,transparent 0 11px,#ffffff14 11px 12px);color:#f2f0e8}

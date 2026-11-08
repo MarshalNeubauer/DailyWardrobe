@@ -435,3 +435,17 @@ async function boughtRec(i){
   for(const x of rec.items){const it={...x,id:crypto.randomUUID(),added:Date.now()};await put(it);items.push(it)}
   cache={};shop=null;renderWardrobe();analyzeWardrobe();
 }
+
+/* ---- theme: Auto (follow the device) → Light → Dark; saved per device ---- */
+const THEMES={auto:['◐','automatic'],light:['☀︎','light'],dark:['☾','dark']};
+function applyTheme(t){
+  if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else{delete document.documentElement.dataset.theme;t='auto'}
+  const b=$('#theme-btn');if(b){b.textContent=THEMES[t][0];b.setAttribute('aria-label','Theme: '+THEMES[t][1]);b.title='Theme: '+THEMES[t][1]+' (tap to change)'}
+}
+function cycleTheme(){
+  let cur='auto';try{cur=localStorage.getItem('theme')||'auto'}catch{}
+  const next={auto:'light',light:'dark',dark:'auto'}[cur]||'auto';
+  try{next==='auto'?localStorage.removeItem('theme'):localStorage.setItem('theme',next)}catch{}
+  applyTheme(next);
+}
+try{applyTheme(localStorage.getItem('theme')||'auto')}catch{applyTheme('auto')}

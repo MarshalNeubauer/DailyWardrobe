@@ -4,12 +4,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#101820">
 <!-- The app has its own dark theme; tell dark-mode extensions not to recolour it (they invert the mannequin's colours). -->
 <meta name="color-scheme" content="light dark"><meta name="darkreader-lock">
+<script>/* apply the saved theme before first paint */try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <title>Daily Wardrobe</title>
 <link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Wardrobe"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head><body>
-<header><h1>Daily Wardrobe</h1><button onclick="openSettings()" aria-label="Settings">⚙</button></header>
+<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
 <main>
 <section id="today"></section>
 <section id="wardrobe" hidden></section>
