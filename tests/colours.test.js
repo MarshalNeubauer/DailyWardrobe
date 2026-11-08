@@ -5,7 +5,7 @@ module.exports=async({ok,chromium,url})=>{
   const NEW={midgrey:'mid grey',steelblue:'steel blue',deepblue:'deep blue',darknavy:'very dark navy',slate:'dark slate blue-grey',wine:'wine',cream:'cream'};
   const r=await p.evaluate(N=>{show('add');addManual();
     const allOpts=[...document.querySelectorAll('#queue select')].flatMap(s=>[...s.options].map(o=>o.value+'='+o.textContent));
-    return {opts:allOpts,keys:Object.keys(N).filter(k=>COLORS[k]),alias:['Denim Blue','Wine Red','Light Grey','Navy Blue','Dark Blue','Beige','slate grey','very dark navy','mid gray','deep blue'].map(normCol),
+    return {opts:allOpts,keys:Object.keys(N).filter(k=>COLORS[k]),alias:['Denim Blue','Wine Red','Light Grey','Navy Blue','Dark Blue','Beige','slate grey','very dark navy','mid gray','deep blue'].map(c=>normColFor('suit',c)),
       pretty:prettyCols('a darknavy shirt with a steelblue tie, slate suit, midgrey trousers, deepblue socks'),
       lum:['lightgrey','midgrey','grey'].map(lumOf)}},NEW);
   ok(r.keys.length===7,'all seven colours exist');

@@ -14,7 +14,7 @@
 //   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
 //
-// Pattern lists must stay in sync with PATS_BY in index.html.
+// Pattern lists must stay in sync with PATS_BY in core.js.
 const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
 {"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
 
@@ -30,6 +30,9 @@ primaryColor — the dominant colour of the main fabric (the leather for shoes a
   than navy; darknavy is navy so dark it is almost black; slate is a dark blue-grey, greyer than navy and bluer than charcoal;
   wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
   than burgundy)
+  Dress shirts only, also: paleyellow, ivory (warm off-white, between white and cream), beige (pale sandy tan), lavender
+  (pale purple), periwinkle (soft blue with a violet cast, between lightblue and blue). Never use these for other items.
+  Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
 
 secondaryColor — the colour of the stripe, check line, dot or motif, from the same list. "none" if the item is plain.
 tertiaryColor — a third distinct colour in the pattern (e.g. the second line colour of a tattersall), or "none".
@@ -50,8 +53,13 @@ pattern — pick the closest value from the list for the item's type:
     twill        plain colour with a visible diagonal rib
     other
   shirt:
-    solid, stripe (bold or bengal stripe), pinstripe (thin lines), gingham (even two-colour checks), tattersall (thin lines of two
-    alternating colours forming checks), check (any other check or plaid), herringbone, oxford (basket-weave texture), twill, other
+    solid (smooth poplin or broadcloth), stripe (bold or bengal stripe), pinstripe (thin lines), fine-stripe (hairline stripes, very
+    close together, reads almost solid), gingham (even two-colour checks), tattersall (thin lines of two alternating colours forming
+    checks), check (any other check or plaid), houndstooth (tiny broken checks), herringbone, oxford (basket-weave texture),
+    pinpoint (very fine oxford weave), royal-oxford (pronounced, shiny basket weave), twill (fine diagonal rib), end-on-end
+    (fil-a-fil: white and coloured threads alternate, a fine heathered two-tone look), chambray (coloured warp with white weft,
+    slightly faded look), dobby (small repeating woven motif, tone on tone), woven (visible small cross-weave), textured (uneven,
+    slubbed surface), fine-texture (barely visible texture up close), other
   tie:
     solid, stripe (diagonal/regimental), polka-dot, paisley, check, foulard (small repeating geometric motif), knit, other
   tieclip, watch, shoes, belt, socks, cufflinks, overcoat, raincoat: solid
@@ -73,10 +81,12 @@ const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* ---- Claude API ---- */
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
-  'brown','tan','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver'];
+  'brown','tan','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
+  'paleyellow','ivory','beige','lavender','periwinkle'];   // the last five: dress shirts only
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
-  'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other'];
+  'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
+  'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture'];
 const orNull = values => ({ anyOf: [{ type: 'string', enum: values }, { type: 'null' }] });
 // Structured output: the reply is guaranteed to be JSON matching this schema.
 const TAG_SCHEMA = {

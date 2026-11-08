@@ -90,9 +90,9 @@ async function ask(c){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
       pattern:normPat(TYPES[parsed.type]?parsed.type:'suit',parsed.pattern),
-      primaryColor:normCol(parsed.primaryColor||parsed.color)||'grey',
-      secondaryColor:normCol(parsed.secondaryColor),
-      tertiaryColor:normCol(parsed.tertiaryColor),
+      primaryColor:normColFor(parsed.type,parsed.primaryColor||parsed.color)||'grey',
+      secondaryColor:normColFor(parsed.type,parsed.secondaryColor),
+      tertiaryColor:normColFor(parsed.type,parsed.tertiaryColor),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
       leather:LEATHERS.includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
       model:result.model||'',
@@ -196,7 +196,8 @@ document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;docum
   if(!files.length&&!isLink(link))return;e.preventDefault();if($('#add').hidden)show('add');
   if(files.length)addBlobs(files);else addFromUrl(link.trim())});
 
-const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;if(k==='type')q.pattern=normPat(v,q.pattern);if(k==='type'||q.manual)renderAdd()};
+const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f])};
+const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual)renderAdd()};
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 function addManual(){
   const wo=watchOpts({});
@@ -221,7 +222,7 @@ async function save(i){
 let editing=null;
 const E=(id,k,list,v)=>`<label>${k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
 function editForm(i){
-  const cols=COLOR_OPTS(),opt=[['none','None'],...cols];
+  const cols=COLOR_OPTS(i.type),opt=[['none','None'],...cols];
   return `<div class="card" style="margin:8px 0 0;padding:8px">${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',opt,i.secondaryColor||'none')}${E(i.id,'tertiaryColor',opt,i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
@@ -233,7 +234,7 @@ function editForm(i){
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
   it[k]=v==='none'?null:v;
-  if(k==='type'){it.pattern=normPat(v,it.pattern);if((v==='watch'||v==='tieclip')&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';if(v==='belt'&&!it.metal)it.metal='silver'}
+  if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if((v==='watch'||v==='tieclip')&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';if(v==='belt'&&!it.metal)it.metal='silver'}
   if(k==='primaryColor')delete it.color;
   await put(it);cache={};renderWardrobe();
 }
@@ -502,13 +503,13 @@ ${FABRIC.includes(q.type)&&q.big?`
   </div>
 </div>`:''}
 <label>Item ${S(Object.entries(TYPES),q.type,'type',i)}</label>
-<label>Primary Colour ${S(COLOR_OPTS(),q.primaryColor,'primaryColor',i)}</label>
-<label>Secondary Colour ${S([['none','None'], ...COLOR_OPTS()],q.secondaryColor||'none','secondaryColor',i)}</label>
-<label>Tertiary Colour ${S([['none','None'], ...COLOR_OPTS()],q.tertiaryColor||'none','tertiaryColor',i)}</label>
+<label>Primary Colour ${S(COLOR_OPTS(q.type),q.primaryColor,'primaryColor',i)}</label>
+<label>Secondary Colour ${S([['none','None'], ...COLOR_OPTS(q.type)],q.secondaryColor||'none','secondaryColor',i)}</label>
+<label>Tertiary Colour ${S([['none','None'], ...COLOR_OPTS(q.type)],q.tertiaryColor||'none','tertiaryColor',i)}</label>
 ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c=>[c,patLabel(c)]),q.pattern,'pattern',i)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='no'?'no':'yes','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
-${q.type==='watch'?`<label>Dial ${S(COLOR_OPTS(),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
+${q.type==='watch'?`<label>Dial ${S(COLOR_OPTS('watch'),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
 <div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
 }
 

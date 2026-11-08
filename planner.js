@@ -1,13 +1,13 @@
 /* Daily Wardrobe: outfit rules, planning and scoring (no DOM access; also loaded by the analysis worker) */
 /* colour families for the rules: dark grey behaves like charcoal, light grey like grey, oxblood like burgundy */
-const FAM={darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
+const FAM={paleyellow:'cream',ivory:'cream',beige:'tan',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
 /* acceptable shoe colours for each trouser colour, best first */
 const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black','burgundy']};
 /* ---- clothing rules (suit/blazer, trousers, shirt, tie) ----
    Every candidate outfit gets one score from these rules; the planner picks among the best-scoring outfits. */
 const HARM={navy:['burgundy','red','gold','grey','lightblue','green','purple','pink','brown'],charcoal:['burgundy','red','purple','navy','lightblue','pink','green','gold'],grey:['navy','burgundy','blue','purple','pink','green','black'],black:['red','grey','burgundy','purple','silver'],brown:['green','gold','navy','tan','burgundy','cream','olive'],tan:['navy','brown','burgundy','green','olive'],olive:['brown','burgundy','navy','gold','cream','tan'],blue:['navy','burgundy','grey','gold','brown'],green:['tan','brown','burgundy','gold','navy']};
 /* good tie colours on each shirt colour (white takes almost anything) */
-const TIE_ON_SHIRT={lightblue:['navy','burgundy','red','gold','brown','green','purple','charcoal','grey','black'],pink:['navy','burgundy','grey','charcoal','purple','blue','green'],cream:['brown','green','burgundy','olive','navy','gold','tan'],lightgrey:['navy','burgundy','black','purple','charcoal','pink','red'],blue:['navy','burgundy','gold','brown','charcoal','red'],grey:['navy','burgundy','black','purple','red']};
+const TIE_ON_SHIRT={ivory:['navy','burgundy','brown','green','olive','gold','charcoal','red','grey'],paleyellow:['navy','burgundy','brown','green','purple','charcoal','blue'],lavender:['navy','purple','burgundy','charcoal','grey','black','pink'],periwinkle:['navy','burgundy','charcoal','gold','brown','red','grey'],beige:['brown','navy','green','olive','burgundy','tan'],lightblue:['navy','burgundy','red','gold','brown','green','purple','charcoal','grey','black'],pink:['navy','burgundy','grey','charcoal','purple','blue','green'],cream:['brown','green','burgundy','olive','navy','gold','tan'],lightgrey:['navy','burgundy','black','purple','charcoal','pink','red'],blue:['navy','burgundy','gold','brown','charcoal','red'],grey:['navy','burgundy','black','purple','red']};
 /* good trousers for each odd jacket, best first */
 const BLAZER_TROUSERS={navy:['grey','charcoal','tan','cream','olive'],tan:['navy','brown','charcoal','olive'],brown:['grey','charcoal','tan','navy','cream'],olive:['tan','brown','charcoal','cream'],grey:['charcoal','navy','black'],charcoal:['grey','tan','navy'],black:['grey','charcoal'],green:['tan','grey','brown','cream'],burgundy:['grey','charcoal','navy'],blue:['grey','tan','navy','cream']};
 const colsOf=i=>i?[primaryCol(i),i.secondaryColor,i.tertiaryColor].filter(c=>c&&COLORS[c]).map(fam):[];
@@ -16,7 +16,7 @@ const lumOf=c=>{const h=COLORS[c];return h?parseInt(h.slice(1,3),16)*.3+parseInt
 /* shirt against the jacket: light, quiet shirts read as professional; the shirt should be lighter than the jacket */
 function shirtScore(t,s){
   const raw=primaryCol(s),pc=pcol(s);
-  let v=({white:5,lightblue:4,pink:2,cream:2,lightgrey:1,midgrey:-2,blue:0})[raw]??(['navy','black','charcoal','brown','burgundy','green','olive','red'].includes(pc)?-10:-5);
+  let v=({white:5,ivory:4,lightblue:4,pink:2,cream:2,paleyellow:1,lavender:1,lightgrey:1,periwinkle:0,beige:0,midgrey:-2,blue:0})[raw]??(['navy','black','charcoal','brown','burgundy','green','olive','red'].includes(pc)?-10:-5);
   if(!t)return v;const tc=pcol(t);
   if(pc===tc)v-=25;
   if(lumOf(raw)<LUM(t)+20)v-=15;
@@ -54,11 +54,11 @@ function pairScore(t,p){
   return v;
 }
 /* pattern mixing: one bold pattern is always fine; two are fine if they differ in type or scale; never three */
-const PAT_TYPE={stripe:'stripe',pinstripe:'stripe','chalk-stripe':'stripe',check:'check',gingham:'check',tattersall:'check',windowpane:'check','glen-check':'check',houndstooth:'check','polka-dot':'motif',paisley:'motif',foulard:'motif'};
+const PAT_TYPE={stripe:'stripe',pinstripe:'stripe','fine-stripe':'stripe','chalk-stripe':'stripe',check:'check',gingham:'check',tattersall:'check',windowpane:'check','glen-check':'check',houndstooth:'check','polka-dot':'motif',paisley:'motif',foulard:'motif'};
 function patInfo(i,role){
   const p=i&&i.pattern;if(!p||!PAT_TYPE[p])return null;     // solids and fine weaves don't count
   const scale=role==='tie'?({stripe:3,check:2,'polka-dot':2,paisley:2,foulard:1})[p]??2
-    :role==='shirt'?({pinstripe:1})[p]??2
+    :role==='shirt'?({pinstripe:1,'fine-stripe':1,houndstooth:1})[p]??2
     :({pinstripe:1,windowpane:3})[p]??2;
   return {type:PAT_TYPE[p],scale};
 }
@@ -194,7 +194,7 @@ function rateOutfit(o){
   const nice=prettyCols;
   const C=[],add=(label,pts,max,why)=>C.push({label,pts:Math.max(0,Math.min(max,pts)),max,why:pts<max?nice(why):''});
   const {top,shirt,tie,shoes,belt,socks,watch,clip}=o,bot=o.suitDay?null:o.bot,trousers=o.bot||top;
-  if(shirt){const raw=primaryCol(shirt);let v=({white:10,lightblue:10,pink:8,cream:8,lightgrey:7,blue:6})[raw]??2,why=v<10?`a ${raw} shirt is less classic than white or light blue`:'';
+  if(shirt){const raw=primaryCol(shirt);let v=({white:10,lightblue:10,ivory:9,pink:8,cream:8,lightgrey:7,paleyellow:7,lavender:7,periwinkle:7,blue:6,beige:6,midgrey:6})[raw]??2,why=v<10?`a ${raw} shirt is less classic than white or light blue`:'';
     if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same colour as the jacket'}
     else if(top&&LUM(shirt)<LUM(top)+20){v-=5;why='shirt is darker than the jacket'}
     if(shirt.cuff==='french'&&!o.links){v-=5;why=(why?why+'; ':'')+'French cuffs without cufflinks'}

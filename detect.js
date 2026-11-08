@@ -5,7 +5,7 @@
    Fine weaves (herringbone, birdseye, nailhead, sharkskin, twill) are not measured: a phone photo of a whole
    garment doesn't resolve them reliably, so they use drawn tiles with the correct orientation.
    Colours always come from the item's tagged colours, matched by brightness rank, so photo colour casts don't leak in. */
-const STRIPE_PATS=['stripe','pinstripe','chalk-stripe'],CHECK_PATS=['check','gingham','tattersall','windowpane','glen-check'];
+const STRIPE_PATS=['stripe','pinstripe','fine-stripe','chalk-stripe'],CHECK_PATS=['check','gingham','tattersall','windowpane','glen-check'];
 const DETECT_PATS=[...STRIPE_PATS,...CHECK_PATS];
 
 /* region -> luminance grid (downscaled to at most 256px) */
