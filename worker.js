@@ -1,10 +1,12 @@
-// Cloudflare Worker (Workers AI) for photo recognition.
+// Cloudflare Worker for photo recognition (Claude API, or Workers AI as a fallback), backup/sync and photo links.
 //
 // Bindings / variables (Worker > Settings):
-//   AI              Workers AI binding, variable name "AI"   (required)
+//   ANTHROPIC_API_KEY  secret; your Claude API key from platform.claude.com. When set, photos are tagged by Claude.
+//   CLAUDE_MODEL    optional, defaults to claude-opus-5-5 (e.g. claude-sonnet-5-5 or claude-haiku-5-5 cost less)
+//   AI              Workers AI binding, variable name "AI"   (used only when ANTHROPIC_API_KEY is not set)
 //   APP_TOKEN       secret; must match the App Token in the app's settings (recommended — without it anyone can use your quota)
 //   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin)
-//   MODEL           optional, defaults to @cf/meta/llama-3.2-11b-vision-instruct
+//   MODEL           optional Workers AI model, defaults to @cf/meta/llama-3.2-11b-vision-instruct
 //   (GET /fetch?url=… also uses APP_TOKEN: it downloads photo links for the app)
 //   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
@@ -64,6 +66,64 @@ dial, band, bezel — watches only, otherwise null:
   bezel: fluted (finely ridged ring around the crystal) or smooth.`;
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
+
+/* ---- Claude API ---- */
+const CLAUDE_DEFAULT = 'claude-opus-5-5';
+const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
+  'brown','tan','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver'];
+const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
+const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
+  'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other'];
+const orNull = values => ({ anyOf: [{ type: 'string', enum: values }, { type: 'null' }] });
+// Structured output: the reply is guaranteed to be JSON matching this schema.
+const TAG_SCHEMA = {
+  type: 'object', additionalProperties: false,
+  required: ['type','primaryColor','secondaryColor','tertiaryColor','pattern','metal','leather','dial','band','bezel'],
+  properties: {
+    type: { type: 'string', enum: TYPE_LIST },
+    primaryColor: { type: 'string', enum: COLOR_LIST },
+    secondaryColor: { type: 'string', enum: [...COLOR_LIST, 'none'] },
+    tertiaryColor: { type: 'string', enum: [...COLOR_LIST, 'none'] },
+    pattern: { type: 'string', enum: PATTERN_LIST },
+    metal: orNull(['gold','silver','other']),
+    leather: orNull(['calf','cordovan','suede','patent','pebble-grain','scotch-grain']),
+    dial: orNull(COLOR_LIST),
+    band: orNull(['bracelet','leather']),
+    bezel: orNull(['fluted','smooth']),
+  },
+};
+async function tagWithClaude(env, image) {
+  const m = image.match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
+  if (!m) return { status: 400, body: { error: 'no image' } };
+  const model = env.CLAUDE_MODEL || CLAUDE_DEFAULT;
+  const headers = { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
+  const body = {
+    model,
+    max_tokens: 4000,                      // thinking counts toward this; the JSON itself is ~100 tokens
+    output_config: { effort: 'low', format: { type: 'json_schema', schema: TAG_SCHEMA } },
+    system: 'You are a menswear expert who labels clothing photos for a wardrobe app. Judge colours as the fabric would look in neutral daylight: correct for warm or cool lighting and shadows.',
+    messages: [{ role: 'user', content: [
+      { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
+      { type: 'text', text: PROMPT },
+    ] }],
+  };
+  // If a safety classifier declines (very unlikely for clothing photos), let the API retry on its recommended model.
+  if (/opus|fable|sonnet-5-5/.test(model)) { body.fallbacks = 'default'; headers['anthropic-beta'] = 'server-side-fallback-2026-07-01'; }
+  let r;
+  try { r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) }); }
+  catch (e) { return { status: 502, body: { error: 'ai', detail: 'Could not reach the Claude API: ' + String(e && e.message) } }; }
+  const out = await r.json().catch(() => null);
+  if (!r.ok) {
+    const msg = out && out.error && out.error.message || `HTTP ${r.status}`;
+    const hint = r.status === 401 ? ' (check the ANTHROPIC_API_KEY secret)' : /credit|billing/i.test(msg) ? ' (add credits in the Claude Console: Billing)' : r.status === 429 ? ' (rate limited; try again shortly)' : '';
+    return { status: 502, body: { error: 'ai', detail: `Claude API: ${msg}${hint}` } };
+  }
+  if (out.stop_reason === 'refusal') return { status: 502, body: { error: 'ai', detail: 'Claude declined to label this photo.' } };
+  if (out.stop_reason === 'max_tokens') return { status: 502, body: { error: 'ai', detail: 'Claude ran out of tokens before answering.' } };
+  const text = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  try { return { status: 200, body: { ...JSON.parse(text), model: out.model } }; }
+  catch { return { status: 502, body: { error: 'unparseable model output', detail: text.slice(0, 300) } }; }
+}
 
 /* GET /sync returns the stored backup {rev, saved, data}; PUT /sync {baseRev, data} stores a new one.
    baseRev must equal the stored rev, otherwise 409 with the current backup so the app can merge and retry
@@ -152,6 +212,9 @@ export default {
     let image = String(body.image || '');
     if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
     if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
+
+    if (env.ANTHROPIC_API_KEY) { const c = await tagWithClaude(env, image); return json(c.body, c.status); }
+    if (!env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
 
     const model = env.MODEL || DEFAULT_MODEL;
     const input = {
