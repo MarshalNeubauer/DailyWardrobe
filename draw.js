@@ -355,6 +355,12 @@ function renderMannequinCanvas(o, containerEl){
     s+=`<path d="M119,111 C119,118 120,124 120,130" stroke="#000" stroke-opacity=".3" stroke-width=".8" fill="none"/>`;
     s+='</g>';
   }
+  if(o.top&&o.vest){
+    // matching vest (three-piece suit), seen in the jacket's V: its own narrower V, five buttons
+    const vL='M98,84 L113,84 L114,104 C116,124 118,140 120,158 L120.5,240 L98,240 Z';
+    s+=`<clipPath id="vest-clip"><path d="${vee}"/></clipPath><g class="vest-layer" clip-path="url(#vest-clip)">`+part(vL,F('top'))+part(mirror(vL),F('top'))+
+      `<path d="M120,158 L120,240" stroke="#000" stroke-opacity=".35" stroke-width=".7"/>`+[165,177,189,201,213].map(y=>`<circle cx="120.4" cy="${y}" r="1.5" fill="${lum(colOf(o.top))>.5?'#3a3530':'#141414'}"/>`).join('')+'</g>';
+  }
   s+=part(both(collarL),F('shirt'));
 
   if(o.top){
@@ -427,6 +433,6 @@ function figureSvg(o,prefix='fig-'){
     watch={metal:tones,dial,strap:wo.band==='bracelet'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
   return outfitFigureSvg({
     suit:figFabric(o.top||o.shirt,o.top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),
-    watch,clip:o.clip?{color:METAL[o.clip.metal]||METAL.other}:null,bg:figBg(),idPrefix:prefix,
-    ariaLabel:`Torso wearing ${[o.top&&nm(o.top),o.shirt&&nm(o.shirt),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`});
+    watch,clip:o.clip&&!o.vest?{color:METAL[o.clip.metal]||METAL.other}:null,vest:!!(o.vest&&o.top),bg:figBg(),idPrefix:prefix,
+    ariaLabel:`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`});
 }

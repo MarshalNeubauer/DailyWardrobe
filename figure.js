@@ -70,6 +70,7 @@ function outfitFigureSvg({
   ariaLabel = "Torso wearing today's outfit, adjusting the cuff next to the watch",
   watch = { metal: ['#F4F6F8', '#9AA1AA', '#5C636D'], dial: '#12151A', strap: '#16181C', marks: '#D9DEE6' },
   clip = { color: '#A9AFB8' },
+  vest = false,
 } = {}) {
   const wm = (watch && watch.metal) || ['#F4F6F8', '#9AA1AA', '#5C636D'];
   const P = String(idPrefix).replace(/[^A-Za-z0-9_-]/g, '');
@@ -117,6 +118,7 @@ ${fabrics}
 <path id="${P}foSegL" d="M -25 -30 L 25 -30 L 25 0 L 19 120 L -19 120 L -25 0 Z"/>
 <path id="${P}upSegR" d="M -28 -8 L 28 -8 L 25 173 L 24 216 L -24 216 L -25 173 Z"/>
 <path id="${P}foSegR" d="M -25 -30 L 25 -30 L 25 0 L 19 104 L -19 104 L -25 0 Z"/>
+<clipPath id="${P}clipVee"><path d="M 132 -4 L 258 -4 L 197 248 L 193 248 Z"/></clipPath>
 <clipPath id="${P}clipSilL"><path d="M 336.9 43 L 376.2 199.1 C 379.9 212.6 361.7 233 347.9 230.7 L 230.6 205.1 L 236.8 167.7 L 317.6 177 L 282.9 57.6 Z"/></clipPath>
 <clipPath id="${P}clipShoL"><polygon points="129.4,4.7 574.6,407.3 574.6,-300 129.4,-300"/></clipPath>
 <clipPath id="${P}clipCufL"><polygon points="129.4,4.7 574.6,407.3 574.6,600 129.4,600"/></clipPath>
@@ -170,6 +172,16 @@ ${tie && clip ? `<g class="fig-clip"><rect x="178" y="116" width="34" height="5"
 <rect x="179" y="112" width="32" height="3.8" rx="1.9" fill="${hex(clip.color, '#A9AFB8')}"/>
 <rect x="179" y="112" width="32" height="1.4" rx="0.7" fill="#FFFFFF" fill-opacity="0.65"/></g>` : ''}
 
+${vest ? `<g class="fig-vest" clip-path="url(#${P}clipVee)">
+<path d="M 172 40 C 178 86 187 124 195 156 C 203 124 212 86 218 40" stroke="#000" stroke-opacity="0.45" stroke-width="7" fill="none" filter="url(#${P}fBlurS)"/>
+<path d="M 120 -4 L 160 -4 L 165 38 C 172 86 184 124 195 156 L 196 262 L 120 262 Z" fill="url(#${P}suitB)"/>
+<path d="M 270 -4 L 230 -4 L 225 38 C 218 86 206 124 195 156 L 194 262 L 270 262 Z" fill="url(#${P}suitB)"/>
+<path d="M 120 -4 L 160 -4 L 165 38 C 172 86 184 124 195 156 L 196 262 L 120 262 Z" fill="url(#${P}gLapel)"/>
+<path d="M 270 -4 L 230 -4 L 225 38 C 218 86 206 124 195 156 L 194 262 L 270 262 Z" fill="url(#${P}gLapel)"/>
+<path d="M 165 38 C 172 86 184 124 195 156 M 225 38 C 218 86 206 124 195 156" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="1.2" fill="none"/>
+<path d="M 195 156 L 195 262" stroke="#000" stroke-opacity="0.45" stroke-width="1.2"/>
+${[170, 190, 210, 230, 250].map(y => `<circle cx="196" cy="${y}" r="3.4" fill="#0E1424"/><circle cx="195.2" cy="${y - 0.9}" r="1" fill="#FFFFFF" fill-opacity="0.35"/>`).join('')}
+</g>` : ''}
 <path d="M 137 -4 C 146 80 160 160 195 244" stroke="#000" stroke-opacity="0.5" stroke-width="9" fill="none" filter="url(#${P}fBlurS)"/>
 <path d="M 253 -4 C 244 80 230 160 195 244" stroke="#000" stroke-opacity="0.5" stroke-width="9" fill="none" filter="url(#${P}fBlurS)"/>
 

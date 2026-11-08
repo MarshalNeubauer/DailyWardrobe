@@ -210,6 +210,7 @@ async function save(i){
   if(f)it.swatch=q.swatch;
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
+  if(q.type==='suit'&&q.vest==='no')it.vest='no';
   if(SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all')it.season=q.season;
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
@@ -223,7 +224,7 @@ function editForm(i){
   const cols=COLOR_OPTS(),opt=[['none','None'],...cols];
   return `<div class="card" style="margin:8px 0 0;padding:8px">${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',opt,i.secondaryColor||'none')}${E(i.id,'tertiaryColor',opt,i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
-  ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
+  ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?E(i.id,'dial',cols,watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
   ${DETECT_PATS.includes(i.pattern)?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="redetect('${i.id}')">Read pattern from photo</button>${i.stripes?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
@@ -256,8 +257,9 @@ async function rm(id){if(!confirm('Delete this item?'))return;await del(id);item
 let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
 
 /* views */
+const vestRow=o=>!(o.suitDay&&hasVest(o.top))?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${o.frozen?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
 const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top,'top'],...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip'],...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])]
-.map(([l,i,s])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:'<span class="mut none">Add one on the Add tab</span>'}</div>`).join('');
+.map(([l,i,s])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':'Add one on the Add tab'}</span>`}</div>`).join('').replace('</div>',`</div>${vestRow(o)}`);
 
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
@@ -269,8 +271,8 @@ async function recordDays(p){
   const T=todayDate(),tk=key(T);let changed=false;
   for(const [k,o] of Object.entries(p)){
     if(!SLOTS.some(s=>o[s])||o.frozen)continue;const d=keyDate(k);
-    if(d<T&&!dayRecs[k]){await saveDay({date:k,ids:idsOf(o),suitDay:o.suitDay,auto:true},true);changed=true}
-    else if(k===tk){const r=dayRecs[k],ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)){await saveDay({...(r||{date:k}),ids,suitDay:o.suitDay},true);changed=true}}
+    if(d<T&&!dayRecs[k]){await saveDay({date:k,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},true);changed=true}
+    else if(k===tk){const r=dayRecs[k],ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){await saveDay({...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest},true);changed=true}}
   }
   if(changed&&window.scheduleSync)scheduleSync();
 }
@@ -278,7 +280,7 @@ async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
   const cur=o[slot]&&o[slot].id,pool=items.filter(i=>slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay));
   if(pool.length<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to swap.`;renderToday();return}
-  const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay};
+  const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
   const skip={...(rec.skip||{})};skip[slot]=[...new Set([...(skip[slot]||[]),cur].filter(Boolean))];
   if(pool.every(i=>skip[slot].includes(i.id)))skip[slot]=[cur];       // tried them all: start the cycle again
   // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
@@ -286,9 +288,10 @@ async function swapSlot(slot){
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   rec.skip=skip;rec.force=force;swapMsg='';await saveDay(rec);renderToday();
 }
-async function setFormal(v){const k=key(sel),r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;if(v)r.formal=true;else delete r.formal;swapMsg='';await saveDay(r);renderToday()}
-async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;swapMsg='';await saveDay(n);renderToday()}
-async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,worn:v});renderToday()}
+async function setFormal(v){const k=key(sel),r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;if(v)r.formal=true;else delete r.formal;swapMsg='';await saveDay(r);renderToday()}
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;swapMsg='';await saveDay(n);renderToday()}
+async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
+async function setVest(v){const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
 function dayActions(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
   let h='';
@@ -298,7 +301,7 @@ function dayActions(o){
     else h+=`<button class="pri" onclick="setWorn(true)">✓ Wore this</button><button onclick="setWorn(false)">Didn't wear</button>`;
   }
   if(!o.frozen)h+=o.formal?`<span class="chip on formal">Formal day</span><button onclick="setFormal(false)">Make regular</button>`:`<button onclick="setFormal(true)">Make formal</button>`;
-  if(!o.frozen&&o.overrides)h+=`<button onclick="resetDay()">Reset changes</button>`;
+  if(!o.frozen&&(o.overrides||o.vestOverride))h+=`<button onclick="resetDay()">Reset changes</button>`;
   return (h?`<div class="btns dayact">${h}</div>`:'')+(past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
 
@@ -322,15 +325,16 @@ function planHtml(p){
 const figMode=()=>{try{return localStorage.getItem('fig_mode')==='full'?'full':'figure'}catch{return 'figure'}};
 function setFigMode(m){try{localStorage.setItem('fig_mode',m)}catch{}renderToday()}
 let figSel='top';
-const FIG_PIECES=[['top','suit'],['shirt','shirt'],['tie','tie'],['clip','clip'],['watch','watch']];
-const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shirt',tie:'Tie',clip:'Tie clip',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
+const FIG_PIECES=[['top','suit'],['shirt','shirt'],['tie','tie'],['clip','clip'],['vest','vest'],['watch','watch']];
+const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
 function pieceCard(o){
+  if(figSel==='vest'){if(!o.vest)return '';return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(o.top)}</span><div><small class="mut">Vest</small><b class="cap">Matching vest · ${desc(o.top)}</b></div>${o.frozen?'':`<button class="swap" onclick="setVest(false)">Leave off</button>`}</div>`}
   const i=o[figSel];if(!i)return '';
   return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(i)}</span><div><small class="mut">${slotLabel(figSel,o)}</small><b class="cap">${desc(i)||nm(i)}</b></div>${o.frozen?'':`<button class="swap" onclick="swapSlot('${figSel}')">Swap</button>`}</div>`;
 }
 function figureStage(o){
-  const hs=FIG_PIECES.filter(([s])=>o[s]&&!(s==='clip'&&!o.tie)).map(([s,k])=>{const h=FIG_HOTSPOTS[k];
-    return `<button class="hot${figSel===s?' on':''}" style="left:${(h.x/390*100).toFixed(2)}%;top:${(h.y/400*100).toFixed(2)}%" aria-label="${slotLabel(s,o)}: ${desc(o[s])||nm(o[s])}" aria-pressed="${figSel===s}" onclick="pickPiece('${s}')"></button>`}).join('');
+  const hs=FIG_PIECES.filter(([s])=>o[s]&&!(s==='clip'&&!o.tie)).map(([s,k])=>{const h=k==='vest'?{x:174,y:200}:FIG_HOTSPOTS[k];
+    return `<button class="hot${figSel===s?' on':''}" style="left:${(h.x/390*100).toFixed(2)}%;top:${(h.y/400*100).toFixed(2)}%" aria-label="${slotLabel(s,o)}: ${s==='vest'?'matching vest':desc(o[s])||nm(o[s])}" aria-pressed="${figSel===s}" onclick="pickPiece('${s}')"></button>`}).join('');
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
   const tiles=below.map(([s,i])=>`<button class="tile${s==='coat'?' coat-tile':''}"${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemThumb(i)}<small>${slotLabel(s,o)}</small></button>`).join('');
   const r=renderFor(o),photo=r&&figView==='photo';
@@ -346,7 +350,7 @@ let renders={},rendering=false,renderMsg='',figView='photo';
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* what the photo depends on: if any of these pieces change, the stored photo no longer matches */
-const figSig=o=>['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,i.primaryColor,i.secondaryColor,i.tertiaryColor,i.pattern,i.metal,i.updated||0].join('/'):'-'}).join('|');
+const figSig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,i.primaryColor,i.secondaryColor,i.tertiaryColor,i.pattern,i.metal,i.updated||0].join('/'):'-'}).join('|');
 const renderFor=o=>{const r=renders[key(sel)];return r&&r.sig===figSig(o)?r:null};
 /* photos made on another device: the worker keeps a copy per day; fetch it once per day per session when missing */
 const renderTried=new Set();
@@ -366,7 +370,7 @@ async function fetchRemoteRender(day){
 function setFigView(v){figView=v;renderToday()}
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
 function outfitText(o){
-  const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a ${nm(o.shirt)}${o.shirt.cuff==='french'?' with French cuffs':''}`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${o.clip.metal||'silver'} tie bar`,
+  const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a ${nm(o.shirt)}${o.shirt.cuff==='french'?' with French cuffs':''}`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${o.clip.metal||'silver'} tie bar`,
     o.watch&&`a wristwatch with a ${o.watch.metal||'steel'} case, ${watchOpts(o.watch).dial} dial and ${watchOpts(o.watch).band==='bracelet'?'metal bracelet':`${colName(primaryCol(o.watch))} leather strap`}`,o.links&&`${o.links.metal||'silver'} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
@@ -494,7 +498,7 @@ ${FABRIC.includes(q.type)&&q.big?`
 <label>Secondary Colour ${S([['none','None'], ...COLOR_OPTS()],q.secondaryColor||'none','secondaryColor',i)}</label>
 <label>Tertiary Colour ${S([['none','None'], ...COLOR_OPTS()],q.tertiaryColor||'none','tertiaryColor',i)}</label>
 ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c=>[c,patLabel(c)]),q.pattern,'pattern',i)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
-${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
+${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='no'?'no':'yes','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(COLOR_OPTS(),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
 <div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
@@ -524,7 +528,9 @@ function renderSettingsExtras(){
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}`:'No location set: outfits follow the calendar season.';
   if($('#cfg-units'))$('#cfg-units').value=unit();
+  if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';
 }
+function setVestMode(v){settings.vestMode=v;saveUserSettings()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0)return;settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   renderSettingsExtras();saveUserSettings()}
