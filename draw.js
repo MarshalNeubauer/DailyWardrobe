@@ -410,3 +410,23 @@ function renderMannequinCanvas(o, containerEl){
   containerEl.innerHTML=s+'</svg>';
 }
 
+
+/* ---------- torso figure (figure.js), worn with the app's tagged-colour fabrics ----------
+   The figure is drawn in a 390x400 box, about 2.7x the mannequin's scale; these factors size each weave so a
+   pinstripe suit shows ~25 stripes across the body and a polka-dot tie 3-4 dots across. */
+const FIG_SCALE={top:1.6,shirt:1.7,tie:1.5};
+function figFabric(item,role){
+  if(!item)return null;const k=FIG_SCALE[role];
+  return {def:(id,rot)=>{let p=fabricDef(id,item,role);const m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';if(m)p=p.replace(m[0],'');
+    return p.replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="${rot?`rotate(${rot}) `:''}scale(${k})${tf?' '+tf:''}"`)}};
+}
+const figBg=()=>{const v=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();return /^#[0-9a-f]{3,8}$/i.test(v)?v:'#e8ebec'};
+function figureSvg(o,prefix='fig-'){
+  let watch=null;
+  if(o.watch){const wo=watchOpts(o.watch),tones=METAL_TONES[o.watch.metal]||METAL_TONES.silver,dial=COLORS[wo.dial]||'#12151A';
+    watch={metal:tones,dial,strap:wo.band==='bracelet'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
+  return outfitFigureSvg({
+    suit:figFabric(o.top||o.shirt,o.top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),
+    watch,clip:o.clip?{color:METAL[o.clip.metal]||METAL.other}:null,bg:figBg(),idPrefix:prefix,
+    ariaLabel:`Torso wearing ${[o.top&&nm(o.top),o.shirt&&nm(o.shirt),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`});
+}

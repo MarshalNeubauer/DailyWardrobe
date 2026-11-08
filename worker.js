@@ -8,6 +8,9 @@
 //   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin)
 //   MODEL           optional Workers AI model, defaults to @cf/meta/llama-3.2-11b-vision-instruct
 //   (GET /fetch?url=… also uses APP_TOKEN: it downloads photo links for the app)
+//   OPENAI_API_KEY  secret; enables POST /render (the "realistic photo" button). Requires APP_TOKEN.
+//   OPENAI_IMAGE_MODEL    optional, defaults to gpt-image-1
+//   OPENAI_IMAGE_QUALITY  optional: low, medium (default) or high
 //   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
 //
@@ -161,6 +164,59 @@ async function handleFetchImage(req, env, json, cors) {
   return new Response(buf, { headers: { ...cors, 'content-type': type, 'cache-control': 'no-store' } });
 }
 
+/* POST /render {image, refs, outfit} -> {image: data URL, model}
+   Turns the app's outfit illustration into a photorealistic picture with OpenAI's image edit API. The illustration
+   fixes the pose and framing; photos of the actual items (refs) and the written outfit keep colours and patterns right. */
+const RENDER_PROMPT = outfit => `Turn the first image (an illustration) into a photorealistic photograph.
+Keep exactly the same pose, crop and framing: a man's torso from the chin down to the hips, no face; his forearms cross at the waist, one hand holds the jacket lapel next to the wristwatch, the other hand rests at the jacket button.
+He is wearing: ${outfit}.
+Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
+Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
+Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No text, no logos, no watermark.`;
+function dataUrlToBlob(u) {
+  const m = String(u || '').match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/s);
+  if (!m) return null;
+  const bin = atob(m[2]), bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: m[1] });
+}
+async function handleRender(req, env, json) {
+  if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to generate photos.' }, 403);
+  if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.OPENAI_API_KEY) return json({ error: 'Add an OPENAI_API_KEY secret to the worker to generate realistic photos.' }, 501);
+  const text = await req.text();
+  if (text.length > 20e6) return json({ error: 'request too large' }, 413);
+  let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  const base = dataUrlToBlob(body.image);
+  if (!base) return json({ error: 'no illustration' }, 400);
+  const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 6).map(dataUrlToBlob).filter(Boolean);
+  const outfit = String(body.outfit || '').slice(0, 1500) || 'a suit, dress shirt and tie';
+  const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-1';
+  const form = new FormData();
+  form.append('model', model);
+  form.append('prompt', RENDER_PROMPT(outfit).replace('{REFS}', refs.length ? ', and match the photos of the actual items that follow it' : ''));
+  form.append('image[]', base, 'outfit.png');
+  refs.forEach((b, i) => form.append('image[]', b, `item-${i + 1}.${b.type.split('/')[1]}`));
+  form.append('size', '1024x1024');
+  form.append('quality', env.OPENAI_IMAGE_QUALITY || 'medium');
+  form.append('output_format', 'jpeg');
+  form.append('n', '1');
+  let r;
+  try { r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form }); }
+  catch (e) { return json({ error: 'Could not reach the OpenAI API: ' + String(e && e.message) }, 502); }
+  const out = await r.json().catch(() => null);
+  if (!r.ok) {
+    const msg = out && out.error && out.error.message || `HTTP ${r.status}`;
+    const hint = r.status === 401 ? ' (check the OPENAI_API_KEY secret)' : /verif/i.test(msg) ? ' (verify your organization in the OpenAI dashboard: Settings, Organization, General)'
+      : /billing|quota|credit/i.test(msg) ? ' (add credit in the OpenAI dashboard: Billing)' : /model/i.test(msg) ? ' (set OPENAI_IMAGE_MODEL to an image model your account can use)' : '';
+    return json({ error: `OpenAI: ${msg}${hint}` }, 502);
+  }
+  const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
+  if (!b64) return json({ error: 'OpenAI returned no image' }, 502);
+  console.log(`rendered by ${model}; usage ${JSON.stringify(out.usage || {})}`);
+  return json({ image: `data:image/jpeg;base64,${b64}`, model });
+}
+
 const SYNC_KEY = 'wardrobe:v1';
 async function handleSync(req, env, json) {
   if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to enable backups.' }, 403);
@@ -200,6 +256,7 @@ export default {
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
     if (path === '/sync') return handleSync(req, env, json);
     if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
+    if (path === '/render' && req.method === 'POST') return handleRender(req, env, json);
     if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
     let body;
