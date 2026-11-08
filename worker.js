@@ -9,7 +9,7 @@
 //   MODEL           optional Workers AI model, defaults to @cf/meta/llama-3.2-11b-vision-instruct
 //   (GET /fetch?url=… also uses APP_TOKEN: it downloads photo links for the app)
 //   OPENAI_API_KEY  secret; enables POST /render (the "realistic photo" button). Requires APP_TOKEN.
-//   OPENAI_IMAGE_MODEL    optional, defaults to gpt-image-1
+//   OPENAI_IMAGE_MODEL    optional, defaults to gpt-image-2
 //   OPENAI_IMAGE_QUALITY  optional: low, medium (default) or high
 //   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
@@ -191,7 +191,7 @@ async function handleRender(req, env, json) {
   if (!base) return json({ error: 'no illustration' }, 400);
   const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 6).map(dataUrlToBlob).filter(Boolean);
   const outfit = String(body.outfit || '').slice(0, 1500) || 'a suit, dress shirt and tie';
-  const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-1';
+  const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   const form = new FormData();
   form.append('model', model);
   form.append('prompt', RENDER_PROMPT(outfit).replace('{REFS}', refs.length ? ', and match the photos of the actual items that follow it' : ''));
