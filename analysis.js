@@ -32,7 +32,7 @@ function evaluateWardrobe(list,T,weeks){
 /* standard purchases the wardrobe doesn't have yet; items that only work in pairs are bundled */
 function purchaseCandidates(list){
   const has=(type,f=()=>true)=>list.some(i=>i.type===type&&f(i));let n=0;const C=[];
-  const mk=(name,...its)=>C.push({name,items:its.map(x=>({id:'cand-'+(n++),pattern:'solid',added:0,...x}))});
+  const mk=(name,...its)=>C.push({name:prettyCols(name),items:its.map(x=>({id:'cand-'+(n++),pattern:'solid',added:0,...x}))});
   const metal=(list.find(i=>i.type==='watch')||{}).metal||'silver',smooth=i=>finish(i.leather)==='smooth';
   for(const [c,p] of [['navy','solid'],['charcoal','solid'],['grey','solid'],['navy','pinstripe']])
     if(!has('suit',i=>pcol(i)===fam(c)&&(i.pattern||'solid')===p))mk(`${c} ${p==='solid'?'':'pinstripe '}suit`,{type:'suit',primaryColor:c,pattern:p,...(p==='pinstripe'?{secondaryColor:'white'}:{})});
@@ -78,7 +78,7 @@ function runAnalysis(list,T,weeks,progress,maxPicks=6){
     if(base.rest-r.rest>0)why.push(`gives your suits proper rest on ${base.rest-r.rest} more day${base.rest-r.rest>1?'s':''}`);
     if(r.avg-base.avg>=.5)why.push(`average outfit score ${Math.round(base.avg)} → ${Math.round(r.avg)}`);
     if(!why.length)why.push('makes the outfits a little better overall');
-    out.push({name:c.name,items:c.items,gain:+gain.toFixed(1),why});
+    out.push({name:prettyCols(c.name),items:c.items,gain:+gain.toFixed(1),why:why.map(prettyCols)});
     cur=[...cur,...c.items];base=r;left=left.filter(x=>x!==c);
   }
   return {base:{days:start.days,avg:Math.round(start.avg),problems:start.problems,rest:start.rest},after:{avg:Math.round(base.avg),problems:base.problems,rest:base.rest},recs:out,checked:C.length};

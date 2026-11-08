@@ -182,13 +182,13 @@ if(french&&!links)notes.push('French-cuff shirt, but no cufflinks in your wardro
 if(clim.rain&&shoes&&finish(shoes.leather)==='suede')notes.push('Rain is forecast and only suede shoes suited this outfit. Smooth leather would hold up better.');
 if(needCoat&&!coat)notes.push(clim.rain?'Rain is forecast and there is no raincoat in your wardrobe.':'It will be cold and there is no overcoat in your wardrobe.');
 if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
-return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,notes,clim,formal:!!day.formal}}
+return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,notes:notes.map(prettyCols),clim,formal:!!day.formal}}
 /* ---- outfit score ----
    A readable 0-100 rating of the planned outfit against the same rules the planner uses.
    Each check earns points out of a maximum; checks that don't apply (no belt owned, suit days have no separate trousers)
    are left out, and the score is the share of available points earned. */
 function rateOutfit(o){
-  const nice=t=>String(t||'').replace(/lightblue/g,'light blue').replace(/lightgrey/g,'light grey').replace(/darkgrey/g,'dark grey');
+  const nice=prettyCols;
   const C=[],add=(label,pts,max,why)=>C.push({label,pts:Math.max(0,Math.min(max,pts)),max,why:pts<max?nice(why):''});
   const {top,shirt,tie,shoes,belt,socks,watch,clip}=o,bot=o.suitDay?null:o.bot,trousers=o.bot||top;
   if(shirt){const raw=primaryCol(shirt);let v=({white:10,lightblue:10,pink:8,cream:8,lightgrey:7,blue:6})[raw]??2,why=v<10?`a ${raw} shirt is less classic than white or light blue`:'';

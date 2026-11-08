@@ -77,3 +77,4 @@ button{touch-action:manipulation}
 .recs{list-style:none;padding:0;margin:8px 0 0}.recs li{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
 .rec-img .thumb{width:56px;border-radius:8px}.rec-txt{display:flex;flex-direction:column;gap:2px}.rec-txt small{color:var(--mut)}.rec-txt button{align-self:flex-start;padding:4px 10px;font-size:14px;margin-top:4px}
 .day h2 .wx a{color:var(--acc);text-decoration:underline}
+.dot{overflow:hidden;display:inline-block}.dot svg{width:100%;height:100%;display:block}

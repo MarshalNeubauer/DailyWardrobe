@@ -157,7 +157,7 @@ async function save(i){
 let editing=null;
 const E=(id,k,list,v)=>`<label>${k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
 function editForm(i){
-  const cols=Object.keys(COLORS).map(c=>[c,c]),opt=[['none','None'],...cols];
+  const cols=COLOR_OPTS(),opt=[['none','None'],...cols];
   return `<div class="card" style="margin:8px 0 0;padding:8px">${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',opt,i.secondaryColor||'none')}${E(i.id,'tertiaryColor',opt,i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
@@ -194,7 +194,7 @@ let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view
 
 /* views */
 const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top,'top'],...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip'],...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])]
-.map(([l,i,s])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot" style='background:${bg(i)}'></span><span class="cap">${desc(i)}</span>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:'<span class="mut none">Add one on the Add tab</span>'}</div>`).join('');
+.map(([l,i,s])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:'<span class="mut none">Add one on the Add tab</span>'}</div>`).join('');
 
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
@@ -251,7 +251,7 @@ function planHtml(p){
   days.map(d=>{
     const o=p[key(d)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null};
     const sc=o.shirt||o.top?rateOutfit(o).score:null;
-    return `<div class="pl ${key(d)===key(sel)?'on':''}" onclick="pick(${d.getTime()})">${sc===null?'':`<span class="sc ${sc>=80?'good':sc>=65?'ok':'low'}">${sc}</span>`}<b>${d.toLocaleDateString(undefined,{weekday:'short',day:'numeric'})}</b><span class="cap">${o.suitDay?nm(o.top):nm(o.top)+' + '+nm(o.bot)}, ${o.shirt?primaryCol(o.shirt)+' shirt':'no shirt'}, ${o.tie?desc(o.tie)+' tie':'no tie'}</span></div>`;
+    return `<div class="pl ${key(d)===key(sel)?'on':''}" onclick="pick(${d.getTime()})">${sc===null?'':`<span class="sc ${sc>=80?'good':sc>=65?'ok':'low'}">${sc}</span>`}<b>${d.toLocaleDateString(undefined,{weekday:'short',day:'numeric'})}</b><span class="cap">${o.suitDay?nm(o.top):nm(o.top)+' + '+nm(o.bot)}, ${o.shirt?colName(primaryCol(o.shirt))+' shirt':'no shirt'}, ${o.tie?desc(o.tie)+' tie':'no tie'}</span></div>`;
   }).join('');
 }
 
@@ -346,13 +346,13 @@ ${FABRIC.includes(q.type)&&q.big?`
   </div>
 </div>`:''}
 <label>Item ${S(Object.entries(TYPES),q.type,'type',i)}</label>
-<label>Primary Colour ${S(Object.keys(COLORS).map(c=>[c,c]),q.primaryColor,'primaryColor',i)}</label>
-<label>Secondary Colour ${S([['none','None'], ...Object.keys(COLORS).map(c=>[c,c])],q.secondaryColor||'none','secondaryColor',i)}</label>
-<label>Tertiary Colour ${S([['none','None'], ...Object.keys(COLORS).map(c=>[c,c])],q.tertiaryColor||'none','tertiaryColor',i)}</label>
+<label>Primary Colour ${S(COLOR_OPTS(),q.primaryColor,'primaryColor',i)}</label>
+<label>Secondary Colour ${S([['none','None'], ...COLOR_OPTS()],q.secondaryColor||'none','secondaryColor',i)}</label>
+<label>Tertiary Colour ${S([['none','None'], ...COLOR_OPTS()],q.tertiaryColor||'none','tertiaryColor',i)}</label>
 ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c=>[c,patLabel(c)]),q.pattern,'pattern',i)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
-${q.type==='watch'?`<label>Dial ${S(Object.keys(COLORS).map(c=>[c,c]),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
+${q.type==='watch'?`<label>Dial ${S(COLOR_OPTS(),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
 <div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':'<small>Cloudflare AI.</small>'}</div>`).join('');
 }
 
