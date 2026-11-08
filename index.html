@@ -16,6 +16,8 @@
 <section id="wardrobe" hidden></section>
 <section id="add" hidden><h2>Add to wardrobe</h2><p id="note" class="mut"></p>
 <div class="btns" style="flex-wrap:wrap"><label class="btn pri" style="margin:0">Choose photos<input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><button class="btn" style="margin:0" onclick="addManual()">Add without photo</button></div>
+<div class="paste-box"><input type="url" id="photo-url" inputmode="url" autocomplete="off" placeholder="Paste a photo or link" onkeydown="if(event.key==='Enter'){event.preventDefault();addLink()}"><button class="btn" onclick="addLink()">Add</button><button class="btn" onclick="pasteFromClipboard()">Paste</button></div>
+<p id="paste-status" class="mut"></p><p class="mut drop-hint">On a computer you can also drag photos here, or press Ctrl+V / ⌘V anywhere.</p>
 <div id="queue"></div></section>
 </main>
 <nav><button id="n-today" onclick="show('today')">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-add" onclick="show('add')">Add</button></nav>

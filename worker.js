@@ -5,6 +5,7 @@
 //   APP_TOKEN       secret; must match the App Token in the app's settings (recommended — without it anyone can use your quota)
 //   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin)
 //   MODEL           optional, defaults to @cf/meta/llama-3.2-11b-vision-instruct
+//   (GET /fetch?url=… also uses APP_TOKEN: it downloads photo links for the app)
 //   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
 //
@@ -64,6 +65,38 @@ const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* GET /sync returns the stored backup {rev, saved, data}; PUT /sync {baseRev, data} stores a new one.
    baseRev must equal the stored rev, otherwise 409 with the current backup so the app can merge and retry
    (two devices syncing at once never overwrite each other). */
+/* GET /fetch?url=… downloads a photo for the app when the site won't let the browser fetch it directly (no CORS).
+   A link to a web page (e.g. a shop's product page) returns the page's share image (og:image / twitter:image).
+   Requires APP_TOKEN; only http(s); images only; 15 MB cap. */
+const IMG_LIMIT = 15e6;
+async function handleFetchImage(req, env, json, cors) {
+  if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to fetch photo links.' }, 403);
+  if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  let u;
+  try { u = new URL(new URL(req.url).searchParams.get('url') || ''); } catch { return json({ error: 'That is not a valid link.' }, 400); }
+  if (!/^https?:$/.test(u.protocol)) return json({ error: 'Only http and https links are supported.' }, 400);
+  const get = href => fetch(href, { redirect: 'follow', headers: { 'user-agent': 'Mozilla/5.0 (compatible; DailyWardrobe photo fetch)', accept: 'image/*,text/html;q=0.8,*/*;q=0.5' } });
+  let r = await get(u.href);
+  if (!r.ok) return json({ error: `The link returned an error (${r.status}).` }, 502);
+  let type = r.headers.get('content-type') || '';
+  if (type.includes('text/html')) {
+    const html = (await r.text()).slice(0, 600000);
+    const meta = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image(?::src)?)["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image(?::src)?)["']/i);
+    if (!meta) return json({ error: 'No photo found on that page. Try a direct link to the image.' }, 422);
+    const img = new URL(meta[1].replace(/&amp;/g, '&'), u);
+    if (!/^https?:$/.test(img.protocol)) return json({ error: 'No usable photo found on that page.' }, 422);
+    r = await get(img.href);
+    if (!r.ok) return json({ error: `The page's photo returned an error (${r.status}).` }, 502);
+    type = r.headers.get('content-type') || '';
+  }
+  if (!type.startsWith('image/')) return json({ error: 'That link is not a photo.' }, 415);
+  if (+(r.headers.get('content-length') || 0) > IMG_LIMIT) return json({ error: 'That photo is too large (over 15 MB).' }, 413);
+  const buf = await r.arrayBuffer();
+  if (buf.byteLength > IMG_LIMIT) return json({ error: 'That photo is too large (over 15 MB).' }, 413);
+  return new Response(buf, { headers: { ...cors, 'content-type': type, 'cache-control': 'no-store' } });
+}
+
 const SYNC_KEY = 'wardrobe:v1';
 async function handleSync(req, env, json) {
   if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to enable backups.' }, 403);
@@ -100,7 +133,9 @@ export default {
 
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) return json({ error: 'forbidden origin' }, 403);
-    if (new URL(req.url).pathname.replace(/\/+$/, '') === '/sync') return handleSync(req, env, json);
+    const path = new URL(req.url).pathname.replace(/\/+$/, '');
+    if (path === '/sync') return handleSync(req, env, json);
+    if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
     if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
     let body;
