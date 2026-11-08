@@ -89,3 +89,8 @@ button{touch-action:manipulation}
 .drop-hint{font-size:12px;margin:2px 0 8px}
 @media (hover:none){.drop-hint{display:none}}
 body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
+#refresh-btn{display:inline-block}
+#refresh-btn.spin{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink,#111);color:var(--bg,#fff);padding:8px 14px;border-radius:18px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:calc(100% - 32px);text-align:center}
+#toast.on{opacity:.92}

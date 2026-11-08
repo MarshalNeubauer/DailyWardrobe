@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Wardrobe"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head><body>
-<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
+<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe">↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
 <main>
 <section id="today"></section>
 <section id="wardrobe" hidden></section>
@@ -20,6 +20,7 @@
 <p id="paste-status" class="mut"></p><p class="mut drop-hint">On a computer you can also drag photos here, or press Ctrl+V / ⌘V anywhere.</p>
 <div id="queue"></div></section>
 </main>
+<div id="toast" role="status" aria-live="polite"></div>
 <nav><button id="n-today" onclick="show('today')">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-add" onclick="show('add')">Add</button></nav>
 
 <div id="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;pointer-events:none;" onclick="closeSettings()"></div>

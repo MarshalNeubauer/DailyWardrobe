@@ -457,6 +457,26 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
     window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${c.name}</button>`).join(''):'<small class="mut">No matches.</small>'}
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
+/* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */
+let toastTimer=null;
+function toast(t,ms=2500){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('on'),ms)}
+let refreshing=false;
+async function refreshAll(){
+  if(refreshing)return;refreshing=true;const b=$('#refresh-btn');if(b)b.classList.add('spin');
+  let msg='';
+  try{
+    const n0=items.length;
+    if(window.syncNow&&localStorage.getItem('worker_url')&&localStorage.getItem('app_token')){
+      const ok=await syncNow();if(!ok)msg=localStorage.getItem('sync_status')||'Sync failed.'}
+    const [r,d,st]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')]);
+    items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};cache={};
+    await loadWeather(true);
+    const v=['today','wardrobe','add'].find(t=>!$('#'+t).hidden)||'today';show(v);
+    if(!msg){const diff=items.length-n0;msg=`Refreshed · ${items.length} item${items.length===1?'':'s'}${diff>0?` (${diff} new)`:diff<0?` (${-diff} removed)`:''}`}
+    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(g=>g&&g.update()).catch(()=>{});
+  }catch(e){msg='Refresh failed: '+(e.message||e)}
+  finally{refreshing=false;if(b)b.classList.remove('spin');toast(msg)}
+}
 async function loadWeather(force){
   const L=settings.location;if(!L)return;
   try{const c=JSON.parse(localStorage.getItem('wx')||'null');
