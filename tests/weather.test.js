@@ -41,6 +41,12 @@ module.exports=async({ok,chromium,url})=>{
   const nl=await p.evaluate(()=>{const keep=items;items=items.filter(i=>i.type!=='cufflinks');cache={};const o=planFor()['2026-11-19'];const n=o.notes.join(' ');items=keep;cache={};return {cuff:o.shirt.cuff,n}});
   ok(nl.cuff!=='french'||nl.n.includes('cufflinks'),'without cufflinks the French-cuff shirt is avoided or flagged');
 
+  // ---- no location yet: a link in the date bar opens Settings at the weather section ----
+  await p.evaluate(()=>{settings.location=null;closeSettings();renderToday()});
+  ok((await p.textContent('.day .wx')).includes('Set your location'),'without a location the date bar offers "Set your location for weather"');
+  await p.click('.day .wx a');await p.waitForTimeout(150);
+  ok(await p.evaluate(()=>getComputedStyle(document.querySelector('#settings-modal')).display!=='none'&&!!document.querySelector('#wx-section')),'the link opens Settings at the weather section');
+  await p.evaluate(()=>closeSettings());
   // ---- weather ----
   await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];openSettings()});
   await p.fill('#cfg-city','Austin');await p.click('text=Search');await p.waitForTimeout(150);
@@ -59,6 +65,13 @@ module.exports=async({ok,chromium,url})=>{
   const chipF=await p.textContent('.day .wx');
   ok(chipF.includes('43°')&&chipF.includes('☂ 90%'),`weather chip on the date bar (${chipF.trim()})`);
   ok((await p.textContent('#today .list')).includes('Raincoat'),'the raincoat is listed with the outfit');
+  ok(await p.evaluate(()=>{const l=document.querySelector('.coat-layer');return !!l&&l.dataset.coat==='raincoat'}),'on the rainy day the mannequin wears the raincoat (open)');
+  ok(await p.evaluate(()=>{const v=document.querySelector('#today .side').innerHTML;return !!document.querySelector('#mannequin-container g[clip-path="url(#vee-clip)"]')}),'the tie is still drawn under the open coat');
+  await p.evaluate(()=>{sel=new Date(2026,10,18);renderToday()});
+  ok(await p.evaluate(()=>{const l=document.querySelector('.coat-layer');return !!l&&l.dataset.coat==='overcoat'}),'on the freezing day the mannequin wears the overcoat');
+  await p.evaluate(()=>{sel=new Date(2026,10,19);renderToday()});
+  ok(await p.evaluate(()=>!document.querySelector('.coat-layer')&&!/Raincoat|Overcoat|Coat/.test(document.querySelector('#today .list').textContent)),'on a mild dry day there is no coat, on the mannequin or in the list');
+  await p.evaluate(()=>{sel=new Date(2026,10,16);renderToday()});
   await p.evaluate(()=>setUnits('C'));await p.evaluate(()=>renderToday());
   ok((await p.textContent('.day .wx')).includes('6°'),'switching to °C converts the chip');
 

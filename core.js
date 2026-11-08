@@ -32,7 +32,7 @@ let weather={};
 /* the day's climate: from the forecast when there is one, otherwise from the calendar (hemisphere from the location) */
 function dayClimate(d){
   const w=weather[key(d)];
-  if(w){const t=w.tmax;return {wx:w,season:t>=24?'warm':t<=12?'cold':'mild',rain:(w.pop||0)>=50||(w.rain||0)>=2,cold:t<10,veryCold:t<4}}
+  if(w){const t=w.tmax;return {wx:w,season:t>=24?'warm':t<=12?'cold':'mild',rain:(w.pop||0)>=40||(w.rain||0)>=1,cold:t<10,veryCold:t<4}}
   const south=settings.location&&settings.location.lat<0,m=(d.getMonth()+(south?6:0))%12;
   const season=[11,0,1].includes(m)?'cold':[5,6,7].includes(m)?'warm':'mild';
   return {wx:null,season,rain:false,cold:season==='cold',veryCold:false};

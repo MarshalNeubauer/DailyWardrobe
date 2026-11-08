@@ -269,6 +269,7 @@ function renderMannequinCanvas(o, containerEl){
     if(!item)continue;
     defs.push(fabricDef('fab-'+role,item,role));fill[role]=`url(#fab-${role})`;
   }
+  if(o.coat){defs.push(fabricDef('fab-coat',o.coat,'top'));fill.coat='url(#fab-coat)'}
   const F=r=>fill[r]||(r==='shirt'?'#f4f3ee':FORM);
   const shade='url(#shade)',seam='stroke="#000" stroke-opacity=".28" stroke-width=".8" stroke-linejoin="round"';
   const both=d=>d+' '+mirror(d);
@@ -360,6 +361,33 @@ function renderMannequinCanvas(o, containerEl){
     for(const x of [58,61,64])s+=`<circle cx="${x}" cy="${306-(x-58)*.2}" r="1.1" fill="${btn}"/><circle cx="${240-x}" cy="${306-(x-58)*.2}" r="1.1" fill="${btn}"/>`;
   }
 
+  /* coat worn open over the outfit: covers the shoulders, sleeves and sides, leaves the suit, shirt and tie visible */
+  if(o.coat){
+    const c=colOf(o.coat),edge=mix(c,'#000',.4),lining=mix(c,'#000',.5),rain=o.coat.type==='raincoat';
+    const panelL='M97,91 C86,94 70,98 55,105 C49,150 52,220 56,300 L60,448 L88,452 L86,300 C85,230 84,170 85,150 Z';
+    const liningL='M97,91 L85,150 C84,170 85,230 86,300 L88,452 L83,452 L81,300 C80,230 80,170 81,152 L94,92 Z';
+    const lapelL=rain?'M97,91 L85,150 L72,128 L74,112 L84,110 L82,100 Z':'M97,91 L85,150 L74,126 L77,112 L87,111 L85,101 Z';
+    const sleeveC='M55,105 C45,109 40,122 38,142 L33,312 L66,317 L74,170 C76,142 70,118 55,105 Z';
+    s+=`<g class="coat-layer" data-coat="${o.coat.type}">`;
+    s+=part(both(panelL),F('coat'))+`<path d="${both(liningL)}" fill="${lining}" opacity=".85"/>`;
+    s+=part(both(sleeveC),F('coat'))+part(both(lapelL),F('coat'));
+    s+=`<path d="${both('M97,91 L85,150 C84,170 85,230 86,300 L88,452')}" fill="none" stroke="${edge}" stroke-width=".7"/>`;
+    s+=`<path d="${both('M84,110 L74,112 M86,111 L77,112')}" stroke="${edge}" stroke-width=".6" fill="none"/>`;
+    if(rain){
+      // trench: epaulettes, storm flap, belt with a hanging end, double-breasted buttons
+      s+=`<path d="${both('M62,104 L82,99 L83,103 L63,108 Z')}" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/>`;
+      s+=`<path d="M57,110 L83,114 L82,150 L56,146 Z" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/><path d="M57,110 L83,114 L82,150 L56,146 Z" fill="url(#shade)" opacity=".6"/>`;
+      s+=`<path d="${both('M55,276 L86,277 L86,285 L56,284 Z')}" fill="${F('coat')}" stroke="${edge}" stroke-width=".6"/>`;
+      s+=`<path d="M64,284 L70,284 L72,338 L66,340 Z" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/>`;
+      s+=`<rect x="167" y="275.5" width="8" height="10" rx="1" fill="none" stroke="${mix(c,'#000',.55)}" stroke-width="1.1"/>`;
+      for(const y of [190,230,320,360])s+=`<circle cx="78" cy="${y}" r="1.6" fill="${edge}"/><circle cx="162" cy="${y}" r="1.6" fill="${edge}"/>`;
+    }else{
+      // overcoat: single-breasted, buttons on one front, pocket flaps
+      for(const y of [200,250,300,350])s+=`<circle cx="79" cy="${y}" r="1.8" fill="${edge}"/>`;
+      s+=`<path d="${both('M60,330 L84,332 L84,338 L60,336 Z')}" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/>`;
+    }
+    s+='</g>';
+  }
   /* accessories */
   if(o.links){const [mL,mM,mD]=METAL_TONES[o.links.metal]||METAL_TONES.silver,y=o.top?317:310;
     for(const x of [44.5,195.5])s+=`<circle cx="${x}" cy="${y}" r="2.4" fill="${mM}" stroke="${mD}" stroke-width=".5"/><circle cx="${x-.7}" cy="${y-.7}" r=".8" fill="${mL}"/>`}

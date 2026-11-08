@@ -20,7 +20,8 @@ const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>window.scheduleS
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
 /* settings management */
-function openSettings(){
+function openSettings(section){
+  if(section)setTimeout(()=>{const el=$('#wx-section');if(el)el.scrollIntoView({block:'start'})},0);
   if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
   if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
   if(window.showSyncStatus)showSyncStatus();
@@ -258,7 +259,7 @@ function renderToday(){
   closeSettings();
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}${settings.location?`<small class="wx">${wxChip(sel)||'&nbsp;'}</small>`:''}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||'&nbsp;'):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the mannequin) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';
   if(!isWorkday(sel))stage=`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`;
