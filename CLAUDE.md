@@ -23,12 +23,13 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 | `core.js` | colours, types, item helpers (no DOM; also loaded by background workers) |
 | `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM) |
 | `detect.js` | stripe/check detection from photos (canvas) |
-| `draw.js` | SVG mannequin, accessories, wardrobe thumbnails |
+| `figure.js` | Today's torso figure (from the design handoff; don't redraw it). Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js |
+| `draw.js` | SVG mannequin (the "Full outfit" view), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails |
 | `analysis.js` | "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker) |
-| `app.js` | IndexedDB storage (items, day history, settings), forms, screens, swipe gestures, weather |
+| `app.js` | IndexedDB storage (items, day history, settings; generated photos in `meta` as `render:<date>`, device-only), forms, screens, swipe gestures, weather |
 | `sync.js` | backup/sync through the worker's `/sync` endpoint (KV), backup file download/restore |
 | `sw.js` | service worker: network-first app files, offline fallback. Add new app files to `ASSETS` and bump `CACHE` |
-| `worker.js` | Cloudflare Worker: photo tagging via the Claude API (secret `ANTHROPIC_API_KEY`, optional `CLAUDE_MODEL`; falls back to Workers AI binding `AI`), `/sync` (KV binding `WARDROBE`, requires `APP_TOKEN`) and `/fetch` (downloads photo links for the app, requires `APP_TOKEN`); the user deploys it by hand, merging doesn't deploy it |
+| `worker.js` | Cloudflare Worker: photo tagging via the Claude API (secret `ANTHROPIC_API_KEY`, optional `CLAUDE_MODEL`; falls back to Workers AI binding `AI`), `/sync` (KV binding `WARDROBE`, requires `APP_TOKEN`) `/fetch` (downloads photo links for the app, requires `APP_TOKEN`) and `/render` (realistic outfit photo via OpenAI's image edit API: secret `OPENAI_API_KEY`, optional `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_QUALITY`; requires `APP_TOKEN`); the user deploys it by hand, merging doesn't deploy it |
 
 Colours always come from the item's tagged colours, matched by brightness rank, never from the photo. Pattern lists in `PATS_BY` (core.js) must stay in sync with the prompt in `worker.js`.
 
