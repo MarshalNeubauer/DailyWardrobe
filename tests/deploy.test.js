@@ -10,6 +10,7 @@ module.exports=async({ok,ROOT})=>{
   ok(!/[0-9a-f]{32}/.test(toml),'no account or namespace IDs are committed (they come from GitHub variables)');
   ok(/paths:[^\n]*worker\.js/.test(wf)&&/branches: \[main\]/.test(wf),'the deploy workflow runs when worker.js changes on main');
   ok(wf.indexOf('npm test')>0&&wf.indexOf('npm test')<wf.indexOf('wrangler@'),'tests run before the deploy');
+  {const sub=wf.indexOf('s/WARDROBE_KV_ID/');ok(sub>wf.lastIndexOf('npm test')&&sub<wf.indexOf('wrangler@'),'the real KV ID is filled in after the tests, just before the deploy');}
   ok(/secrets\.CLOUDFLARE_API_TOKEN/.test(wf)&&!/CLOUDFLARE_API_TOKEN:\s*["']?[A-Za-z0-9_-]{30,}/.test(wf),'the Cloudflare token comes from a GitHub secret');
   ok(/wrangler@\d+\.\d+\.\d+/.test(wf),'wrangler is pinned to an exact version');
 };
