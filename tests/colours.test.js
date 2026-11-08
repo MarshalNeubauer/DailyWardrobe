@@ -16,12 +16,12 @@ module.exports=async({ok,chromium,url})=>{
   // rules: new colours follow their families
   const rules=await p.evaluate(()=>{const I=(type,primaryColor,x={})=>({id:type+primaryColor,type,primaryColor,pattern:'solid',...x});
     const suit=I('suit','lightgrey');
-    return {darkShirt:shirtScore(suit,I('shirt','darknavy'))<shirtScore(suit,I('shirt','white'))-10,
+    return {darkShirt:shirtScore(I('suit','charcoal'),I('shirt','darknavy'))<shirtScore(I('suit','charcoal'),I('shirt','white'))-10&&darkShirt(I('shirt','darknavy'))&&shirtScore(suit,I('shirt','darknavy'))>0,
       slateShirt:shirtScore(I('suit','navy'),I('shirt','slate'))<=-10,
       fam:['wine','deepblue','darknavy','steelblue','midgrey','slate'].map(c=>fam(c)).join(),
       wineBelt:leatherGroup('wine')===leatherGroup('burgundy'),
       steelTie:tieScore(I('tie','navy'),I('shirt','steelblue'),I('tie','navy'))!==tieScore(I('tie','navy'),I('shirt','steelblue'),I('tie','pink'))}});
-  ok(rules.darkShirt&&rules.slateShirt,'very dark navy and dark slate shirts count as dark shirts');
+  ok(rules.darkShirt&&rules.slateShirt,'very dark navy and dark slate are dark shirts: kept out under dark jackets, allowed under a light one');
   ok(rules.fam==='burgundy,navy,navy,blue,grey,charcoal','each new colour follows its family in the outfit rules');
   ok(rules.wineBelt,'wine shoes and belts match the burgundy leather group');
   ok(rules.steelTie,'ties on a steel blue shirt use the blue-shirt table');

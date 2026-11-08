@@ -56,7 +56,8 @@ const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
 /* display names for colours: 'lightblue' -> 'light blue' (the keys themselves stay as they are) */
 const COLOR_NAMES={paleyellow:'pale yellow',lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey',midgrey:'mid grey',steelblue:'steel blue',deepblue:'deep blue',darknavy:'very dark navy',slate:'dark slate blue-grey'};
 const colName=c=>COLOR_NAMES[c]||c;
-const COLOR_NAME_RE=new RegExp('\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b','g');
+// (a key that appears in its own spelled-out name, like slate in 'dark slate blue-grey', is not expanded twice)
+const COLOR_NAME_RE=new RegExp('(?<!dark )\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b(?! blue-grey)','g');
 const prettyCols=t=>String(t??'').replace(COLOR_NAME_RE,m=>COLOR_NAMES[m]);
 const COLOR_OPTS=type=>Object.keys(COLORS).filter(c=>type==='shirt'||!SHIRT_ONLY.includes(c)).map(c=>[c,colName(c)]);
 const colorDesc = i => {
