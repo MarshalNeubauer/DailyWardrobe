@@ -13,9 +13,16 @@ const BLAZER_TROUSERS={navy:['grey','charcoal','tan','cream','olive'],tan:['navy
 const colsOf=i=>i?[primaryCol(i),i.secondaryColor,i.tertiaryColor].filter(c=>c&&COLORS[c]).map(fam):[];
 const lumOf=c=>{const h=COLORS[c];return h?parseInt(h.slice(1,3),16)*.3+parseInt(h.slice(3,5),16)*.59+parseInt(h.slice(5,7),16)*.11:128};
 
+/* dark shirts (navy, charcoal, black, burgundy...) are worn under light jackets (light/mid grey, tan) with a tie lighter
+   than the shirt: a modern, less formal look. With any other jacket the classic rule applies: shirt lighter than jacket. */
+const darkShirt=s=>!!s&&lumOf(primaryCol(s))<100,lightTop=t=>!!t&&LUM(t)>=130,darkUnderLight=(t,s)=>darkShirt(s)&&lightTop(t);
+/* how light a tie reads overall: a patterned tie's stripes, checks or dots lighten (or darken) it */
+const tieLum=x=>{const acc=x&&x.pattern&&!['solid','knit'].includes(x.pattern)?[x.secondaryColor,x.tertiaryColor].filter(c=>c&&COLORS[c]):[];
+  return acc.length?LUM(x)*.65+acc.reduce((a,c)=>a+lumOf(c),0)/acc.length*.35:LUM(x)};
 /* shirt against the jacket: light, quiet shirts read as professional; the shirt should be lighter than the jacket */
 function shirtScore(t,s){
   const raw=primaryCol(s),pc=pcol(s);
+  if(darkUnderLight(t,s))return 3;
   let v=({white:5,ivory:4,lightblue:4,pink:2,cream:2,paleyellow:1,lavender:1,lightgrey:1,periwinkle:0,beige:0,midgrey:-2,blue:0})[raw]??(['navy','black','charcoal','brown','burgundy','green','olive','red'].includes(pc)?-10:-5);
   if(!t)return v;const tc=pcol(t);
   if(pc===tc)v-=25;
@@ -29,8 +36,9 @@ function tieScore(t,sh,x){
   if(sh){const sc=pcol(sh),raw=primaryCol(sh),d=LUM(sh)-LUM(x);
     if(xc===sc)v-=15;
     if(xc==='blue'&&raw==='lightblue')v-=6;
-    if(d<25)v-=12;else if(d>60)v+=3;                       // the tie should be clearly darker than the shirt
-    const ts=TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[sc];if(raw!=='white'&&ts)v+=ts.includes(xc)?3:-4;
+    if(darkShirt(sh)){const u=tieLum(x)-LUM(sh);if(u<25)v-=12;else if(u>60)v+=3}   // on a dark shirt the tie is clearly lighter
+    else if(d<25)v-=12;else if(d>60)v+=3;                  // otherwise the tie should be clearly darker than the shirt
+    const ts=darkShirt(sh)?null:TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[sc];if(raw!=='white'&&ts)v+=ts.includes(xc)?3:-4;
     if(raw==='pink'&&['red','pink'].includes(xc))v-=10;
   }
   if(t){const tc=pcol(t);
@@ -128,7 +136,7 @@ function watchFit(w,shoe,belt){
   return v;
 }
 
-const QWIN=8;   // outfits within this many points of the best one take turns (rest decides among them)
+const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
@@ -146,7 +154,7 @@ const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'
 // Large wardrobes: keep only the 4 best trousers and 10 best shirts for this jacket (rotation included), then try every tie.
 const topN=(arr,n,f)=>arr.length<=n?arr:arr.map(i=>[f(i)+rb(i),i]).sort((a,b)=>b[0]-a[0]).slice(0,n).map(x=>x[1]);
 // shirts are many and low-stakes: how long one has rested counts for more, so every acceptable shirt comes around
-const shRest=sh=>Math.min(rest(sh),21)*.5;
+const shRest=sh=>Math.min(rest(sh),SH_CAP)*.5;
 const Ps=suitDay?[null]:topN(pool('pants','bot'),4,pt=>pairScore(top,pt)),Ss=topN(pool('shirt','shirt'),16,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])+shRest(sh)),Ts=pool('tie','tie'),cands=[];
 for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(const x of Ts.length?Ts:[null]){
   const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day);
@@ -177,8 +185,9 @@ const coat=needCoat?best([...pool('overcoat','coat'),...pool('raincoat','coat')]
 // say so when the wardrobe can't make a correct combination, instead of silently mismatching
 const notes=[];
 // clothing: only reached when the wardrobe had no compliant combination for this jacket
-if(shirt&&tie&&LUM(shirt)-LUM(tie)<25)notes.push(`The ${nm(tie)} isn't darker than the ${nm(shirt)}; no darker tie suited this outfit. A darker tie would look sharper.`);
-if(top&&shirt&&LUM(shirt)<LUM(top)+20)notes.push(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
+if(shirt&&tie&&darkShirt(shirt)&&tieLum(tie)-LUM(shirt)<25)notes.push(`The ${nm(tie)} isn't lighter than the ${nm(shirt)}; on a dark shirt a lighter tie reads better.`);
+if(shirt&&tie&&!darkShirt(shirt)&&LUM(shirt)-LUM(tie)<25)notes.push(`The ${nm(tie)} isn't darker than the ${nm(shirt)}; no darker tie suited this outfit. A darker tie would look sharper.`);
+if(top&&shirt&&!darkUnderLight(top,shirt)&&LUM(shirt)<LUM(top)+20)notes.push(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
 if([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']].filter(([i,r])=>patInfo(i,r)).length>=3)notes.push('Three bold patterns today; there was no quieter combination. A solid shirt or tie would calm it down.');
 if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50)notes.push(`None of your shoes suit ${primaryCol(bot)} trousers.`);
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
@@ -198,14 +207,16 @@ function rateOutfit(o){
   const C=[],add=(label,pts,max,why)=>C.push({label,pts:Math.max(0,Math.min(max,pts)),max,why:pts<max?nice(why):''});
   const {top,shirt,tie,shoes,belt,socks,watch,clip}=o,bot=o.suitDay?null:o.bot,trousers=o.bot||top;
   if(shirt){const raw=primaryCol(shirt);let v=({white:10,lightblue:10,ivory:9,pink:8,cream:8,lightgrey:7,paleyellow:7,lavender:7,periwinkle:7,blue:6,beige:6,midgrey:6})[raw]??2,why=v<10?`a ${raw} shirt is less classic than white or light blue`:'';
-    if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same colour as the jacket'}
+    if(darkUnderLight(top,shirt)){v=7;why='a dark shirt under a light jacket is a modern, less formal look'}
+    else if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same colour as the jacket'}
     else if(top&&LUM(shirt)<LUM(top)+20){v-=5;why='shirt is darker than the jacket'}
     if(shirt.cuff==='french'&&!o.links){v-=5;why=(why?why+'; ':'')+'French cuffs without cufflinks'}
     add('Shirt',v,10,why)}
   if(shirt&&tie){const raw=primaryCol(shirt),d=LUM(shirt)-LUM(tie);let v=0,why=[];
-    if(d>=25)v+=8;else why.push('tie is not darker than the shirt');
+    if(darkShirt(shirt)){if(tieLum(tie)-LUM(shirt)>=25)v+=8;else why.push('tie is not lighter than the dark shirt')}
+    else if(d>=25)v+=8;else why.push('tie is not darker than the shirt');
     if(pcol(tie)!==pcol(shirt))v+=2;else why.push('tie and shirt are the same colour');
-    const ts=TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[pcol(shirt)];if(raw==='white'||!ts||ts.includes(pcol(tie)))v+=5;else{v+=1;why.push(`${primaryCol(tie)} is an unusual tie colour on a ${raw} shirt`)}
+    const ts=darkShirt(shirt)?null:TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[pcol(shirt)];if(raw==='white'||!ts||ts.includes(pcol(tie)))v+=5;else{v+=1;why.push(`${primaryCol(tie)} is an unusual tie colour on a ${raw} shirt`)}
     add('Tie and shirt',v,15,why.join('; '))}
   if(tie&&top){const tc=pcol(top),xc=pcol(tie);let v,why='';
     if(xc===tc){if(tc==='black'){v=0;why='black tie on a black suit reads as funeral wear'}else if(pw(tie)>0||LUM(tie)<LUM(top)-15)v=10;else{v=6;why='tonal tie blends into the jacket'}}

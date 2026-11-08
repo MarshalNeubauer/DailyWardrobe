@@ -81,9 +81,13 @@ suite('planner: independent outfit checklist',async({page})=>{
    const sc=(i,r)=>r==='tie'?({stripe:3,check:2,'polka-dot':2,paisley:2,foulard:1})[i.pattern]??2:r==='shirt'?(i.pattern==='pinstripe'?1:2):({pinstripe:1,windowpane:3})[i.pattern]??2;
    const BT={navy:['grey','charcoal','tan','cream','olive'],tan:['navy','brown','charcoal','olive'],brown:['grey','charcoal','tan','navy','cream'],grey:['charcoal','navy','black'],olive:['tan','brown','charcoal','cream']};
    const audit=o=>{const v=[];const top=o.top,bot=o.suitDay?null:o.bot,sh=o.shirt,t=o.tie;
-    if(sh&&t&&L(sh.primaryColor)-L(t.primaryColor)<25)v.push('tie not darker than shirt');
+    // option B: a dark shirt (brightness < 100) may go under a light jacket (>= 130); its tie must then read lighter than it,
+    // judging a patterned tie by base 65% + its accent colours 35%
+    const dk=sh&&L(sh.primaryColor)<100,tl=x=>{const a=x.pattern&&!['solid','knit'].includes(x.pattern)?[x.secondaryColor,x.tertiaryColor].filter(c=>c&&COLORS[c]):[];return a.length?L(x.primaryColor)*.65+a.reduce((s,c)=>s+L(c),0)/a.length*.35:L(x.primaryColor)};
+    if(sh&&t&&dk&&tl(t)-L(sh.primaryColor)<25)v.push('tie not lighter than dark shirt');
+    if(sh&&t&&!dk&&L(sh.primaryColor)-L(t.primaryColor)<25)v.push('tie not darker than shirt');
     if(sh&&t&&f(sh.primaryColor)===f(t.primaryColor))v.push('tie same colour as shirt');
-    if(sh&&top&&L(sh.primaryColor)<L(top.primaryColor)+20)v.push('shirt not lighter than jacket');
+    if(sh&&top&&!(dk&&L(top.primaryColor)>=130)&&L(sh.primaryColor)<L(top.primaryColor)+20)v.push('shirt not lighter than jacket');
     const P=[[top,'top'],[bot,'bot'],[sh,'shirt'],[t,'tie']].filter(([i])=>i&&T[i.pattern]).map(([i,r])=>({t:T[i.pattern],s:sc(i,r)}));
     if(P.length>=3)v.push('three bold patterns');
     for(let a=0;a<P.length;a++)for(let c=a+1;c<P.length;c++)if(P[a].t===P[c].t&&P[a].s===P[c].s)v.push('same pattern type and scale');
