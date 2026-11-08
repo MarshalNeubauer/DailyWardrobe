@@ -55,6 +55,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await ctx.route('https://w.test/**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.postData()}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
     await p.evaluate(async src=>{const blob=await (await fetch(src)).blob();await addFiles([new File([blob],'x.png',{type:'image/png'})])},IMG);
+    ok((await p.textContent('#queue')).includes('Tagged by Claude (claude-opus-5-5).')&&!(await p.textContent('#queue')).includes('Cloudflare AI'),'each photo card says which model tagged it');
     ok(/tagged by Claude \(claude-opus-5-5\)/.test(await p.textContent('#note')),`the Add screen says which model tagged the photo ("${await p.textContent('#note')}")`);
     await b.close();
   }finally{globalThis.fetch=realFetch}

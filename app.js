@@ -66,6 +66,7 @@ function updateSwatchParam(i, param, val){
 }
 
 let aiError='',aiModel='';
+const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by Workers AI (${q.model.replace(/^@cf\//,'')}).`;
 async function ask(c){
   try {
     const workerUrl=localStorage.getItem('worker_url');
@@ -94,6 +95,7 @@ async function ask(c){
       tertiaryColor:normCol(parsed.tertiaryColor),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
       leather:LEATHERS.includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
+      model:result.model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather'].includes(parsed.band)?parsed.band:null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null
     };
   } catch(e) {
@@ -107,7 +109,7 @@ function shrink(img,max){const k=Math.min(1,max/Math.max(img.width,img.height)),
 async function fill(q,ai){
   q.zoom=1; q.cx=0.5; q.cy=0.5;
   generateSwatch(q);
-  q.ai=!!(ai&&ai.type);
+  q.ai=!!(ai&&ai.type);q.model=ai&&ai.model||'';
   q.type=q.ai?ai.type:'suit';
   q.primaryColor=ai&&COLORS[ai.primaryColor]?ai.primaryColor:'grey';
   q.secondaryColor=ai&&ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null;
@@ -414,7 +416,7 @@ ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(COLOR_OPTS(),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
-<div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':'<small>Cloudflare AI.</small>'}</div>`).join('');
+<div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
 }
 
 function show(t){
