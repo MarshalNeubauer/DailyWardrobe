@@ -39,6 +39,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(await A.p.evaluate(()=>{sel=new Date(2026,10,17);renderToday();return !document.querySelector('.fig.photo')}),'a different outfit is drawn, not given the photo');
     ok(await A.p.evaluate(()=>{const o=planFor()['2026-11-16'],a=comboKey(o),b=comboKey({...o,tie:{...o.tie,primaryColor:'green'}}),c=comboKey({...o,tie:{...o.tie,updated:99}}),d=comboKey({...o,vest:!o.vest});return a!==b&&a===c&&a!==d}),
       'the key changes with colour or vest, not with an unrelated edit');
+    // the shirt counts only by colour: any white shirt shares the photo; jackets/ties by look, not by which item
+    const share=await A.p.evaluate(()=>{const o=planFor()['2026-11-16'],sh=o.shirt;
+      const tex={...o,shirt:{...sh,id:'other-shirt',pattern:'dobby',cuff:'french',stripes:{b:[['p',1]]}}},col={...o,shirt:{...sh,primaryColor:'white'}},
+        twin={...o,top:{...o.top,id:'twin-suit'}},pin={...o,top:{...o.top,pattern:'pinstripe'}};
+      return {tex:comboKey(tex)===comboKey(o),col:comboKey(col)!==comboKey(o),twin:comboKey(twin)===comboKey(o),pin:comboKey(pin)!==comboKey(o)}});
+    ok(share.tex,'another shirt of the same colour (different texture, cuffs, item) shares the photo');
+    ok(share.col,'a shirt of a different colour does not');
+    ok(share.twin&&share.pin,'an identical suit shares the photo; a different pattern does not');
+    // photos saved under the earlier key (which included the shirt item) are moved over
+    const v1=await A.p.evaluate(async()=>{const o=planFor()['2026-11-16'],ck=comboKey(o),old=comboKeyV1(o),rec=renders[ck];
+      delete renders[ck];await txs('meta','readwrite',s=>s.delete('render:'+ck));renders[old]={...rec,t:7};const got=!!renderFor(o);
+      await new Promise(r=>setTimeout(r,300));return got&&!!(await metaGet('render:'+ck))});
+    ok(v1,'a photo saved under the earlier combination key is found and moved to the new one');
     // the phone gets it from the worker for any day with that combination
     const B=await device();await B.p.evaluate(setup);
     await B.p.waitForFunction(()=>!!document.querySelector('.fig.photo img'),null,{timeout:8000}).catch(()=>{});
