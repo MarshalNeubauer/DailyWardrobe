@@ -322,8 +322,6 @@ function planHtml(p){
 }
 
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
-const figMode=()=>{try{return localStorage.getItem('fig_mode')==='full'?'full':'figure'}catch{return 'figure'}};
-function setFigMode(m){try{localStorage.setItem('fig_mode',m)}catch{}renderToday()}
 let figSel='top';
 const FIG_PIECES=[['top','suit'],['shirt','shirt'],['tie','tie'],['clip','clip'],['vest','vest'],['watch','watch']];
 const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
@@ -364,7 +362,7 @@ async function fetchRemoteRender(day){
     if(cur&&cur.t>(j.t||0)){up();return}if(cur&&cur.t===(j.t||0))return;   // ours is newer / the same
     const rec={sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()};
     renders[day]=rec;await metaPut('render:'+day,rec);
-    if(key(sel)===day&&!$('#today').hidden&&figMode()==='figure')renderToday();
+    if(key(sel)===day&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('remote photo unavailable',e)}
 }
 function setFigView(v){figView=v;renderToday()}
@@ -407,18 +405,14 @@ function renderToday(){
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||'&nbsp;'):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
-  // only the stage (the mannequin) slides on a swipe; the date bar and the item list stay put and just update
+  // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';
   if(!isWorkday(sel))stage=`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`;
   else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
-  else{stage=figMode()==='full'?'<div class="man" id="mannequin-container"></div>':figureStage(o);
+  else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}<div class="list">${slots(o)}</div>${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
-  const toggle=side?`<div class="figmode" role="group" aria-label="Outfit view"><button class="${figMode()==='figure'?'on':''}" aria-pressed="${figMode()==='figure'}" onclick="setFigMode('figure')">Close-up</button><button class="${figMode()==='full'?'on':''}" aria-pressed="${figMode()==='full'}" onclick="setFigMode('full')">Full outfit</button></div>`:'';
-  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div>${toggle}</div><div class="side">${side}${planHtml(p)}</div></div>`;
-  if(o && items.length && isWorkday(sel) && figMode()==='full') {
-    renderMannequinCanvas(o, $('#mannequin-container'));
-  }
+  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${planHtml(p)}</div></div>`;
   if(items.length){recordDays(p);
   }
 }

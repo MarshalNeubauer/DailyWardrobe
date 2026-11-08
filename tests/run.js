@@ -32,17 +32,17 @@ const MONTHS=[[2026,10],[2026,11],[2027,0]];
 
 suite('renders the outfit without errors',async({page,errs})=>{
   await page.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);
-  ok(await page.$('#mannequin-container > svg')!==null,'mannequin SVG is drawn');
+  ok(await page.$('#mannequin-container.fig > svg')!==null,'outfit figure SVG is drawn');
   ok(await page.$('.score .num')!==null,'score card is shown');
   ok((await page.$$('#today .pl .sc')).length>10,'month plan shows score badges');
   ok(errs.length===0,'no console errors ('+errs.join('; ')+')');
 });
 
-suite('tie is clipped to the V when a jacket is worn',async({page})=>{
+suite('figure draws the tie, and the shirt when there is no jacket',async({page})=>{
   const r=await page.evaluate(`(()=>{const o={suitDay:true,top:{type:'suit',primaryColor:'grey',pattern:'solid'},bot:{type:'suit',primaryColor:'grey',pattern:'solid'},shirt:{type:'shirt',primaryColor:'white',pattern:'solid'},tie:{type:'tie',primaryColor:'navy',pattern:'solid'}};
-    const d=document.createElement('div');document.body.appendChild(d);renderMannequinCanvas(o,d);const a=!!d.querySelector('g[clip-path="url(#vee-clip)"]');
-    o.top=null;renderMannequinCanvas(o,d);const b=!d.querySelector('g[clip-path="url(#vee-clip)"]');d.remove();return [a,b]})()`);
-  ok(r[0],'tie clipped with a jacket');ok(r[1],'tie drawn in full without a jacket');
+    const d=document.createElement('div');d.innerHTML=figureSvg(o,'t1-');const a=!!d.querySelector('use[href="#t1-bladeP"]')&&d.querySelector('#t1-suitB').innerHTML.includes(COLORS.grey);
+    o.top=null;d.innerHTML=figureSvg(o,'t2-');const b=d.querySelector('#t2-suitB').innerHTML.includes(COLORS.white);return [a,b]})()`);
+  ok(r[0],'tie drawn over the suit');ok(r[1],'without a jacket the body is drawn in the shirt fabric');
 });
 
 suite('swipe moves only the outfit, across viewports',async({browser,url})=>{

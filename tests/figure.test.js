@@ -3,7 +3,7 @@
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
-  await p.evaluate(()=>{localStorage.removeItem('fig_mode');let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+  await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
     items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('shirt','lightblue'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tieclip','gold',{metal:'gold'}),
       I('watch','black',{metal:'gold',dial:'white',band:'leather'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'gold'}),I('socks','navy'),
       I('blazer','navy'),I('pants','grey')];
@@ -39,11 +39,7 @@ module.exports=async({ok,chromium,url})=>{
   // two figures don't share ids
   const ids=await p.evaluate(()=>{const o=planFor()[key(sel)],a=figureSvg(o,'a-'),b=figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return [...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))});
   ok(!ids,'two figures on a page use distinct ids');
-  // view toggle
-  await p.click('.figmode >> text=Full outfit');
-  ok(await p.evaluate(()=>!document.querySelector('.fig')&&!!document.querySelector('.man svg')&&localStorage.getItem('fig_mode')==='full'),'Full outfit switches to the full mannequin (remembered)');
-  await p.click('.figmode >> text=Close-up');
-  ok(await p.evaluate(()=>!!document.querySelector('.fig svg')),'Close-up switches back');
+  ok(await p.evaluate(()=>!document.querySelector('.figmode:not(.small)')&&typeof renderMannequinCanvas==='undefined'),'the full-body mannequin is gone (no view toggle)');
   ok(await p.evaluate(()=>document.documentElement.scrollWidth<=390),'no horizontal scroll on a phone');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
