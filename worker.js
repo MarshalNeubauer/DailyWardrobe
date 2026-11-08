@@ -215,12 +215,16 @@ async function handleRender(req, env, json) {
   if (!b64) return json({ error: 'OpenAI returned no image' }, 502);
   console.log(`rendered by ${model}; usage ${JSON.stringify(out.usage || {})}`);
   const rec = { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() };
-  // keep a copy so the user's other devices can show it (GET /render?day=...); old photos expire after 90 days
-  if (env.WARDROBE && DAY_RE.test(String(body.day || ''))) await env.WARDROBE.put(`render:${body.day}`, JSON.stringify(rec), { expirationTtl: 90 * 86400 });
+  // keep a copy per outfit combination so it is reused on any day and shown on every device (GET /render?key=...)
+  const id = renderId(body);
+  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(rec), renderTtl(id));
   return json({ image: rec.img, model });
 }
-const DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
-/* PUT /render {day, rec}: a device uploads a photo the worker doesn't have yet (e.g. made before copies were kept) */
+/* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced); older ones were per date (90 days) */
+const COMBO_RE = /^c[0-9a-f]{16}$/, DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
+const renderId = o => { const k = String(o && o.key || ''), d = String(o && o.day || ''); return COMBO_RE.test(k) ? k : DAY_RE.test(d) ? d : null; };
+const renderTtl = id => (DAY_RE.test(id) ? { expirationTtl: 90 * 86400 } : undefined);
+/* PUT /render {key, rec}: a device uploads a photo the worker doesn't have yet */
 async function putRender(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
@@ -228,19 +232,20 @@ async function putRender(req, env, json) {
   if (text.length > 4e6) return json({ error: 'photo too large' }, 413);
   let b; try { b = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
   const rec = b && b.rec;
-  if (!DAY_RE.test(String(b && b.day || '')) || !rec || !/^data:image\/(jpeg|png|webp);base64,/.test(String(rec.img || ''))) return json({ error: 'bad photo' }, 400);
-  const cur = await env.WARDROBE.get(`render:${b.day}`, 'json');
+  const id = renderId(b);
+  if (!id || !rec || !/^data:image\/(jpeg|png|webp);base64,/.test(String(rec.img || ''))) return json({ error: 'bad photo' }, 400);
+  const cur = await env.WARDROBE.get(`render:${id}`, 'json');
   if (cur && (cur.t || 0) >= (rec.t || 0)) return json({ ok: true, kept: 'newer' });
-  await env.WARDROBE.put(`render:${b.day}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), { expirationTtl: 90 * 86400 });
+  await env.WARDROBE.put(`render:${id}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), renderTtl(id));
   return json({ ok: true });
 }
-/* GET /render?day=YYYY-M-D -> the photo generated for that day on any device, or 404 */
+/* GET /render?key=c... (or the older ?day=) -> the stored photo, or 404 */
 async function getRender(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 404);
-  const day = new URL(req.url).searchParams.get('day') || '';
-  if (!DAY_RE.test(day)) return json({ error: 'bad day' }, 400);
-  const rec = await env.WARDROBE.get(`render:${day}`, 'json');
+  const q = new URL(req.url).searchParams, id = renderId({ key: q.get('key'), day: q.get('day') });
+  if (!id) return json({ error: 'bad key' }, 400);
+  const rec = await env.WARDROBE.get(`render:${id}`, 'json');
   return rec ? json(rec) : json({ error: 'none' }, 404);
 }
 
