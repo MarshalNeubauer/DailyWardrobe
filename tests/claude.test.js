@@ -50,6 +50,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(async src=>{show('add');const blob=await (await fetch(src)).blob();await addFiles([new File([blob],'x.png',{type:'image/png'})])},IMG);
     ok(/Photo tagging failed: .*ANTHROPIC_API_KEY/.test(await p.textContent('#note')),'the Add screen shows why tagging failed');
+    reply=()=>[200,{model:'claude-opus-5-5',stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1},content:[{type:'text',text:JSON.stringify(answer)}]}];
+    await ctx.unroute('https://w.test/**');
+    await ctx.route('https://w.test/**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.postData()}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
+      await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
+    await p.evaluate(async src=>{const blob=await (await fetch(src)).blob();await addFiles([new File([blob],'x.png',{type:'image/png'})])},IMG);
+    ok(/tagged by Claude \(claude-opus-5-5\)/.test(await p.textContent('#note')),`the Add screen says which model tagged the photo ("${await p.textContent('#note')}")`);
     await b.close();
   }finally{globalThis.fetch=realFetch}
 };

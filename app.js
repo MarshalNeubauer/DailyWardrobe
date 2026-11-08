@@ -65,7 +65,7 @@ function updateSwatchParam(i, param, val){
   if(swEl) swEl.style.backgroundImage=`url(${queue[i].swatch})`;
 }
 
-let aiError='';
+let aiError='',aiModel='';
 async function ask(c){
   try {
     const workerUrl=localStorage.getItem('worker_url');
@@ -78,7 +78,7 @@ async function ask(c){
     });
     if(!res.ok){let e='';try{const j=await res.json();e=j.detail||j.error||''}catch{}aiError=`Photo tagging failed: ${e||'HTTP '+res.status}. Fill in the details below.`;return null}
     aiError='';
-    const result=await res.json();
+    const result=await res.json();aiModel=result.model||'';
     let parsed;
     try {
       const cleanText=(result.response||'').replace(/```json/g,'').replace(/```/g, '').trim();
@@ -392,7 +392,7 @@ const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.ma
 function renderAdd(){
   closeSettings();
   const workerSet = !!localStorage.getItem('worker_url');
-  if($('#note')) $('#note').textContent = !workerSet ? 'Worker URL not set! Tap ⚙ in the top right to configure your Cloudflare Worker.' : aiError || 'Photos are tagged by AI through your Cloudflare Worker.';
+  if($('#note')) $('#note').textContent = !workerSet ? 'Worker URL not set! Tap ⚙ in the top right to configure your Cloudflare Worker.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?'<div class="card">Analyzing photo…</div>':q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">
 <div class="rv">${q.photo?`<img class="ph" src="${q.photo}" alt="">`:itemThumb(q)}</div>

@@ -121,6 +121,7 @@ async function tagWithClaude(env, image) {
   if (out.stop_reason === 'refusal') return { status: 502, body: { error: 'ai', detail: 'Claude declined to label this photo.' } };
   if (out.stop_reason === 'max_tokens') return { status: 502, body: { error: 'ai', detail: 'Claude ran out of tokens before answering.' } };
   const text = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  console.log(`tagged by Claude (${out.model}); tokens in ${out.usage && out.usage.input_tokens}, out ${out.usage && out.usage.output_tokens}`);
   try { return { status: 200, body: { ...JSON.parse(text), model: out.model } }; }
   catch { return { status: 502, body: { error: 'unparseable model output', detail: text.slice(0, 300) } }; }
 }
@@ -244,11 +245,12 @@ export default {
     }
 
     const raw = out && out.response;
-    if (raw && typeof raw === 'object') return json(raw);
+    console.log(`tagged by Workers AI (${model})`);
+    if (raw && typeof raw === 'object') return json({ ...raw, model });
     const text = String(raw || '');
     const m = text.match(/\{[\s\S]*\}/);
     if (!m) return json({ error: 'no json in model output', detail: text.slice(0, 300) }, 502);
-    try { return json(JSON.parse(m[0])); }
+    try { return json({ ...JSON.parse(m[0]), model }); }
     catch { return json({ error: 'unparseable model output', detail: m[0].slice(0, 300) }, 502); }
   },
 };
