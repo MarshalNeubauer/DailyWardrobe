@@ -214,7 +214,34 @@ async function handleRender(req, env, json) {
   const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
   if (!b64) return json({ error: 'OpenAI returned no image' }, 502);
   console.log(`rendered by ${model}; usage ${JSON.stringify(out.usage || {})}`);
-  return json({ image: `data:image/jpeg;base64,${b64}`, model });
+  const rec = { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() };
+  // keep a copy so the user's other devices can show it (GET /render?day=...); old photos expire after 90 days
+  if (env.WARDROBE && DAY_RE.test(String(body.day || ''))) await env.WARDROBE.put(`render:${body.day}`, JSON.stringify(rec), { expirationTtl: 90 * 86400 });
+  return json({ image: rec.img, model });
+}
+const DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
+/* PUT /render {day, rec}: a device uploads a photo the worker doesn't have yet (e.g. made before copies were kept) */
+async function putRender(req, env, json) {
+  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
+  const text = await req.text();
+  if (text.length > 4e6) return json({ error: 'photo too large' }, 413);
+  let b; try { b = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  const rec = b && b.rec;
+  if (!DAY_RE.test(String(b && b.day || '')) || !rec || !/^data:image\/(jpeg|png|webp);base64,/.test(String(rec.img || ''))) return json({ error: 'bad photo' }, 400);
+  const cur = await env.WARDROBE.get(`render:${b.day}`, 'json');
+  if (cur && (cur.t || 0) >= (rec.t || 0)) return json({ ok: true, kept: 'newer' });
+  await env.WARDROBE.put(`render:${b.day}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), { expirationTtl: 90 * 86400 });
+  return json({ ok: true });
+}
+/* GET /render?day=YYYY-M-D -> the photo generated for that day on any device, or 404 */
+async function getRender(req, env, json) {
+  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.WARDROBE) return json({ error: 'no KV binding' }, 404);
+  const day = new URL(req.url).searchParams.get('day') || '';
+  if (!DAY_RE.test(day)) return json({ error: 'bad day' }, 400);
+  const rec = await env.WARDROBE.get(`render:${day}`, 'json');
+  return rec ? json(rec) : json({ error: 'none' }, 404);
 }
 
 const SYNC_KEY = 'wardrobe:v1';
@@ -257,6 +284,8 @@ export default {
     if (path === '/sync') return handleSync(req, env, json);
     if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
     if (path === '/render' && req.method === 'POST') return handleRender(req, env, json);
+    if (path === '/render' && req.method === 'GET') return getRender(req, env, json);
+    if (path === '/render' && req.method === 'PUT') return putRender(req, env, json);
     if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
     let body;
