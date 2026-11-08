@@ -1,15 +1,17 @@
 /* Daily Wardrobe: shared constants and item helpers (no DOM access; also loaded by the analysis worker) */
 const TYPES={suit:'Suit',blazer:'Blazer',pants:'Dress pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat'};
-const COLORS={black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',navy:'#1b2a4a',brown:'#5a3a22',tan:'#b8946a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb'};
+const COLORS={black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',midgrey:'#a2a4a8',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',steelblue:'#56657f',deepblue:'#26326a',navy:'#1b2a4a',darknavy:'#1c1f2b',slate:'#3a3f4c',brown:'#5a3a22',tan:'#b8946a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',wine:'#7d2438',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb'};
 const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{const suiting=['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','other'];
   return{suit:suiting,blazer:suiting,pants:suiting,shirt:['solid','stripe','pinstripe','gingham','tattersall','check','herringbone','oxford','twill','other'],tie:['solid','stripe','polka-dot','paisley','check','foulard','knit','other']}})(),
 PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'oxford',plaid:'check'},tie:{texture:'knit',dots:'polka-dot',plaid:'check'}},
 normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pants'?'suit':t]||{};p=String(p||'').toLowerCase().trim().replace(/[\s_]+/g,'-');return l.includes(p)?p:l.includes(g[p])?g[p]:'solid'},
 patLabel=p=>String(p||'').replace(/-/g,' '),
-COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'lightgrey',silvergrey:'silver',silvergray:'silver',darkgray:'darkgrey',slate:'darkgrey',mediumgrey:'grey',mediumgray:'grey',
+COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'lightgrey',silvergrey:'silver',silvergray:'silver',darkgray:'darkgrey',middlegrey:'midgrey',middlegray:'midgrey',midgray:'midgrey',mediumgrey:'grey',mediumgray:'grey',
+  slateblue:'slate',slategrey:'slate',slategray:'slate',slatebluegrey:'slate',darkslatebluegrey:'slate',darkslate:'slate',bluegrey:'slate',bluegray:'slate',
+  steel:'steelblue',denimblue:'steelblue',denim:'steelblue',dustyblue:'steelblue',verydarknavy:'darknavy',navyblack:'darknavy',inkblue:'darknavy',ink:'darknavy',sapphire:'deepblue',
   lightblue:'lightblue',skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
-  darkblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'tan',camel:'tan',sand:'tan',taupe:'tan',
-  darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',wine:'burgundy',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
+  darkblue:'navy',navyblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'tan',camel:'tan',sand:'tan',taupe:'tan',
+  darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',winered:'wine',merlot:'wine',claret:'wine',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
   yellow:'gold',mustard:'gold',lavender:'purple',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
@@ -43,9 +45,10 @@ const seasonFit=(i,season)=>{const s=itemSeason(i);if(!i||!s||s==='all'||s===sea
 /* matching logic & helpers */
 const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
 /* display names for colours: 'lightblue' -> 'light blue' (the keys themselves stay as they are) */
-const COLOR_NAMES={lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey'};
+const COLOR_NAMES={lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey',midgrey:'mid grey',steelblue:'steel blue',deepblue:'deep blue',darknavy:'very dark navy',slate:'dark slate blue-grey'};
 const colName=c=>COLOR_NAMES[c]||c;
-const prettyCols=t=>String(t??'').replace(/\b(lightblue|lightgrey|darkgrey)\b/g,m=>COLOR_NAMES[m]);
+const COLOR_NAME_RE=new RegExp('\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b','g');
+const prettyCols=t=>String(t??'').replace(COLOR_NAME_RE,m=>COLOR_NAMES[m]);
 const COLOR_OPTS=()=>Object.keys(COLORS).map(c=>[c,colName(c)]);
 const colorDesc = i => {
   if(!i) return '';

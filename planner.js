@@ -1,6 +1,6 @@
 /* Daily Wardrobe: outfit rules, planning and scoring (no DOM access; also loaded by the analysis worker) */
 /* colour families for the rules: dark grey behaves like charcoal, light grey like grey, oxblood like burgundy */
-const FAM={darkgrey:'charcoal',lightgrey:'grey',oxblood:'burgundy'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
+const FAM={darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
 /* acceptable shoe colours for each trouser colour, best first */
 const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black','burgundy']};
 /* ---- clothing rules (suit/blazer, trousers, shirt, tie) ----
@@ -16,7 +16,7 @@ const lumOf=c=>{const h=COLORS[c];return h?parseInt(h.slice(1,3),16)*.3+parseInt
 /* shirt against the jacket: light, quiet shirts read as professional; the shirt should be lighter than the jacket */
 function shirtScore(t,s){
   const raw=primaryCol(s),pc=pcol(s);
-  let v=({white:5,lightblue:4,pink:2,cream:2,lightgrey:1,blue:0})[raw]??(['navy','black','charcoal','brown','burgundy','oxblood','green','olive','red','darkgrey'].includes(raw)?-10:-5);
+  let v=({white:5,lightblue:4,pink:2,cream:2,lightgrey:1,midgrey:-2,blue:0})[raw]??(['navy','black','charcoal','brown','burgundy','green','olive','red'].includes(pc)?-10:-5);
   if(!t)return v;const tc=pcol(t);
   if(pc===tc)v-=25;
   if(lumOf(raw)<LUM(t)+20)v-=15;
@@ -30,7 +30,7 @@ function tieScore(t,sh,x){
     if(xc===sc)v-=15;
     if(xc==='blue'&&raw==='lightblue')v-=6;
     if(d<25)v-=12;else if(d>60)v+=3;                       // the tie should be clearly darker than the shirt
-    if(raw!=='white'&&TIE_ON_SHIRT[raw])v+=TIE_ON_SHIRT[raw].includes(xc)?3:-4;
+    const ts=TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[sc];if(raw!=='white'&&ts)v+=ts.includes(xc)?3:-4;
     if(raw==='pink'&&['red','pink'].includes(xc))v-=10;
   }
   if(t){const tc=pcol(t);
@@ -104,7 +104,7 @@ const sockScore=(bot,sh,s)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?pcol(
 /* ---- leather goods ----
    Belt and shoes must be the same colour group (black / brown / tan / burgundy-oxblood) and a compatible finish:
    suede with suede, smooth with smooth or grain. Patent is black-tie only. Metals (buckle, watch, tie clip) should agree. */
-const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',burgundy:'burgundy',oxblood:'burgundy'})[c]||c;
+const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',burgundy:'burgundy',oxblood:'burgundy',wine:'burgundy'})[c]||c;
 const finish=l=>l==='suede'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':'smooth';
 const metalOf=i=>i&&i.metal||'silver';
 function beltFit(shoe,belt){
@@ -199,7 +199,7 @@ function rateOutfit(o){
   if(shirt&&tie){const raw=primaryCol(shirt),d=LUM(shirt)-LUM(tie);let v=0,why=[];
     if(d>=25)v+=8;else why.push('tie is not darker than the shirt');
     if(pcol(tie)!==pcol(shirt))v+=2;else why.push('tie and shirt are the same colour');
-    if(raw==='white'||!TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[raw].includes(pcol(tie)))v+=5;else{v+=1;why.push(`${primaryCol(tie)} is an unusual tie colour on a ${raw} shirt`)}
+    const ts=TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[pcol(shirt)];if(raw==='white'||!ts||ts.includes(pcol(tie)))v+=5;else{v+=1;why.push(`${primaryCol(tie)} is an unusual tie colour on a ${raw} shirt`)}
     add('Tie and shirt',v,15,why.join('; '))}
   if(tie&&top){const tc=pcol(top),xc=pcol(tie);let v,why='';
     if(xc===tc){if(tc==='black'){v=0;why='black tie on a black suit reads as funeral wear'}else if(pw(tie)>0||LUM(tie)<LUM(top)-15)v=10;else{v=6;why='tonal tie blends into the jacket'}}

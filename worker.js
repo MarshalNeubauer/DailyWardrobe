@@ -18,10 +18,13 @@ type — one of:
   shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks, cufflinks, overcoat (wool topcoat), raincoat (trench or mac)
 
 primaryColor — the dominant colour of the main fabric (the leather for shoes and belts, the strap for watches). One of:
-  black, charcoal, darkgrey, grey, lightgrey, white, cream, lightblue, blue, navy, brown, tan, olive, green, burgundy, oxblood, red,
-  purple, pink, gold, silver
-  (charcoal is near-black grey; darkgrey sits between charcoal and grey; lightgrey is pale grey; oxblood is a deep brownish red,
-  the colour of cordovan "color 8" shoes, darker and browner than burgundy)
+  black, charcoal, darkgrey, grey, midgrey, lightgrey, white, cream, lightblue, blue, steelblue, deepblue, navy, darknavy, slate,
+  brown, tan, olive, green, burgundy, wine, oxblood, red, purple, pink, gold, silver
+  (charcoal is near-black grey; darkgrey sits between charcoal and grey; midgrey is a medium grey, between grey and lightgrey;
+  lightgrey is pale grey; steelblue is a dusty, greyed mid blue (denim-like); deepblue is a rich, saturated dark blue, brighter
+  than navy; darknavy is navy so dark it is almost black; slate is a dark blue-grey, greyer than navy and bluer than charcoal;
+  wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
+  than burgundy)
 
 secondaryColor — the colour of the stripe, check line, dot or motif, from the same list. "none" if the item is plain.
 tertiaryColor — a third distinct colour in the pattern (e.g. the second line colour of a tattersall), or "none".
