@@ -87,6 +87,13 @@ async function ask(c){
     } catch(e) {
       parsed=result;
     }
+    return normTag(parsed,result.model);
+  } catch(e) {
+    return null;
+  }
+}
+/* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
+function normTag(parsed,model){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
       pattern:normPat(TYPES[parsed.type]?parsed.type:'suit',parsed.pattern),
@@ -95,12 +102,9 @@ async function ask(c){
       tertiaryColor:normColFor(parsed.type,parsed.tertiaryColor),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
       leather:LEATHERS.includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
-      model:result.model||'',
+      model:model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather'].includes(parsed.band)?parsed.band:null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null
     };
-  } catch(e) {
-    return null;
-  }
 }
 
 const loadImg=f=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(f)});
@@ -121,6 +125,7 @@ async function fill(q,ai){
 }
 
 async function addFiles(files){
+  if($('#multi-items')&&$('#multi-items').checked){for(const f of files)await addMulti(f);return}
   for(const f of files){
     const q={id:crypto.randomUUID(),busy:1};
     queue.push(q);
@@ -196,6 +201,45 @@ document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;docum
   if(!files.length&&!isLink(link))return;e.preventDefault();if($('#add').hidden)show('add');
   if(files.length)addBlobs(files);else addFromUrl(link.trim())});
 
+/* ---- several items in one photo: the worker lists every item with a rough box; each becomes its own card ---- */
+const multiMsg=t=>{const e=$('#multi-status');if(e)e.textContent=t||''};
+function multiNote(){multiMsg($('#multi-items').checked?'Photos you add now are split into one card per item. Check each card: colours and textures from a rail photo need a look, especially whites.':'')}
+/* crop the box (thousandths of the image) with a little margin, keeping at least a usable size */
+function cropBox(img,box,max){
+  const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,pad=.04;
+  let x=(box.x/1000-pad*box.w/1000)*W,y=(box.y/1000-pad*box.h/1000)*H,w=box.w/1000*W*(1+2*pad),h=box.h/1000*H*(1+2*pad);
+  const minS=Math.min(W,H)*.08;if(w<minS){x-=(minS-w)/2;w=minS}if(h<minS){y-=(minS-h)/2;h=minS}
+  x=Math.max(0,x);y=Math.max(0,y);w=Math.min(W-x,w);h=Math.min(H-y,h);
+  const k=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));
+  c.getContext('2d').drawImage(img,x,y,w,h,0,0,c.width,c.height);return c;
+}
+async function addMulti(f){
+  const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token')||'';
+  if(!w){multiMsg('Set the Worker URL in ⚙ Settings first: finding several items needs your worker.');return}
+  const holder={id:crypto.randomUUID(),busy:1,multiBusy:1};queue.push(holder);renderAdd();
+  try{
+    const img=await loadImg(f);
+    const r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
+      body:JSON.stringify({image:shrink(img,1568).toDataURL('image/jpeg',.85)})});
+    const j=await r.json().catch(()=>({}));
+    queue.splice(queue.indexOf(holder),1);
+    if(!r.ok){multiMsg(r.status===404||r.status===405?'Your worker doesn’t support several items yet: it needs the latest worker.js.':`Couldn’t find the items: ${j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
+    const list=j.items||[];
+    if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
+    list.forEach((it,n)=>{
+      const q={id:crypto.randomUUID(),multi:{n:n+1,of:list.length,confidence:it.confidence||'medium'}};
+      q.big=cropBox(img,it.box,800);q.photo=cropBox(img,it.box,360).toDataURL('image/jpeg',.8);
+      fill(q,normTag(it,j.model));queue.push(q);
+    });
+    aiModel=j.model||aiModel;aiError='';
+    const counts={};for(const it of list){const t=TYPES[it.type]?it.type:'item';counts[t]=(counts[t]||0)+1}
+    multiMsg(`Found ${list.length} item${list.length===1?'':'s'} (${Object.entries(counts).map(([t,c])=>{const n=(TYPES[t]||'item').toLowerCase();return `${c} ${n}${c>1&&!n.endsWith('s')?'s':''}`}).join(', ')}). Check each card, then Save all or confirm them one by one.`);
+  }catch(e){const k=queue.indexOf(holder);if(k>=0)queue.splice(k,1);multiMsg('Couldn’t read that photo: '+(e.message||e))}
+  renderAdd();
+}
+/* save every finished card in the queue (Skip the ones you don't want first) */
+async function saveAll(){const n=queue.filter(q=>!q.busy&&!q.err).length;for(let i=queue.length-1;i>=0;i--){const q=queue[i];if(!q.busy&&!q.err)await save(i)}
+  multiMsg(`Saved ${n} item${n===1?'':'s'} to your wardrobe.`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f])};
 const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual)renderAdd()};
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
@@ -489,8 +533,9 @@ function renderAdd(){
   closeSettings();
   const workerSet = !!localStorage.getItem('worker_url');
   if($('#note')) $('#note').textContent = !workerSet ? 'Worker URL not set! Tap ⚙ in the top right to configure your Cloudflare Worker.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
-  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?'<div class="card">Analyzing photo…</div>':q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
-`<div class="card">
+  const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
+  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card">${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
+`<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
 <div class="rv">${q.photo?`<img class="ph" src="${q.photo}" alt="">`:itemThumb(q)}</div>
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">

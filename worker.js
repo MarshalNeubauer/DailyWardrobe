@@ -105,19 +105,19 @@ const TAG_SCHEMA = {
     bezel: orNull(['fluted','smooth']),
   },
 };
-async function tagWithClaude(env, image) {
+async function tagWithClaude(env, image, opts = {}) {
   const m = image.match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   if (!m) return { status: 400, body: { error: 'no image' } };
   const model = env.CLAUDE_MODEL || CLAUDE_DEFAULT;
   const headers = { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
   const body = {
     model,
-    max_tokens: 4000,                      // thinking counts toward this; the JSON itself is ~100 tokens
-    output_config: { effort: 'low', format: { type: 'json_schema', schema: TAG_SCHEMA } },
+    max_tokens: opts.maxTokens || 4000,    // thinking counts toward this; a single item's JSON is ~100 tokens
+    output_config: { effort: opts.effort || 'low', format: { type: 'json_schema', schema: opts.schema || TAG_SCHEMA } },
     system: 'You are a menswear expert who labels clothing photos for a wardrobe app. Judge colours as the fabric would look in neutral daylight: correct for warm or cool lighting and shadows.',
     messages: [{ role: 'user', content: [
       { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
-      { type: 'text', text: PROMPT },
+      { type: 'text', text: opts.prompt || PROMPT },
     ] }],
   };
   // If a safety classifier declines (very unlikely for clothing photos), let the API retry on its recommended model.
@@ -137,6 +137,56 @@ async function tagWithClaude(env, image) {
   console.log(`tagged by Claude (${out.model}); tokens in ${out.usage && out.usage.input_tokens}, out ${out.usage && out.usage.output_tokens}`);
   try { return { status: 200, body: { ...JSON.parse(text), model: out.model } }; }
   catch { return { status: 502, body: { error: 'unparseable model output', detail: text.slice(0, 300) } }; }
+}
+
+/* POST /tag-many {image} -> {items: [tag + confidence + box], model}
+   One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,
+   left to right, each with the same fields as a single tag, a confidence, and a rough box (thousandths of the image). */
+const MULTI_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['items'],
+  properties: { items: { type: 'array', items: {
+    type: 'object', additionalProperties: false,
+    required: [...TAG_SCHEMA.required, 'confidence', 'box'],
+    properties: {
+      ...TAG_SCHEMA.properties,
+      confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+      box: { type: 'object', additionalProperties: false, required: ['x', 'y', 'w', 'h'],
+        properties: { x: { type: 'integer' }, y: { type: 'integer' }, w: { type: 'integer' }, h: { type: 'integer' } } },
+    },
+  } } },
+};
+const MULTI_PROMPT = `This photo shows several clothing items, for example dress shirts hanging on a closet rail, suits or blazers on
+hangers, or trousers hanging or folded. List every distinct item you can see, from left to right. Reply with JSON only.
+
+Rules:
+- Each physical item is listed once. Count sleeves, collars and hangers to separate neighbouring items; items that overlap
+  or are partly hidden still count if you can see enough of them to tell their colour.
+- A suit jacket hanging together with trousers of the same cloth is ONE item of type suit, not a suit and pants.
+- A jacket hanging on its own is a blazer, unless it is clearly a suit jacket (smooth worsted suiting, or its matching
+  trousers are visible); when you cannot tell, choose blazer and confidence medium or low.
+- Trousers hanging or folded on their own are type pants. Each pair is one item.
+- confidence: high when the colour, type and pattern are clearly visible; medium when part of the item is hidden or the
+  texture is hard to see; low when you are guessing.
+- box: the approximate rectangle around the visible part of the item, in thousandths of the image size: x and y are the
+  top-left corner (0-1000 from the left and top edges), w and h the width and height (0-1000).
+
+For each item give these fields:
+` + PROMPT.slice(PROMPT.indexOf('type —'));
+async function handleTagMany(req, env, json) {
+  if (env.APP_TOKEN && (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
+  const text = await req.text();
+  if (text.length > 15e6) return json({ error: 'photo too large' }, 413);
+  let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  const c = await tagWithClaude(env, String(body.image || ''), { schema: MULTI_SCHEMA, prompt: MULTI_PROMPT, maxTokens: 16000, effort: 'medium' });
+  if (c.status !== 200) return json(c.body, c.status);
+  const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
+  const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
+    const b = it.box || {}, x = clamp(b.x), y = clamp(b.y);
+    return { ...it, box: { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) } };
+  }).sort((a, b) => a.box.x + a.box.w / 2 - (b.box.x + b.box.w / 2));
+  console.log(`tagged ${items.length} items in one photo`);
+  return json({ items, model: c.body.model });
 }
 
 /* GET /sync returns the stored backup {rev, saved, data}; PUT /sync {baseRev, data} stores a new one.
@@ -298,6 +348,7 @@ export default {
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
     if (path === '/sync') return handleSync(req, env, json);
     if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
+    if (path === '/tag-many' && req.method === 'POST') return handleTagMany(req, env, json);
     if (path === '/render' && req.method === 'POST') return handleRender(req, env, json);
     if (path === '/render' && req.method === 'GET') return getRender(req, env, json);
     if (path === '/render' && req.method === 'PUT') return putRender(req, env, json);
