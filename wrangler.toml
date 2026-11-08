@@ -1,0 +1,19 @@
+# Cloudflare Worker config, used by .github/workflows/deploy-worker.yml to deploy worker.js automatically.
+# The account ID and KV namespace ID come from GitHub Actions variables at deploy time (placeholders below).
+# Secrets (APP_TOKEN, ANTHROPIC_API_KEY, OPENAI_API_KEY) stay in Cloudflare: a deploy never changes them.
+name = "wardrobevision"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+# keep the plain variables set in the Cloudflare dashboard (ALLOWED_ORIGIN, CLAUDE_MODEL, OPENAI_IMAGE_MODEL, ...)
+keep_vars = true
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "WARDROBE"
+id = "WARDROBE_KV_ID"
+
+[observability]
+enabled = true
