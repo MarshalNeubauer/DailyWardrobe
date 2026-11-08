@@ -395,10 +395,17 @@ let renders={},rendering=false,renderMsg='',figView='photo';
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* the combination a photo shows: which pieces, and everything about them that changes how they look */
-const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle','cuff'];
-const comboSig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,...LOOK_FIELDS.map(f=>i[f]??''),i.stripes?JSON.stringify(i.stripes):''].join('/'):'-'}).join('|');
+/* Which look a photo shows. The shirt counts only by its base colour (any white shirt shares the photo made with another
+   white shirt); the jacket, tie, clip and watch count by how they look (colours, pattern, metal, dial), not by which item it
+   is, so identical items share too. */
+const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
+const comboSig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];if(!i)return '-';
+  return s==='shirt'?'shirt/'+primaryCol(i):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')}).join('|');
 const fnv64=t=>{let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}return h.toString(16).padStart(16,'0')};
 const comboKey=o=>'c'+fnv64(comboSig(o));
+/* the key photos were saved under before shirts counted by colour only; moved over on first use */
+const comboSigV1=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,...LOOK_FIELDS.map(f=>i[f]??''),i.cuff??'',i.stripes?JSON.stringify(i.stripes):''].join('/'):'-'}).join('|');
+const comboKeyV1=o=>'c'+fnv64(comboSigV1(o));
 const figSig=comboSig;
 /* photos saved before combinations were used were keyed by date with this signature; they are moved over on first use */
 const legacySig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,i.primaryColor,i.secondaryColor,i.tertiaryColor,i.pattern,i.metal,i.updated||0].join('/'):'-'}).join('|');
@@ -406,6 +413,7 @@ async function keepRender(ck,rec,share){renders[ck]=rec;await metaPut('render:'+
 const workerBase=()=>{const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');return w&&tok?{url:new URL('render',w.replace(/\/*$/,'/')).href,tok}:null};
 function shareRender(ck,rec){const W=workerBase();if(W)fetch(W.url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({key:ck,rec})}).catch(()=>{})}
 const renderFor=o=>{const ck=comboKey(o);if(renders[ck])return renders[ck];
+  const v1=renders[comboKeyV1(o)];if(v1){const rec={...v1,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
   const old=renders[key(sel)];if(old&&old.sig===legacySig(o)){const rec={...old,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
   return null};
 /* a combination with no photo here: ask the worker (another device may have made it); one with a photo only here: share it */
@@ -416,8 +424,9 @@ async function fetchRemoteRender(o,day){
     const get=async q=>{const r=await fetch(W.url+'?'+q,{headers:{'x-app-token':W.tok},cache:'no-store'});return r.ok?r.json():null};
     const cur=renders[ck];let j=await get('key='+ck);
     if(!j){if(cur){shareRender(ck,cur);return}
-      // a photo the worker kept for this date before combinations were used
-      const old=await get('day='+encodeURIComponent(day));if(old&&old.img&&old.sig===legacySig(o))j={...old,sig:comboSig(o),legacy:true}}
+      // a photo the worker kept under the earlier combination key, or for this date before combinations were used
+      const v1=await get('key='+comboKeyV1(o));if(v1&&v1.img)j={...v1,sig:comboSig(o),legacy:true};
+      else{const old=await get('day='+encodeURIComponent(day));if(old&&old.img&&old.sig===legacySig(o))j={...old,sig:comboSig(o),legacy:true}}}
     if(!j||!j.img)return;
     if(cur&&cur.t>(j.t||0)){shareRender(ck,cur);return}if(cur&&cur.t===(j.t||0))return;
     await keepRender(ck,{sig:comboSig(o),img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},!!j.legacy);
@@ -427,7 +436,7 @@ async function fetchRemoteRender(o,day){
 function setFigView(v){figView=v;renderToday()}
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
 function outfitText(o){
-  const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a ${nm(o.shirt)}${o.shirt.cuff==='french'?' with French cuffs':''}`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${o.clip.metal||'silver'} tie bar`,
+  const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${o.clip.metal||'silver'} tie bar`,
     o.watch&&`a wristwatch with a ${o.watch.metal||'steel'} case, ${watchOpts(o.watch).dial} dial and ${watchOpts(o.watch).band==='bracelet'?'metal bracelet':`${colName(primaryCol(o.watch))} leather strap`}`,o.links&&`${o.links.metal||'silver'} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
@@ -446,7 +455,7 @@ async function generateRender(){
   const day=key(sel);rendering=true;renderMsg='This takes about 30–90 seconds.';renderToday();
   try{
     const image=await figurePng(o);
-    const refs=['top','shirt','tie'].map(s=>o[s]&&o[s].photo).filter(Boolean);
+    const refs=['top','tie'].map(s=>o[s]&&o[s].photo).filter(Boolean);   // no shirt photo: the photo is shared by every shirt of that colour
     const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o)})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok){renderMsg=(r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.error||`HTTP ${r.status}`);return}

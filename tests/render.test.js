@@ -24,9 +24,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(await p.isVisible('text=Generate realistic photo'),'Today has a Generate realistic photo button');
     await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(sent&&sent.auth==='Bearer sk-o'&&sent.model==='gpt-image-2'&&sent.size==='1024x1024'&&sent.quality==='medium'&&sent.fmt==='jpeg','the worker calls the OpenAI image edit API with the key, model, size and quality');
-    const exp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {n:1+['top','shirt','tie'].filter(s=>o[s]&&o[s].photo).length,top:prettyCols(nm(o.top)),shirt:prettyCols(nm(o.shirt)),tie:prettyCols(nm(o.tie))}});
-    ok(exp.n>=2&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the item photos (${sent.images.length})`);
-    ok([exp.top,exp.shirt,exp.tie].every(t=>sent.prompt.includes(t))&&/same pose/i.test(sent.prompt),'the prompt describes the outfit and asks to keep the pose');
+    const exp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {shirtHasPhoto:!!o.shirt.photo,n:1+['top','tie'].filter(s=>o[s]&&o[s].photo).length,top:prettyCols(nm(o.top)),shirt:prettyCols(nm(o.shirt)),tie:prettyCols(nm(o.tie))}});
+    ok(exp.shirtHasPhoto&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the suit/tie photos, not the shirt's (${sent.images.length})`);
+    ok([exp.top,exp.tie].every(t=>sent.prompt.includes(t))&&/a plain light blue dress shirt/.test(sent.prompt)&&/same pose/i.test(sent.prompt),'the prompt describes the outfit (the shirt by its colour only) and asks to keep the pose');
     const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:document.querySelector('.fig.photo small').textContent,btn:document.querySelector('.render-btn').textContent}));
     ok(shown.img&&/gpt-image-2/.test(shown.by)&&shown.btn==='Regenerate photo','the photo replaces the illustration, says which model made it');
     await p.click('.render-ctl >> text=Illustration');
