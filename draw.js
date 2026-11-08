@@ -1,6 +1,4 @@
-/* Daily Wardrobe: SVG drawings (mannequin, accessories, thumbnails) */
-/* Vector mannequin: resolution-independent SVG with procedural fabric patterns */
-const mirror=d=>d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g,(_,x,y)=>`${+(240-x).toFixed(2)},${y}`);
+/* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
 
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
 function fabricDef(id,item,role){
@@ -98,7 +96,7 @@ function fabricDef(id,item,role){
   return wool?tile(4,4,twill):tile(4,4,'');
 }
 
-/* ---------- accessory drawings, shared by the mannequin and the wardrobe thumbnails ----------
+/* ---------- accessory drawings for the wardrobe thumbnails and tiles ----------
    Every function takes an id prefix P so several drawings can live on one page without id clashes. */
 
 /* leather surface: base colour, grain texture and a highlight whose strength depends on the leather */
@@ -114,18 +112,6 @@ function leatherLayers(P,item,d,toe){
   if(L==='patent')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.18}" rx="${toe.r*.55}" ry="${toe.r*.09}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".75"/>`;
   if(L==='cordovan')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.15}" rx="${toe.r*.4}" ry="${toe.r*.12}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".3"/>`;
   return {defs,body:`<path d="${d}" fill="${col}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/>${tex}<path d="${d}" fill="url(#${P}hl)"/>${extra}`,sole:mix(base,'#000',.6)};
-}
-
-/* cap-toe oxford, front three-quarter view (left foot, toe turned out); the trouser hem covers the top */
-function drawOxfordFront(item,P){
-  const U='M86,545 L118,545 L119,560 C119,566 116,568 110,568 L73,568 C65,568 62,563.5 65,558.5 C68,553.5 76,550 86,548.5 Z';
-  const lay=leatherLayers(P,item,U,{x:77,y:557,r:14,rot:-10}),lace=item?mix(colOf(item),'#000',.45):'#111';
-  return `<defs>${lay.defs}</defs><path d="${U}" transform="translate(0,2.6)" fill="${lay.sole}"/>${lay.body}`+
-    `<path d="M118.6,565.8 C117,567.4 114,567.6 110,567.6 L73,567.6 C67,567.6 63.8,564.4 64.8,560.4" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width=".35" stroke-dasharray=".7 .5"/>`+
-    `<path d="M80,550.2 C75.5,554 75,562 79.3,567.6" fill="none" stroke="#000" stroke-opacity=".4" stroke-width=".6"/>`+
-    `<path d="M81.5,549.8 C77,553.8 76.5,562 80.8,567.6" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".35" stroke-dasharray=".7 .5"/>`+
-    `<path d="M95.5,553.5 L100.5,559.4 L105.5,553.5" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".55"/>`+
-    `<path d="M97.2,555.4 L103.8,555.4 M98.7,557.2 L102.3,557.2" stroke="${lace}" stroke-width=".65"/>`;
 }
 
 /* cap-toe oxford in side profile (toe left), for wardrobe thumbnails; box 0..100 x 0..50 */
@@ -274,148 +260,6 @@ function itemThumb(i){
   else g=`<rect x="10" y="10" width="80" height="80" rx="8" fill="${colOf(i)}"/>`;
   return `<div class="ph thumb"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${TYPES[i.type]||'Item'}">${g}</svg></div>`;
 }
-
-function renderMannequinCanvas(o, containerEl){
-  const FORM='#dcd6cb';
-  const defs=[],fill={};
-  for(const [role,item] of [['top',o.top],['bot',o.bot],['shirt',o.shirt],['tie',o.tie]]){
-    if(!item)continue;
-    defs.push(fabricDef('fab-'+role,item,role));fill[role]=`url(#fab-${role})`;
-  }
-  if(o.coat){defs.push(fabricDef('fab-coat',o.coat,'top'));fill.coat='url(#fab-coat)'}
-  const F=r=>fill[r]||(r==='shirt'?'#f4f3ee':FORM);
-  const shade='url(#shade)',seam='stroke="#000" stroke-opacity=".28" stroke-width=".8" stroke-linejoin="round"';
-  const both=d=>d+' '+mirror(d);
-  const part=(d,f,extra='')=>`<path d="${d}" fill="${f}" ${seam} ${extra}/><path d="${d}" fill="${shade}" pointer-events="none"/>`;
-
-  /* geometry (viewBox 240x600, figure centred on x=120) */
-  const torso='M106,90 C92,93 76,98 63,105 C58,140 64,190 75,240 C79,270 78,300 76,336 L164,336 C162,300 161,270 165,240 C176,190 182,140 177,105 C164,98 148,93 134,90 Z';
-  const sleeveL='M63,105 C53,109 49,122 47,142 L41,312 L67,316 L74,172 C77,142 75,118 63,105 Z';
-  const legL='M79,302 L120,302 L118,553 Q102,557.5 86,553 Z'; // hem breaks slightly over the shoe
-  const cuffL='M41,307 L67,311 L66,323 L41,319 Z';
-  const lapelL='M108,92 L120,228 C108,206 97,178 89,150 L86,124 L96,121 L93,112 L103,97 Z';
-  const collarL='M120,97 L109,84 L103,89 L110,116 Z';
-  const vee='M106,90 L134,90 L120,230 Z';
-  /* ghost mannequin: no head or hands; show the inside back of the collar and dark sleeve openings instead */
-  const neckBack=()=>`<path d="M104,91 C106,79 134,79 136,91 L133,92 C130,84 110,84 107,92 Z" fill="${F('shirt')}" ${seam}/><path d="M104,91 C106,79 134,79 136,91 L133,92 C130,84 110,84 107,92 Z" fill="#000" opacity=".12"/><ellipse cx="120" cy="90.5" rx="13" ry="4.2" fill="#1b1d21" opacity=".78"/>`;
-  const opening=(cx,cy,rx,tilt)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="2.3" transform="rotate(${tilt} ${cx} ${cy})" fill="#1b1d21" opacity=".8"/>`;
-  const hemGap='M120,298 C119,316 114,328 104,337 L136,337 C126,328 121,316 120,298 Z';
-
-  let s=`<svg viewBox="-40 70 314 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outfit preview"><defs>
-  <linearGradient id="shade" x1="0" x2="1" y1="0" y2="0">
-    <stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".32" stop-color="#fff" stop-opacity=".10"/>
-    <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
-  <radialGradient id="shine" cx=".35" cy=".35" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-  <pattern id="silk" patternUnits="userSpaceOnUse" width="1.4" height="1.4" patternTransform="rotate(45)"><rect width=".7" height=".7" fill="#000" opacity=".16"/><rect x=".7" y=".7" width=".7" height=".7" fill="#fff" opacity=".07"/></pattern>
-  ${defs.join('')}</defs>`;
-
-
-  /* oxfords first, then the trousers resting on them with a slight break */
-  s+=drawOxfordFront(o.shoes,'shL')+`<g transform="translate(240,0) scale(-1,1)">${drawOxfordFront(o.shoes,'shR')}</g>`;
-  s+=part(both(legL),F('bot'));
-  s+=`<path d="${both('M100,330 L102,548')}" stroke="#000" stroke-opacity=".22" stroke-width=".8" fill="none"/>`;
-  s+=`<path d="${both('M101,330 L103,548')}" stroke="#fff" stroke-opacity=".12" stroke-width=".6" fill="none"/>`;
-  /* floating accessories, positioned from the wearer's point of view:
-     sock beside the right foot (viewer's left) with its toe pointing the same way as that shoe;
-     watch beside the left wrist with the buckled belt just below it */
-  if(o.socks)s+=`<g transform="translate(58,433) scale(-2,2)">${drawSock(colOf(o.socks),'sk-')}</g>`;
-  if(o.belt)s+=`<g transform="translate(231,386)">${drawBelt(o.belt,'bt-')}</g>`; // just below the watch
-
-  if(o.top){
-    /* shirt cuffs under the sleeves */
-    s+=part(both(cuffL),F('shirt'));
-    s+=opening(53.5,321,12.4,9)+opening(186.5,321,12.4,-9);
-    /* jacket body */
-    s+=part(torso,F('top'));
-    /* shirt V, tie, collar */
-    s+=`<path d="${vee}" fill="${F('shirt')}"/><path d="${vee}" fill="url(#shade)" opacity=".5"/>`;
-    s+=neckBack();
-    s+=`<path d="M120,118 L120,230" stroke="#000" stroke-opacity=".15" stroke-width=".7"/>`;
-  }else{
-    /* no jacket: shirt is the outer layer */
-    s+=part(both(sleeveL),F('shirt'));
-    s+=opening(54,314,12.8,9)+opening(186,314,12.8,-9);
-    s+=neckBack();
-    // no jacket: the shirt is tucked in, so it stops at the waistband and the belt shows
-    s+=`<clipPath id="tuck"><rect x="0" y="0" width="240" height="304"/></clipPath><g clip-path="url(#tuck)">${part(torso,F('shirt'))}</g>`;
-    s+=`<path d="M120,112 L120,302" stroke="#000" stroke-opacity=".2" stroke-width="1"/>`;
-    for(let y=140;y<300;y+=34)s+=`<circle cx="120" cy="${y}" r="1.6" fill="#fff" stroke="#000" stroke-opacity=".25" stroke-width=".4"/>`;
-    if(o.belt){const bc=colOf(o.belt),[bL,bM,bD]=METAL_TONES[o.belt.metal]||METAL_TONES.silver;
-      s+=`<path d="M78.6,298.4 L161.4,298.4 L161.2,305.6 L78.8,305.6 Z" fill="${bc}" ${seam}/><path d="M80,299.6 H160 M80,304.4 H160" stroke="${mix(bc,'#fff',.4)}" stroke-opacity=".5" stroke-width=".3" stroke-dasharray=".9 .6"/>`+
-         `<path d="M78.6,298.4 L161.4,298.4 L161.2,305.6 L78.8,305.6 Z" fill="url(#shade)"/>`+
-         `<defs>${buckleDefs('wb-',o.belt.metal)}</defs><rect x="114" y="297.4" width="11" height="9.2" rx="1.8" fill="none" stroke="${bD}" stroke-width="2"/><rect x="114" y="297.4" width="11" height="9.2" rx="1.8" fill="none" stroke="url(#wb-bm)" stroke-width="1.5"/><path d="M114.2,302 L121,302" stroke="url(#wb-bm)" stroke-width=".9"/>`;}
-  }
-  if(o.tie){
-    const knot='M112,94 L128,94 L125,110 L115,110 Z';
-    const blade='M115,110 L125,110 L130,212 L120,224 L110,212 Z';
-    // with a jacket on, the tie is only visible through the V opening; clip it so the tip never pokes past the lapels
-    s+=o.top?`<clipPath id="vee-clip"><path d="${vee}"/></clipPath><g clip-path="url(#vee-clip)">`:'<g>';
-    s+=part(blade,F('tie'));s+=part(knot,F('tie'));
-    s+=`<path d="${blade}" fill="url(#silk)"/><path d="${knot}" fill="url(#silk)"/>`;
-    s+=`<path d="M119,111 C119,118 120,124 120,130" stroke="#000" stroke-opacity=".3" stroke-width=".8" fill="none"/>`;
-    s+='</g>';
-  }
-  if(o.top&&o.vest){
-    // matching vest (three-piece suit), seen in the jacket's V: its own narrower V, five buttons
-    const vL='M98,84 L113,84 L114,104 C116,124 118,140 120,158 L120.5,240 L98,240 Z';
-    s+=`<clipPath id="vest-clip"><path d="${vee}"/></clipPath><g class="vest-layer" clip-path="url(#vest-clip)">`+part(vL,F('top'))+part(mirror(vL),F('top'))+
-      `<path d="M120,158 L120,240" stroke="#000" stroke-opacity=".35" stroke-width=".7"/>`+[165,177,189,201,213].map(y=>`<circle cx="120.4" cy="${y}" r="1.5" fill="${lum(colOf(o.top))>.5?'#3a3530':'#141414'}"/>`).join('')+'</g>';
-  }
-  s+=part(both(collarL),F('shirt'));
-
-  if(o.top){
-    /* lapels, closure, hem opening */
-    s+=part(both(lapelL),F('top'));
-    s+=`<path d="${both('M109,98 C111,140 115,190 120,228')}" stroke="#fff" stroke-opacity=".18" stroke-width="1" fill="none"/>`;
-    s+=`<path d="${hemGap}" fill="${F('bot')}"/>`;
-    s+=`<path d="M120,228 L120,298 C119,316 114,328 104,337 M120,298 C121,316 126,328 136,337" stroke="#000" stroke-opacity=".38" stroke-width=".9" fill="none"/>`;
-    /* pockets */
-    s+=`<path d="${both('M80,286 L106,288 L106,296 L80,294 Z')}" fill="${F('top')}" ${seam}/>`;
-    s+=`<path d="M138,160 L160,157 L160,161 L138,164 Z" fill="${F('top')}" ${seam}/>`;
-    /* buttons */
-    const btn=lum(colOf(o.top))>.5?'#3a3530':'#141414';
-    for(const y of [242,276])s+=`<circle cx="122" cy="${y}" r="2.6" fill="${btn}"/><circle cx="121.4" cy="${y-.6}" r="1" fill="#fff" opacity=".18"/>`;
-    /* sleeves last so they overlap the body */
-    s+=part(both(sleeveL),F('top'));
-    for(const x of [58,61,64])s+=`<circle cx="${x}" cy="${306-(x-58)*.2}" r="1.1" fill="${btn}"/><circle cx="${240-x}" cy="${306-(x-58)*.2}" r="1.1" fill="${btn}"/>`;
-  }
-
-  /* coat worn open over the outfit: covers the shoulders, sleeves and sides, leaves the suit, shirt and tie visible */
-  if(o.coat){
-    const c=colOf(o.coat),edge=mix(c,'#000',.4),lining=mix(c,'#000',.5),rain=o.coat.type==='raincoat';
-    const panelL='M97,91 C86,94 70,98 55,105 C49,150 52,220 56,300 L60,448 L88,452 L86,300 C85,230 84,170 85,150 Z';
-    const liningL='M97,91 L85,150 C84,170 85,230 86,300 L88,452 L83,452 L81,300 C80,230 80,170 81,152 L94,92 Z';
-    const lapelL=rain?'M97,91 L85,150 L72,128 L74,112 L84,110 L82,100 Z':'M97,91 L85,150 L74,126 L77,112 L87,111 L85,101 Z';
-    const sleeveC='M55,105 C45,109 40,122 38,142 L33,312 L66,317 L74,170 C76,142 70,118 55,105 Z';
-    s+=`<g class="coat-layer" data-coat="${o.coat.type}">`;
-    s+=part(both(panelL),F('coat'))+`<path d="${both(liningL)}" fill="${lining}" opacity=".85"/>`;
-    s+=part(both(sleeveC),F('coat'))+part(both(lapelL),F('coat'));
-    s+=`<path d="${both('M97,91 L85,150 C84,170 85,230 86,300 L88,452')}" fill="none" stroke="${edge}" stroke-width=".7"/>`;
-    s+=`<path d="${both('M84,110 L74,112 M86,111 L77,112')}" stroke="${edge}" stroke-width=".6" fill="none"/>`;
-    if(rain){
-      // trench: epaulettes, storm flap, belt with a hanging end, double-breasted buttons
-      s+=`<path d="${both('M62,104 L82,99 L83,103 L63,108 Z')}" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/>`;
-      s+=`<path d="M57,110 L83,114 L82,150 L56,146 Z" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/><path d="M57,110 L83,114 L82,150 L56,146 Z" fill="url(#shade)" opacity=".6"/>`;
-      s+=`<path d="${both('M55,276 L86,277 L86,285 L56,284 Z')}" fill="${F('coat')}" stroke="${edge}" stroke-width=".6"/>`;
-      s+=`<path d="M64,284 L70,284 L72,338 L66,340 Z" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/>`;
-      s+=`<rect x="167" y="275.5" width="8" height="10" rx="1" fill="none" stroke="${mix(c,'#000',.55)}" stroke-width="1.1"/>`;
-      for(const y of [190,230,320,360])s+=`<circle cx="78" cy="${y}" r="1.6" fill="${edge}"/><circle cx="162" cy="${y}" r="1.6" fill="${edge}"/>`;
-    }else{
-      // overcoat: single-breasted, buttons on one front, pocket flaps
-      for(const y of [200,250,300,350])s+=`<circle cx="79" cy="${y}" r="1.8" fill="${edge}"/>`;
-      s+=`<path d="${both('M60,330 L84,332 L84,338 L60,336 Z')}" fill="${F('coat')}" stroke="${edge}" stroke-width=".5"/>`;
-    }
-    s+='</g>';
-  }
-  /* accessories */
-  if(o.links){const [mL,mM,mD]=METAL_TONES[o.links.metal]||METAL_TONES.silver,y=o.top?317:310;
-    for(const x of [44.5,195.5])s+=`<circle cx="${x}" cy="${y}" r="2.4" fill="${mM}" stroke="${mD}" stroke-width=".5"/><circle cx="${x-.7}" cy="${y-.7}" r=".8" fill="${mL}"/>`}
-  if(o.watch)s+=`<g transform="translate(231,318) scale(.8)">${drawWatch(o.watch,'wt-')}</g>`;
-  if(o.clip&&o.tie){const m=METAL[o.clip.metal]||METAL.other;s+=`<rect x="111" y="170" width="18" height="2.4" rx="1" fill="${m}" stroke="#000" stroke-opacity=".3" stroke-width=".4"/>`}
-
-  containerEl.innerHTML=s+'</svg>';
-}
-
 
 /* ---------- torso figure (figure.js), worn with the app's tagged-colour fabrics ----------
    The figure is drawn in a 390x400 box, about 2.7x the mannequin's scale; these factors size each weave so a

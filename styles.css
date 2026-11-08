@@ -19,7 +19,6 @@ header button{background:none;border:0;color:inherit;font-size:22px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:900}
 nav button{flex:1;border:0;border-radius:0;background:none;padding:16px 0;font-weight:600;color:var(--mut)}
 nav button.on{color:var(--ink);box-shadow:inset 0 3px var(--acc)}
-.man>svg{display:block;margin:6px auto;width:min(330px,88vw);height:auto;max-height:calc(100svh - 250px)} /* whole outfit fits above the tab bar */
 .list{background:var(--card);border-radius:14px;padding:6px 14px;margin:8px 0 20px}
 .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
 .row .mut{width:68px;flex:none}.row .mut.none{width:auto;flex:1}
@@ -64,7 +63,6 @@ button{touch-action:manipulation}
   .daygrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
   .daygrid .stage{margin:0;padding:0;position:sticky;top:8px}
   .daygrid .side{padding-top:8px}
-  .man>svg{width:100%;max-width:440px;max-height:calc(100svh - 240px)}
   .grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
   #add{max-width:620px;margin:auto}
   .gi[style*="grid-column"]{max-width:620px}
@@ -110,7 +108,7 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .below .tile{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 4px;min-height:44px;color:inherit}
 .below .tile .ph.thumb{width:100%;aspect-ratio:1;background:none}.below .tile svg{width:100%;height:100%;display:block}
 .below .tile small{color:var(--mut);font-size:12px}
-.figmode{display:flex;justify-content:center;gap:0;margin:10px auto 4px}
+.figmode{display:flex;justify-content:center;gap:0}
 .figmode button{border:1px solid var(--line);background:var(--card);color:var(--mut);padding:8px 14px;min-height:40px;margin:0}
 .figmode button:first-child{border-radius:10px 0 0 10px}.figmode button:last-child{border-radius:0 10px 10px 0;border-left:0}
 .figmode button.on{color:var(--ink);font-weight:600;background:var(--bg)}

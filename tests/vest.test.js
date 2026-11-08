@@ -3,7 +3,7 @@
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
-  await p.evaluate(()=>{localStorage.removeItem('fig_mode');let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+  await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
     items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('suit','grey',{vest:'no'}),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),
       I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tieclip','silver',{metal:'silver'}),I('watch','black',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
     settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';weather={};dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
@@ -34,10 +34,6 @@ module.exports=async({ok,chromium,url})=>{
   ok(off.reset,'the day shows Reset changes');
   await p.click('.vest-row .swap');await p.waitForFunction(()=>planFor()[key(sel)].vest===true,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>planFor()[key(sel)].vest),'and it can be put back on');
-  // full mannequin draws it too
-  await p.click('.figmode >> text=Full outfit');
-  ok(await p.evaluate(()=>!!document.querySelector('#mannequin-container .vest-layer')&&document.querySelectorAll('#mannequin-container .vest-layer circle').length===5),'Full outfit: the mannequin wears the 5-button vest');
-  await p.click('.figmode >> text=Close-up');
   // suits: vest option in the editor; new suits default to having one
   ok(await p.evaluate(()=>{editing='suit0';show('wardrobe');const sel=[...document.querySelectorAll('#wardrobe select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));editing=null;return !!sel&&sel.value==='yes'}),'a suit\'s editor has a Vest option (Matching vest / No vest)');
   // past days keep what was worn

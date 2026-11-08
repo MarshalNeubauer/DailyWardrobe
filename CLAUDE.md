@@ -24,7 +24,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 | `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM) |
 | `detect.js` | stripe/check detection from photos (canvas) |
 | `figure.js` | Today's torso figure (from the design handoff; don't redraw it). Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js |
-| `draw.js` | SVG mannequin (the "Full outfit" view), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails |
+| `draw.js` | procedural fabric patterns (`fabricDef`), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails |
 | `analysis.js` | "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker) |
 | `app.js` | IndexedDB storage (items, day history, settings; generated photos in `meta` as `render:<date>`, device-only), forms, screens, swipe gestures, weather |
 | `sync.js` | backup/sync through the worker's `/sync` endpoint (KV), backup file download/restore |

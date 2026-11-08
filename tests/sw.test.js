@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,ROOT})=>{
   // offline: the app shell still loads and renders
   await ctx.setOffline(true);await page.reload();await page.waitForTimeout(500);
   ok((await page.textContent('h1')).includes('Daily Wardrobe')&&await page.$('#n-today')!==null,'app loads offline from the cache');
-  ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof renderMannequinCanvas==='function'),'all scripts available offline');
+  ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitFigureSvg==='function'),'all scripts available offline');
   await ctx.setOffline(false);
   // cross-origin requests are not intercepted
   const sw=await page.evaluate(()=>fetch('https://example.invalid/x').then(()=>'ok',e=>'network error'));
