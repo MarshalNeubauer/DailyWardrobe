@@ -239,6 +239,19 @@ function drawBelt(item,P){
     `<path d="M-8,.4 L3.2,.4" stroke="${mD}" stroke-width="1.5" stroke-linecap="round"/><path d="M-8,.1 L3,.1" stroke="url(#${P}bm)" stroke-width="1" stroke-linecap="round"/>`;
 }
 
+/* small colour swatch for the item list: drawn from the tagged colours and pattern (like the mannequin), never cropped
+   from the photo, so it always matches the outfit and isn't tinted by the photo's lighting */
+let swN=0;
+function swatchSVG(i){
+  const P='sw'+(swN++)+'-';let body;
+  if(FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
+    body=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
+  else{const metal=(i.type==='watch'&&watchOpts(i).band==='bracelet')||i.type==='cufflinks'||i.type==='tieclip';
+    const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,c=metal?mM:colOf(i);
+    body=`<defs><linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${metal?.45:.15}"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><rect width="16" height="16" fill="${c}"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
+  return `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
+}
+
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 function itemThumb(i){

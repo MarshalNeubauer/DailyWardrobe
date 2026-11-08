@@ -42,14 +42,19 @@ const seasonFit=(i,season)=>{const s=itemSeason(i);if(!i||!s||s==='all'||s===sea
 
 /* matching logic & helpers */
 const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
+/* display names for colours: 'lightblue' -> 'light blue' (the keys themselves stay as they are) */
+const COLOR_NAMES={lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey'};
+const colName=c=>COLOR_NAMES[c]||c;
+const prettyCols=t=>String(t??'').replace(/\b(lightblue|lightgrey|darkgrey)\b/g,m=>COLOR_NAMES[m]);
+const COLOR_OPTS=()=>Object.keys(COLORS).map(c=>[c,colName(c)]);
 const colorDesc = i => {
   if(!i) return '';
   let cols=[primaryCol(i)];
   if(i.secondaryColor&&i.secondaryColor!=='none') cols.push(i.secondaryColor);
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
-  return cols.join(' & ');
+  return cols.map(colName).join(' & ');
 };
-const desc=i=>i?((i.type==='watch'&&watchOpts(i).band==='bracelet')||i.type==='cufflinks'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal?((i.type==='watch'&&watchOpts(i).band==='bracelet')||i.type==='cufflinks'?'':' · ')+i.metal:'')+(i.type==='watch'?` · ${watchOpts(i).dial} dial · ${watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
+const desc=i=>i?((i.type==='watch'&&watchOpts(i).band==='bracelet')||i.type==='cufflinks'||i.type==='tieclip'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal?((i.type==='watch'&&watchOpts(i).band==='bracelet')||i.type==='cufflinks'||i.type==='tieclip'?'':' · ')+i.metal:'')+(i.type==='watch'?` · ${watchOpts(i).dial} dial · ${watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'?' '+patLabel(i.pattern):'')+' '+(TYPES[i.type]||'item').toLowerCase():'none';
 const bg=i=>i?(i.swatch?`url(${i.swatch})`:COLORS[primaryCol(i)]||METAL[i.metal]||'#ccc'):'#ccc';
 
