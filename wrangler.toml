@@ -5,6 +5,8 @@ name = "wardrobevision"
 main = "worker.js"
 compatibility_date = "2026-10-01"
 workers_dev = true
+# no per-version public preview links
+preview_urls = false
 # keep the plain variables set in the Cloudflare dashboard (ALLOWED_ORIGIN, CLAUDE_MODEL, OPENAI_IMAGE_MODEL, ...)
 keep_vars = true
 

@@ -4,6 +4,7 @@ const fs=require('fs'),path=require('path');
 module.exports=async({ok,ROOT})=>{
   const toml=fs.readFileSync(path.join(ROOT,'wrangler.toml'),'utf8'),wf=fs.readFileSync(path.join(ROOT,'.github/workflows/deploy-worker.yml'),'utf8'),src=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
   ok(/^name = "wardrobevision"$/m.test(toml)&&/^main = "worker.js"$/m.test(toml),'wrangler.toml deploys worker.js as wardrobevision');
+  ok(/^preview_urls = false$/m.test(toml),'per-version preview links are off');
   ok(/^keep_vars = true$/m.test(toml),'dashboard variables (ALLOWED_ORIGIN, model choices) are kept on deploy');
   ok(/\[ai\][\s\S]*?binding = "AI"/.test(toml)&&/\[\[kv_namespaces\]\][\s\S]*?binding = "WARDROBE"/.test(toml),'the AI and WARDROBE bindings the worker uses are declared');
   ok(/env\.WARDROBE/.test(src)&&/env\.AI\b/.test(src),'(the worker does read env.WARDROBE and env.AI)');
