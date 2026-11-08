@@ -23,12 +23,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')},PHOTO);
     ok(await p.isVisible('text=Generate realistic photo'),'Today has a Generate realistic photo button');
     await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(sent&&sent.auth==='Bearer sk-o'&&sent.model==='gpt-image-1'&&sent.size==='1024x1024'&&sent.quality==='medium'&&sent.fmt==='jpeg','the worker calls the OpenAI image edit API with the key, model, size and quality');
+    ok(sent&&sent.auth==='Bearer sk-o'&&sent.model==='gpt-image-2'&&sent.size==='1024x1024'&&sent.quality==='medium'&&sent.fmt==='jpeg','the worker calls the OpenAI image edit API with the key, model, size and quality');
     const exp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {n:1+['top','shirt','tie'].filter(s=>o[s]&&o[s].photo).length,top:prettyCols(nm(o.top)),shirt:prettyCols(nm(o.shirt)),tie:prettyCols(nm(o.tie))}});
     ok(exp.n>=2&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the item photos (${sent.images.length})`);
     ok([exp.top,exp.shirt,exp.tie].every(t=>sent.prompt.includes(t))&&/same pose/i.test(sent.prompt),'the prompt describes the outfit and asks to keep the pose');
     const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:document.querySelector('.fig.photo small').textContent,btn:document.querySelector('.render-btn').textContent}));
-    ok(shown.img&&/gpt-image-1/.test(shown.by)&&shown.btn==='Regenerate photo','the photo replaces the illustration, says which model made it');
+    ok(shown.img&&/gpt-image-2/.test(shown.by)&&shown.btn==='Regenerate photo','the photo replaces the illustration, says which model made it');
     await p.click('.render-ctl >> text=Illustration');
     ok(await p.evaluate(()=>!!document.querySelector('.fig svg')&&!document.querySelector('.fig.photo')),'Illustration / Photo toggle switches back to the drawing');
     await p.click('.render-ctl >> text=Photo');
@@ -48,9 +48,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/verify your organization/i.test(await p.textContent('#render-msg')),'an unverified OpenAI org is explained');
     env={APP_TOKEN:'t'};await p.click('.render-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(/OPENAI_API_KEY/.test(await p.textContent('#render-msg')),'no OpenAI key on the worker: says what to add');
-    env={APP_TOKEN:'t',OPENAI_API_KEY:'k',OPENAI_IMAGE_MODEL:'gpt-image-2',OPENAI_IMAGE_QUALITY:'high'};reply=()=>[200,{data:[{b64_json:JPG}]}];
+    env={APP_TOKEN:'t',OPENAI_API_KEY:'k',OPENAI_IMAGE_MODEL:'gpt-image-x',OPENAI_IMAGE_QUALITY:'high'};reply=()=>[200,{data:[{b64_json:JPG}]}];
     await p.click('.render-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(sent.model==='gpt-image-2'&&sent.quality==='high','OPENAI_IMAGE_MODEL and OPENAI_IMAGE_QUALITY override the defaults');
+    ok(sent.model==='gpt-image-x'&&sent.quality==='high','OPENAI_IMAGE_MODEL and OPENAI_IMAGE_QUALITY override the defaults');
     const res=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}),env);
     ok(res.status===403,'/render needs the app token');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
