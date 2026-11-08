@@ -119,3 +119,11 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .render-btn{margin:0;min-height:44px;padding:0 16px;font-weight:600;background:var(--card);color:var(--ink)}
 .render-btn[disabled]{opacity:.6}
 .render-msg{max-width:390px;margin:4px auto 0;text-align:center;font-size:13px}.render-msg:empty{display:none}
+.multi-opt{display:flex;gap:8px;align-items:flex-start;margin:10px 0 2px;font-size:14px;line-height:1.35}
+.multi-opt input{margin-top:3px;width:18px;height:18px;flex:none}
+#multi-status:empty{display:none}#multi-status{font-size:13px;margin:4px 0}
+#save-all .btn{margin:6px 0}
+.multi-h{margin:0 0 6px;display:flex;gap:8px;align-items:center;font-size:14px}
+.conf{font-size:12px;padding:2px 8px;border-radius:10px;background:var(--line)}
+.conf.high{background:#2f7a4f;color:#fff}.conf.medium{background:#b5841a;color:#fff}.conf.low{background:#a23b3b;color:#fff}
+.rv img.ph{display:block;max-width:100%;max-height:280px;margin:0 auto;object-fit:contain;border-radius:8px}
