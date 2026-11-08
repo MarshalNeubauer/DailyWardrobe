@@ -32,6 +32,7 @@
 <h3 style="margin:16px 0 4px">Schedule</h3>
 <p class="mut" style="margin:4px 0"><small>Workdays</small></p><div class="days" id="cfg-workdays"></div>
 <p class="mut" style="margin:8px 0 4px"><small>Blazer days (business casual); other workdays get a suit</small></p><div class="days" id="cfg-blazer"></div>
+<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0 6px">Wear the suit's vest <select id="cfg-vest" onchange="setVestMode(this.value)" style="max-width:210px"><option value="auto">Suit days, except hot ones</option><option value="always">Every suit day</option><option value="never">Never</option></select></label>
 <h3 id="wx-section" style="margin:16px 0 4px">Weather</h3>
 <p class="mut" style="margin:0 0 6px"><small id="wx-loc"></small></p>
 <div class="btns" style="flex-wrap:wrap;align-items:center"><button type="button" onclick="useMyLocation()">Use my location</button><input type="text" id="cfg-city" placeholder="or search a city" style="max-width:150px"><button type="button" onclick="findCity()">Search</button></div>

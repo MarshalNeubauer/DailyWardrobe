@@ -26,7 +26,11 @@ const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather'
 
 /* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
    temperature units and the weather location */
-let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,updated:0};
+let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'auto',updated:0};
+/* three-piece suits: a suit has a matching vest unless marked 'no'. vestMode: 'auto' (suit days that aren't hot, and
+   formal days), 'always' (every suit day) or 'never'; a day can override it. A vest means no tie clip. */
+const VESTS=[['yes','Matching vest'],['no','No vest']],VEST_MODES=[['auto','Suit days, except hot ones'],['always','Every suit day'],['never','Never']];
+const hasVest=i=>!!i&&i.type==='suit'&&i.vest!=='no';
 const isWorkday=d=>settings.workdays.includes(d.getDay());
 const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 /* forecast by date key: {tmax,tmin,pop,rain,code} in °C, filled from Open-Meteo by app.js */

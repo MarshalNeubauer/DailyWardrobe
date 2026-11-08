@@ -137,6 +137,9 @@ const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
 const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0));
+// vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
+const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
+const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.clim.season!=='warm'))));
 // trousers, shirt and tie are scored together as one outfit. Rotation only chooses among outfits within 5 points
 // of the best one, so variety never costs a clearly better combination.
 // Large wardrobes: keep only the 4 best trousers and 10 best shirts for this jacket (rotation included), then try every tie.
@@ -162,7 +165,7 @@ for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.len
 const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
 const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s));
 const metalPref=c=>(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0);
-const clip=best(pool('tieclip','clip'),metalPref);
+const clip=vest?null:best(pool('tieclip','clip'),metalPref);   // the vest holds the tie: no clip
 // cufflinks only (and always) with French cuffs
 const french=shirt&&shirt.cuff==='french',links=french?best(pool('cufflinks','links'),metalPref):null;
 // coat when the forecast (or the season) calls for one: raincoat for rain unless it's very cold, otherwise an overcoat
@@ -182,7 +185,7 @@ if(french&&!links)notes.push('French-cuff shirt, but no cufflinks in your wardro
 if(clim.rain&&shoes&&finish(shoes.leather)==='suede')notes.push('Rain is forecast and only suede shoes suited this outfit. Smooth leather would hold up better.');
 if(needCoat&&!coat)notes.push(clim.rain?'Rain is forecast and there is no raincoat in your wardrobe.':'It will be cold and there is no overcoat in your wardrobe.');
 if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
-return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,notes:notes.map(prettyCols),clim,formal:!!day.formal}}
+return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal}}
 /* ---- outfit score ----
    A readable 0-100 rating of the planned outfit against the same rules the planner uses.
    Each check earns points out of a maximum; checks that don't apply (no belt owned, suit days have no separate trousers)
@@ -250,6 +253,7 @@ function rateOutfit(o){
 function frozenOutfit(rec,n,last){
   const o={suitDay:!!rec.suitDay,frozen:true,worn:rec.worn,formal:!!rec.formal,notes:[]};
   for(const s of SLOTS){const id=rec.ids[s],it=id&&items.find(i=>i.id===id);o[s]=it?{...it,rest:Math.min(n-(last[it.id]??-1e5),60)}:null}
+  o.vest=!!(rec.vestOn&&o.suitDay&&hasVest(o.top));
   if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
   return o;
 }

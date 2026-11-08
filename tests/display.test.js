@@ -14,7 +14,8 @@ module.exports=async({ok,chromium,url})=>{
   const suitHex=await p.evaluate(()=>COLORS[planFor()[key(sel)].top.primaryColor]);
   ok(suitSw.includes(suitHex)&&!suitSw.includes('data:image'),'the suit swatch uses its tagged grey, not the brown photo crop');
   const shirt=await p.evaluate(()=>{const o=planFor()[key(sel)];return o.shirt.primaryColor});
-  ok(sw[1].html.includes(await p.evaluate(c=>COLORS[c],shirt)),'the shirt swatch uses the shirt\'s tagged colour');
+  const shirtSw=await p.evaluate(()=>{const r=[...document.querySelectorAll('#today .list .row')].find(r=>r.querySelector('.mut').textContent==='Shirt');return r.querySelector('.dot').innerHTML});
+  ok(shirtSw.includes(await p.evaluate(c=>COLORS[c],shirt)),'the shirt swatch uses the shirt\'s tagged colour');
   // colour names with spaces everywhere they are shown
   await p.click('.score summary');
   const texts=await p.evaluate(()=>{const t=[document.querySelector('#today').innerText];
