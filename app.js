@@ -314,7 +314,7 @@ function editForm(i){
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
-  ${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
+  ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
   ${DETECT_PATS.includes(i.pattern)?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="redetect('${i.id}')">Read pattern from photo</button>${i.stripes?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
   <div class="btns"><button class="pri" onclick="editing=null;renderWardrobe()">Done</button></div></div>`;
 }
@@ -507,7 +507,7 @@ const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=
    is, so identical items share too. */
 const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
 const comboSig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];if(!i)return '-';
-  return s==='shirt'?'shirt/'+primaryCol(i):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')}).join('|');
+  return s==='shirt'?'shirt/'+primaryCol(i):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')}).join('|');
 const fnv64=t=>{let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}return h.toString(16).padStart(16,'0')};
 const comboKey=o=>'c'+fnv64(comboSig(o));
 /* the key photos were saved under before shirts counted by colour only; moved over on first use */
@@ -543,7 +543,7 @@ async function fetchRemoteRender(o,day){
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
 function outfitText(o){
   const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${o.clip.metal||'silver'} tie bar`,
-    o.watch&&`a wristwatch with a ${o.watch.metal||'steel'} case, ${watchOpts(o.watch).dial} dial and ${watchOpts(o.watch).band==='bracelet'?'metal bracelet':`${colName(primaryCol(o.watch))} leather strap`}`,o.links&&`${o.links.metal||'silver'} cufflinks`];
+    o.watch&&watchText(o.watch),o.links&&`${o.links.metal||'silver'} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
 /* draw the figure SVG onto a canvas and return a PNG data URL */
@@ -555,12 +555,18 @@ function figurePng(o,w=780){
 }
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
 /* generate and keep the photo for one outfit; throws with a readable message */
+/* reference photos for an outfit photo, each labelled: the jacket and tie photos, and the watch's own photo or its product
+   picture (no shirt photo: an outfit photo is shared by every shirt of that colour) */
+function outfitRefs(o){const refs=[],labels=[];const add=(img,l)=>{if(img){refs.push(img);labels.push(l)}};
+  add(o.top&&o.top.photo,o.suitDay?'the suit':'the blazer');add(o.tie&&o.tie.photo,'the tie');
+  if(o.watch)add((itemPic(o.watch)||{}).img||o.watch.photo,'the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)');
+  return {refs,labels}}
 async function renderCombo(o){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
   if(!w||!tok)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
   const image=await figurePng(o);
-  const refs=['top','tie'].map(s=>o[s]&&o[s].photo).filter(Boolean);   // no shirt photo: the photo is shared by every shirt of that colour
-  const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o)})});
+  const {refs,labels}=outfitRefs(o);
+  const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,labels,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o)})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error((r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.error||`HTTP ${r.status}`));
   const rec={sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()};
@@ -584,7 +590,7 @@ function lastWorn(o){
 }
 /* ---- item pictures: product photos of shoes, belts, socks, trousers and coats for the tiles under the figure.
    Generated once per look (OpenAI, through the worker), kept like outfit photos and shared between devices. ---- */
-const ITEM_PIC_TYPES=['shoes','belt','socks','pants','overcoat','raincoat'];
+const ITEM_PIC_TYPES=['shoes','belt','socks','pants','overcoat','raincoat','watch'];
 const aAn=w=>(/^[aeiou]/i.test(w)?'an ':'a ')+w;
 function itemDesc(i){const c=colName(primaryCol(i)),lea=patLabel(i.leather||'calf'),pat=i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?patLabel(i.pattern)+' ':'';
   switch(i.type){
@@ -593,7 +599,8 @@ function itemDesc(i){const c=colName(primaryCol(i)),lea=patLabel(i.leather||'cal
     case 'socks':return `a pair of ${c} ${pat}fine ribbed over-the-calf dress socks, laid flat side by side`;
     case 'pants':return `a pair of ${c} ${pat}${primaryCol(i)==='khaki'?'cotton twill':'wool'} dress trousers, neatly folded`;
     case 'overcoat':return `${aAn(c)} wool overcoat on an invisible mannequin`;
-    case 'raincoat':return `${aAn(c)} trench coat on an invisible mannequin`}
+    case 'raincoat':return `${aAn(c)} trench coat on an invisible mannequin`;
+    case 'watch':return `${watchText(i)}, three-quarter view, standing upright on a display cushion, the bracelet closed`}
   return ''}
 const itemKey=i=>'c'+fnv64('item|'+itemDesc(i));
 const itemPic=i=>i&&ITEM_PIC_TYPES.includes(i.type)&&renders[itemKey(i)]||null;
@@ -614,7 +621,7 @@ async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTr
     await keepRender(k,{sig:'item',img:await shrinkUrl(j.img,400),model:j.model||'',t:j.t||Date.now()},false);if(!$('#today').hidden)renderToday()}catch(e){console.warn('item picture unavailable',e)}}
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
-  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i)})});
+  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
   await keepRender(itemKey(i),{sig:'item',img:await shrinkUrl(j.image,400),model:j.model||'',t:Date.now()},false);
 }
@@ -669,8 +676,8 @@ async function startBatch(){
 /* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
 async function queueCombo(o){
   const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
-  const image=await figurePng(o),refs=['top','tie'].map(s=>o[s]&&o[s].photo).filter(Boolean),ck=comboKey(o);
-  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,outfit:outfitText(o),key:ck,sig:comboSig(o)})});
+  const image=await figurePng(o),{refs,labels}=outfitRefs(o),ck=comboKey(o);
+  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o)})});
   const j=await r.json().catch(()=>({}));
   if(r.ok&&j.queued)return 'queued';
   if(r.ok&&j.exists){renderTried.delete(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}

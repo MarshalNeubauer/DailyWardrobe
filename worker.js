@@ -261,7 +261,7 @@ Keep exactly the same pose, crop and framing: a man's torso from the chin down t
 He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
 Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
-Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No text, no logos, no watermark.`;
+Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
 function dataUrlToBlob(u) {
   const m = String(u || '').match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/s);
   if (!m) return null;
@@ -295,7 +295,11 @@ async function outfitPhoto(body, env) {
   const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   const form = new FormData();
   form.append('model', model);
-  form.append('prompt', RENDER_PROMPT(outfit).replace('{REFS}', refs.length ? ', and match the photos of the actual items that follow it' : ''));
+  const labels = (Array.isArray(body.labels) ? body.labels : []).slice(0, refs.length).map(l => String(l).replace(/[^\w ,.:()'-]/g, '').slice(0, 160));
+  const refText = !refs.length ? '' : labels.length === refs.length
+    ? `. The photos after the illustration show the actual items, in this order: ${labels.join('; ')}. Match each one exactly`
+    : ', and match the photos of the actual items that follow it';
+  form.append('prompt', RENDER_PROMPT(outfit).replace('{REFS}', refText));
   form.append('image[]', base, 'outfit.png');
   refs.forEach((b, i) => form.append('image[]', b, `item-${i + 1}.${b.type.split('/')[1]}`));
   form.append('size', '1024x1024');
@@ -326,7 +330,7 @@ async function queueRender(body, env, json) {
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
   if (await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });
-  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 1500), sig: String(body.sig || ''), t: Date.now() };
+  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 1500), sig: String(body.sig || ''), t: Date.now() };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
   await env.RENDER_QUEUE.send({ key });
@@ -366,14 +370,29 @@ async function runRenderJob(msg, env) {
 const ITEM_PROMPT = item => `Studio product photograph of ${item}. Plain light warm-grey seamless background, soft even daylight,
 the whole item centred and in frame, true-to-life colour and leather or fabric texture, sharp focus, catalogue style.
 No person, no props, no text, no logos, no watermark.`;
+const ITEM_REF_PROMPT = item => `Studio product photograph of the exact item in the reference photo: ${item}.
+Recreate it faithfully, detail for detail: the same case or shape, proportions, materials and finish, the same dial or face layout,
+markings, numerals, hands and printing, the same bracelet, strap or links. Do not redesign, simplify or add anything.
+Show it on its own, off the wrist: plain light warm-grey seamless background, soft even daylight, centred and in frame, sharp focus,
+catalogue style. No hands, no person, no props, no added text or watermark.`;
 async function renderItem(body, env, json) {
-  const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  const ref = dataUrlToBlob(body.ref);
+  const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 900);
   if (!item) return json({ error: 'no item description' }, 400);
   const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   let r;
   try {
-    r = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }) });
+    if (ref) {
+      // a photo of the actual item: edit from it so the picture is that item, not a lookalike
+      const form = new FormData();
+      form.append('model', model); form.append('prompt', ITEM_REF_PROMPT(item)); form.append('image[]', ref, `item.${ref.type.split('/')[1]}`);
+      form.append('size', '1024x1024'); form.append('quality', env.OPENAI_IMAGE_QUALITY || 'high'); form.append('output_format', 'jpeg'); form.append('n', '1');
+      if (/^gpt-image-1/.test(model)) form.append('input_fidelity', 'high');
+      r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form });
+    } else {
+      r = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }) });
+    }
   } catch (e) { return json({ error: 'Could not reach the OpenAI API: ' + String(e && e.message) }, 502); }
   const out = await r.json().catch(() => null);
   if (!r.ok) return json({ error: `OpenAI: ${out && out.error && out.error.message || `HTTP ${r.status}`}` }, 502);
