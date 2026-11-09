@@ -259,9 +259,12 @@ function swatchSVG(i){
 
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
-function itemThumb(i){
+/* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
+function itemThumb(i,full){
   const P='th'+(thumbN++)+'-';let g='';
-  if(FABRIC.includes(i.type)){
+  if(full&&FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
+    g=`<defs>${fabricDef(P+'f',i,role)}</defs><rect width="100" height="100" fill="url(#${P}f)"/>`}
+  else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     const shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':'M10,10 H90 V90 H10 Z';
     g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`;
