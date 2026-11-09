@@ -421,7 +421,7 @@ function figureStage(o){
   const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}"><small class="mut">${(()=>{const d=lastWorn(o);return d?`Last worn ${d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}`:'Not worn yet'})()}</small></div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${hs}</div>`)+ctl+
-    `<div id="piece-wrap">${pieceCard(o)}</div>`+(tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below" style="--n:${below.length}">${tiles}</div>`:'');
+    (tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below" style="--n:${below.length}">${tiles}</div>`:'');
 }
 /* ---- realistic photo: the figure + item photos -> worker /render (OpenAI image edit).
    Photos are saved per outfit combination, not per day: any day that wears the same pieces reuses the photo.
@@ -586,18 +586,35 @@ async function startBatch(){
 function pickPiece(s){figSel=s;const o=planFor()[key(sel)];if(!o)return;
   document.querySelectorAll('#mannequin-container .hot').forEach(b=>{const on=b.getAttribute('onclick').includes(`'${s}'`);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   const w=$('#piece-wrap');if(w)w.innerHTML=pieceCard(o)}
+/* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
+const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
+const todayBtn=()=>{const h=homeDay();if(key(sel)===key(h))return '';const isT=+h===+todayDate();
+  return `<button class="gotoday" onclick="goToday()" aria-label="${isT?"Back to today's outfit":'Go to the next outfit'}">${isT?'↩ Today':'↩ Next outfit'}</button>`};
+function goToday(){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false;show('today');scrollTo({top:0,behavior:'smooth'})}
+/* ---- the day's pieces: a folded box (a strip of fabric chips, like the month box) that unfolds into the full list ---- */
+let listOpen=false;
+function piecesBox(o){
+  const pcs=[['top',o.top],['vest',o.vest?o.top:null],['bot',o.suitDay?null:o.bot],['shirt',o.shirt],['tie',o.tie],['clip',o.clip],['links',o.links],['watch',o.watch],['belt',o.belt],['socks',o.socks],['shoes',o.shoes],['coat',o.coat]].filter(([,i])=>i);
+  const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':desc(i)||nm(i))}">${swatchSVG(i)}</span>`).join('');
+  const sum=[o.top&&`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`,o.shirt&&`${colName(primaryCol(o.shirt))} shirt`,o.tie&&`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`].filter(Boolean).join(' · ');
+  return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
+    <span class="pstrip" aria-hidden="true">${chips}</span><span class="mltxt"><b>${pcs.length} pieces</b><small class="cap">${sum||'tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <div class="mpanel" id="ipanel"><div class="mpanel-in"><div class="list">${slots(o)}</div></div></div></section>`}
+function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;box.classList.remove('instant');void box.offsetHeight;
+  box.classList.toggle('open',listOpen);const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
+  if(listOpen)setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),120)}
 function renderToday(){
   closeSettings();
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||'&nbsp;'):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';
   if(!isWorkday(sel))stage=`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`;
   else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${scoreCard(o)}<div class="list">${slots(o)}</div>${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+    side=`${scoreCard(o)}<div id="piece-wrap">${pieceCard(o)}</div>${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink():''}</div></div>`;
   if(items.length){recordDays(p);
   }
