@@ -246,7 +246,7 @@ async function saveAll(){const n=queue.filter(q=>!q.busy&&!q.err).length;for(let
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
 const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual)renderAdd();else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
-const tagSwInner=i=>`${itemThumb(i)}<figcaption>As tagged<br><b class="cap">${desc(i)||TYPES[i.type]||''}</b></figcaption>`;
+const tagSwInner=i=>`${itemThumb(i,true)}<figcaption>As tagged<br><b class="cap">${desc(i)||TYPES[i.type]||''}</b></figcaption>`;
 const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure><figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure></div>`;
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 function addManual(){

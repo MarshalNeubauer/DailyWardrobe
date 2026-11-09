@@ -12,6 +12,9 @@ module.exports=async({ok,chromium,url})=>{
     ok(a.pair&&a.svg&&/As tagged\s*dark grey nailhead/i.test(a.cap),`an opened item shows its photo and the tagged swatch side by side (${a.cap})`);
     const hex=await p.evaluate(()=>[COLORS.darkgrey,COLORS.khaki]);
     ok(a.html.toLowerCase().includes(hex[0]),'the swatch is drawn in the tagged colour');
+    const sz=await p.evaluate(()=>{const im=document.querySelector('#wardrobe .pair img.ph').getBoundingClientRect(),th=document.querySelector('#tagsw-p1 .ph.thumb').getBoundingClientRect(),r=document.querySelector('#tagsw-p1 svg > rect');
+      return {w:[Math.round(im.width),Math.round(th.width)],h:[Math.round(im.height),Math.round(th.height)],full:!!r&&r.getAttribute('width')==='100'&&r.getAttribute('height')==='100'&&!r.getAttribute('x')&&!document.querySelector('#tagsw-p1 svg [stroke]')}});
+    ok(sz.w[0]===sz.w[1]&&sz.h[0]===sz.h[1]&&sz.full,`the swatch fills a block the same size as the photo, edge to edge with no border (${JSON.stringify(sz)})`);
     await p.selectOption('#wardrobe .gi[style] select >> nth=1','khaki');await p.waitForTimeout(150);
     const b=await p.evaluate(()=>{const f=document.querySelector('#tagsw-p1');return {cap:f.textContent,html:f.innerHTML.toLowerCase()}});
     ok(/khaki nailhead/i.test(b.cap)&&b.html.includes(hex[1])&&!b.html.includes(hex[0]),'picking khaki redraws the swatch in khaki nailhead');
