@@ -17,7 +17,7 @@ const lumOf=c=>{const h=COLORS[c];return h?parseInt(h.slice(1,3),16)*.3+parseInt
    than the shirt: a modern, less formal look. With any other jacket the classic rule applies: shirt lighter than jacket. */
 const darkShirt=s=>!!s&&lumOf(primaryCol(s))<100,lightTop=t=>!!t&&LUM(t)>=130,darkUnderLight=(t,s)=>darkShirt(s)&&lightTop(t);
 /* how light a tie reads overall: a patterned tie's stripes, checks or dots lighten (or darken) it */
-const tieLum=x=>{const acc=x&&x.pattern&&!['solid','knit'].includes(x.pattern)?[x.secondaryColor,x.tertiaryColor].filter(c=>c&&COLORS[c]):[];
+const tieLum=x=>{const acc=x&&x.pattern&&!['solid','knit','woven'].includes(x.pattern)?[x.secondaryColor,x.tertiaryColor].filter(c=>c&&COLORS[c]):[];
   return acc.length?LUM(x)*.65+acc.reduce((a,c)=>a+lumOf(c),0)/acc.length*.35:LUM(x)};
 /* shirt against the jacket: light, quiet shirts read as professional; the shirt should be lighter than the jacket */
 function shirtScore(t,s){
@@ -138,7 +138,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are cleared; formal days, today and the past stay) */
-const PLAN_RULES=3;
+const PLAN_RULES=4;
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
