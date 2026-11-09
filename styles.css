@@ -127,3 +127,38 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .conf{font-size:12px;padding:2px 8px;border-radius:10px;background:var(--line)}
 .conf.high{background:#2f7a4f;color:#fff}.conf.medium{background:#b5841a;color:#fff}.conf.low{background:#a23b3b;color:#fff}
 .rv img.ph{display:block;max-width:100%;max-height:280px;margin:0 auto;object-fit:contain;border-radius:8px}
+/* month view (wear plan), from the design concept */
+#month{max-width:560px;margin:0 auto}
+.mhead{display:flex;align-items:flex-end;justify-content:space-between;padding:14px 4px 12px}
+.mhead .eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.mhead h1{margin:4px 0 0;font-size:28px;line-height:1.1;letter-spacing:-.01em}
+.mbtns{display:flex;gap:8px}.mbtns button{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:22px;padding:0;margin:0}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.mdow{padding-bottom:6px;text-align:center;font-size:12px;font-weight:600;color:var(--mut)}
+.mc{box-sizing:border-box;min-width:0;width:100%;height:76px;padding:6px 4px 4px;border:0;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;color:var(--ink);background:var(--card);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+.mc.blank{background:none;box-shadow:none;cursor:default}
+.mc.worn{background:color-mix(in srgb,var(--line) 55%,var(--bg))}
+.mc.today{box-shadow:inset 0 0 0 2px var(--acc)}.mc.sel:not(.today){box-shadow:inset 0 0 0 2px var(--mut)}
+.mc .dn{font-size:12px;font-weight:600;line-height:1}
+.mc.rest{background:none;box-shadow:none}
+.stack{display:block;width:100%;flex:1;min-height:0;border-radius:3px}
+.stack.rest{box-sizing:border-box;border:1.5px dashed var(--mut);opacity:.6;border-radius:6px}
+.mlegend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 2px 0;font-size:12px;color:var(--mut)}
+.mlegend span{display:flex;align-items:center;gap:6px}.lg{display:block;width:14px;height:14px;border-radius:4px;box-sizing:border-box}
+.lg.worn{background:color-mix(in srgb,var(--line) 55%,var(--bg))}.lg.today{background:var(--card);box-shadow:inset 0 0 0 2px var(--acc)}
+.lg.planned{background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}.lg.rest{border:1.5px dashed var(--mut)}
+.mcard{margin:12px 0 16px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.mcard hr{border:0;height:1px;background:var(--line);margin:0}
+.mday{display:flex;align-items:center;gap:12px;border:0;background:none;padding:0;margin:0;text-align:left;color:inherit;width:100%;cursor:pointer}
+.stack.big{flex:none;width:44px;height:56px;border-radius:8px}
+.mtxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.mtxt small{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--acc);line-height:1}
+.mtxt b{font-size:16px;line-height:1.2}.mtxt span{font-size:13px;line-height:1.3;color:var(--mut)}
+/* box on Today that opens the month */
+.month-link{display:flex;align-items:center;gap:12px;width:100%;margin:8px 0 20px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-align:left;cursor:pointer}
+.mlstrip{display:flex;gap:4px;flex:none}.mli{display:flex;flex-direction:column;align-items:center;gap:2px;width:22px}
+.mli small{font-size:10px;color:var(--mut);line-height:1}.mli .stack{height:30px;flex:none}
+.mltxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.mltxt small{color:var(--mut);font-size:13px}
+.month-link .chev{font-size:24px;color:var(--mut)}
+#batch-btn[disabled]{opacity:.55}
+.stack.none{background:repeating-linear-gradient(-45deg,transparent 0 4px,color-mix(in srgb,var(--mut) 18%,transparent) 4px 5px);border-radius:6px}

@@ -34,7 +34,7 @@ suite('renders the outfit without errors',async({page,errs})=>{
   await page.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);
   ok(await page.$('#mannequin-container.fig > svg')!==null,'outfit figure SVG is drawn');
   ok(await page.$('.score .num')!==null,'score card is shown');
-  ok((await page.$$('#today .pl .sc')).length>10,'month plan shows score badges');
+  ok((await page.$$('#today .month-link .mli')).length===5,'Today links to the month plan with the next 5 outfits');
   ok(errs.length===0,'no console errors ('+errs.join('; ')+')');
 });
 
