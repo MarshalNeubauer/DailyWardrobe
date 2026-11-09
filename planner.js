@@ -138,7 +138,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are cleared; formal days, today and the past stay) */
-const PLAN_RULES=6;
+const PLAN_RULES=7;
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
@@ -167,10 +167,21 @@ const shirtGroup=i=>{const c=primaryCol(i);return SHIRT_GROUP[c]||fam(c)},tieGro
 const comboRepeat=(sh,x,hist)=>{if(!hist||!hist.length)return 0;const sc=sh?shirtGroup(sh):null;let v=0;
   hist.slice(0,2).forEach((h,n)=>{if(!h)return;if(x&&h.tie===x.id)v+=n?3:7;if(x&&h.tie===x.id&&sc&&h.sc===sc)v+=n?4:8;
     else if(sc&&h.sc===sc&&sc!=='white'&&sc!=='lightblue')v+=n?1:2});return v};
-const shirtRepeat=(sh,prev)=>{if(!sh||!prev)return 0;const g=shirtGroup(sh),staple=g==='white'||g==='lightblue';let v=0;
-  prev.slice(0,2).forEach((p,n)=>{if(p&&p.sg===g)v+=staple?(n?0:2):(n?3:8)});return v};
-const tieRepeat=(x,prev)=>{if(!x||!prev)return 0;const g=tieGroup(x);let v=0;
-  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.tid===x.id)v+=n?4:18;else if(p.tg===g)v+=n?2:15});return v};
+/* how a shirt and a tie read at a glance: every dark shirt (black, charcoal, navy, slate, burgundy...) is one "dark shirt" look,
+   and black, charcoal, grey and silver ties are one "monochrome" look. Used for repeats, never for matching */
+const shirtLook=sh=>sh?darkShirt(sh)?'dark':shirtGroup(sh):null;
+const MONO_TIE=['black','grey'];
+const tieLook=x=>{if(!x)return null;const g=tieGroup(x);return MONO_TIE.includes(g)?'mono':g};
+const shirtRepeat=(sh,prev)=>{if(!sh||!prev)return 0;const g=shirtGroup(sh),l=shirtLook(sh),staple=g==='white'||g==='lightblue';let v=0;
+  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.sg===g)v+=staple?(n?0:2):(n?3:8);else if(l==='dark'&&p.sl==='dark')v+=n?2:6});return v};
+const tieRepeat=(x,prev)=>{if(!x||!prev)return 0;const g=tieGroup(x),l=tieLook(x);let v=0;
+  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.tid===x.id)v+=n?4:18;else if(p.tg===g)v+=n?2:15;else if(l==='mono'&&p.tl==='mono')v+=n?1:8});return v};
+/* the whole look: the same jacket colour group with the same shirt look and tie look as one of the last two workdays
+   (light grey blazer, dark shirt, grey tie two days after a grey suit, black shirt, black tie) reads as the same outfit again.
+   Same jacket colour and shirt look with a different tie still costs a little, unless the shirt is a white or light blue staple */
+const lookRepeat=(top,sh,x,prev)=>{if(!top||!prev)return 0;const jg=jacketGroup(top),sl=shirtLook(sh),tl=tieLook(x);let v=0;
+  prev.slice(0,2).forEach((p,n)=>{if(!p||p.jg!==jg||p.sl!==sl)return;
+    if(p.tl===tl)v+=n?20:25;else if(sl!=='white'&&sl!=='lightblue')v+=n?8:10});return v};   // same jacket colour and shirt look, another tie: half a repeat
 function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
@@ -192,7 +203,7 @@ const shRest=sh=>Math.min(rest(sh),SH_CAP)*.5;
 const Ps=suitDay?[null]:topN(pool('pants','bot'),4,pt=>pairScore(top,pt)),Ss=topN(pool('shirt','shirt'),16,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])+shRest(sh)),Ts=pool('tie','tie'),cands=[];
 for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(const x of Ts.length?Ts:[null]){
   const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day);
-  cands.push({q,pt,sh,x,r:1.5*((pt?rb(pt):0)+(x?rb(x):0))+(x?Math.min(rest(x),30)*.25:0)+(sh?shRest(sh):0)-shirtRepeat(sh,day.prev)-tieRepeat(x,day.prev)-comboRepeat(sh,x,top&&day.hist&&day.hist[top.id])});
+  cands.push({q,pt,sh,x,r:1.5*((pt?rb(pt):0)+(x?rb(x):0))+(x?Math.min(rest(x),30)*.25:0)+(sh?shRest(sh):0)-shirtRepeat(sh,day.prev)-tieRepeat(x,day.prev)-lookRepeat(top,sh,x,day.prev)-comboRepeat(sh,x,top&&day.hist&&day.hist[top.id])});
 }
 const qmax=Math.max(...cands.map(c=>c.q)),pick1=cands.filter(c=>c.q>=qmax-QWIN).sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0];
 const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
@@ -319,7 +330,7 @@ const fixedAhead=d=>{const x=new Date(d),ids=[];let next=null,soft=null,w=0;for(
       if(due)soft={g:jacketGroup(due),c:primaryCol(due)}}
     w++}return {next,ids,soft}};
 const hist={},remember=o=>{if(!o.top)return;const h=hist[o.top.id]||(hist[o.top.id]=[]);h.unshift({tie:o.tie?o.tie.id:null,sc:o.shirt?shirtGroup(o.shirt):null});h.length=Math.min(h.length,2)};
-const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,jc:o.top?primaryCol(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null});
+const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,jc:o.top?primaryCol(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null,sl:shirtLook(o.shirt),tl:tieLook(o.tie)});
 // every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
 // share (the plan depends on what came before: rest and the previous workdays' jacket colours)
 const from=new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)));
