@@ -76,13 +76,13 @@ ${fabrics}
 <filter id="${P}fBlurS" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter>
 <filter id="${P}fBlurXS" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.2"/></filter>
 <clipPath id="${P}clipShoulder"><path d="M 10 440 L 38 130 C 40 90 56 68 84 60 C 110 52 138 44 166 36 L 224 36 C 252 44 280 52 306 60 C 334 68 350 90 352 130 L 380 440 Z"/></clipPath>
-<clipPath id="${P}clipVee"><path d="M 150 40 L 240 40 L 196 262 L 194 262 Z"/></clipPath>
-<path id="${P}bodyP" d="M 166 36 C 138 44 110 52 84 60 C 64 66 52 80 50 104 C 48 160 70 230 84 290 C 88 330 86 380 84 430 L 306 430 C 304 380 302 330 306 290 C 320 230 342 160 340 104 C 338 80 326 66 306 60 C 280 52 252 44 224 36 Z"/>
-<path id="${P}shirtV" d="M 154 50 L 236 50 L 196 262 L 194 262 Z"/>
+<clipPath id="${P}clipVee"><path d="M 156 40 L 158 46 C 166 130 180 210 195 262 C 210 210 224 130 232 46 L 234 40 Z"/></clipPath>
+<path id="${P}bodyP" d="M 166 36 C 138 44 110 52 84 60 C 64 66 52 80 50 104 C 48 160 70 230 84 290 C 88 330 86 380 84 470 L 306 470 C 304 380 302 330 306 290 C 320 230 342 160 340 104 C 338 80 326 66 306 60 C 280 52 252 44 224 36 Z"/>
+<path id="${P}shirtV" d="M 154 46 L 158 46 C 166 130 180 210 195 262 C 210 210 224 130 232 46 L 236 46 L 236 50 L 154 50 Z"/>
 <path id="${P}bladeP" d="M 186 74 L 204 74 C 207 120 212 172 217 222 L 195 256 L 173 222 C 178 172 183 120 186 74 Z"/>
 <path id="${P}knotP" d="M 182 50 L 208 50 C 211 60 210 70 205 79 C 199 83 191 83 185 79 C 180 70 179 60 182 50 Z"/>
-<path id="${P}lapL" d="M 164 40 L 146 34 L 122 98 L 132 105 L 112 113 C 126 172 160 224 195 258 C 182 200 172 118 164 40 Z"/>
-<path id="${P}lapR" d="M 226 40 L 244 34 L 268 98 L 258 105 L 278 113 C 264 172 230 224 195 258 C 208 200 218 118 226 40 Z"/>
+<path id="${P}lapL" d="M 158 46 L 150 38 L 134 94 L 142 100 L 126 108 C 136 172 164 226 195 262 C 180 210 166 130 158 46 Z"/>
+<path id="${P}lapR" d="M 232 46 L 240 38 L 256 94 L 248 100 L 264 108 C 254 172 226 226 195 262 C 210 210 224 130 232 46 Z"/>
 <path id="${P}hPalm" d="M -13.5 -8 L 13.5 -8 C 15.5 4 19.5 14 20.8 27 L -20.8 27 C -20.3 14 -16.5 4 -13.5 -8 Z"/>
 <path id="${P}hThumbP" d="M -5.9 -8 L 5.9 -8 L 5 30 A 5 5 0 0 1 -5 30 Z"/>
 <path id="${P}hF1" d="M -19.8 18 L -19.22 53.73 A 4.27 4.27 0 0 0 -10.68 53.73 L -10.1 18 Z"/>
@@ -99,20 +99,18 @@ ${fabrics}
 </g>
 </defs>
 
+<g transform="translate(0 -40)">
 <!-- jacket body -->
 <use href="#${P}bodyP" fill="url(#${P}suitB)"/>
 <use href="#${P}bodyP" fill="url(#${P}gBody)"/>
 <use href="#${P}bodyP" fill="url(#${P}gBodyV)"/>
+<!-- no head or neck: the collar opening shows the inside back of the collar band -->
+<path d="M 156 -40 L 234 -40 L 234 44 C 216 38 174 38 156 44 Z" fill="url(#${P}suitB)"/><path d="M 156 -40 L 234 -40 L 234 44 C 216 38 174 38 156 44 Z" fill="#000" fill-opacity=".42"/>
 <!-- jacket collar behind the neck -->
 <path d="M 148 46 C 150 30 166 22 195 22 C 224 22 240 30 242 46 L 246 56 C 228 46 162 46 144 56 Z" fill="url(#${P}suitB)"/><path d="M 148 46 C 150 30 166 22 195 22 C 224 22 240 30 242 46 L 246 56 C 228 46 162 46 144 56 Z" fill="#000" fill-opacity=".3"/>
 <!-- shirt collar band standing around the neck -->
 <path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44 L 236 52 C 220 44 170 44 154 52 Z" fill="url(#${P}shirt)"/><path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44 L 236 52 C 220 44 170 44 154 52 Z" fill="url(#${P}gCollar)"/>
 <path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44" stroke="#000" stroke-opacity=".22" stroke-width="1" fill="none"/>
-<!-- neck and chin -->
-<path d="M 173 -6 L 217 -6 L 219 40 C 212 50 178 50 171 40 Z" fill="${skin}"/><path d="M 173 -6 L 217 -6 L 219 40 C 212 50 178 50 171 40 Z" fill="url(#${P}gNeck)"/>
-<path d="M 188 30 C 191 35 199 35 202 30" stroke="#5A3A28" stroke-opacity=".22" stroke-width="1.3" fill="none"/>
-<path d="M 176 12 C 184 17 206 17 214 12" stroke="#3A2518" stroke-opacity=".28" stroke-width="4" fill="none" filter="url(#${P}fBlurXS)"/>
-<path d="M 163 -6 L 227 -6 C 225 2 214 9 195 10 C 176 9 165 2 163 -6 Z" fill="${skin}"/><path d="M 163 -6 L 227 -6 C 225 2 214 9 195 10 C 176 9 165 2 163 -6 Z" fill="url(#${P}gChin)"/>
 <!-- shirt front between the lapels -->
 <use href="#${P}shirtV" fill="url(#${P}shirt)"/>
 <use href="#${P}shirtV" fill="url(#${P}gShirtV)"/>
@@ -133,24 +131,26 @@ ${tie && clip ? `<g class="fig-clip"><rect x="178" y="152" width="36" height="5"
 <rect x="179" y="148" width="34" height="3.8" rx="1.9" fill="${hex(clip.color, '#A9AFB8')}"/>
 <rect x="179" y="148" width="34" height="1.4" rx=".7" fill="#FFFFFF" fill-opacity=".65"/></g>` : ''}
 ${vest ? `<g class="fig-vest" clip-path="url(#${P}clipVee)">
-<path d="M 168 96 C 174 140 186 180 195 206 C 204 180 216 140 222 96" stroke="#000" stroke-opacity=".45" stroke-width="7" fill="none" filter="url(#${P}fBlurS)"/>
-<path d="M 140 40 L 162 40 L 168 96 C 174 140 186 180 195 206 L 196 270 L 140 270 Z" fill="url(#${P}suitB)"/><path d="M 140 40 L 162 40 L 168 96 C 174 140 186 180 195 206 L 196 270 L 140 270 Z" fill="url(#${P}gLapel)"/>
-<path d="M 250 40 L 228 40 L 222 96 C 216 140 204 180 195 206 L 194 270 L 250 270 Z" fill="url(#${P}suitB)"/><path d="M 250 40 L 228 40 L 222 96 C 216 140 204 180 195 206 L 194 270 L 250 270 Z" fill="url(#${P}gLapel)"/>
-<path d="M 195 206 L 195 270" stroke="#000" stroke-opacity=".45" stroke-width="1.2"/>
-${[216, 236, 256].map(y => `<circle cx="196" cy="${y}" r="3.2" fill="#0E1424"/><circle cx="195.2" cy="${y - .9}" r="1" fill="#FFFFFF" fill-opacity=".35"/>`).join('')}
+<path d="M 176 92 C 180 140 188 182 195 210 C 202 182 210 140 214 92" stroke="#000" stroke-opacity=".45" stroke-width="6" fill="none" filter="url(#${P}fBlurS)"/>
+<path d="M 140 40 L 170 40 L 176 92 C 180 140 188 182 195 210 L 196 280 L 140 280 Z" fill="url(#${P}suitB)"/><path d="M 140 40 L 170 40 L 176 92 C 180 140 188 182 195 210 L 196 280 L 140 280 Z" fill="url(#${P}gLapel)"/>
+<path d="M 250 40 L 220 40 L 214 92 C 210 140 202 182 195 210 L 194 280 L 250 280 Z" fill="url(#${P}suitB)"/><path d="M 250 40 L 220 40 L 214 92 C 210 140 202 182 195 210 L 194 280 L 250 280 Z" fill="url(#${P}gLapel)"/>
+<path d="M 140 40 L 170 40 L 176 92 C 180 140 188 182 195 210 L 196 280 L 140 280 Z M 250 40 L 220 40 L 214 92 C 210 140 202 182 195 210 L 194 280 L 250 280 Z" fill="#000" fill-opacity=".14"/>
+<path d="M 176 92 C 180 140 188 182 195 210 M 214 92 C 210 140 202 182 195 210" stroke="#FFFFFF" stroke-opacity=".38" stroke-width="1.3" fill="none"/>
+<path d="M 195 210 L 195 280" stroke="#000" stroke-opacity=".45" stroke-width="1.2"/>
+${[220, 238, 256].map(y => `<circle cx="196" cy="${y}" r="3" fill="#0E1424"/><circle cx="195.3" cy="${y - .8}" r=".9" fill="#FFFFFF" fill-opacity=".35"/>`).join('')}
 </g>` : ''}
 <!-- lapels -->
-<path d="M 164 40 C 172 118 182 200 195 258" stroke="#000" stroke-opacity=".45" stroke-width="8" fill="none" filter="url(#${P}fBlurS)"/>
-<path d="M 226 40 C 218 118 208 200 195 258" stroke="#000" stroke-opacity=".45" stroke-width="8" fill="none" filter="url(#${P}fBlurS)"/>
+<path d="M 158 46 C 166 130 180 210 195 262" stroke="#000" stroke-opacity=".45" stroke-width="7" fill="none" filter="url(#${P}fBlurS)"/>
+<path d="M 232 46 C 224 130 210 210 195 262" stroke="#000" stroke-opacity=".45" stroke-width="7" fill="none" filter="url(#${P}fBlurS)"/>
 <use href="#${P}lapL" fill="url(#${P}suitL)"/><use href="#${P}lapL" fill="url(#${P}gLapel)"/>
 <use href="#${P}lapR" fill="url(#${P}suitR)"/><use href="#${P}lapR" fill="url(#${P}gLapel)"/>
-<path d="M 146 34 L 122 98 L 132 105 L 112 113 C 126 172 160 224 195 258" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="1.3" fill="none"/>
-<path d="M 244 34 L 268 98 L 258 105 L 278 113 C 264 172 230 224 195 258" stroke="#FFFFFF" stroke-opacity=".1" stroke-width="1.3" fill="none"/>
-<path d="M 112 113 C 126 172 160 224 195 258" stroke="#000" stroke-opacity=".4" stroke-width="1" fill="none" transform="translate(-1.5 1.5)"/>
-<path d="M 278 113 C 264 172 230 224 195 258" stroke="#000" stroke-opacity=".4" stroke-width="1" fill="none" transform="translate(1.5 1.5)"/>
+<path d="M 150 38 L 134 94 L 142 100 L 126 108 C 136 172 164 226 195 262" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="1.3" fill="none"/>
+<path d="M 240 38 L 256 94 L 248 100 L 264 108 C 254 172 226 226 195 262" stroke="#FFFFFF" stroke-opacity=".1" stroke-width="1.3" fill="none"/>
+<path d="M 126 108 C 136 172 164 226 195 262" stroke="#000" stroke-opacity=".4" stroke-width="1" fill="none" transform="translate(-1.5 1.5)"/>
+<path d="M 264 108 C 254 172 226 226 195 262" stroke="#000" stroke-opacity=".4" stroke-width="1" fill="none" transform="translate(1.5 1.5)"/>
 <!-- front: buttons, chest pocket, flap pockets -->
-<path d="M 195 258 L 195 430" stroke="#000" stroke-opacity=".5" stroke-width="1.6"/>
-<circle cx="195" cy="272" r="5.5" fill="#0E1424"/><circle cx="193.6" cy="270.6" r="1.6" fill="#FFFFFF" fill-opacity=".35"/>
+<path d="M 195 262 L 195 440" stroke="#000" stroke-opacity=".5" stroke-width="1.6"/>
+<circle cx="195" cy="276" r="5.5" fill="#0E1424"/><circle cx="193.6" cy="274.6" r="1.6" fill="#FFFFFF" fill-opacity=".35"/>
 <circle cx="195" cy="336" r="5.5" fill="#0E1424"/><circle cx="193.6" cy="334.6" r="1.6" fill="#FFFFFF" fill-opacity=".35"/>
 <path d="M 236 152 L 284 146" stroke="#000" stroke-opacity=".55" stroke-width="2.6"/><path d="M 236 154.5 L 284 148.5" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="1"/>
 <path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="url(#${P}suitB)"/><path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="#000" fill-opacity=".16"/><path d="M 106 374 L 168 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
@@ -167,6 +167,7 @@ ${hand(R.fo, 42, false, true)}
 ${hand(L.fo, 42, true, false)}
 <path d="M 322 236 Q 330 248 322 262 M 72 282 Q 64 294 72 308" stroke="#000" stroke-opacity=".3" stroke-width="1.6" fill="none"/>
 
+</g>
 <rect x="0" y="330" width="390" height="70" fill="url(#${P}gFade)"/>
 </svg>`;
 }
