@@ -341,8 +341,8 @@ function dayActions(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
   let h='';
   // did you wear it: a two-way toggle; tapping the chosen side again clears it
-  if(past||isToday)h+=`<div class="seg" role="group" aria-label="Did you wear this outfit?"><button class="${o.worn===true?'on':''}" aria-pressed="${o.worn===true}" onclick="setWorn(${o.worn===true?'undefined':'true'})">✓ Wore this</button><button class="${o.worn===false?'on':''}" aria-pressed="${o.worn===false}" onclick="setWorn(${o.worn===false?'undefined':'false'})">Didn't wear</button></div>`;
-  if(!o.frozen)h+=`<button class="tog${o.formal?' on':''}" aria-pressed="${!!o.formal}" aria-label="${o.formal?'Make regular':'Make formal'}" onclick="setFormal(${!o.formal})">${o.formal?'Formal day':'Formal'}</button>`;
+  if(past||isToday)h+=`<div class="seg" role="group" aria-label="Did you wear this outfit?"><button class="${o.worn===true?'on':''}" aria-pressed="${o.worn===true}" onclick="setWorn(${o.worn===true?'undefined':'true'})" aria-label="Wore this">✓ Worn</button><button class="${o.worn===false?'on':''}" aria-pressed="${o.worn===false}" onclick="setWorn(${o.worn===false?'undefined':'false'})" aria-label="Didn't wear">Not worn</button></div>`;
+  if(!o.frozen)h+=`<button class="tog${o.formal?' on':''}" aria-pressed="${!!o.formal}" aria-label="${o.formal?'Make regular':'Make formal'}" onclick="setFormal(${!o.formal})">${o.formal?'✓ Formal':'Formal'}</button>`;
   if(!o.frozen&&(o.overrides||o.vestOverride))h+=`<button class="reset" aria-label="Reset changes" title="Undo your changes to this day" onclick="resetDay()">↺</button>`;
   return (h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
