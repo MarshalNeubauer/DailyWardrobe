@@ -13,21 +13,20 @@ module.exports=async({ok,chromium,url})=>{
     return {fig:c.classList.contains('fig'),vb:svg.getAttribute('viewBox'),role:svg.getAttribute('role'),label:svg.getAttribute('aria-label'),
       noImg:!svg.querySelector('image'),suitHex:pat('fig-suitB').innerHTML.includes(COLORS[o.top.primaryColor]),lapel:/rotate\(-16\)/.test(pat('fig-suitL').getAttribute('patternTransform')),
       tieDots:pat('fig-tie').querySelectorAll('circle').length>0,clip:!!svg.querySelector('.fig-clip'),clipGold:svg.querySelector('.fig-clip rect:nth-child(2)').getAttribute('fill')===METAL.gold,
-      watch:!!svg.querySelector('.fig-watch'),dialWhite:svg.innerHTML.includes(COLORS.white),hot:[...c.querySelectorAll('.hot')].map(b=>b.getAttribute('aria-label').split(':')[0]),
-      size:[...c.querySelectorAll('.hot')].every(b=>{const r=b.getBoundingClientRect();return r.width>=44&&r.height>=44}),
-      useInClip:!!svg.querySelector('clipPath use')}});
+      watch:!!svg.querySelector('.fig-watch'),dialWhite:svg.innerHTML.includes(COLORS.white),hot:c.querySelectorAll('.hot').length,
+      useInClip:!!svg.querySelector('clipPath use'),shoulder:!!svg.querySelector('clipPath[id="fig-clipShoulder"]'),collar:svg.innerHTML.includes('collar band')}});
   ok(f.fig&&f.vb==='0 0 390 400'&&f.role==='img'&&/navy/.test(f.label),'Today shows the torso figure (390x400, role=img, labelled with the outfit)');
   ok(f.noImg&&f.suitHex,'fabrics are drawn from the tagged colours, not photo crops');
   ok(f.lapel,'lapel weave is turned to follow the lapel');
   ok(f.tieDots,'a polka-dot tie shows dots');
   ok(f.clip&&f.clipGold,'the tie clip is drawn in its metal (gold)');
   ok(f.watch&&f.dialWhite,'the watch uses its dial colour');
-  ok(f.hot.join()==='Suit,Shirt,Tie,Tie clip,Watch'&&f.size,'five labelled tap targets, each at least 44x44');
+  ok(f.hot===0,'no selection dots on the figure');
   ok(!f.useInClip,'no <use> inside <clipPath> (WebKit-safe)');
+  ok(f.shoulder&&f.collar,'the redrawn figure: sleeves set into the shoulder line, a shirt collar band around the neck');
   // selecting a piece fills the card
-  await p.click('.hot[aria-label^="Tie:"]');
-  const card=await p.evaluate(()=>({t:document.querySelector('#piece').textContent,pressed:document.querySelector('.hot[aria-label^="Tie:"]').getAttribute('aria-pressed')}));
-  ok(/Tie/.test(card.t)&&/Burgundy/i.test(card.t)&&card.pressed==='true','tapping the tie selects it in the piece card');
+  await p.click('.below .tile >> nth=1');
+  ok(/Shoes/.test(await p.textContent('#piece')),'tapping a tile under the figure selects that piece in the card');
   ok((await p.$$eval('.below .tile small',e=>e.map(x=>x.textContent))).join()==='Belt,Shoes,Socks','below the waist: belt, shoes, socks on a suit day');
   // blazer day: trousers tile; no tie => no tie or clip drawn
   const bz=await p.evaluate(()=>{sel=new Date(2026,10,19);renderToday();const t=[...document.querySelectorAll('.below .tile small')].map(x=>x.textContent).join();

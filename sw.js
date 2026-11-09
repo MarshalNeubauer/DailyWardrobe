@@ -2,7 +2,7 @@
    Network-first for the app's own files: every load fetches fresh copies (revalidating past the browser's HTTP cache),
    so updates show up immediately with no '?v=' tricks. If the network fails or is slow, the last cached copy is used,
    so the app also works offline. Cross-origin requests (the AI worker, weather) are never cached. */
-const CACHE='dw-v46';
+const CACHE='dw-v47';
 const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','sync.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

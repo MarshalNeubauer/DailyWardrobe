@@ -25,9 +25,9 @@ module.exports=async({ok,chromium,url})=>{
   // Today: list row, figure, per-day toggle
   await p.evaluate(()=>{const P=planFor();const k=Object.keys(P).find(k=>keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);sel=keyDate(k);renderToday()});
   const t=await p.evaluate(()=>({row:document.querySelector('.vest-row').textContent,clipRow:[...document.querySelectorAll('#today .list .row')].find(r=>r.querySelector('.mut').textContent==='Tie clip').textContent,
-    fig:!!document.querySelector('.fig .fig-vest'),figClip:!!document.querySelector('.fig .fig-clip'),hot:!!document.querySelector('.hot[aria-label^="Vest"]'),label:document.querySelector('.fig svg').getAttribute('aria-label')}));
+    fig:!!document.querySelector('.fig .fig-vest'),figClip:!!document.querySelector('.fig .fig-clip'),label:document.querySelector('.fig svg').getAttribute('aria-label')}));
   ok(/Matching vest/.test(t.row)&&/Not with the vest/.test(t.clipRow),'the list shows the vest, and the tie clip row says "Not with the vest"');
-  ok(t.fig&&!t.figClip&&t.hot&&/with matching vest/.test(t.label),'the figure draws the vest (no clip) with a Vest tap target');
+  ok(t.fig&&!t.figClip&&/with matching vest/.test(t.label),'the figure draws the vest (no clip)');
   await p.evaluate(()=>{listOpen=true;renderToday()});
   await p.click('.vest-row .swap');await p.waitForFunction(()=>planFor()[key(sel)].vest===false&&/Not today/.test(document.querySelector('.vest-row').textContent),null,{timeout:5000}).catch(()=>{});
   const off=await p.evaluate(()=>{const o=planFor()[key(sel)];return {vest:o.vest,clip:!!o.clip,row:document.querySelector('.vest-row').textContent,fig:!!document.querySelector('.fig .fig-vest'),reset:!!document.querySelector('.dayact [aria-label="Reset changes"]')}});
