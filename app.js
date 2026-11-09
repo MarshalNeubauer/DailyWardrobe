@@ -486,6 +486,7 @@ function figureStage(o){
   const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
+  schedulePrefetch();   // and the rest of the month's photos, nearest first
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
   const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}"><small class="mut">${(()=>{const d=lastWorn(o);return d?`Last worn ${d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}`:'Not worn yet'})()}</small></div>`
@@ -526,7 +527,8 @@ async function fetchRemoteRender(o,day){
   const W=workerBase(),ck=comboKey(o);if(!W||renderTried.has(ck)||rendering)return;renderTried.add(ck);
   try{
     const get=async q=>{const r=await fetch(W.url+'?'+q,{headers:{'x-app-token':W.tok},cache:'no-store'});return r.ok?r.json():null};
-    const cur=renders[ck];let j=await get('key='+ck);
+    const cur=renders[ck];if(cur&&remoteKeys&&remoteKeys.has(ck))return;   // here and on the worker already: nothing to do
+    let j=await get('key='+ck);
     if(!j){if(cur){shareRender(ck,cur);return}
       // a photo the worker kept under the earlier combination key, or for this date before combinations were used
       const v1=await get('key='+comboKeyV1(o));if(v1&&v1.img)j={...v1,sig:comboSig(o),legacy:true};
@@ -537,6 +539,26 @@ async function fetchRemoteRender(o,day){
     if(planFor()[key(sel)]&&comboKey(planFor()[key(sel)])===ck&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('remote photo unavailable',e)}
 }
+/* photos the worker keeps that this device lacks (a new install, or made on another device): download the ones the plan needs
+   for the month on screen and the next, nearest the selected day first, so swiping between days shows them at once */
+let prefetching=false,prefetchAgain=false,remoteKeys=null;
+const planOf=(y,m)=>{const k=y+'-'+m;return cache[k]||(cache[k]=buildPlan(y,m))};
+async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetching){prefetchAgain=true;return}prefetching=true;
+  try{
+    if(!remoteKeys){const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;if(!j||!Array.isArray(j.keys)){remoteKeys=new Set();return}remoteKeys=new Set(j.keys)}   // no list: fetch per day as before
+    do{prefetchAgain=false;const c=+sel,near=new Map();   // each combination ranked by its day closest to the one on screen
+      for(const [y,m] of [[view.y,view.m],[view.m===11?view.y+1:view.y,(view.m+1)%12]])for(const [k,o] of Object.entries(planOf(y,m))){if(!o||!o.top)continue;
+        const ck=comboKey(o);if(renders[ck]||!remoteKeys.has(ck)||renderTried.has(ck))continue;const d=Math.abs(+keyDate(k)-c),cur=near.get(ck);if(!cur||d<cur[0])near.set(ck,[d,ck,o])}
+      const list=[...near.values()].sort((a,b)=>a[0]-b[0]);let i=0;
+      const one=async()=>{while(i<list.length&&!prefetchAgain){const [,ck,o]=list[i++];if(renders[ck])continue;
+        try{const r=await fetch(W.url+'?key='+ck,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;
+          if(!j||!j.img){remoteKeys.delete(ck);continue}
+          await keepRender(ck,{sig:comboSig(o),img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);
+          const s=planFor()[key(sel)];if(s&&comboKey(s)===ck&&!$('#today').hidden)renderToday()}catch(e){remoteKeys.delete(ck)}}};
+      await Promise.all([one(),one(),one()]);
+    }while(prefetchAgain)
+  }catch(e){console.warn('photo prefetch failed',e)}finally{prefetching=false}}
+let prefetchTimer=0;const schedulePrefetch=()=>{clearTimeout(prefetchTimer);prefetchTimer=setTimeout(prefetchRenders,250)};
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
 /* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
@@ -708,7 +730,8 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
 function startQueueWatch(){if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},45000)}
 function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&queuedKeys().length){checkQueue();startQueueWatch()}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(queuedKeys().length){checkQueue();startQueueWatch()}
+  remoteKeys=null;schedulePrefetch()});   // photos made on another device meanwhile
 function pickPiece(s){figSel=s;const o=planFor()[key(sel)];if(!o)return;
   const w=$('#piece-wrap');if(w)w.innerHTML=pieceCard(o)}
 /* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
