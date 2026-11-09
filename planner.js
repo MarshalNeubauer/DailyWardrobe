@@ -148,6 +148,17 @@ const jacketGroup=i=>{const c=primaryCol(i);return JKT_GROUP[c]||fam(c)};
 const groupsNear=(a,b)=>JKT_NEAR.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));
 const colourRepeat=(i,prev)=>{if(!prev||!prev.length)return 0;const g=jacketGroup(i);let v=0;
   prev.slice(0,2).forEach((p,n)=>{if(!p)return;v+=p===g?(n?10:24):groupsNear(p,g)?(n?2:6):0});return v};
+/* shirts and ties get the same treatment, with their own groups. White and light blue are the staples: a repeat of those costs
+   little. These penalties only choose among outfits that already score within QWIN of the best one. */
+const SHIRT_GROUP={white:'white',ivory:'white',cream:'white',lightblue:'lightblue',periwinkle:'blue',blue:'blue',steelblue:'blue',lavender:'purple',pink:'pink',
+  paleyellow:'yellow',beige:'beige',mint:'green',lightgrey:'grey',midgrey:'grey',grey:'grey',darkgrey:'grey',charcoal:'grey',slate:'grey',navy:'navy',darknavy:'navy',black:'black',burgundy:'red'};
+const TIE_GROUP={navy:'navy',darknavy:'navy',deepblue:'navy',blue:'blue',steelblue:'blue',lightblue:'blue',slate:'blue',black:'black',charcoal:'black',grey:'grey',silver:'grey',
+  burgundy:'red',wine:'red',red:'red',oxblood:'red',pink:'pink',purple:'purple',lavender:'purple',green:'green',olive:'green',brown:'brown',tan:'brown',rust:'brown',gold:'gold',cream:'cream'};
+const shirtGroup=i=>{const c=primaryCol(i);return SHIRT_GROUP[c]||fam(c)},tieGroup=i=>{const c=primaryCol(i);return TIE_GROUP[c]||fam(c)};
+const shirtRepeat=(sh,prev)=>{if(!sh||!prev)return 0;const g=shirtGroup(sh),staple=g==='white'||g==='lightblue';let v=0;
+  prev.slice(0,2).forEach((p,n)=>{if(p&&p.sg===g)v+=staple?(n?0:2):(n?3:8)});return v};
+const tieRepeat=(x,prev)=>{if(!x||!prev)return 0;const g=tieGroup(x);let v=0;
+  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.tid===x.id)v+=n?4:12;else if(p.tg===g)v+=n?2:8});return v};
 function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
@@ -156,7 +167,7 @@ const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
-const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)*2+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)-colourRepeat(i,day.prev));
+const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)*2+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&p.jg)));
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
 const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
 const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.clim.season!=='warm'))));
@@ -169,7 +180,7 @@ const shRest=sh=>Math.min(rest(sh),SH_CAP)*.5;
 const Ps=suitDay?[null]:topN(pool('pants','bot'),4,pt=>pairScore(top,pt)),Ss=topN(pool('shirt','shirt'),16,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])+shRest(sh)),Ts=pool('tie','tie'),cands=[];
 for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(const x of Ts.length?Ts:[null]){
   const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day);
-  cands.push({q,pt,sh,x,r:1.5*((pt?rb(pt):0)+(x?rb(x):0))+(sh?shRest(sh):0)});
+  cands.push({q,pt,sh,x,r:1.5*((pt?rb(pt):0)+(x?rb(x):0))+(x?Math.min(rest(x),30)*.25:0)+(sh?shRest(sh):0)-shirtRepeat(sh,day.prev)-tieRepeat(x,day.prev)});
 }
 const qmax=Math.max(...cands.map(c=>c.q)),pick1=cands.filter(c=>c.q>=qmax-QWIN).sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0];
 const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
@@ -283,13 +294,14 @@ function frozenOutfit(rec,n,last){
   return o;
 }
 function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={},T=todayDate();
-const hasLinks=by('cufflinks').length>0;let prev=[];   // jacket colour groups of the previous workdays, latest first
+const hasLinks=by('cufflinks').length>0;let prev=[];   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
+const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null});
 // every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
 // share (the plan depends on what came before: rest and the previous workdays' jacket colours)
 const from=new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)));
 for(const d=from;d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
   const k=key(d),rec=dayRecs[k];
-  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top)prev=[jacketGroup(plan[k].top),prev[0]];continue}
-  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top)prev=[jacketGroup(o.top),prev[0]]}
+  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top)prev=[sumUp(plan[k]),prev[0]];continue}
+  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top)prev=[sumUp(o),prev[0]]}
 return plan}
 
