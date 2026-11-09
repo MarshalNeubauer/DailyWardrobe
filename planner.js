@@ -137,6 +137,17 @@ function watchFit(w,shoe,belt){
 }
 
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
+/* jacket colour groups, as the eye reads them: light/mid/plain grey are one look, two navies are one look. A jacket in the same
+   group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
+   before that counts less. Rest still decides when every choice repeats a colour. */
+const JKT_GROUP={lightgrey:'grey',midgrey:'grey',grey:'grey',silver:'grey',charcoal:'charcoal',darkgrey:'charcoal',slate:'charcoal',black:'black',
+  navy:'navy',darknavy:'navy',deepblue:'navy',blue:'blue',steelblue:'blue',lightblue:'blue',brown:'brown',taupe:'brown',rust:'brown',tan:'tan',khaki:'tan',cream:'tan',
+  olive:'green',green:'green',burgundy:'red',wine:'red',oxblood:'red'};
+const JKT_NEAR=[['grey','charcoal'],['charcoal','black'],['navy','blue'],['navy','charcoal'],['brown','tan']];
+const jacketGroup=i=>{const c=primaryCol(i);return JKT_GROUP[c]||fam(c)};
+const groupsNear=(a,b)=>JKT_NEAR.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));
+const colourRepeat=(i,prev)=>{if(!prev||!prev.length)return 0;const g=jacketGroup(i);let v=0;
+  prev.slice(0,2).forEach((p,n)=>{if(!p)return;v+=p===g?(n?10:24):groupsNear(p,g)?(n?2:6):0});return v};
 function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
@@ -145,7 +156,7 @@ const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
-const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0));
+const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)*2+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)-colourRepeat(i,day.prev));
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
 const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
 const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.clim.season!=='warm'))));
@@ -272,10 +283,13 @@ function frozenOutfit(rec,n,last){
   return o;
 }
 function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={},T=todayDate();
-const hasLinks=by('cufflinks').length>0;
-for(const d=new Date(y,m,-13);d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
+const hasLinks=by('cufflinks').length>0;let prev=[];   // jacket colour groups of the previous workdays, latest first
+// every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
+// share (the plan depends on what came before: rest and the previous workdays' jacket colours)
+const from=new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)));
+for(const d=from;d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
   const k=key(d),rec=dayRecs[k];
-  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);continue}
-  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o}
+  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top)prev=[jacketGroup(plan[k].top),prev[0]];continue}
+  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top)prev=[jacketGroup(o.top),prev[0]]}
 return plan}
 

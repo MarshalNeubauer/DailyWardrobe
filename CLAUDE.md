@@ -21,7 +21,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 | `index.html` | markup and script tags |
 | `styles.css` | styles |
 | `core.js` | colours, types, item helpers (no DOM; also loaded by background workers) |
-| `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM) |
+| `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM). Jackets rotate by rest and avoid the previous workdays' colour group (`jacketGroup`, `colourRepeat`); every month from two months back is simulated from one shared start so months agree |
 | `detect.js` | stripe/check detection from photos (canvas) |
 | `figure.js` | Today's torso figure (from the design handoff; don't redraw it). Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js |
 | `draw.js` | procedural fabric patterns (`fabricDef`), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails |
