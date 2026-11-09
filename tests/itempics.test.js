@@ -84,6 +84,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(lay.n===3&&lay.left===0&&lay.right===0&&lay.tileW>lay.imgW+20,`the three tiles fill the score card's width (${JSON.stringify(lay)})`);
     ok(lay.square&&Math.abs(lay.imgW-lay.expect)<=1&&lay.centred,'pictures are not stretched: same size as four to a row, centred');
     ok(/^rgb\(/.test(lay.bg),'the tile around a picture is filled with the photo\'s backdrop colour');
+    // WebKit can read blank (transparent) pixels: the tile must keep the light default, never turn black
+    const blank=await p.evaluate(async()=>{const real=CanvasRenderingContext2D.prototype.getImageData;CanvasRenderingContext2D.prototype.getImageData=function(x,y,w,h){return new ImageData(w,h)};
+      for(const k in picBgs)delete picBgs[k];renderToday();await new Promise(r=>setTimeout(r,300));
+      const bgs=[...document.querySelectorAll('.below .tile.has-pic')].map(t=>getComputedStyle(t).backgroundColor);CanvasRenderingContext2D.prototype.getImageData=real;return bgs});
+    ok(blank.length===3&&blank.every(c=>c==='rgb(220, 215, 210)'),`a blank canvas reading keeps the light backdrop (${blank.join(' / ')})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
