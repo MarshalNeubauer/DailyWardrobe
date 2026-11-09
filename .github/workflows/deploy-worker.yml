@@ -1,7 +1,7 @@
 name: Deploy worker
 # Deploys worker.js to Cloudflare whenever a change to it reaches main (after the tests pass).
 # Needs, in GitHub > Settings > Secrets and variables > Actions:
-#   secret   CLOUDFLARE_API_TOKEN   (Cloudflare token from the "Edit Cloudflare Workers" template)
+#   secret   CLOUDFLARE_API_TOKEN   (Cloudflare token from the "Edit Cloudflare Workers" template, plus Queues edit)
 #   variable CLOUDFLARE_ACCOUNT_ID
 #   variable WARDROBE_KV_ID         (ID of the KV namespace bound as WARDROBE)
 on:
@@ -49,4 +49,6 @@ jobs:
         # the KV namespace ID goes into wrangler.toml only here, after the tests (the repo copy keeps a placeholder)
         run: |
           sed -i "s/WARDROBE_KV_ID/$KV/" wrangler.toml
+          # the queue for background photos must exist before a deploy can bind it (needs Queues edit on the token)
+          npx --yes wrangler@4.158.0 queues info wardrobe-renders >/dev/null 2>&1 || npx --yes wrangler@4.158.0 queues create wardrobe-renders
           npx --yes wrangler@4.158.0 deploy
