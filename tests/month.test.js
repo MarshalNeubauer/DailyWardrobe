@@ -52,16 +52,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // a white shirt instead of light blue is a different look; another light blue shirt would be the same
       const diff=lastWorn({...o2,shirt:{...o2.shirt,primaryColor:'pink'}});return {d:d&&key(d),diff}});
     ok(cap.d==='2026-11-2'&&cap.diff===null,'last worn finds the most recent day with the same look');
-    await p.evaluate(()=>{const o=planFor()['2026-11-16'];renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};figView='photo';renderToday()});
+    await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};figView='photo';renderToday()});
     ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo small')),'the photo caption is just the last-worn date');
     // Settings: generate the month's missing photos
     await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings()});
     const before=await p.evaluate(()=>({btn:$('#batch-btn').textContent,n:batchCombos().length}));
     ok(new RegExp(`^Generate ${before.n} photos for November 2026$`).test(before.btn)&&before.n>=3,`Settings offers to generate the month's missing photos (${before.btn})`);
+    // the worker starts empty except for one look another device already made: that one is fetched, not generated
+    store.clear();
+    const pre=await p.evaluate(()=>comboKey(batchCombos()[1]));
+    store.set('render:'+pre,JSON.stringify({sig:'x',img:'data:image/jpeg;base64,'+JPG,model:'gpt-image-2',t:5}));
     await p.click('#batch-btn');
     await p.waitForFunction(()=>!batch,null,{timeout:30000});
     const after=await p.evaluate(()=>({left:batchCombos().length,btn:$('#batch-btn').textContent,status:$('#batch-status').textContent,disabled:$('#batch-btn').disabled}));
-    ok(calls===before.n,`one photo per distinct look, generated in a row (${calls})`);
+    ok(calls===before.n-1,`one photo per distinct look, generated in a row (${calls} of ${before.n}); the one already on the worker was fetched, not paid for again`);
     ok(after.left===0&&after.disabled&&/All of November 2026 has photos/.test(after.btn)&&new RegExp(`Done: ${before.n} photos ready`).test(after.status),'afterwards nothing is left to generate');
     ok(await p.evaluate(()=>Object.keys(planFor()).filter(k=>keyDate(k).getMonth()===10).every(k=>!planFor()[k].top||!!renders[comboKey(planFor()[k])])),'every November outfit now has a photo');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
