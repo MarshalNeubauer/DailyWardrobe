@@ -355,15 +355,47 @@ function scoreCard(o){
   const r=rateOutfit(o),tone=r.score>=80?'good':r.score>=65?'ok':'low';
   return `<details class="score ${tone}"><summary><span class="num">${r.score}</span><span class="lbl"><b>${r.label}</b><small>Outfit score · tap for why</small></span></summary><ul>${r.checks.map(c=>`<li class="${c.pts===c.max?'ok':'miss'}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></details>`;
 }
-function planHtml(p){
-  const f=new Date(view.y,view.m,1),days=[];
-  for(const d=new Date(f);d.getMonth()===view.m;d.setDate(d.getDate()+1))if(isWorkday(d))days.push(new Date(d));
-  return `<div class="nav"><button onclick="mv(-1)" aria-label="Previous month">‹</button><h2>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><button onclick="mv(1)" aria-label="Next month">›</button></div>`+
-  days.map(d=>{
-    const o=p[key(d)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null};
-    const sc=o.shirt||o.top?rateOutfit(o).score:null;
-    return `<div class="pl ${key(d)===key(sel)?'on':''}" onclick="pick(${d.getTime()})">${sc===null?'':`<span class="sc ${sc>=80?'good':sc>=65?'ok':'low'}">${sc}</span>`}<b>${d.toLocaleDateString(undefined,{weekday:'short',day:'numeric'})}</b><span class="cap">${o.suitDay?nm(o.top):nm(o.top)+' + '+nm(o.bot)}, ${o.shirt?colName(primaryCol(o.shirt))+' shirt':'no shirt'}, ${o.tie?desc(o.tie)+' tie':'no tie'}</span></div>`;
-  }).join('');
+/* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
+/* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
+let stkN=0;
+function stackSVG(o,cls=''){
+  const P='st'+(stkN++)+'-',parts=[[o.top,'top',22],...(!o.suitDay&&o.bot?[[o.bot,'bot',9]]:[]),[o.shirt,'shirt',9],[o.tie,'tie',9]].filter(x=>x[0]);
+  const H=parts.reduce((h,x)=>h+x[2],0)+(parts.length-1)*2;let y=0;
+  const body=parts.map(([i,role,h],k)=>{const id=P+k,r=`<rect y="${y}" width="40" height="${h}" rx="2.5" fill="url(#${id})"/><rect y="${y}" width="40" height="${h}" rx="2.5" fill="none" stroke="#000" stroke-opacity=".12" stroke-width=".6"/>`;y+=h+2;return `<defs>${fabricDef(id,i,role)}</defs>${r}`}).join('');
+  return `<svg class="stack ${cls}" viewBox="0 0 40 ${H}" preserveAspectRatio="none" aria-hidden="true">${body}</svg>`;
+}
+const planOn=d=>{const keep=view;view={y:d.getFullYear(),m:d.getMonth()};const o=planFor()[key(d)];view=keep;return o};
+const nextWorkday=d=>{const x=new Date(d);let g=0;do x.setDate(x.getDate()+1);while(!isWorkday(x)&&++g<7);return x};
+const shortTop=o=>{const t=o.top;if(!t)return '';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patLabel(t.pattern):'',n=colName(primaryCol(t))+p;
+  const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' trousers':''}`};
+const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'check',foulard:'foulard',knit:'knit'})[p]||'';
+const shortRest=o=>[o.shirt&&colName(primaryCol(o.shirt))+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
+function dayCard(d,label){const o=isWorkday(d)&&planOn(d);
+  return `<button class="mday" onclick="openDay(${d.getTime()})">${o&&o.top?stackSVG(o,'big'):'<span class="stack big rest"></span>'}<span class="mtxt"><small>${label} · ${d.toLocaleDateString(undefined,{weekday:'short'})}</small><b>${o&&o.top?esc(shortTop(o)):isWorkday(d)?'No outfit yet':'Day off'}</b><span>${o&&o.top?esc(shortRest(o)):''}</span></span></button>`}
+function renderMonth(){
+  const p=planFor(),f=new Date(view.y,view.m,1),T=todayDate(),cells=[];
+  for(let k=0;k<f.getDay();k++)cells.push('<span class="mc blank"></span>');
+  for(const d=new Date(f);d.getMonth()===view.m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),work=wd&&o&&o.top,isT=+d===+T,past=d<T;
+    const label=`${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}: ${work?`${shortTop(o)}, ${shortRest(o)}`:wd?'no outfit recorded':'day off'}`;
+    cells.push(`<button class="mc ${!wd?'rest':past?'worn':'planned'}${isT?' today':''}${k===key(sel)?' sel':''}" aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
+  const tm=nextWorkday(T),tLabel=+tm-+T>864e5?tm.toLocaleDateString(undefined,{weekday:'long'}):'Tomorrow';
+  $('#month').innerHTML=`<div class="mhead"><div><small class="eyebrow">Wear plan</small><h1>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h1></div>
+    <div class="mbtns"><button onclick="monthStep(-1)" aria-label="Previous month">‹</button><button onclick="monthStep(1)" aria-label="Next month">›</button></div></div>
+    <div class="mgrid mdow" aria-hidden="true">${['S','M','T','W','T','F','S'].map(x=>`<span>${x}</span>`).join('')}</div>
+    <div class="mgrid">${cells.join('')}</div>
+    <div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div>
+    <section class="mcard" aria-label="Today and ${tLabel.toLowerCase()}">${dayCard(T,'Today')}<hr>${dayCard(tm,tLabel)}</section>`;
+  if(items.length)recordDays(p);
+}
+function monthStep(n){view.m+=n;if(view.m>11){view.m=0;view.y++}if(view.m<0){view.m=11;view.y--}renderMonth()}
+function openMonth(){view={y:sel.getFullYear(),m:sel.getMonth()};show('month');scrollTo(0,0)}
+function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};show('today');scrollTo(0,0)}
+/* the box on Today that opens the month view: the next few workdays as small stacks */
+function monthLink(){
+  const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(o&&o.top)days.push([new Date(d),o])}
+  const f=new Date(view.y,view.m,1),n=Object.keys(planFor()).filter(k=>keyDate(k).getMonth()===view.m).length;
+  return `<button class="month-link" onclick="openMonth()" aria-label="Open the ${f.toLocaleDateString(undefined,{month:'long'})} wear plan"><span class="mlstrip">${days.map(([d,o])=>`<span class="mli"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o)}</span>`).join('')}</span>
+    <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${n} outfit${n===1?'':'s'} · see the month</small></span><span class="chev" aria-hidden="true">›</span></button>`;
 }
 
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
@@ -384,7 +416,7 @@ function figureStage(o){
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   const ctl=`<div class="render-ctl">${r?`<div class="figmode small" role="group" aria-label="Picture"><button class="${photo?'':'on'}" aria-pressed="${!photo}" onclick="setFigView('art')">Illustration</button><button class="${photo?'on':''}" aria-pressed="${photo}" onclick="setFigView('photo')">Photo</button></div>`:''}`+
     `<button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':r?'Regenerate photo':'Generate realistic photo'}</button></div><p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
-  return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}"><small class="mut">Generated by ${esc(r.model||'AI')}${r.t?' on '+new Date(r.t).toLocaleDateString(undefined,{month:'short',day:'numeric'}):''} · reused whenever this outfit comes back</small></div>`
+  return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}"><small class="mut">${(()=>{const d=lastWorn(o);return d?`Last worn ${d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}`:'Not worn yet'})()}</small></div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${hs}</div>`)+ctl+
     `<div id="piece-wrap">${pieceCard(o)}</div>`+(tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below">${tiles}</div>`:'');
 }
@@ -448,22 +480,60 @@ function figurePng(o,w=780){
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
 }
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
+/* generate and keep the photo for one outfit; throws with a readable message */
+async function renderCombo(o){
+  const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
+  if(!w||!tok)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
+  const image=await figurePng(o);
+  const refs=['top','tie'].map(s=>o[s]&&o[s].photo).filter(Boolean);   // no shirt photo: the photo is shared by every shirt of that colour
+  const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o)})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error((r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.error||`HTTP ${r.status}`));
+  const rec={sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()};
+  await keepRender(comboKey(o),rec,false);   // the worker already kept a copy
+  return rec;
+}
 async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering)return;
-  const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok){renderMsg='Set the Worker URL and App Token in ⚙ Settings first.';renderToday();return}
   const day=key(sel);rendering=true;renderMsg='This takes about 30–90 seconds.';renderToday();
-  try{
-    const image=await figurePng(o);
-    const refs=['top','tie'].map(s=>o[s]&&o[s].photo).filter(Boolean);   // no shirt photo: the photo is shared by every shirt of that colour
-    const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o)})});
-    const j=await r.json().catch(()=>({}));
-    if(!r.ok){renderMsg=(r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.error||`HTTP ${r.status}`);return}
-    const img=await shrinkUrl(j.image,900);
-    await keepRender(comboKey(o),{sig:comboSig(o),img,model:j.model||'',t:Date.now()},false);   // the worker already kept a copy
-    figView='photo';renderMsg='';
-  }catch(e){renderMsg='Couldn’t generate the photo: '+(e.message||e)}
+  try{await renderCombo(o);figView='photo';renderMsg=''}
+  catch(e){renderMsg=/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t generate the photo: '+(e.message||e)}
   finally{rendering=false;if(key(sel)===day)renderToday()}
+}
+/* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day */
+function lastWorn(o){
+  const ck=comboKey(o),T=todayDate(),lim=Math.min(+keyDate(key(sel)),+T);let best=null;
+  for(const r of Object.values(dayRecs)){if(!r.ids||r.worn===false)continue;const d=keyDate(r.date);if(+d>=lim||(best&&d<=best))continue;
+    const get=id=>id&&items.find(i=>i.id===id)||null,x={suitDay:!!r.suitDay,top:get(r.ids.top),shirt:get(r.ids.shirt),tie:get(r.ids.tie),clip:get(r.ids.clip),watch:get(r.ids.watch),vest:!!r.vestOn};
+    if(x.top&&comboKey(x)===ck)best=d}
+  return best;
+}
+/* ---- Settings: generate the month's missing photos in one go ---- */
+let batch=null;
+function batchCombos(){
+  const p=planFor(),seen=new Set(),todo=[];
+  for(const [k,o] of Object.entries(p)){const d=keyDate(k);if(d.getMonth()!==view.m||d.getFullYear()!==view.y||!o.top||!o.shirt)continue;
+    const ck=comboKey(o);if(seen.has(ck))continue;seen.add(ck);if(!renders[ck])todo.push(o)}
+  return todo;
+}
+const monthName=()=>new Date(view.y,view.m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
+function renderBatchUI(){const el=$('#batch-status'),btn=$('#batch-btn');if(!el||!btn)return;
+  if(batch){el.textContent=batch.msg;btn.textContent='Stop';btn.onclick=()=>{batch.stop=true;batch.msg='Stopping after the current photo…';renderBatchUI()};return}
+  const n=batchCombos().length;btn.textContent=n?`Generate ${n} photo${n===1?'':'s'} for ${monthName()}`:`All of ${monthName()} has photos`;btn.disabled=!n;btn.onclick=startBatch;
+  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet. Each costs about 7¢ (OpenAI); outfits that share a look share a photo.`:''}
+async function startBatch(){
+  if(batch)return;let todo=batchCombos();if(!todo.length){renderBatchUI();return}
+  if(!confirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\nAbout $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. Keep the app open: each takes 30–90 seconds.`))return;
+  batch={done:0,fail:0,n:todo.length,stop:false,msg:'Starting…'};renderBatchUI();
+  // a photo another device already made is fetched instead of generated
+  for(const o of todo){if(batch.stop)break;const ck=comboKey(o);
+    batch.msg=`Generating ${batch.done+batch.fail+1} of ${batch.n}…`;renderBatchUI();
+    try{if(!renders[ck]){renderTried.delete(ck);await fetchRemoteRender(o,'');if(!renders[ck])await renderCombo(o)}batch.done++}
+    catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden/i.test(e.message)){batch.stop=true}}
+  }
+  const b=batch;batch=null;const el=$('#batch-status');
+  if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
+  renderBatchUI();if(!$('#today').hidden)renderToday();
 }
 function pickPiece(s){figSel=s;const o=planFor()[key(sel)];if(!o)return;
   document.querySelectorAll('#mannequin-container .hot').forEach(b=>{const on=b.getAttribute('onclick').includes(`'${s}'`);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
@@ -480,13 +550,11 @@ function renderToday(){
   else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}<div class="list">${slots(o)}</div>${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
-  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${planHtml(p)}</div></div>`;
+  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink():''}</div></div>`;
   if(items.length){recordDays(p);
   }
 }
 
-function mv(n){view.m+=n;if(view.m>11){view.m=0;view.y++}if(view.m<0){view.m=11;view.y--}const d=new Date(view.y,view.m,1);for(let g=0;g<7&&!isWorkday(d);g++)d.setDate(d.getDate()+1);sel=d;renderToday()}
-function pick(t){sel=new Date(t);renderToday();scrollTo(0,0)}
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed */
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed.
    from: where the new day's outfit slides in from (px, sign = side); 0 = no animation */
@@ -569,8 +637,8 @@ ${q.type==='watch'?`<label>Dial ${S(COLOR_OPTS('watch'),watchOpts(q).dial,'dial'
 
 function show(t){
   closeSettings();
-  for(const s of['today','wardrobe','add']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
-  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd};if(f[t])f[t]();
+  for(const s of['today','month','wardrobe','add']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t||(s==='today'&&t==='month'))}
+  const f={today:renderToday,month:renderMonth,wardrobe:renderWardrobe,add:renderAdd};if(f[t])f[t]();
 }
 
 db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};show('today');window.appReady=true;loadWeather();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday()})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
@@ -587,6 +655,7 @@ const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
 async function saveUserSettings(){settings.updated=Date.now();await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
 function renderSettingsExtras(){
+  renderBatchUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}`:'No location set: outfits follow the calendar season.';

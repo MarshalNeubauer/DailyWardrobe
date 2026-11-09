@@ -13,6 +13,7 @@
 <header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe">↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
 <main>
 <section id="today"></section>
+<section id="month" hidden></section>
 <section id="wardrobe" hidden></section>
 <section id="add" hidden><h2>Add to wardrobe</h2><p id="note" class="mut"></p>
 <div class="btns" style="flex-wrap:wrap"><label class="btn pri" style="margin:0">Choose photos<input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><button class="btn" style="margin:0" onclick="addManual()">Add without photo</button></div>
@@ -40,6 +41,9 @@
 <div class="btns" style="flex-wrap:wrap;align-items:center"><button type="button" onclick="useMyLocation()">Use my location</button><input type="text" id="cfg-city" placeholder="or search a city" style="max-width:150px"><button type="button" onclick="findCity()">Search</button></div>
 <div id="city-results" class="btns" style="flex-wrap:wrap"></div>
 <label style="display:flex;justify-content:space-between;align-items:center;margin:6px 0">Units <select id="cfg-units" onchange="setUnits(this.value)" style="max-width:90px"><option value="F">°F</option><option value="C">°C</option></select></label>
+<h3 style="margin:16px 0 4px">Realistic photos</h3>
+<p class="mut" style="margin:0 0 6px"><small id="batch-status"></small></p>
+<div class="btns"><button id="batch-btn" type="button">Generate photos for this month</button></div>
 <h3 style="margin:16px 0 4px">Backup &amp; sync</h3>
 <p class="mut" style="margin:0 0 6px"><small id="sync-status"></small></p>
 <p class="mut" style="margin:0"><small>Your wardrobe is backed up to your Cloudflare Worker and kept in sync across your devices. Needs the WARDROBE KV binding and APP_TOKEN on the worker.</small></p>

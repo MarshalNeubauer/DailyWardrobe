@@ -34,7 +34,7 @@ suite('renders the outfit without errors',async({page,errs})=>{
   await page.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);
   ok(await page.$('#mannequin-container.fig > svg')!==null,'outfit figure SVG is drawn');
   ok(await page.$('.score .num')!==null,'score card is shown');
-  ok((await page.$$('#today .pl .sc')).length>10,'month plan shows score badges');
+  ok((await page.$$('#today .month-link .mli')).length===5,'Today links to the month plan with the next 5 outfits');
   ok(errs.length===0,'no console errors ('+errs.join('; ')+')');
 });
 
@@ -187,7 +187,9 @@ async function workerTests(){
 (async()=>{
   await new Promise(r=>server.listen(0,r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
   const browser=await chromium.launch();
-  for(const [name,fn] of suites){
+  // TEST_ONLY=name runs just the tests/*.test.js files whose name contains it (for reproducing one suite quickly)
+  const ONLY=process.env.TEST_ONLY;
+  for(const [name,fn] of ONLY?[]:suites){
     console.log('\n• '+name);
     const ctx=await browser.newContext({...devices['iPhone 13']});const page=await ctx.newPage();const errs=[];
     page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
@@ -197,9 +199,9 @@ async function workerTests(){
     await ctx.close();
   }
   await browser.close();
-  try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}
+  if(!ONLY)try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}
   // extra suites contributed by other files (tests/*.test.js)
-  for(const f of fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')).sort()){
+  for(const f of fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')&&(!ONLY||f.includes(ONLY))).sort()){
     console.log('\n• '+f);try{await require(path.join(__dirname,f))({ok,url,chromium,devices,WARDROBES,ROOT})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
   }
   server.close();

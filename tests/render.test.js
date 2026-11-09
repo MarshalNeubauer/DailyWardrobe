@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(exp.shirtHasPhoto&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the suit/tie photos, not the shirt's (${sent.images.length})`);
     ok([exp.top,exp.tie].every(t=>sent.prompt.includes(t))&&/a plain light blue dress shirt/.test(sent.prompt)&&/same pose/i.test(sent.prompt),'the prompt describes the outfit (the shirt by its colour only) and asks to keep the pose');
     const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:document.querySelector('.fig.photo small').textContent,btn:document.querySelector('.render-btn').textContent}));
-    ok(shown.img&&/gpt-image-2/.test(shown.by)&&shown.btn==='Regenerate photo','the photo replaces the illustration, says which model made it');
+    ok(shown.img&&/^(Not worn yet|Last worn \w{3}, \w{3} \d+)$/.test(shown.by)&&shown.btn==='Regenerate photo',`the photo replaces the illustration; the caption is the last-worn date ("${shown.by}")`);
     await p.click('.render-ctl >> text=Illustration');
     ok(await p.evaluate(()=>!!document.querySelector('.fig svg')&&!document.querySelector('.fig.photo')),'Illustration / Photo toggle switches back to the drawing');
     await p.click('.render-ctl >> text=Photo');
