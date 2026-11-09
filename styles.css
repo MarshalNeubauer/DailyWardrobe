@@ -249,3 +249,5 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 /* a wardrobe item is one big tap target that opens its editor */
 .giopen{display:block;width:100%;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .giopen:active{opacity:.8}
+.giclose{cursor:pointer}.giclose:active{opacity:.85}
+.gi-gap{min-height:0}
