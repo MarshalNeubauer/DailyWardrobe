@@ -443,7 +443,15 @@ async function putRender(req, env, json) {
 async function getRender(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 404);
-  const q = new URL(req.url).searchParams, id = renderId({ key: q.get('key'), day: q.get('day') });
+  const q = new URL(req.url).searchParams;
+  // GET /render?list=1 -> {keys}: every outfit or item photo kept here, so a device can download the ones it lacks in one go
+  if (q.get('list')) {
+    if (typeof env.WARDROBE.list !== 'function') return json({ error: 'listing not available' }, 501);
+    const keys = []; let cursor;
+    do { const page = await env.WARDROBE.list({ prefix: 'render:c', cursor }); for (const k of page.keys) keys.push(k.name.slice(7)); cursor = page.list_complete ? null : page.cursor; } while (cursor && keys.length < 20000);
+    return json({ keys: keys.filter(k => COMBO_RE.test(k)) });
+  }
+  const id = renderId({ key: q.get('key'), day: q.get('day') });
   if (!id) return json({ error: 'bad key' }, 400);
   const rec = await env.WARDROBE.get(`render:${id}`, 'json');
   return rec ? json(rec) : json({ error: 'none' }, 404);
