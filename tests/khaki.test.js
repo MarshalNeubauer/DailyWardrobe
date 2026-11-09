@@ -9,7 +9,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       norm:['Khaki','chino','stone'].map(c=>normColFor('pants',c)).join(),camel:normCol('camel'),
       lighter:lumOf('khaki')>lumOf('tan')+10,fam:fam('khaki'),belt:leatherGroup('khaki'),
       desc:itemDesc({type:'pants',primaryColor:'khaki',pattern:'solid'}),wool:itemDesc({type:'pants',primaryColor:'tan',pattern:'solid'})}));
-    ok(r.pants&&r.shirt,'khaki is offered as a colour');
+    ok(r.pants&&!r.shirt,'khaki is offered for trousers (not dress shirts)');
     ok(r.norm==='khaki,khaki,khaki'&&r.camel==='tan','khaki, chino and stone tag as khaki; camel stays tan');
     ok(r.lighter&&r.fam==='tan'&&r.belt==='tan','khaki is lighter than tan and follows the tan rules');
     ok(/khaki cotton twill dress trousers/.test(r.desc)&&/tan wool dress trousers/.test(r.wool),'the khaki item picture asks for cotton twill');
@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o=planFor()['2026-11-12'];return o&&o.bot&&o.bot.primaryColor});
     ok(bot==='khaki','a navy blazer is paired with the khaki trousers ('+bot+')');
     const w=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
-    ok(/brown, tan, khaki, olive/.test(w)&&/khaki is the light sandy beige/.test(w),'the tagging prompt lists and explains khaki');
+    ok(/pants: \[\[\.\.\.SUITING/.test(w)&&/'tan','khaki'/.test(w)&&/khaki is the light sandy beige/.test(w),'the tagging prompt lists and explains khaki');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
