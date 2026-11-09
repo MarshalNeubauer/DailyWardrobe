@@ -53,6 +53,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     env={APP_TOKEN:'t',OPENAI_API_KEY:'k',OPENAI_IMAGE_MODEL:'gpt-image-x',OPENAI_IMAGE_QUALITY:'high'};reply=()=>[200,{data:[{b64_json:JPG}]}];
     await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(sent.model==='gpt-image-x'&&sent.quality==='high','OPENAI_IMAGE_MODEL and OPENAI_IMAGE_QUALITY override the defaults');
+    // one request may ask for its own quality (a cheap test or batch photo); anything else falls back to the worker setting
+    const PNG1='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+    const rq=q=>worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:PNG1,outfit:'a navy suit',quality:q})}),env);
+    await rq('low');const qLow=sent.quality;await rq('ultra');const qBad=sent.quality;
+    ok(qLow==='low'&&qBad==='high',`a request can ask for low quality; an unknown value uses the worker setting (${qLow}, ${qBad})`);
     const res=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}),env);
     ok(res.status===403,'/render needs the app token');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
