@@ -35,6 +35,11 @@
 <p class="mut" style="margin:4px 0"><small>Workdays</small></p><div class="days" id="cfg-workdays"></div>
 <p class="mut" style="margin:8px 0 4px"><small>Blazer days (business casual); other workdays get a suit</small></p><div class="days" id="cfg-blazer"></div>
 <label style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0 6px">Wear the suit's vest <select id="cfg-vest" onchange="setVestMode(this.value)" style="max-width:210px"><option value="auto">Suit days, except hot ones</option><option value="always">Every suit day</option><option value="never">Never</option></select></label>
+<h3 style="margin:16px 0 4px">Formal days</h3>
+<p class="mut" style="margin:0 0 6px"><small>Change a date to formal: dark suit, white shirt, quiet tie.</small></p>
+<div class="btns" style="align-items:center;flex-wrap:wrap"><input type="date" id="cfg-formal-date" aria-label="Date to make formal" style="max-width:180px"><button type="button" onclick="addFormalDay()">Make formal</button></div>
+<p class="mut" style="margin:4px 0" aria-live="polite"><small id="formal-msg"></small></p>
+<div class="fchips" id="formal-list"></div>
 <h3 id="wx-section" style="margin:16px 0 4px">Weather</h3>
 <p class="mut" style="margin:0 0 6px"><small id="wx-loc"></small></p>
 <div class="btns" style="flex-wrap:wrap;align-items:center"><button type="button" onclick="useMyLocation()">Use my location</button><input type="text" id="cfg-city" placeholder="or search a city" style="max-width:150px"><button type="button" onclick="findCity()">Search</button></div>
@@ -43,6 +48,8 @@
 <h3 style="margin:16px 0 4px">Realistic photos</h3>
 <p class="mut" style="margin:0 0 6px"><small id="batch-status"></small></p>
 <div class="btns"><button id="batch-btn" type="button">Generate photos for this month</button></div>
+<p class="mut" style="margin:8px 0 6px"><small id="regen-status"></small></p>
+<div class="btns"><button id="regen-btn" type="button" onclick="generateRender()">Regenerate photo</button></div>
 <p class="mut" style="margin:8px 0 6px"><small id="itempic-status">Product pictures for the shoes, belts and socks shown under the figure.</small></p>
 <div class="btns"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div>
 <h3 style="margin:16px 0 4px">Backup &amp; sync</h3>
