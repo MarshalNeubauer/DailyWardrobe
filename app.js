@@ -414,7 +414,7 @@ function figureStage(o){
   const hs=FIG_PIECES.filter(([s])=>o[s]&&!(s==='clip'&&!o.tie)).map(([s,k])=>{const h=k==='vest'?{x:174,y:200}:FIG_HOTSPOTS[k];
     return `<button class="hot${figSel===s?' on':''}" style="left:${(h.x/390*100).toFixed(2)}%;top:${(h.y/400*100).toFixed(2)}%" aria-label="${slotLabel(s,o)}: ${s==='vest'?'matching vest':desc(o[s])||nm(o[s])}" aria-pressed="${figSel===s}" onclick="pickPiece('${s}')"></button>`}).join('');
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
-  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&picBgs[itemKey(i)];return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
+  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
@@ -527,12 +527,16 @@ const itemKey=i=>'c'+fnv64('item|'+itemDesc(i));
 const itemPic=i=>i&&ITEM_PIC_TYPES.includes(i.type)&&renders[itemKey(i)]||null;
 /* the colour of a product photo's backdrop (the average of its outer edge), so a tile wider than the photo is filled to match;
    the picture's edges are feathered (CSS mask) so there is no visible seam */
-const picBgs={};
-function picBg(img,k){if(!picBgs[k])try{const N=16,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(img,0,0,N,N);
-    const d=x.getImageData(0,0,N,N).data,s=[0,0,0];let n=0;for(let y=0;y<N;y++)for(let X=0;X<N;X++)if(y===0||X===0||y===N-1||X===N-1){const o=(y*N+X)*4;s[0]+=d[o];s[1]+=d[o+1];s[2]+=d[o+2];n++}
-    picBgs[k]=`rgb(${s.map(v=>Math.round(v/n)).join(',')})`}catch{return}
-  const t=img.closest('.tile');if(t){t.style.background=picBgs[k];t.classList.add('has-pic')}}
-const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
+const picBgs={},PIC_BG='rgb(220,215,210)';   // the generated photos' backdrops average about this; used until a real reading
+/* WebKit (iOS Safari) can hand back blank pixels when an <img> is drawn right at onload, so read from a decoded copy and
+   accept only a full-alpha, light result (the backdrops are light grey); anything else keeps PIC_BG */
+async function readPicBg(src){try{const im=new Image();im.src=src;await im.decode();const N=16,c=document.createElement('canvas');c.width=c.height=N;
+    const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,N,N);const d=x.getImageData(0,0,N,N).data,s=[0,0,0,0];let n=0;
+    for(let y=0;y<N;y++)for(let X=0;X<N;X++)if(y===0||X===0||y===N-1||X===N-1){const o=(y*N+X)*4;for(let j=0;j<4;j++)s[j]+=d[o+j];n++}
+    const [r,g,b,a]=s.map(v=>Math.round(v/n));return a>=250&&r*.3+g*.59+b*.11>=150?`rgb(${r},${g},${b})`:null}catch{return null}}
+function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
+  readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
+const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="" data-k="${itemKey(i)}" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
   try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
     await keepRender(k,{sig:'item',img:await shrinkUrl(j.img,400),model:j.model||'',t:j.t||Date.now()},false);if(!$('#today').hidden)renderToday()}catch(e){console.warn('item picture unavailable',e)}}
