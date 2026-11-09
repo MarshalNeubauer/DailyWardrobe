@@ -32,7 +32,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   const seen=new Set();for(let i=0;i<25;i++){await p.click('.row button[aria-label="Swap tie"]');seen.add((await snap('2026-11-18')).tie)}
   const nTies=await p.evaluate(()=>items.filter(i=>i.type==='tie').length);
   ok(seen.size>=Math.min(nTies,12),`repeated swaps cycle through the ties (${seen.size} of ${nTies} seen)`);
-  await p.click('text=Reset changes');await p.waitForTimeout(150);
+  await p.click('[aria-label="Reset changes"]');await p.waitForTimeout(150);
   ok(!(await p.evaluate(()=>planFor()['2026-11-18'].overrides)),'Reset changes clears the swaps');
   // only one of a type: no swap, a message instead
   const msg=await p.evaluate(async()=>{const keep=items;items=items.filter(i=>i.type!=='watch'||i.id===items.find(x=>x.type==='watch').id);cache={};await swapSlot('watch');const t=document.querySelector('#today').textContent;items=keep;cache={};return t});

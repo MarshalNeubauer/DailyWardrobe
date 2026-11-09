@@ -29,7 +29,7 @@ module.exports=async({ok,chromium,url})=>{
   ok(/Matching vest/.test(t.row)&&/Not with the vest/.test(t.clipRow),'the list shows the vest, and the tie clip row says "Not with the vest"');
   ok(t.fig&&!t.figClip&&t.hot&&/with matching vest/.test(t.label),'the figure draws the vest (no clip) with a Vest tap target');
   await p.click('.vest-row .swap');await p.waitForFunction(()=>planFor()[key(sel)].vest===false&&/Not today/.test(document.querySelector('.vest-row').textContent),null,{timeout:5000}).catch(()=>{});
-  const off=await p.evaluate(()=>{const o=planFor()[key(sel)];return {vest:o.vest,clip:!!o.clip,row:document.querySelector('.vest-row').textContent,fig:!!document.querySelector('.fig .fig-vest'),reset:[...document.querySelectorAll('.dayact button')].some(b=>b.textContent==='Reset changes')}});
+  const off=await p.evaluate(()=>{const o=planFor()[key(sel)];return {vest:o.vest,clip:!!o.clip,row:document.querySelector('.vest-row').textContent,fig:!!document.querySelector('.fig .fig-vest'),reset:!!document.querySelector('.dayact [aria-label="Reset changes"]')}});
   ok(!off.vest&&off.clip&&/Not today/.test(off.row)&&!off.fig,'leaving the vest off for the day brings the tie clip back');
   ok(off.reset,'the day shows Reset changes');
   await p.click('.vest-row .swap');await p.waitForFunction(()=>planFor()[key(sel)].vest===true,null,{timeout:5000}).catch(()=>{});

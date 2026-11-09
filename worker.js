@@ -247,6 +247,7 @@ async function handleRender(req, env, json) {
   const text = await req.text();
   if (text.length > 20e6) return json({ error: 'request too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  if (body.mode === 'item') return renderItem(body, env, json);
   const base = dataUrlToBlob(body.image);
   if (!base) return json({ error: 'no illustration' }, 400);
   const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 6).map(dataUrlToBlob).filter(Boolean);
@@ -280,6 +281,31 @@ async function handleRender(req, env, json) {
   if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(rec), renderTtl(id));
   return json({ image: rec.img, model });
 }
+/* POST /render {mode:'item', item, key} -> a product photo of one accessory (shoes, belt, socks...), made from a short
+   description with OpenAI's image generation, kept in KV under the item's look key like outfit photos */
+const ITEM_PROMPT = item => `Studio product photograph of ${item}. Plain light warm-grey seamless background, soft even daylight,
+the whole item centred and in frame, true-to-life colour and leather or fabric texture, sharp focus, catalogue style.
+No person, no props, no text, no logos, no watermark.`;
+async function renderItem(body, env, json) {
+  const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  if (!item) return json({ error: 'no item description' }, 400);
+  const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
+  let r;
+  try {
+    r = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }) });
+  } catch (e) { return json({ error: 'Could not reach the OpenAI API: ' + String(e && e.message) }, 502); }
+  const out = await r.json().catch(() => null);
+  if (!r.ok) return json({ error: `OpenAI: ${out && out.error && out.error.message || `HTTP ${r.status}`}` }, 502);
+  const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
+  if (!b64) return json({ error: 'OpenAI returned no image' }, 502);
+  console.log(`item picture by ${model}: ${item}`);
+  const rec = { sig: 'item|' + item, img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() };
+  const id = renderId(body);
+  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(rec), renderTtl(id));
+  return json({ image: rec.img, model });
+}
+
 /* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced); older ones were per date (90 days) */
 const COMBO_RE = /^c[0-9a-f]{16}$/, DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
 const renderId = o => { const k = String(o && o.key || ''), d = String(o && o.day || ''); return COMBO_RE.test(k) ? k : DAY_RE.test(d) ? d : null; };

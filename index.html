@@ -13,7 +13,6 @@
 <header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe">↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
 <main>
 <section id="today"></section>
-<section id="month" hidden></section>
 <section id="wardrobe" hidden></section>
 <section id="add" hidden><h2>Add to wardrobe</h2><p id="note" class="mut"></p>
 <div class="btns" style="flex-wrap:wrap"><label class="btn pri" style="margin:0">Choose photos<input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><button class="btn" style="margin:0" onclick="addManual()">Add without photo</button></div>
@@ -44,6 +43,8 @@
 <h3 style="margin:16px 0 4px">Realistic photos</h3>
 <p class="mut" style="margin:0 0 6px"><small id="batch-status"></small></p>
 <div class="btns"><button id="batch-btn" type="button">Generate photos for this month</button></div>
+<p class="mut" style="margin:8px 0 6px"><small id="itempic-status">Product pictures for the shoes, belts and socks shown under the figure.</small></p>
+<div class="btns"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div>
 <h3 style="margin:16px 0 4px">Backup &amp; sync</h3>
 <p class="mut" style="margin:0 0 6px"><small id="sync-status"></small></p>
 <p class="mut" style="margin:0"><small>Your wardrobe is backed up to your Cloudflare Worker and kept in sync across your devices. Needs the WARDROBE KV binding and APP_TOKEN on the worker.</small></p>
