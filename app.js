@@ -414,7 +414,7 @@ function figureStage(o){
   const hs=FIG_PIECES.filter(([s])=>o[s]&&!(s==='clip'&&!o.tie)).map(([s,k])=>{const h=k==='vest'?{x:174,y:200}:FIG_HOTSPOTS[k];
     return `<button class="hot${figSel===s?' on':''}" style="left:${(h.x/390*100).toFixed(2)}%;top:${(h.y/400*100).toFixed(2)}%" aria-label="${slotLabel(s,o)}: ${s==='vest'?'matching vest':desc(o[s])||nm(o[s])}" aria-pressed="${figSel===s}" onclick="pickPiece('${s}')"></button>`}).join('');
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
-  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
+  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)

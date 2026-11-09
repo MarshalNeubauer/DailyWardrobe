@@ -157,9 +157,14 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .month-link .chev{font-size:24px;color:var(--mut)}
 #batch-btn[disabled]{opacity:.55}
 .stack.none{background:repeating-linear-gradient(-45deg,transparent 0 4px,color-mix(in srgb,var(--mut) 18%,transparent) 4px 5px);border-radius:6px}
-.below .tile .item-pic{width:min(100%,calc((100cqw - 24px)/4 - 8px));aspect-ratio:1;object-fit:cover;border-radius:0;display:block;
-  -webkit-mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 10%,#000 90%,transparent);-webkit-mask-composite:source-in;
-  mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 10%,#000 90%,transparent);mask-composite:intersect}
+/* a product picture fills its tile edge to edge, zoomed past the photo's empty margin (per item type); the label sits on the
+   photo's own backdrop at the bottom */
+.below .tile.has-pic{padding:0 0 6px;overflow:hidden;position:relative}
+.below .tile.has-pic .item-pic{--z:1.1;width:calc(var(--z)*100%);max-width:none;aspect-ratio:1;object-fit:cover;display:block;border-radius:0;
+  margin:calc((1 - var(--z))*50%) calc((1 - var(--z))*50%) calc((1 - var(--z))*50%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 82%,transparent);mask-image:linear-gradient(to bottom,#000 82%,transparent)}
+.below .tile.has-pic[data-type="shoes"] .item-pic,.below .tile.has-pic[data-type="belt"] .item-pic{--z:1.08}.below .tile.has-pic[data-type="socks"] .item-pic{--z:1;-webkit-mask-image:none;mask-image:none}
+.below .tile.has-pic small{position:relative}
 .below .tile.has-pic{border-color:transparent}.below .tile.has-pic small{color:#4b5058}
 .piece .chip-sw .item-pic{width:40px;height:40px;border-radius:8px;object-fit:cover;display:block}
 #itempic-btn[disabled]{opacity:.55}
