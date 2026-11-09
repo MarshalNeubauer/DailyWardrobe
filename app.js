@@ -475,7 +475,6 @@ function monthLink(){
 
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
 let figSel='top';
-const FIG_PIECES=[['top','suit'],['shirt','shirt'],['tie','tie'],['clip','clip'],['vest','vest'],['watch','watch']];
 const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
 function pieceCard(o){
   if(figSel==='vest'){if(!o.vest)return '';return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(o.top)}</span><div><small class="mut">Vest</small><b class="cap">Matching vest · ${desc(o.top)}</b></div>${o.frozen?'':`<button class="swap" onclick="setVest(false)">Leave off</button>`}</div>`}
@@ -483,8 +482,6 @@ function pieceCard(o){
   return `<div class="piece" id="piece"><span class="chip-sw">${itemPicHtml(i,swatchSVG(i))}</span><div><small class="mut">${slotLabel(figSel,o)}</small><b class="cap">${desc(i)||nm(i)}</b></div>${o.frozen?'':`<button class="swap" onclick="swapSlot('${figSel}')">Swap</button>`}</div>`;
 }
 function figureStage(o){
-  const hs=FIG_PIECES.filter(([s])=>o[s]&&!(s==='clip'&&!o.tie)).map(([s,k])=>{const h=k==='vest'?{x:174,y:200}:FIG_HOTSPOTS[k];
-    return `<button class="hot${figSel===s?' on':''}" style="left:${(h.x/390*100).toFixed(2)}%;top:${(h.y/400*100).toFixed(2)}%" aria-label="${slotLabel(s,o)}: ${s==='vest'?'matching vest':desc(o[s])||nm(o[s])}" aria-pressed="${figSel===s}" onclick="pickPiece('${s}')"></button>`}).join('');
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
   const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
@@ -492,7 +489,7 @@ function figureStage(o){
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
   const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}"><small class="mut">${(()=>{const d=lastWorn(o);return d?`Last worn ${d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}`:'Not worn yet'})()}</small></div>`
-    :`<div class="fig" id="mannequin-container">${figureSvg(o)}${hs}</div>`)+ctl+
+    :`<div class="fig" id="mannequin-container">${figureSvg(o)}</div>`)+ctl+
     (tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below" style="--n:${below.length}">${tiles}</div>`:'');
 }
 /* ---- realistic photo: the figure + item photos -> worker /render (OpenAI image edit).
@@ -711,7 +708,6 @@ function startQueueWatch(){if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(
 function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&queuedKeys().length){checkQueue();startQueueWatch()}});
 function pickPiece(s){figSel=s;const o=planFor()[key(sel)];if(!o)return;
-  document.querySelectorAll('#mannequin-container .hot').forEach(b=>{const on=b.getAttribute('onclick').includes(`'${s}'`);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   const w=$('#piece-wrap');if(w)w.innerHTML=pieceCard(o)}
 /* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
 const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
