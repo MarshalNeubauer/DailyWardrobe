@@ -271,9 +271,46 @@ async function save(i){
 }
 let editing=null;
 const E=(id,k,list,v)=>`<label>${k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
+/* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
+   and the item itself stay, so the plan and the outfit history are untouched. Undo works until the editor is closed. ---- */
+let phEdit={id:null,undo:[],crop:null};
+const PH_MAX=720;
+function photoTools(i){if(phEdit.crop)return '';
+  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
+    (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
+    (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
+const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
+async function setPhoto(id,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push(it.photo||null);if(phEdit.undo.length>10)phEdit.undo.shift();
+  if(url)it.photo=url;else delete it.photo;await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
+async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f);await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.')}
+  catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
+async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
+  c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);await setPhoto(id,c.toDataURL('image/jpeg',.9))}
+async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const prev=phEdit.undo.pop();
+  if(prev)it.photo=prev;else delete it.photo;await put(it);cache={};renderWardrobe()}
+/* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
+async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
+  phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();requestAnimationFrame(layoutCrop)}
+function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" onpointerdown="cropDrag(event)"><img id="cropimg" src="${i.photo}" alt="Photo being cropped" draggable="false"></div>
+  <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" oninput="phEdit.crop.z=+this.value;layoutCrop()" aria-label="Zoom"></label>
+  <p class="mut" style="margin:2px 0 6px;font-size:13px">Drag the picture to position it.</p>
+  <div class="btns"><button class="pri" type="button" onclick="applyCrop('${i.id}')">Apply</button><button type="button" onclick="phEdit.crop=null;renderWardrobe()">Cancel</button></div></div>`}
+function cropGeom(){const c=phEdit.crop,box=$('#cropbox');if(!c||!box)return null;const V=box.clientWidth,s=V/Math.min(c.w,c.h)*c.z,W=c.w*s,H=c.h*s;
+  // keep the frame inside the picture
+  const hx=V/2/W,hy=V/2/H;c.cx=Math.min(1-hx,Math.max(hx,c.cx));c.cy=Math.min(1-hy,Math.max(hy,c.cy));
+  return {V,s,W,H,x:V/2-c.cx*W,y:V/2-c.cy*H}}
+function layoutCrop(){const g=cropGeom(),img=$('#cropimg');if(!g||!img)return;Object.assign(img.style,{width:g.W+'px',height:g.H+'px',left:g.x+'px',top:g.y+'px'})}
+function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const box=e.currentTarget;box.setPointerCapture&&box.setPointerCapture(e.pointerId);let lx=e.clientX,ly=e.clientY;
+  const mv=ev=>{const g=cropGeom();if(!g)return;c.cx-=(ev.clientX-lx)/g.W;c.cy-=(ev.clientY-ly)/g.H;lx=ev.clientX;ly=ev.clientY;layoutCrop()};
+  const up=()=>{box.removeEventListener('pointermove',mv);box.removeEventListener('pointerup',up);box.removeEventListener('pointercancel',up)};
+  box.addEventListener('pointermove',mv);box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up)}
+async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;const im=await imgOf(it.photo);
+  const side=g.V/g.s,sx=-g.x/g.s,sy=-g.y/g.s,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
+  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9))}
 function editForm(i){
+  if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
   const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)];
-  return `<div class="card" style="margin:8px 0 0;padding:8px">${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none')}${E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
+  return `<div class="card" style="margin:8px 0 0;padding:8px">${photoTools(i)}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none')}${E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
@@ -745,11 +782,11 @@ function stepDay(n,from){
 })();
 
 function renderWardrobe(){
-  closeSettings();
+  closeSettings();if(editing!==phEdit.id)phEdit={id:null,undo:[],crop:null};   // undo lasts while the item stays open
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
-  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''}>${i.photo?(editing===i.id?photoPair(i.photo,i,'tagsw-'+i.id):`<img class="ph" src="${i.photo}" alt="">`):itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small><div class="btns"><button onclick="editing=editing==='${i.id}'?null:'${i.id}';renderWardrobe()">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
+  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''}>${editing===i.id&&phEdit.crop&&phEdit.id===i.id?cropEditor(i):i.photo?(editing===i.id?photoPair(i.photo,i,'tagsw-'+i.id):`<img class="ph" src="${i.photo}" alt="">`):itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small><div class="btns"><button onclick="editing=editing==='${i.id}'?null:'${i.id}';renderWardrobe()">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
 }
 
 const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select>`;

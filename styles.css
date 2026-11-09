@@ -236,3 +236,11 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .rnote{display:block;text-align:center;margin-top:6px;font-size:12px}
 .ritem.instant .rpanel,.ritem.instant .rpanel-in{transition:none}
 @media (prefers-reduced-motion:reduce){.rpanel,.rpanel-in{transition:none}}
+
+/* Wardrobe editor: photo tools and the zoom & crop frame */
+.phtools{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}.phtools button,.phtools .btn{margin:0;min-height:40px;padding:8px 12px;font-size:14px;cursor:pointer}
+.cropwrap{display:flex;flex-direction:column;gap:6px}
+.cropbox{position:relative;width:100%;max-width:360px;aspect-ratio:1;margin:0 auto;overflow:hidden;border-radius:10px;background:var(--bg);touch-action:none;cursor:grab}
+.cropbox img{position:absolute;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.cropbox::after{content:"";position:absolute;inset:0;border:2px solid #fff8;border-radius:10px;pointer-events:none}
+.cropzoom{display:flex;align-items:center;gap:10px;font-size:14px;max-width:360px;margin:0 auto;width:100%}.cropzoom input{flex:1}
