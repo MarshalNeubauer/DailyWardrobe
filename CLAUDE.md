@@ -21,7 +21,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 | `index.html` | markup and script tags |
 | `styles.css` | styles |
 | `core.js` | colours, types, item helpers (no DOM; also loaded by background workers) |
-| `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM). Jackets rotate by rest and avoid the previous workdays' colour group (`jacketGroup`, `colourRepeat`), and so do shirts and ties (`shirtRepeat`, `tieRepeat`; white and light blue shirts only mildly); every month from two months back is simulated from one shared start so months agree |
+| `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM). Jackets rotate by rest and avoid the previous workdays' colour group (`jacketGroup`, `colourRepeat`), and so do shirts and ties (`shirtRepeat`, `tieRepeat`; white and light blue shirts only mildly); a jacket pinned to one of the next 3 workdays is held back before its day, the next fixed day's colour is avoided, and the suit before a blazer day avoids the colour of the blazer that is due (`fixedAhead`); every month from two months back is simulated from one shared start so months agree |
 | `detect.js` | stripe/check detection from photos (canvas) |
 | `figure.js` | Today's torso figure (from the design handoff; don't redraw it). Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js |
 | `draw.js` | procedural fabric patterns (`fabricDef`), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails |
