@@ -29,9 +29,12 @@ function openSettings(section){
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
 }
+let todayStale=false;   // a change made in Settings that Today should show once Settings closes
+const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.display==='block';
 function closeSettings(){
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
+  if(todayStale){todayStale=false;renderToday()}
 }
 function saveSettings(){
   if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
@@ -333,7 +336,7 @@ async function swapSlot(slot){
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   rec.skip=skip;rec.force=force;swapMsg='';await saveDay(rec);renderToday();
 }
-async function setFormal(v){const k=key(sel),r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;if(v)r.formal=true;else delete r.formal;swapMsg='';await saveDay(r);renderToday()}
+async function setFormal(v,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;if(v)r.formal=true;else delete r.formal;if(k===key(sel))swapMsg='';await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
@@ -342,7 +345,7 @@ function dayActions(o){
   let h='';
   // did you wear it: a two-way toggle; tapping the chosen side again clears it
   if(past||isToday)h+=`<div class="seg" role="group" aria-label="Did you wear this outfit?"><button class="${o.worn===true?'on':''}" aria-pressed="${o.worn===true}" onclick="setWorn(${o.worn===true?'undefined':'true'})" aria-label="Wore this">✓ Worn</button><button class="${o.worn===false?'on':''}" aria-pressed="${o.worn===false}" onclick="setWorn(${o.worn===false?'undefined':'false'})" aria-label="Didn't wear">Not worn</button></div>`;
-  if(!o.frozen)h+=`<button class="tog${o.formal?' on':''}" aria-pressed="${!!o.formal}" aria-label="${o.formal?'Make regular':'Make formal'}" onclick="setFormal(${!o.formal})">${o.formal?'✓ Formal':'Formal'}</button>`;
+  if(o.formal)h+=`<span class="ftag" title="Set in Settings, Formal days">Formal day</span>`;
   if(!o.frozen&&(o.overrides||o.vestOverride))h+=`<button class="reset" aria-label="Reset changes" title="Undo your changes to this day" onclick="resetDay()">↺</button>`;
   return (h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
@@ -411,19 +414,19 @@ function figureStage(o){
   const hs=FIG_PIECES.filter(([s])=>o[s]&&!(s==='clip'&&!o.tie)).map(([s,k])=>{const h=k==='vest'?{x:174,y:200}:FIG_HOTSPOTS[k];
     return `<button class="hot${figSel===s?' on':''}" style="left:${(h.x/390*100).toFixed(2)}%;top:${(h.y/400*100).toFixed(2)}%" aria-label="${slotLabel(s,o)}: ${s==='vest'?'matching vest':desc(o[s])||nm(o[s])}" aria-pressed="${figSel===s}" onclick="pickPiece('${s}')"></button>`}).join('');
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
-  const tiles=below.map(([s,i])=>`<button class="tile${s==='coat'?' coat-tile':''}"${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`).join('');
-  const r=renderFor(o),photo=r&&figView==='photo';
+  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&picBgs[itemKey(i)];return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
+  const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
-  const ctl=`<div class="render-ctl">${r?`<div class="figmode small" role="group" aria-label="Picture"><button class="${photo?'':'on'}" aria-pressed="${!photo}" onclick="setFigView('art')">Illustration</button><button class="${photo?'on':''}" aria-pressed="${photo}" onclick="setFigView('photo')">Photo</button></div>`:''}`+
-    `<button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':r?'Regenerate photo':'Generate realistic photo'}</button></div><p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
+  // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
+  const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}"><small class="mut">${(()=>{const d=lastWorn(o);return d?`Last worn ${d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}`:'Not worn yet'})()}</small></div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${hs}</div>`)+ctl+
-    `<div id="piece-wrap">${pieceCard(o)}</div>`+(tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below">${tiles}</div>`:'');
+    `<div id="piece-wrap">${pieceCard(o)}</div>`+(tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below" style="--n:${below.length}">${tiles}</div>`:'');
 }
 /* ---- realistic photo: the figure + item photos -> worker /render (OpenAI image edit).
    Photos are saved per outfit combination, not per day: any day that wears the same pieces reuses the photo.
    The worker keeps a copy (KV) so every device can show it. ---- */
-let renders={},rendering=false,renderMsg='',figView='photo';
+let renders={},rendering=false,renderMsg='';
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* the combination a photo shows: which pieces, and everything about them that changes how they look */
@@ -465,7 +468,6 @@ async function fetchRemoteRender(o,day){
     if(planFor()[key(sel)]&&comboKey(planFor()[key(sel)])===ck&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('remote photo unavailable',e)}
 }
-function setFigView(v){figView=v;renderToday()}
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
 function outfitText(o){
   const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${o.clip.metal||'silver'} tie bar`,
@@ -496,7 +498,7 @@ async function renderCombo(o){
 async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering)return;
   const day=key(sel);rendering=true;renderMsg='This takes about 30–90 seconds.';renderToday();
-  try{await renderCombo(o);figView='photo';renderMsg=''}
+  try{await renderCombo(o);renderMsg=''}
   catch(e){renderMsg=/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t generate the photo: '+(e.message||e)}
   finally{rendering=false;if(key(sel)===day)renderToday()}
 }
@@ -523,7 +525,14 @@ function itemDesc(i){const c=colName(primaryCol(i)),lea=patLabel(i.leather||'cal
   return ''}
 const itemKey=i=>'c'+fnv64('item|'+itemDesc(i));
 const itemPic=i=>i&&ITEM_PIC_TYPES.includes(i.type)&&renders[itemKey(i)]||null;
-const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
+/* the colour of a product photo's backdrop (the average of its outer edge), so a tile wider than the photo is filled to match;
+   the picture's edges are feathered (CSS mask) so there is no visible seam */
+const picBgs={};
+function picBg(img,k){if(!picBgs[k])try{const N=16,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(img,0,0,N,N);
+    const d=x.getImageData(0,0,N,N).data,s=[0,0,0];let n=0;for(let y=0;y<N;y++)for(let X=0;X<N;X++)if(y===0||X===0||y===N-1||X===N-1){const o=(y*N+X)*4;s[0]+=d[o];s[1]+=d[o+1];s[2]+=d[o+2];n++}
+    picBgs[k]=`rgb(${s.map(v=>Math.round(v/n)).join(',')})`}catch{return}
+  const t=img.closest('.tile');if(t){t.style.background=picBgs[k];t.classList.add('has-pic')}}
+const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
   try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
     await keepRender(k,{sig:'item',img:await shrinkUrl(j.img,400),model:j.model||'',t:j.t||Date.now()},false);if(!$('#today').hidden)renderToday()}catch(e){console.warn('item picture unavailable',e)}}
@@ -689,8 +698,26 @@ const temp=c=>Math.round(unit()==='F'?c*9/5+32:c);
 const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
 async function saveUserSettings(){settings.updated=Date.now();await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
+/* ---- Settings: formal days (any upcoming workday) and regenerating the shown day's photo ---- */
+const shortDate=d=>d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-date');if(!list)return;
+  const T=todayDate();if(inp){inp.min=isoDate(T);if(!inp.value)inp.value=isoDate(nextWorkday?nextWorkday(T):T)}
+  const up=Object.values(dayRecs).filter(r=>r.formal&&keyDate(r.date)>=T).sort((a,b)=>keyDate(a.date)-keyDate(b.date));
+  list.innerHTML=up.length?up.map(r=>{const l=shortDate(keyDate(r.date));return `<span class="fchip">${l}<button type="button" aria-label="Make ${l} a regular day" onclick="setFormal(false,'${r.date}')">×</button></span>`}).join(''):'<small class="mut">No formal days coming up.</small>';
+  if(msg!==undefined&&$('#formal-msg'))$('#formal-msg').textContent=msg}
+async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)return renderFormalUI('Pick a date first.');
+  const [y,m,dd]=v.split('-').map(Number),d=new Date(y,m-1,dd),k=key(d),l=shortDate(d);
+  if(d<todayDate())return renderFormalUI(`${l} has passed.`);
+  const o=monthPlan(y,m-1)[k];if(!o)return renderFormalUI(`${l} is a day off, so there's no outfit to change.`);
+  if(o.frozen)return renderFormalUI(`${l} is already locked in.`);
+  if(o.formal)return renderFormalUI(`${l} is already a formal day.`);
+  await setFormal(true,k);renderFormalUI(`${l} is now a formal day: dark suit, white shirt, quiet tie.`)}
+function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn)return;const o=planFor()[key(sel)],l=shortDate(sel);
+  const r=o&&renderFor(o);btn.disabled=!o||rendering;btn.textContent=rendering?'Generating photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
+  if(st)st.textContent=o?(r?'Makes a new realistic photo of the day shown on Today (about 7¢); it replaces the current one for every day with this look.':'The day shown on Today has no photo yet (about 7¢).'):'Pick a workday on Today first.'}
 function renderSettingsExtras(){
-  renderBatchUI();renderItemPicUI();
+  renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}`:'No location set: outfits follow the calendar season.';

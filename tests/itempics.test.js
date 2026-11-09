@@ -51,31 +51,39 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // day actions: one row
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});
     const row=await p.evaluate(()=>{const r=document.querySelector('.dayact'),kids=[...r.children],tops=new Set(kids.map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));
-      return {kids:kids.map(k=>k.className),oneRow:tops.size===1,seg:[...r.querySelectorAll('.seg button')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),formal:r.querySelector('.tog').getAttribute('aria-label')}});
-    ok(row.oneRow&&row.kids.join()==='seg,tog','Wore this / Didn\'t wear and Formal sit in one row');
-    ok(row.seg==='✓ Worn:false,Not worn:false'&&row.formal==='Make formal','worn is a two-way toggle; Formal is a toggle');
+      return {kids:kids.map(k=>k.className),oneRow:tops.size===1,seg:[...r.querySelectorAll('.seg button')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),formal:r.querySelector('.tog')}});
+    ok(row.oneRow&&row.kids.join()==='seg','Today has the worn toggle only');
+    ok(row.seg==='✓ Worn:false,Not worn:false'&&row.formal===null,'worn is a two-way toggle; no Formal button on Today');
     await p.click('.seg button >> nth=0');await p.waitForFunction(()=>planFor()[key(sel)].worn===true&&document.querySelector('.seg button').getAttribute('aria-pressed')==='true');
     ok(await p.evaluate(()=>document.querySelector('.seg button').getAttribute('aria-pressed')==='true'),'tapping Wore this marks it');
     await p.click('.seg button >> nth=0');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined);
     ok(true,'tapping it again clears it');
     await p.evaluate(()=>{sel=new Date(2026,10,10);renderToday()});
-    await p.click('[aria-label="Make formal"]');await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
+    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
     await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides);
-    const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.tog').textContent}});
-    ok(r2.kids==='tog on,reset'&&r2.one&&r2.label==='✓ Formal','a future day: Formal day toggle and a small reset icon after a swap, same row');
+    const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.ftag').textContent}});
+    ok(r2.kids==='ftag,reset'&&r2.one&&r2.label==='Formal day','a future formal day: a Formal day tag and the reset icon after a swap, same row');
     await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides);
     ok(await p.evaluate(()=>!document.querySelector('.dayact .reset')),'reset clears the changes and the icon goes away');
     // today with a change: worn toggle, Formal and the reset icon fit one row even on narrow phones
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('.dayact .reset'));
-    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('.dayact .reset')&&document.querySelector('.dayact .tog.on'));
+    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('.dayact .reset')&&document.querySelector('.dayact .ftag'));
     for(const [w,fs] of [[320,16],[360,16],[390,16]]){await p.setViewportSize({width:w,height:900});
       const f=await p.evaluate(fs=>{document.body.style.fontSize=fs+'px';const r=document.querySelector('.dayact'),kids=[...r.children],btns=[...r.querySelectorAll('button')];
         const mids=new Set(kids.map(k=>{const b=k.getBoundingClientRect();return Math.round((b.top+b.bottom)/2)}));
         const out=Math.max(...kids.map(k=>k.getBoundingClientRect().right))<=r.getBoundingClientRect().right+0.5;
         const clipped=btns.filter(b=>b.scrollWidth>b.clientWidth+1).map(b=>b.textContent);document.body.style.fontSize='';
         return {kids:kids.map(k=>k.className.split(' ')[0]).join(),one:mids.size===1,out,clipped}},fs);
-      ok(f.kids==='seg,tog,reset'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day buttons and reset icon share one row, nothing cut off (${JSON.stringify(f)})`)}
+      ok(f.kids==='seg,ftag,reset'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day buttons and reset icon share one row, nothing cut off (${JSON.stringify(f)})`)}
     await p.setViewportSize({width:390,height:900});
+    // three tiles on a suit day span the column like the score card; pictures keep their size, the tile takes the photo's backdrop
+    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.waitForFunction(()=>document.querySelectorAll('.below .tile.has-pic').length===3);
+    const lay=await p.evaluate(()=>{const b=document.querySelector('.below').getBoundingClientRect(),sc=document.querySelector('.score').getBoundingClientRect(),t=[...document.querySelectorAll('.below .tile')],im=t.map(x=>x.querySelector('img').getBoundingClientRect());
+      return {n:t.length,left:Math.round(b.left-sc.left),right:Math.round(b.right-sc.right),tileW:Math.round(t[0].getBoundingClientRect().width),imgW:Math.round(im[0].width),square:Math.abs(im[0].width-im[0].height)<1,
+        expect:Math.round((b.width-24)/4-8),bg:t[0].style.background,centred:Math.abs((im[0].left+im[0].right)/2-(t[0].getBoundingClientRect().left+t[0].getBoundingClientRect().right)/2)<1}});
+    ok(lay.n===3&&lay.left===0&&lay.right===0&&lay.tileW>lay.imgW+20,`the three tiles fill the score card's width (${JSON.stringify(lay)})`);
+    ok(lay.square&&Math.abs(lay.imgW-lay.expect)<=1&&lay.centred,'pictures are not stretched: same size as four to a row, centred');
+    ok(/^rgb\(/.test(lay.bg),'the tile around a picture is filled with the photo\'s backdrop colour');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

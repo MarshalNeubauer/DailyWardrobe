@@ -4,9 +4,9 @@ const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
-  const realFetch=globalThis.fetch;let sent=null,reply=()=>[200,{data:[{b64_json:JPG}],usage:{total_tokens:1}}];
+  const realFetch=globalThis.fetch;let sent=null,gens=0,reply=()=>[200,{data:[{b64_json:JPG}],usage:{total_tokens:1}}];
   globalThis.fetch=async(href,init)=>{if(String(href)!=='https://api.openai.com/v1/images/edits')return new Response('',{status:404});
-    const f=init.body;sent={auth:init.headers.authorization,model:f.get('model'),prompt:f.get('prompt'),images:f.getAll('image[]'),size:f.get('size'),quality:f.get('quality'),fmt:f.get('output_format')};
+    gens++;const f=init.body;sent={auth:init.headers.authorization,model:f.get('model'),prompt:f.get('prompt'),images:f.getAll('image[]'),size:f.get('size'),quality:f.get('quality'),fmt:f.get('output_format')};
     const [st,b]=reply();return new Response(JSON.stringify(b),{status:st,headers:{'content-type':'application/json'}})};
   let env={APP_TOKEN:'t',OPENAI_API_KEY:'sk-o'};const HOST='https://w.test/';
   const browser=await chromium.launch();
@@ -27,11 +27,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const exp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {shirtHasPhoto:!!o.shirt.photo,n:1+['top','tie'].filter(s=>o[s]&&o[s].photo).length,top:prettyCols(nm(o.top)),shirt:prettyCols(nm(o.shirt)),tie:prettyCols(nm(o.tie))}});
     ok(exp.shirtHasPhoto&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the suit/tie photos, not the shirt's (${sent.images.length})`);
     ok([exp.top,exp.tie].every(t=>sent.prompt.includes(t))&&/a plain light blue dress shirt/.test(sent.prompt)&&/same pose/i.test(sent.prompt),'the prompt describes the outfit (the shirt by its colour only) and asks to keep the pose');
-    const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:document.querySelector('.fig.photo small').textContent,btn:document.querySelector('.render-btn').textContent}));
-    ok(shown.img&&/^(Not worn yet|Last worn \w{3}, \w{3} \d+)$/.test(shown.by)&&shown.btn==='Regenerate photo',`the photo replaces the illustration; the caption is the last-worn date ("${shown.by}")`);
-    await p.click('.render-ctl >> text=Illustration');
-    ok(await p.evaluate(()=>!!document.querySelector('.fig svg')&&!document.querySelector('.fig.photo')),'Illustration / Photo toggle switches back to the drawing');
-    await p.click('.render-ctl >> text=Photo');
+    const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:document.querySelector('.fig.photo small').textContent,btn:!!document.querySelector('.render-btn'),mode:!!document.querySelector('.figmode')}));
+    ok(shown.img&&/^(Not worn yet|Last worn \w{3}, \w{3} \d+)$/.test(shown.by)&&!shown.btn&&!shown.mode,`the photo replaces the illustration (no picture switch, no button under it); the caption is the last-worn date ("${shown.by}")`);
+    // regenerating lives in Settings
+    const rg=await p.evaluate(()=>{openSettings();const b=document.querySelector('#regen-btn');return {t:b.textContent,d:b.disabled}});
+    ok(/^Regenerate photo for \w{3}, \w{3} \d+$/.test(rg.t)&&!rg.d,`Settings offers to regenerate the shown day's photo ("${rg.t}")`);
+    const n0=gens;await p.click('#regen-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    ok(gens===n0+1&&await p.evaluate(()=>!!document.querySelector('.fig.photo img')&&!settingsOpen()),'tapping it makes a new photo and shows Today');
     // stored on the device: survives a reload
     await p.reload();await p.waitForFunction(()=>window.appReady);
     const kept=await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
@@ -44,12 +46,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(await p.evaluate(()=>{const o=planFor()[key(sel)],before=!!renderFor(o),sw={...o,tie:{...o.tie,id:'other',primaryColor:'green'}};return before&&!renderFor(sw)}),'after a swap the stored photo no longer matches, so it is not shown');
     // errors
     reply=()=>[403,{error:{message:'Your organization must be verified to use the model gpt-image-1.'}}];
-    await p.click('.render-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(/verify your organization/i.test(await p.textContent('#render-msg')),'an unverified OpenAI org is explained');
-    env={APP_TOKEN:'t'};await p.click('.render-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    env={APP_TOKEN:'t'};await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(/OPENAI_API_KEY/.test(await p.textContent('#render-msg')),'no OpenAI key on the worker: says what to add');
     env={APP_TOKEN:'t',OPENAI_API_KEY:'k',OPENAI_IMAGE_MODEL:'gpt-image-x',OPENAI_IMAGE_QUALITY:'high'};reply=()=>[200,{data:[{b64_json:JPG}]}];
-    await p.click('.render-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(sent.model==='gpt-image-x'&&sent.quality==='high','OPENAI_IMAGE_MODEL and OPENAI_IMAGE_QUALITY override the defaults');
     const res=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}),env);
     ok(res.status===403,'/render needs the app token');

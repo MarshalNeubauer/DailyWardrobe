@@ -25,9 +25,15 @@ module.exports=async({ok,chromium,url})=>{
   ok(wd.friBlazer,'Friday is a blazer day when set as one');
   ok(wd.next==='2026-11-23','the next-day arrow skips the weekend');
 
-  // ---- formal day via the button ----
-  await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday()});
-  await p.click('[aria-label="Make formal"]');await p.waitForTimeout(150);
+  // ---- formal day via Settings: pick a date, Make formal ----
+  await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday();openSettings()});
+  ok(await p.evaluate(()=>!document.querySelector('#today [aria-label="Make formal"]')&&!document.querySelector('#today .tog')),'the formal option is not on Today');
+  await p.fill('#cfg-formal-date','2026-11-19');await p.click('text=Make formal');await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
+  const fl=await p.evaluate(()=>({msg:$('#formal-msg').textContent,list:[...document.querySelectorAll('#formal-list .fchip')].map(c=>c.textContent)}));
+  ok(/is now a formal day/.test(fl.msg)&&fl.list.length===1&&/Nov 19/.test(fl.list[0]),`Settings lists the formal day (${fl.list.join()})`);
+  await p.fill('#cfg-formal-date','2026-11-21');await p.click('text=Make formal');
+  ok(/day off/.test(await p.textContent('#formal-msg'))&&await p.evaluate(()=>!monthPlan(2026,10)['2026-11-21']),'a day off cannot be made formal');
+  await p.evaluate(()=>closeSettings());
   const f=await p.evaluate(()=>{const o=planFor()['2026-11-19'],r=rateOutfit(o);return {formal:o.formal,suitDay:o.suitDay,top:o.top.primaryColor,shirt:o.shirt.primaryColor,cuff:o.shirt.cuff,tie:o.tie.primaryColor+' '+o.tie.pattern,shoes:o.shoes.primaryColor+' '+o.shoes.leather,links:o.links&&o.links.metal,watch:o.watch&&o.watch.metal,formality:r.checks.find(c=>c.label==='Formality')}});
   ok(f.formal&&f.suitDay,'a blazer day upgraded to formal gets a suit');
   ok(['navy','charcoal'].includes(f.top),`formal suit is dark (${f.top})`);
@@ -36,7 +42,10 @@ module.exports=async({ok,chromium,url})=>{
   ok(f.shoes==='black calf','formal shoes are black calf');
   ok(f.links==='gold'&&f.watch==='gold','French cuffs get cufflinks matching the watch metal');
   ok(f.formality&&f.formality.pts===10,'Formality check scores 10/10');
-  ok(await p.evaluate(()=>{const t=document.querySelector('#today .dayact .tog');return !!t&&t.classList.contains('on')&&t.getAttribute('aria-pressed')==='true'&&t.textContent==='✓ Formal'}),'Today marks the formal day (Formal toggle on)');
+  ok(await p.evaluate(()=>(document.querySelector('#today .dayact .ftag')||{}).textContent==='Formal day'),'Today marks the formal day (a small tag, not a button)');
+  await p.evaluate(()=>openSettings());await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!planFor()['2026-11-19'].formal);
+  ok(await p.evaluate(()=>!document.querySelector('#formal-list .fchip')),'the × on a formal day in Settings makes it regular again');
+  await p.evaluate(()=>{closeSettings();setFormal(true,'2026-11-19')});await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
   // French cuffs with no cufflinks owned
   const nl=await p.evaluate(()=>{const keep=items;items=items.filter(i=>i.type!=='cufflinks');cache={};const o=planFor()['2026-11-19'];const n=o.notes.join(' ');items=keep;cache={};return {cuff:o.shirt.cuff,n}});
   ok(nl.cuff!=='french'||nl.n.includes('cufflinks'),'without cufflinks the French-cuff shirt is avoided or flagged');
