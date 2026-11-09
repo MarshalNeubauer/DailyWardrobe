@@ -316,7 +316,7 @@ function editForm(i){
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
   ${DETECT_PATS.includes(i.pattern)?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="redetect('${i.id}')">Read pattern from photo</button>${i.stripes?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
-  <div class="btns"><button class="pri" onclick="editing=null;renderWardrobe()">Done</button></div></div>`;
+  <div class="btns"><button class="pri" onclick="closeItem()">Done</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -810,7 +810,31 @@ function stepDay(n,from){
 })();
 
 /* tapping an item opens its editor (and brings it into view) */
-function openItem(id){editing=id;renderWardrobe();const el=$('#gi-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+/* Opening an item in the Wardrobe: it takes the whole width of its row, starting where it is, so the tapped box keeps its
+   place on screen; the items beside it slide down under it (a blank cell keeps the rows below unchanged). Closing (Close,
+   Done, or tapping the photo or swatch) reverses it. Every box glides from its old place to its new one (FLIP). */
+let editAt=null;   // {id,at,cols}: where the open item is placed in the list, and the grid's column count then
+const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
+function flipWardrobe(update,anchorId){
+  const box=()=>[...document.querySelectorAll('#wardrobe .grid > .gi')],before=new Map(box().map(el=>[el.id,el.getBoundingClientRect()]));
+  const anchor=before.get('gi-'+anchorId);update();
+  const k=$('#gi-'+anchorId);if(anchor&&k){const d=k.getBoundingClientRect().top-anchor.top;if(Math.abs(d)>1)window.scrollBy(0,d)}   // the tapped box stays put
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate)return;
+  if(k){k.style.position='relative';k.style.zIndex='2';setTimeout(()=>{k.style.position='';k.style.zIndex=''},WARD_MS+60)}   // the tapped box stays above the ones sliding past
+  for(const el of box()){const a=before.get(el.id);if(!a)continue;const b=el.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;
+    if(el.id==='gi-'+anchorId&&(b.width>a.width+1||b.height>a.height+1)){   // opening: grows out of its old box
+      const ins=[Math.max(0,a.top-b.top),Math.max(0,b.right-a.right),Math.max(0,b.bottom-a.bottom),Math.max(0,a.left-b.left)].map(v=>v+'px').join(' ');
+      el.animate([{clipPath:`inset(${ins} round 14px)`},{clipPath:'inset(0px 0px 0px 0px round 14px)'}],{duration:WARD_MS,easing:WARD_EASE});continue}
+    if(Math.abs(dx)<1&&Math.abs(dy)<1)continue;
+    el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:WARD_MS,easing:WARD_EASE})}}
+function openItem(id){
+  const els=[...document.querySelectorAll('#wardrobe .grid > .gi')],el=$('#gi-'+id);
+  if(editing&&editing!==id){const top=el&&el.getBoundingClientRect().top;editing=null;editAt=null;renderWardrobe();   // another one is open: fold it first
+    const n=$('#gi-'+id);if(n&&top!=null)window.scrollBy(0,n.getBoundingClientRect().top-top);return openItem(id)}
+  const g=$('#wardrobe .grid'),cols=g?Math.max(1,getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length):1,idx=els.findIndex(e=>e.id==='gi-'+id);
+  editAt=idx>=0?{id,at:idx-idx%cols,cols,flt}:null;
+  flipWardrobe(()=>{editing=id;renderWardrobe()},id)}
+function closeItem(){const id=editing;if(!id)return;flipWardrobe(()=>{editing=null;editAt=null;renderWardrobe()},id)}
 /* in the Wardrobe, shoes, belts and socks show their realistic product picture when there is one */
 const WARD_PIC_TYPES=['shoes','belt','socks'];
 const wardPic=i=>{if(!WARD_PIC_TYPES.includes(i.type))return null;const p=itemPic(i);if(p)return p.img;setTimeout(()=>fetchItemPic(i),0);return null};
@@ -819,8 +843,11 @@ function renderWardrobe(){
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
-  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small>`
-  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small></button>`}<div class="btns"><button onclick="editing=editing==='${i.id}'?null:'${i.id}';renderWardrobe()">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
+  // the open item moves to the start of its row; the rest of that row follows it and a blank cell fills the slot it left
+  let gapAfter=null;if(editing&&editAt&&editAt.id===editing&&editAt.flt===flt){const k=list.findIndex(i=>i.id===editing);
+    if(k>=0){const end=Math.min(editAt.at+editAt.cols,list.length),[it]=list.splice(k,1);list.splice(editAt.at,0,it);if(end-editAt.at===editAt.cols&&editAt.cols>1)gapAfter=list[end-1].id}}
+  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div>`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small>`
+  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small></button>`}<div class="btns"><button onclick="${editing===i.id?'closeItem()':`openItem('${i.id}')`}">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>');
 }
 
 const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select>`;
