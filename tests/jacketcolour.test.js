@@ -18,7 +18,10 @@ module.exports=async({ok,chromium,url})=>{
       const seq=[];for(let m=10;m<16;m++){const pl=buildPlan(2026+Math.floor(m/12),m%12);for(const [d,o] of Object.entries(pl))if(keyDate(d).getMonth()===m%12&&o.top)seq.push([d,o.top.id,jacketGroup(o.top),shirtGroup(o.shirt),o.tie.id,tieGroup(o.tie),rateOutfit(o).score])}
       const after=f=>seq.filter((s,n)=>n&&f(seq[n-1],s)).map(s=>s[0]);
       const shirtRep=after((a,b)=>a[3]===b[3]&&!['white','lightblue'].includes(b[3])),tieSame=after((a,b)=>a[4]===b[4]),tieGroupRep=after((a,b)=>a[5]===b[5]);
-      const tieUse={};seq.forEach(s=>tieUse[s[4]]=(tieUse[s[4]]||0)+1);const tieIds=base.filter(i=>i.type==='tie').map(i=>i.id);
+      const tieUse={};seq.forEach(s=>tieUse[s[4]]=(tieUse[s[4]]||0)+1);
+      // each jacket's wearings: the same tie with the same shirt colour should not come back on the next wearing
+      const byTop={};seq.forEach(x=>(byTop[x[1]]=byTop[x[1]]||[]).push(x[4]+'/'+x[3]));let comboRep=0,wear=0,distinct=0;
+      for(const a of Object.values(byTop)){distinct+=new Set(a).size;for(let i=1;i<a.length;i++){wear++;if(a[i]===a[i-1])comboRep++}}const tieIds=base.filter(i=>i.type==='tie').map(i=>i.id);
       const same=after((a,b)=>a[2]===b[2]);
       const used={},gap={},last={};seq.forEach(([d,id],n)=>{used[id]=(used[id]||0)+1;if(last[id]!==undefined)gap[id]=Math.max(gap[id]||0,n-last[id]);last[id]=n});
       const jk=jackets.filter(j=>j.type!=='pants');
@@ -30,13 +33,14 @@ module.exports=async({ok,chromium,url})=>{
       const N=buildPlan(2026,10),D=buildPlan(2026,11);const dis=Object.keys(D).filter(k=>N[k]&&D[k].top&&JSON.stringify(idsOf(N[k]))!==JSON.stringify(idsOf(D[k])));
       const T=todayDate();for(const [d,o] of Object.entries(N))if(keyDate(d)<T&&o.top)dayRecs[d]={date:d,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
       const N2=buildPlan(2026,10),moved=Object.keys(N2).filter(k=>keyDate(k)>=T&&N2[k].top&&JSON.stringify(idsOf(N[k]))!==JSON.stringify(idsOf(N2[k])));
-      return {shirtRep,tieSame,tieGroupRep,tiesUnused:tieIds.filter(t=>!tieUse[t]).length,minScore:Math.min(...seq.map(x=>x[6])),n:seq.length,same,unused:jk.filter(j=>!used[j.id]).map(j=>j.primaryColor),maxSuit:Math.max(...jk.filter(j=>j.type==='suit').map(j=>gap[j.id]||0)),maxBlazer:Math.max(...jk.filter(j=>j.type==='blazer').map(j=>gap[j.id]||0)),greyDays,dis,moved,
+      return {comboRep,wear,distinct,shirtRep,tieSame,tieGroupRep,tiesUnused:tieIds.filter(t=>!tieUse[t]).length,minScore:Math.min(...seq.map(x=>x[6])),n:seq.length,same,unused:jk.filter(j=>!used[j.id]).map(j=>j.primaryColor),maxSuit:Math.max(...jk.filter(j=>j.type==='suit').map(j=>gap[j.id]||0)),maxBlazer:Math.max(...jk.filter(j=>j.type==='blazer').map(j=>gap[j.id]||0)),greyDays,dis,moved,
         groups:['lightgrey','midgrey','grey','darkgrey','charcoal','navy','darknavy','deepblue','steelblue','tan','khaki','brown'].map(c=>jacketGroup({primaryColor:c})).join()}});
     ok(r.groups==='grey,grey,grey,grey,grey,navy,navy,navy,blue,tan,tan,brown',`colour groups read like the eye does: every grey from light grey to charcoal is one (${r.groups})`);
     ok(r.n>100&&r.same.length===0,`over six months no two consecutive workdays share a jacket colour group (${r.same.length} of ${r.n}: ${r.same.slice(0,4).join(' ')})`);
     ok(r.shirtRep.length===0,`no shirt colour group (e.g. dark grey then light grey) on consecutive workdays, apart from white and light blue (${r.shirtRep.join(' ')})`);
     ok(r.tieSame.length===0&&r.tieGroupRep.length===0,`never the same tie, nor the same tie colour, on consecutive workdays (${r.tieSame.length} / ${r.tieGroupRep.length})`);
     ok(r.tiesUnused===0,'every tie gets worn');
+    ok(r.comboRep===0&&r.distinct>=r.wear*.6,`a jacket is not worn with the same tie and shirt colour on its next wearing (${r.comboRep} of ${r.wear}; ${r.distinct} distinct combinations)`);
     ok(r.minScore>=80,`variety never costs a good outfit (lowest score ${r.minScore})`);
     ok(!r.unused.length&&r.maxSuit<=14&&r.maxBlazer<=20,`every jacket stays in rotation: 8 suits on 4 days a week come back within 14 workdays, 3 blazers on 1 day a week within 4 weeks (longest ${r.maxSuit} / ${r.maxBlazer}${r.unused.length?', unused: '+r.unused.join():''})`);
     ok(r.greyDays>=20&&r.greyDays<=23,`a wardrobe of only grey jackets is still planned (${r.greyDays} days in December)`);
