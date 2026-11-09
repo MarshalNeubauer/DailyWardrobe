@@ -41,6 +41,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(gens.length===6&&after.left===0&&/Done: 5 pictures ready/.test(after.status),'five pictures generated, nothing left');
     ok(after.tiles.length>=3&&after.tiles.every(Boolean)&&after.piece,'belt, shoes and socks tiles (and the piece card) now show the pictures');
     // another device fetches them instead of generating
+    await p.evaluate(()=>localStorage.setItem('last_sync',Date.now()+864e5));   // no background sync when the first page becomes visible again
     const p2=await ctx.newPage();await p2.goto(url);await p2.waitForFunction(()=>window.appReady);
     const fetched=await p2.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
@@ -48,8 +49,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today');
       await new Promise(r=>setTimeout(r,800));return document.querySelectorAll('.below .tile img.item-pic').length});
     ok(fetched===3&&gens.length===6,'another device shows the pictures from the worker without generating again');
-    // day actions: one row
-    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});
+    // day actions: one row (set the first page up again: a second page in the same context can make it reload via the service worker)
+    await p.waitForFunction(()=>window.appReady);
+    await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+      if(!items.some(i=>i.id==='shoes5'))items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
+        I('belt','black',{leather:'calf',metal:'silver'}),I('belt','oxblood',{leather:'cordovan',metal:'silver'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
+      settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-09T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=false;show('today')});
     const row=await p.evaluate(()=>{const r=document.querySelector('.dayact'),kids=[...r.children],tops=new Set(kids.map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));
       return {kids:kids.map(k=>k.className),oneRow:tops.size===1,seg:[...r.querySelectorAll('.seg button')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),formal:r.querySelector('.tog')}});
     ok(row.oneRow&&row.kids.join()==='seg','Today has the worn toggle only');

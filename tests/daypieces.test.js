@@ -38,6 +38,11 @@ module.exports=async({ok,chromium,url})=>{
     ok(/Next outfit/.test(wk)&&await p.evaluate(()=>key(sel)==='2026-11-15'),'when today is a day off it goes to the next outfit');
     for(const w of [320,360]){await p.setViewportSize({width:w,height:800});await p.evaluate(()=>{sel=new Date(2026,11,8);view={y:2026,m:11};renderToday()});
       ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&$('.day .gotoday').getBoundingClientRect().right<=innerWidth),`${w}px: the date bar fits with the Today button`)}
+    // the date bar keeps its height when the Today button appears, even with wide text (CI's font is wider than local)
+    await p.setViewportSize({width:390,height:800});
+    const hs=await p.evaluate(()=>{const st=document.createElement('style');st.textContent='.day h2 .wx{letter-spacing:1.5px}';document.head.appendChild(st);
+      const h=()=>Math.round($('#today .day').getBoundingClientRect().height);settings.location=null;sel=new Date(2026,10,15);renderToday();const a=h();sel=new Date(2026,11,8);renderToday();const b=h();st.remove();return [a,b]});
+    ok(hs[0]===hs[1],`the date bar is the same height with and without the Today button (${hs.join(' / ')})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

@@ -210,6 +210,7 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .ibox.open:not(.instant) .list .row:nth-child(n+6){animation-delay:150ms}
 @media (prefers-reduced-motion:reduce){.ibox.open .list .row{animation:none}}
 /* back to today, on the date bar */
-.day h2 .wx{display:flex;justify-content:center;align-items:center;gap:8px;min-height:30px;flex-wrap:wrap}
+.day h2{min-width:0}.day h2 .wx{display:flex;justify-content:center;align-items:center;gap:8px;min-height:30px;flex-wrap:nowrap;min-width:0}
+.day h2 .wx a{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gotoday{flex:none}
 .gotoday{margin:0;padding:3px 10px;min-height:28px;border-radius:14px;border:1px solid var(--acc);background:none;color:var(--acc);font-size:13px;font-weight:600;position:relative}
 .gotoday::after{content:"";position:absolute;inset:-8px -4px}
