@@ -35,6 +35,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         key:comboKey(o)!==comboKey({...o,watch:{...w,details:'other'}})&&comboKey(o)!==comboKey({...o,watch:{...w,watchStyle:'date'}})}});
     ok(/chronograph/.test(r.opts)&&/integrated/.test(r.opts)&&/engraved/.test(r.opts),`the wardrobe offers chronograph, integrated bracelet and engraved bezel (${r.opts})`);
     ok(r.subdials>=6&&r.nums&&r.bezel&&!r.plainHas,'a chronograph is drawn with subdials, 12 and 6 numerals and an engraved bezel');
+    // long descriptions are not cut off
+    sent=[];const long='a watch '+'with many details '.repeat(70)+'END';await post({mode:'item',item:long,key:'c4444444444444444',ref:PNG});
+    ok(/END/.test(sent[0].body.get('prompt')),'a long, precise item description reaches the image model in full');
     ok(/chronograph \(three subdials and a date window\) wristwatch with a polished bezel engraved with numerals, a white dial and an integrated stainless steel bracelet.*\(small seconds at 10/.test(r.txt),`outfit photo prompts describe the watch precisely, details included (${r.txt})`);
     ok(r.pic&&/three-quarter view/.test(r.desc),'watches get product pictures');
     ok(r.refs==='data:image/jpeg;base64,AAA,data:image/jpeg;base64,BBB'&&/^the suit\|the wristwatch/.test(r.labels),'the watch picture goes to outfit photos as a labelled reference');
