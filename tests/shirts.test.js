@@ -9,7 +9,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const r=await p.evaluate(([NEW,TEX])=>{
     const shirtOpts=COLOR_OPTS('shirt').map(x=>x[0]),tieOpts=COLOR_OPTS('tie').map(x=>x[0]),suitOpts=COLOR_OPTS('suit').map(x=>x[0]);
     return {shirtHas:NEW.every(c=>shirtOpts.includes(c))&&['lightblue','midgrey'].every(c=>shirtOpts.includes(c)),
-      othersLack:NEW.every(c=>!tieOpts.includes(c)&&!suitOpts.includes(c)),names:NEW.map(colName).join(','),
+      othersLack:NEW.every(c=>!suitOpts.includes(c))&&NEW.filter(c=>c!=='lavender').every(c=>!tieOpts.includes(c))&&tieOpts.includes('lavender'),names:NEW.map(colName).join(','),
       fallback:NEW.map(c=>normColFor('tie',c)).join(','),keep:NEW.map(c=>normColFor('shirt',c)).join(','),
       alias:['Pale Yellow','Lilac','Eggshell','Periwinkle','Beige'].map(c=>normColFor('shirt',c)).join(','),
       tex:TEX.every(t=>PATS_BY.shirt.includes(t)),texNotSuit:['end-on-end','chambray','fine-texture'].every(t=>!PATS_BY.suit.includes(t)),
@@ -17,9 +17,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       normPat:[normPat('shirt','Fine Texture'),normPat('shirt','hairline'),normPat('shirt','fil-a-fil'),normPat('shirt','texture'),normPat('shirt','poplin')].join(','),
       lums:['white','ivory','cream','paleyellow'].map(lumOf)}},[NEW,TEX]);
   ok(r.shirtHas,'shirts can be pale yellow, ivory, beige, lavender, periwinkle (and light blue, mid grey)');
-  ok(r.othersLack,'other items do not get the shirt-only colours');
+  ok(r.othersLack,'suits do not get the shirt colours; ties get lavender only');
   ok(r.names==='pale yellow,ivory,beige,lavender,periwinkle','readable names ("pale yellow")');
-  ok(r.fallback==='cream,cream,tan,purple,blue'&&r.keep===NEW.join(','),'an AI tag of a shirt colour on another item falls back to its family; on a shirt it is kept');
+  ok(r.fallback==='cream,cream,tan,lavender,blue'&&r.keep===NEW.join(','),'an AI tag of a shirt colour on another item falls back to its family; on a shirt it is kept');
   ok(r.alias==='paleyellow,lavender,ivory,periwinkle,beige',`shop/AI names map to the shirt colours (${r.alias})`);
   ok(r.tex&&r.texNotSuit,'shirt textures are offered for shirts only');
   ok(r.labels==='fine stripe,fine texture,royal oxford','texture labels read naturally');
@@ -52,6 +52,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await browser.close();
   // worker prompt and schema
   const src=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
-  ok(NEW.every(c=>src.includes(`'${c}'`))&&/Dress shirts only/.test(src),'the worker knows the shirt colours (and that they are shirt-only)');
+  ok(NEW.every(c=>new RegExp(`shirt: \\[\\[[^\\]]*'${c}'`).test(src)),'the worker lists the shirt colours under shirts');
   ok(TEX.filter(t=>t!=='houndstooth').every(t=>src.includes(`'${t}'`)&&new RegExp(t+'\\s*\\(').test(src)),'the worker schema and prompt include every shirt texture');
 };

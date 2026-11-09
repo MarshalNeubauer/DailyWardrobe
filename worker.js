@@ -15,6 +15,31 @@
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
 //
 // Pattern lists must stay in sync with PATS_BY in core.js.
+/* colours each item type really comes in: [main colours, stripe / motif colours]. Must match COLS_BY in core.js. */
+const SUITING = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green'],
+  SUIT_LINES = ['white','cream','lightgrey','grey','midgrey','charcoal','black','lightblue','blue','navy','deepblue','burgundy','red','rust','brown','tan','green','olive','gold'],
+  LEATHER_COLS = ['black','brown','tan','oxblood','burgundy','navy','grey','taupe'];
+const TYPE_COLORS = {
+  suit: [[...SUITING,'cream'], SUIT_LINES],
+  blazer: [[...SUITING,'cream','burgundy','wine','rust'], SUIT_LINES],
+  pants: [[...SUITING,'cream','lightblue'], SUIT_LINES],
+  shirt: [['white','ivory','cream','paleyellow','beige','pink','lavender','periwinkle','mint','lightblue','blue','steelblue','lightgrey','midgrey','grey','slate','charcoal','navy','darknavy','black','burgundy'],
+    ['white','navy','darknavy','blue','lightblue','steelblue','red','burgundy','pink','lavender','purple','grey','lightgrey','charcoal','black','green','mint','brown','gold']],
+  tie: [['navy','darknavy','deepblue','blue','steelblue','lightblue','slate','black','charcoal','grey','silver','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust','cream'],
+    ['white','cream','silver','lightgrey','grey','charcoal','black','navy','deepblue','blue','lightblue','steelblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust']],
+  tieclip: [['silver','gold','grey','black'], ['black','white','navy','gold','silver']],
+  cufflinks: [['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'], ['silver','gold','black','white','navy','blue','burgundy','red','green']],
+  watch: [['black','brown','tan','oxblood','navy','grey','green','silver','gold'], ['black','brown','white','grey','navy']],
+  shoes: [LEATHER_COLS, ['black','brown','tan','white','navy']],
+  belt: [LEATHER_COLS, ['black','brown','tan','navy']],
+  socks: [['black','charcoal','darkgrey','grey','midgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green','burgundy','wine','red','rust','purple','pink','gold'],
+    ['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','burgundy','red','rust','pink','purple','lavender','green','olive','gold','brown','tan']],
+  overcoat: [['black','charcoal','darkgrey','grey','midgrey','navy','darknavy','brown','tan','taupe','olive'], ['black','charcoal','grey','navy','brown','tan','burgundy','green']],
+  raincoat: [['khaki','tan','taupe','navy','darknavy','black','charcoal','grey','olive'], ['black','navy','tan','khaki','burgundy','brown']],
+};
+const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal','black','navy','deepblue','blue','lightblue','green','olive','brown','burgundy','gold'];
+const TYPE_COLOR_TEXT = Object.entries(TYPE_COLORS).map(([t, [p, a]]) => `  ${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n')
+  + `\n  watch dial: ${DIAL_COLS.join(', ')}`;
 const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
 {"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
 
@@ -22,21 +47,21 @@ type — one of:
   suit (suit jacket, or a jacket and trousers of the same cloth), blazer (odd jacket / sport coat), pants (dress trousers),
   shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks, cufflinks, overcoat (wool topcoat), raincoat (trench or mac)
 
-primaryColor — the dominant colour of the main fabric (the leather for shoes and belts, the strap for watches). One of:
-  black, charcoal, darkgrey, grey, midgrey, lightgrey, white, cream, lightblue, blue, steelblue, deepblue, navy, darknavy, slate,
-  brown, tan, khaki, olive, green, burgundy, wine, oxblood, red, purple, pink, gold, silver
+primaryColor — the dominant colour of the main fabric (the leather for shoes and belts, the strap or bracelet for watches, the metal
+  for tie clips). Use only a colour from the item type's own list (main colours, before the |):
+${TYPE_COLOR_TEXT}
   (charcoal is near-black grey; darkgrey sits between charcoal and grey; midgrey is a medium grey, between grey and lightgrey;
   lightgrey is pale grey; steelblue is a dusty, greyed mid blue (denim-like); deepblue is a rich, saturated dark blue, brighter
   than navy; darknavy is navy so dark it is almost black; slate is a dark blue-grey, greyer than navy and bluer than charcoal;
   wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
   than burgundy; khaki is the light sandy beige of classic chinos and cotton dress trousers, lighter and greener than tan,
-  which is a warmer, deeper camel brown)
-  Dress shirts only, also: paleyellow, ivory (warm off-white, between white and cream), beige (pale sandy tan), lavender
-  (pale purple), periwinkle (soft blue with a violet cast, between lightblue and blue). Never use these for other items.
+  which is a warmer, deeper camel brown; taupe is a greyish brown, between grey and tan; rust is a burnt orange-brown;
+  ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
+  blue with a violet cast, between lightblue and blue; grey for a tie clip or cufflinks means gunmetal)
   Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
 
-secondaryColor — the colour of the stripe, check line, dot or motif, from the same list. "none" if the item is plain.
-tertiaryColor — a third distinct colour in the pattern (e.g. the second line colour of a tattersall), or "none".
+secondaryColor — the colour of the stripe, check line, dot or motif, from the type's line colours (after the |). "none" if plain.
+tertiaryColor — a third distinct colour in the pattern (e.g. the second line colour of a tattersall), from the same, or "none".
 
 pattern — pick the closest value from the list for the item's type:
   suit, blazer, pants:
@@ -73,7 +98,7 @@ leather — shoes and belts: calf (smooth, moderate shine), cordovan (dense, dee
   patent (mirror gloss), pebble-grain (large tumbled grain), scotch-grain (fine embossed grain). Otherwise null.
 
 dial, band, bezel — watches only, otherwise null:
-  dial: the dial colour, from the colour list above.
+  dial: the dial colour, from the watch dial list above.
   band: bracelet (metal links) or leather (strap).
   bezel: fluted (finely ridged ring around the crystal) or smooth.`;
 
@@ -82,8 +107,8 @@ const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* ---- Claude API ---- */
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
-  'brown','tan','khaki','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
-  'paleyellow','ivory','beige','lavender','periwinkle'];   // the last five: dress shirts only
+  'brown','tan','khaki','taupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
+  'paleyellow','ivory','beige','lavender','periwinkle','mint'];   // per-type lists: TYPE_COLORS
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
@@ -101,7 +126,7 @@ const TAG_SCHEMA = {
     pattern: { type: 'string', enum: PATTERN_LIST },
     metal: orNull(['gold','silver','other']),
     leather: orNull(['calf','cordovan','suede','patent','pebble-grain','scotch-grain']),
-    dial: orNull(COLOR_LIST),
+    dial: orNull(DIAL_COLS),
     band: orNull(['bracelet','leather']),
     bezel: orNull(['fluted','smooth']),
   },
