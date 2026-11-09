@@ -30,8 +30,8 @@ function outfitFigureSvg({ suit, shirt, tie, skin = '#D6B89E', bg = '#F5F2EC', i
   const fabrics = [pattern(`${P}suitB`, suit, 0), pattern(`${P}suitL`, suit, -16), pattern(`${P}suitR`, suit, 16), pattern(`${P}shirt`, shirt, 0), pattern(`${P}tie`, tie, 0)].join('\n');
 
   /* ---- arms: [shoulder, elbow, wrist] in viewBox units ---- */
-  const L = { up: [334, 20, 372, 250], fo: [372, 250, 246, 208] };   // the left arm (viewer's right): forearm across the chest
-  const R = { up: [56, 20, 22, 300], fo: [22, 300, 150, 324] };      // the right arm (viewer's left): hand at the button
+  const L = { up: [318, 30, 338, 248], fo: [338, 248, 240, 210] };   // the left arm (viewer's right): forearm across the chest
+  const R = { up: [72, 30, 58, 294], fo: [58, 294, 158, 322] };      // the right arm (viewer's left): hand at the button
   const sleeve = (seg, w1, w2, id) => { const fr = frame(...seg), h = fr.len;
     const d = `M ${-w1 / 2} 0 L ${w1 / 2} 0 L ${w2 / 2} ${f(h)} L ${-w2 / 2} ${f(h)} Z`;
     return `<g transform="${fr.tr} rotate(${fr.rot})"><path d="${d}" fill="url(#${P}suitB)"/><path d="${d}" fill="url(#${P}gSleeve)"/>${id ? `<path id="${P}${id}" d="${d}" fill="none"/>` : ''}</g>`; };
@@ -75,9 +75,9 @@ ${fabrics}
 <filter id="${P}fBlur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
 <filter id="${P}fBlurS" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter>
 <filter id="${P}fBlurXS" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.2"/></filter>
-<clipPath id="${P}clipShoulder"><path d="M -60 440 L -60 150 L 12 128 C 18 92 38 70 70 58 C 100 50 132 42 162 34 L 228 34 C 258 42 290 50 320 58 C 352 70 372 92 378 128 L 450 150 L 450 440 Z"/></clipPath>
+<clipPath id="${P}clipShoulder"><path d="M 10 440 L 38 130 C 40 90 56 68 84 60 C 110 52 138 44 166 36 L 224 36 C 252 44 280 52 306 60 C 334 68 350 90 352 130 L 380 440 Z"/></clipPath>
 <clipPath id="${P}clipVee"><path d="M 150 40 L 240 40 L 196 262 L 194 262 Z"/></clipPath>
-<path id="${P}bodyP" d="M 162 34 C 132 42 100 50 70 58 C 42 66 22 84 16 114 L 4 430 L 386 430 L 374 114 C 368 84 348 66 320 58 C 290 50 258 42 228 34 Z"/>
+<path id="${P}bodyP" d="M 166 36 C 138 44 110 52 84 60 C 64 66 52 80 50 104 C 48 160 70 230 84 290 C 88 330 86 380 84 430 L 306 430 C 304 380 302 330 306 290 C 320 230 342 160 340 104 C 338 80 326 66 306 60 C 280 52 252 44 224 36 Z"/>
 <path id="${P}shirtV" d="M 154 50 L 236 50 L 196 262 L 194 262 Z"/>
 <path id="${P}bladeP" d="M 186 74 L 204 74 C 207 120 212 172 217 222 L 195 256 L 173 222 C 178 172 183 120 186 74 Z"/>
 <path id="${P}knotP" d="M 182 50 L 208 50 C 211 60 210 70 205 79 C 199 83 191 83 185 79 C 180 70 179 60 182 50 Z"/>
@@ -109,10 +109,10 @@ ${fabrics}
 <path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44 L 236 52 C 220 44 170 44 154 52 Z" fill="url(#${P}shirt)"/><path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44 L 236 52 C 220 44 170 44 154 52 Z" fill="url(#${P}gCollar)"/>
 <path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44" stroke="#000" stroke-opacity=".22" stroke-width="1" fill="none"/>
 <!-- neck and chin -->
-<path d="M 168 -6 L 222 -6 L 224 40 C 216 50 174 50 166 40 Z" fill="${skin}"/><path d="M 168 -6 L 222 -6 L 224 40 C 216 50 174 50 166 40 Z" fill="url(#${P}gNeck)"/>
+<path d="M 173 -6 L 217 -6 L 219 40 C 212 50 178 50 171 40 Z" fill="${skin}"/><path d="M 173 -6 L 217 -6 L 219 40 C 212 50 178 50 171 40 Z" fill="url(#${P}gNeck)"/>
 <path d="M 188 30 C 191 35 199 35 202 30" stroke="#5A3A28" stroke-opacity=".22" stroke-width="1.3" fill="none"/>
-<path d="M 170 16 C 180 22 210 22 220 16" stroke="#3A2518" stroke-opacity=".3" stroke-width="5" fill="none" filter="url(#${P}fBlurXS)"/>
-<path d="M 156 -6 L 234 -6 C 232 4 220 13 195 15 C 170 13 158 4 156 -6 Z" fill="${skin}"/><path d="M 156 -6 L 234 -6 C 232 4 220 13 195 15 C 170 13 158 4 156 -6 Z" fill="url(#${P}gChin)"/>
+<path d="M 176 12 C 184 17 206 17 214 12" stroke="#3A2518" stroke-opacity=".28" stroke-width="4" fill="none" filter="url(#${P}fBlurXS)"/>
+<path d="M 163 -6 L 227 -6 C 225 2 214 9 195 10 C 176 9 165 2 163 -6 Z" fill="${skin}"/><path d="M 163 -6 L 227 -6 C 225 2 214 9 195 10 C 176 9 165 2 163 -6 Z" fill="url(#${P}gChin)"/>
 <!-- shirt front between the lapels -->
 <use href="#${P}shirtV" fill="url(#${P}shirt)"/>
 <use href="#${P}shirtV" fill="url(#${P}gShirtV)"/>
@@ -153,19 +153,19 @@ ${[216, 236, 256].map(y => `<circle cx="196" cy="${y}" r="3.2" fill="#0E1424"/><
 <circle cx="195" cy="272" r="5.5" fill="#0E1424"/><circle cx="193.6" cy="270.6" r="1.6" fill="#FFFFFF" fill-opacity=".35"/>
 <circle cx="195" cy="336" r="5.5" fill="#0E1424"/><circle cx="193.6" cy="334.6" r="1.6" fill="#FFFFFF" fill-opacity=".35"/>
 <path d="M 236 152 L 284 146" stroke="#000" stroke-opacity=".55" stroke-width="2.6"/><path d="M 236 154.5 L 284 148.5" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="1"/>
-<path d="M 96 362 L 168 368 L 168 380 L 96 374 Z" fill="url(#${P}suitB)"/><path d="M 96 362 L 168 368 L 168 380 L 96 374 Z" fill="#000" fill-opacity=".16"/><path d="M 96 374 L 168 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
-<path d="M 294 362 L 222 368 L 222 380 L 294 374 Z" fill="url(#${P}suitB)"/><path d="M 294 362 L 222 368 L 222 380 L 294 374 Z" fill="#000" fill-opacity=".16"/><path d="M 294 374 L 222 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
+<path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="url(#${P}suitB)"/><path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="#000" fill-opacity=".16"/><path d="M 106 374 L 168 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
+<path d="M 284 362 L 222 368 L 222 380 L 284 374 Z" fill="url(#${P}suitB)"/><path d="M 284 362 L 222 368 L 222 380 L 284 374 Z" fill="#000" fill-opacity=".16"/><path d="M 284 374 L 222 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
 
-<path d="M 70 58 C 52 64 40 74 34 88 M 320 58 C 338 64 350 74 356 88" stroke="#000" stroke-opacity=".25" stroke-width="1.6" fill="none"/>
+<path d="M 84 60 C 68 66 58 76 54 90 M 306 60 C 322 66 332 76 336 90" stroke="#000" stroke-opacity=".25" stroke-width="1.6" fill="none"/>
 <!-- the right arm (viewer's left): upper arm down the side, forearm to the button -->
-<path d="M 30 300 L 150 330 L 152 352 L 30 330 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
-<g clip-path="url(#${P}clipShoulder)">${sleeve(R.up, 72, 60)}</g>${joint(22, 300, 30)}${sleeve(R.fo, 58, 48)}
-${hand(R.fo, 48, false, true)}
+<path d="M 64 300 L 158 328 L 160 348 L 64 326 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
+<g clip-path="url(#${P}clipShoulder)">${sleeve(R.up, 58, 50)}</g>${joint(58, 294, 25)}${sleeve(R.fo, 50, 42)}
+${hand(R.fo, 42, false, true)}
 <!-- the left arm (viewer's right): forearm across the chest, hand at the lapel, the watch at the wrist -->
-<path d="M 372 258 L 246 222 L 240 246 L 368 284 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
-<g clip-path="url(#${P}clipShoulder)">${sleeve(L.up, 72, 60)}</g>${joint(372, 250, 30)}${sleeve(L.fo, 58, 48)}
-${hand(L.fo, 48, true, false)}
-<path d="M 352 234 Q 360 250 352 268 M 40 286 Q 30 300 40 316" stroke="#000" stroke-opacity=".3" stroke-width="1.6" fill="none"/>
+<path d="M 338 256 L 240 224 L 236 246 L 334 280 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
+<g clip-path="url(#${P}clipShoulder)">${sleeve(L.up, 58, 50)}</g>${joint(338, 248, 25)}${sleeve(L.fo, 50, 42)}
+${hand(L.fo, 42, true, false)}
+<path d="M 322 236 Q 330 248 322 262 M 72 282 Q 64 294 72 308" stroke="#000" stroke-opacity=".3" stroke-width="1.6" fill="none"/>
 
 <rect x="0" y="330" width="390" height="70" fill="url(#${P}gFade)"/>
 </svg>`;
