@@ -53,7 +53,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const row=await p.evaluate(()=>{const r=document.querySelector('.dayact'),kids=[...r.children],tops=new Set(kids.map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));
       return {kids:kids.map(k=>k.className),oneRow:tops.size===1,seg:[...r.querySelectorAll('.seg button')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),formal:r.querySelector('.tog').getAttribute('aria-label')}});
     ok(row.oneRow&&row.kids.join()==='seg,tog','Wore this / Didn\'t wear and Formal sit in one row');
-    ok(row.seg==='✓ Wore this:false,Didn\'t wear:false'&&row.formal==='Make formal','worn is a two-way toggle; Formal is a toggle');
+    ok(row.seg==='✓ Worn:false,Not worn:false'&&row.formal==='Make formal','worn is a two-way toggle; Formal is a toggle');
     await p.click('.seg button >> nth=0');await p.waitForFunction(()=>planFor()[key(sel)].worn===true&&document.querySelector('.seg button').getAttribute('aria-pressed')==='true');
     ok(await p.evaluate(()=>document.querySelector('.seg button').getAttribute('aria-pressed')==='true'),'tapping Wore this marks it');
     await p.click('.seg button >> nth=0');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined);
@@ -62,9 +62,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.click('[aria-label="Make formal"]');await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
     await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides);
     const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.tog').textContent}});
-    ok(r2.kids==='tog on,reset'&&r2.one&&r2.label==='Formal day','a future day: Formal day toggle and a small reset icon after a swap, same row');
+    ok(r2.kids==='tog on,reset'&&r2.one&&r2.label==='Formal','a future day: Formal day toggle and a small reset icon after a swap, same row');
     await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides);
     ok(await p.evaluate(()=>!document.querySelector('.dayact .reset')),'reset clears the changes and the icon goes away');
+    // today with a change: worn toggle, Formal and the reset icon fit one row even on narrow phones
+    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('.dayact .reset'));
+    for(const [w,fs] of [[320,16],[360,16],[390,16]]){await p.setViewportSize({width:w,height:900});
+      const f=await p.evaluate(fs=>{document.body.style.fontSize=fs+'px';const r=document.querySelector('.dayact'),kids=[...r.children],btns=[...r.querySelectorAll('button')];
+        const mids=new Set(kids.map(k=>{const b=k.getBoundingClientRect();return Math.round((b.top+b.bottom)/2)}));
+        const out=Math.max(...kids.map(k=>k.getBoundingClientRect().right))<=r.getBoundingClientRect().right+0.5;
+        const clipped=btns.filter(b=>b.scrollWidth>b.clientWidth+1).map(b=>b.textContent);document.body.style.fontSize='';
+        return {kids:kids.map(k=>k.className.split(' ')[0]).join(),one:mids.size===1,out,clipped}},fs);
+      ok(f.kids==='seg,tog,reset'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day buttons and reset icon share one row, nothing cut off (${JSON.stringify(f)})`)}
+    await p.setViewportSize({width:390,height:900});
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
