@@ -15,9 +15,11 @@ module.exports=async({ok,chromium,url})=>{
       base.push(I('shirt','white'),I('shirt','white'),I('shirt','lightblue'),I('shirt','charcoal'),I('shirt','midgrey'),I('shirt','lightgrey'),I('shirt','periwinkle'),I('shirt','lavender'),
         I('tie','navy'),I('tie','black'),I('tie','black',{pattern:'check',secondaryColor:'grey'}),I('tie','deepblue'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}));
       items=[...base,...jackets];
-      const seq=[];for(let m=10;m<16;m++){const pl=buildPlan(2026+Math.floor(m/12),m%12);for(const [d,o] of Object.entries(pl))if(keyDate(d).getMonth()===m%12&&o.top)seq.push([d,o.top.id,jacketGroup(o.top),shirtGroup(o.shirt),o.tie.id,tieGroup(o.tie),rateOutfit(o).score])}
+      const seq=[];for(let m=10;m<16;m++){const pl=buildPlan(2026+Math.floor(m/12),m%12);for(const [d,o] of Object.entries(pl))if(keyDate(d).getMonth()===m%12&&o.top)seq.push([d,o.top.id,jacketGroup(o.top),shirtGroup(o.shirt),o.tie.id,tieGroup(o.tie),rateOutfit(o).score,jacketGroup(o.top)+'/'+shirtLook(o.shirt)+'/'+tieLook(o.tie)])}
       const after=f=>seq.filter((s,n)=>n&&f(seq[n-1],s)).map(s=>s[0]);
       const shirtRep=after((a,b)=>a[3]===b[3]&&!['white','lightblue'].includes(b[3])),tieSame=after((a,b)=>a[4]===b[4]),tieGroupRep=after((a,b)=>a[5]===b[5]);
+      // the same look (jacket colour, shirt look, tie look) within two workdays
+      const lookRep=seq.filter((x,n)=>[1,2].some(b=>n>=b&&seq[n-b][7]===x[7])).map(x=>x[0]+' '+x[7]);
       const tieUse={};seq.forEach(s=>tieUse[s[4]]=(tieUse[s[4]]||0)+1);
       // each jacket's wearings: the same tie with the same shirt colour should not come back on the next wearing
       const byTop={};seq.forEach(x=>(byTop[x[1]]=byTop[x[1]]||[]).push(x[4]+'/'+x[3]));let comboRep=0,wear=0,distinct=0;
@@ -33,13 +35,14 @@ module.exports=async({ok,chromium,url})=>{
       const N=buildPlan(2026,10),D=buildPlan(2026,11);const dis=Object.keys(D).filter(k=>N[k]&&D[k].top&&JSON.stringify(idsOf(N[k]))!==JSON.stringify(idsOf(D[k])));
       const T=todayDate();for(const [d,o] of Object.entries(N))if(keyDate(d)<T&&o.top)dayRecs[d]={date:d,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
       const N2=buildPlan(2026,10),moved=Object.keys(N2).filter(k=>keyDate(k)>=T&&N2[k].top&&JSON.stringify(idsOf(N[k]))!==JSON.stringify(idsOf(N2[k])));
-      return {comboRep,wear,distinct,shirtRep,tieSame,tieGroupRep,tiesUnused:tieIds.filter(t=>!tieUse[t]).length,minScore:Math.min(...seq.map(x=>x[6])),n:seq.length,same,unused:jk.filter(j=>!used[j.id]).map(j=>j.primaryColor),maxSuit:Math.max(...jk.filter(j=>j.type==='suit').map(j=>gap[j.id]||0)),maxBlazer:Math.max(...jk.filter(j=>j.type==='blazer').map(j=>gap[j.id]||0)),greyDays,dis,moved,
+      return {lookRep,comboRep,wear,distinct,shirtRep,tieSame,tieGroupRep,tiesUnused:tieIds.filter(t=>!tieUse[t]).length,minScore:Math.min(...seq.map(x=>x[6])),n:seq.length,same,unused:jk.filter(j=>!used[j.id]).map(j=>j.primaryColor),maxSuit:Math.max(...jk.filter(j=>j.type==='suit').map(j=>gap[j.id]||0)),maxBlazer:Math.max(...jk.filter(j=>j.type==='blazer').map(j=>gap[j.id]||0)),greyDays,dis,moved,
         groups:['lightgrey','midgrey','grey','darkgrey','charcoal','navy','darknavy','deepblue','steelblue','tan','khaki','brown'].map(c=>jacketGroup({primaryColor:c})).join()}});
     ok(r.groups==='grey,grey,grey,grey,grey,navy,navy,navy,blue,tan,tan,brown',`colour groups read like the eye does: every grey from light grey to charcoal is one (${r.groups})`);
     ok(r.n>100&&r.same.length===0,`over six months no two consecutive workdays share a jacket colour group (${r.same.length} of ${r.n}: ${r.same.slice(0,4).join(' ')})`);
     ok(r.shirtRep.length===0,`no shirt colour group (e.g. dark grey then light grey) on consecutive workdays, apart from white and light blue (${r.shirtRep.join(' ')})`);
     ok(r.tieSame.length===0&&r.tieGroupRep.length===0,`never the same tie, nor the same tie colour, on consecutive workdays (${r.tieSame.length} / ${r.tieGroupRep.length})`);
     ok(r.tiesUnused===0,'every tie gets worn');
+    ok(r.lookRep.length===0,`no look (jacket colour, light or dark shirt, tie colour family) comes back within two workdays (${r.lookRep.slice(0,4).join(' | ')})`);
     ok(r.comboRep===0&&r.distinct>=r.wear*.6,`a jacket is not worn with the same tie and shirt colour on its next wearing (${r.comboRep} of ${r.wear}; ${r.distinct} distinct combinations)`);
     ok(r.minScore>=80,`variety never costs a good outfit (lowest score ${r.minScore})`);
     ok(!r.unused.length&&r.maxSuit<=14&&r.maxBlazer<=20,`every jacket stays in rotation: 8 suits on 4 days a week come back within 14 workdays, 3 blazers on 1 day a week within 4 weeks (longest ${r.maxSuit} / ${r.maxBlazer}${r.unused.length?', unused: '+r.unused.join():''})`);
@@ -66,6 +69,15 @@ module.exports=async({ok,chromium,url})=>{
     const dk=await p.evaluate(()=>{const J=c=>({id:'j'+c,type:'suit',primaryColor:c,pattern:'solid'}),P=c=>({g:jacketGroup(J(c)),c});
       return {bc:colourRepeat(J('black'),[P('charcoal')]),bd:colourRepeat(J('darkgrey'),[P('black')]),gl:colourRepeat(J('lightgrey'),[P('darkgrey')]),bn:colourRepeat(J('black'),[P('navy')])}});
     ok(dk.gl===40&&dk.bc>=20&&dk.bd>=20&&dk.bn===0,`dark grey then light grey is a repeat; black next to charcoal or dark grey nearly one; black next to navy is fine (${JSON.stringify(dk)})`);
+    // your Dec 1 / Dec 3 case: grey suit, black shirt, grey woven tie; then a light grey blazer with a dark navy shirt and a black check tie
+    const lk=await p.evaluate(()=>{const I=(type,primaryColor,x={})=>({id:type+primaryColor,type,primaryColor,pattern:'solid',...x});
+      const d1={top:I('suit','midgrey',{pattern:'twill'}),shirt:I('shirt','black'),tie:I('tie','grey',{pattern:'woven',secondaryColor:'black'})};
+      const prev=[{jg:'navy',sl:'white',tl:'red'},{jg:jacketGroup(d1.top),sl:shirtLook(d1.shirt),tl:tieLook(d1.tie)}],bl=I('blazer','lightgrey');
+      return {same:lookRepeat(bl,I('shirt','darknavy'),I('tie','black',{pattern:'check',secondaryColor:'grey'}),prev),half:lookRepeat(bl,I('shirt','slate'),I('tie','navy'),prev),
+        white:lookRepeat(bl,I('shirt','white'),I('tie','black'),prev),looks:[shirtLook(I('shirt','navy')),shirtLook(I('shirt','charcoal')),shirtLook(I('shirt','lightblue')),tieLook(I('tie','silver')),tieLook(I('tie','charcoal')),tieLook(I('tie','navy'))].join(),
+        sr:shirtRepeat(I('shirt','darknavy'),[{sg:'black',sl:'dark'}]),tr:tieRepeat(I('tie','black'),[{tg:'grey',tl:'mono',tid:'z'}])}});
+    ok(lk.same>=20&&lk.half>0&&lk.half<lk.same&&lk.white===0,`a grey jacket, dark shirt and grey/black tie two workdays after the same look is a repeat; another tie is half one; a white shirt is fine (${JSON.stringify(lk)})`);
+    ok(lk.looks==='dark,dark,lightblue,mono,mono,navy'&&lk.sr>0&&lk.tr>0,`dark shirts read as one look, black/charcoal/grey/silver ties as one (${lk.looks}; shirt ${lk.sr}, tie ${lk.tr})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
