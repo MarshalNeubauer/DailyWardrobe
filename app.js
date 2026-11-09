@@ -517,7 +517,7 @@ function itemDesc(i){const c=colName(primaryCol(i)),lea=patLabel(i.leather||'cal
     case 'shoes':return `a pair of ${c} ${lea} leather cap-toe oxford dress shoes, side three-quarter view`;
     case 'belt':return `${aAn(c)} ${lea} leather dress belt, loosely coiled, with a polished ${i.metal==='gold'?'gold':i.metal==='other'?'gunmetal':'silver'} buckle`;
     case 'socks':return `a pair of ${c} ${pat}fine ribbed over-the-calf dress socks, laid flat side by side`;
-    case 'pants':return `a pair of ${c} ${pat}wool dress trousers, neatly folded`;
+    case 'pants':return `a pair of ${c} ${pat}${primaryCol(i)==='khaki'?'cotton twill':'wool'} dress trousers, neatly folded`;
     case 'overcoat':return `${aAn(c)} wool overcoat on an invisible mannequin`;
     case 'raincoat':return `${aAn(c)} trench coat on an invisible mannequin`}
   return ''}

@@ -1,6 +1,6 @@
 /* Daily Wardrobe: outfit rules, planning and scoring (no DOM access; also loaded by the analysis worker) */
 /* colour families for the rules: dark grey behaves like charcoal, light grey like grey, oxblood like burgundy */
-const FAM={paleyellow:'cream',ivory:'cream',beige:'tan',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
+const FAM={paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
 /* acceptable shoe colours for each trouser colour, best first */
 const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black','burgundy']};
 /* ---- clothing rules (suit/blazer, trousers, shirt, tie) ----
@@ -112,7 +112,7 @@ const sockScore=(bot,sh,s)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?pcol(
 /* ---- leather goods ----
    Belt and shoes must be the same colour group (black / brown / tan / burgundy-oxblood) and a compatible finish:
    suede with suede, smooth with smooth or grain. Patent is black-tie only. Metals (buckle, watch, tie clip) should agree. */
-const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',burgundy:'burgundy',oxblood:'burgundy',wine:'burgundy'})[c]||c;
+const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',khaki:'tan',burgundy:'burgundy',oxblood:'burgundy',wine:'burgundy'})[c]||c;
 const finish=l=>l==='suede'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':'smooth';
 const metalOf=i=>i&&i.metal||'silver';
 function beltFit(shoe,belt){

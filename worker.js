@@ -24,12 +24,13 @@ type — one of:
 
 primaryColor — the dominant colour of the main fabric (the leather for shoes and belts, the strap for watches). One of:
   black, charcoal, darkgrey, grey, midgrey, lightgrey, white, cream, lightblue, blue, steelblue, deepblue, navy, darknavy, slate,
-  brown, tan, olive, green, burgundy, wine, oxblood, red, purple, pink, gold, silver
+  brown, tan, khaki, olive, green, burgundy, wine, oxblood, red, purple, pink, gold, silver
   (charcoal is near-black grey; darkgrey sits between charcoal and grey; midgrey is a medium grey, between grey and lightgrey;
   lightgrey is pale grey; steelblue is a dusty, greyed mid blue (denim-like); deepblue is a rich, saturated dark blue, brighter
   than navy; darknavy is navy so dark it is almost black; slate is a dark blue-grey, greyer than navy and bluer than charcoal;
   wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
-  than burgundy)
+  than burgundy; khaki is the light sandy beige of classic chinos and cotton dress trousers, lighter and greener than tan,
+  which is a warmer, deeper camel brown)
   Dress shirts only, also: paleyellow, ivory (warm off-white, between white and cream), beige (pale sandy tan), lavender
   (pale purple), periwinkle (soft blue with a violet cast, between lightblue and blue). Never use these for other items.
   Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
@@ -81,7 +82,7 @@ const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* ---- Claude API ---- */
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
-  'brown','tan','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
+  'brown','tan','khaki','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
   'paleyellow','ivory','beige','lavender','periwinkle'];   // the last five: dress shirts only
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
