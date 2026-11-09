@@ -136,6 +136,9 @@ function watchFit(w,shoe,belt){
   return v;
 }
 
+/* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
+   after today are cleared; formal days, today and the past stay) */
+const PLAN_RULES=2;
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 /* jacket colour groups, as the eye reads them: light/mid/plain grey are one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday

@@ -343,6 +343,23 @@ async function swapSlot(slot){
 async function setFormal(v,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;if(v)r.formal=true;else delete r.formal;if(k===key(sel))swapMsg='';await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
+/* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay */
+async function replanFuture(){const T=todayDate();let n=0;
+  for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<=T||r.worn===true)continue;
+    if(!(r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto))continue;
+    const keep={date:r.date};if(r.formal)keep.formal=true;await saveDay(keep,true);n++}
+  cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
+/* the planning rules changed since this wardrobe was last planned: re-plan the future once */
+async function checkPlanRules(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
+  settings.planRules=PLAN_RULES;await saveUserSettings();if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
+async function replanButton(){const T=todayDate();
+  const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
+  if(!n){renderReplanUI('Nothing to reset: every upcoming day follows the planner.');return}
+  if(!confirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'} and let the planner choose again? Formal days, today and past days stay as they are.`))return;
+  const m=await replanFuture();renderReplanUI(`${m} day${m===1?'':'s'} planned again.`);todayStale=true}
+function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const T=todayDate();
+  const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
+  el.textContent=msg||(n?`${n} upcoming day${n===1?' keeps':'s keep'} pieces from a swap.`:'Every upcoming day follows the planner.')}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
 function dayActions(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
@@ -758,7 +775,7 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd};if(f[t])f[t]();
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};show('today');window.appReady=true;loadWeather();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};checkPlanRules().then(()=>{if(!$('#today').hidden)renderToday()});show('today');window.appReady=true;loadWeather();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
 
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
@@ -790,7 +807,7 @@ function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn
   const r=o&&renderFor(o);btn.disabled=!o||rendering;btn.textContent=rendering?'Generating photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
   if(st)st.textContent=o?(r?'Makes a new realistic photo of the day shown on Today (about 7¢); it replaces the current one for every day with this look.':'The day shown on Today has no photo yet (about 7¢).'):'Pick a workday on Today first.'}
 function renderSettingsExtras(){
-  renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();
+  renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}`:'No location set: outfits follow the calendar season.';
