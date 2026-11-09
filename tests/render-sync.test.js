@@ -58,18 +58,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(await photoShown(B.p)&&calls===1,'the phone shows the desktop\'s photo without generating another');
     // photos saved per date before this change: a local one is moved and shared; a worker one is picked up
     store.clear();
-    const mig=await A.p.evaluate(async()=>{const o=planFor()['2026-11-16'],ck=comboKey(o);delete renders[ck];await txs('meta','readwrite',s=>s.delete('render:'+ck));
+    const mig=await A.p.evaluate(async()=>{const o=planFor()['2026-11-16'],ck=comboKey(o);delete renders[ck];delete renders[comboKeyV1(o)];await txs('meta','readwrite',s=>s.delete('render:'+ck));
       renders['2026-11-16']={sig:legacySig(o),img:'data:image/jpeg;base64,/9j/',model:'gpt-image-2',t:5};renderTried.clear();sel=new Date(2026,10,16);renderToday();
       await new Promise(r=>setTimeout(r,600));return {shown:!!document.querySelector('.fig.photo img'),local:!!(await metaGet('render:'+ck)),ck}});
+    for(let w=0;w<30&&!store.has('render:'+mig.ck);w++)await new Promise(r=>setTimeout(r,100));
     ok(mig.shown&&mig.local&&store.has('render:'+mig.ck),'an old date-keyed photo on the device is moved to its combination and shared');
     const C=await device();store.delete('render:'+mig.ck);
     const legacy=await C.p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',updated:1,...x});
       items=[I('suit','navy'),I('shirt','lightblue'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
-      settings.workdays=[0,1,2,3,4];settings.vestMode='auto';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};return legacySig(planFor()['2026-11-16'])});
-    store.set('render:2026-11-16',JSON.stringify({sig:legacy,img:'data:image/jpeg;base64,'+JPG,model:'gpt-image-2',t:3}));
+      settings.workdays=[0,1,2,3,4];settings.vestMode='auto';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};const o=planFor()['2026-11-16'];return {sig:legacySig(o),ck:comboKey(o)}});
+    store.set('render:2026-11-16',JSON.stringify({sig:legacy.sig,img:'data:image/jpeg;base64,'+JPG,model:'gpt-image-2',t:3}));
     await C.p.evaluate(()=>{sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
     await C.p.waitForFunction(()=>!!document.querySelector('.fig.photo img'),null,{timeout:8000}).catch(()=>{});
-    ok(await photoShown(C.p)&&store.has('render:'+mig.ck),'an old date-keyed photo on the worker is picked up and re-saved under its combination');
+    for(let w=0;w<30&&!store.has('render:'+legacy.ck);w++)await new Promise(r=>setTimeout(r,100));
+    ok(await photoShown(C.p)&&store.has('render:'+legacy.ck),'an old date-keyed photo on the worker is picked up and re-saved under its combination');
     const bad=await worker.fetch(new Request(HOST+'render',{method:'PUT',headers:{'x-app-token':'t'},body:JSON.stringify({key:'c0123456789abcdef',rec:{img:'javascript:alert(1)'}})}),env);
     ok(bad.status===400,'the worker only accepts image data');
     ok((await worker.fetch(new Request(HOST+'render?key=nope',{headers:{'x-app-token':'t'}}),env)).status===400,'the worker rejects malformed keys');

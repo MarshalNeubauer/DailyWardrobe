@@ -146,8 +146,12 @@ const JKT_GROUP={lightgrey:'grey',midgrey:'grey',grey:'grey',silver:'grey',charc
 const JKT_NEAR=[['grey','charcoal'],['charcoal','black'],['navy','blue'],['navy','charcoal'],['brown','tan']];
 const jacketGroup=i=>{const c=primaryCol(i);return JKT_GROUP[c]||fam(c)};
 const groupsNear=(a,b)=>JKT_NEAR.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));
-const colourRepeat=(i,prev)=>{if(!prev||!prev.length)return 0;const g=jacketGroup(i);let v=0;
-  prev.slice(0,2).forEach((p,n)=>{if(!p)return;v+=p===g?(n?10:24):groupsNear(p,g)?(n?2:6):0});return v};
+// prev: the previous workdays' groups (latest first); next: the next workday's group when that day is already fixed
+// (worn, or a jacket the user picked), so a pinned day is not crowded either
+const colourRepeat=(i,prev,next)=>{const g=jacketGroup(i);let v=0;
+  const near=(a,b)=>!groupsNear(a,b)?0:(a+b==='greycharcoal'||a+b==='charcoalgrey')?26:6;   // dark and mid grey still read as "grey again"
+  (prev||[]).slice(0,2).forEach((p,n)=>{if(!p)return;v+=p===g?(n?12:40):n?Math.round(near(p,g)/3):near(p,g)});
+  if(next)v+=next===g?40:near(next,g);return v};
 /* shirts and ties get the same treatment, with their own groups. White and light blue are the staples: a repeat of those costs
    little. These penalties only choose among outfits that already score within QWIN of the best one. */
 const SHIRT_GROUP={white:'white',ivory:'white',cream:'white',lightblue:'lightblue',periwinkle:'blue',blue:'blue',steelblue:'blue',lavender:'purple',pink:'pink',
@@ -167,7 +171,7 @@ const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
-const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)*2+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&p.jg)));
+const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&p.jg),day.ahead&&day.ahead.next)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0));
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
 const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
 const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.clim.season!=='warm'))));
@@ -295,6 +299,17 @@ function frozenOutfit(rec,n,last){
 }
 function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={},T=todayDate();
 const hasLinks=by('cufflinks').length>0;let prev=[];   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
+// jackets already fixed on the next workdays (worn, or picked by the user): the next one's colour group, and the ids of
+// those within the next 3 workdays, which are held back so a pinned jacket is not worn just before its day
+const fixedAhead=d=>{const x=new Date(d),ids=[];let next=null,soft=null,w=0;for(let g=0;g<10&&w<3;g++){x.setDate(x.getDate()+1);if(!settings.workdays.includes(x.getDay()))continue;
+    const r=dayRecs[key(x)],id=r&&(r.force&&r.force.top||(r.ids&&(x<T||r.worn===true)&&r.ids.top)),it=id&&items.find(i=>i.id===id);
+    if(it){ids.push(it.id);if(!w)next=jacketGroup(it)}
+    // not fixed and the next day is a blazer day: the blazer due (longest rested) is the likely pick, so the suit before it
+    // avoids that colour (only this way round: suits are many, blazers few and must keep rotating)
+    else if(!w&&settings.blazerDays.includes(x.getDay())&&!settings.blazerDays.includes(d.getDay())&&!(r&&r.formal)){
+      const pool=by('blazer');let due=null,dr=-1;for(const j of pool){const rr=di(x)-(last[j.id]??-1e5);if(rr>dr){dr=rr;due=j}}
+      if(due)soft=jacketGroup(due)}
+    w++}return {next,ids,soft}};
 const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null});
 // every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
 // share (the plan depends on what came before: rest and the previous workdays' jacket colours)
@@ -302,6 +317,6 @@ const from=new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getM
 for(const d=from;d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
   const k=key(d),rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top)prev=[sumUp(plan[k]),prev[0]];continue}
-  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top)prev=[sumUp(o),prev[0]]}
+  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d)});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top)prev=[sumUp(o),prev[0]]}
 return plan}
 

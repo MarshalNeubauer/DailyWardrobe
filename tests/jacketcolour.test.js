@@ -42,6 +42,23 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.greyDays>=20&&r.greyDays<=23,`a wardrobe of only grey jackets is still planned (${r.greyDays} days in December)`);
     ok(r.dis.length===0,`November and December agree on the days they share (${r.dis.join(' ')})`);
     ok(r.moved.length===0,`recording past days does not change the plan ahead (${r.moved.join(' ')})`);
+    // your Nov 17/18 case: a navy suit unworn for weeks must not follow the other navy; a pinned next day is respected
+    const c=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:'x'+type+(k++),type,primaryColor,pattern:'solid',...x});
+      const navyA=I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),navyB=I('suit','navy'),g1=I('suit','lightgrey'),br=I('suit','brown'),bl=I('suit','black'),tn=I('suit','tan');
+      items=[navyA,navyB,g1,br,bl,tn,I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),
+        I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';
+      // history: navy B last worn in September; the others in early November; navy A pinned for Nov 17
+      dayRecs={'2026-9-29':{date:'2026-9-29',ids:{top:navyB.id},suitDay:true,worn:true},'2026-11-17':{date:'2026-11-17',force:{top:navyA.id}}};
+      ['2026-11-1','2026-11-2','2026-11-3','2026-11-4','2026-11-5','2026-11-8'].forEach((d,n)=>dayRecs[d]={date:d,ids:{top:[g1,br,bl,tn,g1,br][n].id},suitDay:true,worn:true});
+      // the days before are pinned to the other suits (swaps), so navy B builds up weeks of rest
+      ['2026-11-9','2026-11-10','2026-11-11','2026-11-12','2026-11-15','2026-11-16'].forEach((d,n)=>dayRecs[d]={date:d,force:{top:[bl,tn,g1,br,bl,tn][n].id}});
+      const pl=buildPlan(2026,10),t=d=>pl[d]&&pl[d].top&&pl[d].top.id;
+      // a pinned navy on Nov 23: the Sunday before must not be navy
+      dayRecs['2026-11-23']={date:'2026-11-23',force:{top:navyB.id}};const pl2=buildPlan(2026,10);
+      return {n17:t('2026-11-17')===navyA.id,n18:t('2026-11-18')!==navyB.id&&t('2026-11-16')!==navyB.id,n22:pl2['2026-11-22'].top.primaryColor,n23:pl2['2026-11-23'].top.id===navyB.id}});
+    ok(c.n17&&c.n18,'a navy suit left unworn for weeks still does not come right before or after the other navy');
+    ok(c.n23&&c.n22!=='navy',`the day before a pinned navy day is not navy (${c.n22})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
