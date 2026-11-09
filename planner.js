@@ -62,10 +62,10 @@ function pairScore(t,p){
   return v;
 }
 /* pattern mixing: one bold pattern is always fine; two are fine if they differ in type or scale; never three */
-const PAT_TYPE={stripe:'stripe',pinstripe:'stripe','fine-stripe':'stripe','chalk-stripe':'stripe',check:'check',gingham:'check',tattersall:'check',windowpane:'check','glen-check':'check',houndstooth:'check','polka-dot':'motif',paisley:'motif',foulard:'motif'};
+const PAT_TYPE={stripe:'stripe',pinstripe:'stripe','fine-stripe':'stripe','chalk-stripe':'stripe',check:'check',gingham:'check',tattersall:'check',windowpane:'check','glen-check':'check',houndstooth:'check','polka-dot':'motif',paisley:'motif',foulard:'motif','tonal-check':'check'};
 function patInfo(i,role){
   const p=i&&i.pattern;if(!p||!PAT_TYPE[p])return null;     // solids and fine weaves don't count
-  const scale=role==='tie'?({stripe:3,check:2,'polka-dot':2,paisley:2,foulard:1})[p]??2
+  const scale=role==='tie'?({stripe:3,check:2,'tonal-check':1,'polka-dot':2,paisley:2,foulard:1})[p]??2
     :role==='shirt'?({pinstripe:1,'fine-stripe':1,houndstooth:1})[p]??2
     :({pinstripe:1,windowpane:3})[p]??2;
   return {type:PAT_TYPE[p],scale};
@@ -138,7 +138,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are cleared; formal days, today and the past stay) */
-const PLAN_RULES=4;
+const PLAN_RULES=5;
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday

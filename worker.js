@@ -89,7 +89,8 @@ pattern — pick the closest value from the list for the item's type:
   tie:
     solid, woven (a textured solid: a fine basket/oxford weave or micro-check that reads as one colour from a step away, often two-tone
     threads; put the second thread colour in secondaryColor), stripe (diagonal/regimental), polka-dot, paisley, check (a visible check),
-    foulard (small repeating geometric motif), knit, other
+    tonal-check (a check or glen check woven in two close shades of one colour,
+    e.g. black on charcoal: subtle, but clearly not a solid; put the lighter shade in secondaryColor), foulard (small repeating geometric motif), knit, other
   tieclip, watch, shoes, belt, socks, cufflinks, overcoat, raincoat: solid
 
 Use "solid" for suits, blazers and trousers whose weave is only visible up close and does not match a listed pattern.
@@ -114,7 +115,7 @@ const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
-  'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture'];
+  'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','tonal-check'];
 const orNull = values => ({ anyOf: [{ type: 'string', enum: values }, { type: 'null' }] });
 // Structured output: the reply is guaranteed to be JSON matching this schema.
 const TAG_SCHEMA = {
