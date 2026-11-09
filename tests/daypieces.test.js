@@ -13,6 +13,8 @@ module.exports=async({ok,chromium,url})=>{
       return {open:box.classList.contains('open'),chips:box.querySelectorAll('.pchip').length,n,h:Math.round($('#ipanel').getBoundingClientRect().height),txt:box.querySelector('.mltxt').textContent,
         exp:box.querySelector('.month-link').getAttribute('aria-expanded'),side,inStage:!!document.querySelector('#stage #piece')}});
     ok(!c.open&&c.exp==='false'&&c.h===0,'the pieces list starts folded');
+    const rows=await p.evaluate(()=>{const ys=[...document.querySelectorAll('#ibox .pchip')].map(e=>Math.round(e.getBoundingClientRect().top));const m={};ys.forEach(y=>m[y]=(m[y]||0)+1);return Object.values(m)});
+    ok(rows.length<=2&&Math.max(...rows)-Math.min(...rows)<=1,`the chips are spread evenly over the rows (${rows.join(' + ')})`);
     ok(c.chips===c.n&&c.chips>=7,`the folded box shows one fabric chip per piece (${c.chips})`);
     ok(new RegExp(`^${c.n} pieces`).test(c.txt)&&/suit · .* shirt · .* tie/i.test(c.txt),`and names the suit, shirt and tie (${c.txt})`);
     ok(c.side.indexOf('piece-wrap')===c.side.indexOf('score')+1&&c.side.indexOf('ibox')===c.side.indexOf('piece-wrap')+1&&!c.inStage,`the swap card sits below the score and above the pieces (${c.side.join(',')})`);
