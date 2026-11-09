@@ -62,11 +62,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.click('[aria-label="Make formal"]');await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
     await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides);
     const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.tog').textContent}});
-    ok(r2.kids==='tog on,reset'&&r2.one&&r2.label==='Formal','a future day: Formal day toggle and a small reset icon after a swap, same row');
+    ok(r2.kids==='tog on,reset'&&r2.one&&r2.label==='✓ Formal','a future day: Formal day toggle and a small reset icon after a swap, same row');
     await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides);
     ok(await p.evaluate(()=>!document.querySelector('.dayact .reset')),'reset clears the changes and the icon goes away');
     // today with a change: worn toggle, Formal and the reset icon fit one row even on narrow phones
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('.dayact .reset'));
+    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('.dayact .reset')&&document.querySelector('.dayact .tog.on'));
     for(const [w,fs] of [[320,16],[360,16],[390,16]]){await p.setViewportSize({width:w,height:900});
       const f=await p.evaluate(fs=>{document.body.style.fontSize=fs+'px';const r=document.querySelector('.dayact'),kids=[...r.children],btns=[...r.querySelectorAll('button')];
         const mids=new Set(kids.map(k=>{const b=k.getBoundingClientRect();return Math.round((b.top+b.bottom)/2)}));

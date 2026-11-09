@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url})=>{
   ok(f.shoes==='black calf','formal shoes are black calf');
   ok(f.links==='gold'&&f.watch==='gold','French cuffs get cufflinks matching the watch metal');
   ok(f.formality&&f.formality.pts===10,'Formality check scores 10/10');
-  ok((await p.textContent('#today')).includes('Formal day'),'Today shows the formal-day badge');
+  ok(await p.evaluate(()=>{const t=document.querySelector('#today .dayact .tog');return !!t&&t.classList.contains('on')&&t.getAttribute('aria-pressed')==='true'&&t.textContent==='✓ Formal'}),'Today marks the formal day (Formal toggle on)');
   // French cuffs with no cufflinks owned
   const nl=await p.evaluate(()=>{const keep=items;items=items.filter(i=>i.type!=='cufflinks');cache={};const o=planFor()['2026-11-19'];const n=o.notes.join(' ');items=keep;cache={};return {cuff:o.shirt.cuff,n}});
   ok(nl.cuff!=='french'||nl.n.includes('cufflinks'),'without cufflinks the French-cuff shirt is avoided or flagged');
