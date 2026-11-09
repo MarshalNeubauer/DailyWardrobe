@@ -291,7 +291,7 @@ async function outfitPhoto(body, env) {
   const base = dataUrlToBlob(body.image);
   if (!base) return { ok: false, status: 400, error: 'no illustration' };
   const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 6).map(dataUrlToBlob).filter(Boolean);
-  const outfit = String(body.outfit || '').slice(0, 1500) || 'a suit, dress shirt and tie';
+  const outfit = String(body.outfit || '').slice(0, 2500) || 'a suit, dress shirt and tie';
   const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   const form = new FormData();
   form.append('model', model);
@@ -330,7 +330,7 @@ async function queueRender(body, env, json) {
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
   if (await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });
-  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 1500), sig: String(body.sig || ''), t: Date.now() };
+  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), t: Date.now() };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
   await env.RENDER_QUEUE.send({ key });
@@ -377,7 +377,7 @@ Show it on its own, off the wrist: plain light warm-grey seamless background, so
 catalogue style. No hands, no person, no props, no added text or watermark.`;
 async function renderItem(body, env, json) {
   const ref = dataUrlToBlob(body.ref);
-  const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 900);
+  const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 1500);
   if (!item) return json({ error: 'no item description' }, 400);
   const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   let r;
