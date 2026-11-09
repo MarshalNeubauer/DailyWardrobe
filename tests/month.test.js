@@ -51,8 +51,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(await p.evaluate(()=>!$('#today').hidden&&key(sel)==='2026-11-16'&&!monthOpen),'tapping a day shows it on Today and folds the month');
     // caption: last worn
     const cap=await p.evaluate(async()=>{const o=planFor()['2026-11-16'];
+      dayRecs={};   // only the history planted here
       dayRecs['2026-11-2']={date:'2026-11-2',ids:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,clip:null,watch:null},suitDay:true,vestOn:!!o.vest,worn:true};
       dayRecs['2026-10-27']={date:'2026-10-27',ids:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id},suitDay:true,vestOn:!!o.vest,worn:true};
+      // keep Nov 16 on that look (the planner may otherwise move it once Nov 2 is recorded)
+      dayRecs['2026-11-16']={date:'2026-11-16',force:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,...(o.clip?{clip:o.clip.id}:{}),...(o.watch?{watch:o.watch.id}:{})},vest:!!o.vest};
       cache={};const o2=planFor()['2026-11-16'];const d=lastWorn(o2);
       // a white shirt instead of light blue is a different look; another light blue shirt would be the same
       const diff=lastWorn({...o2,shirt:{...o2.shirt,primaryColor:'pink'}});return {d:d&&key(d),diff}});
