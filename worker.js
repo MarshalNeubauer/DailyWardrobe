@@ -87,7 +87,9 @@ pattern — pick the closest value from the list for the item's type:
     slightly faded look), dobby (small repeating woven motif, tone on tone), woven (visible small cross-weave), textured (uneven,
     slubbed surface), fine-texture (barely visible texture up close), other
   tie:
-    solid, stripe (diagonal/regimental), polka-dot, paisley, check, foulard (small repeating geometric motif), knit, other
+    solid, woven (a textured solid: a fine basket/oxford weave or micro-check that reads as one colour from a step away, often two-tone
+    threads; put the second thread colour in secondaryColor), stripe (diagonal/regimental), polka-dot, paisley, check (a visible check),
+    foulard (small repeating geometric motif), knit, other
   tieclip, watch, shoes, belt, socks, cufflinks, overcoat, raincoat: solid
 
 Use "solid" for suits, blazers and trousers whose weave is only visible up close and does not match a listed pattern.
