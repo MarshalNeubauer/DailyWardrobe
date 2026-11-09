@@ -309,8 +309,22 @@ let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view
 
 /* views */
 const vestRow=o=>!(o.suitDay&&hasVest(o.top))?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${o.frozen?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
-const slots=o=>[[o.suitDay?'Suit':'Blazer',o.top,'top'],...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip'],...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])]
-.map(([l,i,s])=>`<div class="row"><span class="mut">${l}</span>${i?`<span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':'Add one on the Add tab'}</span>`}</div>`).join('').replace('</div>',`</div>${vestRow(o)}`);
+/* the outfit list: tapping a piece's swatch or name unfolds its photo inside the list (the actual item, so you can see
+   exactly which shirt it is); one at a time; items without a photo show their product picture or drawing */
+let openRow=null;
+const rowPic=i=>i.photo?`<img class="rpic" src="${i.photo}" alt="Photo of ${esc(desc(i)||nm(i))}">`:itemPic(i)?`<img class="rpic" src="${itemPic(i).img}" alt="Picture of ${esc(desc(i)||nm(i))}">`:`<div class="rpic draw">${itemThumb(i,true)}</div>`;
+const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of this item yet${itemPic(i)?': a generated picture of it.':': this is how the app draws it.'}</small>`);
+const slots=o=>{const rows=([[o.suitDay?'Suit':'Blazer',o.top,'top'],...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip'],...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
+.map(([l,i,s])=>{const open=!!i&&openRow===s;
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(desc(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span></button>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':'Add one on the Add tab'}</span>`}</div>`+
+    (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
+  rows.splice(1,0,vestRow(o));return rows.join('')};
+function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
+  document.querySelectorAll('.ritem.open').forEach(r=>{if(r!==el){r.classList.remove('open','instant');const b=r.querySelector('.rowtap');if(b)b.setAttribute('aria-expanded','false')}});
+  if(opening){el.querySelector('.rpanel-in').innerHTML=rowPanel(o[s]);el.classList.remove('instant');void el.offsetHeight}
+  el.classList.toggle('open',opening);openRow=opening?s:null;const b=el.querySelector('.rowtap');b.setAttribute('aria-expanded',opening);
+  b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/(Show|Hide) the photo/,opening?'Hide the photo':'Show the photo'));
+  if(opening)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),150)}
 
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
