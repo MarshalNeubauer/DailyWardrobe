@@ -244,3 +244,7 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .cropbox img{position:absolute;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
 .cropbox::after{content:"";position:absolute;inset:0;border:2px solid #fff8;border-radius:10px;pointer-events:none}
 .cropzoom{display:flex;align-items:center;gap:10px;font-size:14px;max-width:360px;margin:0 auto;width:100%}.cropzoom input{flex:1}
+
+/* a wardrobe item is one big tap target that opens its editor */
+.giopen{display:block;width:100%;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.giopen:active{opacity:.8}
