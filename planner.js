@@ -5,7 +5,7 @@ const FAM={mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan'
 const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black','burgundy']};
 /* ---- clothing rules (suit/blazer, trousers, shirt, tie) ----
    Every candidate outfit gets one score from these rules; the planner picks among the best-scoring outfits. */
-const HARM={navy:['burgundy','red','gold','grey','lightblue','green','purple','pink','brown'],charcoal:['burgundy','red','purple','navy','lightblue','pink','green','gold'],grey:['navy','burgundy','blue','purple','pink','green','black'],black:['red','grey','burgundy','purple','silver'],brown:['green','gold','navy','tan','burgundy','cream','olive'],tan:['navy','brown','burgundy','green','olive'],olive:['brown','burgundy','navy','gold','cream','tan'],blue:['navy','burgundy','grey','gold','brown'],green:['tan','brown','burgundy','gold','navy']};
+const HARM={navy:['burgundy','red','gold','grey','lightblue','green','purple','pink','brown'],charcoal:['burgundy','red','purple','navy','lightblue','pink','green','gold'],grey:['navy','burgundy','blue','purple','pink','green','black'],black:['red','grey','burgundy','purple','silver','navy','green'],brown:['green','gold','navy','tan','burgundy','cream','olive'],tan:['navy','brown','burgundy','green','olive'],olive:['brown','burgundy','navy','gold','cream','tan'],blue:['navy','burgundy','grey','gold','brown'],green:['tan','brown','burgundy','gold','navy']};
 /* good tie colours on each shirt colour (white takes almost anything) */
 const TIE_ON_SHIRT={mint:['navy','burgundy','brown','green','olive','charcoal','purple','grey'],ivory:['navy','burgundy','brown','green','olive','gold','charcoal','red','grey'],paleyellow:['navy','burgundy','brown','green','purple','charcoal','blue'],lavender:['navy','purple','burgundy','charcoal','grey','black','pink'],periwinkle:['navy','burgundy','charcoal','gold','brown','red','grey'],beige:['brown','navy','green','olive','burgundy','tan'],lightblue:['navy','burgundy','red','gold','brown','green','purple','charcoal','grey','black'],pink:['navy','burgundy','grey','charcoal','purple','blue','green'],cream:['brown','green','burgundy','olive','navy','gold','tan'],lightgrey:['navy','burgundy','black','purple','charcoal','pink','red'],blue:['navy','burgundy','gold','brown','charcoal','red'],grey:['navy','burgundy','black','purple','red']};
 /* good trousers for each odd jacket, best first */
@@ -27,7 +27,7 @@ function shirtScore(t,s){
   if(!t)return v;const tc=pcol(t);
   if(pc===tc)v-=25;
   if(lumOf(raw)<LUM(t)+20)v-=15;
-  if(tc==='black'&&raw!=='white')v-=8;
+  if(tc==='black'&&raw!=='white')v-=['lightblue','lightgrey','lavender','ivory'].includes(raw)?2:8;   // a black suit: white first, other pale, quiet shirts fine
   return v;
 }
 /* tie against shirt and jacket */
@@ -138,7 +138,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are cleared; formal days, today and the past stay) */
-const PLAN_RULES=5;
+const PLAN_RULES=6;
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
@@ -164,10 +164,13 @@ const SHIRT_GROUP={white:'white',ivory:'white',cream:'white',lightblue:'lightblu
 const TIE_GROUP={navy:'navy',darknavy:'navy',deepblue:'navy',blue:'blue',steelblue:'blue',lightblue:'blue',slate:'blue',black:'black',charcoal:'black',grey:'grey',silver:'grey',
   burgundy:'red',wine:'red',red:'red',oxblood:'red',pink:'pink',purple:'purple',lavender:'purple',green:'green',olive:'green',brown:'brown',tan:'brown',rust:'brown',gold:'gold',cream:'cream'};
 const shirtGroup=i=>{const c=primaryCol(i);return SHIRT_GROUP[c]||fam(c)},tieGroup=i=>{const c=primaryCol(i);return TIE_GROUP[c]||fam(c)};
+const comboRepeat=(sh,x,hist)=>{if(!hist||!hist.length)return 0;const sc=sh?shirtGroup(sh):null;let v=0;
+  hist.slice(0,2).forEach((h,n)=>{if(!h)return;if(x&&h.tie===x.id)v+=n?3:7;if(x&&h.tie===x.id&&sc&&h.sc===sc)v+=n?4:8;
+    else if(sc&&h.sc===sc&&sc!=='white'&&sc!=='lightblue')v+=n?1:2});return v};
 const shirtRepeat=(sh,prev)=>{if(!sh||!prev)return 0;const g=shirtGroup(sh),staple=g==='white'||g==='lightblue';let v=0;
   prev.slice(0,2).forEach((p,n)=>{if(p&&p.sg===g)v+=staple?(n?0:2):(n?3:8)});return v};
 const tieRepeat=(x,prev)=>{if(!x||!prev)return 0;const g=tieGroup(x);let v=0;
-  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.tid===x.id)v+=n?4:12;else if(p.tg===g)v+=n?2:8});return v};
+  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.tid===x.id)v+=n?4:18;else if(p.tg===g)v+=n?2:15});return v};
 function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
@@ -189,7 +192,7 @@ const shRest=sh=>Math.min(rest(sh),SH_CAP)*.5;
 const Ps=suitDay?[null]:topN(pool('pants','bot'),4,pt=>pairScore(top,pt)),Ss=topN(pool('shirt','shirt'),16,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])+shRest(sh)),Ts=pool('tie','tie'),cands=[];
 for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(const x of Ts.length?Ts:[null]){
   const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day);
-  cands.push({q,pt,sh,x,r:1.5*((pt?rb(pt):0)+(x?rb(x):0))+(x?Math.min(rest(x),30)*.25:0)+(sh?shRest(sh):0)-shirtRepeat(sh,day.prev)-tieRepeat(x,day.prev)});
+  cands.push({q,pt,sh,x,r:1.5*((pt?rb(pt):0)+(x?rb(x):0))+(x?Math.min(rest(x),30)*.25:0)+(sh?shRest(sh):0)-shirtRepeat(sh,day.prev)-tieRepeat(x,day.prev)-comboRepeat(sh,x,top&&day.hist&&day.hist[top.id])});
 }
 const qmax=Math.max(...cands.map(c=>c.q)),pick1=cands.filter(c=>c.q>=qmax-QWIN).sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0];
 const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
@@ -315,13 +318,14 @@ const fixedAhead=d=>{const x=new Date(d),ids=[];let next=null,soft=null,w=0;for(
       const pool=by('blazer');let due=null,dr=-1;for(const j of pool){const rr=di(x)-(last[j.id]??-1e5);if(rr>dr){dr=rr;due=j}}
       if(due)soft={g:jacketGroup(due),c:primaryCol(due)}}
     w++}return {next,ids,soft}};
+const hist={},remember=o=>{if(!o.top)return;const h=hist[o.top.id]||(hist[o.top.id]=[]);h.unshift({tie:o.tie?o.tie.id:null,sc:o.shirt?shirtGroup(o.shirt):null});h.length=Math.min(h.length,2)};
 const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,jc:o.top?primaryCol(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null});
 // every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
 // share (the plan depends on what came before: rest and the previous workdays' jacket colours)
 const from=new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)));
 for(const d=from;d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
   const k=key(d),rec=dayRecs[k];
-  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top)prev=[sumUp(plan[k]),prev[0]];continue}
-  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d)});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top)prev=[sumUp(o),prev[0]]}
+  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top){prev=[sumUp(plan[k]),prev[0]];remember(plan[k])}continue}
+  const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top){prev=[sumUp(o),prev[0]];remember(o)}}
 return plan}
 
