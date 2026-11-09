@@ -23,6 +23,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const pr=sent[0].body.get('prompt');
     ok(/in this order: the suit; the wristwatch \(copy it exactly: case shape, bezel\)\. Match each one exactly/.test(pr),'outfit photos name each reference photo, the watch included');
     ok(/printing on a watch dial stays/.test(pr),'the dial printing is allowed to stay as in the photo');
+    // queued item picture: made later by the queue consumer, by image edit from the reference photo
+    const qsent=[];env.RENDER_QUEUE={send:async m=>{qsent.push(m)}};sent=[];
+    const qr=await (await post({mode:'item',item:'a stainless steel chronograph',key:'c5555555555555555',ref:PNG,queue:true})).json();
+    ok(qr.queued&&sent.length===0&&qsent[0].key==='c5555555555555555'&&JSON.parse(store.get('job:c5555555555555555')).kind==='item','an item picture can be queued (nothing generated yet)');
+    const m={body:qsent[0],attempts:1,ack(){this.acked=true},retry(){this.retried=true}};await worker.queue({messages:[m]},env);
+    ok(m.acked&&sent[0].url==='https://api.openai.com/v1/images/edits'&&store.has('render:c5555555555555555')&&!store.has('job:c5555555555555555'),'the consumer makes it from the reference photo and stores it under the item key');
+    delete env.RENDER_QUEUE;
     // app
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const w={id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph',details:'small seconds at 10, 15/30/45 minute counter at 2'};

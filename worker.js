@@ -353,7 +353,7 @@ async function runRenderJob(msg, env) {
   if (!job) return msg.ack();
   if (await env.WARDROBE.get(`render:${key}`)) { await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   if (!env.OPENAI_API_KEY) { await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
-  const r = await outfitPhoto(job, env);
+  const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env);
   if (r.ok) {
     await env.WARDROBE.put(`render:${key}`, JSON.stringify(r.rec));
     await env.WARDROBE.delete(`job:${key}`);
@@ -376,10 +376,27 @@ markings, numerals, hands and printing, the same bracelet, strap or links. Do no
 Show it on its own, off the wrist: plain light warm-grey seamless background, soft even daylight, centred and in frame, sharp focus,
 catalogue style. No hands, no person, no props, no added text or watermark.`;
 async function renderItem(body, env, json) {
-  const ref = dataUrlToBlob(body.ref);
   const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 1500);
   if (!item) return json({ error: 'no item description' }, 400);
-  const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
+  // background: the picture is made by the queue consumer (an edit from a reference photo can take minutes); fetch it later with GET ?key=
+  if (body.queue) {
+    const key = String(body.key || '');
+    if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
+    if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
+    await env.WARDROBE.put(`job:${key}`, JSON.stringify({ kind: 'item', key, item, ref: body.ref || null, t: Date.now() }), JOB_TTL);
+    await env.WARDROBE.delete(`jobfail:${key}`);
+    await env.RENDER_QUEUE.send({ key });
+    return json({ queued: true });
+  }
+  const r = await itemPhoto({ item, ref: body.ref }, env);
+  if (!r.ok) return json({ error: r.error }, r.status);
+  const id = renderId(body);
+  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(r.rec), renderTtl(id));
+  return json({ image: r.rec.img, model: r.rec.model });
+}
+/* one product picture: from the item's own photo by image edit when there is one, otherwise from the description */
+async function itemPhoto({ item, ref: refUrl }, env) {
+  const ref = dataUrlToBlob(refUrl), model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   let r;
   try {
     if (ref) {
@@ -393,16 +410,13 @@ async function renderItem(body, env, json) {
       r = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, 'content-type': 'application/json' },
         body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }) });
     }
-  } catch (e) { return json({ error: 'Could not reach the OpenAI API: ' + String(e && e.message) }, 502); }
+  } catch (e) { return { ok: false, status: 502, retry: true, error: 'Could not reach the OpenAI API: ' + String(e && e.message) }; }
   const out = await r.json().catch(() => null);
-  if (!r.ok) return json({ error: `OpenAI: ${out && out.error && out.error.message || `HTTP ${r.status}`}` }, 502);
+  if (!r.ok) { const msg = out && out.error && out.error.message || `HTTP ${r.status}`; return { ok: false, status: 502, retry: r.status === 429 && !/quota|billing/i.test(msg) || r.status >= 500, error: `OpenAI: ${msg}` }; }
   const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
-  if (!b64) return json({ error: 'OpenAI returned no image' }, 502);
-  console.log(`item picture by ${model}: ${item}`);
-  const rec = { sig: 'item|' + item, img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() };
-  const id = renderId(body);
-  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(rec), renderTtl(id));
-  return json({ image: rec.img, model });
+  if (!b64) return { ok: false, status: 502, retry: true, error: 'OpenAI returned no image' };
+  console.log(`item picture by ${model}: ${item.slice(0, 120)}`);
+  return { ok: true, rec: { sig: 'item|' + item, img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() } };
 }
 
 /* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced); older ones were per date (90 days) */
