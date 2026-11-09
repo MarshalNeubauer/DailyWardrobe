@@ -32,7 +32,7 @@ module.exports=async({ok,chromium,url})=>{
       const N2=buildPlan(2026,10),moved=Object.keys(N2).filter(k=>keyDate(k)>=T&&N2[k].top&&JSON.stringify(idsOf(N[k]))!==JSON.stringify(idsOf(N2[k])));
       return {shirtRep,tieSame,tieGroupRep,tiesUnused:tieIds.filter(t=>!tieUse[t]).length,minScore:Math.min(...seq.map(x=>x[6])),n:seq.length,same,unused:jk.filter(j=>!used[j.id]).map(j=>j.primaryColor),maxSuit:Math.max(...jk.filter(j=>j.type==='suit').map(j=>gap[j.id]||0)),maxBlazer:Math.max(...jk.filter(j=>j.type==='blazer').map(j=>gap[j.id]||0)),greyDays,dis,moved,
         groups:['lightgrey','midgrey','grey','darkgrey','charcoal','navy','darknavy','deepblue','steelblue','tan','khaki','brown'].map(c=>jacketGroup({primaryColor:c})).join()}});
-    ok(r.groups==='grey,grey,grey,charcoal,charcoal,navy,navy,navy,blue,tan,tan,brown',`colour groups read like the eye does (${r.groups})`);
+    ok(r.groups==='grey,grey,grey,grey,grey,navy,navy,navy,blue,tan,tan,brown',`colour groups read like the eye does: every grey from light grey to charcoal is one (${r.groups})`);
     ok(r.n>100&&r.same.length===0,`over six months no two consecutive workdays share a jacket colour group (${r.same.length} of ${r.n}: ${r.same.slice(0,4).join(' ')})`);
     ok(r.shirtRep.length===0,`no shirt colour group (e.g. dark grey then light grey) on consecutive workdays, apart from white and light blue (${r.shirtRep.join(' ')})`);
     ok(r.tieSame.length===0&&r.tieGroupRep.length===0,`never the same tie, nor the same tie colour, on consecutive workdays (${r.tieSame.length} / ${r.tieGroupRep.length})`);
@@ -59,6 +59,9 @@ module.exports=async({ok,chromium,url})=>{
       return {n17:t('2026-11-17')===navyA.id,n18:t('2026-11-18')!==navyB.id&&t('2026-11-16')!==navyB.id,n22:pl2['2026-11-22'].top.primaryColor,n23:pl2['2026-11-23'].top.id===navyB.id}});
     ok(c.n17&&c.n18,'a navy suit left unworn for weeks still does not come right before or after the other navy');
     ok(c.n23&&c.n22!=='navy',`the day before a pinned navy day is not navy (${c.n22})`);
+    const dk=await p.evaluate(()=>{const J=c=>({id:'j'+c,type:'suit',primaryColor:c,pattern:'solid'}),P=c=>({g:jacketGroup(J(c)),c});
+      return {bc:colourRepeat(J('black'),[P('charcoal')]),bd:colourRepeat(J('darkgrey'),[P('black')]),gl:colourRepeat(J('lightgrey'),[P('darkgrey')]),bn:colourRepeat(J('black'),[P('navy')])}});
+    ok(dk.gl===40&&dk.bc>=20&&dk.bd>=20&&dk.bn===0,`dark grey then light grey is a repeat; black next to charcoal or dark grey nearly one; black next to navy is fine (${JSON.stringify(dk)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
