@@ -49,6 +49,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.pic&&/three-quarter view/.test(r.desc),'watches get product pictures');
     ok(r.refs==='data:image/jpeg;base64,AAA,data:image/jpeg;base64,BBB'&&/^the suit\|the wristwatch/.test(r.labels),'the watch picture goes to outfit photos as a labelled reference');
     ok(r.key,'changing the watch style or details gives a new outfit photo');
+    const tx=await p.evaluate(()=>outfitText({suitDay:false,top:{type:'blazer',primaryColor:'steelblue',pattern:'other'},shirt:{type:'shirt',primaryColor:'pink',pattern:'solid'},tie:{type:'tie',primaryColor:'navy',secondaryColor:'pink',pattern:'stripe'},
+      clip:{type:'tieclip',primaryColor:'grey',pattern:'solid',metal:'other'},links:{type:'cufflinks',primaryColor:'gold',pattern:'solid',metal:'gold'}}));
+    ok(!/\bother\b/.test(tx)&&/a steel blue blazer/.test(tx)&&/a gunmetal tie bar/.test(tx)&&/gold cufflinks/.test(tx),`photo prompts never say "other": an untagged pattern is left out, an "other" metal reads as gunmetal (${tx})`);
     // editor
     await p.evaluate(()=>{items=[{id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph'}];flt='all';editing='w1';show('wardrobe')});
     await p.fill('.wdetails input','blue mark at 45');await p.press('.wdetails input','Tab');
