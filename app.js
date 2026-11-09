@@ -538,9 +538,11 @@ async function fetchRemoteRender(o,day){
   }catch(e){console.warn('remote photo unavailable',e)}
 }
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
+/* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
+const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
 function outfitText(o){
-  const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${o.clip.metal||'silver'} tie bar`,
-    o.watch&&watchText(o.watch),o.links&&`${o.links.metal||'silver'} cufflinks`];
+  const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
+    o.watch&&watchText(o.watch),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
 /* draw the figure SVG onto a canvas and return a PNG data URL */
