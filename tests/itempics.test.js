@@ -81,8 +81,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const lay=await p.evaluate(()=>{const b=document.querySelector('.below').getBoundingClientRect(),sc=document.querySelector('.score').getBoundingClientRect(),t=[...document.querySelectorAll('.below .tile')],im=t.map(x=>x.querySelector('img').getBoundingClientRect());
       return {n:t.length,left:Math.round(b.left-sc.left),right:Math.round(b.right-sc.right),tileW:Math.round(t[0].getBoundingClientRect().width),imgW:Math.round(im[0].width),square:Math.abs(im[0].width-im[0].height)<1,
         expect:Math.round((b.width-24)/4-8),bg:t[0].style.background,centred:Math.abs((im[0].left+im[0].right)/2-(t[0].getBoundingClientRect().left+t[0].getBoundingClientRect().right)/2)<1}});
-    ok(lay.n===3&&lay.left===0&&lay.right===0&&lay.tileW>lay.imgW+20,`the three tiles fill the score card's width (${JSON.stringify(lay)})`);
-    ok(lay.square&&Math.abs(lay.imgW-lay.expect)<=1&&lay.centred,'pictures are not stretched: same size as four to a row, centred');
+    ok(lay.n===3&&lay.left===0&&lay.right===0&&lay.imgW>=lay.tileW,`the three tiles fill the score card's width (${JSON.stringify(lay)})`);
+    ok(lay.square&&lay.imgW>lay.expect*1.3&&lay.centred,'pictures fill their tile (square, not stretched, centred), much larger than four to a row');
     ok(/^rgb\(/.test(lay.bg),'the tile around a picture is filled with the photo\'s backdrop colour');
     // WebKit can read blank (transparent) pixels: the tile must keep the light default, never turn black
     const blank=await p.evaluate(async()=>{const real=CanvasRenderingContext2D.prototype.getImageData;CanvasRenderingContext2D.prototype.getImageData=function(x,y,w,h){return new ImageData(w,h)};
