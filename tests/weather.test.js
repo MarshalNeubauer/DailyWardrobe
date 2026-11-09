@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url})=>{
 
   // ---- formal day via the button ----
   await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday()});
-  await p.click('text=Make formal');await p.waitForTimeout(150);
+  await p.click('[aria-label="Make formal"]');await p.waitForTimeout(150);
   const f=await p.evaluate(()=>{const o=planFor()['2026-11-19'],r=rateOutfit(o);return {formal:o.formal,suitDay:o.suitDay,top:o.top.primaryColor,shirt:o.shirt.primaryColor,cuff:o.shirt.cuff,tie:o.tie.primaryColor+' '+o.tie.pattern,shoes:o.shoes.primaryColor+' '+o.shoes.leather,links:o.links&&o.links.metal,watch:o.watch&&o.watch.metal,formality:r.checks.find(c=>c.label==='Formality')}});
   ok(f.formal&&f.suitDay,'a blazer day upgraded to formal gets a suit');
   ok(['navy','charcoal'].includes(f.top),`formal suit is dark (${f.top})`);

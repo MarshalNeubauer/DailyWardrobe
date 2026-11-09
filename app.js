@@ -340,14 +340,11 @@ async function setVest(v){const k=key(sel),o=planFor()[k];if(!o||o.frozen)return
 function dayActions(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
   let h='';
-  if(past||isToday){
-    if(o.worn===true)h+=`<span class="chip on">✓ Worn</span><button onclick="setWorn(undefined)">Undo</button>`;
-    else if(o.worn===false)h+=`<span class="chip">Not worn</span><button onclick="setWorn(undefined)">Undo</button>`;
-    else h+=`<button class="pri" onclick="setWorn(true)">✓ Wore this</button><button onclick="setWorn(false)">Didn't wear</button>`;
-  }
-  if(!o.frozen)h+=o.formal?`<span class="chip on formal">Formal day</span><button onclick="setFormal(false)">Make regular</button>`:`<button onclick="setFormal(true)">Make formal</button>`;
-  if(!o.frozen&&(o.overrides||o.vestOverride))h+=`<button onclick="resetDay()">Reset changes</button>`;
-  return (h?`<div class="btns dayact">${h}</div>`:'')+(past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
+  // did you wear it: a two-way toggle; tapping the chosen side again clears it
+  if(past||isToday)h+=`<div class="seg" role="group" aria-label="Did you wear this outfit?"><button class="${o.worn===true?'on':''}" aria-pressed="${o.worn===true}" onclick="setWorn(${o.worn===true?'undefined':'true'})">✓ Wore this</button><button class="${o.worn===false?'on':''}" aria-pressed="${o.worn===false}" onclick="setWorn(${o.worn===false?'undefined':'false'})">Didn't wear</button></div>`;
+  if(!o.frozen)h+=`<button class="tog${o.formal?' on':''}" aria-pressed="${!!o.formal}" aria-label="${o.formal?'Make regular':'Make formal'}" onclick="setFormal(${!o.formal})">${o.formal?'Formal day':'Formal'}</button>`;
+  if(!o.frozen&&(o.overrides||o.vestOverride))h+=`<button class="reset" aria-label="Reset changes" title="Undo your changes to this day" onclick="resetDay()">↺</button>`;
+  return (h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
 
 /* outfit score card with an expandable breakdown */
@@ -370,32 +367,35 @@ const shortTop=o=>{const t=o.top;if(!t)return '';const p=t.pattern&&t.pattern!==
   const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' trousers':''}`};
 const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'check',foulard:'foulard',knit:'knit'})[p]||'';
 const shortRest=o=>[o.shirt&&colName(primaryCol(o.shirt))+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
-function dayCard(d,label){const o=isWorkday(d)&&planOn(d);
-  return `<button class="mday" onclick="openDay(${d.getTime()})">${o&&o.top?stackSVG(o,'big'):'<span class="stack big rest"></span>'}<span class="mtxt"><small>${label} · ${d.toLocaleDateString(undefined,{weekday:'short'})}</small><b>${o&&o.top?esc(shortTop(o)):isWorkday(d)?'No outfit yet':'Day off'}</b><span>${o&&o.top?esc(shortRest(o)):''}</span></span></button>`}
-function renderMonth(){
-  const p=planFor(),f=new Date(view.y,view.m,1),T=todayDate(),cells=[];
+/* the month plan unfolds in place from the box on Today (no separate page) */
+let monthOpen=false,monthPanel=null;
+const monthPlan=(y,m)=>{const keep=view;view={y,m};const p=planFor();view=keep;return p};
+function monthGridHtml(){
+  const {y,m}=monthPanel,p=monthPlan(y,m),f=new Date(y,m,1),T=todayDate(),cells=[];let n=0;
   for(let k=0;k<f.getDay();k++)cells.push('<span class="mc blank"></span>');
-  for(const d=new Date(f);d.getMonth()===view.m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),work=wd&&o&&o.top,isT=+d===+T,past=d<T;
+  for(const d=new Date(f);d.getMonth()===m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),work=wd&&o&&o.top,isT=+d===+T,past=d<T;
     const label=`${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}: ${work?`${shortTop(o)}, ${shortRest(o)}`:wd?'no outfit recorded':'day off'}`;
-    cells.push(`<button class="mc ${!wd?'rest':past?'worn':'planned'}${isT?' today':''}${k===key(sel)?' sel':''}" aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
-  const tm=nextWorkday(T),tLabel=+tm-+T>864e5?tm.toLocaleDateString(undefined,{weekday:'long'}):'Tomorrow';
-  $('#month').innerHTML=`<div class="mhead"><div><small class="eyebrow">Wear plan</small><h1>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h1></div>
-    <div class="mbtns"><button onclick="monthStep(-1)" aria-label="Previous month">‹</button><button onclick="monthStep(1)" aria-label="Next month">›</button></div></div>
+    cells.push(`<button class="mc ${!wd?'rest':past?'worn':'planned'}${isT?' today':''}${k===key(sel)?' sel':''}" style="--i:${n++}" aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
+  return `<div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3><div class="mbtns"><button onclick="monthStep(-1)" aria-label="Previous month">‹</button><button onclick="monthStep(1)" aria-label="Next month">›</button></div></div>
     <div class="mgrid mdow" aria-hidden="true">${['S','M','T','W','T','F','S'].map(x=>`<span>${x}</span>`).join('')}</div>
     <div class="mgrid">${cells.join('')}</div>
-    <div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div>
-    <section class="mcard" aria-label="Today and ${tLabel.toLowerCase()}">${dayCard(T,'Today')}<hr>${dayCard(tm,tLabel)}</section>`;
-  if(items.length)recordDays(p);
+    <div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div>`;
 }
-function monthStep(n){view.m+=n;if(view.m>11){view.m=0;view.y++}if(view.m<0){view.m=11;view.y--}renderMonth()}
-function openMonth(){view={y:sel.getFullYear(),m:sel.getMonth()};show('month');scrollTo(0,0)}
-function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};show('today');scrollTo(0,0)}
-/* the box on Today that opens the month view: the next few workdays as small stacks */
+function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
+  if(monthOpen){monthPanel={y:sel.getFullYear(),m:sel.getMonth()};$('#mpanel-in').innerHTML=monthGridHtml();box.classList.remove('instant');void box.offsetHeight}
+  box.classList.toggle('open',monthOpen);$('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
+  const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
+  if(monthOpen)setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),120)}
+function monthStep(n){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(el){el.innerHTML=monthGridHtml();$('#mbox').classList.add('instant')}}
+function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};monthOpen=false;renderToday();scrollTo({top:0,behavior:'smooth'})}
+/* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
 function monthLink(){
   const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(o&&o.top)days.push([new Date(d),o])}
   const f=new Date(view.y,view.m,1),n=Object.keys(planFor()).filter(k=>keyDate(k).getMonth()===view.m).length;
-  return `<button class="month-link" onclick="openMonth()" aria-label="Open the ${f.toLocaleDateString(undefined,{month:'long'})} wear plan"><span class="mlstrip">${days.map(([d,o])=>`<span class="mli"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o)}</span>`).join('')}</span>
-    <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${n} outfit${n===1?'':'s'} · see the month</small></span><span class="chev" aria-hidden="true">›</span></button>`;
+  if(monthOpen&&!monthPanel)monthPanel={y:view.y,m:view.m};
+  return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" onclick="toggleMonth()" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip">${days.map(([d,o])=>`<span class="mli"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o)}</span>`).join('')}</span>
+    <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${n} outfit${n===1?'':'s'} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in">${monthOpen?monthGridHtml():''}</div></div></section>`;
 }
 
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
@@ -405,13 +405,13 @@ const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shi
 function pieceCard(o){
   if(figSel==='vest'){if(!o.vest)return '';return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(o.top)}</span><div><small class="mut">Vest</small><b class="cap">Matching vest · ${desc(o.top)}</b></div>${o.frozen?'':`<button class="swap" onclick="setVest(false)">Leave off</button>`}</div>`}
   const i=o[figSel];if(!i)return '';
-  return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(i)}</span><div><small class="mut">${slotLabel(figSel,o)}</small><b class="cap">${desc(i)||nm(i)}</b></div>${o.frozen?'':`<button class="swap" onclick="swapSlot('${figSel}')">Swap</button>`}</div>`;
+  return `<div class="piece" id="piece"><span class="chip-sw">${itemPicHtml(i,swatchSVG(i))}</span><div><small class="mut">${slotLabel(figSel,o)}</small><b class="cap">${desc(i)||nm(i)}</b></div>${o.frozen?'':`<button class="swap" onclick="swapSlot('${figSel}')">Swap</button>`}</div>`;
 }
 function figureStage(o){
   const hs=FIG_PIECES.filter(([s])=>o[s]&&!(s==='clip'&&!o.tie)).map(([s,k])=>{const h=k==='vest'?{x:174,y:200}:FIG_HOTSPOTS[k];
     return `<button class="hot${figSel===s?' on':''}" style="left:${(h.x/390*100).toFixed(2)}%;top:${(h.y/400*100).toFixed(2)}%" aria-label="${slotLabel(s,o)}: ${s==='vest'?'matching vest':desc(o[s])||nm(o[s])}" aria-pressed="${figSel===s}" onclick="pickPiece('${s}')"></button>`}).join('');
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
-  const tiles=below.map(([s,i])=>`<button class="tile${s==='coat'?' coat-tile':''}"${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemThumb(i)}<small>${slotLabel(s,o)}</small></button>`).join('');
+  const tiles=below.map(([s,i])=>`<button class="tile${s==='coat'?' coat-tile':''}"${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`).join('');
   const r=renderFor(o),photo=r&&figView==='photo';
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   const ctl=`<div class="render-ctl">${r?`<div class="figmode small" role="group" aria-label="Picture"><button class="${photo?'':'on'}" aria-pressed="${!photo}" onclick="setFigView('art')">Illustration</button><button class="${photo?'on':''}" aria-pressed="${photo}" onclick="setFigView('photo')">Photo</button></div>`:''}`+
@@ -508,6 +508,41 @@ function lastWorn(o){
     if(x.top&&comboKey(x)===ck)best=d}
   return best;
 }
+/* ---- item pictures: product photos of shoes, belts, socks, trousers and coats for the tiles under the figure.
+   Generated once per look (OpenAI, through the worker), kept like outfit photos and shared between devices. ---- */
+const ITEM_PIC_TYPES=['shoes','belt','socks','pants','overcoat','raincoat'];
+const aAn=w=>(/^[aeiou]/i.test(w)?'an ':'a ')+w;
+function itemDesc(i){const c=colName(primaryCol(i)),lea=patLabel(i.leather||'calf'),pat=i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?patLabel(i.pattern)+' ':'';
+  switch(i.type){
+    case 'shoes':return `a pair of ${c} ${lea} leather cap-toe oxford dress shoes, side three-quarter view`;
+    case 'belt':return `${aAn(c)} ${lea} leather dress belt, loosely coiled, with a polished ${i.metal==='gold'?'gold':i.metal==='other'?'gunmetal':'silver'} buckle`;
+    case 'socks':return `a pair of ${c} ${pat}fine ribbed over-the-calf dress socks, laid flat side by side`;
+    case 'pants':return `a pair of ${c} ${pat}wool dress trousers, neatly folded`;
+    case 'overcoat':return `${aAn(c)} wool overcoat on an invisible mannequin`;
+    case 'raincoat':return `${aAn(c)} trench coat on an invisible mannequin`}
+  return ''}
+const itemKey=i=>'c'+fnv64('item|'+itemDesc(i));
+const itemPic=i=>i&&ITEM_PIC_TYPES.includes(i.type)&&renders[itemKey(i)]||null;
+const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
+async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
+  try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
+    await keepRender(k,{sig:'item',img:await shrinkUrl(j.img,400),model:j.model||'',t:j.t||Date.now()},false);if(!$('#today').hidden)renderToday()}catch(e){console.warn('item picture unavailable',e)}}
+async function renderItemPic(i){
+  const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
+  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i)})});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
+  await keepRender(itemKey(i),{sig:'item',img:await shrinkUrl(j.image,400),model:j.model||'',t:Date.now()},false);
+}
+const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type))return false;const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
+let itemBatch=false;
+function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
+  b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt and sock has a picture';b.disabled=!n}
+async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();if(!todo.length)return;
+  if(!confirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'} for your shoes, belts, socks, trousers and coats?\n\nAbout $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`))return;
+  itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='';
+  for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
+    try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Worker URL|OPENAI_API_KEY|forbidden/i.test(err))break}}
+  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${err})`:''}`;renderItemPicUI();if(!$('#today').hidden)renderToday()}
 /* ---- Settings: generate the month's missing photos in one go ---- */
 let batch=null;
 function batchCombos(){
@@ -637,8 +672,8 @@ ${q.type==='watch'?`<label>Dial ${S(COLOR_OPTS('watch'),watchOpts(q).dial,'dial'
 
 function show(t){
   closeSettings();
-  for(const s of['today','month','wardrobe','add']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t||(s==='today'&&t==='month'))}
-  const f={today:renderToday,month:renderMonth,wardrobe:renderWardrobe,add:renderAdd};if(f[t])f[t]();
+  for(const s of['today','wardrobe','add']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
+  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd};if(f[t])f[t]();
 }
 
 db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};show('today');window.appReady=true;loadWeather();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday()})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
@@ -655,7 +690,7 @@ const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
 async function saveUserSettings(){settings.updated=Date.now();await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
 function renderSettingsExtras(){
-  renderBatchUI();
+  renderBatchUI();renderItemPicUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}`:'No location set: outfits follow the calendar season.';

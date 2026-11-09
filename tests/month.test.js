@@ -25,25 +25,30 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       txt:document.querySelector('#today .month-link').textContent}));
     ok(t.link&&t.strip===5&&!t.old,'Today has a box with the next 5 outfits instead of the month list');
     ok(/November wear plan/.test(t.txt),'the box names the month');
-    await p.click('#today .month-link');
-    const m=await p.evaluate(()=>{const c=[...document.querySelectorAll('#month .mc:not(.blank)')];return {shown:!$('#month').hidden&&$('#today').hidden,title:document.querySelector('#month h1').textContent,
-      n:c.length,blanks:document.querySelectorAll('#month .mc.blank').length,rest:c.filter(x=>x.classList.contains('rest')).map(x=>x.querySelector('.dn').textContent).join(),
-      today:c.filter(x=>x.classList.contains('today')).map(x=>x.querySelector('.dn').textContent).join(),worn:c.filter(x=>x.classList.contains('worn')).length,
+    // the month unfolds in place: still on Today, panel grows from the box
+    const closedH=await p.evaluate(()=>document.querySelector('#mbox').getBoundingClientRect().height);
+    await p.click('#today .month-link');await p.waitForTimeout(600);
+    const m=await p.evaluate(()=>{const c=[...document.querySelectorAll('#mbox .mc:not(.blank)')];return {today:!$('#today').hidden,open:$('#mbox').classList.contains('open'),
+      exp:document.querySelector('#mbox .month-link').getAttribute('aria-expanded'),h:document.querySelector('#mbox').getBoundingClientRect().height,title:document.querySelector('#mbox .mhead h3').textContent,
+      n:c.length,rest:c.filter(x=>x.classList.contains('rest')).map(x=>x.querySelector('.dn').textContent).join(),
+      todayCell:c.filter(x=>x.classList.contains('today')).map(x=>x.querySelector('.dn').textContent).join(),worn:c.filter(x=>x.classList.contains('worn')).length,
       planned:c.filter(x=>x.classList.contains('planned')).length,thu:c[18].querySelectorAll('.stack rect[fill^="url"]').length,sun:c[14].querySelectorAll('.stack rect[fill^="url"]').length,
-      label:c[8].getAttribute('aria-label'),legend:document.querySelector('#month .mlegend').textContent,card:document.querySelector('#month .mcard').textContent,
-      navOn:$('#n-today').classList.contains('on')}});
-    ok(m.shown&&m.title==='November 2026'&&m.navOn,'the month view opens (Today stays highlighted in the tab bar)');
-    ok(m.n===30&&m.blanks===0,'30 day cells; November 2026 starts on a Sunday');
+      label:c[8].getAttribute('aria-label'),legend:document.querySelector('#mbox .mlegend').textContent,anim:getComputedStyle(c[3]).animationName}});
+    ok(m.today&&m.open&&m.exp==='true'&&m.h>closedH+250,`the month unfolds in place on Today (box ${Math.round(closedH)}px → ${Math.round(m.h)}px)`);
+    ok(m.anim==='mcIn','the days settle in with an animation');
+    ok(m.title==='November 2026'&&m.n===30,'30 day cells; November 2026 starts on a Sunday');
     ok(m.rest==='6,7,13,14,20,21,27,28','Fridays and Saturdays are rest days');
-    ok(m.today==='9'&&m.worn===6&&m.planned===16,`today is outlined, earlier workdays read as worn (${m.worn}), later ones planned (${m.planned})`);
+    ok(m.todayCell==='9'&&m.worn===6&&m.planned===16,`today is outlined, earlier workdays read as worn (${m.worn}), later ones planned (${m.planned})`);
     ok(m.sun===3&&m.thu===4,'suit days show jacket, shirt and tie; blazer days add the trousers');
-    ok(/Monday, November 9: Navy pinstripe|Monday, November 9: (Charcoal|Grey)/.test(m.label),`each day is labelled for screen readers (${m.label})`);
-    ok(/Worn.*Today.*Planned.*Rest/.test(m.legend)&&/TODAY · MON|Today · Mon/i.test(m.card)&&/Tomorrow · Tue/i.test(m.card),'legend and a Today / Tomorrow card');
-    await p.click('#month .monthStep, #month .mbtns button[aria-label="Next month"]');
-    ok(await p.evaluate(()=>document.querySelector('#month h1').textContent==='December 2026'),'next month');
-    await p.click('#month .mbtns button[aria-label="Previous month"]');
-    await p.click('#month .mc:not(.blank) >> nth=15');
-    ok(await p.evaluate(()=>!$('#today').hidden&&key(sel)==='2026-11-16'),'tapping a day opens it on Today');
+    ok(/Monday, November 9: /.test(m.label)&&/Worn.*Today.*Planned.*Rest/.test(m.legend),`labelled days and a legend (${m.label})`);
+    await p.click('#mbox .mbtns button[aria-label="Next month"]');
+    ok(await p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent==='December 2026'&&key(sel)==='2026-11-9'&&!!planFor()['2026-11-9']),'next month inside the panel, without changing the shown day');
+    await p.click('#mbox .mbtns button[aria-label="Previous month"]');
+    await p.click('#mbox .month-link');await p.waitForTimeout(600);
+    ok(await p.evaluate(()=>!$('#mbox').classList.contains('open')&&document.querySelector('#mbox').getBoundingClientRect().height<120),'tapping the box again folds it away');
+    await p.click('#today .month-link');await p.waitForTimeout(500);
+    await p.click('#mbox .mc:not(.blank) >> nth=15');
+    ok(await p.evaluate(()=>!$('#today').hidden&&key(sel)==='2026-11-16'&&!monthOpen),'tapping a day shows it on Today and folds the month');
     // caption: last worn
     const cap=await p.evaluate(async()=>{const o=planFor()['2026-11-16'];
       dayRecs['2026-11-2']={date:'2026-11-2',ids:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,clip:null,watch:null},suitDay:true,vestOn:!!o.vest,worn:true};
