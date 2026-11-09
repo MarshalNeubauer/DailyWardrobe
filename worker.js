@@ -274,8 +274,19 @@ async function handleRender(req, env, json) {
   if (text.length > 20e6) return json({ error: 'request too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
   if (body.mode === 'item') return renderItem(body, env, json);
+  if (body.mode === 'queue') return queueRender(body, env, json);
+  const r = await outfitPhoto(body, env);
+  if (!r.ok) return json({ error: r.error }, r.status);
+  // keep a copy per outfit combination so it is reused on any day and shown on every device (GET /render?key=...)
+  const id = renderId(body);
+  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(r.rec), renderTtl(id));
+  return json({ image: r.rec.img, model: r.rec.model });
+}
+/* one realistic outfit photo from the app's inputs (the rasterised illustration, item photos, outfit text) via OpenAI's image edit;
+   -> {ok, rec} or {ok:false, status, error, retry} (retry: worth trying again later: network, rate limit, OpenAI server error) */
+async function outfitPhoto(body, env) {
   const base = dataUrlToBlob(body.image);
-  if (!base) return json({ error: 'no illustration' }, 400);
+  if (!base) return { ok: false, status: 400, error: 'no illustration' };
   const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 6).map(dataUrlToBlob).filter(Boolean);
   const outfit = String(body.outfit || '').slice(0, 1500) || 'a suit, dress shirt and tie';
   const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
@@ -290,22 +301,62 @@ async function handleRender(req, env, json) {
   form.append('n', '1');
   let r;
   try { r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form }); }
-  catch (e) { return json({ error: 'Could not reach the OpenAI API: ' + String(e && e.message) }, 502); }
+  catch (e) { return { ok: false, status: 502, retry: true, error: 'Could not reach the OpenAI API: ' + String(e && e.message) }; }
   const out = await r.json().catch(() => null);
   if (!r.ok) {
     const msg = out && out.error && out.error.message || `HTTP ${r.status}`;
     const hint = r.status === 401 ? ' (check the OPENAI_API_KEY secret)' : /verif/i.test(msg) ? ' (verify your organization in the OpenAI dashboard: Settings, Organization, General)'
       : /billing|quota|credit/i.test(msg) ? ' (add credit in the OpenAI dashboard: Billing)' : /model/i.test(msg) ? ' (set OPENAI_IMAGE_MODEL to an image model your account can use)' : '';
-    return json({ error: `OpenAI: ${msg}${hint}` }, 502);
+    return { ok: false, status: 502, retry: r.status === 429 && !/quota|billing/i.test(msg) || r.status >= 500, error: `OpenAI: ${msg}${hint}` };
   }
   const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
-  if (!b64) return json({ error: 'OpenAI returned no image' }, 502);
+  if (!b64) return { ok: false, status: 502, retry: true, error: 'OpenAI returned no image' };
   console.log(`rendered by ${model}; usage ${JSON.stringify(out.usage || {})}`);
-  const rec = { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() };
-  // keep a copy per outfit combination so it is reused on any day and shown on every device (GET /render?key=...)
-  const id = renderId(body);
-  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(rec), renderTtl(id));
-  return json({ image: rec.img, model });
+  return { ok: true, rec: { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() } };
+}
+/* ---- background photos: the app uploads each outfit's inputs once (POST /render {mode:'queue'}); they wait in KV as job:<key>
+   and a Cloudflare Queue message ({key}) makes the photo later, so the app can be closed. GET /render-queue reports progress. ---- */
+const JOB_TTL = { expirationTtl: 3 * 86400 }, FAIL_TTL = { expirationTtl: 7 * 86400 };
+async function queueRender(body, env, json) {
+  if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'Background photos need the RENDER_QUEUE and WARDROBE bindings on the worker.', noQueue: true }, 501);
+  const key = String(body.key || '');
+  if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
+  if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
+  if (await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });
+  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 1500), sig: String(body.sig || ''), t: Date.now() };
+  await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
+  await env.WARDROBE.delete(`jobfail:${key}`);
+  await env.RENDER_QUEUE.send({ key });
+  return json({ queued: true });
+}
+async function queueStatus(req, env, json) {
+  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
+  const pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4));
+  const failed = [];
+  for (const k of (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) {
+    const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' });
+  }
+  return json({ pending, failed });
+}
+/* the queue consumer: one photo per message; temporary failures retry after a minute, others are recorded for the app */
+async function runRenderJob(msg, env) {
+  const key = String(msg.body && msg.body.key || '');
+  const job = COMBO_RE.test(key) ? await env.WARDROBE.get(`job:${key}`, 'json') : null;
+  if (!job) return msg.ack();
+  if (await env.WARDROBE.get(`render:${key}`)) { await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
+  if (!env.OPENAI_API_KEY) { await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
+  const r = await outfitPhoto(job, env);
+  if (r.ok) {
+    await env.WARDROBE.put(`render:${key}`, JSON.stringify(r.rec));
+    await env.WARDROBE.delete(`job:${key}`);
+    return msg.ack();
+  }
+  if (r.retry && (msg.attempts || 1) < 4) return msg.retry({ delaySeconds: 60 });
+  console.log(`photo ${key} failed: ${r.error}`);
+  await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: r.error, t: Date.now() }), FAIL_TTL);
+  await env.WARDROBE.delete(`job:${key}`);
+  msg.ack();
 }
 /* POST /render {mode:'item', item, key} -> a product photo of one accessory (shoes, belt, socks...), made from a short
    description with OpenAI's image generation, kept in KV under the item's look key like outfit photos */
@@ -399,6 +450,7 @@ export default {
     if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) return json({ error: 'forbidden origin' }, 403);
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
     if (path === '/sync') return handleSync(req, env, json);
+    if (path === '/render-queue' && req.method === 'GET') return queueStatus(req, env, json);
     if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
     if (path === '/tag-many' && req.method === 'POST') return handleTagMany(req, env, json);
     if (path === '/render' && req.method === 'POST') return handleRender(req, env, json);
@@ -456,5 +508,12 @@ export default {
     if (!m) return json({ error: 'no json in model output', detail: text.slice(0, 300) }, 502);
     try { return json({ ...JSON.parse(m[0]), model }); }
     catch { return json({ error: 'unparseable model output', detail: m[0].slice(0, 300) }, 502); }
+  },
+  // Cloudflare Queue consumer (queue "wardrobe-renders", see wrangler.toml): background outfit photos
+  async queue(batch, env) {
+    for (const msg of batch.messages) {
+      try { await runRenderJob(msg, env); }
+      catch (e) { console.log('photo job error', e && e.message); msg.retry({ delaySeconds: 60 }); }
+    }
   },
 };

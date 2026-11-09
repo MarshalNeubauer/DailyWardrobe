@@ -17,5 +17,16 @@ binding = "AI"
 binding = "WARDROBE"
 id = "WARDROBE_KV_ID"
 
+# background outfit photos: the app queues jobs, the consumer below makes one photo per message (created by the deploy workflow)
+[[queues.producers]]
+queue = "wardrobe-renders"
+binding = "RENDER_QUEUE"
+
+[[queues.consumers]]
+queue = "wardrobe-renders"
+max_batch_size = 1
+max_retries = 5
+max_concurrency = 2
+
 [observability]
 enabled = true

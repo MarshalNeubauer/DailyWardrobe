@@ -25,7 +25,7 @@ function openSettings(section){
   if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
   if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
   if(window.showSyncStatus)showSyncStatus();
-  renderSettingsExtras();
+  renderSettingsExtras();if(queuedKeys().length)checkQueue();
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
 }
@@ -561,28 +561,76 @@ let batch=null;
 function batchCombos(){
   const p=planFor(),seen=new Set(),todo=[];
   for(const [k,o] of Object.entries(p)){const d=keyDate(k);if(d.getMonth()!==view.m||d.getFullYear()!==view.y||!o.top||!o.shirt)continue;
-    const ck=comboKey(o);if(seen.has(ck))continue;seen.add(ck);if(!renders[ck])todo.push(o)}
+    const ck=comboKey(o);if(seen.has(ck))continue;seen.add(ck);if(!renders[ck]&&!queuedKeys().includes(ck))todo.push(o)}
   return todo;
 }
 const monthName=()=>new Date(view.y,view.m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
 function renderBatchUI(){const el=$('#batch-status'),btn=$('#batch-btn');if(!el||!btn)return;
   if(batch){el.textContent=batch.msg;btn.textContent='Stop';btn.onclick=()=>{batch.stop=true;batch.msg='Stopping after the current photo…';renderBatchUI()};return}
   const n=batchCombos().length;btn.textContent=n?`Generate ${n} photo${n===1?'':'s'} for ${monthName()}`:`All of ${monthName()} has photos`;btn.disabled=!n;btn.onclick=startBatch;
-  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet. Each costs about 7¢ (OpenAI); outfits that share a look share a photo.`:''}
+  const q=rqGet();if(q.keys.length&&!el.dataset.keep){el.textContent=q.msg||`Making ${q.keys.length} photo${q.keys.length===1?'':'s'} on your worker in the background.`;return}
+  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet. Each costs about 7¢ (OpenAI); outfits that share a look share a photo. They’re made on your worker, so you can close the app once they’re sent.`:''}
 async function startBatch(){
   if(batch)return;let todo=batchCombos();if(!todo.length){renderBatchUI();return}
-  if(!confirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\nAbout $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. Keep the app open: each takes 30–90 seconds.`))return;
+  if(!confirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\nAbout $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. They’re sent to your worker, which makes them in the background: once they’re sent you can close the app.`))return;
   batch={done:0,fail:0,n:todo.length,stop:false,msg:'Starting…'};renderBatchUI();
-  // a photo another device already made is fetched instead of generated
-  for(const o of todo){if(batch.stop)break;const ck=comboKey(o);
-    batch.msg=`Generating ${batch.done+batch.fail+1} of ${batch.n}…`;renderBatchUI();
-    try{if(!renders[ck]){renderTried.delete(ck);await fetchRemoteRender(o,'');if(!renders[ck])await renderCombo(o)}batch.done++}
+  let noQueue=false;const queued=[];
+  // a photo another device already made is fetched instead of generated; the rest are queued on the worker (or, on a
+  // worker without the queue, generated here one by one with the app open)
+  for(const o of todo){if(batch.stop)break;const ck=comboKey(o),i=batch.done+batch.fail+queued.length+1;
+    batch.msg=noQueue?`Generating ${i} of ${batch.n}… keep the app open.`:`Sending ${i} of ${batch.n}…`;renderBatchUI();
+    try{
+      if(!renders[ck]){renderTried.delete(ck);await fetchRemoteRender(o,'')}
+      if(renders[ck]){batch.done++;continue}
+      if(!noQueue){const q=await queueCombo(o);if(q==='queued'){queued.push(ck);continue}if(q==='done'){batch.done++;continue}noQueue=true;
+        batch.msg=`Generating ${i} of ${batch.n}… keep the app open (your worker has no background queue).`;renderBatchUI()}
+      await renderCombo(o);batch.done++}
     catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden/i.test(e.message)){batch.stop=true}}
   }
   const b=batch;batch=null;const el=$('#batch-status');
-  if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
+  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.failed=q.failed||[];
+    q.msg=`Sent ${queued.length} photo${queued.length===1?'':'s'} to your worker. They’re being made in the background (about a minute each); you can close the app. They appear as they finish.`;rqSet(q);startQueueWatch()}
+  else if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
+  if(queued.length&&b.fail&&el){el.dataset.keep=1;el.textContent=rqGet().msg+` ${b.fail} couldn’t be sent (${b.err}).`;setTimeout(()=>{delete el.dataset.keep},6000)}
   renderBatchUI();if(!$('#today').hidden)renderToday();
 }
+/* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
+async function queueCombo(o){
+  const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
+  const image=await figurePng(o),refs=['top','tie'].map(s=>o[s]&&o[s].photo).filter(Boolean),ck=comboKey(o);
+  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,outfit:outfitText(o),key:ck,sig:comboSig(o)})});
+  const j=await r.json().catch(()=>({}));
+  if(r.ok&&j.queued)return 'queued';
+  if(r.ok&&j.exists){renderTried.delete(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
+  if(r.ok&&j.image){await keepRender(ck,{sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()},false);return 'done'}   // an older worker made it right away
+  if(r.status===501||r.status===404||r.status===405)return 'noqueue';
+  throw new Error(j.error||`HTTP ${r.status}`)}
+const RQ='render_queue';
+const rqGet=()=>{try{const q=JSON.parse(localStorage.getItem(RQ)||'{}');return {keys:[],failed:[],...q}}catch{return {keys:[],failed:[]}}};
+const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):localStorage.removeItem(RQ)}catch{}};
+const queuedKeys=()=>rqGet().keys;
+/* ask the worker how the queued photos are doing and bring the finished ones home */
+let rqTimer=null,rqBusy=false;
+async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;
+  try{const r=await fetch(W.url+'-queue',{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
+    const pend=new Set(st.pending||[]),fail=Object.fromEntries((st.failed||[]).map(f=>[f.key,f.error]));let got=0,shown=false;
+    for(const k of [...q.keys]){
+      if(pend.has(k))continue;
+      if(fail[k]){q.failed.push(fail[k]);q.keys=q.keys.filter(x=>x!==k);continue}
+      const g=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=g.ok?await g.json().catch(()=>null):null;
+      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;q.keys=q.keys.filter(x=>x!==k);
+        const o=planFor()[key(sel)];if(o&&comboKey(o)===k)shown=true}
+      else if(!g.ok&&g.status!==404)continue;
+      else q.keys=q.keys.filter(x=>x!==k)}   // neither waiting, failed nor finished: lost (expired), stop waiting for it
+    const done=(q.total||0)-q.keys.length-q.failed.length;
+    q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
+      :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
+    if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}
+    rqSet(q);renderBatchUI();if(shown&&!$('#today').hidden)renderToday();
+  }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
+function startQueueWatch(){if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},45000)}
+function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&queuedKeys().length){checkQueue();startQueueWatch()}});
 function pickPiece(s){figSel=s;const o=planFor()[key(sel)];if(!o)return;
   document.querySelectorAll('#mannequin-container .hot').forEach(b=>{const on=b.getAttribute('onclick').includes(`'${s}'`);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   const w=$('#piece-wrap');if(w)w.innerHTML=pieceCard(o)}
@@ -706,7 +754,7 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd};if(f[t])f[t]();
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};show('today');window.appReady=true;loadWeather();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday()})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};show('today');window.appReady=true;loadWeather();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
 
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
