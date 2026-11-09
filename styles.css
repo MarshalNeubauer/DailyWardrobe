@@ -197,3 +197,19 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .fchips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
 .fchip{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:10px;padding:0 0 0 10px;font-size:14px;background:var(--bg)}
 .fchip button{border:0;background:none;color:var(--mut);font-size:18px;min-width:40px;min-height:40px;margin:0;padding:0}
+
+/* the day's pieces, folded: a strip of fabric chips; unfolds (same motion as the month box) into the list */
+.ibox{margin:8px 0 12px}
+.pstrip{display:grid;grid-template-columns:repeat(6,22px);gap:4px;flex:none}
+.pchip{width:22px;height:22px;border-radius:6px;overflow:hidden;border:1px solid #0003;display:block}.pchip svg{width:100%;height:100%;display:block}
+.pchip.vest{border-radius:6px 6px 11px 11px}
+.ibox .list{margin:0;padding:0 4px;background:none}
+.ibox.open:not(.instant) .list .row{animation:mcIn .34s cubic-bezier(.2,.8,.2,1) both}
+.ibox.open:not(.instant) .list .row:nth-child(2){animation-delay:30ms}.ibox.open:not(.instant) .list .row:nth-child(3){animation-delay:60ms}
+.ibox.open:not(.instant) .list .row:nth-child(4){animation-delay:90ms}.ibox.open:not(.instant) .list .row:nth-child(5){animation-delay:120ms}
+.ibox.open:not(.instant) .list .row:nth-child(n+6){animation-delay:150ms}
+@media (prefers-reduced-motion:reduce){.ibox.open .list .row{animation:none}}
+/* back to today, on the date bar */
+.day h2 .wx{display:flex;justify-content:center;align-items:center;gap:8px;min-height:30px;flex-wrap:wrap}
+.gotoday{margin:0;padding:3px 10px;min-height:28px;border-radius:14px;border:1px solid var(--acc);background:none;color:var(--acc);font-size:13px;font-weight:600;position:relative}
+.gotoday::after{content:"";position:absolute;inset:-8px -4px}

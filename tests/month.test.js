@@ -21,13 +21,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')});
-    const t=await p.evaluate(()=>({link:!!document.querySelector('#today .month-link'),strip:document.querySelectorAll('#today .month-link .mli').length,old:!!document.querySelector('#today .pl'),
-      txt:document.querySelector('#today .month-link').textContent}));
+    const t=await p.evaluate(()=>({link:!!document.querySelector('#mbox .month-link'),strip:document.querySelectorAll('#mbox .month-link .mli').length,old:!!document.querySelector('#today .pl'),
+      txt:document.querySelector('#mbox .month-link').textContent}));
     ok(t.link&&t.strip===5&&!t.old,'Today has a box with the next 5 outfits instead of the month list');
     ok(/November wear plan/.test(t.txt),'the box names the month');
     // the month unfolds in place: still on Today, panel grows from the box
     const closedH=await p.evaluate(()=>document.querySelector('#mbox').getBoundingClientRect().height);
-    await p.click('#today .month-link');await p.waitForTimeout(600);
+    await p.click('#mbox .month-link');await p.waitForTimeout(600);
     const m=await p.evaluate(()=>{const c=[...document.querySelectorAll('#mbox .mc:not(.blank)')];return {today:!$('#today').hidden,open:$('#mbox').classList.contains('open'),
       exp:document.querySelector('#mbox .month-link').getAttribute('aria-expanded'),h:document.querySelector('#mbox').getBoundingClientRect().height,title:document.querySelector('#mbox .mhead h3').textContent,
       n:c.length,rest:c.filter(x=>x.classList.contains('rest')).map(x=>x.querySelector('.dn').textContent).join(),
@@ -46,7 +46,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.click('#mbox .mbtns button[aria-label="Previous month"]');
     await p.click('#mbox .month-link');await p.waitForTimeout(600);
     ok(await p.evaluate(()=>!$('#mbox').classList.contains('open')&&document.querySelector('#mbox').getBoundingClientRect().height<120),'tapping the box again folds it away');
-    await p.click('#today .month-link');await p.waitForTimeout(500);
+    await p.click('#mbox .month-link');await p.waitForTimeout(500);
     await p.click('#mbox .mc:not(.blank) >> nth=15');
     ok(await p.evaluate(()=>!$('#today').hidden&&key(sel)==='2026-11-16'&&!monthOpen),'tapping a day shows it on Today and folds the month');
     // caption: last worn

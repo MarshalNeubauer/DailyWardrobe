@@ -18,6 +18,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   // swap one piece on a future day
   await p.evaluate(()=>{sel=new Date(2026,10,18);view={y:2026,m:10};renderToday()});await p.waitForTimeout(150);
   const before=await snap('2026-11-18');
+  await p.evaluate(()=>{listOpen=true;renderToday()});
   await p.click('.row button[aria-label="Swap tie"]');await p.waitForTimeout(150);
   const afterTie=await snap('2026-11-18');
   ok(afterTie.tie!==before.tie,'↻ on the tie gives a different tie');
