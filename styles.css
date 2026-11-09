@@ -185,7 +185,7 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .tog{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;padding:9px 14px;min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:500}
 .tog.on{background:#1b2a4a;border-color:#1b2a4a;color:#fff}
 .dayact .seg button,.dayact .tog{font-size:15px;padding:9px clamp(8px,2.6vw,14px)}
-@media (max-width:340px){.dayact{gap:6px}.dayact .seg button,.dayact .tog{font-size:14px;padding:9px 7px}}
+@media (max-width:340px){.dayact{gap:6px}.dayact .seg button,.dayact .tog{font-size:14px;padding:9px 7px}.ftag{font-size:12px;padding:5px 7px}.ftag .fx{display:none}}
 .reset{flex:0 0 40px;margin:0 0 0 auto;width:40px;height:40px;padding:0;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--mut);font-size:18px}
 
 .ftag{font-size:13px;font-weight:600;color:#fff;background:#1b2a4a;border-radius:8px;padding:5px 9px;white-space:nowrap}
