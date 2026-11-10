@@ -370,7 +370,7 @@ function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[
   if(opening){el.querySelector('.rpanel-in').innerHTML=rowPanel(o[s]);el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',opening);openRow=opening?s:null;const b=el.querySelector('.rowtap');b.setAttribute('aria-expanded',opening);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/(Show|Hide) the photo/,opening?'Hide the photo':'Show the photo'));
-  if(opening)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),150)}
+  if(opening)reveal(el)}
 
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
@@ -500,7 +500,7 @@ function dayActions(o){
 /* outfit score card with an expandable breakdown */
 function scoreCard(o){
   const r=rateOutfit(o),tone=r.score>=80?'good':r.score>=65?'ok':'low';
-  return `<details class="score ${tone}"><summary><span class="num">${r.score}</span><span class="lbl"><b>${r.label}</b><small>Outfit score · tap for why</small></span><span class="chev" aria-hidden="true">›</span></summary><ul>${r.checks.map(c=>`<li class="${c.pts===c.max?'ok':'miss'}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></details>`;
+  return `<details class="score ${tone}" ontoggle="if(this.open)reveal(this)"><summary><span class="num">${r.score}</span><span class="lbl"><b>${r.label}</b><small>Outfit score · tap for why</small></span><span class="chev" aria-hidden="true">›</span></summary><ul>${r.checks.map(c=>`<li class="${c.pts===c.max?'ok':'miss'}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></details>`;
 }
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
@@ -531,11 +531,26 @@ function monthGridHtml(){
     <div class="mgrid">${cells.join('')}</div>
     <div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div>`;
 }
+/* after a box unfolds: scroll down just far enough to show what opened, but never past the point where the tapped box
+   (top: the tapped element, e.g. the tile row for a tile's photo) reaches the top of the screen. Follows the box while it
+   grows, so the page moves with the unfolding; a touch or wheel by the user stops it. */
+let revealRun=0;
+function reveal(el,top){top=top||el;const run=++revealRun,t0=performance.now(),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);
+  const sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove();
+  const stop=()=>{revealRun++;off()},off=()=>{removeEventListener('touchstart',stop);removeEventListener('wheel',stop)};
+  addEventListener('touchstart',stop,{passive:true,once:true});addEventListener('wheel',stop,{passive:true,once:true});
+  const want=()=>{const nav=document.querySelector('body>nav'),bottom=(nav?nav.getBoundingClientRect().top:innerHeight)-12,
+      need=el.getBoundingClientRect().bottom-bottom,cap=top.getBoundingClientRect().top-(sat+8);return Math.max(0,Math.min(need,cap))};
+  const step=now=>{if(run!==revealRun)return;const d=want(),done=now-t0>(reduce?0:700);
+    if(reduce||done){if(d>.5)scrollBy(0,d);off();return}
+    if(d>.5)scrollBy(0,Math.max(1,d*.2));requestAnimationFrame(step)};
+  requestAnimationFrame(step)}
 function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
   if(monthOpen){monthPanel={y:sel.getFullYear(),m:sel.getMonth()};$('#mpanel-in').innerHTML=monthGridHtml();box.classList.remove('instant');void box.offsetHeight}
   box.classList.toggle('open',monthOpen);$('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
-  if(monthOpen)setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),120)}
+  if(monthOpen)reveal(box)}
 function monthStep(n){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(el){el.innerHTML=monthGridHtml();$('#mbox').classList.add('instant')}}
 function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};monthOpen=false;renderToday();scrollTo({top:0,behavior:'smooth'})}
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
@@ -830,7 +845,7 @@ function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||
   if(opening){const was=el.classList.contains('open');inn.innerHTML=rowPanel(o[s]);if(!was){el.classList.remove('instant');void el.offsetHeight}}
   else el.classList.remove('instant');
   el.classList.toggle('open',opening);
-  if(opening)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),150)}
+  if(opening)reveal(el,$('.below'))}
 /* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
 const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
 const todayBtn=()=>{const h=homeDay();if(key(sel)===key(h))return '';const isT=+h===+todayDate();
@@ -847,7 +862,7 @@ function piecesBox(o){
     <div class="mpanel" id="ipanel"><div class="mpanel-in"><div class="list">${slots(o)}</div></div></div></section>`}
 function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;box.classList.remove('instant');void box.offsetHeight;
   box.classList.toggle('open',listOpen);const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
-  if(listOpen)setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),120)}
+  if(listOpen)reveal(box)}
 function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
