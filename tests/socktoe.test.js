@@ -31,12 +31,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const a=await p.evaluate(async()=>{const s={id:'sk1',type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid',added:1},plain={id:'sk2',type:'socks',primaryColor:'black',pattern:'solid',added:1};
       const th=itemThumb(s,true),th0=itemThumb(plain,true);items=[s,plain];
       await renderItemPic(s);
-      return {d:itemDesc(s),d0:itemDesc(plain),desc:desc(s),desc0:desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(COLORS.lightgrey),toe0:/sock-toe/.test(th0),
+      return {d:itemDesc(s),d0:itemDesc(plain),desc:desc(s),desc0:desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(COLORS.lightgrey),toe0:/sock-toe/.test(th0),traced:th.includes(SOCK_D)&&/<clipPath id="[^"]+sk">/.test(th)&&/clip-path="url\(#[^)]+sk\)"/.test(th),
         keys:itemKey(s)!==itemKey(plain),form:editForm(s),form0:editForm({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});
     ok(/single black .*dress sock in side profile/.test(a.d)&&/light grey knitted toe cap/.test(a.d)&&/heel stays black/.test(a.d),`the picture description is one sock in profile with its toe cap (${a.d.slice(0,60)}…)`);
     ok(!/toe cap/.test(a.d0)&&/toe and heel the same colour/.test(a.d0)&&a.keys,'a plain sock has no toe cap, and gets its own picture');
     ok(a.desc==='black, light grey toe'&&a.desc0==='black',`the name says the toe colour (${a.desc})`);
     ok(a.toe&&!a.toe0,'the drawing shows the toe cap in its colour, and none on a plain sock');
+    ok(a.traced,'the sock is drawn from the traced catalogue outline, details clipped inside it');
     ok(/Toe cap <select/.test(a.form)&&!/Third colour/.test(a.form)&&/Secondary <select/.test(a.form0),'the editor calls a sock\'s secondary colour "Toe cap" and drops the third colour');
     const req=sent.find(b=>b.mode==='item');
     ok(req&&req.bg==='white'&&/toe cap/.test(req.item),'the app asks the worker for a sock picture on white');
