@@ -73,10 +73,17 @@ const isWorkday=d=>settings.workdays.includes(d.getDay());
 const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 /* forecast by date key: {tmax,tmin,pop,rain,code} in °C, filled from Open-Meteo by app.js */
 let weather={};
-/* the day's climate: from the forecast when there is one, otherwise from the calendar (hemisphere from the location) */
+/* the usual weather of each month at the location: 12 × {tmax, tmin, rainDays}, averaged from the last two years (null until
+   it is known); used for days beyond the forecast, so a hot or mild climate is not planned by a temperate calendar */
+let climate=null;
+/* the day's climate: from the forecast when there is one, otherwise from the location's usual weather for the month, and
+   failing that from the calendar (hemisphere from the location) */
 function dayClimate(d){
   const w=weather[key(d)];
   if(w){const t=w.tmax;return {wx:w,season:t>=24?'warm':t<=12?'cold':'mild',rain:(w.pop||0)>=40||(w.rain||0)>=1,cold:t<10,veryCold:t<4}}
+  // no forecast that far ahead: the month's usual weather at the location (see loadClimate in app.js), judged like a forecast
+  const n=climate&&climate[d.getMonth()];
+  if(n&&typeof n.tmax==='number'){const t=n.tmax;return {wx:null,norm:n,season:t>=24?'warm':t<=12?'cold':'mild',rain:false,cold:t<10,veryCold:t<4}}
   const south=settings.location&&settings.location.lat<0,m=(d.getMonth()+(south?6:0))%12;
   const season=[11,0,1].includes(m)?'cold':[5,6,7].includes(m)?'warm':'mild';
   return {wx:null,season,rain:false,cold:season==='cold',veryCold:false};
