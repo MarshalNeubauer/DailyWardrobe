@@ -270,7 +270,7 @@ async function save(i){
   await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
 }
 let editing=null;
-const E=(id,k,list,v)=>`<label>${k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
+const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Undo works until the editor is closed. ---- */
 let phEdit={id:null,undo:[],crop:null};
@@ -310,7 +310,7 @@ async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!
 function editForm(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
   const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)];
-  return `<div class="card" style="margin:8px 0 0;padding:8px">${photoTools(i)}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none')}${E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
+  return `<div class="card" style="margin:8px 0 0;padding:8px">${photoTools(i)}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patLabel(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
@@ -700,13 +700,14 @@ function itemDesc(i){const c=colName(primaryCol(i)),lea=patLabel(i.leather||'cal
   switch(i.type){
     case 'shoes':return `a pair of ${c} ${lea} leather cap-toe oxford dress shoes, side three-quarter view`;
     case 'belt':return `${aAn(c)} ${lea} leather dress belt, loosely coiled, with a polished ${i.metal==='gold'?'gold':i.metal==='other'?'gunmetal':'silver'} buckle`;
-    case 'socks':return `a pair of ${c} ${pat}fine ribbed over-the-calf dress socks, laid flat side by side`;
+    case 'socks':{const t=sockToe(i);return `a single ${c} ${pat}fine-knit mid-calf dress sock in side profile, as if on an invisible leg: the cuff at the top, the leg straight down, the heel at the lower left and the foot pointing to the right, smooth fine gauge with a soft sheen${t?`, with a ${colName(t)} knitted toe cap over the toes (only the toe, the heel stays ${c})`:', the toe and heel the same colour as the rest'}`}
     case 'pants':return `a pair of ${c} ${pat}${primaryCol(i)==='khaki'?'cotton twill':'wool'} dress trousers, neatly folded`;
     case 'overcoat':return `${aAn(c)} wool overcoat on an invisible mannequin`;
     case 'raincoat':return `${aAn(c)} trench coat on an invisible mannequin`;
     case 'watch':return `${watchText(i)}, three-quarter view, standing upright on a display cushion, the bracelet closed`}
   return ''}
 const itemKey=i=>'c'+fnv64('item|'+itemDesc(i));
+const itemBg=i=>i&&i.type==='socks'?'white':null;   // socks are shot on pure white, like a hosiery catalogue
 const itemPic=i=>i&&ITEM_PIC_TYPES.includes(i.type)&&renders[itemKey(i)]||null;
 /* the colour of a product photo's backdrop (the average of its outer edge), so a tile wider than the photo is filled to match;
    the picture's edges are feathered (CSS mask) so there is no visible seam */
@@ -725,7 +726,7 @@ async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTr
     await keepRender(k,{sig:'item',img:await shrinkUrl(j.img,400),model:j.model||'',t:j.t||Date.now()},false);if(!$('#today').hidden)renderToday();else if(!$('#wardrobe').hidden&&!phEdit.crop)renderWardrobe()}catch(e){console.warn('item picture unavailable',e)}}
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
-  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
+  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(itemBg(i)?{bg:itemBg(i)}:{}),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
   await keepRender(itemKey(i),{sig:'item',img:await shrinkUrl(j.image,400),model:j.model||'',t:Date.now()},false);
 }
@@ -999,8 +1000,8 @@ ${FABRIC.includes(q.type)&&q.big?`
 </div>`:''}
 <label>Item ${S(Object.entries(TYPES),q.type,'type',i)}</label>
 <label>Primary Colour ${S(COLOR_OPTS(q.type,q.primaryColor),q.primaryColor,'primaryColor',i)}</label>
-<label>Secondary Colour ${S([['none','None'], ...COLOR_OPTS(q.type,q.secondaryColor,true)],q.secondaryColor||'none','secondaryColor',i)}</label>
-<label>Tertiary Colour ${S([['none','None'], ...COLOR_OPTS(q.type,q.tertiaryColor,true)],q.tertiaryColor||'none','tertiaryColor',i)}</label>
+<label>${q.type==='socks'?'Toe cap':'Secondary Colour'} ${S([['none','None'], ...COLOR_OPTS(q.type,q.secondaryColor,true)],q.secondaryColor||'none','secondaryColor',i)}</label>
+${q.type==='socks'?'':`<label>Tertiary Colour ${S([['none','None'], ...COLOR_OPTS(q.type,q.tertiaryColor,true)],q.tertiaryColor||'none','tertiaryColor',i)}</label>`}
 ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c=>[c,patLabel(c)]),q.pattern,'pattern',i)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='no'?'no':'yes','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
