@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url})=>{
       ok(new Set(r.text).size===1&&new Set(r.slots).size===1,`${name}: their pictures share one width and their text starts in one column (${r.slots}; ${r.text})`);
       ok(r.gaps.every(g=>g===r.gaps[0])&&r.gaps[0]===12,`${name}: even spacing between the picture, the tiles and each card (${r.gaps.join(', ')})`);
       ok(r.tileH<r.tileW*1.1,`${name}: tiles are short (${Math.round(r.tileH)}px tall, ${Math.round(r.tileW)}px wide)`);
-      const o=await p.evaluate(async()=>{const d=document.querySelector('.score'),h=d.getBoundingClientRect().height;d.open=true;await new Promise(r=>setTimeout(r,400));
+      const o=await p.evaluate(async()=>{const d=document.querySelector('#sbox'),h=d.getBoundingClientRect().height;toggleScore();await new Promise(r=>setTimeout(r,700));
         return {grew:d.getBoundingClientRect().height>h+40,turned:getComputedStyle(d.querySelector('.chev')).transform!=='none'}});
       ok(o.grew&&o.turned,`${name}: the score card opens with its chevron turned, like the other cards`);
       // an unfolded tile photo is spaced like everything else; folded it takes no space

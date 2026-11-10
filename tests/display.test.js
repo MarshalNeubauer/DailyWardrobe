@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url})=>{
   const shirtSw=await p.evaluate(()=>{const r=[...document.querySelectorAll('#today .list .row')].find(r=>r.querySelector('.mut').textContent==='Shirt');return r.querySelector('.dot').innerHTML});
   ok(shirtSw.includes(await p.evaluate(c=>COLORS[c],shirt)),'the shirt swatch uses the shirt\'s tagged colour');
   // colour names with spaces everywhere they are shown
-  await p.click('.score summary');
+  await p.click('#sbox .month-link');
   const texts=await p.evaluate(()=>{const t=[document.querySelector('#today').innerText];
     sel=new Date(2026,10,16);items.push({id:'x1',type:'shoes',primaryColor:'brown',leather:'suede'});cache={};renderToday();t.push(document.querySelector('#today').innerText);
     show('add');addManual();t.push([...document.querySelectorAll('#queue select option')].map(o=>o.textContent).join(' '));
