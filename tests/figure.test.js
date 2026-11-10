@@ -1,6 +1,6 @@
 // The Today torso figure (figure.js from the design handoff): fabrics from tagged colours, tap targets, selected piece,
 // below-the-waist tiles, optional tie/clip/watch, unique ids, view toggle.
-module.exports=async({ok,chromium,url})=>{
+module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
@@ -25,15 +25,15 @@ module.exports=async({ok,chromium,url})=>{
   ok(!f.useInClip,'no <use> inside <clipPath> (WebKit-safe)');
   ok(f.shoulder&&f.collar,'the redrawn figure: sleeves set into the shoulder line, a shirt collar band around the neck');
   // a tile unfolds that item's photo in a box below the tiles; tapping it again, or the photo, folds it back
-  await p.click('.below .tile >> nth=1');await p.waitForTimeout(600);
+  await p.click('.below .tile >> nth=1');await settle(p,600);
   const bo=await p.evaluate(()=>{const b=$('#bbox'),o=planFor()[key(sel)],t=[...document.querySelectorAll('.below .tile')];
     return {open:b.classList.contains('open'),h:b.querySelector('.rpanel').getBoundingClientRect().height,exp:t.map(x=>x.getAttribute('aria-expanded')).join(),label:t[1].getAttribute('aria-label'),pic:!!b.querySelector('.rpic'),below:b.getBoundingClientRect().top>=document.querySelector('.below').getBoundingClientRect().bottom-1,shoes:o.shoes&&o.shoes.id,shown:belowOpen}});
   ok(bo.open&&bo.h>60&&bo.pic&&bo.below&&bo.shown==='shoes'&&bo.exp==='false,true,false'&&/Hide the photo/.test(bo.label),`tapping the shoes tile unfolds their photo below the tiles (${bo.h|0}px, ${bo.exp})`);
   await p.click('.below .tile >> nth=0');await p.waitForTimeout(100);
   ok(await p.evaluate(()=>belowOpen==='belt'&&$('#bbox').classList.contains('open')&&document.querySelectorAll('.below .tile[aria-expanded="true"]').length===1),'tapping another tile switches the box to that item');
-  await p.click('#bbox .rpanel-in');await p.waitForTimeout(600);
+  await p.click('#bbox .rpanel-in');await settle(p,600);
   ok(await p.evaluate(()=>!$('#bbox').classList.contains('open')&&belowOpen===null&&$('#bbox .rpanel').getBoundingClientRect().height<1),'tapping the photo folds it back');
-  await p.click('.below .tile >> nth=2');await p.click('.below .tile >> nth=2');await p.waitForTimeout(600);
+  await p.click('.below .tile >> nth=2');await p.click('.below .tile >> nth=2');await settle(p,600);
   ok(await p.evaluate(()=>!$('#bbox').classList.contains('open')&&$('#bbox .rpanel').getBoundingClientRect().height<1),'tapping the same tile again folds it back');
   ok(await p.evaluate(()=>!document.querySelector('#piece')),'there is no swap card under the score any more');
   ok((await p.$$eval('.below .tile small',e=>e.map(x=>x.textContent))).join()==='Belt,Shoes,Socks','below the waist: belt, shoes, socks on a suit day');

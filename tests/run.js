@@ -9,6 +9,15 @@ const server=http.createServer((q,r)=>{let f=path.join(ROOT,decodeURIComponent(q
 
 let failures=0,passes=0;
 const ok=(cond,msg)=>{if(cond){passes++;console.log('  ✓ '+msg)}else{failures++;console.log('  ✗ '+msg)}};
+/* wait for the page to come to rest after a tap: no finite animation or transition running and the scroll position unchanged
+   for 4 frames, instead of a fixed pause. `max` is the pause it replaced; it may wait up to twice that on a busy machine, so a
+   check never runs in the middle of an animation (DEBUG_SETTLE=1 logs each wait and what was still moving) */
+const settle=async(page,max=1000)=>{const t0=Date.now();
+  const r=await page.evaluate(max=>new Promise(res=>{let last=scrollY,still=0,n=0,why='';const t0=performance.now();
+    const live=()=>document.getAnimations().filter(a=>(a.playState==='running'||a.pending)&&a.effect&&a.effect.getComputedTiming().endTime!==Infinity);
+    const f=()=>{const L=live();if(scrollY===last&&!L.length)still++;else{still=0;why=L.map(a=>(a.animationName||a.transitionProperty)+'@'+(a.effect.target.id||String(a.effect.target.className).slice(0,20))).join(',')+(scrollY!==last?' scroll':'')}
+      last=scrollY;if(still>=4||performance.now()-t0>2*max)res(why);else requestAnimationFrame(f)};requestAnimationFrame(f)}),max).catch(()=>'');
+  if(process.env.DEBUG_SETTLE)console.log(`    settle ${Date.now()-t0}/${max} ${r}`)};
 const suites=[];const suite=(name,fn)=>suites.push([name,fn]);
 
 /* shared test wardrobes, built inside the page */
@@ -66,7 +75,7 @@ suite('swipe moves only the outfit, across viewports',async({browser,url})=>{
 suite('swipe edge cases and month crossing',async({page,ctx})=>{
   await page.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};sel=new Date(2026,10,7);view={y:2026,m:10};show('today')})()`);
   const cdp=await ctx.newCDPSession(page);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
-  const swipe=async(x0,x1)=>{await T('touchStart',x0,420);for(let k=1;k<=6;k++)await T('touchMove',x0+(x1-x0)*k/6,422);await T('touchEnd');await page.waitForTimeout(400)};
+  const swipe=async(x0,x1)=>{await T('touchStart',x0,420);for(let k=1;k<=6;k++)await T('touchMove',x0+(x1-x0)*k/6,422);await T('touchEnd');await settle(page,400)};
   const day=()=>page.evaluate(()=>document.querySelector('#today .day h2').textContent);
   await swipe(300,120);ok((await day()).startsWith('Sunday'),'swipe works from a non-workday');
   const d=await day();await swipe(10,250);ok(await day()===d,'swipes starting at the screen edge are ignored');
@@ -211,7 +220,7 @@ async function workerTests(){
       :typeof t[k]==='function'?t[k].bind(t):t[k]});
     return new Proxy(chromium,{get:(t,k)=>k==='launch'?async()=>b:t[k]})};
   for(const f of fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')&&(!ONLY||f.includes(ONLY))).sort()){
-    console.log('\n• '+f);const t0=Date.now(),chr=sharedChromium();try{await require(path.join(__dirname,f))({ok,url,chromium:chr,devices,WARDROBES,ROOT})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+    console.log('\n• '+f);const t0=Date.now(),chr=sharedChromium();try{await require(path.join(__dirname,f))({ok,url,chromium:chr,devices,WARDROBES,ROOT,settle})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
     finally{const b=await chr.launch();await b.close()}
     times.push([f,Date.now()-t0]);
   }

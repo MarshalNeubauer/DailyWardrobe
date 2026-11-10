@@ -182,6 +182,7 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 `npm test` (or `node tests/run.js`) serves the repo, drives it in headless Chromium and checks rendering, swipe/layout on phone and iPhone Duo viewports, the planner against an independent rule checklist, belts/leather/metals, the outfit score, photo-less adding, pattern detection, and `worker.js` with mocked bindings. GitHub Actions runs it on every PR (`.github/workflows/test.yml`). Add a check for every behaviour you change; extra suites can go in `tests/*.test.js`.
 
 - CI runs the tests on pull requests only (not again on the push to `main`, which re-tested code that already passed on its PR).
+- After a tap, tests wait with `settle(page, ms)` (passed to every test file) instead of a fixed `waitForTimeout`: it returns once no animation runs and the scroll is still, waiting up to 2×`ms` (`DEBUG_SETTLE=1` logs each wait)
 - `tests/run.js` gives every `tests/*.test.js` file one shared Chromium (a file's `chromium.launch()`/`close()` open and close only its own contexts) and prints the slowest files at the end.
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.

@@ -1,6 +1,6 @@
 // Wardrobe: swiping left/right moves between the type filters (All, Suit, Blazer, …) in chip order, skipping empty types.
 // Only the grid slides; the chips row keeps its own horizontal scroll; nothing happens while an item is open.
-module.exports=async({ok,chromium,url})=>{
+module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     for(const [name,[w,h]] of Object.entries({'iPhone 13':[390,844],'Duo unfolded':[626,890]})){
@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,url})=>{
       const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
       const y=await p.evaluate(()=>{const b=document.querySelector('#wardrobe .grid').getBoundingClientRect();return Math.round(b.y+40)});
       let mid=null;
-      const swipe=async(x0,x1,yy=y,probe)=>{await T('touchStart',x0,yy);for(let k=1;k<=6;k++){await T('touchMove',x0+(x1-x0)*k/6,yy+2);await p.waitForTimeout(16);if(probe&&k===5)mid=await probe()}await T('touchEnd');await p.waitForTimeout(450)};
+      const swipe=async(x0,x1,yy=y,probe)=>{await T('touchStart',x0,yy);for(let k=1;k<=6;k++){await T('touchMove',x0+(x1-x0)*k/6,yy+2);await p.waitForTimeout(16);if(probe&&k===5)mid=await probe()}await T('touchEnd');await settle(p,450)};
       const state=()=>p.evaluate(()=>({flt,on:document.querySelector('#wardrobe .chip.on').textContent,n:document.querySelectorAll('#wardrobe .grid > .gi').length,
         chips:Math.round(document.querySelector('#wardrobe .chips').getBoundingClientRect().y),slide:(document.querySelector('#wslide')||{}).style?.transform||'',
         overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}));
@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url})=>{
       await p.evaluate(()=>{flt='all';renderWardrobe()});await swipe(80,300);s=await state();ok(s.flt==='all'&&s.slide.includes('translateX(0'),`${name}: All is the first; a swipe right springs back`);
       await swipe(10,250);s=await state();ok(s.flt==='all',`${name}: swipes from the screen edge are ignored`);
       const cy=s0.chips+10;await swipe(w-80,w-300,cy);s=await state();ok(s.flt==='all',`${name}: dragging the chips row scrolls it instead of changing type`);
-      await p.evaluate(()=>openItem('s1'));await p.waitForTimeout(400);
+      await p.evaluate(()=>openItem('s1'));await settle(p,400);
       const oy=await p.evaluate(()=>Math.round(document.querySelector('#gi-s1').getBoundingClientRect().y+20));
       await swipe(w-80,w-300,oy);s=await state();ok(s.flt==='all'&&await p.evaluate(()=>editing==='s1'),`${name}: no type change while an item is open`);
       await p.evaluate(()=>{editing=null;flt='all';renderWardrobe();document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}))});
