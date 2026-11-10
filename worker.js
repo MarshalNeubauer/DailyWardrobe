@@ -11,6 +11,7 @@
 //   OPENAI_API_KEY  secret; enables POST /render (the "realistic photo" button). Requires APP_TOKEN.
 //   OPENAI_IMAGE_MODEL    optional, defaults to gpt-image-2
 //   OPENAI_IMAGE_QUALITY  optional: low, medium (default) or high; an outfit request may ask for its own with body.quality
+//                         (and its own body.model, e.g. gpt-image-2.6-sunburst, and body.complexity for GPT Image 2.6)
 //   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
 //
@@ -290,13 +291,15 @@ async function handleRender(req, env, json) {
 }
 /* one realistic outfit photo from the app's inputs (the rasterised illustration, item photos, outfit text) via OpenAI's image edit;
    -> {ok, rec} or {ok:false, status, error, retry} (retry: worth trying again later: network, rate limit, OpenAI server error) */
-const QUALITIES = ['low', 'medium', 'high'];
+const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max'];   // xhigh and max: GPT Image 2.5 and later
+/* a request may name its own image model (to try a newer one under a test key) and, for GPT Image 2.6, a complexity */
+const IMG_MODEL_RE = /^gpt-image-[a-z0-9.-]{1,40}$/, COMPLEXITIES = ['low', 'medium', 'high'];
 async function outfitPhoto(body, env) {
   const base = dataUrlToBlob(body.image);
   if (!base) return { ok: false, status: 400, error: 'no illustration' };
   const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 6).map(dataUrlToBlob).filter(Boolean);
   const outfit = String(body.outfit || '').slice(0, 2500) || 'a suit, dress shirt and tie';
-  const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
+  const model = IMG_MODEL_RE.test(String(body.model || '')) ? body.model : env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   const form = new FormData();
   form.append('model', model);
   const labels = (Array.isArray(body.labels) ? body.labels : []).slice(0, refs.length).map(l => String(l).replace(/[^\w ,.:()'-]/g, '').slice(0, 160));
@@ -308,6 +311,7 @@ async function outfitPhoto(body, env) {
   refs.forEach((b, i) => form.append('image[]', b, `item-${i + 1}.${b.type.split('/')[1]}`));
   form.append('size', '1024x1024');
   form.append('quality', QUALITIES.includes(body.quality) ? body.quality : env.OPENAI_IMAGE_QUALITY || 'medium');
+  if (COMPLEXITIES.includes(body.complexity)) form.append('complexity', body.complexity);
   form.append('output_format', 'jpeg');
   form.append('n', '1');
   let r;
@@ -334,7 +338,8 @@ async function queueRender(body, env, json) {
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
   if (await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });
-  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined, t: Date.now() };
+  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
+    model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, t: Date.now() };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
   await env.RENDER_QUEUE.send({ key });
