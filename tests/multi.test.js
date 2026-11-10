@@ -38,11 +38,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     reply=claude(shirtItems);
     await p.evaluate(()=>{items=[];show('add')});
-    ok(await p.isVisible('#multi-items'),'Add has a "several items" option');
-    await p.check('#multi-items');
+    ok(await p.isVisible('#add-group')&&await p.isVisible('#add-one'),'Add asks for one item or several items in one photo');
     const rail=await p.evaluate(async S=>{const c=document.createElement('canvas');c.width=1100;c.height=600;const x=c.getContext('2d');
       S.forEach(([, hex],k)=>{x.fillStyle=hex;x.fillRect(k*100,0,100,600)});const b=await new Promise(r=>c.toBlob(r,'image/png'));
-      await addFiles([new File([b],'rail.png',{type:'image/png'})]);
+      await addFiles([new File([b],'rail.png',{type:'image/png'})],true);
       const avg=src=>{const im=new Image();return new Promise(r=>{im.onload=()=>{const k=document.createElement('canvas');k.width=k.height=8;const g=k.getContext('2d');g.drawImage(im,im.width*.3,im.height*.3,im.width*.4,im.height*.4,0,0,8,8);
         const d=g.getImageData(0,0,8,8).data;let R=0,G=0,B=0;for(let i=0;i<d.length;i+=4){R+=d[i];G+=d[i+1];B+=d[i+2]}r([R,G,B].map(v=>Math.round(v/64)))};im.src=src})};
       const crops=await Promise.all(queue.map(q=>avg(q.photo)));
@@ -64,7 +63,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     reply=claude([T('suit','navy','pinstripe',{x:10,y:20,w:230,h:940},{secondaryColor:'white'}),T('suit','charcoal','solid',{x:250,y:20,w:230,h:940}),
       T('blazer','navy','solid',{x:490,y:20,w:230,h:600},{confidence:'medium'}),T('pants','grey','solid',{x:730,y:300,w:250,h:660}),T('pants','lavender','solid',{x:730,y:960,w:250,h:30},{confidence:'low'})]);
     const mixed=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=800;c.height=600;c.getContext('2d').fillRect(0,0,800,600);const b=await new Promise(r=>c.toBlob(r,'image/png'));
-      await addFiles([new File([b],'rail.png',{type:'image/png'})]);
+      await addFiles([new File([b],'rail.png',{type:'image/png'})],true);
       const forms=[...document.querySelectorAll('#queue .card')].map(cd=>[...cd.querySelectorAll('select')].map(s=>s.value).join('/'));
       return {cards:queue.map(q=>q.type+':'+q.primaryColor+':'+q.pattern+':'+(q.secondaryColor||'')).join(','),status:document.querySelector('#multi-status').textContent,forms,
         vestOpt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='Matching vest')),
@@ -79,13 +78,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(s2.n===15&&s2.suits==='true,true','saved suits have their matching vest by default');
     // errors
     reply=()=>[200,{model:'m',stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify({items:[]})}]}];
-    await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})])});
+    await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})],true)});
     ok(/No clothing items were found/.test(await p.textContent('#multi-status')),'a photo with nothing found says so');
     await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',r=>r.fulfill({status:405,contentType:'application/json',body:'{"error":"method not allowed"}'}));
-    await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})])});
+    await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})],true)});
     ok(/needs the latest worker\.js/.test(await p.textContent('#multi-status')),'an old worker is explained');
-    await p.uncheck('#multi-items');
-    ok(await p.evaluate(()=>document.querySelector('#multi-status').textContent===''),'turning the option off goes back to one item per photo');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

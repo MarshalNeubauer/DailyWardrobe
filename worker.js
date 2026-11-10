@@ -300,7 +300,7 @@ const IMG_MODEL_RE = /^gpt-image-[a-z0-9.-]{1,40}$/, COMPLEXITIES = ['low', 'med
 async function outfitPhoto(body, env) {
   const base = dataUrlToBlob(body.image);
   if (!base) return { ok: false, status: 400, error: 'no illustration' };
-  const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 6).map(dataUrlToBlob).filter(Boolean);
+  const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 8).map(dataUrlToBlob).filter(Boolean);
   const outfit = String(body.outfit || '').slice(0, 2500) || 'a suit, dress shirt and tie';
   const model = IMG_MODEL_RE.test(String(body.model || '')) ? body.model : env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   const form = new FormData();
@@ -341,7 +341,7 @@ async function queueRender(body, env, json) {
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
   if (await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });
-  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
+  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 8), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 8), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
     model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, t: Date.now() };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
