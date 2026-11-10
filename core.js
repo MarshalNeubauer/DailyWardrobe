@@ -69,7 +69,17 @@ let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestM
    formal days), 'always' (every suit day) or 'never'; a day can override it. A vest means no tie clip. */
 const VESTS=[['yes','Matching vest'],['no','No vest']],VEST_MODES=[['auto','Suit days, except hot ones'],['always','Every suit day'],['never','Never']];
 const hasVest=i=>!!i&&i.type==='suit'&&i.vest!=='no';
-const isWorkday=d=>settings.workdays.includes(d.getDay());
+/* days off: the chosen country's public holidays (settings.holidays: {country, list:[{d:'2026-12-25',n:'Christmas Day'}],
+   skip:[dates the user works anyway]}) and the user's own days off (settings.daysOff: [{d, n}]). A day off is planned like
+   a weekend: no outfit, and it does not count as worn. offName(d) -> the day's name, or '' on an ordinary day. */
+const isoKey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+let offMemo=null;
+function offDays(){const h=settings.holidays,o=settings.daysOff;if(offMemo&&offMemo.h===h&&offMemo.o===o)return offMemo.map;
+  const map={},skip=new Set(h&&h.skip||[]);for(const x of h&&h.list||[])if(x&&x.d&&!skip.has(x.d))map[x.d]=map[x.d]?map[x.d]+', '+x.n:x.n||'Public holiday';
+  for(const x of o||[])if(x&&x.d)map[x.d]=x.n||map[x.d]||'Day off';
+  offMemo={h,o,map};return map}
+const offName=d=>offDays()[isoKey(d)]||'';
+const isWorkday=d=>settings.workdays.includes(d.getDay())&&!offName(d);
 const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 /* forecast by date key: {tmax,tmin,pop,rain,code} in °C, filled from Open-Meteo by app.js */
 let weather={};
