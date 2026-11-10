@@ -29,7 +29,7 @@ module.exports=async({ok,chromium,url})=>{
   const txt=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
     items=[I('suit','slate'),I('suit','deepblue'),I('suit','midgrey'),I('shirt','cream'),I('shirt','steelblue'),I('shirt','lightblue'),I('tie','wine'),I('tie','darknavy'),
       I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('shoes','wine',{leather:'calf'}),I('belt','burgundy',{leather:'calf',metal:'silver'}),I('socks','darknavy')];
-    dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');document.querySelector('.score summary')?.click();
+    dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');document.querySelector('#sbox .month-link')?.click();
     const t=[document.querySelector('#today').innerText];show('wardrobe');t.push(document.querySelector('#wardrobe').innerText);return t.join('\n')});
   ok(!/\b(darknavy|steelblue|deepblue|midgrey)\b/.test(txt),'no run-together colour keys on Today or in the wardrobe');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
