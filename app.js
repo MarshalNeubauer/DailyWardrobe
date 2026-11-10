@@ -717,8 +717,8 @@ const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
 /* a striped or checked shirt shows in the photo (a plain or finely woven one counts by its colour alone) */
 const shirtPatterned=i=>!!i&&[...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern));
 function outfitText(o){
-  const pt=i=>i&&i.patternText?` (${i.patternText.replace(/\.$/,'')})`:'';   // Claude's description of a striped or checked cloth
-  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top)}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt)}`:`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot)} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie)}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
+  const pt=(i,role)=>{const t=patternPrompt(i,role);return t?` (${t})`:''};   // the pattern measured and described (tagging.js)
+  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top,'top')}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt,'shirt')}`:`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot,'bot')} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie,'tie')}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
     o.watch&&watchText(o.watch),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
@@ -743,7 +743,7 @@ async function renderCombo(o){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
   if(!w||!tok)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
   const image=await figurePng(o);
-  const {refs,labels}=outfitRefs(o);
+  const {refs,labels}=await outfitRefsFull(o);
   const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,labels,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o),...(o.top?{}:{nojacket:true})})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error((r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.error||`HTTP ${r.status}`));
@@ -870,7 +870,7 @@ async function startBatch(){
 /* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
 async function queueCombo(o){
   const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
-  const image=await figurePng(o),{refs,labels}=outfitRefs(o),ck=comboKey(o);
+  const image=await figurePng(o),{refs,labels}=await outfitRefsFull(o),ck=comboKey(o);
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o),...(o.top?{}:{nojacket:true})})});
   const j=await r.json().catch(()=>({}));
   if(r.ok&&j.queued)return 'queued';
