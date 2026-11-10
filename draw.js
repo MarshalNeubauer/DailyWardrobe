@@ -158,7 +158,7 @@ function drawOxfordSide(item,P){
 }
 
 /* dress sock, side view: welt, ribbed leg, reinforced heel and toe; box ~0..40 x 0..70 */
-function drawSock(color,P){
+function drawSock(color,P,toe){
   const d='M4,0 L20,0 L20,44 C20,50 23,53 29,55 L33,56.5 C39.5,58.5 40.5,68 32,69 L11,69 C3,69 1,63 4,56 Z';
   const ink=lum(color)>.55?'#000':'#fff';let ribs='';for(let x=6;x<19;x+=1.6)ribs+=`M${x.toFixed(1)},7 L${x.toFixed(1)},46 `;
   return `<defs><linearGradient id="${P}sh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".25"/><stop offset=".4" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>`+
@@ -168,7 +168,9 @@ function drawSock(color,P){
     `<path d="M4,0 L20,0 L20,6 L4,6 Z" fill="#000" opacity=".1"/><path d="M4,6 L20,6" stroke="${ink}" stroke-opacity=".2" stroke-width=".5"/>`+
     `<path d="M4,53 C1.5,61 4,68.5 11,69 L14,69 C9.5,66 8.5,59 9.6,53 Z" fill="#000" opacity=".14"/>`+
     `<path d="M33,56.5 C39.5,58.5 40.5,68 32,69 L29,69 C33.5,66 33.5,59 30,55.6 Z" fill="#000" opacity=".14"/>`+
-    `<path d="${d}" fill="url(#${P}sh)"/>`;
+    `<path d="${d}" fill="url(#${P}sh)"/>`+
+    (toe?`<path class="sock-toe" d="M30.5,55.8 L33,56.5 C39.5,58.5 40.5,68 32,69 L28,69 C30.6,65.5 31.6,60.5 30.5,55.8 Z" fill="${toe}" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`+
+      `<path d="M36,58 C40,61 39.8,67.5 32,69 L30.5,69 C35,67 36.5,62 36,58 Z" fill="#000" opacity=".12"/>`:'');
 }
 
 /* wristwatch seen from above, centred on 0,0; case radius ~15, bracelet to about +/-49.
@@ -298,7 +300,7 @@ function itemThumb(i,full){
     g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`;
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawOxfordSide(i,P)}</g>`;
-  else if(i.type==='socks')g=`<g transform="translate(28 13) scale(1.05)">${drawSock(colOf(i),P)}</g>`;
+  else if(i.type==='socks')g=`<g transform="translate(28 13) scale(1.05)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
   else if(i.type==='belt')g=`<g transform="translate(50 50) scale(1.42)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat'||i.type==='raincoat'){const c=colOf(i),e=mix(c,'#000',.35),rain=i.type==='raincoat';
     g=`<path d="M38,14 L50,20 L62,14 L78,22 L84,90 L16,90 L22,22 Z" fill="${c}" stroke="${e}" stroke-width=".8"/><path d="M38,14 L50,40 L62,14" fill="none" stroke="${e}" stroke-width=".8"/>`+

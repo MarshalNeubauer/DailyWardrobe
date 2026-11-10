@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       settings.workdays=[0,1,2,3,4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')});
     const d=await p.evaluate(()=>({desc:items.filter(i=>ITEM_PIC_TYPES.includes(i.type)).map(itemDesc),same:itemKey(items[6])===itemKey(items[8]),diff:itemKey(items[4])!==itemKey(items[5]),missing:missingItemPics().length,
       drawn:document.querySelectorAll('.below .tile .item-pic').length}));
-    ok(/oxblood cordovan leather cap-toe oxford/.test(d.desc[1])&&/black calf leather dress belt.*silver buckle/.test(d.desc[2])&&/charcoal fine ribbed over-the-calf dress socks/.test(d.desc[5]),'each item is described from its tags (colour, leather, buckle metal)');
+    ok(/oxblood cordovan leather cap-toe oxford/.test(d.desc[1])&&/black calf leather dress belt.*silver buckle/.test(d.desc[2])&&/single charcoal fine-knit mid-calf dress sock in side profile/.test(d.desc[5]),'each item is described from its tags (colour, leather, buckle metal)');
     ok(d.same&&d.diff&&d.missing===5,'identical items share a picture (5 distinct of 6)');
     ok(d.drawn===0,'without pictures the tiles keep their drawings');
     await p.evaluate(()=>openSettings());

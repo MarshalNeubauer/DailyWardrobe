@@ -118,8 +118,11 @@ const prettyCols=t=>String(t??'').replace(COLOR_NAME_RE,m=>COLOR_NAMES[m]);
 /* the dropdown for a type; a colour an existing item already has is always kept in its own list */
 const COLOR_OPTS=(type,cur,accent)=>{const l=colsFor(type,accent);return (cur&&COLORS[cur]&&!l.includes(cur)?[...l,cur]:l).map(c=>[c,colName(c)])},
   DIAL_OPTS=cur=>(cur&&COLORS[cur]&&!DIAL_COLS.includes(cur)?[...DIAL_COLS,cur]:DIAL_COLS).map(c=>[c,colName(c)]);
+/* socks: the secondary colour is a contrasting toe cap, not a pattern colour */
+const sockToe=i=>i&&i.type==='socks'&&i.secondaryColor&&i.secondaryColor!=='none'&&COLORS[i.secondaryColor]&&i.secondaryColor!==primaryCol(i)?i.secondaryColor:null;
 const colorDesc = i => {
   if(!i) return '';
+  if(i.type==='socks')return colName(primaryCol(i))+(sockToe(i)?`, ${colName(sockToe(i)).toLowerCase()} toe`:'');
   let cols=[primaryCol(i)];
   if(i.secondaryColor&&i.secondaryColor!=='none') cols.push(i.secondaryColor);
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
