@@ -114,7 +114,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
   - Wardrobe (an opened item takes the full width of its row from where it was, so the tapped box stays put; its row-mates slide under it and a blank `.gi-gap` keeps later rows; tapping the open photo/swatch, Close or Done folds it back; `openItem`/`closeItem`/`flipWardrobe`, FLIP animations; swiping the grid or ←/→ steps through the type filters in chip order, skipping empty types, not while an item is open: `stepType`/`wardTypes`), Add
 - product pictures for shoes/belts/socks/pants/coats/watches:
   - `itemDesc()`
-  - socks are one sock in side profile on pure white (`itemBg()` sends `bg:'white'`, the worker's `ITEM_BG`)
+  - socks are one sock in side profile on the same warm grey as every other item (the worker's `ITEM_BG`; it ignores an old app's `bg:'white'`)
+  - product photos kept on a white backdrop are toned down to `PIC_BG` once in the app (`greyBackdrop`/`fixItemBackdrops`, flag `grey` on the render)
   - a sock's `secondaryColor` is its toe cap colour (`sockToe()` in core.js: the tagger is told so, `drawSock` draws it (the sock outline `SOCK_D` is traced from a catalogue photo, a 60×72 box; details are clipped inside it), `desc` names it, the editor labels it "Toe cap"; the planner ignores it)
   - made from the item's own photo by image edit when it has one, saved as `render:c<16 hex>` of the description
   - Settings button generates the missing ones
