@@ -25,7 +25,7 @@ async function applyMerged(m,local){
     await atomic('days',d.date,cur=>!cur||(cur.updated||0)<(d.updated||0)?{put:d}:null)}
   if(m.settings){const cs=await metaGet('settings');if(!cs||(cs.updated||0)<=(m.settings.updated||0))await metaPut('settings',m.settings)}
   const now=await localState();
-  if(stateSig(now)!==stateSig(local)){items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);const v=['today','wardrobe','add'].find(t=>!$('#'+t).hidden);if(v&&v!=='add')show(v)}
+  if(stateSig(now)!==stateSig(local)){items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);const v=['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden);if(v&&v!=='add')show(v)}
   return now;
 }
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
