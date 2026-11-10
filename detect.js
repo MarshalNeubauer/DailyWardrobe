@@ -36,7 +36,8 @@ function period(prof,minLag=6){
   const maxLag=Math.floor(P.length*.67),r=[];for(let l=0;l<=maxLag;l++)r.push(l<minLag-1?-1:ac(l));
   let best=-1,T=0;for(let l=minLag;l<maxLag;l++)if(r[l]>r[l-1]&&r[l]>=r[l+1]&&r[l]>best){best=r[l];T=l}
   if(!T||best<.35)return null;
-  const half=Math.round(T/2);if(half>=minLag&&r[half]>.9*best&&r[half]>=r[half-1]&&r[half]>=r[half+1])T=half;
+  // a clean pattern matches itself almost as well at two or three repeats: take the shortest whole fraction that matches nearly as well
+  for(let k=6;k>=2;k--){const f=Math.round(T/k);if(f<minLag)continue;let m=f;for(let d=-2;d<=2;d++)if(r[f+d]>r[m])m=f+d;if(r[m]>.9*best&&r[m]>=r[m-1]&&r[m]>=(r[m+1]??-1)){T=m;break}}
   const y0=r[T-1],y1=r[T],y2=r[T+1]??y1,den=y0-2*y1+y2;
   return {T:T+(den?.5*(y0-y2)/den:0),corr:best};
 }
@@ -137,3 +138,94 @@ function detectQueued(q,it){
   return null;
 }
 
+
+/* ---- the full sett from a close-up (a woven stripe, check or plaid, in its real colours) ----
+   The close-up is white-balanced and taken for its colour, so here the colours DO come from the photo: the bands of one
+   repeat across the main stripes (median CIELAB per band, merged until neighbours differ visibly), and the lines that cross
+   them in the other direction (what is left once the main stripes are taken out). Result (item.sett):
+   {v:2, a: angle across the main stripes (deg, in the close-up), bands:[[hex,w]...] (w: share of one repeat),
+    cross: {d: angle between the two directions, bands:[[hex|null,w]...], r: cross repeat / main repeat} or null,
+    cr: repeats across the close-up's width (the swatch draws the same scale), src:'closeup'} */
+function labGrid(src,sx,sy,sw,sh,N=280){
+  const k=N/Math.max(sw,sh),W=Math.max(16,Math.round(sw*k)),H=Math.max(16,Math.round(sh*k));
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d',{willReadFrequently:true});g.drawImage(src,sx,sy,sw,sh,0,0,W,H);
+  const d=g.getImageData(0,0,W,H).data,n=W*H,L=new Float32Array(n),A=new Float32Array(n),Bb=new Float32Array(n),Y=new Float32Array(n);
+  for(let i=0;i<n;i++){const l=rgbLab(d[i*4],d[i*4+1],d[i*4+2]);L[i]=l[0];A[i]=l[1];Bb[i]=l[2];Y[i]=(.2126*d[i*4]+.7152*d[i*4+1]+.0722*d[i*4+2])/255}
+  return {W,H,L,A,B:Bb,Y}}
+/* the projection index of every pixel along an angle, for a W x H grid */
+function projIdx(W,H,ang){const R=Math.ceil(Math.hypot(W,H)/2)+1,cs=Math.cos(ang),sn=Math.sin(ang),idx=new Int32Array(W*H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)idx[y*W+x]=Math.floor((x-W/2)*cs+(y-H/2)*sn+R);return {idx,len:2*R}}
+function projAvg(M,P){const s=new Float64Array(P.len),c=new Float64Array(P.len);for(let i=0;i<M.length;i++){s[P.idx[i]]+=M[i];c[P.idx[i]]++}
+  return {avg:[...s].map((v,i)=>c[i]?v/c[i]:0),cnt:[...c]}}
+const boxBlurWH=(a,W,H)=>{const o=new Float32Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0,c=0;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const X=x+i,Y=y+j;if(X>=0&&Y>=0&&X<W&&Y<H){s+=a[Y*W+X];c++}}o[y*W+x]=s/c}return o};
+/* fold a Lab profile on its repeat (or take it whole) and merge it into bands */
+/* one repeat in M steps, each the median colour of its pixels (a median, so lines crossing the band don't tint it) */
+function foldMedian(G,P,first,len,okIdx,T){const M=Math.max(24,Math.min(400,Math.round(T))),bins=Array.from({length:M},()=>[[],[],[]]);
+  for(let i=0;i<G.L.length;i++){const pi=P.idx[i],t=pi-first;if(t<0||t>=len||!okIdx[pi])continue;const b=bins[Math.floor(((t%T)/T)*M)%M];b[0].push(G.L[i]);b[1].push(G.A[i]);b[2].push(G.B[i])}
+  const med=v=>{v.sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};return bins.filter(b=>b[0].length).map(b=>[med(b[0]),med(b[1]),med(b[2])])}
+function settBands(labs,minShare){
+  let bands=labs.map(lab=>({lab,w:1}));
+  const mergeInto=(to,k)=>{const x=bands[to],y=bands[k],w=x.w+y.w;bands[to]={lab:x.lab.map((v,i)=>(v*x.w+y.lab[i]*y.w)/w),w};bands.splice(k,1)};
+  const nb=i=>(i+1)%bands.length,merge=i=>{const j=nb(i);if(j===0){bands.unshift(bands.pop());mergeInto(0,1)}else mergeInto(i,j)};
+  // merge the most alike neighbours while they are hard to tell apart, or while there are too many
+  for(;;){if(bands.length<3)break;let bi=-1,bd=1e9;for(let i=0;i<bands.length;i++){const d=dE00(bands[i].lab,bands[nb(i)].lab);if(d<bd){bd=d;bi=i}}
+    if(bd>=5&&bands.length<=24)break;merge(bi)}
+  // a band one or two steps wide whose colour lies between its two neighbours is the blur where they meet, not a band of its own
+  // (a real pinline is darker or lighter than both and stays)
+  const between=(c,a,b)=>{const ab=a.map((v,i)=>b[i]-v),t=Math.max(0,Math.min(1,ab.reduce((s,v,i)=>s+v*(c[i]-a[i]),0)/(ab.reduce((s,v)=>s+v*v,0)||1)));
+    return Math.hypot(...c.map((v,i)=>v-(a[i]+t*ab[i])))<6&&t>.1&&t<.9};
+  for(let pass=0;pass<40&&bands.length>2;pass++){const k=bands.findIndex((b,i)=>b.w<=2.5&&between(b.lab,bands[(i+bands.length-1)%bands.length].lab,bands[nb(i)].lab));if(k<0)break;
+    const p=(k+bands.length-1)%bands.length,q=nb(k);mergeInto(dE00(bands[k].lab,bands[p].lab)<dE00(bands[k].lab,bands[q].lab)?p:q,k)}
+  // slivers (the blur between two bands) join the neighbour they look most like; then neighbours that became alike merge
+  for(let pass=0;pass<12;pass++){const tot=bands.reduce((s,b)=>s+b.w,0);const k=bands.findIndex(b=>b.w/tot<minShare);if(k<0||bands.length<3)break;
+    const p=(k+bands.length-1)%bands.length,q=nb(k),to=dE00(bands[k].lab,bands[p].lab)<dE00(bands[k].lab,bands[q].lab)?p:q;mergeInto(to,k)}
+  for(let i=0;i<bands.length&&bands.length>2;){if(dE00(bands[i].lab,bands[nb(i)].lab)<5)merge(i);else i++}
+  // a sequence that is k copies of itself (the repeat was taken k times over) keeps one copy
+  for(let k=4;k>=2;k--){if(bands.length%k)continue;const n=bands.length/k;
+    if(bands.every((b,i)=>i<n||dE00(b.lab,bands[i%n].lab)<6&&Math.abs(b.w-bands[i%n].w)<=Math.max(2,bands[i%n].w*.25))){bands=bands.slice(0,n).map((b,i)=>({lab:b.lab,w:bands.filter((_,j)=>j%n===i).reduce((s,x)=>s+x.w,0)}));break}}
+  const tot=bands.reduce((s,b)=>s+b.w,0);return bands.map(b=>({lab:b.lab,w:b.w/tot}))}
+/* the sett of a rectangle of a canvas (sx, sy, sw, sh in its pixels) */
+function analyzeSett(src,sx,sy,sw,sh,N0=320){
+  const G=labGrid(src,sx,sy,sw,sh,N0),{W,H}=G,n=W*H,Bl=boxBlurWH(boxBlurWH(G.Y,W,H),W,H);
+  let jxx=0,jyy=0,jxy=0;for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const p=(X,Y)=>Bl[Y*W+X];
+    const gx=(p(x+1,y-1)+2*p(x+1,y)+p(x+1,y+1))-(p(x-1,y-1)+2*p(x-1,y)+p(x-1,y+1)),gy=(p(x-1,y+1)+2*p(x,y+1)+p(x+1,y+1))-(p(x-1,y-1)+2*p(x,y-1)+p(x+1,y-1));
+    jxx+=gx*gx;jyy+=gy*gy;jxy+=gx*gy}
+  const coh=Math.sqrt((jxx-jyy)**2+4*jxy*jxy)/((jxx+jyy)||1);if(coh<.08)return null;
+  const minCnt=Math.min(W,H)/3,keepOf=c=>c.map(v=>v>=minCnt);
+  // the main direction: the projection whose colour (L*, chroma at half weight) varies most near the tensor angle
+  const colVar=ang=>{const P=projIdx(W,H,ang),l=projAvg(G.L,P),a=projAvg(G.A,P),b=projAvg(G.B,P),k=keepOf(l.cnt),pick=v=>v.avg.filter((_,i)=>k[i]);return variance(pick(l))+.5*(variance(pick(a))+variance(pick(b)))};
+  let th=.5*Math.atan2(2*jxy,jxx-jyy),bt=th,bv=-1;for(let dd=-8;dd<=8;dd+=.5){const a=th+dd*Math.PI/180,v=colVar(a);if(v>bv){bv=v;bt=a}}th=normAng(bt);
+  const P=projIdx(W,H,th),pl=projAvg(G.L,P),pa=projAvg(G.A,P),pb=projAvg(G.B,P),ok=keepOf(pl.cnt),first=ok.indexOf(true),last=ok.lastIndexOf(true);
+  const cut=a=>a.slice(first,last+1),prof={L:cut(pl.avg),A:cut(pa.avg),B:cut(pb.avg)};
+  const pd=period(prof.L.map((v,i)=>v+.5*Math.hypot(prof.A[i],prof.B[i])),Math.max(8,Math.round(prof.L.length*.06)));   // not the weave's own texture
+  const T=pd&&pd.T<prof.L.length*.8?pd.T:prof.L.length;   // no repeat inside the picture: what is seen counts as one repeat
+  const bands=settBands(foldMedian(G,P,first,prof.L.length,ok,T),.008);if(bands.length<2)return null;
+  // the lines that cross the main stripes: what is left of each pixel once its main band is taken out, projected the other way
+  const res=new Float32Array(n);for(let i=0;i<n;i++)res[i]=G.L[i]-pl.avg[P.idx[i]];
+  let ca=0,cv=-1;for(let d=30;d<=150;d+=2){const Q=projIdx(W,H,th+d*Math.PI/180),r=projAvg(res,Q),k=keepOf(r.cnt),v=variance(r.avg.filter((_,i)=>k[i]));if(v>cv){cv=v;ca=d}}
+  const cvMain=variance(prof.L);let cross=null;
+  if(self.SETT_DEBUG)console.log('sett',JSON.stringify({W,H,coh:+coh.toFixed(2),th:Math.round(th*180/Math.PI),T,len:prof.L.length,cv:+cv.toFixed(2),ca,cvMain:+cvMain.toFixed(1)}));
+  if(cv>Math.max(2,cvMain*.005)){   // lines of about 1.5 L* or more stand out, whatever the main stripes do
+    const Q=projIdx(W,H,th+ca*Math.PI/180),r=projAvg(res,Q),k=keepOf(r.cnt),f0=k.indexOf(true),f1=k.lastIndexOf(true),rp=r.avg.slice(f0,f1+1);
+    const cp=period(rp,Math.max(8,Math.round(rp.length*.06))),Tc=cp&&cp.T<rp.length*.8?cp.T:rp.length,sd=Math.sqrt(variance(rp));
+    // one repeat of the residual, smoothed, in three levels: lighter lines, nothing, darker lines
+    const M=Math.max(24,Math.min(400,Math.round(Tc))),fold=new Float64Array(M),fc=new Float64Array(M);rp.forEach((v,i)=>{const q=Math.floor(((i%Tc)/Tc)*M)%M;fold[q]+=v;fc[q]++});
+    const f0v=[...fold].map((v,q)=>v/(fc[q]||1)),fv=f0v.map((_,q)=>(f0v[(q+M-1)%M]+2*f0v[q]+f0v[(q+1)%M])/4),fsd=Math.sqrt(variance(fv));
+    let lvl=fv.map(v=>v>fsd*1.1?1:v<-fsd*1.1?-1:0);
+    // a line is at least two steps wide; shorter blips are noise
+    for(let q=0;q<M;q++)if(lvl[q]&&lvl[(q+M-1)%M]!==lvl[q]&&lvl[(q+1)%M]!==lvl[q])lvl[q]=0;
+    // the thread colour: a crossing is about half band, half thread, so thread = 2 x pixel - band (in Lab)
+    const sum={1:[0,0,0,0],'-1':[0,0,0,0]},bandAt=i=>[pl.avg[P.idx[i]],pa.avg[P.idx[i]],pb.avg[P.idx[i]]];
+    for(let i=0;i<n;i++){const t=Q.idx[i]-f0;if(t<0||t>=rp.length)continue;const q=Math.floor(((t%Tc)/Tc)*M)%M,l=lvl[q];if(!l||Math.sign(res[i])!==l)continue;
+      const b0=bandAt(i),s2=sum[l];s2[0]+=2*G.L[i]-b0[0];s2[1]+=2*G.A[i]-b0[1];s2[2]+=2*G.B[i]-b0[2];s2[3]++}
+    const hexOf=l=>{const s2=sum[l];return s2[3]?labHex([Math.max(0,Math.min(100,s2[0]/s2[3])),s2[1]/s2[3],s2[2]/s2[3]]):null};const hx={1:hexOf(1),'-1':hexOf(-1)};
+    let runs=[];for(let q=0;q<M;q++){const c=lvl[q]?hx[lvl[q]]:null;if(runs.length&&runs[runs.length-1][0]===c)runs[runs.length-1][1]++;else runs.push([c,1])}
+    if(runs.length>1&&runs[0][0]===runs[runs.length-1][0])runs[0][1]+=runs.pop()[1];
+    if(self.SETT_DEBUG)console.log('crossdbg',JSON.stringify({Tc,len:rp.length,fsd:+fsd.toFixed(2),on:lvl.filter(Boolean).length,M,hx,runs:runs.length}));
+    if(runs.some(x=>x[0])&&runs.some(x=>!x[0]))cross={d:ca,bands:runs.map(([c,w])=>[c,+(w/M).toFixed(3)]),r:+Math.max(.2,Math.min(5,Tc/T)).toFixed(2)}}
+  // start the repeat at its widest band, so the drawing and the description agree on where it begins
+  let si=0;bands.forEach((b,i)=>{if(b.w>bands[si].w)si=i});const ord=bands.slice(si).concat(bands.slice(0,si));
+  return {v:2,a:Math.round(th*180/Math.PI),bands:ord.map(b=>[labHex(b.lab),+b.w.toFixed(3)]),cross,cr:+Math.max(.3,Math.min(12,Math.min(W,H)/T)).toFixed(2)}}
+/* a sett from a whole canvas (its middle 90%): a close-up */
+function settFromCanvas(c,box){if(box){const b={x:box.x/1000*c.width,y:box.y/1000*c.height,w:box.w/1000*c.width,h:box.h/1000*c.height};return analyzeSett(c,b.x,b.y,b.w,b.h)}
+  return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9)}
