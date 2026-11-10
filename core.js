@@ -106,7 +106,9 @@ const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cu
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+(TYPES[i.type]||'item').toLowerCase():'none';
 const bg=i=>i?(i.swatch?`url(${i.swatch})`:COLORS[primaryCol(i)]||METAL[i.metal]||'#ccc'):'#ccc';
 
-const LUM=i=>{const h=COLORS[primaryCol(i)];return h?(parseInt(h.slice(1,3),16)*.3+parseInt(h.slice(3,5),16)*.59+parseInt(h.slice(5,7),16)*.11):128};
+/* brightness of a named colour (0-255), worked out once per colour: the planner asks tens of thousands of times a month */
+const LUMS={},lumCol=c=>{let v=LUMS[c];if(v===undefined){const h=COLORS[c];v=LUMS[c]=h?parseInt(h.slice(1,3),16)*.3+parseInt(h.slice(3,5),16)*.59+parseInt(h.slice(5,7),16)*.11:128}return v};
+const LUM=i=>lumCol(primaryCol(i));
 const WEAVES=['texture','twill','herringbone','birdseye','nailhead','sharkskin','tweed','oxford','knit'];
 const pw=i=>!i||!i.pattern||i.pattern==='solid'?0:WEAVES.includes(i.pattern)?.5:1;
 

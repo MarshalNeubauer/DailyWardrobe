@@ -218,9 +218,6 @@ async function handleTagMany(req, env, json) {
   return json({ items, model: c.body.model });
 }
 
-/* GET /sync returns the stored backup {rev, saved, data}; PUT /sync {baseRev, data} stores a new one.
-   baseRev must equal the stored rev, otherwise 409 with the current backup so the app can merge and retry
-   (two devices syncing at once never overwrite each other). */
 /* GET /fetch?url=… downloads a photo for the app when the site won't let the browser fetch it directly (no CORS).
    A link to a web page (e.g. a shop's product page) returns the page's share image (og:image / twitter:image).
    Requires APP_TOKEN; only http(s); images only; 15 MB cap. */
@@ -457,24 +454,40 @@ async function getRender(req, env, json) {
   return rec ? json(rec) : json({ error: 'none' }, 404);
 }
 
-const SYNC_KEY = 'wardrobe:v1';
-async function handleSync(req, env, json) {
+const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
+/* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
+   metadata, written in the same put as the backup itself. null for a backup saved before this, or where KV can't list. */
+async function syncVersion(env) {
+  if (typeof env.WARDROBE.list !== 'function') return null;
+  try {
+    const l = await env.WARDROBE.list({ prefix: SYNC_KEY, limit: 10 }), k = (l.keys || []).find(x => x.name === SYNC_KEY), m = k && k.metadata;
+    return m && Number.isInteger(m.rev) ? m : null;
+  } catch { return null; }
+}
+/* GET /sync returns the stored backup {rev, saved, data}; GET /sync?v=<rev>:<saved> answers {rev, saved, same:true} with no
+   data when that is still the stored version, so a device with nothing new neither downloads nor uploads anything.
+   PUT /sync {baseRev, data} stores a new one: baseRev must equal the stored rev, otherwise 409 with the current backup so
+   the app can merge and retry (two devices syncing at once never overwrite each other). */
+async function handleSync(req, env, json, cors) {
   if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to enable backups.' }, 403);
   if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.WARDROBE) return json({ error: 'Add a KV namespace binding named WARDROBE to the worker to enable backups.' }, 501);
   if (req.method === 'GET') {
-    const stored = await env.WARDROBE.get(SYNC_KEY, 'json');
-    return json(stored || { rev: 0, saved: 0, data: null });
+    const v = new URL(req.url).searchParams.get('v');
+    if (v) { const m = await syncVersion(env); if (m && `${m.rev}:${m.saved}` === v) return json({ rev: m.rev, saved: m.saved, same: true }); }
+    // passed through as stored: no need to parse and rebuild several MB of JSON
+    return new Response((await env.WARDROBE.get(SYNC_KEY)) || SYNC_NONE, { headers: { ...cors, 'content-type': 'application/json' } });
   }
   if (req.method === 'PUT') {
     const text = await req.text();
     if (text.length > 24 * 1024 * 1024) return json({ error: 'backup too large (over 24 MB)' }, 413);
     let body;
     try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
-    const cur = (await env.WARDROBE.get(SYNC_KEY, 'json')) || { rev: 0, saved: 0, data: null };
-    if ((body.baseRev ?? -1) !== cur.rev) return json({ error: 'conflict', ...cur }, 409);
-    const next = { rev: cur.rev + 1, saved: Date.now(), data: body.data };
-    await env.WARDROBE.put(SYNC_KEY, JSON.stringify(next));
+    const none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env);
+    const rev = m ? m.rev : ((await env.WARDROBE.get(SYNC_KEY, 'json')) || none).rev;
+    if ((body.baseRev ?? -1) !== rev) return json({ error: 'conflict', ...((await env.WARDROBE.get(SYNC_KEY, 'json')) || none) }, 409);
+    const next = { rev: rev + 1, saved: Date.now(), data: body.data };
+    await env.WARDROBE.put(SYNC_KEY, JSON.stringify(next), { metadata: { rev: next.rev, saved: next.saved } });
     return json({ rev: next.rev, saved: next.saved });
   }
   return json({ error: 'method not allowed' }, 405);
@@ -494,7 +507,7 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) return json({ error: 'forbidden origin' }, 403);
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
-    if (path === '/sync') return handleSync(req, env, json);
+    if (path === '/sync') return handleSync(req, env, json, cors);
     if (path === '/render-queue' && req.method === 'GET') return queueStatus(req, env, json);
     if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
     if (path === '/tag-many' && req.method === 'POST') return handleTagMany(req, env, json);

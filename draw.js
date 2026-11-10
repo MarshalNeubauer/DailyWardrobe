@@ -320,7 +320,12 @@ function figFabric(item,role){
   return {def:(id,rot)=>{let p=fabricDef(id,item,role);const m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';if(m)p=p.replace(m[0],'');
     return p.replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="${rot?`rotate(${rot}) `:''}scale(${k})${tf?' '+tf:''}"`)}};
 }
-const figBg=()=>{const v=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();return /^#[0-9a-f]{3,8}$/i.test(v)?v:'#e8ebec'};
+/* the page colour the figure fades into. Reading a computed style right after the screen was redrawn makes the browser work
+   out every style again (it was 40% of a swipe), so it is read once per theme: it only changes with light/dark */
+let figBgMemo=null;
+const figBg=()=>{const k=(document.documentElement.dataset.theme||'')+'|'+(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'d':'l');
+  if(figBgMemo&&figBgMemo.k===k)return figBgMemo.v;
+  const v=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),c=/^#[0-9a-f]{3,8}$/i.test(v)?v:'#e8ebec';figBgMemo={k,v:c};return c};
 function figureSvg(o,prefix='fig-'){
   let watch=null;
   if(o.watch){const wo=watchOpts(o.watch),tones=METAL_TONES[o.watch.metal]||METAL_TONES.silver,dial=COLORS[wo.dial]||'#12151A';

@@ -4,14 +4,18 @@ const path=require('path'),fs=require('fs'),os=require('os'),{pathToFileURL}=req
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const store=new Map();
-  const KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v)=>{store.set(k,v)}};
+  const meta=new Map();   // KV keeps a key's metadata with its value and returns it from list()
+  const KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v,o)=>{store.set(k,v);meta.set(k,o&&o.metadata)},
+    list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:meta.get(name)})),list_complete:true})};
+  const traffic=[];   // every sync request: method, query and how many bytes came back
   let env={APP_TOKEN:'secret',WARDROBE:KV};
   const HOST='https://wardrobevision.test/';
   const browser=await chromium.launch();
   const device=async()=>{const ctx=await browser.newContext();
     await ctx.route(HOST+'**',async route=>{const r=route.request();
       const res=await worker.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
-      await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
+      const body=await res.text();if(new URL(r.url()).pathname==='/sync')traffic.push({m:r.method(),q:new URL(r.url()).search,up:(r.postData()||'').length,down:body.length});
+      await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);return {ctx,p,errs}};
@@ -47,6 +51,22 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await sync(B.p);
   const race=await Promise.all([names(A.p),names(B.p)]);
   ok(!race[0].includes('tie:gold')&&race[0].includes('tie:pink')&&race[1]===race[0],'a delete and an edit made during a sync survive it, on both devices');
+  // nothing changed since the last sync: one tiny request, no backup downloaded or uploaded
+  await sync(A.p);await sync(B.p);traffic.length=0;const okQuick=await sync(A.p),t1=[...traffic];
+  ok(okQuick&&t1.length===1&&t1[0].m==='GET'&&/^\?v=\d+%3A\d+$/.test(t1[0].q)&&t1[0].down<200,`a sync with nothing new is one small request, with no backup sent either way (${JSON.stringify(t1)})`);
+  // a change on the other device is still found (the version no longer matches, so the backup comes down)
+  await add(B.p,{type:'socks',primaryColor:'navy'});await sync(B.p);traffic.length=0;await sync(A.p);
+  ok((await names(A.p)).includes('socks:navy')&&traffic[0].down>200,'a change made on the other device is still picked up');
+  // a change here goes up as before, and the next sync is quick again
+  await add(A.p,{type:'socks',primaryColor:'brown'});traffic.length=0;await sync(A.p);const t2=[...traffic];traffic.length=0;await sync(A.p);
+  ok(t2.some(t=>t.m==='PUT')&&JSON.parse(store.get('wardrobe:v1')).data.items.some(i=>i.primaryColor==='brown')&&traffic.length===1&&traffic[0].down<200,'a local change is uploaded; the sync after it is quick again');
+  // the wardrobe is lost on the device (storage cleared) but the marker survives: the backup must come back, not be emptied
+  await A.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));items=[]});await sync(A.p);
+  ok((await names(A.p)).includes('socks:brown')&&JSON.parse(store.get('wardrobe:v1')).data.items.length>0,'a device that lost its wardrobe gets it back from the backup (the backup is never overwritten with nothing)');
+  await sync(B.p);
+  // a backup saved by an older worker (no version kept beside it): everything still syncs, just without the shortcut
+  meta.clear();traffic.length=0;await sync(A.p);
+  ok(traffic.length===1&&traffic[0].m==='GET'&&traffic[0].down>200&&!(await A.p.evaluate(()=>localStorage.getItem('sync_status'))),`a backup without a stored version still syncs, with a full download (${JSON.stringify(traffic)})`);
   // misconfiguration messages
   env={APP_TOKEN:'secret'};await sync(A.p);
   ok((await A.p.evaluate(()=>localStorage.getItem('sync_status')))?.includes('WARDROBE'),'missing KV binding: tells you to add WARDROBE');
