@@ -14,6 +14,7 @@
 <main>
 <section id="today"></section>
 <section id="wardrobe" hidden></section>
+<section id="stats" hidden></section>
 <section id="add" hidden><h2>Add to wardrobe</h2><p id="note" class="mut"></p>
 <div class="btns" style="flex-wrap:wrap"><label class="btn pri" style="margin:0">Choose photos<input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><button class="btn" style="margin:0" onclick="addManual()">Add without photo</button></div>
 <div class="paste-box"><input type="url" id="photo-url" inputmode="url" autocomplete="off" placeholder="Paste a photo or link" onkeydown="if(event.key==='Enter'){event.preventDefault();addLink()}"><button class="btn" onclick="addLink()">Add</button><button class="btn" onclick="pasteFromClipboard()">Paste</button></div>
@@ -33,6 +34,9 @@
 <p class="mut"><small>Configure your Cloudflare Worker backend for AI photo recognition.</small></p>
 <label style="display:block;margin:10px 0">Worker URL:<br><input type="text" id="cfg-url" placeholder="https://your-worker.workers.dev"></label>
 <label style="display:block;margin:10px 0">App Token:<br><input type="text" id="cfg-token" placeholder="Your secret token"></label>
+<h3 style="margin:16px 0 4px">Stats</h3>
+<p class="mut" style="margin:0 0 6px"><small>Wear counts, the pieces that never get worn and why, what costs your outfits points, and what the planner has learned from you.</small></p>
+<div class="btns"><button type="button" id="stats-btn" onclick="openStats()">Wardrobe stats</button></div>
 <h3 style="margin:16px 0 4px">Schedule</h3>
 <p class="mut" style="margin:4px 0"><small>Workdays</small></p><div class="days" id="cfg-workdays"></div>
 <p class="mut" style="margin:8px 0 4px"><small>Blazer days (business casual); other workdays get a suit</small></p><div class="days" id="cfg-blazer"></div>
@@ -77,5 +81,6 @@
 <script src="detect.js"></script>
 <script src="figure.js"></script><script src="draw.js"></script>
 <script src="app.js"></script>
+<script src="stats.js"></script>
 <script src="sync.js"></script>
 </body></html>
