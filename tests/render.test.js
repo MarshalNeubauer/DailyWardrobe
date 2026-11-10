@@ -27,8 +27,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const exp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {shirtHasPhoto:!!o.shirt.photo,n:1+['top','tie'].filter(s=>o[s]&&o[s].photo).length,top:prettyCols(nm(o.top)),shirt:prettyCols(nm(o.shirt)),tie:prettyCols(nm(o.tie))}});
     ok(exp.shirtHasPhoto&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the suit/tie photos, not the shirt's (${sent.images.length})`);
     ok([exp.top,exp.tie].every(t=>sent.prompt.includes(t))&&/a plain light blue dress shirt/.test(sent.prompt)&&/same pose/i.test(sent.prompt),'the prompt describes the outfit (the shirt by its colour only) and asks to keep the pose');
-    const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:document.querySelector('.fig.photo small').textContent,btn:!!document.querySelector('.render-btn'),mode:!!document.querySelector('.figmode')}));
-    ok(shown.img&&/^(Not worn yet|Last worn \w{3}, \w{3} \d+)$/.test(shown.by)&&!shown.btn&&!shown.mode,`the photo replaces the illustration (no picture switch, no button under it); the caption is the last-worn date ("${shown.by}")`);
+    const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:(document.querySelector('.fig.photo .lastworn')||{}).textContent||'',btn:!!document.querySelector('.render-btn'),mode:!!document.querySelector('.figmode')}));
+    ok(shown.img&&/^(Last worn \w{3}, \w{3} \d+)?$/.test(shown.by)&&!shown.btn&&!shown.mode,`the photo replaces the illustration (no picture switch, no button under it); the only caption is the last-worn date, when there is one ("${shown.by}")`);
     // regenerating lives in Settings
     const rg=await p.evaluate(()=>{openSettings();const b=document.querySelector('#regen-btn');return {t:b.textContent,d:b.disabled}});
     ok(/^Regenerate photo for \w{3}, \w{3} \d+$/.test(rg.t)&&!rg.d,`Settings offers to regenerate the shown day's photo ("${rg.t}")`);
