@@ -37,9 +37,12 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.tap('.below .tile');await settle(p,1100);const t=await at('.below'),bb=await at('#bbox'),nt=await navTop();
     ok(t.top>=6&&(bb.bottom<=nt-11||Math.abs(t.top-8)<=2),`a tile's photo: scrolls to show it, the tile row stops at the top at most (tiles top ${t.top}px, photo bottom ${bb.bottom}px)`);
     // already visible after unfolding: no scroll; folding never scrolls
-    await setup();const y0=await scrollY();await p.tap('#sbox .month-link');await settle(p,900);const s=await at('#sbox');
-    if(s.bottom<=(await navTop())-12)ok(await scrollY()===y0,'a box that fits on screen once open does not scroll');
-    const y1=await scrollY();await p.tap('#sbox .month-link');await settle(p,600);ok(await scrollY()<=y1,'folding a box does not scroll down');
+    // (on a tall screen, where the open score box fits where it is; judged from where it would end with no scroll)
+    await p.setViewportSize({width:390,height:1300});await setup();
+    const y0=await scrollY();await p.tap('#sbox .month-link');await settle(p,900);const s=await at('#sbox'),y2=await scrollY();
+    const fits=s.bottom+(y2-y0)<=(await navTop())-12;
+    ok(fits&&y2===y0,`a box that fits on screen once open does not scroll (fits: ${fits}, scrolled ${y2-y0}px)`);
+    const y1=await scrollY();await p.tap('#sbox .month-link');await settle(p,600);ok(await scrollY()<=y1,'folding a box does not scroll down');await p.setViewportSize({width:390,height:664});
     // a touch during the scroll stops it
     await setup();await p.evaluate(()=>{const r=document.querySelector('#mbox').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect().top;scrollBy(0,r.bottom-nav+4)});
     await p.tap('#mbox .month-link');await p.waitForTimeout(90);const mid=await p.evaluate(()=>{const y=scrollY;dispatchEvent(new Event('touchstart'));return y});   // read and touch in one step, so a busy machine can't scroll in betweenawait settle(p,900);

@@ -96,6 +96,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - screens:
   - Today: worn / not worn are ✕ and ✓ over the picture's bottom corners on today and past days, with a "Last worn" pill between them when the look was worn before (`wornMarks`, `setWorn`)
   - no "Below the waist" heading
+  - the bottom tab bar is compact so the picture and the tiles fit on one screen: 38px buttons, and it keeps only `--navpad` (the home-indicator inset minus 18px) below them; `--navh` is its height, used by the body padding and the toast
   - the score, pieces and month cards share one size (76px folded, a 112px picture slot, one text column) and everything on Today is spaced by `--gap` (12px) in styles.css
   - tiles show a short 4:3 picture
   - the score card is a `#sbox` fold box like `#ibox`/`#mbox` (`scoreCard`, `toggleScore`, `scoreOpen`; its checks slide in one after another and each `.sbar` fills to the points scored)
