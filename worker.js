@@ -138,6 +138,79 @@ const TAG_SCHEMA = {
     bezel: orNull(['fluted','smooth']),
   },
 };
+/* ---- per-request additions to the tagger ----
+   custom: colours and patterns the owner added in the app ({colors:[{key,name,hex,base,types,accent}], patterns:[{key,name,types,base,desc}]})
+   extend the enums and the prompt; a single-item tag also asks for confidence, a runner-up, a suggested new colour or pattern
+   when nothing listed fits, and a box on plain cloth (the app measures the colour there). */
+const KEY_RE = /^own[a-z]{1,28}$/, PKEY_RE = /^own-[a-z0-9-]{1,28}$/, HEX_RE = /^#[0-9a-f]{6}$/i;
+const txt = (v, n) => String(v ?? '').replace(/[^\w ,.'()\/&-]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+function cleanCustom(c) {
+  c = c && typeof c === 'object' ? c : {};
+  const types = t => (Array.isArray(t) ? t : []).filter(x => TYPE_LIST.includes(x));
+  const colors = (Array.isArray(c.colors) ? c.colors : []).filter(x => x && KEY_RE.test(x.key) && HEX_RE.test(x.hex)).slice(0, 40)
+    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), types: types(x.types), accent: !!x.accent }));
+  const patterns = (Array.isArray(c.patterns) ? c.patterns : []).filter(x => x && PKEY_RE.test(x.key)).slice(0, 40)
+    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(4), types: types(x.types), desc: txt(x.desc, 160) }));
+  return { colors, patterns };
+}
+const CONF = { type: 'string', enum: ['high', 'medium', 'low'] };
+const SUGGEST = { anyOf: [{ type: 'object', additionalProperties: false, required: ['name', 'why'],
+  properties: { name: { type: 'string' }, why: { type: 'string' } } }, { type: 'null' }] };
+const BOX = { type: 'object', additionalProperties: false, required: ['x', 'y', 'w', 'h'],
+  properties: { x: { type: 'integer' }, y: { type: 'integer' }, w: { type: 'integer' }, h: { type: 'integer' } } };
+function tagSchema(custom, single) {
+  const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...PATTERN_LIST, ...custom.patterns.map(p => p.key)];
+  const props = { ...TAG_SCHEMA.properties,
+    primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
+    tertiaryColor: { type: 'string', enum: [...cols, 'none'] }, pattern: { type: 'string', enum: pats } };
+  if (!single) return { ...TAG_SCHEMA, properties: props };
+  Object.assign(props, {
+    confidence: { type: 'object', additionalProperties: false, required: ['type', 'primaryColor', 'pattern'], properties: { type: CONF, primaryColor: CONF, pattern: CONF } },
+    altColor: { type: 'string', enum: [...cols, 'none'] }, altPattern: { type: 'string', enum: [...pats, 'none'] },
+    newColor: SUGGEST, newPattern: SUGGEST, clothBox: { anyOf: [BOX, { type: 'null' }] },
+  });
+  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox'] };
+}
+function customText(custom) {
+  let t = '';
+  if (custom.colors.length) t += `\n\nColours the owner added (answer with the key, like any listed colour, for the item types shown):\n`
+    + custom.colors.map(c => `  ${c.key} = ${c.name} (${c.hex}), for ${c.types.join(', ') || 'any type'}${c.accent ? ', also as a stripe or motif colour' : ''}`).join('\n');
+  if (custom.patterns.length) t += `\n\nPatterns the owner added (answer with the key, for the item types shown):\n`
+    + custom.patterns.map(p => `  ${p.key} = ${p.name}: ${p.desc || 'no description'} (${p.types.join(', ') || 'any type'})`).join('\n');
+  return t;
+}
+const SINGLE_EXTRA = `
+
+Also give:
+confidence — for type, primaryColor and pattern: high (clearly visible), medium, or low (guessing).
+altColor, altPattern — your second choice for the main colour and the pattern, or "none" if nothing else is plausible.
+newColor — when NONE of the colours allowed for this type (the owner's included) is a good match for the main colour, give
+  {"name": a short common name for the real colour, "why": one line on how it differs from the closest listed one}; otherwise null.
+  Still put the closest allowed colour in primaryColor.
+newPattern — the same for the pattern or weave: when no listed pattern fits (you would answer "other"), give {"name", "why": one
+  line describing how it looks}; otherwise null. Still put the closest listed pattern in pattern.
+clothBox — a rectangle on a plain, evenly lit area of the main cloth in the FIRST photo (no folds, shadows, buttons, labels,
+  lining or background), in thousandths of that photo (x, y = top-left corner, w, h = size, all 0-1000), so the app can measure
+  its colour; null if there is no such area.`;
+/* what the app measured (Lab after white balance), to weigh against what is seen */
+function measuredText(m) {
+  if (!m || !Array.isArray(m.lab) || m.lab.length !== 3) return '';
+  const lab = m.lab.map(v => Math.round(+v || 0)), near = (Array.isArray(m.near) ? m.near : []).slice(0, 3)
+    .filter(n => n && /^[a-z]{2,32}$/.test(n.c)).map(n => `${n.c} (ΔE ${(+n.d || 0).toFixed(1)})`);
+  return `\n\nThe app measured the cloth's colour ${m.src === 'closeup' ? 'in the close-up' : 'in the photo'} after white balance: CIELAB L*${lab[0]} a*${lab[1]} b*${lab[2]}`
+    + (HEX_RE.test(m.hex || '') ? ` (${m.hex})` : '') + (near.length ? `; nearest of the owner's colours: ${near.join(', ')}` : '') + '. '
+    + (m.ref ? 'A white reference was in the frame, so its lightness is reliable.' : 'There was no white reference, so its lightness may be off by the camera\'s exposure; hue and saturation are more reliable.')
+    + ' Use it together with what you see.';
+}
+/* the owner's earlier corrections of the tagger (AI said -> owner chose), to lean the same way */
+const FIX_FIELDS = ['type', 'primaryColor', 'secondaryColor', 'pattern'];
+function correctionsText(list) {
+  const l = (Array.isArray(list) ? list : []).filter(f => f && FIX_FIELDS.includes(f.field) && TYPE_LIST.includes(f.type)
+    && /^[a-z][a-z0-9-]{0,31}$/.test(f.from || '') && /^[a-z][a-z0-9-]{0,31}$/.test(f.to || '') && f.from !== f.to).slice(-20);
+  return l.length ? `\n\nThe owner corrected these tags on earlier items (you said -> owner chose); lean the same way on similar items:\n`
+    + l.map(f => `  ${f.type} ${f.field}: ${f.from} -> ${f.to}`).join('\n') : '';
+}
+
 async function tagWithClaude(env, image, opts = {}) {
   const m = image.match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   if (!m) return { status: 400, body: { error: 'no image' } };
@@ -147,10 +220,12 @@ async function tagWithClaude(env, image, opts = {}) {
     model,
     max_tokens: opts.maxTokens || 4000,    // thinking counts toward this; a single item's JSON is ~100 tokens
     output_config: { effort: opts.effort || 'low', format: { type: 'json_schema', schema: opts.schema || TAG_SCHEMA } },
-    system: 'You are a menswear expert who labels clothing photos for a wardrobe app. Judge colours as the fabric would look in neutral daylight: correct for warm or cool lighting and shadows.',
+    system: 'You are a menswear expert who labels clothing photos for a wardrobe app. The app has already white-balanced the photos, '
+      + 'so take their colours as shown and do not shift them for warm or cool light; only allow for shadows, sheen and folds.',
     messages: [{ role: 'user', content: [
       { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
-      { type: 'text', text: opts.prompt || PROMPT },
+      ...(opts.closeup ? [{ type: 'image', source: { type: 'base64', media_type: opts.closeup[1], data: opts.closeup[2] } }] : []),
+      { type: 'text', text: (opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.\n\n' : '') + (opts.prompt || PROMPT) },
     ] }],
   };
   // If a safety classifier declines (very unlikely for clothing photos), let the API retry on its recommended model.
@@ -172,6 +247,15 @@ async function tagWithClaude(env, image, opts = {}) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: text.slice(0, 300) } }; }
 }
 
+/* the extra single-item fields, tidied: suggestion text kept short and plain, the cloth box inside the photo */
+function cleanTag(t) {
+  const sug = v => v && typeof v === 'object' && txt(v.name, 30) ? { name: txt(v.name, 30), why: txt(v.why, 200) } : null;
+  const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
+  let box = null;
+  if (t.clothBox && typeof t.clothBox === 'object') { const x = clamp(t.clothBox.x), y = clamp(t.clothBox.y);
+    box = { x, y, w: Math.max(1, Math.min(1000 - x, clamp(t.clothBox.w))), h: Math.max(1, Math.min(1000 - y, clamp(t.clothBox.h))) }; }
+  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box };
+}
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,
    left to right, each with the same fields as a single tag, a confidence, and a rough box (thousandths of the image). */
@@ -211,7 +295,10 @@ async function handleTagMany(req, env, json) {
   const text = await req.text();
   if (text.length > 15e6) return json({ error: 'photo too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
-  const c = await tagWithClaude(env, String(body.image || ''), { schema: MULTI_SCHEMA, prompt: MULTI_PROMPT, maxTokens: 16000, effort: 'medium' });
+  const custom = cleanCustom(body.custom), base = tagSchema(custom, false);
+  const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
+    properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
+  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT + customText(custom) + correctionsText(body.corrections), maxTokens: 16000, effort: 'medium' });
   if (c.status !== 200) return json(c.body, c.status);
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
@@ -546,7 +633,7 @@ async function keepSnapshots(env, m, body) {
 async function listSnapshots(env) {
   const l = await env.WARDROBE.list({ prefix: 'snap:' });
   return (l.keys || []).filter(k => k.metadata && k.metadata.saved).map(k => ({ id: k.name.slice(5), saved: k.metadata.saved, rev: k.metadata.rev }))
-    .sort((a, b) => b.saved - a.saved || a.id.localeCompare(b.id));
+    .sort((a, b) => b.saved - a.saved || b.id.localeCompare(a.id));   // same moment: the later date first
 }
 async function handleSync(req, env, json, cors) {
   if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to enable backups.' }, 403);
@@ -618,7 +705,13 @@ export default {
     if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
     if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
 
-    if (env.ANTHROPIC_API_KEY) { const c = await tagWithClaude(env, image); return json(c.body, c.status); }
+    if (env.ANTHROPIC_API_KEY) {
+      const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
+      const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + measuredText(body.measured) + correctionsText(body.corrections);
+      const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
+      if (c.status === 200) c.body = cleanTag(c.body);
+      return json(c.body, c.status);
+    }
     if (!env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
 
     const model = env.MODEL || DEFAULT_MODEL;

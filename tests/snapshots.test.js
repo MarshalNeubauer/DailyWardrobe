@@ -24,6 +24,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok(store.get('snap:2026-11-10')===v1,'later changes the same day leave that day\'s copy alone');
   await put(st(4),'2026-11-11');
   ok(store.get('snap:2026-11-11')!==v1&&JSON.parse(store.get('snap:2026-11-11')).data.items[0].id==='i3'&&store.get('snap:2026-11')===v1,'the next day keeps the state it started with; the month keeps its first');
+  for(const k of ['snap:2026-11-10','snap:2026-11','snap:2026-11-11'])meta.set(k,{...meta.get(k),saved:1700000000000});   // all the same moment: the later date still comes first
   const L=await (await call('GET','?snaps=1')).json();
   ok(L.snaps.length===3&&L.snaps.every(s=>s.saved&&s.rev)&&L.snaps[0].id==='2026-11-11','GET ?snaps=1 lists the copies, newest first');
   const g=await (await call('GET','?snap=2026-11-10')).json();

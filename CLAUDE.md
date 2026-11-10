@@ -59,6 +59,18 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the simulation is resumable (`planSim(start).upTo(day)`; `buildPlan(y,m)` runs one from `planStart`)
 - a day with no jacket of its kind (a blazer day with no blazers) takes the other kind
 
+### `tagging.js`
+
+- photo tagging on the app side (loaded after app.js): `tagExtras()` adds to every tag request the owner's colours/patterns (`settings.custom`), the latest 20 corrections (`settings.tagFixes`, an item never gets its own), and on a second tag the close-up and the measurement
+- the tagger gets a sharp copy (`TAG_MAX` 2048px, JPEG 0.92; group photos 2576px), kept on the device in Cache Storage `dw-keep-tagimg` (`keepTagImg`/`tagImgOf`; sw.js never deletes `dw-keep-*` caches) for the benchmark
+- adding a close-up tags again with both photos (`refineFromCloseup`): fields the owner set by hand (`q.edited`, set by `setq`) stay, the rest take the new answer, and the card says what changed
+- white balance: `wbRead` (gains, whether a white reference is there, its brightness); a close-up with its own reference (white paper) is corrected and exposure-set from it (`texGains`), otherwise like its item photo
+- measuring: `measureCloth` gives the median Lab of the close-up (or of Claude's `clothBox` in the item photo); `nearestCols` compares by ΔE2000 (`dE00` in core.js; lightness counts half without a reference) against `calibLab`, the median of the owner's own measured items of that colour once there are two (`item.meas`), else the swatch
+- the card shows confidence, one-tap runner-ups (`altColor`/`altPattern`), the measurement, and offers a new colour (Claude's `newColor`, or ΔE over `FAR_DE` 12) or pattern (`newPattern`) through `newColForm`/`newPatForm`
+- owner colours/patterns: `settings.custom` (synced), applied by `applyCustom` in core.js; keys `own<letters>` / `own-<slug>`; each has a base (`colBase`/`patBase`): the planner reads `planCol(i)`/`patOf(i)` so it behaves like the base, while drawings and brightness (`lumCol`) use the colour's own shade; Settings lists them, removable when unused (`renderCustomUI`)
+- corrections: saving an AI-tagged card records changed fields (`recordTagResult`: `settings.tagFixes`, last 60; `settings.tagStats` counts) and the stats page shows the accuracy (`tagStatsCard`)
+- benchmark (Settings → Tagging benchmark, `renderBenchUI`/`runBench`): re-tags 25/50/75/100% of the items with photos (random), three at a time, compares type/colour/colour family/pattern with the confirmed tags; runs only when started, with a cost estimate; results in `localStorage.tag_bench` (last 10)
+
 ### `detect.js`
 
 - stripe/check detection from photos (canvas)
@@ -160,6 +172,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
 
 - Photo tagging via the Claude API (secret `ANTHROPIC_API_KEY`, optional `CLAUDE_MODEL`); falls back to the Workers AI binding `AI`.
+- single tag (POST /): `tagSchema(custom,true)` adds confidence, `altColor`/`altPattern`, `newColor`/`newPattern` ({name, why} or null) and `clothBox`; effort medium; an optional `closeup` is sent as a second image; `measured` and `corrections` become prompt text (`measuredText`/`correctionsText`); `custom` is checked by `cleanCustom`; the system prompt says photos are already white-balanced
 - `/tag-many`: several items in one photo. Claude lists every item with a confidence and a rough box in thousandths; the app crops each into its own Add card.
 - `/sync`: KV binding `WARDROBE`. The backup's `{rev, saved}` is kept as the KV key's metadata, so `?v=` and the PUT conflict check don't load the backup.
 - `/fetch`: downloads photo links for the app.
