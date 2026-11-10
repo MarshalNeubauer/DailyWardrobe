@@ -17,7 +17,7 @@
 //
 // Pattern lists must stay in sync with PATS_BY in core.js.
 /* colours each item type really comes in: [main colours, stripe / motif colours]. Must match COLS_BY in core.js. */
-const SUITING = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green'],
+const SUITING = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','deeptaupe','taupe','tan','khaki','olive','green'],
   SUIT_LINES = ['white','cream','lightgrey','grey','midgrey','charcoal','black','lightblue','blue','navy','deepblue','burgundy','red','rust','brown','tan','green','olive','gold'],
   LEATHER_COLS = ['black','brown','tan','oxblood','burgundy','navy','grey','taupe'];
 const TYPE_COLORS = {
@@ -56,7 +56,8 @@ ${TYPE_COLOR_TEXT}
   than navy; darknavy is navy so dark it is almost black; slate is a dark blue-grey, greyer than navy and bluer than charcoal;
   wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
   than burgundy; khaki is the light sandy beige of classic chinos and cotton dress trousers, lighter and greener than tan,
-  which is a warmer, deeper camel brown; taupe is a greyish brown, between grey and tan; rust is a burnt orange-brown;
+  which is a warmer, deeper camel brown; taupe is a greyish brown, between grey and tan;
+  deeptaupe is a dark taupe, a deep greyish brown, darker and greyer than brown and much darker than taupe; rust is a burnt orange-brown;
   ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
   blue with a violet cast, between lightblue and blue; grey for a tie clip or cufflinks means gunmetal)
   Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
@@ -111,7 +112,7 @@ const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* ---- Claude API ---- */
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
-  'brown','tan','khaki','taupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
+  'brown','tan','khaki','taupe','deeptaupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
   'paleyellow','ivory','beige','lavender','periwinkle','mint'];   // per-type lists: TYPE_COLORS
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
