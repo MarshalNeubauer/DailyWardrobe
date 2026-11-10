@@ -15,26 +15,162 @@
   1. merge `origin/main` into the branch and resolve any conflicts;
   2. if `main` changed `CACHE` in `sw.js` or `PLAN_RULES` in planner.js, and this branch bumps it too, bump it again to one above `main`'s value (two sessions bumping to the same number is a single bump, so phones would miss the second change);
   3. re-run `npm test` on the merged result, push, and only then merge. If tests fail after the merge, apply the "Don't merge" rule.
+- **Waiting for GitHub's test run: never a fixed wait.** No `sleep`, `timeout … sleep` or fixed-length loop to "give CI time".
+  1. Right after pushing, check the run once (`pull_request_read`, method `get_check_runs`). If it has finished, act on it now.
+  2. If it is still running, call `subscribe_pr_activity` for the PR and end the turn. The run's result arrives as a PR event and wakes the session; merge (or fix) then.
+  3. After merging, call `unsubscribe_pr_activity` for that PR.
+- **Run only what you need while working.** `node tests/run.js <name>` (or `TEST_ONLY=<name>`) runs just the `tests/*.test.js` files whose name contains `<name>`. Run the full suite (`npm test`, about 3–4 min) once before pushing, and once more only if `main` had to be merged in.
+- **CLAUDE.md: one fact per line.** Add a new bullet under the file's heading instead of extending an existing one, so sessions working in parallel don't edit the same line and conflict.
 
 ## Project
 
 Static app served from `main` by GitHub Pages (no build step). Classic scripts loaded in order, sharing one global scope:
 
-| File | Contents |
-|---|---|
-| `index.html` | markup and script tags |
-| `styles.css` | styles |
-| `core.js` | colours, types, item helpers (no DOM; also loaded by background workers). `isWorkday(d)` = a weekday in `settings.workdays` that is not a day off (`offName(d)`: a public holiday in `settings.holidays` `{country, list:[{d,n}], skip}` that is not skipped, or one of the user's own `settings.daysOff` `[{d,n}]`; dates as `YYYY-MM-DD`, `isoKey`). The planner skips days off like weekends |
-| `planner.js` | outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM). Jackets rotate by rest and avoid the previous workdays' colour group (`jacketGroup`, `colourRepeat`), and so do shirts and ties (`shirtRepeat`, `tieRepeat`; white and light blue shirts only mildly; dark shirts count as one look and black/charcoal/grey/silver ties as one, `shirtLook`/`tieLook`); the same jacket colour group with the same shirt look and tie look as either of the last two workdays is a whole-look repeat (`lookRepeat`); each jacket remembers its last two outfits so its tie and shirt colour vary (`comboRepeat`); a jacket pinned to one of the next 3 workdays is held back before its day, the next fixed day's colour is avoided, and the suit before a blazer day avoids the colour of the blazer that is due (`fixedAhead`); odd trousers rotate on a long rest (`ptRest`, up to 60 days, since blazer days are weekly) and shoes avoid yesterday's pair when another suits; steel blue is a mid-tone shirt, not a `darkShirt` (cutoff 95); what the user's changes taught it (`settings.learn`: votes on item pairings `p` and items `i`, −3…+3; a pairing voted down scores 6 lower per vote, one voted up is preferred among the good outfits; `pairVote`/`itemVote`) is applied in `outfit()`; occasions (`occOf(rec)`: `formal` stored as `rec.formal`, `wedding` / `funeral` / `casual` as `rec.occasion`; rules in `OCC` and `formalTop/Shirt/Tie`; an occasion's suit outweighs rotation and the one clearly right suit is held back on the days before; `casual` = no jacket, tie, clip or vest: `o.top` is null and the shirt is judged against the trousers); every month from two months back is simulated from one shared start so months agree; the simulation is resumable (`planSim(start).upTo(day)`; `buildPlan(y,m)` runs one from `planStart`), and a day with no jacket of its kind (a blazer day with no blazers) takes the other kind |
-| `detect.js` | stripe/check detection from photos (canvas) |
-| `figure.js` | Today's torso figure (`jacket:false` draws it in shirt sleeves with a button placket, for no-jacket days), redrawn at the user's request: no head or neck (cropped at the collar, like the original handoff), athletic build, shirt collar band with points on the tie knot, slim notched lapels around a wide opening so the vest shows, set-in sleeves cut by the shoulder line (`clipShoulder`), the left forearm across the chest with the watch, the right hand at the button. No tap targets on it. Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js; keep the pattern ids (`suitB/suitL/suitR/shirt/tie`), `bladeP`, `.fig-clip`, `.fig-watch`, `.fig-vest` and no `<use>` inside `<clipPath>` |
-| `draw.js` | procedural fabric patterns (`fabricDef`), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails |
-| `analysis.js` | "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker) |
-| `app.js` | IndexedDB storage (items, day history, settings; generated photos in `meta` as `render:<combination key>`), forms (the Wardrobe editor can replace, rotate, zoom-crop and undo an item's photo without touching its tags: `photoTools`, `setPhoto`), screens (Today: worn / not worn are ✕ and ✓ over the picture's bottom corners on today and past days, with a "Last worn" pill between them when the look was worn before (`wornMarks`, `setWorn`); no "Below the waist" heading; the score, pieces and month cards share one size (76px folded, a 112px picture slot, one text column) and everything on Today is spaced by `--gap` (12px) in styles.css; tiles show a short 4:3 picture; the score card is a `#sbox` fold box like `#ibox`/`#mbox` (`scoreCard`, `toggleScore`, `scoreOpen`; its checks slide in one after another and each `.sbar` fills to the points scored); folding from inside: a tap on an open photo (pieces list row or tile) folds it, a tap on the open score breakdown folds it, a tap in the open pieces list that is not on a button or photo folds the list (`foldListTap`), the open month has a `.foldbtn` at its bottom right, and folding a box whose top is off screen scrolls the card back into view (`keepInView`); a box that unfolds (score, pieces list, a piece row, month plan, a tile's photo) scrolls with `reveal(el, top)`: just far enough to show what opened, stopping when the tapped box's top reaches the top of the screen; no piece card under the score (removed); a below-the-waist tile under the figure unfolds that item's photo in `#bbox` below the tiles (`pickPiece`/`belowOpen`; tapping the tile again or the photo folds it), the pieces list folded into `#ibox` (each piece unfolds into its photo, `toggleRow`) and the month plan into `#mbox`, both unfolding in place; `goToday()` from the date-bar pill and the Today tab; ⇄ beside a piece opens the picker sheet (`openPicker`/`pickItem`: every item for the slot, best match first by `fitOf`; "Suggest another" is the old cycling `swapSlot`); changes teach the planner (`learnFrom`: a swap votes a pairing down, a hand pick votes it up); a past day can be corrected to what was really worn (`togglePastEdit`/`correctPast`: the record gets `edited`, `worn:true` and the real ids); `planMonth(y,m)` / `planFor()` keep one shared `planSim` in `cache` (anything that changes the wardrobe, history, settings or weather must reset `cache={}`); `newDayCheck()` moves on to today when the app is reopened on a later day; Wardrobe (an opened item takes the full width of its row from where it was, so the tapped box stays put; its row-mates slide under it and a blank `.gi-gap` keeps later rows; tapping the open photo/swatch, Close or Done folds it back; `openItem`/`closeItem`/`flipWardrobe`, FLIP animations; swiping the grid or ←/→ steps through the type filters in chip order, skipping empty types, not while an item is open: `stepType`/`wardTypes`), Add), product pictures for shoes/belts/socks/pants/coats/watches (`itemDesc()`; socks are one sock in side profile on pure white (`itemBg()` sends `bg:'white'`, the worker's `ITEM_BG`); a sock's `secondaryColor` is its toe cap colour (`sockToe()` in core.js: the tagger is told so, `drawSock` draws it (the sock outline `SOCK_D` is traced from a catalogue photo, a 60×72 box; details are clipped inside it), `desc` names it, the editor labels it "Toe cap"; the planner ignores it); made from the item's own photo by image edit when it has one, saved as `render:c<16 hex>` of the description; Settings button generates the missing ones), batch photo generation, background download of the worker's photos for the month on screen and the next, nearest day first (`prefetchRenders`, after one `GET /render?list=1`), swipe gestures, occasions in Settings (`setOccasion`, `addFormalDay`, `renderFormalUI`; `hasOutfit(o)` is true for a no-jacket day too, whose photo key includes the trousers and whose request sends `nojacket`), days off in Settings (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`), weather (16-day forecast; beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in `localStorage.wx_norm`, so `dayClimate()` does not fall back to a temperate calendar) |
-| `stats.js` | the stats page (Settings → Wardrobe stats, `openStats`/`renderStats`, shown as the `#stats` section by `show('stats')`): `buildStats()` counts what was really worn (`wornDays()`: day records from when the wardrobe existed, not days marked "Not worn") and what is planned for the next six months (`plannedDays()`); never-worn pieces with a reason (`whyUnused`), wear counts by type (folded sections build their rows when opened), what costs points, colour balance, pairings and rest, and what the planner learned (`forgetLearned`) |
-| `sync.js` | backup/sync through the worker's `/sync` endpoint (KV), backup file download/restore. When nothing changed on the device since the last sync (`sync_mark`: the backup's version and a fingerprint of the wardrobe), it asks `GET /sync?v=<rev>:<saved>` and neither downloads nor uploads the backup; any local change takes the full merge path |
-| `sw.js` | service worker: network-first app files, offline fallback. Add new app files to `ASSETS` and bump `CACHE` |
-| `worker.js` | Cloudflare Worker: photo tagging via the Claude API (secret `ANTHROPIC_API_KEY`, optional `CLAUDE_MODEL`; falls back to Workers AI binding `AI`), `/sync` (KV binding `WARDROBE`, requires `APP_TOKEN`; the backup's `{rev, saved}` is kept as the KV key's metadata so `?v=` and the PUT conflict check don't load the backup) `/fetch` (downloads photo links for the app, requires `APP_TOKEN`), `/holidays?country=XX` (public holidays from Google's public holiday calendars, for countries Nager.Date lacks; the app asks Nager.Date itself first; requires `APP_TOKEN`), `/tag-many` (several items in one photo: Claude lists every item with a confidence and a rough box in thousandths; the app crops each into its own Add card) and `/render` (POST with `mode:'item'`: a product picture of one item from a text description via OpenAI image generation, stored under the given key; otherwise POST: realistic outfit photo via OpenAI's image edit API (`nojacket:true` uses a shirt-sleeves pose prompt), secret `OPENAI_API_KEY`, optional `OPENAI_IMAGE_MODEL` (default `gpt-image-2`), `OPENAI_IMAGE_QUALITY` (an outfit request or queued job may set its own `quality`, `model` (a `gpt-image-*` id) and `complexity`, to try another model under a test key); photos are saved per outfit combination (`comboKey()` in app.js: the shirt by base colour only, the jacket/tie/clip/watch by how they look, plus the vest) as `render:c<16 hex>` in KV (no expiry) and in `meta`, so a combination is never generated twice and GET/PUT `/render?key=` share it between devices (`GET /render?list=1` lists every kept key); older `render:<date>` copies are migrated on first use; requires `APP_TOKEN`; POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`), whose consumer (`queue()` export) makes the photo in the background, retrying temporary OpenAI errors and recording others as `jobfail:<key>`; GET `/render-queue` lists pending and failed jobs; the Settings month batch uses this and falls back to generating on the page when the worker has no queue); deployed automatically by `.github/workflows/deploy-worker.yml` (Wrangler, config in `wrangler.toml`; it creates the queue if missing, so the token needs Queues edit) when a merge to `main` changes it, once the repo has the `CLOUDFLARE_API_TOKEN` secret and `CLOUDFLARE_ACCOUNT_ID` / `WARDROBE_KV_ID` variables; until then the workflow skips and the user deploys by hand |
+### `index.html`
+
+- markup and script tags
+
+### `styles.css`
+
+- styles
+
+### `core.js`
+
+- colours, types, item helpers (no DOM; also loaded by background workers)
+- `isWorkday(d)` = a weekday in `settings.workdays` that is not a day off (`offName(d)`: a public holiday in `settings.holidays` `{country, list:[{d,n}], skip}` that is not skipped, or one of the user's own `settings.daysOff` `[{d,n}]`; dates as `YYYY-MM-DD`, `isoKey`)
+- The planner skips days off like weekends
+
+### `planner.js`
+
+- outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM)
+- Jackets rotate by rest and avoid the previous workdays' colour group (`jacketGroup`, `colourRepeat`)
+- Shirts and ties do the same (`shirtRepeat`, `tieRepeat`; white and light blue shirts only mildly; dark shirts count as one look and black/charcoal/grey/silver ties as one, `shirtLook`/`tieLook`)
+- the same jacket colour group with the same shirt look and tie look as either of the last two workdays is a whole-look repeat (`lookRepeat`)
+- each jacket remembers its last two outfits so its tie and shirt colour vary (`comboRepeat`)
+- a jacket pinned to one of the next 3 workdays is held back before its day
+- the next fixed day's colour is avoided, and the suit before a blazer day avoids the colour of the blazer that is due (`fixedAhead`)
+- odd trousers rotate on a long rest (`ptRest`, up to 60 days, since blazer days are weekly) and shoes avoid yesterday's pair when another suits
+- steel blue is a mid-tone shirt, not a `darkShirt` (cutoff 95)
+- what the user's changes taught it (`settings.learn`: votes on item pairings `p` and items `i`, −3…+3; a pairing voted down scores 6 lower per vote, one voted up is preferred among the good outfits; `pairVote`/`itemVote`) is applied in `outfit()`
+- occasions:
+  - `occOf(rec)`: `formal` stored as `rec.formal`, `wedding` / `funeral` / `casual` as `rec.occasion`
+  - rules in `OCC` and `formalTop/Shirt/Tie`
+  - an occasion's suit outweighs rotation and the one clearly right suit is held back on the days before
+  - `casual` = no jacket, tie, clip or vest: `o.top` is null and the shirt is judged against the trousers
+- every month from two months back is simulated from one shared start so months agree
+- the simulation is resumable (`planSim(start).upTo(day)`; `buildPlan(y,m)` runs one from `planStart`)
+- a day with no jacket of its kind (a blazer day with no blazers) takes the other kind
+
+### `detect.js`
+
+- stripe/check detection from photos (canvas)
+
+### `figure.js`
+
+- Today's torso figure (`jacket:false` draws it in shirt sleeves with a button placket, for no-jacket days)
+- redrawn at the user's request: no head or neck (cropped at the collar, like the original handoff)
+- athletic build
+- shirt collar band with points on the tie knot
+- slim notched lapels around a wide opening so the vest shows
+- set-in sleeves cut by the shoulder line (`clipShoulder`)
+- the left forearm across the chest with the watch
+- the right hand at the button
+- No tap targets on it
+- Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js
+- keep the pattern ids (`suitB/suitL/suitR/shirt/tie`)
+- keep `bladeP`, `.fig-clip`, `.fig-watch`, `.fig-vest`, and no `<use>` inside `<clipPath>`
+
+### `draw.js`
+
+- procedural fabric patterns (`fabricDef`)
+- `figureSvg()` glue for the torso figure
+- accessories
+- wardrobe thumbnails
+
+### `analysis.js`
+
+- "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker)
+
+### `app.js`
+
+- IndexedDB storage (items, day history, settings; generated photos in `meta` as `render:<combination key>`)
+- forms (the Wardrobe editor can replace, rotate, zoom-crop and undo an item's photo without touching its tags: `photoTools`, `setPhoto`)
+- screens:
+  - Today: worn / not worn are ✕ and ✓ over the picture's bottom corners on today and past days, with a "Last worn" pill between them when the look was worn before (`wornMarks`, `setWorn`)
+  - no "Below the waist" heading
+  - the score, pieces and month cards share one size (76px folded, a 112px picture slot, one text column) and everything on Today is spaced by `--gap` (12px) in styles.css
+  - tiles show a short 4:3 picture
+  - the score card is a `#sbox` fold box like `#ibox`/`#mbox` (`scoreCard`, `toggleScore`, `scoreOpen`; its checks slide in one after another and each `.sbar` fills to the points scored)
+  - folding from inside: a tap on an open photo (pieces list row or tile) folds it, a tap on the open score breakdown folds it, a tap in the open pieces list that is not on a button or photo folds the list (`foldListTap`), the open month has a `.foldbtn` at its bottom right, and folding a box whose top is off screen scrolls the card back into view (`keepInView`)
+  - a box that unfolds (score, pieces list, a piece row, month plan, a tile's photo) scrolls with `reveal(el, top)`: just far enough to show what opened, stopping when the tapped box's top reaches the top of the screen
+  - no piece card under the score (removed)
+  - a below-the-waist tile under the figure unfolds that item's photo in `#bbox` below the tiles (`pickPiece`/`belowOpen`; tapping the tile again or the photo folds it), the pieces list folded into `#ibox` (each piece unfolds into its photo, `toggleRow`) and the month plan into `#mbox`, both unfolding in place
+  - `goToday()` from the date-bar pill and the Today tab
+  - ⇄ beside a piece opens the picker sheet (`openPicker`/`pickItem`: every item for the slot, best match first by `fitOf`; "Suggest another" is the old cycling `swapSlot`)
+  - changes teach the planner (`learnFrom`: a swap votes a pairing down, a hand pick votes it up)
+  - a past day can be corrected to what was really worn (`togglePastEdit`/`correctPast`: the record gets `edited`, `worn:true` and the real ids)
+  - `planMonth(y,m)` / `planFor()` keep one shared `planSim` in `cache` (anything that changes the wardrobe, history, settings or weather must reset `cache={}`)
+  - `newDayCheck()` moves on to today when the app is reopened on a later day
+  - Wardrobe (an opened item takes the full width of its row from where it was, so the tapped box stays put; its row-mates slide under it and a blank `.gi-gap` keeps later rows; tapping the open photo/swatch, Close or Done folds it back; `openItem`/`closeItem`/`flipWardrobe`, FLIP animations; swiping the grid or ←/→ steps through the type filters in chip order, skipping empty types, not while an item is open: `stepType`/`wardTypes`), Add
+- product pictures for shoes/belts/socks/pants/coats/watches:
+  - `itemDesc()`
+  - socks are one sock in side profile on pure white (`itemBg()` sends `bg:'white'`, the worker's `ITEM_BG`)
+  - a sock's `secondaryColor` is its toe cap colour (`sockToe()` in core.js: the tagger is told so, `drawSock` draws it (the sock outline `SOCK_D` is traced from a catalogue photo, a 60×72 box; details are clipped inside it), `desc` names it, the editor labels it "Toe cap"; the planner ignores it)
+  - made from the item's own photo by image edit when it has one, saved as `render:c<16 hex>` of the description
+  - Settings button generates the missing ones
+- batch photo generation
+- background download of the worker's photos for the month on screen and the next, nearest day first (`prefetchRenders`, after one `GET /render?list=1`)
+- swipe gestures
+- occasions in Settings (`setOccasion`, `addFormalDay`, `renderFormalUI`; `hasOutfit(o)` is true for a no-jacket day too, whose photo key includes the trousers and whose request sends `nojacket`)
+- days off in Settings (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`)
+- weather:
+  - 16-day forecast
+  - beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in `localStorage.wx_norm`, so `dayClimate()` does not fall back to a temperate calendar
+
+### `stats.js`
+
+- the stats page (Settings → Wardrobe stats, `openStats`/`renderStats`, shown as the `#stats` section by `show('stats')`): `buildStats()` counts what was really worn (`wornDays()`: day records from when the wardrobe existed, not days marked "Not worn") and what is planned for the next six months (`plannedDays()`)
+- never-worn pieces with a reason (`whyUnused`)
+- wear counts by type (folded sections build their rows when opened)
+- what costs points
+- colour balance
+- pairings and rest
+- what the planner learned (`forgetLearned`)
+
+### `sync.js`
+
+- backup/sync through the worker's `/sync` endpoint (KV)
+- backup file download/restore
+- When nothing changed on the device since the last sync (`sync_mark`: the backup's version and a fingerprint of the wardrobe), it asks `GET /sync?v=<rev>:<saved>` and neither downloads nor uploads the backup
+- any local change takes the full merge path
+
+### `sw.js`
+
+- service worker: network-first app files, offline fallback
+- Add new app files to `ASSETS` and bump `CACHE`
+
+### `worker.js`
+
+Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
+
+- Photo tagging via the Claude API (secret `ANTHROPIC_API_KEY`, optional `CLAUDE_MODEL`); falls back to the Workers AI binding `AI`.
+- `/tag-many`: several items in one photo. Claude lists every item with a confidence and a rough box in thousandths; the app crops each into its own Add card.
+- `/sync`: KV binding `WARDROBE`. The backup's `{rev, saved}` is kept as the KV key's metadata, so `?v=` and the PUT conflict check don't load the backup.
+- `/fetch`: downloads photo links for the app.
+- `/holidays?country=XX`: public holidays from Google's public holiday calendars, for countries Nager.Date lacks (the app asks Nager.Date itself first).
+- `/render` POST with `mode:'item'`: a product picture of one item from a text description via OpenAI image generation, stored under the given key.
+- `/render` POST otherwise: a realistic outfit photo via OpenAI's image edit API (`nojacket:true` uses a shirt-sleeves pose prompt).
+  - Secret `OPENAI_API_KEY`; optional `OPENAI_IMAGE_MODEL` (default `gpt-image-2`) and `OPENAI_IMAGE_QUALITY`.
+  - An outfit request or queued job may set its own `quality`, `model` (a `gpt-image-*` id) and `complexity`, to try another model under a test key.
+- Photos are saved per outfit combination (`comboKey()` in app.js: the shirt by base colour only; the jacket/tie/clip/watch by how they look; plus the vest) as `render:c<16 hex>` in KV (no expiry) and in `meta`, so a combination is never generated twice.
+- GET/PUT `/render?key=` share a photo between devices; `GET /render?list=1` lists every kept key. Older `render:<date>` copies are migrated on first use.
+- POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`).
+  - Its consumer (`queue()` export) makes the photo in the background, retrying temporary OpenAI errors and recording others as `jobfail:<key>`.
+  - GET `/render-queue` lists pending and failed jobs.
+  - The Settings month batch uses the queue and falls back to generating on the page when the worker has no queue.
+- Deployed automatically by `.github/workflows/deploy-worker.yml` (Wrangler, config in `wrangler.toml`) when a merge to `main` changes it.
+  - It creates the queue if missing, so the token needs Queues edit.
+  - Needs the repo's `CLOUDFLARE_API_TOKEN` secret and `CLOUDFLARE_ACCOUNT_ID` / `WARDROBE_KV_ID` variables; until then the workflow skips and the user deploys by hand.
 
 **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js. On the next start the app clears swaps and vest choices on every day after today (`checkPlanRules()` / `replanFuture()` in app.js; formal days, today and past days stay), so the new rules apply to the whole future. Settings has "Re-plan upcoming days" for the same on demand.
 
