@@ -550,16 +550,14 @@ function monthLink(){
 }
 
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
-let figSel='top';
+/* a tile under the figure unfolds the item's photo below the tiles, like the pieces list; tap it again (or the photo) to fold it */
+let belowOpen=null;
 const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
-function pieceCard(o){
-  if(figSel==='vest'){if(!o.vest)return '';return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(o.top)}</span><div><small class="mut">Vest</small><b class="cap">Matching vest · ${desc(o.top)}</b></div>${canPick(o)?`<button class="swap" onclick="setVest(false)">Leave off</button>`:''}</div>`}
-  const i=o[figSel];if(!i)return '';
-  return `<div class="piece" id="piece"><span class="chip-sw">${itemPicHtml(i,swatchSVG(i))}</span><div><small class="mut">${slotLabel(figSel,o)}</small><b class="cap">${desc(i)||nm(i)}</b></div>${canPick(o)?`<button class="swap" onclick="openPicker('${figSel}')">Change</button>`:''}</div>`;
-}
+const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen];if(!i)belowOpen=null;
+  return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" onclick="pickPiece(belowOpen)">${i?rowPanel(i):''}</div></div></div>`};
 function figureStage(o){
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
-  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-label="${slotLabel(s,o)}: ${desc(i)}">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
+  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${desc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   schedulePrefetch();   // and the rest of the month's photos, nearest first
@@ -567,7 +565,7 @@ function figureStage(o){
   const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}"><small class="mut">${(()=>{const d=lastWorn(o);return d?`Last worn ${d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}`:'Not worn yet'})()}</small></div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}</div>`)+ctl+
-    (tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below" style="--n:${below.length}">${tiles}</div>`:'');
+    (tiles?`<p class="below-h mut">${o.coat?'Coat and below the waist':'Below the waist'}</p><div class="below" style="--n:${below.length}">${tiles}</div>`+belowBox(o,below):'');
 }
 /* ---- realistic photo: the figure + item photos -> worker /render (OpenAI image edit).
    Photos are saved per outfit combination, not per day: any day that wears the same pieces reuses the photo.
@@ -817,8 +815,15 @@ function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:t
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(queuedKeys().length){checkQueue();startQueueWatch()}
   newDayCheck();try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(settings.location&&(!c||Date.now()-c.t>3*3600e3))loadWeather()}catch{}
   remoteKeys=null;schedulePrefetch()});   // photos made on another device meanwhile
-function pickPiece(s){figSel=s;const o=planFor()[key(sel)];if(!o)return;
-  const w=$('#piece-wrap');if(w)w.innerHTML=pieceCard(o)}
+function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||!o[s])return;const opening=belowOpen!==s;
+  belowOpen=opening?s:null;
+  document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('onclick')===`pickPiece('${s}')`;t.setAttribute('aria-expanded',on);
+    t.setAttribute('aria-label',t.getAttribute('aria-label').replace(/(Show|Hide) the photo/,on?'Hide the photo':'Show the photo'))});
+  const inn=el.querySelector('.rpanel-in');
+  if(opening){const was=el.classList.contains('open');inn.innerHTML=rowPanel(o[s]);if(!was){el.classList.remove('instant');void el.offsetHeight}}
+  else el.classList.remove('instant');
+  el.classList.toggle('open',opening);
+  if(opening)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),150)}
 /* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
 const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
 const todayBtn=()=>{const h=homeDay();if(key(sel)===key(h))return '';const isT=+h===+todayDate();
@@ -848,7 +853,7 @@ function renderToday(){
   else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${scoreCard(o)}<div id="piece-wrap">${pieceCard(o)}</div>${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+    side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink():''}</div></div>`;
   if(items.length){recordDays(p);
   }
