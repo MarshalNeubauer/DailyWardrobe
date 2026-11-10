@@ -1,7 +1,7 @@
 // Month view (wear plan): calendar of fabric stacks with worn/today/planned/rest states, a Today/Tomorrow card,
 // opened from the box on Today; photo caption shows when the look was last worn; Settings can generate the month's photos.
 const path=require('path'),{pathToFileURL}=require('url');
-module.exports=async({ok,chromium,url,ROOT})=>{
+module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
   const realFetch=globalThis.fetch;let calls=0;
@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/November wear plan/.test(t.txt),'the box names the month');
     // the month unfolds in place: still on Today, panel grows from the box
     const closedH=await p.evaluate(()=>document.querySelector('#mbox').getBoundingClientRect().height);
-    await p.click('#mbox .month-link');await p.waitForTimeout(600);
+    await p.click('#mbox .month-link');await settle(p,600);
     const m=await p.evaluate(()=>{const c=[...document.querySelectorAll('#mbox .mc:not(.blank)')];return {today:!$('#today').hidden,open:$('#mbox').classList.contains('open'),
       exp:document.querySelector('#mbox .month-link').getAttribute('aria-expanded'),h:document.querySelector('#mbox').getBoundingClientRect().height,title:document.querySelector('#mbox .mhead h3').textContent,
       n:c.length,rest:c.filter(x=>x.classList.contains('rest')).map(x=>x.querySelector('.dn').textContent).join(),
@@ -44,9 +44,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.click('#mbox .mbtns button[aria-label="Next month"]');
     ok(await p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent==='December 2026'&&key(sel)==='2026-11-9'&&!!planFor()['2026-11-9']),'next month inside the panel, without changing the shown day');
     await p.click('#mbox .mbtns button[aria-label="Previous month"]');
-    await p.click('#mbox .month-link');await p.waitForTimeout(600);
+    await p.click('#mbox .month-link');await settle(p,600);
     ok(await p.evaluate(()=>!$('#mbox').classList.contains('open')&&document.querySelector('#mbox').getBoundingClientRect().height<120),'tapping the box again folds it away');
-    await p.click('#mbox .month-link');await p.waitForTimeout(500);
+    await p.click('#mbox .month-link');await settle(p,500);
     await p.click('#mbox .mc:not(.blank) >> nth=15');
     ok(await p.evaluate(()=>!$('#today').hidden&&key(sel)==='2026-11-16'&&!monthOpen),'tapping a day shows it on Today and folds the month');
     // caption: last worn

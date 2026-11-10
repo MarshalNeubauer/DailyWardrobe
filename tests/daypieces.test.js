@@ -1,6 +1,6 @@
 // Day view: the pieces list folds into a box of fabric chips (unfolds in place), the swap card sits between the score and that box,
 // and a back-to-today button (date bar pill and the Today tab) returns from any other day or month.
-module.exports=async({ok,chromium,url})=>{
+module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
@@ -18,12 +18,12 @@ module.exports=async({ok,chromium,url})=>{
     ok(c.chips===c.n&&c.chips>=7,`the folded box shows one fabric chip per piece (${c.chips})`);
     ok(new RegExp(`^${c.n} pieces`).test(c.txt)&&/suit · .* shirt · .* tie/i.test(c.txt),`and names the suit, shirt and tie (${c.txt})`);
     ok(c.side.indexOf('piece-wrap')<0&&c.side.indexOf('ibox')===c.side.indexOf('sbox')+1&&!c.inStage&&!c.card,`no swap card: the pieces box sits right below the score (${c.side.join(',')})`);
-    await p.click('#ibox .month-link');await p.waitForTimeout(600);
+    await p.click('#ibox .month-link');await settle(p,600);
     const o1=await p.evaluate(()=>({open:$('#ibox').classList.contains('open'),h:$('#ipanel').getBoundingClientRect().height,exp:$('#ibox .month-link').getAttribute('aria-expanded'),rows:document.querySelectorAll('#ibox .list .row').length}));
     ok(o1.open&&o1.h>300&&o1.exp==='true'&&o1.rows>=8,`tapping it unfolds the list in place (${Math.round(o1.h)}px, ${o1.rows} rows)`);
     await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForTimeout(150);
     ok(await p.evaluate(()=>$('#ibox').classList.contains('open')&&planFor()[key(sel)].overrides),'swapping from the list keeps it open');
-    await p.click('#ibox .month-link');await p.waitForTimeout(600);
+    await p.click('#ibox .month-link');await settle(p,600);
     ok(await p.evaluate(()=>!$('#ibox').classList.contains('open')&&$('#ipanel').getBoundingClientRect().height<1),'tapping again folds it away');
     // back to today
     ok(await p.evaluate(()=>!document.querySelector('.gotoday')),'no back-to-today button on today');
