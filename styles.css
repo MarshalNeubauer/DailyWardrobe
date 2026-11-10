@@ -347,3 +347,8 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 @keyframes barIn{from{transform:scaleX(0)}to{transform:none}}
 @keyframes numPop{0%{transform:none}35%{transform:scale(1.05)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.score.open li,.score.open .sbar i,.score.open .num{animation:none}}
+/* folding from inside: the score breakdown and the pieces list's names fold on a tap; the month has a fold button */
+#spanel .mpanel-in{cursor:pointer}.ibox .rpanel-in{cursor:pointer}.ibox .row>.mut:first-child{cursor:pointer}
+.mfoot{display:flex;align-items:center;gap:10px;margin-top:8px}.mfoot .mlegend{flex:1;min-width:0;margin:0}
+.foldbtn{flex:none;width:36px;height:36px;margin:0;padding:0;border-radius:18px;border:1px solid var(--line);background:var(--bg);color:var(--mut);font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center}
+.foldbtn span{display:block;transform:rotate(-90deg)}.foldbtn:active{transform:scale(.92)}
