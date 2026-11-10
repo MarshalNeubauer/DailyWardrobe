@@ -187,8 +187,8 @@ async function workerTests(){
 (async()=>{
   await new Promise(r=>server.listen(0,r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
   const browser=await chromium.launch();
-  // TEST_ONLY=name runs just the tests/*.test.js files whose name contains it (for reproducing one suite quickly)
-  const ONLY=process.env.TEST_ONLY;
+  // `node tests/run.js name` (or TEST_ONLY=name) runs just the tests/*.test.js files whose name contains it
+  const ONLY=process.env.TEST_ONLY||process.argv[2];
   for(const [name,fn] of ONLY?[]:suites){
     console.log('\n• '+name);
     const ctx=await browser.newContext({...devices['iPhone 13']});const page=await ctx.newPage();const errs=[];

@@ -10,8 +10,10 @@ module.exports=async({ok,chromium,url})=>{
         items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
           I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
         settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;
-        const o=planFor()[key(sel)];renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>'),model:'x',t:1};show('today');
-        await new Promise(r=>setTimeout(r,300));
+        // a stand-in photo for the day's look; a background refresh (weather, holidays) can re-plan the day, so set it again until it shows
+        const img='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>');
+        show('today');for(let n=0;n<40;n++){const o=planFor()[key(sel)];if(!renders[comboKey(o)]){renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img,model:'x',t:1};renderToday()}
+          await new Promise(r=>setTimeout(r,100));if(document.querySelector('.fig.photo img')&&n>=3)break}
         const R=s=>document.querySelector(s).getBoundingClientRect(),seq=['#mannequin-container','.below','.score','#ibox','#mbox'].map(R);
         const cards=['.score','#ibox','#mbox'].map(R),text=[...document.querySelectorAll('.score .lbl,#ibox .mltxt,#mbox .mltxt')].map(e=>Math.round(e.getBoundingClientRect().left));
         const slots=['.score .num','#ibox .pstrip','#mbox .mlstrip'].map(s=>Math.round(R(s).width)),tile=R('.below .tile');
