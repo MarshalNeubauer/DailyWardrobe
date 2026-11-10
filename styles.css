@@ -326,8 +326,7 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .score .lbl b,.mltxt b{font-size:16px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .score .lbl small,.mltxt small{font-size:13px;line-height:1.3;color:var(--mut);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .score .chev,.month-link .chev{flex:none;font-size:24px;line-height:1;color:var(--mut);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
-.score[open] .chev{transform:rotate(90deg)}
-.score ul{margin:0 14px 10px}
+.score ul{list-style:none;margin:0 4px;padding:0}
 .pstrip{grid-template-columns:repeat(var(--pc,6),minmax(0,1fr));gap:4px;align-content:center}
 .pchip{width:100%;height:auto;aspect-ratio:1;max-height:25px;max-width:25px}
 .mlstrip{justify-content:space-between;gap:0}.mli{width:20px}
@@ -335,3 +334,16 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .below .tile.has-pic .item-pic{aspect-ratio:4/3}
 .below .tile.has-pic[data-type="socks"] .item-pic{object-fit:contain}
 .below .tile .ph.thumb{width:auto;height:calc((100cqw - 24px)/4*.75);max-width:100%;aspect-ratio:1}
+/* the score card's breakdown: each check slides in one after another and its bar fills to the points it scored */
+.score .month-link{color:inherit}
+.score li{grid-template-columns:1fr auto;align-items:center;row-gap:5px}
+.score li:first-child{border-top:0}
+.sbar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.sbar i{display:block;height:100%;width:calc(var(--p) * 100%);border-radius:2px;background:#2f7a4f;transform-origin:left}
+.score li.miss .sbar i{background:#b5841a}
+.score.open:not(.instant) li{animation:mcIn .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 90ms)}
+.score.open:not(.instant) .sbar i{animation:barIn .75s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 220ms)}
+.score.open:not(.instant) .num{animation:numPop .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes barIn{from{transform:scaleX(0)}to{transform:none}}
+@keyframes numPop{0%{transform:none}35%{transform:scale(1.05)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.score.open li,.score.open .sbar i,.score.open .num{animation:none}}

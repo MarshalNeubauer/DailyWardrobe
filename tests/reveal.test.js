@@ -9,14 +9,14 @@ module.exports=async({ok,chromium,url})=>{
     const setup=()=>p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
         I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;belowOpen=null;
+      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;belowOpen=null;scoreOpen=false;
       const o=planFor()[key(sel)];renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>'),model:'x',t:1};
       show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,300))});
     const navTop=()=>p.evaluate(()=>document.querySelector('body>nav').getBoundingClientRect().top);
     const at=s=>p.evaluate(s=>{const b=document.querySelector(s).getBoundingClientRect();return {top:Math.round(b.top),bottom:Math.round(b.bottom)}},s);
     const scrollY=()=>p.evaluate(()=>Math.round(scrollY));
     // a tall box (month plan, pieces list, score breakdown): it ends with its top at the top of the screen
-    for(const [name,box,tap,prep] of [['month plan','#mbox','#mbox .month-link'],['pieces list','#ibox','#ibox .month-link'],['score card','.score','.score summary']]){
+    for(const [name,box,tap,prep] of [['month plan','#mbox','#mbox .month-link'],['pieces list','#ibox','#ibox .month-link'],['score card','#sbox','#sbox .month-link']]){
       await setup();
       // bring the box into view near the bottom of the screen, as when scrolling down to it
       await p.evaluate(([b])=>{const r=document.querySelector(b).getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect().top;scrollBy(0,r.bottom-nav+4)},[box]);
@@ -37,9 +37,9 @@ module.exports=async({ok,chromium,url})=>{
     await p.tap('.below .tile');await p.waitForTimeout(1100);const t=await at('.below'),bb=await at('#bbox'),nt=await navTop();
     ok(t.top>=6&&(bb.bottom<=nt-11||Math.abs(t.top-8)<=2),`a tile's photo: scrolls to show it, the tile row stops at the top at most (tiles top ${t.top}px, photo bottom ${bb.bottom}px)`);
     // already visible after unfolding: no scroll; folding never scrolls
-    await setup();const y0=await scrollY();await p.tap('.score summary');await p.waitForTimeout(900);const s=await at('.score');
+    await setup();const y0=await scrollY();await p.tap('#sbox .month-link');await p.waitForTimeout(900);const s=await at('#sbox');
     if(s.bottom<=(await navTop())-12)ok(await scrollY()===y0,'a box that fits on screen once open does not scroll');
-    const y1=await scrollY();await p.tap('.score summary');await p.waitForTimeout(600);ok(await scrollY()<=y1,'folding a box does not scroll down');
+    const y1=await scrollY();await p.tap('#sbox .month-link');await p.waitForTimeout(600);ok(await scrollY()<=y1,'folding a box does not scroll down');
     // a touch during the scroll stops it
     await setup();await p.evaluate(()=>{const r=document.querySelector('#mbox').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect().top;scrollBy(0,r.bottom-nav+4)});
     await p.tap('#mbox .month-link');await p.waitForTimeout(90);const mid=await scrollY();await p.evaluate(()=>dispatchEvent(new Event('touchstart')));await p.waitForTimeout(900);
