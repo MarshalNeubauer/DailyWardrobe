@@ -224,15 +224,21 @@ function settFromWeave(w){const c=(w&&w.colours||[]).filter(x=>/^#[0-9a-f]{6}$/i
 /* both pictures when there are both: the item photo gives the scale and the direction; a close-up that shows at least one and a half
    repeats resolves fine stripes far better (a pinstripe a pixel wide in the whole-jacket photo is a crisp line up close), so
    its bands and crossing lines are used */
-function settFrom({full,box,tex,weave,wb}){let s=null,c=null;
-  try{if(full&&box){s=settFromCanvas(applyWb(full,wb),box);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
-    if(tex){const r=wbRead(tex);c=settFromCanvas(applyWb(tex,r.ref?r.gains:wb));if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
+/* white balance and, when the picture has a white reference (a white shirt under the tie, a white wall, paper), exposure set
+   from it too: an underexposed photo otherwise reads every band too dark (a cream reads grey). At most 1.6x, in linear light. */
+function settCanvas(c,wb){const r=wbRead(c),g=wb||r.gains,out=applyWb(c,g);if(!r.ref||r.refLum>=235)return out;
+  const k=Math.min(1.6,sLin(243)/sLin(Math.max(1,r.refLum))),x=out.getContext('2d',{willReadFrequently:true}),D=x.getImageData(0,0,out.width,out.height),d=D.data,lut=new Uint8ClampedArray(256);
+  for(let v=0;v<256;v++)lut[v]=Math.round(linS(Math.min(1,sLin(v)*k)));for(let i=0;i<d.length;i+=4){d[i]=lut[d[i]];d[i+1]=lut[d[i+1]];d[i+2]=lut[d[i+2]]}x.putImageData(D,0,0);return out}
+function settFrom({full,box,tex,weave,wb,type}){let s=null,c=null;
+  try{if(full&&box){s=settFromCanvas(settCanvas(full,wb),box);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
+    if(tex){const r=wbRead(tex);c=settFromCanvas(settCanvas(tex,r.ref?r.gains:wb));if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
   if(s&&c&&c.cr>=1.5)s={...s,bands:c.bands,cross:c.cross&&s.cross?{...c.cross,d:s.cross.d}:c.cross||s.cross,src:'photo+closeup'};
   else if(!s)s=c;
   if(!s&&weave)s=settFromWeave(weave);
-  if(s&&weave){if(weave.repeatsAcross)s.tr=weave.repeatsAcross;if(s.src==='closeup'&&DIR_ANG[weave.direction]!=null)s.a=DIR_ANG[weave.direction]}   // a close-up's angle says nothing
+  if(s&&weave){if(weave.repeatsAcross&&!(type==='tie'&&/photo/.test(s.src)))s.tr=weave.repeatsAcross;   // a tie's box spans most of its width: its own count beats Claude's estimate (a jacket's box is only part of it)
+    if(s.src==='closeup'&&DIR_ANG[weave.direction]!=null)s.a=DIR_ANG[weave.direction]}   // a close-up's angle says nothing
   return s}
-function readSett(q){q.sett=!q.settOff&&settable(q.type,q.pattern,q.weave)&&q.raw?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.texFull||q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb}):null;return q.sett}
+function readSett(q){q.sett=!q.settOff&&settable(q.type,q.pattern,q.weave)&&q.raw?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.texFull||q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;return q.sett}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);renderAdd()}
 const settSummary=s=>`${s.bands.length} colour bands${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!settable(q.type,q.pattern,q.weave))return '';
@@ -242,6 +248,49 @@ function settNote(q,i){if(!settable(q.type,q.pattern,q.weave))return '';
 async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};
   const full=it.pbox?await toCanvas(await tagImgOf(it.id)):null,tex=await toCanvas(it.texture);
-  const s=settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null});   // the kept copy is already white-balanced
+  const s=settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type});   // the kept copy is already white-balanced
   if(!s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
   it.sett=s;delete it.stripes;await put(it);cache={};renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
+
+/* ---- the pattern for the photo generator. Claude's words alone were not enough: on a plaid tie its description had the stripes
+   rising the wrong way and the generator followed it, and it said nothing of how much of each colour there is. So a read
+   pattern is also described from the measurements (direction as the viewer sees it, each colour's share, pinlines, crossing
+   lines), any direction in Claude's words is taken out, and a drawing of the pattern goes along as a reference. ---- */
+/* a band's name: the nearest of Claude's own colour names for this cloth (so the measured shares and its description use one
+   vocabulary; lightness counts half, a photo's exposure being the least certain), else the nearest of the app's colours */
+const nearName=(hex,named)=>{const l=rgbLab(...hexRgb(hex));
+  // hue counts most here: a greyed steel blue in a dim photo is still the blue band, not the beige one of the same lightness
+  const dist=(x,y)=>Math.hypot((x[0]-y[0])/2,1.4*(x[1]-y[1]),1.4*(x[2]-y[2]));
+  if(named&&named.length>=2){let best=named[0],bd=1e9;for(const c of named){const d=dist(l,rgbLab(...hexRgb(c.hex)));if(d<bd){bd=d;best=c}}return String(best.name).toLowerCase()}
+  let best=null,bd=1e9;for(const c of Object.keys(COLORS)){if(CUSTOM_COL[c])continue;const d=dE00(l,labOf(c));if(d<bd){bd=d;best=c}}return colName(best)};
+/* which way the stripes run as the viewer sees them (sett.a is the angle across them; on a jacket or shirt they are snapped straight) */
+function settDirText(s,role){const a=role==='tie'?s.a:Math.round(s.a/90)*90,phi=((a+90)%180+180)%180;   // the stripes' own direction, 0 = horizontal, y down
+  if(phi<15||phi>165)return 'horizontal stripes';if(phi>75&&phi<105)return 'vertical stripes';
+  return phi<90?'diagonal stripes running from the upper left down to the lower right, as the viewer sees them':'diagonal stripes running from the lower left up to the upper right, as the viewer sees them'}
+function settText(i,role){const s=i&&i.sett;if(!s||!s.bands)return '';
+  const named=(i.weave&&i.weave.colours||[]).filter(c=>c&&c.name&&/^#[0-9a-f]{6}$/i.test(c.hex||''));
+  const share={},thin={};for(const [h,w] of s.bands){const n=nearName(h,named);if(w<.035)thin[n]=1;else share[n]=(share[n]||0)+w}
+  const tot=Object.values(share).reduce((a,b)=>a+b,0)||1,parts=Object.entries(share).sort((a,b)=>b[1]-a[1]).map(([n,w])=>`${Math.max(1,Math.round(100*w/tot/5)*5)}% ${n}`);
+  const pins=Object.keys(thin);
+  const cross=s.cross?[...new Set(s.cross.bands.filter(b=>b[0]).map(b=>nearName(b[0],named)))]:[];
+  return `measured: ${settDirText(s,role)}; the bands are about ${parts.join(', ')}${pins.length?`, with thin ${pins.join(' and ')} pinlines`:''}`+
+    (cross.length?`; fine ${cross.join(' and ')} lines cross them in the other direction`:'')}
+const DIR_RE=/(?:rising|running|descending|slanting|sloping|going|that run|which run)?\s*(?:diagonally\s+)?(?:from\s+)?(?:the\s+)?(?:upper|lower|top|bottom)[ -](?:left|right)\s+(?:down\s+|up\s+)?(?:to|towards)\s+(?:the\s+)?(?:upper|lower|top|bottom)[ -](?:left|right)(?:\s+as (?:seen|worn))?/gi;
+const dropDir=t=>String(t||'').replace(DIR_RE,'').replace(/\s+([,.:;])/g,'$1').replace(/\s{2,}/g,' ').trim();
+/* what the photo prompt says of an item's pattern */
+function patternPrompt(i,role){if(!i)return '';const m=settText(i,role),d=m?dropDir(i.patternText):i.patternText||'';
+  return [m,d.replace(/\.$/,'')].filter(Boolean).join('. ')}
+/* the drawing of a read pattern for the generator: a tie as its blade (tip down, the pattern at the angle it is worn), anything else
+   as a square of its cloth; on a light grey ground, sharp */
+function patternDiagram(i,role){const fab=figFabric(i,role);if(!fab)return Promise.resolve(null);
+  const tie=role==='tie',vb=tie?'168 46 54 214':'0 0 200 200',W=tie?360:600,H=tie?Math.round(360*214/54):600;
+  const shape=tie?'<path d="M 182 50 L 208 50 C 211 60 210 70 205 79 C 199 83 191 83 185 79 C 180 70 179 60 182 50 Z" fill="url(#pd)"/><path d="M 186 74 L 204 74 C 207 120 212 172 217 222 L 195 256 L 173 222 C 178 172 183 120 186 74 Z" fill="url(#pd)"/>':'<rect width="200" height="200" fill="url(#pd)"/>';
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${vb}"><defs>${fab.def('pd',0)}</defs><rect x="-10" y="-10" width="400" height="400" fill="#ececea"/>${shape}</svg>`;
+  return new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(im,0,0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>ok(null);
+    im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
+/* the references with the pattern drawings put in after their item's photos (at most 8 in all) */
+async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie','tie','the tie'],['top','top',o.suitDay?'the suit':'the blazer'],['shirt','shirt','the shirt'],...(o.top?[]:[['bot','bot','the trousers']])];
+  for(const [s,role,name] of slots){const i=o[s];if(!i||!i.sett||refs.length>=8)continue;const img=await patternDiagram(i,role);if(!img)continue;
+    let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
+    refs.splice(at,0,img);labels.splice(at,0,`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy its colours, their order and proportions and the stripe direction exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
+  return {refs:refs.slice(0,8),labels:labels.slice(0,8)}}

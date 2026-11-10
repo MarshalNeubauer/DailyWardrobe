@@ -46,17 +46,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- the real tie: through the Add flow
     const flow=await p.evaluate(async()=>{show('add');const blob=await (await fetch('tests/fixtures/tie-plaid.jpg')).blob();await addFiles([new File([blob],'tie.jpg',{type:'image/jpeg'})]);
       const q=queue[0],s=q.sett,L=s.bands.map(([h])=>rgbLab(...hexRgb(h)));
-      return {s,src:s&&s.src,n:s&&s.bands.length,blue:L.some(l=>l[2]<-2&&l[2]<l[1]-1&&l[0]>30),light:L.some(l=>l[0]>68),dark:L.some(l=>l[0]<30),note:document.querySelector('#queue').textContent}});
+      return {s,src:s&&s.src,n:s&&s.bands.length,blue:L.some(l=>l[2]<-2&&l[2]<l[1]-1&&l[0]>30),light:L.some(l=>l[0]>68),dark:L.some(l=>l[0]<38),note:document.querySelector('#queue').textContent}});
     ok(flow.src==='photo'&&flow.n>=10,`the tie's pattern is read from the sharp photo: ${flow.n} colour bands`);
     ok(flow.blue&&flow.light&&flow.dark,'… including its steel blue, its cream and its dark pinlines');
     ok(flow.s.cross&&Math.abs(flow.s.cross.d-90)<=10,`… and the lines crossing the other way (${flow.s.cross&&flow.s.cross.d}°)`);
-    ok(Math.abs(flow.s.a+46)<=6&&flow.s.tr===.7,`direction from the photo (${flow.s.a}°), scale from Claude's repeats across (${flow.s.tr})`);
+    ok(Math.abs(flow.s.a+46)<=6&&Math.abs(flow.s.tr-.61)<.08,`direction and scale from the photo (${flow.s.a}°, ${flow.s.tr} repeats across; a tie's own count beats Claude's estimate of 0.7)`);
     ok(/Pattern: \d+ colour bands with lines crossing the other way, read from the photo/.test(flow.note),'the card says what was read');
     // drawn: the swatch uses the bands; the figure keeps the repeat's share of the tie's width
     const dr=await p.evaluate(()=>{const q=queue[0],th=itemThumb(q,true),fig=fabricDef('f',q,'tie','fig'),sw=fabricDef('s',q,'tie');const W=d=>+d.match(/width="([\d.]+)"/)[1];
-      return {all:q.sett.bands.every(([h])=>th.includes(h)),over:/opacity="\.5"/.test(th),rot:/rotate\(-46\)/.test(th),wf:W(fig),ws:W(sw)}});
+      return {all:q.sett.bands.every(([h])=>th.includes(h)),over:/opacity="\.5"/.test(th),rot:/rotate\(-46\)/.test(th),wf:W(fig),ws:W(sw),tr:q.sett.tr}});
     ok(dr.all&&dr.over&&dr.rot,'the swatch draws every band in its colour, the crossing lines over them, at the tie\'s angle');
-    ok(Math.abs(dr.wf-29/.7)<1&&dr.ws>=14&&dr.ws<=110,`one repeat is ${dr.wf.toFixed(0)} units on the figure (the tie is 29 wide, 0.7 repeats across) and ${dr.ws.toFixed(0)} in the swatch`);
+    ok(Math.abs(dr.wf-29/dr.tr)<1&&dr.ws>=14&&dr.ws<=110,`one repeat is ${dr.wf.toFixed(0)} units on the figure (the tie is 29 wide, ${dr.tr} repeats across) and ${dr.ws.toFixed(0)} in the swatch`);
     // the simple pattern instead
     await p.click('#queue .chipbtn:has-text("Use the simple pattern")');
     ok(await p.evaluate(()=>!queue[0].sett&&/Drawn with the simple stripe pattern/.test(document.querySelector('#queue').textContent)),'"Use the simple pattern" goes back to the drawn stripe');
@@ -66,7 +66,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o={top:{id:'s',type:'suit',primaryColor:'charcoal',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:it,suitDay:true};
       return {sett:!!it.sett,pbox:it.pbox,text:it.patternText,prompt:outfitText(o),key:comboKey(o)!==comboKey({...o,tie:plain})}});
     ok(sv.sett&&sv.pbox&&sv.pbox.w===339&&sv.text===DESC,'the item keeps its pattern, the box it was read from and the description');
-    ok(sv.prompt.includes('Diagonal regimental stripes running upper left to lower right')&&sv.key,'the photo generator is told the pattern, and the photo is made for it (its own key)');
+    ok(/\(measured: diagonal stripes running from the upper left down to the lower right, as the viewer sees them; the bands are about/.test(sv.prompt)&&sv.prompt.includes('wide taupe-brown bands with dark brown pinlines')&&sv.key,'the photo generator is told the pattern, and the photo is made for it (its own key)');
     await p.evaluate(()=>{show('wardrobe');openItem(items[0].id)});await p.waitForTimeout(500);
     const ed=await p.textContent(`#gi-${await p.evaluate(()=>items[0].id)}`);
     ok(/Pattern layout: \d+ colour bands with lines crossing the other way, read from the photo/.test(ed),'the Wardrobe editor shows it');
@@ -117,7 +117,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const st={id:'a',type:'shirt',primaryColor:'white',pattern:'stripe',sett:{v:2,a:0,bands:[['#ffffff',.5],['#3f6fb5',.5]],cr:20},patternText:'Bold blue bengal stripes on white'},
         p1={id:'b',type:'shirt',primaryColor:'white',pattern:'solid'},p2={id:'c',type:'shirt',primaryColor:'white',pattern:'oxford'},o=sh=>({top,tie,shirt:sh,suitDay:true});
       return {txt:outfitText(o(st)),plain:outfitText(o(p1)),own:comboKey(o(st))!==comboKey(o(p1)),share:comboKey(o(p1))===comboKey(o(p2))}});
-    ok(/a white stripe dress shirt \(Bold blue bengal stripes on white\)/.test(sh.txt)&&/a plain white dress shirt/.test(sh.plain),'the photo generator is told a striped shirt\'s pattern; a plain one is still "a plain white dress shirt"');
+    ok(/a white stripe dress shirt \(measured: vertical stripes; the bands are about [^)]*\. Bold blue bengal stripes on white\)/.test(sh.txt)&&/a plain white dress shirt/.test(sh.plain),'the photo generator is told a striped shirt\'s pattern; a plain one is still "a plain white dress shirt"');
     ok(sh.own&&sh.share,'a striped shirt gets its own photo; plain and finely woven white shirts still share one');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

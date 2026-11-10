@@ -211,14 +211,16 @@ patternBox — for a striped, checked or plaid item: the largest rectangle of th
 weave — for a striped, checked or plaid item (null for solids and fine weaves): its pattern as precisely as you can, from the
   close-up when there is one:
   layout: stripes, stripes-with-crossing-lines (stripes with finer lines running the other way), check, plaid, or other;
-  direction: which way the main stripes run as worn (a regimental tie's stripes usually run upper-left to lower-right);
+  direction: which way the main stripes run in the photo, as the viewer sees them (look carefully: follow one stripe from where it
+    enters the tie to where it leaves);
   repeatsAcross: how many times the whole colour sequence repeats across the item's widest part (0.5 if one repeat is twice as wide;
     for a pinstripe or chalk-stripe jacket, the number of stripes across its front, often 20 to 40);
   colours: one full repeat of the stripe sequence in order, each band with a plain name, an sRGB hex as seen, and its width
     (a pinstripe suit: the ground, then the stripe as a hairline; a gingham: the two colours);
   crossing: the lines that run the other way (colours, how fine, how far apart), or "" if none;
-  description: one or two sentences describing the pattern for a photo-realistic image generator: direction, the order and
-  colours of the bands, their widths, the crossing lines, and the cloth's sheen or weave.`;
+  description: one or two sentences describing the pattern for a photo-realistic image generator: the order and colours of the
+  bands, which colour dominates, their widths, the crossing lines, and the cloth's sheen or weave. Leave out the direction (the app
+  measures it).`;
 /* what the app measured (Lab after white balance), to weigh against what is seen */
 function measuredText(m) {
   if (!m || !Array.isArray(m.lab) || m.lab.length !== 3) return '';
