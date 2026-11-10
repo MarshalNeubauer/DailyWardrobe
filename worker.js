@@ -250,10 +250,16 @@ async function handleFetchImage(req, env, json, cors) {
   return new Response(buf, { headers: { ...cors, 'content-type': type, 'cache-control': 'no-store' } });
 }
 
-/* POST /render {image, refs, outfit} -> {image: data URL, model}
+/* POST /render {image, refs, outfit, nojacket?} -> {image: data URL, model}
    Turns the app's outfit illustration into a photorealistic picture with OpenAI's image edit API. The illustration
    fixes the pose and framing; photos of the actual items (refs) and the written outfit keep colours and patterns right. */
-const RENDER_PROMPT = outfit => `Turn the first image (an illustration) into a photorealistic photograph.
+const RENDER_PROMPT = (outfit, nojacket) => nojacket ? `Turn the first image (an illustration) into a photorealistic photograph.
+Keep exactly the same pose, crop and framing: a man's torso from the chin down to the hips, no face, in shirt sleeves with no jacket; his forearms cross at the waist, one hand rests on his chest next to the wristwatch, the other hand rests at his waist.
+He is wearing: ${outfit}.
+Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item: no jacket, and no tie unless one is listed.
+A crisp cotton dress shirt with natural folds, buttoned cuffs, realistic hands and skin.
+Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`
+  : `Turn the first image (an illustration) into a photorealistic photograph.
 Keep exactly the same pose, crop and framing: a man's torso from the chin down to the hips, no face; his forearms cross at the waist, one hand holds the jacket lapel next to the wristwatch, the other hand rests at the jacket button.
 He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
@@ -297,7 +303,7 @@ async function outfitPhoto(body, env) {
   const refText = !refs.length ? '' : labels.length === refs.length
     ? `. The photos after the illustration show the actual items, in this order: ${labels.join('; ')}. Match each one exactly`
     : ', and match the photos of the actual items that follow it';
-  form.append('prompt', RENDER_PROMPT(outfit).replace('{REFS}', refText));
+  form.append('prompt', RENDER_PROMPT(outfit, !!body.nojacket).replace('{REFS}', refText));
   form.append('image[]', base, 'outfit.png');
   refs.forEach((b, i) => form.append('image[]', b, `item-${i + 1}.${b.type.split('/')[1]}`));
   form.append('size', '1024x1024');
@@ -328,7 +334,7 @@ async function queueRender(body, env, json) {
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
   if (await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });
-  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, t: Date.now() };
+  const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 6), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 6), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined, t: Date.now() };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
   await env.RENDER_QUEUE.send({ key });

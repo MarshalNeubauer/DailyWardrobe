@@ -332,6 +332,6 @@ function figureSvg(o,prefix='fig-'){
     watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
   return outfitFigureSvg({
     suit:figFabric(o.top||o.shirt,o.top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),
-    watch,clip:o.clip&&!o.vest?{color:METAL[o.clip.metal]||METAL.other}:null,vest:!!(o.vest&&o.top),bg:figBg(),idPrefix:prefix,
-    ariaLabel:`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`});
+    watch,clip:o.clip&&!o.vest?{color:METAL[o.clip.metal]||METAL.other}:null,vest:!!(o.vest&&o.top),jacket:!!o.top,bg:figBg(),idPrefix:prefix,
+    ariaLabel:`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt)+(o.top?'':', no jacket'),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`});
 }
