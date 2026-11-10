@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const c=sent.body.messages[0].content;
     ok(c[0].type==='image'&&c[0].source.type==='base64'&&c[0].source.media_type==='image/png'&&!c[0].source.data.startsWith('data:'),'the photo is sent as a base64 image block (data: prefix stripped)');
     const sch=sent.body.output_config.format;
-    ok(sch.type==='json_schema'&&sch.schema.additionalProperties===false&&sch.schema.required.length===10,'structured output: a strict JSON schema with every field required');
+    ok(sch.type==='json_schema'&&sch.schema.additionalProperties===false&&sch.schema.required.length===Object.keys(sch.schema.properties).length&&sch.schema.required.length>=16,'structured output: a strict JSON schema with every field required (the tag plus confidence, runner-up, suggestions and the cloth box)');
     ok(sch.schema.properties.primaryColor.enum.includes('darknavy')&&sch.schema.properties.primaryColor.enum.includes('wine'),'the colour enum includes the new colours');
     ok(sent.body.fallbacks==='default'&&sent.headers['anthropic-beta']==='server-side-fallback-2026-07-01','refusal fallback is enabled for Opus');
     ok(!('temperature' in sent.body)&&!('thinking' in sent.body),'no sampling or thinking parameters (rejected on current models)');

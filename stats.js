@@ -109,6 +109,8 @@ function renderStats(){
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="cap st-nm">${nm(p.a)} · ${nm(p.b)}</span><b>${p.n}×</b></div>`).join('')}`:''}
   <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: another pair in that colour would give them a rest.`:'Shoes always get a day off between wears.'}</small></p></section>
 
+  ${typeof tagStatsCard==='function'?tagStatsCard():''}
+
   <section class="card st-card" id="st-learn"><h3>What the planner has learned</h3>
   ${learned.length?`<p class="mut"><small>From your swaps, picks and corrections. Forget one and the planner goes back to its own judgement.</small></p>${learned.map(x=>`<div class="st-learn"><span class="st-tag ${x.v<0?'down':'up'}">${x.v<0?(x.kind==='p'?'Avoids':'Wears less'):(x.kind==='p'?'Prefers':'Wears more')}</span><span class="st-nm">${x.txt.replace(/^./,c=>c.toUpperCase())}</span><button type="button" onclick="forgetLearned('${x.kind}','${x.k}')" aria-label="Forget: ${esc(x.txt)}">Forget</button></div>`).join('')}
     <div class="btns"><button type="button" onclick="forgetLearned()">Forget everything</button></div>`

@@ -68,6 +68,10 @@
 <div class="btns"><button id="regen-btn" type="button" onclick="generateRender()">Regenerate photo</button></div>
 <p class="mut" style="margin:8px 0 6px"><small id="itempic-status">Product pictures for the shoes, belts and socks shown under the figure.</small></p>
 <div class="btns"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div>
+<h3 style="margin:16px 0 4px">Your colours &amp; patterns</h3>
+<div id="custom-list"></div>
+<h3 style="margin:16px 0 4px">Tagging benchmark</h3>
+<div id="bench-box"></div>
 <h3 style="margin:16px 0 4px">Backup &amp; sync</h3>
 <p class="mut" style="margin:0 0 6px"><small id="sync-status"></small></p>
 <p class="mut" style="margin:0"><small>Your wardrobe is backed up to your Cloudflare Worker and kept in sync across your devices. Needs the WARDROBE KV binding and APP_TOKEN on the worker.</small></p>
@@ -84,6 +88,7 @@
 <script src="detect.js"></script>
 <script src="figure.js"></script><script src="draw.js"></script>
 <script src="app.js"></script>
+<script src="tagging.js"></script>
 <script src="stats.js"></script>
 <script src="sync.js"></script>
 </body></html>
