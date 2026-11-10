@@ -11,6 +11,10 @@
   In those cases, push the branch, report the problem, and leave the PR unmerged.
 - If the working branch's earlier PR is already merged, start the next change on top of the latest `main`. Merge `main` into the branch rather than force-pushing.
 - The app is served from `main` by GitHub Pages, so a merge is a deploy.
+- **Other sessions may be merging at the same time.** Right before merging, fetch `main`; if it moved since the branch was made or last updated:
+  1. merge `origin/main` into the branch and resolve any conflicts;
+  2. if `main` changed `CACHE` in `sw.js` or `PLAN_RULES` in planner.js, and this branch bumps it too, bump it again to one above `main`'s value (two sessions bumping to the same number is a single bump, so phones would miss the second change);
+  3. re-run `npm test` on the merged result, push, and only then merge. If tests fail after the merge, apply the "Don't merge" rule.
 
 ## Project
 
