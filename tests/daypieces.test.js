@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.click('#ibox .month-link');await p.waitForTimeout(600);
     const o1=await p.evaluate(()=>({open:$('#ibox').classList.contains('open'),h:$('#ipanel').getBoundingClientRect().height,exp:$('#ibox .month-link').getAttribute('aria-expanded'),rows:document.querySelectorAll('#ibox .list .row').length}));
     ok(o1.open&&o1.h>300&&o1.exp==='true'&&o1.rows>=8,`tapping it unfolds the list in place (${Math.round(o1.h)}px, ${o1.rows} rows)`);
-    await p.click('#ibox .row button[aria-label="Swap tie"]');await p.waitForTimeout(150);
+    await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForTimeout(150);
     ok(await p.evaluate(()=>$('#ibox').classList.contains('open')&&planFor()[key(sel)].overrides),'swapping from the list keeps it open');
     await p.click('#ibox .month-link');await p.waitForTimeout(600);
     ok(await p.evaluate(()=>!$('#ibox').classList.contains('open')&&$('#ipanel').getBoundingClientRect().height<1),'tapping again folds it away');

@@ -352,7 +352,8 @@ function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];
 const planFor=()=>planMonth(view.y,view.m);
 
 /* views */
-const vestRow=o=>!(o.suitDay&&hasVest(o.top))?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${o.frozen?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
+const canPick=o=>!o.frozen||pastEdit===key(sel);   // a past day only while it is being corrected
+const vestRow=o=>!(o.suitDay&&hasVest(o.top))?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${!canPick(o)?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
 /* the outfit list: tapping a piece's swatch or name unfolds its photo inside the list (the actual item, so you can see
    exactly which shirt it is); one at a time; items without a photo show their product picture or drawing */
 let openRow=null;
@@ -360,7 +361,7 @@ const rowPic=i=>i.photo?`<img class="rpic" src="${i.photo}" alt="Photo of ${esc(
 const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of this item yet${itemPic(i)?': a generated picture of it.':': this is how the app draws it.'}</small>`);
 const slots=o=>{const rows=([[o.suitDay?'Suit':'Blazer',o.top,'top'],...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip'],...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
 .map(([l,i,s])=>{const open=!!i&&openRow===s;
-  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(desc(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span></button>${o.frozen?'':`<button class="swap" onclick="swapSlot('${s}')" aria-label="Swap ${l.toLowerCase()}" title="Swap">↻</button>`}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':'Add one on the Add tab'}</span>`}</div>`+
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(desc(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':'Add one on the Add tab'}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
     (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
@@ -394,10 +395,72 @@ async function swapSlot(slot){
   const skip={...(rec.skip||{})};skip[slot]=[...new Set([...(skip[slot]||[]),cur].filter(Boolean))];
   if(pool.every(i=>skip[slot].includes(i.id)))skip[slot]=[cur];       // tried them all: start the cycle again
   // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
-  const follow={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks']}[slot]||[];
+  const follow=FOLLOW[slot]||[];
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  rec.skip=skip;rec.force=force;swapMsg='';await saveDay(rec);renderToday();
+  rec.skip=skip;rec.force=force;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
 }
+const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks']};
+/* ---- learning from changes (the votes are read by the planner, see planner.js) ----
+   A piece swapped away votes against its pairing with the pieces that stayed (a shirt with the jacket and the tie, a tie
+   with the jacket and the shirt, trousers or shoes with the jacket); a piece chosen by hand votes for its pairings. Pieces
+   with no partner (a jacket, a belt, socks) get a vote of their own. Kept in the settings, so it syncs. */
+const LEARN_PARTNERS={shirt:['top','tie'],tie:['top','shirt'],bot:['top'],shoes:['top']};
+function learnVote(kind,k,d){const L=settings.learn={p:{...(settings.learn&&settings.learn.p)},i:{...(settings.learn&&settings.learn.i)}},m=L[kind];
+  const v=Math.max(-LEARN_CAP,Math.min(LEARN_CAP,(m[k]||0)+d));if(v)m[k]=v;else delete m[k]}
+function learnFrom(slot,o,oldIt,newIt,picked){
+  const partners=(LEARN_PARTNERS[slot]||[]).map(s=>o[s]).filter(p=>p&&(!oldIt||p.id!==oldIt.id)&&(!newIt||p.id!==newIt.id));let down=false,up=false;
+  if(oldIt&&(!newIt||oldIt.id!==newIt.id)){if(partners.length){for(const p of partners)learnVote('p',pairKey(oldIt,p),-1);down=true}else if(!picked){learnVote('i',oldIt.id,-1);down=true}}
+  if(picked&&newIt){if(partners.length)for(const p of partners)learnVote('p',pairKey(newIt,p),1);else learnVote('i',newIt.id,1);up=true}
+  if(!down&&!up)return '';
+  settings.updated=Date.now();metaPut('settings',settings);cache={};
+  return up?'Noted: the planner will reach for this choice more often.':'Noted: the planner will suggest that pairing less often.'}
+/* ---- choosing a piece by hand: a sheet with every item for the slot, best match for the rest of the outfit first ---- */
+let picker=null,pastEdit=null;
+const slotPool=(slot,o)=>slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay));
+/* how well a candidate suits the rest of the day's outfit (higher is better), by the planner's own rules */
+function fitOf(slot,o,c){
+  const day={formal:!!o.formal,clim:o.clim||dayClimate(sel),hasLinks:items.some(i=>i.type==='cufflinks')},suit=slot==='top'?c.type==='suit':o.suitDay,top=slot==='top'?c:o.top,bot=suit?top:slot==='bot'?c:o.bot,legs=suit?top:bot;
+  switch(slot){
+    case 'top':case 'bot':case 'shirt':case 'tie':return clothesScore(top,bot,slot==='shirt'?c:o.shirt,slot==='tie'?c:o.tie,suit,day)+(slot==='top'?seasonFit(c,day.clim.season)*2+(day.formal?formalTop(c)*2:0):0);
+    case 'shoes':return legs?shoeScore(top,legs,c)+shoeFormality(c,suit):0;
+    case 'belt':{const f=o.shoes?beltFit(o.shoes,c):0;return f===null?-60:f}
+    case 'socks':return sockScore(legs,o.shoes,c);
+    case 'watch':return watchFit(c,o.shoes,o.belt);
+    case 'clip':case 'links':return o.watch?(metalOf(c)===metalOf(o.watch)?6:-4):0}
+  return 0}
+const fitTag=gap=>gap<=.5?['best','Best match']:gap<=QWIN?['good','Good match']:gap<=18?['ok','Works']:['weak','Weak match'];
+const pickPic=i=>i.photo?`<img src="${i.photo}" alt="">`:itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true);
+function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=slotPool(slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,o).toLowerCase();
+  if(!o.frozen&&pool.length<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
+  const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
+  const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur;
+    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${i.id}')" aria-label="${esc(desc(i)||nm(i))}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm cap">${desc(i)||nm(i)}</span><small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
+  const none=o.frozen&&slot!=='top'&&cur?`<button type="button" onclick="pickItem('${slot}','')">None: I didn't wear one</button>`:'';
+  $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
+    <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`Every ${label} you own, the best match for the rest of the outfit first.`}</small></p>
+    ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another ↻</button>`}</div>`:''}
+    <div class="pick-grid">${scored.map(card).join('')}</div>`;
+  picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0}
+function closePicker(){picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on')}
+function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
+async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
+  const it=id?items.find(i=>i.id===id)||null:null;
+  if(o.frozen)return correctPast(slot,it);
+  if(!it||(o[slot]&&o[slot].id===id))return;
+  const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
+  for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
+  force[slot]=id;const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;
+  swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);renderToday()}
+/* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
+function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
+async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||pastEdit!==k)return;
+  const ids={...r.ids};let suitDay=!!r.suitDay;
+  if(slot==='top'){if(!it)return;ids.top=it.id;if(it.type==='suit'){suitDay=true;ids.bot=it.id}else{if(suitDay||ids.bot===r.ids.top)ids.bot=null;suitDay=false}}
+  else ids[slot]=it?it.id:null;
+  const rec={...r,ids,suitDay,worn:true,edited:true};delete rec.auto;
+  if(!suitDay||!hasVest(items.find(i=>i.id===ids.top)))rec.vestOn=false;
+  swapMsg=it?learnFrom(slot,slot==='top'?{...o,top:null}:o,null,it,true)&&'Corrected. The planner counts what you really wore.':'Corrected.';
+  await saveDay(rec);renderToday()}
 async function setFormal(v,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;if(v)r.formal=true;else delete r.formal;if(k===key(sel))swapMsg='';await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
@@ -418,15 +481,18 @@ async function replanButton(){const T=todayDate();
 function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
   el.textContent=msg||(n?`${n} upcoming day${n===1?' keeps':'s keep'} pieces from a swap.`:'Every upcoming day follows the planner.')}
-async function setVest(v){const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
+async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
+  if(o.frozen){const r0=dayRecs[k];if(pastEdit!==k||!r0)return;await saveDay({...r0,vestOn:!!v,worn:true,edited:true});renderToday();return}
+ const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
 function dayActions(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
   let h='';
   // did you wear it: a two-way toggle; tapping the chosen side again clears it
   if(past||isToday)h+=`<div class="seg" role="group" aria-label="Did you wear this outfit?"><button class="${o.worn===true?'on':''}" aria-pressed="${o.worn===true}" onclick="setWorn(${o.worn===true?'undefined':'true'})" aria-label="Wore this">✓ Worn</button><button class="${o.worn===false?'on':''}" aria-pressed="${o.worn===false}" onclick="setWorn(${o.worn===false?'undefined':'false'})" aria-label="Didn't wear">Not worn</button></div>`;
   if(o.formal)h+=`<span class="ftag" title="Set in Settings, Formal days" aria-label="Formal day">Formal<span class="fx"> day</span></span>`;
+  if(past&&o.frozen)h+=`<button class="pastedit${pastEdit===key(sel)?' on':''}" onclick="togglePastEdit()" aria-pressed="${pastEdit===key(sel)}">${pastEdit===key(sel)?'Done':'Correct this day'}</button>`;
   if(!o.frozen&&(o.overrides||o.vestOverride))h+=`<button class="reset" aria-label="Reset changes" title="Undo your changes to this day" onclick="resetDay()">↺</button>`;
-  return (h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
+  return (h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
 
 /* outfit score card with an expandable breakdown */
@@ -484,9 +550,9 @@ function monthLink(){
 let figSel='top';
 const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
 function pieceCard(o){
-  if(figSel==='vest'){if(!o.vest)return '';return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(o.top)}</span><div><small class="mut">Vest</small><b class="cap">Matching vest · ${desc(o.top)}</b></div>${o.frozen?'':`<button class="swap" onclick="setVest(false)">Leave off</button>`}</div>`}
+  if(figSel==='vest'){if(!o.vest)return '';return `<div class="piece" id="piece"><span class="chip-sw">${swatchSVG(o.top)}</span><div><small class="mut">Vest</small><b class="cap">Matching vest · ${desc(o.top)}</b></div>${canPick(o)?`<button class="swap" onclick="setVest(false)">Leave off</button>`:''}</div>`}
   const i=o[figSel];if(!i)return '';
-  return `<div class="piece" id="piece"><span class="chip-sw">${itemPicHtml(i,swatchSVG(i))}</span><div><small class="mut">${slotLabel(figSel,o)}</small><b class="cap">${desc(i)||nm(i)}</b></div>${o.frozen?'':`<button class="swap" onclick="swapSlot('${figSel}')">Swap</button>`}</div>`;
+  return `<div class="piece" id="piece"><span class="chip-sw">${itemPicHtml(i,swatchSVG(i))}</span><div><small class="mut">${slotLabel(figSel,o)}</small><b class="cap">${desc(i)||nm(i)}</b></div>${canPick(o)?`<button class="swap" onclick="openPicker('${figSel}')">Change</button>`:''}</div>`;
 }
 function figureStage(o){
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
@@ -768,7 +834,7 @@ function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;box
   box.classList.toggle('open',listOpen);const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
   if(listOpen)setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),120)}
 function renderToday(){
-  closeSettings();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
+  closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
