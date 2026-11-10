@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await h('top')===0&&await p.evaluate(()=>openRow===null),'tapping it again folds it away');
     await p.click('#ri-tie .rowtap');await p.waitForTimeout(600);
     ok(await p.evaluate(()=>!!document.querySelector('#rp-tie .rpic.draw svg')&&/No photo of this item yet/.test(document.querySelector('#rp-tie').textContent)),'a piece without a photo shows its drawing and says so');
-    await p.click('#ri-tie .swap');await p.waitForTimeout(300);
+    await p.click('#ri-tie .swap');await p.click('#pick-next');await p.waitForTimeout(300);
     ok(await p.evaluate(()=>document.querySelector('#ri-tie').classList.contains('open')&&planFor()[key(sel)].overrides),'swapping the open piece keeps it open, now showing the new one');
     ok(await p.evaluate(()=>!!document.querySelector('#ibox .vest-row')||!planFor()[key(sel)].vest),'the vest row is still in the list');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

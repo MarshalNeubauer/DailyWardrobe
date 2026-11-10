@@ -183,6 +183,15 @@ const tieRepeat=(x,prev)=>{if(!x||!prev)return 0;const g=tieGroup(x),l=tieLook(x
 const lookRepeat=(top,sh,x,prev)=>{if(!top||!prev)return 0;const jg=jacketGroup(top),sl=shirtLook(sh),tl=tieLook(x);let v=0;
   prev.slice(0,2).forEach((p,n)=>{if(!p||p.jg!==jg||p.sl!==sl)return;
     if(p.tl===tl)v+=n?20:25;else if(sl!=='white'&&sl!=='lightblue')v+=n?8:10});return v};   // same jacket colour and shirt look, another tie: half a repeat
+/* ---- what the planner has learned from the user's changes (settings.learn, synced with the settings) ----
+   p: votes on a pairing of two items ("idA|idB", ids sorted), i: votes on an item, both from -3 to +3. Swapping a piece away
+   votes against its pairing with the pieces that stayed; picking a piece by hand (or correcting a past day to what was really
+   worn) votes for the pairings chosen. A pairing voted down scores 6 points lower per vote, so after two it is out of reach
+   of the "good outfits" window; one voted up is preferred among the good outfits (3 per vote), never forced. */
+const LEARN_CAP=3,pairKey=(a,b)=>a.id<b.id?a.id+'|'+b.id:b.id+'|'+a.id;
+const pairVote=(a,b)=>{const L=settings.learn;return a&&b&&L&&L.p?L.p[pairKey(a,b)]||0:0};
+const itemVote=i=>{const L=settings.learn;return i&&L&&L.i?L.i[i.id]||0:0};
+const pairDown=(a,b)=>{const v=pairVote(a,b);return v<0?6*v:0},pairUp=(a,b)=>{const v=pairVote(a,b);return v>0?3*v:0};
 function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};
 // no blazer in the wardrobe on a blazer day (or no suit on a suit day): wear the other kind rather than no jacket
 if(!by(suitDay?'suit':'blazer').length&&by(suitDay?'blazer':'suit').length)suitDay=!suitDay;
@@ -194,7 +203,7 @@ const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
-const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&{g:p.jg,c:p.jc}),day.ahead&&day.ahead.next)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0));
+const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&{g:p.jg,c:p.jc}),day.ahead&&day.ahead.next)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0)+4*itemVote(i));
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
 const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
 const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.clim.season!=='warm'))));
@@ -208,8 +217,8 @@ const shRest=sh=>Math.min(rest(sh),SH_CAP)*.5;
 const ptRest=pt=>Math.min(rest(pt),60)*.2;
 const Ps=suitDay?[null]:topN(pool('pants','bot'),6,pt=>pairScore(top,pt)+patternScore([[top,'top'],[pt,'bot']])+ptRest(pt)),Ss=topN(pool('shirt','shirt'),16,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])+shRest(sh)),Ts=pool('tie','tie'),cands=[];
 for(const pt of Ps.length?Ps:[null])for(const sh of Ss.length?Ss:[null])for(const x of Ts.length?Ts:[null]){
-  const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day);
-  cands.push({q,pt,sh,x,r:1.5*((pt?rb(pt):0)+(x?rb(x):0))+(pt?ptRest(pt):0)+(x?Math.min(rest(x),30)*.25:0)+(sh?shRest(sh):0)-shirtRepeat(sh,day.prev)-tieRepeat(x,day.prev)-lookRepeat(top,sh,x,day.prev)-comboRepeat(sh,x,top&&day.hist&&day.hist[top.id])});
+  const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day)+pairDown(top,sh)+pairDown(top,x)+pairDown(sh,x)+pairDown(top,pt);   // pairings the user swapped away
+  cands.push({q,pt,sh,x,r:pairUp(top,sh)+pairUp(top,x)+pairUp(sh,x)+pairUp(top,pt)+2*(itemVote(sh)+itemVote(x)+itemVote(pt))+1.5*((pt?rb(pt):0)+(x?rb(x):0))+(pt?ptRest(pt):0)+(x?Math.min(rest(x),30)*.25:0)+(sh?shRest(sh):0)-shirtRepeat(sh,day.prev)-tieRepeat(x,day.prev)-lookRepeat(top,sh,x,day.prev)-comboRepeat(sh,x,top&&day.hist&&day.hist[top.id])});
 }
 const qmax=Math.max(...cands.map(c=>c.q)),pick1=cands.filter(c=>c.q>=qmax-QWIN).sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0];
 const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
@@ -217,15 +226,15 @@ const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
 const S=pool('shoes','shoes'),B=pool('belt','belt'),W=pool('watch','watch');let pick=null;
 for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.length?W:[null]){
   let t=0;
-  if(s){t+=shoeScore(top,bot,s)+shoeFormality(s,suitDay)+rb(s)-(rest(s)<=1?7:0);   // leather shoes want a day to dry: not yesterday's pair when another suits
+  if(s){t+=shoeScore(top,bot,s)+shoeFormality(s,suitDay)+rb(s)-(rest(s)<=1?7:0)+pairDown(top,s)+pairUp(top,s)+2*itemVote(s);   // leather shoes want a day to dry: not yesterday's pair when another suits
     if(day.clim.rain&&finish(s.leather)==='suede')t-=25;             // suede and rain don't mix
     if(day.formal){const g=leatherGroup(primaryCol(s)),f=finish(s.leather);t+=(f==='suede'||f==='grain')?-20:g==='black'?8:g==='burgundy'?3:-4}}
-  if(b){if(!s)continue;const f=beltFit(s,b);if(f===null)continue;t+=12+f+rb(b)}else if(B.length&&s)t-=30; // no matching belt: allowed, but last resort
-  if(w)t+=watchFit(w,s,b)+rb(w);
+  if(b){if(!s)continue;const f=beltFit(s,b);if(f===null)continue;t+=12+f+rb(b)+2*itemVote(b)}else if(B.length&&s)t-=30; // no matching belt: allowed, but last resort
+  if(w)t+=watchFit(w,s,b)+rb(w)+2*itemVote(w);
   if(!pick||t>pick.t)pick={t,s,b,w};
 }
 const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
-const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s));
+const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s)+2*itemVote(s));
 const metalPref=c=>(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0);
 const clip=vest?null:best(pool('tieclip','clip'),metalPref);   // the vest holds the tie: no clip
 // cufflinks only (and always) with French cuffs

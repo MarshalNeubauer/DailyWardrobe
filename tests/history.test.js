@@ -19,18 +19,18 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   await p.evaluate(()=>{sel=new Date(2026,10,18);view={y:2026,m:10};renderToday()});await p.waitForTimeout(150);
   const before=await snap('2026-11-18');
   await p.evaluate(()=>{listOpen=true;renderToday()});
-  await p.click('.row button[aria-label="Swap tie"]');await p.waitForTimeout(150);
+  await p.click('.row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForTimeout(150);
   const afterTie=await snap('2026-11-18');
   ok(afterTie.tie!==before.tie,'↻ on the tie gives a different tie');
   ok(['top','bot','shirt','shoes','belt','socks','watch'].every(s=>afterTie[s]===before[s]),'everything else stays the same');
-  await p.click('.row button[aria-label="Swap shirt"]');await p.waitForTimeout(150);
+  await p.click('.row button[aria-label="Change shirt"]');await p.click('#pick-next');await p.waitForTimeout(150);
   const afterShirt=await snap('2026-11-18');
   ok(afterShirt.shirt!==afterTie.shirt&&afterShirt.tie===afterTie.tie,'swapping the shirt keeps the swapped tie');
-  await p.click('.row button[aria-label="Swap shoes"]');await p.waitForTimeout(150);
+  await p.click('.row button[aria-label="Change shoes"]');await p.click('#pick-next');await p.waitForTimeout(150);
   const afterShoes=await p.evaluate(()=>{const o=planFor()['2026-11-18'];return {shoes:o.shoes.id,belt:o.belt&&o.belt.id,fit:o.belt?beltFit(o.shoes,o.belt):null}});
   ok(afterShoes.shoes!==afterShirt.shoes&&afterShoes.fit!==null,'swapping shoes re-picks a matching belt');
   // cycling through every tie never errors and eventually returns
-  const seen=new Set();for(let i=0;i<25;i++){await p.click('.row button[aria-label="Swap tie"]');seen.add((await snap('2026-11-18')).tie)}
+  const seen=new Set();for(let i=0;i<25;i++){await p.click('.row button[aria-label="Change tie"]');await p.click('#pick-next');seen.add((await snap('2026-11-18')).tie)}
   const nTies=await p.evaluate(()=>items.filter(i=>i.type==='tie').length);
   ok(seen.size>=Math.min(nTies,12),`repeated swaps cycle through the ties (${seen.size} of ${nTies} seen)`);
   await p.click('[aria-label="Reset changes"]');await p.waitForTimeout(150);
