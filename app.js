@@ -938,7 +938,7 @@ function renderSettingsExtras(){
   renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
-  if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}`:'No location set: outfits follow the calendar season.';
+  if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.';
   if($('#cfg-units'))$('#cfg-units').value=unit();
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';
 }
@@ -947,7 +947,7 @@ function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=
   if(k==='workdays'&&l.size===0)return;settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   renderSettingsExtras();saveUserSettings()}
 function setUnits(v){settings.units=v;saveUserSettings()}
-function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');weather={};saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
+function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
 function useMyLocation(){if(!navigator.geolocation){alert('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:'your current location'}),()=>alert('Location permission was denied. Search for your city instead.'))}
 async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();if(!q)return;
@@ -977,8 +977,24 @@ async function refreshAll(){
   }catch(e){msg='Refresh failed: '+(e.message||e)}
   finally{refreshing=false;if(b)b.classList.remove('spin');toast(msg)}
 }
+/* the location's usual weather by month, from Open-Meteo's archive (free, no key): the last two full years' daily highs,
+   lows and rain, averaged per month. Kept for four months per location; days beyond the 16-day forecast are planned from it. */
+async function loadClimate(){
+  const L=settings.location;if(!L){climate=null;return}
+  try{const c=JSON.parse(localStorage.getItem('wx_norm')||'null');
+    if(c&&c.lat===L.lat&&c.lon===L.lon&&Array.isArray(c.months)){const fresh=Date.now()-c.t<120*864e5;if(JSON.stringify(climate)!==JSON.stringify(c.months)){climate=c.months;cache={};if(!$('#today').hidden)renderToday()}if(fresh)return}}catch{}
+  try{const y=new Date().getFullYear(),r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${L.lat}&longitude=${L.lon}&start_date=${y-2}-01-01&end_date=${y-1}-12-31&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`);
+    const d=r.ok&&(await r.json()).daily;if(!d||!d.time||!d.temperature_2m_max)return;
+    const m=[...Array(12)].map(()=>({n:0,tx:0,tn:0,r:0}));
+    d.time.forEach((t,i)=>{const k=+t.slice(5,7)-1,tx=d.temperature_2m_max[i];if(!(k>=0&&k<12)||typeof tx!=='number')return;m[k].n++;m[k].tx+=tx;m[k].tn+=d.temperature_2m_min?.[i]??tx;if((d.precipitation_sum?.[i]||0)>=1)m[k].r++});
+    if(m.some(x=>x.n<20))return;   // a month with hardly any readings: keep what we had
+    const months=m.map(x=>({tmax:+(x.tx/x.n).toFixed(1),tmin:+(x.tn/x.n).toFixed(1),rainDays:+(x.r/x.n*30).toFixed(1)}));
+    const N=settings.location;if(!N||N.lat!==L.lat||N.lon!==L.lon)return;   // the location changed meanwhile
+    climate=months;localStorage.setItem('wx_norm',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),months}));cache={};if(!$('#today').hidden)renderToday();if(settingsOpen())renderSettingsExtras()}
+  catch(e){console.warn('climate history unavailable',e)}
+}
 async function loadWeather(force){
-  const L=settings.location;if(!L)return;
+  const L=settings.location;if(!L)return;loadClimate();
   try{const c=JSON.parse(localStorage.getItem('wx')||'null');
     if(!force&&c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3){weather=c.days;cache={};if(!$('#today').hidden)renderToday();return}}catch{}
   try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${L.lat}&longitude=${L.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`);
@@ -1003,7 +1019,7 @@ function shopCard(){
   return items.length?`<div class="card shop"><div class="shop-head"><b>What to buy</b><button onclick="analyzeWardrobe()" ${shopBusy?'disabled':''}>${shop&&shop.sig===shopSig()?'Re-check':'Analyze my wardrobe'}</button></div>${body}</div>`:'';
 }
 function analyzeWardrobe(){
-  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,...i})=>i),settings,weather,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
+  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,...i})=>i),settings,weather,climate,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
   const finish=res=>{shopBusy=null;shop={sig,res};if(!$('#wardrobe').hidden)renderWardrobe()};
   const progress=(i,n)=>{shopBusy=`Checking ${i+1} of ${n} possible purchases…`;const el=$('#wardrobe .shop small');if(el)el.textContent=shopBusy};
   shopBusy='Starting…';renderWardrobe();

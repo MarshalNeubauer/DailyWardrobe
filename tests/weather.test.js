@@ -5,6 +5,8 @@ module.exports=async({ok,chromium,url})=>{
   const days=['2026-11-15','2026-11-16','2026-11-17','2026-11-18','2026-11-19','2026-11-20'];
   const daily={time:days,temperature_2m_max:[14,6,28,2,15,15],temperature_2m_min:[6,2,19,-4,8,8],precipitation_probability_max:[10,90,0,5,10,10],precipitation_sum:[0,12,0,0,0,0],weather_code:[2,63,0,0,3,3]};
   let wxCalls=0;
+  // no climate history in this suite (tests/climate.test.js covers it): days beyond the forecast follow the calendar
+  await ctx.route('https://archive-api.open-meteo.com/**',r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
   await ctx.route('https://api.open-meteo.com/**',r=>{wxCalls++;r.fulfill({contentType:'application/json',body:JSON.stringify({daily})})});
   await ctx.route('https://geocoding-api.open-meteo.com/**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({results:[{name:'Austin',admin1:'Texas',country_code:'US',latitude:30.27,longitude:-97.74}]})}));
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
