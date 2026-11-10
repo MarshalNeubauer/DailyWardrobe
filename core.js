@@ -1,6 +1,6 @@
 /* Daily Wardrobe: shared constants and item helpers (no DOM access; also loaded by the analysis worker) */
 const TYPES={suit:'Suit',blazer:'Blazer',pants:'Dress pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat'};
-const COLORS={black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',midgrey:'#a2a4a8',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',steelblue:'#56657f',deepblue:'#26326a',navy:'#1b2a4a',darknavy:'#1c1f2b',slate:'#3a3f4c',brown:'#5a3a22',tan:'#b8946a',khaki:'#c3b091',taupe:'#8b7d6b',rust:'#a4502a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',wine:'#7d2438',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb'};
+const COLORS={black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',midgrey:'#a2a4a8',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',steelblue:'#56657f',deepblue:'#26326a',navy:'#1b2a4a',darknavy:'#1c1f2b',slate:'#3a3f4c',brown:'#5a3a22',tan:'#b8946a',khaki:'#c3b091',taupe:'#8b7d6b',deeptaupe:'#5f5449',rust:'#a4502a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',wine:'#7d2438',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb'};
 /* colours offered only for dress shirts (the planner maps them to a family for other rules) */
 const SHIRT_COLORS={mint:'#cfe6d4',paleyellow:'#f1e6ac',ivory:'#f4efde',beige:'#dccbb0',lavender:'#c9bfe2',periwinkle:'#9ea8d4'};
 Object.assign(COLORS,SHIRT_COLORS);
@@ -14,14 +14,14 @@ COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'ligh
   slateblue:'slate',slategrey:'slate',slategray:'slate',slatebluegrey:'slate',darkslatebluegrey:'slate',darkslate:'slate',bluegrey:'slate',bluegray:'slate',
   steel:'steelblue',denimblue:'steelblue',denim:'steelblue',dustyblue:'steelblue',verydarknavy:'darknavy',navyblack:'darknavy',inkblue:'darknavy',ink:'darknavy',sapphire:'deepblue',
   lightblue:'lightblue',skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
-  lightyellow:'paleyellow',butter:'paleyellow',lemon:'paleyellow',eggshell:'ivory',lilac:'lavender',cornflower:'periwinkle',cornflowerblue:'periwinkle',darkblue:'navy',navyblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'khaki',chino:'khaki',stone:'khaki',camel:'tan',sand:'tan',taupe:'taupe',mushroom:'taupe',greige:'taupe',rust:'rust',orange:'rust',burntorange:'rust',terracotta:'rust',copper:'rust',mintgreen:'mint',palegreen:'mint',seafoam:'mint',
+  lightyellow:'paleyellow',butter:'paleyellow',lemon:'paleyellow',eggshell:'ivory',lilac:'lavender',cornflower:'periwinkle',cornflowerblue:'periwinkle',darkblue:'navy',navyblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'khaki',chino:'khaki',stone:'khaki',camel:'tan',sand:'tan',taupe:'taupe',mushroom:'taupe',greige:'taupe',deeptaupe:'deeptaupe',darktaupe:'deeptaupe',richtaupe:'deeptaupe',mink:'deeptaupe',rust:'rust',orange:'rust',burntorange:'rust',terracotta:'rust',copper:'rust',mintgreen:'mint',palegreen:'mint',seafoam:'mint',
   darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',winered:'wine',merlot:'wine',claret:'wine',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
   yellow:'gold',mustard:'gold',lavender:'purple',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normColFor=(type,c,accent)=>fitCol(type,normCol(c),accent),
 normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 /* colours each item type really comes in: p = main colour, a = stripe / check / motif colours.
    The tagger is told the same lists (worker.js TYPE_COLORS); a colour outside the list is moved to the closest one in it. */
-const SUITING=['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green'],
+const SUITING=['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','deeptaupe','taupe','tan','khaki','olive','green'],
   SUIT_LINES=['white','cream','lightgrey','grey','midgrey','charcoal','black','lightblue','blue','navy','deepblue','burgundy','red','rust','brown','tan','green','olive','gold'],
   LEATHER_COLS=['black','brown','tan','oxblood','burgundy','navy','grey','taupe'];
 const COLS_BY={
@@ -110,7 +110,7 @@ const seasonFit=(i,season)=>{const s=itemSeason(i);if(!i||!s||s==='all'||s===sea
 /* matching logic & helpers */
 const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
 /* display names for colours: 'lightblue' -> 'light blue' (the keys themselves stay as they are) */
-const COLOR_NAMES={paleyellow:'pale yellow',lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey',midgrey:'mid grey',steelblue:'steel blue',deepblue:'deep blue',darknavy:'very dark navy',slate:'dark slate blue-grey'};
+const COLOR_NAMES={paleyellow:'pale yellow',lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey',midgrey:'mid grey',steelblue:'steel blue',deepblue:'deep blue',deeptaupe:'deep taupe',darknavy:'very dark navy',slate:'dark slate blue-grey'};
 const colName=c=>COLOR_NAMES[c]||c;
 // (a key that appears in its own spelled-out name, like slate in 'dark slate blue-grey', is not expanded twice)
 const COLOR_NAME_RE=new RegExp('(?<!dark )\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b(?! blue-grey)','g');

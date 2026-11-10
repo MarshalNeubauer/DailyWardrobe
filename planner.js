@@ -1,6 +1,6 @@
 /* Daily Wardrobe: outfit rules, planning and scoring (no DOM access; also loaded by the analysis worker) */
 /* colour families for the rules: dark grey behaves like charcoal, light grey like grey, oxblood like burgundy */
-const FAM={mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan',taupe:'tan',rust:'brown',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
+const FAM={mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan',taupe:'tan',deeptaupe:'brown',rust:'brown',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(primaryCol(i));
 /* acceptable shoe colours for each trouser colour, best first */
 const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black','burgundy']};
 /* ---- clothing rules (suit/blazer, trousers, shirt, tie) ----
@@ -161,13 +161,13 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are cleared; formal days, today and the past stay) */
-const PLAN_RULES=8;
+const PLAN_RULES=9;
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
    before that counts less. Rest still decides when every choice repeats a colour. */
 const JKT_GROUP={lightgrey:'grey',midgrey:'grey',grey:'grey',silver:'grey',charcoal:'grey',darkgrey:'grey',slate:'charcoal',black:'black',
-  navy:'navy',darknavy:'navy',deepblue:'navy',blue:'blue',steelblue:'blue',lightblue:'blue',brown:'brown',taupe:'brown',rust:'brown',tan:'tan',khaki:'tan',cream:'tan',
+  navy:'navy',darknavy:'navy',deepblue:'navy',blue:'blue',steelblue:'blue',lightblue:'blue',brown:'brown',taupe:'brown',deeptaupe:'brown',rust:'brown',tan:'tan',khaki:'tan',cream:'tan',
   olive:'green',green:'green',burgundy:'red',wine:'red',oxblood:'red'};
 const JKT_NEAR=[['grey','charcoal'],['charcoal','black'],['navy','blue'],['navy','charcoal'],['brown','tan']];
 const jacketGroup=i=>{const c=primaryCol(i);return JKT_GROUP[c]||fam(c)};
