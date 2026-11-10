@@ -329,7 +329,7 @@ function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=
 const hasLinks=by('cufflinks').length>0;let prev=[];   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
 // jackets already fixed on the next workdays (worn, or picked by the user): the next one's colour group, and the ids of
 // those within the next 3 workdays, which are held back so a pinned jacket is not worn just before its day
-const fixedAhead=d=>{const x=new Date(d),ids=[];let next=null,soft=null,w=0;for(let g=0;g<10&&w<3;g++){x.setDate(x.getDate()+1);if(!settings.workdays.includes(x.getDay()))continue;
+const fixedAhead=d=>{const x=new Date(d),ids=[];let next=null,soft=null,w=0;for(let g=0;g<10&&w<3;g++){x.setDate(x.getDate()+1);if(!isWorkday(x))continue;
     const r=dayRecs[key(x)],id=r&&(r.force&&r.force.top||(r.ids&&(x<T||r.worn===true)&&r.ids.top)),it=id&&items.find(i=>i.id===id);
     if(it){ids.push(it.id);if(!w)next={g:jacketGroup(it),c:primaryCol(it)}}
     // not fixed and the next day is a blazer day: the blazer due (longest rested) is the likely pick, so the suit before it
@@ -342,7 +342,7 @@ const hist={},remember=o=>{if(!o.top)return;const h=hist[o.top.id]||(hist[o.top.
 const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,jc:o.top?primaryCol(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null,sl:shirtLook(o.shirt),tl:tieLook(o.tie)});
 const d=new Date(start);
 return {plan,upTo(end){
-for(;d<=end;d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
+for(;d<=end;d.setDate(d.getDate()+1)){const w=d.getDay();if(!isWorkday(d))continue;   // weekends, public holidays and days off
   const k=key(d),rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top){prev=[sumUp(plan[k]),prev[0]];remember(plan[k])}continue}
   const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top){prev=[sumUp(o),prev[0]];remember(o)}}

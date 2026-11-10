@@ -37,6 +37,14 @@
 <label style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0 6px">Wear the suit's vest <select id="cfg-vest" onchange="setVestMode(this.value)" style="max-width:210px"><option value="auto">Suit days, except hot ones</option><option value="always">Every suit day</option><option value="never">Never</option></select></label>
 <p class="mut" style="margin:8px 0 4px"><small id="replan-status"></small></p>
 <div class="btns"><button type="button" id="replan-btn" onclick="replanButton()">Re-plan upcoming days</button></div>
+<h3 style="margin:16px 0 4px">Days off</h3>
+<p class="mut" style="margin:0 0 6px"><small>Public holidays and your own days off get no outfit and don't count as worn.</small></p>
+<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0">Public holidays <select id="cfg-country" onchange="setHolidayCountry(this.value)" style="max-width:210px" aria-label="Country for public holidays"><option value="">No public holidays</option></select></label>
+<p class="mut" style="margin:4px 0" aria-live="polite"><small id="holiday-msg"></small></p>
+<div class="hlist" id="holiday-list"></div>
+<p class="mut" style="margin:10px 0 4px"><small>Your own days off (leave the second date empty for a single day)</small></p>
+<div class="btns offadd" style="align-items:center;flex-wrap:wrap"><input type="date" id="cfg-off-from" aria-label="First day off"><span class="mut">to</span><input type="date" id="cfg-off-to" aria-label="Last day off"><input type="text" id="cfg-off-name" placeholder="Name (optional)" aria-label="Name of the days off" style="max-width:150px"><button type="button" onclick="addDayOff()">Add</button></div>
+<div class="fchips" id="off-list"></div>
 <h3 style="margin:16px 0 4px">Formal days</h3>
 <p class="mut" style="margin:0 0 6px"><small>Change a date to formal: dark suit, white shirt, quiet tie.</small></p>
 <div class="btns" style="align-items:center;flex-wrap:wrap"><input type="date" id="cfg-formal-date" aria-label="Date to make formal" style="max-width:180px"><button type="button" onclick="addFormalDay()">Make formal</button></div>
