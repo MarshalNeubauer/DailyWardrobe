@@ -363,7 +363,7 @@ const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of th
 const slots=o=>{const nj=o.occasion==='casual'&&!o.top;const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nj&&!o.tie?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
 .map(([l,i,s])=>{const open=!!i&&openRow===s;
   return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(desc(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i)}</span><span class="cap">${desc(i)}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':'Add one on the Add tab'}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
-    (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
+    (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
   document.querySelectorAll('.ritem.open').forEach(r=>{if(r!==el){r.classList.remove('open','instant');const b=r.querySelector('.rowtap');if(b)b.setAttribute('aria-expanded','false')}});
@@ -504,13 +504,13 @@ function scoreCard(o){
   // unfolds like the pieces list and the month plan; each check slides in and its bar fills to the points it scored
   return `<section class="mbox score ${tone}${scoreOpen?' open instant':''}" id="sbox"><button class="month-link" onclick="toggleScore()" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="Outfit score ${r.score}, ${r.label}. ${scoreOpen?'Fold away':'Show why'}">
     <span class="num" aria-hidden="true">${r.score}</span><span class="lbl" aria-hidden="true"><b>${r.label}</b><small>Outfit score · ${scoreOpen?'tap to fold away':'tap for why'}</small></span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="spanel"><div class="mpanel-in"><ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></div></div></section>`;
+    <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()"><ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></div></div></section>`;
 }
 function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;box.classList.remove('instant');void box.offsetHeight;
   box.classList.toggle('open',scoreOpen);const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
   const sm=box.querySelector('.lbl small');if(sm)sm.textContent='Outfit score · '+(scoreOpen?'tap to fold away':'tap for why');
-  if(scoreOpen)reveal(box)}
+  if(scoreOpen)reveal(box);else{revealRun++;keepInView(box)}}
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
@@ -538,7 +538,7 @@ function monthGridHtml(){
   return `<div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3><div class="mbtns"><button onclick="monthStep(-1)" aria-label="Previous month">‹</button><button onclick="monthStep(1)" aria-label="Next month">›</button></div></div>
     <div class="mgrid mdow" aria-hidden="true">${['S','M','T','W','T','F','S'].map(x=>`<span>${x}</span>`).join('')}</div>
     <div class="mgrid">${cells.join('')}</div>
-    <div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div>`;
+    <div class="mfoot"><div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div><button class="foldbtn" onclick="toggleMonth()" aria-label="Fold away the month" title="Fold away"><span aria-hidden="true">›</span></button></div>`;
 }
 /* after a box unfolds: scroll down just far enough to show what opened, but never past the point where the tapped box
    (top: the tapped element, e.g. the tile row for a tile's photo) reaches the top of the screen. Follows the box while it
@@ -559,7 +559,7 @@ function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
   if(monthOpen){monthPanel={y:sel.getFullYear(),m:sel.getMonth()};$('#mpanel-in').innerHTML=monthGridHtml();box.classList.remove('instant');void box.offsetHeight}
   box.classList.toggle('open',monthOpen);$('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
-  if(monthOpen)reveal(box)}
+  if(monthOpen)reveal(box);else{revealRun++;keepInView(box)}}
 function monthStep(n){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(el){el.innerHTML=monthGridHtml();$('#mbox').classList.add('instant')}}
 function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};monthOpen=false;renderToday();scrollTo({top:0,behavior:'smooth'})}
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
@@ -868,10 +868,14 @@ function piecesBox(o){
   const sum=[o.top?`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&`${colName(primaryCol(o.bot))} trousers`,o.shirt&&`${colName(primaryCol(o.shirt))} shirt`,o.tie&&`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`].filter(Boolean).join(' · ');
   return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
     <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} pieces</b><small class="cap">${sum||'tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="ipanel"><div class="mpanel-in"><div class="list">${slots(o)}</div></div></div></section>`}
+    <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div></div></div></section>`}
+/* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
+function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
+/* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
+function keepInView(box){const r=box.getBoundingClientRect();if(r.top<8)scrollBy({top:r.top-8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;box.classList.remove('instant');void box.offsetHeight;
   box.classList.toggle('open',listOpen);const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
-  if(listOpen)reveal(box)}
+  if(listOpen)reveal(box);else{revealRun++;keepInView(box)}}
 function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
