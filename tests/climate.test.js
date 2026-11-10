@@ -16,7 +16,7 @@ module.exports=async({ok,chromium,url})=>{
     // before a location is set: the calendar decides, so mid-January is "cold" and warns about the missing overcoat
     const cal=await p.evaluate(()=>{const o=planMonth(2027,0)['2027-1-12'];return {season:o.clim.season,note:(o.notes||[]).some(n=>/overcoat/.test(n))}});
     ok(cal.season==='cold'&&cal.note,'without climate history, January follows the calendar: cold, and a missing overcoat is flagged');
-    await p.evaluate(()=>setLocation({lat:29.31,lon:48.01,name:'Kuwait City'}));await p.waitForFunction(()=>!!climate,null,{timeout:8000});
+    await p.evaluate(()=>setLocation({lat:29.31,lon:48.01,name:'Kuwait City'}));await p.waitForFunction(()=>!!climate&&!!weather['2026-11-15'],null,{timeout:8000});   // both the climate history and the forecast have arrived
     ok(calls===1&&/start_date=\d{4}-01-01&end_date=\d{4}-12-31/.test(lastUrl)&&/latitude=29.31/.test(lastUrl),`the usual weather for the location is fetched once (${lastUrl.split('?')[1]||''})`);
     const k=await p.evaluate(()=>{const g=(y,m,d)=>planMonth(y,m)[y+'-'+(m+1)+'-'+d];const jan=g(2027,0,12),apr=g(2027,3,13),jul=g(2027,6,13),tom=g(2026,10,15);
       return {jan:jan.clim.season,janNote:(jan.notes||[]).some(n=>/overcoat/.test(n)),janVest:jan.vest,apr:apr.clim.season,jul:jul.clim.season,julVest:jul.vest,fc:!!tom.clim.wx,n:climate.length,jt:climate[0].tmax,

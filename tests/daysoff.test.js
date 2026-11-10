@@ -68,7 +68,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.click('#off-list .fchip button');await p.waitForFunction(()=>(settings.daysOff||[]).length===1);
     ok(await p.evaluate(()=>isWorkday(new Date(2026,11,8))&&!isWorkday(new Date(2026,11,15))),'a single day works too, and removing the range gives those days back');
     // saved with the settings (so it syncs and survives a reload)
-    await p.reload();await p.waitForFunction(()=>window.appReady);
+    await p.evaluate(()=>saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady);   // (the save from the last tap has finished)
     ok(await p.evaluate(()=>settings.holidays&&settings.holidays.country==='US'&&settings.holidays.skip.length===1&&settings.daysOff.length===1),'days off are saved with the settings');
     // a country Nager lacks comes from the worker
     await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};openSettings()});const n0=nager;
