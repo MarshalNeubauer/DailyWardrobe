@@ -37,9 +37,6 @@ module.exports=async({ok,chromium,url})=>{
     ok(tp.top===topWant&&tp.shoes==='brown'&&tp.score>=75,`choosing a suit re-picks the pieces that follow it (brown suit → ${tp.shoes} shoes, score ${tp.score})`);
     await p.click('#ri-tie .swap');await p.click('.pick-x');await settle();
     ok(await p.evaluate(()=>!document.querySelector('#pick-sheet').classList.contains('on')&&planFor()[key(sel)].top.id)===topWant,'closing the sheet changes nothing');
-    await p.click('#piece-wrap .swap');
-    ok(await p.evaluate(()=>document.querySelector('#pick-sheet').classList.contains('on')),'the Change button on the piece card opens the sheet too');
-    await p.click('#pick-backdrop',{position:{x:10,y:10}});
     // ---- learning ----
     const learn=await p.evaluate(async()=>{settings.learn=null;dayRecs={};cache={};sel=new Date(2026,10,17);view={y:2026,m:10};renderToday();
       const days=()=>Object.entries(planMonth(2027,1)).filter(([k])=>keyDate(k)>todayDate()).map(([,o])=>o);

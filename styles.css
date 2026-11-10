@@ -100,10 +100,6 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .fig .hot::after{content:'';position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff;opacity:.55;box-shadow:0 1px 3px rgba(0,0,0,.35)}
 .fig .hot.on{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35)}.fig .hot.on::after{opacity:.95}
 .fig .hot:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-.piece{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px auto 0;max-width:390px}
-.piece .chip-sw svg{width:40px;height:40px;border-radius:8px;display:block}
-.piece>div{flex:1;display:flex;flex-direction:column;min-width:0}.piece b{font-weight:600}
-.piece .swap{margin:0;min-height:44px;padding:0 14px}
 .below-h{margin:12px 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
 /* tiles share the column's width; pictures keep the size they have four to a row, the tile around them takes the photo's backdrop */
 .below{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px;margin:0;container-type:inline-size}
@@ -167,7 +163,6 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .below .tile.has-pic[data-type="shoes"] .item-pic,.below .tile.has-pic[data-type="belt"] .item-pic{--z:1.08}.below .tile.has-pic[data-type="socks"] .item-pic{--z:1;-webkit-mask-image:none;mask-image:none}
 .below .tile.has-pic small{position:relative}
 .below .tile.has-pic{border-color:transparent}.below .tile.has-pic small{color:#4b5058}
-.piece .chip-sw .item-pic{width:40px;height:40px;border-radius:8px;object-fit:cover;display:block}
 #itempic-btn[disabled]{opacity:.55}
 
 /* the month box: unfolds in place */
@@ -236,6 +231,9 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .rpic{display:block;width:100%;max-height:360px;object-fit:contain;border-radius:10px;background:var(--bg)}
 .rpic.draw{max-width:240px;aspect-ratio:1;margin:0 auto;overflow:hidden}.rpic.draw .ph.thumb{width:100%;max-width:none;aspect-ratio:1;margin:0}.rpic.draw svg{width:100%;height:100%;display:block}
 .rnote{display:block;text-align:center;margin-top:6px;font-size:12px}
+.bbox{margin:8px 0 0}.bbox .rpanel-in{cursor:pointer}.ritem.bbox.open .rpanel-in{padding:0}
+.bbox .rpic{background:var(--card);border:1px solid var(--line)}.bbox .rnote{margin-bottom:4px}
+.below .tile[aria-expanded="true"]{outline:2px solid var(--acc);outline-offset:-2px}
 .ritem.instant .rpanel,.ritem.instant .rpanel-in{transition:none}
 @media (prefers-reduced-motion:reduce){.rpanel,.rpanel-in{transition:none}}
 

@@ -37,9 +37,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/^Generate 5 item pictures$/.test(await p.textContent('#itempic-btn')),'Settings offers to generate the missing item pictures');
     await p.click('#itempic-btn');await p.waitForFunction(()=>!itemBatch,null,{timeout:20000});
     const after=await p.evaluate(()=>{closeSettings();renderToday();return {left:missingItemPics().length,status:$('#itempic-status').textContent,
-      tiles:[...document.querySelectorAll('.below .tile')].map(t=>!!t.querySelector('img.item-pic')),piece:(pickPiece('shoes'),!!document.querySelector('#piece .item-pic'))}});
+      tiles:[...document.querySelectorAll('.below .tile')].map(t=>!!t.querySelector('img.item-pic')),piece:(pickPiece('shoes'),!!document.querySelector('#bbox.open .rpic'))}});
     ok(gens.length===6&&after.left===0&&/Done: 5 pictures ready/.test(after.status),'five pictures generated, nothing left');
-    ok(after.tiles.length>=3&&after.tiles.every(Boolean)&&after.piece,'belt, shoes and socks tiles (and the piece card) now show the pictures');
+    ok(after.tiles.length>=3&&after.tiles.every(Boolean)&&after.piece,'belt, shoes and socks tiles now show the pictures, and a tapped tile unfolds its picture');
     // another device fetches them instead of generating
     await p.evaluate(()=>localStorage.setItem('last_sync',Date.now()+864e5));   // no background sync when the first page becomes visible again
     const p2=await ctx.newPage();await p2.goto(url);await p2.waitForFunction(()=>window.appReady);
