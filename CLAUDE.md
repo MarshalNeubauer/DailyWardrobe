@@ -15,11 +15,9 @@
   1. merge `origin/main` into the branch and resolve any conflicts;
   2. if `main` changed `CACHE` in `sw.js` or `PLAN_RULES` in planner.js, and this branch bumps it too, bump it again to one above `main`'s value (two sessions bumping to the same number is a single bump, so phones would miss the second change);
   3. re-run `npm test` on the merged result, push, and only then merge. If tests fail after the merge, apply the "Don't merge" rule.
-- **Waiting for GitHub's test run: never a fixed wait.** No `sleep`, `timeout … sleep` or fixed-length loop to "give CI time".
-  1. Right after pushing, check the run once (`pull_request_read`, method `get_check_runs`). If it has finished, act on it now.
-  2. If it is still running, call `subscribe_pr_activity` for the PR and end the turn. The run's result arrives as a PR event and wakes the session; merge (or fix) then.
-  3. After merging, call `unsubscribe_pr_activity` for that PR.
-- **Run only what you need while working.** `node tests/run.js <name>` (or `TEST_ONLY=<name>`) runs just the `tests/*.test.js` files whose name contains `<name>`. Run the full suite (`npm test`, about 3–4 min) once before pushing, and once more only if `main` had to be merged in.
+- **No GitHub test run.** GitHub doesn't run the tests on pull requests (the user dropped it to save the wait). Your own full `npm test` on the final branch is the only gate: merge right after it passes, without waiting on GitHub checks or subscribing to the PR.
+- Before a change that rewrites stored data on startup (a migration over items, days, settings or `render:` records), tell the user to download a backup file first: a revert fixes the code but not data already written or synced.
+- **Run only what you need while working.** `node tests/run.js <name>` (or `TEST_ONLY=<name>`) runs just the `tests/*.test.js` files whose name contains `<name>`. Run the full suite (`npm test`, about 2 min) once before pushing, and once more only if `main` had to be merged in.
 - **CLAUDE.md: one fact per line.** Add a new bullet under the file's heading instead of extending an existing one, so sessions working in parallel don't edit the same line and conflict.
 
 ## Project
@@ -179,9 +177,8 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 
 ## Testing
 
-`npm test` (or `node tests/run.js`) serves the repo, drives it in headless Chromium and checks rendering, swipe/layout on phone and iPhone Duo viewports, the planner against an independent rule checklist, belts/leather/metals, the outfit score, photo-less adding, pattern detection, and `worker.js` with mocked bindings. GitHub Actions runs it on every PR (`.github/workflows/test.yml`). Add a check for every behaviour you change; extra suites can go in `tests/*.test.js`.
+`npm test` (or `node tests/run.js`) serves the repo, drives it in headless Chromium and checks rendering, swipe/layout on phone and iPhone Duo viewports, the planner against an independent rule checklist, belts/leather/metals, the outfit score, photo-less adding, pattern detection, and `worker.js` with mocked bindings. Add a check for every behaviour you change; extra suites can go in `tests/*.test.js`.
 
-- CI runs the tests on pull requests only (not again on the push to `main`, which re-tested code that already passed on its PR).
 - After a tap, tests wait with `settle(page, ms)` (passed to every test file) instead of a fixed `waitForTimeout`: it returns once no animation runs and the scroll is still, waiting up to 2×`ms` (`DEBUG_SETTLE=1` logs each wait)
 - `tests/run.js` gives every `tests/*.test.js` file one shared Chromium (a file's `chromium.launch()`/`close()` open and close only its own contexts) and prints the slowest files at the end.
 
