@@ -16,7 +16,7 @@
   2. if `main` changed `CACHE` in `sw.js` or `PLAN_RULES` in planner.js, and this branch bumps it too, bump it again to one above `main`'s value (two sessions bumping to the same number is a single bump, so phones would miss the second change);
   3. re-run `npm test` on the merged result, push, and only then merge. If tests fail after the merge, apply the "Don't merge" rule.
 - **No GitHub test run.** GitHub doesn't run the tests on pull requests (the user dropped it to save the wait). Your own full `npm test` on the final branch is the only gate: merge right after it passes, without waiting on GitHub checks or subscribing to the PR.
-- Before a change that rewrites stored data on startup (a migration over items, days, settings or `render:` records), tell the user to download a backup file first: a revert fixes the code but not data already written or synced.
+- Never tell the user to download a backup file before a change: the worker keeps daily backups and Settings → Roll back undoes a bad change (see `sync.js`).
 - **Run only what you need while working.** `node tests/run.js <name>` (or `TEST_ONLY=<name>`) runs just the `tests/*.test.js` files whose name contains `<name>`. Run the full suite (`npm test`, about 2 min) once before pushing, and once more only if `main` had to be merged in.
 - **CLAUDE.md: one fact per line.** Add a new bullet under the file's heading instead of extending an existing one, so sessions working in parallel don't edit the same line and conflict.
 
