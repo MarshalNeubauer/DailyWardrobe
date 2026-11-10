@@ -47,9 +47,9 @@
 <p class="mut" style="margin:10px 0 4px"><small>Your own days off (leave the second date empty for a single day)</small></p>
 <div class="btns offadd" style="align-items:center;flex-wrap:wrap"><input type="date" id="cfg-off-from" aria-label="First day off"><span class="mut">to</span><input type="date" id="cfg-off-to" aria-label="Last day off"><input type="text" id="cfg-off-name" placeholder="Name (optional)" aria-label="Name of the days off" style="max-width:150px"><button type="button" onclick="addDayOff()">Add</button></div>
 <div class="fchips" id="off-list"></div>
-<h3 style="margin:16px 0 4px">Formal days</h3>
-<p class="mut" style="margin:0 0 6px"><small>Change a date to formal: dark suit, white shirt, quiet tie.</small></p>
-<div class="btns" style="align-items:center;flex-wrap:wrap"><input type="date" id="cfg-formal-date" aria-label="Date to make formal" style="max-width:180px"><button type="button" onclick="addFormalDay()">Make formal</button></div>
+<h3 style="margin:16px 0 4px">Occasions</h3>
+<p class="mut" style="margin:0 0 6px"><small>Give a date an occasion and the outfit is chosen for it: formal, a wedding, a funeral, or a day with no jacket or tie.</small></p>
+<div class="btns occadd" style="align-items:center;flex-wrap:wrap"><input type="date" id="cfg-formal-date" aria-label="Date of the occasion" style="max-width:160px"><select id="cfg-occasion" aria-label="Occasion" style="max-width:170px"></select><button type="button" id="occ-add" onclick="addFormalDay()">Add</button></div>
 <p class="mut" style="margin:4px 0" aria-live="polite"><small id="formal-msg"></small></p>
 <div class="fchips" id="formal-list"></div>
 <h3 id="wx-section" style="margin:16px 0 4px">Weather</h3>

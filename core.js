@@ -58,6 +58,12 @@ let items=[];
 let dayRecs={},TODAY_OVERRIDE=null;
 const todayDate=()=>{const d=TODAY_OVERRIDE?new Date(TODAY_OVERRIDE):new Date();d.setHours(0,0,0,0);return d};
 const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip','links','coat'];
+/* occasions a day can be given (Settings): each changes what the planner picks. 'formal' is stored as rec.formal (as
+   before); the others as rec.occasion. 'casual' = no jacket and no tie: a shirt and trousers. */
+const OCCASIONS=[['formal','Formal','dark suit, white shirt, quiet tie'],['wedding','Wedding','a lighter suit, a light shirt and a lively tie, never black'],
+  ['funeral','Funeral','the darkest suit, white shirt, black tie, black shoes'],['casual','No jacket or tie','a shirt and trousers']];
+const occOf=r=>r?(OCCASIONS.some(o=>o[0]===r.occasion)?r.occasion:r.formal?'formal':null):null;
+const occLabel=o=>(OCCASIONS.find(x=>x[0]===o)||[])[1]||'';
 const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip',links:'cufflinks'})[s]||s;
 const METAL_TYPES=['watch','tieclip','belt','cufflinks'],SEASON_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];
 const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather']],CUFFS=[['button','Button cuffs'],['french','French cuffs']];

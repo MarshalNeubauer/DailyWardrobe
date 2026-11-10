@@ -23,7 +23,9 @@ function frame(x1, y1, x2, y2) { const dx = x2 - x1, dy = y2 - y1; return { len:
 
 function outfitFigureSvg({ suit, shirt, tie, skin = '#D6B89E', bg = '#F5F2EC', idPrefix = 'ofig-',
   ariaLabel = "Torso wearing today's outfit", watch = { metal: ['#F4F6F8', '#9AA1AA', '#5C636D'], dial: '#F6F6F3', strap: '#9AA1AA', marks: '#1D2125' },
-  clip = { color: '#A9AFB8' }, vest = false } = {}) {
+  clip = { color: '#A9AFB8' }, vest = false, jacket = true } = {}) {
+  /* jacket:false draws the same torso in shirt sleeves (the caller passes the shirt's fabric as `suit`): no lapels, jacket
+     collar, pockets or sleeve buttons; a button placket runs down the front instead */
   const P = String(idPrefix).replace(/[^A-Za-z0-9_-]/g, '');
   skin = hex(skin, '#D6B89E'); bg = hex(bg, '#F5F2EC');
   const wm = (watch && watch.metal) || ['#F4F6F8', '#9AA1AA', '#5C636D'];
@@ -43,8 +45,8 @@ function outfitFigureSvg({ suit, shirt, tie, skin = '#D6B89E', bg = '#F5F2EC', i
 <g transform="translate(0 ${f(h + 30)}) scale(${flip ? -0.92 : 0.92} 0.92)"><use href="#${P}handSil" fill="#000" fill-opacity="0.25" filter="url(#${P}fBlurS)" transform="translate(3 4)"/><use href="#${P}handArt" color="${skin}"/></g>
 <rect x="-14" y="${f(h + 10)}" width="28" height="8" fill="url(#${P}gWristShade)"/>
 <rect x="${-w / 2 + 2}" y="${f(h - 6)}" width="${w - 4}" height="18" rx="3" fill="url(#${P}shirt)"/><rect x="${-w / 2 + 2}" y="${f(h - 6)}" width="${w - 4}" height="18" rx="3" fill="url(#${P}gCuff)"/>
-<path d="M ${-w / 2 - 1} ${f(h - 4)} L ${w / 2 + 1} ${f(h - 4)} L ${w / 2 + 1} ${f(h - 1)} L ${-w / 2 - 1} ${f(h - 1)} Z" fill="url(#${P}suitB)"/><path d="M ${-w / 2 - 1} ${f(h - 1)} L ${w / 2 + 1} ${f(h - 1)}" stroke="#000" stroke-opacity=".45" stroke-width="1.2"/>
-${[0, 7, 14].map(k => `<circle cx="${flip ? -w / 2 + 6 : w / 2 - 6}" cy="${f(h - 10 - k)}" r="2" fill="#0E1424"/>`).join('')}
+${jacket ? `<path d="M ${-w / 2 - 1} ${f(h - 4)} L ${w / 2 + 1} ${f(h - 4)} L ${w / 2 + 1} ${f(h - 1)} L ${-w / 2 - 1} ${f(h - 1)} Z" fill="url(#${P}suitB)"/><path d="M ${-w / 2 - 1} ${f(h - 1)} L ${w / 2 + 1} ${f(h - 1)}" stroke="#000" stroke-opacity=".45" stroke-width="1.2"/>
+${[0, 7, 14].map(k => `<circle cx="${flip ? -w / 2 + 6 : w / 2 - 6}" cy="${f(h - 10 - k)}" r="2" fill="#0E1424"/>`).join('')}` : `<path d="M ${-w / 2 + 2} ${f(h - 6)} L ${w / 2 - 2} ${f(h - 6)}" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/><circle cx="${flip ? -w / 2 + 8 : w / 2 - 8}" cy="${f(h + 3)}" r="2" fill="#FFFFFF" fill-opacity=".8" stroke="#000" stroke-opacity=".35" stroke-width=".6"/>`}
 ${withWatch && watch ? `<g class="fig-watch" transform="translate(0 ${f(h + 19)})">
 <rect x="-16" y="-11" width="32" height="22" rx="3" fill="${hex(watch.strap, '#9AA1AA')}"/><rect x="-16" y="-11" width="32" height="22" rx="3" fill="url(#${P}gCuff)"/>
 <rect x="15" y="-3" width="5" height="6" rx="1.5" fill="${hex(wm[1], '#9AA1AA')}"/>
@@ -107,13 +109,13 @@ ${fabrics}
 <!-- no head or neck: the collar opening shows the inside back of the collar band -->
 <path d="M 156 -40 L 234 -40 L 234 44 C 216 38 174 38 156 44 Z" fill="url(#${P}suitB)"/><path d="M 156 -40 L 234 -40 L 234 44 C 216 38 174 38 156 44 Z" fill="#000" fill-opacity=".42"/>
 <!-- jacket collar behind the neck -->
-<path d="M 148 46 C 150 30 166 22 195 22 C 224 22 240 30 242 46 L 246 56 C 228 46 162 46 144 56 Z" fill="url(#${P}suitB)"/><path d="M 148 46 C 150 30 166 22 195 22 C 224 22 240 30 242 46 L 246 56 C 228 46 162 46 144 56 Z" fill="#000" fill-opacity=".3"/>
+${jacket ? `<path d="M 148 46 C 150 30 166 22 195 22 C 224 22 240 30 242 46 L 246 56 C 228 46 162 46 144 56 Z" fill="url(#${P}suitB)"/><path d="M 148 46 C 150 30 166 22 195 22 C 224 22 240 30 242 46 L 246 56 C 228 46 162 46 144 56 Z" fill="#000" fill-opacity=".3"/>` : ''}
 <!-- shirt collar band standing around the neck -->
 <path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44 L 236 52 C 220 44 170 44 154 52 Z" fill="url(#${P}shirt)"/><path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44 L 236 52 C 220 44 170 44 154 52 Z" fill="url(#${P}gCollar)"/>
 <path d="M 156 44 C 158 26 172 14 195 14 C 218 14 232 26 234 44" stroke="#000" stroke-opacity=".22" stroke-width="1" fill="none"/>
 <!-- shirt front between the lapels -->
 <use href="#${P}shirtV" fill="url(#${P}shirt)"/>
-<use href="#${P}shirtV" fill="url(#${P}gShirtV)"/>
+${jacket ? `<use href="#${P}shirtV" fill="url(#${P}gShirtV)"/>` : ''}
 <path d="M 195 80 L 195 262" stroke="#000" stroke-opacity=".12" stroke-width="1"/>
 ${tie ? `<use href="#${P}bladeP" fill="url(#${P}tie)"/>
 <use href="#${P}bladeP" fill="url(#${P}gTie)"/>
@@ -139,7 +141,7 @@ ${vest ? `<g class="fig-vest" clip-path="url(#${P}clipVee)">
 <path d="M 195 210 L 195 280" stroke="#000" stroke-opacity=".45" stroke-width="1.2"/>
 ${[220, 238, 256].map(y => `<circle cx="196" cy="${y}" r="3" fill="#0E1424"/><circle cx="195.3" cy="${y - .8}" r=".9" fill="#FFFFFF" fill-opacity=".35"/>`).join('')}
 </g>` : ''}
-<!-- lapels -->
+${jacket ? `<!-- lapels -->
 <path d="M 158 46 C 166 130 180 210 195 262" stroke="#000" stroke-opacity=".45" stroke-width="7" fill="none" filter="url(#${P}fBlurS)"/>
 <path d="M 232 46 C 224 130 210 210 195 262" stroke="#000" stroke-opacity=".45" stroke-width="7" fill="none" filter="url(#${P}fBlurS)"/>
 <use href="#${P}lapL" fill="url(#${P}suitL)"/><use href="#${P}lapL" fill="url(#${P}gLapel)"/>
@@ -156,6 +158,11 @@ ${[220, 238, 256].map(y => `<circle cx="196" cy="${y}" r="3" fill="#0E1424"/><ci
 <path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="url(#${P}suitB)"/><path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="#000" fill-opacity=".16"/><path d="M 106 374 L 168 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
 <path d="M 284 362 L 222 368 L 222 380 L 284 374 Z" fill="url(#${P}suitB)"/><path d="M 284 362 L 222 368 L 222 380 L 284 374 Z" fill="#000" fill-opacity=".16"/><path d="M 284 374 L 222 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
 
+` : `<!-- no jacket: a shirt front with its button placket -->
+<path d="M 188 100 L 188 440 M 202 100 L 202 440" stroke="#000" stroke-opacity=".16" stroke-width="1"/>
+${[124, 172, 220, 268, 316, 364].map(y => `<circle cx="195" cy="${y}" r="3.4" fill="#FFFFFF" fill-opacity=".85" stroke="#000" stroke-opacity=".4" stroke-width=".7"/><circle cx="195" cy="${y}" r=".9" fill="#000" fill-opacity=".35"/>`).join('')}
+<path d="M 236 150 L 276 146 L 278 196 L 257 206 L 238 198 Z" fill="none" stroke="#000" stroke-opacity=".2" stroke-width="1.2"/>
+`}
 <path d="M 84 60 C 68 66 58 76 54 90 M 306 60 C 322 66 332 76 336 90" stroke="#000" stroke-opacity=".25" stroke-width="1.6" fill="none"/>
 <!-- the right arm (viewer's left): upper arm down the side, forearm to the button -->
 <path d="M 64 300 L 158 328 L 160 348 L 64 326 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
