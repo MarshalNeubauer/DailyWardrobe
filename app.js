@@ -655,7 +655,7 @@ const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=
    is, so identical items share too. */
 const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
 const comboSig=o=>(o.vest?'vest|':'')+(!o.top&&o.bot?'nojacket/'+[o.bot.type,...LOOK_FIELDS.map(f=>o.bot[f]??'')].join('/')+'|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];if(!i)return '-';
-  return s==='shirt'?'shirt/'+primaryCol(i):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+i.sett.bands.map(b=>b[0]).join(''):'')+(i.patternText?'/'+i.patternText:'')}).join('|');
+  return s==='shirt'?'shirt/'+primaryCol(i)+(shirtPatterned(i)?'/'+i.pattern+(i.sett?'/'+i.sett.bands.map(b=>b[0]).join(''):'')+(i.patternText?'/'+i.patternText:''):''):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+i.sett.bands.map(b=>b[0]).join(''):'')+(i.patternText?'/'+i.patternText:'')}).join('|');
 const fnvMemo=new Map();   // the same looks are hashed over and over (every render, every history record): remember them
 const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}
   v=h.toString(16).padStart(16,'0');if(fnvMemo.size>4000)fnvMemo.clear();fnvMemo.set(t,v);return v};
@@ -714,9 +714,11 @@ let prefetchTimer=0;const schedulePrefetch=()=>{clearTimeout(prefetchTimer);pref
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
 /* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
+/* a striped or checked shirt shows in the photo (a plain or finely woven one counts by its colour alone) */
+const shirtPatterned=i=>!!i&&[...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern));
 function outfitText(o){
   const pt=i=>i&&i.patternText?` (${i.patternText.replace(/\.$/,'')})`:'';   // Claude's description of a striped or checked cloth
-  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot)} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie)}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
+  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top)}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt)}`:`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot)} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie)}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
     o.watch&&watchText(o.watch),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }

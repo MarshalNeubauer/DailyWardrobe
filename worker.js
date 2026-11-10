@@ -206,13 +206,16 @@ clothBox — a rectangle on a plain, evenly lit area of the main cloth in the FI
   lining or background), in thousandths of that photo (x, y = top-left corner, w, h = size, all 0-1000), so the app can measure
   its colour; null if there is no such area.
 patternBox — for a striped, checked or plaid item: the largest rectangle of the FIRST photo that lies entirely on the patterned
-  cloth (no background, knot, collar or edges), in thousandths like clothBox, so the app can read the pattern's colours; null otherwise.
+  cloth (no background, knot, collar or edges; on a jacket the front panel beside the buttons, clear of lapels and pockets; on a
+  shirt the body, clear of the collar and placket), in thousandths like clothBox, so the app can read the pattern's colours; null otherwise.
 weave — for a striped, checked or plaid item (null for solids and fine weaves): its pattern as precisely as you can, from the
   close-up when there is one:
   layout: stripes, stripes-with-crossing-lines (stripes with finer lines running the other way), check, plaid, or other;
   direction: which way the main stripes run as worn (a regimental tie's stripes usually run upper-left to lower-right);
-  repeatsAcross: how many times the whole colour sequence repeats across the item's widest part (0.5 if one repeat is twice as wide);
-  colours: one full repeat of the stripe sequence in order, each band with a plain name, an sRGB hex as seen, and its width;
+  repeatsAcross: how many times the whole colour sequence repeats across the item's widest part (0.5 if one repeat is twice as wide;
+    for a pinstripe or chalk-stripe jacket, the number of stripes across its front, often 20 to 40);
+  colours: one full repeat of the stripe sequence in order, each band with a plain name, an sRGB hex as seen, and its width
+    (a pinstripe suit: the ground, then the stripe as a hairline; a gingham: the two colours);
   crossing: the lines that run the other way (colours, how fine, how far apart), or "" if none;
   description: one or two sentences describing the pattern for a photo-realistic image generator: direction, the order and
   colours of the bands, their widths, the crossing lines, and the cloth's sheen or weave.`;
