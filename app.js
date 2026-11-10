@@ -127,16 +127,50 @@ async function fill(q,ai){
   const wo=watchOpts(ai||{});q.dial=wo.dial;q.band=wo.band;q.bezel=wo.bezel;q.watchStyle=wo.style;
 }
 
-async function addFiles(files){
-  if($('#multi-items')&&$('#multi-items').checked){for(const f of files)await addMulti(f);return}
+/* ---- automatic white balance: the light's colour is read from the brightest near-neutral pixels (a white wall, backdrop,
+   shirt or label), which should be grey, and every pixel is scaled to make them so. Conservative: no correction when there
+   are too few of them, when they fill nearly the whole photo (then they are the item itself, e.g. a close-up of a cream
+   shirt; a white backdrop behind an item is fine), or when the cast is under 2%; each channel moves at most -15%/+18%. ---- */
+function wbGains(c){
+  const k=Math.min(1,200/Math.max(c.width,c.height)),w=Math.max(1,Math.round(c.width*k)),h=Math.max(1,Math.round(c.height*k)),t=document.createElement('canvas');t.width=w;t.height=h;
+  const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0,w,h);const d=x.getImageData(0,0,w,h).data,n=w*h,lums=new Float32Array(n);
+  for(let i=0,j=0;i<d.length;i+=4,j++)lums[j]=(d[i]+d[i+1]+d[i+2])/3;
+  const thr=Math.max(150,[...lums].sort((a,b)=>a-b)[Math.floor(n*.95)]-12);let R=0,G=0,B=0,m=0,bright=0;
+  for(let i=0,j=0;i<d.length;i+=4,j++){if(lums[j]<thr)continue;bright++;const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);
+    if(mx>=250&&mn>=250)continue;   // clipped highlights say nothing about the light
+    if((mx-mn)/mx<.35){R+=d[i];G+=d[i+1];B+=d[i+2];m++}}   // a white wall under tungsten light reads about 30% saturated
+  if(m<n*.005||m>n*.85)return null;
+  const g=(R+G+B)/3/m,cl=v=>Math.min(1.18,Math.max(.85,v)),gains={r:cl(g/(R/m)),g:cl(g/(G/m)),b:cl(g/(B/m))};
+  return Math.max(...Object.values(gains).map(v=>Math.abs(v-1)))<.02?null:gains}
+function applyWb(c,g){const o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0);
+  if(!g)return o;const D=x.getImageData(0,0,o.width,o.height),d=D.data;
+  for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*g.r);d[i+1]=Math.min(255,d[i+1]*g.g);d[i+2]=Math.min(255,d[i+2]*g.b)}x.putImageData(D,0,0);return o}
+/* an Add card's pictures from its uncorrected originals, with or without the correction (Show original toggles it) */
+function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);q.photo=shrink(q.big,360).toDataURL('image/jpeg',.8);
+  if(q.raw.tex)q.texture=applyWb(q.raw.tex,g).toDataURL('image/jpeg',.85);generateSwatch(q)}
+function toggleWb(i){const q=queue[i];if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
+const TEX_MAX=640;
+/* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
+async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
+  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,TEX_MAX);q.texture=applyWb(q.raw.tex,q.wbOff?null:q.wb).toDataURL('image/jpeg',.85);renderAdd()}
+  catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
+function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;if(q.raw)delete q.raw.tex;renderAdd()}
+/* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
+function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
+  const inp=`<input type="file" accept="image/*" hidden onchange="addTexture(${i},this.files[0]);this.value=''">`;
+  return q.texture?`<div class="texslot done"><small class="mut">Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.</small><div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
+    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the realistic photos match better. Optional.</small><label class="btn pri">Add close-up${inp}</label></div>`}
+const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`:'';
+/* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
+async function addFiles(files,multi){
+  if(multi){multiNote(true);for(const f of files)await addMulti(f);return}
   for(const f of files){
     const q={id:crypto.randomUUID(),busy:1};
     queue.push(q);
     renderAdd();
     try{
       const img=await loadImg(f);
-      q.big=shrink(img,800);
-      q.photo=shrink(img,360).toDataURL('image/jpeg',.8);
+      q.raw={big:shrink(img,800)};q.wb=wbGains(q.raw.big);cardPics(q);   // tagged from the corrected photo
       const aiResult=await ask(q.big);
       fill(q,aiResult);
     }catch(e){q.err=1}
@@ -206,7 +240,7 @@ document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;docum
 
 /* ---- several items in one photo: the worker lists every item with a rough box; each becomes its own card ---- */
 const multiMsg=t=>{const e=$('#multi-status');if(e)e.textContent=t||''};
-function multiNote(){multiMsg($('#multi-items').checked?'Photos you add now are split into one card per item. Check each card: colours and textures from a rail photo need a look, especially whites.':'')}
+function multiNote(on){multiMsg(on?'Each item in the photo gets its own card. Check each card: colours and textures from a rail photo need a look, especially whites.':'')}
 /* crop the box (thousandths of the image) with a little margin, keeping at least a usable size */
 function cropBox(img,box,max){
   const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,pad=.04;
@@ -221,9 +255,9 @@ async function addMulti(f){
   if(!w){multiMsg('Set the Worker URL in ⚙ Settings first: finding several items needs your worker.');return}
   const holder={id:crypto.randomUUID(),busy:1,multiBusy:1};queue.push(holder);renderAdd();
   try{
-    const img=await loadImg(f);
+    const raw=shrink(await loadImg(f),1568),wb=wbGains(raw),img=applyWb(raw,wb);   // one light reading for the whole photo
     const r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
-      body:JSON.stringify({image:shrink(img,1568).toDataURL('image/jpeg',.85)})});
+      body:JSON.stringify({image:img.toDataURL('image/jpeg',.85)})});
     const j=await r.json().catch(()=>({}));
     queue.splice(queue.indexOf(holder),1);
     if(!r.ok){multiMsg(r.status===404||r.status===405?'Your worker doesn’t support several items yet: it needs the latest worker.js.':`Couldn’t find the items: ${j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
@@ -231,7 +265,7 @@ async function addMulti(f){
     if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
     list.forEach((it,n)=>{
       const q={id:crypto.randomUUID(),multi:{n:n+1,of:list.length,confidence:it.confidence||'medium'}};
-      q.big=cropBox(img,it.box,800);q.photo=cropBox(img,it.box,360).toDataURL('image/jpeg',.8);
+      q.raw={big:cropBox(raw,it.box,800)};q.wb=wb;cardPics(q);
       fill(q,normTag(it,j.model));queue.push(q);
     });
     aiModel=j.model||aiModel;aiError='';
@@ -246,7 +280,8 @@ async function saveAll(){const n=queue.filter(q=>!q.busy&&!q.err).length;for(let
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
 const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual)renderAdd();else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
-const tagSwInner=i=>`${itemThumb(i,true)}<figcaption>As tagged<br><b class="cap">${desc(i)||TYPES[i.type]||''}</b></figcaption>`;
+/* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
+const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${i.texture}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${desc(i)||TYPES[i.type]||''}</b></figcaption>`;
 const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure><figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure></div>`;
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 function addManual(){
@@ -266,6 +301,7 @@ async function save(i){
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;
+  if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
   await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
 }
@@ -276,18 +312,23 @@ const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Primary':k==='s
 let phEdit={id:null,undo:[],crop:null};
 const PH_MAX=720;
 function photoTools(i){if(phEdit.crop)return '';
-  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
+  const tex=TEXTURE_TYPES.includes(i.type)?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`+(i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:''):'';
+  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+tex+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
-async function setPhoto(id,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push(it.photo||null);if(phEdit.undo.length>10)phEdit.undo.shift();
-  if(url)it.photo=url;else delete it.photo;await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
+async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
+  if(url)it[k]=url;else delete it[k];await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
+const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
+/* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
+async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);await setTexture(id,shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),'Close-up added. The realistic photos use it from the next one made.')}
+  catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f);await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.')}
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
   c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);await setPhoto(id,c.toDataURL('image/jpeg',.9))}
-async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const prev=phEdit.undo.pop();
-  if(prev)it.photo=prev;else delete it.photo;await put(it);cache={};renderWardrobe()}
+async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
+  if(v)it[k]=v;else delete it[k];await put(it);cache={};renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
   phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();requestAnimationFrame(layoutCrop)}
@@ -685,7 +726,9 @@ const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=(
 /* reference photos for an outfit photo, each labelled: the jacket and tie photos, and the watch's own photo or its product
    picture (no shirt photo: an outfit photo is shared by every shirt of that colour) */
 function outfitRefs(o){const refs=[],labels=[];const add=(img,l)=>{if(img){refs.push(img);labels.push(l)}};
-  add(o.top&&o.top.photo,o.suitDay?'the suit':'the blazer');if(!o.top)add(o.bot&&o.bot.photo,'the trousers');add(o.tie&&o.tie.photo,'the tie');
+  const tex=(i,what)=>add(i&&i.texture,`a close-up of the ${what} fabric (match its exact colour and weave)`);   // a fabric close-up, when the item has one
+  const top=o.suitDay?'suit':'blazer';add(o.top&&o.top.photo,'the '+top);tex(o.top,top);
+  if(!o.top){add(o.bot&&o.bot.photo,'the trousers');tex(o.bot,'trouser')}tex(o.shirt,'shirt');add(o.tie&&o.tie.photo,'the tie');tex(o.tie,'tie');
   if(o.watch)add((itemPic(o.watch)||{}).img||o.watch.photo,'the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)');
   return {refs,labels}}
 async function renderCombo(o){
@@ -1029,7 +1072,7 @@ function renderAdd(){
   const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card">${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
-<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>
+<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}${texSlot(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
   <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
@@ -1229,7 +1272,7 @@ function shopCard(){
   return items.length?`<div class="card shop"><div class="shop-head"><b>What to buy</b><button onclick="analyzeWardrobe()" ${shopBusy?'disabled':''}>${shop&&shop.sig===shopSig()?'Re-check':'Analyze my wardrobe'}</button></div>${body}</div>`:'';
 }
 function analyzeWardrobe(){
-  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,...i})=>i),settings,weather,climate,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
+  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,texture,...i})=>i),settings,weather,climate,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
   const finish=res=>{shopBusy=null;shop={sig,res};if(!$('#wardrobe').hidden)renderWardrobe()};
   const progress=(i,n)=>{shopBusy=`Checking ${i+1} of ${n} possible purchases…`;const el=$('#wardrobe .shop small');if(el)el.textContent=shopBusy};
   shopBusy='Starting…';renderWardrobe();

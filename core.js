@@ -65,6 +65,8 @@ const OCCASIONS=[['formal','Formal','dark suit, white shirt, quiet tie'],['weddi
 const occOf=r=>r?(OCCASIONS.some(o=>o[0]===r.occasion)?r.occasion:r.formal?'formal':null):null;
 const occLabel=o=>(OCCASIONS.find(x=>x[0]===o)||[])[1]||'';
 const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip',links:'cufflinks'})[s]||s;
+/* items that can carry a second photo: a close-up of the cloth (its weave and true colour), used for the realistic photos */
+const TEXTURE_TYPES=['suit','blazer','pants','shirt','tie'];
 const METAL_TYPES=['watch','tieclip','belt','cufflinks'],SEASON_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];
 const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather']],CUFFS=[['button','Button cuffs'],['french','French cuffs']];
 
