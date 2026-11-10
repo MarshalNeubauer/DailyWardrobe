@@ -157,20 +157,31 @@ function drawOxfordSide(item,P){
     `<path d="M53.5,14.2 L56,15.6 M56,14.1 L58.6,15.5 M58.6,14 L61.2,15.4 M61.2,13.8 L63.8,15.2" stroke="${lace}" stroke-width=".55"/>`;
 }
 
-/* dress sock, side view: welt, ribbed leg, reinforced heel and toe; box ~0..40 x 0..70 */
+/* dress sock, side view, traced from a catalogue photo of a fine merino dress sock: slanted cuff with a heathered welt,
+   leg leaning back, heel pocket, foot pointing right, flat knitted toe cap (the sock's secondary colour); box ~0..60 x 0..72 */
+const SOCK_D='M6.2,0 C10.2,0.4 25.5,2.4 29.7,2.9 C31,3.05 31.6,3.3 31.4,4.1 C31,5.5 29.6,9.3 28.9,11.6 C28.2,13.9 27.9,14.7 27.1,17.9 C26.3,21.2 24.4,28.2 23.8,31.1 C23.2,34 23.5,34.1 23.6,35.5 C23.7,36.8 23.9,38 24.3,39.2 C24.7,40.3 25,41.1 25.8,42.4 C26.6,43.7 27.7,45 29.2,46.8 C30.7,48.5 32.9,50.8 34.9,52.8 C36.9,54.7 39.7,57.3 41.2,58.6 C42.7,59.9 42.9,60 44,60.6 C45,61.3 45.4,61.8 47.5,62.6 C49.6,63.3 54.7,64.7 56.5,65.3 C58.2,65.9 57.6,65.7 58,66 C58.4,66.2 58.6,66.4 58.9,66.8 C59.2,67.2 59.6,68 59.7,68.5 C59.8,69 59.7,69.4 59.6,69.8 C59.4,70.2 59.3,70.4 58.9,70.7 C58.5,71 58,71.4 57.1,71.6 C56.1,71.9 56.8,72 53.3,72 C49.8,72 39.8,71.9 36,71.8 C32.3,71.6 32.1,71.4 31,71.1 C29.8,70.9 30.3,71.1 29.2,70.4 C28.2,69.6 26.2,67.5 24.7,66.4 C23.3,65.3 22.1,64.5 20.4,63.6 C18.8,62.8 17.4,62.1 14.7,61.1 C11.9,60.1 6.1,58.5 3.9,57.7 C1.8,56.9 2.4,57 1.9,56.6 C1.3,56.2 1,55.9 0.7,55.3 C0.4,54.7 0.1,53.8 0,52.9 C-0.1,52 0.1,51 0.3,50 C0.5,49 0.7,48.3 1.3,47 C1.8,45.6 2.9,43.9 3.6,42 C4.2,40 4.9,38.9 5.3,35.2 C5.7,31.6 6,24.8 6.1,20.3 C6.3,15.8 6.4,11.3 6.4,8 C6.3,4.7 5.9,1.8 5.9,0.5 C5.9,-0.2 6,0 6.2,0Z';
 function drawSock(color,P,toe){
-  const d='M4,0 L20,0 L20,44 C20,50 23,53 29,55 L33,56.5 C39.5,58.5 40.5,68 32,69 L11,69 C3,69 1,63 4,56 Z';
-  const ink=lum(color)>.55?'#000':'#fff';let ribs='';for(let x=6;x<19;x+=1.6)ribs+=`M${x.toFixed(1)},7 L${x.toFixed(1)},46 `;
-  return `<defs><linearGradient id="${P}sh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".25"/><stop offset=".4" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>`+
-    ``+
-    `<path d="${d}" fill="${color}" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`+
-    `<path d="${ribs}" stroke="${ink}" stroke-opacity=".13" stroke-width=".5"/>`+
-    `<path d="M4,0 L20,0 L20,6 L4,6 Z" fill="#000" opacity=".1"/><path d="M4,6 L20,6" stroke="${ink}" stroke-opacity=".2" stroke-width=".5"/>`+
-    `<path d="M4,53 C1.5,61 4,68.5 11,69 L14,69 C9.5,66 8.5,59 9.6,53 Z" fill="#000" opacity=".14"/>`+
-    `<path d="M33,56.5 C39.5,58.5 40.5,68 32,69 L29,69 C33.5,66 33.5,59 30,55.6 Z" fill="#000" opacity=".14"/>`+
-    `<path d="${d}" fill="url(#${P}sh)"/>`+
-    (toe?`<path class="sock-toe" d="M30.5,55.8 L33,56.5 C39.5,58.5 40.5,68 32,69 L28,69 C30.6,65.5 31.6,60.5 30.5,55.8 Z" fill="${toe}" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`+
-      `<path d="M36,58 C40,61 39.8,67.5 32,69 L30.5,69 C35,67 36.5,62 36,58 Z" fill="#000" opacity=".12"/>`:'');
+  const ink=lum(color)>.55?'#000':'#fff',welt=mix(color,'#fff',lum(color)>.55?.12:.42);let ribs='';
+  // fine knit lines that follow the leg's lean: from the cuff (6,0)-(31,3.2) down to the ankle (4.6,40)-(24.2,36)
+  for(let k=1;k<16;k++){const t=k/16,x1=6+25*t,y1=3.2*t,x2=4.6+19.6*t,y2=40-4*t;ribs+=`M${x1.toFixed(1)},${y1.toFixed(1)} L${x2.toFixed(1)},${y2.toFixed(1)} `}
+  return `<defs><linearGradient id="${P}sh" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="60" y2="12"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".3" stop-color="#fff" stop-opacity=".07"/><stop offset=".6" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>`+
+    `<clipPath id="${P}sk"><path d="${SOCK_D}"/></clipPath></defs>`+
+    `<path d="${SOCK_D}" fill="${color}"/>`+
+    `<g clip-path="url(#${P}sk)">`+
+      `<path d="${ribs}" stroke="${ink}" stroke-opacity=".06" stroke-width=".3"/>`+
+      // heathered welt along the slanted cuff
+      `<path d="M4,-0.6 L33,2.6" stroke="${welt}" stroke-width="1.6"/><path d="M4,1.1 L33,4.3" stroke="${ink}" stroke-opacity=".12" stroke-width=".3"/>`+
+      // heel pocket: a darker patch under the ankle seam, closed by the diagonal gusset line
+      `<path d="M-1,42.9 L12.4,42.9 L12.9,47.6 L0.4,53.4 Z" fill="#000" opacity=".08"/>`+
+      `<path d="M-1,42.9 L12.4,42.9 M12.9,47.6 L0.4,53.4" fill="none" stroke="#000" stroke-opacity=".14" stroke-width=".3"/>`+
+      // sole: a soft shadow along the bottom of the foot
+      `<path d="M1,55.5 C12,59.5 22,63.5 30,70.8 L58,71.8 L58,74 L-2,74 Z" fill="#000" opacity=".08"/>`+
+      (toe?`<path class="sock-toe" d="M48.6,61.2 C47.3,64.5 46.5,68.2 46.3,73 L63,73 L63,60 Z" fill="${toe}"/>`+
+        `<path d="M48.6,61.2 C47.3,64.5 46.5,68.2 46.3,73" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".35"/>`+
+        `<path d="M50,73 C52,69 55,66.5 60,66" fill="none" stroke="#000" stroke-opacity=".1" stroke-width=".9"/>`:'')+
+      `<path d="M-2,-2 L64,-2 L64,76 L-2,76 Z" fill="url(#${P}sh)"/>`+
+    `</g>`+
+    `<path d="${SOCK_D}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`;
 }
 
 /* wristwatch seen from above, centred on 0,0; case radius ~15, bracelet to about +/-49.
@@ -300,7 +311,7 @@ function itemThumb(i,full){
     g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`;
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawOxfordSide(i,P)}</g>`;
-  else if(i.type==='socks')g=`<g transform="translate(28 13) scale(1.05)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
+  else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
   else if(i.type==='belt')g=`<g transform="translate(50 50) scale(1.42)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat'||i.type==='raincoat'){const c=colOf(i),e=mix(c,'#000',.35),rain=i.type==='raincoat';
     g=`<path d="M38,14 L50,20 L62,14 L78,22 L84,90 L16,90 L22,22 Z" fill="${c}" stroke="${e}" stroke-width=".8"/><path d="M38,14 L50,40 L62,14" fill="none" stroke="${e}" stroke-width=".8"/>`+
