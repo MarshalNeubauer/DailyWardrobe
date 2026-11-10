@@ -37,6 +37,11 @@ async function syncNow(){
   if(syncRun){await syncRun.catch(()=>{});if(syncRun)await syncRun.catch(()=>{})}
   syncRun=syncOnce();try{return await syncRun}finally{syncRun=null}
 }
+/* what this device last agreed on with the worker: the backup's version and a fingerprint of the wardrobe at that moment.
+   While both still hold, a sync is one tiny request: nothing is downloaded or uploaded (the backup is several MB of photos). */
+const syncMark=()=>{try{const m=JSON.parse(localStorage.getItem('sync_mark')||'null');return m&&m.url===syncUrl()&&m.v&&m.sig?m:null}catch{return null}};
+const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:rev+':'+saved,sig}))}catch{}};
+const synced=()=>{localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus()};
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Set the Worker URL to turn on backup.');return false}
@@ -44,16 +49,19 @@ async function syncOnce(){
   syncing=true;setSyncStatus('Syncing…');
   try{
     for(let attempt=0;attempt<3;attempt++){
-      const r=await fetch(url,{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
+      // nothing changed here since the last sync: ask only whether the backup is still that version
+      const mark=attempt?null:syncMark(),local=await localState(),quick=!!mark&&stateSig(mergeState(local,{}))===mark.sig;
+      const r=await fetch(url+(quick?'?v='+encodeURIComponent(mark.v):''),{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(remote.error||'HTTP '+r.status);
-      const local=await localState(),merged=mergeState(local,remote.data||{});
+      if(quick&&remote.same){synced();return true}
+      const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
       const now=mergeState(await applyMerged(merged,local),remote.data||{});
-      if(remote.data&&stateSig(now)===stateSig(remote.data)){localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus();return true}
+      if(remote.data&&stateSig(now)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();return true}
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,data:now})});
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));if(!p.ok)throw new Error(pr.error||'HTTP '+p.status);
-      localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus();
+      setSyncMark(pr.rev,pr.saved,stateSig(now));synced();
       if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
       return true;
     }

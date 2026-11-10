@@ -11,7 +11,7 @@ const TIE_ON_SHIRT={mint:['navy','burgundy','brown','green','olive','charcoal','
 /* good trousers for each odd jacket, best first */
 const BLAZER_TROUSERS={navy:['grey','charcoal','tan','cream','olive'],tan:['navy','brown','charcoal','olive'],brown:['grey','charcoal','tan','navy','cream'],olive:['tan','brown','charcoal','cream'],grey:['charcoal','navy','black'],charcoal:['grey','tan','navy'],black:['grey','charcoal'],green:['tan','grey','brown','cream'],burgundy:['grey','charcoal','navy'],blue:['grey','tan','navy','cream']};
 const colsOf=i=>i?[primaryCol(i),i.secondaryColor,i.tertiaryColor].filter(c=>c&&COLORS[c]).map(fam):[];
-const lumOf=c=>{const h=COLORS[c];return h?parseInt(h.slice(1,3),16)*.3+parseInt(h.slice(3,5),16)*.59+parseInt(h.slice(5,7),16)*.11:128};
+const lumOf=lumCol;
 
 /* dark shirts (navy, charcoal, black, burgundy...) are worn under light jackets (light/mid grey, tan) with a tie lighter
    than the shirt: a modern, less formal look. With any other jacket the classic rule applies: shirt lighter than jacket. */
@@ -182,7 +182,10 @@ const tieRepeat=(x,prev)=>{if(!x||!prev)return 0;const g=tieGroup(x),l=tieLook(x
 const lookRepeat=(top,sh,x,prev)=>{if(!top||!prev)return 0;const jg=jacketGroup(top),sl=shirtLook(sh),tl=tieLook(x);let v=0;
   prev.slice(0,2).forEach((p,n)=>{if(!p||p.jg!==jg||p.sl!==sl)return;
     if(p.tl===tl)v+=n?20:25;else if(sl!=='white'&&sl!=='lightblue')v+=n?8:10});return v};   // same jacket colour and shirt look, another tie: half a repeat
-function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
+function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};
+// no blazer in the wardrobe on a blazer day (or no suit on a suit day): wear the other kind rather than no jacket
+if(!by(suitDay?'suit':'blazer').length&&by(suitDay?'blazer':'suit').length)suitDay=!suitDay;
+const rest=i=>Math.min(n-(last[i.id]??-1e5),60),rb=i=>Math.min(rest(i),10)*.4;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
 const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
@@ -194,9 +197,9 @@ const top=best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Mat
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
 const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
 const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.clim.season!=='warm'))));
-// trousers, shirt and tie are scored together as one outfit. Rotation only chooses among outfits within 5 points
+// trousers, shirt and tie are scored together as one outfit. Rotation only chooses among outfits within QWIN points
 // of the best one, so variety never costs a clearly better combination.
-// Large wardrobes: keep only the 4 best trousers and 10 best shirts for this jacket (rotation included), then try every tie.
+// Large wardrobes: keep only the 4 best trousers and 16 best shirts for this jacket (rotation included), then try every tie.
 const topN=(arr,n,f)=>arr.length<=n?arr:arr.map(i=>[f(i)+rb(i),i]).sort((a,b)=>b[0]-a[0]).slice(0,n).map(x=>x[1]);
 // shirts are many and low-stakes: how long one has rested counts for more, so every acceptable shirt comes around
 const shRest=sh=>Math.min(rest(sh),SH_CAP)*.5;
@@ -316,7 +319,10 @@ function frozenOutfit(rec,n,last){
   if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
   return o;
 }
-function buildPlan(y,m){const by=t=>items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1),last={},plan={},T=todayDate();
+/* One simulation, resumable: planSim(start).upTo(day) plans every workday from start to that day and can be asked again
+   for a later day, continuing where it stopped (the app keeps one for all the months it shows, so stepping to another
+   month only plans the days that are new). The wardrobe, history and settings must not change in between: start a new one. */
+function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();
 const hasLinks=by('cufflinks').length>0;let prev=[];   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
 // jackets already fixed on the next workdays (worn, or picked by the user): the next one's colour group, and the ids of
 // those within the next 3 workdays, which are held back so a pinned jacket is not worn just before its day
@@ -331,12 +337,15 @@ const fixedAhead=d=>{const x=new Date(d),ids=[];let next=null,soft=null,w=0;for(
     w++}return {next,ids,soft}};
 const hist={},remember=o=>{if(!o.top)return;const h=hist[o.top.id]||(hist[o.top.id]=[]);h.unshift({tie:o.tie?o.tie.id:null,sc:o.shirt?shirtGroup(o.shirt):null});h.length=Math.min(h.length,2)};
 const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,jc:o.top?primaryCol(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null,sl:shirtLook(o.shirt),tl:tieLook(o.tie)});
-// every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
-// share (the plan depends on what came before: rest and the previous workdays' jacket colours)
-const from=new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)));
-for(const d=from;d<=new Date(y,m+1,0);d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
+const d=new Date(start);
+return {plan,upTo(end){
+for(;d<=end;d.setDate(d.getDate()+1)){const w=d.getDay();if(!settings.workdays.includes(w))continue;
   const k=key(d),rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top){prev=[sumUp(plan[k]),prev[0]];remember(plan[k])}continue}
   const formal=!!(rec&&rec.formal),o=outfit(formal||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top){prev=[sumUp(o),prev[0]];remember(o)}}
-return plan}
+return plan}}}
+/* every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
+   share (the plan depends on what came before: rest and the previous workdays' jacket colours) */
+const planStart=(y,m)=>{const T=todayDate();return new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)))};
+function buildPlan(y,m){return planSim(planStart(y,m)).upTo(new Date(y,m+1,0))}
 

@@ -3,6 +3,7 @@
    purchases by how much they improve the outfits: average score, days with a problem (no matching belt, French cuffs
    without cufflinks, no coat for the weather...) and days where a suit hasn't had enough rest. */
 
+const keyDate2=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 function horizonKeys(T,weeks){const out=[],end=new Date(T);end.setDate(end.getDate()+weeks*7);
   for(const d=new Date(T);d<end;d.setDate(d.getDate()+1))if(isWorkday(d))out.push(key(d));return out}
 
@@ -18,8 +19,8 @@ function noteKind(n){
 function evaluateWardrobe(list,T,weeks){
   const keepItems=items,keepRecs=dayRecs;items=list;dayRecs={};
   try{
-    const ks=horizonKeys(T,weeks),plans={};
-    for(const m of [...new Set(ks.map(k=>k.split('-').slice(0,2).join('-')))]){const [y,mm]=m.split('-').map(Number);Object.assign(plans,buildPlan(y,mm-1))}
+    const ks=horizonKeys(T,weeks),end=keyDate2(ks[ks.length-1]||key(T));
+    const plans=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(end);   // one pass over the whole horizon
     let sum=0,val=0,problems=0,rest=0;const kinds={};
     for(const k of ks){const o=plans[k];if(!o)continue;
       const score=rateOutfit(o).score,bad=(o.notes||[]).length>0,short=!!(o.top&&o.top.rest<COOL);

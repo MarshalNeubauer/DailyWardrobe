@@ -267,7 +267,7 @@ async function save(i){
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;
   try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
-  await put(it);items.push(it);queue.splice(i,1);renderAdd();
+  await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
 }
 let editing=null;
 const E=(id,k,list,v)=>`<label>${k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
@@ -340,9 +340,16 @@ async function redetect(id){
   it.stripes=st;await put(it);cache={};renderWardrobe();
 }
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;await put(it);cache={};renderWardrobe()}
-async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);renderWardrobe()}
+async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id){editing=null;editAt=null}renderWardrobe()}
 
-let cache={}; const planFor=()=>cache[view.y+'-'+view.m]||(cache[view.y+'-'+view.m]=buildPlan(view.y,view.m));
+/* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
+   the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
+let cache={};
+function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];
+  const start=planStart(y,m),T=todayDate();
+  if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=buildPlan(y,m);
+  return cache[k]=(cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0))}
+const planFor=()=>planMonth(view.y,view.m);
 
 /* views */
 const vestRow=o=>!(o.suitDay&&hasVest(o.top))?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${o.frozen?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
@@ -436,7 +443,7 @@ function stackSVG(o,cls=''){
   const body=parts.map(([i,role,h],k)=>{const id=P+k,r=`<rect y="${y}" width="40" height="${h}" rx="2.5" fill="url(#${id})"/><rect y="${y}" width="40" height="${h}" rx="2.5" fill="none" stroke="#000" stroke-opacity=".12" stroke-width=".6"/>`;y+=h+2;return `<defs>${fabricDef(id,i,role)}</defs>${r}`}).join('');
   return `<svg class="stack ${cls}" viewBox="0 0 40 ${H}" preserveAspectRatio="none" aria-hidden="true">${body}</svg>`;
 }
-const planOn=d=>{const keep=view;view={y:d.getFullYear(),m:d.getMonth()};const o=planFor()[key(d)];view=keep;return o};
+const planOn=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)];
 const nextWorkday=d=>{const x=new Date(d);let g=0;do x.setDate(x.getDate()+1);while(!isWorkday(x)&&++g<7);return x};
 const shortTop=o=>{const t=o.top;if(!t)return '';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patLabel(t.pattern):'',n=colName(primaryCol(t))+p;
   const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' trousers':''}`};
@@ -444,7 +451,7 @@ const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'ch
 const shortRest=o=>[o.shirt&&colName(primaryCol(o.shirt))+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
 /* the month plan unfolds in place from the box on Today (no separate page) */
 let monthOpen=false,monthPanel=null;
-const monthPlan=(y,m)=>{const keep=view;view={y,m};const p=planFor();view=keep;return p};
+const monthPlan=planMonth;
 function monthGridHtml(){
   const {y,m}=monthPanel,p=monthPlan(y,m),f=new Date(y,m,1),T=todayDate(),cells=[];let n=0;
   for(let k=0;k<f.getDay();k++)cells.push('<span class="mc blank"></span>');
@@ -466,7 +473,7 @@ function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
 function monthLink(){
   const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(o&&o.top)days.push([new Date(d),o])}
-  const f=new Date(view.y,view.m,1),n=Object.keys(planFor()).filter(k=>keyDate(k).getMonth()===view.m).length;
+  const f=new Date(view.y,view.m,1),n=Object.keys(planFor()).filter(k=>{const d=keyDate(k);return d.getMonth()===view.m&&d.getFullYear()===view.y}).length;
   if(monthOpen&&!monthPanel)monthPanel={y:view.y,m:view.m};
   return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" onclick="toggleMonth()" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip">${days.map(([d,o])=>`<span class="mli"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o)}</span>`).join('')}</span>
     <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${n} outfit${n===1?'':'s'} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
@@ -506,7 +513,9 @@ const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=
 const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
 const comboSig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];if(!i)return '-';
   return s==='shirt'?'shirt/'+primaryCol(i):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')}).join('|');
-const fnv64=t=>{let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}return h.toString(16).padStart(16,'0')};
+const fnvMemo=new Map();   // the same looks are hashed over and over (every render, every history record): remember them
+const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}
+  v=h.toString(16).padStart(16,'0');if(fnvMemo.size>4000)fnvMemo.clear();fnvMemo.set(t,v);return v};
 const comboKey=o=>'c'+fnv64(comboSig(o));
 /* the key photos were saved under before shirts counted by colour only; moved over on first use */
 const comboSigV1=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,...LOOK_FIELDS.map(f=>i[f]??''),i.cuff??'',i.stripes?JSON.stringify(i.stripes):''].join('/'):'-'}).join('|');
@@ -542,7 +551,7 @@ async function fetchRemoteRender(o,day){
 /* photos the worker keeps that this device lacks (a new install, or made on another device): download the ones the plan needs
    for the month on screen and the next, nearest the selected day first, so swiping between days shows them at once */
 let prefetching=false,prefetchAgain=false,remoteKeys=null;
-const planOf=(y,m)=>{const k=y+'-'+m;return cache[k]||(cache[k]=buildPlan(y,m))};
+const planOf=planMonth;
 async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetching){prefetchAgain=true;return}prefetching=true;
   try{
     if(!remoteKeys){const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;if(!j||!Array.isArray(j.keys)){remoteKeys=new Set();return}remoteKeys=new Set(j.keys)}   // no list: fetch per day as before
@@ -606,6 +615,7 @@ function lastWorn(o){
   const ck=comboKey(o),T=todayDate(),lim=Math.min(+keyDate(key(sel)),+T);let best=null;
   for(const r of Object.values(dayRecs)){if(!r.ids||r.worn===false)continue;const d=keyDate(r.date);if(+d>=lim||(best&&d<=best))continue;
     const get=id=>id&&items.find(i=>i.id===id)||null,x={suitDay:!!r.suitDay,top:get(r.ids.top),shirt:get(r.ids.shirt),tie:get(r.ids.tie),clip:get(r.ids.clip),watch:get(r.ids.watch),vest:!!r.vestOn};
+    if([x.top,x.shirt,x.tie].some(i=>i&&(i.added||0)>+d+864e5))continue;   // dated before a piece was added: a warm-up day of the planner, never worn
     if(x.top&&comboKey(x)===ck)best=d}
   return best;
 }
@@ -730,7 +740,13 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
 function startQueueWatch(){if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},45000)}
 function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
+let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
+function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
+  if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};cache={};
+  if(home){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false}
+  if(!$('#today').hidden)renderToday()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(queuedKeys().length){checkQueue();startQueueWatch()}
+  newDayCheck();try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(settings.location&&(!c||Date.now()-c.t>3*3600e3))loadWeather()}catch{}
   remoteKeys=null;schedulePrefetch()});   // photos made on another device meanwhile
 function pickPiece(s){figSel=s;const o=planFor()[key(sel)];if(!o)return;
   const w=$('#piece-wrap');if(w)w.innerHTML=pieceCard(o)}
@@ -752,7 +768,7 @@ function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;box
   box.classList.toggle('open',listOpen);const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
   if(listOpen)setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),120)}
 function renderToday(){
-  closeSettings();
+  closeSettings();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
@@ -954,7 +970,7 @@ async function refreshAll(){
     const [r,d,st]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')]);
     items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};cache={};
     await loadWeather(true);
-    if(typeof renderTried!=='undefined')renderTried.clear();
+    if(typeof renderTried!=='undefined')renderTried.clear();remoteKeys=null;
     const v=['today','wardrobe','add'].find(t=>!$('#'+t).hidden)||'today';show(v);
     if(!msg){const diff=items.length-n0;msg=`Refreshed · ${items.length} item${items.length===1?'':'s'}${diff>0?` (${diff} new)`:diff<0?` (${-diff} removed)`:''}`}
     if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(g=>g&&g.update()).catch(()=>{});
@@ -987,7 +1003,7 @@ function shopCard(){
   return items.length?`<div class="card shop"><div class="shop-head"><b>What to buy</b><button onclick="analyzeWardrobe()" ${shopBusy?'disabled':''}>${shop&&shop.sig===shopSig()?'Re-check':'Analyze my wardrobe'}</button></div>${body}</div>`:'';
 }
 function analyzeWardrobe(){
-  const sig=shopSig(),payload={list:items,settings,weather,today:TODAY_OVERRIDE,weeks:8};
+  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,...i})=>i),settings,weather,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
   const finish=res=>{shopBusy=null;shop={sig,res};if(!$('#wardrobe').hidden)renderWardrobe()};
   const progress=(i,n)=>{shopBusy=`Checking ${i+1} of ${n} possible purchases…`;const el=$('#wardrobe .shop small');if(el)el.textContent=shopBusy};
   shopBusy='Starting…';renderWardrobe();
