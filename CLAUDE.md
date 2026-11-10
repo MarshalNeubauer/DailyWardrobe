@@ -142,6 +142,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - backup file download/restore
 - When nothing changed on the device since the last sync (`sync_mark`: the backup's version and a fingerprint of the wardrobe), it asks `GET /sync?v=<rev>:<saved>` and neither downloads nor uploads the backup
 - any local change takes the full merge path
+- daily backups: before the first `/sync` PUT of each calendar day (the app sends its `day`), the worker keeps the stored backup as `snap:<YYYY-MM-DD>` (30 days) and `snap:<YYYY-MM>` (400 days); `GET /sync?snaps=1` lists them, `GET /sync?snap=<id>` returns one
+- Settings → "Roll back" (`loadSnapshots`/`rollBack`/`rollBackState` in sync.js) replaces items, days and settings with a snapshot by giving them a new stamp and tombstoning everything else, so it wins the merge on every device; the PUT carries `reason:'restore'` and the worker first keeps the replaced backup as `snap:before-restore`
 
 ### `sw.js`
 

@@ -523,12 +523,45 @@ async function syncVersion(env) {
    data when that is still the stored version, so a device with nothing new neither downloads nor uploads anything.
    PUT /sync {baseRev, data} stores a new one: baseRev must equal the stored rev, otherwise 409 with the current backup so
    the app can merge and retry (two devices syncing at once never overwrite each other). */
+/* dated copies of the backup, so a bad change that reaches the backup can be undone: before the first overwrite of each
+   calendar day (the app's own date), the backup as it stood is kept as snap:<YYYY-MM-DD> for 30 days, and the first of each
+   month as snap:<YYYY-MM> for a year. A restore from the app (body.reason 'restore') first keeps the backup it replaces as
+   snap:before-restore, so a restore can itself be undone. Copied as stored text, not parsed (the backup is several MB). */
+const SNAP_DAYS = 30, SNAP_MONTHS = 400, SNAP_DAY = /^\d{4}-\d{2}-\d{2}$/;
+async function keepSnapshots(env, m, body) {
+  const day = SNAP_DAY.test(body.day || '') ? body.day : new Date().toISOString().slice(0, 10), month = day.slice(0, 7);
+  const want = [[`snap:${day}`, SNAP_DAYS], [`snap:${month}`, SNAP_MONTHS]];
+  let have = new Set();
+  try { have = new Set(((await env.WARDROBE.list({ prefix: 'snap:' })).keys || []).map(k => k.name)); } catch { }
+  const todo = want.filter(([k]) => !have.has(k));
+  if (body.reason === 'restore') todo.push(['snap:before-restore', SNAP_DAYS]);
+  if (!todo.length) return;
+  const cur = await env.WARDROBE.get(SYNC_KEY);
+  if (!cur || cur === SYNC_NONE) return;                       // nothing stored yet
+  let meta = m;
+  if (!meta) { try { const o = JSON.parse(cur); meta = { rev: o.rev, saved: o.saved }; } catch { return; } }
+  if (!meta.saved) return;
+  for (const [k, days] of todo) await env.WARDROBE.put(k, cur, { expirationTtl: days * 86400, metadata: { rev: meta.rev, saved: meta.saved } });
+}
+async function listSnapshots(env) {
+  const l = await env.WARDROBE.list({ prefix: 'snap:' });
+  return (l.keys || []).filter(k => k.metadata && k.metadata.saved).map(k => ({ id: k.name.slice(5), saved: k.metadata.saved, rev: k.metadata.rev }))
+    .sort((a, b) => b.saved - a.saved || a.id.localeCompare(b.id));
+}
 async function handleSync(req, env, json, cors) {
   if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to enable backups.' }, 403);
   if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.WARDROBE) return json({ error: 'Add a KV namespace binding named WARDROBE to the worker to enable backups.' }, 501);
   if (req.method === 'GET') {
-    const v = new URL(req.url).searchParams.get('v');
+    const q = new URL(req.url).searchParams, v = q.get('v');
+    if (q.has('snaps')) return json({ snaps: await listSnapshots(env) });
+    if (q.has('snap')) {
+      const id = q.get('snap');
+      if (!/^(\d{4}-\d{2}(-\d{2})?|before-restore)$/.test(id)) return json({ error: 'bad snapshot id' }, 400);
+      const t = await env.WARDROBE.get('snap:' + id);
+      if (!t) return json({ error: 'no such backup' }, 404);
+      return new Response(t, { headers: { ...cors, 'content-type': 'application/json' } });
+    }
     if (v) { const m = await syncVersion(env); if (m && `${m.rev}:${m.saved}` === v) return json({ rev: m.rev, saved: m.saved, same: true }); }
     // passed through as stored: no need to parse and rebuild several MB of JSON
     return new Response((await env.WARDROBE.get(SYNC_KEY)) || SYNC_NONE, { headers: { ...cors, 'content-type': 'application/json' } });
@@ -541,6 +574,7 @@ async function handleSync(req, env, json, cors) {
     const none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env);
     const rev = m ? m.rev : ((await env.WARDROBE.get(SYNC_KEY, 'json')) || none).rev;
     if ((body.baseRev ?? -1) !== rev) return json({ error: 'conflict', ...((await env.WARDROBE.get(SYNC_KEY, 'json')) || none) }, 409);
+    await keepSnapshots(env, m, body);
     const next = { rev: rev + 1, saved: Date.now(), data: body.data };
     await env.WARDROBE.put(SYNC_KEY, JSON.stringify(next), { metadata: { rev: next.rev, saved: next.saved } });
     return json({ rev: next.rev, saved: next.saved });
