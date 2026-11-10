@@ -55,13 +55,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       if(!items.some(i=>i.id==='shoes5'))items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
         I('belt','black',{leather:'calf',metal:'silver'}),I('belt','oxblood',{leather:'cordovan',metal:'silver'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
       settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-09T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=false;show('today')});
-    const row=await p.evaluate(()=>{const r=document.querySelector('.dayact'),kids=[...r.children],tops=new Set(kids.map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));
-      return {kids:kids.map(k=>k.className),oneRow:tops.size===1,seg:[...r.querySelectorAll('.seg button')].map(b=>b.textContent+':'+b.getAttribute('aria-pressed')).join(),formal:r.querySelector('.tog')}});
-    ok(row.oneRow&&row.kids.join()==='seg','Today has the worn toggle only');
-    ok(row.seg==='✓ Worn:false,Not worn:false'&&row.formal===null,'worn is a two-way toggle; no Formal button on Today');
-    await p.click('.seg button >> nth=0');await p.waitForFunction(()=>planFor()[key(sel)].worn===true&&document.querySelector('.seg button').getAttribute('aria-pressed')==='true');
-    ok(await p.evaluate(()=>document.querySelector('.seg button').getAttribute('aria-pressed')==='true'),'tapping Wore this marks it');
-    await p.click('.seg button >> nth=0');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined);
+    const row=await p.evaluate(()=>({dayact:!!document.querySelector('.dayact'),marks:[...document.querySelectorAll('.fig .wornbar .wmark')].map(b=>b.getAttribute('aria-label')+':'+b.getAttribute('aria-pressed')).join(),formal:!!document.querySelector('.tog')}));
+    ok(!row.dayact&&row.marks==="Didn't wear:false,Wore this:false"&&!row.formal,`worn is marked with ✕ / ✓ on the picture; no other day buttons on a plain day (${row.marks})`);
+    await p.click('.wmark.yes');await p.waitForFunction(()=>planFor()[key(sel)].worn===true&&document.querySelector('.wmark.yes').getAttribute('aria-pressed')==='true');
+    ok(await p.evaluate(()=>document.querySelector('.wmark.yes.on')&&!document.querySelector('.wmark.no.on')),'tapping ✓ marks it worn');
+    await p.click('.wmark.yes');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined);
     ok(true,'tapping it again clears it');
     await p.evaluate(()=>{sel=new Date(2026,10,10);renderToday()});
     await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
@@ -79,7 +77,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const out=Math.max(...kids.map(k=>k.getBoundingClientRect().right))<=r.getBoundingClientRect().right+0.5;
         const clipped=btns.filter(b=>b.scrollWidth>b.clientWidth+1).map(b=>b.textContent);document.body.style.fontSize='';
         return {kids:kids.map(k=>k.className.split(' ')[0]).join(),one:mids.size===1,out,clipped}},fs);
-      ok(f.kids==='seg,ftag,reset'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day buttons and reset icon share one row, nothing cut off (${JSON.stringify(f)})`)}
+      ok(f.kids==='ftag,reset'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day buttons and reset icon share one row, nothing cut off (${JSON.stringify(f)})`)}
     await p.setViewportSize({width:390,height:900});
     // three tiles on a suit day span the column like the score card; pictures keep their size, the tile takes the photo's backdrop
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.waitForFunction(()=>document.querySelectorAll('.below .tile.has-pic').length===3);
