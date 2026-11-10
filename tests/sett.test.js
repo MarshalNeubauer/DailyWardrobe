@@ -46,7 +46,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- the real tie: through the Add flow
     const flow=await p.evaluate(async()=>{show('add');const blob=await (await fetch('tests/fixtures/tie-plaid.jpg')).blob();await addFiles([new File([blob],'tie.jpg',{type:'image/jpeg'})]);
       const q=queue[0],s=q.sett,L=s.bands.map(([h])=>rgbLab(...hexRgb(h)));
-      return {s,src:s&&s.src,n:s&&s.bands.length,blue:L.some(l=>l[2]<-3&&l[0]>30),light:L.some(l=>l[0]>68),dark:L.some(l=>l[0]<30),note:document.querySelector('#queue').textContent}});
+      return {s,src:s&&s.src,n:s&&s.bands.length,blue:L.some(l=>l[2]<-2&&l[2]<l[1]-1&&l[0]>30),light:L.some(l=>l[0]>68),dark:L.some(l=>l[0]<30),note:document.querySelector('#queue').textContent}});
     ok(flow.src==='photo'&&flow.n>=10,`the tie's pattern is read from the sharp photo: ${flow.n} colour bands`);
     ok(flow.blue&&flow.light&&flow.dark,'… including its steel blue, its cream and its dark pinlines');
     ok(flow.s.cross&&Math.abs(flow.s.cross.d-90)<=10,`… and the lines crossing the other way (${flow.s.cross&&flow.s.cross.d}°)`);
@@ -79,6 +79,46 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const s2=settFrom({tex:c,weave:{direction:'upper-left to lower-right',repeatsAcross:3}});return {s,s2}});
     ok(fb.s.src==='claude'&&fb.s.a===45&&fb.s.bands.length===2&&fb.s.bands[0][1]>fb.s.bands[1][1],'with nothing readable, Claude\'s colours and widths are drawn');
     ok(fb.s2.src==='closeup'&&fb.s2.a===-45&&fb.s2.tr===3,'a close-up\'s bands are used with Claude\'s direction and scale');
+    // ---- suits and shirts: photographed-like synthetic cloth (soft edges, weave noise, light falloff)
+    const sw=await p.evaluate(()=>{
+      const mk=draw=>{const S=1000,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');draw(x,S);x.filter='blur(1px)';x.drawImage(c,0,0);x.filter='none';
+        const d=x.getImageData(0,0,S,S);for(let i=0;i<d.data.length;i+=4){const px=(i/4)%S,py=Math.floor(i/4/S),sh=1-.12*((px/S-.5)**2+(py/S-.5)**2)*4,n=(Math.random()-.5)*12;for(let k=0;k<3;k++)d.data[i+k]=d.data[i+k]*sh+n}x.putImageData(d,0,0);return c};
+      const v=(x,S,g,lines,step)=>{x.fillStyle=g;x.fillRect(0,0,S,S);let k=0;if(lines.length)for(let o=0;o<S;o+=step){const [c,w]=lines[k++%lines.length];x.fillStyle=c;x.fillRect(o,0,w,S)}};
+      const h=(x,S,lines,step,a)=>{x.globalAlpha=a;let k=0;for(let o=0;o<S;o+=step){const [c,w]=lines[k++%lines.length];x.fillStyle=c;x.fillRect(0,o,S,w)}x.globalAlpha=1};
+      const lab=hx=>rgbLab(...hexRgb(hx)),r={};
+      r.pin=settFromCanvas(mk((x,S)=>v(x,S,'#1f2a44',[['#c8ccd4',2]],32)));
+      r.chalk=settFromCanvas(mk((x,S)=>{v(x,S,'#3a3d44',[],0);x.filter='blur(3px)';x.globalAlpha=.55;for(let o=0;o<S;o+=56){x.fillStyle='#b9bcc2';x.fillRect(o,0,6,S)}x.filter='none';x.globalAlpha=1}));
+      r.gingham=settFromCanvas(mk((x,S)=>{v(x,S,'#ffffff',[['#5b7fb8',24]],48);h(x,S,[['#5b7fb8',24]],48,.55)}));
+      r.tatt=settFromCanvas(mk((x,S)=>{v(x,S,'#f4f1e8',[['#b02a30',3],['#2f6b4a',3]],36);h(x,S,[['#b02a30',3],['#2f6b4a',3]],36,.9)}));
+      r.bengal=settFromCanvas(mk((x,S)=>v(x,S,'#ffffff',[['#3f6fb5',14]],28)));
+      const L=s=>s.bands.map(b=>lab(b[0])),X=s=>s.cross?s.cross.bands.filter(b=>b[0]).map(b=>lab(b[0])):[];
+      return {r,pin:{n:r.pin.bands.length,con:dE00(...L(r.pin)),w:Math.min(...r.pin.bands.map(b=>b[1])),light:Math.max(...L(r.pin).map(l=>l[0]))>Math.min(...L(r.pin).map(l=>l[0]))+15},
+        chalk:{n:r.chalk.bands.length,con:dE00(...L(r.chalk))},ging:{white:Math.max(...L(r.gingham).map(l=>l[0])),blue:L(r.gingham).some(l=>l[2]<-15),cross:X(r.gingham).some(l=>l[2]<-15)},
+        tatt:{n:r.tatt.bands.length,red:L(r.tatt).some(l=>l[1]>15),green:L(r.tatt).some(l=>l[1]<-10),xred:X(r.tatt).some(l=>l[1]>15),xgreen:X(r.tatt).some(l=>l[1]<-10)},
+        bengal:{n:r.bengal.bands.length,cross:!!r.bengal.cross}}});
+    ok(sw.pin.n===2&&sw.pin.light&&sw.pin.w<.15&&!sw.r.pin.cross&&sw.r.pin.a===0,`a pinstripe suit: the navy ground and a narrow light stripe, upright, nothing crossing (stripe ${(sw.pin.w*100).toFixed(0)}% of the repeat)`);
+    ok(sw.chalk.n===2&&sw.chalk.con>8&&!sw.r.chalk.cross,'a chalk stripe: its soft lighter stripe on the ground');
+    ok(sw.ging.white>80&&sw.ging.blue&&sw.ging.cross,`a gingham shirt: white stays white (L* ${sw.ging.white.toFixed(0)}, the crossing threads left out), blue bands and blue crossing lines`);
+    ok(sw.tatt.n===4&&sw.tatt.red&&sw.tatt.green&&sw.tatt.xred&&sw.tatt.xgreen,'a tattersall: its red and green lines both ways, kept apart (same lightness, told apart by colour)');
+    ok(sw.bengal.n===2&&!sw.bengal.cross,'a bengal stripe: two bands, and the light falling off across the photo is not taken for crossing lines');
+    // a blurry whole-jacket reading takes the close-up's bands when the close-up shows enough of the pattern
+    const comb=await p.evaluate(()=>{const mk=(step,w,S=900)=>{const c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');x.fillStyle='#1f2a44';x.fillRect(0,0,S,S);
+        for(let o=0;o<S;o+=step){x.fillStyle='#c8ccd4';x.fillRect(o,0,w,S)}return c};
+      const full=mk(12,1),tex=mk(150,10),x=full.getContext('2d');x.filter='blur(1.2px)';x.drawImage(full,0,0);
+      const s=settFrom({full,box:{x:100,y:100,w:800,h:800},tex,weave:{repeatsAcross:30,direction:'vertical'}});return s});
+    ok(comb.src==='photo+closeup'&&comb.tr===30&&comb.a===0&&comb.bands.length===2,`the whole-jacket reading keeps its direction and scale and takes the close-up's sharper bands (${comb.src}, ${comb.bands.map(b=>b.join(':')).join(' ')})`);
+    const fig=await p.evaluate(()=>{const it={id:'p1',type:'suit',primaryColor:'navy',pattern:'pinstripe',sett:{v:2,a:3,bands:[['#1f2a44',.94],['#c8ccd4',.06]],cross:null,cr:28,tr:30}};
+      const d=fabricDef('f',it,'top','fig'),sw=fabricDef('s',it,'top');return {w:+d.match(/width="([\d.]+)"/)[1],rot:/patternTransform/.test(d),ws:+sw.match(/width="([\d.]+)"/)[1]}});
+    ok(Math.abs(fig.w-200/30)<.1&&!fig.rot&&fig.ws===14,`on the figure a 30-across pinstripe repeats every ${fig.w.toFixed(1)} units, upright (a jacket's stripes snap straight); the swatch shows several`);
+    const tp=await p.evaluate(()=>({suit:settable('suit','pinstripe'),chalk:settable('blazer','chalk-stripe'),ging:settable('shirt','gingham'),herr:settable('suit','herringbone'),solid:settable('shirt','solid')}));
+    ok(tp.suit&&tp.chalk&&tp.ging&&!tp.herr&&!tp.solid,'suits, blazers and trousers read their stripes and checks; fine weaves and solids keep the drawn tile');
+    // a patterned shirt is described and gets its own photo; plain shirts still share theirs by colour
+    const sh=await p.evaluate(()=>{const top={id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},tie={id:'t',type:'tie',primaryColor:'burgundy',pattern:'solid'};
+      const st={id:'a',type:'shirt',primaryColor:'white',pattern:'stripe',sett:{v:2,a:0,bands:[['#ffffff',.5],['#3f6fb5',.5]],cr:20},patternText:'Bold blue bengal stripes on white'},
+        p1={id:'b',type:'shirt',primaryColor:'white',pattern:'solid'},p2={id:'c',type:'shirt',primaryColor:'white',pattern:'oxford'},o=sh=>({top,tie,shirt:sh,suitDay:true});
+      return {txt:outfitText(o(st)),plain:outfitText(o(p1)),own:comboKey(o(st))!==comboKey(o(p1)),share:comboKey(o(p1))===comboKey(o(p2))}});
+    ok(/a white stripe dress shirt \(Bold blue bengal stripes on white\)/.test(sh.txt)&&/a plain white dress shirt/.test(sh.plain),'the photo generator is told a striped shirt\'s pattern; a plain one is still "a plain white dress shirt"');
+    ok(sh.own&&sh.share,'a striped shirt gets its own photo; plain and finely woven white shirts still share one');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

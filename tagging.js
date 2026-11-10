@@ -214,22 +214,27 @@ async function runBench(pct){if(bench)return;const pool=shuffle(benchPool()),lis
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
    weave also gives the direction (for a close-up, whose angle says nothing), the repeats across the item (the drawing's
    scale on the figure) and a description for the photo generator. ---- */
-const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other'],shirt:[...STRIPE_PATS,...CHECK_PATS,'other'],suit:CHECK_PATS,blazer:CHECK_PATS,pants:CHECK_PATS};
+const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other'],shirt:[...STRIPE_PATS,...CHECK_PATS,'other'],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
 const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
 const DIR_ANG={'upper-left to lower-right':-45,'lower-left to upper-right':45,vertical:0,horizontal:90};
 const WEAVE_W={hairline:.02,narrow:.05,medium:.12,wide:.25};
 function settFromWeave(w){const c=(w&&w.colours||[]).filter(x=>/^#[0-9a-f]{6}$/i.test(x.hex));if(c.length<2)return null;const tot=c.reduce((s,x)=>s+(WEAVE_W[x.width]||.12),0);
   return {v:2,a:DIR_ANG[w.direction]??-45,bands:c.map(x=>[x.hex.toLowerCase(),+((WEAVE_W[x.width]||.12)/tot).toFixed(3)]),cross:null,cr:1,src:'claude'}}
 /* the sett for a card, or for a saved item from its kept pictures */
-function settFrom({full,box,tex,weave,wb}){let s=null;
+/* both pictures when there are both: the item photo gives the scale and the direction; a close-up that shows at least one and a half
+   repeats resolves fine stripes far better (a pinstripe a pixel wide in the whole-jacket photo is a crisp line up close), so
+   its bands and crossing lines are used */
+function settFrom({full,box,tex,weave,wb}){let s=null,c=null;
   try{if(full&&box){s=settFromCanvas(applyWb(full,wb),box);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
-    if(!s&&tex){const r=wbRead(tex);s=settFromCanvas(applyWb(tex,r.ref?r.gains:wb));if(s){s.src='closeup';s.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
+    if(tex){const r=wbRead(tex);c=settFromCanvas(applyWb(tex,r.ref?r.gains:wb));if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
+  if(s&&c&&c.cr>=1.5)s={...s,bands:c.bands,cross:c.cross&&s.cross?{...c.cross,d:s.cross.d}:c.cross||s.cross,src:'photo+closeup'};
+  else if(!s)s=c;
   if(!s&&weave)s=settFromWeave(weave);
   if(s&&weave){if(weave.repeatsAcross)s.tr=weave.repeatsAcross;if(s.src==='closeup'&&DIR_ANG[weave.direction]!=null)s.a=DIR_ANG[weave.direction]}   // a close-up's angle says nothing
   return s}
 function readSett(q){q.sett=!q.settOff&&settable(q.type,q.pattern,q.weave)&&q.raw?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.texFull||q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb}):null;return q.sett}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);renderAdd()}
-const settSummary=s=>`${s.bands.length} colour bands${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':'Claude\'s description'}`;
+const settSummary=s=>`${s.bands.length} colour bands${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!settable(q.type,q.pattern,q.weave))return '';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
   return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the simple pattern</button></p>`:''}
