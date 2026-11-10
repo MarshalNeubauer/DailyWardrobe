@@ -189,6 +189,7 @@ async function workerTests(){
   const browser=await chromium.launch();
   // `node tests/run.js name` (or TEST_ONLY=name) runs just the tests/*.test.js files whose name contains it
   const ONLY=process.env.TEST_ONLY||process.argv[2];
+  const times=[],T0=Date.now();
   for(const [name,fn] of ONLY?[]:suites){
     console.log('\n• '+name);
     const ctx=await browser.newContext({...devices['iPhone 13']});const page=await ctx.newPage();const errs=[];
@@ -198,12 +199,24 @@ async function workerTests(){
     if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
     await ctx.close();
   }
-  await browser.close();
+  await browser.close();times.push(['run.js built-in suites',Date.now()-T0]);
   if(!ONLY)try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}
   // extra suites contributed by other files (tests/*.test.js)
+  // one Chromium for every file: a file's chromium.launch() gets a view of it whose close() closes only the contexts that
+  // file opened (launching a browser per file cost about half a second each)
+  const shared=await chromium.launch();
+  const sharedChromium=()=>{const mine=new Set(),track=async c=>{c=await c;mine.add(c);return c};
+    const b=new Proxy(shared,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
+      :k==='newContext'?o=>track(t.newContext(o)):k==='newPage'?async o=>{const c=await track(t.newContext(o));return c.newPage()}
+      :typeof t[k]==='function'?t[k].bind(t):t[k]});
+    return new Proxy(chromium,{get:(t,k)=>k==='launch'?async()=>b:t[k]})};
   for(const f of fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')&&(!ONLY||f.includes(ONLY))).sort()){
-    console.log('\n• '+f);try{await require(path.join(__dirname,f))({ok,url,chromium,devices,WARDROBES,ROOT})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+    console.log('\n• '+f);const t0=Date.now(),chr=sharedChromium();try{await require(path.join(__dirname,f))({ok,url,chromium:chr,devices,WARDROBES,ROOT})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+    finally{const b=await chr.launch();await b.close()}
+    times.push([f,Date.now()-t0]);
   }
-  server.close();
+  await shared.close();server.close();
+  // the slowest files, so the suite can be kept quick
+  console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${f} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`);
   console.log(`\n${passes} passed, ${failures} failed`);process.exit(failures?1:0);
 })();

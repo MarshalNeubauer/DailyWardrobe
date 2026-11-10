@@ -42,7 +42,7 @@ module.exports=async({ok,chromium,url})=>{
     const y1=await scrollY();await p.tap('#sbox .month-link');await p.waitForTimeout(600);ok(await scrollY()<=y1,'folding a box does not scroll down');
     // a touch during the scroll stops it
     await setup();await p.evaluate(()=>{const r=document.querySelector('#mbox').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect().top;scrollBy(0,r.bottom-nav+4)});
-    await p.tap('#mbox .month-link');await p.waitForTimeout(90);const mid=await scrollY();await p.evaluate(()=>dispatchEvent(new Event('touchstart')));await p.waitForTimeout(900);
+    await p.tap('#mbox .month-link');await p.waitForTimeout(90);const mid=await p.evaluate(()=>{const y=scrollY;dispatchEvent(new Event('touchstart'));return y});   // read and touch in one step, so a busy machine can't scroll in betweenawait p.waitForTimeout(900);
     ok(await scrollY()-mid<40,'touching the screen while it scrolls stops it');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
