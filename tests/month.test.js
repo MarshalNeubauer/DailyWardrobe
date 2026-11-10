@@ -61,7 +61,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const diff=lastWorn({...o2,shirt:{...o2.shirt,primaryColor:'pink'}});return {d:d&&key(d),diff}});
     ok(cap.d==='2026-11-2'&&cap.diff===null,'last worn finds the most recent day with the same look');
     await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};figView='photo';renderToday()});
-    ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo small')),'the photo caption is just the last-worn date');
+    ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
     // Settings: generate the month's missing photos
     await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings()});
     const before=await p.evaluate(()=>({btn:$('#batch-btn').textContent,n:batchCombos().length}));
