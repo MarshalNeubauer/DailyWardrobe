@@ -71,8 +71,9 @@ const valName=(k,v)=>!v?'none':k==='type'?(TYPES[v]||v).toLowerCase():k==='patte
 /* what the tagger answered, as the card's values (the same normalising as a first tag) */
 function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?ai.primaryColor:'grey',secondaryColor:ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null,
   tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:normPat(ai.type,ai.pattern)}}
-function takeExtras(q,ai){Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null});
-  q.aiTag={...aiFields(ai)}}
+function takeExtras(q,ai){Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
+    patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
+  q.aiTag={...aiFields(ai)};readSett(q)}
 async function closeTagImg(q){const r=wbRead(q.raw.texFull||q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.texFull||q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);
   if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();return}
@@ -94,6 +95,7 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];
   const ct=confTxt(q.conf),alts=[q.altColor&&q.altColor!==q.primaryColor&&colsFor(q.type).includes(q.altColor)?`<button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.altColor}')">or ${esc(colName(q.altColor))}</button>`:'',
     q.altPattern&&q.altPattern!==q.pattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?`<button type="button" class="chipbtn" onclick="setq(${i},'pattern','${q.altPattern}')">or ${esc(patName(q.altPattern))}</button>`:''].join('');
   if(ct||alts)out.push(`<p class="tagnote mut"><small>${ct}</small>${alts}</p>`);
+  out.push(settNote(q,i));
   const m=q.meas;if(m&&m.near&&m.near.length){const n=m.near;out.push(`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
   if(FABRIC.includes(q.type)||COLS_BY[q.type]){const far=m&&m.near&&m.near.length&&m.near[0].d>FAR_DE;
     if(q.colForm)out.push(newColForm(q,i));
@@ -207,3 +209,34 @@ async function runBench(pct){if(bench)return;const pool=shuffle(benchPool()),lis
   const run={t:Date.now(),pct,n:res.length,fail,score,misses:misses.slice(0,40)};
   try{localStorage.setItem('tag_bench',JSON.stringify([run,...benchRuns()].slice(0,10)))}catch{}
   bench=null;renderBenchUI();toast(res.length?`Benchmark done: ${benchScoreTxt(run)}.`:'The benchmark could not tag any item.')}
+
+/* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
+   area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
+   weave also gives the direction (for a close-up, whose angle says nothing), the repeats across the item (the drawing's
+   scale on the figure) and a description for the photo generator. ---- */
+const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other'],shirt:[...STRIPE_PATS,...CHECK_PATS,'other'],suit:CHECK_PATS,blazer:CHECK_PATS,pants:CHECK_PATS};
+const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
+const DIR_ANG={'upper-left to lower-right':-45,'lower-left to upper-right':45,vertical:0,horizontal:90};
+const WEAVE_W={hairline:.02,narrow:.05,medium:.12,wide:.25};
+function settFromWeave(w){const c=(w&&w.colours||[]).filter(x=>/^#[0-9a-f]{6}$/i.test(x.hex));if(c.length<2)return null;const tot=c.reduce((s,x)=>s+(WEAVE_W[x.width]||.12),0);
+  return {v:2,a:DIR_ANG[w.direction]??-45,bands:c.map(x=>[x.hex.toLowerCase(),+((WEAVE_W[x.width]||.12)/tot).toFixed(3)]),cross:null,cr:1,src:'claude'}}
+/* the sett for a card, or for a saved item from its kept pictures */
+function settFrom({full,box,tex,weave,wb}){let s=null;
+  try{if(full&&box){s=settFromCanvas(applyWb(full,wb),box);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
+    if(!s&&tex){const r=wbRead(tex);s=settFromCanvas(applyWb(tex,r.ref?r.gains:wb));if(s){s.src='closeup';s.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
+  if(!s&&weave)s=settFromWeave(weave);
+  if(s&&weave){if(weave.repeatsAcross)s.tr=weave.repeatsAcross;if(s.src==='closeup'&&DIR_ANG[weave.direction]!=null)s.a=DIR_ANG[weave.direction]}   // a close-up's angle says nothing
+  return s}
+function readSett(q){q.sett=!q.settOff&&settable(q.type,q.pattern,q.weave)&&q.raw?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.texFull||q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb}):null;return q.sett}
+function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);renderAdd()}
+const settSummary=s=>`${s.bands.length} colour bands${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':'Claude\'s description'}`;
+function settNote(q,i){if(!settable(q.type,q.pattern,q.weave))return '';
+  if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
+  return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the simple pattern</button></p>`:''}
+/* Wardrobe editor: read it again from the kept sharp copy (or the close-up) */
+async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
+  const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};
+  const full=it.pbox?await toCanvas(await tagImgOf(it.id)):null,tex=await toCanvas(it.texture);
+  const s=settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null});   // the kept copy is already white-balanced
+  if(!s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
+  it.sett=s;delete it.stripes;await put(it);cache={};renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}

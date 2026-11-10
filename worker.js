@@ -143,7 +143,7 @@ const TAG_SCHEMA = {
    extend the enums and the prompt; a single-item tag also asks for confidence, a runner-up, a suggested new colour or pattern
    when nothing listed fits, and a box on plain cloth (the app measures the colour there). */
 const KEY_RE = /^own[a-z]{1,28}$/, PKEY_RE = /^own-[a-z0-9-]{1,28}$/, HEX_RE = /^#[0-9a-f]{6}$/i;
-const txt = (v, n) => String(v ?? '').replace(/[^\w ,.'()\/&-]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+const txt = (v, n) => String(v ?? '').replace(/[^\w ,.;:'()\/&-]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
 function cleanCustom(c) {
   c = c && typeof c === 'object' ? c : {};
   const types = t => (Array.isArray(t) ? t : []).filter(x => TYPE_LIST.includes(x));
@@ -158,6 +158,18 @@ const SUGGEST = { anyOf: [{ type: 'object', additionalProperties: false, require
   properties: { name: { type: 'string' }, why: { type: 'string' } } }, { type: 'null' }] };
 const BOX = { type: 'object', additionalProperties: false, required: ['x', 'y', 'w', 'h'],
   properties: { x: { type: 'integer' }, y: { type: 'integer' }, w: { type: 'integer' }, h: { type: 'integer' } } };
+/* a striped, checked or plaid cloth in words and colours: for the photo generator, the drawing's scale and direction, and as
+   the drawing's colours when the app can't read them from the photo */
+const WEAVE = { type: 'object', additionalProperties: false, required: ['layout', 'direction', 'repeatsAcross', 'colours', 'crossing', 'description'],
+  properties: {
+    layout: { type: 'string', enum: ['stripes', 'stripes-with-crossing-lines', 'check', 'plaid', 'other'] },
+    direction: { type: 'string', enum: ['upper-left to lower-right', 'lower-left to upper-right', 'vertical', 'horizontal'] },
+    repeatsAcross: { type: 'number' },
+    colours: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['name', 'hex', 'width'],
+      properties: { name: { type: 'string' }, hex: { type: 'string' }, width: { type: 'string', enum: ['hairline', 'narrow', 'medium', 'wide'] } } } },
+    crossing: { type: 'string' },
+    description: { type: 'string' },
+  } };
 function tagSchema(custom, single) {
   const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...PATTERN_LIST, ...custom.patterns.map(p => p.key)];
   const props = { ...TAG_SCHEMA.properties,
@@ -168,8 +180,9 @@ function tagSchema(custom, single) {
     confidence: { type: 'object', additionalProperties: false, required: ['type', 'primaryColor', 'pattern'], properties: { type: CONF, primaryColor: CONF, pattern: CONF } },
     altColor: { type: 'string', enum: [...cols, 'none'] }, altPattern: { type: 'string', enum: [...pats, 'none'] },
     newColor: SUGGEST, newPattern: SUGGEST, clothBox: { anyOf: [BOX, { type: 'null' }] },
+    patternBox: { anyOf: [BOX, { type: 'null' }] }, weave: { anyOf: [WEAVE, { type: 'null' }] },
   });
-  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox'] };
+  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave'] };
 }
 function customText(custom) {
   let t = '';
@@ -191,7 +204,18 @@ newPattern — the same for the pattern or weave: when no listed pattern fits (y
   line describing how it looks}; otherwise null. Still put the closest listed pattern in pattern.
 clothBox — a rectangle on a plain, evenly lit area of the main cloth in the FIRST photo (no folds, shadows, buttons, labels,
   lining or background), in thousandths of that photo (x, y = top-left corner, w, h = size, all 0-1000), so the app can measure
-  its colour; null if there is no such area.`;
+  its colour; null if there is no such area.
+patternBox — for a striped, checked or plaid item: the largest rectangle of the FIRST photo that lies entirely on the patterned
+  cloth (no background, knot, collar or edges), in thousandths like clothBox, so the app can read the pattern's colours; null otherwise.
+weave — for a striped, checked or plaid item (null for solids and fine weaves): its pattern as precisely as you can, from the
+  close-up when there is one:
+  layout: stripes, stripes-with-crossing-lines (stripes with finer lines running the other way), check, plaid, or other;
+  direction: which way the main stripes run as worn (a regimental tie's stripes usually run upper-left to lower-right);
+  repeatsAcross: how many times the whole colour sequence repeats across the item's widest part (0.5 if one repeat is twice as wide);
+  colours: one full repeat of the stripe sequence in order, each band with a plain name, an sRGB hex as seen, and its width;
+  crossing: the lines that run the other way (colours, how fine, how far apart), or "" if none;
+  description: one or two sentences describing the pattern for a photo-realistic image generator: direction, the order and
+  colours of the bands, their widths, the crossing lines, and the cloth's sheen or weave.`;
 /* what the app measured (Lab after white balance), to weigh against what is seen */
 function measuredText(m) {
   if (!m || !Array.isArray(m.lab) || m.lab.length !== 3) return '';
@@ -254,7 +278,14 @@ function cleanTag(t) {
   let box = null;
   if (t.clothBox && typeof t.clothBox === 'object') { const x = clamp(t.clothBox.x), y = clamp(t.clothBox.y);
     box = { x, y, w: Math.max(1, Math.min(1000 - x, clamp(t.clothBox.w))), h: Math.max(1, Math.min(1000 - y, clamp(t.clothBox.h))) }; }
-  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box };
+  const boxOf = b => { if (!b || typeof b !== 'object') return null; const x = clamp(b.x), y = clamp(b.y);
+    return { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) }; };
+  let weave = null;
+  if (t.weave && typeof t.weave === 'object') { const w = t.weave;
+    weave = { layout: w.layout, direction: w.direction, repeatsAcross: Math.max(.2, Math.min(12, +w.repeatsAcross || 1)),
+      colours: (Array.isArray(w.colours) ? w.colours : []).slice(0, 24).filter(c => c && HEX_RE.test(c.hex || '')).map(c => ({ name: txt(c.name, 30), hex: c.hex.toLowerCase(), width: ['hairline', 'narrow', 'medium', 'wide'].includes(c.width) ? c.width : 'medium' })),
+      crossing: txt(w.crossing, 300), description: txt(w.description, 600) }; }
+  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,

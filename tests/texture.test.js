@@ -88,7 +88,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     return {a:a.labels,n:a.refs.length,b:b.labels}});
   ok(refs.a.join(' | ')==='the suit | a close-up of the suit fabric (match its exact colour and weave) | a close-up of the shirt fabric (match its exact colour and weave) | the tie | a close-up of the tie fabric (match its exact colour and weave)',`the suit, shirt and tie close-ups follow their photos (${refs.a.length} refs)`);
   ok(refs.b.includes('a close-up of the trouser fabric (match its exact colour and weave)'),'on a no-jacket day the trousers\' close-up goes too');
-  ok(/\{photo,swatch,stripes,texture,\.\.\.i\}/.test(require('fs').readFileSync(path.join(ROOT,'app.js'),'utf8')),'the planner worker is not sent the close-ups');
+  ok(/\{photo,swatch,stripes,texture,sett,patternText,weave,pbox,\.\.\.i\}/.test(require('fs').readFileSync(path.join(ROOT,'app.js'),'utf8')),'the planner worker is not sent the close-ups');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
 };

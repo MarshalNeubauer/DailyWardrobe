@@ -69,11 +69,14 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the card shows confidence, one-tap runner-ups (`altColor`/`altPattern`), the measurement, and offers a new colour (Claude's `newColor`, or ΔE over `FAR_DE` 12) or pattern (`newPattern`) through `newColForm`/`newPatForm`
 - owner colours/patterns: `settings.custom` (synced), applied by `applyCustom` in core.js; keys `own<letters>` / `own-<slug>`; each has a base (`colBase`/`patBase`): the planner reads `planCol(i)`/`patOf(i)` so it behaves like the base, while drawings and brightness (`lumCol`) use the colour's own shade; Settings lists them, removable when unused (`renderCustomUI`)
 - corrections: saving an AI-tagged card records changed fields (`recordTagResult`: `settings.tagFixes`, last 60; `settings.tagStats` counts) and the stats page shows the accuracy (`tagStatsCard`)
+- full patterns (`readSett`/`settFrom`): for a striped/checked tie or shirt (`SETT_PATS`, or any cloth Claude gives a `weave` for) the sett is read from Claude's `patternBox` in the sharp photo, else the close-up (direction then from Claude's `weave.direction`), else Claude's own `weave.colours`; Claude's `weave.repeatsAcross` sets the figure scale; the card says what was read and can switch to the simple pattern (`toggleSett`); saved as `item.sett`, `item.pbox`, `item.weave`, `item.patternText`; the editor's "Read pattern from photo" re-reads from the kept sharp copy (`rereadSett`)
 - benchmark (Settings → Tagging benchmark, `renderBenchUI`/`runBench`): re-tags 25/50/75/100% of the items with photos (random), three at a time, compares type/colour/colour family/pattern with the confirmed tags; runs only when started, with a cost estimate; results in `localStorage.tag_bench` (last 10)
 
 ### `detect.js`
 
 - stripe/check detection from photos (canvas)
+- the full sett (`analyzeSett`/`settFromCanvas`): every band of one repeat in its own colour (per-step medians in Lab, merged until neighbours differ by ΔE 5; a 1–2 step band lying between its neighbours is their blurred edge), the direction, the lines crossing the other way (the residual after the main bands, projected; thread colour = 2 × pixel − band), and the scale (`cr`); stored as `item.sett` `{v:2,a,bands:[[hex,w]],cross:{d,bands:[[hex|null,w]],r},cr,tr,src}`
+- `period()` takes the shortest whole fraction of a repeat that matches nearly as well (a clean pattern also matches at 2–3 repeats)
 
 ### `figure.js`
 
@@ -93,6 +96,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 ### `draw.js`
 
 - procedural fabric patterns (`fabricDef`)
+- an item's `sett` is drawn first: its bands, the crossing lines over them at half opacity, at its angle (ties) or snapped (others); a swatch shows at least one repeat, the figure keeps the repeat's share of the item's width (`fabricDef(..., 'fig')`)
+- `outfitText()` adds an item's `patternText` (Claude's description) for the photo generator, and `comboSig` includes the sett and description, so such an item gets its own photo
 - `figureSvg()` glue for the torso figure
 - accessories
 - wardrobe thumbnails
@@ -193,7 +198,7 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
 
 **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js. On the next start the app clears swaps and vest choices on every day after today (`checkPlanRules()` / `replanFuture()` in app.js; formal days, today and past days stay), so the new rules apply to the whole future. Settings has "Re-plan upcoming days" for the same on demand.
 
-Colours always come from the item's tagged colours, matched by brightness rank, never from the photo. Pattern lists in `PATS_BY` (core.js) must stay in sync with the prompt in `worker.js`, and so must the per-type colour lists (`COLS_BY` / `DIAL_COLS` in core.js = `TYPE_COLORS` / `DIAL_COLS` in worker.js; `tests/colouraudit.test.js` checks it). Each item type offers only colours it really comes in; an off-list tag moves to the closest allowed colour (`fitCol`), and a colour an existing item already has stays selectable for it.
+Colours always come from the item's tagged colours, matched by brightness rank, never from the photo, except an item's `sett`: it is read from the white-balanced sharp photo or close-up at the user's request, so its bands keep their measured colours. Pattern lists in `PATS_BY` (core.js) must stay in sync with the prompt in `worker.js`, and so must the per-type colour lists (`COLS_BY` / `DIAL_COLS` in core.js = `TYPE_COLORS` / `DIAL_COLS` in worker.js; `tests/colouraudit.test.js` checks it). Each item type offers only colours it really comes in; an off-list tag moves to the closest allowed colour (`fitCol`), and a colour an existing item already has stays selectable for it.
 
 ## Testing
 

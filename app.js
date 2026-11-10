@@ -112,7 +112,8 @@ function normTag(parsed,model){
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,
       altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
       newColor:parsed.newColor&&parsed.newColor.name?parsed.newColor:null,newPattern:parsed.newPattern&&parsed.newPattern.name?parsed.newPattern:null,
-      clothBox:parsed.clothBox&&typeof parsed.clothBox==='object'?parsed.clothBox:null
+      clothBox:parsed.clothBox&&typeof parsed.clothBox==='object'?parsed.clothBox:null,
+      patternBox:parsed.patternBox&&typeof parsed.patternBox==='object'?parsed.patternBox:null,weave:parsed.weave&&typeof parsed.weave==='object'?parsed.weave:null
     };
 }
 
@@ -277,7 +278,7 @@ async function addMulti(f){
 async function saveAll(){const n=queue.filter(q=>!q.busy&&!q.err).length;for(let i=queue.length-1;i>=0;i--){const q=queue[i];if(!q.busy&&!q.err)await save(i)}
   multiMsg(`Saved ${n} item${n===1?'':'s'} to your wardrobe.`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
+const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${i.texture}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${desc(i)||TYPES[i.type]||''}</b></figcaption>`;
@@ -302,7 +303,9 @@ async function save(i){
   if(!it.photo)delete it.photo;
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src};   // the owner's own colour samples (calibLab)
-  try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
+  if(q.sett&&!q.settOff&&settable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (tagging.js)
+  if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
+  if(!it.sett)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
   await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
   if(q.tagImg)keepTagImg(it.id,q.tagImg);recordTagResult(q,it);   // tagging.js: the sharp copy for the benchmark; what the tagger got wrong
 }
@@ -357,7 +360,7 @@ function editForm(i){
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
-  ${DETECT_PATS.includes(i.pattern)?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="redetect('${i.id}')">Read pattern from photo</button>${i.stripes?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
+  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
   <div class="btns"><button class="pri" onclick="closeItem()">Done</button></div></div>`;
 }
 async function sete(id,k,v){
@@ -368,6 +371,7 @@ async function sete(id,k,v){
   await put(it);cache={};renderWardrobe();
 }
 function patSummary(i){
+  if(i.sett)return settSummary(i.sett);
   const st=i.stripes;if(!st)return 'generic';
   if(st.kind==='check')return `check read from photo (${st.b.length}×${st.v.length} bands)`;
   return `stripes read from photo (${st.b.length} bands, ${Math.abs(st.a)}°)`;
@@ -381,7 +385,7 @@ async function redetect(id){
   if(!st){alert('Could not find a clear repeating pattern in the photo. Re-adding it with the swatch centred on the fabric usually works.');return}
   it.stripes=st;await put(it);cache={};renderWardrobe();
 }
-async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;await put(it);cache={};renderWardrobe()}
+async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);cache={};renderWardrobe()}
 async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id){editing=null;editAt=null}renderWardrobe()}
 
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
@@ -651,7 +655,7 @@ const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=
    is, so identical items share too. */
 const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
 const comboSig=o=>(o.vest?'vest|':'')+(!o.top&&o.bot?'nojacket/'+[o.bot.type,...LOOK_FIELDS.map(f=>o.bot[f]??'')].join('/')+'|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];if(!i)return '-';
-  return s==='shirt'?'shirt/'+primaryCol(i):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')}).join('|');
+  return s==='shirt'?'shirt/'+primaryCol(i):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+i.sett.bands.map(b=>b[0]).join(''):'')+(i.patternText?'/'+i.patternText:'')}).join('|');
 const fnvMemo=new Map();   // the same looks are hashed over and over (every render, every history record): remember them
 const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}
   v=h.toString(16).padStart(16,'0');if(fnvMemo.size>4000)fnvMemo.clear();fnvMemo.set(t,v);return v};
@@ -711,7 +715,8 @@ async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getA
 /* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
 function outfitText(o){
-  const parts=[o.top&&`a ${nm(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
+  const pt=i=>i&&i.patternText?` (${i.patternText.replace(/\.$/,'')})`:'';   // Claude's description of a striped or checked cloth
+  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top)}`,o.shirt&&`a plain ${colName(primaryCol(o.shirt))} dress shirt`+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot)} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie)}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
     o.watch&&watchText(o.watch),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
@@ -1273,7 +1278,7 @@ function shopCard(){
   return items.length?`<div class="card shop"><div class="shop-head"><b>What to buy</b><button onclick="analyzeWardrobe()" ${shopBusy?'disabled':''}>${shop&&shop.sig===shopSig()?'Re-check':'Analyze my wardrobe'}</button></div>${body}</div>`:'';
 }
 function analyzeWardrobe(){
-  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,texture,...i})=>i),settings,weather,climate,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
+  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,texture,sett,patternText,weave,pbox,...i})=>i),settings,weather,climate,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
   const finish=res=>{shopBusy=null;shop={sig,res};if(!$('#wardrobe').hidden)renderWardrobe()};
   const progress=(i,n)=>{shopBusy=`Checking ${i+1} of ${n} possible purchases…`;const el=$('#wardrobe .shop small');if(el)el.textContent=shopBusy};
   shopBusy='Starting…';renderWardrobe();

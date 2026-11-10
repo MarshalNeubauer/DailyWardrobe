@@ -1,7 +1,7 @@
 /* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
 
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
-function fabricDef(id,item,role){
+function fabricDef(id,item,role,ctx){
   const b=colOf(item),a=accentOf(item),t3=thirdOf(item),c=t3||a,p=patBase(item.pattern)||'solid',wool=role==='top'||role==='bot';
   const dk='#000',lt='#fff',ink=lum(b)>.5?'#000':'#fff';
   const twill=`<path d="M-2,2 L2,-2 M0,4 L4,0 M2,6 L6,2" stroke="${ink}" stroke-opacity="${wool?.07:.04}" stroke-width=".6"/>`;
@@ -19,6 +19,18 @@ function fabricDef(id,item,role){
   const st=item.stripes,col={p:b,s:a,t:c},angOf=x=>role==='tie'?x:Math.round(x/90)*90,rot=x=>{const r=angOf(x);return r?`rotate(${r})`:''};
   const bandRects=(bands,T,H,vertical,skipP)=>{let x=0;return bands.map(([r,f])=>{const w=f*T,x0=x;x+=w;if(skipP&&r==='p')return '';
     return vertical?`<rect x="${x0.toFixed(3)}" width="${(w+.05).toFixed(3)}" height="${H}" fill="${col[r]||b}"${skipP?' opacity=".55"':''}/>`:`<rect y="${x0.toFixed(3)}" height="${(w+.05).toFixed(3)}" width="${H}" fill="${col[r]||b}"/>`}).join('')};
+  /* a sett read in full colour (detect.js analyzeSett): its own band colours and the lines that cross them. The repeat is
+     sized from what was seen: in a swatch at least one whole repeat shows; on the figure the repeat keeps its share of the
+     item's width (sett.tw, or Claude's repeats across). */
+  const se=item.sett;
+  if(se&&se.v===2&&se.bands&&se.bands.length>1&&p!=='solid'){
+    const across=se.tr||(se.tw?1/se.tw:1.5),T=ctx==='fig'?Math.max(4,Math.min(60,(role==='tie'?29:role==='shirt'?60:90)/across)):Math.max(14,Math.min(110,100/Math.max(.9,se.cr||1)));
+    const cx=se.cross&&Math.abs(Math.abs(se.cross.d)-90)<=20?se.cross:null,Tv=cx?T*(cx.r||1):T;
+    let x=0;const main=se.bands.map(([h,f])=>{const w=f*T,x0=x;x+=w;return `<rect x="${x0.toFixed(3)}" width="${(w+.06).toFixed(3)}" height="${Tv.toFixed(3)}" fill="${h}"/>`}).join('');
+    let y=0;const over=cx?cx.bands.map(([h,f])=>{const w=f*Tv,y0=y;y+=w;return h?`<rect y="${y0.toFixed(3)}" height="${(w+.06).toFixed(3)}" width="${T.toFixed(3)}" fill="${h}" opacity=".5"/>`:''}).join(''):'';
+    const sheen=role==='tie'?`<path d="M0,0 L${T},${Tv}" stroke="#fff" stroke-opacity=".05" stroke-width="${(T/30).toFixed(2)}"/>`:'';
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${T.toFixed(3)}" height="${Tv.toFixed(3)}"${rot(se.a)?` patternTransform="${rot(se.a)}"`:''}>${main}${over}${sheen}</pattern>`;
+  }
   if(st&&(!st.kind||st.kind==='stripes')&&[...STRIPE_PATS,...CHECK_PATS].includes(p)&&st.b&&st.b.length>1){
     const T=role==='tie'?8:role==='shirt'?5:10;
     return tile(T,T,(wool?twill:'')+bandRects(st.b,T,T,true,false),rot(st.a));
@@ -330,7 +342,7 @@ function itemThumb(i,full){
 const FIG_SCALE={top:1.6,shirt:1.7,tie:1.5};
 function figFabric(item,role){
   if(!item)return null;const k=FIG_SCALE[role];
-  return {def:(id,rot)=>{let p=fabricDef(id,item,role);const m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';if(m)p=p.replace(m[0],'');
+  return {def:(id,rot)=>{let p=fabricDef(id,item,role,'fig');const m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';if(m)p=p.replace(m[0],'');
     return p.replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="${rot?`rotate(${rot}) `:''}scale(${k})${tf?' '+tf:''}"`)}};
 }
 /* the page colour the figure fades into. Reading a computed style right after the screen was redrawn makes the browser work
