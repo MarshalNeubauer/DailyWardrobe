@@ -72,6 +72,9 @@
 <p class="mut" style="margin:0 0 6px"><small id="sync-status"></small></p>
 <p class="mut" style="margin:0"><small>Your wardrobe is backed up to your Cloudflare Worker and kept in sync across your devices. Needs the WARDROBE KV binding and APP_TOKEN on the worker.</small></p>
 <div class="btns" style="flex-wrap:wrap"><button onclick="syncNow()">Sync now</button><button onclick="downloadBackup()">Download backup</button><label class="btn" style="margin:0;padding:8px 14px">Restore file<input type="file" accept="application/json,.json" hidden onchange="restoreBackup(this.files[0]);this.value=''"></label></div>
+<p class="mut" style="margin:10px 0 4px"><small>Daily backups: the worker keeps the wardrobe as it was at the start of each day for 30 days, and the first of each month for a year. Rolling back replaces the wardrobe, history and settings on every device with that copy.</small></p>
+<div class="btns" style="flex-wrap:wrap"><select id="snap-list" onfocus="loadSnapshots()" aria-label="Daily backup"><option value="">Choose a day…</option></select><button id="snap-btn" type="button" onclick="rollBack()">Roll back</button></div>
+<p class="mut" style="margin:0"><small id="snap-status"></small></p>
 <div class="btns"><button class="pri" onclick="saveSettings()">Save</button><button onclick="closeSettings()">Cancel</button></div>
 </div>
 

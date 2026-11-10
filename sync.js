@@ -1,6 +1,6 @@
 /* Daily Wardrobe: backup and sync through the Cloudflare worker (KV), plus download/restore of a backup file.
    Runs at start-up, a few seconds after any change, when the app comes back to the foreground, and on demand. */
-let syncing=false,syncTimer=null,syncAgain=false,syncRun=null;
+let restoring=false,syncing=false,syncTimer=null,syncAgain=false,syncRun=null;
 const syncUrl=()=>{const u=(localStorage.getItem('worker_url')||'').trim();if(!u)return null;try{return new URL('sync',u.endsWith('/')?u:u+'/').href}catch{return null}};
 async function localState(){
   const [its,days,tombstones,settings]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('tombstones'),metaGet('settings')]);
@@ -58,10 +58,10 @@ async function syncOnce(){
       // upload what is actually stored now (it may include edits made during this sync)
       const now=mergeState(await applyMerged(merged,local),remote.data||{});
       if(remote.data&&stateSig(now)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();return true}
-      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,data:now})});
+      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,data:now,day:isoKey(new Date()),...(restoring?{reason:'restore'}:{})})});
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));if(!p.ok)throw new Error(pr.error||'HTTP '+p.status);
-      setSyncMark(pr.rev,pr.saved,stateSig(now));synced();
+      setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;
       if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
       return true;
     }
@@ -85,4 +85,32 @@ async function restoreBackup(file){
   const local=await localState();await applyMerged(mergeState(local,data),local);
   alert(`Restored. Your wardrobe now has ${items.length} items.`);showSyncStatus();scheduleSync();
 }
+/* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
+const snapLabel=s=>{const t=new Date(s.saved).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  return s.id==='before-restore'?`Before the last roll-back (${t})`:/^\d{4}-\d{2}$/.test(s.id)?`Start of ${new Date(s.id+'-02').toLocaleDateString(undefined,{month:'long',year:'numeric'})} (${t})`:t};
+async function loadSnapshots(){const sel=$('#snap-list'),st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';if(!sel||sel.dataset.loaded)return;
+  if(!url||!token){st.textContent='Set the Worker URL and App Token first.';return}
+  try{const r=await fetch(url+'?snaps=1',{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'HTTP '+r.status);
+    sel.dataset.loaded=1;const list=j.snaps||[];
+    sel.innerHTML=`<option value="">${list.length?'Choose a day…':'No daily backups yet'}</option>`+list.map(s=>`<option value="${s.id}">${snapLabel(s)}</option>`).join('');
+    st.textContent=list.length?`${list.length} kept. Each is the wardrobe before that day's first change.`:'The first one is kept the next time something changes.'}
+  catch(e){st.textContent='Could not list the daily backups: '+(e.message||e)}}
+/* the wardrobe exactly as in snapshot s, made to win the merge everywhere: its items, days and settings get a new stamp, and
+   anything not in it gets a tombstone (days after it are kept: they hold no wardrobe, and there is no deleting a day) */
+function rollBackState(local,snap,now=Date.now()){
+  const items=(snap.items||[]).map(i=>({...i,updated:now})),keep=new Set(items.map(i=>i.id)),tombstones={...(snap.tombstones||{})};
+  for(const id of Object.keys(tombstones))if(keep.has(id))delete tombstones[id];
+  for(const i of local.items||[])if(!keep.has(i.id))tombstones[i.id]=now;
+  return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:now})),settings:snap.settings?{...snap.settings,updated:now}:null}}
+async function rollBack(){const id=$('#snap-list')&&$('#snap-list').value,st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';
+  if(!id){st.textContent='Choose a day first.';return}
+  if(!confirm(`Roll back to ${$('#snap-list').selectedOptions[0].textContent}?\n\nThe wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`))return;
+  try{st.textContent='Rolling back…';await syncNow();
+    const r=await fetch(url+'?snap='+encodeURIComponent(id),{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'HTTP '+r.status);
+    if(!j.data||!Array.isArray(j.data.items))throw new Error('that backup is empty');
+    const local=await localState(),next=rollBackState(local,j.data);
+    await applyMerged(mergeState(local,next),local);
+    restoring=true;const ok=await syncNow();delete $('#snap-list').dataset.loaded;
+    st.textContent=ok?`Rolled back. The wardrobe has ${items.length} items.`:`Rolled back on this device (${items.length} items), but the backup could not be updated yet: ${localStorage.getItem('sync_status')||''}`}
+  catch(e){st.textContent='Roll back failed: '+(e.message||e)}}
 db.then(()=>setTimeout(syncNow,300));
