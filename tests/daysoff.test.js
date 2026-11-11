@@ -42,6 +42,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>openSettings('daysoff'));
     ok(await p.locator('#cfg-country option').count()>200&&await p.evaluate(()=>[...document.querySelectorAll('#cfg-country option')].some(o=>o.value==='KW'&&o.textContent==='Kuwait')),'Settings has a country selector for public holidays');
     await p.selectOption('#cfg-country','US');await p.waitForFunction(()=>settings.holidays&&settings.holidays.list.length>0,null,{timeout:8000});
+    await p.waitForSelector('#holiday-list .hrow',{timeout:8000});   // the list is drawn just after the data arrives
     const rows=await p.locator('#holiday-list .hrow').allTextContents();
     ok(rows.length===4&&/Thanksgiving Day/.test(rows[0])&&/Thu, Nov 26/.test(rows[0])&&!rows.some(r=>/State Day|Christmas Eve/.test(r)),`the country's upcoming public holidays are listed (national public holidays only): ${rows.join(' | ')}`);
     ok(/4 public holidays of United States count as days off/.test(await p.textContent('#holiday-msg')),'and it says they count as days off');

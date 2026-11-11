@@ -13,11 +13,17 @@ module.exports=async({ok,chromium,url,settle})=>{
       await p.waitForSelector('#mannequin-container img');await settle(p,600);await p.waitForTimeout(300);
       const m=await p.evaluate(()=>{const nav=document.querySelector('body>nav').getBoundingClientRect(),tiles=document.querySelector('.below').getBoundingClientRect(),btn=document.querySelector('nav button').getBoundingClientRect();
         return {gap:Math.round(nav.top-tiles.bottom),navx:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx')),btn:Math.round(btn.height)}});
+      // a day without a photo (the drawing and its Generate button push the tiles lower), and a weekend, keep the size
+      const keep=await p.evaluate(async()=>{const nx=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx'));const before=nx();
+        renders={};renderToday();await new Promise(r=>setTimeout(r,400));const drawing=nx(),btn=!!document.querySelector('.render-btn');
+        sel=new Date(2026,10,13);renderToday();await new Promise(r=>setTimeout(r,400));const weekend=nx();return {before,drawing,weekend,btn}});
+      m.keep=keep;
       await ctx.close();return {...m,errs}};
     const a=await run(390,844);
     ok(a.navx>0&&a.navx<=64&&(Math.abs(a.gap-12)<=1||a.navx===64),`on a phone the tab bar grows to one 12px gap below the tiles (gap ${a.gap}px, ${a.navx}px taller, buttons ${a.btn}px)`);
     const d=await run(466,710);   // like the user's screenshot: about 35px between the tiles and the bar, the score card peeking out
     ok(d.navx>15&&d.navx<40&&Math.abs(d.gap-12)<=1,`with ~35px to spare (466×710) the bar's top lands 12px below the tiles (gap ${d.gap}px, ${d.navx}px taller)`);
+    ok(d.keep.btn&&d.keep.drawing===d.navx&&d.keep.weekend===d.navx,`the bar keeps that size on a day with only the drawing (${d.keep.drawing}px) and on a weekend (${d.keep.weekend}px)`);
     const s=await run(390,600);
     ok(s.navx===0&&s.btn===38,`on a short screen, where the tiles already reach it, the bar keeps its 38px buttons (grown ${s.navx}px)`);
     const t=await run(430,1100);

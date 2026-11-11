@@ -124,13 +124,18 @@ function renderBusy(){let el=document.getElementById('busy');if(!el){if(!documen
   el.innerHTML=`<span class="spin" aria-hidden="true"></span><span>${esc(live[live.length-1])}${live.length>1?` <small>+${live.length-1}</small>`:''}</span>`;el.classList.add('on')}
 /* the tab bar grows upward until its top is one design gap (--gap, 12px) below Today's below-the-waist tiles, so nothing peeks out
    between them (the score card's top used to); at most 64px, and never shorter than its 38px buttons. Measured with the page at the
-   top, from where the tiles end and where the bar's natural top is; kept while on other pages. */
+   top, from where the tiles end and where the bar's natural top is; kept while on other pages and on days whose tiles sit lower. */
 const NAV_MAX=64;
-function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),nav=document.querySelector('body>nav');if(!b||!nav)return;
+function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),nav=document.querySelector('body>nav');if(!nav)return;
+  if(!b){let kept=0;try{kept=+localStorage.getItem('nav_fit:'+innerWidth+'x'+innerHeight)||0}catch{}document.documentElement.style.setProperty('--navx',kept+'px');return}   // a day with no tiles (a weekend) keeps the fitted size
   const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12,cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx'))||0;
   const cs=getComputedStyle(nav),natural=innerHeight-38-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
   const tiles=b.getBoundingClientRect().bottom+scrollY;
-  const x=Math.max(0,Math.min(NAV_MAX,Math.round(natural-(tiles+gap))));if(Math.abs(x-cur)>=1)document.documentElement.style.setProperty('--navx',x+'px')}
+  // never shrinks: a day without a photo (the drawing and its Generate button sit lower) keeps the size the photo days fitted; kept per
+  // screen size, so it is the same on every day and after a restart
+  const k='nav_fit:'+innerWidth+'x'+innerHeight;let kept=0;try{kept=+localStorage.getItem(k)||0}catch{}
+  const x=Math.max(kept,Math.max(0,Math.min(NAV_MAX,Math.round(natural-(tiles+gap)))));if(x>kept)try{localStorage.setItem(k,String(x))}catch{}
+  if(Math.abs(x-cur)>=1)document.documentElement.style.setProperty('--navx',x+'px')}
 let fitNavRaf=0;const fitNavSoon=()=>{cancelAnimationFrame(fitNavRaf);fitNavRaf=requestAnimationFrame(fitNav)};
 if(typeof ResizeObserver!=='undefined')addEventListener('DOMContentLoaded',()=>{const t=document.querySelector('#today');if(t)new ResizeObserver(fitNavSoon).observe(t)});
 addEventListener('resize',fitNavSoon);

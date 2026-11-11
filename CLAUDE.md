@@ -157,6 +157,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
   - no "Below the waist" heading
   - the bottom tab bar is compact so the picture and the tiles fit on one screen: 38px buttons, and it keeps only `--navpad` (the home-indicator inset minus 18px) below them; `--navh` is its height, used by the body padding and the toast
   - the tab bar grows upward (`--navx`, its buttons taller) until its top is one `--gap` below Today's below-the-waist tiles, so nothing peeks out between them (`fitNav`, after each render, on resize and when Today's size changes); at most 64px (`NAV_MAX`), never on a screen where the tiles already reach it; the natural top is computed, not measured, since the height animates
+  - the grown bar never shrinks: the largest fit is kept per screen size (`localStorage.nav_fit:<w>x<h>`), so a day with only the drawing (its Generate button pushes the tiles lower) or a weekend keeps it
   - the score, pieces and month cards share one size (76px folded, a 112px picture slot, one text column) and everything on Today is spaced by `--gap` (12px) in styles.css
   - tiles show a short 4:3 picture
   - the score card is a `#sbox` fold box like `#ibox`/`#mbox` (`scoreCard`, `toggleScore`, `scoreOpen`; its checks slide in one after another and each `.sbar` fills to the points scored)
