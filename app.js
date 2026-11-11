@@ -1346,7 +1346,7 @@ function renderWardrobe(){
   // the open item moves to the start of its row; the rest of that row follows it and a blank cell fills the slot it left
   let gapAfter=null;if(editing&&editAt&&editAt.id===editing&&editAt.flt===flt){const k=list.findIndex(i=>i.id===editing);
     if(k>=0){const end=Math.min(editAt.at+editAt.cols,list.length),[it]=list.splice(k,1);list.splice(editAt.at,0,it);if(end-editAt.at===editAt.cols&&editAt.cols>1)gapAfter=list[end-1].id}}
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>`
+  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${typeof shopButton==='function'?shopButton():''}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>`
   :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button>`}${editing===i.id?`<div class="btns giact"><button onclick="closeItem()">Close</button><button class="danger" onclick="rm('${i.id}')">Delete</button><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`:''}${editing===i.id&&i.paused?(i.order?`<div class="rotnote ordrow"><small class="mut">On the way: it isn't in your outfits yet.</small><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="mut rotnote"><small>Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</small></p>'):''}${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
 }
@@ -1384,7 +1384,7 @@ ${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confi
 }
 
 function show(t){
-  closeSettings();
+  closeSettings();if(typeof closeShop==='function')closeShop();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
 }
@@ -1547,37 +1547,6 @@ async function loadWeather(force){
     d.time.forEach((t,i)=>{const [y,m,dd]=t.split('-').map(Number);days[key(new Date(y,m-1,dd))]={tmax:d.temperature_2m_max[i],tmin:d.temperature_2m_min[i],pop:d.precipitation_probability_max[i]??0,rain:d.precipitation_sum[i]??0,code:d.weather_code[i]??0}});
     weather=days;localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));cache={};if(!$('#today').hidden)refreshToday()}
   catch(e){console.warn('weather unavailable',e)}
-}
-
-/* ---- what to buy ---- */
-let shop=null,shopBusy=null;
-const shopSig=()=>items.map(i=>i.id+':'+stamp(i)).sort().join(',')+'|'+JSON.stringify([settings.workdays,settings.blazerDays]);
-function shopCard(){
-  let body='';
-  if(shopBusy)body=`<p class="mut"><small>${shopBusy}</small></p>`;
-  else if(shop&&shop.sig===shopSig()){const r=shop.res,b=r.base;
-    body=`<p class="mut"><small>Next 8 weeks (${b.days} workdays): average score ${b.avg}, ${b.problems} day${b.problems===1?'':'s'} with a problem, ${b.rest} day${b.rest===1?'':'s'} where a suit hasn't rested ${COOL} days.</small></p>`+
-      (r.recs.length?`<p class="mut"><small>In order of need: each step assumes you bought the ones above it. Buying all ${r.recs.length}: average ${r.after.avg}, ${r.after.problems} problem day${r.after.problems===1?'':'s'}, ${r.after.rest} short-rest day${r.after.rest===1?'':'s'}.</small></p><ol class="recs">${r.recs.map((x,i)=>`<li><div class="rec-img">${itemThumb(x.items[0])}</div><div class="rec-txt"><b class="cap">${x.name}</b><small>${x.why.join(' · ')}</small>
-        <button onclick="boughtRec(${i})">I bought this</button></div><span class="sc ${x.gain>=5?'good':x.gain>=2?'ok':'low'}" title="improvement">${i+1}</span></li>`).join('')}</ol>`
-      :'<p><small>Nothing on the standard list would make a real difference. Your wardrobe covers the next 8 weeks well.</small></p>');
-  }else if(items.length)body='<p class="mut"><small>Plans your next 8 weeks with each likely purchase and ranks what would improve your outfits most.</small></p>';
-  return items.length?`<div class="card shop"><div class="shop-head"><b>What to buy</b><button onclick="analyzeWardrobe()" ${shopBusy?'disabled':''}>${shop&&shop.sig===shopSig()?'Re-check':'Analyze my wardrobe'}</button></div>${body}</div>`:'';
-}
-function analyzeWardrobe(){
-  const sig=shopSig(),payload={list:items.map(({photo,swatch,stripes,texture,sett,patternText,weave,pbox,patternSpec,...i})=>i),settings,weather,climate,today:TODAY_OVERRIDE,weeks:8};   // the planner needs the tags only: no pictures
-  const finish=res=>{shopBusy=null;shop={sig,res};if(!$('#wardrobe').hidden)renderWardrobe()};
-  const progress=(i,n)=>{shopBusy=`Checking ${i+1} of ${n} possible purchases…`;const el=$('#wardrobe .shop small');if(el)el.textContent=shopBusy};
-  shopBusy='Starting…';renderWardrobe();
-  let w=null;try{w=new Worker('analysis-worker.js')}catch(e){}
-  if(w){w.onmessage=e=>{const d=e.data;if(d.progress)progress(...d.progress);else{w.terminate();if(d.error){shopBusy=null;alert('Analysis failed: '+d.error);renderWardrobe()}else finish(d.done)}};
-    w.onerror=()=>{w.terminate();runOnMainThread()};w.postMessage(JSON.parse(JSON.stringify(payload)));}
-  else runOnMainThread();
-  function runOnMainThread(){setTimeout(()=>finish(runAnalysis(items,todayDate(),8,progress)),30)}  // fallback where workers aren't available
-}
-async function boughtRec(i){
-  const rec=shop&&shop.res.recs[i];if(!rec)return;
-  for(const x of rec.items){const it={...x,id:crypto.randomUUID(),added:Date.now()};await put(it);items.push(it)}
-  cache={};shop=null;renderWardrobe();analyzeWardrobe();
 }
 
 /* ---- theme: Auto (follow the device) → Light → Dark; saved per device ---- */
