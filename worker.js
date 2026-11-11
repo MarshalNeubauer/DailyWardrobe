@@ -551,7 +551,7 @@ ${ONE_PHOTO}
 No added text, captions or watermark.`;
 /* the master photo of assembled outfits (assemble.js): the pose in plain placeholder clothes, which every item's photo is an edit of */
 const MASTER_NOTE = `
-This is a plain reference photo. The suit is a solid, perfectly plain worsted wool with no pattern, stripe, check or visible weave. The tie is a solid plain silk with no pattern. The shirt is plain, with a classic spread collar and plain barrel cuffs showing at both wrists. No tie bar, tie clip, pocket square, lapel pin or cufflinks.`;
+This is a reference photo that other photos are edited from. The shirt is plain, with a classic spread collar and plain barrel cuffs showing at both wrists. No waistcoat, tie bar, tie clip, pocket square, lapel pin or cufflinks.`;
 function dataUrlToBlob(u) {
   const m = String(u || '').match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/s);
   if (!m) return null;

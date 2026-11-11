@@ -1,18 +1,21 @@
 // Assembled outfit photos (loaded after tagging.js). Instead of one generated photo per outfit, one MASTER photo fixes the pose and
 // every item gets ONE photo, made by editing the master so that only that piece changes (the worker's swap jobs). An outfit's
 // picture is then put together here, on the device, by copying each piece's pixels onto the master: no image model, no cost.
-//   master  the pose, in plain placeholder clothes (never shown)
+//   master  the pose, in the owner's dark grey herringbone suit, a white shirt and a burgundy tie (never shown as it is)
 //   calib   four edits of the master in loud flat colours (jacket, shirt, tie, watch): where each differs from the master is that
 //           piece's ZONE. They are only used to find the zones, once per master.
 //   pieces  one edit of the master per jacket, shirt look, tie, tie bar and extra watch
 // Order: master, then the jacket, shirt, tie, tie bar and watch; pixels along the joins are rebuilt from clean pixels either side.
 // Today shows the assembled picture once the master, the zones and the outfit's pieces are on the device (asmFor / asmEnsure);
 // an outfit it can't do (no jacket, no tie, a vest), or with a piece still missing, keeps its own photo.
-const ASM_VER=1,ASM_DE=14;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
-/* ASM_ON: are assembled pictures in use? Off since the owner rejected the first master (zoomed out, the lower hand too low; the
-   vest master's buttons read as seven): Today shows each outfit's own photo again, nothing is fetched or made, and Settings hides
-   Item photos. Everything else stays, to be switched back on with new masters (a new ASM_VER makes every device start afresh). */
-let ASM_ON=false;
+const ASM_VER=2,ASM_DE=14;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+/* ASM_VER 2: the masters the owner approved, made from the redrawn figure (close framing, the lower hand at the waist button, the
+   watch turned as worn, a blurred light office): his dark grey herringbone suit, a white shirt, a burgundy tie and his watch, and
+   the same photo with the suit's waistcoat. Version 1's master (zoomed out, the lower hand too low) was rejected; every key
+   carries the version, so its photos are simply no longer asked for.
+   ASM_ON: are assembled pictures in use? Off, Today shows each outfit's own photo, nothing is fetched or made, and Settings hides
+   Item photos (it was off between the two versions). */
+let ASM_ON=true;
 const asmImg=u=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('could not read a photo'));im.src=u});
 /* a photo as pixels, W wide and high (its own width when not given: photos are square) */
 async function asmData(u,W){const im=await asmImg(u),w=W||im.naturalWidth,c=document.createElement('canvas');c.width=c.height=w;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,w,w);return x.getImageData(0,0,w,w)}
@@ -152,10 +155,11 @@ const ASM_SLOT={jacket:'top',vest:'top',shirt:'shirt',tie:'tie',bar:'clip',watch
    counts those by colour alone; here every shirt look gets its own photo) */
 const asmLook=(slot,i)=>lookSig(ASM_SLOT[slot],i)+(slot==='shirt'&&texPat('shirt',i.pattern)&&!shirtPatterned(i)&&!shirtTextured(i)?'/weave/'+patBase(i.pattern):'');
 const asmPieceKey=(slot,i,v)=>asmKey('piece/'+slot+(slot==='vest'?asmVestTag(v):'')+'/'+asmLook(slot,i));
-/* the master's placeholder clothes: a plain mid-grey suit, a white shirt, a green tie, and the owner's watch */
-const asmMasterItem=(type,primaryColor)=>({id:'asm-'+type,type,primaryColor,pattern:'solid'});
+/* the master's clothes: a dark grey herringbone suit, a white shirt, a burgundy tie, and the owner's watch. The kept master was
+   made from the owner's own items and put on the worker by hand; this describes it, for the day one has to be made again */
+const asmMasterItem=(type,primaryColor,pattern='solid')=>({id:'asm-'+type,type,primaryColor,pattern});
 function asmMasterOutfit(){const watch=items.find(i=>i.type==='watch'&&inRotation(i))||items.find(i=>i.type==='watch');
-  return {top:asmMasterItem('suit','midgrey'),shirt:asmMasterItem('shirt','white'),tie:asmMasterItem('tie','green'),watch,suitDay:true}}
+  return {top:asmMasterItem('suit','darkgrey','herringbone'),shirt:asmMasterItem('shirt','white'),tie:asmMasterItem('tie','burgundy'),watch,suitDay:true}}
 /* what the kept master was made with (its watch and shirt need no piece of their own): {watch, shirt}, carried in the master
    photo's own record (sig 'asm/master {…}'), so every device that has the master knows */
 const asmMasterSig=o=>'asm/master '+JSON.stringify({watch:o.watch?asmLook('watch',o.watch):'',shirt:asmLook('shirt',o.shirt)});
@@ -314,7 +318,7 @@ const ASM_CALIB={jacket:'a jacket of exactly the same cut in a solid, flat, brig
 async function asmMasterJob(){const o=asmMasterOutfit(),{refs,labels}=await outfitRefsFull(o);
   return {mode:'queue',key:asmMasterKey(),image:await figurePng(o),refs,labels,outfit:outfitText(o),sig:asmMasterSig(o),master:true,quality:'high'}}
 const asmVestMasterJob=()=>({mode:'queue',key:asmVestKey(),baseKey:asmMasterKey(),refs:[],labels:[],sig:'asm/master/vest',swap:{what:'waistcoat',add:true,
-  text:'a matching five-button waistcoat (vest) in exactly the same plain mid-grey cloth as the suit jacket, worn under the jacket and buttoned up. Its V-shaped opening shows the shirt collar, the tie knot and the top of the tie; lower down the tie runs behind the waistcoat, and the waistcoat fills the opening of the jacket above its button'}});
+  text:'a matching waistcoat (vest) in exactly the same cloth as the suit jacket, worn under the jacket and buttoned up. Its V-shaped opening shows the shirt collar, the tie knot and the top of the tie; lower down the tie runs behind the waistcoat, and the waistcoat fills the opening of the jacket above its button'}});
 const asmCalibJob=s=>({mode:'queue',key:asmCalibKey(s),baseKey:s==='vest'?asmVestKey():asmMasterKey(),swap:{what:s==='vest'?'waistcoat':s,text:ASM_CALIB[s]},refs:[],labels:[],sig:'asm/calib/'+s});
 /* A shirt's description for its piece. A woven texture is asked for bolder than life: at this size (the shirt shows in a strip either
    side of the tie) a true-to-life weave can't be seen at all. The wording matters: "easy to see in this photo" made the generator

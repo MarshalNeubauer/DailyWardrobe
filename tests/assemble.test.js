@@ -51,18 +51,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.b.shirtA>4&&r.b.tinted>0&&r.b.white<1.5,`the shirt is pink, and the bit of cuff the smaller watch uncovers is tinted to it, not left white (${r.b.tinted} pixels tinted, ${r.b.white.toFixed(2)}% white)`);
     ok(r.onlyTie===1,'a piece that is left out stays as the master shows it');
     // ---- keys, what an outfit needs, and the picture from the kept photos ----
-    // as shipped, assembled pictures are switched off: no picture, nothing wanted, nothing asked of the worker, Settings hides Item photos
+    // switched off (ASM_ON false, as it was between the two masters): no picture, nothing wanted, nothing asked of the worker, Settings hides Item photos
     const off=await p.evaluate(async()=>{let n=0;const I=(type,primaryColor,x={})=>({id:'off'+type+(n++),type,primaryColor,pattern:'solid',...x});
       const o={top:I('blazer','khaki'),shirt:I('shirt','black'),tie:I('tie','navy'),watch:I('watch','silver',{metal:'silver'}),suitDay:false};
       renders[asmMasterKey()]={sig:asmMasterSig(o),img:'data:image/jpeg;base64,AAAA',model:'',t:5};renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OWN',model:'gpt',t:1};
       asmOut[asmOutKey(o)]={img:'data:image/jpeg;base64,ASM',stamp:asmStamp(o),t:9};
       const calls=[],f0=window.fetch;window.fetch=async(...a)=>{calls.push(String(a[0]));return new Response('{}',{status:404})};localStorage.setItem('worker_url','https://off.test/');localStorage.setItem('app_token','t');
-      const r={on:ASM_ON,wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img,pending:asmPending(o)};await asmEnsure(o);await asmSync(true);asmAutoSoon();openSettings('photos');renderAsmUI();
+      const shipped=ASM_ON;ASM_ON=false;const r={shipped,ver:ASM_VER,on:ASM_ON,wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img,pending:asmPending(o)};await asmEnsure(o);await asmSync(true);asmAutoSoon();openSettings('photos');renderAsmUI();
       r.calls=calls.length;r.hidden=document.querySelector('#asm-group').hidden&&getComputedStyle(document.querySelector('#asm-group')).display==='none';r.timer=asmAutoTimer;
       ASM_ON=true;r.forOn=(asmFor(o)||{}).img;renderAsmUI();r.shownOn=!document.querySelector('#asm-group').hidden;
       window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[asmMasterKey()];delete renders[comboKey(o)];delete asmOut[asmOutKey(o)];closeSettings&&closeSettings();return r});
     ok(off.on===false&&off.wants===false&&off.for===null&&off.shown==='data:image/jpeg;base64,OWN'&&off.pending===false&&off.calls===0&&off.hidden&&!off.timer,`assembled pictures are switched off: Today shows the outfit's own photo, nothing is asked of the worker or made for a new item, and Settings hides Item photos (${off.calls} requests)`);
     ok(off.forOn==='data:image/jpeg;base64,ASM'&&off.shownOn,'switched on (ASM_ON), the assembled picture is shown again and Settings offers Item photos');
+    ok(off.shipped===true&&off.ver===2,'as shipped, assembled pictures are on, with the second masters (ASM_VER 2)');
     const k=await p.evaluate(async()=>{const url=async n=>{const d=await asmData('tests/fixtures/asm-'+n+'.jpg'),c=document.createElement('canvas');c.width=c.height=d.width;c.getContext('2d').putImageData(d,0,0);return c.toDataURL('image/jpeg',.9)};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const watch=I('watch','silver',{metal:'silver'}),jk=I('blazer','khaki',{pattern:'windowpane'}),black=I('shirt','black'),black2=I('shirt','black'),white=I('shirt','white'),tie=I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),tie2=I('tie','burgundy'),clip=I('tieclip','silver',{metal:'silver'}),gold=I('watch','gold',{metal:'gold'});
@@ -135,7 +136,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.forBefore===null&&k.forAfter&&k.keptOut&&k.overOld==='assembled'&&k.underNew==='gpt'&&k.stale===null,'Today takes the assembled picture (kept on the device) over an older photo of the outfit; a photo made after the master wins, and a piece made again makes the picture stale');
     ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===2&&k.needs.split('piece:tie').length===3&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt or the master's watch (${k.needs})`);
     const J=k.jobs;
-    ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/mid grey suit/.test(J.mj.outfit)&&/green tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit),'the master job is a normal outfit photo of the placeholder clothes, marked as the master, at high quality');
+    ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/dark grey herringbone suit/.test(J.mj.outfit)&&/burgundy tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit),'the master job is a normal outfit photo of the master\'s clothes (dark grey herringbone, white shirt, burgundy tie), marked as the master, at high quality');
     ok(J.cj.baseKey===J.mj.key&&J.cj.swap.what==='tie'&&/magenta/.test(J.cj.swap.text)&&J.tj.baseKey===J.mj.key&&J.tj.swap.what==='tie'&&/navy & pink stripe tie/.test(J.tj.swap.text)&&J.tj.refs===1,'calibration and piece jobs edit the kept master (by its key) and swap one piece, with the item\'s own photo');
     ok(J.bj.swap.what==='tie bar'&&J.bj.swap.add===true&&/silver tie bar/.test(J.bj.swap.text)&&J.sj.swap.what==='shirt'&&J.sj.refs===1&&/plain black dress shirt/.test(J.sj.swap.text)&&J.jj.swap.what==='jacket'&&J.jj.refs===1&&J.wj.swap.what==='watch'&&J.wj.refs===2,'a tie bar is added, and a shirt, jacket or watch swapped, each from its own photo (the watch with its dial enlarged)');
     // ---- the worker: master and piece jobs through the queue ----
@@ -155,7 +156,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       let ms=await drain();ok(ms[0].retried&&ms[0].retried.delaySeconds===60&&got.length===0,'while the master is not kept yet, the piece waits and tries again');
       // the master
       q=await post({...J.mj,image:PNG,refs:[],labels:[]});ms=await drain();const mk=J.mj.key;
-      ok(ms[0].acked&&store.has('render:'+mk)&&got[0].quality==='high'&&/^Turn the first image/.test(got[0].prompt)&&/plain reference photo/.test(got[0].prompt)&&/No tie bar/.test(got[0].prompt),'the master is made at high quality with the plain-reference note and kept under its key');
+      ok(ms[0].acked&&store.has('render:'+mk)&&got[0].quality==='high'&&/^Turn the first image/.test(got[0].prompt)&&/reference photo that other photos are edited from/.test(got[0].prompt)&&/No waistcoat, tie bar/.test(got[0].prompt),'the master is made at high quality with the reference note and kept under its key');
       store.set('render:'+mk,JSON.stringify({sig:'asm/master',img:k.masterUrl,model:'m',t:1}));
       // the piece, now that the master is kept: the worker edits the kept photo
       got=[];await post({...k.tieJob,replace:true});ms=await drain();
@@ -163,7 +164,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       got=[];await post(J.bj);ms=await drain();
       ok(ms[0].acked&&/Add one thing only: a slim silver tie bar/.test(got[0].prompt)&&!/Replace only/.test(got[0].prompt)&&/must stay exactly[^\n]*the tie, its knot and its pattern/.test(got[0].prompt),'the tie bar is added to the master, with everything else kept');
       got=[];await post(k.vjobs.vj);ms=await drain();const p1=got[0]&&got[0].prompt;store.set('render:'+k.vjobs.vj.key,JSON.stringify({sig:'',img:k.masterUrl,model:'m',t:1}));got=[];await post(k.vjobs.vcj);await drain();
-      ok(/Add one thing only: a matching five-button waistcoat/.test(p1)&&/Replace only the waistcoat with: a waistcoat of exactly the same cut[^\n]*orange/.test(got[0].prompt)&&/must stay exactly[^\n]*the jacket and its pattern/.test(got[0].prompt),'the worker adds the waistcoat for the vest master and swaps only the waistcoat for its calibration photo');
+      ok(/Add one thing only: a matching waistcoat \(vest\) in exactly the same cloth as the suit jacket/.test(p1)&&/Replace only the waistcoat with: a waistcoat of exactly the same cut[^\n]*orange/.test(got[0].prompt)&&/must stay exactly[^\n]*the jacket and its pattern/.test(got[0].prompt),'the worker adds the waistcoat for the vest master and swaps only the waistcoat for its calibration photo');
       q=await post({mode:'queue',key:'c0000000000000001',swap:{what:'tie',text:'x'}});ok(q.status===400,'a job with neither an image nor a photo to edit is refused');
       // a photo that was made wrong can be removed from the worker
       const del=(key,tok='t')=>worker.fetch(new Request(HOST+'render?key='+key,{method:'DELETE',headers:{'x-app-token':tok}}),env);
