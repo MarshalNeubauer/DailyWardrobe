@@ -119,6 +119,22 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {txt:outfitText(o(st)),plain:outfitText(o(p1)),own:comboKey(o(st))!==comboKey(o(p1)),share:comboKey(o(p1))===comboKey(o(p2))}});
     ok(/a white stripe dress shirt \(measured: vertical stripes; the bands are about [^)]*\. Bold blue bengal stripes on white\)/.test(sh.txt)&&/a plain white dress shirt/.test(sh.plain),'the photo generator is told a striped shirt\'s pattern; a plain one is still "a plain white dress shirt"');
     ok(sh.own&&sh.share,'a striped shirt gets its own photo; plain and finely woven white shirts still share one');
+    // a linen windowpane blazer (khaki, slubby, thin light-blue lines with a white one beside, both ways, light falling off): the
+    // lines barely differ in lightness, only in colour; read from a close-up and from the whole jacket, then combined
+    const wp=await p.evaluate(()=>{const linen=(S,step,lw,seed)=>{const c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');x.fillStyle='#b9ad92';x.fillRect(0,0,S,S);
+        let r=seed;const rnd=()=>{r=(r*16807)%2147483647;return r/2147483647};
+        for(let k=0;k<S*S/60;k++){const v=rnd()<.5,l=4+rnd()*30,xx=rnd()*S,yy=rnd()*S;x.fillStyle=rnd()<.5?'rgba(255,250,235,.35)':'rgba(90,80,60,.3)';v?x.fillRect(xx,yy,1+rnd(),l):x.fillRect(xx,yy,l,1+rnd())}
+        x.fillStyle='#9fb3d0';for(let o=step*.3;o<S;o+=step){x.globalAlpha=.85;x.fillRect(o,0,lw,S);x.fillRect(0,o,S,lw)}x.globalAlpha=1;
+        x.fillStyle='rgba(240,240,235,.5)';for(let o=step*.3+lw+1;o<S;o+=step){x.fillRect(o,0,lw*.6,S);x.fillRect(0,o,S,lw*.6)}
+        const d=x.getImageData(0,0,S,S);for(let i=0;i<d.data.length;i+=4){const px=(i/4)%S,py=Math.floor(i/4/S),sh=1-.15*((px/S-.3)**2+(py/S-.5)**2)*4,n=(Math.random()-.5)*16;for(let q=0;q<3;q++)d.data[i+q]=d.data[i+q]*sh+n}x.putImageData(d,0,0);return c};
+      const close=linen(1100,420,6,7),jacket=linen(1400,95,2,9),blue=h=>rgbLab(...hexRgb(h))[2]<-4;
+      const c=settFromCanvas(close,null,{straight:true}),j=settFromCanvas(jacket,{x:200,y:200,w:600,h:600},{straight:true}),both=settFrom({full:jacket,box:{x:200,y:200,w:600,h:600},tex:close,type:'blazer',weave:{repeatsAcross:9}});
+      const info=s=>s&&{cr:s.cr,a:s.a,blueBand:s.bands.some(b=>blue(b[0])),blueCross:!!s.cross&&s.cross.bands.some(b=>b[0]&&blue(b[0])),r:s.cross&&s.cross.r,n:s.bands.length};
+      return {c:info(c),j:info(j),both:both&&{src:both.src,a:both.a,tr:both.tr,blue:both.bands.some(b=>blue(b[0])),ground:(()=>{const g=rgbLab(...hexRgb(both.bands[0][0])),k=rgbLab(...hexRgb('#b9ad92')),C=l=>Math.hypot(l[1],l[2]),h=l=>Math.atan2(l[2],l[1])*180/Math.PI;return {chroma:C(g)/C(k),hue:Math.abs(h(g)-h(k))}})()},noRef:!wbRead(close).ref}});
+    ok(wp.c&&wp.c.blueBand&&wp.c.blueCross&&Math.abs(wp.c.cr-2.36)<.3&&Math.abs(wp.c.r-1)<.1,`a linen windowpane close-up: its light-blue lines both ways, square panes, the right repeat (${JSON.stringify(wp.c)})`);
+    ok(wp.j&&wp.j.blueBand&&wp.j.blueCross&&Math.abs(wp.j.cr-8.84)<.5&&wp.j.a===0,`… and from the whole jacket, where the lines are a pixel or two wide (${JSON.stringify(wp.j)})`);
+    ok(wp.both&&wp.both.src==='photo+closeup'&&wp.both.blue&&wp.both.tr===9,'with both, the close-up\'s bands and the jacket\'s scale are used');
+    ok(wp.noRef&&wp.both.ground.chroma>.85&&wp.both.ground.hue<6,`a khaki close-up's own light slubs are not taken for a white reference, so the khaki keeps its colour (${Math.round(wp.both.ground.chroma*100)}% of its chroma, hue within ${wp.both.ground.hue.toFixed(1)}°)`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

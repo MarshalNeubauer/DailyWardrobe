@@ -22,11 +22,17 @@ function wbRead(c){
   const k=Math.min(1,200/Math.max(c.width,c.height)),w=Math.max(1,Math.round(c.width*k)),h=Math.max(1,Math.round(c.height*k)),t=document.createElement('canvas');t.width=w;t.height=h;
   const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0,w,h);const d=x.getImageData(0,0,w,h).data,n=w*h,lums=new Float32Array(n);
   for(let i=0,j=0;i<d.length;i+=4,j++)lums[j]=(d[i]+d[i+1]+d[i+2])/3;
-  const thr=Math.max(150,[...lums].sort((a,b)=>a-b)[Math.floor(n*.95)]-12);let R=0,G=0,B=0,m=0;
+  const sorted=[...lums].sort((a,b)=>a-b),thr=Math.max(150,sorted[Math.floor(n*.95)]-12),p25=sorted[Math.floor(n*.25)];let R=0,G=0,B=0,m=0;
   for(let i=0,j=0;i<d.length;i+=4,j++){if(lums[j]<thr)continue;const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);
     if(mx>=250&&mn>=250)continue;   // clipped highlights say nothing about the light
     if((mx-mn)/mx<.35){R+=d[i];G+=d[i+1];B+=d[i+2];m++}}   // a white wall under tungsten light reads about 30% saturated
   if(m<n*.005||m>n*.85)return {gains:null,ref:false,refLum:0,frac:m/n};
+  // a white reference is one solid area clearly brighter than the cloth (a wall, a white shirt under a tie, paper); the light
+  // slubs and highlights of a khaki or beige cloth are scattered specks only a little brighter, and taking them for white would
+  // turn the cloth grey
+  const isRef=new Uint8Array(n);for(let i=0,j=0;i<d.length;i+=4,j++){if(lums[j]<thr)continue;const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);if(!(mx>=250&&mn>=250)&&(mx-mn)/mx<.35)isRef[j]=1}
+  let solid=0;for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const j=y*w+x;if(isRef[j]&&isRef[j-1]+isRef[j+1]+isRef[j-w]+isRef[j+w]>=3)solid++}
+  if(solid<m*.5||(R+G+B)/3/m<1.15*p25)return {gains:null,ref:false,refLum:0,frac:m/n};
   const g=(R+G+B)/3/m,cl=v=>Math.min(1.18,Math.max(.85,v)),gains={r:cl(g/(R/m)),g:cl(g/(G/m)),b:cl(g/(B/m))};
   const sig=Math.max(...Object.values(gains).map(v=>Math.abs(v-1)))>=.02;
   return {gains:sig?gains:null,ref:true,refLum:(R/m*gains.r+G/m*gains.g+B/m*gains.b)/3,frac:m/n}}
@@ -226,12 +232,13 @@ function settFromWeave(w){const c=(w&&w.colours||[]).filter(x=>/^#[0-9a-f]{6}$/i
    its bands and crossing lines are used */
 /* white balance and, when the picture has a white reference (a white shirt under the tie, a white wall, paper), exposure set
    from it too: an underexposed photo otherwise reads every band too dark (a cream reads grey). At most 1.6x, in linear light. */
-function settCanvas(c,wb){const r=wbRead(c),g=wb||r.gains,out=applyWb(c,g);if(!r.ref||r.refLum>=235)return out;
+function settCanvas(c,wb){const r=wbRead(c),g=wb||r.gains,out=applyWb(c,g);if(!r.ref||r.refLum>=235||r.frac<.03)return out;   // a few white threads are no reference (partly blended, they read dim)
   const k=Math.min(1.6,sLin(243)/sLin(Math.max(1,r.refLum))),x=out.getContext('2d',{willReadFrequently:true}),D=x.getImageData(0,0,out.width,out.height),d=D.data,lut=new Uint8ClampedArray(256);
   for(let v=0;v<256;v++)lut[v]=Math.round(linS(Math.min(1,sLin(v)*k)));for(let i=0;i<d.length;i+=4){d[i]=lut[d[i]];d[i+1]=lut[d[i+1]];d[i+2]=lut[d[i+2]]}x.putImageData(D,0,0);return out}
 function settFrom({full,box,tex,weave,wb,type}){let s=null,c=null;
-  try{if(full&&box){s=settFromCanvas(settCanvas(full,wb),box);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
-    if(tex){const r=wbRead(tex);c=settFromCanvas(settCanvas(tex,r.ref?r.gains:wb));if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
+  const opt={straight:!!type&&type!=='tie'};   // a jacket's, shirt's or trousers' pattern is straight in the photo
+  try{if(full&&box){s=settFromCanvas(settCanvas(full,wb),box,opt);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
+    if(tex){const r=wbRead(tex);c=settFromCanvas(settCanvas(tex,r.ref?r.gains:wb),null,opt);if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
   if(s&&c&&c.cr>=1.5)s={...s,bands:c.bands,cross:c.cross&&s.cross?{...c.cross,d:s.cross.d}:c.cross||s.cross,src:'photo+closeup'};
   else if(!s)s=c;
   if(!s&&weave)s=settFromWeave(weave);

@@ -32,6 +32,8 @@ const normAng=t=>{while(t<=-Math.PI/2)t+=Math.PI;while(t>Math.PI/2)t-=Math.PI;re
 /* repeat length of a profile via autocorrelation (sub-sample precision) */
 function period(prof,minLag=6){return periodCh([prof],[1],minLag)}
 /* the same over several channels at once (L*, a*, b*): a red line and a green one of the same lightness are told apart */
+/* how alike a multi-channel profile is to itself shifted by one lag (normalised) */
+function corrAt(chs,wts,l){let a=0,b=0,c=0;chs.forEach((ch,k)=>{const m=ch.reduce((x,y)=>x+y,0)/ch.length,w=wts[k];for(let i=0;i+l<ch.length;i++){const p=ch[i]-m,q=ch[i+l]-m;a+=w*p*q;b+=w*p*p;c+=w*q*q}});return a/(Math.sqrt(b*c)||1)}
 function periodCh(chs,wts,minLag=6){
   const Ps=chs.map(ch=>{const m=ch.reduce((a,b)=>a+b,0)/ch.length;return ch.map(v=>v-m)}),N=Ps[0].length;
   const ac=l=>{let a=0,b=0,c=0;Ps.forEach((P,k)=>{const w=wts[k];for(let i=0;i+l<N;i++){a+=w*P[i]*P[i+l];b+=w*P[i]*P[i];c+=w*P[i+l]*P[i+l]}});return a/(Math.sqrt(b*c)||1)};
@@ -197,49 +199,76 @@ function settBands(labs,minShare){
    lines are measured on a sharper one (up to 900px), so a pinstripe a pixel or two wide keeps its width and colour. */
 const detrend=(a,w)=>{const n=a.length,pre=[0];for(const v of a)pre.push(pre[pre.length-1]+v);   // minus a moving average: slow light falloff and folds go
   return a.map((v,i)=>{const lo=Math.max(0,i-w),hi=Math.min(n,i+w+1);return v-(pre[hi]-pre[lo])/(hi-lo)})};
-function analyzeSett(src,sx,sy,sw,sh){
-  const g0=labGrid(src,sx,sy,sw,sh,320),Bl=boxBlurWH(boxBlurWH(g0.Y,g0.W,g0.H),g0.W,g0.H);
+function analyzeSett(src,sx,sy,sw,sh,opt={}){
+  const g0=labGrid(src,sx,sy,sw,sh,320),n0=g0.L.length;
+  // how far each pixel is from the cloth's own colour: a light-blue line on khaki linen barely differs in lightness, but here it
+  // stands out (directions are read from this, not from lightness alone)
+  const med=a=>{const v=Array.from(a).sort((x,y)=>x-y);return v[v.length>>1]},m0=[med(g0.L),med(g0.A),med(g0.B)],E=new Float32Array(n0);
+  for(let i=0;i<n0;i++)E[i]=Math.hypot(g0.L[i]-m0[0],g0.A[i]-m0[1],g0.B[i]-m0[2]);
+  const Bl=boxBlurWH(boxBlurWH(E,g0.W,g0.H),g0.W,g0.H);
   let jxx=0,jyy=0,jxy=0;for(let y=1;y<g0.H-1;y++)for(let x=1;x<g0.W-1;x++){const p=(X,Y)=>Bl[Y*g0.W+X];
     const gx=(p(x+1,y-1)+2*p(x+1,y)+p(x+1,y+1))-(p(x-1,y-1)+2*p(x-1,y)+p(x-1,y+1)),gy=(p(x-1,y+1)+2*p(x,y+1)+p(x+1,y+1))-(p(x-1,y-1)+2*p(x,y-1)+p(x+1,y-1));
     jxx+=gx*gx;jyy+=gy*gy;jxy+=gx*gy}
-  const coh=Math.sqrt((jxx-jyy)**2+4*jxy*jxy)/((jxx+jyy)||1);if(coh<.08)return null;
+  const coh=Math.sqrt((jxx-jyy)**2+4*jxy*jxy)/((jxx+jyy)||1);
   const keepOf=(c,G)=>c.map(v=>v>=Math.min(G.W,G.H)/3);
-  // the main direction: the projection whose colour (L*, chroma at half weight) varies most near the tensor angle
+  // the main direction: the projection whose colour (L*, chroma at half weight) varies most. A jacket's, shirt's or trousers'
+  // pattern is straight in the photo, so only upright and level are tried (a few degrees either way); a tie's can be any angle
   const colVar=ang=>{const P=projIdx(g0.W,g0.H,ang),l=projAvg(g0.L,P),a=projAvg(g0.A,P),b=projAvg(g0.B,P),k=keepOf(l.cnt,g0),pick=v=>v.avg.filter((_,i)=>k[i]);return variance(pick(l))+.5*(variance(pick(a))+variance(pick(b)))};
-  let th=.5*Math.atan2(2*jxy,jxx-jyy),bt=th,bv=-1;for(let dd=-8;dd<=8;dd+=.5){const a=th+dd*Math.PI/180,v=colVar(a);if(v>bv){bv=v;bt=a}}th=normAng(bt);
-  // the crossing direction, on the small copy: the residual (each pixel minus its main band), detrended, varies most across it
-  const P0=projIdx(g0.W,g0.H,th),l0=projAvg(g0.L,P0),res0=new Float32Array(g0.L.length);for(let i=0;i<res0.length;i++)res0[i]=g0.L[i]-l0.avg[P0.idx[i]];
-  const resVar=(G,res,d)=>{const Q=projIdx(G.W,G.H,th+d*Math.PI/180),r=projAvg(res,Q),k=keepOf(r.cnt,G),f0=k.indexOf(true),f1=k.lastIndexOf(true),rp=r.avg.slice(f0,f1+1);
+  const starts=opt.straight?[0,Math.PI/2]:coh<.1?[.5*Math.atan2(2*jxy,jxx-jyy),0,Math.PI/2]:[.5*Math.atan2(2*jxy,jxx-jyy)];
+  let th=starts[0],bv=-1;for(const t0 of starts)for(let dd=opt.straight?-6:-8;dd<=(opt.straight?6:8);dd+=.5){const a=t0+dd*Math.PI/180,v=colVar(a);if(v>bv){bv=v;th=a}}th=normAng(th);
+  if(bv<.4)return null;   // nothing varies across the cloth: a plain one
+  // the crossing direction, on the small copy: the residual (each pixel minus its main band, in colour), detrended, varies most
+  // across it (in colour: a light-blue line on khaki barely differs in lightness)
+  const P0=projIdx(g0.W,g0.H,th),L0=projAvg(g0.L,P0),A0=projAvg(g0.A,P0),B0=projAvg(g0.B,P0),r0=[new Float32Array(n0),new Float32Array(n0),new Float32Array(n0)];
+  for(let i=0;i<n0;i++){const pi=P0.idx[i];r0[0][i]=g0.L[i]-L0.avg[pi];r0[1][i]=g0.A[i]-A0.avg[pi];r0[2][i]=g0.B[i]-B0.avg[pi]}
+  const resProj=(G,res,d)=>{const Q=projIdx(G.W,G.H,th+d*Math.PI/180),r=projAvg(res,Q),k=keepOf(r.cnt,G),f0=k.indexOf(true),f1=k.lastIndexOf(true),rp=r.avg.slice(f0,f1+1);
     return {Q,f0,rp:detrend(rp,Math.max(9,Math.round(rp.length*.2)))}};
-  let ca=0,cv=-1;for(let d=30;d<=150;d+=2){const v=variance(resVar(g0,res0,d).rp);if(v>cv){cv=v;ca=d}}
+  const colourVar=(G,rs,d)=>{const v=rs.map(r=>variance(resProj(G,r,d).rp));return v[0]+.5*(v[1]+v[2])};
+  let ca=0,cv=-1;for(let d=30;d<=150;d+=2){const v=colourVar(g0,r0,d);if(v>cv){cv=v;ca=d}}
   // the sharp copy: profile, repeat, bands
   const G=labGrid(src,sx,sy,sw,sh,Math.max(320,Math.min(900,Math.round(Math.max(sw,sh))))),{W,H}=G,n=W*H;
   const P=projIdx(W,H,th),pl=projAvg(G.L,P),pa=projAvg(G.A,P),pb=projAvg(G.B,P),ok=keepOf(pl.cnt,G),first=ok.indexOf(true),last=ok.lastIndexOf(true);
   const cut=a=>a.slice(first,last+1),prof={L:cut(pl.avg),A:cut(pa.avg),B:cut(pb.avg)};
-  const pd=periodCh([prof.L,prof.A,prof.B],[1,.7,.7],Math.max(8,Math.round(prof.L.length*.02)));   // in colour; not the weave's own texture
+  // the repeat, in colour, with and without the profile's slow drift (light falling off across a photo can look like a short
+  // repeat; it wins only when it is clearly the better match: a long irregular sequence (a plaid tie with no full repeat in view)
+  // can show a false one once its drift is taken out. The bands themselves are measured on the untouched pixels.
+  const dt=v=>detrend(v,Math.max(9,Math.round(v.length*.35))),minLag=Math.max(8,Math.round(prof.L.length*.02));   // not the weave's own texture
+  const pRaw=periodCh([prof.L,prof.A,prof.B],[1,.7,.7],minLag),pDt=periodCh([dt(prof.L),dt(prof.A),dt(prof.B)],[1,.7,.7],minLag);
+  // both candidates are scored on the drift-free profile (the drift itself makes any short lag look alike)
+  const D3=[dt(prof.L),dt(prof.A),dt(prof.B)],score=pp=>pp?corrAt(D3,[1,.7,.7],Math.round(pp.T)):-1;
+  const pd=pRaw?(pDt&&score(pDt)>score(pRaw)?pDt:pRaw):(pDt&&pDt.corr>.75?pDt:null);
   const T=pd&&pd.T<prof.L.length*.8?pd.T:prof.L.length;   // no repeat inside the picture: what is seen counts as one repeat
-  const cvMain=variance(prof.L);let cross=null,inLine=null;
-  if(self.SETT_DEBUG)console.log('sett',JSON.stringify({W,H,coh:+coh.toFixed(2),th:Math.round(th*180/Math.PI),T:+T.toFixed(1),len:prof.L.length,cv:+cv.toFixed(2),ca,cvMain:+cvMain.toFixed(1)}));
-  if(cv>Math.max(2,cvMain*.005)){   // lines of about 1.5 L* or more stand out, whatever the main stripes do
-    const res=new Float32Array(n),resA=new Float32Array(n),resB=new Float32Array(n);for(let i=0;i<n;i++){const pi=P.idx[i];res[i]=G.L[i]-pl.avg[pi];resA[i]=G.A[i]-pa.avg[pi];resB[i]=G.B[i]-pb.avg[pi]}
-    const {Q,f0,rp}=resVar(G,res,ca),rA=resVar(G,resA,ca).rp,rB=resVar(G,resB,ca).rp;
+  const cvMain=variance(prof.L)+.5*(variance(prof.A)+variance(prof.B));let cross=null,inLine=null;
+  if(self.SETT_DEBUG)console.log('sett',JSON.stringify({W,H,coh:+coh.toFixed(2),bv:+bv.toFixed(2),th:Math.round(th*180/Math.PI),T:+T.toFixed(1),len:prof.L.length,cv:+cv.toFixed(2),ca,cvMain:+cvMain.toFixed(1)}));
+  if(cv>Math.max(1,cvMain*.005)){   // lines of about 1 unit of colour or more stand out, whatever the main stripes do
+    const rs=[new Float32Array(n),new Float32Array(n),new Float32Array(n)];for(let i=0;i<n;i++){const pi=P.idx[i];rs[0][i]=G.L[i]-pl.avg[pi];rs[1][i]=G.A[i]-pa.avg[pi];rs[2][i]=G.B[i]-pb.avg[pi]}
+    const pr=rs.map(r=>resProj(G,r,ca)),{Q,f0}=pr[0],rp=pr[0].rp,rA=pr[1].rp,rB=pr[2].rp;
     const cp=periodCh([rp,rA,rB],[1,.7,.7],Math.max(8,Math.round(rp.length*.04))),   // crossing lines are never as close as the weave's texture
       Tc=cp&&cp.T<rp.length*.8?cp.T:rp.length;
-    // one repeat of the residual, smoothed, in three levels: lighter lines, nothing, darker lines
-    const M=Math.max(24,Math.min(400,Math.round(Tc))),fold=new Float64Array(M),fc=new Float64Array(M);rp.forEach((v,i)=>{const q=Math.floor(((i%Tc)/Tc)*M)%M;fold[q]+=v;fc[q]++});
-    const f0v=[...fold].map((v,q)=>v/(fc[q]||1)),fv=f0v.map((_,q)=>(f0v[(q+M-1)%M]+2*f0v[q]+f0v[(q+1)%M])/4),fsd=Math.sqrt(variance(fv));
-    const thr=Math.min(fsd*1.1,.6*Math.max(...fv.map(Math.abs))),lvl=fv.map(v=>v>thr?1:v<-thr?-1:0);   // (a gingham's even square wave never passes 1.1 x its own spread)
+    // one repeat of the residual, in colour and smoothed: where it stands out are the lines. Each step's kind is its strongest
+    // direction of change (lighter, darker, bluer, yellower, redder, greener), so neighbouring lines of different colours stay apart
+    const M=Math.max(24,Math.min(400,Math.round(Tc))),fold=[0,1,2].map(()=>new Float64Array(M)),fc=new Float64Array(M);
+    rp.forEach((v,i)=>{const q=Math.floor(((i%Tc)/Tc)*M)%M;fold[0][q]+=v;fold[1][q]+=rA[i];fold[2][q]+=rB[i];fc[q]++});
+    const sm=f=>{const v=[...f].map((x,q)=>x/(fc[q]||1));return v.map((_,q)=>(v[(q+M-1)%M]+2*v[q]+v[(q+1)%M])/4)},fl=fold.map(sm);
+    const mag=fl[0].map((v,q)=>Math.hypot(v,.85*fl[1][q],.85*fl[2][q])),mm=mag.reduce((a,b)=>a+b,0)/M,msd=Math.sqrt(variance(mag));
+    const thr=Math.min(mm+1.1*msd,.6*Math.max(...mag));   // (a gingham's even square wave is all lines: .6 of the peak)
+    const kindOf=q=>{const c=[fl[0][q],.85*fl[1][q],.85*fl[2][q]];let k=0;for(let j=1;j<3;j++)if(Math.abs(c[j])>Math.abs(c[k]))k=j;return (k+1)*Math.sign(c[k])};
+    const lvl=mag.map((m,q)=>m>thr?kindOf(q):0);
     for(let q=0;q<M;q++)if(lvl[q]&&lvl[(q+M-1)%M]!==lvl[q]&&lvl[(q+1)%M]!==lvl[q])lvl[q]=0;   // a line is at least two steps wide
-    // runs of one level; each line run gets its own thread colour (a tattersall's red and green lines stay apart):
+    // runs of one kind; each line run gets its own thread colour (a tattersall's red and green lines stay apart):
     // a crossing is about half band, half thread, so thread = 2 x pixel - band
-    const rid=new Int32Array(M).fill(-1),runs=[];for(let q=0;q<M;q++){if(q&&lvl[q]===lvl[q-1])rid[q]=runs.length-1;else{runs.push({l:lvl[q],w:0,s:[0,0,0,0]});rid[q]=runs.length-1}runs[rid[q]].w++}
-    if(runs.length>1&&runs[0].l===runs[runs.length-1].l){const a=runs.pop();runs[0].w+=a.w;for(let q=0;q<M;q++)if(rid[q]===runs.length)rid[q]=0}
-    // the pixels under the scarcer kind of line are left out when the bands are measured (with lines all across, like a gingham's
-    // alternating weft, masking both would leave nothing)
-    const wOf=l=>runs.filter(r=>r.l===l).reduce((a,r)=>a+r.w,0),maskL=wOf(1)&&wOf(-1)?(wOf(1)<wOf(-1)?1:-1):(wOf(1)?1:-1);
+    const rid=new Int32Array(M).fill(-1),runs=[];for(let q=0;q<M;q++){if(q&&lvl[q]===lvl[q-1])rid[q]=runs.length-1;else{runs.push({l:lvl[q],w:0,s:[0,0,0,0],v:[0,0,0]});rid[q]=runs.length-1}runs[rid[q]].w++;
+      const ru=runs[rid[q]];ru.v[0]+=fl[0][q];ru.v[1]+=fl[1][q];ru.v[2]+=fl[2][q]}
+    if(runs.length>1&&runs[0].l===runs[runs.length-1].l){const a=runs.pop();runs[0].w+=a.w;runs[0].v=runs[0].v.map((x,j)=>x+a.v[j]);for(let q=0;q<M;q++)if(rid[q]===runs.length)rid[q]=0}
+    // the pixels under the lines are left out when the bands are measured; with lines nearly all across (a gingham's
+    // alternating weft) only those of the scarcer kinds are, or nothing would be left
+    const lineW=runs.filter(r=>r.l).reduce((a,r)=>a+r.w,0),kinds={};for(const r of runs)if(r.l)kinds[r.l]=(kinds[r.l]||0)+r.w;
+    const keepKind=lineW>.6*M?+Object.entries(kinds).sort((a,b)=>b[1]-a[1])[0][0]:null;
     inLine=new Uint8Array(n);
-    for(let i=0;i<n;i++){const t=Q.idx[i]-f0;if(t<0||t>=rp.length)continue;const q=Math.floor(((t%Tc)/Tc)*M)%M,ru=runs[rid[q]];if(!ru||!ru.l)continue;if(ru.l===maskL||!(wOf(1)&&wOf(-1)))inLine[i]=ru.l===maskL?1:0;
-      if(Math.sign(res[i])!==ru.l)continue;const pi=P.idx[i];ru.s[0]+=2*G.L[i]-pl.avg[pi];ru.s[1]+=2*G.A[i]-pa.avg[pi];ru.s[2]+=2*G.B[i]-pb.avg[pi];ru.s[3]++}
+    for(let i=0;i<n;i++){const t=Q.idx[i]-f0;if(t<0||t>=rp.length)continue;const q=Math.floor(((t%Tc)/Tc)*M)%M,ru=runs[rid[q]];if(!ru||!ru.l)continue;
+      if(ru.l!==keepKind)inLine[i]=1;
+      if(rs[0][i]*ru.v[0]+rs[1][i]*ru.v[1]+rs[2][i]*ru.v[2]<=0)continue;   // this pixel leans the line's way
+      const pi=P.idx[i];ru.s[0]+=2*G.L[i]-pl.avg[pi];ru.s[1]+=2*G.A[i]-pa.avg[pi];ru.s[2]+=2*G.B[i]-pb.avg[pi];ru.s[3]++}
     const labOfRun=ru=>{if(!ru.s[3])return null;const a=ru.s[1]/ru.s[3],b=ru.s[2]/ru.s[3],C=Math.hypot(a,b),k=C>70?70/C:1;   // capped: a cloth is not neon
       return [Math.max(0,Math.min(100,ru.s[0]/ru.s[3])),a*k,b*k]};
     // threads that look alike share one colour (so the drawing isn't speckled with near-identical shades)
@@ -247,7 +276,7 @@ function analyzeSett(src,sx,sy,sw,sh){
     for(const c of cols)c.hex=labHex(c.sum.map(v=>v/c.n));
     const out=[];for(const ru of runs){const h=ru.l&&ru.c?ru.c.hex:null;if(out.length&&out[out.length-1][0]===h)out[out.length-1][1]+=ru.w;else out.push([h,ru.w])}
     if(out.some(x=>x[0]))cross={d:ca,bands:out.map(([c,w])=>[c,+(w/M).toFixed(3)]),r:+Math.max(.2,Math.min(5,Tc/T)).toFixed(2)};else inLine=null;
-    if(self.SETT_DEBUG)console.log('cross',JSON.stringify({Tc:+Tc.toFixed(1),len:rp.length,fsd:+fsd.toFixed(2),runs:runs.length,cols:cols.map(c=>c.hex)}));
+    if(self.SETT_DEBUG)console.log('cross',JSON.stringify({Tc:+Tc.toFixed(1),len:rp.length,thr:+thr.toFixed(2),runs:runs.length,cols:cols.map(c=>c.hex)}));
   }
   // the bands: per-step medians, leaving out the pixels under crossing lines (a gingham's white stays white)
   const bands=settBands(foldMedian(G,P,first,prof.L.length,ok,T,inLine),.008);if(bands.length<2)return null;
@@ -255,5 +284,5 @@ function analyzeSett(src,sx,sy,sw,sh){
   let si=0;bands.forEach((b,i)=>{if(b.w>bands[si].w)si=i});const ord=bands.slice(si).concat(bands.slice(0,si));
   return {v:2,a:Math.round(th*180/Math.PI),bands:ord.map(b=>[labHex(b.lab),+b.w.toFixed(3)]),cross,cr:+Math.max(.3,Math.min(60,Math.min(W,H)/T)).toFixed(2)}}
 /* a sett from a whole canvas (its middle 90%): a close-up */
-function settFromCanvas(c,box){if(box){const b={x:box.x/1000*c.width,y:box.y/1000*c.height,w:box.w/1000*c.width,h:box.h/1000*c.height};return analyzeSett(c,b.x,b.y,b.w,b.h)}
-  return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9)}
+function settFromCanvas(c,box,opt){if(box){const b={x:box.x/1000*c.width,y:box.y/1000*c.height,w:box.w/1000*c.width,h:box.h/1000*c.height};return analyzeSett(c,b.x,b.y,b.w,b.h,opt)}
+  return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9,opt)}
