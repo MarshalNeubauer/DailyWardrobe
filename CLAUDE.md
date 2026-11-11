@@ -169,7 +169,25 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 ### `analysis.js`
 
-- "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker)
+- "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker): `runAnalysis(list, T, weeks, progress, onCat)` → `{v:2, base, cats:[{key, title, verdict, own, notes, recs}], top, occasions}`
+- `evalPlan(list,T,weeks)` plans the next `SHOP_WEEKS` (26) with the real `dayRecs` (history, occasions) and measures it: score, problem notes, jacket rest, colour/tie/look repeats, shoes worn two days running, first-choice shoe days, pieces never planned, points lost per check
+- pieces on the way count as owned (`shopList`), pieces out of rotation don't
+- suits, blazers, trousers, shirts and ties: candidates are every colour in `SHOP_COLS` × pattern class (`clothesCandidates`), ranked without simulating (`rankClothes`): fit = how many owned jackets/shirts/ties make an outfit within `QWIN` of that jacket's best (`compatBase`/`compat`), gap = a colour group (`shopGroup`) or pattern class (`shopClass`) not owned, staples first (`STAPLES`), a bonus for partners that are never planned; ranking by simulation alone is noise in a full wardrobe (the user's got "another brown suit" first)
+- the best of each category (one per colour group and class, two per colour) are then simulated for the facts (`simFacts`): days planned, the score of its outfits, two sample outfits, problem days and short-rest days fixed; an idea planned under twice or scoring 1.5 below the usual is dropped
+- solid and the fine weaves are one class for jackets (the planner treats them alike): a plain suit idea names the fine textures not owned yet (`shopDetail`)
+- shoes, belts, socks, tie clip, cufflinks and coats (`smallCandidates`) are each simulated and ranked by their direct effect; shoes whose owner's pair only lacks a belt get the belt as the idea; `shoeNotes` says what the plan leans on
+- tiers: `fix` (problem days or 2+ short-rest days gone), `better` (a check no longer marked down), `gap` (a staple), `variety`, `optional` (everything in a category that is full: 2+ pieces never planned, or each planned less than once in five weeks); category verdict needed / worth / covered
+- two fixes for the same days are not both top picks: the best is taken, the rest re-checked as if it were bought (same section: kept as alternatives with `dup`; coats, belts and cufflinks: dropped)
+- `occasionCheck` dresses one formal day, wedding, funeral and no-jacket day and lists what is missing
+- `settings.shopSkip` (keys `type|colour group|pattern class`, synced) are left out of every check
+
+### `shop.js`
+
+- the "What to buy" button on the Wardrobe tab (`shopButton`, `#shop-btn`) and its sheet (`#shop-sheet`/`#shop-backdrop`, `openShop`/`closeShop`/`renderShop`): slides up from the bottom over the whole page like the piece picker; Escape, the backdrop, × and changing tab close it
+- sections: top picks (`shopGo` opens the idea in its section), one per category with what is owned, a verdict and its ideas, occasions, hidden ideas
+- an idea is folded to its picture, name and first reason; open it shows every reason, sample outfits drawn with `figureSvg` from the owner's pieces, "Bought it" and "Not for me"
+- "Bought it" (`shopBought`) adds the piece as bought, on the way (`order`+`paused`, optional `arrives`) and checks again; "Not for me" (`shopHide`) adds its key to `settings.shopSkip` and hides it at once
+- the result is kept on the device (`meta` key `shop`: `{sig, at, res}`) and shown without checking again while the wardrobe is unchanged (`shopSig`) and it is under a week old; sections appear as the worker finishes them (`{cat}` messages)
 
 ### `app.js`
 
