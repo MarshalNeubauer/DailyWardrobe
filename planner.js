@@ -379,7 +379,7 @@ function frozenOutfit(rec,n,last){
 /* One simulation, resumable: planSim(start).upTo(day) plans every workday from start to that day and can be asked again
    for a later day, continuing where it stopped (the app keeps one for all the months it shows, so stepping to another
    month only plans the days that are new). The wardrobe, history and settings must not change in between: start a new one. */
-function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t&&inRotation(i)).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();
+function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t&&(!i.paused||arriveN(i)!=null)).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();
 const hasLinks=by('cufflinks').length>0;let prev=[];   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
 // jackets already fixed on the next workdays (worn, or picked by the user): the next one's colour group, and the ids of
 // those within the next 3 workdays, which are held back so a pinned jacket is not worn just before its day
@@ -398,11 +398,13 @@ const fixedAhead=d=>{const x=new Date(d),ids=[];let next=null,soft=null,w=0;for(
 const hist={},remember=o=>{if(!o.top)return;const h=hist[o.top.id]||(hist[o.top.id]=[]);h.unshift({tie:o.tie?o.tie.id:null,sc:o.shirt?shirtGroup(o.shirt):null});h.length=Math.min(h.length,2)};
 const sumUp=o=>({jg:o.top?jacketGroup(o.top):null,jc:o.top?planCol(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null,sl:shirtLook(o.shirt),tl:tieLook(o.tie)});
 const d=new Date(start);
+// the pool for one day: items in rotation that day (one on its way joins the day after it arrives)
+const arriving=items.some(i=>i.paused&&arriveN(i)!=null),byOn=n=>arriving?(t=>by(t).filter(i=>inRotation(i,n))):by;
 return {plan,upTo(end){
 for(;d<=end;d.setDate(d.getDate()+1)){const w=d.getDay();if(!isWorkday(d))continue;   // weekends, public holidays and days off
   const k=key(d),rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top){prev=[sumUp(plan[k]),prev[0]];remember(plan[k])}continue}   // (a day without a jacket leaves the jacket history alone)
-  const occ=occOf(rec),formal=occ==='formal',o=outfit(!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),by,last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top){prev=[sumUp(o),prev[0]];remember(o)}}
+  const occ=occOf(rec),formal=occ==='formal',o=outfit(!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top){prev=[sumUp(o),prev[0]];remember(o)}}
 return plan}}}
 /* every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
    share (the plan depends on what came before: rest and the previous workdays' jacket colours) */

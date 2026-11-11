@@ -383,3 +383,7 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .pausetag{display:table;margin:6px 0 0;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:color-mix(in srgb,var(--mut) 22%,transparent);color:var(--ink)}
 .rotbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .rotnote{margin:4px 0 0}
+/* Add card: bought, on the way (and an optional arrival date) */
+.ordrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 4px}.ordrow .rotbtn{margin:0}
+.ordate,.card .ordate{display:flex;align-items:center;justify-content:flex-start;gap:8px;margin:0}.ordate input{padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
+.ordhint{flex-basis:100%}

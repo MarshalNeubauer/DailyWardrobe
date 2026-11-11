@@ -38,6 +38,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `isWorkday(d)` = a weekday in `settings.workdays` that is not a day off (`offName(d)`: a public holiday in `settings.holidays` `{country, list:[{d,n}], skip}` that is not skipped, or one of the user's own `settings.daysOff` `[{d,n}]`; dates as `YYYY-MM-DD`, `isoKey`)
 - The planner skips days off like weekends
 - `inRotation(i)`: false for an item the user took out of rotation (`item.paused`, synced with the item); it stays in the wardrobe and in past outfits
+- bought, on the way: `item.order` with `item.paused`, optionally `item.arrives` (YYYY-MM-DD); `inRotation(i, n)` is true for day number `n` (`di`) after the arrival date (`arriveN`), so the plan includes it from then on
 
 ### `planner.js`
 
@@ -60,6 +61,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the simulation is resumable (`planSim(start).upTo(day)`; `buildPlan(y,m)` runs one from `planStart`)
 - a day with no jacket of its kind (a blazer day with no blazers) takes the other kind
 - the planner picks only items in rotation (`by()` in `planSim` filters `inRotation`; belt/coat notes in `rateOutfit` too); frozen past days look their pieces up in the full wardrobe (`frozenOutfit`), so a paused item stays in outfits already worn; the what-to-buy analysis runs the same planner
+- `planSim` keeps on-the-way items with a date in `by()` and gives `outfit()` a per-day pool (`byOn(n)`), so an item joins the plan the day after it arrives
 
 ### `tagging.js`
 
@@ -174,6 +176,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - occasions in Settings (`setOccasion`, `addFormalDay`, `renderFormalUI`; `hasOutfit(o)` is true for a no-jacket day too, whose photo key includes the trousers and whose request sends `nojacket`)
 - days off in Settings (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`)
 - out of rotation: the open Wardrobe item has "Take out of rotation" / "Put back in rotation" beside Close and Delete (`togglePause`); taking it out releases upcoming days it was pinned to (`force`), the picker and "Suggest another" leave it out (`slotPool`/`swapSlot`; correcting a past day still offers it), and its grid box is dimmed with an "Out of rotation" tag (`.gi.paused`, `.pausetag`)
+- bought, on the way: the Add card has "Bought, on the way" (`orderRow`/`setOrder`) with an optional Arrives date (`setArrives`); `save()` stores it paused; the grid tag reads "On the way · <date>", the open item can change the date (`setItemArrives`) or "It arrived: put in rotation"; `checkArrivals()` (start-up and `newDayCheck`) puts items back in rotation the day after their date, with a toast
 - weather:
   - 16-day forecast
   - beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in `localStorage.wx_norm`, so `dayClimate()` does not fall back to a temperate calendar
@@ -183,6 +186,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the stats page (Settings → Wardrobe stats, `openStats`/`renderStats`, shown as the `#stats` section by `show('stats')`): `buildStats()` counts what was really worn (`wornDays()`: day records from when the wardrobe existed, not days marked "Not worn") and what is planned for the next six months (`plannedDays()`)
 - never-worn pieces with a reason (`whyUnused`)
 - a paused item's reason is that it was taken out of rotation
+- an item on the way says so, with its arrival date if there is one
 - wear counts by type (folded sections build their rows when opened)
 - what costs points
 - colour balance
