@@ -187,6 +187,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - sections: top picks (`shopGo` opens the idea in its section), one per category with what is owned, a verdict and its ideas, occasions, hidden ideas
 - an idea is folded to its picture, name and first reason; open it shows every reason, sample outfits drawn with `figureSvg` from the owner's pieces, "Bought it" and "Not for me"
 - "Bought it" (`shopBought`) adds the piece as bought, on the way (`order`+`paused`, optional `arrives`) and checks again; "Not for me" (`shopHide`) adds its key to `settings.shopSkip` and hides it at once
+- swiping the sheet down closes it, like the item sheet: its header (`.shop-top-head`, with a grabber) is a handle at any time, its content only while scrolled to the top; the sheet follows the finger and the backdrop lightens, and it closes past a quarter of its height or on a flick, else springs back (the handler after `closeShop`; `tests/shopswipe.test.js`)
+- the sheet and its backdrop slide and fade away on closing (`visibility` switches off after the transition; not `.on` = no pointer events); the handler only sets an inline transform and lets the CSS transition finish from there
+- `renderShop` during a swipe (`shopDrag`) is put off until the finger lifts (`shopStale`): a redraw removes the element the touch started on and its moves stop coming
 - the result is kept on the device (`meta` key `shop`: `{sig, at, res}`) and shown without checking again while the wardrobe is unchanged (`shopSig`) and it is under a week old; sections appear as the worker finishes them (`{cat}` messages)
 
 ### `app.js`
