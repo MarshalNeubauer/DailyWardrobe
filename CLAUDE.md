@@ -395,6 +395,12 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
 - Deployed automatically by `.github/workflows/deploy-worker.yml` (Wrangler, config in `wrangler.toml`) when a merge to `main` changes it.
   - It creates the queue if missing, so the token needs Queues edit.
   - Needs the repo's `CLOUDFLARE_API_TOKEN` secret and `CLOUDFLARE_ACCOUNT_ID` / `WARDROBE_KV_ID` variables; until then the workflow skips and the user deploys by hand.
+  - its test step is `npm test`: on `main` that selects nothing when the merged branch was tested (the map carries the fingerprint of `main`'s files) and every test when it was not, so a normal deploy runs no test and needs no browser
+  - the step "Which tests will run" (`node tests/run.js --changed --list`) decides: Chromium is installed only when the answer is not one of `tests/impact.js`'s two "nothing runs" sentences (`tests/deploy.test.js` checks they still match)
+  - when a browser is needed, the system packages (`npx playwright install-deps chromium`, apt) get two minutes and may fail with a warning, and the browser download is tried three times; no step uses `--with-deps`
+  - why: on 2026-11-11 the runners could not resolve `archive.ubuntu.com` / `security.ubuntu.com` / `azure.archive.ubuntu.com` for hours, and runs 46–50 failed in `npx playwright install --with-deps chromium` (apt, nine font packages) although no test was going to run; the runner image was the same as in the last good run (`ubuntu-26.04` 20261101.186.1)
+  - not tried on a runner: the whole suite without those font packages (the image has Chromium's libraries; apt adds fonts only)
+  - is the current `worker.js` live: `DELETE /render?key=not-a-key` with the app's Origin answers 400 from a worker that has `delRender`, 405 from an older one (a key that fails `COMBO_RE` deletes nothing)
 
 **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js. On the next start the app clears swaps and vest choices on every day after today (`checkPlanRules()` / `replanFuture()` in app.js; formal days, today and past days stay), so the new rules apply to the whole future. Settings has "Re-plan upcoming days" for the same on demand.
 
