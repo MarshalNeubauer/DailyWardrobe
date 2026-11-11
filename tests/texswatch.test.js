@@ -38,7 +38,10 @@ module.exports=async({ok,chromium,url,settle})=>{
       return {row:!!row&&!row.querySelector('image')&&!!row.querySelector('pattern'),chip:!!chip&&!chip.querySelector('image'),size:row&&Math.round(row.getBoundingClientRect().width),
         elsewhere:/<image/.test(swatchSVG(s))}},it.id);
     ok(today.row&&today.chip&&today.elsewhere,'Today\'s pieces list and chips show the drawn swatch; elsewhere it is the close-up');
-    ok(today.size>=30,`Today's piece swatches are larger, so the pattern reads (${today.size}px)`);
+    ok(today.size===40,`Today's piece swatches are 40px, so the pattern reads (${today.size}px)`);
+    const rows=await p.evaluate(()=>{toggleList();const hs=()=>[...document.querySelectorAll('#today .list .ritem>.row')].map(r=>Math.round(r.getBoundingClientRect().height));
+      const big=hs(),st=document.createElement('style');st.textContent='#today .row .dot{width:30px!important;height:30px!important}';document.head.appendChild(st);const small=hs();st.remove();return {big,small}});
+    ok(rows.big.length>3&&rows.big.every((h,k)=>h===rows.small[k]),`the larger swatches leave every row the same height (${rows.big.join(',')} px, as with 30px squares)`);
     const legible=await p.evaluate(()=>{const w={id:'w',type:'suit',primaryColor:'khaki',pattern:'windowpane',sett:{v:2,a:0,bands:[['#b0a084',.95],['#9db3cf',.05]],cross:{d:90,bands:[[null,.95],['#9db3cf',.05]],r:1},cr:3.5,tr:9}};
       const tile=s=>+(s.match(/<pattern[^>]*width="([\d.]+)"/)||[])[1];
       const sh={id:'s',type:'shirt',primaryColor:'white',pattern:'woven',sett:{v:4,tex:{kind:'diamond',grid:['1001','0110','0110','1001'],aspect:1.4,lighter:true,contrast:'subtle',rel:.2},a:0,cr:24,tr:45}};
@@ -71,6 +74,9 @@ module.exports=async({ok,chromium,url,settle})=>{
       const q=queue[0];const c=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([c],'c.jpg',{type:'image/jpeg'}));
       const before=q.swatch;setq(0,'primaryColor','navy');return {changed:q.swatch!==before,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q))}});
     ok(card.changed&&card.same,'changing the colour on the Add card re-cuts the close-up swatch to match');
+    const clip=await p.evaluate(()=>{const lab=()=>[...document.querySelectorAll('#today .list .row .mut')].map(m=>m.textContent);const o=planFor()[key(sel)];const none=!o.clip&&!lab().includes('Tie clip');
+      items.push({id:'clip1',type:'tieclip',primaryColor:'silver',metal:'silver',pattern:'solid'});items.find(i=>i.type==='suit').vest='no';cache={};renderToday();const o2=planFor()[key(sel)];return {none,has:!!o2.clip&&lab().includes('Tie clip')}});
+    ok(clip.none&&clip.has,'a day without a tie clip (a vest day) has no Tie clip row; with one, the row is there');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
   }finally{await browser.close()}
