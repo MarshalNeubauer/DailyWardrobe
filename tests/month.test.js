@@ -41,9 +41,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(m.todayCell==='9'&&m.worn===6&&m.planned===16,`today is outlined, earlier workdays read as worn (${m.worn}), later ones planned (${m.planned})`);
     ok(m.sun===3&&m.thu===4,'suit days show jacket, shirt and tie; blazer days add the trousers');
     ok(/Monday, November 9: /.test(m.label)&&/Worn.*Today.*Planned.*Rest/.test(m.legend),`labelled days and a legend (${m.label})`);
-    await p.click('#mbox .mbtns button[aria-label="Next month"]');
-    ok(await p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent==='December 2026'&&key(sel)==='2026-11-9'&&!!planFor()['2026-11-9']),'next month inside the panel, without changing the shown day');
-    await p.click('#mbox .mbtns button[aria-label="Previous month"]');
+    // no arrows: a drag inside the box (a mouse here; touch in tests/monthswipe.test.js) changes the month
+    const drag=async(dx)=>{const b=await p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}});
+      await p.mouse.move(b.x,b.y);await p.mouse.down();for(let k=1;k<=6;k++)await p.mouse.move(b.x+dx*k/6,b.y+2);await p.mouse.up();await settle(p,500)};
+    ok(await p.evaluate(()=>!document.querySelector('#mbox .mbtns')),'the month has no arrow buttons');
+    await drag(-160);
+    ok(await p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent==='December 2026'&&key(sel)==='2026-11-9'&&!!planFor()['2026-11-9']),'dragging left shows the next month inside the panel, without changing the shown day');
+    await drag(160);
+    ok(await p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent==='November 2026'&&key(sel)==='2026-11-9'),'dragging right goes back, and the drag didn\'t open a day');
     await p.click('#mbox .month-link');await settle(p,600);
     ok(await p.evaluate(()=>!$('#mbox').classList.contains('open')&&document.querySelector('#mbox').getBoundingClientRect().height<120),'tapping the box again folds it away');
     await p.click('#mbox .month-link');await settle(p,500);

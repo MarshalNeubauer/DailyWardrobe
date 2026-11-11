@@ -32,18 +32,18 @@ module.exports=async({ok,chromium,url,settle})=>{
     await setup();await into('#sbox');await p.tap('#sbox .month-link');await settle(p,900);const s1=await open('#sbox');
     await p.tap('#sbox li >> nth=1');await settle(p,700);
     ok(s1&&!(await open('#sbox'))&&await p.evaluate(()=>!scoreOpen&&document.querySelector('#sbox .month-link').getAttribute('aria-expanded')==='false'),'tapping the open score breakdown folds it');
-    // month: a fold button at the bottom right
+    // month: a full-width fold bar along its bottom
     await setup({month:true});await into('#mbox');
-    const fb=await p.evaluate(()=>{const b=document.querySelector('#mbox .foldbtn'),r=b.getBoundingClientRect(),box=document.querySelector('#mbox').getBoundingClientRect(),cells=[...document.querySelectorAll('#mbox .mc')].map(c=>c.getBoundingClientRect().bottom);
-      return {label:b.getAttribute('aria-label'),right:box.right-r.right<=24,bottom:box.bottom-r.bottom<=24,below:r.top>=Math.max(...cells)-1,size:Math.round(r.width)}});
-    ok(fb.label==='Fold away the month'&&fb.right&&fb.bottom&&fb.below&&fb.size>=32,`the open month has a fold button at its bottom right (${JSON.stringify(fb)})`);
+    const fb=await p.evaluate(()=>{const b=document.querySelector('#mbox .foldbar'),r=b.getBoundingClientRect(),box=document.querySelector('#mbox').getBoundingClientRect(),cells=[...document.querySelectorAll('#mbox .mc')].map(c=>c.getBoundingClientRect().bottom);
+      return {label:b.getAttribute('aria-label'),text:b.textContent,wide:r.width>=box.width-48,bottom:box.bottom-r.bottom<=24,below:r.top>=Math.max(...cells)-1,h:Math.round(r.height)}});
+    ok(fb.label==='Fold away the month'&&/Fold away/.test(fb.text)&&fb.wide&&fb.bottom&&fb.below&&fb.h>=44,`the open month has a full-width "Fold away" bar along its bottom (${JSON.stringify(fb)})`);
     // folding from the bottom of a long box brings the card back into view
     await p.setViewportSize({width:390,height:480});   // shorter than the open month, so its top is off screen at its bottom
-    await setup({month:true,list:true,score:true});await p.evaluate(()=>{const b=document.querySelector('#mbox .foldbtn');scrollBy(0,b.getBoundingClientRect().bottom-380)});
+    await setup({month:true,list:true,score:true});await p.evaluate(()=>{const b=document.querySelector('#mbox .foldbar');scrollBy(0,b.getBoundingClientRect().bottom-380)});
     const topBefore=await p.evaluate(()=>Math.round(document.querySelector('#mbox').getBoundingClientRect().top));
-    await p.tap('#mbox .foldbtn');await settle(p,900);
+    await p.tap('#mbox .foldbar');await settle(p,900);
     const after=await p.evaluate(()=>({open:monthOpen,cls:document.querySelector('#mbox').classList.contains('open'),top:Math.round(document.querySelector('#mbox').getBoundingClientRect().top)}));
-    ok(!after.open&&!after.cls&&topBefore<0&&after.top>=0&&after.top<=480-78-60,`the fold button folds the month, and the card comes back into view (top ${topBefore} → ${after.top}px)`);
+    ok(!after.open&&!after.cls&&topBefore<0&&after.top>=0&&after.top<=480-78-60,`the fold bar folds the month, and the card comes back into view (top ${topBefore} → ${after.top}px)`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
   }finally{await browser.close()}
