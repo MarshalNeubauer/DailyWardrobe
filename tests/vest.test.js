@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url})=>{
   await p.click('.vest-row .swap');await p.waitForFunction(()=>planFor()[key(sel)].vest===true,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>planFor()[key(sel)].vest),'and it can be put back on');
   // suits: vest option in the editor; new suits default to having one
-  ok(await p.evaluate(()=>{editing='suit0';show('wardrobe');const sel=[...document.querySelectorAll('#wardrobe select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));editing=null;return !!sel&&sel.value==='yes'}),'a suit\'s editor has a Vest option (Matching vest / No vest)');
+  ok(await p.evaluate(()=>{editing='suit0';show('wardrobe');const sel=[...document.querySelectorAll('#item-view select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));closeItem();return !!sel&&sel.value==='yes'}),'a suit\'s editor has a Vest option (Matching vest / No vest)');
   // past days keep what was worn
   const fz=await p.evaluate(()=>{const o=frozenOutfit({date:'2026-11-10',ids:{top:'suit0',shirt:'shirt5',tie:'tie7'},suitDay:true,vestOn:true},0,{});return o.vest});
   ok(fz,'a past day remembers that the vest was worn');

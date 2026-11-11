@@ -29,6 +29,12 @@
 
 <div id="pick-backdrop" onclick="closePicker()"></div>
 <div id="pick-sheet" role="dialog" aria-modal="true" aria-labelledby="pick-title"></div>
+<div id="item-backdrop" onclick="closeItem()"></div>
+<div id="item-view" role="dialog" aria-modal="true" aria-labelledby="iv-title">
+<div class="ivhead" id="ivhead"></div>
+<div class="ivbody" id="ivbody"></div>
+<div class="ivbar"><button type="button" class="ivnav" id="iv-prev" onclick="stepItem(-1)" aria-label="Previous item"><svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="pri ivdone" onclick="closeItem()">Done</button><button type="button" class="ivnav" id="iv-next" onclick="stepItem(1)" aria-label="Next item"><svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
+</div>
 <div id="modal-backdrop" onclick="closeSettings()"></div>
 <div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="set-title">
 <div class="shead"><h2 id="set-title">Settings</h2><button type="button" class="pri sdone" onclick="saveSettings()">Done</button></div>
