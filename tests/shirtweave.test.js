@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const IMG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
   // a diamond lattice 8 cells wide and 12 tall: two diagonal lines that meet the next repeat's
   const grid=[...Array(12)].map((_,y)=>{const a=Math.round(y*8/12)%8,b=(8-Math.round(y*8/12))%8;return [...Array(8)].map((_,x)=>x===a||x===b?'1':'0').join('')});
-  const TEX={layout:'texture',across:null,along:null,motif:null,texture:{kind:'diamond',grid,ground:{name:'white',hex:'#f4f4f2'},raised:{name:'bright white',hex:'#fbfbfa'},contrast:'subtle'},
+  const TEX={layout:'texture',across:null,along:null,motif:null,texture:{kind:'diamond',grid,ground:{name:'white',hex:'#f4f4f2'},raised:{name:'bright white',hex:'#fbfbfa'},contrast:'subtle',aspect:1.5},
     stripeDirection:'vertical',repeatsInCloseup:12,repeatsAcrossItem:150,paneAspect:1,ignored:'light falloff',description:'A white dress shirt in a small diamond dobby weave.'};
   const env={APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'},call=b=>worker.fetch(new Request('https://w.test/pattern',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify(b)}),env);
   const browser=await chromium.launch();
@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     let r=await call({image:IMG,closeup:IMG,type:'shirt'}),j=await r.json();
     const t=sent.messages[0].content.find(c=>c.type==='text').text,sch=sent.output_config.format.schema;
     ok(r.status===200&&sch.required.includes('texture')&&sch.properties.layout.enum.includes('texture')&&/ONE repeat of the texture as a small bitmap/.test(t)&&/dobby diamonds/.test(t),'POST /pattern asks Claude for a weave texture as a one-repeat bitmap');
-    ok(j.layout==='texture'&&j.across===null&&j.texture&&j.texture.kind==='diamond'&&j.texture.grid.join(',')==='1001,0110,1001,1'+'000'&&j.texture.ground.hex==='#f4f4f2',`the bitmap is tidied: #/. and x/- become 1/0, rows padded to one length, no stray bands (${j.texture&&j.texture.grid.join(',')})`);
+    ok(j.layout==='texture'&&j.across===null&&j.texture&&j.texture.kind==='diamond'&&j.texture.grid.join(',')==='1001,0110,1001,1'+'000'&&j.texture.ground.hex==='#f4f4f2'&&j.texture.aspect===1.5,`the bitmap is tidied: #/. and x/- become 1/0, rows padded to one length, no stray bands (${j.texture&&j.texture.grid.join(',')})`);
     reply=()=>({...TEX,texture:{...TEX.texture,grid:['1111','1111']}});
     ok((await call({image:IMG,type:'shirt'})).status===422,'a bitmap with only one tone is no texture');
 
@@ -47,7 +47,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/<pattern id="sw"/.test(sp.def)&&/<image href="data:image\/png;base64,/.test(sp.def),'the swatch draws the bitmap as a soft tile (threads, not a staircase of squares)');
     ok(sp.tones[0]>90&&sp.tones[1]>sp.tones[0]&&sp.tones[1]-sp.tones[0]<8&&Math.abs(sp.mean-sp.whiteL)<3,`a white shirt stays white: ground L* ${sp.tones[0].toFixed(1)}, raised ${sp.tones[1].toFixed(1)}, averaging ${sp.mean.toFixed(1)} against the tagged white's ${sp.whiteL.toFixed(1)} (no room above white, so the ground darkens slightly; the close-up's grey is not the colour)`);
     ok(sp.navy[1]<sp.navy[0]&&sp.navy[0]-sp.navy[1]>=2.5,'raised threads that read darker draw darker');
-    const T=+sp.fig.match(/width="([\d.]+)"/)[1];
+    const T=+sp.fig.match(/width="([\d.]+)"/)[1],Tv=+sp.fig.match(/height="([\d.]+)"/)[1];
+    ok(Math.abs(Tv/T-1.5)<.01&&sp.s.tex.aspect===1.5,`the tile is stretched to the repeat's measured shape (1.5 times as tall as wide: ${(Tv/T).toFixed(2)})`);
     ok(T>=6&&T<=8,`on the figure a repeat is no finer than 6 units (it would only shimmer): ${T}`);
     ok(sp.usable&&!sp.stripeUsable&&sp.spec2===null,'the texture is drawn only while the shirt is a weave pattern, and only for shirts');
     ok(/diamond dobby/.test(sp.summary)&&/^t/.test(sp.sig)&&/tone-on-tone small diamond dobby weave/.test(sp.text),'it is summarised, has its own signature and is described');

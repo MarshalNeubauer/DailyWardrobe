@@ -429,7 +429,7 @@ function texContrast(c,cells){const W=Math.min(320,c.width),H=Math.max(8,Math.ro
 function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.grid.length<2)return null;
   let rel=null;if(tex)try{rel=texContrast(settCanvas(tex,null),+spec.repeatsInCloseup||8)}catch{}
   const L=h=>rgbLab(...hexRgb(h))[0];
-  return {v:4,tex:{kind:t.kind,grid:t.grid,lighter:L(t.raised.hex)>=L(t.ground.hex),contrast:t.contrast,rel:+(rel??TEX_REL[t.contrast]??.08).toFixed(3),measured:rel!=null},
+  return {v:4,tex:{kind:t.kind,grid:t.grid,aspect:+(+t.aspect||t.grid.length/t.grid[0].length).toFixed(2),lighter:L(t.raised.hex)>=L(t.ground.hex),contrast:t.contrast,rel:+(rel??TEX_REL[t.contrast]??.08).toFixed(3),measured:rel!=null},
     a:0,cr:+(+spec.repeatsInCloseup||8).toFixed(2),tr:+(+spec.repeatsAcrossItem||100).toFixed(2),src:'claude+pixels'}}
 /* the motif in words for the photo generator */
 const SHAPE_WORDS={square:'small squares','square-with-dot':'tiny squares with a dot in the middle',diamond:'small diamonds',dot:'dots',ring:'small rings',cross:'small crosses',flower:'small flowers',other:'small figures'};

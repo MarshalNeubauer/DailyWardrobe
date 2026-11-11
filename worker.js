@@ -364,8 +364,8 @@ const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid',
 /* a weave texture (a dress shirt's dobby diamonds, herringbone, oxford): the cloth is one colour and the pattern is in how the
    threads float, so it is read as a small bitmap of one repeat (1 = reads raised / catches the light) */
 const TEXTURE_KINDS = ['diamond', 'herringbone', 'twill', 'oxford', 'royal-oxford', 'pinpoint', 'end-on-end', 'birdseye', 'honeycomb', 'dobby-dot', 'basket', 'other'];
-const PTEX = { type: 'object', additionalProperties: false, required: ['kind', 'grid', 'ground', 'raised', 'contrast'],
-  properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, ground: PCOL, raised: PCOL,
+const PTEX = { type: 'object', additionalProperties: false, required: ['kind', 'grid', 'aspect', 'ground', 'raised', 'contrast'],
+  properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, aspect: { type: 'number' }, ground: PCOL, raised: PCOL,
     contrast: { type: 'string', enum: ['faint', 'subtle', 'clear'] } } };
 const PATTERN_SCHEMA = { type: 'object', additionalProperties: false,
   required: ['layout', 'across', 'along', 'motif', 'texture', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
@@ -408,11 +408,13 @@ texture — for a texture only (null otherwise), what the weave looks like up cl
   kind: diamond (a lattice of small diamonds), herringbone, twill (fine diagonal ribs), oxford, royal-oxford, pinpoint,
     end-on-end, birdseye, honeycomb, dobby-dot (small woven dots), basket, or other;
   grid: ONE repeat of the texture as a small bitmap, top row first: each row a string of 1 and 0 of the same length, 1 where the
-    cloth reads raised or catches the light, 0 where it reads as the ground. Each cell is square (a repeat twice as tall as it
-    is wide has twice as many rows as columns), 4 to 24 cells each way, and the bitmap must tile seamlessly when repeated in
+    cloth reads raised or catches the light, 0 where it reads as the ground, 4 to 24 cells each way (the app stretches it to
+    "aspect", so the cells need not be square), and the bitmap must tile seamlessly when repeated in
     both directions, its outlines continuing across the edges (a diamond lattice's lines meet the next repeat's). Draw the
     texture as it looks, at about the scale of the thread floats you see, not a weaving draft of every thread.
     A fine twill is e.g. ["1000","0100","0010","0001"];
+  aspect: one repeat's height divided by its width as the cloth hangs, measured in the close-up (diamonds half again as tall
+    as they are wide: 1.5; a square repeat: 1);
   ground and raised: the two tones (a plain colour name and an sRGB hex as in "across"; for a white shirt both are whites);
   contrast: faint (only seen up close), subtle, or clear.
   repeatsInCloseup and repeatsAcrossItem then count repeats of the grid, measured along a row.
@@ -439,7 +441,7 @@ function cleanPattern(p) {
     const rows = t.grid.slice(0, 24).map(r => String(r).replace(/[^01#.xX-]/g, '').replace(/[#xX]/g, '1').replace(/[.-]/g, '0').slice(0, 24)).filter(Boolean);
     const w = Math.max(0, ...rows.map(r => r.length)), g = rows.map(r => r.padEnd(w, '0')), all = g.join('');
     if (g.length < 2 || w < 2 || !all.includes('1') || !all.includes('0')) return null;
-    return { kind: TEXTURE_KINDS.includes(t.kind) ? t.kind : 'other', grid: g, ground: col(t.ground), raised: col(t.raised) || col(t.ground), contrast: ['faint', 'subtle', 'clear'].includes(t.contrast) ? t.contrast : 'subtle' }; };
+    return { kind: TEXTURE_KINDS.includes(t.kind) ? t.kind : 'other', grid: g, aspect: num(t.aspect, .25, 4, g.length / w), ground: col(t.ground), raised: col(t.raised) || col(t.ground), contrast: ['faint', 'subtle', 'clear'].includes(t.contrast) ? t.contrast : 'subtle' }; };
   const flat = p.layout === 'motif' || p.layout === 'texture';
   return { layout: p.layout, across: flat ? null : dir(p.across), along: flat ? null : dir(p.along), motif: p.layout === 'motif' ? motif(p.motif) : null, texture: p.layout === 'texture' ? texture(p.texture) : null, stripeDirection: p.stripeDirection,
     repeatsInCloseup: num(p.repeatsInCloseup, .2, 60, 1), repeatsAcrossItem: num(p.repeatsAcrossItem, .2, 80, 1), paneAspect: num(p.paneAspect, .3, 3, 1),
