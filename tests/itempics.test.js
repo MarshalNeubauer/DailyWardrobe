@@ -47,7 +47,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
       for(const x of Object.keys(renders))delete renders[x];for(const x of [...renderTried])renderTried.delete(x);
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today');
-      await new Promise(r=>setTimeout(r,800));return document.querySelectorAll('.below .tile img.item-pic').length});
+      const n=()=>document.querySelectorAll('.below .tile img.item-pic').length;await new Promise(r=>setTimeout(r,800));
+      for(let k=0;k<80&&n()<3;k++)await new Promise(r=>setTimeout(r,50));return n()});   // (longer on a busy machine, where the three downloads can take more than 0.8 s)
     ok(fetched===3&&gens.length===6,'another device shows the pictures from the worker without generating again');
     // day actions: one row (set the first page up again: a second page in the same context can make it reload via the service worker)
     await p.waitForFunction(()=>window.appReady);

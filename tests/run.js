@@ -3,9 +3,11 @@
 //   node tests/run.js --changed   only the checks the change since origin/main can affect (`npm test`; see tests/impact.js)
 //   node tests/run.js --changed --list   say which those are, and run nothing
 //   node tests/run.js <name>      the tests/*.test.js files whose name contains <name> (or TEST_ONLY=<name>)
+//   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 8); TEST_JOBS=1 runs
+//                                 them one after another in this process, printing as it goes
 // Serves the repo over HTTP, drives the app in headless Chromium and checks rendering, gestures, layout,
 // the outfit rules (with an independent checklist), pattern detection and the Cloudflare worker.
-const http=require('http'),fs=require('fs'),path=require('path'),{chromium,devices}=require('playwright'),impact=require('./impact');
+const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),{fork}=require('child_process'),{chromium,devices}=require('playwright'),impact=require('./impact');
 const ROOT=path.resolve(__dirname,'..'),readFile=fs.readFile;
 let rec=null;   // records what each test uses (tests/impact.js); NO_IMPACT=1 turns it off
 const TYPES={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml'};
@@ -192,7 +194,6 @@ suite('pattern detection on synthetic fabric photos',async({page})=>{
 /* worker.js in Node with a mocked Workers AI binding */
 const WORKER='Cloudflare worker (mocked bindings)';
 async function workerTests(){
-  console.log('\n• '+WORKER);
   const mod=await import(require('url').pathToFileURL(path.join(ROOT,'worker.js')).href);const w=mod.default;
   let agreed=false;const AI={run:async(m,inp)=>{if(inp.prompt==='agree'){agreed=true;return{response:'ok'}}if(!agreed)throw new Error('5016: agree first');return{response:'{"type":"tie","primaryColor":"navy","pattern":"stripe"}'}}};
   const env={AI,APP_TOKEN:'t',ALLOWED_ORIGIN:'https://x.github.io'};
@@ -203,58 +204,96 @@ async function workerTests(){
   return w;
 }
 
-(async()=>{
-  await new Promise(r=>server.listen(0,r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
-  const args=process.argv.slice(2),flag=f=>args.includes(f),ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
-  const files=fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')).sort();
-  // every test has a name: a built-in suite is 'run.js: <its title>', a file its file name
-  const all=[...suites.map(([n])=>'run.js: '+n),'run.js: '+WORKER,...files];
-  let want=null;   // null: everything
-  if(ONLY)want=new Set(files.filter(f=>f.includes(ONLY)));
-  else if(flag('--changed')){const s=await impact.select(ROOT,all);console.log(s.report);if(!s.all)want=new Set(s.tests)}
-  if(flag('--list')){server.close();return}
-  impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
-  const run=k=>!want||want.has(k),results=new Map();
+/* ---------- running ---------- */
+// every test has a name: a built-in suite is 'run.js: <its title>', a file its file name
+const FILES=fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')).sort();
+const ALL=[...suites.map(([n])=>'run.js: '+n),'run.js: '+WORKER,...FILES];
+const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
+
+/* What one process needs to run tests one after another: the local server, one Chromium for every test (a file's
+   chromium.launch() gets a view of it whose close() closes only the contexts that file opened: launching a browser per file
+   cost about half a second each) and the recorder of what each test uses. With several tests at once, each worker process
+   (below) has its own set of these, so no two tests ever share a server, a browser, a recorder or Node's coverage. */
+const bench=async()=>{
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
   if(!process.env.NO_IMPACT){rec=impact.recorder(ROOT);await rec.prepare()}
-  // around each test: note what it uses
-  const around=async(key,self,fn)=>{if(rec)await rec.begin(key,self);try{await fn()}finally{if(rec)results.set(key,await rec.end().catch(()=>({m:new Map(),bad:true})))}};
-  const times=[],T0=Date.now();
-  if(suites.some(([n])=>run('run.js: '+n))){const browser=await chromium.launch();
-    for(const [name,fn] of suites){if(!run('run.js: '+name))continue;
-      console.log('\n• '+name);
-      await around('run.js: '+name,null,async()=>{
-        const ctx=await browser.newContext({...devices['iPhone 13']});if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
-        page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-        await page.goto(url);await page.waitForFunction(()=>window.appReady);
-        // a suite's own contexts are recorded too
-        const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext(o);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
-        try{await fn({page,ctx,browser:b,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
-        if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
-        await ctx.close()});
-    }
-    await browser.close();times.push(['run.js built-in suites',Date.now()-T0])}
-  if(run('run.js: '+WORKER))await around('run.js: '+WORKER,null,async()=>{try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}});
-  // extra suites contributed by other files (tests/*.test.js)
-  // one Chromium for every file: a file's chromium.launch() gets a view of it whose close() closes only the contexts that
-  // file opened (launching a browser per file cost about half a second each)
-  const mine=files.filter(run);
-  const shared=mine.length?await chromium.launch():null;
-  const sharedChromium=()=>{const mine=new Set(),track=async c=>{c=await c;if(rec)rec.context(c);mine.add(c);return c};
-    const b=new Proxy(shared,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
+  let shared=null;const browserOf=async()=>shared||(shared=await chromium.launch());
+  const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1];
+    const ctx=await browser.newContext({...devices['iPhone 13']});if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
+    page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+    await page.goto(url);await page.waitForFunction(()=>window.appReady);
+    // a suite's own contexts are recorded too
+    const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext(o);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
+    try{await fn({page,ctx,browser:b,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+    if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
+    await ctx.close()};
+  const file=async f=>{const browser=await browserOf(),mine=new Set(),track=async c=>{c=await c;if(rec)rec.context(c);mine.add(c);return c};
+    const b=new Proxy(browser,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
       :k==='newContext'?o=>track(t.newContext(o)):k==='newPage'?async o=>{const c=await track(t.newContext(o));return c.newPage()}
       :typeof t[k]==='function'?t[k].bind(t):t[k]});
-    return new Proxy(chromium,{get:(t,k)=>k==='launch'?async()=>b:t[k]})};
-  for(const f of mine){
-    console.log('\n• '+f);const t0=Date.now(),chr=sharedChromium();
-    await around(f,'tests/'+f,async()=>{try{await require(path.join(__dirname,f))({ok,url,chromium:chr,devices,WARDROBES,ROOT,settle,impactRec:rec})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
-      finally{const b=await chr.launch();await b.close()}});
-    times.push([f,Date.now()-t0]);
-  }
-  if(shared)await shared.close();server.close();
+    const chr=new Proxy(chromium,{get:(t,k)=>k==='launch'?async()=>b:t[k]});
+    try{await require(path.join(__dirname,f))({ok,url,chromium:chr,devices,WARDROBES,ROOT,settle,impactRec:rec})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+    finally{await b.close()}};
+  return {
+    /* one test, noting what it uses → {ms, res: {m, bad} or null} */
+    async run(key){const t0=Date.now();let res=null;
+      if(rec)await rec.begin(key,key.startsWith('run.js: ')?null:'tests/'+key);
+      try{if(key==='run.js: '+WORKER){try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}}
+        else if(key.startsWith('run.js: '))await builtin(key.slice(8));else await file(key)}
+      finally{if(rec)res=await rec.end().catch(()=>({m:new Map(),bad:true}))}
+      return {ms:Date.now()-t0,res}},
+    async close(){if(shared)await shared.close().catch(()=>{});server.close()}}};
+
+/* how long each test took last time (kept beside node_modules, never committed): the slow ones start first */
+const TIMES=path.join(ROOT,'node_modules','.cache','dw-test-times.json');
+const lastTimes=()=>{try{return JSON.parse(fs.readFileSync(TIMES,'utf8'))}catch(e){return {}}};
+const keepTimes=times=>{try{fs.mkdirSync(path.dirname(TIMES),{recursive:true});fs.writeFileSync(TIMES,JSON.stringify({...lastTimes(),...Object.fromEntries(times)}))}catch(e){}};
+/* how many at once: one fewer than the processor cores (each test is a Node process and a Chromium with its own helpers).
+   With one per core, on 4 cores, a check that waits a fixed time failed in each of three runs; with one fewer, none did */
+const jobsWanted=()=>{const n=parseInt(process.env.TEST_JOBS,10);return n>=1?n:Math.max(1,Math.min(8,(os.availableParallelism?os.availableParallelism():os.cpus().length)-1))};
+
+/* a worker process (`node tests/run.js --worker`, started by the parent below): it runs the tests it is handed, one at a
+   time, keeps what each prints and sends it back whole with the counts and what the test used */
+const worker=async()=>{const B=await bench();let out=null;   // null between tests: anything printed then goes straight out
+  for(const k of ['stdout','stderr']){const w=process[k].write.bind(process[k]);process[k].write=(d,...a)=>{if(out==null)return w(d,...a);out+=typeof d==='string'?d:Buffer.from(d).toString();const cb=a[a.length-1];if(typeof cb==='function')cb();return true}}
+  let chain=Promise.resolve();
+  process.on('message',m=>{chain=chain.then(async()=>{
+    if(m.exit){out=null;await B.close();process.exit(0)}
+    out='';passes=0;failures=0;const r=await B.run(m.run);
+    const text=out;out=null;process.send({key:m.run,out:text,passes,failures,ms:r.ms,res:r.res&&{bad:r.res.bad,m:[...r.res.m].map(([f,S])=>[f,[...S]])}})})});
+  process.send({ready:true})};
+
+/* several tests at once: `n` worker processes take the tests from one queue, slowest first. Each test's lines are printed
+   together when it finishes */
+const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
+  const spawn=()=>{const c=fork(__filename,['--worker'],{env:process.env});let job=null;live.add(c);
+    const next=()=>{job=queue.shift();if(job)c.send({run:job});else{c.send({exit:true})}};
+    c.on('message',m=>{if(m.ready){next();return}
+      job=null;done(m.key,m.out,m.passes,m.failures,m.ms,m.res&&{bad:m.res.bad,m:new Map(m.res.m.map(([f,L])=>[f,new Set(L)]))});next()});
+    // a worker that dies takes its test with it: that test has failed, and another worker takes its place
+    c.on('exit',code=>{live.delete(c);if(job){done(job,'  ✗ the test process stopped (exit code '+code+')\n',0,1,0,{m:new Map(),bad:true});if(queue.length)spawn()}
+      if(!live.size)resolve()})};
+  for(let i=0;i<Math.min(n,queue.length);i++)spawn()});
+
+(async()=>{
+  if(process.argv.includes('--worker')){await worker();return}
+  const args=process.argv.slice(2),flag=f=>args.includes(f),ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
+  let want=null;   // null: everything
+  if(ONLY)want=new Set(FILES.filter(f=>f.includes(ONLY)));
+  else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);if(!s.all)want=new Set(s.tests)}
+  if(flag('--list'))return;
+  impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
+  const keys=ALL.filter(k=>!want||want.has(k)),results=new Map(),times=[],T0=Date.now(),jobs=Math.min(jobsWanted(),keys.length);
+  if(jobs>1){
+    await together(keys,jobs,(key,out,p,f,ms,res)=>{console.log('\n• '+label(key));process.stdout.write(out);passes+=p;failures+=f;times.push([key,ms]);if(res)results.set(key,res)});
+  }else if(keys.length){const B=await bench();
+    for(const key of keys){console.log('\n• '+label(key));const r=await B.run(key);times.push([key,r.ms]);if(r.res)results.set(key,r.res)}
+    await B.close()}
+  keepTimes(times);
   // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on
   const passed=!failures&&!ONLY;
-  if(rec&&(results.size||passed))try{await impact.save(ROOT,results,all,passed)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
+  if(!process.env.NO_IMPACT&&(results.size||passed))try{await impact.save(ROOT,results,ALL,passed)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
   // the slowest files, so the suite can be kept quick
-  if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${f} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`);
-  console.log(`\n${passes} passed, ${failures} failed`+(want?` (${results.size||mine.length} of ${all.length} test files and built-in suites)`:''));process.exit(failures?1:0);
+  if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${label(f)} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`+(jobs>1?` (${jobs} at a time; one after another ${(times.reduce((a,t)=>a+t[1],0)/1000).toFixed(0)}s)`:''));
+  console.log(`\n${passes} passed, ${failures} failed`+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:''));process.exit(failures?1:0);
 })();

@@ -12,13 +12,14 @@ module.exports=async({ok,chromium,url,settle})=>{
       shop={sig:shopSig(),at:Date.now(),res:{v:2,base:null,cats:[...Array(8)].map((_,n)=>cat(n)),top:[],occasions:[],checked:0,sims:1,months:6}}});
     const view=()=>p.evaluate(()=>{const v=document.querySelector('#shop-sheet'),r=v.getBoundingClientRect(),bd=getComputedStyle(document.querySelector('#shop-backdrop'));
       return {open:shopOpen,on:v.classList.contains('on'),vis:getComputedStyle(v).visibility,top:Math.round(r.top),scroll:Math.round(v.scrollTop),tall:v.scrollHeight-v.clientHeight,bd:bd.visibility,dim:+bd.opacity,busy:!!shopBusy,
-        inline:v.style.transform+v.style.transition,grab:getComputedStyle(v.querySelector('.shop-top-head'),'::before').width}});
+        inline:v.style.transform+v.style.transition,grab:(g=>g?Math.round(g.getBoundingClientRect().width)+'px':'')(v.querySelector('.shop-top-head .shop-grab'))}});
     const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
     const drag=async(x,y0,y1,n=8,probe)=>{let mid=null;await T('touchStart',x,y0);for(let k=1;k<=n;k++){await T('touchMove',x,y0+(y1-y0)*k/n);await p.waitForTimeout(16);if(probe&&k===n)mid=await probe()}await T('touchEnd');await settle(p,500);return mid};
     const open=async()=>{await p.evaluate(()=>openShop());await settle(p,500)};
+    ok(await p.evaluate(()=>!shopSwipeOn),'the swipe is not installed before the sheet is first opened');
     await open();let v=await view();const top0=v.top;
     ok(v.open&&v.on&&!v.busy&&v.tall>300&&v.bd==='visible'&&v.dim===1,`the sheet is open on the kept result and scrolls (${v.tall}px)`);
-    ok(v.grab==='38px','its header has a grabber');
+    ok(v.grab==='38px'&&await p.evaluate(()=>shopSwipeOn),'its header has a grabber, and opening the sheet installed the swipe');
     // from the content while it is scrolled to the top
     let mid=await drag(200,400,640,8,view);v=await view();
     ok(mid.top>top0+200&&mid.dim<1&&mid.open,`swiping down on the content drags the sheet with the finger and the backdrop lightens (top ${mid.top}px, backdrop ${mid.dim.toFixed(2)})`);

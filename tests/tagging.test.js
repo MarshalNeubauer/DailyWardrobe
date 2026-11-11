@@ -80,7 +80,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/already a colour/.test(dup),'a second colour with the same name is refused');
     // save: the measurement, the correction and the sharp copy are kept
     await p.evaluate(()=>save(0));await p.waitForFunction(()=>settings.tagStats&&settings.tagStats.n===1);
-    const sv=await p.evaluate(async()=>{const it=items[0];return {meas:it.meas,fixes:settings.tagFixes,st:settings.tagStats,copy:!!(await tagImgOf(it.id)),desc:desc(it)}});
+    const sv=await p.evaluate(async()=>{const it=items[0];return {meas:it.meas,fixes:settings.tagFixes,st:settings.tagStats,copy:await (async()=>{for(let k=0;k<100;k++){if(await tagImgOf(it.id))return true;await new Promise(r=>setTimeout(r,50))}return false})(),desc:desc(it)}});   // (the copy is written after the save returns)
     ok(sv.meas&&sv.meas.ref&&sv.meas.src==='closeup','the item keeps its measured colour (it calibrates later measurements)');
     ok(sv.fixes.some(f=>f.field==='primaryColor'&&f.from==='taupe'&&f.to==='ownmushroom')&&sv.fixes.some(f=>f.field==='pattern'&&f.from==='birdseye'&&f.to==='own-seersucker')&&sv.st.wrong.primaryColor===1,'what you changed from the tagger\'s answer is recorded');
     ok(sv.copy,'the sharp copy is kept on this device for the benchmark');
