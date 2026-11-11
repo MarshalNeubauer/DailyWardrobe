@@ -236,6 +236,9 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
 - POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`).
   - Its consumer (`queue()` export) makes the photo in the background, retrying temporary OpenAI errors and recording others as `jobfail:<key>`.
   - GET `/render-queue` lists pending and failed jobs.
+  - the consumer retries a message whose `job:` it can't see yet (20 s, up to 6 tries): KV can take a minute to show the job written just before the message, and acking it lost the photo, which sat "pending" for days
+  - OpenAI calls have a 5-minute limit (`OPENAI_MS`); a job that keeps throwing is recorded as `jobfail:` after 4 tries; `jobrun:<key>` {attempts, at} is reported as `running` by `/render-queue`
+  - the app offers "Try again" for a photo waiting over 10 minutes (`renderStalled`, `STALL_MS`), which queues it again
   - the push: the queue consumer hands each finished photo (or failure) to the Durable Object `RenderHub` (binding `RENDER_HUB`, `tellHub`), which answers the app's held `GET /render-wait?keys=…&ms=` (`waitForRenders`) with the photo itself (KV can lag a minute); results are kept 10 minutes in memory for an app between waits; no binding → 501 and the app only polls
   - the app holds `/render-wait` open while photos are queued and it is visible (`waitPush`, `PUSH_WAIT` 90 s, `takeQueued`); polling `/render-queue` is the backup on a schedule (`queueDelay`: first look 40 s after sending, then 7 s, 20 s after 3 min, 60 s after 15; `scheduleQueueCheck`, `rqGet().sentAt`)
   - a queued photo missing from `/render-queue` and not yet made counts as lost only after `LOST_MS` (45 min, from `rqGet().at[key]`): KV lists lag up to a minute, and giving up early made the push be ignored (the photo showed only after a reload); `takeQueued` keeps any pushed photo, waited for or not

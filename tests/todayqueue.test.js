@@ -17,7 +17,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:900}});
-    await ctx.route(HOST+'**',async route=>{const q=route.request();if(q.method()==='POST')posts.push(JSON.parse(q.postData()||'{}'));
+    await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:404,body:'{}'});   // backup sync isn't under test (the two pages would share one)
+      if(q.method()==='POST')posts.push(JSON.parse(q.postData()||'{}'));
       const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -57,6 +58,23 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
     // ---- the polling schedule
+    // ---- jobs the consumer can't see yet, crashes and hangs never leave a photo "pending" for days
+    {const K='c4444444444444444',job={key:K,image:'data:image/png;base64,AA',refs:[],labels:[],outfit:'x',sig:'s',t:1};
+      const run=async(attempts)=>{const m={body:{key:K},attempts,acked:false,retried:null,ack(){this.acked=true},retry(o){this.retried=o}};await worker.queue({messages:[m]},env);return m};
+      let m=await run(1);
+      ok(!m.acked&&m.retried&&m.retried.delaySeconds===20,'a job not yet visible in KV (written moments before, elsewhere) is tried again in 20 s, not dropped');
+      m=await run(6);ok(m.acked,'…and given up only after several tries');
+      reply=()=>[200,{data:[{b64_json:JPG}]}];
+      store.set('job:'+K,JSON.stringify(job));const put0=KV.put;let sig=null;const f0=globalThis.fetch;
+      globalThis.fetch=async(h,init)=>{sig=init&&init.signal;return f0(h,init)};
+      KV.put=async(k,v)=>{if(k.startsWith('render:'))throw new Error('KV down');return put0(k,v)};
+      m=await run(1);ok(m.retried&&m.retried.delaySeconds===60&&!m.acked,'a crash is retried');
+      const st=await (await worker.fetch(new Request(HOST+'render-queue',{headers:{'x-app-token':'t'}}),env)).json();
+      ok(st.pending.includes(K)&&st.running[K]&&st.running[K].attempts===1,'GET /render-queue says how far a waiting photo got (attempts, when it last began)');
+      m=await run(4);KV.put=put0;globalThis.fetch=f0;
+      ok(m.acked&&store.has('jobfail:'+K)&&/failed making it: KV down/.test(JSON.parse(store.get('jobfail:'+K)).error)&&!store.has('job:'+K),'a job that keeps crashing is recorded as failed, with the reason');
+      ok(sig&&typeof sig.aborted==='boolean','the call to OpenAI has a time limit');
+      store.delete('jobfail:'+K)}
     // ---- the push: RenderHub (Durable Object) on its own
     const hub=new mod.RenderHub({},{}),H=(path,init)=>hub.fetch(new Request('https://hub'+path,init)),note=b=>H('/notify',{method:'POST',body:JSON.stringify(b)});
     const K1='c1111111111111111',K2='c2222222222222222';
@@ -76,7 +94,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const hub2=new mod.RenderHub({},{}),ns2={idFromName:()=>'id',get:()=>({fetch:(u,init)=>hub2.fetch(new Request(u,init))})};
     env.RENDER_HUB=ns2;reply=()=>[200,{data:[{b64_json:JPG}]}];
     const ctx2=await browser.newContext({viewport:{width:390,height:900}});const gets=[];
-    await ctx2.route(HOST+'**',async route=>{const q=route.request();if(q.method()==='GET')gets.push(new URL(q.url()).pathname);
+    await ctx2.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:404,body:'{}'});   // backup sync isn't under test (the two pages would share one)
+      if(q.method()==='GET')gets.push(new URL(q.url()).pathname);else posts.push(JSON.parse(q.postData()||'{}'));
       const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p2=await ctx2.newPage();const errs2=[];p2.on('pageerror',e=>errs2.push(e.message));
@@ -108,6 +127,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // one never seen for 45 minutes is given up on
     const gone=await p2.evaluate(async()=>{rqSet({keys:['c00000000000fffff'],failed:[],total:1,at:{c00000000000fffff:Date.now()-46*60000}});await checkQueue();return queuedKeys().length});
     ok(gone===0,'a photo unseen for 45 minutes counts as lost');
+    // a photo waiting over 10 minutes: Try again sends it again
+    const stall=await p2.evaluate(()=>{items.find(i=>i.type==='tie').primaryColor='burgundy';cache={};const ck=comboKey(planFor()[key(sel)]);delete renders[ck];
+      rqSet({keys:[ck],failed:[],total:1,at:{[ck]:Date.now()-11*60000}});renderToday();const b=document.querySelector('.render-btn');return {ck,t:b.textContent,dis:b.disabled,msg:document.querySelector('#render-msg').textContent}});
+    ok(stall.t==='Try again'&&!stall.dis&&/over 10 minutes/.test(stall.msg),`a photo stuck over 10 minutes offers Try again ("${stall.msg}")`);
+    const nPosts=posts.length;await p2.click('text=Try again');await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
+    const re=await p2.evaluate(ck=>({pend:renderPending(planFor()[key(sel)]),age:Date.now()-rqGet().at[ck]}),stall.ck);
+    ok(posts.length===nPosts+1&&posts.at(-1).mode==='queue'&&re.pend&&re.age<60000,'Try again sends it to the queue again and waits afresh');
+    await drain();await p2.waitForFunction(()=>!queuedKeys().length,null,{timeout:5000});
     KV.lag=false;
     ok(errs2.length===0,'no page errors ('+errs2.join('; ')+')');
     await ctx2.close();
