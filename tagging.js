@@ -345,10 +345,12 @@ async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie'
     let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
     refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
   return trimRefs(refs,labels)}
-/* the worker takes 8 references: when there are more, the least needed go first (the shirt's texture drawing, then its close-up, then
+/* the worker takes 8 references: when there are more, the least needed go first (the shirt's close-up, then its texture drawing: the
+   drawing is in the tagged colour with the weave readable, while a close-up shot in dim light reads grey and the generator is told to
+   match its colour; then
    the other drawings and close-ups), never an item's own photo. Cutting the list at 8 dropped the watch, which comes last, once the
    pattern drawings were added, and the generator drew a generic one. */
-function refRank(l){return /^a drawing of the shirt/.test(l)?0:/^a close-up of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
+function refRank(l){return /^a close-up of the shirt/.test(l)?0:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
 function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
   while(keep.length>max){let worst=0;for(let n=1;n<keep.length;n++)if(refRank(labels[keep[n]])<refRank(labels[keep[worst]]))worst=n;keep.splice(worst,1)}
   return {refs:keep.map(k=>refs[k]),labels:keep.map(k=>labels[k])}}

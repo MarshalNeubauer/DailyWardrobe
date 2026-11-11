@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url})=>{
       const all=outfitRefs(o).labels.length+3,{refs,labels}=await outfitRefsFull(o);return {all,n:refs.length,labels}});
     ok(r.all>8&&r.n===8,`a full outfit has ${r.all} references; 8 go to the generator`);
     ok(r.labels.some(l=>/^the wristwatch/.test(l))&&['the blazer','the tie'].every(x=>r.labels.includes(x)),'the watch photo and every item photo are kept');
-    ok(!r.labels.some(l=>/^a drawing of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the tie/.test(l))&&r.labels.some(l=>/^a drawing of the blazer/.test(l)),'the shirt\'s texture drawing goes first; the tie and blazer drawings stay');
+    ok(!r.labels.some(l=>/^a close-up of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the tie/.test(l))&&r.labels.some(l=>/^a drawing of the blazer/.test(l)),'the shirt\'s close-up goes first; its texture drawing and the tie and blazer drawings stay');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
