@@ -420,10 +420,11 @@ const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Colour':k==='se
    and the item itself stay, so the plan and the outfit history are untouched. Undo works until the editor is closed. ---- */
 let phEdit={id:null,undo:[],crop:null};
 const PH_MAX=720;
-function photoTools(i){if(phEdit.crop)return '';
-  const tex=TEXTURE_TYPES.includes(i.type)?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`+(i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:''):'';
-  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+tex+
+function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
+  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
+    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
+    (tex&&i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
@@ -440,7 +441,7 @@ async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.u
   if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);await put(it);cache={};renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
-  phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();requestAnimationFrame(layoutCrop)}
+  phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
 function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" onpointerdown="cropDrag(event)"><img id="cropimg" src="${i.photo}" alt="Photo being cropped" draggable="false"></div>
   <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" oninput="phEdit.crop.z=+this.value;layoutCrop()" aria-label="Zoom"></label>
   <p class="mut" style="margin:2px 0 6px;font-size:13px">Drag the picture to position it.</p>
@@ -457,16 +458,24 @@ function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const b
 async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;const im=await imgOf(it.photo);
   const side=g.V/g.s,sx=-g.x/g.s,sy=-g.y/g.s,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
   c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9))}
-function editForm(i){
+/* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with its tools folded under it, then a
+   card for the tags, one for rotation, and Delete on its own at the very end */
+function togglePhotoTools(){phEdit.open=!phEdit.open;const el=$('#ivph');if(!el)return;el.classList.toggle('open',!!phEdit.open);el.querySelector('.ivphbtn').setAttribute('aria-expanded',!!phEdit.open)}
+function itemBody(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
-  const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)];
-  return `<div class="card" style="margin:8px 0 0;padding:8px">${photoTools(i)}${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
+  const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)],pic=i.photo||wardPic(i);
+  const hero=phEdit.crop?cropEditor(i):`<div class="ivhero">${pic?photoPair(pic,i,'tagsw-'+i.id):`<div class="ivdraw">${itemThumb(i)}</div>`}</div>`;
+  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patName(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
-  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
-  <div class="btns"><button class="pri" onclick="closeItem()">Done</button></div></div>`;
+  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div></div>`:''}</section>`;
+  // the photo tools stay beside the photos: one row when there is nothing to edit yet, else folded under "Edit photos"
+  const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
+  const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
+  <div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div></section>`;
+  return `<div class="ivin">${hero}${photos}${tags}${rot}<div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -505,7 +514,7 @@ async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;i
   await put(it);cache={};renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);cache={};renderWardrobe()}
-async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id){editing=null;editAt=null}renderWardrobe()}
+async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe()}
 
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
@@ -1280,32 +1289,93 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
   root.addEventListener('contextmenu',e=>{if(e.target.closest('#mpanel-in .mc[data-mv]'))e.preventDefault()});
 })();
 
-/* tapping an item opens its editor (and brings it into view) */
-/* Opening an item in the Wardrobe: it takes the whole width of its row, starting where it is, so the tapped box keeps its
-   place on screen; the items beside it slide down under it (a blank cell keeps the rows below unchanged). Closing (Close,
-   Done, or tapping the photo or swatch) reverses it. Every box glides from its old place to its new one (FLIP). */
-let editAt=null;   // {id,at,cols}: where the open item is placed in the list, and the grid's column count then
-const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
-function flipWardrobe(update,anchorId){
-  const box=()=>[...document.querySelectorAll('#wardrobe .grid > .gi')],before=new Map(box().map(el=>[el.id,el.getBoundingClientRect()]));
-  const anchor=before.get('gi-'+anchorId);update();
-  const k=$('#gi-'+anchorId);if(anchor&&k){const d=k.getBoundingClientRect().top-anchor.top;if(Math.abs(d)>1)window.scrollBy(0,d)}   // the tapped box stays put
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate)return;
-  if(k){k.style.position='relative';k.style.zIndex='2';setTimeout(()=>{k.style.position='';k.style.zIndex=''},WARD_MS+60)}   // the tapped box stays above the ones sliding past
-  for(const el of box()){const a=before.get(el.id);if(!a)continue;const b=el.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;
-    if(el.id==='gi-'+anchorId&&(b.width>a.width+1||b.height>a.height+1)){   // opening: grows out of its old box
-      const ins=[Math.max(0,a.top-b.top),Math.max(0,b.right-a.right),Math.max(0,b.bottom-a.bottom),Math.max(0,a.left-b.left)].map(v=>v+'px').join(' ');
-      el.animate([{clipPath:`inset(${ins} round 14px)`},{clipPath:'inset(0px 0px 0px 0px round 14px)'}],{duration:WARD_MS,easing:WARD_EASE});continue}
-    if(Math.abs(dx)<1&&Math.abs(dy)<1)continue;
-    el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:WARD_MS,easing:WARD_EASE})}}
+/* ---- Wardrobe item page ----
+   Tapping an item opens it as a page over the Wardrobe (the whole screen on a phone, a centred panel from 600px). It grows out
+   of the tapped box and the grid behind never moves, so closing puts you back exactly where you were. One way out, always
+   under the thumb: Done in the bar at the bottom; the phone's Back button or gesture, Esc and (on a wide screen) the backdrop
+   do the same. ‹ › beside Done, a sideways swipe or the arrow keys go to the previous / next item of the list on screen. */
+const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=300,IV_FULL='inset(0px 0px 0px 0px round 0px)';
+const wardList=()=>items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
+const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
+let itemFrom=null;   // the item the page was opened on: closing on another one brings that one's box into view first
+/* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
+let itemHist=false,itemBack=false;
+try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
+function histPush(){if(itemHist||itemBack)return;try{history.pushState({item:1},'');itemHist=true}catch{}}
+function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
+addEventListener('popstate',()=>{
+  if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
+  if(itemHist){itemHist=false;if(editing)closeItem(true)}});
+/* show or hide the page; while it is up the app behind it takes no taps or keyboard focus */
+function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;
+  v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
+  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on}
+/* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
+function renderItem(){
+  const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
+  if(!i){editing=null;itemShown(false);return}
+  const l=wardList(),k=l.findIndex(x=>x.id===i.id);
+  $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="cap">${desc(i)||TYPES[i.type]||'Item'}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
+  $('#ivbody').innerHTML=itemBody(i);
+  $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
+  itemShown(true)}
+/* the page's outline while it is the size of the item's box in the grid (null: that box isn't on screen) */
+function tileInset(id){const v=$('#item-view'),t=$('#gi-'+id);if(!v||!t)return null;const r=t.getBoundingClientRect(),b=v.getBoundingClientRect();
+  if(r.bottom<0||r.top>innerHeight||!r.width)return null;
+  return `inset(${[r.top-b.top,b.right-r.right,b.bottom-r.bottom,r.left-b.left].map(x=>Math.max(0,x)+'px').join(' ')} round 14px)`}
+/* the picture at the top of the page starts (or ends) on the box's picture, so the item seems to stay put while the page unfolds */
+function heroFlip(id,back){const h=document.querySelector('#ivbody .ivhero .phfig img.ph,#ivbody .ivhero .ivdraw'),t=document.querySelector(`#gi-${id} .ph`);if(!h||!t)return;
+  const a=t.getBoundingClientRect(),b=h.getBoundingClientRect();if(!a.width||!b.width)return;
+  const k=[{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(${a.width/b.width})`,transformOrigin:'0 0'},{transform:'none',transformOrigin:'0 0'}];
+  h.animate(back?k.reverse():k,{duration:WARD_MS,easing:WARD_EASE})}
 function openItem(id){
-  const els=[...document.querySelectorAll('#wardrobe .grid > .gi')],el=$('#gi-'+id);
-  if(editing&&editing!==id){const top=el&&el.getBoundingClientRect().top;editing=null;editAt=null;renderWardrobe();   // another one is open: fold it first
-    const n=$('#gi-'+id);if(n&&top!=null)window.scrollBy(0,n.getBoundingClientRect().top-top);return openItem(id)}
-  const g=$('#wardrobe .grid'),cols=g?Math.max(1,getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length):1,idx=els.findIndex(e=>e.id==='gi-'+id);
-  editAt=idx>=0?{id,at:idx-idx%cols,cols,flt}:null;
-  flipWardrobe(()=>{editing=id;renderWardrobe()},id)}
-function closeItem(){const id=editing;if(!id)return;flipWardrobe(()=>{editing=null;editAt=null;renderWardrobe()},id)}
+  if(!items.some(i=>i.id===id))return;const v=$('#item-view'),was=editing;
+  editing=id;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;
+  for(const a of v.getAnimations())a.cancel();v.classList.remove('closing');
+  if(was||noMotion())return;
+  const ins=tileInset(id),o={duration:WARD_MS,easing:WARD_EASE};
+  if(ins){v.animate([{clipPath:ins},{clipPath:IV_FULL}],o);v.animate([{opacity:0},{opacity:1,offset:.15},{opacity:1}],{duration:WARD_MS});heroFlip(id)}
+  else v.animate([{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o)}
+function closeItem(fromPop){
+  const id=editing,v=$('#item-view');if(!id||!v)return;const moved=id!==itemFrom,top=$('#ivbody').scrollTop<4;
+  editing=null;itemFrom=null;if(!fromPop)histDrop();
+  if(noMotion()){renderItem();return}
+  v.classList.add('closing');renderItem();   // the page stays up, drawn as it was, while it folds back into its box
+  const t=$('#gi-'+id);if(t&&moved)t.scrollIntoView({block:'center'});   // it was reached with ‹ ›: show where it lives
+  const ins=tileInset(id),o={duration:WARD_MS-40,easing:WARD_EASE,fill:'forwards'};
+  const an=ins?v.animate([{clipPath:IV_FULL},{clipPath:ins}],o):v.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(24px)'}],o);
+  if(ins)v.animate([{opacity:1},{opacity:1,offset:.55},{opacity:0}],{duration:WARD_MS-40,fill:'forwards'});   // it fades only once it is back to the box's size
+  if(ins&&top)heroFlip(id,true);
+  an.finished.catch(()=>{}).then(()=>{if(editing)return;for(const a of v.getAnimations())a.cancel();v.classList.remove('closing')})}
+/* closing with nothing to fold back into: the item was deleted, or another tab is shown */
+function dropItem(){editing=null;itemFrom=null;histDrop();const v=$('#item-view');if(v){for(const a of v.getAnimations())a.cancel();v.classList.remove('closing')}itemShown(false)}
+/* the previous / next item of the list on screen; the new one slides in from the side it lies on */
+function stepItem(n,from){
+  const l=wardList(),k=l.findIndex(x=>x.id===editing),t=l[k+n];if(k<0||!t)return false;
+  editing=t.id;renderItem();const b=$('#ivbody');b.scrollTop=0;
+  const el=b.firstElementChild;if(el&&!noMotion())el.animate([{transform:`translateX(${from===undefined?n*56:from}px)`,opacity:0},{transform:'none',opacity:1}],{duration:220,easing:WARD_EASE});
+  return true}
+(()=>{const b=$('#ivbody');if(!b)return;let st=null;const inn=()=>b.firstElementChild;
+  b.addEventListener('touchstart',e=>{const t=e.touches[0];
+    st=e.touches.length>1||phEdit.crop||t.clientX<24||t.clientX>innerWidth-24||e.target.closest('input,textarea,.cropwrap')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0}},{passive:true});   // a swipe may start on a dropdown: half the page is dropdowns
+  b.addEventListener('touchmove',e=>{
+    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8))st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';
+    if(st.lock!=='x')return;e.preventDefault();
+    const l=wardList(),k=l.findIndex(x=>x.id===editing),edge=k<0||(dx>0&&k<=0)||(dx<0&&k>=l.length-1);   // nothing that way: resist
+    st.dx=dx;const el=inn();if(el){const x=edge?dx/4:dx;el.style.transition='none';el.style.transform=`translateX(${x}px)`;el.style.opacity=String(1-Math.min(.5,Math.abs(x)/innerWidth))}
+  },{passive:false});
+  const end=()=>{
+    if(!st)return;const {lock,dx,t}=st;st=null;const el=inn();if(lock!=='x'||!el)return;
+    const fast=Math.abs(dx)/Math.max(1,Date.now()-t)>.5,n=dx<0?1:-1;
+    if(!((Math.abs(dx)>70||(fast&&Math.abs(dx)>30))&&stepItem(n,n*Math.min(innerWidth*.5,220)))){
+      el.style.transition='transform .2s ease-out,opacity .2s';el.style.transform='translateX(0)';el.style.opacity='1'}};
+  b.addEventListener('touchend',end,{passive:true});b.addEventListener('touchcancel',end,{passive:true});
+  document.addEventListener('keydown',e=>{if(!editing)return;
+    if(e.key==='Escape'){if(phEdit.crop){phEdit.crop=null;renderWardrobe()}else closeItem();return}
+    if(e.target.closest&&e.target.closest('input,select,textarea'))return;
+    if(e.key==='ArrowRight')stepItem(1);if(e.key==='ArrowLeft')stepItem(-1)});
+})();
 /* swiping the Wardrobe moves between the type filters (All, Suit, Blazer, …) in chip order, skipping types with no items;
    only the grid slides. Not while an item is open (its editor has sliders and the photo crop), nor on the chips row itself. */
 const wardTypes=()=>['all',...Object.keys(TYPES).filter(t=>items.some(i=>i.type===t))];
@@ -1342,13 +1412,10 @@ function renderWardrobe(){
   closeSettings();if(editing!==phEdit.id)phEdit={id:null,undo:[],crop:null};   // undo lasts while the item stays open
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
-  const list=items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
-  // the open item moves to the start of its row; the rest of that row follows it and a blank cell fills the slot it left
-  let gapAfter=null;if(editing&&editAt&&editAt.id===editing&&editAt.flt===flt){const k=list.findIndex(i=>i.id===editing);
-    if(k>=0){const end=Math.min(editAt.at+editAt.cols,list.length),[it]=list.splice(k,1);list.splice(editAt.at,0,it);if(end-editAt.at===editAt.cols&&editAt.cols>1)gapAfter=list[end-1].id}}
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>`
-  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button>`}${editing===i.id?`<div class="btns giact"><button onclick="closeItem()">Close</button><button class="danger" onclick="rm('${i.id}')">Delete</button><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`:''}${editing===i.id&&i.paused?(i.order?`<div class="rotnote ordrow"><small class="mut">On the way: it isn't in your outfits yet.</small><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="mut rotnote"><small>Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</small></p>'):''}${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
+  const list=wardList();
+  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button></div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
+  renderItem();
 }
 
 const cap1=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};   // option labels start with a capital ("Grey", "Solid"); values stay as they are
@@ -1384,9 +1451,10 @@ ${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confi
 }
 
 function show(t){
-  closeSettings();
+  closeSettings();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
+  if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
 }
 
 db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});

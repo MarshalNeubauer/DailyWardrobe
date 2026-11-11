@@ -29,8 +29,8 @@ module.exports=async({ok,chromium,url,settle})=>{
       await swipe(10,250);s=await state();ok(s.flt==='all',`${name}: swipes from the screen edge are ignored`);
       const cy=s0.chips+10;await swipe(w-80,w-300,cy);s=await state();ok(s.flt==='all',`${name}: dragging the chips row scrolls it instead of changing type`);
       await p.evaluate(()=>openItem('s1'));await settle(p,400);
-      const oy=await p.evaluate(()=>Math.round(document.querySelector('#gi-s1').getBoundingClientRect().y+20));
-      await swipe(w-80,w-300,oy);s=await state();ok(s.flt==='all'&&await p.evaluate(()=>editing==='s1'),`${name}: no type change while an item is open`);
+      const oy=await p.evaluate(()=>Math.round(document.querySelector('#ivbody .ivin').getBoundingClientRect().y+20));
+      await swipe(w-80,w-300,oy);s=await state();ok(s.flt==='all'&&await p.evaluate(()=>editing==='s2'),`${name}: with an item open a swipe goes to the next item, not the next type`);
       await p.evaluate(()=>{editing=null;flt='all';renderWardrobe();document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}))});
       ok(await p.evaluate(()=>flt)==='suit',`${name}: the right arrow key moves to the next type`);
       await p.evaluate(()=>{flt='socks';renderWardrobe()});

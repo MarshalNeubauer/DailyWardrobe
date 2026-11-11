@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url})=>{
       renders[itemKey(items[0])]={sig:'item',img:pic};renders[itemKey(items[1])]={sig:'item',img:pic};renderTried.add(itemKey(items[2]));
       flt='all';editing=null;show('wardrobe');const src=id=>{const im=document.querySelector(`#gi-${id} .giopen img.ph`);return im&&im.getAttribute('src')};
       const a={shoes:src('s'),belt:src('b'),socks:src('k'),tie:src('t'),sockDrawn:!!document.querySelector('#gi-k .thumb')};
-      editing='s';renderWardrobe();a.open=!!document.querySelector('#gi-s .pair img.ph')&&document.querySelector('#gi-s .pair img.ph').getAttribute('src')===pic;return a},PIC);
+      editing='s';renderWardrobe();a.open=!!document.querySelector('#item-view .pair img.ph')&&document.querySelector('#item-view .pair img.ph').getAttribute('src')===pic;closeItem();return a},PIC);
     ok(r.shoes===PIC&&r.belt===PIC,'shoes and belts with a product picture show it in the Wardrobe');
     ok(!r.socks&&r.sockDrawn,'without a picture they keep their drawing');
     ok(!r.tie,'other types are unchanged');

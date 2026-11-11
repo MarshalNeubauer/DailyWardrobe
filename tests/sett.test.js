@@ -70,9 +70,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(sv.sett&&sv.pbox&&sv.pbox.w===339&&sv.text===DESC,'the item keeps its pattern, the box it was read from and the description');
     ok(/\(measured: diagonal stripes running from the upper left down to the lower right, as the viewer sees them; the bands are about/.test(sv.prompt)&&sv.prompt.includes('wide taupe-brown bands with dark brown pinlines')&&sv.key,'the photo generator is told the pattern, and the photo is made for it (its own key)');
     await p.evaluate(()=>{show('wardrobe');openItem(items[0].id)});await p.waitForTimeout(500);
-    const ed=await p.textContent(`#gi-${await p.evaluate(()=>items[0].id)}`);
+    const ed=await p.textContent('#item-view');
     ok(/Pattern layout: \d+ colour bands with lines crossing the other way, read from the photo/.test(ed),'the Wardrobe editor shows it');
-    await p.evaluate(()=>{delete items[0].sett});await p.click(`#gi-${await p.evaluate(()=>items[0].id)} button:has-text("Read pattern from photo")`);
+    await p.evaluate(()=>{delete items[0].sett});await p.click('#item-view button:has-text("Read pattern from photo")');
     await p.waitForFunction(()=>items[0].sett);
     ok(await p.evaluate(()=>items[0].sett.src==='photo'&&items[0].sett.bands.length>=10),'"Read pattern from photo" reads it again from the kept sharp copy');
     // Claude's own reading when the app can't read the photo; a close-up's angle comes from Claude
