@@ -11,15 +11,13 @@
 const ASM_VER=2;
 const ASM_DE=14;
 const ASM_EDGE=3;
-const ASM_EDGE_DE=28;
-const ASM_EDGE_C=10;
 const ASM_HALO=4;
 const ASM_TINT=5;
 const ASM_HAND=4;
 const ASM_SOFT=2;
 /* ASM_ZV: how zones are worked out. Zones and assembled pictures kept on a device carry it, so they are made again when it changes
-   (2: a zone reaches the picture's edge; 3, 4: no halo of the master's tie; 5: the edge ring keeps off the hands' shadow line; 6: no rim of a piece's own skin round the fist; 7: the tie's smooth outline and soft edge) */
-const ASM_ZV=7;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+   (2: a zone reaches the picture's edge; 3, 4: no halo of the master's tie; 5: the edge ring keeps off the hands' shadow line; 6: no rim of a piece's own skin round the fist; 7: the tie's smooth outline and soft edge; 8: the whole edge ring away from the hands) */
+const ASM_ZV=8;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
 /* ASM_VER 2: the masters the owner approved, made from the redrawn figure (close framing, the lower hand at the waist button, the
    watch turned as worn, a blurred light office): his dark grey herringbone suit, a white shirt, a burgundy tie and his watch, and
    the same photo with the suit's waistcoat. Version 1's master (zoomed out, the lower hand too low) was rejected; every key
@@ -141,15 +139,14 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
     // the jacket's own outline: its zone stops a pixel or two short of the cloth's soft edge, and the master's dark edge left there
     // read as an outline round a lighter or bluer jacket. The ASM_EDGE pixels just outside the zone, where no other piece is, come
     // from the jacket's photo too (it is the master there, but for its own edge)
-    // Only where the master shows a leftover of its own jacket (its colour there is near the master jacket's beside it): never the
-    // hands, which a suit's photo redraws a little (taken from it, the fist's outline came out ragged on a waistcoat day)
-    const own=V0?z.jacket.map((v,i)=>v||V0[i]):z.jacket,ring=asmBox(own,W,ASM_EDGE,true),Lm=asmLab(master),R=ASM_EDGE;
-    // nor the dark line of shadow round a hand, which is the jacket's colour: nothing within 5px of the master's skin
-    const skin=new Uint8Array(N);for(let i=0;i<N;i++)if(!own[i]&&!z.shirt[i]&&!z.tie[i]&&!z.watch[i]&&Lm[3*i+1]>8&&Lm[3*i+2]>10&&Lm[3*i]>35)skin[i]=1;
-    const byHand=asmBox(asmBox(skin,W,1,false),W,6,true);
-    for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!ring[i]||lab[i]||z.shirt[i]||z.tie[i]||z.watch[i]||byHand[i])continue;let l=0,a=0,b=0,n=0;
-      for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const k=yy*W+xx;if(own[k]){l+=Lm[3*k];a+=Lm[3*k+1];b+=Lm[3*k+2];n++}}}
-      if(!n||Math.hypot(Lm[3*i]-l/n,Lm[3*i+1]-a/n,Lm[3*i+2]-b/n)>ASM_EDGE_DE||Math.hypot(Lm[3*i+1]-a/n,Lm[3*i+2]-b/n)>ASM_EDGE_C)continue;   // near in colour, and no more colourful (skin is)
+    // Away from the hands every ring pixel is taken: there the jacket's photo is the master but for its own edge. (Taking only the
+    // pixels of the master jacket's colour left a dotted outline: the master's herringbone is light and dark dots, and only the dark
+    // ones passed.) Within ASM_HAND+2 of the master's skin, only what is cloth in both photos: never skin, the master's or the piece's
+    // (a suit's photo redraws the hands a little, and its fist's outline came out ragged).
+    const own=V0?z.jacket.map((v,i)=>v||V0[i]):z.jacket,ring=asmBox(own,W,ASM_EDGE,true),Lm=asmLab(master),Lj=asmLab(P.jacket),isSkin=(L,i)=>L[3*i+1]>8&&L[3*i+2]>10&&L[3*i]>50;   // lit skin: the dark rim of a hand over the master's burgundy tie is reddish too, and is not kept
+    const skin=new Uint8Array(N);for(let i=0;i<N;i++)if(!own[i]&&!z.shirt[i]&&!z.tie[i]&&!z.watch[i]&&isSkin(Lm,i))skin[i]=1;
+    const byHand=asmBox(asmBox(skin,W,1,false),W,ASM_HAND+2,true);
+    for(let i=0;i<N;i++){if(!ring[i]||lab[i]||z.shirt[i]||z.tie[i]||z.watch[i])continue;if(byHand[i]&&(isSkin(Lm,i)||isSkin(Lj,i)))continue;
       const j=4*i;o[j]=P.jacket.data[j];o[j+1]=P.jacket.data[j+1];o[j+2]=P.jacket.data[j+2];lab[i]=7}}
   if(P.jacket){   // A suit's photo redraws the hands a little (most with a waistcoat): where its hand is a pixel or two larger than the
     // master's, a rim of ITS skin lies in the jacket's zone, outside the master's hand, and reads as a dotted outline round the fist.
