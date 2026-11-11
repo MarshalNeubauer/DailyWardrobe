@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const th=itemThumb(s,true),th0=itemThumb(plain,true);items=[s,plain];
       await renderItemPic(s);
       return {d:itemDesc(s),d0:itemDesc(plain),desc:desc(s),desc0:desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(COLORS.lightgrey),toe0:/sock-toe/.test(th0),traced:th.includes(SOCK_D)&&/<clipPath id="[^"]+sk">/.test(th)&&/clip-path="url\(#[^)]+sk\)"/.test(th),
-        keys:itemKey(s)!==itemKey(plain),form:editForm(s),form0:editForm({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});
+        keys:itemKey(s)!==itemKey(plain),form:itemBody(s),form0:itemBody({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});
     ok(/single black .*dress sock in side profile/.test(a.d)&&/light grey knitted toe cap/.test(a.d)&&/heel stays black/.test(a.d),`the picture description is one sock in profile with its toe cap (${a.d.slice(0,60)}…)`);
     ok(!/toe cap/.test(a.d0)&&/toe and heel the same colour/.test(a.d0)&&a.keys,'a plain sock has no toe cap, and gets its own picture');
     ok(a.desc==='black, light grey toe'&&a.desc0==='black',`the name says the toe colour (${a.desc})`);

@@ -55,7 +55,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(shown,`swiping to ${day} shows the photo immediately`);
     // a day already here and on the worker is not downloaded again when shown
     const before=reqs.length;await B.p.evaluate(()=>{sel=new Date(2026,10,17);renderToday()});await B.p.waitForTimeout(600);
-    ok(!reqs.slice(before).some(r=>/^GET render\?key=/.test(r)),'showing a day whose photo is already here does not download it again');
+    ok(!reqs.slice(before).some(r=>keys.some(k=>r==='GET render?key='+k)),'showing a day whose photo is already here does not download it again');
     ok(B.errs.length===0,'no page errors ('+B.errs.join('; ')+')');
   }finally{await browser.close()}
 };

@@ -532,11 +532,12 @@ He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
 Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
 Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
-/* a one-piece edit of a kept photo (a test path: is changing only the tie cheaper than a whole new photo?): body.image is the
-   photo, body.swap {what, text} the piece and its description, refs its photos, body.mask (or body.markup) where it is */
+/* a one-piece edit of a kept photo (a test path: is changing one piece cheaper than a whole new photo?): body.image is the
+   photo, body.swap {what, text} the piece (one of SWAP_KEEP) and its description, refs its photos, body.mask (or body.markup) where it is */
+const SWAP_KEEP = { jacket: 'the jacket and its pattern', shirt: 'the shirt and collar', tie: 'the tie, its knot and its pattern', 'tie bar': 'the tie bar', watch: 'the wristwatch' };
 const SWAP_PROMPT = (what, text) => `Edit the first image (a photograph of a man's torso). Replace only the ${what} with: ${text}{REFS}.
-The new ${what} takes the place of the old one: same position, size, knot, drape and lighting, lying under the hand and the tie bar where they cover it.
-Everything else must stay exactly as it is in the first image: the jacket and its pattern, the shirt and collar, the tie bar, the wristwatch, both hands, the pose, the background, the light and the framing.
+The new ${what} takes the place of the old one: same position, size, shape, drape and lighting, with the same outline, lying under whatever covers it now (a hand, the tie bar, the lapels).${what === 'jacket' ? ' Keep the cut as it is: the lapels, buttons, pockets, sleeves and every fold stay where they are; only the cloth changes.' : ''}
+Everything else must stay exactly as it is in the first image, pixel for pixel where possible: ${Object.keys(SWAP_KEEP).filter(k => k !== what).map(k => SWAP_KEEP[k]).join(', ')}, both hands, the pose, the background, the light and the framing.
 No added text, captions or watermark.`;
 function dataUrlToBlob(u) {
   const m = String(u || '').match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/s);
@@ -579,7 +580,7 @@ async function outfitPhoto(body, env) {
   const refText = !refs.length ? '' : labels.length === refs.length
     ? `. The photos after the illustration show the actual items, in this order: ${labels.join('; ')}. Match each one exactly`
     : ', and match the photos of the actual items that follow it';
-  const swap = body.swap && /^[a-z ]{2,30}$/.test(String(body.swap.what || '')) ? { what: body.swap.what, text: String(body.swap.text || '').replace(/[{}`]/g, '').slice(0, 1500) || `another ${body.swap.what}` } : null;
+  const swap = body.swap && Object.hasOwn(SWAP_KEEP, String(body.swap.what || '')) ? { what: body.swap.what, text: String(body.swap.text || '').replace(/[{}`]/g, '').slice(0, 1500) || `another ${body.swap.what}` } : null;
   const swapRefs = !refs.length ? '' : `. The images after the first show the new ${swap && swap.what}${labels.length === refs.length ? `, in this order: ${labels.join('; ')}` : ''}. Match it exactly`;
   form.append('prompt', swap ? SWAP_PROMPT(swap.what, swap.text).replace('{REFS}', swapRefs) : RENDER_PROMPT(outfit, !!body.nojacket).replace('{REFS}', refText));
   form.append('image[]', base, `outfit.${base.type.split('/')[1]}`);
@@ -607,7 +608,8 @@ async function outfitPhoto(body, env) {
   const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
   if (!b64) return { ok: false, status: 502, retry: true, error: 'OpenAI returned no image' };
   console.log(`rendered by ${model}; usage ${JSON.stringify(out.usage || {})}`);
-  return { ok: true, usage: out.usage || null, rec: { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() } };
+  // the record keeps OpenAI's token counts, so what a photo cost can be read back (GET /render?key=)
+  return { ok: true, usage: out.usage || null, rec: { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now(), ...(out.usage ? { usage: out.usage } : {}) } };
 }
 /* ---- background photos: the app uploads each outfit's inputs once (POST /render {mode:'queue'}); they wait in KV as job:<key>
    and a Cloudflare Queue message ({key}) makes the photo later, so the app can be closed. GET /render-queue reports progress. ---- */
@@ -619,7 +621,8 @@ async function queueRender(body, env, json) {
   if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
   if (!body.replace && await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });   // replace: a regenerate from the app
   const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 8), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 8), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
-    model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, replace: body.replace ? true : undefined, t: Date.now() };
+    model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, replace: body.replace ? true : undefined, t: Date.now(),
+    ...(body.swap ? { swap: body.swap, mask: body.mask, markup: body.markup } : {}) };   // a one-piece edit of a kept photo (the test path)
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
   await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: 0, at: Date.now() }), JOB_TTL);   // queued, not started (GET /render-queue resends it if it never starts)
@@ -685,7 +688,7 @@ async function runRenderJob(msg, env) {
   if (!env.OPENAI_API_KEY) { await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env);
   if (r.ok) {
-    await env.WARDROBE.put(`render:${key}`, JSON.stringify(r.rec));
+    await env.WARDROBE.put(`render:${key}`, JSON.stringify(r.rec), renderTtl(key));
     await env.WARDROBE.delete(`job:${key}`); await env.WARDROBE.delete(`jobrun:${key}`);
     await tellHub(env, { key, rec: r.rec });
     return msg.ack();
@@ -798,7 +801,8 @@ async function itemPhoto({ item, ref: refUrl }, env) {
 /* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced); older ones were per date (90 days) */
 const COMBO_RE = /^c[0-9a-f]{16}$/, DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
 const renderId = o => { const k = String(o && o.key || ''), d = String(o && o.day || ''); return COMBO_RE.test(k) ? k : DAY_RE.test(d) ? d : null; };
-const renderTtl = id => (DAY_RE.test(id) ? { expirationTtl: 90 * 86400 } : undefined);
+/* dated copies go after 90 days; test photos (keys starting c7e57, made to compare models or methods) after 7 */
+const renderTtl = id => (DAY_RE.test(id) ? { expirationTtl: 90 * 86400 } : /^c7e57/.test(id) ? { expirationTtl: 7 * 86400 } : undefined);
 /* PUT /render {key, rec}: a device uploads a photo the worker doesn't have yet */
 async function putRender(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);

@@ -19,10 +19,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(before.includes('navy'),`before: the navy suit is in the upcoming plan (${before.filter(x=>x==='navy').length} days)`);
     // the button in the item's details
     await p.evaluate(()=>openItem('navy'));await settle(p,500);
-    const b0=await p.evaluate(()=>{const b=document.querySelector('#gi-navy .rotbtn');return b&&{t:b.textContent,pressed:b.getAttribute('aria-pressed')}});
+    const b0=await p.evaluate(()=>{const b=document.querySelector('#item-view .rotbtn');return b&&{t:b.textContent,pressed:b.getAttribute('aria-pressed')}});
     ok(b0&&b0.t==='Take out of rotation'&&b0.pressed==='false','the open item has a "Take out of rotation" button beside Close and Delete');
-    await p.click('#gi-navy .rotbtn');await p.waitForFunction(()=>items.find(i=>i.id==='navy').paused===true);await settle(p,500);
-    const st=await p.evaluate(()=>({btn:document.querySelector('#gi-navy .rotbtn').textContent,note:(document.querySelector('#gi-navy .rotnote')||{}).textContent||'',
+    await p.click('#item-view .rotbtn');await p.waitForFunction(()=>items.find(i=>i.id==='navy').paused===true);await settle(p,500);
+    const st=await p.evaluate(()=>({btn:document.querySelector('#item-view .rotbtn').textContent,note:(document.querySelector('#item-view .rotnote')||{}).textContent||'',
       still:items.some(i=>i.id==='navy'),pin:dayRecs['2026-11-16'].force,past:dayRecs['2026-11-9'].ids.top}));
     ok(st.still&&st.btn==='Put back in rotation'&&/planner won't pick it/.test(st.note)&&/Outfits you already wore keep it/.test(st.note),'it stays in the wardrobe; the button now says "Put back in rotation" and a note says what it means');
     ok(!st.pin&&st.past==='navy','the upcoming day it was pinned to is let go; the worn day keeps it');
@@ -43,9 +43,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     // stats explain it
     ok(await p.evaluate(()=>whyUnused(items.find(i=>i.id==='navy'))==='You took it out of rotation, so the planner leaves it out.'),'the stats page gives the reason it is not planned');
     // put it back
-    await p.evaluate(()=>{show('wardrobe');openItem('navy')});await settle(p,500);await p.click('#gi-navy .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='navy'))&&document.querySelector('#gi-navy .rotbtn').textContent==='Take out of rotation');
+    await p.evaluate(()=>{show('wardrobe');openItem('navy')});await settle(p,500);await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='navy'))&&document.querySelector('#item-view .rotbtn').textContent==='Take out of rotation');
     const back=await tops();
-    ok(back.includes('navy')&&await p.evaluate(()=>!document.querySelector('#gi-navy .rotnote')&&document.querySelector('#gi-navy .rotbtn').textContent==='Take out of rotation'),`"Put back in rotation" brings it back into the plan (${back.filter(x=>x==='navy').length} days)`);
+    ok(back.includes('navy')&&await p.evaluate(()=>!document.querySelector('#item-view .rotnote')&&document.querySelector('#item-view .rotbtn').textContent==='Take out of rotation'),`"Put back in rotation" brings it back into the plan (${back.filter(x=>x==='navy').length} days)`);
     // the only belt out of rotation: no belt, and no complaint about belts in the score
     const belt=await p.evaluate(()=>{items.find(i=>i.id==='bb').paused=true;cache={};const o=planFor()['2026-11-12'];return {belt:o.belt,checks:rateOutfit(o).checks.map(c=>c.label)}});
     ok(belt.belt===null,'with its only belt out of rotation, the outfit has no belt rather than the paused one');

@@ -420,10 +420,11 @@ const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Colour':k==='se
    and the item itself stay, so the plan and the outfit history are untouched. Undo works until the editor is closed. ---- */
 let phEdit={id:null,undo:[],crop:null};
 const PH_MAX=720;
-function photoTools(i){if(phEdit.crop)return '';
-  const tex=TEXTURE_TYPES.includes(i.type)?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`+(i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:''):'';
-  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+tex+
+function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
+  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
+    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
+    (tex&&i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
@@ -440,7 +441,7 @@ async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.u
   if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);await put(it);cache={};renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
-  phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();requestAnimationFrame(layoutCrop)}
+  phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
 function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" onpointerdown="cropDrag(event)"><img id="cropimg" src="${i.photo}" alt="Photo being cropped" draggable="false"></div>
   <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" oninput="phEdit.crop.z=+this.value;layoutCrop()" aria-label="Zoom"></label>
   <p class="mut" style="margin:2px 0 6px;font-size:13px">Drag the picture to position it.</p>
@@ -457,16 +458,30 @@ function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const b
 async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;const im=await imgOf(it.photo);
   const side=g.V/g.s,sx=-g.x/g.s,sy=-g.y/g.s,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
   c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9))}
-function editForm(i){
+/* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with its tools folded under it, then a
+   card for the tags, one for rotation, and Delete on its own at the very end */
+function toggleCompare(closeOnly){const el=$('#ivpair');if(!el||(closeOnly&&!phEdit.cmp))return;phEdit.cmp=!phEdit.cmp;el.classList.toggle('cmp',!!phEdit.cmp);el.querySelector('.tagsw').setAttribute('aria-pressed',!!phEdit.cmp)}
+function togglePhotoTools(){phEdit.open=!phEdit.open;const el=$('#ivph');if(!el)return;el.classList.toggle('open',!!phEdit.open);el.querySelector('.ivphbtn').setAttribute('aria-expanded',!!phEdit.open)}
+function itemBody(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
-  const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)];
-  return `<div class="card" style="margin:8px 0 0;padding:8px">${photoTools(i)}${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
+  const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)],pic=i.photo||wardPic(i);
+  // with a close-up, the split swatch is a button: tapped, the drawing slides over the photo and the close-up fills its square, to
+  // compare the two whole; a tap on either square puts them back (toggleCompare; the choice lasts while the item stays open)
+  const cmp=pic&&i.texture&&TEXTURE_TYPES.includes(i.type);
+  const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:!cmp?photoPair(pic,i,'tagsw-'+i.id):`<div class="pair cmpable${phEdit.cmp?' cmp':''}" id="ivpair"><figure class="phfig" onclick="toggleCompare(true)"><div class="cmpbox"><img class="ph" src="${pic}" alt="Photo"><div class="cmpdraw" aria-hidden="true">${itemThumb(i,true)}</div></div><figcaption><span class="c0">Photo</span><span class="c1">As tagged</span></figcaption></figure>`+
+    `<figure class="tagsw" id="tagsw-${i.id}" role="button" tabindex="0" aria-pressed="${!!phEdit.cmp}" aria-label="Compare the drawing and the close-up side by side" onclick="toggleCompare()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCompare()}">${tagSwInner(i)}<figcaption class="c1">Close-up</figcaption></figure></div>`;
+  const hero=phEdit.crop?cropEditor(i):`<div class="ivhero">${pair}</div>`;
+  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patName(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
-  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<p class="mut" style="margin:6px 0;font-size:14px">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>`:''}
-  <div class="btns"><button class="pri" onclick="closeItem()">Done</button></div></div>`;
+  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div></div>`:''}</section>`;
+  // the photo tools stay beside the photos: one row when there is nothing to edit yet, else folded under "Edit photos"
+  const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
+  const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
+  <div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div></section>`;
+  return `<div class="ivin">${hero}${photos}${tags}${rot}<div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -505,7 +520,7 @@ async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;i
   await put(it);cache={};renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);cache={};renderWardrobe()}
-async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id){editing=null;editAt=null}renderWardrobe()}
+async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe()}
 
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
@@ -554,6 +569,27 @@ async function recordDays(p){
   }
   if(changed&&window.scheduleSync)scheduleSync();
 }
+/* ---- the coming week stays as shown ----
+   Each workday from today to LOCK_DAYS-1 days on gets rec.lock, the pieces the plan showed for it (not the coat: that follows the
+   forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not worn or
+   adding an item re-plans only the days after the lock, not tomorrow's outfit. A change made by hand on a day (a swap, a pick, an
+   occasion, Reset, a move) drops that day's lock: the day is planned again around the change and locked as it then shows. */
+const LOCK_DAYS=7,lockIds=o=>{const l=idsOf(o);delete l.coat;return l};
+async function lockUpcoming(){
+  if(!items.length)return;const T=todayDate(),mine=dayRecs;let n=0;
+  for(let g=0;g<LOCK_DAYS;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(!isWorkday(d))continue;
+    if(dayRecs!==mine)break;   // the history was replaced meanwhile (sync, restore)
+    // the plan is read afresh for each day (it is cached; a change made while an earlier lock was being saved has reset it), and the lock
+    // is put on the record before the write is awaited, so a lock never comes from a plan that is no longer the one on screen
+    const k=key(d),o=planMonth(d.getFullYear(),d.getMonth())[k];if(!o||o.frozen||!SLOTS.some(s=>o[s]))continue;
+    const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l))continue;
+    const rec={...(r||{date:k}),lock:l,updated:Date.now()};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
+    await txs('days','readwrite',s=>s.put(rec))}
+  if(n&&window.scheduleSync)scheduleSync()}
+/* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
+async function clearLocks(){const T=todayDate();let n=0;
+  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>T&&r.worn!==true){const c={...r};delete c.lock;await saveDay(c,true);n++}
+  if(n&&window.scheduleSync)scheduleSync();return n}
 async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
   const cur=o[slot]&&o[slot].id,pool=items.filter(i=>(slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay))&&inRotation(i,di(sel)));
@@ -564,7 +600,7 @@ async function swapSlot(slot){
   // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
   const follow=FOLLOW[slot]||[];
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  rec.skip=skip;rec.force=force;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
+  rec.skip=skip;rec.force=force;delete rec.lock;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
 }
 const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks']};
 /* ---- learning from changes (the votes are read by the planner, see planner.js) ----
@@ -591,7 +627,7 @@ function fitOf(slot,o,c){
     case 'top':case 'bot':case 'shirt':case 'tie':return clothesScore(top,bot,slot==='shirt'?c:o.shirt,slot==='tie'?c:o.tie,suit,day)+(slot==='top'?seasonFit(c,day.clim.season)*2+(day.formal?formalTop(c)*2:0):0);
     case 'shoes':return legs?shoeScore(top,legs,c)+shoeFormality(c,suit):0;
     case 'belt':{const f=o.shoes?beltFit(o.shoes,c):0;return f===null?-60:f}
-    case 'socks':return sockScore(legs,o.shoes,c);
+    case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie));
     case 'watch':return watchFit(c,o.shoes,o.belt);
     case 'clip':case 'links':return o.watch?(metalOf(c)===metalOf(o.watch)?6:-4):0}
   return 0}
@@ -616,7 +652,7 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   if(!it||(o[slot]&&o[slot].id===id))return;
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  force[slot]=id;const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;
+  force[slot]=id;const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;
   swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);renderToday()}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
@@ -629,27 +665,29 @@ async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k]
   swapMsg=it?learnFrom(slot,slot==='top'?{...o,top:null}:o,null,it,true)&&'Corrected. The planner counts what you really wore.':'Corrected.';
   await saveDay(rec);renderToday()}
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
-/* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion */
-async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
-async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;swapMsg='';await saveDay(n);renderToday()}
+/* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
+   released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
+async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
 /* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay */
 async function replanFuture(){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<=T||r.worn===true)continue;
-    if(!(r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto))continue;
-    const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);n++}
+    const mine=r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto;if(!mine&&!r.lock)continue;
+    const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
 async function checkPlanRules(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
   settings.planRules=PLAN_RULES;await saveUserSettings();if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
 async function replanButton(){const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
-  if(!n){renderReplanUI('Nothing to reset: every upcoming day follows the planner.');return}
-  if(!confirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'} and let the planner choose again? Formal days, today and past days stay as they are.`))return;
-  const m=await replanFuture();renderReplanUI(`${m} day${m===1?'':'s'} planned again.`);todayStale=true}
+  const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true);
+  if(!n&&!locked){renderReplanUI('Nothing to reset: every upcoming day follows the planner.');return}
+  if(n&&!confirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'} and let the planner choose again? Formal days, today and past days stay as they are.`))return;
+  const m=await replanFuture();renderReplanUI(m?`${m} day${m===1?'':'s'} planned again.`:'The coming days were planned again.');todayStale=true}
 function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
-  el.textContent=msg||(n?`${n} upcoming day${n===1?' keeps':'s keep'} pieces from a swap.`:'Every upcoming day follows the planner.')}
+  el.textContent=msg||(n?`${n} upcoming day${n===1?' keeps':'s keep'} pieces from a swap.`:'Every upcoming day follows the planner.')+' The coming week stays as shown when something changes; re-plan to choose it again.'}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
   if(o.frozen){const r0=dayRecs[k];if(pastEdit!==k||!r0)return;await saveDay({...r0,vestOn:!!v,worn:true,edited:true});renderToday();return}
  const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
@@ -667,13 +705,23 @@ function dayActions(o){
 
 /* outfit score card with an expandable breakdown */
 let scoreOpen=false;
+/* the score's advice for a day (planner.js, scoreAdvice): swaps that would raise it, the wardrobe's best with this jacket, and the
+   checks nothing owned improves. Worked out once per outfit (kept until the day's pieces change); not for past or worn days */
+let adviceMemo={k:'',v:null};
+function adviceFor(o){if(!o||o.frozen||!hasOutfit(o))return null;const k=key(sel)+JSON.stringify(idsOf(o))+!!o.vest+items.length;
+  if(adviceMemo.k!==k)adviceMemo={k,v:scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
+function applyFix(slot,id){return pickItem(slot,id)}
 function scoreCard(o){
-  const r=rateOutfit(o),tone=r.score>=80?'good':r.score>=65?'ok':'low';
+  const r=rateOutfit(o),tone=r.hard.length?'low':r.score>=80?'good':r.score>=65?'ok':'low',A=adviceFor(o);
+  const sub=scoreOpen?'tap to fold away':'tap for why',fix=A&&A.fixes.length>0;
+  const line=r.hard.length?`${r.hard.length} thing${r.hard.length===1?'':'s'} to put right`:fix&&A.best>r.score?`Could be ${A.best} with what you own`:A&&r.score<100?'The best your wardrobe allows':'Outfit score';
+  const fixes=!fix?'':`<div class="sfix" onclick="event.stopPropagation()"><small>${r.hard.length?'These would put it right:':'Today\'s pieces were chosen for variety. These would score higher:'}</small>${A.fixes.map(f=>`<button type="button" class="sfixbtn" onclick="applyFix('${f.slot}','${f.item.id}')" aria-label="Wear the ${esc(desc(f.item)||nm(f.item))} ${esc(slotLabel(f.slot,o).toLowerCase())}: ${f.gain} more points"><span class="dot">${swatchSVG(f.item,true)}</span><span class="cap sfixnm">${desc(f.item)||nm(f.item)} <span class="mut">${slotLabel(f.slot,o).toLowerCase()}</span></span><b>+${f.gain}</b></button>`).join('')}</div>`;
   // unfolds like the pieces list and the month plan; each check slides in and its bar fills to the points it scored
-  return `<section class="mbox score ${tone}${scoreOpen?' open instant':''}" id="sbox"><button class="month-link" onclick="toggleScore()" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="Outfit score ${r.score}, ${r.label}. ${scoreOpen?'Fold away':'Show why'}">
-    <span class="num" aria-hidden="true">${r.score}</span><span class="lbl" aria-hidden="true"><b>${r.label}</b><small>Outfit score · ${scoreOpen?'tap to fold away':'tap for why'}</small></span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()"><ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></div></div></section>`;
+  return `<section class="mbox score ${tone}${scoreOpen?' open instant':''}" id="sbox"><button class="month-link" onclick="toggleScore()" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="Outfit score ${r.score}, ${r.label}. ${line}. ${scoreOpen?'Fold away':'Show why'}">
+    <span class="num" aria-hidden="true">${r.score}</span><span class="lbl" aria-hidden="true"><b>${r.label}</b><small>${line} · ${sub}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()">${fixes}<ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':c.hard?'miss hard':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':c.hard?'!':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}${A&&A.stuck.includes(c.label)?' <span class="lim">Nothing you own does better here.</span>':''}</small>`:''}</li>`).join('')}</ul>${r.hard.length?`<p class="scap">A real mistake keeps the score at ${HARD_CAP} or below, however well the rest matches.</p>`:''}</div></div></section>`;
 }
+
 function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;box.classList.remove('instant');void box.offsetHeight;
   box.classList.toggle('open',scoreOpen);const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
@@ -1132,7 +1180,7 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);fitNavSoon();
-  if(items.length){recordDays(p);
+  if(items.length){recordDays(p).then(lockUpcoming);
   }
 }
 
@@ -1225,7 +1273,7 @@ const mvSig=o=>o?[o.top&&o.top.id,o.bot&&o.bot.id,o.shirt&&o.shirt.id,o.tie&&o.t
 const MOVE_HOLD=380,MOVE_SLOP=8;
 function moveRecs(src,dst,plan){const o=(plan||planFor())[src];if(!o)return null;const ids=idsOf(o),force={};
   for(const [s,v] of Object.entries(ids))if(v&&s!=='coat')force[s]=v;   // the coat is the weather's choice
-  const recs={...dayRecs},keep=r=>{const n={...(r||{})};delete n.force;delete n.skip;delete n.ids;delete n.vest;delete n.kind;delete n.auto;return n};
+  const recs={...dayRecs},keep=r=>{const n={...(r||{})};delete n.force;delete n.skip;delete n.ids;delete n.vest;delete n.kind;delete n.auto;delete n.lock;return n};
   recs[dst]={...keep(dayRecs[dst]),date:dst,force,vest:!!o.vest,kind:o.suitDay?'suit':'blazer'};
   const s=keep(dayRecs[src]);if(Object.keys(s).filter(k=>k!=='date'&&k!=='updated').length)recs[src]={...s,date:src};else delete recs[src];
   return recs}
@@ -1280,32 +1328,106 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
   root.addEventListener('contextmenu',e=>{if(e.target.closest('#mpanel-in .mc[data-mv]'))e.preventDefault()});
 })();
 
-/* tapping an item opens its editor (and brings it into view) */
-/* Opening an item in the Wardrobe: it takes the whole width of its row, starting where it is, so the tapped box keeps its
-   place on screen; the items beside it slide down under it (a blank cell keeps the rows below unchanged). Closing (Close,
-   Done, or tapping the photo or swatch) reverses it. Every box glides from its old place to its new one (FLIP). */
-let editAt=null;   // {id,at,cols}: where the open item is placed in the list, and the grid's column count then
+/* ---- Wardrobe item sheet ----
+   Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
+   screen (a centred panel from 600px). The grid behind never moves, so closing puts you back exactly where you were. Ways out:
+   swipe the sheet down (by its header at any time; by its content once that is scrolled to the top), Done in the bar at the
+   bottom, a tap on the strip of Wardrobe left above it, the phone's Back button or gesture, Esc. ‹ › beside Done, a sideways
+   swipe or the arrow keys go to the previous / next item of the list on screen. */
 const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
-function flipWardrobe(update,anchorId){
-  const box=()=>[...document.querySelectorAll('#wardrobe .grid > .gi')],before=new Map(box().map(el=>[el.id,el.getBoundingClientRect()]));
-  const anchor=before.get('gi-'+anchorId);update();
-  const k=$('#gi-'+anchorId);if(anchor&&k){const d=k.getBoundingClientRect().top-anchor.top;if(Math.abs(d)>1)window.scrollBy(0,d)}   // the tapped box stays put
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate)return;
-  if(k){k.style.position='relative';k.style.zIndex='2';setTimeout(()=>{k.style.position='';k.style.zIndex=''},WARD_MS+60)}   // the tapped box stays above the ones sliding past
-  for(const el of box()){const a=before.get(el.id);if(!a)continue;const b=el.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;
-    if(el.id==='gi-'+anchorId&&(b.width>a.width+1||b.height>a.height+1)){   // opening: grows out of its old box
-      const ins=[Math.max(0,a.top-b.top),Math.max(0,b.right-a.right),Math.max(0,b.bottom-a.bottom),Math.max(0,a.left-b.left)].map(v=>v+'px').join(' ');
-      el.animate([{clipPath:`inset(${ins} round 14px)`},{clipPath:'inset(0px 0px 0px 0px round 14px)'}],{duration:WARD_MS,easing:WARD_EASE});continue}
-    if(Math.abs(dx)<1&&Math.abs(dy)<1)continue;
-    el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:WARD_MS,easing:WARD_EASE})}}
+const wardList=()=>items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
+const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
+let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
+/* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
+let itemHist=false,itemBack=false;
+try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
+function histPush(){if(itemHist||itemBack)return;try{history.pushState({item:1},'');itemHist=true}catch{}}
+function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
+addEventListener('popstate',()=>{
+  if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
+  if(itemHist){itemHist=false;if(editing)closeItem(true)}});
+/* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
+function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;
+  v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
+  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on}
+/* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
+function renderItem(){
+  const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
+  if(!i){editing=null;itemShown(false);return}
+  const l=wardList(),k=l.findIndex(x=>x.id===i.id);
+  $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="cap">${desc(i)||TYPES[i.type]||'Item'}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
+  $('#ivbody').innerHTML=itemBody(i);
+  $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
+  itemShown(true)}
+const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
-  const els=[...document.querySelectorAll('#wardrobe .grid > .gi')],el=$('#gi-'+id);
-  if(editing&&editing!==id){const top=el&&el.getBoundingClientRect().top;editing=null;editAt=null;renderWardrobe();   // another one is open: fold it first
-    const n=$('#gi-'+id);if(n&&top!=null)window.scrollBy(0,n.getBoundingClientRect().top-top);return openItem(id)}
-  const g=$('#wardrobe .grid'),cols=g?Math.max(1,getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length):1,idx=els.findIndex(e=>e.id==='gi-'+id);
-  editAt=idx>=0?{id,at:idx-idx%cols,cols,flt}:null;
-  flipWardrobe(()=>{editing=id;renderWardrobe()},id)}
-function closeItem(){const id=editing;if(!id)return;flipWardrobe(()=>{editing=null;editAt=null;renderWardrobe()},id)}
+  if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
+  editing=id;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;
+  for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
+  if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
+  v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);
+  bd.animate([{opacity:0},{opacity:1}],{duration:WARD_MS})}
+/* fromPop: the Back button did it (its history entry is gone already); dragged: how far down the sheet was let go, in px */
+function closeItem(fromPop,dragged){
+  const id=editing,v=$('#item-view'),bd=$('#item-backdrop');if(!id||!v)return;const moved=id!==itemFrom;
+  editing=null;itemFrom=null;if(!fromPop)histDrop();
+  const y=dragged||0,op=+bd.style.opacity||1;v.style.transform=bd.style.opacity='';
+  if(noMotion()){renderItem();return}
+  v.classList.add('closing');bd.classList.add('closing');renderItem();   // the sheet stays up, drawn as it was, while it slides away
+  const t=$('#gi-'+id);if(t&&moved)t.scrollIntoView({block:'center'});   // it was reached with ‹ ›: show where it lives
+  const o={duration:WARD_MS-60,easing:dragged?'ease-out':'cubic-bezier(.4,0,.8,.4)',fill:'forwards'};
+  const an=v.animate(sheetSlides()?[{transform:`translateY(${y}px)`},{transform:'translateY(100%)'}]:[{opacity:1,transform:`translateY(${y}px)`},{opacity:0,transform:`translateY(${y+24}px)`}],o);
+  bd.animate([{opacity:op},{opacity:0}],{duration:WARD_MS-60,fill:'forwards'});
+  an.finished.catch(()=>{}).then(()=>{if(editing)return;for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing')}})}
+/* closing with nothing to slide away from: the item was deleted, or another tab is shown */
+function dropItem(){editing=null;itemFrom=null;histDrop();for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
+/* swiping the sheet down closes it. The header is a handle at any time; the content is one only while it is scrolled to the
+   top (further down, a downward swipe scrolls it back up, as it must). The choice is made on the first move of a touch, before
+   the browser starts scrolling. The sheet follows the finger and the Wardrobe behind brightens; let go past a quarter of the
+   sheet's height, or with a flick, and it closes, else it springs back. Not while cropping (the crop frame is dragged). */
+let ivDrag=false;
+(()=>{const v=$('#item-view'),b=$('#ivbody'),bd=$('#item-backdrop');if(!v||!b)return;let st=null;
+  const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
+  v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.ivhead');
+    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:Date.now(),vy:0}},{passive:true});
+  v.addEventListener('touchmove',e=>{
+    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return}}   // downward: ours; anything else is a scroll or a sideways swipe
+    e.preventDefault();const now=Date.now();if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
+    st.d=Math.max(0,dy);put(st.d)},{passive:false});
+  const end=()=>{
+    if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;ivDrag=false;v.style.transition='';
+    if(d>v.offsetHeight*.25||(vy>.5&&d>30)){closeItem(false,d);return}
+    put(0);if(!noMotion()){v.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:220,easing:WARD_EASE});if(bd)bd.animate([{opacity:Math.max(.15,1-d/v.offsetHeight)},{opacity:1}],{duration:220})}};
+  v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true});
+})();
+/* the previous / next item of the list on screen; the new one slides in from the side it lies on */
+function stepItem(n,from){
+  const l=wardList(),k=l.findIndex(x=>x.id===editing),t=l[k+n];if(k<0||!t)return false;
+  editing=t.id;renderItem();const b=$('#ivbody');b.scrollTop=0;
+  const el=b.firstElementChild;if(el&&!noMotion())el.animate([{transform:`translateX(${from===undefined?n*56:from}px)`,opacity:0},{transform:'none',opacity:1}],{duration:220,easing:WARD_EASE});
+  return true}
+(()=>{const b=$('#ivbody');if(!b)return;let st=null;const inn=()=>b.firstElementChild;
+  b.addEventListener('touchstart',e=>{const t=e.touches[0];
+    st=e.touches.length>1||phEdit.crop||t.clientX<24||t.clientX>innerWidth-24||e.target.closest('input,textarea,.cropwrap')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0}},{passive:true});   // a swipe may start on a dropdown: half the page is dropdowns
+  b.addEventListener('touchmove',e=>{
+    if(ivDrag)st=null;if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8))st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';
+    if(st.lock!=='x')return;e.preventDefault();
+    const l=wardList(),k=l.findIndex(x=>x.id===editing),edge=k<0||(dx>0&&k<=0)||(dx<0&&k>=l.length-1);   // nothing that way: resist
+    st.dx=dx;const el=inn();if(el){const x=edge?dx/4:dx;el.style.transition='none';el.style.transform=`translateX(${x}px)`;el.style.opacity=String(1-Math.min(.5,Math.abs(x)/innerWidth))}
+  },{passive:false});
+  const end=()=>{
+    if(!st)return;const {lock,dx,t}=st;st=null;const el=inn();if(lock!=='x'||!el)return;
+    const fast=Math.abs(dx)/Math.max(1,Date.now()-t)>.5,n=dx<0?1:-1;
+    if(!((Math.abs(dx)>70||(fast&&Math.abs(dx)>30))&&stepItem(n,n*Math.min(innerWidth*.5,220)))){
+      el.style.transition='transform .2s ease-out,opacity .2s';el.style.transform='translateX(0)';el.style.opacity='1'}};
+  b.addEventListener('touchend',end,{passive:true});b.addEventListener('touchcancel',end,{passive:true});
+  document.addEventListener('keydown',e=>{if(!editing)return;
+    if(e.key==='Escape'){if(phEdit.crop){phEdit.crop=null;renderWardrobe()}else closeItem();return}
+    if(e.target.closest&&e.target.closest('input,select,textarea'))return;
+    if(e.key==='ArrowRight')stepItem(1);if(e.key==='ArrowLeft')stepItem(-1)});
+})();
 /* swiping the Wardrobe moves between the type filters (All, Suit, Blazer, …) in chip order, skipping types with no items;
    only the grid slides. Not while an item is open (its editor has sliders and the photo crop), nor on the chips row itself. */
 const wardTypes=()=>['all',...Object.keys(TYPES).filter(t=>items.some(i=>i.type===t))];
@@ -1342,13 +1464,10 @@ function renderWardrobe(){
   closeSettings();if(editing!==phEdit.id)phEdit={id:null,undo:[],crop:null};   // undo lasts while the item stays open
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
-  const list=items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
-  // the open item moves to the start of its row; the rest of that row follows it and a blank cell fills the slot it left
-  let gapAfter=null;if(editing&&editAt&&editAt.id===editing&&editAt.flt===flt){const k=list.findIndex(i=>i.id===editing);
-    if(k>=0){const end=Math.min(editAt.at+editAt.cols,list.length),[it]=list.splice(k,1);list.splice(editAt.at,0,it);if(end-editAt.at===editAt.cols&&editAt.cols>1)gapAfter=list[end-1].id}}
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>`
-  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button>`}${editing===i.id?`<div class="btns giact"><button onclick="closeItem()">Close</button><button class="danger" onclick="rm('${i.id}')">Delete</button><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`:''}${editing===i.id&&i.paused?(i.order?`<div class="rotnote ordrow"><small class="mut">On the way: it isn't in your outfits yet.</small><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="mut rotnote"><small>Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</small></p>'):''}${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
+  const list=wardList();
+  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button></div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
+  renderItem();
 }
 
 const cap1=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};   // option labels start with a capital ("Grey", "Solid"); values stay as they are
@@ -1384,9 +1503,10 @@ ${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confi
 }
 
 function show(t){
-  closeSettings();
+  closeSettings();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
+  if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
 }
 
 db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
@@ -1401,7 +1521,8 @@ const unit=()=>settings.units||(/^en-(US|LR|MM)/.test(navigator.language||'')?'F
 const temp=c=>Math.round(unit()==='F'?c*9/5+32:c);
 const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
-async function saveUserSettings(){settings.updated=Date.now();await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
+async function saveUserSettings(){settings.updated=Date.now();cache={};   // the settings have changed already: the cached plan is stale now, not only once they are stored
+  await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
 /* ---- Settings: days off. A country's public holidays (each can be unticked if you work that day) and your own days
    off (a single day or a range, e.g. a holiday trip). They are planned like weekends: no outfit, nothing counted as worn. ---- */
 const COUNTRY_CODES='AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WS YE YT ZA ZM ZW'.split(' ');
@@ -1482,13 +1603,15 @@ function renderSettingsExtras(){
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.';
   if($('#cfg-units'))$('#cfg-units').value=unit();
-  if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';
+  if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
   settingsSummaries();
 }
 function setVestMode(v){settings.vestMode=v;saveUserSettings();settingsSummaries()}
+/* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
+async function setDarkShirts(v){settings.darkShirts=v;await clearLocks();await saveUserSettings();todayStale=true;settingsSummaries()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0)return;settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
-  renderSettingsExtras();saveUserSettings()}
+  renderSettingsExtras();clearLocks().then(saveUserSettings)}
 function setUnits(v){settings.units=v;saveUserSettings();settingsSummaries()}
 function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
 function useMyLocation(){if(!navigator.geolocation){alert('Location is not available on this device.');return}
