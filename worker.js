@@ -534,11 +534,22 @@ Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, 
 Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
 /* a one-piece edit of a kept photo (a test path: is changing one piece cheaper than a whole new photo?): body.image is the
    photo, body.swap {what, text} the piece (one of SWAP_KEEP) and its description, refs its photos, body.mask (or body.markup) where it is */
+/* the generator once answered a swap with a collage: the figure moved aside and the reference photos pasted next to it */
+const ONE_PHOTO = 'The result is one single photograph with the same crop and framing as the first image: the man stays where he is and at the same size. Do not add panels, insets, swatches, borders or copies of the other images; they only show what the new piece looks like.';
 const SWAP_KEEP = { jacket: 'the jacket and its pattern', shirt: 'the shirt and collar', tie: 'the tie, its knot and its pattern', 'tie bar': 'the tie bar', watch: 'the wristwatch' };
 const SWAP_PROMPT = (what, text) => `Edit the first image (a photograph of a man's torso). Replace only the ${what} with: ${text}{REFS}.
 The new ${what} takes the place of the old one: same position, size, shape, drape and lighting, with the same outline, lying under whatever covers it now (a hand, the tie bar, the lapels).${what === 'jacket' ? ' Keep the cut as it is: the lapels, buttons, pockets, sleeves and every fold stay where they are; only the cloth changes.' : ''}
 Everything else must stay exactly as it is in the first image, pixel for pixel where possible: ${Object.keys(SWAP_KEEP).filter(k => k !== what).map(k => SWAP_KEEP[k]).join(', ')}, both hands, the pose, the background, the light and the framing.
+${ONE_PHOTO}
 No added text, captions or watermark.`;
+/* adding a piece the photo doesn't have yet (a tie bar: the master photo has none) */
+const SWAP_ADD_PROMPT = (what, text) => `Edit the first image (a photograph of a man's torso). Add one thing only: ${text}{REFS}.
+Everything else must stay exactly as it is in the first image, pixel for pixel where possible: ${Object.keys(SWAP_KEEP).filter(k => k !== what).map(k => SWAP_KEEP[k]).join(', ')}, both hands, the pose, the background, the light and the framing.
+${ONE_PHOTO}
+No added text, captions or watermark.`;
+/* the master photo of assembled outfits (assemble.js): the pose in plain placeholder clothes, which every item's photo is an edit of */
+const MASTER_NOTE = `
+This is a plain reference photo. The suit is a solid, perfectly plain worsted wool with no pattern, stripe, check or visible weave. The tie is a solid plain silk with no pattern. The shirt is plain, with a classic spread collar and plain barrel cuffs showing at both wrists. No tie bar, tie clip, pocket square, lapel pin or cufflinks.`;
 function dataUrlToBlob(u) {
   const m = String(u || '').match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/s);
   if (!m) return null;
@@ -569,7 +580,13 @@ const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max'];   // xhigh and max:
 const IMG_MODEL_RE = /^gpt-image-[a-z0-9.-]{1,40}$/, COMPLEXITIES = ['low', 'medium', 'high'];
 const OPENAI_MS = 300000;
 async function outfitPhoto(body, env) {
-  const base = dataUrlToBlob(body.image);
+  let base = dataUrlToBlob(body.image);
+  // baseKey: edit a photo kept here (an item's piece is an edit of the master), so the app doesn't upload the master with every piece
+  if (!base && COMBO_RE.test(String(body.baseKey || '')) && env.WARDROBE) {
+    const kept = await env.WARDROBE.get(`render:${body.baseKey}`, 'json');
+    base = dataUrlToBlob(kept && kept.img);
+    if (!base) return { ok: false, status: 409, retry: true, error: 'the photo to edit is not there yet' };   // the master may still be on its way
+  }
   if (!base) return { ok: false, status: 400, error: 'no illustration' };
   const refs = (Array.isArray(body.refs) ? body.refs : []).slice(0, 8).map(dataUrlToBlob).filter(Boolean);
   const outfit = String(body.outfit || '').slice(0, 2500) || 'a suit, dress shirt and tie';
@@ -582,7 +599,7 @@ async function outfitPhoto(body, env) {
     : ', and match the photos of the actual items that follow it';
   const swap = body.swap && Object.hasOwn(SWAP_KEEP, String(body.swap.what || '')) ? { what: body.swap.what, text: String(body.swap.text || '').replace(/[{}`]/g, '').slice(0, 1500) || `another ${body.swap.what}` } : null;
   const swapRefs = !refs.length ? '' : `. The images after the first show the new ${swap && swap.what}${labels.length === refs.length ? `, in this order: ${labels.join('; ')}` : ''}. Match it exactly`;
-  form.append('prompt', swap ? SWAP_PROMPT(swap.what, swap.text).replace('{REFS}', swapRefs) : RENDER_PROMPT(outfit, !!body.nojacket).replace('{REFS}', refText));
+  form.append('prompt', swap ? (body.swap.add ? SWAP_ADD_PROMPT : SWAP_PROMPT)(swap.what, swap.text).replace('{REFS}', swapRefs) : RENDER_PROMPT(outfit, !!body.nojacket).replace('{REFS}', refText) + (body.master ? MASTER_NOTE : ''));
   form.append('image[]', base, `outfit.${base.type.split('/')[1]}`);
   // where to edit: a mask (PNG with an alpha channel, the first image's size) or, for GPT Image 2.5 and later, a markup layer (not both)
   const mask = swap && dataUrlToBlob(body.mask), markup = swap && !mask && dataUrlToBlob(body.markup);
@@ -618,11 +635,12 @@ async function queueRender(body, env, json) {
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'Background photos need the RENDER_QUEUE and WARDROBE bindings on the worker.', noQueue: true }, 501);
   const key = String(body.key || '');
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
-  if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
+  if (!dataUrlToBlob(body.image) && !COMBO_RE.test(String(body.baseKey || ''))) return json({ error: 'no illustration' }, 400);
   if (!body.replace && await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });   // replace: a regenerate from the app
   const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 8), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 8), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
     model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, replace: body.replace ? true : undefined, t: Date.now(),
-    ...(body.swap ? { swap: body.swap, mask: body.mask, markup: body.markup } : {}) };   // a one-piece edit of a kept photo (the test path)
+    ...(body.swap ? { swap: body.swap, mask: body.mask, markup: body.markup } : {}),   // a one-piece edit of a kept photo
+    ...(COMBO_RE.test(String(body.baseKey || '')) ? { baseKey: body.baseKey } : {}), ...(body.master ? { master: true } : {}) };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
   await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: 0, at: Date.now() }), JOB_TTL);   // queued, not started (GET /render-queue resends it if it never starts)

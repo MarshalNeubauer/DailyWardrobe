@@ -86,7 +86,8 @@ function applyCustom(cu){
     CUSTOM_COL[c.key]=c;COLORS[c.key]=c.hex.toLowerCase();COLOR_NAMES[c.key]=String(c.name||c.key.slice(3)).toLowerCase();
     for(const t of c.types||[])if(COLS_BY[t]){COLS_BY[t].p.push(c.key);if(c.accent)COLS_BY[t].a.push(c.key)}}
   for(const p of cu.patterns||[]){if(!/^own-[a-z0-9-]{1,28}$/.test(p.key))continue;
-    for(const t of p.types||[])if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}}
+    for(const t of p.types||[])if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}
+  COLOR_NAME_RE=null}
 const patName=p=>CUSTOM_PAT[p]?String(CUSTOM_PAT[p].name).toLowerCase():patLabel(p);
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
 let items=[];
@@ -156,8 +157,11 @@ const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
 const COLOR_NAMES={paleyellow:'pale yellow',lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey',midgrey:'mid grey',steelblue:'steel blue',deepblue:'deep blue',deeptaupe:'deep taupe',darknavy:'very dark navy',slate:'dark slate blue-grey'};
 const colName=c=>COLOR_NAMES[c]||c;
 // (a key that appears in its own spelled-out name, like slate in 'dark slate blue-grey', is not expanded twice)
-const COLOR_NAME_RE=new RegExp('(?<!dark )\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b(?! blue-grey)','g');
-const prettyCols=t=>String(t??'').replace(COLOR_NAME_RE,m=>COLOR_NAMES[m]);
+/* built when first needed and again after the owner's colours change (applyCustom): made once at load it never knew them, and the
+   photo generator was told "a owntaupe tie" */
+let COLOR_NAME_RE=null;
+const colourNameRe=()=>COLOR_NAME_RE||(COLOR_NAME_RE=new RegExp('(?<!dark )\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b(?! blue-grey)','g'));
+const prettyCols=t=>String(t??'').replace(colourNameRe(),m=>COLOR_NAMES[m]);
 /* the dropdown for a type; a colour an existing item already has is always kept in its own list */
 const COLOR_OPTS=(type,cur,accent)=>{const l=colsFor(type,accent);return (cur&&COLORS[cur]&&!l.includes(cur)?[...l,cur]:l).map(c=>[c,colName(c)])},
   DIAL_OPTS=cur=>(cur&&COLORS[cur]&&!DIAL_COLS.includes(cur)?[...DIAL_COLS,cur]:DIAL_COLS).map(c=>[c,colName(c)]);

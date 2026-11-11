@@ -132,6 +132,32 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - weave patterns never use the pixel band reader (`claudeOnly`); a texture isn't sent to the photo generator (plain shirts share one photo per colour); Settings → Shirt weaves (`renderWeaveUI`/`readWeaves`) reads textured shirts that have a close-up but no reading; the user's diamond-dobby close-up is `tests/fixtures/shirt-diamond-closeup.jpg`
 - benchmark (Settings → Tagging benchmark, `renderBenchUI`/`runBench`): re-tags 25/50/75/100% of the items with photos (random), three at a time, compares type/colour/colour family/pattern with the confirmed tags; runs only when started, with a cost estimate; results in `localStorage.tag_bench` (last 10)
 
+### `assemble.js`
+
+- assembled outfit photos (loaded after tagging.js): one master photo fixes the pose, every item has one photo that is the master with only that piece changed, and an outfit's picture is put together on the device by copying pieces onto the master, with no image model
+- the master (`asmMasterOutfit`, key `asmMasterKey()`): a plain mid-grey suit, white shirt, green tie and the owner's watch, no tie bar; things are added on top of it, never taken off
+- zones (`asmZones`): four calibration photos (the master with the jacket, shirt, tie or watch in a loud flat colour, `ASM_CALIB`) show where each piece is; a pixel goes to the piece whose calibration photo changed it most, if by more than `ASM_DE` (14, CIE Lab: a dark green and a dark navy of one brightness still differ); zones are kept packed in `meta` as `asm:zones:<master key>` and refused when a piece is missing or absurdly large (`asmZonesOk`)
+- `asmCompose(master, zones, {jacket, shirt, tie, bar, watch})`: the jacket and shirt are copied over their whole zone; the tie by its own outline (`asmTieMask`: within 3px of the zone's edge each pixel is tie or not by the nearer colours); the tie bar is the biggest thing on the tie the master doesn't show (`asmBarMask`); another watch takes the master watch's zone and what it changed around it (`asmWatch`)
+- a piece left out stays as the master shows it: the owner's watch and a white shirt need no piece (`asmInfo()`, read from the master photo's own record: its `sig` is `asm/master {watch, shirt}`, `asmMasterSig`), and the hands, the background and that watch always come from the master (edits redraw them slightly: the trial's jacket photo smeared the watch dial)
+- joins (`asmSeams`): pixels where two pieces meet are rebuilt from the clean pixels within 2px either side, so a tie made over the white master shirt has no pale rim on a dark shirt
+- where a smaller watch uncovers the cuff its photo shows the master's white shirt: cuff-coloured pixels joined to the cuff are tinted to the outfit's shirt (`asmWatch`)
+- `asmCan(o)`: a jacket, shirt, tie and watch and no vest; no-jacket days, tieless days and vest days keep a photo of their own
+- photo keys: `asmPieceKey(slot, item)` hashes `asmLook`: `lookSig` (app.js, shared with `comboSig`), so plain shirts of one colour share a piece, plus the weave's name for a shirt in a woven texture that was never read (the owner wants a photo per shirt look, not per colour)
+- shirt textures (`asmShirtText`, `ASM_WEAVE`): a woven texture is asked for "bold … a little larger and with more contrast than life", since a true-to-life weave can't be seen in the strip of shirt beside the tie; tried on the user's pink herringbone
+- the wording matters: "easy to see in this photo" made the generator answer with a collage (the figure moved aside, the reference photos pasted beside it); the worker's swap prompts now end with `ONE_PHOTO` (one photograph, same framing, no panels or copies of the references)
+- a piece that didn't keep the picture is refused: `asmDrift` is the share of pixels outside the piece that changed (real pieces under 6%, the collage over 30%); over `ASM_DRIFT` (12%) the key goes in `asmBad`, the outfit keeps its own photo and Settings offers to make the piece again
+- Today: `renderFor(o)` returns `asmFor(o)` first, the assembled picture kept on the device (`asmOut`, in `meta` as `asm:out:<key>`, the newest 80; stale once a piece is made again, `asmStamp`); `figureStage` calls `asmEnsure(o)`, which brings the master, the pieces (and the calibration photos while no zones are kept) home with `GET /render?key=` (`asmGet`, once a session each), assembles and redraws
+- a photo made for the outfit itself after the master (Settings: Regenerate) wins over the assembled one; older outfit photos are superseded but stay as the fallback while a piece is missing
+- Generate on Today, for an outfit that can be assembled (`asmWants`), sends only its missing pieces (`asmQueueOutfit`), about 8¢ each; `renderPending` counts them (`asmPending`); the month batch skips such outfits (`batchCombos`)
+- Settings → Realistic photos → Item photos (`renderAsmUI`, `asmMakeMissing`): `asmSync()` looks at the worker (at start-up, when Settings opens, forced after a change), brings home what it has and lists what nobody made (`asmState.missing`, from `asmNeeds()`: the master, four calibration photos, one piece per in-rotation jacket, shirt look, tie, tie bar and extra watch); the button sends them after a confirm with the cost (`ASM_COST`: master 24¢, calibration 6.5¢, piece 8¢); a missing master is made first, alone
+- a new item, or one put back in rotation (`put` → `asmAutoSoon`), has its photo made by itself when at most `ASM_AUTO` (3) pieces are missing; "New items: Only when I ask" (`settings.asmAuto`, `setAsmAuto`) turns that off
+- a worker with no master is asked for it once and then not again for 6 hours (`localStorage.asm_none`, `ASM_NONE_MS`), except when Settings looks; without a master nothing else is asked for
+- `prettyCols` (core.js) builds its colour-name pattern when first needed and again after `applyCustom`: built once at load it never knew the owner's colours, and photo descriptions said "a owntaupe tie"
+- sent pieces go through the same queue watch as outfit photos (`rqGet().keys`, the push, `checkQueue`)
+- `asmPhoto(o)`: the outfit's picture as a JPEG data URL from the photos kept on the device (`renders`), or null when the master, a piece or the calibration photos are missing
+- the jobs (`asmMasterJob`, `asmCalibJob`, `asmPieceJob`): each is a `POST /render {mode:'queue'}`; pieces name the master by `baseKey` and swap one piece (`swap`), a tie bar is added (`swap.add`)
+- the fixtures `tests/fixtures/asm-*.jpg` are the real trial photos (900px): the master and six one-piece edits; `tests/assemble.test.js`
+
 ### `detect.js`
 
 - stripe/check detection from photos (canvas)
@@ -329,7 +355,10 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
   - a photo's record keeps OpenAI's token counts (`usage`), so `GET /render?key=` shows what it cost
   - a queued job can be a one-piece edit too (`swap`, `mask`, `markup` kept in the job): a direct request waiting minutes is cut off by some proxies
   - photos under test keys (`c7e57…`) expire from KV after 7 days (`renderTtl`)
-  - a one-piece edit of a kept photo, as a test path (not used by the app): `swap {what, text}` with the photo as `image`, the new piece's photos as `refs`, and a `mask` (PNG with alpha, the photo's size) or a `markup` layer; the prompt is `SWAP_PROMPT`
+  - a one-piece edit of a kept photo (assemble.js builds and sends these jobs): `swap {what, text}` with the photo as `image`, the new piece's photos as `refs`, and a `mask` (PNG with alpha, the photo's size) or a `markup` layer; the prompt is `SWAP_PROMPT`
+  - `master:true` adds `MASTER_NOTE` to an outfit photo's prompt (plain cloth, no tie bar or pocket square): the master of assembled photos
+  - `baseKey`: the photo to edit is one kept in KV (`render:<baseKey>`, the master), so a piece job uploads no image; while it isn't there the job retries
+  - `swap.add` uses `SWAP_ADD_PROMPT` (add one thing, keep the rest): a tie bar on the master, which has none
   - `swap.what` is one of `SWAP_KEEP` (jacket, shirt, tie, tie bar, watch): the prompt lists every other piece as staying exactly as it is; a jacket swap keeps the cut and changes only the cloth
 - Photos are saved per outfit combination (`comboKey()` in app.js: the shirt by base colour only; the jacket/tie/clip/watch by how they look; plus the vest) as `render:c<16 hex>` in KV (no expiry) and in `meta`, so a combination is never generated twice.
 - GET/PUT `/render?key=` share a photo between devices; `GET /render?list=1` lists every kept key. Older `render:<date>` copies are migrated on first use.
