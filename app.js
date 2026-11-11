@@ -671,10 +671,12 @@ function monthGridHtml(){
   for(const d=new Date(f);d.getMonth()===m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),off=offName(d),work=wd&&hasOutfit(o),isT=+d===+T,past=d<T;
     const label=`${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}: ${work?`${shortTop(o)}, ${shortRest(o)}`:wd?'no outfit recorded':off?'day off: '+off:'day off'}`;
     cells.push(`<button class="mc ${!wd?'rest':past?'worn':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}" style="--i:${n++}" aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
-  return `<div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3><div class="mbtns"><button onclick="monthStep(-1)" aria-label="Previous month">‹</button><button onclick="monthStep(1)" aria-label="Next month">›</button></div></div>
+  // no arrows: a swipe (or a mouse drag) inside the box moves between months (monthSwipe); the title is centred
+  return `<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3><small class="mhint">Swipe for other months</small></div>
     <div class="mgrid mdow" aria-hidden="true">${['S','M','T','W','T','F','S'].map(x=>`<span>${x}</span>`).join('')}</div>
-    <div class="mgrid">${cells.join('')}</div>
-    <div class="mfoot"><div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div><button class="foldbtn" onclick="toggleMonth()" aria-label="Fold away the month" title="Fold away"><span aria-hidden="true">›</span></button></div>`;
+    <div class="mgrid">${cells.join('')}</div></div>
+    <div class="mfoot"><div class="mlegend"><span><i class="lg worn"></i>Worn</span><span><i class="lg today"></i>Today</span><span><i class="lg planned"></i>Planned</span><span><i class="lg rest"></i>Rest</span></div></div>
+    <button class="foldbar" onclick="toggleMonth()" aria-label="Fold away the month"><span class="fchev" aria-hidden="true">›</span>Fold away</button>`;
 }
 /* after a box unfolds: scroll down just far enough to show what opened, but never past the point where the tapped box
    (top: the tapped element, e.g. the tile row for a tile's photo) reaches the top of the screen. Follows the box while it
@@ -696,7 +698,18 @@ function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
   box.classList.toggle('open',monthOpen);$('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
   if(monthOpen)reveal(box);else{revealRun++;keepInView(box)}}
-function monthStep(n){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(el){el.innerHTML=monthGridHtml();$('#mbox').classList.add('instant')}}
+function monthStep(n,from){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(!el)return;el.innerHTML=monthGridHtml();$('#mbox').classList.add('instant');
+  const sw=$('#mswipe');if(!sw||!from||matchMedia('(prefers-reduced-motion: reduce)').matches)return;   // the new month slides in from the side it was swiped from
+  sw.style.transition='none';sw.style.transform=`translateX(${from}px)`;sw.style.opacity='0';void sw.offsetWidth;
+  sw.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sw.style.transform='translateX(0)';sw.style.opacity='1'}
+/* a sideways drag inside the open month: the month follows the finger, and past 70 px (or a quick flick) the next or previous
+   month slides in; anything shorter springs back. Shared by touch (the Today swipe handler hands it over) and the mouse. */
+function monthDrag(dx){const sw=$('#mswipe');if(!sw)return;sw.style.transition='none';sw.style.transform=`translateX(${dx}px)`;sw.style.opacity=String(1-Math.min(.5,Math.abs(dx)/innerWidth))}
+function monthRelease(dx,ms){const sw=$('#mswipe');if(!sw)return false;const fast=Math.abs(dx)/Math.max(1,ms)>.5;
+  if(Math.abs(dx)>70||(fast&&Math.abs(dx)>30)){const n=dx<0?1:-1,w=sw.offsetWidth||innerWidth;
+    sw.style.transition='transform .16s ease-in,opacity .16s';sw.style.transform=`translateX(${dx<0?-w:w}px)`;sw.style.opacity='0';
+    setTimeout(()=>monthStep(n,(dx<0?1:-1)*w*.6),160);return true}
+  sw.style.transition='transform .2s ease-out,opacity .2s';sw.style.transform='translateX(0)';sw.style.opacity='1';return false}
 function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};monthOpen=false;renderToday();scrollTo({top:0,behavior:'smooth'})}
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
 function monthLink(){
@@ -1138,17 +1151,19 @@ function stepDay(n,from){
     // ignore multi-touch and touches that start at the screen edge (iOS back/forward gesture)
     // the gesture can start anywhere on Today (e.g. a Saturday shows only a one-line message); only the outfit moves
     // nor while the picture is zoomed: then a drag on it pans the picture
-    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24||(zoom&&e.target.closest('#mannequin-container'))?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0};
+    // inside the open month a sideways drag changes the month instead (the day stays)
+    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24||(zoom&&e.target.closest('#mannequin-container'))?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0,month:!!e.target.closest('#mpanel-in')};
   },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
-    if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8)){st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';if(st.lock==='x')foldAll()}
+    if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8)){st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';if(st.lock==='x'&&!st.month)foldAll()}
     if(st.lock!=='x')return;
     e.preventDefault(); // horizontal drag is ours: no page pan, no zoom bounce
+    if(st.month){st.dx=dx;monthDrag(dx);return}
     st.dx=dx;const sl=slide();if(sl){sl.style.transition='none';sl.style.transform=`translateX(${dx}px)`;sl.style.opacity=String(1-Math.min(.5,Math.abs(dx)/innerWidth))}
   },{passive:false});
   const end=()=>{
-    if(!st)return;const {lock,dx,t}=st;st=null;const sl=slide();if(lock!=='x'||!sl)return;
+    if(!st)return;const {lock,dx,t,month}=st;st=null;if(month){if(lock==='x')monthRelease(dx,Date.now()-t);return}const sl=slide();if(lock!=='x'||!sl)return;
     const fast=Math.abs(dx)/Math.max(1,Date.now()-t)>.5;
     if(Math.abs(dx)>70||(fast&&Math.abs(dx)>30)){
       const n=dx<0?1:-1,w=sl.offsetWidth||innerWidth;
@@ -1157,6 +1172,12 @@ function stepDay(n,from){
     }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}
   };
   el.addEventListener('touchend',end,{passive:true});el.addEventListener('touchcancel',end,{passive:true});
+  // a mouse drag inside the open month does the same on a computer; the click that ends a drag doesn't open a day
+  let md=null,noClick=false;
+  el.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0||!e.target.closest('#mpanel-in'))return;md={x:e.clientX,y:e.clientY,t:Date.now(),on:false}});
+  addEventListener('pointermove',e=>{if(!md)return;const dx=e.clientX-md.x;if(!md.on&&Math.abs(dx)>8&&Math.abs(dx)>Math.abs(e.clientY-md.y))md.on=true;if(md.on){e.preventDefault();monthDrag(dx)}});
+  addEventListener('pointerup',e=>{if(!md)return;const m=md;md=null;if(!m.on)return;noClick=true;setTimeout(()=>noClick=false,0);monthRelease(e.clientX-m.x,Date.now()-m.t)});
+  el.addEventListener('click',e=>{if(noClick&&e.target.closest('#mpanel-in')){e.stopPropagation();e.preventDefault()}},true);
   document.addEventListener('keydown',e=>{if(el.hidden||e.target.closest('input,select,textarea'))return;if(e.key==='ArrowRight')stepDay(1);if(e.key==='ArrowLeft')stepDay(-1)});
 })();
 
