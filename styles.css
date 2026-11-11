@@ -299,6 +299,13 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 
 /* stats page */
 #stats .nav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin-bottom:8px}#stats .nav h2{margin:0;text-align:center}
+.st-card a{color:inherit;text-decoration:underline}
+/* stats: the score of what was worn, one column a week */
+.st-trend{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;margin:10px 0 8px}
+.st-wk{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}.st-wk b{font-size:13px;font-variant-numeric:tabular-nums}.st-wk.none b{color:var(--mut);font-weight:400}
+.st-wk small{font-size:10px;color:var(--mut);white-space:nowrap}
+.st-col{display:flex;align-items:flex-end;width:100%;height:72px;border-radius:6px;background:var(--bg);overflow:hidden}.st-col i{display:block;width:100%;border-radius:6px 6px 0 0}
+.st-col i.good{background:#2f7a4f}.st-col i.ok{background:#b5841a}.st-col i.low{background:#a23b3b}
 .st-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
 .st-tile{background:var(--card);border-radius:12px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;gap:2px}.st-tile b{font-size:22px;line-height:1.1}.st-tile small{color:var(--mut);font-size:11.5px;line-height:1.25}
 .st-card h3{margin:0 0 4px}.st-card>p{margin:2px 0 8px}
@@ -359,6 +366,12 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .sbar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
 .sbar i{display:block;height:100%;width:calc(var(--p) * 100%);border-radius:2px;background:#2f7a4f;transform-origin:left}
 .score li.miss .sbar i{background:#b5841a}
+/* the score's advice: a real mistake in red, swaps that would score higher as one-tap rows above the checks */
+.score li.hard span:first-child{color:#a23b3b;font-weight:600}.score li.hard .sbar i{background:#a23b3b}
+.score .lim{display:block;font-style:italic}.score .scap{margin:8px 4px 4px;font-size:13px;color:var(--mut)}
+.sfix{margin:0 4px 8px;padding:10px 0 4px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}.sfix>small{font-size:13px;color:var(--mut)}
+.sfixbtn{display:flex;align-items:center;gap:10px;min-height:44px;margin:0;padding:4px 10px 4px 6px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.sfixbtn .dot{width:32px;height:32px;border-radius:8px;flex:none}.sfixbtn .sfixnm{flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sfixbtn b{flex:none;color:#2f7a4f;font-variant-numeric:tabular-nums}
 .score.open:not(.instant) li{animation:mcIn .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 90ms)}
 .score.open:not(.instant) .sbar i{animation:barIn .75s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 220ms)}
 .score.open:not(.instant) .num{animation:numPop .5s cubic-bezier(.2,.8,.2,1)}
