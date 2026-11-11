@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(a.desc==='black, light grey toe'&&a.desc0==='black',`the name says the toe colour (${a.desc})`);
     ok(a.toe&&!a.toe0,'the drawing shows the toe cap in its colour, and none on a plain sock');
     ok(a.traced,'the sock is drawn from the traced catalogue outline, details clipped inside it');
-    ok(/Toe cap <select/.test(a.form)&&!/Third colour/.test(a.form)&&/Secondary <select/.test(a.form0),'the editor calls a sock\'s secondary colour "Toe cap" and drops the third colour');
+    ok(/Toe cap <select/.test(a.form)&&!/Third colour/.test(a.form)&&/Second colour <select/.test(a.form0),'the editor calls a sock\'s secondary colour "Toe cap" and drops the third colour');
     const req=sent.find(b=>b.mode==='item');
     ok(req&&!('bg' in req)&&/toe cap/.test(req.item),'the app no longer asks for a sock picture on white');
     // a sock photo already kept on pure white is toned down to the warm grey of the other tiles, once; a grey one is left alone
@@ -55,7 +55,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(g.same,'a picture already on grey is left as it is');
     // the Add card says Toe cap too
     const add=await p.evaluate(()=>{show('add');queue=[{id:'q1',manual:true,type:'socks',primaryColor:'navy',secondaryColor:'grey',pattern:'solid'}];renderAdd();return $('#add').textContent});
-    ok(/Toe cap/.test(add)&&!/Tertiary Colour/.test(add),'the Add card labels the sock\'s secondary colour "Toe cap"');
+    ok(/Toe cap/.test(add)&&!/Third colour/.test(add),'the Add card labels the sock\'s secondary colour "Toe cap"');
     // the planner ignores the toe cap (it is hidden in the shoe)
     const pl=await p.evaluate(()=>sockScore(null,null,{type:'socks',primaryColor:'navy',secondaryColor:'lightgrey',pattern:'solid'})===sockScore(null,null,{type:'socks',primaryColor:'navy',pattern:'solid'}));
     ok(pl,'the toe cap does not change how socks are chosen');

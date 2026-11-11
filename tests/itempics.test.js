@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/oxblood cordovan leather cap-toe oxford/.test(d.desc[1])&&/black calf leather dress belt.*silver buckle/.test(d.desc[2])&&/single charcoal fine-knit mid-calf dress sock in side profile/.test(d.desc[5]),'each item is described from its tags (colour, leather, buckle metal)');
     ok(d.same&&d.diff&&d.missing===5,'identical items share a picture (5 distinct of 6)');
     ok(d.drawn===0,'without pictures the tiles keep their drawings');
-    await p.evaluate(()=>openSettings());
+    await p.evaluate(()=>openSettings('photos'));
     ok(/^Generate 5 item pictures$/.test(await p.textContent('#itempic-btn')),'Settings offers to generate the missing item pictures');
     await p.click('#itempic-btn');await p.waitForFunction(()=>!itemBatch,null,{timeout:20000});
     const after=await p.evaluate(()=>{closeSettings();renderToday();return {left:missingItemPics().length,status:$('#itempic-status').textContent,

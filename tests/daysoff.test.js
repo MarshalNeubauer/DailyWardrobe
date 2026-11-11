@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[1,2,3,4,5];settings.blazerDays=[];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};sel=new Date(2026,10,23);view={y:2026,m:10};show('today')});
     const before=await p.evaluate(()=>!!planFor()['2026-11-26']&&isWorkday(new Date(2026,10,26)));
-    await p.evaluate(()=>openSettings());
+    await p.evaluate(()=>openSettings('daysoff'));
     ok(await p.locator('#cfg-country option').count()>200&&await p.evaluate(()=>[...document.querySelectorAll('#cfg-country option')].some(o=>o.value==='KW'&&o.textContent==='Kuwait')),'Settings has a country selector for public holidays');
     await p.selectOption('#cfg-country','US');await p.waitForFunction(()=>settings.holidays&&settings.holidays.list.length>0,null,{timeout:8000});
     const rows=await p.locator('#holiday-list .hrow').allTextContents();
@@ -56,11 +56,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const rot=await p.evaluate(async()=>{TODAY_OVERRIDE='2026-11-30T12:00:00';cache={};sel=new Date(2026,10,30);view={y:2026,m:10};renderToday();await new Promise(r=>setTimeout(r,400));return {rec:!!dayRecs['2026-11-26'],wed:!!dayRecs['2026-11-25']}});
     ok(!rot.rec&&rot.wed,'nothing is recorded as worn on the holiday (the workday before it is)');
     // untick a holiday you work: it is planned again
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};dayRecs={};sel=new Date(2026,10,23);view={y:2026,m:10};renderToday();openSettings()});
+    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};dayRecs={};sel=new Date(2026,10,23);view={y:2026,m:10};renderToday();openSettings('daysoff')});
     await p.locator('#holiday-list .hrow input').first().uncheck();await p.waitForFunction(()=>settings.holidays.skip.length===1);
     ok(await p.evaluate(()=>{closeSettings();return isWorkday(new Date(2026,10,26))&&!!planFor()['2026-11-26']&&!isWorkday(new Date(2026,11,25))}),'unticking a holiday makes it a workday again; the others stay off');
     // your own days off: a range with a name, shown as one chip, removable
-    await p.evaluate(()=>openSettings());await p.fill('#cfg-off-from','2026-12-07');await p.fill('#cfg-off-to','2026-12-09');await p.fill('#cfg-off-name','Trip');await p.click('.offadd button');
+    await p.evaluate(()=>openSettings('daysoff'));await p.fill('#cfg-off-from','2026-12-07');await p.fill('#cfg-off-to','2026-12-09');await p.fill('#cfg-off-name','Trip');await p.click('.offadd button');
     await p.waitForFunction(()=>(settings.daysOff||[]).length===3&&!!document.querySelector('#off-list .fchip'));
     const own=await p.evaluate(()=>({chip:document.querySelector('#off-list .fchip').textContent,n:document.querySelectorAll('#off-list .fchip').length,off:[7,8,9].every(d=>!isWorkday(new Date(2026,11,d))),name:offName(new Date(2026,11,8)),plan:Object.keys(planMonth(2026,11)).filter(k=>/^2026-12-(7|8|9)$/.test(k)).length}));
     ok(own.n===1&&/Dec 7.*Dec 9.*Trip/.test(own.chip)&&own.off&&own.name==='Trip'&&own.plan===0,`a range of your own days off is added in one go (${own.chip})`);
@@ -71,7 +71,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady);   // (the save from the last tap has finished)
     ok(await p.evaluate(()=>settings.holidays&&settings.holidays.country==='US'&&settings.holidays.skip.length===1&&settings.daysOff.length===1),'days off are saved with the settings');
     // a country Nager lacks comes from the worker
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};openSettings()});const n0=nager;
+    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};openSettings('daysoff')});const n0=nager;
     await p.selectOption('#cfg-country','KW');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='KW'&&settings.holidays.list.length>0,null,{timeout:8000});
     ok(nager>n0&&await p.evaluate(()=>settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&!isWorkday(new Date(2027,1,25))&&settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker');
     // the list is fetched again after a month, keeping what was unticked
