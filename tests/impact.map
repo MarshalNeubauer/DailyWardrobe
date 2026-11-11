@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	4fcef8443c47889b8ec6
+# tested	26cb1c7699906a3a085d
 <every page test>	analysis.js	<loaded>
 <every page test>	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterScripts	applyTheme	applyZoom	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txs	workerBase	zoomTarget
 <every page test>	assemble.js	<loaded>	@	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
@@ -825,6 +825,7 @@ run.js: pattern detection on synthetic fabric photos	icon-512.png	<loaded>
 run.js: pattern detection on synthetic fabric photos	index.html	<loaded>
 run.js: pattern detection on synthetic fabric photos	manifest.webmanifest	<loaded>
 run.js: pattern detection on synthetic fabric photos	styles.css	<loaded>
+run.js: pattern detection on synthetic fabric photos	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 run.js: planner: independent outfit checklist	<every page test>	<every page test>
 run.js: planner: independent outfit checklist	app.js	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove
 run.js: planner: independent outfit checklist	apple-touch-icon.png	<loaded>
