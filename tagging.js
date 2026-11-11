@@ -239,7 +239,11 @@ function settFrom({full,box,tex,weave,wb,type}){let s=null,c=null;
   const opt={straight:!!type&&type!=='tie'};   // a jacket's, shirt's or trousers' pattern is straight in the photo
   try{if(full&&box){s=settFromCanvas(settCanvas(full,wb),box,opt);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
     if(tex){const r=wbRead(tex);c=settFromCanvas(settCanvas(tex,r.ref?r.gains:wb),null,opt);if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
-  if(s&&c&&c.cr>=1.5)s={...s,bands:c.bands,cross:c.cross&&s.cross?{...c.cross,d:s.cross.d}:c.cross||s.cross,src:'photo+closeup'};
+  // the close-up's colours are moved so its ground matches the item photo's: the item photo usually has a white wall behind it to
+  // set its exposure, the close-up of a khaki cloth has nothing white in it and reads darker
+  if(s&&c&&c.cr>=1.5){const g=b=>b.reduce((x,y)=>y[1]>x[1]?y:x),L=h=>rgbLab(...hexRgb(h)),d=L(g(s.bands)[0]).map((v,k)=>v-L(g(c.bands)[0])[k]);
+    const mv=h=>h&&labHex(L(h).map((v,k)=>v+d[k]));
+    s={...s,bands:c.bands.map(([h,w])=>[mv(h),w]),cross:c.cross?{...c.cross,d:s.cross?s.cross.d:c.cross.d,bands:c.cross.bands.map(([h,w])=>[mv(h),w])}:s.cross,cr:c.cr,src:'photo+closeup'}}   // the swatch sits beside the close-up: its scale
   else if(!s)s=c;
   if(!s&&weave)s=settFromWeave(weave);
   if(s&&weave){if(weave.repeatsAcross&&!(type==='tie'&&/photo/.test(s.src)))s.tr=weave.repeatsAcross;   // a tie's box spans most of its width: its own count beats Claude's estimate (a jacket's box is only part of it)
