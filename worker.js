@@ -536,7 +536,7 @@ Soft natural daylight, softly blurred bright office background, 50mm lens, edito
    photo, body.swap {what, text} the piece (one of SWAP_KEEP) and its description, refs its photos, body.mask (or body.markup) where it is */
 /* the generator once answered a swap with a collage: the figure moved aside and the reference photos pasted next to it */
 const ONE_PHOTO = 'The result is one single photograph with the same crop and framing as the first image: the man stays where he is and at the same size. Do not add panels, insets, swatches, borders or copies of the other images; they only show what the new piece looks like.';
-const SWAP_KEEP = { jacket: 'the jacket and its pattern', shirt: 'the shirt and collar', tie: 'the tie, its knot and its pattern', 'tie bar': 'the tie bar', watch: 'the wristwatch' };
+const SWAP_KEEP = { jacket: 'the jacket and its pattern', waistcoat: 'the waistcoat, if he wears one', shirt: 'the shirt and collar', tie: 'the tie, its knot and its pattern', 'tie bar': 'the tie bar', watch: 'the wristwatch' };
 const SWAP_PROMPT = (what, text) => `Edit the first image (a photograph of a man's torso). Replace only the ${what} with: ${text}{REFS}.
 The new ${what} takes the place of the old one: same position, size, shape, drape and lighting, with the same outline, lying under whatever covers it now (a hand, the tie bar, the lapels).${what === 'jacket' ? ' Keep the cut as it is: the lapels, buttons, pockets, sleeves and every fold stay where they are; only the cloth changes.' : ''}
 Everything else must stay exactly as it is in the first image, pixel for pixel where possible: ${Object.keys(SWAP_KEEP).filter(k => k !== what).map(k => SWAP_KEEP[k]).join(', ')}, both hands, the pose, the background, the light and the framing.
