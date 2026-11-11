@@ -378,3 +378,8 @@ body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
 .custrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin:6px 0}
 .bench-pct button{min-width:56px}.benchruns p,.benchmiss p{margin:4px 0}
 .fixlist{margin:4px 0 0;padding-left:18px}
+/* an item out of rotation: dimmed in the grid, with a tag; the button in its details shows the state */
+.gi.paused .giopen .ph,.gi.paused .giopen svg{opacity:.45}
+.pausetag{display:table;margin:6px 0 0;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:color-mix(in srgb,var(--mut) 22%,transparent);color:var(--ink)}
+.rotbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rotnote{margin:4px 0 0}

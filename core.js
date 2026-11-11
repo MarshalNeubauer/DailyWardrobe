@@ -93,6 +93,8 @@ let items=[];
 /* outfit history (one record per date, see planner.js) and the current date (overridable in tests) */
 let dayRecs={},TODAY_OVERRIDE=null;
 const todayDate=()=>{const d=TODAY_OVERRIDE?new Date(TODAY_OVERRIDE):new Date();d.setHours(0,0,0,0);return d};
+/* an item the user took out of rotation (item.paused) stays in the wardrobe and in past outfits, but the planner never picks it */
+const inRotation=i=>!!i&&!i.paused;
 const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip','links','coat'];
 /* occasions a day can be given (Settings): each changes what the planner picks. 'formal' is stored as rec.formal (as
    before); the others as rec.occasion. 'casual' = no jacket and no tie: a shirt and trousers. */

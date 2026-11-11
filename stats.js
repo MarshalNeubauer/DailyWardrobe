@@ -20,6 +20,7 @@ function plannedDays(){const T=todayDate(),end=new Date(T.getFullYear(),T.getMon
   return out.sort((a,b)=>keyDate(a[0])-keyDate(b[0]))}
 /* why a piece is never worn, in a sentence (by the planner's own rules) */
 function whyUnused(i){
+  if(i.paused)return 'You took it out of rotation, so the planner leaves it out.';
   const by=t=>items.filter(x=>x.type===t),suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
   const day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0},jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
   const bestFor=(j,pred)=>{let b=-1e9;const pants=j.type==='suit'?[j]:by('pants');for(const pt of pants.length?pants:[null])for(const sh of by('shirt'))for(const x of by('tie')){if(!pred(pt,sh,x))continue;const q=clothesScore(j,pt,sh,x,j.type==='suit',day);if(q>b)b=q}return b};
