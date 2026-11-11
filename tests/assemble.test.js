@@ -65,7 +65,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x,r=Math.hypot(x-60,y-60),skin=L[3*i+1]>8&&L[3*i+2]>10&&L[3*i]>60;if(r>21.5&&r<30&&skin)rim++;if(r<18&&skin)hand++;if(r>32&&o.data[4*i+2]===90)cloth++}
       return {rim,hand,cloth,h:ASM_HAND}});
     ok(hd.rim===0&&hd.hand>900&&hd.cloth>9000,`where a suit's photo shows a larger hand than the master's, its rim of skin outside the master's hand becomes cloth (${hd.rim} skin pixels left round the fist; the hand and the cloth are untouched)`);
-    ok(ed.stale===false&&ed.v===7,'zones kept from before that fix are not used: they are worked out again');
+    ok(ed.stale===false&&ed.v===8,'zones kept from before that fix are not used: they are worked out again');
     ok(!r.noneOk,'calibration photos that changed nothing give zones that are refused');
     ok(r.a.moved===0&&r.a.watchKept===1,`outside the pieces the picture is the master, pixel for pixel, and the owner's watch stays the master's own (${r.a.moved} pixels differ)`);
     ok(r.a.ringN>300&&r.a.ringOk===1&&r.a.ringSeam<r.a.ringN/100,`the jacket's own edge comes from its photo: ${r.a.ringN} pixels just outside its zone where the master shows a leftover of its own jacket, none on another piece and next to none on the hands (${r.a.ringSeam} skin pixels; the master's dark edge left there read as an outline)`);
