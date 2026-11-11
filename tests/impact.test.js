@@ -68,19 +68,36 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     /* against a real git history */
     const repo=path.join(dir,'repo');fs.mkdirSync(path.join(repo,'tests'),{recursive:true});
     fs.writeFileSync(path.join(repo,'app.js'),A);fs.writeFileSync(path.join(repo,'README.md'),'hello\n');
-    fs.writeFileSync(path.join(repo,I.MAP),['a.test.js\tapp.js\t'+I.LOADED+'\tone','b.test.js\tapp.js\t'+I.LOADED+'\ttwo',''].join('\n'));
-    sh(repo,'init','-q');sh(repo,'add','-A');sh(repo,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm','x');sh(repo,'update-ref','refs/remotes/origin/main','HEAD');
+    const rows=['a.test.js\tapp.js\t'+I.LOADED+'\tone','b.test.js\tapp.js\t'+I.LOADED+'\ttwo',''].join('\n'),commit=m=>{sh(repo,'add','-A');sh(repo,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm',m)};
+    const main=()=>sh(repo,'update-ref','refs/remotes/origin/main','HEAD'),mapText=()=>fs.readFileSync(path.join(repo,I.MAP),'utf8');
+    sh(repo,'init','-q');fs.writeFileSync(path.join(repo,I.MAP),rows);commit('x');main();
     const T=['a.test.js','b.test.js'];let r=await I.select(repo,T);
-    ok(!r.all&&r.tests.length===0,'nothing changed: nothing to run');
+    ok(r.all&&/not recorded for the files/.test(r.report),'a map on main without the fingerprint of main\'s files is not trusted: everything runs');
+    // a passing run writes the fingerprint of the files it ran on; the same files give the same one, committed or not
+    await I.save(repo,new Map(),T,true);const fp=I.fingerprint(repo);commit('tested');main();
+    ok(/^\w{20}$/.test(fp)&&I.stampsOf(mapText()).join()===fp&&I.fingerprint(repo,'HEAD')===fp,'a passing run stamps the map with the fingerprint of its files, the same for the folder and for the commit made from it');
+    r=await I.select(repo,T);ok(!r.all&&r.tests.length===0,'nothing changed: nothing to run');
     fs.writeFileSync(path.join(repo,'app.js'),A.replace('a+1','a+2'));fs.writeFileSync(path.join(repo,'README.md'),'hello there\n');fs.writeFileSync(path.join(repo,'notes.md'),'x\n');
     r=await I.select(repo,T);ok(!r.all&&r.tests.join()==='a.test.js'&&/one\(\)/.test(r.report),'an uncommitted edit to one function picks the one test that runs it ('+(r.tests||[]).join()+')');
     fs.writeFileSync(path.join(repo,'app.js'),A.replace('LIMIT=5','LIMIT=6').replace('return a+1','return a+LIMIT'));fs.writeFileSync(path.join(repo,'tests','b.test.js'),'// checks LIMIT\n');
-    sh(repo,'add','-A');sh(repo,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm','y');fs.writeFileSync(path.join(repo,'app.js'),A.replace('LIMIT=5','LIMIT=7').replace('return a+1','return a+LIMIT'));
+    commit('y');fs.writeFileSync(path.join(repo,'app.js'),A.replace('LIMIT=5','LIMIT=7').replace('return a+1','return a+LIMIT'));
     r=await I.select(repo,T);ok(!r.all&&r.tests.sort().join()==='a.test.js,b.test.js'&&/LIMIT/.test(r.report),'committed and uncommitted work both count, and a changed constant picks the function and the test that name it ('+(r.tests||[]).join()+')');
     // saving: what a test used is added to what is known, names that are gone are dropped
     await I.save(repo,new Map([['a.test.js',{m:new Map([['app.js',new Set(['two','gone'])],['old.js',new Set([I.LOADED])]]),bad:false}],['c.test.js',{m:new Map(),bad:true}]]),['a.test.js','c.test.js']);
     const sv=I.load(repo);ok([...sv.get('a.test.js').get('app.js')].sort().join()===[I.LOADED,'one','two'].sort().join()&&!sv.get('a.test.js').has('old.js')&&!sv.has('b.test.js')&&sv.get('c.test.js').has(I.ANY),'the map adds up what a test uses, forgets functions, files and tests that are gone, and marks a test it could not follow');
-    fs.unlinkSync(path.join(repo,I.MAP));ok((await I.select(repo,T)).all,'without the map everything runs');
+    // enforcing that the map is committed with its change
+    ok(I.stampsOf(mapText()).length===0,'a run that did not pass leaves no fingerprint');
+    let pp=I.prePush(repo);ok(!pp.ok&&/not committed/.test(pp.msg),'a push is refused while the map has uncommitted changes');
+    commit('code and map, untested');pp=I.prePush(repo);ok(pp.ok&&/has not passed/.test(pp.msg),'once it is committed the push goes through, with a note when the files were not passed by npm test');
+    main();ok((await I.select(repo,['a.test.js','c.test.js'])).all,'if that reaches main, the next npm test runs everything');
+    await I.save(repo,new Map(),['a.test.js','c.test.js'],true);commit('tested again');main();pp=I.prePush(repo);
+    ok(pp.ok&&!pp.msg&&!(await I.select(repo,['a.test.js','c.test.js'])).all,'and a passing run with its map committed makes main trusted again');
+    fs.writeFileSync(path.join(repo,'README.md'),'docs\n');commit('docs');main();ok(!(await I.select(repo,['a.test.js','c.test.js'])).all&&!I.prePush(repo).msg,'a docs-only commit needs no new fingerprint');
+    fs.writeFileSync(path.join(repo,'app.js'),A);commit('code without the map');main();ok((await I.select(repo,['a.test.js','c.test.js'])).all,'a code change merged without its map is noticed: everything runs');
+    fs.mkdirSync(path.join(repo,'.githooks'));fs.writeFileSync(path.join(repo,'.githooks','pre-push'),'#!/bin/sh\n');I.installHook(repo);
+    ok(sh(repo,'config','--get','core.hooksPath').trim()==='.githooks','a test run switches the push check on in the clone');
+    ok(fs.statSync(path.join(ROOT,'.githooks','pre-push')).mode&0o111&&/impact\.js pre-push/.test(fs.readFileSync(path.join(ROOT,'.githooks','pre-push'),'utf8')),'the push check is in the repo and executable');
+    fs.unlinkSync(path.join(repo,I.MAP));commit('no map');main();ok((await I.select(repo,T)).all,'without the map everything runs');
 
     /* the runner's own record of this test */
     if(impactRec){const b=await chromium.launch(),p=await b.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);

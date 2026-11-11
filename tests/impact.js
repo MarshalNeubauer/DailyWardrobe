@@ -7,7 +7,13 @@
 // For a change, the edited functions and CSS rules are worked out from `git diff` against origin/main, and only the tests
 // that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector for existing
 // classes, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / package.json select all.
-const fs=require('fs'),path=require('path'),vm=require('vm'),inspector=require('inspector'),{execFileSync}=require('child_process'),{fileURLToPath}=require('url');
+//
+// The map has to travel with the change it was recorded for. Two things see to that:
+//   - a passing `npm test` writes into the map a fingerprint of the files it ran on (`# tested`). When origin/main's map
+//     doesn't carry the fingerprint of origin/main's own files (the map was left out of a commit, the last edit wasn't
+//     tested, two changes were merged without a run on the result), the next `npm test` runs everything and records anew;
+//   - `git push` is refused while the map has changes that aren't committed (.githooks/pre-push, switched on by tests/run.js).
+const fs=require('fs'),path=require('path'),vm=require('vm'),inspector=require('inspector'),crypto=require('crypto'),{execFileSync}=require('child_process'),{fileURLToPath}=require('url');
 const MAP='tests/impact.map',ANY='<any>',LOADED='<loaded>',SMOKE='run.js: renders the outfit without errors';
 const realRead=fs.readFileSync;
 
@@ -167,21 +173,43 @@ const cssImpact=(oldS,newS,H,isNew)=>{const out={units:new Set(),top:false},O=cs
 /* ---------- the map: test → file → what it uses ---------- */
 // What every page test uses (starting the app) is written once, under COMMON; a test that includes it has a COMMON line
 const COMMON='<every page test>';
-const load=root=>{let t;try{t=realRead(path.join(root,MAP),'utf8')}catch(e){return null}const m=new Map();
+const load=root=>{try{return parse(realRead(path.join(root,MAP),'utf8'))}catch(e){return null}};
+const parse=t=>{const m=new Map();
   for(const line of t.split('\n')){if(!line||line[0]==='#')continue;const [test,file,...toks]=line.split('\t');if(!file)continue;
     if(!m.has(test))m.set(test,new Map());const e=m.get(test);if(!e.has(file))e.set(file,new Set());for(const k of toks)e.get(file).add(k)}   // a merge can leave two lines for one test and file: both count
   const com=m.get(COMMON);m.delete(COMMON);
   for(const e of m.values())if(e.delete(COMMON)&&com)for(const [f,S] of com){if(!e.has(f))e.set(f,new Set());for(const k of S)e.get(f).add(k)}
   return m};
-const dump=m=>{const pages=[...m.values()].filter(e=>e.has('index.html')),com=new Map();
+const dump=(m,stamp)=>{const pages=[...m.values()].filter(e=>e.has('index.html')),com=new Map();
   if(pages.length>1)for(const [f,S] of pages[0]){const k=[...S].filter(x=>pages.every(e=>e.has(f)&&e.get(f).has(x)));if(k.length)com.set(f,new Set(k))}
   const rows=(t,e,cut)=>[...e.keys()].sort().map(f=>[t,f,...[...e.get(f)].filter(x=>!(cut&&com.has(f)&&com.get(f).has(x))).sort()]).filter(r=>r.length>2).map(r=>r.join('\t'));
   return ['# What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, '+LOADED+' or '+ANY+'.',
-    ...(com.size?rows(COMMON,com):[]),...[...m.keys()].sort().flatMap(t=>{const cut=com.size&&pages.includes(m.get(t));return [...(cut?[t+'\t'+COMMON+'\t'+COMMON]:[]),...rows(t,m.get(t),cut)]})].join('\n')+'\n'};
+    ...(stamp?[TESTED+stamp]:[]),...(com.size?rows(COMMON,com):[]),...[...m.keys()].sort().flatMap(t=>{const cut=com.size&&pages.includes(m.get(t));return [...(cut?[t+'\t'+COMMON+'\t'+COMMON]:[]),...rows(t,m.get(t),cut)]})].join('\n')+'\n'};
+/* ---------- the fingerprint: which files the map was tested on ---------- */
+const TESTED='# tested\t';
+const stampsOf=text=>[...(text||'').matchAll(/^# tested\t(\w+)$/gm)].map(m=>m[1]);   // a merge can leave two
+/* every file but the map itself and the docs (*.md, LICENSE: no test reads them), by content: of a commit, or of the
+   folder as it is now (committed or not). The same files give the same fingerprint either way. null when git can't say */
+const fingerprint=(root,commit)=>{let rows;
+  try{if(commit){const t=git(root,'ls-tree','-r','-z',commit);if(t==null)return null;rows=t.split('\0').filter(Boolean).map(l=>{const [meta,f]=l.split('\t');return [f,meta.split(' ')[2]]})}
+    else{const t=git(root,'ls-files','-co','--exclude-standard','-z');if(t==null)return null;const files=[...new Set(t.split('\0').filter(Boolean))].filter(f=>fs.existsSync(path.join(root,f)));
+      const h=execFileSync('git',['hash-object','--stdin-paths'],{cwd:root,input:files.join('\n')+'\n',maxBuffer:1<<28,stdio:['pipe','pipe','ignore']}).toString().trim().split('\n');rows=files.map((f,i)=>[f,h[i]])}
+  }catch(e){return null}
+  return crypto.createHash('sha256').update(rows.filter(([f])=>f!==MAP&&!/\.md$/.test(f)&&f!=='LICENSE').map(r=>r.join(' ')).sort().join('\n')).digest('hex').slice(0,20)};
+/* before a push (.githooks/pre-push → `node tests/impact.js pre-push`): the map may not be left behind */
+const prePush=root=>{const dirty=(git(root,'status','--porcelain','--',MAP)||'').trim();
+  if(dirty)return {ok:false,msg:MAP+' has changes that are not committed. It records what each test uses, and later sessions choose their tests from it:\ncommit it with your change, then push again.'};
+  const fp=fingerprint(root,'HEAD');
+  if(fp&&!stampsOf(git(root,'show','HEAD:'+MAP)).includes(fp))return {ok:true,msg:'Note: `npm test` has not passed on exactly these files (or its '+MAP+' is not in the commit).\nIf this reaches main as it is, the next `npm test` there runs every check.'};
+  return {ok:true,msg:''}};
+/* tests/run.js calls this: from then on git runs .githooks/pre-push in this clone (left alone if hooks are set up otherwise) */
+const installHook=root=>{try{if(fs.existsSync(path.join(root,'.githooks','pre-push'))&&!(git(root,'config','--get','core.hooksPath')||'').trim())git(root,'config','core.hooksPath','.githooks')}catch(e){}};
+
 /* results: Map(test → {m, bad}). What a test used is added to what it used before: a timer that fires in one run and not
    the next, or a path only taken on a weekend, stays known. Names that no longer exist in the sources are dropped, and so
    are tests that no longer exist */
-const save=async(root,results,all)=>{const out=load(root)||new Map(),alive=new Map();
+// passed: `npm test` (or the whole suite) ran and nothing failed: the map then says which files it stands for
+const save=async(root,results,all,passed)=>{const out=load(root)||new Map(),alive=new Map();
   const names=async f=>{if(!alive.has(f)){let t=null,k=null;try{t=realRead(path.join(root,f),'utf8')}catch(e){}
       if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)){const u=await scan(t);if(u)k=new Set(u.map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
       alive.set(f,k)}return alive.get(f)};
@@ -190,7 +218,9 @@ const save=async(root,results,all)=>{const out=load(root)||new Map(),alive=new M
   for(const k of [...out.keys()])if(!all.includes(k))out.delete(k);
   for(const e of out.values())for(const [f,S] of [...e]){if(f===ANY)continue;const ok=await names(f);if(!ok){e.delete(f);continue}
     if(ok!==true)for(const x of [...S])if(x!==ANY&&x!==LOADED&&!ok.has(x))S.delete(x);if(!S.size)e.delete(f)}
-  const text=dump(out);let was=null;try{was=realRead(path.join(root,MAP),'utf8')}catch(e){}if(text!==was)fs.writeFileSync(path.join(root,MAP),text)};
+  let was=null;try{was=realRead(path.join(root,MAP),'utf8')}catch(e){}
+  const fp=fingerprint(root),text=dump(out,fp&&(passed||stampsOf(was).includes(fp))?fp:null);   // an earlier pass on these very files still counts
+  if(text!==was)fs.writeFileSync(path.join(root,MAP),text)};
 
 /* ---------- choosing ---------- */
 const FULL=/^(?:tests\/run\.js|tests\/impact\.js|package(?:-lock)?\.json)$/;
@@ -215,6 +245,8 @@ const pick=(map,all,changes)=>{const out=new Map(),add=(t,why)=>{if(all.includes
 const select=async(root,all)=>{const base=baseOf(root),map=load(root);
   if(!base)return {all:true,report:'No origin/main to compare with: running everything.'};
   if(!map)return {all:true,report:'No '+MAP+' yet: running everything.'};
+  const fp=fingerprint(root,base);
+  if(!fp||!stampsOf(git(root,'show',base+':'+MAP)).includes(fp))return {all:true,report:'The '+MAP+' on origin/main was not recorded for the files that are there (a change went in without it, or without a passing `npm test`): running everything.'};
   const files=changedFiles(root,base);if(!files)return {all:true,report:'git could not list the changes: running everything.'};
   const oldOf=f=>git(root,'show',base+':'+f),newOf=f=>{try{return realRead(path.join(root,f),'utf8')}catch(e){return null}};
   let corpus=null;const isNew=name=>{if(corpus==null)corpus=(git(root,'ls-tree','--name-only',base)||'').split('\n').filter(f=>/\.(?:js|html|css)$/.test(f)).map(f=>oldOf(f)||'').join('\n');
@@ -292,4 +324,6 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
     async end(){const c=cur;for(const p of [...live.keys()])await take(p,true);
       try{addJs(c,(await post('Profiler.takePreciseCoverage')).result,true)}catch(e){c.bad=true}cur=null;return {m:c.m,bad:c.bad}}}};
 
-module.exports={MAP,ANY,LOADED,SMOKE,units,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,recorder};
+module.exports={MAP,ANY,LOADED,SMOKE,units,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,recorder,fingerprint,stampsOf,prePush,installHook};
+
+if(require.main===module&&process.argv[2]==='pre-push'){const r=prePush(path.resolve(__dirname,'..'));if(r.msg)console.error(r.msg);process.exit(r.ok?0:1)}
