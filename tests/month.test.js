@@ -33,14 +33,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       n:c.length,rest:c.filter(x=>x.classList.contains('rest')).map(x=>x.querySelector('.dn').textContent).join(),
       todayCell:c.filter(x=>x.classList.contains('today')).map(x=>x.querySelector('.dn').textContent).join(),worn:c.filter(x=>x.classList.contains('worn')).length,
       planned:c.filter(x=>x.classList.contains('planned')).length,thu:c[18].querySelectorAll('.stack rect[fill^="url"]').length,sun:c[14].querySelectorAll('.stack rect[fill^="url"]').length,
-      label:c[8].getAttribute('aria-label'),legend:document.querySelector('#mbox .mlegend').textContent,anim:getComputedStyle(c[3]).animationName}});
+      label:c[8].getAttribute('aria-label'),legend:!!document.querySelector('#mbox .mlegend'),anim:getComputedStyle(c[3]).animationName}});
     ok(m.today&&m.open&&m.exp==='true'&&m.h>closedH+250,`the month unfolds in place on Today (box ${Math.round(closedH)}px → ${Math.round(m.h)}px)`);
     ok(m.anim==='mcIn','the days settle in with an animation');
     ok(m.title==='November 2026'&&m.n===30,'30 day cells; November 2026 starts on a Sunday');
     ok(m.rest==='6,7,13,14,20,21,27,28','Fridays and Saturdays are rest days');
     ok(m.todayCell==='9'&&m.worn===6&&m.planned===16,`today is outlined, earlier workdays read as worn (${m.worn}), later ones planned (${m.planned})`);
     ok(m.sun===3&&m.thu===4,'suit days show jacket, shirt and tie; blazer days add the trousers');
-    ok(/Monday, November 9: /.test(m.label)&&/Worn.*Today.*Planned.*Rest/.test(m.legend),`labelled days and a legend (${m.label})`);
+    ok(/Monday, November 9: /.test(m.label)&&!m.legend,`labelled days, and no legend: the cells show worn, today, planned and rest themselves (${m.label})`);
     // no arrows: a drag inside the box (a mouse here; touch in tests/monthswipe.test.js) changes the month
     const drag=async(dx)=>{const b=await p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}});
       await p.mouse.move(b.x,b.y);await p.mouse.down();for(let k=1;k<=6;k++)await p.mouse.move(b.x+dx*k/6,b.y+2);await p.mouse.up();await settle(p,500)};
