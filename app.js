@@ -66,22 +66,26 @@ function saveSettings(){
   if(window.syncNow)syncNow();
 }
 
-/* precision swatch generator */
+/* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
+   balanced), else from the item photo; the Add card's sliders choose the zoom and the spot. Items with a close-up show it as their
+   small fabric square across the app (swatchSVG in draw.js). */
+function cropSwatch(canvas,zoom=1,cx=.5,cy=.5){
+  const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/(Number(zoom)||1)),o=document.createElement('canvas');o.width=o.height=128;
+  const sx=Math.max(0,Math.min(canvas.width-sampleSize,(Number(cx)||.5)*canvas.width-sampleSize/2)),sy=Math.max(0,Math.min(canvas.height-sampleSize,(Number(cy)||.5)*canvas.height-sampleSize/2));
+  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);return o.toDataURL('image/png')}
 function generateSwatch(q){
-  if(!q.big) return '';
-  const canvas=q.big;
-  const zoom=Number(q.zoom)||1;
-  const cx=Number(q.cx)||0.5;
-  const cy=Number(q.cy)||0.5;
-  const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/zoom);
-  const o=document.createElement('canvas');
-  o.width=o.height=128;
-  const sx=Math.max(0,Math.min(canvas.width-sampleSize,cx*canvas.width-sampleSize/2));
-  const sy=Math.max(0,Math.min(canvas.height-sampleSize,cy*canvas.height-sampleSize/2));
-  o.getContext('2d').drawImage(canvas, sx, sy, sampleSize, sampleSize, 0, 0, 128, 128);
-  q.swatch=o.toDataURL('image/png');
+  const canvas=q.texCanvas||q.big;if(!canvas)return '';
+  q.swatch=cropSwatch(canvas,q.zoom,q.cx,q.cy);q.swSrc=q.texCanvas?'tex':'photo';
   return q.swatch;
 }
+/* a saved item's swatch, cut from the middle of its close-up (or, without one, its photo) */
+async function refreshSwatch(it){if(!FABRIC.includes(it.type))return;const src=it.texture&&TEXTURE_TYPES.includes(it.type)?it.texture:it.photo;if(!src){delete it.swatch;delete it.swSrc;return}
+  try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
+    it.swatch=cropSwatch(c);it.swSrc=src===it.photo?'photo':'tex'}catch(e){console.warn('swatch not cut',e)}}
+/* once: items that already have a close-up get their swatch cut from it */
+async function texSwatches(){if(localStorage.getItem('tex_swatch')==='1')return 0;let n=0;
+  for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)&&it.swSrc!=='tex'){await refreshSwatch(it);if(it.swSrc==='tex'){await put(it);n++}}
+  localStorage.setItem('tex_swatch','1');if(n)cache={};return n}
 
 function updateSwatchParam(i, param, val){
   queue[i][param]=Number(val);
@@ -186,17 +190,17 @@ function applyWb(c,g){const o=document.createElement('canvas');o.width=c.width;o
 /* an Add card's pictures from its uncorrected originals, with or without the correction (Show original toggles it) */
 function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);q.photo=shrink(q.big,360).toDataURL('image/jpeg',.8);
   if(q.raw.full)q.tagImg=applyWb(q.raw.full,g).toDataURL('image/jpeg',TAG_Q);   // the sharp copy the tagger sees
-  if(q.raw.tex)q.texture=applyWb(q.raw.tex,texGains(q)).toDataURL('image/jpeg',.85);generateSwatch(q)}
+  if(q.raw.tex){q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85)}generateSwatch(q)}
 /* a close-up with its own white reference (a corner of white paper) is corrected from that; otherwise like its item photo */
 function texGains(q){const r=wbRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}
 function toggleWb(i){const q=queue[i];if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
 const TEX_MAX=640;
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
 async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
-  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,TEX_MAX);q.raw.texFull=shrink(img,CLOSE_MAX);q.texture=applyWb(q.raw.tex,texGains(q)).toDataURL('image/jpeg',.85);q.refineNote='';renderAdd();
+  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,TEX_MAX);q.raw.texFull=shrink(img,CLOSE_MAX);q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;if(q.raw){delete q.raw.tex;delete q.raw.texFull}q.refineNote='';measureCard(q);renderAdd()}
+function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw){delete q.raw.tex;delete q.raw.texFull}q.refineNote='';measureCard(q);renderAdd()}
 /* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
   const inp=`<input type="file" accept="image/*" hidden onchange="addTexture(${i},this.files[0]);this.value=''">`;
@@ -345,7 +349,7 @@ async function save(i){
   const q=queue[i],f=FABRIC.includes(q.type);
   generateSwatch(q);
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
-  if(f)it.swatch=q.swatch;
+  if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
@@ -376,7 +380,7 @@ function photoTools(i){if(phEdit.crop)return '';
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
-  if(url)it[k]=url;else delete it[k];await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
+  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
 async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);await setTexture(id,shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),'Close-up added. The realistic photos use it from the next one made.')}
@@ -386,7 +390,7 @@ async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f);aw
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
   c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);await setPhoto(id,c.toDataURL('image/jpeg',.9))}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
-  if(v)it[k]=v;else delete it[k];await put(it);cache={};renderWardrobe()}
+  if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);await put(it);cache={};renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
   phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();requestAnimationFrame(layoutCrop)}
@@ -1223,7 +1227,7 @@ ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
   <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
   <div style="flex:1;font-size:13px">
-    <b>Precision Swatch Inspector</b>
+    <b>Precision Swatch Inspector</b>${q.texCanvas?'<small class="mut" style="display:block">From the fabric close-up</small>':''}
     <label>Zoom: <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label>
     <label>X-Pos: <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label>
     <label>Y-Pos: <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label>
@@ -1246,7 +1250,7 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)renderToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)renderToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)renderToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)renderToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)renderToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)renderToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)renderToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
 
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
