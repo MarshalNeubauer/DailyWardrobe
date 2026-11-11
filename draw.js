@@ -24,11 +24,13 @@ function fabricDef(id,item,role,ctx){
   const tile=(w,h,body,tf='')=>`<pattern id="${id}" patternUnits="userSpaceOnUse" width="${w}" height="${h}"${tf?` patternTransform="${tf}"`:''}><rect width="${w}" height="${h}" fill="${b}"/>${body}</pattern>`;
   const fine=role==='shirt'||role==='tie';
   /* herringbone: columns of steep twill lines whose slant alternates, with a half-step break at each column edge */
-  const herringboneTile=(cw,lineDeg,tf)=>{
-    const t=Math.tan(lineDeg*Math.PI/180),sv=+(cw*.55).toFixed(3),W=2*cw,kmax=Math.ceil(t*cw/sv)+2;
+  /* k: contrast (1 as drawn generically; more where the drawing is small, or for the photo generator) */
+  const herringboneTile=(cw,lineDeg,tf,k=1)=>{
+    const t=Math.tan(lineDeg*Math.PI/180),sv=+(cw*.55).toFixed(3),W=2*cw,kmax=Math.ceil(t*cw/sv)+2,o=v=>Math.min(1,v*k).toFixed(3);
     const fam=(dir,off)=>{let d='';for(let k=-kmax;k<=kmax;k++){const y0=k*sv+off;d+=dir>0?`M0,${(y0+t*cw).toFixed(3)} L${cw},${y0.toFixed(3)} `:`M0,${y0.toFixed(3)} L${cw},${(y0+t*cw).toFixed(3)} `}return d};
-    const col=(dir,off)=>`<path d="${fam(dir,off)}" stroke="${lt}" stroke-opacity=".17" stroke-width="${(sv*.38).toFixed(3)}"/><path d="${fam(dir,off+sv/2)}" stroke="${dk}" stroke-opacity=".2" stroke-width="${(sv*.3).toFixed(3)}"/>`;
-    return tile(W,sv,`<svg width="${cw}" height="${sv}" overflow="hidden">${col(1,0)}</svg><svg x="${cw}" width="${cw}" height="${sv}" overflow="hidden">${col(-1,sv/2)}</svg><rect x="${(cw-.12).toFixed(3)}" width=".24" height="${sv}" fill="${dk}" opacity=".16"/><rect x="${(W-.12).toFixed(3)}" width=".24" height="${sv}" fill="${dk}" opacity=".16"/>`,tf);
+    const col=(dir,off)=>`<path d="${fam(dir,off)}" stroke="${lt}" stroke-opacity="${o(.17)}" stroke-width="${(sv*.38).toFixed(3)}"/><path d="${fam(dir,off+sv/2)}" stroke="${dk}" stroke-opacity="${o(.2)}" stroke-width="${(sv*.3).toFixed(3)}"/>`;
+    const brk=Math.max(.24,cw*.06).toFixed(3);
+    return tile(W,sv,`<svg width="${cw}" height="${sv}" overflow="hidden">${col(1,0)}</svg><svg x="${cw}" width="${cw}" height="${sv}" overflow="hidden">${col(-1,sv/2)}</svg><rect x="${(cw-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/><rect x="${(W-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/>`,tf);
   };
   /* layouts read from the item's photo take precedence over the generic tiles.
      Ties keep the photographed angle; garments snap to vertical/horizontal. */
@@ -45,6 +47,15 @@ function fabricDef(id,item,role,ctx){
   /* a weave texture read by Claude (tagging.js texFromSpec): its one-repeat bitmap in the tagged colour, the raised cells lighter
      (or darker) by the swing measured in the close-up; on a near-white ground the ground cells go darker instead. In a swatch as
      many repeats as the close-up shows; on the figure no finer than 6 units a repeat (finer only shimmers). */
+  /* Claude's herringbone or twill reading: a small bitmap of one repeat can't hold them (a herringbone's one V, tiled, joins into
+     horizontal zigzags, where the cloth has columns of dense twill lines turning at each column edge), so these are drawn with the
+     woven tiles, kept to the measured contrast; Claude's bitmap stays for figured weaves (diamond dobby, birdseye, honeycomb). A swatch
+     shows at most 20 column pairs: Claude's count can be the chevrons along a column (60 for the user's blue shirt), not the columns. */
+  if(se&&se.tex&&p!=='solid'&&(se.tex.kind==='herringbone'||se.tex.kind==='twill')){
+    const k=(ctx==='dot'?2.2:ctx==='dia'?3:1)*Math.max(.8,Math.min(ctx==='dot'||ctx==='dia'?1.6:1.2,(se.tex.rel||.1)/.1));
+    if(se.tex.kind==='herringbone'){const cw=ctx==='dot'?16/6:ctx==='dia'?200/24:ctx==='fig'?(role==='shirt'?1.3:2.2):Math.max(2.5,Math.min(5,50/Math.max(.9,se.cr||8)));return herringboneTile(cw,55,'',k)}
+    const s=ctx==='dot'?16/5:ctx==='dia'?200/30:3,o=v=>Math.min(1,v*k).toFixed(3);
+    return tile(s,s,`<path d="M0,${s} L${s},0" stroke="#000" stroke-opacity="${o(.14)}" stroke-width="${(s*.23).toFixed(3)}"/><path d="M-1,1 L1,-1 M${s-1},${s+1} L${s+1},${s-1}" stroke="#fff" stroke-opacity="${o(.08)}" stroke-width="${(s*.17).toFixed(3)}"/>`)}
   if(se&&se.tex&&p!=='solid'){const g=se.tex.grid,M=g[0].length,N=g.length,T=ctx==='dot'?16/2.5:ctx==='dia'?200/14:ctx==='fig'?Math.max(6,Math.min(40,180/Math.max(.5,se.tr||100))):Math.max(4,Math.min(60,100/Math.max(.9,se.cr||8)));
     const Tv=T*(se.tex.aspect||N/M),f2=v=>+v.toFixed(3),[lo,hi]=texTones(b,se.tex,ctx==='fig'?.8:ctx==='dia'?2.5:ctx==='dot'?1.7:1),url=texTileUrl(g,lo,hi);
     const body=url?`<image href="${url}" width="${f2(T)}" height="${f2(Tv)}" preserveAspectRatio="none"/>`:g.map((row,y)=>[...row].map((v,x)=>v==='1'?`<rect x="${f2(x*T/M)}" y="${f2(y*T/M)}" width="${f2(T/M+.02)}" height="${f2(T/M+.02)}"/>`:'').join('')).join('');
