@@ -40,6 +40,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - The planner skips days off like weekends
 - `inRotation(i)`: false for an item the user took out of rotation (`item.paused`, synced with the item); it stays in the wardrobe and in past outfits
 - bought, on the way: `item.order` with `item.paused`, optionally `item.arrives` (YYYY-MM-DD); `inRotation(i, n)` is true for day number `n` (`di`) after the arrival date (`arriveN`), so the plan includes it from then on
+- `item.shade` (−6…+6 steps of `SHADE_STEP` 4 L*, `shadeHex`/`shadeFor`/`shadeName`): the owner's darker/lighter for the drawn main colour (`colOf`); the tag, the planner (`planCol`, `lumOf`) and photo keys keep the tagged colour; set on the Add card and in the editor (`shadeRow`, `stepShadeQ`/`matchShadeQ`, `stepShadeE`/`matchShadeE`), "Match close-up" from the close-up's measured lightness
 
 ### `planner.js`
 

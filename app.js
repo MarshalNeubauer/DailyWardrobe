@@ -337,6 +337,14 @@ const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edit
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${i.texture}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${desc(i)||TYPES[i.type]||''}</b></figcaption>`;
+/* Shade: darker or lighter than the tagged colour's swatch, to match the close-up; "Match close-up" sets it from the measurement */
+const shadeRow=(o,onStep,onMatch,canMatch)=>`<div class="shaderow"><span class="shlab">Shade</span><div class="shctl"><button type="button" class="shbtn" aria-label="Darker" onclick="${onStep}(-1)"${(o.shade||0)<=-SHADE_MAX?' disabled':''}>−</button><span class="shval">${shadeName(o.shade||0)}</span><button type="button" class="shbtn" aria-label="Lighter" onclick="${onStep}(1)"${(o.shade||0)>=SHADE_MAX?' disabled':''}>+</button></div>${canMatch?`<button type="button" class="chipbtn" onclick="${onMatch}">Match close-up</button>`:''}</div>`;
+function stepShadeQ(i,d){const q=queue[i];if(!q)return;q.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(q.shade||0)+d));if(!q.shade)delete q.shade;renderAdd()}
+function matchShadeQ(i){const q=queue[i];if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;renderAdd();toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
+async function stepShadeE(id,d){const it=items.find(x=>x.id===id);if(!it)return;it.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(it.shade||0)+d));if(!it.shade)delete it.shade;await put(it);cache={};renderWardrobe()}
+async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
+  if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
+  if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);cache={};renderWardrobe();toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure><figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure></div>`;
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 function addManual(){
@@ -368,7 +376,8 @@ async function save(i){
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
-  if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src};   // the owner's own colour samples (calibLab)
+  if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src};
+  if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&settable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (tagging.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (tagging.js)
@@ -422,7 +431,7 @@ async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!
 function editForm(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
   const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)];
-  return `<div class="card" style="margin:8px 0 0;padding:8px">${photoTools(i)}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
+  return `<div class="card" style="margin:8px 0 0;padding:8px">${photoTools(i)}${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patName(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
@@ -1232,7 +1241,7 @@ function renderAdd(){
   const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
-<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
+<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
   <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>

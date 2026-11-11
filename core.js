@@ -186,7 +186,13 @@ const hexRgb=h=>{h=String(h).replace('#','');if(h.length===3)h=h.split('').map(c
 const rgbHex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
 const lum=h=>{const [r,g,b]=hexRgb(h);return (.2126*r+.7152*g+.0722*b)/255};
 const mix=(h,t,k)=>{const a=hexRgb(h),b=hexRgb(t);return rgbHex(a.map((v,i)=>v+(b[i]-v)*k))};
-const colOf=i=>COLORS[primaryCol(i)]||'#8b8f96';
+/* an item's own shade (item.shade, chosen by the owner to match its close-up): steps of SHADE_STEP L* applied to the drawn main
+   colour only; the tag, the planner and the photo prompts keep the tagged colour */
+const SHADE_STEP=4,SHADE_MAX=6;
+const shadeHex=(h,s)=>{if(!s)return h;const l=rgbLab(...hexRgb(h));return labHex([Math.max(2,Math.min(98,l[0]+s*SHADE_STEP)),l[1],l[2]])};
+const shadeFor=(i,lab)=>i&&lab&&COLORS[primaryCol(i)]?Math.max(-SHADE_MAX,Math.min(SHADE_MAX,Math.round((lab[0]-labOf(primaryCol(i))[0])/SHADE_STEP))):0;
+const shadeName=s=>!s?'As tagged':`${s<0?'Darker':'Lighter'} ${Math.abs(s)}`;
+const colOf=i=>{const h=COLORS[primaryCol(i)]||'#8b8f96';return i&&i.shade?shadeHex(h,i.shade):h};
 const thirdOf=i=>i&&i.tertiaryColor&&COLORS[i.tertiaryColor]||null;
 const accentOf=i=>{const s=i&&i.secondaryColor&&COLORS[i.secondaryColor];if(s)return s;const b=colOf(i);return lum(b)>.55?mix(b,'#000',.35):mix(b,'#fff',.45)};
 
