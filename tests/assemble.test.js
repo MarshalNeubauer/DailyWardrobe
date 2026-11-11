@@ -45,6 +45,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const [zj,zs,zt,zw]=r.shares;
     ok(r.W===900&&r.ok&&zj>45&&zj<70&&zs>2&&zs<7&&zt>1&&zt<4&&zw>.3&&zw<1.2&&r.overlap===0,`the four zones are found from the calibration photos, each of a sensible size and none overlapping (jacket ${zj.toFixed(1)}%, shirt ${zs.toFixed(1)}%, tie ${zt.toFixed(1)}%, watch ${zw.toFixed(2)}%)`);
     ok(r.same,'zones survive being packed for storage and unpacked');
+    const ed=await p.evaluate(async()=>{const W=40,m=new Uint8Array(W*W);for(let y=0;y<12;y++)for(let x=10;x<30;x++)m[y*W+x]=1;m[0*W+15]=0;   // a block on the top edge with a one-pixel gap
+      const c=asmBox(asmBox(m,W,2,true),W,2,false);let top=1;for(let x=10;x<30;x++)if(!c[x]||!c[W+x])top=0;const s=asmBox(m,W,2,false);
+      const old={v:1,...asmPackZones({W:2,jacket:new Uint8Array(4),shirt:new Uint8Array(4),tie:new Uint8Array(4),watch:new Uint8Array(4)})};delete old.v;await metaPut('asm:zones:'+asmMasterKey(),old);const stale=await asmZonesKept();await metaPut('asm:zones:'+asmMasterKey(),null);
+      return {top,inner:s[5*W+20]===1&&s[11*W+20]===0&&s[0*W+20]===1,stale,v:ASM_ZV}});
+    ok(ed.top===1&&ed.inner,'a zone that reaches the picture\'s edge keeps its outermost rows when its gaps are closed (they were cut, and the master\'s white collar showed as a line along the top of a dark shirt)');
+    ok(ed.stale===false&&ed.v===2,'zones kept from before that fix are not used: they are worked out again');
     ok(!r.noneOk,'calibration photos that changed nothing give zones that are refused');
     ok(r.a.moved===0&&r.a.watchKept===1,`outside the pieces the picture is the master, pixel for pixel, and the owner's watch stays the master's own (${r.a.moved} pixels differ)`);
     ok(r.a.ringN>2000&&r.a.ringOk===1&&r.a.ringSeam===0,`the jacket's own edge comes from its photo: the ${r.a.ringN} pixels just outside its zone, none on another piece, and where they meet the master nothing is rebuilt (the master's dark edge left there read as an outline)`);

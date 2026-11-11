@@ -8,7 +8,10 @@
 // Order: master, then the jacket, shirt, tie, tie bar and watch; pixels along the joins are rebuilt from clean pixels either side.
 // Today shows the assembled picture once the master, the zones and the outfit's pieces are on the device (asmFor / asmEnsure);
 // an outfit it can't do (no jacket, no tie, a vest), or with a piece still missing, keeps its own photo.
-const ASM_VER=2,ASM_DE=14,ASM_EDGE=3;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+const ASM_VER=2,ASM_DE=14,ASM_EDGE=3;
+/* ASM_ZV: how zones are worked out. Zones and assembled pictures kept on a device carry it, so they are made again when it changes
+   (2: a zone reaches the picture's edge) */
+const ASM_ZV=2;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
 /* ASM_VER 2: the masters the owner approved, made from the redrawn figure (close framing, the lower hand at the waist button, the
    watch turned as worn, a blurred light office): his dark grey herringbone suit, a white shirt, a burgundy tie and his watch, and
    the same photo with the suit's waistcoat. Version 1's master (zoomed out, the lower hand too low) was rejected; every key
@@ -27,10 +30,12 @@ function asmLab(d){let o=asmLabs.get(d);if(o)return o;const p=d.data,n=p.length>
   asmLabs.set(d,o);return o}
 const asmDE=(A,B,i,j=i)=>Math.hypot(A[3*i]-B[3*j],A[3*i+1]-B[3*j+1],A[3*i+2]-B[3*j+2]);
 /* ---- masks: one byte per pixel ---- */
-/* grow (any) or shrink a mask by r pixels (a square); a running count along rows, then columns, so a wide reach costs no more */
-function asmBox(m,W,r,any){const n=m.length,t=new Uint8Array(n),o=new Uint8Array(n),full=2*r+1,line=new Int32Array(W+1),pass=(a,b,step)=>{
+/* grow (any) or shrink a mask by r pixels (a square); a running count along rows, then columns, so a wide reach costs no more.
+   Shrinking used to take a piece off wherever it reached the picture's edge (the reach ran off the picture and counted as "off"):
+   closing a zone's gaps then cut its two outermost rows, and the master's white collar showed as a line along the top of a dark shirt */
+function asmBox(m,W,r,any){const n=m.length,t=new Uint8Array(n),o=new Uint8Array(n),line=new Int32Array(W+1),pass=(a,b,step)=>{
     for(let u=0;u<W;u++){const at=step===1?u*W:u;line[0]=0;for(let p=0;p<W;p++)line[p+1]=line[p]+a[at+p*step];
-      for(let p=0;p<W;p++){const lo=Math.max(0,p-r),hi=Math.min(W,p+r+1),c=line[hi]-line[lo];b[at+p*step]=any?(c?1:0):(c===full?1:0)}}};
+      for(let p=0;p<W;p++){const lo=Math.max(0,p-r),hi=Math.min(W,p+r+1),c=line[hi]-line[lo];b[at+p*step]=any?(c?1:0):(c===hi-lo?1:0)}}};   // shrinking, what lies beyond the picture's edge doesn't count against a pixel
   pass(m,t,1);pass(t,o,W);return o}
 /* smooth a mask's outline: a pixel is on when most of the square of r pixels around it is (ragged steps and spikes go) */
 function asmMajor(m,W,r){const n=m.length,h=new Uint16Array(n),o=new Uint8Array(n),line=new Int32Array(W+1),half=((2*r+1)*(2*r+1))>>1;
@@ -72,7 +77,7 @@ function asmVestZone(vestMaster,calib,z){const W=z.W,N=W*W,L0=asmLab(vestMaster)
   for(let i=0;i<N;i++)if(!z.watch[i]&&asmDE(L,L0,i)>ASM_DE)m[i]=1;
   m=asmBox(asmBox(m,W,2,true),W,2,false);const a=asmAreas(m,W);let top=0;for(let k=1;k<a.size.length;k++)if(!top||a.size[k]>a.size[top])top=k;
   return top?asmMajor(asmFill(asmBig(m,W,0,k=>a.size[k]>=N/1500||k===top),W,N/1500),W,2):m}
-const asmPackZones=z=>({W:z.W,jacket:asmPack(z.jacket),shirt:asmPack(z.shirt),tie:asmPack(z.tie),watch:asmPack(z.watch)});
+const asmPackZones=z=>({v:ASM_ZV,W:z.W,jacket:asmPack(z.jacket),shirt:asmPack(z.shirt),tie:asmPack(z.tie),watch:asmPack(z.watch)});
 const asmUnpackZones=p=>{const n=p.W*p.W;return {W:p.W,jacket:asmUnpack(p.jacket,n),shirt:asmUnpack(p.shirt,n),tie:asmUnpack(p.tie,n),watch:asmUnpack(p.watch,n)}};
 /* are these zones believable? each piece has to be there and of a sensible size (a calibration edit that changed nothing, or the whole
    picture, gives zones that would ruin every outfit) */
@@ -181,18 +186,18 @@ function asmParts(o){const inf=asmInfo()||{},out=[];
 /* the zones of the kept master: from storage, else worked out from the four calibration photos and kept */
 let asmZ=null;
 async function asmZonesFor(master){const mk=asmMasterKey();if(asmZ&&asmZ.k===mk&&asmZ.z.W===master.width)return asmZ.z;
-  const kept=await metaGet('asm:zones:'+mk);if(kept&&kept.W===master.width){asmZ={k:mk,z:asmUnpackZones(kept)};return asmZ.z}
+  const kept=await metaGet('asm:zones:'+mk);if(kept&&kept.W===master.width&&kept.v===ASM_ZV){asmZ={k:mk,z:asmUnpackZones(kept)};return asmZ.z}
   const calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;calib[s]=await asmData(r.img,master.width)}
   const z=asmZones(master,calib);if(!asmZonesOk(z))return null;
   await metaPut('asm:zones:'+mk,asmPackZones(z));asmZ={k:mk,z};return z}
 /* the waistcoat's zone for the kept vest master: from storage, else worked out from the vest master and its calibration photo and kept */
 let asmV=null;
 async function asmVestFor(z){const vk=asmVestKey(),r=renders[vk];if(!r)return null;if(asmV&&asmV.k===vk&&asmV.t===r.t&&asmV.m.length===z.W*z.W)return asmV.m;
-  const kept=await metaGet('asm:vest:'+vk);if(kept&&kept.W===z.W&&kept.t===r.t){asmV={k:vk,t:r.t,m:asmUnpack(kept.m,z.W*z.W)};return asmV.m}
+  const kept=await metaGet('asm:vest:'+vk);if(kept&&kept.W===z.W&&kept.t===r.t&&kept.v===ASM_ZV){asmV={k:vk,t:r.t,m:asmUnpack(kept.m,z.W*z.W)};return asmV.m}
   const c=renders[asmCalibKey('vest')];if(!c)return null;
   const m=asmVestZone(await asmData(r.img,z.W),await asmData(c.img,z.W),z),share=asmCount(m)/(z.W*z.W);if(share<.01||share>.2)return null;   // no waistcoat, or half the picture: not believable
-  await metaPut('asm:vest:'+vk,{W:z.W,t:r.t,m:asmPack(m)});asmV={k:vk,t:r.t,m};return m}
-const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('asm:vest:'+asmVestKey());return !!(k&&k.t===r.t)};
+  await metaPut('asm:vest:'+vk,{v:ASM_ZV,W:z.W,t:r.t,m:asmPack(m)});asmV={k:vk,t:r.t,m};return m}
+const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('asm:vest:'+asmVestKey());return !!(k&&k.t===r.t&&k.v===ASM_ZV)};
 /* Did an edit keep the picture? Outside its own piece (and a margin) a photo must still be the master. The generator once answered
    a swap with a collage: the figure moved aside, the reference photos pasted beside it. -> the share of outside pixels that changed */
 const ASM_DRIFT=.12;
@@ -213,7 +218,7 @@ async function asmPhoto(o){if(!asmCan(o))return null;const m=renders[asmMasterKe
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP), each with the newest date among the photos
    it was made from: a piece made again makes it stale */
 let asmOut={};const ASM_KEEP=80,asmBusy=new Set(),asmTried=new Set();
-const asmOutKey=o=>asmKey('out/'+asmParts(o).map(p=>p.key).join('+'));
+const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key).join('+'));
 const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
@@ -239,7 +244,7 @@ async function asmGet(key,force){if(renders[key])return true;const W=workerBase(
     if(key===mk&&r.status===404)localStorage.setItem('asm_none',String(Date.now()))}catch(e){console.warn('piece unavailable',e)}
   return false}
 const ASM_NONE_MS=6*3600e3;
-const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());return !!k};
+const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());return !!(k&&k.v===ASM_ZV)};
 /* bring what this outfit needs onto the device, put its picture together, keep it and show it */
 async function asmEnsure(o){if(!ASM_ON||!asmCan(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
   try{if(!await asmGet(mk)||(o.vest&&!await asmGet(asmVestKey())))return;
