@@ -345,6 +345,67 @@ async function handleTagMany(req, env, json) {
   return json({ items, model: c.body.model });
 }
 
+/* POST /pattern {image, closeup, type} -> the woven pattern as clean data, for the app to draw. The pixels of a photo carry noise
+   (seams, folds, moire, slubs, panes made uneven by drape or perspective) that defeats measuring the pattern from them alone;
+   Claude reads the pattern as it was woven: each direction's bands in order with their width share, and how many repeats the
+   close-up and the item show. The app takes the exact colours from the pixels (tagging.js). */
+const PBAND = { type: 'object', additionalProperties: false, required: ['role', 'name', 'hex', 'widthPct'],
+  properties: { role: { type: 'string', enum: ['ground', 'line'] }, name: { type: 'string' }, hex: { type: 'string' }, widthPct: { type: 'number' } } };
+const PDIR = { type: 'object', additionalProperties: false, required: ['bands'], properties: { bands: { type: 'array', items: PBAND } } };
+const PATTERN_SCHEMA = { type: 'object', additionalProperties: false,
+  required: ['layout', 'across', 'along', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
+  properties: {
+    layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'none'] },
+    across: PDIR, along: { anyOf: [PDIR, { type: 'null' }] },
+    stripeDirection: { type: 'string', enum: ['vertical', 'horizontal', 'upper-left to lower-right', 'lower-left to upper-right'] },
+    repeatsInCloseup: { type: 'number' }, repeatsAcrossItem: { type: 'number' }, paneAspect: { type: 'number' },
+    ignored: { type: 'string' }, description: { type: 'string' },
+  } };
+const PATTERN_PROMPT = `You are reading the woven pattern of a cloth so an app can draw it exactly. The first photo is the whole item; the second
+(when there is one) is a close-up of its cloth. Report the pattern as it was WOVEN, stripping away everything that is not the
+pattern: seams and the pattern shift across them, folds, shadows, sheen, moire, slubs and other texture of the weave, and panes or
+stripes made uneven by drape or by the camera's angle (report the regular spacing they were woven at).
+
+layout — stripes (lines one way), check, windowpane (thin lines both ways on a plain ground, large panes), plaid (several
+  colours both ways), or none (no stripes or checks).
+across — one full repeat of the main lines, measured across them (for vertical lines from left to right, for a tie's diagonal
+  stripes across the stripes): every band in order, the ground included, each with role (ground or line), a plain colour name,
+  an sRGB hex of how that thread looks in neutral daylight (a light blue line is light blue even where the photo greys it),
+  and widthPct, its share of the repeat in percent (the bands add up to 100). A line made of several close threads (a blue line
+  with a thin white line each side) is listed thread by thread with the ground between them.
+along — the same for the lines running the other way (top to bottom for horizontal lines), or null if there are none.
+stripeDirection — which way the main lines run as the viewer sees them.
+repeatsInCloseup — how many repeats of "across" fit across the close-up's width (or the item photo's, without a close-up).
+repeatsAcrossItem — how many repeats of "across" fit across the item's widest part in the first photo.
+paneAspect — for checks: a pane's height divided by its width as woven (1 for square panes); 1 otherwise.
+ignored — a few words on what you left out as noise (e.g. "a seam down the middle, moire").
+description — one or two sentences describing the pattern for a photo-realistic image generator: the ground, the lines in
+  order, their colours and widths, the size of the panes, and the cloth's texture. Leave out the direction.`;
+function cleanPattern(p) {
+  const hex = h => (HEX_RE.test(h || '') ? h.toLowerCase() : null);
+  const dir = d => { if (!d || !Array.isArray(d.bands)) return null;
+    const b = d.bands.slice(0, 40).map(x => ({ role: x.role === 'line' ? 'line' : 'ground', name: txt(x.name, 30), hex: hex(x.hex), w: Math.max(0, +x.widthPct || 0) })).filter(x => x.hex && x.w > 0);
+    const t = b.reduce((a, x) => a + x.w, 0); return b.length >= 2 && t > 0 ? { bands: b.map(x => ({ ...x, w: +(x.w / t).toFixed(4) })) } : null; };
+  const num = (v, lo, hi, d) => Math.max(lo, Math.min(hi, +v || d));
+  return { layout: p.layout, across: dir(p.across), along: dir(p.along), stripeDirection: p.stripeDirection,
+    repeatsInCloseup: num(p.repeatsInCloseup, .2, 60, 1), repeatsAcrossItem: num(p.repeatsAcrossItem, .2, 80, 1), paneAspect: num(p.paneAspect, .3, 3, 1),
+    ignored: txt(p.ignored, 200), description: txt(p.description, 600) };
+}
+async function handlePattern(req, env, json) {
+  if (env.APP_TOKEN && (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Reading a pattern needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
+  const text = await req.text();
+  if (text.length > 20e6) return json({ error: 'photos too large' }, 413);
+  let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
+  const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
+  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: kind + PATTERN_PROMPT, closeup: cm, effort: 'high', maxTokens: 16000 });
+  if (c.status !== 200) return json(c.body, c.status);
+  const out = cleanPattern(c.body);
+  if (!out.across) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
+  return json({ ...out, model: c.body.model });
+}
+
 /* GET /fetch?url=… downloads a photo for the app when the site won't let the browser fetch it directly (no CORS).
    A link to a web page (e.g. a shop's product page) returns the page's share image (og:image / twitter:image).
    Requires APP_TOKEN; only http(s); images only; 15 MB cap. */
@@ -724,6 +785,7 @@ export default {
     if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
     if (path === '/holidays' && req.method === 'GET') return handleHolidays(req, env, json);
     if (path === '/tag-many' && req.method === 'POST') return handleTagMany(req, env, json);
+    if (path === '/pattern' && req.method === 'POST') return handlePattern(req, env, json);
     if (path === '/render' && req.method === 'POST') return handleRender(req, env, json);
     if (path === '/render' && req.method === 'GET') return getRender(req, env, json);
     if (path === '/render' && req.method === 'PUT') return putRender(req, env, json);
