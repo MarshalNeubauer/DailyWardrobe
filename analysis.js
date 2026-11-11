@@ -197,7 +197,9 @@ function runAnalysis(list,T,weeks,progress,onCat){
 
   /* suits, blazers, trousers, shirts, ties */
   const TITLES={suit:'Suits',blazer:'Blazers',pants:'Trousers',shirt:'Shirts',tie:'Ties'};
-  for(const cat of CLOTHES){const R=ranked[cat],recs=[],idle=idleOf(cat),covered=idle.length>=2,W=TYPE_WORD[cat];
+  for(const cat of CLOTHES){const R=ranked[cat],recs=[],idle=idleOf(cat),W=TYPE_WORD[cat],per=R.own.length?R.own.reduce((a,i)=>a+(base.use[i.id]||0),0)/R.own.length:0;
+    // enough of them already: two or more never come up, or each comes up less than once in five weeks
+    const covered=idle.length>=2||(R.own.length>1&&per<D/25);
     if(cat==='blazer'&&!B.blazerDays&&B.by('suit').length)continue;
     if(cat==='pants'&&(!B.blazerDays||!B.by('blazer').length))continue;
     let tried=0;for(const x of R.top){if(recs.length>=SHOP_PER_CAT||tried++>=SHOP_PER_CAT+3)break;tick(TITLES[cat]);const f=simFacts(L,T,weeks,base,x.c.items);sims++;
@@ -222,8 +224,9 @@ function runAnalysis(list,T,weeks,progress,onCat){
       why.push(`Planned on ${f.worn} of the next ${D} workdays${f.ownAvg!=null?`; those outfits score ${Math.round(f.ownAvg)} on average (your ${cat==='suit'?'suit days':cat==='blazer'||cat==='pants'?'blazer days':'outfits'} now: ${Math.round(usual||base.avg)})`:''}.`);
       const tier=fix?'fix':x.staple?'gap':covered?'optional':x.newG||x.newCell?'variety':'optional';
       recs.push(rec(x.c,f,{tier,why,rank:fix?8*Math.max(0,f.dProb)+6*Math.max(0,f.dRest):x.score+4*Math.max(-3,Math.min(3,edge))}))}
-    const note=!R.own.length?`You have no ${W[1]} in rotation.`:covered?`${idle.length} of your ${several(R.own.length,cat)} ${idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months, so nothing here is needed.`
-      :`Each is planned about ${Math.round(R.own.reduce((a,i)=>a+(base.use[i.id]||0),0)/R.own.length)} times in the next ${D} workdays.`;
+    const note=!R.own.length?`You have no ${W[1]} in rotation.`:idle.length>=2?`${idle.length} of your ${several(R.own.length,cat)} ${idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months, so nothing here is needed.`
+      :covered?`Each of your ${several(R.own.length,cat)} is planned only about ${Math.round(per)} times in the next ${Math.round(weeks/4.33)} months, so nothing here is needed.`
+      :`Each is planned about ${Math.round(per)} times in the next ${D} workdays.`;
     const cat1={key:cat,title:TITLES[cat],own:ownMix(cat,R),notes:[note],recs};cats.push(cat1);onCat&&onCat(cat1)}
 
   /* shoes and belts, socks, accessories and coats: simulate each */

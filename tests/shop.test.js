@@ -102,7 +102,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const c=k=>r.cats.find(c=>c.key===k);return {fix:r.cats.flatMap(c=>c.recs).filter(x=>x.tier==='fix').length,problems:r.base.problems,shirts:c('shirt').verdict,shirtTiers:c('shirt').recs.map(x=>x.tier),note:c('shirt').notes[0],
       socks:c('extra').recs.filter(x=>x.type==='socks').map(x=>x.name),n:r.cats.flatMap(c=>c.recs).length}})()`);
   ok(full.problems===0&&full.fix===0&&full.n>=10,`a well-stocked wardrobe has nothing to fix and still gets ideas (${full.n})`);
-  ok(full.shirts==='covered'&&full.shirtTiers.length>0&&full.shirtTiers.every(t=>t==='optional')&&/aren't planned at all/.test(full.note),`38 shirts: the section is Covered and its ideas are optional (${full.note})`);
+  ok(full.shirts==='covered'&&full.shirtTiers.length>0&&full.shirtTiers.every(t=>t==='optional')&&/nothing here is needed/.test(full.note),`38 shirts: the section is Covered and its ideas are optional (${full.note})`);
   ok(full.socks.includes('black socks'),'black socks out of rotation are not counted as owned: black socks are still suggested');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

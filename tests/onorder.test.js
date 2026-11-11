@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{flt='all';editing=null;show('wardrobe')});
     ok(/On the way · Nov 20/.test(await p.textContent('#gi-grey')),'its box says "On the way · Nov 20"');
     await p.evaluate(()=>openItem('grey'));await settle(p,500);
-    const ed=await p.evaluate(()=>({btn:document.querySelector('#gi-grey .rotbtn').textContent,date:(document.querySelector('#gi-grey .rotnote input[type=date]')||{}).value}));
+    const ed=await p.evaluate(()=>({btn:document.querySelector('#item-view .rotbtn').textContent,date:(document.querySelector('#item-view .rotnote input[type=date]')||{}).value}));
     ok(ed.btn==='It arrived: put in rotation'&&ed.date==='2026-11-20','the open item can change the date or mark it arrived');
     // the day after arrival: back in rotation for good, with a message
     const ar=await p.evaluate(async()=>{TODAY_OVERRIDE='2026-11-20T12:00:00';const a=await checkArrivals();TODAY_OVERRIDE='2026-11-21T09:00:00';const b=await checkArrivals();
@@ -45,7 +45,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       return {n,used,why:whyUnused(items.find(i=>i.id==='tnew'))}});
     ok(nd.n===0&&!nd.used&&/on the way: put it back in rotation once it arrives/.test(nd.why),'without a date it stays out of the plan until put back by hand (months later too), and the stats say why');
     await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';flt='all';show('wardrobe');openItem('tnew')});await settle(p,500);
-    await p.click('#gi-tnew .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='tnew'))&&!('order' in items.find(i=>i.id==='tnew')));
+    await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='tnew'))&&!('order' in items.find(i=>i.id==='tnew')));
     ok(true,'"It arrived: put in rotation" puts it back and clears the order');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

@@ -29,6 +29,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(calls===1&&ms[0].acked&&store.has('render:'+K)&&!store.has('job:'+K)&&JSON.parse(store.get('render:'+K)).sig==='s1','the consumer makes the photo, keeps it under the combination key and clears the job');
     r=await post({mode:'queue',key:K,image:PNG});j=await r.json();
     ok(j.exists&&!j.queued&&sent.length===0,'a look that already has a photo is not queued again');
+    // a queued one-piece edit of a kept photo (test path) keeps its swap and mask, and the photo's record keeps OpenAI's token counts
+    {const f1=globalThis.fetch;let got=null;globalThis.fetch=async(h,i)=>{if(i&&i.body&&i.body.get)got={prompt:i.body.get('prompt'),mask:!!i.body.get('mask')};return f1(h,i)};
+      const TK='c7e5700000000e001',ttl={};const put0=KV.put;KV.put=async(k,v,o)=>{ttl[k]=o&&o.expirationTtl;return put0(k,v)};
+      reply=()=>[200,{data:[{b64_json:JPG}],usage:{input_tokens:700,output_tokens:1400,total_tokens:2100}}];
+      await post({mode:'queue',key:TK,image:PNG,swap:{what:'tie',text:'a burgundy tie'},mask:PNG,refs:[PNG],labels:['the tie']});await drain();
+      const rec=JSON.parse(store.get('render:'+TK)||'{}');
+      ok(got&&got.mask&&/^Edit the first image/.test(got.prompt)&&/Replace only the tie with: a burgundy tie/.test(got.prompt),'a queued swap job is made as an edit of the kept photo, with its mask');
+      ok(rec.usage&&rec.usage.output_tokens===1400&&ttl['render:'+TK]===7*86400,'the photo record keeps the token counts; a test key (c7e57…) expires after a week');
+      globalThis.fetch=f1;KV.put=put0;store.delete('render:'+TK);reply=()=>[200,{data:[{b64_json:JPG}]}]}
     reply=()=>[500,{error:{message:'server busy'}}];
     await post({mode:'queue',key:'c1111111111111111',image:PNG});ms=await drain();
     ok(ms[0].retried&&ms[0].retried.delaySeconds===60&&store.has('job:c1111111111111111'),'an OpenAI server error retries after a minute, keeping the job');
