@@ -618,7 +618,21 @@ const START_STALE_MS = 3 * 60000, RUN_STALE_MS = 20 * 60000;
 async function queueStatus(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
-  const pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4));
+  // The app names the photos it waits for (?keys=a,b): each is looked up with reads, never a KV list. Lists are capped at 1,000 a
+  // day on the free plan, and polling with two lists a time used them up, after which every list threw (error 1101) until midnight UTC.
+  // Without keys (an older app) the lists are tried, and their failure is reported, not thrown.
+  const want = String(new URL(req.url).searchParams.get('keys') || '').split(',').filter(k => COMBO_RE.test(k)).slice(0, 40);
+  let pending, failedByKey = null;
+  if (want.length) {
+    pending = []; failedByKey = [];
+    for (const k of want) {
+      const f = await env.WARDROBE.get(`jobfail:${k}`, 'json'); if (f) { failedByKey.push({ key: k, error: f.error || 'failed' }); continue; }
+      if (await env.WARDROBE.get(`jobrun:${k}`) || await env.WARDROBE.get(`job:${k}`)) pending.push(k);
+    }
+  } else {
+    try { pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4)); }
+    catch (e) { return json({ error: 'The worker has used up its daily KV list allowance; update the app.', detail: String(e && e.message) }, 503); }
+  }
   // how far each waiting photo got: attempts so far and when the last began (none yet: its message hasn't been taken)
   // A job whose message never got going (lost, as before the consumer waited for KV) or whose run never finished (the consumer was
   // stopped) is sent to the queue again, up to 3 times, then recorded as failed: no photo sits "pending" for days.
@@ -640,10 +654,10 @@ async function queueStatus(req, env, json) {
     running[k] = r;
   }
   for (const k of Object.keys(running)) if (!pending.includes(k)) delete running[k];
-  const failed = [];
-  for (const k of (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) {
-    const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' });
-  }
+  let failed = failedByKey;
+  if (!failed) { failed = [];
+    try { for (const k of (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) { const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' }); } }
+    catch { } }
   return json({ pending, running, failed });
 }
 /* the queue consumer: one photo per message; temporary failures retry after a minute, others are recorded for the app */
@@ -797,7 +811,8 @@ async function getRender(req, env, json) {
   if (q.get('list')) {
     if (typeof env.WARDROBE.list !== 'function') return json({ error: 'listing not available' }, 501);
     const keys = []; let cursor;
-    do { const page = await env.WARDROBE.list({ prefix: 'render:c', cursor }); for (const k of page.keys) keys.push(k.name.slice(7)); cursor = page.list_complete ? null : page.cursor; } while (cursor && keys.length < 20000);
+    try { do { const page = await env.WARDROBE.list({ prefix: 'render:c', cursor }); for (const k of page.keys) keys.push(k.name.slice(7)); cursor = page.list_complete ? null : page.cursor; } while (cursor && keys.length < 20000); }
+    catch (e) { return json({ error: 'listing not available right now', detail: String(e && e.message) }, 503); }   // the daily list allowance: the app then asks per photo
     return json({ keys: keys.filter(k => COMBO_RE.test(k)) });
   }
   const id = renderId({ key: q.get('key'), day: q.get('day') });

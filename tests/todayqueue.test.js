@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   globalThis.fetch=async href=>{if(String(href)!=='https://api.openai.com/v1/images/edits')return new Response('',{status:404});calls++;const [st,b]=reply();
     return new Response(JSON.stringify(b),{status:st,headers:{'content-type':'application/json'}})};
   const store=new Map(),KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v)=>{store.set(k,v)},delete:async k=>{store.delete(k)},
-    list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)&&!(KV.lag&&k.startsWith('job:'))).map(name=>({name}))})};   // lag: a list that doesn't show new jobs yet, as KV can
+    list:async({prefix})=>{KV.lists=(KV.lists||0)+1;if(KV.noList)throw new Error('KV list limit exceeded for the day');return {keys:[...store.keys()].filter(k=>k.startsWith(prefix)&&!(KV.lag&&k.startsWith('job:'))).map(name=>({name}))}}};   // lag: a list that doesn't show new jobs yet, as KV can
   const sent=[],posts=[],Q={send:async m=>{sent.push(m)}};
   const env={APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:KV,RENDER_QUEUE:Q},HOST='https://w.test/';
   const drain=async()=>{for(const body of sent.splice(0)){const m={body,attempts:1,ack(){},retry(){}};await worker.queue({messages:[m]},env)}};
@@ -89,6 +89,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     {const r=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({mode:'queue',key:'c6666666666666666',image:'data:image/png;base64,AA'})}),env);
       ok(r.status===200&&JSON.parse(store.get('jobrun:c6666666666666666')).attempts===0,'queueing records when the job was sent (so one that never starts is noticed)');
       store.delete('job:c6666666666666666');store.delete('jobrun:c6666666666666666');sent.splice(0)}
+    // ---- KV lists are capped per day (1,000 on the free plan): once used up, every list threw and the worker answered error 1101
+    {KV.noList=true;const K='c7777777777777777',st=q=>worker.fetch(new Request(HOST+'render-queue'+q,{headers:{'x-app-token':'t'}}),env);
+      store.set('job:'+K,JSON.stringify({key:K,image:'x',t:Date.now()}));store.set('jobrun:'+K,JSON.stringify({attempts:1,at:Date.now()}));store.set('jobfail:c8888888888888888',JSON.stringify({error:'OpenAI: no'}));
+      const l0=KV.lists||0,r=await st('?keys='+K+',c8888888888888888,c9999999999999999'),j=await r.json();
+      ok(r.status===200&&j.pending.join()===K&&j.failed.length===1&&j.failed[0].key==='c8888888888888888'&&(KV.lists||0)===l0,'given the keys it waits for, the queue status reads each one and lists nothing');
+      const old=await st(''),all=await worker.fetch(new Request(HOST+'render?list=1',{headers:{'x-app-token':'t'}}),env);
+      ok(old.status===503&&all.status===503,'with the list allowance used up, the old status and the photo list answer 503 instead of crashing');
+      KV.noList=false;for(const k of ['job:'+K,'jobrun:'+K,'jobfail:c8888888888888888'])store.delete(k)}
     // ---- the push: RenderHub (Durable Object) on its own
     const hub=new mod.RenderHub({},{}),H=(path,init)=>hub.fetch(new Request('https://hub'+path,init)),note=b=>H('/notify',{method:'POST',body:JSON.stringify(b)});
     const K1='c1111111111111111',K2='c2222222222222222';
@@ -115,7 +123,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const p2=await ctx2.newPage();const errs2=[];p2.on('pageerror',e=>errs2.push(e.message));
     await p2.goto(url);await p2.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p2.reload();await p2.waitForFunction(()=>window.appReady);
     const dl=await p2.evaluate(()=>[0,30000,45000,200000,1000000].map(queueDelay));
-    ok(dl.join()==='40000,10000,7000,20000,60000','polling waits 40 s after sending (no photo is ready sooner), then every 7 s, 20 s after 3 minutes, a minute after 15');
+    ok(dl.join()==='40000,10000,20000,20000,60000','polling (the backup to the push) waits 40 s after sending, then every 20 s, a minute after 5 minutes');
     await p2.evaluate(()=>{PUSH_WAIT=4000;let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','charcoal'),I('shirt','lightblue'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
