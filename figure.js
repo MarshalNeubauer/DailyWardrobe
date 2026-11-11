@@ -1,7 +1,8 @@
 /* Daily Wardrobe: the torso figure for the Today tab (suit, vest, shirt, tie, clip, watch). Redrawn to the proportions of
    the realistic outfit photos: a man from the chin to the hips, broad shoulders filling the frame, the shirt collar
    standing around the neck with its points resting on the tie knot under notched lapels, the left forearm crossing the
-   chest (hand at the lapel, the watch at the wrist) and the right hand at the jacket button.
+   chest (hand on the jacket front, the watch at the wrist) and the right hand raised to the jacket's waist button, right
+   under the other wrist: the pose of the photo the owner chose as the model, which the photo generator copies.
    Fabrics are ready-made <pattern>s (spec.def) or a flat colour; sleeves are drawn in their own rotated frames so a
    stripe follows the arm. WebKit-safe: no <use> inside <clipPath>. */
 (function(){
@@ -9,7 +10,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').repl
 const hex = (c, fallback) => (/^#[0-9a-fA-F]{3,8}$/.test(String(c)) ? c : fallback);
 const VIEWBOX = { w: 390, h: 400 };
 // centre points of the pieces, in viewBox units (kept for anything that wants to point at them)
-const HOTSPOTS = { suit: { x: 110, y: 150 }, shirt: { x: 172, y: 60 }, tie: { x: 195, y: 110 }, clip: { x: 195, y: 150 }, watch: { x: 262, y: 214 } };
+const HOTSPOTS = { suit: { x: 110, y: 150 }, shirt: { x: 172, y: 60 }, tie: { x: 195, y: 110 }, clip: { x: 195, y: 150 }, watch: { x: 232, y: 209 } };
 
 function pattern(id, spec, extraRotate) {
   const s = spec || {};
@@ -32,8 +33,8 @@ function outfitFigureSvg({ suit, shirt, tie, skin = '#D6B89E', bg = '#F5F2EC', i
   const fabrics = [pattern(`${P}suitB`, suit, 0), pattern(`${P}suitL`, suit, -16), pattern(`${P}suitR`, suit, 16), pattern(`${P}shirt`, shirt, 0), pattern(`${P}tie`, tie, 0)].join('\n');
 
   /* ---- arms: [shoulder, elbow, wrist] in viewBox units ---- */
-  const L = { up: [318, 30, 338, 248], fo: [338, 248, 240, 210] };   // the left arm (viewer's right): forearm across the chest
-  const R = { up: [72, 30, 58, 294], fo: [58, 294, 158, 322] };      // the right arm (viewer's left): hand at the button
+  const L = { up: [318, 30, 340, 290], fo: [340, 290, 250, 256] };   // the left arm (viewer's right): forearm across the chest
+  const R = { up: [72, 30, 54, 338], fo: [54, 338, 140, 312] };      // the right arm (viewer's left): hand at the button
   const sleeve = (seg, w1, w2, id) => { const fr = frame(...seg), h = fr.len;
     const d = `M ${-w1 / 2} 0 L ${w1 / 2} 0 L ${w2 / 2} ${f(h)} L ${-w2 / 2} ${f(h)} Z`;
     return `<g transform="${fr.tr} rotate(${fr.rot})"><path d="${d}" fill="url(#${P}suitB)"/><path d="${d}" fill="url(#${P}gSleeve)"/>${id ? `<path id="${P}${id}" d="${d}" fill="none"/>` : ''}</g>`; };
@@ -42,7 +43,7 @@ function outfitFigureSvg({ suit, shirt, tie, skin = '#D6B89E', bg = '#F5F2EC', i
   const hand = (seg, w, withWatch, flip) => { const fr = frame(...seg), h = fr.len;
     return `<g transform="${fr.tr} rotate(${fr.rot})">
 <rect x="-14" y="${f(h + 8)}" width="28" height="30" rx="12" fill="${skin}"/>
-<g transform="translate(0 ${f(h + 30)}) scale(${flip ? -0.92 : 0.92} 0.92)"><use href="#${P}handSil" fill="#000" fill-opacity="0.25" filter="url(#${P}fBlurS)" transform="translate(3 4)"/><use href="#${P}handArt" color="${skin}"/></g>
+<g class="fig-hand ${flip ? 'fig-hand-r' : 'fig-hand-l'}" transform="translate(0 ${f(h + 30)}) scale(${flip ? -0.92 : 0.92} 0.92)"><use href="#${P}handSil" fill="#000" fill-opacity="0.25" filter="url(#${P}fBlurS)" transform="translate(3 4)"/><use href="#${P}handArt" color="${skin}"/></g>
 <rect x="-14" y="${f(h + 10)}" width="28" height="8" fill="url(#${P}gWristShade)"/>
 <rect x="${-w / 2 + 2}" y="${f(h - 6)}" width="${w - 4}" height="18" rx="3" fill="url(#${P}shirt)"/><rect x="${-w / 2 + 2}" y="${f(h - 6)}" width="${w - 4}" height="18" rx="3" fill="url(#${P}gCuff)"/>
 ${jacket ? `<path d="M ${-w / 2 - 1} ${f(h - 4)} L ${w / 2 + 1} ${f(h - 4)} L ${w / 2 + 1} ${f(h - 1)} L ${-w / 2 - 1} ${f(h - 1)} Z" fill="url(#${P}suitB)"/><path d="M ${-w / 2 - 1} ${f(h - 1)} L ${w / 2 + 1} ${f(h - 1)}" stroke="#000" stroke-opacity=".45" stroke-width="1.2"/>
@@ -165,14 +166,14 @@ ${[124, 172, 220, 268, 316, 364].map(y => `<circle cx="195" cy="${y}" r="3.4" fi
 `}
 <path d="M 84 60 C 68 66 58 76 54 90 M 306 60 C 322 66 332 76 336 90" stroke="#000" stroke-opacity=".25" stroke-width="1.6" fill="none"/>
 <!-- the right arm (viewer's left): upper arm down the side, forearm to the button -->
-<path d="M 64 300 L 158 328 L 160 348 L 64 326 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
-<g clip-path="url(#${P}clipShoulder)">${sleeve(R.up, 58, 50)}</g>${joint(58, 294, 25)}${sleeve(R.fo, 50, 42)}
+<path d="M 60 346 L 140 322 L 144 342 L 62 370 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
+<g clip-path="url(#${P}clipShoulder)">${sleeve(R.up, 58, 50)}</g>${joint(54, 338, 25)}${sleeve(R.fo, 50, 42)}
 ${hand(R.fo, 42, false, true)}
 <!-- the left arm (viewer's right): forearm across the chest, hand at the lapel, the watch at the wrist -->
-<path d="M 338 256 L 240 224 L 236 246 L 334 280 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
-<g clip-path="url(#${P}clipShoulder)">${sleeve(L.up, 58, 50)}</g>${joint(338, 248, 25)}${sleeve(L.fo, 50, 42)}
+<path d="M 340 298 L 250 268 L 246 290 L 336 322 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
+<g clip-path="url(#${P}clipShoulder)">${sleeve(L.up, 58, 50)}</g>${joint(340, 290, 25)}${sleeve(L.fo, 50, 42)}
 ${hand(L.fo, 42, true, false)}
-<path d="M 322 236 Q 330 248 322 262 M 72 282 Q 64 294 72 308" stroke="#000" stroke-opacity=".3" stroke-width="1.6" fill="none"/>
+<path d="M 324 278 Q 332 290 324 304 M 68 326 Q 60 338 68 352" stroke="#000" stroke-opacity=".3" stroke-width="1.6" fill="none"/>
 
 </g>
 <rect x="0" y="330" width="390" height="70" fill="url(#${P}gFade)"/>

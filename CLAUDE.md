@@ -196,6 +196,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - set-in sleeves cut by the shoulder line (`clipShoulder`)
 - the left forearm across the chest with the watch
 - the right hand at the button
+- the pose follows the photo the owner chose as the model: the left forearm lower across the chest, the right hand raised to the waist button right under the left wrist, clear of the watch (`.fig-hand-l`, `.fig-hand-r`); a photo used as the pose source made the generator copy that photo's watch, so the pose comes from the drawing
+- the photo generator gets a square crop of the drawing with a jacket (`FIG_CROP` in app.js, `figurePng`: shoulders across, ending under the pocket flaps); sent whole it came back zoomed out, down to the hips; a no-jacket day sends the whole drawing; the worker's `RENDER_PROMPT` describes the same pose and crop
 - No tap targets on it
 - Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js
 - keep the pattern ids (`suitB/suitL/suitR/shirt/tie`)
