@@ -138,7 +138,13 @@ function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),
   let x=kept;
   if(ready){const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12;
     const cs=getComputedStyle(nav),natural=innerHeight-38-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
-    x=Math.max(0,Math.min(NAV_MAX,Math.round(natural-(b.getBoundingClientRect().bottom+scrollY+gap))));if(x!==kept)try{localStorage.setItem(k,String(x))}catch{}}
+    // always as if the row had three tiles (belt, shoes, socks): with four (trousers on a blazer day, a coat) each is narrower, and a
+    // tile with a product picture (its picture's height follows its width, its label doesn't) is shorter, which made the bar taller on those days; a drawn
+    // tile keeps its height whatever the count
+    const r=b.getBoundingClientRect(),cg=parseFloat(getComputedStyle(b).columnGap)||8,w3=(r.width-2*cg)/3;
+    const h3=Math.max(0,...[...b.querySelectorAll('.tile')].map(t=>{const q=t.getBoundingClientRect(),im=t.querySelector('.item-pic');if(!t.classList.contains('has-pic')||!im)return q.height;
+      const ar=im.getBoundingClientRect(),k=ar.width?ar.height/ar.width:.75;return q.height+(w3-q.width)*k}));   // the picture keeps its shape (4:3 in styles.css): it grows with the width
+    x=Math.max(0,Math.min(NAV_MAX,Math.round(natural-(r.top+scrollY+h3+gap))));if(x!==kept)try{localStorage.setItem(k,String(x))}catch{}}
   const cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx'))||0;
   if(Math.abs(x-cur)>=1)document.documentElement.style.setProperty('--navx',x+'px')}
 try{for(const k of Object.keys(localStorage))if(k.startsWith('nav_fit:'))localStorage.removeItem(k)}catch{}   // the first version could keep a 64px fit measured before the photo loaded
