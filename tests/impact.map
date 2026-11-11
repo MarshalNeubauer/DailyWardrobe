@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	e07bc34a79ace64ed866
-# tested	fa24f735b52c3a928aee
+# tested	d769730d21d286d84c7c
 <every page test>	analysis.js	<loaded>
 <every page test>	app.js	<loaded>	@	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	afterScripts	applyTheme	applyZoom	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txs	zoomTarget
 <every page test>	assemble.js	<loaded>	@
