@@ -83,6 +83,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await put(asmVestKey(),'vestmaster');await put(asmCalibKey('vest'),'vestcalib');await put(asmPieceKey('vest',su),'vest-suit');
       const uv=await asmPhoto(ov);out.vmade=typeof uv==='string'&&uv.length>40000;out.vkept=!!(await metaGet('asm:vest:'+asmVestKey()));out.vwants2=asmWants(ov);
       const vj=asmVestMasterJob(),vcj=asmCalibJob('vest'),vpj=await asmPieceJob('vest',su);out.vjobs={vj,vcj,vpj:{...vpj,refs:vpj.refs.length}};
+      // photos from an earlier vest master (other keys) still on the device are dropped once
+      const olds=[asmVestKey(1),asmCalibKey('vest',1),asmPieceKey('vest',su,1)];items.push(su);for(const q of olds){renders[q]={sig:'',img:'data:image/jpeg;base64,AAAA',model:'',t:1};await metaPut('render:'+q,renders[q])}
+      localStorage.removeItem('asm_vest');const dropped=await asmDropOld(),again=await asmDropOld();items.pop();
+      out.drop={differ:olds.every(q=>![asmVestKey(),asmCalibKey('vest'),asmPieceKey('vest',su)].includes(q)),dropped,again,gone:olds.every(q=>!renders[q]),stored:!!(await metaGet('render:'+olds[0])),kept:!!renders[asmVestKey()],flag:localStorage.getItem('asm_vest')};
       // a piece that did not keep the picture (the generator once made a collage: the figure moved aside) is refused
       const master=await asmData(renders[asmMasterKey()].img),real=await asmData(renders[asmPieceKey('tie',tie)].img),c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');x.fillStyle='#ccc';x.fillRect(0,0,W,W);
       x.drawImage(await asmImg(renders[asmPieceKey('tie',tie)].img),0,0,W,W,-140,0,W*.8,W*.8);const moved=c.toDataURL('image/jpeg',.9);
@@ -111,6 +115,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.made&&k.zonesKept&&k.shirtL<38&&k.jacketB>8,`with everything kept on the device the outfit's picture is made and its zones stored (shirt lightness ${k.shirtL.toFixed(0)}, jacket yellowness ${k.jacketB.toFixed(1)})`);
     ok(k.gold===null&&k.vest===null&&k.vwants===false,'an outfit whose watch has no piece yet, or a vest day before the vest photos are there, gets no assembled picture (it keeps its own photo)');
     ok(k.vmade&&k.vkept&&k.vwants2,'with the vest master, its calibration photo and the suit\'s vest photo on the device, a vest day is put together, and the waistcoat\'s zone is kept');
+    ok(k.drop.differ&&k.drop.dropped===3&&k.drop.again===0&&k.drop.gone&&!k.drop.stored&&k.drop.kept&&k.drop.flag==='2','a remade vest master has new keys: photos from the earlier one still on a device are dropped once, the new ones kept');
     const VJ=k.vjobs;
     ok(VJ.vj.baseKey===k.jobs.mj.key&&VJ.vj.swap.what==='waistcoat'&&VJ.vj.swap.add===true&&VJ.vcj.baseKey===VJ.vj.key&&VJ.vcj.swap.what==='waistcoat'&&/orange/.test(VJ.vcj.swap.text)&&VJ.vpj.baseKey===VJ.vj.key&&VJ.vpj.swap.what==='jacket'&&/navy & light blue pinstripe suit, a three-piece suit/.test(VJ.vpj.swap.text),
       'the vest master adds a waistcoat to the master; its calibration photo and each suit\'s vest photo are edits of the vest master');
@@ -148,6 +153,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       got=[];await post(k.vjobs.vj);ms=await drain();const p1=got[0]&&got[0].prompt;store.set('render:'+k.vjobs.vj.key,JSON.stringify({sig:'',img:k.masterUrl,model:'m',t:1}));got=[];await post(k.vjobs.vcj);await drain();
       ok(/Add one thing only: a matching five-button waistcoat/.test(p1)&&/Replace only the waistcoat with: a waistcoat of exactly the same cut[^\n]*orange/.test(got[0].prompt)&&/must stay exactly[^\n]*the jacket and its pattern/.test(got[0].prompt),'the worker adds the waistcoat for the vest master and swaps only the waistcoat for its calibration photo');
       q=await post({mode:'queue',key:'c0000000000000001',swap:{what:'tie',text:'x'}});ok(q.status===400,'a job with neither an image nor a photo to edit is refused');
+      // a photo that was made wrong can be removed from the worker
+      const del=(key,tok='t')=>worker.fetch(new Request(HOST+'render?key='+key,{method:'DELETE',headers:{'x-app-token':tok}}),env);
+      const d0=store.has('render:'+k.tieJob.key),d1=await del(k.tieJob.key,'wrong'),d2=await del('not-a-key'),d3=await del(k.tieJob.key);
+      ok(d0&&d1.status===403&&d2.status===400&&d3.status===200&&!store.has('render:'+k.tieJob.key),'DELETE /render?key= removes a kept photo, with the app token and a photo key only');
     }finally{globalThis.fetch=realFetch}
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     // ---- the app against the worker (mocked KV, queue and OpenAI): item photos come home, Today shows the outfit put together ----
