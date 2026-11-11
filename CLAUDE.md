@@ -259,6 +259,8 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
 - `/render` POST otherwise: a realistic outfit photo via OpenAI's image edit API (`nojacket:true` uses a shirt-sleeves pose prompt).
   - Secret `OPENAI_API_KEY`; optional `OPENAI_IMAGE_MODEL` (default `gpt-image-2`) and `OPENAI_IMAGE_QUALITY`.
   - An outfit request or queued job may set its own `quality`, `model` (a `gpt-image-*` id) and `complexity`, to try another model under a test key.
+  - a direct outfit request (not a queued job) answers with OpenAI's token counts (`usage`), to measure what a photo costs
+  - a one-piece edit of a kept photo, as a test path (not used by the app): `swap {what, text}` with the photo as `image`, the new piece's photos as `refs`, and a `mask` (PNG with alpha, the photo's size) or a `markup` layer; the prompt is `SWAP_PROMPT`
 - Photos are saved per outfit combination (`comboKey()` in app.js: the shirt by base colour only; the jacket/tie/clip/watch by how they look; plus the vest) as `render:c<16 hex>` in KV (no expiry) and in `meta`, so a combination is never generated twice.
 - GET/PUT `/render?key=` share a photo between devices; `GET /render?list=1` lists every kept key. Older `render:<date>` copies are migrated on first use.
 - POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`).
