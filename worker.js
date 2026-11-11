@@ -361,11 +361,17 @@ const PFIG = { type: 'object', additionalProperties: false, required: ['shape', 
     colours: { type: 'array', items: PCOL }, centre: { anyOf: [PCOL, { type: 'null' }] }, sizePct: { type: 'number' } } };
 const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid', 'ground', 'figures'],
   properties: { grid: { type: 'string', enum: ['straight', 'diagonal'] }, ground: PCOL, figures: { type: 'array', items: PFIG } } };
+/* a weave texture (a dress shirt's dobby diamonds, herringbone, oxford): the cloth is one colour and the pattern is in how the
+   threads float, so it is read as a small bitmap of one repeat (1 = reads raised / catches the light) */
+const TEXTURE_KINDS = ['diamond', 'herringbone', 'twill', 'oxford', 'royal-oxford', 'pinpoint', 'end-on-end', 'birdseye', 'honeycomb', 'dobby-dot', 'basket', 'other'];
+const PTEX = { type: 'object', additionalProperties: false, required: ['kind', 'grid', 'ground', 'raised', 'contrast'],
+  properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, ground: PCOL, raised: PCOL,
+    contrast: { type: 'string', enum: ['faint', 'subtle', 'clear'] } } };
 const PATTERN_SCHEMA = { type: 'object', additionalProperties: false,
-  required: ['layout', 'across', 'along', 'motif', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
+  required: ['layout', 'across', 'along', 'motif', 'texture', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
   properties: {
-    layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'motif', 'none'] },
-    across: { anyOf: [PDIR, { type: 'null' }] }, along: { anyOf: [PDIR, { type: 'null' }] }, motif: { anyOf: [PMOTIF, { type: 'null' }] },
+    layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'motif', 'texture', 'none'] },
+    across: { anyOf: [PDIR, { type: 'null' }] }, along: { anyOf: [PDIR, { type: 'null' }] }, motif: { anyOf: [PMOTIF, { type: 'null' }] }, texture: { anyOf: [PTEX, { type: 'null' }] },
     stripeDirection: { type: 'string', enum: ['vertical', 'horizontal', 'upper-left to lower-right', 'lower-left to upper-right'] },
     repeatsInCloseup: { type: 'number' }, repeatsAcrossItem: { type: 'number' }, paneAspect: { type: 'number' },
     ignored: { type: 'string' }, description: { type: 'string' },
@@ -376,14 +382,16 @@ pattern: seams and the pattern shift across them, folds, shadows, sheen, moire, 
 stripes made uneven by drape or by the camera's angle (report the regular spacing they were woven at).
 
 layout — stripes (lines one way), check, windowpane (thin lines both ways on a plain ground, large panes), plaid (several
-  colours both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds), or none.
+  colours both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds),
+  texture (the cloth is one colour, or nearly, and the pattern is in the weave itself: a dress shirt's dobby diamonds,
+  herringbone, twill, oxford, pinpoint, end-on-end, birdseye, honeycomb), or none.
 across — one full repeat of the main lines, measured across them (for vertical lines from left to right, for a tie's diagonal
   stripes across the stripes): every band in order, the ground included, each with role (ground or line), a plain colour name,
   an sRGB hex of how that thread looks in neutral daylight (a light blue line is light blue even where the photo greys it),
   and widthPct, its share of the repeat in percent (the bands add up to 100). A line made of several close threads (a blue line
   with a thin white line each side) is listed thread by thread with the ground between them.
 along — the same for the lines running the other way (top to bottom for horizontal lines), or null if there are none.
-  For a motif, across and along are null.
+  For a motif or a texture, across and along are null.
 motif — for a motif only (null otherwise), as woven, one grid cell being one repeat:
   grid: straight (rows and columns run with the item's edges) or diagonal (rows and columns run at 45°, squares stand on a point);
   ground: the colour that shows between the figures (a plain colour name and an sRGB hex as in "across");
@@ -396,6 +404,18 @@ motif — for a motif only (null otherwise), as woven, one grid cell being one r
     centre: the dot's colour for square-with-dot (null otherwise);
     sizePct: the figure's width as a percentage of the grid spacing (cell figures that nearly touch: 80; a small accent: 30).
   repeatsInCloseup and repeatsAcrossItem then count grid cells, measured along a row.
+texture — for a texture only (null otherwise), what the weave looks like up close (read it from the close-up):
+  kind: diamond (a lattice of small diamonds), herringbone, twill (fine diagonal ribs), oxford, royal-oxford, pinpoint,
+    end-on-end, birdseye, honeycomb, dobby-dot (small woven dots), basket, or other;
+  grid: ONE repeat of the texture as a small bitmap, top row first: each row a string of 1 and 0 of the same length, 1 where the
+    cloth reads raised or catches the light, 0 where it reads as the ground. Each cell is square (a repeat twice as tall as it
+    is wide has twice as many rows as columns), 4 to 24 cells each way, and the bitmap must tile seamlessly when repeated in
+    both directions, its outlines continuing across the edges (a diamond lattice's lines meet the next repeat's). Draw the
+    texture as it looks, at about the scale of the thread floats you see, not a weaving draft of every thread.
+    A fine twill is e.g. ["1000","0100","0010","0001"];
+  ground and raised: the two tones (a plain colour name and an sRGB hex as in "across"; for a white shirt both are whites);
+  contrast: faint (only seen up close), subtle, or clear.
+  repeatsInCloseup and repeatsAcrossItem then count repeats of the grid, measured along a row.
 stripeDirection — which way the main lines run as the viewer sees them.
 repeatsInCloseup — how many repeats of "across" fit across the close-up's width (or the item photo's, without a close-up).
 repeatsAcrossItem — how many repeats of "across" fit across the item's widest part in the first photo.
@@ -414,7 +434,14 @@ function cleanPattern(p) {
     const f = m.figures.slice(0, 3).map(x => ({ shape: MOTIF_SHAPES.includes(x.shape) ? x.shape : 'other', placement: ['cell', 'corner', 'alternate-cells'].includes(x.placement) ? x.placement : 'cell',
       colours: (x.colours || []).map(col).filter(Boolean).slice(0, 2), centre: x.shape === 'square-with-dot' ? col(x.centre) : null, size: num(x.sizePct, 5, 100, 50) / 100 })).filter(x => x.colours.length);
     return f.length ? { grid: m.grid === 'diagonal' ? 'diagonal' : 'straight', ground: col(m.ground), figures: f } : null; };
-  return { layout: p.layout, across: p.layout === 'motif' ? null : dir(p.across), along: p.layout === 'motif' ? null : dir(p.along), motif: p.layout === 'motif' ? motif(p.motif) : null, stripeDirection: p.stripeDirection,
+  /* the texture's bitmap: rows of 1/0 (also #/. and x/-), the same length, 2-24 each way, with both tones in it */
+  const texture = t => { if (!t || !Array.isArray(t.grid) || !col(t.ground)) return null;
+    const rows = t.grid.slice(0, 24).map(r => String(r).replace(/[^01#.xX-]/g, '').replace(/[#xX]/g, '1').replace(/[.-]/g, '0').slice(0, 24)).filter(Boolean);
+    const w = Math.max(0, ...rows.map(r => r.length)), g = rows.map(r => r.padEnd(w, '0')), all = g.join('');
+    if (g.length < 2 || w < 2 || !all.includes('1') || !all.includes('0')) return null;
+    return { kind: TEXTURE_KINDS.includes(t.kind) ? t.kind : 'other', grid: g, ground: col(t.ground), raised: col(t.raised) || col(t.ground), contrast: ['faint', 'subtle', 'clear'].includes(t.contrast) ? t.contrast : 'subtle' }; };
+  const flat = p.layout === 'motif' || p.layout === 'texture';
+  return { layout: p.layout, across: flat ? null : dir(p.across), along: flat ? null : dir(p.along), motif: p.layout === 'motif' ? motif(p.motif) : null, texture: p.layout === 'texture' ? texture(p.texture) : null, stripeDirection: p.stripeDirection,
     repeatsInCloseup: num(p.repeatsInCloseup, .2, 60, 1), repeatsAcrossItem: num(p.repeatsAcrossItem, .2, 80, 1), paneAspect: num(p.paneAspect, .3, 3, 1),
     ignored: txt(p.ignored, 200), description: txt(p.description, 600) };
 }
@@ -429,7 +456,7 @@ async function handlePattern(req, env, json) {
   const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: kind + PATTERN_PROMPT, closeup: cm, effort: 'high', maxTokens: 16000 });
   if (c.status !== 200) return json(c.body, c.status);
   const out = cleanPattern(c.body);
-  if (!out.across && !out.motif) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
+  if (!out.across && !out.motif && !out.texture) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
   return json({ ...out, model: c.body.model });
 }
 
