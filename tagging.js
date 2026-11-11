@@ -345,10 +345,18 @@ async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie'
     let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
     refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
   const wk=labels.findIndex(l=>l.startsWith('the wristwatch'));   // the watch is small in the picture: its dial enlarged is a second reference
-  if(wk>=0){const d=await dialCrop(refs[wk]);if(d){refs.splice(wk+1,0,d);labels.splice(wk+1,0,dialLabel(o.watch))}}
+  if(wk>=0){const d=await dialCrop(refs[wk]),t=await halfTurn(refs[wk]);
+    if(t){refs[wk]=t;labels[wk]=WATCH_WORN}   // turned as it sits on the wrist, so the generator copies it the right way round
+    if(d){refs.splice(wk+1,0,t?await halfTurn(d)||d:d);labels.splice(wk+1,0,dialLabel(o.watch)+(t?', turned the same way':''))}}
   return trimRefs(refs,labels)}
 /* the middle of the watch's photo (DIAL_PART of its shorter side), enlarged: with the whole watch alone the generator drew a generic
    dial, with this it drew the owner's white dial and its subdials */
+/* on the left wrist, the arm across the chest and the back of the hand to the camera, a watch is seen half a turn round: the crown
+   toward the hand, 12 o'clock at the bottom. From upright photos the generator drew it upright, the crown toward the elbow (the
+   owner: "backwards") */
+const WATCH_WORN="the wristwatch, turned as worn: crown toward the hand, 12 o'clock at the bottom (copy it exactly: case, bezel, dial and subdials, hands, bracelet links)";
+const halfTurn=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');
+  x.translate(c.width,c.height);x.rotate(Math.PI);x.drawImage(im,0,0);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
 const DIAL_PART=.48,dialLabel=w=>`an enlargement of the same wristwatch's dial (${w&&w.dial?'a '+colName(w.dial)+' dial':'its dial'}${w&&w.watchStyle==='chronograph'?' with its subdials':''}: copy its layout, hands and markings)`;
 const dialCrop=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height)*DIAL_PART,c=document.createElement('canvas');c.width=c.height=640;
   c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,640,640);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
