@@ -520,18 +520,20 @@ async function handleFetchImage(req, env, json, cors) {
 /* POST /render {image, refs, outfit, nojacket?} -> {image: data URL, model}
    Turns the app's outfit illustration into a photorealistic picture with OpenAI's image edit API. The illustration
    fixes the pose and framing; photos of the actual items (refs) and the written outfit keep colours and patterns right. */
+/* the room behind him, spelled out: "bright office background" came back as blown-out windows, harsh and different every time */
+const BACKDROP = 'Soft, even natural daylight from the left, gentle shadows. Behind him, softly out of focus, a calm office: a warm off-white wall, a light wooden desk at the lower right with a dark laptop on it, and a green plant at the right edge. No window in view and no blown-out highlights: the background is a little darker than the white of a shirt.';
 const RENDER_PROMPT = (outfit, nojacket) => nojacket ? `Turn the first image (an illustration) into a photorealistic photograph.
 Keep exactly the same pose, crop and framing: a man's torso from the chin down to the hips, no face, in shirt sleeves with no jacket; his forearms cross at the waist, one hand rests on his chest next to the wristwatch, the other hand rests at his waist.
 He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item: no jacket, and no tie unless one is listed.
 A crisp cotton dress shirt with natural folds, buttoned cuffs, realistic hands and skin.
-Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`
+${BACKDROP} 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`
   : `Turn the first image (an illustration) into a photorealistic photograph.
-Keep exactly the same pose, crop and framing: a man's torso from just under the chin down to just below the jacket pocket flaps, no face, his shoulders filling the width of the picture; his left forearm lies across his chest, the hand a loose fist on the jacket front with the wristwatch on that wrist facing the camera; his other hand is raised to the jacket's waist button, fastening it, directly under the first wrist so that it almost touches that cuff.
+Keep exactly the same pose, crop and framing: a man's torso from just under the chin down to just below the jacket pocket flaps, no face, both shoulders and both elbows fully inside the picture, with a narrow strip of background visible at either side of the arms exactly as in the illustration; his left forearm lies across his chest, the hand a loose fist on the jacket front with the wristwatch on that wrist facing the camera; his other hand is raised to the jacket's waist button, fastening it, directly under the first wrist so that it almost touches that cuff.
 He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
 Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
-Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
+${BACKDROP} 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
 /* a one-piece edit of a kept photo (a test path: is changing one piece cheaper than a whole new photo?): body.image is the
    photo, body.swap {what, text} the piece (one of SWAP_KEEP) and its description, refs its photos, body.mask (or body.markup) where it is */
 /* the generator once answered a swap with a collage: the figure moved aside and the reference photos pasted next to it */

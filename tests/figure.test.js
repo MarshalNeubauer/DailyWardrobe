@@ -14,13 +14,14 @@ module.exports=async({ok,chromium,url,settle})=>{
       noImg:!svg.querySelector('image'),suitHex:pat('fig-suitB').innerHTML.includes(COLORS[o.top.primaryColor]),lapel:/rotate\(-16\)/.test(pat('fig-suitL').getAttribute('patternTransform')),
       tieDots:pat('fig-tie').querySelectorAll('circle').length>0,clip:!!svg.querySelector('.fig-clip'),clipGold:svg.querySelector('.fig-clip rect:nth-child(2)').getAttribute('fill')===METAL.gold,
       watch:!!svg.querySelector('.fig-watch'),dialWhite:svg.innerHTML.includes(COLORS.white),hot:c.querySelectorAll('.hot').length,
-      useInClip:!!svg.querySelector('clipPath use'),shoulder:!!svg.querySelector('clipPath[id="fig-clipShoulder"]'),collar:svg.innerHTML.includes('collar band')}});
+      welt:!!svg.querySelector('path.fig-welt[fill^="url(#fig-suitB"]'),useInClip:!!svg.querySelector('clipPath use'),shoulder:!!svg.querySelector('clipPath[id="fig-clipShoulder"]'),collar:svg.innerHTML.includes('collar band')}});
   ok(f.fig&&f.vb==='0 0 390 400'&&f.role==='img'&&/navy/.test(f.label),'Today shows the torso figure (390x400, role=img, labelled with the outfit)');
   ok(f.noImg&&f.suitHex,'fabrics are drawn from the tagged colours, not photo crops');
   ok(f.lapel,'lapel weave is turned to follow the lapel');
   ok(f.tieDots,'a polka-dot tie shows dots');
   ok(f.clip&&f.clipGold,'the tie clip is drawn in its metal (gold)');
   ok(f.watch&&f.dialWhite,'the watch uses its dial colour');
+  ok(f.welt,'the chest pocket is a welt in the jacket\'s cloth, not a dark line');
   ok(f.hot===0,'no selection dots on the figure');
   ok(!f.useInClip,'no <use> inside <clipPath> (WebKit-safe)');
   ok(f.shoulder&&f.collar,'the redrawn figure: sleeves set into the shoulder line, a shirt collar band around the neck');
