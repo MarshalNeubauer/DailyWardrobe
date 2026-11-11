@@ -198,6 +198,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the right hand at the button
 - the pose follows the photo the owner chose as the model: the left forearm lower across the chest, the right hand raised to the waist button right under the left wrist, clear of the watch (`.fig-hand-l`, `.fig-hand-r`); a photo used as the pose source made the generator copy that photo's watch, so the pose comes from the drawing
 - the photo generator gets a square crop of the drawing with a jacket (`FIG_CROP` in app.js, `figurePng`: shoulders across, ending under the pocket flaps); sent whole it came back zoomed out, down to the hips; a no-jacket day sends the whole drawing; the worker's `RENDER_PROMPT` describes the same pose and crop
+- `FIG_CROP` is 368 of the drawing's 390 units and the prompt asks for both shoulders and elbows inside the picture with a strip of background either side: the crop alone changed nothing, the wording did ("shoulders filling the width" ran them off both edges)
+- the chest pocket is a welt in the jacket's cloth (`.fig-welt`): drawn as a dark stroke it came back as a dark line in the pocket
 - No tap targets on it
 - Fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js
 - keep the pattern ids (`suitB/suitL/suitR/shirt/tie`)
@@ -297,6 +299,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - Today's pieces list, vest row and outfit chips show the drawn swatch even for an item with a close-up (`swatchSVG(i,true)`); stats keep the close-up one; Today's piece squares are 40px (`#today .row .dot`), as large as the rows' 40px tap height allows, so no row is taller
 - every drawn small swatch uses `fabricDef(…,'dot')`, a scale that reads at that size: two repeats of a band sett (T 8 of 16), three motif cells, two and a half weave repeats with 1.7× contrast
 - the "As tagged" swatch (`tagSwInner`) splits when there is a close-up: drawn colour on the left half, the close-up on the right (`.swsplit .swtex`); the Wardrobe editor adds/replaces/removes it (`replaceTexture`/`setTexture`, undo per field via `setPic`)
+- the watch's dial goes to the generator enlarged, after the watch's photo (`dialCrop`, `DIAL_PART` .48 of the photo's middle, `dialLabel`; in `outfitRefsFull`): the watch is about 80px in the picture and with its photo alone the dial came back generic; when there are over 8 references it goes right after the shirt's close-up (`refRank` .5)
 - the worker takes 8 references; `trimRefs` (tagging.js) drops the least needed first (`refRank`: the shirt's close-up, then its texture drawing (the user's choice: the drawing is in the tagged colour, a dim close-up reads grey), other drawings, close-ups), never an item's photo: cutting at 8 dropped the watch (added last) once the pattern drawings came in, and the generator drew a generic one
 - `outfitRefs()` sends each close-up after its item's photo, labelled "a close-up of the … fabric (match its exact colour and weave)" (suit/blazer, shirt, tie; trousers on no-jacket days); the worker takes up to 8 reference photos; the planner worker never gets `texture`
 - automatic white balance on new Add photos (`wbGains`/`applyWb`): gains from the brightest near-neutral pixels (≤35% saturated, 0.5–85% of the frame), capped at −15%/+18% per channel, skipped under 2%; a card's close-up gets its item photo's gains; the card has Show original (`toggleWb`, originals kept in `q.raw` until saved); close-ups added later in the editor are not corrected
@@ -370,6 +373,7 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
   - a queued job can be a one-piece edit too (`swap`, `mask`, `markup` kept in the job): a direct request waiting minutes is cut off by some proxies
   - photos under test keys (`c7e57…`) expire from KV after 7 days (`renderTtl`)
   - a one-piece edit of a kept photo (assemble.js builds and sends these jobs): `swap {what, text}` with the photo as `image`, the new piece's photos as `refs`, and a `mask` (PNG with alpha, the photo's size) or a `markup` layer; the prompt is `SWAP_PROMPT`
+  - the room behind him is spelled out in `BACKDROP` (even daylight from the left, an off-white wall, a wooden desk with a laptop at lower right, a plant at the right edge, no window): "softly blurred bright office background" came back as blown-out windows, different every time
   - `master:true` adds `MASTER_NOTE` to an outfit photo's prompt (plain cloth, no tie bar or pocket square): the master of assembled photos
   - `baseKey`: the photo to edit is one kept in KV (`render:<baseKey>`, the master), so a piece job uploads no image; while it isn't there the job retries
   - `swap.add` uses `SWAP_ADD_PROMPT` (add one thing, keep the rest): a tie bar on the master, which has none

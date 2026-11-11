@@ -11,10 +11,15 @@ module.exports=async({ok,chromium,url})=>{
         shirt:{id:'s',type:'shirt',primaryColor:'white',pattern:'woven',texture:im,sett:{v:4,tex:{kind:'diamond',grid:['10','01'],lighter:true,contrast:'subtle',rel:.1},a:0,cr:20,tr:45}},
         tie:{id:'t',type:'tie',primaryColor:'navy',pattern:'stripe',secondaryColor:'pink',photo:im,texture:im,sett:{...band,a:-45}},
         watch:{id:'w',type:'watch',primaryColor:'silver',metal:'silver',photo:im},clip:null,vest:false};
-      const all=outfitRefs(o).labels.length+3,{refs,labels}=await outfitRefsFull(o);return {all,n:refs.length,labels}});
+      const all=outfitRefs(o).labels.length+4,{refs,labels}=await outfitRefsFull(o);
+      const plain=await outfitRefsFull({suitDay:true,top:{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid',photo:im},shirt:{id:'s3',type:'shirt',primaryColor:'white',pattern:'solid'},tie:{id:'t2',type:'tie',primaryColor:'burgundy',pattern:'solid',photo:im},watch:{id:'w',type:'watch',primaryColor:'silver',metal:'silver',dial:'white',watchStyle:'chronograph',photo:im}});
+      const size=u=>new Promise(k=>{const i=new Image();i.onload=()=>k(i.width+'x'+i.height);i.src=u});
+      return {all,n:refs.length,labels,plain:plain.labels,dial:await size(plain.refs[plain.refs.length-1])}});
     ok(r.all>8&&r.n===8,`a full outfit has ${r.all} references; 8 go to the generator`);
     ok(r.labels.some(l=>/^the wristwatch/.test(l))&&['the blazer','the tie'].every(x=>r.labels.includes(x)),'the watch photo and every item photo are kept');
     ok(!r.labels.some(l=>/^a close-up of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the tie/.test(l))&&r.labels.some(l=>/^a drawing of the blazer/.test(l)),'the shirt\'s close-up goes first; its texture drawing and the tie and blazer drawings stay');
+    ok(!r.labels.some(l=>/^an enlargement/.test(l)),'in a full outfit the watch dial\'s enlargement gives way to the pattern drawings');
+    ok(r.plain.join('|')==="the suit|the tie|the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)|an enlargement of the same wristwatch's dial (a white dial with its subdials: copy its layout, hands and markings)"&&r.dial==='640x640',`with room, the watch's dial is sent enlarged after its photo (${r.dial})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

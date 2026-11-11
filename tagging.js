@@ -344,13 +344,20 @@ async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie'
   for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||(i.sett.tex&&s!=='shirt'))continue;const img=await patternDiagram(i,role);if(!img)continue;
     let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
     refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
+  const wk=labels.findIndex(l=>l.startsWith('the wristwatch'));   // the watch is small in the picture: its dial enlarged is a second reference
+  if(wk>=0){const d=await dialCrop(refs[wk]);if(d){refs.splice(wk+1,0,d);labels.splice(wk+1,0,dialLabel(o.watch))}}
   return trimRefs(refs,labels)}
-/* the worker takes 8 references: when there are more, the least needed go first (the shirt's close-up, then its texture drawing: the
+/* the middle of the watch's photo (DIAL_PART of its shorter side), enlarged: with the whole watch alone the generator drew a generic
+   dial, with this it drew the owner's white dial and its subdials */
+const DIAL_PART=.48,dialLabel=w=>`an enlargement of the same wristwatch's dial (${w&&w.dial?'a '+colName(w.dial)+' dial':'its dial'}${w&&w.watchStyle==='chronograph'?' with its subdials':''}: copy its layout, hands and markings)`;
+const dialCrop=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height)*DIAL_PART,c=document.createElement('canvas');c.width=c.height=640;
+  c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,640,640);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
+/* the worker takes 8 references: when there are more, the least needed go first (the shirt's close-up, then the watch dial's enlargement, then the shirt's texture drawing: the
    drawing is in the tagged colour with the weave readable, while a close-up shot in dim light reads grey and the generator is told to
    match its colour; then
    the other drawings and close-ups), never an item's own photo. Cutting the list at 8 dropped the watch, which comes last, once the
    pattern drawings were added, and the generator drew a generic one. */
-function refRank(l){return /^a close-up of the shirt/.test(l)?0:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
+function refRank(l){return /^a close-up of the shirt/.test(l)?0:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:/^an enlargement/.test(l)?.5:9}
 function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
   while(keep.length>max){let worst=0;for(let n=1;n<keep.length;n++)if(refRank(labels[keep[n]])<refRank(labels[keep[worst]]))worst=n;keep.splice(worst,1)}
   return {refs:keep.map(k=>refs[k]),labels:keep.map(k=>labels[k])}}

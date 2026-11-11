@@ -155,7 +155,7 @@ ${jacket ? `<!-- lapels -->
 <path d="M 195 262 L 195 440" stroke="#000" stroke-opacity=".5" stroke-width="1.6"/>
 <circle cx="195" cy="276" r="5.5" fill="#0E1424"/><circle cx="193.6" cy="274.6" r="1.6" fill="#FFFFFF" fill-opacity=".35"/>
 <circle cx="195" cy="336" r="5.5" fill="#0E1424"/><circle cx="193.6" cy="334.6" r="1.6" fill="#FFFFFF" fill-opacity=".35"/>
-<path d="M 236 152 L 284 146" stroke="#000" stroke-opacity=".55" stroke-width="2.6"/><path d="M 236 154.5 L 284 148.5" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="1"/>
+<path class="fig-welt" d="M 236 150 L 284 144 L 284 152 L 236 158 Z" fill="url(#${P}suitB)"/><path d="M 236 150 L 284 144 L 284 152 L 236 158 Z" fill="#000" fill-opacity=".12"/><path d="M 236 150 L 284 144" stroke="#000" stroke-opacity=".4" stroke-width="1"/><path d="M 236 158 L 284 152" stroke="#000" stroke-opacity=".22" stroke-width=".8"/>
 <path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="url(#${P}suitB)"/><path d="M 106 362 L 168 368 L 168 380 L 106 374 Z" fill="#000" fill-opacity=".16"/><path d="M 106 374 L 168 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
 <path d="M 284 362 L 222 368 L 222 380 L 284 374 Z" fill="url(#${P}suitB)"/><path d="M 284 362 L 222 368 L 222 380 L 284 374 Z" fill="#000" fill-opacity=".16"/><path d="M 284 374 L 222 380" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
 

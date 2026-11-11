@@ -917,7 +917,7 @@ function outfitText(o){
 /* draw the figure SVG onto a canvas and return a PNG data URL. With a jacket the picture is the square FIG_CROP of the drawing
    (viewBox units): the shoulders fill its width and it ends just under the pocket flaps, the close framing the photo generator
    copies (sent whole, 390x400, it came back zoomed out, down to the hips). A no-jacket day keeps the whole drawing */
-const FIG_CROP={x:22,y:0,s:346};
+const FIG_CROP={x:11,y:0,s:368};
 function figurePng(o,w=780){
   const crop=o&&o.top?FIG_CROP:null,k=crop?w/crop.s:w/390,W=Math.round(390*k),H=Math.round(400*k);
   const svg=figureSvg(o,'r-').replace('width="100%"',`width="${W}" height="${H}"`).replace('style="display:block;height:auto"','');
