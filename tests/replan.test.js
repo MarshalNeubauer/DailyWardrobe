@@ -25,7 +25,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(/planner was updated.*4 days reset/.test(await p.textContent('#toast')),'a note says the upcoming days were planned again');
     ok(await p.evaluate(async()=>{dayRecs['2026-11-18']={date:'2026-11-18',force:{top:'suit3'}};await checkPlanRules();return !!dayRecs['2026-11-18'].force}),'it happens once per rules change: later swaps are kept');
     // Settings button
-    await p.evaluate(()=>openSettings('schedule'));
+    await p.evaluate(()=>openSettings());
     ok(/1 upcoming day keeps pieces from a swap/.test(await p.textContent('#replan-status')),'Settings says how many upcoming days keep swapped pieces');
     await p.click('#replan-btn');await p.waitForFunction(()=>/planned again/.test($('#replan-status').textContent),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>!dayRecs['2026-11-18'].force&&/1 day planned again/.test($('#replan-status').textContent)),'Re-plan upcoming days clears them on demand');

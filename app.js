@@ -20,34 +20,12 @@ const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>window.scheduleS
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
 /* settings management */
-/* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
-const SET_CATS=['schedule','daysoff','weather','photos','tagging','backup','connection'];
-function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
-  el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open)}
-function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();
-  if(open)setTimeout(()=>{const m=$('#settings-modal'),r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
-    const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
-function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};
-  const days=l=>{const s=[...l].sort((a,b)=>((a+6)%7)-((b+6)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
-    const run=s.length>2&&s.every((d,i)=>!i||(s[i-1]+1)%7===d);return run?`${n(s[0])}–${n(s[s.length-1])}`:s.map(n).join(', ')};
-  const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
-  set('schedule',`${days(settings.workdays)} · ${bl.length?'blazers '+days(bl):'suits every day'} · vest ${({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']}`);
-  const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
-  set('daysoff',[h&&h.country?`${h.country} holidays`:'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
-  set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
-  set('photos','Outfit photos for the month, and item pictures');
-  const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
-  set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'} · shirt weaves · benchmark`);
-  const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
-  set('backup',w?'Backed up daily to your worker':'Needs a connection');set('connection',host||'Not connected')}
 function openSettings(section){
-  const cat=section==='wx'?'weather':section;
-  for(const k of SET_CATS)setCatOpen(k,k===cat,true);
-  if(cat)setTimeout(()=>{const el=$('#sc-'+cat),m=$('#settings-modal');if(el&&m)m.scrollTop=el.offsetTop-m.querySelector('.shead').offsetHeight-8},0);else if($('#settings-modal'))$('#settings-modal').scrollTop=0;
+  if(section)setTimeout(()=>{const el=$('#wx-section');if(el)el.scrollIntoView({block:'start'})},0);
   if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
   if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
   if(window.showSyncStatus)showSyncStatus();
-  renderSettingsExtras();settingsSummaries();if(queuedKeys().length)checkQueue();
+  renderSettingsExtras();if(queuedKeys().length)checkQueue();
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
 }
@@ -109,6 +87,8 @@ function renderBusy(){let el=document.getElementById('busy');if(!el){if(!documen
   if(bg)live.push(`Making ${bg} photo${bg===1?'':'s'} in the background…`);
   document.body.classList.toggle('busy-on',!!live.length);if(!live.length){el.classList.remove('on');return}
   el.innerHTML=`<span class="spin" aria-hidden="true"></span><span>${esc(live[live.length-1])}${live.length>1?` <small>+${live.length-1}</small>`:''}</span>`;el.classList.add('on')}
+/* run once every script has loaded: the start-up chain can resolve before tagging.js (loaded after app.js) has run */
+const afterScripts=f=>document.readyState==='complete'?f():addEventListener('load',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by Workers AI (${q.model.replace(/^@cf\//,'')}).`;
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
 async function ask(c,extra){
@@ -362,7 +342,7 @@ async function save(i){
   if(q.tagImg)keepTagImg(it.id,q.tagImg);recordTagResult(q,it);   // tagging.js: the sharp copy for the benchmark; what the tagger got wrong
 }
 let editing=null;
-const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Colour':k==='secondaryColor'?'Second colour':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
+const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Primary':k==='secondaryColor'?'Secondary':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select></label>`;
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Undo works until the editor is closed. ---- */
 let phEdit={id:null,undo:[],crop:null};
@@ -829,7 +809,7 @@ async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
   const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
   try{const q=await queueCombo(o,replace);
-    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.failed=s.failed||[];rqSet(s);startQueueWatch()}
+    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open: your worker has no background queue.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
   catch(e){renderMsg={k:day,t:/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t send the photo to your worker: '+(e.message||e)}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)renderToday();renderRegenUI()}
@@ -937,7 +917,7 @@ async function startBatch(){
     catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden/i.test(e.message)){batch.stop=true}}
   }
   const b=batch;batch=null;const el=$('#batch-status');
-  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.failed=q.failed||[];
+  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.sentAt=Date.now();q.failed=q.failed||[];
     q.msg=`Sent ${queued.length} photo${queued.length===1?'':'s'} to your worker. They’re being made in the background (about a minute each); you can close the app. They appear as they finish.`;rqSet(q);startQueueWatch()}
   else if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
   if(queued.length&&b.fail&&el){el.dataset.keep=1;el.textContent=rqGet().msg+` ${b.fail} couldn’t be sent (${b.err}).`;setTimeout(()=>{delete el.dataset.keep},6000)}
@@ -960,25 +940,47 @@ const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):loc
 const queuedKeys=()=>rqGet().keys;
 /* ask the worker how the queued photos are doing and bring the finished ones home */
 let rqTimer=null,rqBusy=false;
-async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const n0=q.keys.length;
+async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const removed=new Set(),newFail=[];
   try{const r=await fetch(W.url+'-queue',{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
     const pend=new Set(st.pending||[]),fail=Object.fromEntries((st.failed||[]).map(f=>[f.key,f.error]));let got=0,shown=false;
     for(const k of [...q.keys]){
       if(pend.has(k))continue;
-      if(fail[k]){q.failed.push(fail[k]);renderFail[k]=fail[k];shown=true;q.keys=q.keys.filter(x=>x!==k);continue}
+      if(fail[k]){newFail.push(fail[k]);renderFail[k]=fail[k];shown=true;removed.add(k);continue}
       const g=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=g.ok?await g.json().catch(()=>null):null;
-      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;q.keys=q.keys.filter(x=>x!==k);
+      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;removed.add(k);
         const o=planFor()[key(sel)];if(o&&comboKey(o)===k)shown=true}
       else if(!g.ok&&g.status!==404)continue;
-      else q.keys=q.keys.filter(x=>x!==k)}   // neither waiting, failed nor finished: lost (expired), stop waiting for it
-    const done=(q.total||0)-q.keys.length-q.failed.length;
-    q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
-      :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
-    if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}
-    rqSet(q);renderBatchUI();renderRegenUI();if((shown||q.keys.length!==n0)&&!$('#today').hidden)renderToday();
+      else removed.add(k)}   // neither waiting, failed nor finished: lost (expired), stop waiting for it
+    // applied to the list as it is now: a push may have taken some meanwhile, and new photos may have been sent
+    const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
+    rqSet(q2);renderBatchUI();renderRegenUI();if((shown||removed.size)&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
-function startQueueWatch(){renderBusy();if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},20000)}
-function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
+/* Bringing photos home. The worker pushes: while photos are waiting and the app is on screen, a request to GET /render-wait is held
+   open, and the worker answers it the moment a queue job finishes, with the photo itself (waitPush). Polling GET /render-queue
+   stays as the backup (a worker without the push, a dropped connection), timed by what a photo takes: none is ready within 40 s
+   of sending, so the first look is then; after that every 7 s, every 20 s after 3 minutes (a month batch) and every minute after 15. */
+const queueDelay=age=>age<40000?40000-age:age<180000?7000:age<900000?20000:60000;
+function scheduleQueueCheck(){clearTimeout(rqTimer);rqTimer=null;const q=rqGet();if(!q.keys.length)return;
+  rqTimer=setTimeout(async()=>{rqTimer=null;if(document.visibilityState==='visible')await checkQueue();scheduleQueueCheck()},Math.max(1000,queueDelay(Date.now()-(q.sentAt||0))))}
+function startQueueWatch(){renderBusy();scheduleQueueCheck();waitPush()}
+function stopQueueWatch(){clearTimeout(rqTimer);rqTimer=null}
+let PUSH_WAIT=90000,pushOn=false,noPush=false;
+async function waitPush(){const W=workerBase(),keys=queuedKeys();if(pushOn||noPush||!W||!keys.length||document.visibilityState!=='visible')return;pushOn=true;let pause=0;
+  try{const r=await fetch(W.url+'-wait?keys='+keys.join(',')+'&ms='+PUSH_WAIT,{headers:{'x-app-token':W.tok},cache:'no-store'});
+    if(r.status===501||(r.status>=400&&r.status<500)){noPush=true;return}   // an older worker without the push (or no access): polling only
+    const res=r.ok?await r.json().catch(()=>[]):[];if(!r.ok)pause=5000;if(Array.isArray(res)&&res.length)await takeQueued(res)}
+  catch{pause=5000}   // the connection dropped (the app went to the background): look again shortly
+  finally{pushOn=false}
+  if(pause)await new Promise(ok=>setTimeout(ok,pause));waitPush()}
+/* finished (or failed) queued photos, from the push or from polling */
+async function takeQueued(res){const mine=new Set(queuedKeys());res=res.filter(m=>m&&mine.has(m.key));if(!res.length)return;
+  for(const m of res)if(m.rec&&m.rec.img)await keepRender(m.key,{sig:m.rec.sig||'',img:await shrinkUrl(m.rec.img,900),model:m.rec.model||'',t:m.rec.t||Date.now()},false);
+  const q=rqGet();for(const m of res){if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
+  finishQueueMsg(q);rqSet(q);renderBatchUI();renderRegenUI();if(!$('#today').hidden)renderToday()}
+function finishQueueMsg(q){const done=(q.total||0)-q.keys.length-q.failed.length;
+  q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
+    :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
+  if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}}
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
   if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};cache={};checkArrivals().then(n=>{if(n&&!$('#today').hidden)renderToday()});
@@ -1172,13 +1174,12 @@ function renderWardrobe(){
   // the open item moves to the start of its row; the rest of that row follows it and a blank cell fills the slot it left
   let gapAfter=null;if(editing&&editAt&&editAt.id===editing&&editAt.flt===flt){const k=list.findIndex(i=>i.id===editing);
     if(k>=0){const end=Math.min(editAt.at+editAt.cols,list.length),[it]=list.splice(k,1);list.splice(editAt.at,0,it);if(end-editAt.at===editAt.cols&&editAt.cols>1)gapAfter=list[end-1].id}}
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>`
-  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button>`}${editing===i.id?`<div class="btns giact"><button onclick="closeItem()">Close</button><button class="danger" onclick="rm('${i.id}')">Delete</button><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`:''}${editing===i.id&&i.paused?(i.order?`<div class="rotnote ordrow"><small class="mut">On the way: it isn't in your outfits yet.</small><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="mut rotnote"><small>Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</small></p>'):''}${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
+  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small>`
+  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button>`}<div class="btns"><button onclick="${editing===i.id?'closeItem()':`openItem('${i.id}')`}">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button>${editing===i.id?`<button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button>`:''}</div>${editing===i.id&&i.paused?(i.order?`<div class="rotnote ordrow"><small class="mut">On the way: it isn't in your outfits yet.</small><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="mut rotnote"><small>Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</small></p>'):''}${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
 }
 
-const cap1=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};   // option labels start with a capital ("Grey", "Solid"); values stay as they are
-const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select>`;
+const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${x[1]}</option>`).join('')}</select>`;
 
 function renderAdd(){
   closeSettings();
@@ -1198,10 +1199,10 @@ ${FABRIC.includes(q.type)&&q.big?`
     <label>Y-Pos: <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label>
   </div>
 </div>`:''}
-<label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>
-<label>Colour ${S(COLOR_OPTS(q.type,q.primaryColor),q.primaryColor,'primaryColor',i)}</label>
-<label>${q.type==='socks'?'Toe cap':'Second colour'} ${S([['none','None'], ...COLOR_OPTS(q.type,q.secondaryColor,true)],q.secondaryColor||'none','secondaryColor',i)}</label>
-${q.type==='socks'?'':`<label>Third colour ${S([['none','None'], ...COLOR_OPTS(q.type,q.tertiaryColor,true)],q.tertiaryColor||'none','tertiaryColor',i)}</label>`}
+<label>Item ${S(Object.entries(TYPES),q.type,'type',i)}</label>
+<label>Primary Colour ${S(COLOR_OPTS(q.type,q.primaryColor),q.primaryColor,'primaryColor',i)}</label>
+<label>${q.type==='socks'?'Toe cap':'Secondary Colour'} ${S([['none','None'], ...COLOR_OPTS(q.type,q.secondaryColor,true)],q.secondaryColor||'none','secondaryColor',i)}</label>
+${q.type==='socks'?'':`<label>Tertiary Colour ${S([['none','None'], ...COLOR_OPTS(q.type,q.tertiaryColor,true)],q.tertiaryColor||'none','tertiaryColor',i)}</label>`}
 ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c=>[c,patName(c)]),q.pattern,'pattern',i)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='no'?'no':'yes','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
@@ -1215,7 +1216,7 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)renderToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)renderToday()});recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)renderToday()});if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)renderToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)renderToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)renderToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
 
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
@@ -1309,13 +1310,12 @@ function renderSettingsExtras(){
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.';
   if($('#cfg-units'))$('#cfg-units').value=unit();
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';
-  settingsSummaries();
 }
-function setVestMode(v){settings.vestMode=v;saveUserSettings();settingsSummaries()}
+function setVestMode(v){settings.vestMode=v;saveUserSettings()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0)return;settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   renderSettingsExtras();saveUserSettings()}
-function setUnits(v){settings.units=v;saveUserSettings();settingsSummaries()}
+function setUnits(v){settings.units=v;saveUserSettings()}
 function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
 function useMyLocation(){if(!navigator.geolocation){alert('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:'your current location'}),()=>alert('Location permission was denied. Search for your city instead.'))}

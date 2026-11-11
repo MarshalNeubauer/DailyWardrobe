@@ -28,5 +28,14 @@ max_batch_size = 1
 max_retries = 5
 max_concurrency = 2
 
+# the push to an open app: queue jobs hand finished photos to this Durable Object, which answers the app's waiting GET /render-wait
+[[durable_objects.bindings]]
+name = "RENDER_HUB"
+class_name = "RenderHub"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RenderHub"]
+
 [observability]
 enabled = true

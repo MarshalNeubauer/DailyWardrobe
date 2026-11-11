@@ -31,7 +31,6 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 ### `styles.css`
 
 - styles
-- design system for every page but Today (scoped to `#wardrobe`, `#add`, `#stats`, `#settings-modal`; Today keeps its own tuned styles): page header `.phead` (22px title, `.pcount`, `.pback`), buttons and inputs 44px (`--ctl-h`/`--in-h`), radius 12px on controls and 14px on cards, bordered cards, `.pri` filled, `.danger` red outline; the base button rule uses `:where()` so page rules override it; `tests/uipages.test.js` checks sizes, titles and no sideways scroll at 320/466/626px
 
 ### `core.js`
 
@@ -181,9 +180,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - swipe gestures
 - occasions in Settings (`setOccasion`, `addFormalDay`, `renderFormalUI`; `hasOutfit(o)` is true for a no-jacket day too, whose photo key includes the trousers and whose request sends `nojacket`)
 - days off in Settings (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`)
-- Settings is a full-screen page (a centred panel from 600px): a sticky header with Done (`saveSettings`: saves the connection fields and closes), a Wardrobe stats link, then categories that unfold like Today's cards (`SET_CATS`: schedule, daysoff, weather, photos, tagging, backup, connection; `.scat`, `toggleCat`, `setCatOpen`), each with a one-line summary (`settingsSummaries`); `openSettings('<key>')` opens one category and scrolls to it, and tests must open the category before clicking inside it
 - out of rotation: the open Wardrobe item has "Take out of rotation" / "Put back in rotation" beside Close and Delete (`togglePause`); taking it out releases upcoming days it was pinned to (`force`), the picker and "Suggest another" leave it out (`slotPool`/`swapSlot`; correcting a past day still offers it), and its grid box is dimmed with an "Out of rotation" tag (`.gi.paused`, `.pausetag`)
-- Wardrobe boxes are one tap target (photo, type eyebrow `.gtype`, name) with no buttons; the open item has Close, Delete (`.danger`) and the rotation button in `.giact`; Add and the editor use one set of labels (Type, Colour, Second colour, Third colour) and dropdown labels start with a capital (`cap1`)
 - bought, on the way: the Add card has "Bought, on the way" (`orderRow`/`setOrder`) with an optional Arrives date (`setArrives`); `save()` stores it paused; the grid tag reads "On the way · <date>", the open item can change the date (`setItemArrives`) or "It arrived: put in rotation"; `checkArrivals()` (start-up and `newDayCheck`) puts items back in rotation the day after their date, with a toast
 - weather:
   - 16-day forecast
@@ -236,6 +233,9 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
 - POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`).
   - Its consumer (`queue()` export) makes the photo in the background, retrying temporary OpenAI errors and recording others as `jobfail:<key>`.
   - GET `/render-queue` lists pending and failed jobs.
+  - the push: the queue consumer hands each finished photo (or failure) to the Durable Object `RenderHub` (binding `RENDER_HUB`, `tellHub`), which answers the app's held `GET /render-wait?keys=…&ms=` (`waitForRenders`) with the photo itself (KV can lag a minute); results are kept 10 minutes in memory for an app between waits; no binding → 501 and the app only polls
+  - the app holds `/render-wait` open while photos are queued and it is visible (`waitPush`, `PUSH_WAIT` 90 s, `takeQueued`); polling `/render-queue` is the backup on a schedule (`queueDelay`: first look 40 s after sending, then 7 s, 20 s after 3 min, 60 s after 15; `scheduleQueueCheck`, `rqGet().sentAt`)
+  - `checkQueue` and `takeQueued` apply their changes to a fresh copy of the waiting list, so a push and a poll finishing together don't undo each other
   - The Settings month batch uses the queue and falls back to generating on the page when the worker has no queue.
   - Today's Generate and Settings → Regenerate also use the queue (`generateRender` → `queueCombo(o,replace)`), so the app can be swiped, closed or locked; `{replace:true}` makes the worker queue and make it though a photo is kept; the button shows "Making photo…" while the combination is queued (`renderPending`), a failure shows its reason with "Try again" (`renderFail`); the app checks the queue every 20 s while open; a worker without the queue still makes it on the page
 - Deployed automatically by `.github/workflows/deploy-worker.yml` (Wrangler, config in `wrangler.toml`) when a merge to `main` changes it.
