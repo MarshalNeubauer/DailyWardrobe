@@ -22,7 +22,28 @@ function fabricDef(id,item,role,ctx){
   /* a sett read in full colour (detect.js analyzeSett): its own band colours and the lines that cross them. The repeat is
      sized from what was seen: in a swatch at least one whole repeat shows; on the figure the repeat keeps its share of the
      item's width (sett.tw, or Claude's repeats across). */
-  const se=item.sett;
+  const se=usableSett(item);
+  /* a motif read by Claude (tagging.js motifFromSpec): its figures on a grid two cells square (so two colours can alternate like a
+     checkerboard), turned 45° for a diagonal grid. Scaled like a sett: in a swatch as many cells as the close-up shows, on the
+     figure as many as fit across the item. */
+  if(se&&se.motif&&p!=='solid'){const m=se.motif;
+    const T=ctx==='fig'?Math.max(1.5,Math.min(40,(role==='tie'?29:role==='shirt'?180:200)/Math.max(.5,se.tr||8))):Math.max(3,Math.min(80,100/Math.max(.9,se.cr||1)));
+    const f2=v=>+v.toFixed(3),fig=(f,x,y,col)=>{const s=f.size*T,h=s/2;
+      switch(f.shape){
+        case 'square':return `<rect x="${f2(x-h)}" y="${f2(y-h)}" width="${f2(s)}" height="${f2(s)}" rx="${f2(s*.1)}" fill="${col}"/>`;
+        case 'square-with-dot':{const d=s*.34;return `<rect x="${f2(x-h)}" y="${f2(y-h)}" width="${f2(s)}" height="${f2(s)}" rx="${f2(s*.1)}" fill="${col}"/><rect x="${f2(x-d/2)}" y="${f2(y-d/2)}" width="${f2(d)}" height="${f2(d)}" fill="${f.centre||b}"/>`}
+        case 'diamond':return `<path d="M${f2(x)},${f2(y-h)} L${f2(x+h)},${f2(y)} L${f2(x)},${f2(y+h)} L${f2(x-h)},${f2(y)} Z" fill="${col}"/>`;
+        case 'ring':return `<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(h*.8)}" fill="none" stroke="${col}" stroke-width="${f2(s*.2)}"/>`;
+        case 'cross':{const w=s*.3;return `<rect x="${f2(x-w/2)}" y="${f2(y-h)}" width="${f2(w)}" height="${f2(s)}" fill="${col}"/><rect x="${f2(x-h)}" y="${f2(y-w/2)}" width="${f2(s)}" height="${f2(w)}" fill="${col}"/>`}
+        case 'flower':{const r=s*.26,o=s*.24;return [[o,0],[-o,0],[0,o],[0,-o]].map(([u,v])=>`<circle cx="${f2(x+u)}" cy="${f2(y+v)}" r="${f2(r)}" fill="${col}"/>`).join('')+`<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(r*.7)}" fill="${f.centre||m.ground}"/>`}
+        default:return `<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(h)}" fill="${col}"/>`}};
+    let body='';
+    for(const f of m.figs){const corner=f.place==='corner',n=corner?3:2;
+      for(let i=0;i<n;i++)for(let j=0;j<n;j++){const alt=(i+j)%2;if(f.place==='alternate-cells'&&alt)continue;
+        body+=fig(f,(corner?i:i+.5)*T,(corner?j:j+.5)*T,f.cols[f.cols.length>1?alt:0])}}
+    const sheen=role==='tie'?`<path d="M0,${f2(T*2)} L${f2(T*2)},0" stroke="#fff" stroke-opacity=".05" stroke-width="${f2(T/6)}"/>`:'';
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(2*T)}" height="${f2(2*T)}"${se.a?` patternTransform="rotate(${se.a})"`:''}><rect width="${f2(2*T)}" height="${f2(2*T)}" fill="${m.ground}"/>${body}${sheen}</pattern>`;
+  }
   if(se&&se.v===2&&se.bands&&se.bands.length>1&&p!=='solid'){
     const across=se.tr||(se.tw?1/se.tw:1.5),T=ctx==='fig'?Math.max(2,Math.min(60,(role==='tie'?29:role==='shirt'?180:200)/across)):Math.max(14,Math.min(110,100/Math.max(.9,se.cr||1)));
     const cx=se.cross&&Math.abs(Math.abs(se.cross.d)-90)<=20?se.cross:null,Tv=cx?T*(cx.r||1):T;

@@ -77,11 +77,16 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - before a pattern is read, a photo with a white reference is exposure-corrected too (`settCanvas`, at most 1.6x in linear light), so an underexposed photo doesn't read every band too dark; a tie's scale (`tr`) comes from its own photo, a jacket's or shirt's from Claude's count
 - tested against the user's real worker: the same outfit made the old way and the new way (queued under throwaway keys `render:c7e5700000000a001/2`), the new one had the right stripe direction, colour balance and crossing lines
 - Claude reads the pattern itself once a card has a close-up (`readPatternWithClaude` → worker `POST /pattern`, `claudePattern`): every band of a repeat each way with its width, the pane shape and the repeats in the close-up and across the item, with the noise (seams, moire, uneven panes) left out; `settFromSpec` draws it with colours from the photos: each named thread matched to its own pixels, the close-up's exposure matched to the item photo's, Claude's hue where the pixels read grey (a light-blue line in khaki linen), a quarter of the ground's lightness mixed into each line (crossing threads); saved as `item.patternSpec`; the pixel reader (`settFrom`) is the fallback; the editor's "Read pattern from photo" asks Claude too
+- a motif answer (`layout:'motif'`: a small figure on a grid, a neat/foulard, dots) becomes `sett = {v:3, motif:{grid, ground, figs:[{shape, place, size, cols, names, centre, centreName}]}, a, cr, tr, src:'claude+pixels'}` (`motifFromSpec`, chosen by `specSett`): each colour from its nearest pixels, Claude's hue kept where they read grey, the close-up's exposure matched to the photo only when there is a box on the cloth (else the photo's wall washes it out)
+- `MOTIF_PATS` (foulard, polka-dot; detect.js) never get a band reading (`readSett`, `rereadSett`): a band reader turns a neat into a diagonal plaid; without Claude they are drawn with the generic tile
+- `motifText()` describes a motif for the photo generator (grid, figures, colours, ground, repeats across); `outfitRefsFull` labels its diagram as figures
 - benchmark (Settings → Tagging benchmark, `renderBenchUI`/`runBench`): re-tags 25/50/75/100% of the items with photos (random), three at a time, compares type/colour/colour family/pattern with the confirmed tags; runs only when started, with a cost estimate; results in `localStorage.tag_bench` (last 10)
 
 ### `detect.js`
 
 - stripe/check detection from photos (canvas)
+- `usableSett(i)`: the item's `sett`, unless it is a band reading of a `MOTIF_PATS` pattern (an older reading); drawing, `settText`, photo diagrams and `patSummary` use it
+- `settSig(s)`: a reading's signature for photo keys (`comboSig`): band colours, or the motif's grid, ground, figures and colours
 - the full sett (`analyzeSett`/`settFromCanvas`): every band of one repeat in its own colour (per-step medians in Lab, merged until neighbours differ by ΔE 5; a 1–2 step band lying between its neighbours is their blurred edge), the direction, the lines crossing the other way (the residual after the main bands, projected; thread colour = 2 × pixel − band), and the scale (`cr`); stored as `item.sett` `{v:2,a,bands:[[hex,w]],cross:{d,bands:[[hex|null,w]],r},cr,tr,src}`
 - `period()` takes the shortest whole fraction of a repeat that matches nearly as well (a clean pattern also matches at 2–3 repeats)
 - `analyzeSett` finds the directions on a 320px copy and measures on a sharper one (up to 900px) so fine stripes keep their width; repeats are found in colour (`periodCh` over L*, a*, b*: a tattersall's red and green lines of one lightness stay apart); crossing lines are looked for after a moving average is taken out (`detrend`: light falloff and folds are not lines) and their repeat is at least 4% of the length (not the weave texture)
@@ -111,6 +116,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - procedural fabric patterns (`fabricDef`)
 - an item's `sett` is drawn first: its bands, the crossing lines over them at half opacity, at its angle (ties) or snapped (others); a swatch shows at least one repeat, the figure keeps the repeat's share of the item's width (`fabricDef(..., 'fig')`)
+- a motif `sett` is drawn as a 2×2-cell tile (two colours alternate like a checkerboard; `corner` figures where four cells meet; `alternate-cells` in every other cell), turned 45° for a diagonal grid; swatch scale from `cr` (cells in the close-up), figure scale from `tr` (cells across the item)
 - `outfitText()` adds an item's `patternText` (Claude's description) for the photo generator, and `comboSig` includes the sett and description, so such an item gets its own photo
 - `figureSvg()` glue for the torso figure
 - accessories
@@ -193,6 +199,7 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
 - Photo tagging via the Claude API (secret `ANTHROPIC_API_KEY`, optional `CLAUDE_MODEL`); falls back to the Workers AI binding `AI`.
 - single tag (POST /): `tagSchema(custom,true)` adds confidence, `altColor`/`altPattern`, `newColor`/`newPattern` ({name, why} or null) and `clothBox`; effort medium; an optional `closeup` is sent as a second image; `measured` and `corrections` become prompt text (`measuredText`/`correctionsText`); `custom` is checked by `cleanCustom`; the system prompt says photos are already white-balanced
 - `/pattern`: the woven pattern as data (`PATTERN_SCHEMA`/`PATTERN_PROMPT`, effort high): `across`/`along` bands `{role, name, hex, w}` (shares of a repeat), `stripeDirection`, `repeatsInCloseup`, `repeatsAcrossItem`, `paneAspect`, `ignored`, `description`; tidied by `cleanPattern`; 422 when there is none
+- `/pattern` motif: `layout:'motif'` with `motif {grid: straight|diagonal, ground {name,hex}, figures [{shape (MOTIF_SHAPES), placement: cell|corner|alternate-cells, colours (1, or 2 alternating), centre (square-with-dot), sizePct}]}`; `across`/`along` are null; `repeatsInCloseup`/`repeatsAcrossItem` count grid cells
 - `/tag-many`: several items in one photo. Claude lists every item with a confidence and a rough box in thousandths; the app crops each into its own Add card.
 - `/sync`: KV binding `WARDROBE`. The backup's `{rev, saved}` is kept as the KV key's metadata, so `?v=` and the PUT conflict check don't load the backup.
 - `/fetch`: downloads photo links for the app.

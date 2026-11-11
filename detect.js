@@ -7,6 +7,12 @@
    Colours always come from the item's tagged colours, matched by brightness rank, so photo colour casts don't leak in. */
 const STRIPE_PATS=['stripe','pinstripe','fine-stripe','chalk-stripe'],CHECK_PATS=['check','gingham','tattersall','windowpane','glen-check'];
 const DETECT_PATS=[...STRIPE_PATS,...CHECK_PATS];
+/* small figures on a grid (a neat / foulard, dots): no band reader can draw them, only Claude's motif reading (tagging.js) */
+const MOTIF_PATS=['foulard','polka-dot'];
+/* an item's pattern reading, unless it is a band reading of a motif pattern (an older reading turned a neat into a plaid) */
+const usableSett=i=>{const s=i&&i.sett;return s&&(MOTIF_PATS.includes(patBase(i.pattern)||'')&&!s.motif?null:s)};
+/* what a pattern reading looks like, for photo keys: the band colours, or the motif's ground, figures and colours */
+const settSig=s=>!s?'':s.motif?'m'+[s.motif.grid,s.motif.ground,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||''].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
 
 /* region -> luminance grid (downscaled to at most 256px) */
 function lumGrid(src,sx,sy,size){
