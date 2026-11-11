@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	083eac3e9e2bf8a3d6e8
 <every page test>	analysis.js	<loaded>
 <every page test>	app.js	<loaded>	@	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	afterScripts	applyTheme	applyZoom	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txs	zoomTarget
 <every page test>	core.js	$	<loaded>	@PATS_BY	applyCustom	dayClimate	di	isWorkday	isoKey	itemSeason	key	occOf	offDays	offName	seasonFit	todayDate
@@ -236,6 +237,7 @@ history.test.js	planner.js	beltFit	buildPlan	colourRepeat	colsOf	darkShirt	darkU
 history.test.js	styles.css	#add	#mannequin-container	#pick-backdrop.on	#pick-sheet .btns	#pick-sheet p	#pick-sheet.on	#spanel .mpanel-in	#today .row .dot	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.cap	.dayact	.daygrid	.daygrid .side	.daygrid .stage	.dot	.dot svg	.fig	.fig .lastworn	.fig .wornbar	.fig .wornbar .lastworn:only-child	.fig .wornbar>*	.fig>svg	.fit.best,.fit.good	.fit.ok	.fit.weak	.gotoday	.gotoday::after	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.pastedit	.pchip	.pchip svg	.pchip.vest	.pick-grid	.pick-head	.pick-head b	.pick-it	.pick-it .fit	.pick-it.cur	.pick-nm	.pick-pic	.pick-pic .ph.thumb	.pick-pic svg	.pick-x	.pstrip	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.resetbox .month-link	.resetbox .month-link:active	.resetbox .rsicon	.row	.row .mut	.row .swap	.row .swap:active	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.sfix	.sfix>small	.sfixbtn	.sfixbtn .dot	.sfixbtn .sfixnm	.sfixbtn b	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.stack	.thumb	.thumb svg	.warn	.wmark	.wmark.no.on	.wmark.yes.on	<loaded>
 history.test.js	sync.js	@document.addEventListenervisibilitychange	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 impact.test.js	<every page test>	<every page test>
+impact.test.js	.githooks/pre-push	<any>
 impact.test.js	app.js	@document.addEventListenervisibilitychange
 impact.test.js	apple-touch-icon.png	<loaded>
 impact.test.js	core.js	hasVest
@@ -263,15 +265,17 @@ itempics.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	
 itempics.test.js	tagging.js	benchPool	benchRuns	renderBenchUI	renderCustomUI	renderWeaveUI	weavePool
 itempics.test.js	worker.js	<loaded>	ITEM_BG	ITEM_PROMPT	dataUrlToBlob	fetch	getRender	handleRender	handleSync	itemPhoto	keepSnapshots	renderId	renderItem	renderTtl	syncVersion
 jacketcolour.test.js	<every page test>	<every page test>
-jacketcolour.test.js	app.js	idsOf	keyDate
+jacketcolour.test.js	app.js	aAn	adviceFor	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	monthLink	piecesBox	planOn	recordDays	renderFor	renderPending	renderStalled	resetCard	saveDay	schedulePrefetch	scoreCard	shirtPatterned	shirtTextured	slotLabel	slotPool	slots	stackSVG	vestRow	workerBase	wornMarks
 jacketcolour.test.js	apple-touch-icon.png	<loaded>
-jacketcolour.test.js	core.js	LUM	colBase	hasVest	inRotation	lumCol	patBase	patOf	planCol	prettyCols	primaryCol	pw
+jacketcolour.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf
+jacketcolour.test.js	detect.js	usableSett
+jacketcolour.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 jacketcolour.test.js	icon-192.png	<loaded>
 jacketcolour.test.js	icon-512.png	<loaded>
 jacketcolour.test.js	index.html	<loaded>
 jacketcolour.test.js	manifest.webmanifest	<loaded>
-jacketcolour.test.js	planner.js	beltFit	buildPlan	colourRepeat	colsOf	darkMode	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	jacketGroup	leatherGroup	lightTop	metalOf	nearCost	pairScore	pcol	rateOutfit	shirtGroup	shirtLook	shirtScore	shoeFormality	shoeScore	sockEcho	sockScore	tieGroup	tieLook	tieLum	tieScore
-jacketcolour.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	<loaded>
+jacketcolour.test.js	planner.js	beltFit	buildPlan	colourRepeat	colsOf	darkMode	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	jacketGroup	leatherGroup	lightTop	metalOf	nearCost	pairScore	pcol	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtScore	shoeFormality	shoeScore	sockEcho	sockScore	tieGroup	tieLook	tieLum	tieScore
+jacketcolour.test.js	styles.css	#add	#mannequin-container	#spanel .mpanel-in	#today .row .dot	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.cap	.daygrid	.daygrid .side	.daygrid .stage	.dot	.dot svg	.fig	.fig .lastworn	.fig .wornbar	.fig .wornbar .lastworn:only-child	.fig .wornbar>*	.fig>svg	.gotoday	.gotoday::after	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.pchip	.pchip svg	.pchip.vest	.pstrip	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.row	.row .mut	.row .mut.none	.row .swap	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.stack	.thumb	.thumb svg	<loaded>
 jacketcolour.test.js	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 khaki.test.js	<every page test>	<every page test>
 khaki.test.js	app.js	itemDesc

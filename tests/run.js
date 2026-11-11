@@ -213,6 +213,7 @@ async function workerTests(){
   if(ONLY)want=new Set(files.filter(f=>f.includes(ONLY)));
   else if(flag('--changed')){const s=await impact.select(ROOT,all);console.log(s.report);if(!s.all)want=new Set(s.tests)}
   if(flag('--list')){server.close();return}
+  impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
   const run=k=>!want||want.has(k),results=new Map();
   if(!process.env.NO_IMPACT){rec=impact.recorder(ROOT);await rec.prepare()}
   // around each test: note what it uses
@@ -250,8 +251,9 @@ async function workerTests(){
     times.push([f,Date.now()-t0]);
   }
   if(shared)await shared.close();server.close();
-  // what each test used is added to tests/impact.map
-  if(rec&&results.size)try{await impact.save(ROOT,results,all)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
+  // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on
+  const passed=!failures&&!ONLY;
+  if(rec&&(results.size||passed))try{await impact.save(ROOT,results,all,passed)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
   // the slowest files, so the suite can be kept quick
   if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${f} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`);
   console.log(`\n${passes} passed, ${failures} failed`+(want?` (${results.size||mine.length} of ${all.length} test files and built-in suites)`:''));process.exit(failures?1:0);

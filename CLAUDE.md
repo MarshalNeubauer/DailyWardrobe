@@ -19,6 +19,8 @@
 - **`npm test` runs only the checks the change can affect** (the user's rule: never the whole suite for a small change). It compares the branch with `origin/main`, prints what changed and why each test runs, and runs nothing for a docs-only change.
 - `npm run test:all` runs every check. It is not needed before a merge; use it only when the selection looks too small for what you changed.
 - Test runs rewrite `tests/impact.map` (what each test uses). Commit it with the change: later sessions choose their tests from it.
+- **The map must be in the commit (enforced).** `git push` is refused while `tests/impact.map` has uncommitted changes; commit it and push again. Never bypass it with `--no-verify`.
+- If a change reaches `main` without its map, or without a passing `npm test` on the final files, the next session's `npm test` notices and runs every check. So run `npm test` after your last code edit, then commit everything it changed.
 - A conflict in `tests/impact.map` needs no thought: `.gitattributes` merges it by keeping both sides' lines (`merge=union`).
 - Never tell the user to download a backup file before a change: the worker keeps daily backups and Settings → Roll back undoes a bad change (see `sync.js`).
 - **Run only what you need while working.** `node tests/run.js <name>` (or `TEST_ONLY=<name>`) runs just the `tests/*.test.js` files whose name contains `<name>`. Run `npm test` once before pushing, and once more only if `main` had to be merged in.
@@ -363,6 +365,10 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 - the map adds up: what a test used is added to what it used before (timers make two runs differ slightly), names and tests that no longer exist are dropped (`save`)
 - Chromium answers no coverage request while a page load is pending and drops the old document's coverage, so the recorder reads it just before `goto`/`reload` and before a page or context closes (`recorder`); a test that navigates another way would lose what it ran before
 - `npm test` fetches `origin/main` before comparing (`baseOf`): a cloud session's own copy of it can be months old with its history cut short, and then no common commit is found and everything would run
+- the fingerprint: a passing `npm test` (or whole suite; not a run by name) writes `# tested <hash>` into the map, a hash of every file's content but the map, `*.md` and `LICENSE` (`fingerprint`, the same for a folder and for the commit made from it)
+- `select` trusts the map only when `origin/main`'s copy carries the fingerprint of `origin/main`'s own files; otherwise it says so and runs everything, which records and stamps anew (a map left out of a commit, an edit after the last test run, two changes merged on GitHub without a run on the result, an edit made on github.com)
+- the push check is `.githooks/pre-push` (`node tests/impact.js pre-push`, `prePush`): it refuses an uncommitted map and prints a note when the commit's files were not passed by `npm test` (a note only, so a branch with failing tests can still be pushed); every test run switches it on in the clone (`installHook`: `git config core.hooksPath .githooks`, unless hooks are already set up otherwise)
+- docs-only changes (`*.md`) need no `npm test`: they are not part of the fingerprint
 - `NO_IMPACT=1` turns the recording off; `TEST_BASE=<commit>` compares with another commit; `tests/impact.test.js` checks the selection
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.
