@@ -1,5 +1,10 @@
 /* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
 
+/* a herringbone stripe's plain band, read from Claude's one-repeat bitmap: columns the same all the way down (all 1: a shiny satin
+   line; all 0: plain ground) are not twill. Its share of the repeat, and whether it shines; null for plain herringbone. */
+function texPlainBand(grid){if(!grid||!grid.length)return null;const M=grid[0].length,u=[];
+  for(let x=0;x<M;x++){const c=grid.map(r=>r[x]);if(c.every(v=>v===c[0]))u.push(c[0])}
+  const share=u.length/M;return share>0&&share<=.5&&u.length<M?{share,light:u.filter(v=>v==='1').length>=u.length/2}:null}
 /* a weave texture's two tones around the tagged colour: the ground cells and the raised ones (tagging.js texFromSpec). The swing is
    the close-up's, softened (a macro shot's raking light exaggerates the relief: the cloth itself reads only faintly textured)
    and capped, and the tones keep the cloth's average at the tagged colour, so a white shirt stays white. Raised threads that read
@@ -25,12 +30,14 @@ function fabricDef(id,item,role,ctx){
   const fine=role==='shirt'||role==='tie';
   /* herringbone: columns of steep twill lines whose slant alternates, with a half-step break at each column edge */
   /* k: contrast (1 as drawn generically; more where the drawing is small, or for the photo generator) */
-  const herringboneTile=(cw,lineDeg,tf,k=1)=>{
-    const t=Math.tan(lineDeg*Math.PI/180),sv=+(cw*.55).toFixed(3),W=2*cw,kmax=Math.ceil(t*cw/sv)+2,o=v=>Math.min(1,v*k).toFixed(3);
+  /* band: a herringbone stripe's plain band after each pair of columns ({w: its width, light: a satin sheen}) */
+  const herringboneTile=(cw,lineDeg,tf,k=1,band)=>{
+    const t=Math.tan(lineDeg*Math.PI/180),sv=+(cw*.55).toFixed(3),bw=band?+band.w.toFixed(3):0,W=2*cw+bw,kmax=Math.ceil(t*cw/sv)+2,o=v=>Math.min(1,v*k).toFixed(3);
     const fam=(dir,off)=>{let d='';for(let k=-kmax;k<=kmax;k++){const y0=k*sv+off;d+=dir>0?`M0,${(y0+t*cw).toFixed(3)} L${cw},${y0.toFixed(3)} `:`M0,${y0.toFixed(3)} L${cw},${(y0+t*cw).toFixed(3)} `}return d};
     const col=(dir,off)=>`<path d="${fam(dir,off)}" stroke="${lt}" stroke-opacity="${o(.17)}" stroke-width="${(sv*.38).toFixed(3)}"/><path d="${fam(dir,off+sv/2)}" stroke="${dk}" stroke-opacity="${o(.2)}" stroke-width="${(sv*.3).toFixed(3)}"/>`;
     const brk=Math.max(.24,cw*.06).toFixed(3);
-    return tile(W,sv,`<svg width="${cw}" height="${sv}" overflow="hidden">${col(1,0)}</svg><svg x="${cw}" width="${cw}" height="${sv}" overflow="hidden">${col(-1,sv/2)}</svg><rect x="${(cw-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/><rect x="${(W-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/>`,tf);
+    return tile(W,sv,`<svg width="${cw}" height="${sv}" overflow="hidden">${col(1,0)}</svg><svg x="${cw}" width="${cw}" height="${sv}" overflow="hidden">${col(-1,sv/2)}</svg><rect x="${(cw-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/><rect x="${(W-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/>`+
+      (bw?`<rect x="${2*cw}" width="${bw}" height="${sv}" fill="${band.light?lt:dk}" opacity="${o(band.light?.14:.05)}"/><rect x="${(2*cw-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/>`:''),tf);
   };
   /* layouts read from the item's photo take precedence over the generic tiles.
      Ties keep the photographed angle; garments snap to vertical/horizontal. */
@@ -53,7 +60,7 @@ function fabricDef(id,item,role,ctx){
      shows at most 20 column pairs: Claude's count can be the chevrons along a column (60 for the user's blue shirt), not the columns. */
   if(se&&se.tex&&p!=='solid'&&(se.tex.kind==='herringbone'||se.tex.kind==='twill')){
     const k=(ctx==='dot'?2.2:ctx==='dia'?3:1)*Math.max(.8,Math.min(ctx==='dot'||ctx==='dia'?1.6:1.2,(se.tex.rel||.1)/.1));
-    if(se.tex.kind==='herringbone'){const cw=ctx==='dot'?16/6:ctx==='dia'?200/24:ctx==='fig'?(role==='shirt'?1.3:2.2):Math.max(2.5,Math.min(5,50/Math.max(.9,se.cr||8)));return herringboneTile(cw,55,'',k)}
+    if(se.tex.kind==='herringbone'){const band=texPlainBand(se.tex.grid),cw=ctx==='dot'?16/6:ctx==='dia'?200/24:ctx==='fig'?(role==='shirt'?1.3:2.2):Math.max(2.5,Math.min(5,50/Math.max(.9,se.cr||8)));return herringboneTile(cw,55,'',k,band&&{w:2*cw*band.share/(1-band.share),light:band.light})}
     const s=ctx==='dot'?16/5:ctx==='dia'?200/30:3,o=v=>Math.min(1,v*k).toFixed(3);
     return tile(s,s,`<path d="M0,${s} L${s},0" stroke="#000" stroke-opacity="${o(.14)}" stroke-width="${(s*.23).toFixed(3)}"/><path d="M-1,1 L1,-1 M${s-1},${s+1} L${s+1},${s-1}" stroke="#fff" stroke-opacity="${o(.08)}" stroke-width="${(s*.17).toFixed(3)}"/>`)}
   if(se&&se.tex&&p!=='solid'){const g=se.tex.grid,M=g[0].length,N=g.length,T=ctx==='dot'?16/2.5:ctx==='dia'?200/14:ctx==='fig'?Math.max(6,Math.min(40,180/Math.max(.5,se.tr||100))):Math.max(4,Math.min(60,100/Math.max(.9,se.cr||8)));

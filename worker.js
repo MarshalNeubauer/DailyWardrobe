@@ -427,7 +427,8 @@ texture — for a texture only (null otherwise), what the weave looks like up cl
     "aspect", so the cells need not be square), and the bitmap must tile seamlessly when repeated in
     both directions, its outlines continuing across the edges (a diamond lattice's lines meet the next repeat's). Draw the
     texture as it looks, at about the scale of the thread floats you see, not a weaving draft of every thread.
-    A fine twill is e.g. ["1000","0100","0010","0001"];
+    A fine twill is e.g. ["1000","0100","0010","0001"]. A herringbone or twill stripe with plain (untwilled) bands between
+    its columns gives each band its own columns, the same all the way down: all 1 for a shiny satin band, all 0 for a plain one;
   aspect: one repeat's height divided by its width as the cloth hangs, measured in the close-up (diamonds half again as tall
     as they are wide: 1.5; a square repeat: 1);
   ground and raised: the two tones (a plain colour name and an sRGB hex as in "across"; for a white shirt both are whites);
