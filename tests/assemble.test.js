@@ -28,8 +28,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const ib={},B=asmCompose(master,z,{jacket:X.jacket,shirt:X.pink,tie:X.tie,bar:X.bar,watch:X.watch},ib),Lb=asmLab(B);
       const b={watch:asmCount(ib.watch),dark:100*stat(Lb,ib.watch,l=>l<25?1:0),darkMaster:100*stat(Lm,ib.watch,l=>l<25?1:0),tinted:ib.tinted,white:100*stat(Lb,ib.watch,(l,x,y)=>l>88&&Math.hypot(x,y)<6?1:0),shirtA:stat(Lb,asmBox(z.shirt,W,2,false),(l,x)=>x)};
       // nothing but a tie: everything else stays as the master shows it
-      const ic={};asmCompose(master,z,{tie:X.tie},ic);let onlyTie=1;for(let i=0;i<N;i++)if(ic.lab[i]&&ic.lab[i]!==3)onlyTie=0;
-      return {W,shares:['jacket','shirt','tie','watch'].map(share),overlap,ok:asmZonesOk(z),same,noneOk:asmZonesOk(none),a,b,onlyTie}});
+      const ic={};asmCompose(master,z,{tie:X.tie},ic);let onlyTie=1;for(let i=0;i<N;i++)if(ic.lab[i]&&ic.lab[i]!==3&&ic.lab[i]!==6)onlyTie=0;   // 6: where the new tie is narrower, filled from beside it
+      // a vest day: the suit's piece is an edit of the vest master (the master with a waistcoat); the waistcoat's zone comes from its calibration photo
+      const vm=await F('vestmaster'),vc=await F('vestcalib'),vs=await F('vest-suit'),V=asmVestZone(vm,vc,z),iv={},D=asmCompose(master,z,{jacket:vs,shirt:X.black,tie:X.tie,bar:X.bar,vest:V},iv),Ld=asmLab(D),Vin=asmBox(V,W,5,false);
+      let vOff=0,tieIn=0,vn=0;for(let i=0;i<N;i++){if(Vin[i]){vn++;if(!iv.seam[i]&&(D.data[4*i]!==vs.data[4*i]||D.data[4*i+1]!==vs.data[4*i+1]||D.data[4*i+2]!==vs.data[4*i+2]))vOff++;if(iv.lab[i]===3)tieIn++}}
+      const v={share:100*asmCount(V)/N,vOff,tieIn,vn,tie:asmCount(iv.tie),tieNoVest:asmCount(ia.tie),bar:iv.bar,green:100*stat(Ld,z.tie,(l,x)=>x<-12?1:0),jacketB:stat(Ld,z.jacket,(l,x,b)=>b),drift:asmDrift(master,z,'jacket',vs,V),driftNoV:asmDrift(master,z,'jacket',vs)};
+      return {W,shares:['jacket','shirt','tie','watch'].map(share),overlap,ok:asmZonesOk(z),same,noneOk:asmZonesOk(none),a,b,onlyTie,v}});
+    ok(r.v.share>2.5&&r.v.share<8&&r.v.vn>8000&&r.v.vOff<r.v.vn*.03&&r.v.tieIn===0,`the waistcoat's zone is found from its calibration photo (${r.v.share.toFixed(1)}% of the picture) and filled from the suit's vest photo, with no tie over it (${r.v.vOff} of ${r.v.vn} pixels differ: specks of the master's tie filled in)`);
+    ok(r.v.tie>2000&&r.v.tie<r.v.tieNoVest*.9&&r.v.bar===null&&r.v.green<2&&r.v.jacketB<-2,`on a vest day only the top of the tie shows (${r.v.tie} pixels, ${r.v.tieNoVest} without a waistcoat), there is no tie bar, none of the master's green tie is left (${r.v.green.toFixed(1)}%) and the suit is the navy one`);
+    ok(r.v.drift<.06&&r.v.driftNoV>r.v.drift,`a suit's vest photo is judged with the waistcoat counted as its own (${(100*r.v.drift).toFixed(1)}% changed outside it; ${(100*r.v.driftNoV).toFixed(1)}% if it were not)`);
     const [zj,zs,zt,zw]=r.shares;
     ok(r.W===900&&r.ok&&zj>45&&zj<70&&zs>2&&zs<7&&zt>1&&zt<4&&zw>.3&&zw<1.2&&r.overlap===0,`the four zones are found from the calibration photos, each of a sensible size and none overlapping (jacket ${zj.toFixed(1)}%, shirt ${zs.toFixed(1)}%, tie ${zt.toFixed(1)}%, watch ${zw.toFixed(2)}%)`);
     ok(r.same,'zones survive being packed for storage and unpacked');
@@ -54,6 +61,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         keyShape:/^c[0-9a-f]{16}$/.test(asmPieceKey('tie',tie))&&/^c[0-9a-f]{16}$/.test(asmMasterKey())&&/^c[0-9a-f]{16}$/.test(asmCalibKey('tie')),
         weaveOwn:asmPieceKey('shirt',hb)!==asmPieceKey('shirt',pinkPlain)&&comboKey({...o,shirt:hb})===comboKey({...o,shirt:pinkPlain}),weaveText:asmShirtText(hb),plainText:asmShirtText(pinkPlain),
         can:[asmCan(o),asmCan({...o,vest:true}),asmCan({...o,tie:null}),asmCan({...o,top:null}),asmCan({...o,watch:null})].join()};
+      const su=I('suit','navy',{pattern:'pinstripe',secondaryColor:'lightblue'}),ov={top:su,shirt:black,tie,watch,vest:true,suitDay:true};
+      out.vparts=asmParts(ov).map(x=>x.slot+(x.vest?'+vest':'')).join();out.vkey=asmParts(ov)[0].key===asmPieceKey('vest',su)&&asmPieceKey('vest',su)!==asmPieceKey('jacket',su)&&asmVestKey()!==asmMasterKey();
+      items.push(su);const nd=()=>asmNeeds().filter(q=>/vest/.test(q.kind+q.slot)).map(q=>q.kind+':'+(q.slot||'')).join(' ');out.vneeds=nd();settings.vestMode='never';out.vnever=nd();settings.vestMode='auto';su.vest='no';out.vno=nd();delete su.vest;items.pop();
       out.noMaster=await asmPhoto(o);
       const put=async(key,f,sig='')=>{renders[key]={sig,img:await url(f),model:'',t:1000}};
       // the master was made with this watch and a white shirt (its record says so): neither needs a piece
@@ -68,7 +78,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // the picture is the outfit: dark shirt, khaki jacket
       const d=await asmData(u),L=asmLab(d),z=asmUnpackZones(await metaGet('asm:zones:'+asmMasterKey())),W=z.W;let sl=0,sn=0,jb=0,jn=0;const sh=asmBox(z.shirt,W,2,false);
       for(let i=0;i<W*W;i++){if(sh[i]){sn++;sl+=L[3*i]}if(z.jacket[i]){jn++;jb+=L[3*i+2]}}out.shirtL=sl/sn;out.jacketB=jb/jn;
-      out.gold=await asmPhoto({...o,watch:gold});out.vest=await asmPhoto({...o,vest:true});
+      out.gold=await asmPhoto({...o,watch:gold});out.vest=await asmPhoto(ov);out.vwants=asmWants(ov);
+      // with the vest master, its calibration photo and the suit's vest photo kept, a vest day is put together too
+      await put(asmVestKey(),'vestmaster');await put(asmCalibKey('vest'),'vestcalib');await put(asmPieceKey('vest',su),'vest-suit');
+      const uv=await asmPhoto(ov);out.vmade=typeof uv==='string'&&uv.length>40000;out.vkept=!!(await metaGet('asm:vest:'+asmVestKey()));out.vwants2=asmWants(ov);
+      const vj=asmVestMasterJob(),vcj=asmCalibJob('vest'),vpj=await asmPieceJob('vest',su);out.vjobs={vj,vcj,vpj:{...vpj,refs:vpj.refs.length}};
       // a piece that did not keep the picture (the generator once made a collage: the figure moved aside) is refused
       const master=await asmData(renders[asmMasterKey()].img),real=await asmData(renders[asmPieceKey('tie',tie)].img),c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');x.fillStyle='#ccc';x.fillRect(0,0,W,W);
       x.drawImage(await asmImg(renders[asmPieceKey('tie',tie)].img),0,0,W,W,-140,0,W*.8,W*.8);const moved=c.toDataURL('image/jpeg',.9);
@@ -90,11 +104,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.keyShape&&k.keysDiffer&&k.sameShirt,'the master, calibration and piece photos have their own photo keys; two plain shirts of one colour share a piece');
     ok(k.weaveOwn&&/bold tone-on-tone herringbone weave/.test(k.weaveText)&&/a little larger and with more contrast than life/.test(k.weaveText)&&k.plainText==='a plain pink dress shirt',
       'a shirt in a woven texture has its own piece (though it shares the outfit key with the plain colour) and is asked for with a bolder weave than life, so it can be seen');
-    ok(k.can==='true,false,false,false,false','an outfit can be assembled when it has a jacket, shirt, tie and watch and no vest');
+    ok(k.can==='true,true,false,false,false','an outfit can be assembled when it has a jacket (with or without its waistcoat), a shirt, a tie and a watch');
+    ok(k.vparts==='jacket+vest,shirt,tie,watch'&&k.vkey&&k.vneeds==='vestmaster: vestcalib:vest piece:vest'&&k.vnever===''&&k.vno==='',`a vest day takes the suit's vest photo (its own key) and no tie bar; a wardrobe with a three-piece suit needs the vest master, its calibration photo and that piece, unless vests are never worn or the suit has none (${k.vparts}; ${k.vkey}; "${k.vneeds}"; "${k.vnever}"; "${k.vno}")`);
     ok(k.before==='jacket,shirt,tie,bar,watch'&&k.parts==='jacket,shirt,tie,bar'&&k.partsWhite==='jacket,tie,bar'&&k.partsGold==='jacket,shirt,tie,bar,watch',`an outfit needs a piece per jacket, shirt, tie and tie bar; the master's own watch and a white shirt need none (${k.parts}; ${k.partsWhite}; ${k.partsGold})`);
     ok(k.noMaster===null&&k.noPieces===null&&k.noZones===null,'no picture without the master, with a piece missing, or before the calibration photos are there');
     ok(k.made&&k.zonesKept&&k.shirtL<38&&k.jacketB>8,`with everything kept on the device the outfit's picture is made and its zones stored (shirt lightness ${k.shirtL.toFixed(0)}, jacket yellowness ${k.jacketB.toFixed(1)})`);
-    ok(k.gold===null&&k.vest===null,'an outfit whose watch has no piece yet, or with a vest, gets no assembled picture (it keeps its own photo)');
+    ok(k.gold===null&&k.vest===null&&k.vwants===false,'an outfit whose watch has no piece yet, or a vest day before the vest photos are there, gets no assembled picture (it keeps its own photo)');
+    ok(k.vmade&&k.vkept&&k.vwants2,'with the vest master, its calibration photo and the suit\'s vest photo on the device, a vest day is put together, and the waistcoat\'s zone is kept');
+    const VJ=k.vjobs;
+    ok(VJ.vj.baseKey===k.jobs.mj.key&&VJ.vj.swap.what==='waistcoat'&&VJ.vj.swap.add===true&&VJ.vcj.baseKey===VJ.vj.key&&VJ.vcj.swap.what==='waistcoat'&&/orange/.test(VJ.vcj.swap.text)&&VJ.vpj.baseKey===VJ.vj.key&&VJ.vpj.swap.what==='jacket'&&/navy & light blue pinstripe suit, a three-piece suit/.test(VJ.vpj.swap.text),
+      'the vest master adds a waistcoat to the master; its calibration photo and each suit\'s vest photo are edits of the vest master');
     ok(k.drift.slice(0,3).every(v=>v<.06)&&k.drift[3]>.3&&k.collage===null&&k.bad,`a real piece leaves the rest of the picture alone; one that moved the figure is refused (${k.drift.map(v=>(100*v).toFixed(1)+'%').join(', ')} changed outside the piece)`);
     ok(k.forBefore===null&&k.forAfter&&k.keptOut&&k.overOld==='assembled'&&k.underNew==='gpt'&&k.stale===null,'Today takes the assembled picture (kept on the device) over an older photo of the outfit; a photo made after the master wins, and a piece made again makes the picture stale');
     ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===2&&k.needs.split('piece:tie').length===3&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt or the master's watch (${k.needs})`);
@@ -126,6 +145,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(ms[0].acked&&store.has('render:'+k.tieJob.key)&&got[0].n===2&&got[0].first==='image/jpeg'&&got[0].firstSize>20000&&/^Edit the first image/.test(got[0].prompt)&&/Replace only the tie with: a navy & pink stripe tie/.test(got[0].prompt),'the piece is an edit of the kept master: the master first, then the item\'s photo, and only the tie replaced');
       got=[];await post(J.bj);ms=await drain();
       ok(ms[0].acked&&/Add one thing only: a slim silver tie bar/.test(got[0].prompt)&&!/Replace only/.test(got[0].prompt)&&/must stay exactly[^\n]*the tie, its knot and its pattern/.test(got[0].prompt),'the tie bar is added to the master, with everything else kept');
+      got=[];await post(k.vjobs.vj);ms=await drain();const p1=got[0]&&got[0].prompt;store.set('render:'+k.vjobs.vj.key,JSON.stringify({sig:'',img:k.masterUrl,model:'m',t:1}));got=[];await post(k.vjobs.vcj);await drain();
+      ok(/Add one thing only: a matching five-button waistcoat/.test(p1)&&/Replace only the waistcoat with: a waistcoat of exactly the same cut[^\n]*orange/.test(got[0].prompt)&&/must stay exactly[^\n]*the jacket and its pattern/.test(got[0].prompt),'the worker adds the waistcoat for the vest master and swaps only the waistcoat for its calibration photo');
       q=await post({mode:'queue',key:'c0000000000000001',swap:{what:'tie',text:'x'}});ok(q.status===400,'a job with neither an image nor a photo to edit is refused');
     }finally{globalThis.fetch=realFetch}
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
