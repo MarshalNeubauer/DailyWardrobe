@@ -13,6 +13,7 @@ concurrency: deploy-worker
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
       - name: Check configuration
@@ -36,8 +37,27 @@ jobs:
           node-version: 22
       - run: npm install
         if: steps.cfg.outputs.ready == 'yes'
-      - run: npx playwright install --with-deps chromium
+      # The tests: only what the change since origin/main can affect (tests/impact.js). On main that is nothing when the
+      # merged branch was tested before the merge (tests/impact.map carries the fingerprint of these very files), and
+      # every test when it was not. A browser is therefore installed only when tests will really run: a deploy must not
+      # wait on Ubuntu's package mirrors (2026-11-11: they could not be resolved from the runners for hours, and every
+      # deploy failed in the browser install although no test needed a browser).
+      - name: Which tests will run
+        id: sel
         if: steps.cfg.outputs.ready == 'yes'
+        run: |
+          node tests/run.js --changed --list | tee "$RUNNER_TEMP/selection.txt"
+          # these two sentences are tests/impact.js saying that nothing runs; anything else (or no answer) installs the browser
+          if grep -Eq 'No check can be affected by this change\.|Nothing more needs to run\.' "$RUNNER_TEMP/selection.txt"; then echo "browser=no"; else echo "browser=yes"; fi >> "$GITHUB_OUTPUT"
+      - name: Install Chromium (only when tests will run)
+        if: steps.sel.outputs.browser == 'yes'
+        run: |
+          # system packages through apt, for at most two minutes and without failing the deploy: the runner image already
+          # has Chromium's libraries, apt adds fonts only
+          timeout -k 10 120 npx playwright install-deps chromium || echo "::warning::Chromium's system packages could not be installed (apt); the tests run with what the runner image has."
+          # the browser itself, tried three times
+          for i in 1 2 3; do npx playwright install chromium && exit 0; sleep $((i * 15)); done
+          exit 1
       - run: npm test
         if: steps.cfg.outputs.ready == 'yes'
       - name: Deploy to Cloudflare
