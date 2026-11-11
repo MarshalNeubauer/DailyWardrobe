@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.rules&&r.f17==='["date"]'&&r.f18==='["date"]'&&r.dec==='["date"]','after a rules change, swaps and vest choices on upcoming days are cleared');
     ok(r.formal==='["date","formal"]','formal days stay formal (their swaps are cleared)');
     ok(r.past==='["date","force","ids","worn"]'&&r.today==='["date","force","skip"]','today and past days are left alone');
-    await p.waitForTimeout(600);
+    await p.waitForFunction(()=>/planner was updated.*4 days reset/.test(document.querySelector('#toast').textContent),null,{timeout:5000}).catch(()=>{});
     ok(/planner was updated.*4 days reset/.test(await p.textContent('#toast')),'a note says the upcoming days were planned again');
     ok(await p.evaluate(async()=>{dayRecs['2026-11-18']={date:'2026-11-18',force:{top:'suit3'}};await checkPlanRules();return !!dayRecs['2026-11-18'].force}),'it happens once per rules change: later swaps are kept');
     // Settings button

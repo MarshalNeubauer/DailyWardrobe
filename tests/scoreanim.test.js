@@ -1,7 +1,7 @@
 // The score card unfolds smoothly like the pieces list and the month plan (the panel grows over time, not in one frame):
 // the checks slide in one after another and each bar fills to the points that check scored. It stays open across
 // re-renders without replaying the animation, folds back smoothly, and is reachable by keyboard / screen reader.
-module.exports=async({ok,chromium,url})=>{
+module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(s.distinct>=6&&s.final>s.first+80,`opening grows smoothly over many frames (${s.distinct} heights, ${s.first} → ${s.final}px)`);
     ok(s.delays.length>3&&s.delays.every((d,i)=>!i||d>s.delays[i-1]),`the checks slide in one after another (${s.delays.map(d=>d.toFixed(2)).join(', ')}s)`);
     ok(s.bars.every(b=>b==='barIn')&&s.expanded==='true'&&s.chev!=='none','each check has a bar that fills; the chevron turns; the button says it is open');
-    await p.waitForTimeout(1000);const bars=await p.evaluate(()=>{const li=[...document.querySelectorAll('#sbox li')],r=rateOutfit(planFor()[key(sel)]);
+    await settle(p,1000);const bars=await p.evaluate(()=>{const li=[...document.querySelectorAll('#sbox li')],r=rateOutfit(planFor()[key(sel)]);
       return li.map((l,i)=>{const w=l.querySelector('.sbar').getBoundingClientRect().width,f=l.querySelector('.sbar i').getBoundingClientRect().width,c=r.checks[i];return Math.abs(f/w-Math.max(0,c.pts)/c.max)<.02}).every(Boolean)});
     ok(bars,'each bar ends at the share of the points that check scored');
     // a re-render keeps it open without replaying
@@ -31,7 +31,7 @@ module.exports=async({ok,chromium,url})=>{
       while(performance.now()-t0<700){hs.push(Math.round(box.getBoundingClientRect().height));await new Promise(r=>requestAnimationFrame(r))}return {distinct:new Set(hs).size,last:hs[hs.length-1],ib:Math.round(document.querySelector('#ibox').getBoundingClientRect().height)}});
     ok(f.distinct>=6&&f.last===f.ib,`folding shrinks smoothly back to the card size (${f.distinct} heights, ends at ${f.last}px)`);
     // keyboard
-    await p.focus('#sbox .month-link');await p.keyboard.press('Enter');await p.waitForTimeout(600);
+    await p.focus('#sbox .month-link');await p.keyboard.press('Enter');await p.waitForFunction(()=>document.querySelector('#sbox').classList.contains('open'),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>document.querySelector('#sbox').classList.contains('open')),'Enter on the focused card opens it');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

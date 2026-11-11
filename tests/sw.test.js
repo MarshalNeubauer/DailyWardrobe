@@ -9,13 +9,13 @@ module.exports=async({ok,chromium,ROOT})=>{
   await new Promise(r=>srv.listen(0,r));const url=`http://127.0.0.1:${srv.address().port}/`;
   const browser=await chromium.launch();const ctx=await browser.newContext();const page=await ctx.newPage();
   await page.goto(url);await page.waitForFunction(()=>navigator.serviceWorker&&navigator.serviceWorker.controller,null,{timeout:10000}).catch(()=>{});
-  await page.reload();await page.waitForTimeout(300);
+  await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:5000}).catch(()=>{});
   ok(await page.evaluate(()=>!!navigator.serviceWorker.controller),'service worker controls the page');
   // update: the server now serves a changed page; despite max-age=600 the next load shows it
-  marker='v2';await page.reload();await page.waitForTimeout(300);
+  marker='v2';await page.reload();await page.waitForFunction(()=>/v2/.test((document.querySelector('h1')||{}).textContent),null,{timeout:5000}).catch(()=>{});
   ok((await page.textContent('h1')).includes('v2'),'changed files show up on the next load (no ?v= needed)');
   // offline: the app shell still loads and renders
-  await ctx.setOffline(true);await page.reload();await page.waitForTimeout(500);
+  await ctx.setOffline(true);await page.reload();await page.waitForSelector('#n-today',{timeout:5000}).catch(()=>{});
   ok((await page.textContent('h1')).includes('Daily Wardrobe')&&await page.$('#n-today')!==null,'app loads offline from the cache');
   ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitFigureSvg==='function'),'all scripts available offline');
   await ctx.setOffline(false);

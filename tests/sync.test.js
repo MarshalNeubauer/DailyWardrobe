@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await sync(A.p);await sync(B.p);await sync(A.p);
   ok((await names(A.p))==='belt:black,shirt:white'&&(await names(B.p))==='belt:black,shirt:white','offline edits on both devices merge');
   // the merged state survives a reload (it was written to IndexedDB)
-  await B.p.reload();await B.p.waitForTimeout(800);
+  await B.p.reload();await B.p.waitForFunction(()=>window.appReady&&items.map(i=>i.type+':'+i.primaryColor).sort().join(',')==='belt:black,shirt:white',null,{timeout:5000}).catch(()=>{});
   ok((await names(B.p))==='belt:black,shirt:white','synced wardrobe persists on the device');
   // the screen refreshes after a sync brings new items
   await add(A.p,{type:'suit',primaryColor:'navy'});await sync(A.p);await B.p.click('#n-wardrobe');await sync(B.p);
@@ -80,7 +80,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const file=path.join(os.tmpdir(),`dw-backup-test-${process.pid}-${Date.now()}.json`);
   const data=await A.p.evaluate(async()=>JSON.stringify({app:'daily-wardrobe',version:1,...await localState()}));fs.writeFileSync(file,data);
   const C=await browser.newContext();const cp=await C.newPage();cp.on('dialog',d=>d.accept());await cp.goto(url);await cp.waitForFunction(()=>window.appReady);
-  await cp.evaluate(()=>openSettings());await cp.setInputFiles('#settings-modal input[type=file]',file);await cp.waitForTimeout(600);
+  await cp.evaluate(()=>openSettings());await cp.setInputFiles('#settings-modal input[type=file]',file);await cp.waitForFunction(()=>items.length>0,null,{timeout:5000}).catch(()=>{});await cp.waitForTimeout(100);
   ok((await names(cp))===(await names(A.p))&&(await names(cp)).length>0,'Download backup → Restore file reproduces the wardrobe on a new device');
   fs.unlinkSync(file);
 

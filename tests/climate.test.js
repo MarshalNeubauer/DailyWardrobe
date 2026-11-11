@@ -31,7 +31,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(()=>openSettings('weather'));
     ok(/usual weather there/.test(await p.textContent('#wx-loc'))&&/66°.*115°/.test(await p.textContent('#wx-loc')),`Settings says days beyond the forecast use the usual weather (${await p.textContent('#wx-loc')})`);
     // another location: fetched again for the new place
-    await p.evaluate(()=>setLocation({lat:51.5,lon:-0.12,name:'London'}));await p.waitForTimeout(500);
+    await p.evaluate(()=>setLocation({lat:51.5,lon:-0.12,name:'London'}));for(let t=0;t<250&&calls<2;t++)await p.waitForTimeout(20);
     ok(calls===2,'changing the location fetches that place\'s climate');
     // the what-to-buy analysis plans with it too
     const pay=await p.evaluate(()=>{let sent=null;const W=window.Worker;window.Worker=function(){this.postMessage=d=>{sent=d};this.terminate=()=>{}};analyzeWardrobe();window.Worker=W;shopBusy=null;return Array.isArray(sent.climate)&&sent.climate.length});

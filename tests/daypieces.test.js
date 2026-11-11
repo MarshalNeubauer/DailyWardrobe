@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.click('#ibox .month-link');await settle(p,600);
     const o1=await p.evaluate(()=>({open:$('#ibox').classList.contains('open'),h:$('#ipanel').getBoundingClientRect().height,exp:$('#ibox .month-link').getAttribute('aria-expanded'),rows:document.querySelectorAll('#ibox .list .row').length}));
     ok(o1.open&&o1.h>300&&o1.exp==='true'&&o1.rows>=8,`tapping it unfolds the list in place (${Math.round(o1.h)}px, ${o1.rows} rows)`);
-    await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForTimeout(150);
+    await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForFunction(()=>planFor()[key(sel)].overrides,null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>$('#ibox').classList.contains('open')&&planFor()[key(sel)].overrides),'swapping from the list keeps it open');
     await p.click('#ibox .month-link');await settle(p,600);
     ok(await p.evaluate(()=>!$('#ibox').classList.contains('open')&&$('#ipanel').getBoundingClientRect().height<1),'tapping again folds it away');
@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{sel=new Date(2026,11,8);view={y:2026,m:11};renderToday()});
     const g=await p.evaluate(()=>{const b=document.querySelector('.day .gotoday');return b&&{t:b.textContent,a:b.getAttribute('aria-label')}});
     ok(g&&/Today/.test(g.t)&&/today/.test(g.a),'on a December day the date bar has a Today button');
-    await p.click('.day .gotoday');await p.waitForTimeout(100);
+    await p.click('.day .gotoday');await p.waitForFunction(()=>key(sel)==='2026-11-9'&&!document.querySelector('.gotoday'),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>key(sel)==='2026-11-9'&&view.m===10&&!document.querySelector('.gotoday')&&/November 9/.test($('#today .day h2').textContent)),'it brings back today\'s outfit');
     await p.evaluate(()=>{sel=new Date(2026,11,15);view={y:2026,m:11};show('wardrobe')});await p.click('#n-today');
     ok(await p.evaluate(()=>key(sel)==='2026-11-9'&&!$('#today').hidden),'the Today tab also returns to today');

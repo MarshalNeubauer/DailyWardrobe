@@ -68,15 +68,15 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- working on it
     delay=600;
     const busy=()=>p.evaluate(()=>{const b=document.querySelector('#busy');return b&&b.classList.contains('on')?b.textContent:''});
-    const pr=p.evaluate(()=>claudePattern({image:'data:image/png;base64,AA',type:'tie'}));await p.waitForTimeout(250);
-    const during=await busy();await pr;await p.waitForTimeout(50);
+    const pr=p.evaluate(()=>claudePattern({image:'data:image/png;base64,AA',type:'tie'}));await p.waitForFunction(()=>/Claude is reading/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});
+    const during=await busy();await pr;await p.waitForFunction(()=>!document.querySelector('#busy.on'),null,{timeout:5000}).catch(()=>{});
     ok(/Claude is reading the pattern/.test(during)&&await p.evaluate(()=>!!document.querySelector('#busy .spin')),`a spinning pill shows while Claude works ("${during}")`);
     ok(await busy()==='','it goes away when the answer comes');
-    const tg=p.evaluate(()=>ask('data:image/png;base64,AA',{}));await p.waitForTimeout(250);const tagging=await busy();await tg;
-    const rd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({image:'x',key:'c1'})}));await p.waitForTimeout(250);const making=await busy();await rd;
-    const iq=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({mode:'item',key:'c2'})}));await p.waitForTimeout(250);const itemPic=await busy();await iq;
+    const tg=p.evaluate(()=>ask('data:image/png;base64,AA',{}));await p.waitForFunction(()=>/tagging/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const tagging=await busy();await tg;
+    const rd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({image:'x',key:'c1'})}));await p.waitForFunction(()=>/Making the photo/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const making=await busy();await rd;
+    const iq=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({mode:'item',key:'c2'})}));await p.waitForFunction(()=>/item picture/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const itemPic=await busy();await iq;
     ok(/tagging/.test(tagging)&&/Making the photo/.test(making)&&/item picture/.test(itemPic),`tagging, making a photo and an item picture each say so ("${tagging}", "${making}", "${itemPic}")`);
-    const two=[p.evaluate(()=>claudePattern({image:'data:image/png;base64,AA',type:'tie'})),p.evaluate(()=>ask('data:image/png;base64,AA',{}))];await p.waitForTimeout(250);const both=await busy();await Promise.all(two);
+    const two=[p.evaluate(()=>claudePattern({image:'data:image/png;base64,AA',type:'tie'})),p.evaluate(()=>ask('data:image/png;base64,AA',{}))];await p.waitForFunction(()=>/\+1/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const both=await busy();await Promise.all(two);
     ok(/\+1/.test(both),`two at once: the latest, with a count of the rest ("${both}")`);
     const qd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({mode:'queue',key:'c3'})}));await p.waitForTimeout(250);const queued=await busy();await qd;
     const syncs=p.evaluate(()=>fetch('https://w.test/sync',{method:'GET'}));await p.waitForTimeout(250);const sync=await busy();await syncs;

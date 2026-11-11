@@ -45,8 +45,9 @@ function period(prof,minLag=6){return periodCh([prof],[1],minLag)}
 /* how alike a multi-channel profile is to itself shifted by one lag (normalised) */
 function corrAt(chs,wts,l){let a=0,b=0,c=0;chs.forEach((ch,k)=>{const m=ch.reduce((x,y)=>x+y,0)/ch.length,w=wts[k];for(let i=0;i+l<ch.length;i++){const p=ch[i]-m,q=ch[i+l]-m;a+=w*p*q;b+=w*p*p;c+=w*q*q}});return a/(Math.sqrt(b*c)||1)}
 function periodCh(chs,wts,minLag=6){
-  const Ps=chs.map(ch=>{const m=ch.reduce((a,b)=>a+b,0)/ch.length;return ch.map(v=>v-m)}),N=Ps[0].length;
-  const ac=l=>{let a=0,b=0,c=0;Ps.forEach((P,k)=>{const w=wts[k];for(let i=0;i+l<N;i++){a+=w*P[i]*P[i+l];b+=w*P[i]*P[i];c+=w*P[i+l]*P[i+l]}});return a/(Math.sqrt(b*c)||1)};
+  // (typed arrays and a plain loop: the sums are added in the same order, so the same numbers, in less time)
+  const Ps=chs.map(ch=>{const m=ch.reduce((a,b)=>a+b,0)/ch.length;return Float64Array.from(ch,v=>v-m)}),N=Ps[0].length;
+  const ac=l=>{let a=0,b=0,c=0;for(let k=0;k<Ps.length;k++){const P=Ps[k],w=wts[k];for(let i=0;i+l<N;i++){a+=w*P[i]*P[i+l];b+=w*P[i]*P[i];c+=w*P[i+l]*P[i+l]}}return a/(Math.sqrt(b*c)||1)};
   const P=Ps[0];
   const maxLag=Math.floor(P.length*.67),r=[];for(let l=0;l<=maxLag;l++)r.push(l<minLag-1?-1:ac(l));
   let best=-1,T=0;for(let l=minLag;l<maxLag;l++)if(r[l]>r[l-1]&&r[l]>=r[l+1]&&r[l]>best){best=r[l];T=l}
@@ -165,8 +166,14 @@ function labGrid(src,sx,sy,sw,sh,N=280){
   const k=N/Math.max(sw,sh),W=Math.max(16,Math.round(sw*k)),H=Math.max(16,Math.round(sh*k));
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d',{willReadFrequently:true});g.drawImage(src,sx,sy,sw,sh,0,0,W,H);
   const d=g.getImageData(0,0,W,H).data,n=W*H,L=new Float32Array(n),A=new Float32Array(n),Bb=new Float32Array(n),Y=new Float32Array(n);
-  for(let i=0;i<n;i++){const l=rgbLab(d[i*4],d[i*4+1],d[i*4+2]);L[i]=l[0];A[i]=l[1];Bb[i]=l[2];Y[i]=(.2126*d[i*4]+.7152*d[i*4+1]+.0722*d[i*4+2])/255}
+  // rgbLab (core.js) worked out inline, with its sRGB curve from a table: the same numbers in a fraction of the time on a 900px grid
+  const f=t=>t>.008856?Math.cbrt(t):7.787*t+16/116;
+  for(let i=0;i<n;i++){const r=LAB_LIN[d[i*4]],gg=LAB_LIN[d[i*4+1]],b=LAB_LIN[d[i*4+2]],
+      X=f((r*.4124+gg*.3576+b*.1805)/.95047),Yl=f(r*.2126+gg*.7152+b*.0722),Z=f((r*.0193+gg*.1192+b*.9505)/1.08883);
+    L[i]=116*Yl-16;A[i]=500*(X-Yl);Bb[i]=200*(Yl-Z);Y[i]=(.2126*d[i*4]+.7152*d[i*4+1]+.0722*d[i*4+2])/255}
   return {W,H,L,A,B:Bb,Y}}
+/* rgbLab's linear value of each sRGB byte, worked out as rgbLab does */
+const LAB_LIN=Float64Array.from({length:256},(_,u)=>{u/=255;return u>.04045?((u+.055)/1.055)**2.4:u/12.92});
 /* the projection index of every pixel along an angle, for a W x H grid */
 function projIdx(W,H,ang){const R=Math.ceil(Math.hypot(W,H)/2)+1,cs=Math.cos(ang),sn=Math.sin(ang),idx=new Int32Array(W*H);
   for(let y=0;y<H;y++)for(let x=0;x<W;x++)idx[y*W+x]=Math.floor((x-W/2)*cs+(y-H/2)*sn+R);return {idx,len:2*R}}
@@ -175,9 +182,17 @@ function projAvg(M,P){const s=new Float64Array(P.len),c=new Float64Array(P.len);
 const boxBlurWH=(a,W,H)=>{const o=new Float32Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0,c=0;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const X=x+i,Y=y+j;if(X>=0&&Y>=0&&X<W&&Y<H){s+=a[Y*W+X];c++}}o[y*W+x]=s/c}return o};
 /* fold a Lab profile on its repeat (or take it whole) and merge it into bands */
 /* one repeat in M steps, each the median colour of its pixels (a median, so lines crossing the band don't tint it) */
-function foldMedian(G,P,first,len,okIdx,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))),bins=Array.from({length:M},()=>[[],[],[]]);
-  for(let i=0;i<G.L.length;i++){const pi=P.idx[i],t=pi-first;if(t<0||t>=len||!okIdx[pi]||skip&&skip[i])continue;const b=bins[Math.floor(((t%T)/T)*M)%M];b[0].push(G.L[i]);b[1].push(G.A[i]);b[2].push(G.B[i])}
-  const med=v=>{v.sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};return bins.filter(b=>b[0].length).map(b=>[med(b[0]),med(b[1]),med(b[2])])}
+function foldMedian(G,P,first,len,okIdx,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))),bin=new Int32Array(G.L.length).fill(-1);
+  for(let i=0;i<G.L.length;i++){const pi=P.idx[i],t=pi-first;if(t<0||t>=len||!okIdx[pi]||skip&&skip[i])continue;bin[i]=Math.floor(((t%T)/T)*M)%M}
+  return binMedians(G,bin,M).filter(Boolean)}
+/* the median Lab of each bin's pixels (bin[i]: 0…M-1, or -1 = left out); null for an empty bin. The pixels are grouped into one
+   typed array per channel and each bin sorted numerically: sorting plain arrays with a comparator took half of a reading's time */
+function binMedians(G,bin,M){const cnt=new Int32Array(M+1);for(let i=0;i<bin.length;i++)if(bin[i]>=0)cnt[bin[i]+1]++;
+  for(let b=0;b<M;b++)cnt[b+1]+=cnt[b];const at=cnt.slice(0,M),tot=cnt[M],L=new Float32Array(tot),A=new Float32Array(tot),B=new Float32Array(tot);
+  for(let i=0;i<bin.length;i++){const b=bin[i];if(b<0)continue;const k=at[b]++;L[k]=G.L[i];A[k]=G.A[i];B[k]=G.B[i]}
+  const out=new Array(M);for(let b=0;b<M;b++){const s=cnt[b],e=cnt[b+1];if(e===s){out[b]=null;continue}const m=s+((e-s)>>1);
+    out[b]=[L.subarray(s,e).sort()[m-s],A.subarray(s,e).sort()[m-s],B.subarray(s,e).sort()[m-s]]}
+  return out}
 function settBands(labs,minShare){
   let bands=labs.map(lab=>({lab,w:1,steps:[lab]}));
   const mergeInto=(to,k)=>{const x=bands[to],y=bands[k],w=x.w+y.w;bands[to]={lab:x.lab.map((v,i)=>(v*x.w+y.lab[i]*y.w)/w),w,steps:to<k?[...x.steps,...y.steps]:[...y.steps,...x.steps]};bands.splice(k,1)};
@@ -213,7 +228,7 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
   const g0=labGrid(src,sx,sy,sw,sh,320),n0=g0.L.length;
   // how far each pixel is from the cloth's own colour: a light-blue line on khaki linen barely differs in lightness, but here it
   // stands out (directions are read from this, not from lightness alone)
-  const med=a=>{const v=Array.from(a).sort((x,y)=>x-y);return v[v.length>>1]},m0=[med(g0.L),med(g0.A),med(g0.B)],E=new Float32Array(n0);
+  const med=a=>{const v=Float32Array.from(a).sort();return v[v.length>>1]},m0=[med(g0.L),med(g0.A),med(g0.B)],E=new Float32Array(n0);
   for(let i=0;i<n0;i++)E[i]=Math.hypot(g0.L[i]-m0[0],g0.A[i]-m0[1],g0.B[i]-m0[2]);
   const Bl=boxBlurWH(boxBlurWH(E,g0.W,g0.H),g0.W,g0.H);
   let jxx=0,jyy=0,jxy=0;for(let y=1;y<g0.H-1;y++)for(let x=1;x<g0.W-1;x++){const p=(X,Y)=>Bl[Y*g0.W+X];
@@ -231,9 +246,9 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
   // across it (in colour: a light-blue line on khaki barely differs in lightness)
   const P0=projIdx(g0.W,g0.H,th),L0=projAvg(g0.L,P0),A0=projAvg(g0.A,P0),B0=projAvg(g0.B,P0),r0=[new Float32Array(n0),new Float32Array(n0),new Float32Array(n0)];
   for(let i=0;i<n0;i++){const pi=P0.idx[i];r0[0][i]=g0.L[i]-L0.avg[pi];r0[1][i]=g0.A[i]-A0.avg[pi];r0[2][i]=g0.B[i]-B0.avg[pi]}
-  const resProj=(G,res,d)=>{const Q=projIdx(G.W,G.H,th+d*Math.PI/180),r=projAvg(res,Q),k=keepOf(r.cnt,G),f0=k.indexOf(true),f1=k.lastIndexOf(true),rp=r.avg.slice(f0,f1+1);
+  const resProj=(G,res,d,Q=projIdx(G.W,G.H,th+d*Math.PI/180))=>{const r=projAvg(res,Q),k=keepOf(r.cnt,G),f0=k.indexOf(true),f1=k.lastIndexOf(true),rp=r.avg.slice(f0,f1+1);
     return {Q,f0,rp:detrend(rp,Math.max(9,Math.round(rp.length*.2)))}};
-  const colourVar=(G,rs,d)=>{const v=rs.map(r=>variance(resProj(G,r,d).rp));return v[0]+.5*(v[1]+v[2])};
+  const colourVar=(G,rs,d)=>{const Q=projIdx(G.W,G.H,th+d*Math.PI/180),v=rs.map(r=>variance(resProj(G,r,d,Q).rp));return v[0]+.5*(v[1]+v[2])};
   let ca=0,cv=-1;for(let d=30;d<=150;d+=2){const v=colourVar(g0,r0,d);if(v>cv){cv=v;ca=d}}
   // the sharp copy, read in strips running along the lines: a draped cloth's lines wave, so one straight projection across the
   // whole picture smears them into nothing (a linen windowpane close-up showed no repeat at all). Within a strip a line is nearly
@@ -353,9 +368,9 @@ function stripShifts(strips,wts,max){
     for(let d=-max;d<=max;d++){let v=0;for(let c=0;c<s.length;c++){const ch=s[c],r=R[c];for(let i=Math.max(0,-d);i<ch.length&&i+d<r.length;i++)v+=wts[c]*(ch[i]-Sm[c])*(r[i+d]-Rm[c])}if(v>bv){bv=v;best=d}}return best})}
 /* one repeat in M steps from pixels' lined-up positions (t; -1 = outside), each step the median colour of its pixels (a median,
    so lines crossing the band don't tint it); steps with no pixels are null */
-function foldBins(G,tAdj,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))),bins=Array.from({length:M},()=>[[],[],[]]);
-  for(let i=0;i<G.L.length;i++){const t=tAdj[i];if(t<0||skip&&skip[i])continue;const b=bins[Math.floor((((t%T)+T)%T)/T*M)%M];b[0].push(G.L[i]);b[1].push(G.A[i]);b[2].push(G.B[i])}
-  const med=v=>{v.sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};let labs=bins.map(b=>b[0].length?[med(b[0]),med(b[1]),med(b[2])]:null);
+function foldBins(G,tAdj,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))),bin=new Int32Array(G.L.length).fill(-1);
+  for(let i=0;i<G.L.length;i++){const t=tAdj[i];if(t<0||skip&&skip[i])continue;bin[i]=Math.floor((((t%T)+T)%T)/T*M)%M}
+  let labs=binMedians(G,bin,M);
   if(labs.every(l=>!l))return {labs};const fill=labs.slice();for(let q=0;q<M;q++)if(!fill[q]){let d=1;while(!labs[(q+d)%M]&&!labs[(q-d+M)%M])d++;fill[q]=labs[(q+d)%M]||labs[(q-d+M)%M]}
   return {labs:skip?labs:fill}}
 /* a sett from a whole canvas (its middle 90%): a close-up */

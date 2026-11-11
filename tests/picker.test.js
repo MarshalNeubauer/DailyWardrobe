@@ -1,7 +1,7 @@
 // Choosing a piece by hand (the sheet behind ⇄), the planner learning from changes, and correcting a past day.
-module.exports=async({ok,chromium,url})=>{
+module.exports=async({ok,chromium,url,settle:settleFor})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-  const settle=()=>p.waitForTimeout(350);
+  const settle=()=>settleFor(p,350);
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
