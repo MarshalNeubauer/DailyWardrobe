@@ -53,7 +53,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const old={v:1,...asmPackZones({W:2,jacket:new Uint8Array(4),shirt:new Uint8Array(4),tie:new Uint8Array(4),watch:new Uint8Array(4)})};delete old.v;await metaPut('asm:zones:'+asmMasterKey(),old);const stale=await asmZonesKept();await metaPut('asm:zones:'+asmMasterKey(),null);
       return {top,inner:s[5*W+20]===1&&s[11*W+20]===0&&s[0*W+20]===1,stale,v:ASM_ZV}});
     ok(ed.top===1&&ed.inner,'a zone that reaches the picture\'s edge keeps its outermost rows when its gaps are closed (they were cut, and the master\'s white collar showed as a line along the top of a dark shirt)');
-    ok(ed.stale===false&&ed.v===5,'zones kept from before that fix are not used: they are worked out again');
+    // a suit's photo whose hand is two pixels larger than the master's: its rim of skin in the jacket's zone becomes cloth
+    const hd=await p.evaluate(()=>{const W=120,N=W*W,mk=(r,cloth)=>{const d=new ImageData(W,W);for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=4*(y*W+x),in_=Math.hypot(x-60,y-60)<=r,c=in_?[214,170,140]:cloth;d.data[i]=c[0];d.data[i+1]=c[1];d.data[i+2]=c[2];d.data[i+3]=255}return d};
+      const master=mk(20,[70,70,74]),piece=mk(22,[30,40,90]),z={W,jacket:new Uint8Array(N),shirt:new Uint8Array(N),tie:new Uint8Array(N),watch:new Uint8Array(N)};
+      for(let y=0;y<W;y++)for(let x=0;x<W;x++)if(Math.hypot(x-60,y-60)>20.5)z.jacket[y*W+x]=1;
+      const o=asmCompose(master,z,{jacket:piece}),L=asmLab(o);let rim=0,hand=0,cloth=0;
+      for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x,r=Math.hypot(x-60,y-60),skin=L[3*i+1]>8&&L[3*i+2]>10&&L[3*i]>60;if(r>21.5&&r<30&&skin)rim++;if(r<18&&skin)hand++;if(r>32&&o.data[4*i+2]===90)cloth++}
+      return {rim,hand,cloth,h:ASM_HAND}});
+    ok(hd.rim===0&&hd.hand>900&&hd.cloth>9000,`where a suit's photo shows a larger hand than the master's, its rim of skin outside the master's hand becomes cloth (${hd.rim} skin pixels left round the fist; the hand and the cloth are untouched)`);
+    ok(ed.stale===false&&ed.v===6,'zones kept from before that fix are not used: they are worked out again');
     ok(!r.noneOk,'calibration photos that changed nothing give zones that are refused');
     ok(r.a.moved===0&&r.a.watchKept===1,`outside the pieces the picture is the master, pixel for pixel, and the owner's watch stays the master's own (${r.a.moved} pixels differ)`);
     ok(r.a.ringN>300&&r.a.ringOk===1&&r.a.ringSeam<r.a.ringN/100,`the jacket's own edge comes from its photo: ${r.a.ringN} pixels just outside its zone where the master shows a leftover of its own jacket, none on another piece and next to none on the hands (${r.a.ringSeam} skin pixels; the master's dark edge left there read as an outline)`);
