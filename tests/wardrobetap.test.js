@@ -37,8 +37,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>editing==='s4'&&!!document.querySelector('#gi-s4 select')&&!!document.querySelector('#gi-s9 .giopen')),'tapping another item opens that one and folds the first');
     await p.click('#gi-s4 .btns >> text=Close');await settle();
     ok(await p.evaluate(()=>editing===null&&!!document.querySelector('#gi-s4 .giopen')&&!document.querySelector('.gi-gap')),'Close folds it back');
-    await p.click('#gi-t .btns >> text=Edit');await settle();
-    ok(await p.evaluate(()=>editing==='t'),'the Edit button still works (an item without a photo too)');
+    await p.click('#gi-t .giopen');await settle();
+    ok(await p.evaluate(()=>editing==='t'&&!document.querySelector('.gi:not(#gi-t) .btns')),'tapping an item without a photo opens it; closed boxes have no buttons (no Delete one tap away)');
     await p.click('#gi-t .giclose');await settle();
     ok(await p.evaluate(()=>editing===null),'tapping a drawn swatch of an item without a photo closes it');
     // while cropping, the photo is for cropping: it doesn't close the item

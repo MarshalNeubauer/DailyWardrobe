@@ -79,7 +79,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await settle(6);
   ok((await photos())===6,'a photo dropped on the app is queued');
   // pasting text into another field is left alone
-  await p.evaluate(()=>{openSettings();const i=document.querySelector('#cfg-city')||document.querySelector('#settings-modal input[type=text]');const dt=new DataTransfer();dt.setData('text/plain','https://cors.test/x.png');
+  await p.evaluate(()=>{openSettings('weather');const i=document.querySelector('#cfg-city')||document.querySelector('#settings-modal input[type=text]');const dt=new DataTransfer();dt.setData('text/plain','https://cors.test/x.png');
     window.__def=!i.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}));closeSettings()});
   ok(!(await p.evaluate(()=>window.__def)),'pasting a link into another text field is not hijacked');
   // a queued pasted photo saves like an uploaded one
