@@ -65,19 +65,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
     await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides);
     const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.ftag').textContent}});
-    ok(r2.kids==='ftag,reset'&&r2.one&&r2.label==='Formal day','a future formal day: a Formal day tag and the reset icon after a swap, same row');
+    const rc=await p.evaluate(()=>{const b=document.querySelector('#rbox'),m=document.querySelector('#mbox');return {after:!!b&&!!m&&b.previousElementSibling===m,h:b&&Math.round(b.getBoundingClientRect().height),w:b&&Math.round(b.getBoundingClientRect().width),mw:m&&Math.round(m.getBoundingClientRect().width),text:b&&b.textContent.trim()}});
+    ok(r2.kids==='ftag'&&r2.label==='Formal day'&&rc.after&&rc.h>=76&&rc.w===rc.mw&&/Reset/.test(rc.text),`after a swap, a Reset card under the month, the size of the other cards (${JSON.stringify(rc)}); the Formal day tag stays in its row`);
     await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides);
-    ok(await p.evaluate(()=>!document.querySelector('.dayact .reset')),'reset clears the changes and the icon goes away');
+    ok(await p.evaluate(()=>!document.querySelector('#rbox')),'Reset clears the changes and the card goes away');
     // today with a change: worn toggle, Formal and the reset icon fit one row even on narrow phones
-    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('.dayact .reset'));
-    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('.dayact .reset')&&document.querySelector('.dayact .ftag'));
+    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('#rbox'));
+    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('#rbox')&&document.querySelector('.dayact .ftag'));
     for(const [w,fs] of [[320,16],[360,16],[390,16]]){await p.setViewportSize({width:w,height:900});
       const f=await p.evaluate(fs=>{document.body.style.fontSize=fs+'px';const r=document.querySelector('.dayact'),kids=[...r.children],btns=[...r.querySelectorAll('button')];
         const mids=new Set(kids.map(k=>{const b=k.getBoundingClientRect();return Math.round((b.top+b.bottom)/2)}));
         const out=Math.max(...kids.map(k=>k.getBoundingClientRect().right))<=r.getBoundingClientRect().right+0.5;
         const clipped=btns.filter(b=>b.scrollWidth>b.clientWidth+1).map(b=>b.textContent);document.body.style.fontSize='';
         return {kids:kids.map(k=>k.className.split(' ')[0]).join(),one:mids.size===1,out,clipped}},fs);
-      ok(f.kids==='ftag,reset'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day buttons and reset icon share one row, nothing cut off (${JSON.stringify(f)})`)}
+      ok(f.kids==='ftag'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day's row fits, nothing cut off (${JSON.stringify(f)})`)}
     await p.setViewportSize({width:390,height:900});
     // three tiles on a suit day span the column like the score card; pictures keep their size, the tile takes the photo's backdrop
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.waitForFunction(()=>document.querySelectorAll('.below .tile.has-pic').length===3);

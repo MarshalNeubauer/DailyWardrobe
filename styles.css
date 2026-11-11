@@ -209,6 +209,8 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .tog.on{background:#1b2a4a;border-color:#1b2a4a;color:#fff}
 .dayact .seg button,.dayact .tog{font-size:15px;padding:9px clamp(8px,2.6vw,14px)}
 @media (max-width:340px){.dayact{gap:6px}.dayact .seg button,.dayact .tog{font-size:14px;padding:9px 7px}.ftag{font-size:12px;padding:5px 7px}.ftag .fx{display:none}}
+.resetbox .month-link{justify-content:center;gap:10px;font-size:17px;color:var(--ink)}.resetbox .rsicon{font-size:22px;line-height:1;color:var(--mut)}
+.resetbox .month-link:active{transform:scale(.99)}
 .reset{flex:0 0 40px;margin:0 0 0 auto;width:40px;height:40px;padding:0;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--mut);font-size:18px}
 
 .ftag{font-size:13px;font-weight:600;color:#fff;background:#1b2a4a;border-radius:8px;padding:5px 9px;white-space:nowrap}
