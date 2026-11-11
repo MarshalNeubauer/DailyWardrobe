@@ -321,7 +321,7 @@ function rateOutfit(o){
     add('Trousers',v,10,why)}
   if(shoes&&trousers){const s=shoeScore(top,trousers,shoes),k=(SH[pcol(trousers)]||['black','brown']).indexOf(pcol(shoes));
     add('Shoes',s<=-50?0:k===0?10:k===1?9:k===2?8:7,10,s<=-50?`${planCol(shoes)} shoes don't suit ${planCol(trousers)} trousers`:`${planCol(shoes)} shoes are a good but not the first choice with ${planCol(trousers)}`)}
-  if(shoes&&items.some(i=>i.type==='belt')){const f=belt?beltFit(shoes,belt):null;
+  if(shoes&&items.some(i=>i.type==='belt'&&inRotation(i))){const f=belt?beltFit(shoes,belt):null;
     add('Belt',!belt?0:f===null?0:f>0?10:8,10,!belt?'no belt matches the shoes':f===null?'belt does not match the shoes':'belt finish differs slightly from the shoes')}
   if(shoes){const f=finish(shoes.leather);let v=5,why='';
     if(f==='patent'){v=0;why='patent shoes are for black tie'}else if(f==='suede'&&o.suitDay){v=2;why='suede is casual for a suit'}else if(f==='grain'&&o.suitDay){v=3;why='grain leather is casual for a suit'}
@@ -359,7 +359,7 @@ function rateOutfit(o){
     if(shoes&&finish(shoes.leather)!=='suede'&&finish(shoes.leather)!=='patent')v+=2;else why.push('smooth leather shoes suit a wedding');
     add('Wedding',v,10,why.join('; '))}
   if(o.clim){const c=o.clim,s=c.season;let v=5;const why=[];
-    if((c.cold||c.rain)&&!o.coat&&items.some(i=>i.type==='overcoat'||i.type==='raincoat')){v-=2;why.push('no coat for the weather')}
+    if((c.cold||c.rain)&&!o.coat&&items.some(i=>(i.type==='overcoat'||i.type==='raincoat')&&inRotation(i))){v-=2;why.push('no coat for the weather')}
     if(c.rain&&shoes&&finish(shoes.leather)==='suede'){v-=2;why.push('suede shoes in the rain')}
     const off=[top,o.suitDay?null:o.bot,shirt,tie].filter(i=>i&&seasonFit(i,s)<-10);if(off.length){v-=2;why.push(`${off.map(nm).join(', ')} out of season`)}
     if(c.wx||off.length)add('Weather',v,5,why.join('; '))}
@@ -379,7 +379,7 @@ function frozenOutfit(rec,n,last){
 /* One simulation, resumable: planSim(start).upTo(day) plans every workday from start to that day and can be asked again
    for a later day, continuing where it stopped (the app keeps one for all the months it shows, so stepping to another
    month only plans the days that are new). The wardrobe, history and settings must not change in between: start a new one. */
-function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();
+function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t&&inRotation(i)).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();
 const hasLinks=by('cufflinks').length>0;let prev=[];   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
 // jackets already fixed on the next workdays (worn, or picked by the user): the next one's colour group, and the ids of
 // those within the next 3 workdays, which are held back so a pinned jacket is not worn just before its day

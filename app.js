@@ -388,6 +388,15 @@ async function redetect(id){
   if(!st){alert('Could not find a clear repeating pattern in the photo. Re-adding it with the swatch centred on the fabric usually works.');return}
   it.stripes=st;await put(it);cache={};renderWardrobe();
 }
+/* take an item out of rotation, or put it back. Taking it out also lets go of the upcoming days it was pinned to (a swap or a
+   hand pick), so those days are planned again without it; past days and days marked worn keep it. */
+async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;it.paused=!it.paused;if(!it.paused)delete it.paused;
+  let n=0;if(it.paused){const T=todayDate();
+    for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
+      for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
+      if(hit){const nr={...r,force:f};if(!Object.keys(f).length)delete nr.force;delete nr.ids;await saveDay(nr,true);n++}}}
+  await put(it);cache={};renderWardrobe();
+  toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);cache={};renderWardrobe()}
 async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id){editing=null;editAt=null}renderWardrobe()}
 
@@ -439,7 +448,7 @@ async function recordDays(p){
 }
 async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
-  const cur=o[slot]&&o[slot].id,pool=items.filter(i=>slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay));
+  const cur=o[slot]&&o[slot].id,pool=items.filter(i=>(slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay))&&inRotation(i));
   if(pool.length<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to swap.`;renderToday();return}
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
   const skip={...(rec.skip||{})};skip[slot]=[...new Set([...(skip[slot]||[]),cur].filter(Boolean))];
@@ -466,7 +475,7 @@ function learnFrom(slot,o,oldIt,newIt,picked){
   return up?'Noted: the planner will reach for this choice more often.':'Noted: the planner will suggest that pairing less often.'}
 /* ---- choosing a piece by hand: a sheet with every item for the slot, best match for the rest of the outfit first ---- */
 let picker=null,pastEdit=null;
-const slotPool=(slot,o)=>slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay));
+const slotPool=(slot,o)=>(slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay))).filter(i=>o.frozen||inRotation(i));
 /* how well a candidate suits the rest of the day's outfit (higher is better), by the planner's own rules */
 function fitOf(slot,o,c){
   const day={formal:!!o.formal,clim:o.clim||dayClimate(sel),hasLinks:items.some(i=>i.type==='cufflinks')},suit=slot==='top'?c.type==='suit':o.suitDay,top=slot==='top'?c:o.top,bot=suit?top:slot==='bot'?c:o.bot,legs=suit?top:bot;
@@ -1069,8 +1078,8 @@ function renderWardrobe(){
   // the open item moves to the start of its row; the rest of that row follows it and a blank cell fills the slot it left
   let gapAfter=null;if(editing&&editAt&&editAt.id===editing&&editAt.flt===flt){const k=list.findIndex(i=>i.id===editing);
     if(k>=0){const end=Math.min(editAt.at+editAt.cols,list.length),[it]=list.splice(k,1);list.splice(editAt.at,0,it);if(end-editAt.at===editAt.cols&&editAt.cols>1)gapAfter=list[end-1].id}}
-  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small>`
-  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small></button>`}<div class="btns"><button onclick="${editing===i.id?'closeItem()':`openItem('${i.id}')`}">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button></div>${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
+  $('#wardrobe').innerHTML=`<h2>Wardrobe</h2>${shopCard()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}"${editing===i.id?' style="grid-column:1/-1"':''} id="gi-${i.id}">${editing===i.id?`${phEdit.crop&&phEdit.id===i.id?cropEditor(i):`<div class="giclose" onclick="closeItem()" role="button" aria-label="Close ${esc(TYPES[i.type]||'item')}">${i.photo?photoPair(i.photo,i,'tagsw-'+i.id):wardPic(i)?photoPair(wardPic(i),i,'tagsw-'+i.id):itemThumb(i)}</div>`}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small>`
+  :`<button class="giopen" onclick="openItem('${i.id}')" aria-label="Edit ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<b>${TYPES[i.type]||'Item'}</b><br><small class="cap">${desc(i)}</small>${i.paused?'<span class="pausetag">Out of rotation</span>':''}</button>`}<div class="btns"><button onclick="${editing===i.id?'closeItem()':`openItem('${i.id}')`}">${editing===i.id?'Close':'Edit'}</button><button onclick="rm('${i.id}')">Delete</button>${editing===i.id?`<button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?'Put back in rotation':'Take out of rotation'}</button>`:''}</div>${editing===i.id&&i.paused?'<p class="mut rotnote"><small>Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</small></p>':''}${editing===i.id?editForm(i):''}</div>${gapAfter===i.id?'<div class="gi-gap" aria-hidden="true"></div>':''}`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
 }
 
