@@ -528,3 +528,18 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .shctl .shbtn{min-height:44px!important;min-width:44px!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;font-size:20px!important;font-weight:600!important}
 .shctl .shval{min-width:92px;text-align:center;font-size:14px;font-weight:600;padding:0 4px;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:44px}
 .shaderow .chipbtn{min-height:34px}
+/* moving an outfit in the month: the lifted day, the outfit under the finger, the day it would land on, the others ready to shift */
+#mpanel-in .mc[data-mv]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.mv-ghost{position:fixed;left:0;top:0;z-index:1200;pointer-events:none;box-sizing:border-box;padding:6px 4px 4px;border-radius:10px;background:var(--card);
+  box-shadow:0 14px 30px rgba(0,0,0,.45),inset 0 0 0 2px var(--acc);display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);transition:transform .06s linear}
+.mv-ghost .dn{font-size:12px;font-weight:600;line-height:1}.mv-ghost .stack{display:block;width:100%;flex:1;min-height:0;border-radius:3px}
+#mpanel-in .mc.lifted{box-shadow:inset 0 0 0 1.5px var(--acc);background:none}#mpanel-in .mc.lifted .stack{opacity:.35}
+#mpanel-in .mc.drop{box-shadow:inset 0 0 0 2px var(--acc);transform:scale(1.06);transition:transform .15s}
+#mpanel-in.mv-on .mc[data-mv]:not(.lifted):not(.drop){animation:mvWiggle .32s ease-in-out infinite alternate}
+#mpanel-in.mv-on .mc[data-mv]:nth-child(even):not(.lifted):not(.drop){animation-delay:-.16s}
+@keyframes mvWiggle{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
+@media (prefers-reduced-motion:reduce){#mpanel-in.mv-on .mc[data-mv]{animation:none}}
+#toast.act{pointer-events:auto;display:flex;align-items:center;gap:10px}#toast button{margin:0;padding:4px 12px;border-radius:14px;border:0;background:var(--bg);color:var(--ink);font-weight:700;font-size:14px;cursor:pointer}
+#mpanel-in .mv-held{display:none}
+/* while moving, only the day cells are targets: a drawing sliding to its new day would otherwise catch the finger over its old one */
+#mpanel-in.mv-on .mc *{pointer-events:none}
