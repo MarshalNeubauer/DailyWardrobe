@@ -69,6 +69,24 @@ function updateSwatchParam(i, param, val){
 }
 
 let aiError='',aiModel='';
+/* ---- working on it: while a call to Claude or OpenAI runs (tagging, reading a pattern, making a photo or an item picture), and
+   while photos are being made in the background, a spinning pill at the top of the screen says what is happening. Every call
+   to the worker's AI endpoints goes through fetch, so one hook catches them all, including new ones. ---- */
+const busyJobs=new Map();let busySeq=0;
+function busyStart(label){const id=++busySeq;busyJobs.set(id,label);renderBusy();return ()=>{busyJobs.delete(id);renderBusy()}}
+function busyLabelFor(u,o){if(!o||String(o.method||'GET').toUpperCase()!=='POST')return null;const w=localStorage.getItem('worker_url');if(!w)return null;
+  let a,b;try{a=new URL(u,location.href);b=new URL(w.replace(/\/*$/,'/'))}catch{return null}if(a.origin!==b.origin)return null;
+  const p=a.pathname.replace(b.pathname,'/').replace(/\/+$/,'')||'/',body=typeof o.body==='string'?o.body.slice(0,4000):'';
+  if(p==='/')return 'Claude is tagging the photo…';if(p==='/tag-many')return 'Claude is finding the items…';if(p==='/pattern')return 'Claude is reading the pattern…';
+  if(p==='/render'){if(/"mode":"queue"/.test(body))return null;return /"mode":"item"/.test(body)?'Making the item picture…':'Making the photo…'}
+  return null}
+if(typeof window!=='undefined'&&window.fetch&&!window.fetch.busy){const f0=window.fetch.bind(window);
+  window.fetch=function(u,o){const l=busyLabelFor(typeof u==='string'?u:u&&u.url,o);if(!l)return f0(u,o);const end=busyStart(l);const r=f0(u,o);r.then(end,end);return r};window.fetch.busy=1}
+function renderBusy(){let el=document.getElementById('busy');if(!el){if(!document.body)return;el=document.createElement('div');el.id='busy';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.appendChild(el)}
+  const live=[...busyJobs.values()],bg=typeof queuedKeys==='function'?queuedKeys().length:0;
+  if(bg)live.push(`Making ${bg} photo${bg===1?'':'s'} in the background…`);
+  document.body.classList.toggle('busy-on',!!live.length);if(!live.length){el.classList.remove('on');return}
+  el.innerHTML=`<span class="spin" aria-hidden="true"></span><span>${esc(live[live.length-1])}${live.length>1?` <small>+${live.length-1}</small>`:''}</span>`;el.classList.add('on')}
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by Workers AI (${q.model.replace(/^@cf\//,'')}).`;
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
 async function ask(c,extra){
@@ -663,7 +681,7 @@ function figureStage(o){
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   schedulePrefetch();   // and the rest of the month's photos, nearest first
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
-  const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
+  const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'<span class="spin" aria-hidden="true"></span>Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${wornMarks(o)}</div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}</div>`)+ctl+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
@@ -680,7 +698,7 @@ const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=
    is, so identical items share too. */
 const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
 const comboSig=o=>(o.vest?'vest|':'')+(!o.top&&o.bot?'nojacket/'+[o.bot.type,...LOOK_FIELDS.map(f=>o.bot[f]??'')].join('/')+'|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];if(!i)return '-';
-  return s==='shirt'?'shirt/'+primaryCol(i)+(shirtPatterned(i)?'/'+i.pattern+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:''):''):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:'')}).join('|');
+  return s==='shirt'?'shirt/'+primaryCol(i)+(shirtPatterned(i)?'/'+i.pattern+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:''):shirtTextured(i)?'/tex/'+settSig(i.sett):''):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:'')}).join('|');
 const fnvMemo=new Map();   // the same looks are hashed over and over (every render, every history record): remember them
 const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}
   v=h.toString(16).padStart(16,'0');if(fnvMemo.size>4000)fnvMemo.clear();fnvMemo.set(t,v);return v};
@@ -741,9 +759,12 @@ async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getA
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
 /* a striped or checked shirt shows in the photo (a plain or finely woven one counts by its colour alone) */
 const shirtPatterned=i=>!!i&&[...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern));
+/* a shirt whose weave texture was read (dobby diamonds, herringbone…): it gets its own photo, described and drawn for the generator */
+const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(usableSett(i)||{}).tex;
+const shirtTexText=i=>`a ${colName(primaryCol(i))} dress shirt woven with a fine, subtle tone-on-tone ${TEX_WORDS[i.sett.tex.kind]||'woven texture'} (the texture is in the weave itself, one colour, faint but visible up close; not stripes, checks or a print)`;
 function outfitText(o){
   const pt=(i,role)=>{const t=patternPrompt(i,role);return t?` (${t})`:''};   // the pattern measured and described (tagging.js)
-  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top,'top')}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt,'shirt')}`:`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot,'bot')} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie,'tie')}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
+  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top,'top')}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt,'shirt')}`:shirtTextured(o.shirt)?shirtTexText(o.shirt):`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?'':`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot,'bot')} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie,'tie')}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
     o.watch&&watchText(o.watch),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
@@ -905,7 +926,7 @@ async function queueCombo(o){
   throw new Error(j.error||`HTTP ${r.status}`)}
 const RQ='render_queue';
 const rqGet=()=>{try{const q=JSON.parse(localStorage.getItem(RQ)||'{}');return {keys:[],failed:[],...q}}catch{return {keys:[],failed:[]}}};
-const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):localStorage.removeItem(RQ)}catch{}};
+const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):localStorage.removeItem(RQ)}catch{}renderBusy()};
 const queuedKeys=()=>rqGet().keys;
 /* ask the worker how the queued photos are doing and bring the finished ones home */
 let rqTimer=null,rqBusy=false;
@@ -926,7 +947,7 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
     if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}
     rqSet(q);renderBatchUI();if(shown&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
-function startQueueWatch(){if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},45000)}
+function startQueueWatch(){renderBusy();if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},45000)}
 function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
@@ -962,7 +983,7 @@ function piecesBox(o){
 /* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
 /* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
-function keepInView(box){const r=box.getBoundingClientRect();if(r.top<8)scrollBy({top:r.top-8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
+function keepInView(box){if(foldQuiet)return;const r=box.getBoundingClientRect();if(r.top<8)scrollBy({top:r.top-8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;box.classList.remove('instant');void box.offsetHeight;
   box.classList.toggle('open',listOpen);const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
   if(listOpen)reveal(box);else{revealRun++;keepInView(box)}}
@@ -979,18 +1000,47 @@ function renderToday(){
   else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
-  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink():''}</div></div>`;
+  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink():''}</div></div>`;applyZoom(false);
   if(items.length){recordDays(p);
   }
 }
 
+/* a swipe to another day folds whatever is open (score, pieces list and its rows, a below-the-waist photo, the month) and zooms
+   the picture back out: it starts as soon as the drag is known to be sideways, so the boxes fold while the day slides */
+let foldQuiet=false;
+function foldAll(){foldQuiet=true;try{if(openRow)toggleRow(openRow);if(belowOpen)pickPiece(belowOpen);if(scoreOpen)toggleScore();if(listOpen)toggleList();if(monthOpen)toggleMonth()}
+  catch(e){console.warn(e)}finally{foldQuiet=false}scoreOpen=listOpen=monthOpen=false;belowOpen=openRow=null;zoomOut()}
+/* ---- double-tap the Today picture (the photo, or the drawing) to zoom in on the tapped spot, again to zoom back out; while
+   zoomed, a drag pans it (and doesn't change the day). 2.5x: the outfit photo is 1024 px square and fills about 390 px on a phone,
+   so 2.5x shows it at about its own resolution (any more is only blur), with a collar, tie knot or shirt front filling the frame. ---- */
+const ZOOM=2.5;let zoom=null,zoomPan=null,lastTap=null,zoomTouchAt=0;
+const zoomTarget=()=>{const c=$('#mannequin-container');return c&&c.querySelector(':scope > img, :scope > svg')};
+function applyZoom(anim){const c=$('#mannequin-container'),t=zoomTarget();if(!c||!t)return;const on=!!zoom&&zoom.k===key(sel);if(!on)zoom=null;
+  c.classList.toggle('zoomed',on);t.style.transformOrigin='0 0';t.style.transition=anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'transform .28s cubic-bezier(.2,.8,.2,1)':'none';
+  t.style.transform=on?`translate(${zoom.x.toFixed(1)}px,${zoom.y.toFixed(1)}px) scale(${ZOOM})`:''}
+function clampZoom(){const c=$('#mannequin-container');if(!c||!zoom)return;const W=c.clientWidth,H=c.clientHeight;   // the frame, which the picture fills (an <svg> has no offsetWidth)
+  zoom.x=Math.min(0,Math.max(W*(1-ZOOM),zoom.x));zoom.y=Math.min(0,Math.max(H*(1-ZOOM),zoom.y))}
+function toggleZoom(cx,cy){const t=zoomTarget();if(!t)return;
+  if(zoom)zoom=null;else{const r=t.getBoundingClientRect(),px=cx-r.left,py=cy-r.top;zoom={k:key(sel),x:px*(1-ZOOM),y:py*(1-ZOOM)};clampZoom()}
+  applyZoom(true)}
+function zoomOut(){if(zoom){zoom=null;applyZoom(true)}}
+(()=>{const el=$('#today'),inPic=e=>{const c=e.target.closest&&e.target.closest('#mannequin-container');return c&&!e.target.closest('button,a')?c:null};
+  el.addEventListener('touchstart',e=>{const c=inPic(e);if(!c||e.touches.length>1){zoomPan=null;return}const t=e.touches[0];
+    zoomPan={x0:t.clientX,y0:t.clientY,t:Date.now(),zx:zoom?zoom.x:0,zy:zoom?zoom.y:0,moved:false}},{passive:true});
+  el.addEventListener('touchmove',e=>{if(!zoomPan)return;const t=e.touches[0],dx=t.clientX-zoomPan.x0,dy=t.clientY-zoomPan.y0;if(Math.abs(dx)>8||Math.abs(dy)>8)zoomPan.moved=true;
+    if(!zoom)return;e.preventDefault();zoom.x=zoomPan.zx+dx;zoom.y=zoomPan.zy+dy;clampZoom();applyZoom(false)},{passive:false});
+  el.addEventListener('touchend',e=>{const p=zoomPan;zoomPan=null;if(!p||p.moved||Date.now()-p.t>300){lastTap=null;return}const t=e.changedTouches[0],now=Date.now();
+    if(lastTap&&now-lastTap.t<320&&Math.hypot(t.clientX-lastTap.x,t.clientY-lastTap.y)<40){lastTap=null;zoomTouchAt=now;e.preventDefault();toggleZoom(t.clientX,t.clientY)}
+    else lastTap={t:now,x:t.clientX,y:t.clientY}},{passive:false});
+  el.addEventListener('dblclick',e=>{if(!inPic(e)||Date.now()-zoomTouchAt<700)return;e.preventDefault();toggleZoom(e.clientX,e.clientY)});
+})();
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed */
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed.
    from: where the new day's outfit slides in from (px, sign = side); 0 = no animation */
 function stepDay(n,from){
   const d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate());
   let g=0;do d.setDate(d.getDate()+n);while(!isWorkday(d)&&++g<7);
-  sel=d;view={y:d.getFullYear(),m:d.getMonth()};renderToday();
+  foldAll();sel=d;view={y:d.getFullYear(),m:d.getMonth()};renderToday();
   const sl=$('#slide');if(!sl)return;
   const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x)return;
   sl.style.transition='none';sl.style.transform=`translateX(${x}px)`;sl.style.opacity='0';
@@ -1003,11 +1053,12 @@ function stepDay(n,from){
     const t=e.touches[0];
     // ignore multi-touch and touches that start at the screen edge (iOS back/forward gesture)
     // the gesture can start anywhere on Today (e.g. a Saturday shows only a one-line message); only the outfit moves
-    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0};
+    // nor while the picture is zoomed: then a drag on it pans the picture
+    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24||(zoom&&e.target.closest('#mannequin-container'))?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0};
   },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
-    if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8))st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';
+    if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8)){st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';if(st.lock==='x')foldAll()}
     if(st.lock!=='x')return;
     e.preventDefault(); // horizontal drag is ours: no page pan, no zoom bounce
     st.dx=dx;const sl=slide();if(sl){sl.style.transition='none';sl.style.transform=`translateX(${dx}px)`;sl.style.opacity=String(1-Math.min(.5,Math.abs(dx)/innerWidth))}
@@ -1103,7 +1154,7 @@ function renderAdd(){
   const workerSet = !!localStorage.getItem('worker_url');
   if($('#note')) $('#note').textContent = !workerSet ? 'Worker URL not set! Tap ⚙ in the top right to configure your Cloudflare Worker.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
   const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
-  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card">${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
+  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
 <div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`

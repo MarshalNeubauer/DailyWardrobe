@@ -63,6 +63,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the planner picks only items in rotation (`by()` in `planSim` filters `inRotation`; belt/coat notes in `rateOutfit` too); frozen past days look their pieces up in the full wardrobe (`frozenOutfit`), so a paused item stays in outfits already worn; the what-to-buy analysis runs the same planner
 - `planSim` keeps on-the-way items with a date in `by()` and gives `outfit()` a per-day pool (`byOn(n)`), so an item joins the plan the day after it arrives
 
+- working on it: every POST to the worker's AI endpoints (`/` tagging, `/tag-many`, `/pattern`, `/render` and item pictures, not `mode:'queue'`) is caught by a `fetch` hook (`busyLabelFor`) that shows `#busy`, a spinning pill above the tab bar, with what is running (`busyStart`/`renderBusy`); photos waiting in the background queue show there too; `.spin` is the ring, also in "Generating photo…", the Add card's busy state and "Claude is reading the pattern…"
+- a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`), a prompt line (`shirtTexText`) and a drawing of its texture with 2.5× contrast (`fabricDef(…,'dia')`) after its close-up
+
 ### `tagging.js`
 
 - photo tagging on the app side (loaded after app.js): `tagExtras()` adds to every tag request the owner's colours/patterns (`settings.custom`), the latest 20 corrections (`settings.tagFixes`, an item never gets its own), and on a second tag the close-up and the measurement
@@ -153,6 +156,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
   - no piece card under the score (removed)
   - a below-the-waist tile under the figure unfolds that item's photo in `#bbox` below the tiles (`pickPiece`/`belowOpen`; tapping the tile again or the photo folds it), the pieces list folded into `#ibox` (each piece unfolds into its photo, `toggleRow`) and the month plan into `#mbox`, both unfolding in place
   - `goToday()` from the date-bar pill and the Today tab
+  - double-tap the picture (photo or drawing) to zoom 2.5x on the tapped spot, again to zoom out (`toggleZoom`/`applyZoom`, `zoom` state, kept across redraws of the same day); a drag pans while zoomed and doesn't change the day; `#mannequin-container` has `touch-action:manipulation` and clips the zoomed picture
+  - a sideways swipe folds every open box (score, list and rows, below-the-waist photo, month) as soon as the drag locks sideways, and zooms out (`foldAll`, also from `stepDay`)
   - ⇄ beside a piece opens the picker sheet (`openPicker`/`pickItem`: every item for the slot, best match first by `fitOf`; "Suggest another" is the old cycling `swapSlot`)
   - changes teach the planner (`learnFrom`: a swap votes a pairing down, a hand pick votes it up)
   - a past day can be corrected to what was really worn (`togglePastEdit`/`correctPast`: the record gets `edited`, `worn:true` and the real ids)
