@@ -72,7 +72,7 @@ const groupName=g=>GROUP_NAMES[g]||colName(g).replace(/^./,c=>c.toUpperCase());
 const groupCol=g=>COLORS[({red:'burgundy',yellow:'paleyellow',beige:'beige',purple:'purple',green:'green'})[g]||g]||'#8b8f96';
 function renderStats(){
   const el=$('#stats');if(!el)return;
-  if(!items.length){el.innerHTML=`<div class="nav"><button onclick="show('today')" aria-label="Back to Today">‹</button><h2>Wardrobe stats</h2><span></span></div><p class="mut empty">Your wardrobe is empty. Add some items first.</p>`;return}
+  if(!items.length){el.innerHTML=`<div class="phead nav"><button class="pback" onclick="show('today')" aria-label="Back to Today">‹</button><h2>Wardrobe stats</h2></div><p class="mut empty">Your wardrobe is empty. Add some items first.</p>`;return}
   const S=buildStats(),nPlan=S.plan.length,bar=(n,max,cls='')=>`<span class="st-bar ${cls}"><i style="width:${max?Math.max(2,Math.round(100*n/max)):0}%"></i></span>`;
   const tile=(v,l)=>`<div class="st-tile"><b>${v}</b><small>${l}</small></div>`;
   const first=S.worn.length?S.worn[0].d:null;
@@ -89,7 +89,7 @@ function renderStats(){
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
   const L=settings.learn||{},lp=Object.entries(L.p||{}),li=Object.entries(L.i||{}),byId=id=>items.find(i=>i.id===id);
   const learned=[...lp.map(([k,v])=>{const [a,b]=k.split('|').map(byId);return a&&b?{k,kind:'p',v,txt:`${nm(a)} with ${nm(b)}`}:null}),...li.map(([k,v])=>{const a=byId(k);return a?{k,kind:'i',v,txt:nm(a)}:null})].filter(Boolean).sort((a,b)=>a.v-b.v);
-  el.innerHTML=`<div class="nav"><button onclick="show('today')" aria-label="Back to Today">‹</button><h2>Wardrobe stats</h2><span></span></div>
+  el.innerHTML=`<div class="phead nav"><button class="pback" onclick="show('today')" aria-label="Back to Today">‹</button><h2>Wardrobe stats</h2></div>
   <div class="st-tiles">${tile(items.length,'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${tile(nPlan,`outfits planned, next ${STATS_MONTHS} months`)}${tile(S.looks,'different looks planned')}${tile(nPlan?S.avg:'–','average outfit score')}${tile(S.unused.length,'items never worn')}</div>
 
   <section class="card st-card" id="st-unused"><h3>Never worn</h3>
