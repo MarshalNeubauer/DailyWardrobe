@@ -404,7 +404,7 @@ return {plan,upTo(end){
 for(;d<=end;d.setDate(d.getDate()+1)){const w=d.getDay();if(!isWorkday(d))continue;   // weekends, public holidays and days off
   const k=key(d),rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);if(plan[k].top){prev=[sumUp(plan[k]),prev[0]];remember(plan[k])}continue}   // (a day without a jacket leaves the jacket history alone)
-  const occ=occOf(rec),formal=occ==='formal',o=outfit(!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top){prev=[sumUp(o),prev[0]];remember(o)}}
+  const occ=occOf(rec),formal=occ==='formal',o=outfit(rec&&rec.kind?rec.kind==='suit':!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;plan[k]=o;if(o.top){prev=[sumUp(o),prev[0]];remember(o)}}
 return plan}}}
 /* every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
    share (the plan depends on what came before: rest and the previous workdays' jacket colours) */
