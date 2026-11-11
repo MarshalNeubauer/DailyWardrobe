@@ -21,11 +21,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const ia={},A=asmCompose(master,z,{jacket:X.jacket,shirt:X.black,tie:X.tie,bar:X.bar},ia),La=asmLab(A);
       let moved=0,watchKept=1;for(let i=0;i<N;i++){if(!ia.lab[i]&&!ia.seam[i]&&(A.data[4*i]!==master.data[4*i]||A.data[4*i+1]!==master.data[4*i+1]||A.data[4*i+2]!==master.data[4*i+2]))moved++;if(z.watch[i]&&ia.lab[i])watchKept=0}
       // the jacket's edge ring: just outside its zone, from the jacket's photo, never on another piece, and only where the master shows its own jacket's colour (never skin)
-      const near=asmBox(z.jacket,W,ASM_EDGE,true);let ringN=0,ringOk=1,ringSeam=0;for(let i=0;i<N;i++)if(ia.lab[i]===7){ringN++;const x=i%W;
+      const near=asmBox(z.jacket,W,ASM_EDGE,true),tieNear=asmBox(z.tie,W,ASM_HALO,true);let ringN=0,ringOk=1,ringSeam=0;for(let i=0;i<N;i++)if(ia.lab[i]===7){ringN++;const x=i%W;
         if(!near[i]||z.jacket[i]||z.shirt[i]||z.tie[i]||z.watch[i])ringOk=0;
         const out=[x?i-1:-1,x<W-1?i+1:-1,i-W,i+W].filter(j=>j>=0&&j<N),lone=out.every(j=>ia.lab[j]===7||ia.lab[j]===0||ia.lab[j]===1);
         if(Lm[3*i+1]>13&&Lm[3*i+2]>16&&Lm[3*i]>55)ringSeam++;   // a clear skin pixel of the master (reddish, yellowish, light)
-        if(lone&&!ia.seam[i]){if(A.data[4*i]!==X.jacket.data[4*i]||A.data[4*i+1]!==X.jacket.data[4*i+1]||A.data[4*i+2]!==X.jacket.data[4*i+2])ringOk=0}}
+        if(lone&&!ia.seam[i]&&!tieNear[i]){if(A.data[4*i]!==X.jacket.data[4*i]||A.data[4*i+1]!==X.jacket.data[4*i+1]||A.data[4*i+2]!==X.jacket.data[4*i+2])ringOk=0}}
       // the halo: beside the new tie, on the black shirt, nothing of the master's green tie is left
       const hb=asmBox(ia.tie,W,ASM_HALO,true);let haloN=0,haloGreen=0;for(let i=0;i<N;i++)if(hb[i]&&!ia.tie[i]&&z.shirt[i]){haloN++;if(La[3*i+1]<-8)haloGreen++}
       const core=asmBox(z.tie,W,3,false),wide=asmBox(z.tie,W,3,true);let inCore=1,inWide=1;for(let i=0;i<N;i++){if(core[i]&&!ia.tie[i])inCore=0;if(ia.tie[i]&&!wide[i])inWide=0}
@@ -53,7 +53,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const old={v:1,...asmPackZones({W:2,jacket:new Uint8Array(4),shirt:new Uint8Array(4),tie:new Uint8Array(4),watch:new Uint8Array(4)})};delete old.v;await metaPut('asm:zones:'+asmMasterKey(),old);const stale=await asmZonesKept();await metaPut('asm:zones:'+asmMasterKey(),null);
       return {top,inner:s[5*W+20]===1&&s[11*W+20]===0&&s[0*W+20]===1,stale,v:ASM_ZV}});
     ok(ed.top===1&&ed.inner,'a zone that reaches the picture\'s edge keeps its outermost rows when its gaps are closed (they were cut, and the master\'s white collar showed as a line along the top of a dark shirt)');
-    ok(ed.stale===false&&ed.v===3,'zones kept from before that fix are not used: they are worked out again');
+    ok(ed.stale===false&&ed.v===4,'zones kept from before that fix are not used: they are worked out again');
     ok(!r.noneOk,'calibration photos that changed nothing give zones that are refused');
     ok(r.a.moved===0&&r.a.watchKept===1,`outside the pieces the picture is the master, pixel for pixel, and the owner's watch stays the master's own (${r.a.moved} pixels differ)`);
     ok(r.a.ringN>300&&r.a.ringOk===1&&r.a.ringSeam<r.a.ringN/100,`the jacket's own edge comes from its photo: ${r.a.ringN} pixels just outside its zone where the master shows a leftover of its own jacket, none on another piece and next to none on the hands (${r.a.ringSeam} skin pixels; the master's dark edge left there read as an outline)`);

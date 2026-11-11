@@ -8,10 +8,10 @@
 // Order: master, then the jacket, shirt, tie, tie bar and watch; pixels along the joins are rebuilt from clean pixels either side.
 // Today shows the assembled picture once the master, the zones and the outfit's pieces are on the device (asmFor / asmEnsure);
 // an outfit it can't do (no jacket, no tie, a vest), or with a piece still missing, keeps its own photo.
-const ASM_VER=2,ASM_DE=14,ASM_EDGE=3,ASM_EDGE_DE=28,ASM_EDGE_C=10,ASM_HALO=4;
+const ASM_VER=2,ASM_DE=14,ASM_EDGE=3,ASM_EDGE_DE=28,ASM_EDGE_C=10,ASM_HALO=4,ASM_TINT=5;
 /* ASM_ZV: how zones are worked out. Zones and assembled pictures kept on a device carry it, so they are made again when it changes
-   (2: a zone reaches the picture's edge; 3: no halo of the master's tie) */
-const ASM_ZV=3;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+   (2: a zone reaches the picture's edge; 3, 4: no halo of the master's tie) */
+const ASM_ZV=4;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
 /* ASM_VER 2: the masters the owner approved, made from the redrawn figure (close framing, the lower hand at the waist button, the
    watch turned as worn, a blurred light office): his dark grey herringbone suit, a white shirt, a burgundy tie and his watch, and
    the same photo with the suit's waistcoat. Version 1's master (zoomed out, the lower hand too low) was rejected; every key
@@ -152,13 +152,23 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
     // where the master's tie shows and the new one doesn't (a narrower tie; its tip below a waistcoat), the master's green would be
     // left: each such pixel takes what is beside it in the picture so far (the outfit's shirt, the waistcoat, the lapel)
     // The same goes for the master tie's soft edge, which lies just OUTSIDE its zone: every other piece's photo shows the master's
-    // tie, so the ASM_HALO pixels round the zone carry a little of its colour (a red halo round a navy tie on a black shirt). Those
-    // on another piece, or in the crack between the tie's zone and one, are filled the same way, from beyond that band
-    // (never the hands or the wall: what belongs to no piece and is more than a crack between two)
+    // tie, so pixels within ASM_HALO of the zone carry a little of its colour (a red halo round a navy tie on a black shirt). A
+    // pixel there is TINTED when its colour leans from its own piece's toward the master tie's by more than ASM_TINT; tinted pixels,
+    // the zone's leftovers and the cracks between the tie's zone and another take the nearest clean pixel of their own piece, in
+    // any direction. (Filling the whole band from the side put lapel grey into the slivers of shirt beside the tie: two bumps.)
+    // Never the hands or the wall: what belongs to no piece and is more than a crack between two.
     const halo=asmBox(z.tie,W,ASM_HALO,true),free=new Uint8Array(N);for(let i=0;i<N;i++)if(!(z.shirt[i]||z.jacket[i]||z.tie[i]||z.watch[i]||(V0&&V0[i])))free[i]=1;
-    const open=asmBox(asmBox(free,W,3,false),W,4,true),hand=i=>free[i]&&open[i];
-    for(let i=0;i<N;i++)if(!tieM[i]&&!(V&&V[i])&&!z.watch[i]&&(z.tie[i]||(halo[i]&&!hand(i)))){const x=i%W;let j=-1;for(let k=1;k<48&&j<0;k++){if(x-k>=0&&!halo[i-k]&&!z.watch[i-k]&&!hand(i-k))j=i-k;else if(x+k<W&&!halo[i+k]&&!z.watch[i+k]&&!hand(i+k))j=i+k}
-      if(j>=0){o[4*i]=o[4*j];o[4*i+1]=o[4*j+1];o[4*i+2]=o[4*j+2];lab[i]=lab[j]&&lab[j]!==7?lab[j]:6}}
+    const open=asmBox(asmBox(free,W,3,false),W,4,true),hand=i=>free[i]&&open[i],zid=i=>z.tie[i]?0:z.shirt[i]?2:(z.jacket[i]||(V0&&V0[i])||lab[i]===7)?1:0;
+    const src=new Uint8ClampedArray(o),Lo=asmLab(new ImageData(src,W,W)),Lt=asmLab(master),mean=[null,[0,0,0],[0,0,0]],g=[0,0,0];
+    for(let i=0;i<N;i++){if(z.tie[i]){g[0]+=Lt[3*i+1];g[1]+=Lt[3*i+2];g[2]++}else if(!halo[i]){const k=zid(i);if(k){mean[k][0]+=Lo[3*i+1];mean[k][1]+=Lo[3*i+2];mean[k][2]++}}}
+    const dir=[null,null,null];for(const k of [1,2]){const m=mean[k];if(!m[2]||!g[2])continue;const dx=g[0]/g[2]-m[0]/m[2],dy=g[1]/g[2]-m[1]/m[2],len=Math.hypot(dx,dy);if(len>=12)dir[k]=[m[0]/m[2],m[1]/m[2],dx/len,dy/len]}   // a tie near the cloth's own colour leaves no halo to see
+    const tinted=i=>{const d=dir[zid(i)];return !!d&&(Lo[3*i+1]-d[0])*d[2]+(Lo[3*i+2]-d[1])*d[3]>ASM_TINT};
+    const need=new Uint8Array(N);for(let i=0;i<N;i++)if(!tieM[i]&&!(V&&V[i])&&!z.watch[i]&&(z.tie[i]||(halo[i]&&!hand(i)&&(zid(i)?tinted(i):true))))need[i]=1;
+    const R=14;for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!need[i])continue;const want=zid(i);let j=-1,best=1e9;
+      for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const d=dx*dx+dy*dy;if(d>=best)continue;const q=yy*W+xx,k=zid(q);
+        if(k&&(!want||k===want)&&!need[q]&&!tieM[q]&&!z.watch[q]&&!(V&&V[q])){best=d;j=q}}}
+      if(j<0&&z.tie[i])for(let k=1;k<48&&j<0;k++){if(x-k>=0&&!z.tie[i-k]&&!z.watch[i-k])j=i-k;else if(x+k<W&&!z.tie[i+k]&&!z.watch[i+k])j=i+k}   // the master's tie must not stay
+      if(j>=0){o[4*i]=src[4*j];o[4*i+1]=src[4*j+1];o[4*i+2]=src[4*j+2];if(z.tie[i]||!lab[i])lab[i]=lab[j]&&lab[j]!==7?lab[j]:6}}
     copy(P.tie.data,tieM,3)}
   let barM=null;if(P.bar&&!V){barM=asmBarMask(master,z,P.bar,tieM);if(barM)copy(P.bar.data,barM,4)}
   let w=null;if(P.watch){w=asmWatch(master,z,P.watch,P.shirt);copy(w.src,w.mask,5)}
