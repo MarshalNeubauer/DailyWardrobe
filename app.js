@@ -122,6 +122,18 @@ function renderBusy(){let el=document.getElementById('busy');if(!el){if(!documen
   if(bg)live.push(`Making ${bg} photo${bg===1?'':'s'} in the background…`);
   document.body.classList.toggle('busy-on',!!live.length);if(!live.length){el.classList.remove('on');return}
   el.innerHTML=`<span class="spin" aria-hidden="true"></span><span>${esc(live[live.length-1])}${live.length>1?` <small>+${live.length-1}</small>`:''}</span>`;el.classList.add('on')}
+/* the tab bar grows upward until its top is one design gap (--gap, 12px) below Today's below-the-waist tiles, so nothing peeks out
+   between them (the score card's top used to); at most 64px, and never shorter than its 38px buttons. Measured with the page at the
+   top, from where the tiles end and where the bar's natural top is; kept while on other pages. */
+const NAV_MAX=64;
+function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),nav=document.querySelector('body>nav');if(!b||!nav)return;
+  const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12,cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx'))||0;
+  const cs=getComputedStyle(nav),natural=innerHeight-38-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
+  const tiles=b.getBoundingClientRect().bottom+scrollY;
+  const x=Math.max(0,Math.min(NAV_MAX,Math.round(natural-(tiles+gap))));if(Math.abs(x-cur)>=1)document.documentElement.style.setProperty('--navx',x+'px')}
+let fitNavRaf=0;const fitNavSoon=()=>{cancelAnimationFrame(fitNavRaf);fitNavRaf=requestAnimationFrame(fitNav)};
+if(typeof ResizeObserver!=='undefined')addEventListener('DOMContentLoaded',()=>{const t=document.querySelector('#today');if(t)new ResizeObserver(fitNavSoon).observe(t)});
+addEventListener('resize',fitNavSoon);
 /* run once every script has loaded: the start-up chain can resolve before tagging.js (loaded after app.js) has run */
 const afterScripts=f=>document.readyState==='complete'?f():addEventListener('load',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by Workers AI (${q.model.replace(/^@cf\//,'')}).`;
@@ -1097,7 +1109,7 @@ function renderToday(){
   else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
-  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink():''}</div></div>`;applyZoom(false);
+  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink():''}</div></div>`;applyZoom(false);fitNavSoon();
   if(items.length){recordDays(p);
   }
 }

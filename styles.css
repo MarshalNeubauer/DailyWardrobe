@@ -6,7 +6,7 @@
 .hbtns{display:flex;gap:4px;align-items:center}
 *{box-sizing:border-box}
 /* the bottom tab bar: compact buttons, and it reaches into the home-indicator zone (only 16px of the inset kept clear below it) */
-:root{--navpad:max(0px, calc(env(safe-area-inset-bottom) - 18px));--navh:calc(38px + var(--navpad))}
+:root{--navpad:max(0px, calc(env(safe-area-inset-bottom) - 18px));--navx:0px;--navh:calc(38px + var(--navx) + var(--navpad))}   /* --navx: the tab bar grown to meet Today's tiles (fitNav in app.js) */
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(var(--navh) + 12px)}
 header{display:flex;justify-content:space-between;align-items:center;padding:calc(6px + env(safe-area-inset-top)) 12px 6px 16px;background:#101820 repeating-linear-gradient(90deg,transparent 0 11px,#ffffff14 11px 12px);color:#f2f0e8}
 h1,h2{margin:0;font-weight:700;letter-spacing:-.01em}h1{font-size:21px}h2{font-size:19px}
@@ -19,7 +19,7 @@ header button{background:none;border:0;color:inherit;font-size:22px;line-height:
 .pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn{display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid var(--line);cursor:pointer;margin:10px 0}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--navpad);z-index:900}
-nav button{flex:1;border:0;border-radius:0;background:none;padding:0;height:38px;font-size:15px;line-height:38px;font-weight:600;color:var(--mut)}
+nav button{flex:1;border:0;border-radius:0;background:none;padding:0;height:calc(38px + var(--navx));transition:height .2s ease;font-size:15px;line-height:calc(38px + var(--navx));font-weight:600;color:var(--mut)}
 nav button.on{color:var(--ink);box-shadow:inset 0 3px var(--acc)}
 .list{background:var(--card);border-radius:14px;padding:6px 14px;margin:8px 0 20px}
 .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
