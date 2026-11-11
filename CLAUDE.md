@@ -15,9 +15,13 @@
   1. merge `origin/main` into the branch and resolve any conflicts;
   2. if `main` changed `CACHE` in `sw.js` or `PLAN_RULES` in planner.js, and this branch bumps it too, bump it again to one above `main`'s value (two sessions bumping to the same number is a single bump, so phones would miss the second change);
   3. re-run `npm test` on the merged result, push, and only then merge. If tests fail after the merge, apply the "Don't merge" rule.
-- **No GitHub test run.** GitHub doesn't run the tests on pull requests (the user dropped it to save the wait). Your own full `npm test` on the final branch is the only gate: merge right after it passes, without waiting on GitHub checks or subscribing to the PR.
+- **No GitHub test run.** GitHub doesn't run the tests on pull requests (the user dropped it to save the wait). Your own `npm test` on the final branch is the only gate: merge right after it passes, without waiting on GitHub checks or subscribing to the PR.
+- **`npm test` runs only the checks the change can affect** (the user's rule: never the whole suite for a small change). It compares the branch with `origin/main`, prints what changed and why each test runs, and runs nothing for a docs-only change.
+- `npm run test:all` runs every check. It is not needed before a merge; use it only when the selection looks too small for what you changed.
+- Test runs rewrite `tests/impact.map` (what each test uses). Commit it with the change: later sessions choose their tests from it.
+- A conflict in `tests/impact.map` needs no thought: `.gitattributes` merges it by keeping both sides' lines (`merge=union`).
 - Never tell the user to download a backup file before a change: the worker keeps daily backups and Settings → Roll back undoes a bad change (see `sync.js`).
-- **Run only what you need while working.** `node tests/run.js <name>` (or `TEST_ONLY=<name>`) runs just the `tests/*.test.js` files whose name contains `<name>`. Run the full suite (`npm test`, about 2 min) once before pushing, and once more only if `main` had to be merged in.
+- **Run only what you need while working.** `node tests/run.js <name>` (or `TEST_ONLY=<name>`) runs just the `tests/*.test.js` files whose name contains `<name>`. Run `npm test` once before pushing, and once more only if `main` had to be merged in.
 - **CLAUDE.md: one fact per line.** Add a new bullet under the file's heading instead of extending an existing one, so sessions working in parallel don't edit the same line and conflict.
 
 ## Project
@@ -343,9 +347,19 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 
 ## Testing
 
-`npm test` (or `node tests/run.js`) serves the repo, drives it in headless Chromium and checks rendering, swipe/layout on phone and iPhone Duo viewports, the planner against an independent rule checklist, belts/leather/metals, the outfit score, photo-less adding, pattern detection, and `worker.js` with mocked bindings. Add a check for every behaviour you change; extra suites can go in `tests/*.test.js`.
+`npm run test:all` (or `node tests/run.js`) serves the repo, drives it in headless Chromium and checks rendering, swipe/layout on phone and iPhone Duo viewports, the planner against an independent rule checklist, belts/leather/metals, the outfit score, photo-less adding, pattern detection, and `worker.js` with mocked bindings. Add a check for every behaviour you change; extra suites can go in `tests/*.test.js`.
 
 - After a tap, tests wait with `settle(page, ms)` (passed to every test file) instead of a fixed `waitForTimeout`: it returns once no animation runs and the scroll is still, waiting up to 2×`ms` (`DEBUG_SETTLE=1` logs each wait)
 - `tests/run.js` gives every `tests/*.test.js` file one shared Chromium (a file's `chromium.launch()`/`close()` open and close only its own contexts) and prints the slowest files at the end.
+- test selection (`tests/impact.js`; `npm test` = `node tests/run.js --changed`, `--changed --list` only says what would run): while a test runs, the runner records in `tests/impact.map` every top-level function it runs (the app's scripts in the page over CDP coverage, `worker.js` in Node), every `styles.css` rule that applied to an element, the files its pages were served (`<loaded>`) and the files it read itself or ran in a Web Worker (`<any>`)
+- for a change, `git diff` against `origin/main` (committed, uncommitted and new files) is turned into the edited top-level functions and CSS rules (`jsImpact`, `cssImpact`); a test runs when it uses one of them, reads the file, was edited itself or is not in the map yet; comments and spacing select nothing
+- a changed top-level constant is followed by name to the functions and constants that name it, in the scripts that share its scope (`follow`), and to the test files that name it
+- what can't be narrowed selects every test that loads the file: other top-level code, `index.html`, a new selector made of existing classes, an `@media` condition, `@keyframes`, a script V8 can't parse
+- `tests/run.js`, `tests/impact.js` and `package.json` select everything; so does a missing map or a missing `origin/main`
+- a change to a file the browser gets also runs the built-in suite "renders the outfit without errors" (the app still starts); `sw.js` is otherwise covered only by `tests/sw.test.js`, since service-worker code isn't recorded
+- the map adds up: what a test used is added to what it used before (timers make two runs differ slightly), names and tests that no longer exist are dropped (`save`)
+- Chromium answers no coverage request while a page load is pending and drops the old document's coverage, so the recorder reads it just before `goto`/`reload` and before a page or context closes (`recorder`); a test that navigates another way would lose what it ran before
+- `npm test` fetches `origin/main` before comparing (`baseOf`): a cloud session's own copy of it can be months old with its history cut short, and then no common commit is found and everything would run
+- `NO_IMPACT=1` turns the recording off; `TEST_BASE=<commit>` compares with another commit; `tests/impact.test.js` checks the selection
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.

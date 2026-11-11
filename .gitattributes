@@ -1,0 +1,2 @@
+# what each test uses, rewritten by test runs: when two branches both changed it, keep both sides' lines (tests/impact.js adds them up)
+tests/impact.map merge=union linguist-generated

@@ -1,11 +1,17 @@
 // Daily Wardrobe test suite. Run: node tests/run.js   (needs Playwright + Chromium)
+//   node tests/run.js             every check
+//   node tests/run.js --changed   only the checks the change since origin/main can affect (`npm test`; see tests/impact.js)
+//   node tests/run.js --changed --list   say which those are, and run nothing
+//   node tests/run.js <name>      the tests/*.test.js files whose name contains <name> (or TEST_ONLY=<name>)
 // Serves the repo over HTTP, drives the app in headless Chromium and checks rendering, gestures, layout,
 // the outfit rules (with an independent checklist), pattern detection and the Cloudflare worker.
-const http=require('http'),fs=require('fs'),path=require('path'),{chromium,devices}=require('playwright');
-const ROOT=path.resolve(__dirname,'..');
+const http=require('http'),fs=require('fs'),path=require('path'),{chromium,devices}=require('playwright'),impact=require('./impact');
+const ROOT=path.resolve(__dirname,'..'),readFile=fs.readFile;
+let rec=null;   // records what each test uses (tests/impact.js); NO_IMPACT=1 turns it off
 const TYPES={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml'};
 const server=http.createServer((q,r)=>{let f=path.join(ROOT,decodeURIComponent(q.url.split('?')[0]));if(f.endsWith('/'))f+='index.html';
-  fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}r.writeHead(200,{'content-type':TYPES[path.extname(f)]||'application/octet-stream'});r.end(d)})});
+  readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}if(rec)rec.served(path.relative(ROOT,f).split(path.sep).join('/'));
+    r.writeHead(200,{'content-type':TYPES[path.extname(f)]||'application/octet-stream'});r.end(d)})});
 
 let failures=0,passes=0;
 const ok=(cond,msg)=>{if(cond){passes++;console.log('  ✓ '+msg)}else{failures++;console.log('  ✗ '+msg)}};
@@ -184,8 +190,9 @@ suite('pattern detection on synthetic fabric photos',async({page})=>{
 });
 
 /* worker.js in Node with a mocked Workers AI binding */
+const WORKER='Cloudflare worker (mocked bindings)';
 async function workerTests(){
-  console.log('\n• Cloudflare worker (mocked bindings)');
+  console.log('\n• '+WORKER);
   const mod=await import(require('url').pathToFileURL(path.join(ROOT,'worker.js')).href);const w=mod.default;
   let agreed=false;const AI={run:async(m,inp)=>{if(inp.prompt==='agree'){agreed=true;return{response:'ok'}}if(!agreed)throw new Error('5016: agree first');return{response:'{"type":"tie","primaryColor":"navy","pattern":"stripe"}'}}};
   const env={AI,APP_TOKEN:'t',ALLOWED_ORIGIN:'https://x.github.io'};
@@ -198,37 +205,54 @@ async function workerTests(){
 
 (async()=>{
   await new Promise(r=>server.listen(0,r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
-  const browser=await chromium.launch();
-  // `node tests/run.js name` (or TEST_ONLY=name) runs just the tests/*.test.js files whose name contains it
-  const ONLY=process.env.TEST_ONLY||process.argv[2];
+  const args=process.argv.slice(2),flag=f=>args.includes(f),ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
+  const files=fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')).sort();
+  // every test has a name: a built-in suite is 'run.js: <its title>', a file its file name
+  const all=[...suites.map(([n])=>'run.js: '+n),'run.js: '+WORKER,...files];
+  let want=null;   // null: everything
+  if(ONLY)want=new Set(files.filter(f=>f.includes(ONLY)));
+  else if(flag('--changed')){const s=await impact.select(ROOT,all);console.log(s.report);if(!s.all)want=new Set(s.tests)}
+  if(flag('--list')){server.close();return}
+  const run=k=>!want||want.has(k),results=new Map();
+  if(!process.env.NO_IMPACT){rec=impact.recorder(ROOT);await rec.prepare()}
+  // around each test: note what it uses
+  const around=async(key,self,fn)=>{if(rec)await rec.begin(key,self);try{await fn()}finally{if(rec)results.set(key,await rec.end().catch(()=>({m:new Map(),bad:true})))}};
   const times=[],T0=Date.now();
-  for(const [name,fn] of ONLY?[]:suites){
-    console.log('\n• '+name);
-    const ctx=await browser.newContext({...devices['iPhone 13']});const page=await ctx.newPage();const errs=[];
-    page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-    await page.goto(url);await page.waitForFunction(()=>window.appReady);
-    try{await fn({page,ctx,browser,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
-    if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
-    await ctx.close();
-  }
-  await browser.close();times.push(['run.js built-in suites',Date.now()-T0]);
-  if(!ONLY)try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}
+  if(suites.some(([n])=>run('run.js: '+n))){const browser=await chromium.launch();
+    for(const [name,fn] of suites){if(!run('run.js: '+name))continue;
+      console.log('\n• '+name);
+      await around('run.js: '+name,null,async()=>{
+        const ctx=await browser.newContext({...devices['iPhone 13']});if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
+        page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+        await page.goto(url);await page.waitForFunction(()=>window.appReady);
+        // a suite's own contexts are recorded too
+        const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext(o);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
+        try{await fn({page,ctx,browser:b,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+        if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
+        await ctx.close()});
+    }
+    await browser.close();times.push(['run.js built-in suites',Date.now()-T0])}
+  if(run('run.js: '+WORKER))await around('run.js: '+WORKER,null,async()=>{try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}});
   // extra suites contributed by other files (tests/*.test.js)
   // one Chromium for every file: a file's chromium.launch() gets a view of it whose close() closes only the contexts that
   // file opened (launching a browser per file cost about half a second each)
-  const shared=await chromium.launch();
-  const sharedChromium=()=>{const mine=new Set(),track=async c=>{c=await c;mine.add(c);return c};
+  const mine=files.filter(run);
+  const shared=mine.length?await chromium.launch():null;
+  const sharedChromium=()=>{const mine=new Set(),track=async c=>{c=await c;if(rec)rec.context(c);mine.add(c);return c};
     const b=new Proxy(shared,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
       :k==='newContext'?o=>track(t.newContext(o)):k==='newPage'?async o=>{const c=await track(t.newContext(o));return c.newPage()}
       :typeof t[k]==='function'?t[k].bind(t):t[k]});
     return new Proxy(chromium,{get:(t,k)=>k==='launch'?async()=>b:t[k]})};
-  for(const f of fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')&&(!ONLY||f.includes(ONLY))).sort()){
-    console.log('\n• '+f);const t0=Date.now(),chr=sharedChromium();try{await require(path.join(__dirname,f))({ok,url,chromium:chr,devices,WARDROBES,ROOT,settle})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
-    finally{const b=await chr.launch();await b.close()}
+  for(const f of mine){
+    console.log('\n• '+f);const t0=Date.now(),chr=sharedChromium();
+    await around(f,'tests/'+f,async()=>{try{await require(path.join(__dirname,f))({ok,url,chromium:chr,devices,WARDROBES,ROOT,settle,impactRec:rec})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+      finally{const b=await chr.launch();await b.close()}});
     times.push([f,Date.now()-t0]);
   }
-  await shared.close();server.close();
+  if(shared)await shared.close();server.close();
+  // what each test used is added to tests/impact.map
+  if(rec&&results.size)try{await impact.save(ROOT,results,all)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
   // the slowest files, so the suite can be kept quick
-  console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${f} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`);
-  console.log(`\n${passes} passed, ${failures} failed`);process.exit(failures?1:0);
+  if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${f} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`);
+  console.log(`\n${passes} passed, ${failures} failed`+(want?` (${results.size||mine.length} of ${all.length} test files and built-in suites)`:''));process.exit(failures?1:0);
 })();

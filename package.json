@@ -3,7 +3,8 @@
   "private": true,
   "description": "Daily Wardrobe: static web app (GitHub Pages) + Cloudflare worker",
   "scripts": {
-    "test": "node tests/run.js"
+    "test": "node tests/run.js --changed",
+    "test:all": "node tests/run.js"
   },
   "devDependencies": {
     "playwright": "1.63.0"
