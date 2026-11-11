@@ -82,7 +82,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await new Promise(r=>setTimeout(r,1200));return {n:settings.holidays.list.length,skip:settings.holidays.skip.join(),fresh:Date.now()-settings.holidays.fetched<60000}});
     ok(again.n===4&&again.skip==='2027-02-25'&&again.fresh,'the holiday list refreshes after a month and keeps the days you unticked');
     // choosing "No public holidays" turns them off
-    await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!settings.holidays);
+    await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!settings.holidays&&!document.querySelector('#holiday-list .hrow'),null,{timeout:5000}).catch(()=>{});   // the list is redrawn after the setting clears
     ok(await p.evaluate(()=>isWorkday(new Date(2027,1,25))&&document.querySelectorAll('#holiday-list .hrow').length===0),'"No public holidays" makes them workdays again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

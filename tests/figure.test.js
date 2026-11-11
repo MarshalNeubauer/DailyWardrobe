@@ -41,7 +41,7 @@ module.exports=async({ok,chromium,url,settle})=>{
   const bo=await p.evaluate(()=>{const b=$('#bbox'),o=planFor()[key(sel)],t=[...document.querySelectorAll('.below .tile')];
     return {open:b.classList.contains('open'),h:b.querySelector('.rpanel').getBoundingClientRect().height,exp:t.map(x=>x.getAttribute('aria-expanded')).join(),label:t[1].getAttribute('aria-label'),pic:!!b.querySelector('.rpic'),below:b.getBoundingClientRect().top>=document.querySelector('.below').getBoundingClientRect().bottom-1,shoes:o.shoes&&o.shoes.id,shown:belowOpen}});
   ok(bo.open&&bo.h>60&&bo.pic&&bo.below&&bo.shown==='shoes'&&bo.exp==='false,true,false'&&/Hide the photo/.test(bo.label),`tapping the shoes tile unfolds their photo below the tiles (${bo.h|0}px, ${bo.exp})`);
-  await p.click('.below .tile >> nth=0');await p.waitForTimeout(100);
+  await p.click('.below .tile >> nth=0');await p.waitForFunction(()=>belowOpen==='belt',null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>belowOpen==='belt'&&$('#bbox').classList.contains('open')&&document.querySelectorAll('.below .tile[aria-expanded="true"]').length===1),'tapping another tile switches the box to that item');
   await p.click('#bbox .rpanel-in');await settle(p,600);
   ok(await p.evaluate(()=>!$('#bbox').classList.contains('open')&&belowOpen===null&&$('#bbox .rpanel').getBoundingClientRect().height<1),'tapping the photo folds it back');

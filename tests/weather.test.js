@@ -55,12 +55,12 @@ module.exports=async({ok,chromium,url})=>{
   // ---- no location yet: a link in the date bar opens Settings at the weather section ----
   await p.evaluate(()=>{settings.location=null;closeSettings();renderToday()});
   ok((await p.textContent('.day .wx')).includes('Set your location'),'without a location the date bar offers "Set your location for weather"');
-  await p.click('.day .wx a');await p.waitForTimeout(150);
+  await p.click('.day .wx a');await p.waitForFunction(()=>document.querySelector('#sc-weather').classList.contains('open'),null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>getComputedStyle(document.querySelector('#settings-modal')).display!=='none'&&document.querySelector('#sc-weather').classList.contains('open')&&!document.querySelector('#sc-schedule').classList.contains('open')),'the link opens Settings at the weather section');
   await p.evaluate(()=>closeSettings());
   // ---- weather ----
   await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];openSettings('weather')});
-  await p.fill('#cfg-city','Austin');await p.click('text=Search');await p.waitForTimeout(150);
+  await p.fill('#cfg-city','Austin');await p.click('text=Search');
   await p.click('#city-results button');await p.waitForFunction(()=>Object.keys(weather).length>0);
   ok(wxCalls>=1,'choosing a city fetches the forecast');
   const w=await p.evaluate(()=>{closeSettings();cache={};const P=buildPlan(2026,10),g=k=>P[k];return {

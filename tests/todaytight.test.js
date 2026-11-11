@@ -1,7 +1,7 @@
 // Today, tightened: a header just tall enough for the title and buttons, a compact date bar, no "Below the waist" heading,
 // a bordered score card, and worn / not worn as ✕ and ✓ over the bottom corners of the picture (today and past days only),
 // with "Last worn …" as a pill between them when the look was worn before.
-module.exports=async({ok,chromium,url})=>{
+module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:430,height:900},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -40,7 +40,7 @@ module.exports=async({ok,chromium,url})=>{
     const before=await p.evaluate(()=>{sel=new Date(2026,10,10);renderToday();return document.querySelector('#today .day h2').textContent});
     const pt=await p.evaluate(()=>{const b=document.querySelector('.wmark.yes').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}});
     const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
-    await T('touchStart',pt.x-20,pt.y);for(let k=1;k<=6;k++)await T('touchMove',pt.x-20-40*k,pt.y+2);await T('touchEnd');await p.waitForTimeout(450);
+    await T('touchStart',pt.x-20,pt.y);for(let k=1;k<=6;k++)await T('touchMove',pt.x-20-40*k,pt.y+2);await T('touchEnd');await p.waitForFunction(b=>document.querySelector('#today .day h2').textContent!==b,before,{timeout:5000}).catch(()=>{});await settle(p,300);
     ok(await p.evaluate(b=>document.querySelector('#today .day h2').textContent!==b&&planFor()['2026-11-10'].worn===undefined,before),'a swipe starting on a mark changes the day without marking it');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();

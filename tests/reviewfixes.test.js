@@ -2,9 +2,9 @@
 // the month's outfit count a year ahead; a new day while the app stayed open; one shared simulation for every month
 // (same outfits as planning each month on its own, each day planned once); "Last worn" ignores days from before a piece
 // was in the wardrobe; the what-to-buy analysis is sent without pictures.
-module.exports=async({ok,chromium,url})=>{
+module.exports=async({ok,chromium,url,settle:settleFor})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-  const settle=()=>p.waitForTimeout(350);
+  const settle=()=>settleFor(p,350);
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{window.confirm=()=>true;let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
