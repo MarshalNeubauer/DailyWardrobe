@@ -59,6 +59,14 @@ function calibLab(c,type){const ms=items.filter(i=>primaryCol(i)===c&&i.meas&&ty
   if(use.length<2)return null;const med=j=>{const v=use.map(m=>m.lab[j]).sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};return [med(0),med(1),med(2)]}
 function nearestCols(type,lab,ref){return colsFor(type).map(c=>({c,d:Math.round(dE00(lab,calibLab(c,type)||labOf(c),ref?1:2)*10)/10})).sort((a,b)=>a.d-b.d).slice(0,3)}
 const FAR_DE=12;   // further than this from every allowed colour: offer to add a new one
+/* the measured colour disagrees with the tag: the closest listed colour is near (ΔE ≤ 8) and the tagged one is clearly further
+   (4+ ΔE more). Claude once kept "brown" on a muted, almost grey mink suit whose close-up measured deep taupe at ΔE 4 (brown 12).
+   Only a close-up or a measurement with a white reference counts: the same suit's photo alone, too dark, measured nearest black. */
+const MEAS_NEAR=8,MEAS_GAP=4;
+function measuredAlt(q){const m=q.meas;if(!m||!m.lab||!m.near||!m.near.length||!q.primaryColor||!(m.src==='closeup'||m.ref))return null;const best=m.near[0];
+  if(best.c===q.primaryColor||best.d>MEAS_NEAR||!colsFor(q.type).includes(best.c))return null;
+  const tagged=Math.round(dE00(m.lab,calibLab(q.primaryColor,q.type)||labOf(q.primaryColor),m.ref?1:2)*10)/10;
+  return tagged-best.d>=MEAS_GAP?{c:best.c,d:best.d,tagged}:null}
 /* the card's measurement: the close-up when there is one (with its own white reference if it has one, else the item photo's
    light reading), otherwise the plain-cloth box Claude pointed at in the item photo */
 function measureCard(q){
@@ -104,6 +112,7 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];
   if(ct||alts)out.push(`<p class="tagnote mut"><small>${ct}</small>${alts}</p>`);
   out.push(settNote(q,i));
   const m=q.meas;if(m&&m.near&&m.near.length){const n=m.near;out.push(`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
+  const ma=measuredAlt(q);if(ma)out.push(`<div class="offer measalt"><small>The ${m.src==='closeup'?'close-up':'photo'} measures much closer to <b>${esc(colName(ma.c))}</b> (ΔE ${ma.d}) than to ${esc(colName(q.primaryColor))} (ΔE ${ma.tagged}).</small><button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${ma.c}')">Use ${esc(colName(ma.c))}</button></div>`);
   if(FABRIC.includes(q.type)||COLS_BY[q.type]){const far=m&&m.near&&m.near.length&&m.near[0].d>FAR_DE;
     if(q.colForm)out.push(newColForm(q,i));
     else if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colours quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured colour is far from every colour for this item.'}</small><button type="button" class="chipbtn" onclick="openColForm(${i})">Add as a new colour</button></div>`)}

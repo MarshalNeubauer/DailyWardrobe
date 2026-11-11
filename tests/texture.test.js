@@ -76,7 +76,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const lab=await p.evaluate(id=>[...document.querySelectorAll(`#gi-${id} .phtools label`)].map(l=>l.textContent.trim()),tieId);
   ok(lab.includes('Add fabric close-up'),`the editor offers a close-up for a tie (${lab.join(', ')})`);
   await p.setInputFiles(`#gi-${tieId} .phtools label:nth-of-type(2) input`,await file('tt.png',130,40,50));
-  await p.waitForFunction(id=>items.find(i=>i.id===id).texture,tieId);
+  await p.waitForFunction(id=>items.find(i=>i.id===id).texture&&!!document.querySelector(`#gi-${id} .swtex`),tieId,{timeout:10000}).catch(()=>{});   // the save, then the redraw
   ok(await p.evaluate(id=>!!document.querySelector(`#gi-${id} .swtex`)&&/Remove close-up/.test(document.querySelector(`#gi-${id} .phtools`).textContent),tieId),'adding one shows it in the swatch, with Remove close-up');
   await p.evaluate(id=>undoPhoto(id),tieId);
   ok(await p.evaluate(id=>!items.find(i=>i.id===id).texture,tieId),'Undo takes the close-up back off');

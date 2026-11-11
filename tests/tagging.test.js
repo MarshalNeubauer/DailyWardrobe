@@ -66,7 +66,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(ref.meas.ref&&ref.meas.lab[2]<12&&ref.meas.lab[0]>40,`the paper corrects the warm cast and the exposure of the close-up (Lab ${ref.meas.lab})`);
     // a new colour and a new pattern
     await p.evaluate(()=>{queue[0].newColor={name:'mushroom',why:''};renderAdd()});
-    await p.click('#queue .offer .chipbtn');
+    await p.click('#queue .offer:not(.measalt) .chipbtn');
     await p.evaluate(()=>{const f=queue[0].colForm;f.base='taupe';});await p.click('#queue .newform button.pri');await p.waitForFunction(()=>queue[0].primaryColor==='ownmushroom');
     const nc=await p.evaluate(()=>({cu:settings.custom.colors,col:queue[0].primaryColor,list:COLS_BY.suit.p.includes('ownmushroom'),blazer:COLS_BY.blazer.p.includes('ownmushroom'),shirt:COLS_BY.shirt.p.includes('ownmushroom'),
       opt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='Mushroom'))}));
