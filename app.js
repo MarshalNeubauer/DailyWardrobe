@@ -1034,7 +1034,8 @@ const queuedKeys=()=>rqGet().keys;
 /* ask the worker how the queued photos are doing and bring the finished ones home */
 let rqTimer=null,rqBusy=false;
 async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const removed=new Set(),newFail=[],fresh={};
-  try{const r=await fetch(W.url+'-queue',{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
+  // by key: the worker reads each one, no KV list (lists are capped per day)
+  try{const r=await fetch(W.url+'-queue?keys='+q.keys.slice(0,40).join(','),{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
     const pend=new Set(st.pending||[]),fail=Object.fromEntries((st.failed||[]).map(f=>[f.key,f.error]));let got=0,shown=false;
     for(const k of [...q.keys]){
       if(pend.has(k)){const run=st.running&&st.running[k];if(run&&run.at>sentAt(q,k))fresh[k]=run.at;continue}   // the worker started it again: wait afresh
@@ -1056,7 +1057,7 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
 /* when each photo was sent (rqGet().at), and how long one may go unseen before it counts as lost: the queue retries a failing
    photo for several minutes and a month batch makes two at a time, so 45 minutes */
 const LOST_MS=45*60000,sentAt=(q,k)=>(q.at&&q.at[k])||q.sentAt||0;
-const queueDelay=age=>age<40000?40000-age:age<180000?7000:age<900000?20000:60000;
+const queueDelay=age=>age<40000?40000-age:age<300000?20000:60000;   // the push brings photos the moment they're made; polling is only the backup
 function scheduleQueueCheck(){clearTimeout(rqTimer);rqTimer=null;const q=rqGet();if(!q.keys.length)return;
   rqTimer=setTimeout(async()=>{rqTimer=null;if(document.visibilityState==='visible')await checkQueue();scheduleQueueCheck()},Math.max(1000,queueDelay(Date.now()-(q.sentAt||0))))}
 function startQueueWatch(){renderBusy();scheduleQueueCheck();waitPush()}
