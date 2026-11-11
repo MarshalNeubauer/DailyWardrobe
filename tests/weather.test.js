@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url})=>{
   // ---- formal day via Settings: pick a date, Make formal ----
   await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday();openSettings('daysoff')});
   ok(await p.evaluate(()=>!document.querySelector('#today [aria-label="Make formal"]')&&!document.querySelector('#today .tog')),'the formal option is not on Today');
-  await p.fill('#cfg-formal-date','2026-11-19');await p.click('#occ-add');await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
+  await p.fill('#cfg-formal-date','2026-11-19');await p.click('#occ-add');await p.waitForFunction(()=>planFor()['2026-11-19'].formal&&document.querySelectorAll('#formal-list .fchip').length===1);   // (Settings lists it a moment after the day is saved)
   const fl=await p.evaluate(()=>({msg:$('#formal-msg').textContent,list:[...document.querySelectorAll('#formal-list .fchip')].map(c=>c.textContent)}));
   ok(/is now a formal day/.test(fl.msg)&&fl.list.length===1&&/Nov 19/.test(fl.list[0]),`Settings lists the formal day (${fl.list.join()})`);
   await p.fill('#cfg-formal-date','2026-11-21');await p.click('#occ-add');
