@@ -57,7 +57,8 @@ ${TYPE_COLOR_TEXT}
   wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
   than burgundy; khaki is the light sandy beige of classic chinos and cotton dress trousers, lighter and greener than tan,
   which is a warmer, deeper camel brown; taupe is a greyish brown, between grey and tan;
-  deeptaupe is a dark taupe, a deep greyish brown, darker and greyer than brown and much darker than taupe; rust is a burnt orange-brown;
+  deeptaupe is a dark taupe, a deep greyish brown, darker and greyer than brown and much darker than taupe (a mink or
+    espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown; brown is a clearly warm, coloured brown); rust is a burnt orange-brown;
   ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
   blue with a violet cast, between lightblue and blue; grey for a tie clip or cufflinks means gunmetal)
   Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
@@ -229,7 +230,8 @@ function measuredText(m) {
   return `\n\nThe app measured the cloth's colour ${m.src === 'closeup' ? 'in the close-up' : 'in the photo'} after white balance: CIELAB L*${lab[0]} a*${lab[1]} b*${lab[2]}`
     + (HEX_RE.test(m.hex || '') ? ` (${m.hex})` : '') + (near.length ? `; nearest of the owner's colours: ${near.join(', ')}` : '') + '. '
     + (m.ref ? 'A white reference was in the frame, so its lightness is reliable.' : 'There was no white reference, so its lightness may be off by the camera\'s exposure; hue and saturation are more reliable.')
-    + ' Use it together with what you see.';
+    + ' Use it together with what you see.'
+    + (near.length ? ' How colourful a cloth is (its a* and b*) is hard to judge by eye, and a muted colour easily passes for its more saturated neighbour, so weigh the measured hue and saturation. If you choose a primaryColor other than the nearest measured one, give the nearest measured one as altColor.' : '');
 }
 /* the owner's earlier corrections of the tagger (AI said -> owner chose), to lean the same way */
 const FIX_FIELDS = ['type', 'primaryColor', 'secondaryColor', 'pattern'];
