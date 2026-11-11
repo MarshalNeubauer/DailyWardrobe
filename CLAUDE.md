@@ -341,6 +341,7 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 - a change to a file the browser gets also runs the built-in suite "renders the outfit without errors" (the app still starts); `sw.js` is otherwise covered only by `tests/sw.test.js`, since service-worker code isn't recorded
 - the map adds up: what a test used is added to what it used before (timers make two runs differ slightly), names and tests that no longer exist are dropped (`save`)
 - Chromium answers no coverage request while a page load is pending and drops the old document's coverage, so the recorder reads it just before `goto`/`reload` and before a page or context closes (`recorder`); a test that navigates another way would lose what it ran before
+- `npm test` fetches `origin/main` before comparing (`baseOf`): a cloud session's own copy of it can be months old with its history cut short, and then no common commit is found and everything would run
 - `NO_IMPACT=1` turns the recording off; `TEST_BASE=<commit>` compares with another commit; `tests/impact.test.js` checks the selection
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.
