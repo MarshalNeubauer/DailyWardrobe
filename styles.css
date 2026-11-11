@@ -512,6 +512,18 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .ivbody{flex:1;min-height:0;overflow-x:clip;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .ivin{box-sizing:border-box;min-height:calc(100% + 1px);max-width:600px;margin:0 auto;padding:14px 16px 24px}   /* always a little taller than the page, so a drag never scrolls the Wardrobe behind */
 .ivhero .pair{gap:10px}.ivhero .pair img.ph,.ivhero .pair .tagsw .ph.thumb,.ivhero .swsplit .swtex{border-radius:12px}
+/* comparing the drawing with the close-up: a tap on the split swatch slides the drawing over the photo and lets the close-up fill
+   its own square; closed, the copy of the drawing lies hidden on the swatch's drawn half, where it slides back to */
+.cmpable .tagsw,.cmpable.cmp .phfig{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cmpbox{position:relative}
+.cmpdraw{position:absolute;inset:0;border-radius:12px;overflow:hidden;pointer-events:none;visibility:hidden;transform:translateX(calc(100% + 10px));clip-path:inset(0 50% 0 0);
+  transition:transform .38s cubic-bezier(.3,.7,.2,1),clip-path .38s cubic-bezier(.3,.7,.2,1),visibility 0s .38s}
+.cmpdraw .ph.thumb{width:100%;height:100%;max-width:none;aspect-ratio:auto;margin:0;padding:0;border-radius:0}.cmpdraw svg{width:100%;height:100%;display:block}
+.cmp .cmpdraw{visibility:visible;transform:none;clip-path:inset(0 0 0 0);transition-delay:0s}
+.cmpable .swsplit .swtex{transition:clip-path .38s cubic-bezier(.3,.7,.2,1)}.cmp .swsplit .swtex{clip-path:inset(0 0 0 0)}
+.cmpable .swsplit::after{transition:opacity .2s}.cmp .swsplit::after{opacity:0}
+.pair .c1{display:none}.pair.cmp .c1{display:block}.pair.cmp .c0,.pair.cmp .tagsw figcaption:not(.c1){display:none}
+@media (prefers-reduced-motion:reduce){.cmpdraw,.cmpable .swsplit .swtex,.cmpable .swsplit::after{transition:none}}
 .ivhero figcaption br,.ivhero figcaption b{display:none}   /* the name is in the page's header */
 .ivdraw{width:min(60%,240px);margin:0 auto}.ivdraw .thumb{border-radius:12px;border:1px solid var(--line);background:var(--card)}
 #item-view .cropwrap{max-width:360px;margin:0 auto 4px}#item-view .cropwrap .btns .pri{flex:1}
