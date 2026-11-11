@@ -67,7 +67,10 @@ suite('swipe moves only the outfit, across viewports',async({browser,url})=>{
     ok(after.date!==before.date&&mid.slide.includes('translateX(-'),`${name}: swipe changes the day and the outfit follows the finger`);
     ok(mid.nav===before.nav&&after.nav===before.nav&&mid.list===before.list&&after.list===before.list,`${name}: date bar and item list stay put`);
     ok(mid.overflow===0&&after.overflow===0,`${name}: page never wider than the screen`);
-    if(w>=600)ok(parseInt(before.list)>w/3,`${name}: two-column layout`);
+    if(w>=600&&w>h)ok(parseInt(before.list)>w/3,`${name}: two-column layout`);
+    if(w>=600&&w<h){const L=await p.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const f=r('#mannequin-container'),b=r('.below'),c=r('#sbox');return {f:[f.left,f.width],b:[b.left,b.width,b.top],c:[c.left,c.width,c.top],fb:f.bottom}});
+      ok(Math.abs(L.f[0]-L.b[0])<1&&Math.abs(L.f[1]-L.b[1])<1&&Math.abs(L.c[0]-L.b[0])<1&&Math.abs(L.c[1]-L.b[1])<1&&L.b[1]>w-40,`${name}: upright, the outfit, tiles and cards share the full width (${Math.round(L.f[1])}/${Math.round(L.b[1])}/${Math.round(L.c[1])}px of ${w})`);
+      ok(L.b[2]>=L.fb&&L.c[2]>L.b[2],`${name}: upright, the outfit is on top, then the tiles, then the cards`)}
     await ctx.close();
   }
 });

@@ -59,13 +59,10 @@ button{touch-action:manipulation}
 .score li small{grid-column:1/-1;color:var(--mut)}.score li.miss span:first-child{color:var(--ink)}.score .pts{color:var(--mut);font-variant-numeric:tabular-nums}
 .sc{flex:none;min-width:30px;height:22px;border-radius:6px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:center}
 .stage .empty{padding:48px 0;text-align:center}
-/* wide screens, e.g. iPhone Duo unfolded (~7.6in) or a tablet: mannequin on the left, list and plan on the right.
-   The fold crease falls in the gap between the columns. Folded (cover screen) keeps the phone layout. */
+/* wide screens: the Wardrobe grid widens. Today goes side by side (outfit left, cards right, the fold crease in the gap) only when the
+   screen is wider than tall, e.g. the iPhone Duo unfolded on its side; held upright it stacks outfit, tiles and cards at full width. */
 @media (min-width:600px){
   main{max-width:1080px}
-  .daygrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
-  .daygrid .stage{margin:0;padding:0;position:sticky;top:8px}
-  .daygrid .side{padding-top:8px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
   #add{max-width:620px;margin:auto}
   .gi[style*="grid-column"]{max-width:620px}
@@ -107,6 +104,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 #toast.on{opacity:.92}
 /* Today torso figure (figure.js) */
 .fig{position:relative;width:min(390px,100%);margin:4px auto 0}
+@media (min-width:600px){.fig{width:100%}}   /* wide screens: the full width of its column (the Duo upright stacks outfit, tiles and cards; landscape puts it on the left) */
 .fig>svg{display:block;width:100%;height:auto}
 .fig .hot{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid transparent;background:transparent;padding:0;cursor:pointer}
 .fig .hot::after{content:'';position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff;opacity:.55;box-shadow:0 1px 3px rgba(0,0,0,.35)}
@@ -338,7 +336,10 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .fig{margin-top:0}.below{margin-top:var(--gap)}.bbox{margin-top:0;transition:margin-top .35s cubic-bezier(.2,.8,.2,1)}.bbox.open{margin-top:var(--gap)}.render-ctl{margin-top:var(--gap)}
 .side>.score,.side>.mbox{margin:var(--gap) 0 0}.side>.mbox:last-child{margin-bottom:var(--gap)}
 .side>.dayact,.side>p{margin:var(--gap) 0 0}
-@media (min-width:600px){.daygrid .side{padding-top:0}.side>:first-child{margin-top:0}}
+@media (min-width:600px) and (orientation:landscape){
+  .daygrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+  .daygrid .stage{margin:0;padding:0;position:sticky;top:8px}
+  .daygrid .side{padding-top:0}.side>:first-child{margin-top:0}}
 .score{padding:0}.score summary,.month-link{box-sizing:border-box;height:76px;padding:12px 14px;gap:12px}
 .score .num,.mlstrip,.pstrip{width:112px;flex:none}
 .score .num{min-width:0;height:52px;font-size:30px;letter-spacing:-.02em}
