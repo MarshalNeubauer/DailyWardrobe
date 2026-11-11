@@ -1289,15 +1289,16 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
   root.addEventListener('contextmenu',e=>{if(e.target.closest('#mpanel-in .mc[data-mv]'))e.preventDefault()});
 })();
 
-/* ---- Wardrobe item page ----
-   Tapping an item opens it as a page over the Wardrobe (the whole screen on a phone, a centred panel from 600px). It grows out
-   of the tapped box and the grid behind never moves, so closing puts you back exactly where you were. One way out, always
-   under the thumb: Done in the bar at the bottom; the phone's Back button or gesture, Esc and (on a wide screen) the backdrop
-   do the same. ‹ › beside Done, a sideways swipe or the arrow keys go to the previous / next item of the list on screen. */
-const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=300,IV_FULL='inset(0px 0px 0px 0px round 0px)';
+/* ---- Wardrobe item sheet ----
+   Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
+   screen (a centred panel from 600px). The grid behind never moves, so closing puts you back exactly where you were. Ways out:
+   swipe the sheet down (by its header at any time; by its content once that is scrolled to the top), Done in the bar at the
+   bottom, a tap on the strip of Wardrobe left above it, the phone's Back button or gesture, Esc. ‹ › beside Done, a sideways
+   swipe or the arrow keys go to the previous / next item of the list on screen. */
+const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
 const wardList=()=>items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
-let itemFrom=null;   // the item the page was opened on: closing on another one brings that one's box into view first
+let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
 /* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
 let itemHist=false,itemBack=false;
 try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
@@ -1306,7 +1307,7 @@ function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history
 addEventListener('popstate',()=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
   if(itemHist){itemHist=false;if(editing)closeItem(true)}});
-/* show or hide the page; while it is up the app behind it takes no taps or keyboard focus */
+/* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
   for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on}
@@ -1319,36 +1320,48 @@ function renderItem(){
   $('#ivbody').innerHTML=itemBody(i);
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}
-/* the page's outline while it is the size of the item's box in the grid (null: that box isn't on screen) */
-function tileInset(id){const v=$('#item-view'),t=$('#gi-'+id);if(!v||!t)return null;const r=t.getBoundingClientRect(),b=v.getBoundingClientRect();
-  if(r.bottom<0||r.top>innerHeight||!r.width)return null;
-  return `inset(${[r.top-b.top,b.right-r.right,b.bottom-r.bottom,r.left-b.left].map(x=>Math.max(0,x)+'px').join(' ')} round 14px)`}
-/* the picture at the top of the page starts (or ends) on the box's picture, so the item seems to stay put while the page unfolds */
-function heroFlip(id,back){const h=document.querySelector('#ivbody .ivhero .phfig img.ph,#ivbody .ivhero .ivdraw'),t=document.querySelector(`#gi-${id} .ph`);if(!h||!t)return;
-  const a=t.getBoundingClientRect(),b=h.getBoundingClientRect();if(!a.width||!b.width)return;
-  const k=[{transform:`translate(${a.left-b.left}px,${a.top-b.top}px) scale(${a.width/b.width})`,transformOrigin:'0 0'},{transform:'none',transformOrigin:'0 0'}];
-  h.animate(back?k.reverse():k,{duration:WARD_MS,easing:WARD_EASE})}
+const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
-  if(!items.some(i=>i.id===id))return;const v=$('#item-view'),was=editing;
+  if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
   editing=id;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;
-  for(const a of v.getAnimations())a.cancel();v.classList.remove('closing');
-  if(was||noMotion())return;
-  const ins=tileInset(id),o={duration:WARD_MS,easing:WARD_EASE};
-  if(ins){v.animate([{clipPath:ins},{clipPath:IV_FULL}],o);v.animate([{opacity:0},{opacity:1,offset:.15},{opacity:1}],{duration:WARD_MS});heroFlip(id)}
-  else v.animate([{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o)}
-function closeItem(fromPop){
-  const id=editing,v=$('#item-view');if(!id||!v)return;const moved=id!==itemFrom,top=$('#ivbody').scrollTop<4;
+  for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
+  if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
+  v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);
+  bd.animate([{opacity:0},{opacity:1}],{duration:WARD_MS})}
+/* fromPop: the Back button did it (its history entry is gone already); dragged: how far down the sheet was let go, in px */
+function closeItem(fromPop,dragged){
+  const id=editing,v=$('#item-view'),bd=$('#item-backdrop');if(!id||!v)return;const moved=id!==itemFrom;
   editing=null;itemFrom=null;if(!fromPop)histDrop();
+  const y=dragged||0,op=+bd.style.opacity||1;v.style.transform=bd.style.opacity='';
   if(noMotion()){renderItem();return}
-  v.classList.add('closing');renderItem();   // the page stays up, drawn as it was, while it folds back into its box
+  v.classList.add('closing');bd.classList.add('closing');renderItem();   // the sheet stays up, drawn as it was, while it slides away
   const t=$('#gi-'+id);if(t&&moved)t.scrollIntoView({block:'center'});   // it was reached with ‹ ›: show where it lives
-  const ins=tileInset(id),o={duration:WARD_MS-40,easing:WARD_EASE,fill:'forwards'};
-  const an=ins?v.animate([{clipPath:IV_FULL},{clipPath:ins}],o):v.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(24px)'}],o);
-  if(ins)v.animate([{opacity:1},{opacity:1,offset:.55},{opacity:0}],{duration:WARD_MS-40,fill:'forwards'});   // it fades only once it is back to the box's size
-  if(ins&&top)heroFlip(id,true);
-  an.finished.catch(()=>{}).then(()=>{if(editing)return;for(const a of v.getAnimations())a.cancel();v.classList.remove('closing')})}
-/* closing with nothing to fold back into: the item was deleted, or another tab is shown */
-function dropItem(){editing=null;itemFrom=null;histDrop();const v=$('#item-view');if(v){for(const a of v.getAnimations())a.cancel();v.classList.remove('closing')}itemShown(false)}
+  const o={duration:WARD_MS-60,easing:dragged?'ease-out':'cubic-bezier(.4,0,.8,.4)',fill:'forwards'};
+  const an=v.animate(sheetSlides()?[{transform:`translateY(${y}px)`},{transform:'translateY(100%)'}]:[{opacity:1,transform:`translateY(${y}px)`},{opacity:0,transform:`translateY(${y+24}px)`}],o);
+  bd.animate([{opacity:op},{opacity:0}],{duration:WARD_MS-60,fill:'forwards'});
+  an.finished.catch(()=>{}).then(()=>{if(editing)return;for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing')}})}
+/* closing with nothing to slide away from: the item was deleted, or another tab is shown */
+function dropItem(){editing=null;itemFrom=null;histDrop();for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
+/* swiping the sheet down closes it. The header is a handle at any time; the content is one only while it is scrolled to the
+   top (further down, a downward swipe scrolls it back up, as it must). The choice is made on the first move of a touch, before
+   the browser starts scrolling. The sheet follows the finger and the Wardrobe behind brightens; let go past a quarter of the
+   sheet's height, or with a flick, and it closes, else it springs back. Not while cropping (the crop frame is dragged). */
+let ivDrag=false;
+(()=>{const v=$('#item-view'),b=$('#ivbody'),bd=$('#item-backdrop');if(!v||!b)return;let st=null;
+  const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
+  v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.ivhead');
+    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:Date.now(),vy:0}},{passive:true});
+  v.addEventListener('touchmove',e=>{
+    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return}}   // downward: ours; anything else is a scroll or a sideways swipe
+    e.preventDefault();const now=Date.now();if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
+    st.d=Math.max(0,dy);put(st.d)},{passive:false});
+  const end=()=>{
+    if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;ivDrag=false;v.style.transition='';
+    if(d>v.offsetHeight*.25||(vy>.5&&d>30)){closeItem(false,d);return}
+    put(0);if(!noMotion()){v.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:220,easing:WARD_EASE});if(bd)bd.animate([{opacity:Math.max(.15,1-d/v.offsetHeight)},{opacity:1}],{duration:220})}};
+  v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true});
+})();
 /* the previous / next item of the list on screen; the new one slides in from the side it lies on */
 function stepItem(n,from){
   const l=wardList(),k=l.findIndex(x=>x.id===editing),t=l[k+n];if(k<0||!t)return false;
@@ -1359,7 +1372,7 @@ function stepItem(n,from){
   b.addEventListener('touchstart',e=>{const t=e.touches[0];
     st=e.touches.length>1||phEdit.crop||t.clientX<24||t.clientX>innerWidth-24||e.target.closest('input,textarea,.cropwrap')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0}},{passive:true});   // a swipe may start on a dropdown: half the page is dropdowns
   b.addEventListener('touchmove',e=>{
-    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(ivDrag)st=null;if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
     if(!st.lock&&(Math.abs(dx)>8||Math.abs(dy)>8))st.lock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';
     if(st.lock!=='x')return;e.preventDefault();
     const l=wardList(),k=l.findIndex(x=>x.id===editing),edge=k<0||(dx>0&&k<=0)||(dx<0&&k>=l.length-1);   // nothing that way: resist

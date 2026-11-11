@@ -38,14 +38,14 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const id=await p.evaluate(()=>document.querySelector('#wardrobe .gi').id.slice(3));
     await p.click(`#gi-${id} .giopen`);await settle(p,600);
     const op=await p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),h=[...v.querySelectorAll('.ivsec h3')].map(x=>x.textContent),del=v.querySelector('.ivin > :last-child button');
-      return {full:v.classList.contains('on')&&r.width>=389&&r.height>=843,h,del:del.textContent+(del.classList.contains('danger')?'!':''),rot:v.querySelector('.ivrot .rotbtn').textContent,
+      return {full:v.classList.contains('on')&&r.width>=389&&r.top>0&&r.top<=40&&r.bottom>=843,h,del:del.textContent+(del.classList.contains('danger')?'!':''),rot:v.querySelector('.ivrot .rotbtn').textContent,
         bar:[...v.querySelectorAll('.ivbar button')].map(b=>b.textContent.trim()||b.getAttribute('aria-label')).join('|'),
         btn:[...new Set([...v.querySelectorAll('button:not(.shbtn):not(.chipbtn),.btn')].filter(b=>b.offsetParent).map(b=>Math.round(b.getBoundingClientRect().height)))],
         inp:[...new Set([...v.querySelectorAll('select,input[type=text],input[type=date]')].map(b=>Math.round(b.getBoundingClientRect().height)))],over:v.querySelector('#ivbody').scrollWidth-v.querySelector('#ivbody').clientWidth}});
-    ok(op.full&&op.h.join('|')==='Details|Rotation',`an item opens as a full-screen page with a Details card and a Rotation card (${op.h.join('|')})`);
+    ok(op.full&&op.h.join('|')==='Details|Rotation',`an item opens in a sheet over the Wardrobe, the full width and nearly the full height, with a Details card and a Rotation card (${op.h.join('|')})`);
     ok(op.rot==='Take out of rotation'&&op.del==='Delete item!','Take out of rotation in its card; Delete (marked as destructive) alone at the very end');
-    ok(op.bar==='Previous item|Done|Next item','a bar at the bottom of the page has Done between previous and next');
-    ok(op.btn.join()==='44'&&op.inp.join()==='44'&&op.over<=0,`the item page uses the same 44px buttons and dropdowns and doesn't scroll sideways (${op.btn} / ${op.inp})`);
+    ok(op.bar==='Previous item|Done|Next item','a bar at the bottom of the sheet has Done between previous and next');
+    ok(op.btn.join()==='44'&&op.inp.join()==='44'&&op.over<=0,`the item sheet uses the same 44px buttons and dropdowns and doesn't scroll sideways (${op.btn} / ${op.inp})`);
     // ---- Add
     await p.evaluate(()=>{closeItem();show('add')});await settle(p,400);
     const ad=await p.evaluate(()=>({head:document.querySelector('#add .phead h2').textContent,picks:[...document.querySelectorAll('#add .addpick label')].map(l=>l.querySelector('span').textContent),
