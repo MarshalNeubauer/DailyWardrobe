@@ -471,6 +471,9 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 - New behaviour goes inside a function that is called from where it is used, not in a block that runs when the script loads: `shopSwipe()` is called from `openShop()`, so only tests that open the sheet run it.
 - A listener is installed by such a function the first time it is needed (a flag like `shopSwipeOn` keeps it to once), not by a top-level `(()=>{…})()` or `document.addEventListener(…)`.
 - A new top-level `const`/`let` is fine: it is followed by name to the functions that use it.
+- A new constant gets its own `const` line, never appended to an existing `const A=1,B=2;`: the selector takes one statement as one change, so every name on that line counts as changed.
+- Measured in assemble.js: `,ASM_XX=1` appended to the `const ASM_VER=2,ASM_DE=14,…;` line selected 90 of 92 (`ASM_VER` is named by `asmKey()`, which runs at start-up in every test); `const ASM_XX=1;` on its own line selected 2.
+- The `ASM_*` numbers in assemble.js are one `const` per line for that reason; keep them so.
 - Don't add the call to a function that every test runs (`show()`, `renderToday()`, `closeShop()`): an edit there selects everything; call it from the narrowest function that needs it.
 - A new visual element gets its own class name (`.shop-grab`), not a new selector built from existing classes or a `::before` on an existing element: a rule for a class the app never had selects no existing test.
 - State for an existing element also gets a new class (`.x.new-state`) rather than new declarations in its base rule: a rule that applies on every page (`#shop-sheet`, `body`, `.card`) selects every page test when its declarations change, and rightly so.

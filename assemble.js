@@ -8,7 +8,13 @@
 // Order: master, then the jacket, shirt, tie, tie bar and watch; pixels along the joins are rebuilt from clean pixels either side.
 // Today shows the assembled picture once the master, the zones and the outfit's pieces are on the device (asmFor / asmEnsure);
 // an outfit it can't do (no jacket, no tie, a vest), or with a piece still missing, keeps its own photo.
-const ASM_VER=2,ASM_DE=14,ASM_EDGE=3,ASM_EDGE_DE=28,ASM_EDGE_C=10,ASM_HALO=4,ASM_TINT=5;
+const ASM_VER=2;
+const ASM_DE=14;
+const ASM_EDGE=3;
+const ASM_EDGE_DE=28;
+const ASM_EDGE_C=10;
+const ASM_HALO=4;
+const ASM_TINT=5;
 /* ASM_ZV: how zones are worked out. Zones and assembled pictures kept on a device carry it, so they are made again when it changes
    (2: a zone reaches the picture's edge; 3, 4: no halo of the master's tie) */
 const ASM_ZV=4;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
