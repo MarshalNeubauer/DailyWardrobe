@@ -261,7 +261,7 @@ function readSett(q){const ok=!q.settOff&&settable(q.type,q.pattern,q.weave)&&q.
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);renderAdd()}
 const settSummary=s=>s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colours from the photo`:s.src==='claude+pixels'?`${s.bands.length} bands${s.cross?' and lines the other way':''}, read by Claude with the colours from the photo`:`${s.bands.length} colour bands${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!settable(q.type,q.pattern,q.weave))return '';
-  if(q.patternReading)return '<p class="tagnote mut"><small>Claude is reading the pattern…</small></p>';
+  if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
   return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the simple pattern</button></p>`:''}
 /* once: Claude-read patterns saved without a pattern box were exposure-matched to the whole item photo (wall and all, a navy
@@ -321,7 +321,7 @@ function patternPrompt(i,role){if(!i)return '';const m=settText(i,role),d=m?drop
   return [m,d.replace(/\.$/,'')].filter(Boolean).join('. ')}
 /* the drawing of a read pattern for the generator: a tie as its blade (tip down, the pattern at the angle it is worn), anything else
    as a square of its cloth; on a light grey ground, sharp */
-function patternDiagram(i,role){const fab=figFabric(i,role);if(!fab)return Promise.resolve(null);
+function patternDiagram(i,role){const fab=i.sett&&i.sett.tex?{def:id=>fabricDef(id,i,'shirt','dia')}:figFabric(i,role);if(!fab)return Promise.resolve(null);
   const tie=role==='tie',vb=tie?'168 46 54 214':'0 0 200 200',W=tie?360:600,H=tie?Math.round(360*214/54):600;
   const shape=tie?'<path d="M 182 50 L 208 50 C 211 60 210 70 205 79 C 199 83 191 83 185 79 C 180 70 179 60 182 50 Z" fill="url(#pd)"/><path d="M 186 74 L 204 74 C 207 120 212 172 217 222 L 195 256 L 173 222 C 178 172 183 120 186 74 Z" fill="url(#pd)"/>':'<rect width="200" height="200" fill="url(#pd)"/>';
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${vb}"><defs>${fab.def('pd',0)}</defs><rect x="-10" y="-10" width="400" height="400" fill="#ececea"/>${shape}</svg>`;
@@ -329,10 +329,9 @@ function patternDiagram(i,role){const fab=figFabric(i,role);if(!fab)return Promi
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
 /* the references with the pattern drawings put in after their item's photos (at most 8 in all) */
 async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie','tie','the tie'],['top','top',o.suitDay?'the suit':'the blazer'],['shirt','shirt','the shirt'],...(o.top?[]:[['bot','bot','the trousers']])];
-  for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||i.sett.tex||refs.length>=8)continue;   // a weave texture is too fine for a photo of the whole outfit (and a plain shirt's photo is shared per colour)
-    const img=await patternDiagram(i,role);if(!img)continue;
+  for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||(i.sett.tex&&s!=='shirt')||refs.length>=8)continue;const img=await patternDiagram(i,role);if(!img)continue;
     let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
-    refs.splice(at,0,img);labels.splice(at,0,`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
+    refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
   return {refs:refs.slice(0,8),labels:labels.slice(0,8)}}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the

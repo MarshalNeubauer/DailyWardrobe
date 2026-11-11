@@ -580,9 +580,9 @@ async function queueRender(body, env, json) {
   const key = String(body.key || '');
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image)) return json({ error: 'no illustration' }, 400);
-  if (await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });
+  if (!body.replace && await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });   // replace: a regenerate from the app
   const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 8), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 8), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
-    model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, t: Date.now() };
+    model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, replace: body.replace ? true : undefined, t: Date.now() };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
   await env.RENDER_QUEUE.send({ key });
@@ -603,7 +603,7 @@ async function runRenderJob(msg, env) {
   const key = String(msg.body && msg.body.key || '');
   const job = COMBO_RE.test(key) ? await env.WARDROBE.get(`job:${key}`, 'json') : null;
   if (!job) return msg.ack();
-  if (await env.WARDROBE.get(`render:${key}`)) { await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
+  if (!job.replace && await env.WARDROBE.get(`render:${key}`)) { await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   if (!env.OPENAI_API_KEY) { await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env);
   if (r.ok) {
