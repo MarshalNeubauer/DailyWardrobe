@@ -34,8 +34,16 @@ module.exports=async({ok,chromium,url,settle})=>{
     const today=await p.evaluate(id=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});const s=items.find(x=>x.id===id);
       items=[s,I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today');
-      return [...document.querySelectorAll('#today svg image')].some(im=>im.getAttribute('href')===s.swatch)},it.id);
-    ok(today,'Today\'s pieces show the suit by its close-up swatch');
+      const row=document.querySelector('#ri-top .dot'),chip=document.querySelector('.pchip');
+      return {row:!!row&&!row.querySelector('image')&&!!row.querySelector('pattern'),chip:!!chip&&!chip.querySelector('image'),size:row&&Math.round(row.getBoundingClientRect().width),
+        elsewhere:/<image/.test(swatchSVG(s))}},it.id);
+    ok(today.row&&today.chip&&today.elsewhere,'Today\'s pieces list and chips show the drawn swatch; elsewhere it is the close-up');
+    ok(today.size>=30,`Today's piece swatches are larger, so the pattern reads (${today.size}px)`);
+    const legible=await p.evaluate(()=>{const w={id:'w',type:'suit',primaryColor:'khaki',pattern:'windowpane',sett:{v:2,a:0,bands:[['#b0a084',.95],['#9db3cf',.05]],cross:{d:90,bands:[[null,.95],['#9db3cf',.05]],r:1},cr:3.5,tr:9}};
+      const tile=s=>+(s.match(/<pattern[^>]*width="([\d.]+)"/)||[])[1];
+      const sh={id:'s',type:'shirt',primaryColor:'white',pattern:'woven',sett:{v:4,tex:{kind:'diamond',grid:['1001','0110','0110','1001'],aspect:1.4,lighter:true,contrast:'subtle',rel:.2},a:0,cr:24,tr:45}};
+      return {wp:tile(swatchSVG(w,true)),tex:tile(swatchSVG(sh,true))}});
+    ok(legible.wp===8&&Math.abs(legible.tex-6.4)<.01,`drawn at a readable scale: two windowpane panes across the square (${legible.wp} of 16), two and a half weave repeats (${legible.tex})`);
     // ---- Wardrobe editor: removing, re-adding and undoing the close-up re-cut the swatch
     const ed=await p.evaluate(async id=>{const it=items.find(x=>x.id===id),tex=it.texture;await setTexture(id,null);const off={src:it.swSrc,img:/<image/.test(swatchSVG(it))};
       await setTexture(id,tex);const on={src:it.swSrc,img:/<image/.test(swatchSVG(it))};await undoPhoto(id);const undo={src:it.swSrc,tex:!!it.texture};return {off,on,undo}},it.id);
