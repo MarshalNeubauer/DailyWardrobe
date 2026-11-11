@@ -405,8 +405,9 @@ motif — for a motif only (null otherwise), as woven, one grid cell being one r
     shape: square, square-with-dot (a small square with a dot of another colour in its middle), diamond (a square on its point
       in a straight grid), dot, ring, cross, flower, figure (any other small shape: draw it in "bitmap"), or other;
     bitmap: for shape figure, the figure alone as a small bitmap, top row first: each row a string of 1 and 0 of the same
-      length, 3 to 16 each way, 1 where the figure's colour is, 0 where the ground shows, with the figure's own proportions
-      (a downward chevron 5 wide and 4 tall: ["10001","11011","01110","00100"]); null for the other shapes;
+      length, 3 to 16 each way, 1 where the figure's colour is, 0 where the ground shows, with the figure's own proportions.
+      Copy the figure in the close-up: its real outline and how thick its strokes are, filling the bitmap edge to edge, not an
+      idealised icon (the format only, not a shape to reuse: a small plus sign is ["010","111","010"]); null for the other shapes;
     name: what the figure is in a few words (e.g. "downward chevron", "small square with a dot");
     placement: cell (one in every grid cell), corner (one where four cells meet, between the cell figures), or alternate-cells
       (only in every other cell, like the dark squares of a checkerboard);
