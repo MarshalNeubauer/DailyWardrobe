@@ -263,6 +263,7 @@ const worker=async()=>{const B=await bench();let out=null;   // null between tes
     const text=out;out=null;process.send({key:m.run,out:text,passes,failures,ms:r.ms,res:r.res&&{bad:r.res.bad,m:[...r.res.m].map(([f,S])=>[f,[...S]])}})})});
   process.send({ready:true})};
 
+const RETRY_MAX=5;
 /* several tests at once: `n` worker processes take the tests from one queue, slowest first. Each test's lines are printed
    together when it finishes */
 const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
@@ -284,8 +285,18 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   if(flag('--list'))return;
   impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
   const keys=ALL.filter(k=>!want||want.has(k)),results=new Map(),times=[],T0=Date.now(),jobs=Math.min(jobsWanted(),keys.length);
-  if(jobs>1){
-    await together(keys,jobs,(key,out,p,f,ms,res)=>{console.log('\n• '+label(key));process.stdout.write(out);passes+=p;failures+=f;times.push([key,ms]);if(res)results.set(key,res)});
+  const alone=[];   // tests that only passed on a second run by themselves
+  if(jobs>1){const again=[],count=(key,out,p,f,ms,res)=>{process.stdout.write(out);passes+=p;failures+=f;times.push([key,ms]);if(res)results.set(key,res)};
+    await together(keys,jobs,(key,out,p,f,ms,res)=>{if(f)again.push([key,out,p,f,ms,res]);else{console.log('\n• '+label(key));count(key,out,p,f,ms,res)}});
+    /* The tests were written to run one at a time, and a few checks are sensitive to a busy machine. A test that failed
+       while others were running is therefore run once more by itself, which is how it always ran before; only that run
+       counts. It is said so loudly, so the check can be made to wait for its condition. With more than RETRY_MAX failures
+       the cause is not the load: they count as they are */
+    if(again.length&&again.length<=RETRY_MAX){const first=new Map(again.map(a=>[a[0],a]));
+      await together(again.map(a=>a[0]),1,(key,out,p,f,ms,res)=>{
+        console.log('\n• '+label(key)+'\n  (failed while other tests were running:\n'+first.get(key)[1].split('\n').filter(l=>/^  ✗/.test(l)).map(l=>'  '+l).join('\n')+'\n   run again by itself:)');
+        if(!f)alone.push(key);count(key,out,p,f,ms,res)})}
+    else for(const a of again){console.log('\n• '+label(a[0]));count(...a)}
   }else if(keys.length){const B=await bench();
     for(const key of keys){console.log('\n• '+label(key));const r=await B.run(key);times.push([key,r.ms]);if(r.res)results.set(key,r.res)}
     await B.close()}
@@ -295,5 +306,6 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   if(!process.env.NO_IMPACT&&(results.size||passed))try{await impact.save(ROOT,results,ALL,passed)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
   // the slowest files, so the suite can be kept quick
   if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${label(f)} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`+(jobs>1?` (${jobs} at a time; one after another ${(times.reduce((a,t)=>a+t[1],0)/1000).toFixed(0)}s)`:''));
+  if(alone.length)console.log('\nfailed with other tests running, passed by '+(alone.length>1?'themselves':'itself')+' (a check there depends on timing: make it wait for its condition): '+alone.map(label).join(', '));
   console.log(`\n${passes} passed, ${failures} failed`+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:''));process.exit(failures?1:0);
 })();

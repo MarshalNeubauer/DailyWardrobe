@@ -5,8 +5,11 @@
 //   - every rule of styles.css that applied to an element (CSS rule usage),
 //   - every other file its pages were served (<loaded>) and every file it read itself or ran in a Web Worker (<any>).
 // For a change, the edited functions and CSS rules are worked out from `git diff` against origin/main, and only the tests
-// that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector for existing
-// classes, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / package.json select all.
+// that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector that no plain
+// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / package.json select all.
+// A block that runs at load, `(()=>{…})()`, is recorded by the functions it holds (units), and a selector new to the sheet
+// selects the tests of the plain rule it can only apply inside (cssImpact). After main has been merged into a branch that
+// had passed, only the tests that both sides' changes can affect run again (select, lastPass).
 //
 // The map has to travel with the change it was recorded for. Two things see to that:
 //   - a passing `npm test` writes into the map a fingerprint of the files it ran on (`# tested`). When origin/main's map
