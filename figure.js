@@ -50,7 +50,7 @@ ${jacket ? `<path d="M ${-w / 2 - 1} ${f(h - 4)} L ${w / 2 + 1} ${f(h - 4)} L ${
 ${[0, 7, 14].map(k => `<circle cx="${flip ? -w / 2 + 6 : w / 2 - 6}" cy="${f(h - 10 - k)}" r="2" fill="#0E1424"/>`).join('')}` : `<path d="M ${-w / 2 + 2} ${f(h - 6)} L ${w / 2 - 2} ${f(h - 6)}" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/><circle cx="${flip ? -w / 2 + 8 : w / 2 - 8}" cy="${f(h + 3)}" r="2" fill="#FFFFFF" fill-opacity=".8" stroke="#000" stroke-opacity=".35" stroke-width=".6"/>`}
 ${withWatch && watch ? `<g class="fig-watch" transform="translate(0 ${f(h + 19)})">
 <rect x="-16" y="-11" width="32" height="22" rx="3" fill="${hex(watch.strap, '#9AA1AA')}"/><rect x="-16" y="-11" width="32" height="22" rx="3" fill="url(#${P}gCuff)"/>
-<rect x="15" y="-3" width="5" height="6" rx="1.5" fill="${hex(wm[1], '#9AA1AA')}"/>
+<rect class="fig-crown" x="-3" y="14" width="6" height="5" rx="1.5" fill="${hex(wm[1], '#9AA1AA')}"/>
 <circle r="15" fill="url(#${P}gCase)"/><circle r="12" fill="${hex(watch.dial, '#F6F6F3')}"/>
 <g stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1" stroke-linecap="round"><path d="M 0 -10.5 L 0 -8"/><path d="M 0 8 L 0 10.5"/><path d="M -10.5 0 L -8 0"/><path d="M 8 0 L 10.5 0"/></g>
 <path d="M 0 0 L 0 -7" stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1.4" stroke-linecap="round"/><path d="M 0 0 L 5 3" stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1.4" stroke-linecap="round"/>
