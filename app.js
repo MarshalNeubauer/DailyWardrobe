@@ -130,15 +130,18 @@ function renderBusy(){let el=document.getElementById('busy');if(!el){if(!documen
    top, from where the tiles end and where the bar's natural top is; kept while on other pages and on days whose tiles sit lower. */
 const NAV_MAX=64;
 function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),nav=document.querySelector('body>nav');if(!nav)return;
-  if(!b){let kept=0;try{kept=+localStorage.getItem('nav_fit:'+innerWidth+'x'+innerHeight)||0}catch{}document.documentElement.style.setProperty('--navx',kept+'px');return}   // a day with no tiles (a weekend) keeps the fitted size
-  const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12,cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx'))||0;
-  const cs=getComputedStyle(nav),natural=innerHeight-38-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
-  const tiles=b.getBoundingClientRect().bottom+scrollY;
-  // never shrinks: a day without a photo (the drawing and its Generate button sit lower) keeps the size the photo days fitted; kept per
-  // screen size, so it is the same on every day and after a restart
-  const k='nav_fit:'+innerWidth+'x'+innerHeight;let kept=0;try{kept=+localStorage.getItem(k)||0}catch{}
-  const x=Math.max(kept,Math.max(0,Math.min(NAV_MAX,Math.round(natural-(tiles+gap)))));if(x>kept)try{localStorage.setItem(k,String(x))}catch{}
+  // the fit is measured only on a day whose photo has loaded: before it loads the photo has no height, the tiles sit right under the
+  // date, and the bar grew to its 64px cap (and was kept there). That measurement is kept per screen size and used everywhere else
+  // (a day with only the drawing and its Generate button, whose tiles sit lower; a weekend with no tiles), so the bar keeps one size.
+  const k='nav_fit2:'+innerWidth+'x'+innerHeight;let kept=0;try{kept=+localStorage.getItem(k)||0}catch{}
+  const img=document.querySelector('#today:not([hidden]) #mannequin-container > img'),ready=!!(b&&img&&img.complete&&img.naturalHeight>0&&img.getBoundingClientRect().height>60);
+  let x=kept;
+  if(ready){const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12;
+    const cs=getComputedStyle(nav),natural=innerHeight-38-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
+    x=Math.max(0,Math.min(NAV_MAX,Math.round(natural-(b.getBoundingClientRect().bottom+scrollY+gap))));if(x!==kept)try{localStorage.setItem(k,String(x))}catch{}}
+  const cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx'))||0;
   if(Math.abs(x-cur)>=1)document.documentElement.style.setProperty('--navx',x+'px')}
+try{for(const k of Object.keys(localStorage))if(k.startsWith('nav_fit:'))localStorage.removeItem(k)}catch{}   // the first version could keep a 64px fit measured before the photo loaded
 let fitNavRaf=0;const fitNavSoon=()=>{cancelAnimationFrame(fitNavRaf);fitNavRaf=requestAnimationFrame(fitNav)};
 if(typeof ResizeObserver!=='undefined')addEventListener('DOMContentLoaded',()=>{const t=document.querySelector('#today');if(t)new ResizeObserver(fitNavSoon).observe(t)});
 addEventListener('resize',fitNavSoon);
@@ -764,7 +767,7 @@ function figureStage(o){
   const ck=comboKey(o),pend=renderPending(o),busyElse=!!rendering&&!pend,fail=renderFail[ck],stalled=!pend&&renderStalled(ck);
   const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it to your worker…':'Your worker is making it (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made: ${fail}`:stalled?'Your worker has been on this photo for over 10 minutes, far longer than one takes. Send it again?':'';
   const ctl=(!r||pend?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${pend||busyElse?' disabled':''}>${pend?'<span class="spin" aria-hidden="true"></span>Making photo…':r?'Regenerate photo':fail||stalled?'Try again':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${esc(msg)}</p>`;
-  return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${wornMarks(o)}</div>`
+  return (photo?`<div class="fig photo" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${wornMarks(o)}</div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}</div>`)+ctl+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }
