@@ -74,9 +74,7 @@ button{touch-action:manipulation}
 .days{display:flex;gap:4px;flex-wrap:wrap}.dtog{padding:6px 9px;font-size:14px;border-radius:8px}.dtog.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .day h2 .wx{display:block;font-size:13px;font-weight:600;color:var(--mut);text-align:center;margin-top:2px}
 .day h2{text-align:center}.dayact .chip.formal{background:#1b2a4a;border-color:#1b2a4a}
-.shop-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.shop-head button{padding:6px 12px}
-.recs{list-style:none;padding:0;margin:8px 0 0}.recs li{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
-.rec-img .thumb{width:56px;border-radius:8px}.rec-txt{display:flex;flex-direction:column;gap:2px}.rec-txt small{color:var(--mut)}.rec-txt button{align-self:flex-start;padding:4px 10px;font-size:14px;margin-top:4px}
+.rec-img .thumb{width:56px;border-radius:8px}
 .day h2 .wx a{color:var(--acc);text-decoration:underline}
 .dot{overflow:hidden;display:inline-block}.dot svg{width:100%;height:100%;display:block}
 #today .row .dot{width:40px;height:40px;border-radius:8px}   /* Today's pieces: the drawn swatch as large as the row's 40px tap height allows, so the row is no taller */
@@ -493,9 +491,10 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 #wardrobe .chips{gap:6px;padding:2px 0 10px;margin:0 0 4px;scrollbar-width:none}#wardrobe .chips::-webkit-scrollbar{display:none}
 #wardrobe .chip{min-height:36px;padding:0 14px;border-radius:18px;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 #wardrobe .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-#wardrobe .shop{padding:14px}.shop-head b{font-size:16px}
-#wardrobe .shop-head button{min-height:38px!important;padding:0 14px!important;font-size:14px!important}
-#wardrobe .shop>p{margin:6px 0 0}
+/* What to buy: the button on the Wardrobe tab, and its sheet (shop.js) */
+#wardrobe .shopbtn{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;text-align:left;padding:10px 14px;margin:0 0 12px;border-radius:var(--r-card);min-height:56px}
+.shopbtn-t{display:flex;flex-direction:column;gap:2px;min-width:0}.shopbtn-t b{font-size:16px}.shopbtn-t small{font-size:13px;font-weight:400;color:var(--mut);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.shopbtn-c{font-size:22px;color:var(--mut);flex:none}
 /* Wardrobe item sheet: an item opens in a sheet that slides up over the Wardrobe, the full width of a phone and up to just under
    the top of the screen (a centred panel from 600px): a grabber and its name on top, the photo and the cards scrolling in the
    middle, and a bar that stays at the bottom with Done between ‹ and › */
@@ -599,3 +598,44 @@ body.iv-on #toast,body.iv-on #busy{z-index:960;bottom:calc(78px + env(safe-area-
 #mpanel-in .mv-held{display:none}
 /* while moving, only the day cells are targets: a drawing sliding to its new day would otherwise catch the finger over its old one */
 #mpanel-in.mv-on .mc *{pointer-events:none}
+
+/* ---- What to buy: a full-height sheet from the bottom, like the piece picker ---- */
+#shop-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100;display:none}#shop-backdrop.on{display:block}
+#shop-sheet{position:fixed;left:0;right:0;bottom:0;top:max(12px,env(safe-area-inset-top));z-index:1101;background:var(--bg);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;
+  overflow:auto;padding:0 14px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.35);transform:translateY(102%);transition:transform .3s cubic-bezier(.2,.8,.2,1);visibility:hidden;max-width:640px;margin:0 auto;overscroll-behavior:contain;font-size:15px}
+#shop-sheet.on{transform:none;visibility:visible}
+@media(prefers-reduced-motion:reduce){#shop-sheet{transition:none}}
+.shop-top-head{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0 6px;margin:0 0 4px;border-bottom:1px solid var(--line)}.shop-top-head b{font-size:22px}
+#shop-sheet p{margin:6px 0}
+#shop-sheet button:where(:not(.pick-x,.shop-toprow,.shop-rechead)){min-height:var(--ctl-h);padding:0 14px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:14px;font-weight:600;margin:0;cursor:pointer}
+#shop-sheet button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#shop-sheet .btns{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+#shop-sheet input[type=date]{height:var(--in-h);padding:0 10px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;min-width:0}
+.shop-busy{display:flex;flex-direction:column;gap:4px;margin:10px 0}.shop-busy .st-bar{flex:none}.shop-busy .st-bar i{background:var(--acc);transition:width .2s}
+.shop-msg{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--acc) 18%,transparent)}
+.shop-cat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:12px 14px;margin:12px 0}
+.shop-cat h3{font-size:16px;margin:0 0 4px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.shop-v{font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.shop-v.needed{background:#b4532a;color:#fff}.shop-v.worth{background:var(--acc);color:#101820}.shop-v.covered{background:color-mix(in srgb,var(--mut) 22%,transparent);color:var(--ink)}
+.shop-mix{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px}.shop-g{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.shop-g i{width:12px;height:12px;border-radius:4px;border:1px solid var(--line);flex:none}
+.shop-rec{margin-top:8px;border-top:1px solid var(--line);scroll-margin-top:64px}
+.shop-rec.flash{animation:shopflash 1.2s ease-out}@keyframes shopflash{from{background:color-mix(in srgb,var(--acc) 30%,transparent)}to{background:transparent}}
+.shop-rechead{display:grid;grid-template-columns:56px minmax(0,1fr) 20px;gap:12px;align-items:center;width:100%;min-height:72px;padding:10px 0 4px;margin:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb{width:56px;max-width:none;margin:0;padding:0;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.shop-rechead .rec-txt{display:flex;flex-direction:column;gap:3px;min-width:0}.shop-rechead .rec-txt b{font-size:15px}
+.shop-lead{font-size:13px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.shop-chev{font-size:20px;color:var(--mut);text-align:center}
+.shop-more{padding:0 0 8px 68px}
+@media(max-width:420px){.shop-more{padding-left:0}}
+.shop-tag{align-self:flex-start;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;background:color-mix(in srgb,var(--mut) 22%,transparent);color:var(--ink)}
+.shop-tag.fix{background:#b4532a;color:#fff}.shop-tag.better{background:#2f8a57;color:#fff}.shop-tag.gap,.shop-tag.variety{background:var(--acc);color:#101820}
+.shop-why{margin:4px 0 0;padding-left:18px;font-size:13.5px;line-height:1.4}.shop-why li{margin:2px 0}
+.shop-buy{display:flex;flex-direction:column;gap:6px;margin-top:8px}.shop-buy .ordate{flex-wrap:wrap}
+.shop-figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 0}.shop-fig{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}.shop-fig figcaption{padding:6px 8px;line-height:1.3}
+.shop-top{list-style:none;margin:6px 0 0;padding:0}.shop-top li{border-top:1px solid var(--line)}
+.shop-toprow{display:grid;grid-template-columns:22px 44px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;min-height:60px;padding:8px 0;margin:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.shop-toprow .rec-img .thumb{width:44px;border-radius:8px}.shop-n{font-weight:700;color:var(--mut);text-align:center}.shop-topnm{display:flex;flex-direction:column;gap:3px;min-width:0}.shop-topnm b{font-size:15px}
+.shop-occ{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}.shop-occ small,.shop-occ ul{grid-column:1/-1}
+.shop-hid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.shop-foot{text-align:center}
+@media(max-width:360px){.shop-figs{grid-template-columns:1fr}}
