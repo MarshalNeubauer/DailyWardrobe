@@ -836,6 +836,15 @@ async function putRender(req, env, json) {
   await env.WARDROBE.put(`render:${id}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), renderTtl(id));
   return json({ ok: true });
 }
+/* DELETE /render?key=c... -> the kept photo is removed (one that was made wrong; the app stops using its own copies by changing the key) */
+async function delRender(req, env, json) {
+  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
+  const k = new URL(req.url).searchParams.get('key') || '';
+  if (!COMBO_RE.test(k)) return json({ error: 'bad key' }, 400);
+  await env.WARDROBE.delete(`render:${k}`);
+  return json({ ok: true });
+}
 /* GET /render?key=c... (or the older ?day=) -> the stored photo, or 404 */
 async function getRender(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
@@ -973,7 +982,7 @@ export default {
     const cors = {
       'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
       'Access-Control-Allow-Headers': 'content-type,x-app-token',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
     };
     const json = (body, status = 200) =>
       new Response(JSON.stringify(body), { status, headers: { ...cors, 'content-type': 'application/json' } });
@@ -991,6 +1000,7 @@ export default {
     if (path === '/render' && req.method === 'POST') return handleRender(req, env, json);
     if (path === '/render' && req.method === 'GET') return getRender(req, env, json);
     if (path === '/render' && req.method === 'PUT') return putRender(req, env, json);
+    if (path === '/render' && req.method === 'DELETE') return delRender(req, env, json);
     if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
     let body;

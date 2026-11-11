@@ -146,6 +146,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the waistcoat's zone (`asmVestZone`, kept as `asm:vest:<vest key>`) comes from its own calibration photo, the vest master with the waistcoat in orange (`asmCalibKey('vest')`); against the plain master a grey waistcoat over a shadowed white shirt left a ragged edge
 - with a vest (`P.vest` in `asmCompose`) the suit's photo covers the jacket's zone and the waistcoat's (the generator opens the jacket's front to show it); the shirt and tie stop 3px under the waistcoat's edge where they meet it; only the tie's top area (joined to the knot) is used; small specks of the master's tie colour left in the suit's photo (its tip below the waistcoat) are filled from beside them
 - wherever the master's tie shows and the new one doesn't (a narrower tie, the tip under a waistcoat), the pixel takes what is beside it in the picture so far; left alone it stayed the master's green
+- `ASM_VEST` (2) is which vest master this is: the vest master's key, its calibration photo's and every suit's vest piece's carry it (`asmVestTag`), so a remade vest master replaces the old one on every device; `asmDropOld()` (start-up, once per version, `localStorage.asm_vest`) drops the earlier version's photos a device still holds. Version 1 drew five visible waistcoat buttons, which with those under the hand read as seven
 - `asmMajor` smooths a mask's outline (most of the square around a pixel)
 - `asmNeeds()` adds the vest master, its calibration photo and a vest piece per suit with a waistcoat, unless `settings.vestMode` is `never` or the suit has `vest:'no'`
 - photo keys: `asmPieceKey(slot, item)` hashes `asmLook`: `lookSig` (app.js, shared with `comboSig`), so plain shirts of one colour share a piece, plus the weave's name for a shirt in a woven texture that was never read (the owner wants a photo per shirt look, not per colour)
@@ -367,6 +368,7 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
   - `swap.add` uses `SWAP_ADD_PROMPT` (add one thing, keep the rest): a tie bar on the master, which has none
   - `swap.what` is one of `SWAP_KEEP` (jacket, waistcoat, shirt, tie, tie bar, watch): the prompt lists every other piece as staying exactly as it is; a jacket swap keeps the cut and changes only the cloth
 - Photos are saved per outfit combination (`comboKey()` in app.js: the shirt by base colour only; the jacket/tie/clip/watch by how they look; plus the vest) as `render:c<16 hex>` in KV (no expiry) and in `meta`, so a combination is never generated twice.
+- `DELETE /render?key=` removes a kept photo (one made wrong)
 - GET/PUT `/render?key=` share a photo between devices; `GET /render?list=1` lists every kept key. Older `render:<date>` copies are migrated on first use.
 - POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`).
   - Its consumer (`queue()` export) makes the photo in the background, retrying temporary OpenAI errors and recording others as `jobfail:<key>`.

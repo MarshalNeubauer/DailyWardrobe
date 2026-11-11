@@ -137,14 +137,17 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
   if(info)Object.assign(info,{lab,seam,tie:tieM,bar:barM,watch:w&&w.mask,tinted:w?w.tinted:0});
   return new ImageData(o,W,W)}
 /* ---- keys, and what an outfit needs ---- */
-const asmKey=t=>'c'+fnv64('asm/'+ASM_VER+'/'+t),asmMasterKey=()=>asmKey('master/jacket'),asmCalibKey=s=>asmKey('calib/'+s);
+/* ASM_VEST: which vest master this is. Its photos (the vest master, its calibration photo, each suit's vest piece) carry it in their
+   keys, so a remade vest master replaces the old one on every device: version 1 drew a seven-button waistcoat */
+const ASM_VEST=2,asmVestTag=(v=ASM_VEST)=>v>1?String(v):'';
+const asmKey=t=>'c'+fnv64('asm/'+ASM_VER+'/'+t),asmMasterKey=()=>asmKey('master/jacket'),asmCalibKey=(s,v)=>asmKey('calib/'+s+(s==='vest'?asmVestTag(v):''));
 /* the vest master: the master with a waistcoat added. A suit worn with its waistcoat has a second piece ('vest'), an edit of this one */
-const asmVestKey=()=>asmKey('master/vest');
+const asmVestKey=v=>asmKey('master/vest'+asmVestTag(v));
 const ASM_SLOT={jacket:'top',vest:'top',shirt:'shirt',tie:'tie',bar:'clip',watch:'watch'};   // a piece and the outfit slot it dresses
 /* how a piece looks, for its key: lookSig, and for a shirt in a woven texture that was never read the weave's name too (lookSig
    counts those by colour alone; here every shirt look gets its own photo) */
 const asmLook=(slot,i)=>lookSig(ASM_SLOT[slot],i)+(slot==='shirt'&&texPat('shirt',i.pattern)&&!shirtPatterned(i)&&!shirtTextured(i)?'/weave/'+patBase(i.pattern):'');
-const asmPieceKey=(slot,i)=>asmKey('piece/'+slot+'/'+asmLook(slot,i));
+const asmPieceKey=(slot,i,v)=>asmKey('piece/'+slot+(slot==='vest'?asmVestTag(v):'')+'/'+asmLook(slot,i));
 /* the master's placeholder clothes: a plain mid-grey suit, a white shirt, a green tie, and the owner's watch */
 const asmMasterItem=(type,primaryColor)=>({id:'asm-'+type,type,primaryColor,pattern:'solid'});
 function asmMasterOutfit(){const watch=items.find(i=>i.type==='watch'&&inRotation(i))||items.find(i=>i.type==='watch');
@@ -203,7 +206,15 @@ const asmWants=o=>asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmV
    (Settings: Regenerate) wins: that was the owner's choice. */
 function asmFor(o){if(!asmWants(o))return null;const full=renders[comboKey(o)];if(full&&full.t>renders[asmMasterKey()].t)return null;
   const a=asmOut[asmOutKey(o)];return a&&a.stamp===asmStamp(o)?{img:a.img,model:'assembled',t:a.t,sig:comboSig(o)}:null}
-async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}}
+async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
+  await asmDropOld()}
+/* photos made from an earlier vest master that this device still holds are dropped, once per version (localStorage.asm_vest) */
+async function asmDropOld(){const had=+localStorage.getItem('asm_vest')||1;if(had>=ASM_VEST)return 0;let n=0;const del=k=>txs('meta','readwrite',st=>st.delete(k));
+  try{for(let v=had;v<ASM_VEST;v++){const keys=[asmVestKey(v),asmCalibKey('vest',v),...items.filter(i=>i.type==='suit').map(i=>asmPieceKey('vest',i,v))];
+      for(const k of keys)if(renders[k]){delete renders[k];await del('render:'+k);n++}
+      await del('asm:vest:'+asmVestKey(v))}
+    localStorage.setItem('asm_vest',String(ASM_VEST))}catch(e){console.warn(e)}
+  return n}
 /* one photo from the worker onto the device (each asked for once a session; a queued photo arrives by itself) */
 async function asmGet(key,force){if(renders[key])return true;const W=workerBase(),mk=asmMasterKey();if(!W||asmTried.has(key))return false;
   // a worker with no master yet is not asked again at every start (ASM_NONE_MS), only when Settings looks
