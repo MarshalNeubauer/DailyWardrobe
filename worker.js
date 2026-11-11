@@ -532,11 +532,12 @@ He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
 Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
 Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
-/* a one-piece edit of a kept photo (a test path: is changing only the tie cheaper than a whole new photo?): body.image is the
-   photo, body.swap {what, text} the piece and its description, refs its photos, body.mask (or body.markup) where it is */
+/* a one-piece edit of a kept photo (a test path: is changing one piece cheaper than a whole new photo?): body.image is the
+   photo, body.swap {what, text} the piece (one of SWAP_KEEP) and its description, refs its photos, body.mask (or body.markup) where it is */
+const SWAP_KEEP = { jacket: 'the jacket and its pattern', shirt: 'the shirt and collar', tie: 'the tie, its knot and its pattern', 'tie bar': 'the tie bar', watch: 'the wristwatch' };
 const SWAP_PROMPT = (what, text) => `Edit the first image (a photograph of a man's torso). Replace only the ${what} with: ${text}{REFS}.
-The new ${what} takes the place of the old one: same position, size, knot, drape and lighting, lying under the hand and the tie bar where they cover it.
-Everything else must stay exactly as it is in the first image: the jacket and its pattern, the shirt and collar, the tie bar, the wristwatch, both hands, the pose, the background, the light and the framing.
+The new ${what} takes the place of the old one: same position, size, shape, drape and lighting, with the same outline, lying under whatever covers it now (a hand, the tie bar, the lapels).${what === 'jacket' ? ' Keep the cut as it is: the lapels, buttons, pockets, sleeves and every fold stay where they are; only the cloth changes.' : ''}
+Everything else must stay exactly as it is in the first image, pixel for pixel where possible: ${Object.keys(SWAP_KEEP).filter(k => k !== what).map(k => SWAP_KEEP[k]).join(', ')}, both hands, the pose, the background, the light and the framing.
 No added text, captions or watermark.`;
 function dataUrlToBlob(u) {
   const m = String(u || '').match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/s);
@@ -579,7 +580,7 @@ async function outfitPhoto(body, env) {
   const refText = !refs.length ? '' : labels.length === refs.length
     ? `. The photos after the illustration show the actual items, in this order: ${labels.join('; ')}. Match each one exactly`
     : ', and match the photos of the actual items that follow it';
-  const swap = body.swap && /^[a-z ]{2,30}$/.test(String(body.swap.what || '')) ? { what: body.swap.what, text: String(body.swap.text || '').replace(/[{}`]/g, '').slice(0, 1500) || `another ${body.swap.what}` } : null;
+  const swap = body.swap && Object.hasOwn(SWAP_KEEP, String(body.swap.what || '')) ? { what: body.swap.what, text: String(body.swap.text || '').replace(/[{}`]/g, '').slice(0, 1500) || `another ${body.swap.what}` } : null;
   const swapRefs = !refs.length ? '' : `. The images after the first show the new ${swap && swap.what}${labels.length === refs.length ? `, in this order: ${labels.join('; ')}` : ''}. Match it exactly`;
   form.append('prompt', swap ? SWAP_PROMPT(swap.what, swap.text).replace('{REFS}', swapRefs) : RENDER_PROMPT(outfit, !!body.nojacket).replace('{REFS}', refText));
   form.append('image[]', base, `outfit.${base.type.split('/')[1]}`);
