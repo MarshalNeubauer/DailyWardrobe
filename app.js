@@ -705,9 +705,9 @@ function figureStage(o){
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   schedulePrefetch();   // and the rest of the month's photos, nearest first
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
-  const ck=comboKey(o),pend=renderPending(o),busyElse=!!rendering&&!pend,fail=renderFail[ck];
-  const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it to your worker…':'Your worker is making it (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made: ${fail}`:'';
-  const ctl=(!r||pend?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${pend||busyElse?' disabled':''}>${pend?'<span class="spin" aria-hidden="true"></span>Making photo…':r?'Regenerate photo':fail?'Try again':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${esc(msg)}</p>`;
+  const ck=comboKey(o),pend=renderPending(o),busyElse=!!rendering&&!pend,fail=renderFail[ck],stalled=!pend&&renderStalled(ck);
+  const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it to your worker…':'Your worker is making it (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made: ${fail}`:stalled?'Your worker has been on this photo for over 10 minutes, far longer than one takes. Send it again?':'';
+  const ctl=(!r||pend?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${pend||busyElse?' disabled':''}>${pend?'<span class="spin" aria-hidden="true"></span>Making photo…':r?'Regenerate photo':fail||stalled?'Try again':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${esc(msg)}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${wornMarks(o)}</div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}</div>`)+ctl+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
@@ -826,7 +826,9 @@ async function renderCombo(o){
 /* Generate (Today) or Regenerate (Settings) the shown day's photo. It goes to the worker's background queue, like the month batch,
    so the app can be swiped to another day, closed or locked: the worker makes it and the app picks it up when it next looks
    (every 20 s while open, and on opening). Only a worker without the queue makes it while the app waits. */
-const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||queuedKeys().includes(ck))};
+const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck)))};
+/* a photo waiting over 10 minutes has stalled (one takes about a minute; retries a few more): the button offers to send it again */
+const STALL_MS=10*60000,renderStalled=ck=>{const q=rqGet();return q.keys.includes(ck)&&Date.now()-sentAt(q,ck)>STALL_MS};
 async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
   const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();

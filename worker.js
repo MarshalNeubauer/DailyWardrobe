@@ -537,6 +537,7 @@ async function handleRender(req, env, json) {
 const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max'];   // xhigh and max: GPT Image 2.5 and later
 /* a request may name its own image model (to try a newer one under a test key) and, for GPT Image 2.6, a complexity */
 const IMG_MODEL_RE = /^gpt-image-[a-z0-9.-]{1,40}$/, COMPLEXITIES = ['low', 'medium', 'high'];
+const OPENAI_MS = 300000;
 async function outfitPhoto(body, env) {
   const base = dataUrlToBlob(body.image);
   if (!base) return { ok: false, status: 400, error: 'no illustration' };
@@ -558,8 +559,9 @@ async function outfitPhoto(body, env) {
   form.append('output_format', 'jpeg');
   form.append('n', '1');
   let r;
-  try { r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form }); }
-  catch (e) { return { ok: false, status: 502, retry: true, error: 'Could not reach the OpenAI API: ' + String(e && e.message) }; }
+  // a time limit: a call that hangs is retried instead of holding the job until Cloudflare stops it
+  try { r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form, signal: AbortSignal.timeout(OPENAI_MS) }); }
+  catch (e) { return { ok: false, status: 502, retry: true, error: (e && e.name === 'TimeoutError' ? 'OpenAI took over 5 minutes' : 'Could not reach the OpenAI API: ' + String(e && e.message)) }; }
   const out = await r.json().catch(() => null);
   if (!r.ok) {
     const msg = out && out.error && out.error.message || `HTTP ${r.status}`;
@@ -592,30 +594,36 @@ async function queueStatus(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
   const pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4));
+  // how far each waiting photo got: attempts so far and when the last began (none yet: its message hasn't been taken)
+  const running = {};
+  for (const k of pending.slice(0, 20)) { const r = await env.WARDROBE.get(`jobrun:${k}`, 'json'); if (r) running[k] = r; }
   const failed = [];
   for (const k of (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) {
     const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' });
   }
-  return json({ pending, failed });
+  return json({ pending, running, failed });
 }
 /* the queue consumer: one photo per message; temporary failures retry after a minute, others are recorded for the app */
 async function runRenderJob(msg, env) {
   const key = String(msg.body && msg.body.key || '');
   const job = COMBO_RE.test(key) ? await env.WARDROBE.get(`job:${key}`, 'json') : null;
-  if (!job) return msg.ack();
+  // the job is written to KV just before its message is sent, and KV can take up to a minute to show a new key in another
+  // location: a consumer that can't see it yet tries again shortly (acking it lost the photo, which then sat "pending" for days)
+  if (!job) { if (COMBO_RE.test(key) && (msg.attempts || 1) < 6) return msg.retry({ delaySeconds: 20 }); return msg.ack(); }
+  await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now() }), JOB_TTL);   // for GET /render-queue
   if (!job.replace && await env.WARDROBE.get(`render:${key}`)) { await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   if (!env.OPENAI_API_KEY) { await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env);
   if (r.ok) {
     await env.WARDROBE.put(`render:${key}`, JSON.stringify(r.rec));
-    await env.WARDROBE.delete(`job:${key}`);
+    await env.WARDROBE.delete(`job:${key}`); await env.WARDROBE.delete(`jobrun:${key}`);
     await tellHub(env, { key, rec: r.rec });
     return msg.ack();
   }
   if (r.retry && (msg.attempts || 1) < 4) return msg.retry({ delaySeconds: 60 });
   console.log(`photo ${key} failed: ${r.error}`);
   await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: r.error, t: Date.now() }), FAIL_TTL);
-  await env.WARDROBE.delete(`job:${key}`);
+  await env.WARDROBE.delete(`job:${key}`); await env.WARDROBE.delete(`jobrun:${key}`);
   await tellHub(env, { key, error: r.error });
   msg.ack();
 }
@@ -953,7 +961,15 @@ export default {
   async queue(batch, env) {
     for (const msg of batch.messages) {
       try { await runRenderJob(msg, env); }
-      catch (e) { console.log('photo job error', e && e.message); msg.retry({ delaySeconds: 60 }); }
+      catch (e) {
+        console.log('photo job error', e && e.message);
+        // a job that keeps crashing is recorded as failed (the queue would otherwise drop it silently and leave it "pending")
+        const key = String(msg.body && msg.body.key || '');
+        if ((msg.attempts || 1) < 4 || !COMBO_RE.test(key)) { msg.retry({ delaySeconds: 60 }); continue; }
+        try { const error = 'The worker failed making it: ' + String(e && e.message || e);
+          await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); await tellHub(env, { key, error }); } catch {}
+        msg.ack();
+      }
     }
   },
 };
