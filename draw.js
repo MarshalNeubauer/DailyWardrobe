@@ -30,14 +30,17 @@ function fabricDef(id,item,role,ctx){
   const fine=role==='shirt'||role==='tie';
   /* herringbone: columns of steep twill lines whose slant alternates, with a half-step break at each column edge */
   /* k: contrast (1 as drawn generically; more where the drawing is small, or for the photo generator) */
-  /* band: a herringbone stripe's plain band after each pair of columns ({w: its width, light: a satin sheen}) */
+  /* band: a herringbone stripe's plain band ({w: its width, light: a satin sheen}), after every twill column: slant one way, band,
+     slant the other way, band (each V split by a band, as on the user's pink shirt); without it the columns meet at a break line */
   const herringboneTile=(cw,lineDeg,tf,k=1,band)=>{
-    const t=Math.tan(lineDeg*Math.PI/180),sv=+(cw*.55).toFixed(3),bw=band?+band.w.toFixed(3):0,W=2*cw+bw,kmax=Math.ceil(t*cw/sv)+2,o=v=>Math.min(1,v*k).toFixed(3);
+    const t=Math.tan(lineDeg*Math.PI/180),sv=+(cw*.55).toFixed(3),bw=band?+band.w.toFixed(3):0,W=2*cw+2*bw,kmax=Math.ceil(t*cw/sv)+2,o=v=>Math.min(1,v*k).toFixed(3);
     const fam=(dir,off)=>{let d='';for(let k=-kmax;k<=kmax;k++){const y0=k*sv+off;d+=dir>0?`M0,${(y0+t*cw).toFixed(3)} L${cw},${y0.toFixed(3)} `:`M0,${y0.toFixed(3)} L${cw},${(y0+t*cw).toFixed(3)} `}return d};
     const col=(dir,off)=>`<path d="${fam(dir,off)}" stroke="${lt}" stroke-opacity="${o(.17)}" stroke-width="${(sv*.38).toFixed(3)}"/><path d="${fam(dir,off+sv/2)}" stroke="${dk}" stroke-opacity="${o(.2)}" stroke-width="${(sv*.3).toFixed(3)}"/>`;
-    const brk=Math.max(.24,cw*.06).toFixed(3);
-    return tile(W,sv,`<svg width="${cw}" height="${sv}" overflow="hidden">${col(1,0)}</svg><svg x="${cw}" width="${cw}" height="${sv}" overflow="hidden">${col(-1,sv/2)}</svg><rect x="${(cw-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/><rect x="${(W-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/>`+
-      (bw?`<rect x="${2*cw}" width="${bw}" height="${sv}" fill="${band.light?lt:dk}" opacity="${o(band.light?.14:.05)}"/><rect x="${(2*cw-brk/2).toFixed(3)}" width="${brk}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/>`:''),tf);
+    const brk=Math.max(.24,cw*.06),f=v=>(+v).toFixed(3),edge=x=>`<rect x="${f(x-brk/2)}" width="${f(brk)}" height="${sv}" fill="${dk}" opacity="${o(.16)}"/>`;
+    const plain=x=>bw?`<rect x="${f(x)}" width="${f(bw)}" height="${sv}" fill="${band.light?lt:dk}" opacity="${o(band.light?.14:.05)}"/>`:'';
+    const x2=cw+bw;   // where the second column starts
+    return tile(W,sv,`<svg width="${cw}" height="${sv}" overflow="hidden">${col(1,0)}</svg>${plain(cw)}<svg x="${f(x2)}" width="${cw}" height="${sv}" overflow="hidden">${col(-1,sv/2)}</svg>${plain(x2+cw)}`+
+      edge(cw)+edge(x2+cw)+(bw?edge(x2)+edge(W):''),tf);
   };
   /* layouts read from the item's photo take precedence over the generic tiles.
      Ties keep the photographed angle; garments snap to vertical/horizontal. */

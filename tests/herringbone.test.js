@@ -22,7 +22,10 @@ module.exports=async({ok,chromium,url})=>{
       const d=fabricDef('a',pink,'shirt'),w=+(d.match(/<pattern[^>]*width="([\d.]+)"/)||[])[1],cw=+(d.match(/<svg width="([\d.]+)"/)||[])[1];
       return {band:texPlainBand(g),blue:texPlainBand(['10000001','01000010','00100100','00011000']),w,cw,sheen:/<rect x="[\d.]+" width="[\d.]+" height="[\d.]+" fill="#fff"/.test(d)}});
     ok(pk.band&&Math.abs(pk.band.share-.2)<1e-9&&pk.band.light&&pk.blue===null,'the user\'s pink herringbone stripe: Claude\'s bitmap has a plain band (a column all 1, a column all 0: 20% of the repeat, shiny); the blue shirt has none');
-    ok(Math.abs(pk.w-(2*pk.cw+2*pk.cw*.25))<.01&&pk.sheen,`it is drawn: two twill columns, then a plain shiny band (repeat ${pk.w}, columns ${pk.cw})`);
+    ok(Math.abs(pk.w-(2*pk.cw+2*(2*pk.cw*.25)))<.01&&pk.sheen,`it is drawn alternating, as on the shirt: a twill column, a plain shiny band, the column slanting the other way, a band (repeat ${pk.w.toFixed(2)}, columns ${pk.cw.toFixed(2)})`);
+    const order=await p.evaluate(()=>{const pink={id:'p',type:'shirt',primaryColor:'pink',pattern:'herringbone',sett:{v:4,tex:{kind:'herringbone',grid:['1000000110','0100001010','0010010010','0001100010'],lighter:true,rel:.179},a:0,cr:13,tr:45}};
+      const d=fabricDef('a',pink,'shirt');return [...d.matchAll(/<(svg) [^>]*x="([\d.]+)"|<svg width|<rect x="([\d.]+)" width="([\d.]+)" height="[\d.]+" fill="#fff"/g)].map(m=>m[0].startsWith('<svg')?'col':'band')});
+    ok(order.join(',')==='col,band,col,band',`one band after each column (${order.join(', ')})`);
     const src=require('fs').readFileSync(require('path').join(__dirname,'..','worker.js'),'utf8');
     ok(/plain \(untwilled\) bands/.test(src),'Claude is told to mark a stripe\'s plain bands as columns that are the same all the way down');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
