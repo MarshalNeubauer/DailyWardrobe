@@ -297,6 +297,7 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
   - a queued job can be a one-piece edit too (`swap`, `mask`, `markup` kept in the job): a direct request waiting minutes is cut off by some proxies
   - photos under test keys (`c7e57…`) expire from KV after 7 days (`renderTtl`)
   - a one-piece edit of a kept photo, as a test path (not used by the app): `swap {what, text}` with the photo as `image`, the new piece's photos as `refs`, and a `mask` (PNG with alpha, the photo's size) or a `markup` layer; the prompt is `SWAP_PROMPT`
+  - `swap.what` is one of `SWAP_KEEP` (jacket, shirt, tie, tie bar, watch): the prompt lists every other piece as staying exactly as it is; a jacket swap keeps the cut and changes only the cloth
 - Photos are saved per outfit combination (`comboKey()` in app.js: the shirt by base colour only; the jacket/tie/clip/watch by how they look; plus the vest) as `render:c<16 hex>` in KV (no expiry) and in `meta`, so a combination is never generated twice.
 - GET/PUT `/render?key=` share a photo between devices; `GET /render?list=1` lists every kept key. Older `render:<date>` copies are migrated on first use.
 - POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`).
