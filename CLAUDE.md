@@ -31,6 +31,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 ### `styles.css`
 
 - styles
+- design system for every page but Today (scoped to `#wardrobe`, `#add`, `#stats`, `#settings-modal`; Today keeps its own tuned styles): page header `.phead` (22px title, `.pcount`, `.pback`), buttons and inputs 44px (`--ctl-h`/`--in-h`), radius 12px on controls and 14px on cards, bordered cards, `.pri` filled, `.danger` red outline; the base button rule uses `:where()` so page rules override it; `tests/uipages.test.js` checks sizes, titles and no sideways scroll at 320/466/626px
 
 ### `core.js`
 
@@ -175,7 +176,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - swipe gestures
 - occasions in Settings (`setOccasion`, `addFormalDay`, `renderFormalUI`; `hasOutfit(o)` is true for a no-jacket day too, whose photo key includes the trousers and whose request sends `nojacket`)
 - days off in Settings (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`)
+- Settings is a full-screen page (a centred panel from 600px): a sticky header with Done (`saveSettings`: saves the connection fields and closes), a Wardrobe stats link, then categories that unfold like Today's cards (`SET_CATS`: schedule, daysoff, weather, photos, tagging, backup, connection; `.scat`, `toggleCat`, `setCatOpen`), each with a one-line summary (`settingsSummaries`); `openSettings('<key>')` opens one category and scrolls to it, and tests must open the category before clicking inside it
 - out of rotation: the open Wardrobe item has "Take out of rotation" / "Put back in rotation" beside Close and Delete (`togglePause`); taking it out releases upcoming days it was pinned to (`force`), the picker and "Suggest another" leave it out (`slotPool`/`swapSlot`; correcting a past day still offers it), and its grid box is dimmed with an "Out of rotation" tag (`.gi.paused`, `.pausetag`)
+- Wardrobe boxes are one tap target (photo, type eyebrow `.gtype`, name) with no buttons; the open item has Close, Delete (`.danger`) and the rotation button in `.giact`; Add and the editor use one set of labels (Type, Colour, Second colour, Third colour) and dropdown labels start with a capital (`cap1`)
 - bought, on the way: the Add card has "Bought, on the way" (`orderRow`/`setOrder`) with an optional Arrives date (`setArrives`); `save()` stores it paused; the grid tag reads "On the way · <date>", the open item can change the date (`setItemArrives`) or "It arrived: put in rotation"; `checkArrivals()` (start-up and `newDayCheck`) puts items back in rotation the day after their date, with a toast
 - weather:
   - 16-day forecast

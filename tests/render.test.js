@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:(document.querySelector('.fig.photo .lastworn')||{}).textContent||'',btn:!!document.querySelector('.render-btn'),mode:!!document.querySelector('.figmode')}));
     ok(shown.img&&/^(Last worn \w{3}, \w{3} \d+)?$/.test(shown.by)&&!shown.btn&&!shown.mode,`the photo replaces the illustration (no picture switch, no button under it); the only caption is the last-worn date, when there is one ("${shown.by}")`);
     // regenerating lives in Settings
-    const rg=await p.evaluate(()=>{openSettings();const b=document.querySelector('#regen-btn');return {t:b.textContent,d:b.disabled}});
+    const rg=await p.evaluate(()=>{openSettings('photos');const b=document.querySelector('#regen-btn');return {t:b.textContent,d:b.disabled}});
     ok(/^Regenerate photo for \w{3}, \w{3} \d+$/.test(rg.t)&&!rg.d,`Settings offers to regenerate the shown day's photo ("${rg.t}")`);
     const n0=gens;await p.click('#regen-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(gens===n0+1&&await p.evaluate(()=>!!document.querySelector('.fig.photo img')&&!settingsOpen()),'tapping it makes a new photo and shows Today');
