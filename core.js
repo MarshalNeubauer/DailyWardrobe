@@ -94,7 +94,10 @@ let items=[];
 let dayRecs={},TODAY_OVERRIDE=null;
 const todayDate=()=>{const d=TODAY_OVERRIDE?new Date(TODAY_OVERRIDE):new Date();d.setHours(0,0,0,0);return d};
 /* an item the user took out of rotation (item.paused) stays in the wardrobe and in past outfits, but the planner never picks it */
-const inRotation=i=>!!i&&!i.paused;
+/* an item bought but not here yet (item.order) is paused too; with an arrival date (item.arrives, YYYY-MM-DD) it is in rotation for
+   every day after that date, so the plan already includes it from then on. n is a day number (di); without one, today. */
+const arriveN=i=>{if(!i||!i.arrives)return null;const [y,m,d]=String(i.arrives).split('-').map(Number);return y&&m&&d?di(new Date(y,m-1,d)):null};
+const inRotation=(i,n)=>{if(!i)return false;if(!i.paused)return true;const a=arriveN(i);return a!=null&&(n??di(todayDate()))>a};
 const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip','links','coat'];
 /* occasions a day can be given (Settings): each changes what the planner picks. 'formal' is stored as rec.formal (as
    before); the others as rec.occasion. 'casual' = no jacket and no tie: a shirt and trousers. */
