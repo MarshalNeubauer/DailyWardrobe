@@ -26,6 +26,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await ctx.route('https://w.test/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({...base,patternBox:{x:293,y:272,w:339,h:543},weave:{...weave,colours:weave.colours.slice(0,3),description:DESC},model:'m'})}));
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
+    // the synthetic cloths' noise is seeded, so every run draws the same cloth
+    await p.evaluate(()=>{let x=20261111;Math.random=()=>{x=(x*16807)%2147483647;return x/2147483647}});
 
     // ---- a synthetic plaid with known bands: every colour and width comes back
     const syn=await p.evaluate(()=>{const S=900,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
