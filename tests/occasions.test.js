@@ -44,7 +44,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/No black tie/.test(gaps.notes)&&/No black, charcoal or navy suit/.test(gaps.notes)&&gaps.tie==='navy',`without a black tie or dark suit it picks the darkest and says so (${gaps.tie})`);
     ok(/No separate trousers/.test(gaps.casual)&&gaps.cshirt,'a no-jacket day without odd trousers says so');
     // ---- Settings → Occasions ----
-    await p.evaluate(()=>openSettings('daysoff'));
+    await p.evaluate(()=>openSettings());
     ok((await p.locator('#cfg-occasion option').allTextContents()).join()==='Formal,Wedding,Funeral,No jacket or tie','Settings offers the four occasions');
     const add=async(date,occ)=>{await p.fill('#cfg-formal-date',date);await p.selectOption('#cfg-occasion',occ);await p.evaluate(()=>{$('#formal-msg').textContent=''});await p.click('#occ-add');await p.waitForFunction(()=>/is now/.test($('#formal-msg').textContent),null,{timeout:8000})};
     await add('2026-11-17','wedding');const m1=await p.textContent('#formal-msg');await add('2026-11-18','casual');const m2=await p.textContent('#formal-msg');await add('2026-11-19','funeral');
@@ -70,7 +70,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // re-planning keeps the occasions; × makes a day regular again
     const keep=await p.evaluate(async()=>{await swapSlot('shirt');await replanFuture();cache={};return [17,18,19].map(d=>occOf(dayRecs['2026-11-'+d])).join()});
     ok(keep==='wedding,casual,funeral','re-planning upcoming days keeps their occasions');
-    await p.evaluate(()=>openSettings('daysoff'));await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!occOf(dayRecs['2026-11-17'])&&document.querySelectorAll('#formal-list .fchip').length===2);
+    await p.evaluate(()=>openSettings());await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!occOf(dayRecs['2026-11-17'])&&document.querySelectorAll('#formal-list .fchip').length===2);
     ok(await p.evaluate(()=>{closeSettings();return planFor()['2026-11-17'].occasion===null&&document.querySelectorAll('#formal-list .fchip').length===2}),'× makes it a regular day again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

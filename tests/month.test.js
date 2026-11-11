@@ -63,7 +63,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};figView='photo';renderToday()});
     ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
     // Settings: generate the month's missing photos
-    await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings('photos')});
+    await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings()});
     const before=await p.evaluate(()=>({btn:$('#batch-btn').textContent,n:batchCombos().length}));
     ok(new RegExp(`^Generate ${before.n} photos for November 2026$`).test(before.btn)&&before.n>=3,`Settings offers to generate the month's missing photos (${before.btn})`);
     // the worker starts empty except for one look another device already made: that one is fetched, not generated

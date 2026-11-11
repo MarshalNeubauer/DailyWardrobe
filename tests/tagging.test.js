@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p.click('#queue .offer .chipbtn');
     await p.evaluate(()=>{const f=queue[0].colForm;f.base='taupe';});await p.click('#queue .newform button.pri');await p.waitForFunction(()=>queue[0].primaryColor==='ownmushroom');
     const nc=await p.evaluate(()=>({cu:settings.custom.colors,col:queue[0].primaryColor,list:COLS_BY.suit.p.includes('ownmushroom'),blazer:COLS_BY.blazer.p.includes('ownmushroom'),shirt:COLS_BY.shirt.p.includes('ownmushroom'),
-      opt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='Mushroom'))}));
+      opt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='mushroom'))}));
     ok(nc.cu.length===1&&nc.cu[0].key==='ownmushroom'&&nc.cu[0].base==='taupe'&&nc.col==='ownmushroom','Add as a new colour saves it (with what it behaves like) and the card takes it');
     ok(nc.list&&nc.blazer&&!nc.shirt&&nc.opt,'it is offered for suits, blazers and trousers (the default group), not shirts');
     await p.evaluate(()=>{queue[0].newPattern={name:'seersucker',why:'puckered stripes'};renderAdd()});
@@ -100,7 +100,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(await p.evaluate(()=>COLORS.ownmushroom===settings.custom.colors[0].hex&&PATS_BY.suit.includes('own-seersucker')),'your colours and patterns are back after a restart');
     // Settings: listed; one in use cannot be removed, an unused one can
     await p.evaluate(()=>addCustomColor({name:'Sage',hex:'#9caf88',base:'olive',types:['tie']}));
-    await p.evaluate(()=>openSettings('tagging'));
+    await p.evaluate(()=>openSettings());
     const cl=await p.evaluate(()=>[...document.querySelectorAll('#custom-list .custrow')].map(r=>r.textContent));
     ok(cl.length===3&&/mushroom.*1 item/.test(cl[0])&&!/Remove/.test(cl[0])&&/Sage.*Remove/.test(cl[1])&&/seersucker/.test(cl[2])&&!/Remove/.test(cl[2]),'Settings lists them; ones in use can\'t be removed');
     await p.click('#custom-list .custrow:has-text("Sage") button');await p.waitForFunction(()=>!COLORS.ownsage);

@@ -58,7 +58,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};
-      if(clear)for(const x of Object.keys(renders))delete renders[x];show('today');openSettings('photos')};
+      if(clear)for(const x of Object.keys(renders))delete renders[x];show('today');openSettings()};
     await p.evaluate(setup,true);
     const n=await p.evaluate(()=>batchCombos().length);
     await p.click('#batch-btn');await p.waitForFunction(()=>!batch,null,{timeout:30000});

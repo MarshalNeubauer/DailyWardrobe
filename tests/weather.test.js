@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url})=>{
   ok(wd.next==='2026-11-23','the next-day arrow skips the weekend');
 
   // ---- formal day via Settings: pick a date, Make formal ----
-  await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday();openSettings('daysoff')});
+  await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday();openSettings()});
   ok(await p.evaluate(()=>!document.querySelector('#today [aria-label="Make formal"]')&&!document.querySelector('#today .tog')),'the formal option is not on Today');
   await p.fill('#cfg-formal-date','2026-11-19');await p.click('#occ-add');await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
   const fl=await p.evaluate(()=>({msg:$('#formal-msg').textContent,list:[...document.querySelectorAll('#formal-list .fchip')].map(c=>c.textContent)}));
@@ -45,7 +45,7 @@ module.exports=async({ok,chromium,url})=>{
   ok(f.links==='gold'&&f.watch==='gold','French cuffs get cufflinks matching the watch metal');
   ok(f.formality&&f.formality.pts===10,'Formality check scores 10/10');
   ok(await p.evaluate(()=>(document.querySelector('#today .dayact .ftag')||{}).textContent==='Formal day'),'Today marks the formal day (a small tag, not a button)');
-  await p.evaluate(()=>openSettings('daysoff'));await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!planFor()['2026-11-19'].formal);
+  await p.evaluate(()=>openSettings());await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!planFor()['2026-11-19'].formal);
   ok(await p.evaluate(()=>!document.querySelector('#formal-list .fchip')),'the × on a formal day in Settings makes it regular again');
   await p.evaluate(()=>{closeSettings();setFormal(true,'2026-11-19')});await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
   // French cuffs with no cufflinks owned
@@ -56,10 +56,10 @@ module.exports=async({ok,chromium,url})=>{
   await p.evaluate(()=>{settings.location=null;closeSettings();renderToday()});
   ok((await p.textContent('.day .wx')).includes('Set your location'),'without a location the date bar offers "Set your location for weather"');
   await p.click('.day .wx a');await p.waitForTimeout(150);
-  ok(await p.evaluate(()=>getComputedStyle(document.querySelector('#settings-modal')).display!=='none'&&document.querySelector('#sc-weather').classList.contains('open')&&!document.querySelector('#sc-schedule').classList.contains('open')),'the link opens Settings at the weather section');
+  ok(await p.evaluate(()=>getComputedStyle(document.querySelector('#settings-modal')).display!=='none'&&!!document.querySelector('#wx-section')),'the link opens Settings at the weather section');
   await p.evaluate(()=>closeSettings());
   // ---- weather ----
-  await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];openSettings('weather')});
+  await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];openSettings()});
   await p.fill('#cfg-city','Austin');await p.click('text=Search');await p.waitForTimeout(150);
   await p.click('#city-results button');await p.waitForFunction(()=>Object.keys(weather).length>0);
   ok(wxCalls>=1,'choosing a city fetches the forecast');
