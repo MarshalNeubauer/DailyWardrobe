@@ -24,6 +24,16 @@ module.exports=async({ok,chromium,url,settle})=>{
   ok(f.hot===0,'no selection dots on the figure');
   ok(!f.useInClip,'no <use> inside <clipPath> (WebKit-safe)');
   ok(f.shoulder&&f.collar,'the redrawn figure: sleeves set into the shoulder line, a shirt collar band around the neck');
+  // the pose of the owner's model photo: the right hand at the waist button under the left wrist, clear of the watch; the photo
+  // generator gets a square crop of it (shoulders across, ending under the pocket flaps), a no-jacket day the whole drawing
+  const pose=await p.evaluate(async()=>{const o=planFor()[key(sel)],d=document.createElement('div');d.style.cssText='position:absolute;left:0;top:0;width:390px';d.innerHTML=figureSvg(o,'q-');document.body.appendChild(d);
+    const b=s=>d.querySelector(s).getBoundingClientRect(),l=b('.fig-hand-l'),r=b('.fig-hand-r'),w=b('.fig-watch');d.remove();
+    const size=u=>new Promise(k=>{const i=new Image();i.onload=()=>k([i.width,i.height]);i.src=u});
+    return {apart:r.top>=w.bottom-22&&r.right<w.right,under:r.top-l.bottom<12&&r.top>l.top+40,button:r.left<195&&r.right>195&&r.top<240&&r.bottom>236,
+      sq:await size(await figurePng(o)),whole:await size(await figurePng({...o,top:null})),crop:FIG_CROP,r:[r.left,r.top,r.right,r.bottom].map(Math.round),w:[w.left,w.top,w.right,w.bottom].map(Math.round)}});
+  ok(pose.under&&pose.button,`the right hand is raised to the waist button, right under the left hand (${pose.r})`);
+  ok(pose.apart,`it stays clear of the watch (${pose.w})`);
+  ok(pose.sq.join()==='780,780'&&pose.whole.join()==='780,800'&&pose.crop.s<390&&pose.crop.x*2+pose.crop.s===390,`the photo generator gets a centred square crop with a jacket (${pose.sq}), the whole drawing without (${pose.whole})`);
   // a tile unfolds that item's photo in a box below the tiles; tapping it again, or the photo, folds it back
   await p.click('.below .tile >> nth=1');await settle(p,600);
   const bo=await p.evaluate(()=>{const b=$('#bbox'),o=planFor()[key(sel)],t=[...document.querySelectorAll('.below .tile')];

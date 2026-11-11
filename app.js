@@ -914,11 +914,15 @@ function outfitText(o){
     o.watch&&watchText(o.watch),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
-/* draw the figure SVG onto a canvas and return a PNG data URL */
+/* draw the figure SVG onto a canvas and return a PNG data URL. With a jacket the picture is the square FIG_CROP of the drawing
+   (viewBox units): the shoulders fill its width and it ends just under the pocket flaps, the close framing the photo generator
+   copies (sent whole, 390x400, it came back zoomed out, down to the hips). A no-jacket day keeps the whole drawing */
+const FIG_CROP={x:22,y:0,s:346};
 function figurePng(o,w=780){
-  const svg=figureSvg(o,'r-').replace('width="100%"',`width="${w}" height="${Math.round(w*400/390)}"`).replace('style="display:block;height:auto"','');
-  return new Promise((ok,no)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=w;c.height=Math.round(w*400/390);const x=c.getContext('2d');
-    x.fillStyle=figBg();x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/png'))};im.onerror=()=>no(new Error('could not draw the illustration'));
+  const crop=o&&o.top?FIG_CROP:null,k=crop?w/crop.s:w/390,W=Math.round(390*k),H=Math.round(400*k);
+  const svg=figureSvg(o,'r-').replace('width="100%"',`width="${W}" height="${H}"`).replace('style="display:block;height:auto"','');
+  return new Promise((ok,no)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=w;c.height=crop?w:H;const x=c.getContext('2d');
+    x.fillStyle=figBg();x.fillRect(0,0,c.width,c.height);x.drawImage(im,crop?-crop.x*k:0,crop?-crop.y*k:0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>no(new Error('could not draw the illustration'));
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
 }
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
