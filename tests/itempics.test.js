@@ -67,7 +67,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.ftag').textContent}});
     const rc=await p.evaluate(()=>{const b=document.querySelector('#rbox'),m=document.querySelector('#mbox');return {after:!!b&&!!m&&b.previousElementSibling===m,h:b&&Math.round(b.getBoundingClientRect().height),w:b&&Math.round(b.getBoundingClientRect().width),mw:m&&Math.round(m.getBoundingClientRect().width),text:b&&b.textContent.trim()}});
     ok(r2.kids==='ftag'&&r2.label==='Formal day'&&rc.after&&rc.h>=76&&rc.w===rc.mw&&/Reset/.test(rc.text),`after a swap, a Reset card under the month, the size of the other cards (${JSON.stringify(rc)}); the Formal day tag stays in its row`);
-    await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides);
+    await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides&&!document.querySelector('#rbox'),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>!document.querySelector('#rbox')),'Reset clears the changes and the card goes away');
     // today with a change: worn toggle, Formal and the reset icon fit one row even on narrow phones
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('#rbox'));

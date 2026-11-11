@@ -554,6 +554,27 @@ async function recordDays(p){
   }
   if(changed&&window.scheduleSync)scheduleSync();
 }
+/* ---- the coming week stays as shown ----
+   Each workday from today to LOCK_DAYS-1 days on gets rec.lock, the pieces the plan showed for it (not the coat: that follows the
+   forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not worn or
+   adding an item re-plans only the days after the lock, not tomorrow's outfit. A change made by hand on a day (a swap, a pick, an
+   occasion, Reset, a move) drops that day's lock: the day is planned again around the change and locked as it then shows. */
+const LOCK_DAYS=7,lockIds=o=>{const l=idsOf(o);delete l.coat;return l};
+async function lockUpcoming(){
+  if(!items.length)return;const T=todayDate(),mine=dayRecs;let n=0;
+  for(let g=0;g<LOCK_DAYS;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(!isWorkday(d))continue;
+    if(dayRecs!==mine)break;   // the history was replaced meanwhile (sync, restore)
+    // the plan is read afresh for each day (it is cached; a change made while an earlier lock was being saved has reset it), and the lock
+    // is put on the record before the write is awaited, so a lock never comes from a plan that is no longer the one on screen
+    const k=key(d),o=planMonth(d.getFullYear(),d.getMonth())[k];if(!o||o.frozen||!SLOTS.some(s=>o[s]))continue;
+    const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l))continue;
+    const rec={...(r||{date:k}),lock:l,updated:Date.now()};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
+    await txs('days','readwrite',s=>s.put(rec))}
+  if(n&&window.scheduleSync)scheduleSync()}
+/* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
+async function clearLocks(){const T=todayDate();let n=0;
+  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>T&&r.worn!==true){const c={...r};delete c.lock;await saveDay(c,true);n++}
+  if(n&&window.scheduleSync)scheduleSync();return n}
 async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
   const cur=o[slot]&&o[slot].id,pool=items.filter(i=>(slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay))&&inRotation(i,di(sel)));
@@ -564,7 +585,7 @@ async function swapSlot(slot){
   // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
   const follow=FOLLOW[slot]||[];
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  rec.skip=skip;rec.force=force;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
+  rec.skip=skip;rec.force=force;delete rec.lock;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
 }
 const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks']};
 /* ---- learning from changes (the votes are read by the planner, see planner.js) ----
@@ -591,7 +612,7 @@ function fitOf(slot,o,c){
     case 'top':case 'bot':case 'shirt':case 'tie':return clothesScore(top,bot,slot==='shirt'?c:o.shirt,slot==='tie'?c:o.tie,suit,day)+(slot==='top'?seasonFit(c,day.clim.season)*2+(day.formal?formalTop(c)*2:0):0);
     case 'shoes':return legs?shoeScore(top,legs,c)+shoeFormality(c,suit):0;
     case 'belt':{const f=o.shoes?beltFit(o.shoes,c):0;return f===null?-60:f}
-    case 'socks':return sockScore(legs,o.shoes,c);
+    case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie));
     case 'watch':return watchFit(c,o.shoes,o.belt);
     case 'clip':case 'links':return o.watch?(metalOf(c)===metalOf(o.watch)?6:-4):0}
   return 0}
@@ -616,7 +637,7 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   if(!it||(o[slot]&&o[slot].id===id))return;
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  force[slot]=id;const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;
+  force[slot]=id;const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;
   swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);renderToday()}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
@@ -629,27 +650,29 @@ async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k]
   swapMsg=it?learnFrom(slot,slot==='top'?{...o,top:null}:o,null,it,true)&&'Corrected. The planner counts what you really wore.':'Corrected.';
   await saveDay(rec);renderToday()}
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
-/* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion */
-async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
-async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;swapMsg='';await saveDay(n);renderToday()}
+/* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
+   released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
+async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
 /* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay */
 async function replanFuture(){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<=T||r.worn===true)continue;
-    if(!(r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto))continue;
-    const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);n++}
+    const mine=r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto;if(!mine&&!r.lock)continue;
+    const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
 async function checkPlanRules(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
   settings.planRules=PLAN_RULES;await saveUserSettings();if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
 async function replanButton(){const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
-  if(!n){renderReplanUI('Nothing to reset: every upcoming day follows the planner.');return}
-  if(!confirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'} and let the planner choose again? Formal days, today and past days stay as they are.`))return;
-  const m=await replanFuture();renderReplanUI(`${m} day${m===1?'':'s'} planned again.`);todayStale=true}
+  const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true);
+  if(!n&&!locked){renderReplanUI('Nothing to reset: every upcoming day follows the planner.');return}
+  if(n&&!confirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'} and let the planner choose again? Formal days, today and past days stay as they are.`))return;
+  const m=await replanFuture();renderReplanUI(m?`${m} day${m===1?'':'s'} planned again.`:'The coming days were planned again.');todayStale=true}
 function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
-  el.textContent=msg||(n?`${n} upcoming day${n===1?' keeps':'s keep'} pieces from a swap.`:'Every upcoming day follows the planner.')}
+  el.textContent=msg||(n?`${n} upcoming day${n===1?' keeps':'s keep'} pieces from a swap.`:'Every upcoming day follows the planner.')+' The coming week stays as shown when something changes; re-plan to choose it again.'}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
   if(o.frozen){const r0=dayRecs[k];if(pastEdit!==k||!r0)return;await saveDay({...r0,vestOn:!!v,worn:true,edited:true});renderToday();return}
  const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
@@ -1132,7 +1155,7 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);fitNavSoon();
-  if(items.length){recordDays(p);
+  if(items.length){recordDays(p).then(lockUpcoming);
   }
 }
 
@@ -1225,7 +1248,7 @@ const mvSig=o=>o?[o.top&&o.top.id,o.bot&&o.bot.id,o.shirt&&o.shirt.id,o.tie&&o.t
 const MOVE_HOLD=380,MOVE_SLOP=8;
 function moveRecs(src,dst,plan){const o=(plan||planFor())[src];if(!o)return null;const ids=idsOf(o),force={};
   for(const [s,v] of Object.entries(ids))if(v&&s!=='coat')force[s]=v;   // the coat is the weather's choice
-  const recs={...dayRecs},keep=r=>{const n={...(r||{})};delete n.force;delete n.skip;delete n.ids;delete n.vest;delete n.kind;delete n.auto;return n};
+  const recs={...dayRecs},keep=r=>{const n={...(r||{})};delete n.force;delete n.skip;delete n.ids;delete n.vest;delete n.kind;delete n.auto;delete n.lock;return n};
   recs[dst]={...keep(dayRecs[dst]),date:dst,force,vest:!!o.vest,kind:o.suitDay?'suit':'blazer'};
   const s=keep(dayRecs[src]);if(Object.keys(s).filter(k=>k!=='date'&&k!=='updated').length)recs[src]={...s,date:src};else delete recs[src];
   return recs}
@@ -1401,7 +1424,8 @@ const unit=()=>settings.units||(/^en-(US|LR|MM)/.test(navigator.language||'')?'F
 const temp=c=>Math.round(unit()==='F'?c*9/5+32:c);
 const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
-async function saveUserSettings(){settings.updated=Date.now();await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
+async function saveUserSettings(){settings.updated=Date.now();cache={};   // the settings have changed already: the cached plan is stale now, not only once they are stored
+  await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
 /* ---- Settings: days off. A country's public holidays (each can be unticked if you work that day) and your own days
    off (a single day or a range, e.g. a holiday trip). They are planned like weekends: no outfit, nothing counted as worn. ---- */
 const COUNTRY_CODES='AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WS YE YT ZA ZM ZW'.split(' ');
@@ -1482,13 +1506,15 @@ function renderSettingsExtras(){
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.';
   if($('#cfg-units'))$('#cfg-units').value=unit();
-  if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';
+  if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
   settingsSummaries();
 }
 function setVestMode(v){settings.vestMode=v;saveUserSettings();settingsSummaries()}
+/* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
+async function setDarkShirts(v){settings.darkShirts=v;await clearLocks();await saveUserSettings();todayStale=true;settingsSummaries()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0)return;settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
-  renderSettingsExtras();saveUserSettings()}
+  renderSettingsExtras();clearLocks().then(saveUserSettings)}
 function setUnits(v){settings.units=v;saveUserSettings();settingsSummaries()}
 function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
 function useMyLocation(){if(!navigator.geolocation){alert('Location is not available on this device.');return}

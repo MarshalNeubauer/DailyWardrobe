@@ -34,7 +34,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     for(let k=1;k<=10;k++){await T('touchMove',a.x+(z.x-a.x)*k/10,a.y+(z.y-a.y)*k/10);await p.waitForTimeout(25)}
     await p.waitForTimeout(100);
     const mid=await p.evaluate(()=>({over:outfitMove&&outfitMove.over,drop:document.querySelector('#mpanel-in .mc[data-k="2026-11-16"]').classList.contains('drop'),
-      sig16:document.querySelector('#mpanel-in .mc[data-k="2026-11-16"]').dataset.sig,cells:Object.fromEntries([...document.querySelectorAll('#mpanel-in .mc[data-sig]')].map(c=>[c.dataset.k,c.dataset.sig])),sel:key(sel),saved:!!dayRecs['2026-11-16']}));
+      sig16:document.querySelector('#mpanel-in .mc[data-k="2026-11-16"]').dataset.sig,cells:Object.fromEntries([...document.querySelectorAll('#mpanel-in .mc[data-sig]')].map(c=>[c.dataset.k,c.dataset.sig])),sel:key(sel),saved:!!(dayRecs['2026-11-16']&&dayRecs['2026-11-16'].force)}));
     ok(mid.over==='2026-11-16'&&mid.drop&&mid.sig16===before['2026-11-18'],'held over Monday, Monday shows the moved outfit');
     const changed=Object.keys(mid.cells).filter(k=>mid.cells[k]!==before[k]);
     ok(changed.includes('2026-11-18')&&changed.length>=2,`the rest of the month is re-planned live (${changed.length} days changed), nothing saved yet`);
