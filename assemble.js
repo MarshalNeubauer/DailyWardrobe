@@ -8,7 +8,7 @@
 // Order: master, then the jacket, shirt, tie, tie bar and watch; pixels along the joins are rebuilt from clean pixels either side.
 // Today shows the assembled picture once the master, the zones and the outfit's pieces are on the device (asmFor / asmEnsure);
 // an outfit it can't do (no jacket, no tie, a vest), or with a piece still missing, keeps its own photo.
-const ASM_VER=2,ASM_DE=14;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+const ASM_VER=2,ASM_DE=14,ASM_EDGE=3;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
 /* ASM_VER 2: the masters the owner approved, made from the redrawn figure (close framing, the lower hand at the waist button, the
    watch turned as worn, a blurred light office): his dark grey herringbone suit, a white shirt, a burgundy tie and his watch, and
    the same photo with the suit's waistcoat. Version 1's master (zoomed out, the lower hand too low) was rejected; every key
@@ -108,8 +108,9 @@ function asmWatch(master,z,watch,shirt){const W=z.W,N=W*W,L0=asmLab(master),L=as
   return {mask:m,src,tinted}}
 /* Pixels on a join between two pieces carry a little of the wrong neighbour (a tie made over a white shirt has a pale edge): each is
    rebuilt from the clean pixels around it, nearer ones counting more. */
-function asmSeams(o,lab,W){const N=W*W,seam=new Uint8Array(N);
-  for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x,v=lab[i];if((x<W-1&&lab[i+1]!==v)||(y<W-1&&lab[i+W]!==v)){seam[i]=1;if(x<W-1&&lab[i+1]!==v)seam[i+1]=1;if(y<W-1&&lab[i+W]!==v)seam[i+W]=1}}
+function asmSeams(o,lab,W){const N=W*W,seam=new Uint8Array(N),J=v=>v===7?1:v;   // 7, the jacket's edge ring, is the jacket; where it meets the untouched master (0) the two photos agree: no join
+  const join=(a,b)=>a!==b&&J(a)!==J(b)&&!((a===7&&b===0)||(a===0&&b===7));
+  for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x,v=lab[i];if((x<W-1&&join(lab[i+1],v))||(y<W-1&&join(lab[i+W],v))){seam[i]=1;if(x<W-1&&join(lab[i+1],v))seam[i+1]=1;if(y<W-1&&join(lab[i+W],v))seam[i+W]=1}}
   const src=new Uint8ClampedArray(o);
   for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!seam[i])continue;let r=0,g=0,b=0,w=0;
     for(let dy=-2;dy<=2;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-2;dx<=2;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const j=yy*W+xx;if(seam[j])continue;const k=1/(dx*dx+dy*dy);r+=src[4*j]*k;g+=src[4*j+1]*k;b+=src[4*j+2]*k;w+=k}}
@@ -122,7 +123,12 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
   // shirt and tie), but not where the waistcoat meets the jacket
   let V=null;if(V0){const open=new Uint8Array(N);for(let i=0;i<N;i++)if((z.shirt[i]||z.tie[i])&&!V0[i])open[i]=1;const near=asmBox(open,W,3,true);V=new Uint8Array(N);for(let i=0;i<N;i++)if(V0[i]&&!near[i])V[i]=1}
   const copy=(s,m,id)=>{for(let i=0;i<N;i++)if(m[i]&&!(V&&V[i]&&id!==1&&id!==5)){const j=4*i;o[j]=s[j];o[j+1]=s[j+1];o[j+2]=s[j+2];lab[i]=id}};   // nothing but the suit (and a watch) goes over the waistcoat
-  if(P.jacket){copy(P.jacket.data,z.jacket,1);if(V0)copy(P.jacket.data,V0,1)}
+  if(P.jacket){copy(P.jacket.data,z.jacket,1);if(V0)copy(P.jacket.data,V0,1);
+    // the jacket's own outline: its zone stops a pixel or two short of the cloth's soft edge, and the master's dark edge left there
+    // read as an outline round a lighter or bluer jacket. The ASM_EDGE pixels just outside the zone, where no other piece is, come
+    // from the jacket's photo too (it is the master there, but for its own edge)
+    const ring=asmBox(V0?z.jacket.map((v,i)=>v||V0[i]):z.jacket,W,ASM_EDGE,true);
+    for(let i=0;i<N;i++)if(ring[i]&&!lab[i]&&!z.shirt[i]&&!z.tie[i]&&!z.watch[i]){const j=4*i;o[j]=P.jacket.data[j];o[j+1]=P.jacket.data[j+1];o[j+2]=P.jacket.data[j+2];lab[i]=7}}
   if(V0&&P.jacket){   // the master's tie also shows in the suit's photo where no zone covers it (its tip below the waistcoat): small specks of its colour are filled from beside them
     const Lm=asmLab(master),Lp=asmLab(P.jacket);let ga=0,gb=0,n=0;for(let i=0;i<N;i++)if(z.tie[i]){ga+=Lm[3*i+1];gb+=Lm[3*i+2];n++}ga/=n||1;gb/=n||1;
     if(Math.hypot(ga,gb)>12){const g=new Uint8Array(N);for(let i=0;i<N;i++)if(lab[i]===1&&Math.hypot(Lp[3*i+1]-ga,Lp[3*i+2]-gb)<12)g[i]=1;
@@ -136,7 +142,7 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
     // where the master's tie shows and the new one doesn't (a narrower tie; its tip below a waistcoat), the master's green would be
     // left: each such pixel takes what is beside it in the picture so far (the outfit's shirt, the waistcoat, the lapel)
     for(let i=0;i<N;i++)if(z.tie[i]&&!tieM[i]&&!(V&&V[i])){const x=i%W;let j=-1;for(let k=1;k<48&&j<0;k++){if(x-k>=0&&!z.tie[i-k])j=i-k;else if(x+k<W&&!z.tie[i+k])j=i+k}
-      if(j>=0){o[4*i]=o[4*j];o[4*i+1]=o[4*j+1];o[4*i+2]=o[4*j+2];lab[i]=lab[j]||6}}
+      if(j>=0){o[4*i]=o[4*j];o[4*i+1]=o[4*j+1];o[4*i+2]=o[4*j+2];lab[i]=lab[j]&&lab[j]!==7?lab[j]:6}}
     copy(P.tie.data,tieM,3)}
   let barM=null;if(P.bar&&!V){barM=asmBarMask(master,z,P.bar,tieM);if(barM)copy(P.bar.data,barM,4)}
   let w=null;if(P.watch){w=asmWatch(master,z,P.watch,P.shirt);copy(w.src,w.mask,5)}

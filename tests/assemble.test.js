@@ -20,9 +20,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // A: the windowpane jacket, the black shirt, the striped tie and a tie bar; the watch stays the master's
       const ia={},A=asmCompose(master,z,{jacket:X.jacket,shirt:X.black,tie:X.tie,bar:X.bar},ia),La=asmLab(A);
       let moved=0,watchKept=1;for(let i=0;i<N;i++){if(!ia.lab[i]&&!ia.seam[i]&&(A.data[4*i]!==master.data[4*i]||A.data[4*i+1]!==master.data[4*i+1]||A.data[4*i+2]!==master.data[4*i+2]))moved++;if(z.watch[i]&&ia.lab[i])watchKept=0}
+      // the jacket's edge ring: just outside its zone, from the jacket's photo, never on another piece, and not rebuilt as a join with the master
+      const near=asmBox(z.jacket,W,ASM_EDGE,true);let ringN=0,ringOk=1,ringSeam=0;for(let i=0;i<N;i++)if(ia.lab[i]===7){ringN++;const x=i%W;
+        if(!near[i]||z.jacket[i]||z.shirt[i]||z.tie[i]||z.watch[i])ringOk=0;
+        const out=[x?i-1:-1,x<W-1?i+1:-1,i-W,i+W].filter(j=>j>=0&&j<N),lone=out.every(j=>ia.lab[j]===7||ia.lab[j]===0||ia.lab[j]===1);
+        if(lone){if(ia.seam[i])ringSeam++;else if(A.data[4*i]!==X.jacket.data[4*i]||A.data[4*i+1]!==X.jacket.data[4*i+1]||A.data[4*i+2]!==X.jacket.data[4*i+2])ringOk=0}}
       const core=asmBox(z.tie,W,3,false),wide=asmBox(z.tie,W,3,true);let inCore=1,inWide=1;for(let i=0;i<N;i++){if(core[i]&&!ia.tie[i])inCore=0;if(ia.tie[i]&&!wide[i])inWide=0}
       const ring=asmBox(ia.tie,W,4,true);let rimN=0,rimPale=0;for(let i=0;i<N;i++)if(ring[i]&&!ia.tie[i]&&ia.lab[i]===2){rimN++;if(La[3*i]>55)rimPale++}
-      const a={moved,watchKept,inCore,inWide,rimN,rimPale:100*rimPale/Math.max(1,rimN),green:100*stat(La,z.tie,(l,x,b)=>x<-12?1:0),greenMaster:100*stat(Lm,z.tie,(l,x,b)=>x<-12?1:0),
+      const a={ringN,ringOk,ringSeam,moved,watchKept,inCore,inWide,rimN,rimPale:100*rimPale/Math.max(1,rimN),green:100*stat(La,z.tie,(l,x,b)=>x<-12?1:0),greenMaster:100*stat(Lm,z.tie,(l,x,b)=>x<-12?1:0),
         jacketB:stat(La,z.jacket,(l,x,b)=>b),jacketBMaster:stat(Lm,z.jacket,(l,x,b)=>b),shirtL:stat(La,asmBox(z.shirt,W,2,false),l=>l),bar:asmCount(ia.bar||[]),barL:ia.bar?stat(La,asmBox(ia.bar,W,1,false),l=>l):0};
       // B: the same with the pink shirt and another watch (smaller, on a strap: it uncovers a little of the cuff)
       const ib={},B=asmCompose(master,z,{jacket:X.jacket,shirt:X.pink,tie:X.tie,bar:X.bar,watch:X.watch},ib),Lb=asmLab(B);
@@ -42,6 +47,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.same,'zones survive being packed for storage and unpacked');
     ok(!r.noneOk,'calibration photos that changed nothing give zones that are refused');
     ok(r.a.moved===0&&r.a.watchKept===1,`outside the pieces the picture is the master, pixel for pixel, and the owner's watch stays the master's own (${r.a.moved} pixels differ)`);
+    ok(r.a.ringN>2000&&r.a.ringOk===1&&r.a.ringSeam===0,`the jacket's own edge comes from its photo: the ${r.a.ringN} pixels just outside its zone, none on another piece, and where they meet the master nothing is rebuilt (the master's dark edge left there read as an outline)`);
     ok(r.a.jacketBMaster<4&&r.a.jacketB>8,`the jacket is the khaki one, not the master's grey (yellowness ${r.a.jacketBMaster.toFixed(1)} -> ${r.a.jacketB.toFixed(1)})`);
     ok(r.a.shirtL<35,`the shirt is black in the collar, chest and cuffs (lightness ${r.a.shirtL.toFixed(0)})`);
     ok(r.a.inCore&&r.a.inWide&&r.a.greenMaster>50&&r.a.green<2,`the tie is pasted within a few pixels of the master's and none of the green master tie is left (${r.a.green.toFixed(1)}% green, was ${r.a.greenMaster.toFixed(0)}%)`);
