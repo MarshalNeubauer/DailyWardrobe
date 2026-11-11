@@ -339,11 +339,19 @@ function patternDiagram(i,role){const fab=i.sett&&i.sett.tex?{def:id=>fabricDef(
   return new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(im,0,0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>ok(null);
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
 /* the references with the pattern drawings put in after their item's photos (at most 8 in all) */
+/* every drawing is added; trimRefs keeps the 8 that matter most */
 async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie','tie','the tie'],['top','top',o.suitDay?'the suit':'the blazer'],['shirt','shirt','the shirt'],...(o.top?[]:[['bot','bot','the trousers']])];
-  for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||(i.sett.tex&&s!=='shirt')||refs.length>=8)continue;const img=await patternDiagram(i,role);if(!img)continue;
+  for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||(i.sett.tex&&s!=='shirt'))continue;const img=await patternDiagram(i,role);if(!img)continue;
     let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
     refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
-  return {refs:refs.slice(0,8),labels:labels.slice(0,8)}}
+  return trimRefs(refs,labels)}
+/* the worker takes 8 references: when there are more, the least needed go first (the shirt's texture drawing, then its close-up, then
+   the other drawings and close-ups), never an item's own photo. Cutting the list at 8 dropped the watch, which comes last, once the
+   pattern drawings were added, and the generator drew a generic one. */
+function refRank(l){return /^a drawing of the shirt/.test(l)?0:/^a close-up of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
+function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
+  while(keep.length>max){let worst=0;for(let n=1;n<keep.length;n++)if(refRank(labels[keep[n]])<refRank(labels[keep[worst]]))worst=n;keep.splice(worst,1)}
+  return {refs:keep.map(k=>refs[k]),labels:keep.map(k=>labels[k])}}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
    noise in a photo (a seam, moire, panes made uneven by drape); Claude reports the pattern as woven: every band of a repeat each
