@@ -205,7 +205,7 @@ newPattern — the same for the pattern or weave: when no listed pattern fits (y
 clothBox — a rectangle on a plain, evenly lit area of the main cloth in the FIRST photo (no folds, shadows, buttons, labels,
   lining or background), in thousandths of that photo (x, y = top-left corner, w, h = size, all 0-1000), so the app can measure
   its colour; null if there is no such area.
-patternBox — for a striped, checked or plaid item: the largest rectangle of the FIRST photo that lies entirely on the patterned
+patternBox — for a striped, checked or plaid item, or one with a small figure repeated all over (a neat or foulard, dots): the largest rectangle of the FIRST photo that lies entirely on the patterned
   cloth (no background, knot, collar or edges; on a jacket the front panel beside the buttons, clear of lapels and pockets; on a
   shirt the body, clear of the collar and placket), in thousandths like clothBox, so the app can read the pattern's colours; null otherwise.
 weave — for a striped, checked or plaid item (null for solids and fine weaves): its pattern as precisely as you can, from the
@@ -352,11 +352,20 @@ async function handleTagMany(req, env, json) {
 const PBAND = { type: 'object', additionalProperties: false, required: ['role', 'name', 'hex', 'widthPct'],
   properties: { role: { type: 'string', enum: ['ground', 'line'] }, name: { type: 'string' }, hex: { type: 'string' }, widthPct: { type: 'number' } } };
 const PDIR = { type: 'object', additionalProperties: false, required: ['bands'], properties: { bands: { type: 'array', items: PBAND } } };
+/* a small figure repeated on a grid (a neat / foulard, mini squares, dots): the grid, the ground between the figures, and each
+   figure's shape, place in the grid, colours (two alternate like a checkerboard) and size */
+const PCOL = { type: 'object', additionalProperties: false, required: ['name', 'hex'], properties: { name: { type: 'string' }, hex: { type: 'string' } } };
+const MOTIF_SHAPES = ['square', 'square-with-dot', 'diamond', 'dot', 'ring', 'cross', 'flower', 'other'];
+const PFIG = { type: 'object', additionalProperties: false, required: ['shape', 'placement', 'colours', 'centre', 'sizePct'],
+  properties: { shape: { type: 'string', enum: MOTIF_SHAPES }, placement: { type: 'string', enum: ['cell', 'corner', 'alternate-cells'] },
+    colours: { type: 'array', items: PCOL }, centre: { anyOf: [PCOL, { type: 'null' }] }, sizePct: { type: 'number' } } };
+const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid', 'ground', 'figures'],
+  properties: { grid: { type: 'string', enum: ['straight', 'diagonal'] }, ground: PCOL, figures: { type: 'array', items: PFIG } } };
 const PATTERN_SCHEMA = { type: 'object', additionalProperties: false,
-  required: ['layout', 'across', 'along', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
+  required: ['layout', 'across', 'along', 'motif', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
   properties: {
-    layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'none'] },
-    across: PDIR, along: { anyOf: [PDIR, { type: 'null' }] },
+    layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'motif', 'none'] },
+    across: { anyOf: [PDIR, { type: 'null' }] }, along: { anyOf: [PDIR, { type: 'null' }] }, motif: { anyOf: [PMOTIF, { type: 'null' }] },
     stripeDirection: { type: 'string', enum: ['vertical', 'horizontal', 'upper-left to lower-right', 'lower-left to upper-right'] },
     repeatsInCloseup: { type: 'number' }, repeatsAcrossItem: { type: 'number' }, paneAspect: { type: 'number' },
     ignored: { type: 'string' }, description: { type: 'string' },
@@ -367,13 +376,26 @@ pattern: seams and the pattern shift across them, folds, shadows, sheen, moire, 
 stripes made uneven by drape or by the camera's angle (report the regular spacing they were woven at).
 
 layout — stripes (lines one way), check, windowpane (thin lines both ways on a plain ground, large panes), plaid (several
-  colours both ways), or none (no stripes or checks).
+  colours both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds), or none.
 across — one full repeat of the main lines, measured across them (for vertical lines from left to right, for a tie's diagonal
   stripes across the stripes): every band in order, the ground included, each with role (ground or line), a plain colour name,
   an sRGB hex of how that thread looks in neutral daylight (a light blue line is light blue even where the photo greys it),
   and widthPct, its share of the repeat in percent (the bands add up to 100). A line made of several close threads (a blue line
   with a thin white line each side) is listed thread by thread with the ground between them.
 along — the same for the lines running the other way (top to bottom for horizontal lines), or null if there are none.
+  For a motif, across and along are null.
+motif — for a motif only (null otherwise), as woven, one grid cell being one repeat:
+  grid: straight (rows and columns run with the item's edges) or diagonal (rows and columns run at 45°, squares stand on a point);
+  ground: the colour that shows between the figures (a plain colour name and an sRGB hex as in "across");
+  figures: each kind of figure, largest first, with
+    shape: square, square-with-dot (a small square with a dot of another colour in its middle), diamond (a square on its point
+      in a straight grid), dot, ring, cross, flower, or other;
+    placement: cell (one in every grid cell), corner (one where four cells meet, between the cell figures), or alternate-cells
+      (only in every other cell, like the dark squares of a checkerboard);
+    colours: its colour, or two colours when neighbouring figures alternate like a checkerboard (purple and navy squares);
+    centre: the dot's colour for square-with-dot (null otherwise);
+    sizePct: the figure's width as a percentage of the grid spacing (cell figures that nearly touch: 80; a small accent: 30).
+  repeatsInCloseup and repeatsAcrossItem then count grid cells, measured along a row.
 stripeDirection — which way the main lines run as the viewer sees them.
 repeatsInCloseup — how many repeats of "across" fit across the close-up's width (or the item photo's, without a close-up).
 repeatsAcrossItem — how many repeats of "across" fit across the item's widest part in the first photo.
@@ -387,7 +409,12 @@ function cleanPattern(p) {
     const b = d.bands.slice(0, 40).map(x => ({ role: x.role === 'line' ? 'line' : 'ground', name: txt(x.name, 30), hex: hex(x.hex), w: Math.max(0, +x.widthPct || 0) })).filter(x => x.hex && x.w > 0);
     const t = b.reduce((a, x) => a + x.w, 0); return b.length >= 2 && t > 0 ? { bands: b.map(x => ({ ...x, w: +(x.w / t).toFixed(4) })) } : null; };
   const num = (v, lo, hi, d) => Math.max(lo, Math.min(hi, +v || d));
-  return { layout: p.layout, across: dir(p.across), along: dir(p.along), stripeDirection: p.stripeDirection,
+  const col = c => c && hex(c.hex) ? { name: txt(c.name, 30), hex: hex(c.hex) } : null;
+  const motif = m => { if (!m || !col(m.ground) || !Array.isArray(m.figures)) return null;
+    const f = m.figures.slice(0, 3).map(x => ({ shape: MOTIF_SHAPES.includes(x.shape) ? x.shape : 'other', placement: ['cell', 'corner', 'alternate-cells'].includes(x.placement) ? x.placement : 'cell',
+      colours: (x.colours || []).map(col).filter(Boolean).slice(0, 2), centre: x.shape === 'square-with-dot' ? col(x.centre) : null, size: num(x.sizePct, 5, 100, 50) / 100 })).filter(x => x.colours.length);
+    return f.length ? { grid: m.grid === 'diagonal' ? 'diagonal' : 'straight', ground: col(m.ground), figures: f } : null; };
+  return { layout: p.layout, across: p.layout === 'motif' ? null : dir(p.across), along: p.layout === 'motif' ? null : dir(p.along), motif: p.layout === 'motif' ? motif(p.motif) : null, stripeDirection: p.stripeDirection,
     repeatsInCloseup: num(p.repeatsInCloseup, .2, 60, 1), repeatsAcrossItem: num(p.repeatsAcrossItem, .2, 80, 1), paneAspect: num(p.paneAspect, .3, 3, 1),
     ignored: txt(p.ignored, 200), description: txt(p.description, 600) };
 }
@@ -402,7 +429,7 @@ async function handlePattern(req, env, json) {
   const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: kind + PATTERN_PROMPT, closeup: cm, effort: 'high', maxTokens: 16000 });
   if (c.status !== 200) return json(c.body, c.status);
   const out = cleanPattern(c.body);
-  if (!out.across) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
+  if (!out.across && !out.motif) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
   return json({ ...out, model: c.body.model });
 }
 

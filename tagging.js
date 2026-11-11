@@ -221,7 +221,7 @@ async function runBench(pct){if(bench)return;const pool=shuffle(benchPool()),lis
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
    weave also gives the direction (for a close-up, whose angle says nothing), the repeats across the item (the drawing's
    scale on the figure) and a description for the photo generator. ---- */
-const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other'],shirt:[...STRIPE_PATS,...CHECK_PATS,'other'],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
+const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other',...MOTIF_PATS],shirt:[...STRIPE_PATS,...CHECK_PATS,'other'],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
 const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
 const DIR_ANG={'upper-left to lower-right':-45,'lower-left to upper-right':45,vertical:0,horizontal:90};
 const WEAVE_W={hairline:.02,narrow:.05,medium:.12,wide:.25};
@@ -250,11 +250,14 @@ function settFrom({full,box,tex,weave,wb,type}){let s=null,c=null;
   if(s&&weave){if(weave.repeatsAcross&&!(type==='tie'&&/photo/.test(s.src)))s.tr=weave.repeatsAcross;   // a tie's box spans most of its width: its own count beats Claude's estimate (a jacket's box is only part of it)
     if(s.src==='closeup'&&DIR_ANG[weave.direction]!=null)s.a=DIR_ANG[weave.direction]}   // a close-up's angle says nothing
   return s}
+const motifPat=p=>MOTIF_PATS.includes(patBase(p)||'');
+/* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
+const specSett=(spec,args)=>spec&&(spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
 function readSett(q){const ok=!q.settOff&&settable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&(q.raw.texFull||q.raw.tex),wb:q.wbOff?null:q.wb,type:q.type};
-  if(ok&&q.spec){const s=settFromSpec(q.spec,args);if(s){q.sett=s;return s}}
-  q.sett=ok?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.texFull||q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;return q.sett}
+  if(ok&&q.spec){const s=specSett(q.spec,args);if(s){q.sett=s;return s}}
+  q.sett=ok&&!motifPat(q.pattern)?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.texFull||q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;return q.sett}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);renderAdd()}
-const settSummary=s=>s.src==='claude+pixels'?`${s.bands.length} bands${s.cross?' and lines the other way':''}, read by Claude with the colours from the photo`:`${s.bands.length} colour bands${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
+const settSummary=s=>s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colours from the photo`:s.src==='claude+pixels'?`${s.bands.length} bands${s.cross?' and lines the other way':''}, read by Claude with the colours from the photo`:`${s.bands.length} colour bands${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!settable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
@@ -265,7 +268,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const full=it.pbox?await toCanvas(await tagImgOf(it.id)):null,tex=await toCanvas(it.texture);
   let spec=null;const img=await tagImgOf(it.id)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:it.texture||null,type:it.type})}
   const full2=full||(it.photo?await toCanvas(it.photo):null);
-  const s=spec&&settFromSpec(spec,{full:full2,box:it.pbox,tex,type:it.type})||settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type});   // the kept copy is already white-balanced
+  const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(motifPat(it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
   if(spec){it.patternSpec=spec;if(spec.description)it.patternText=spec.description}
   if(!s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
   it.sett=s;delete it.stripes;await put(it);cache={};renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
@@ -285,7 +288,7 @@ const nearName=(hex,named)=>{const l=rgbLab(...hexRgb(hex));
 function settDirText(s,role){const a=role==='tie'?s.a:Math.round(s.a/90)*90,phi=((a+90)%180+180)%180;   // the stripes' own direction, 0 = horizontal, y down
   if(phi<15||phi>165)return 'horizontal stripes';if(phi>75&&phi<105)return 'vertical stripes';
   return phi<90?'diagonal stripes running from the upper left down to the lower right, as the viewer sees them':'diagonal stripes running from the lower left up to the upper right, as the viewer sees them'}
-function settText(i,role){const s=i&&i.sett;if(!s||!s.bands)return '';
+function settText(i,role){const s=usableSett(i);if(s&&s.motif)return motifText(s,role);if(!s||!s.bands)return '';
   const named=[...(i.patternSpec?[i.patternSpec.across,i.patternSpec.along].filter(Boolean).flatMap(d=>d.bands.map(b=>({name:b.name,hex:b.hex}))):[]),...(i.weave&&i.weave.colours||[])].filter(c=>c&&c.name&&/^#[0-9a-f]{6}$/i.test(c.hex||''));
   const share={},thin={};for(const [h,w] of s.bands){const n=nearName(h,named);if(w<.035)thin[n]=1;else share[n]=(share[n]||0)+w}
   const tot=Object.values(share).reduce((a,b)=>a+b,0)||1,parts=Object.entries(share).sort((a,b)=>b[1]-a[1]).map(([n,w])=>`${Math.max(1,Math.round(100*w/tot/5)*5)}% ${n}`);
@@ -308,9 +311,9 @@ function patternDiagram(i,role){const fab=figFabric(i,role);if(!fab)return Promi
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
 /* the references with the pattern drawings put in after their item's photos (at most 8 in all) */
 async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie','tie','the tie'],['top','top',o.suitDay?'the suit':'the blazer'],['shirt','shirt','the shirt'],...(o.top?[]:[['bot','bot','the trousers']])];
-  for(const [s,role,name] of slots){const i=o[s];if(!i||!i.sett||refs.length>=8)continue;const img=await patternDiagram(i,role);if(!img)continue;
+  for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||refs.length>=8)continue;const img=await patternDiagram(i,role);if(!img)continue;
     let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
-    refs.splice(at,0,img);labels.splice(at,0,`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy its colours, their order and proportions and the stripe direction exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
+    refs.splice(at,0,img);labels.splice(at,0,`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
   return {refs:refs.slice(0,8),labels:labels.slice(0,8)}}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
@@ -322,7 +325,7 @@ async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie'
 async function claudePattern({image,closeup,type}){const w=localStorage.getItem('worker_url');if(!w||!image)return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type})});
-    const j=await r.json().catch(()=>({}));return r.ok&&j.across&&j.layout!=='none'?j:null}catch{return null}}
+    const j=await r.json().catch(()=>({}));return r.ok&&(j.across||j.motif)&&j.layout!=='none'?j:null}catch{return null}}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];
   for(let i=0;i<d.length;i+=4*st)out.push(rgbLab(d[i],d[i+1],d[i+2]));return out}
 const medLab=ls=>[0,1,2].map(k=>{const v=ls.map(l=>l[k]).sort((a,b)=>a-b);return v[v.length>>1]});
@@ -358,3 +361,34 @@ async function readPatternWithClaude(q){if(!q||!q.raw||!q.raw.tex||!q.tagImg||!s
   q.patternReading=1;renderAdd();const spec=await claudePattern({image:q.tagImg,closeup:await closeTagImg(q),type:q.type});q.patternReading=0;
   if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
   readSett(q);if(queue.includes(q))renderAdd()}
+
+/* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
+   pixels. A band reader can't draw these: it turns a checkerboard of mini squares into a diagonal plaid. Claude gives the grid,
+   the ground and each figure (shape, place, colours, size); the pixels give each colour, like settFromSpec: the close-up's exposure
+   matched to the item photo's, and Claude's hue kept where a colour's pixels read grey. ---- */
+function motifFromSpec(spec,{tex,full,box,wb}){const m=spec&&spec.motif;if(!m||!m.ground||!m.figures||!m.figures.length)return null;
+  const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
+  let src=null;try{src=tex?settCanvas(tex,wbRead(tex).ref?null:wb):full?(box?cropCanvas(settCanvas(full,wb),box):settCanvas(full,wb)):null}catch{}
+  const labs=src?sampleLabs(src):[],med=labs.length?medLab(labs):null;
+  // only with a box on the cloth: the whole photo's median is mostly its background (a tie on a grey wall)
+  let delta=[0,0,0];if(tex&&full&&box&&med)try{const g2=medLab(sampleLabs(cropCanvas(settCanvas(full,wb),box)));delta=g2.map((v,k)=>v-med[k])}catch{}
+  // each colour's share of the cloth: a figure covers size² of its cell (half the cells when it alternates), split between its colours
+  const share=new Map(),add=(h,w)=>share.set(h,(share.get(h)||0)+w);let figs=0;
+  for(const f of m.figures){const a=f.size*f.size*(f.placement==='alternate-cells'?.5:1);figs+=a;f.colours.forEach(c=>add(c.hex,a*(f.centre?.85:1)/f.colours.length));if(f.centre)add(f.centre.hex,a*.15)}
+  add(m.ground.hex,Math.max(.05,1-Math.min(1,figs)));
+  const dist=(x,y)=>Math.hypot((x[0]-y[0])/2,1.4*(x[1]-y[1]),1.4*(x[2]-y[2]));
+  const colour=new Map();
+  for(const [hex,sh] of share){const cl=L(hex);let mm=null;
+    if(labs.length>=40){const k=Math.max(12,Math.round(labs.length*Math.min(.25,sh)*.5)),top=[...labs].sort((a,b)=>dist(a,cl)-dist(b,cl)).slice(0,k);
+      if(dist(top[top.length>>1],cl)<40)mm=[0,1,2].map(j=>top.reduce((s,p)=>s+p[j],0)/top.length);   // nothing near Claude's colour: keep Claude's
+      if(mm&&C(cl)>10&&C(mm)<.6*C(cl)){const s=Math.max(C(mm),.75*C(cl))/C(cl);mm=[mm[0],cl[1]*s,cl[2]*s]}}
+    colour.set(hex,mm?labHex(mm.map((v,k)=>v+delta[k])):hex)}
+  const c=h=>colour.get(h)||h;
+  return {v:3,motif:{grid:m.grid,ground:c(m.ground.hex),groundName:m.ground.name,figs:m.figures.map(f=>({shape:f.shape,place:f.placement,size:+f.size.toFixed(3),cols:f.colours.map(x=>c(x.hex)),names:f.colours.map(x=>x.name),centre:f.centre?c(f.centre.hex):null,centreName:f.centre?f.centre.name:null}))},
+    a:m.grid==='diagonal'?45:0,cr:+(+spec.repeatsInCloseup||1).toFixed(2),tr:+(+spec.repeatsAcrossItem||1).toFixed(2),src:'claude+pixels'}}
+/* the motif in words for the photo generator */
+const SHAPE_WORDS={square:'small squares','square-with-dot':'tiny squares with a dot in the middle',diamond:'small diamonds',dot:'dots',ring:'small rings',cross:'small crosses',flower:'small flowers',other:'small figures'};
+function motifText(s,role){const m=s.motif,figs=m.figs.map((f,n)=>{const cols=f.names.length===2?`alternating ${f.names[0]} and ${f.names[1]}`:f.names[0];
+    const where=f.place==='corner'?(n?' where the corners meet':' at the grid corners'):f.place==='alternate-cells'?' in every other cell':'';
+    return `${cols} ${SHAPE_WORDS[f.shape]||'figures'}${f.centreName?` (each with a ${f.centreName} dot)`:''}${where}`});
+  return `measured: a neat pattern on a ${m.grid==='diagonal'?'diagonal (45°)':'straight'} grid: ${figs.join(', with ')}, on a ${m.groundName} ground; about ${Math.round(s.tr)} repeats across the ${role==='tie'?'tie':'cloth'}`}
