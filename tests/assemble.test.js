@@ -4,7 +4,8 @@
 // watch) and six one-piece edits of it. The worker side (master and piece jobs through the queue) runs with mocked KV, queue and OpenAI.
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
-  const browser=await chromium.launch();
+  const browser=await chromium.launch(),realFetchAll=globalThis.fetch;
+  let worker;
   try{
     const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
@@ -46,41 +47,63 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const k=await p.evaluate(async()=>{const url=async n=>{const d=await asmData('tests/fixtures/asm-'+n+'.jpg'),c=document.createElement('canvas');c.width=c.height=d.width;c.getContext('2d').putImageData(d,0,0);return c.toDataURL('image/jpeg',.9)};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const watch=I('watch','silver',{metal:'silver'}),jk=I('blazer','khaki',{pattern:'windowpane'}),black=I('shirt','black'),black2=I('shirt','black'),white=I('shirt','white'),tie=I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),tie2=I('tie','burgundy'),clip=I('tieclip','silver',{metal:'silver'}),gold=I('watch','gold',{metal:'gold'});
+      const hb=I('shirt','pink',{pattern:'herringbone'}),pinkPlain=I('shirt','pink');
       items=[watch,jk,black,black2,white,tie,tie2,clip,gold];
       const o={top:jk,shirt:black,tie,clip,watch,suitDay:false};
       const out={before:asmParts(o).map(x=>x.slot).join(),keysDiffer:asmPieceKey('tie',tie)!==asmPieceKey('tie',tie2)&&asmPieceKey('jacket',jk)!==asmMasterKey(),sameShirt:asmPieceKey('shirt',black)===asmPieceKey('shirt',black2),
         keyShape:/^c[0-9a-f]{16}$/.test(asmPieceKey('tie',tie))&&/^c[0-9a-f]{16}$/.test(asmMasterKey())&&/^c[0-9a-f]{16}$/.test(asmCalibKey('tie')),
+        weaveOwn:asmPieceKey('shirt',hb)!==asmPieceKey('shirt',pinkPlain)&&comboKey({...o,shirt:hb})===comboKey({...o,shirt:pinkPlain}),weaveText:asmShirtText(hb),plainText:asmShirtText(pinkPlain),
         can:[asmCan(o),asmCan({...o,vest:true}),asmCan({...o,tie:null}),asmCan({...o,top:null}),asmCan({...o,watch:null})].join()};
-      // the master was made with this watch and a white shirt: neither needs a piece
-      localStorage.setItem('asm_master',JSON.stringify({key:asmMasterKey(),watch:lookSig('watch',watch),shirt:lookSig('shirt',asmMasterItem('shirt','white'))}));
-      out.parts=asmParts(o).map(x=>x.slot).join();out.partsWhite=asmParts({...o,shirt:white}).map(x=>x.slot).join();out.partsGold=asmParts({...o,watch:gold}).map(x=>x.slot).join();
       out.noMaster=await asmPhoto(o);
-      const put=async(key,f)=>{renders[key]={sig:'',img:await url(f),model:'',t:1}};
-      await put(asmMasterKey(),'master');out.noPieces=await asmPhoto(o);
+      const put=async(key,f,sig='')=>{renders[key]={sig,img:await url(f),model:'',t:1000}};
+      // the master was made with this watch and a white shirt (its record says so): neither needs a piece
+      await put(asmMasterKey(),'master',asmMasterSig({watch,shirt:asmMasterItem('shirt','white')}));
+      out.parts=asmParts(o).map(x=>x.slot).join();out.partsWhite=asmParts({...o,shirt:white}).map(x=>x.slot).join();out.partsGold=asmParts({...o,watch:gold}).map(x=>x.slot).join();
+      out.noPieces=await asmPhoto(o);
       await put(asmPieceKey('jacket',jk),'jacket');await put(asmPieceKey('shirt',black),'shirt-black');await put(asmPieceKey('tie',tie),'tie');await put(asmPieceKey('bar',clip),'bar');
       out.noZones=await asmPhoto(o);
       await put(asmCalibKey('jacket'),'jacket');await put(asmCalibKey('shirt'),'shirt-black');await put(asmCalibKey('tie'),'tie');await put(asmCalibKey('watch'),'watch');
-      const u=await asmPhoto(o);out.made=typeof u==='string'&&/^data:image\/jpeg;base64,/.test(u)&&u.length>40000;out.again=(await asmPhoto(o))===u;
+      const u=await asmPhoto(o);out.made=typeof u==='string'&&/^data:image\/jpeg;base64,/.test(u)&&u.length>40000;
       out.zonesKept=!!(await metaGet('asm:zones:'+asmMasterKey()));
       // the picture is the outfit: dark shirt, khaki jacket
       const d=await asmData(u),L=asmLab(d),z=asmUnpackZones(await metaGet('asm:zones:'+asmMasterKey())),W=z.W;let sl=0,sn=0,jb=0,jn=0;const sh=asmBox(z.shirt,W,2,false);
       for(let i=0;i<W*W;i++){if(sh[i]){sn++;sl+=L[3*i]}if(z.jacket[i]){jn++;jb+=L[3*i+2]}}out.shirtL=sl/sn;out.jacketB=jb/jn;
       out.gold=await asmPhoto({...o,watch:gold});out.vest=await asmPhoto({...o,vest:true});
-      // the jobs a later step sends
+      // a piece that did not keep the picture (the generator once made a collage: the figure moved aside) is refused
+      const master=await asmData(renders[asmMasterKey()].img),real=await asmData(renders[asmPieceKey('tie',tie)].img),c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');x.fillStyle='#ccc';x.fillRect(0,0,W,W);
+      x.drawImage(await asmImg(renders[asmPieceKey('tie',tie)].img),0,0,W,W,-140,0,W*.8,W*.8);const moved=c.toDataURL('image/jpeg',.9);
+      out.drift=[asmDrift(master,z,'tie',real),asmDrift(master,z,'jacket',await asmData(renders[asmPieceKey('jacket',jk)].img)),asmDrift(master,z,'shirt',await asmData(renders[asmPieceKey('shirt',black)].img)),asmDrift(master,z,'tie',await asmData(moved))];
+      const keep=renders[asmPieceKey('tie',tie)];renders[asmPieceKey('tie',tie)]={...keep,img:moved};out.collage=await asmPhoto(o);out.bad=asmBad.has(asmPieceKey('tie',tie));renders[asmPieceKey('tie',tie)]=keep;asmBad.clear();
+      // on Today: the assembled picture stands in for the outfit's photo, unless a photo was made for this outfit after the master
+      out.forBefore=asmFor(o);asmTried.clear();await asmEnsure(o);const a=asmFor(o);out.forAfter=!!a&&a.model==='assembled'&&a.img.length>40000;out.keptOut=!!(await metaGet('asm:out:'+asmOutKey(o)));
+      renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OLD',model:'gpt',t:500};out.overOld=renderFor(o).model;
+      renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};out.underNew=renderFor(o).model;delete renders[comboKey(o)];
+      renders[asmPieceKey('tie',tie)]={...keep,t:3000};out.stale=asmFor(o);renders[asmPieceKey('tie',tie)]=keep;
+      // the jobs
       const mj=await asmMasterJob(),cj=asmCalibJob('tie'),tj=await asmPieceJob('tie',{...tie,photo:await url('tie')}),bj=await asmPieceJob('bar',clip),sj=await asmPieceJob('shirt',{...black,photo:await url('shirt-black')}),jj=await asmPieceJob('jacket',{...jk,photo:await url('jacket')}),wj=await asmPieceJob('watch',{...gold,photo:await url('watch')});
-      out.jobs={mj:{...mj,image:mj.image.slice(0,30)},cj,tj:{...tj,refs:tj.refs.length},bj,sj:{...sj,refs:sj.refs.length},jj:{...jj,refs:jj.refs.length},wj:{...wj,refs:wj.refs.length}};out.masterUrl=await url('master');out.tieJob=tj;return out});
+      out.jobs={mj:{...mj,image:mj.image.slice(0,30)},cj,tj:{...tj,refs:tj.refs.length},bj,sj:{...sj,refs:sj.refs.length},jj:{...jj,refs:jj.refs.length},wj:{...wj,refs:wj.refs.length}};out.masterUrl=await url('master');out.tieJob=tj;
+      out.needs=asmNeeds().map(q=>q.kind+':'+(q.slot||'')).join(' ');
+      // the owner's own colours are named in the description, not sent as their keys
+      const cu0=settings.custom;applyCustom({colors:[{key:'owntaupe',name:'taupe',hex:'#4b463b',base:'deeptaupe',types:['tie']}]});
+      out.own=(await asmPieceJob('tie',I('tie','owntaupe',{pattern:'stripe',secondaryColor:'cream'}))).swap.text;applyCustom(cu0);out.ownAfter=prettyCols('a owntaupe tie');return out});
+    ok(k.own==='a taupe & cream stripe tie'&&k.ownAfter==='a owntaupe tie',`a colour the owner added is described by its name ("${k.own}")`);
     ok(k.keyShape&&k.keysDiffer&&k.sameShirt,'the master, calibration and piece photos have their own photo keys; two plain shirts of one colour share a piece');
+    ok(k.weaveOwn&&/bold tone-on-tone herringbone weave/.test(k.weaveText)&&/a little larger and with more contrast than life/.test(k.weaveText)&&k.plainText==='a plain pink dress shirt',
+      'a shirt in a woven texture has its own piece (though it shares the outfit key with the plain colour) and is asked for with a bolder weave than life, so it can be seen');
     ok(k.can==='true,false,false,false,false','an outfit can be assembled when it has a jacket, shirt, tie and watch and no vest');
     ok(k.before==='jacket,shirt,tie,bar,watch'&&k.parts==='jacket,shirt,tie,bar'&&k.partsWhite==='jacket,tie,bar'&&k.partsGold==='jacket,shirt,tie,bar,watch',`an outfit needs a piece per jacket, shirt, tie and tie bar; the master's own watch and a white shirt need none (${k.parts}; ${k.partsWhite}; ${k.partsGold})`);
     ok(k.noMaster===null&&k.noPieces===null&&k.noZones===null,'no picture without the master, with a piece missing, or before the calibration photos are there');
-    ok(k.made&&k.again&&k.zonesKept&&k.shirtL<38&&k.jacketB>8,`with everything kept on the device the outfit's picture is made, remembered, and its zones stored (shirt lightness ${k.shirtL.toFixed(0)}, jacket yellowness ${k.jacketB.toFixed(1)})`);
+    ok(k.made&&k.zonesKept&&k.shirtL<38&&k.jacketB>8,`with everything kept on the device the outfit's picture is made and its zones stored (shirt lightness ${k.shirtL.toFixed(0)}, jacket yellowness ${k.jacketB.toFixed(1)})`);
     ok(k.gold===null&&k.vest===null,'an outfit whose watch has no piece yet, or with a vest, gets no assembled picture (it keeps its own photo)');
+    ok(k.drift.slice(0,3).every(v=>v<.06)&&k.drift[3]>.3&&k.collage===null&&k.bad,`a real piece leaves the rest of the picture alone; one that moved the figure is refused (${k.drift.map(v=>(100*v).toFixed(1)+'%').join(', ')} changed outside the piece)`);
+    ok(k.forBefore===null&&k.forAfter&&k.keptOut&&k.overOld==='assembled'&&k.underNew==='gpt'&&k.stale===null,'Today takes the assembled picture (kept on the device) over an older photo of the outfit; a photo made after the master wins, and a piece made again makes the picture stale');
+    ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===2&&k.needs.split('piece:tie').length===3&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt or the master's watch (${k.needs})`);
     const J=k.jobs;
     ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/mid grey suit/.test(J.mj.outfit)&&/green tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit),'the master job is a normal outfit photo of the placeholder clothes, marked as the master, at high quality');
     ok(J.cj.baseKey===J.mj.key&&J.cj.swap.what==='tie'&&/magenta/.test(J.cj.swap.text)&&J.tj.baseKey===J.mj.key&&J.tj.swap.what==='tie'&&/navy & pink stripe tie/.test(J.tj.swap.text)&&J.tj.refs===1,'calibration and piece jobs edit the kept master (by its key) and swap one piece, with the item\'s own photo');
     ok(J.bj.swap.what==='tie bar'&&J.bj.swap.add===true&&/silver tie bar/.test(J.bj.swap.text)&&J.sj.swap.what==='shirt'&&J.sj.refs===1&&/plain black dress shirt/.test(J.sj.swap.text)&&J.jj.swap.what==='jacket'&&J.jj.refs===1&&J.wj.swap.what==='watch'&&J.wj.refs===1,'a tie bar is added, and a shirt, jacket or watch swapped, each from its own photo');
     // ---- the worker: master and piece jobs through the queue ----
-    const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
+    worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
     const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
     const realFetch=globalThis.fetch;let got=[];
     globalThis.fetch=async(href,init)=>{if(String(href)!=='https://api.openai.com/v1/images/edits')return new Response('',{status:404});const f=init.body,im=f.getAll('image[]');
@@ -106,5 +129,51 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       q=await post({mode:'queue',key:'c0000000000000001',swap:{what:'tie',text:'x'}});ok(q.status===400,'a job with neither an image nor a photo to edit is refused');
     }finally{globalThis.fetch=realFetch}
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
-  }finally{await browser.close()}
+    // ---- the app against the worker (mocked KV, queue and OpenAI): item photos come home, Today shows the outfit put together ----
+    {const fs=require('fs'),fx=n=>'data:image/jpeg;base64,'+fs.readFileSync(path.join(ROOT,'tests/fixtures/asm-'+n+'.jpg')).toString('base64');
+      const store=new Map(),KV={get:async(q,t)=>store.has(q)?(t==='json'?JSON.parse(store.get(q)):store.get(q)):null,put:async(q,v)=>{store.set(q,v)},delete:async q=>{store.delete(q)}};
+      let sent=[],made=0;const env={APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:KV,RENDER_QUEUE:{send:async m=>{sent.push(m)}}},HOST='https://asm.test/';
+      const drain=async()=>{for(const body of sent.splice(0)){const m={body,attempts:1,ack(){},retry(){}};await worker.queue({messages:[m]},env)}};
+      globalThis.fetch=async(href,init)=>{if(String(href)!=='https://api.openai.com/v1/images/edits')return new Response('',{status:404});made++;   // every made photo is the tie fixture
+        return new Response(JSON.stringify({data:[{b64_json:fx('tie').split(',')[1]}]}),{status:200,headers:{'content-type':'application/json'}})};
+      await p.close();const ctx=await browser.newContext({viewport:{width:390,height:900}});
+      try{
+        // no backup sync here: with a KV the app's start-up sync would answer, and reload the (empty) stored wardrobe over the test's items
+        await ctx.route(HOST+'**',async route=>{const q=route.request();if(/\/sync(\?|$)/.test(q.url()))return route.fulfill({status:501,contentType:'application/json',body:'{"error":"no sync in this test"}'});
+          const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
+          await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
+        const a=await ctx.newPage();const errs2=[];a.on('pageerror',e=>errs2.push(e.message));a.on('dialog',d=>d.accept());
+        await a.goto(url);await a.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await a.reload();await a.waitForFunction(()=>window.appReady);
+        const K=await a.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
+          items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('shirt','lightblue'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('watch','black',{metal:'silver'}),
+            I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+          settings.workdays=[0,1,2,3,4];settings.vestMode='never';dayRecs={};TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};ASM_AUTO_MS=60;   // today is the day shown: a stray "new day" check changes nothing
+          const o=planFor()[key(sel)];return {can:asmCan(o),master:asmMasterKey(),sig:asmMasterSig({watch:o.watch,shirt:asmMasterItem('shirt','white')}),calib:['jacket','shirt','tie','watch'].map(asmCalibKey),
+            jacket:asmPieceKey('jacket',o.top),shirt:asmPieceKey('shirt',o.shirt),tie:asmPieceKey('tie',o.tie),combo:comboKey(o)}});
+        const keep=(k,f,sig='')=>store.set('render:'+k,JSON.stringify({sig,img:fx(f),model:'m',t:1000}));
+        keep(K.master,'master',K.sig);['jacket','shirt-black','tie','watch'].forEach((f,i)=>keep(K.calib[i],f));keep(K.jacket,'jacket');keep(K.shirt,'shirt-pink');   // the tie's photo is not made yet
+        const s1=await a.evaluate(async()=>{show('today');const st=await asmSync(true);return {missing:st.missing.map(n=>n.kind+':'+n.slot).join(),total:st.total,have:['master','jacket','shirt'].length,btn:(document.querySelector('.render-btn')||{}).textContent||'',photo:!!document.querySelector('.fig.photo img')}});
+        ok(K.can&&s1.missing==='piece:tie'&&s1.total===3&&!s1.photo&&/Generate realistic photo/.test(s1.btn),`the app brings the master and the item photos home and knows what is still to make (${s1.missing}); an outfit with a piece missing shows its drawing and Generate`);
+        await a.click('.render-btn');await a.waitForFunction(()=>!rendering,null,{timeout:15000});
+        const job=JSON.parse(store.get('job:'+K.tie)||'null');
+        ok(sent.length===1&&sent[0].key===K.tie&&job&&job.swap.what==='tie'&&job.baseKey===K.master&&!job.image&&!store.has('job:'+K.combo)&&/Making photo/.test(await a.textContent('.render-btn')),'Generate sends only the missing item (the tie, as an edit of the master), not a whole outfit photo, and says it is being made');
+        await drain();ok(made===1&&store.has('render:'+K.tie),'the worker makes the tie\'s photo from the kept master');
+        await a.evaluate(()=>checkQueue());await a.waitForSelector('.fig.photo img',{timeout:15000});
+        const s2=await a.evaluate(()=>{const o=planFor()[key(sel)],r=asmFor(o);return {shown:!!r&&document.querySelector('.fig.photo img').src===r.img,model:r&&r.model,btn:!!document.querySelector('.render-btn'),queued:queuedKeys().length}});
+        ok(s2.shown&&s2.model==='assembled'&&!s2.btn&&s2.queued===0,'when it arrives, Today shows the outfit put together from the item photos, with no Generate button left');
+        // Settings: Item photos
+        const s3=await a.evaluate(async()=>{openSettings('photos');await asmSync(true);return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,dis:document.querySelector('#asm-btn').disabled,auto:document.querySelector('#cfg-asm-auto').value,batch:batchCombos().length}});
+        ok(/^All 3 item photos are here\./.test(s3.st)&&s3.dis&&s3.auto==='on'&&s3.batch===0,`Settings says every item photo is here, and the month batch no longer offers whole photos for outfits that are put together ("${s3.st}")`);
+        // a new item: its photo is made by itself
+        sent=[];const s4=await a.evaluate(async()=>{const it={id:'tie-new',type:'tie',primaryColor:'green',pattern:'solid'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));return {key:asmPieceKey('tie',it),toast:(document.querySelector('.toast')||document.querySelector('#toast')||{}).textContent||''}});
+        ok(sent.length===1&&sent[0].key===s4.key&&/green tie/.test(s4.toast),`adding an item sends its photo to be made, and says so ("${s4.toast}")`);
+        sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'tie-new2',type:'tie',primaryColor:'gold',pattern:'solid'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
+          await asmSync(true);renderAsmUI();return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,auto:settings.asmAuto}});
+        ok(sent.length===0&&s5.auto===false&&/1 to make, about 8¢/.test(s5.st)&&/gold tie/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
+        await a.click('#asm-btn');await a.waitForFunction(()=>/Making/.test(document.querySelector('#asm-btn').textContent),null,{timeout:15000});
+        const st6=await a.textContent('#asm-status');
+        ok(sent.length===1&&/Your worker is making 2 photos/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);
+        ok(errs2.length===0,'no page errors with the worker ('+errs2.join('; ')+')');
+      }finally{await ctx.close()}}
+  }finally{globalThis.fetch=realFetchAll;await browser.close()}
 };
