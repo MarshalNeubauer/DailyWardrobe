@@ -15,9 +15,10 @@ const ASM_EDGE_DE=28;
 const ASM_EDGE_C=10;
 const ASM_HALO=4;
 const ASM_TINT=5;
+const ASM_HAND=4;
 /* ASM_ZV: how zones are worked out. Zones and assembled pictures kept on a device carry it, so they are made again when it changes
-   (2: a zone reaches the picture's edge; 3, 4: no halo of the master's tie; 5: the edge ring keeps off the hands' shadow line) */
-const ASM_ZV=5;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+   (2: a zone reaches the picture's edge; 3, 4: no halo of the master's tie; 5: the edge ring keeps off the hands' shadow line; 6: no rim of a piece's own skin round the fist) */
+const ASM_ZV=6;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
 /* ASM_VER 2: the masters the owner approved, made from the redrawn figure (close framing, the lower hand at the waist button, the
    watch turned as worn, a blurred light office): his dark grey herringbone suit, a white shirt, a burgundy tie and his watch, and
    the same photo with the suit's waistcoat. Version 1's master (zoomed out, the lower hand too low) was rejected; every key
@@ -148,6 +149,19 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
       for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const k=yy*W+xx;if(own[k]){l+=Lm[3*k];a+=Lm[3*k+1];b+=Lm[3*k+2];n++}}}
       if(!n||Math.hypot(Lm[3*i]-l/n,Lm[3*i+1]-a/n,Lm[3*i+2]-b/n)>ASM_EDGE_DE||Math.hypot(Lm[3*i+1]-a/n,Lm[3*i+2]-b/n)>ASM_EDGE_C)continue;   // near in colour, and no more colourful (skin is)
       const j=4*i;o[j]=P.jacket.data[j];o[j+1]=P.jacket.data[j+1];o[j+2]=P.jacket.data[j+2];lab[i]=7}}
+  if(P.jacket){   // A suit's photo redraws the hands a little (most with a waistcoat): where its hand is a pixel or two larger than the
+    // master's, a rim of ITS skin lies in the jacket's zone, outside the master's hand, and reads as a dotted outline round the fist.
+    // Beside the master's skin, a jacket pixel that is the master's skin colour there and not the cloth's takes the nearest cloth.
+    const Lm=asmLab(master),Lp=asmLab(P.jacket),skin=new Uint8Array(N);for(let i=0;i<N;i++)if(!lab[i]&&!z.shirt[i]&&!z.tie[i]&&!z.watch[i]&&Lm[3*i+1]>8&&Lm[3*i+2]>10&&Lm[3*i]>35)skin[i]=1;
+    const core=asmBox(skin,W,1,false),by=asmBox(core,W,ASM_HAND,true),far=asmBox(core,W,ASM_HAND+6,true),over=new Uint8Array(N),R=ASM_HAND+6;
+    for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(lab[i]!==1||!by[i])continue;let s=[0,0,0,0],c=[0,0,0,0];
+      for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx;
+        if(core[q]){s[0]+=Lm[3*q];s[1]+=Lm[3*q+1];s[2]+=Lm[3*q+2];s[3]++}else if(lab[q]===1&&!by[q]){c[0]+=Lp[3*q];c[1]+=Lp[3*q+1];c[2]+=Lp[3*q+2];c[3]++}}}
+      if(!s[3]||!c[3])continue;const dS=Math.hypot(Lp[3*i]-s[0]/s[3],Lp[3*i+1]-s[1]/s[3],Lp[3*i+2]-s[2]/s[3]),dC=Math.hypot(Lp[3*i]-c[0]/c[3],Lp[3*i+1]-c[1]/c[3],Lp[3*i+2]-c[2]/c[3]);
+      if(dS<dC&&Math.hypot(s[0]/s[3]-c[0]/c[3],s[1]/s[3]-c[1]/c[3],s[2]/s[3]-c[2]/c[3])>20)over[i]=1}   // nearer the skin than the cloth (a skin-coloured jacket is left alone)
+    const from=new Uint8ClampedArray(o);for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!over[i])continue;let j=-1,best=1e9;
+      for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const d=dx*dx+dy*dy,q=yy*W+xx;if(d<best&&lab[q]===1&&!over[q]&&far[q]){best=d;j=q}}}
+      if(j>=0){o[4*i]=from[4*j];o[4*i+1]=from[4*j+1];o[4*i+2]=from[4*j+2]}}}
   if(V0&&P.jacket){   // the master's tie also shows in the suit's photo where no zone covers it (its tip below the waistcoat): small specks of its colour are filled from beside them
     const Lm=asmLab(master),Lp=asmLab(P.jacket);let ga=0,gb=0,n=0;for(let i=0;i<N;i++)if(z.tie[i]){ga+=Lm[3*i+1];gb+=Lm[3*i+2];n++}ga/=n||1;gb/=n||1;
     if(Math.hypot(ga,gb)>12){const g=new Uint8Array(N);for(let i=0;i<N;i++)if(lab[i]===1&&Math.hypot(Lp[3*i+1]-ga,Lp[3*i+2]-gb)<12)g[i]=1;
