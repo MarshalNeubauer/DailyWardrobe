@@ -119,6 +119,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // the jobs
       const mj=await asmMasterJob(),cj=asmCalibJob('tie'),tj=await asmPieceJob('tie',{...tie,photo:await url('tie')}),bj=await asmPieceJob('bar',clip),sj=await asmPieceJob('shirt',{...black,photo:await url('shirt-black')}),jj=await asmPieceJob('jacket',{...jk,photo:await url('jacket')}),wj=await asmPieceJob('watch',{...gold,photo:await url('watch')});
       out.jobs={mj:{...mj,image:mj.image.slice(0,30)},cj,tj:{...tj,refs:tj.refs.length},bj,sj:{...sj,refs:sj.refs.length},jj:{...jj,refs:jj.refs.length},wj:{...wj,refs:wj.refs.length}};out.masterUrl=await url('master');out.tieJob=tj;
+      out.tieClose=(await asmPieceJob('tie',{...tie,photo:await url('tie'),texture:await url('tie')})).labels;
       out.needs=asmNeeds().map(q=>q.kind+':'+(q.slot||'')).join(' ');
       // the owner's own colours are named in the description, not sent as their keys
       const cu0=settings.custom;applyCustom({colors:[{key:'owntaupe',name:'taupe',hex:'#4b463b',base:'deeptaupe',types:['tie']}]});
@@ -144,6 +145,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const J=k.jobs;
     ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/dark grey herringbone suit/.test(J.mj.outfit)&&/burgundy tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit),'the master job is a normal outfit photo of the master\'s clothes (dark grey herringbone, white shirt, burgundy tie), marked as the master, at high quality');
     ok(J.cj.baseKey===J.mj.key&&J.cj.swap.what==='tie'&&/magenta/.test(J.cj.swap.text)&&J.tj.baseKey===J.mj.key&&J.tj.swap.what==='tie'&&/navy & pink stripe tie/.test(J.tj.swap.text)&&J.tj.refs===1,'calibration and piece jobs edit the kept master (by its key) and swap one piece, with the item\'s own photo');
+    ok(k.tieClose[0]==='the tie'&&k.tieClose.some(l=>/^a close-up of the tie fabric/.test(l)),`a tie with a close-up still has its photo in its own piece job, first (${k.tieClose.map(l=>l.slice(0,22)).join(' | ')})`);
     ok(J.bj.swap.what==='tie bar'&&J.bj.swap.add===true&&/silver tie bar/.test(J.bj.swap.text)&&J.sj.swap.what==='shirt'&&J.sj.refs===1&&/plain black dress shirt/.test(J.sj.swap.text)&&J.jj.swap.what==='jacket'&&J.jj.refs===1&&J.wj.swap.what==='watch'&&J.wj.refs===2,'a tie bar is added, and a shirt, jacket or watch swapped, each from its own photo (the watch with its dial enlarged)');
     // ---- the worker: master and piece jobs through the queue ----
     worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;

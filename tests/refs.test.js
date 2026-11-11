@@ -1,5 +1,6 @@
 // The worker takes 8 reference photos. With the pattern drawings an outfit can have more; the least needed go first and an item's
 // own photo is never dropped. Cutting the list at 8 dropped the watch (it comes last), and the generator drew a generic one.
+// A tie with a close-up is sent without its photo, and the shirt's close-up goes in its place.
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   try{
@@ -18,10 +19,14 @@ module.exports=async({ok,chromium,url})=>{
       const dark=async(u,x,y)=>{const i=new Image();await new Promise(k=>{i.onload=k;i.src=u});const cv=document.createElement('canvas');cv.width=i.width;cv.height=i.height;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.drawImage(i,0,0);return g.getImageData(x,y,1,1).data[0]<90};
       const w=plain.refs[plain.refs.length-2];
       return {all,n:refs.length,labels,plain:plain.labels,dial:await size(plain.refs[plain.refs.length-1]),turned:await dark(w,61,61)&&!(await dark(w,3,3))&&await dark(im,3,3)}});
-    ok(r.all>8&&r.n===8,`a full outfit has ${r.all} references; 8 go to the generator`);
-    ok(r.labels.some(l=>/^the wristwatch/.test(l))&&['the blazer','the tie'].every(x=>r.labels.includes(x)),'the watch photo and every item photo are kept');
-    ok(!r.labels.some(l=>/^a close-up of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the tie/.test(l))&&r.labels.some(l=>/^a drawing of the blazer/.test(l)),'the shirt\'s close-up goes first; its texture drawing and the tie and blazer drawings stay');
-    ok(!r.labels.some(l=>/^an enlargement/.test(l)),'in a full outfit the watch dial\'s enlargement gives way to the pattern drawings');
+    ok(r.all===9&&r.n===8,`a full outfit has ${r.all} references; 8 go to the generator`);
+    ok(r.labels.some(l=>/^the wristwatch/.test(l))&&r.labels.includes('the blazer'),'the watch photo and the jacket photo are kept');
+    ok(!r.labels.includes('the tie')&&r.labels.some(l=>/^a close-up of the tie/.test(l)),'a tie with a close-up is sent without its photo');
+    ok(r.labels.some(l=>/^a close-up of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the shirt/.test(l))&&r.labels.some(l=>/^a drawing of the tie/.test(l))&&r.labels.some(l=>/^a drawing of the blazer/.test(l)),'the shirt\'s close-up is sent, with its texture drawing and the tie and blazer drawings');
+    ok(!r.labels.some(l=>/^an enlargement/.test(l)),'in a full outfit the one reference over is the watch dial\'s enlargement');
+    {const L=r.labels,i=re=>L.findIndex(l=>re.test(l));
+      ok(i(/^a drawing of the tie/)+1===i(/^a close-up of the tie/)&&i(/^a drawing of the blazer/)===L.indexOf('the blazer')+1,
+        `a drawing sits right after its item's photo; the tie's, with no photo sent, right before its close-up (${L.map(l=>l.slice(0,24)).join(' | ')})`);}
     ok(r.plain.join('|')==="the suit|the tie|the wristwatch, turned as worn: crown toward the hand, 12 o'clock at the bottom (copy it exactly: case, bezel, dial and subdials, hands, bracelet links)|an enlargement of the same wristwatch's dial (a white dial with its subdials: copy its layout, hands and markings), turned the same way"&&r.dial==='640x640'&&r.turned,`with room, the watch's dial is sent enlarged after its photo, both turned half a turn as the watch sits on the wrist (${r.dial})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

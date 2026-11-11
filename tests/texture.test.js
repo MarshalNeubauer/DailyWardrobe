@@ -84,9 +84,10 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   // ---- realistic photo: the close-ups go along, labelled
   const refs=await p.evaluate(()=>{const s=items[0],t={...items[1],texture:'data:image/jpeg;base64,AAA'},sh={id:'sh',type:'shirt',primaryColor:'white',texture:'data:image/jpeg;base64,BBB'},
       pt={id:'pt',type:'pants',primaryColor:'grey',photo:'data:image/jpeg;base64,CCC',texture:'data:image/jpeg;base64,DDD'};
-    const a=outfitRefs({top:s,suitDay:true,shirt:sh,tie:t,bot:pt}),b=outfitRefs({top:null,shirt:sh,bot:pt,tie:t});
-    return {a:a.labels,n:a.refs.length,b:b.labels}});
-  ok(refs.a.join(' | ')==='the suit | a close-up of the suit fabric (match its exact colour and weave) | a close-up of the shirt fabric (match its exact colour and weave) | the tie | a close-up of the tie fabric (match its exact colour and weave)',`the suit, shirt and tie close-ups follow their photos (${refs.a.length} refs)`);
+    const a=outfitRefs({top:s,suitDay:true,shirt:sh,tie:t,bot:pt}),b=outfitRefs({top:null,shirt:sh,bot:pt,tie:t}),c=outfitRefs({top:s,suitDay:true,shirt:sh,tie:{...t,photo:'data:image/jpeg;base64,EEE',texture:null}});
+    return {a:a.labels,n:a.refs.length,b:b.labels,c:c.labels}});
+  ok(refs.a.join(' | ')==='the suit | a close-up of the suit fabric (match its exact colour and weave) | a close-up of the shirt fabric (match its exact colour and weave) | a close-up of the tie fabric (match its exact colour and weave)',`the suit's close-up follows its photo, then the shirt's, then the tie's in place of the tie's photo (${refs.a.length} refs)`);
+  ok(refs.c.includes('the tie')&&!refs.c.some(l=>/close-up of the tie/.test(l)),'a tie without a close-up is sent as its photo');
   ok(refs.b.includes('a close-up of the trouser fabric (match its exact colour and weave)'),'on a no-jacket day the trousers\' close-up goes too');
   ok(/\{photo,swatch,stripes,texture,sett,patternText,weave,pbox,patternSpec,meas,\.\.\.i\}/.test(require('fs').readFileSync(path.join(ROOT,'shop.js'),'utf8')),'the planner worker is not sent the close-ups');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
