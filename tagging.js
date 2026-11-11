@@ -262,6 +262,13 @@ function settNote(q,i){if(!settable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
   return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the simple pattern</button></p>`:''}
+/* once: Claude-read patterns saved without a pattern box were exposure-matched to the whole item photo (wall and all, a navy
+   pinstripe came out lavender): recolour them from the saved reading and the close-up, no new call to Claude */
+async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='1')return 0;let n=0;
+  for(const it of items)if(it.patternSpec&&it.patternSpec.across&&it.sett&&it.sett.src==='claude+pixels'&&!it.pbox&&it.texture)try{
+    const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
+    const s=settFromSpec(it.patternSpec,{tex:c,type:it.type});if(s&&JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
+  localStorage.setItem('spec_recolour','1');if(n)cache={};return n}
 /* Wardrobe editor: read it again from the kept sharp copy (or the close-up) */
 async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};
@@ -333,10 +340,11 @@ function cropCanvas(c,box){const x=box.x/1000*c.width,y=box.y/1000*c.height,w=Ma
   o.width=Math.round(w);o.height=Math.round(h);o.getContext('2d').drawImage(c,x,y,w,h,0,0,o.width,o.height);return o}
 function settFromSpec(spec,{tex,full,box,wb,type}){
   const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
-  let src=null;try{src=tex?settCanvas(tex,wbRead(tex).ref?null:wb):full?(box?cropCanvas(settCanvas(full,wb),box):settCanvas(full,wb)):null}catch{}
+  let src=null;try{src=tex?settCanvas(tex,wbRead(tex).ref?null:wb):full&&box?cropCanvas(settCanvas(full,wb),box):null}catch{}
   const labs=src?sampleLabs(src):[],ground=labs.length?medLab(labs):null;
-  // the close-up's exposure matched to the item photo's (the median of the patterned area in each)
-  let delta=[0,0,0];if(tex&&full&&ground)try{const f=settCanvas(full,wb),g2=medLab(sampleLabs(box?cropCanvas(f,box):f));delta=g2.map((v,k)=>v-ground[k])}catch{}
+  // the close-up's exposure matched to the item photo's (the median of the patterned area in each); only with the pattern's box:
+  // a whole photo's median takes in the wall and the next jackets (it turned a navy pinstripe lavender)
+  let delta=[0,0,0];if(tex&&full&&box&&ground)try{const g2=medLab(sampleLabs(cropCanvas(settCanvas(full,wb),box)));delta=g2.map((v,k)=>v-ground[k])}catch{}
   // every distinct thread colour Claude named, with its share of the cloth
   const threads=new Map();for(const d of [spec.across,spec.along])if(d)for(const b of d.bands){const t=threads.get(b.hex)||{share:0,role:b.role};t.share+=b.w/(spec.along?2:1);if(b.role==='ground')t.role='ground';threads.set(b.hex,t)}
   const dist=(x,y)=>Math.hypot((x[0]-y[0])/2,1.4*(x[1]-y[1]),1.4*(x[2]-y[2])),dE76=(x,y)=>Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2]);
@@ -350,7 +358,11 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
       if(m&&t.role!=='ground'&&C(cl)>10&&C(m)<.6*C(cl)){const s=Math.max(C(m),.75*C(cl))/C(cl);m=[m[0],cl[1]*s,cl[2]*s]}
       // a line's threads cross the ground's (a white line reads cream, not paper white): a quarter of the ground's lightness
       if(m&&t.role!=='ground')m=[.75*m[0]+.25*ground[0],m[1],m[2]]}
-    colour.set(hex,m?labHex(m.map((v,k)=>v+delta[k])):hex)}
+    if(m)colour.set(hex,m)}
+  // the measured ground far (ΔE00 over 15) from Claude's: first without the exposure match, else Claude's colours
+  const gm=groundHex&&colour.get(groundHex[0]),gc=groundHex&&L(groundHex[0]),far=d=>gm&&dE00(gm.map((v,k)=>v+d[k]),gc)>15;
+  const use=!far(delta)?delta:!far([0,0,0])?[0,0,0]:null;
+  for(const [hex] of threads){const m=colour.get(hex);colour.set(hex,m&&use?labHex(m.map((v,k)=>v+use[k])):hex)}
   const run=d=>{const out=[];for(const b of d.bands){const h=colour.get(b.hex);if(out.length&&out[out.length-1][0]===h)out[out.length-1][1]+=b.w;else out.push([h,b.w])}return out.map(([h,w])=>[h,+w.toFixed(4)])};
   const bands=run(spec.across);if(bands.length<2)return null;
   const gH=groundHex&&colour.get(groundHex[0]),along=spec.along?run(spec.along).map(([h,w])=>[h===gH?null:h,w]):null;

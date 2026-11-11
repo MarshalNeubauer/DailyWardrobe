@@ -80,6 +80,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - a motif answer (`layout:'motif'`: a small figure on a grid, a neat/foulard, dots) becomes `sett = {v:3, motif:{grid, ground, figs:[{shape, place, size, cols, names, centre, centreName}]}, a, cr, tr, src:'claude+pixels'}` (`motifFromSpec`, chosen by `specSett`): each colour from its nearest pixels, Claude's hue kept where they read grey, the close-up's exposure matched to the photo only when there is a box on the cloth (else the photo's wall washes it out)
 - `MOTIF_PATS` (foulard, polka-dot; detect.js) never get a band reading (`readSett`, `rereadSett`): a band reader turns a neat into a diagonal plaid; without Claude they are drawn with the generic tile
 - `motifText()` describes a motif for the photo generator (grid, figures, colours, ground, repeats across); `outfitRefsFull` labels its diagram as figures
+- `settFromSpec` matches the close-up's exposure to the item photo only inside the saved pattern box (`pbox`); with no box the close-up keeps its own colours (a whole-photo median took in the wall and turned a navy pinstripe lavender)
+- if the measured ground still lands over 15 ΔE00 from Claude's ground colour, it drops the exposure match, and failing that uses Claude's colours
+- `recolourSpecSetts()` (once, flag `localStorage.spec_recolour`) recolours saved Claude-read patterns that had no box, from the saved `patternSpec` and close-up, without calling Claude; the user's suit photos are `tests/fixtures/suit-pinstripe*.jpg`
 - benchmark (Settings → Tagging benchmark, `renderBenchUI`/`runBench`): re-tags 25/50/75/100% of the items with photos (random), three at a time, compares type/colour/colour family/pattern with the confirmed tags; runs only when started, with a cost estimate; results in `localStorage.tag_bench` (last 10)
 
 ### `detect.js`

@@ -48,6 +48,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(sp.blue[2]<-5&&sp.blueC>8,`the light-blue line stays light blue though its pixels read grey (b* ${sp.blue[2].toFixed(0)}, chroma ${sp.blueC.toFixed(0)})`);
     ok(sp.white[0]>80&&sp.white[0]<95,`the white line reads cream-white, its threads crossing the khaki (L* ${sp.white[0].toFixed(0)})`);
     ok(sp.tieA===-45,'a tie\'s stripes take Claude\'s direction');
+    // the user's navy pinstripe suit: no pattern box saved, and the item photo is mostly wall and the next jackets
+    const ps=await p.evaluate(async()=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
+      const ph=await ld('tests/fixtures/suit-pinstripe.jpg'),tx=await ld('tests/fixtures/suit-pinstripe-closeup.jpg'),nv='#2b365a',ln='#a3aecb',L=h=>rgbLab(...hexRgb(h));
+      const spec={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:nv,w:.47},{role:'line',name:'pale blue-grey',hex:ln,w:.06},{role:'ground',name:'navy',hex:nv,w:.47}]},along:null,stripeDirection:'vertical',repeatsInCloseup:7,repeatsAcrossItem:40,paneAspect:1};
+      const d=s=>dE00(L(s.bands[0][0]),L(nv)),noBox=settFromSpec(spec,{full:ph,tex:tx,type:'suit'}),wall=settFromSpec(spec,{full:ph,box:{x:0,y:250,w:270,h:110},tex:tx,type:'suit'});
+      return {noBox:d(noBox),wall:d(wall),line:L(noBox.bands[1][0])[0],ground:L(noBox.bands[0][0])[0]}});
+    ok(ps.noBox<10&&ps.ground<35,`without a pattern box the close-up keeps its own exposure: the pinstripe suit stays navy (ΔE00 ${ps.noBox.toFixed(1)} from Claude's navy, L* ${ps.ground.toFixed(0)})`);
+    ok(ps.wall<15&&ps.line>ps.ground+20,`a box over the wall can't lift the navy past 15 ΔE00 (${ps.wall.toFixed(1)}); the stripe stays light`);
+    const mig=await p.evaluate(async()=>{const tex=await (await fetch('tests/fixtures/suit-pinstripe-closeup.jpg')).blob(),url=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(tex)});
+      const spec={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#2b365a',w:.47},{role:'line',name:'pale blue-grey',hex:'#a3aecb',w:.06},{role:'ground',name:'navy',hex:'#2b365a',w:.47}]},along:null,stripeDirection:'vertical',repeatsInCloseup:7,repeatsAcrossItem:40,paneAspect:1};
+      const it={id:'pinsuit',type:'suit',primaryColor:'navy',pattern:'pinstripe',texture:url,patternSpec:spec,sett:{v:2,a:0,bands:[['#63657d',.47],['#b1b6ce',.06],['#63657d',.47]],cross:null,cr:7,tr:40,src:'claude+pixels'}};
+      items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts(),again=await recolourSpecSetts();
+      const L=rgbLab(...hexRgb(it.sett.bands[0][0]));items.splice(items.indexOf(it),1);return {n,again,L:L[0],d:dE00(L,rgbLab(...hexRgb('#2b365a')))}});
+    ok(mig.n===1&&mig.again===0&&mig.d<10&&mig.L<35,`a saved lavender pinstripe is recoloured once on start from its saved reading (L* ${mig.L.toFixed(0)}, ΔE00 ${mig.d.toFixed(1)} from navy)`);
     // the Add card: after the close-up, Claude reads the pattern
     await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
