@@ -527,7 +527,7 @@ Every garment must keep the colour and pattern shown in the illustration${'{REFS
 A crisp cotton dress shirt with natural folds, buttoned cuffs, realistic hands and skin.
 Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`
   : `Turn the first image (an illustration) into a photorealistic photograph.
-Keep exactly the same pose, crop and framing: a man's torso from the chin down to the hips, no face; his forearms cross at the waist, one hand holds the jacket lapel next to the wristwatch, the other hand rests at the jacket button.
+Keep exactly the same pose, crop and framing: a man's torso from just under the chin down to just below the jacket pocket flaps, no face, his shoulders filling the width of the picture; his left forearm lies across his chest, the hand a loose fist on the jacket front with the wristwatch on that wrist facing the camera; his other hand is raised to the jacket's waist button, fastening it, directly under the first wrist so that it almost touches that cuff.
 He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
 Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
