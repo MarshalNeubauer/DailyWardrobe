@@ -32,7 +32,7 @@ module.exports=async({ok,chromium,url})=>{
     const un=await p.evaluate(()=>[...document.querySelectorAll('#st-unused .st-row')].map(r=>r.querySelector('.st-nm').textContent+' → '+r.querySelector('small').textContent));
     const why=n=>(un.find(u=>u.toLowerCase().startsWith(n))||'');
     ok(s.unused==='belt18,cufflinks20,pants7'&&un.length===3,`the pieces never worn are listed (${s.unused})`);
-    ok(/only go with a black jacket/.test(why('dress pants: black'))&&/None of your shoes match it/.test(why('belt: tan'))&&/no French-cuff shirt/.test(why('cufflinks')),`each with its reason (${un.join(' | ')})`);
+    ok(/don't suit any of your blazers well enough/.test(why('dress pants: black'))&&/None of your shoes match it/.test(why('belt: tan'))&&/no French-cuff shirt/.test(why('cufflinks')),`each with its reason (${un.join(' | ')})`);
     // wear counts by type: suits open, others unfold on tap (their rows are only built then)
     const wc=await p.evaluate(()=>({types:[...document.querySelectorAll('#st-wear .st-type summary b')].map(b=>b.textContent).join(),open:[...document.querySelectorAll('#st-wear .st-type[open]')].map(d=>d.dataset.type).join(),
       suitRows:[...document.querySelectorAll('#st-wear .st-type[data-type=suit] .st-row')].map(r=>r.textContent.replace(/\s+/g,' ').trim()),shirtRows:document.querySelectorAll('#st-wear .st-type[data-type=shirt] .st-row').length}));
