@@ -15,7 +15,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     items=[I('suit','navy'),I('shirt','lightblue'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
     settings.workdays=[0,1,2,3,4];settings.vestMode='auto';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')};
   const device=async()=>{const ctx=await browser.newContext({viewport:{width:390,height:900}});
-    await ctx.route(HOST+'**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
+    await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:404,body:'{}'});   // backup sync isn't under test: 2.5 s after a save it pulled the empty backup over the test's in-memory wardrobe
+      const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
@@ -26,7 +27,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const ck=await A.p.evaluate(()=>comboKey(planFor()[key(sel)]));
     ok(/^c[0-9a-f]{16}$/.test(ck),`each outfit combination has a key (${ck})`);
     await A.p.click('.render-btn');await A.p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(calls===1&&await photoShown(A.p),'desktop generates the photo');
+    {const shown=await photoShown(A.p),why=await A.p.evaluate(()=>(document.querySelector('#render-msg')||{}).textContent||'');ok(calls===1&&shown,`desktop generates the photo (calls ${calls}, shown ${shown}${why?', "'+why+'"':''})`)}
     ok(store.has('render:'+ck)&&puts.some(([k,o])=>k==='render:'+ck&&!o),'the worker keeps it under the combination key (no expiry)');
     ok(await A.p.evaluate(async k=>!!(await metaGet('render:'+k)),ck),'and so does the device');
     // the same combination on another day: shown at once, nothing generated

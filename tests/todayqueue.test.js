@@ -75,6 +75,20 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       ok(m.acked&&store.has('jobfail:'+K)&&/failed making it: KV down/.test(JSON.parse(store.get('jobfail:'+K)).error)&&!store.has('job:'+K),'a job that keeps crashing is recorded as failed, with the reason');
       ok(sig&&typeof sig.aborted==='boolean','the call to OpenAI has a time limit');
       store.delete('jobfail:'+K)}
+    // ---- a job stuck as "pending" (its message lost, or its run never finished) is sent again when the app checks, then given up
+    {const K='c5555555555555555',status=async()=>(await worker.fetch(new Request(HOST+'render-queue',{headers:{'x-app-token':'t'}}),env)).json();
+      sent.splice(0);store.set('job:'+K,JSON.stringify({key:K,image:'data:image/png;base64,AA',refs:[],t:Date.now()-12*60000}));   // like the user's: no jobrun, its message gone
+      let st=await status();
+      ok(sent.some(m=>m.key===K)&&st.running[K]&&st.running[K].resends===1,'a job that never started is sent to the queue again when the app checks');
+      sent.splice(0);await status();ok(!sent.length,'…once, not on every check');
+      store.set('jobrun:'+K,JSON.stringify({attempts:1,at:Date.now()-25*60000,resends:1}));await status();
+      ok(sent.some(m=>m.key===K)&&JSON.parse(store.get('jobrun:'+K)).resends===2,'a run that never finished (20 minutes) is sent again too');
+      store.set('jobrun:'+K,JSON.stringify({attempts:0,at:Date.now()-5*60000,resends:3}));sent.splice(0);st=await status();
+      ok(!sent.length&&!store.has('job:'+K)&&/after several tries/.test(JSON.parse(store.get('jobfail:'+K)||'{}').error||'')&&st.failed.some(f=>f.key===K),'after 3 tries it is recorded as failed, not left pending');
+      store.delete('jobfail:'+K);sent.splice(0)}
+    {const r=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({mode:'queue',key:'c6666666666666666',image:'data:image/png;base64,AA'})}),env);
+      ok(r.status===200&&JSON.parse(store.get('jobrun:c6666666666666666')).attempts===0,'queueing records when the job was sent (so one that never starts is noticed)');
+      store.delete('job:c6666666666666666');store.delete('jobrun:c6666666666666666');sent.splice(0)}
     // ---- the push: RenderHub (Durable Object) on its own
     const hub=new mod.RenderHub({},{}),H=(path,init)=>hub.fetch(new Request('https://hub'+path,init)),note=b=>H('/notify',{method:'POST',body:JSON.stringify(b)});
     const K1='c1111111111111111',K2='c2222222222222222';
@@ -130,6 +144,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // a photo waiting over 10 minutes: Try again sends it again
     const stall=await p2.evaluate(()=>{items.find(i=>i.type==='tie').primaryColor='burgundy';cache={};const ck=comboKey(planFor()[key(sel)]);delete renders[ck];
       rqSet({keys:[ck],failed:[],total:1,at:{[ck]:Date.now()-11*60000}});renderToday();const b=document.querySelector('.render-btn');return {ck,t:b.textContent,dis:b.disabled,msg:document.querySelector('#render-msg').textContent}});
+    ok(await p2.evaluate(()=>!document.querySelector('#busy').classList.contains('on')),'a stalled photo isn\'t counted as being made in the pill');
     ok(stall.t==='Try again'&&!stall.dis&&/over 10 minutes/.test(stall.msg),`a photo stuck over 10 minutes offers Try again ("${stall.msg}")`);
     const nPosts=posts.length;await p2.click('text=Try again');await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
     const re=await p2.evaluate(ck=>({pend:renderPending(planFor()[key(sel)]),age:Date.now()-rqGet().at[ck]}),stall.ck);

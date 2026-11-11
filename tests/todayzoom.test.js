@@ -82,7 +82,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const syncs=p.evaluate(()=>fetch('https://w.test/sync',{method:'GET'}));await p.waitForTimeout(250);const sync=await busy();await syncs;
     ok(queued===''&&sync==='','handing a job to the queue or syncing shows nothing (no AI is waiting on it)');
     delay=0;
-    const bg=await p.evaluate(()=>{rqSet({keys:['c1','c2'],failed:[],total:2});const a=document.querySelector('#busy').textContent;rqSet({keys:[],failed:[],total:2});return {a,off:!document.querySelector('#busy').classList.contains('on')}});
+    const bg=await p.evaluate(()=>{rqSet({keys:['c1','c2'],failed:[],total:2,sentAt:Date.now()});const a=document.querySelector('#busy').textContent;rqSet({keys:[],failed:[],total:2});return {a,off:!document.querySelector('#busy').classList.contains('on')}});
     ok(/Making 2 photos in the background/.test(bg.a)&&bg.off,`photos being made in the background show until they're done ("${bg.a}")`);
     const gen=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];rendering=comboKey(o);renderToday();const b=document.querySelector('.render-btn');const r={spin:!!(b&&b.querySelector('.spin')),t:b&&b.textContent};rendering=false;renderToday();return r});
     ok(gen.spin&&/Making photo/.test(gen.t),'"Making photo…" on Today spins too');
