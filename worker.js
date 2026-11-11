@@ -587,16 +587,36 @@ async function queueRender(body, env, json) {
     model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, replace: body.replace ? true : undefined, t: Date.now() };
   await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
   await env.WARDROBE.delete(`jobfail:${key}`);
+  await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: 0, at: Date.now() }), JOB_TTL);   // queued, not started (GET /render-queue resends it if it never starts)
   await env.RENDER_QUEUE.send({ key });
   return json({ queued: true });
 }
+const START_STALE_MS = 3 * 60000, RUN_STALE_MS = 20 * 60000;
 async function queueStatus(req, env, json) {
   if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
   const pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4));
   // how far each waiting photo got: attempts so far and when the last began (none yet: its message hasn't been taken)
-  const running = {};
-  for (const k of pending.slice(0, 20)) { const r = await env.WARDROBE.get(`jobrun:${k}`, 'json'); if (r) running[k] = r; }
+  // A job whose message never got going (lost, as before the consumer waited for KV) or whose run never finished (the consumer was
+  // stopped) is sent to the queue again, up to 3 times, then recorded as failed: no photo sits "pending" for days.
+  const running = {}, now = Date.now();
+  for (const k of pending.slice(0, 20)) {
+    let r = await env.WARDROBE.get(`jobrun:${k}`, 'json');
+    if (!r) { const j = await env.WARDROBE.get(`job:${k}`, 'json'); if (!j) continue; r = { attempts: 0, at: +j.t || now }; }   // a job from before jobrun
+    const stale = r.attempts ? now - r.at > RUN_STALE_MS : now - r.at > START_STALE_MS;
+    if (stale) {
+      const resends = (r.resends || 0) + 1;
+      if (resends > 3) {
+        const error = 'The worker couldn’t get this photo made after several tries. Try again.';
+        await env.WARDROBE.put(`jobfail:${k}`, JSON.stringify({ error, t: now }), FAIL_TTL); await env.WARDROBE.delete(`job:${k}`); await env.WARDROBE.delete(`jobrun:${k}`);
+        await tellHub(env, { key: k, error }); continue;
+      }
+      await env.RENDER_QUEUE.send({ key: k }); r = { ...r, attempts: 0, at: now, resends };
+      await env.WARDROBE.put(`jobrun:${k}`, JSON.stringify(r), JOB_TTL);
+    }
+    running[k] = r;
+  }
+  for (const k of Object.keys(running)) if (!pending.includes(k)) delete running[k];
   const failed = [];
   for (const k of (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) {
     const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' });
@@ -610,7 +630,8 @@ async function runRenderJob(msg, env) {
   // the job is written to KV just before its message is sent, and KV can take up to a minute to show a new key in another
   // location: a consumer that can't see it yet tries again shortly (acking it lost the photo, which then sat "pending" for days)
   if (!job) { if (COMBO_RE.test(key) && (msg.attempts || 1) < 6) return msg.retry({ delaySeconds: 20 }); return msg.ack(); }
-  await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now() }), JOB_TTL);   // for GET /render-queue
+  const run0 = await env.WARDROBE.get(`jobrun:${key}`, 'json');
+  await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now(), resends: run0 && run0.resends || 0 }), JOB_TTL);   // for GET /render-queue
   if (!job.replace && await env.WARDROBE.get(`render:${key}`)) { await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   if (!env.OPENAI_API_KEY) { await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
   const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env);

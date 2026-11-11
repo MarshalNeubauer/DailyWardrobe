@@ -105,7 +105,7 @@ function busyLabelFor(u,o){if(!o||String(o.method||'GET').toUpperCase()!=='POST'
 if(typeof window!=='undefined'&&window.fetch&&!window.fetch.busy){const f0=window.fetch.bind(window);
   window.fetch=function(u,o){const l=busyLabelFor(typeof u==='string'?u:u&&u.url,o);if(!l)return f0(u,o);const end=busyStart(l);const r=f0(u,o);r.then(end,end);return r};window.fetch.busy=1}
 function renderBusy(){let el=document.getElementById('busy');if(!el){if(!document.body)return;el=document.createElement('div');el.id='busy';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.appendChild(el)}
-  const live=[...busyJobs.values()],bg=typeof queuedKeys==='function'?queuedKeys().length:0;
+  const live=[...busyJobs.values()],bg=typeof queuedKeys==='function'?queuedKeys().filter(k=>!renderStalled(k)).length:0;   // a stalled photo isn't being made: its day offers Try again
   if(bg)live.push(`Making ${bg} photo${bg===1?'':'s'} in the background…`);
   document.body.classList.toggle('busy-on',!!live.length);if(!live.length){el.classList.remove('on');return}
   el.innerHTML=`<span class="spin" aria-hidden="true"></span><span>${esc(live[live.length-1])}${live.length>1?` <small>+${live.length-1}</small>`:''}</span>`;el.classList.add('on')}
@@ -964,11 +964,11 @@ const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):loc
 const queuedKeys=()=>rqGet().keys;
 /* ask the worker how the queued photos are doing and bring the finished ones home */
 let rqTimer=null,rqBusy=false;
-async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const removed=new Set(),newFail=[];
+async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const removed=new Set(),newFail=[],fresh={};
   try{const r=await fetch(W.url+'-queue',{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
     const pend=new Set(st.pending||[]),fail=Object.fromEntries((st.failed||[]).map(f=>[f.key,f.error]));let got=0,shown=false;
     for(const k of [...q.keys]){
-      if(pend.has(k))continue;
+      if(pend.has(k)){const run=st.running&&st.running[k];if(run&&run.at>sentAt(q,k))fresh[k]=run.at;continue}   // the worker started it again: wait afresh
       if(fail[k]){newFail.push(fail[k]);renderFail[k]=fail[k];shown=true;removed.add(k);continue}
       const g=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=g.ok?await g.json().catch(()=>null):null;
       if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;removed.add(k);
@@ -977,7 +977,7 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
       else if(Date.now()-sentAt(q,k)>LOST_MS)removed.add(k)}   // neither waiting, failed nor finished for a long time: lost (expired), stop waiting for it
       // (a job just sent can be missing from the worker's list for up to a minute: KV lists are only eventually consistent)
     // applied to the list as it is now: a push may have taken some meanwhile, and new photos may have been sent
-    const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));if(q2.at)for(const k of removed)delete q2.at[k];q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
+    const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));if(Object.keys(fresh).length)q2.at={...(q2.at||{}),...fresh};if(q2.at)for(const k of removed)delete q2.at[k];q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
     rqSet(q2);renderBatchUI();renderRegenUI();if((shown||removed.size)&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
 /* Bringing photos home. The worker pushes: while photos are waiting and the app is on screen, a request to GET /render-wait is held
