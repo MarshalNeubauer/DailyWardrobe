@@ -15,8 +15,11 @@ module.exports=async({ok,chromium,url,settle})=>{
       return p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})};
     const swipe=async(x,y,dx,mid)=>{await T('touchStart',x,y);let m=null;for(let k=1;k<=8;k++){await T('touchMove',x+dx*k/8,y+2);if(k===5&&mid)m=await mid()}await T('touchEnd');await settle(p,500);return m};
     const h=await p.evaluate(()=>{const hd=document.querySelector('#mbox .mhead'),t=hd.querySelector('h3').getBoundingClientRect(),b=document.querySelector('#mbox').getBoundingClientRect();
-      return {arrows:document.querySelectorAll('#mbox .mbtns, #mbox .mhead button').length,centre:Math.abs((t.left+t.right)/2-(b.left+b.right)/2),hint:(hd.querySelector('.mhint')||{}).textContent}});
-    ok(h.arrows===0&&h.centre<=2&&/Swipe/.test(h.hint),`no arrows; the month and year are centred (${h.centre.toFixed(1)}px off), with a swipe hint`);
+      return {arrows:document.querySelectorAll('#mbox .mbtns, #mbox .mhead button').length,centre:Math.abs((t.left+t.right)/2-(b.left+b.right)/2),hint:!!document.querySelector('#mbox .mhint'),legend:!!document.querySelector('#mbox .mlegend'),
+        gap:Math.round(document.querySelector('#mbox .mdow').getBoundingClientRect().top-t.bottom),
+        bar:Math.round(document.querySelector('#mbox .foldbar').getBoundingClientRect().top-Math.max(...[...document.querySelectorAll('#mbox .mc')].map(c=>c.getBoundingClientRect().bottom)))}});
+    ok(h.arrows===0&&h.centre<=2&&!h.hint&&!h.legend,`no arrows, swipe tip or legend; the month and year are centred (${h.centre.toFixed(1)}px off)`);
+    ok(h.gap<=8&&h.bar<=14,`the weekdays sit close under the title (${h.gap}px) and the Fold away bar right under the days (${h.bar}px)`);
     const day0=await p.evaluate(()=>key(sel)),c=await at();
     const mid=await swipe(c.x+60,c.y,-200,()=>p.evaluate(()=>document.querySelector('#mswipe').style.transform));
     ok(/translateX\(-/.test(mid||''),`the month follows the finger (${mid})`);
