@@ -28,9 +28,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         if(lone&&!ia.seam[i]&&!tieNear[i]){if(A.data[4*i]!==X.jacket.data[4*i]||A.data[4*i+1]!==X.jacket.data[4*i+1]||A.data[4*i+2]!==X.jacket.data[4*i+2])ringOk=0}}
       // the halo: beside the new tie, on the black shirt, nothing of the master's green tie is left
       const hb=asmBox(ia.tie,W,ASM_HALO,true);let haloN=0,haloGreen=0;for(let i=0;i<N;i++)if(hb[i]&&!ia.tie[i]&&z.shirt[i]){haloN++;if(La[3*i+1]<-8)haloGreen++}
+      // the tie's outline: its left edge moves at most a pixel from one row to the next (it was ragged, each pixel decided by itself),
+      // and along it nothing is rebuilt as a join: the edge pixels are the tie's clean colour over the shirt's, in the mask's share
+      let jump=0,rows=0,edgeSeam=0,edgeN=0,prevX=-1;for(let y=0;y<W;y++){let x0=-1;for(let x=0;x<W;x++)if(ia.tie[y*W+x]){x0=x;break}if(x0<0){prevX=-1;continue}if(prevX>=0){rows++;if(Math.abs(x0-prevX)>1)jump++}prevX=x0}
+      {const o1=asmBox(ia.tie,W,1,true),i1=asmBox(ia.tie,W,1,false);for(let i=0;i<N;i++)if(o1[i]&&!i1[i]&&z.shirt[i]){edgeN++;if(ia.seam[i])edgeSeam++}}
       const core=asmBox(z.tie,W,3,false),wide=asmBox(z.tie,W,3,true);let inCore=1,inWide=1;for(let i=0;i<N;i++){if(core[i]&&!ia.tie[i])inCore=0;if(ia.tie[i]&&!wide[i])inWide=0}
       const ring=asmBox(ia.tie,W,4,true);let rimN=0,rimPale=0;for(let i=0;i<N;i++)if(ring[i]&&!ia.tie[i]&&ia.lab[i]===2){rimN++;if(La[3*i]>55)rimPale++}
-      const a={haloN,haloGreen,ringN,ringOk,ringSeam,moved,watchKept,inCore,inWide,rimN,rimPale:100*rimPale/Math.max(1,rimN),green:100*stat(La,z.tie,(l,x,b)=>x<-12?1:0),greenMaster:100*stat(Lm,z.tie,(l,x,b)=>x<-12?1:0),
+      const a={jump,rows,edgeSeam,edgeN,haloN,haloGreen,ringN,ringOk,ringSeam,moved,watchKept,inCore,inWide,rimN,rimPale:100*rimPale/Math.max(1,rimN),green:100*stat(La,z.tie,(l,x,b)=>x<-12?1:0),greenMaster:100*stat(Lm,z.tie,(l,x,b)=>x<-12?1:0),
         jacketB:stat(La,z.jacket,(l,x,b)=>b),jacketBMaster:stat(Lm,z.jacket,(l,x,b)=>b),shirtL:stat(La,asmBox(z.shirt,W,2,false),l=>l),bar:asmCount(ia.bar||[]),barL:ia.bar?stat(La,asmBox(ia.bar,W,1,false),l=>l):0};
       // B: the same with the pink shirt and another watch (smaller, on a strap: it uncovers a little of the cuff)
       const ib={},B=asmCompose(master,z,{jacket:X.jacket,shirt:X.pink,tie:X.tie,bar:X.bar,watch:X.watch},ib),Lb=asmLab(B);
@@ -53,10 +57,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const old={v:1,...asmPackZones({W:2,jacket:new Uint8Array(4),shirt:new Uint8Array(4),tie:new Uint8Array(4),watch:new Uint8Array(4)})};delete old.v;await metaPut('asm:zones:'+asmMasterKey(),old);const stale=await asmZonesKept();await metaPut('asm:zones:'+asmMasterKey(),null);
       return {top,inner:s[5*W+20]===1&&s[11*W+20]===0&&s[0*W+20]===1,stale,v:ASM_ZV}});
     ok(ed.top===1&&ed.inner,'a zone that reaches the picture\'s edge keeps its outermost rows when its gaps are closed (they were cut, and the master\'s white collar showed as a line along the top of a dark shirt)');
-    ok(ed.stale===false&&ed.v===5,'zones kept from before that fix are not used: they are worked out again');
+    // a suit's photo whose hand is two pixels larger than the master's: its rim of skin in the jacket's zone becomes cloth
+    const hd=await p.evaluate(()=>{const W=120,N=W*W,mk=(r,cloth)=>{const d=new ImageData(W,W);for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=4*(y*W+x),in_=Math.hypot(x-60,y-60)<=r,c=in_?[214,170,140]:cloth;d.data[i]=c[0];d.data[i+1]=c[1];d.data[i+2]=c[2];d.data[i+3]=255}return d};
+      const master=mk(20,[70,70,74]),piece=mk(22,[30,40,90]),z={W,jacket:new Uint8Array(N),shirt:new Uint8Array(N),tie:new Uint8Array(N),watch:new Uint8Array(N)};
+      for(let y=0;y<W;y++)for(let x=0;x<W;x++)if(Math.hypot(x-60,y-60)>20.5)z.jacket[y*W+x]=1;
+      const o=asmCompose(master,z,{jacket:piece}),L=asmLab(o);let rim=0,hand=0,cloth=0;
+      for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x,r=Math.hypot(x-60,y-60),skin=L[3*i+1]>8&&L[3*i+2]>10&&L[3*i]>60;if(r>21.5&&r<30&&skin)rim++;if(r<18&&skin)hand++;if(r>32&&o.data[4*i+2]===90)cloth++}
+      return {rim,hand,cloth,h:ASM_HAND}});
+    ok(hd.rim===0&&hd.hand>900&&hd.cloth>9000,`where a suit's photo shows a larger hand than the master's, its rim of skin outside the master's hand becomes cloth (${hd.rim} skin pixels left round the fist; the hand and the cloth are untouched)`);
+    ok(ed.stale===false&&ed.v===7,'zones kept from before that fix are not used: they are worked out again');
     ok(!r.noneOk,'calibration photos that changed nothing give zones that are refused');
     ok(r.a.moved===0&&r.a.watchKept===1,`outside the pieces the picture is the master, pixel for pixel, and the owner's watch stays the master's own (${r.a.moved} pixels differ)`);
     ok(r.a.ringN>300&&r.a.ringOk===1&&r.a.ringSeam<r.a.ringN/100,`the jacket's own edge comes from its photo: ${r.a.ringN} pixels just outside its zone where the master shows a leftover of its own jacket, none on another piece and next to none on the hands (${r.a.ringSeam} skin pixels; the master's dark edge left there read as an outline)`);
+    ok(r.a.rows>200&&r.a.jump<=r.a.rows*.1&&r.a.edgeN>300&&r.a.edgeSeam<=r.a.edgeN*.05,`the tie has a smooth outline and a soft edge: its side jumps more than a pixel on ${r.a.jump} of ${r.a.rows} rows, and ${r.a.edgeSeam} of ${r.a.edgeN} edge pixels on the shirt are rebuilt as a join`);
     ok(r.a.haloN>300&&r.a.haloGreen===0,`no halo of the master's tie round the new one: of the ${r.a.haloN} shirt pixels beside it, ${r.a.haloGreen} are green`);
     ok(r.a.jacketBMaster<4&&r.a.jacketB>8,`the jacket is the khaki one, not the master's grey (yellowness ${r.a.jacketBMaster.toFixed(1)} -> ${r.a.jacketB.toFixed(1)})`);
     ok(r.a.shirtL<35,`the shirt is black in the collar, chest and cuffs (lightness ${r.a.shirtL.toFixed(0)})`);
