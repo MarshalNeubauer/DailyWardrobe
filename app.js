@@ -681,7 +681,9 @@ function figureStage(o){
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   schedulePrefetch();   // and the rest of the month's photos, nearest first
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
-  const ctl=(!r||rendering?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${rendering?' disabled':''}>${rendering?'<span class="spin" aria-hidden="true"></span>Generating photo…':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${renderMsg}</p>`;
+  const ck=comboKey(o),pend=renderPending(o),busyElse=!!rendering&&!pend,fail=renderFail[ck];
+  const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it to your worker…':'Your worker is making it (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made: ${fail}`:'';
+  const ctl=(!r||pend?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${pend||busyElse?' disabled':''}>${pend?'<span class="spin" aria-hidden="true"></span>Making photo…':r?'Regenerate photo':fail?'Try again':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${esc(msg)}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${wornMarks(o)}</div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}</div>`)+ctl+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
@@ -689,7 +691,7 @@ function figureStage(o){
 /* ---- realistic photo: the figure + item photos -> worker /render (OpenAI image edit).
    Photos are saved per outfit combination, not per day: any day that wears the same pieces reuses the photo.
    The worker keeps a copy (KV) so every device can show it. ---- */
-let renders={},rendering=false,renderMsg='';
+let renders={},rendering=false,renderMsg={k:'',t:''},renderFail={};   // rendering: an outfit being sent (or, on a worker without a queue, made) now; renderMsg: a note for one day; renderFail: why a queued photo failed, per combination
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* the combination a photo shows: which pieces, and everything about them that changes how they look */
@@ -797,12 +799,18 @@ async function renderCombo(o){
   await keepRender(comboKey(o),rec,false);   // the worker already kept a copy
   return rec;
 }
+/* Generate (Today) or Regenerate (Settings) the shown day's photo. It goes to the worker's background queue, like the month batch,
+   so the app can be swiped to another day, closed or locked: the worker makes it and the app picks it up when it next looks
+   (every 20 s while open, and on opening). Only a worker without the queue makes it while the app waits. */
+const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||queuedKeys().includes(ck))};
 async function generateRender(){
-  const o=planFor()[key(sel)];if(!o||rendering)return;
-  const day=key(sel);rendering=true;renderMsg='This takes about 30–90 seconds.';renderToday();
-  try{await renderCombo(o);renderMsg=''}
-  catch(e){renderMsg=/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t generate the photo: '+(e.message||e)}
-  finally{rendering=false;if(key(sel)===day)renderToday()}
+  const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
+  const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
+  try{const q=await queueCombo(o,replace);
+    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.failed=s.failed||[];rqSet(s);startQueueWatch()}
+    else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open: your worker has no background queue.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
+  catch(e){renderMsg={k:day,t:/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t send the photo to your worker: '+(e.message||e)}}
+  finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)renderToday();renderRegenUI()}
 }
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day */
 function lastWorn(o){
@@ -914,10 +922,10 @@ async function startBatch(){
   renderBatchUI();if(!$('#today').hidden)renderToday();
 }
 /* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
-async function queueCombo(o){
+async function queueCombo(o,replace=false){
   const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
   const image=await figurePng(o),{refs,labels}=await outfitRefsFull(o),ck=comboKey(o);
-  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o),...(o.top?{}:{nojacket:true})})});
+  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o),...(o.top?{}:{nojacket:true}),...(replace?{replace:true}:{})})});
   const j=await r.json().catch(()=>({}));
   if(r.ok&&j.queued)return 'queued';
   if(r.ok&&j.exists){renderTried.delete(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
@@ -930,12 +938,12 @@ const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):loc
 const queuedKeys=()=>rqGet().keys;
 /* ask the worker how the queued photos are doing and bring the finished ones home */
 let rqTimer=null,rqBusy=false;
-async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;
+async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const n0=q.keys.length;
   try{const r=await fetch(W.url+'-queue',{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
     const pend=new Set(st.pending||[]),fail=Object.fromEntries((st.failed||[]).map(f=>[f.key,f.error]));let got=0,shown=false;
     for(const k of [...q.keys]){
       if(pend.has(k))continue;
-      if(fail[k]){q.failed.push(fail[k]);q.keys=q.keys.filter(x=>x!==k);continue}
+      if(fail[k]){q.failed.push(fail[k]);renderFail[k]=fail[k];shown=true;q.keys=q.keys.filter(x=>x!==k);continue}
       const g=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=g.ok?await g.json().catch(()=>null):null;
       if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;q.keys=q.keys.filter(x=>x!==k);
         const o=planFor()[key(sel)];if(o&&comboKey(o)===k)shown=true}
@@ -945,9 +953,9 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
     q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
       :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
     if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}
-    rqSet(q);renderBatchUI();if(shown&&!$('#today').hidden)renderToday();
+    rqSet(q);renderBatchUI();renderRegenUI();if((shown||q.keys.length!==n0)&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
-function startQueueWatch(){renderBusy();if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},45000)}
+function startQueueWatch(){renderBusy();if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},20000)}
 function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
@@ -1269,7 +1277,7 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   if(o.occasion===occ)return renderFormalUI(`${l} is already ${what}.`);
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
 function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn)return;const o=planFor()[key(sel)],l=shortDate(sel);
-  const r=o&&renderFor(o);btn.disabled=!o||rendering;btn.textContent=rendering?'Generating photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
+  const r=o&&renderFor(o),pend=renderPending(o);btn.disabled=!o||!!rendering||pend;btn.textContent=pend?'Making photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
   if(st)st.textContent=o?(r?'Makes a new realistic photo of the day shown on Today (about 7¢); it replaces the current one for every day with this look.':'The day shown on Today has no photo yet (about 7¢).'):'Pick a workday on Today first.'}
 function renderSettingsExtras(){
   renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();
