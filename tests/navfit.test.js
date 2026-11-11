@@ -39,6 +39,20 @@ module.exports=async({ok,chromium,url,settle})=>{
       const late=await nx(),gap=await p.evaluate(()=>Math.round(document.querySelector('body>nav').getBoundingClientRect().top-document.querySelector('.below').getBoundingClientRect().bottom));
       ok(early===0&&late>15&&late<40&&Math.abs(gap-12)<=1&&await p.evaluate(()=>localStorage.getItem('nav_fit:466x710')===null),`the bar isn't sized before the photo loads (${early}px then; ${late}px after, gap ${gap}px), and the old inflated 64px is dropped`);
       await ctx.close()}
+    // a blazer day (trousers too: four tiles, each narrower) keeps the three-tile day's size
+    {const ctx=await browser.newContext({viewport:{width:466,height:710},isMobile:true,hasTouch:true});const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
+      const nx=()=>p.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx')));
+      const day=async(blazer)=>{await p.evaluate(b=>{localStorage.clear();let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+        items=b?[I('blazer','navy'),I('pants','grey')]:[I('suit','grey')];items.push(I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal'));
+        // product pictures, like the user's: a picture tile's picture follows its width, so four of them are shorter than three
+        const pc=document.createElement('canvas');pc.width=pc.height=200;pc.getContext('2d').fillRect(0,0,9,9);const pu=pc.toDataURL('image/jpeg',.6);for(const it of items)if(ITEM_PIC_TYPES.includes(it.type))renders[itemKey(it)]={sig:'item',img:pu,model:'m',t:1,grey:1};
+        settings.workdays=[0,1,2,3,4];settings.blazerDays=b?[0]:[];dayRecs={};TODAY_OVERRIDE='2026-11-08T12:00:00';cache={};sel=new Date(2026,10,8);view={y:2026,m:10};
+        const c=document.createElement('canvas');c.width=c.height=1024;c.getContext('2d').fillRect(0,0,9,9);const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:c.toDataURL('image/jpeg',.6),model:'m',t:1};
+        document.documentElement.style.setProperty('--navx','0px');show('today')},blazer);
+        await p.waitForSelector('#mannequin-container img');await p.waitForTimeout(700);return {x:await nx(),n:await p.evaluate(()=>document.querySelectorAll('.below .tile').length),pics:await p.evaluate(()=>document.querySelectorAll('.below .tile.has-pic').length),h:await p.evaluate(()=>Math.round(document.querySelector('.below').getBoundingClientRect().height))}};
+      const three=await day(false),four=await day(true);
+      ok(three.n===3&&four.n===4&&four.pics===4&&four.h<three.h-10&&Math.abs(four.x-three.x)<=1,`a day with four picture tiles (a shorter row: ${four.h}px against ${three.h}px) gets the same bar as a day with three (${four.x}px and ${three.x}px)`);
+      await ctx.close()}
     const s=await run(390,600);
     ok(s.navx===0&&s.btn===38,`on a short screen, where the tiles already reach it, the bar keeps its 38px buttons (grown ${s.navx}px)`);
     const t=await run(430,1100);
