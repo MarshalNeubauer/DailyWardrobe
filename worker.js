@@ -609,13 +609,57 @@ async function runRenderJob(msg, env) {
   if (r.ok) {
     await env.WARDROBE.put(`render:${key}`, JSON.stringify(r.rec));
     await env.WARDROBE.delete(`job:${key}`);
+    await tellHub(env, { key, rec: r.rec });
     return msg.ack();
   }
   if (r.retry && (msg.attempts || 1) < 4) return msg.retry({ delaySeconds: 60 });
   console.log(`photo ${key} failed: ${r.error}`);
   await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: r.error, t: Date.now() }), FAIL_TTL);
   await env.WARDROBE.delete(`job:${key}`);
+  await tellHub(env, { key, error: r.error });
   msg.ack();
+}
+/* ---- the push to an open app (GET /render-wait): the app holds a request open while its photos are being made, and the queue
+   job hands each finished photo (or its failure) to one Durable Object, RenderHub, which answers the waiting requests at once with
+   the photo itself (KV can take up to a minute to show a new key elsewhere). Results are kept 10 minutes for an app between two
+   waits. Without the RENDER_HUB binding the app just polls GET /render-queue. ---- */
+const hubOf = env => env.RENDER_HUB && env.RENDER_HUB.get(env.RENDER_HUB.idFromName('renders'));
+async function tellHub(env, m) {
+  const hub = hubOf(env); if (!hub) return;
+  try { await hub.fetch('https://hub/notify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(m) }); }
+  catch (e) { console.log('hub notify failed', e && e.message); }   // the app still finds it by polling
+}
+async function waitForRenders(req, env, json) {
+  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+  const hub = hubOf(env); if (!hub) return json({ error: 'no push', noPush: true }, 501);
+  const u = new URL(req.url), keys = String(u.searchParams.get('keys') || '').split(',').filter(k => COMBO_RE.test(k)).slice(0, 60);
+  if (!keys.length) return json({ error: 'no keys' }, 400);
+  const ms = Math.max(1000, Math.min(100000, +u.searchParams.get('ms') || 90000));
+  const r = await hub.fetch(`https://hub/wait?keys=${keys.join(',')}&ms=${ms}`);
+  return json(await r.json().catch(() => []), r.ok ? 200 : 502);
+}
+export class RenderHub {
+  constructor(ctx, env) { this.ctx = ctx; this.waiting = new Set(); this.recent = new Map(); }
+  async fetch(req) {
+    const u = new URL(req.url), now = Date.now();
+    for (const [k, v] of this.recent) if (now - v.at > 600000) this.recent.delete(k);
+    const out = b => new Response(JSON.stringify(b), { headers: { 'content-type': 'application/json' } });
+    if (u.pathname === '/notify') {
+      const m = await req.json().catch(() => null); if (!m || !COMBO_RE.test(String(m.key || ''))) return out({ ok: false });
+      const res = m.rec ? { key: m.key, rec: m.rec } : { key: m.key, error: String(m.error || 'failed') };
+      this.recent.set(m.key, { ...res, at: now });
+      for (const w of [...this.waiting]) if (w.keys.has(m.key)) { this.waiting.delete(w); clearTimeout(w.timer); w.resolve([res]); }
+      return out({ ok: true });
+    }
+    if (u.pathname === '/wait') {
+      const keys = new Set(String(u.searchParams.get('keys') || '').split(',').filter(Boolean));
+      const ready = [...keys].map(k => this.recent.get(k)).filter(Boolean).map(({ at, ...r }) => r);
+      if (ready.length) return out(ready);
+      const ms = Math.max(1000, Math.min(100000, +u.searchParams.get('ms') || 90000));
+      return out(await new Promise(resolve => { const w = { keys, resolve }; w.timer = setTimeout(() => { this.waiting.delete(w); resolve([]); }, ms); this.waiting.add(w); }));
+    }
+    return new Response('not found', { status: 404 });
+  }
 }
 /* POST /render {mode:'item', item, key} -> a product photo of one accessory (shoes, belt, socks...), made from a short
    description with OpenAI's image generation, kept in KV under the item's look key like outfit photos */
@@ -838,6 +882,7 @@ export default {
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
     if (path === '/sync') return handleSync(req, env, json, cors);
     if (path === '/render-queue' && req.method === 'GET') return queueStatus(req, env, json);
+    if (path === '/render-wait' && req.method === 'GET') return waitForRenders(req, env, json);
     if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
     if (path === '/holidays' && req.method === 'GET') return handleHolidays(req, env, json);
     if (path === '/tag-many' && req.method === 'POST') return handleTagMany(req, env, json);

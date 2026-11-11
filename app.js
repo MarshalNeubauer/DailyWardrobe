@@ -87,6 +87,8 @@ function renderBusy(){let el=document.getElementById('busy');if(!el){if(!documen
   if(bg)live.push(`Making ${bg} photo${bg===1?'':'s'} in the background…`);
   document.body.classList.toggle('busy-on',!!live.length);if(!live.length){el.classList.remove('on');return}
   el.innerHTML=`<span class="spin" aria-hidden="true"></span><span>${esc(live[live.length-1])}${live.length>1?` <small>+${live.length-1}</small>`:''}</span>`;el.classList.add('on')}
+/* run once every script has loaded: the start-up chain can resolve before tagging.js (loaded after app.js) has run */
+const afterScripts=f=>document.readyState==='complete'?f():addEventListener('load',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by Workers AI (${q.model.replace(/^@cf\//,'')}).`;
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
 async function ask(c,extra){
@@ -807,7 +809,7 @@ async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
   const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
   try{const q=await queueCombo(o,replace);
-    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.failed=s.failed||[];rqSet(s);startQueueWatch()}
+    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open: your worker has no background queue.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
   catch(e){renderMsg={k:day,t:/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t send the photo to your worker: '+(e.message||e)}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)renderToday();renderRegenUI()}
@@ -915,7 +917,7 @@ async function startBatch(){
     catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden/i.test(e.message)){batch.stop=true}}
   }
   const b=batch;batch=null;const el=$('#batch-status');
-  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.failed=q.failed||[];
+  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.sentAt=Date.now();q.failed=q.failed||[];
     q.msg=`Sent ${queued.length} photo${queued.length===1?'':'s'} to your worker. They’re being made in the background (about a minute each); you can close the app. They appear as they finish.`;rqSet(q);startQueueWatch()}
   else if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
   if(queued.length&&b.fail&&el){el.dataset.keep=1;el.textContent=rqGet().msg+` ${b.fail} couldn’t be sent (${b.err}).`;setTimeout(()=>{delete el.dataset.keep},6000)}
@@ -938,25 +940,47 @@ const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):loc
 const queuedKeys=()=>rqGet().keys;
 /* ask the worker how the queued photos are doing and bring the finished ones home */
 let rqTimer=null,rqBusy=false;
-async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const n0=q.keys.length;
+async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const removed=new Set(),newFail=[];
   try{const r=await fetch(W.url+'-queue',{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
     const pend=new Set(st.pending||[]),fail=Object.fromEntries((st.failed||[]).map(f=>[f.key,f.error]));let got=0,shown=false;
     for(const k of [...q.keys]){
       if(pend.has(k))continue;
-      if(fail[k]){q.failed.push(fail[k]);renderFail[k]=fail[k];shown=true;q.keys=q.keys.filter(x=>x!==k);continue}
+      if(fail[k]){newFail.push(fail[k]);renderFail[k]=fail[k];shown=true;removed.add(k);continue}
       const g=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=g.ok?await g.json().catch(()=>null):null;
-      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;q.keys=q.keys.filter(x=>x!==k);
+      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;removed.add(k);
         const o=planFor()[key(sel)];if(o&&comboKey(o)===k)shown=true}
       else if(!g.ok&&g.status!==404)continue;
-      else q.keys=q.keys.filter(x=>x!==k)}   // neither waiting, failed nor finished: lost (expired), stop waiting for it
-    const done=(q.total||0)-q.keys.length-q.failed.length;
-    q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
-      :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
-    if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}
-    rqSet(q);renderBatchUI();renderRegenUI();if((shown||q.keys.length!==n0)&&!$('#today').hidden)renderToday();
+      else removed.add(k)}   // neither waiting, failed nor finished: lost (expired), stop waiting for it
+    // applied to the list as it is now: a push may have taken some meanwhile, and new photos may have been sent
+    const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
+    rqSet(q2);renderBatchUI();renderRegenUI();if((shown||removed.size)&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
-function startQueueWatch(){renderBusy();if(!rqTimer&&queuedKeys().length)rqTimer=setInterval(()=>{if(document.visibilityState==='visible')checkQueue()},20000)}
-function stopQueueWatch(){clearInterval(rqTimer);rqTimer=null}
+/* Bringing photos home. The worker pushes: while photos are waiting and the app is on screen, a request to GET /render-wait is held
+   open, and the worker answers it the moment a queue job finishes, with the photo itself (waitPush). Polling GET /render-queue
+   stays as the backup (a worker without the push, a dropped connection), timed by what a photo takes: none is ready within 40 s
+   of sending, so the first look is then; after that every 7 s, every 20 s after 3 minutes (a month batch) and every minute after 15. */
+const queueDelay=age=>age<40000?40000-age:age<180000?7000:age<900000?20000:60000;
+function scheduleQueueCheck(){clearTimeout(rqTimer);rqTimer=null;const q=rqGet();if(!q.keys.length)return;
+  rqTimer=setTimeout(async()=>{rqTimer=null;if(document.visibilityState==='visible')await checkQueue();scheduleQueueCheck()},Math.max(1000,queueDelay(Date.now()-(q.sentAt||0))))}
+function startQueueWatch(){renderBusy();scheduleQueueCheck();waitPush()}
+function stopQueueWatch(){clearTimeout(rqTimer);rqTimer=null}
+let PUSH_WAIT=90000,pushOn=false,noPush=false;
+async function waitPush(){const W=workerBase(),keys=queuedKeys();if(pushOn||noPush||!W||!keys.length||document.visibilityState!=='visible')return;pushOn=true;let pause=0;
+  try{const r=await fetch(W.url+'-wait?keys='+keys.join(',')+'&ms='+PUSH_WAIT,{headers:{'x-app-token':W.tok},cache:'no-store'});
+    if(r.status===501||(r.status>=400&&r.status<500)){noPush=true;return}   // an older worker without the push (or no access): polling only
+    const res=r.ok?await r.json().catch(()=>[]):[];if(!r.ok)pause=5000;if(Array.isArray(res)&&res.length)await takeQueued(res)}
+  catch{pause=5000}   // the connection dropped (the app went to the background): look again shortly
+  finally{pushOn=false}
+  if(pause)await new Promise(ok=>setTimeout(ok,pause));waitPush()}
+/* finished (or failed) queued photos, from the push or from polling */
+async function takeQueued(res){const mine=new Set(queuedKeys());res=res.filter(m=>m&&mine.has(m.key));if(!res.length)return;
+  for(const m of res)if(m.rec&&m.rec.img)await keepRender(m.key,{sig:m.rec.sig||'',img:await shrinkUrl(m.rec.img,900),model:m.rec.model||'',t:m.rec.t||Date.now()},false);
+  const q=rqGet();for(const m of res){if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
+  finishQueueMsg(q);rqSet(q);renderBatchUI();renderRegenUI();if(!$('#today').hidden)renderToday()}
+function finishQueueMsg(q){const done=(q.total||0)-q.keys.length-q.failed.length;
+  q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
+    :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
+  if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}}
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
   if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};cache={};checkArrivals().then(n=>{if(n&&!$('#today').hidden)renderToday()});
@@ -1192,7 +1216,7 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)renderToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)renderToday()});recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)renderToday()});if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)renderToday()});show('today');window.appReady=true;loadWeather();refreshHolidays();loadRenders().then(()=>{if(Object.keys(renders).length&&!$('#today').hidden)renderToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)renderToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)renderToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
 
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
