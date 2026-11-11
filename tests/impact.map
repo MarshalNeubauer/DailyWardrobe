@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	84f894db3858de730ccc
-# tested	1c7caf02816ae9bda368
+# tested	af60029908702a6b12cf
 <every page test>	analysis.js	<loaded>
 <every page test>	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterScripts	applyTheme	applyZoom	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txs	workerBase	zoomTarget
 <every page test>	assemble.js	<loaded>	@	asmLoad	asmSync
@@ -59,10 +58,7 @@ claude.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.
 claudepattern.test.js	<every page test>	<every page test>
 claudepattern.test.js	app.js	@document.addEventListenervisibilitychange	S	addFiles	addTexture	aiLabel	applyWb	ask	busyLabelFor	busyStart	cap1	cardPics	cropSwatch	esc	fill	fnv64	generateSwatch	imgOf	loadImg	lookSig	matchLight	normTag	orderRow	photoPair	put	putRaw	renderAdd	renderBusy	renderWardrobe	save	shadeRow	shrink	tagSwInner	texGains	texSlot	toast	wardList	wardPic	wbNote	window.fetch
 claudepattern.test.js	apple-touch-icon.png	<loaded>
-claudepattern.test.js	assemble.js	asmAutoSoon	asmCalibKey	asmCan	asmGet	asmInfo	asmKey	asmMasterKey	asmNeeds	asmVestKept	asmVestKey	asmZonesKept	renderAsmUI
-claudepattern.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	labHex	labOf	lum	normCol	normColFor	normPat	patBase	patLabel	patName	primaryCol	rgbLab	shadeName	thirdOf	watchOpts
-claudepattern.test.js	detect.js	analyzeSett	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	stripProfiles	stripShifts	texPat	usableSett	variance
-claudepattern.test.js	assemble.js	asmAutoSoon	asmCalibKey	asmCan	asmGet	asmInfo	asmKey	asmLook	asmMasterKey	asmNeeds	asmPieceKey	asmZonesKept	renderAsmUI
+claudepattern.test.js	assemble.js	asmAutoSoon	asmCalibKey	asmCan	asmGet	asmInfo	asmKey	asmLook	asmMasterKey	asmNeeds	asmPieceKey	asmVestKept	asmVestKey	asmZonesKept	renderAsmUI
 claudepattern.test.js	core.js	COLOR_OPTS	accentOf	colBase	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	inRotation	labHex	labOf	lum	nm	normCol	normColFor	normPat	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbLab	shadeName	thirdOf	watchOpts
 claudepattern.test.js	detect.js	analyzeSett	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	usableSett	variance
 claudepattern.test.js	draw.js	fabricDef	itemThumb
