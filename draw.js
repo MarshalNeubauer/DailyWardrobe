@@ -60,13 +60,21 @@ function fabricDef(id,item,role,ctx){
         case 'ring':return `<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(h*.8)}" fill="none" stroke="${col}" stroke-width="${f2(s*.2)}"/>`;
         case 'cross':{const w=s*.3;return `<rect x="${f2(x-w/2)}" y="${f2(y-h)}" width="${f2(w)}" height="${f2(s)}" fill="${col}"/><rect x="${f2(x-h)}" y="${f2(y-w/2)}" width="${f2(s)}" height="${f2(w)}" fill="${col}"/>`}
         case 'flower':{const r=s*.26,o=s*.24;return [[o,0],[-o,0],[0,o],[0,-o]].map(([u,v])=>`<circle cx="${f2(x+u)}" cy="${f2(y+v)}" r="${f2(r)}" fill="${col}"/>`).join('')+`<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(r*.7)}" fill="${f.centre||m.ground}"/>`}
+        case 'figure':{   // Claude's bitmap of the figure, its own proportions, s wide; each row's runs of 1 drawn as one rect
+          const B=f.bmp||['1'],C=B[0].length,R=B.length,px=s/C,top=y-R*px/2,left=x-h;let o='';
+          B.forEach((row,r)=>{let k=0;while(k<C){if(row[k]!=='1'){k++;continue}let e=k;while(e<C&&row[e]==='1')e++;
+            o+=`<rect x="${f2(left+k*px)}" y="${f2(top+r*px)}" width="${f2((e-k)*px+.02)}" height="${f2(px+.02)}" fill="${col}"/>`;k=e}});return o}
         default:return `<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(h)}" fill="${col}"/>`}};
+    // a cell is T wide and Tv tall (columns further apart than the figures are stacked: Tv < T); with an offset every other row
+    // is shifted half a cell. The tile is two cells each way; a figure is drawn again a tile's width away where it crosses an edge.
+    const Tv=T*(m.aspect||1),W2=2*T,H2=2*Tv;
     let body='';
     for(const f of m.figs){const corner=f.place==='corner',n=corner?3:2;
       for(let i=0;i<n;i++)for(let j=0;j<n;j++){const alt=(i+j)%2;if(f.place==='alternate-cells'&&alt)continue;
-        body+=fig(f,(corner?i:i+.5)*T,(corner?j:j+.5)*T,f.cols[f.cols.length>1?alt:0])}}
-    const sheen=role==='tie'?`<path d="M0,${f2(T*2)} L${f2(T*2)},0" stroke="#fff" stroke-opacity=".05" stroke-width="${f2(T/6)}"/>`:'';
-    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(2*T)}" height="${f2(2*T)}"${se.a?` patternTransform="rotate(${se.a})"`:''}><rect width="${f2(2*T)}" height="${f2(2*T)}" fill="${m.ground}"/>${body}${sheen}</pattern>`;
+        const col=f.cols[f.cols.length>1?alt:0],y=(corner?j:j+.5)*Tv,x=(corner?i:i+.5)*T+(m.off&&j%2?T/2:0);
+        body+=fig(f,x,y,col);if(x+f.size*T/2>W2)body+=fig(f,x-W2,y,col)}}
+    const sheen=role==='tie'?`<path d="M0,${f2(H2)} L${f2(W2)},0" stroke="#fff" stroke-opacity=".05" stroke-width="${f2(T/6)}"/>`:'';
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(W2)}" height="${f2(H2)}"${se.a?` patternTransform="rotate(${se.a})"`:''}><rect width="${f2(W2)}" height="${f2(H2)}" fill="${m.ground}"/>${body}${sheen}</pattern>`;
   }
   if(se&&se.v===2&&se.bands&&se.bands.length>1&&p!=='solid'){
     const across=se.tr||(se.tw?1/se.tw:1.5),T=ctx==='dot'?8:ctx==='fig'?Math.max(2,Math.min(60,(role==='tie'?29:role==='shirt'?180:200)/across)):Math.max(14,Math.min(110,100/Math.max(.9,se.cr||1)));

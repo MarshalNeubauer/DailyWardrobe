@@ -14,9 +14,9 @@ const TEXTURE_PATS=['dobby','woven','textured','fine-texture','oxford','pinpoint
 const texPat=(t,p)=>t==='shirt'&&TEXTURE_PATS.includes(patBase(p)||'');
 /* an item's pattern reading, unless it is a band reading of a motif pattern (an older reading turned a neat into a plaid), or
    a texture reading on a pattern that is no longer a weave texture (or the reverse) */
-const usableSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';return s&&(MOTIF_PATS.includes(p)&&!s.motif?null:!!s.tex!==texPat(i.type,i.pattern)?null:s)};
+const usableSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PATS.includes(p)&&!s.motif))return null;return texPat(i.type,i.pattern)?(s.tex||s.motif?s:null):(s.tex?null:s)};   // a weave pattern takes a texture or a figure (motif) reading
 /* what a pattern reading looks like, for photo keys: the band colours, or the motif's ground, figures and colours */
-const settSig=s=>!s?'':s.tex?'t'+s.tex.grid.join('')+Math.round(s.tex.rel*100)+'/'+(s.tex.aspect||''):s.motif?'m'+[s.motif.grid,s.motif.ground,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||''].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
+const settSig=s=>!s?'':s.tex?'t'+s.tex.grid.join('')+Math.round(s.tex.rel*100)+'/'+(s.tex.aspect||''):s.motif?'m'+[s.motif.grid,s.motif.ground,s.motif.aspect||1,s.motif.off||0,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||'',(f.bmp||[]).join('/')].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
 
 /* region -> luminance grid (downscaled to at most 256px) */
 function lumGrid(src,sx,sy,size){
