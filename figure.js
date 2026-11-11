@@ -32,8 +32,8 @@ function outfitFigureSvg({ suit, shirt, tie, skin = '#D6B89E', bg = '#F5F2EC', i
   const fabrics = [pattern(`${P}suitB`, suit, 0), pattern(`${P}suitL`, suit, -16), pattern(`${P}suitR`, suit, 16), pattern(`${P}shirt`, shirt, 0), pattern(`${P}tie`, tie, 0)].join('\n');
 
   /* ---- arms: [shoulder, elbow, wrist] in viewBox units ---- */
-  const L = { up: [318, 30, 338, 248], fo: [338, 248, 240, 210] };   // the left arm (viewer's right): forearm across the chest
-  const R = { up: [72, 30, 58, 294], fo: [58, 294, 158, 322] };      // the right arm (viewer's left): hand at the button
+  const L = { up: [318, 30, 340, 290], fo: [340, 290, 250, 256] };   // the left arm (viewer's right): forearm across the chest
+  const R = { up: [72, 30, 56, 330], fo: [56, 330, 150, 300] };      // the right arm (viewer's left): hand at the button
   const sleeve = (seg, w1, w2, id) => { const fr = frame(...seg), h = fr.len;
     const d = `M ${-w1 / 2} 0 L ${w1 / 2} 0 L ${w2 / 2} ${f(h)} L ${-w2 / 2} ${f(h)} Z`;
     return `<g transform="${fr.tr} rotate(${fr.rot})"><path d="${d}" fill="url(#${P}suitB)"/><path d="${d}" fill="url(#${P}gSleeve)"/>${id ? `<path id="${P}${id}" d="${d}" fill="none"/>` : ''}</g>`; };
@@ -165,14 +165,14 @@ ${[124, 172, 220, 268, 316, 364].map(y => `<circle cx="195" cy="${y}" r="3.4" fi
 `}
 <path d="M 84 60 C 68 66 58 76 54 90 M 306 60 C 322 66 332 76 336 90" stroke="#000" stroke-opacity=".25" stroke-width="1.6" fill="none"/>
 <!-- the right arm (viewer's left): upper arm down the side, forearm to the button -->
-<path d="M 64 300 L 158 328 L 160 348 L 64 326 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
-<g clip-path="url(#${P}clipShoulder)">${sleeve(R.up, 58, 50)}</g>${joint(58, 294, 25)}${sleeve(R.fo, 50, 42)}
+<path d="M 62 338 L 150 310 L 154 330 L 64 362 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
+<g clip-path="url(#${P}clipShoulder)">${sleeve(R.up, 58, 50)}</g>${joint(56, 330, 25)}${sleeve(R.fo, 50, 42)}
 ${hand(R.fo, 42, false, true)}
 <!-- the left arm (viewer's right): forearm across the chest, hand at the lapel, the watch at the wrist -->
-<path d="M 338 256 L 240 224 L 236 246 L 334 280 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
-<g clip-path="url(#${P}clipShoulder)">${sleeve(L.up, 58, 50)}</g>${joint(338, 248, 25)}${sleeve(L.fo, 50, 42)}
+<path d="M 340 298 L 250 268 L 246 290 L 336 322 Z" fill="#000" fill-opacity=".35" filter="url(#${P}fBlur)"/>
+<g clip-path="url(#${P}clipShoulder)">${sleeve(L.up, 58, 50)}</g>${joint(340, 290, 25)}${sleeve(L.fo, 50, 42)}
 ${hand(L.fo, 42, true, false)}
-<path d="M 322 236 Q 330 248 322 262 M 72 282 Q 64 294 72 308" stroke="#000" stroke-opacity=".3" stroke-width="1.6" fill="none"/>
+<path d="M 324 278 Q 332 290 324 304 M 70 318 Q 62 330 70 344" stroke="#000" stroke-opacity=".3" stroke-width="1.6" fill="none"/>
 
 </g>
 <rect x="0" y="330" width="390" height="70" fill="url(#${P}gFade)"/>
