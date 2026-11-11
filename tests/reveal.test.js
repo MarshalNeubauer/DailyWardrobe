@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(t.top>=6&&(bb.bottom<=nt-11||Math.abs(t.top-8)<=2),`a tile's photo: scrolls to show it, the tile row stops at the top at most (tiles top ${t.top}px, photo bottom ${bb.bottom}px)`);
     // already visible after unfolding: no scroll; folding never scrolls
     // (on a tall screen, where the open score box fits where it is; judged from where it would end with no scroll)
-    await p.setViewportSize({width:390,height:1300});await setup();
+    await p.setViewportSize({width:390,height:1600});await setup();
     const y0=await scrollY();await p.tap('#sbox .month-link');await settle(p,900);const s=await at('#sbox'),y2=await scrollY();
     const fits=s.bottom+(y2-y0)<=(await navTop())-12;
     ok(fits&&y2===y0,`a box that fits on screen once open does not scroll (fits: ${fits}, scrolled ${y2-y0}px)`);

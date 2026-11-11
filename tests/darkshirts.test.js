@@ -15,7 +15,7 @@ module.exports=async({ok,chromium,url})=>{
   ok(r.kept,'and still kept out under a navy suit');
   ok(r.tieStripe&&r.tieSilver,`on a dark shirt a lighter tie wins: silver, or navy with white stripes (reads as ${r.tieLum})`);
   ok(r.lightRule,'on a white shirt the darker tie still wins');
-  ok(r.rate.Shirt==='7/10'&&r.rate['Tie and shirt'].startsWith('1'),`score: dark shirt under a light jacket ${r.rate.Shirt}, stripe tie on it ${r.rate['Tie and shirt']}`);
+  ok(r.rate.Shirt==='10/10'&&r.rate['Tie and shirt'].startsWith('1'),`score: no points off for taste, dark shirt under a light jacket ${r.rate.Shirt}, stripe tie on it ${r.rate['Tie and shirt']}`);
   ok(!r.rate2['Tie and shirt'].startsWith('15'),'a plain navy tie on a navy shirt loses points');
   // rotation with 6 light + 4 dark shirts, 2 light and 2 dark suits, mixed ties
   const rot=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+String(k++).padStart(3,'0'),type,primaryColor,pattern:'solid',...x});

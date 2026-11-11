@@ -690,13 +690,23 @@ function dayActions(o){
 
 /* outfit score card with an expandable breakdown */
 let scoreOpen=false;
+/* the score's advice for a day (planner.js, scoreAdvice): swaps that would raise it, the wardrobe's best with this jacket, and the
+   checks nothing owned improves. Worked out once per outfit (kept until the day's pieces change); not for past or worn days */
+let adviceMemo={k:'',v:null};
+function adviceFor(o){if(!o||o.frozen||!hasOutfit(o))return null;const k=key(sel)+JSON.stringify(idsOf(o))+!!o.vest+items.length;
+  if(adviceMemo.k!==k)adviceMemo={k,v:scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
+function applyFix(slot,id){return pickItem(slot,id)}
 function scoreCard(o){
-  const r=rateOutfit(o),tone=r.score>=80?'good':r.score>=65?'ok':'low';
+  const r=rateOutfit(o),tone=r.hard.length?'low':r.score>=80?'good':r.score>=65?'ok':'low',A=adviceFor(o);
+  const sub=scoreOpen?'tap to fold away':'tap for why',fix=A&&A.fixes.length>0;
+  const line=r.hard.length?`${r.hard.length} thing${r.hard.length===1?'':'s'} to put right`:fix&&A.best>r.score?`Could be ${A.best} with what you own`:A&&r.score<100?'The best your wardrobe allows':'Outfit score';
+  const fixes=!fix?'':`<div class="sfix" onclick="event.stopPropagation()"><small>${r.hard.length?'These would put it right:':'Today\'s pieces were chosen for variety. These would score higher:'}</small>${A.fixes.map(f=>`<button type="button" class="sfixbtn" onclick="applyFix('${f.slot}','${f.item.id}')" aria-label="Wear the ${esc(desc(f.item)||nm(f.item))} ${esc(slotLabel(f.slot,o).toLowerCase())}: ${f.gain} more points"><span class="dot">${swatchSVG(f.item,true)}</span><span class="cap sfixnm">${desc(f.item)||nm(f.item)} <span class="mut">${slotLabel(f.slot,o).toLowerCase()}</span></span><b>+${f.gain}</b></button>`).join('')}</div>`;
   // unfolds like the pieces list and the month plan; each check slides in and its bar fills to the points it scored
-  return `<section class="mbox score ${tone}${scoreOpen?' open instant':''}" id="sbox"><button class="month-link" onclick="toggleScore()" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="Outfit score ${r.score}, ${r.label}. ${scoreOpen?'Fold away':'Show why'}">
-    <span class="num" aria-hidden="true">${r.score}</span><span class="lbl" aria-hidden="true"><b>${r.label}</b><small>Outfit score · ${scoreOpen?'tap to fold away':'tap for why'}</small></span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()"><ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}</small>`:''}</li>`).join('')}</ul></div></div></section>`;
+  return `<section class="mbox score ${tone}${scoreOpen?' open instant':''}" id="sbox"><button class="month-link" onclick="toggleScore()" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="Outfit score ${r.score}, ${r.label}. ${line}. ${scoreOpen?'Fold away':'Show why'}">
+    <span class="num" aria-hidden="true">${r.score}</span><span class="lbl" aria-hidden="true"><b>${r.label}</b><small>${line} · ${sub}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()">${fixes}<ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':c.hard?'miss hard':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':c.hard?'!':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}${A&&A.stuck.includes(c.label)?' <span class="lim">Nothing you own does better here.</span>':''}</small>`:''}</li>`).join('')}</ul>${r.hard.length?`<p class="scap">A real mistake keeps the score at ${HARD_CAP} or below, however well the rest matches.</p>`:''}</div></div></section>`;
 }
+
 function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;box.classList.remove('instant');void box.offsetHeight;
   box.classList.toggle('open',scoreOpen);const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
