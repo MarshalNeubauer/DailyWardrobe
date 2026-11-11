@@ -1,0 +1,4 @@
+#!/bin/sh
+# Refuses a push while tests/impact.map has changes that aren't committed, and says so when the commit's files were not
+# passed by `npm test` (see tests/impact.js). tests/run.js switches this folder on (git config core.hooksPath .githooks).
+exec node tests/impact.js pre-push
