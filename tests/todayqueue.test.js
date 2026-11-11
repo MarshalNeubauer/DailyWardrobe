@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   globalThis.fetch=async href=>{if(String(href)!=='https://api.openai.com/v1/images/edits')return new Response('',{status:404});calls++;const [st,b]=reply();
     return new Response(JSON.stringify(b),{status:st,headers:{'content-type':'application/json'}})};
   const store=new Map(),KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v)=>{store.set(k,v)},delete:async k=>{store.delete(k)},
-    list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name}))})};
+    list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)&&!(KV.lag&&k.startsWith('job:'))).map(name=>({name}))})};   // lag: a list that doesn't show new jobs yet, as KV can
   const sent=[],posts=[],Q={send:async m=>{sent.push(m)}};
   const env={APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:KV,RENDER_QUEUE:Q},HOST='https://w.test/';
   const drain=async()=>{for(const body of sent.splice(0)){const m={body,attempts:1,ack(){},retry(){}};await worker.queue({messages:[m]},env)}};
@@ -91,6 +91,24 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const t1=Date.now();await drain();await p2.waitForFunction(()=>!!document.querySelector('.fig.photo img')&&!queuedKeys().length,null,{timeout:5000});
     ok(Date.now()-t1<2000&&!gets.includes('/render-queue')&&gets.includes('/render-wait'),`the worker pushes the finished photo to the open app: it shows ${Date.now()-t1} ms after it's made, with no polling`);
     ok(await p2.evaluate(()=>!document.querySelector('#busy').classList.contains('on')&&!!renders[comboKey(planFor()[key(sel)])]),'it is kept, and nothing is left waiting');
+    // KV lists are only eventually consistent: a job just sent can be missing from /render-queue for up to a minute. A poll then
+    // (photo not made yet) must not give up on it, or the push that follows is ignored and the photo shows only after a reload.
+    KV.lag=true;
+    await p2.evaluate(()=>{items.find(i=>i.type==='tie').primaryColor='navy';cache={};renderToday()});
+    await p2.click('text=Generate realistic photo');await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
+    const ck2=await p2.evaluate(()=>comboKey(planFor()[key(sel)]));
+    await p2.evaluate(()=>checkQueue());
+    const still=await p2.evaluate(()=>({q:queuedKeys(),btn:(document.querySelector('.render-btn')||{}).textContent}));
+    ok(still.q.includes(ck2)&&/Making photo/.test(still.btn),'a poll that can\'t see the just-sent job yet keeps waiting for it (KV lists lag)');
+    await drain();await p2.waitForFunction(()=>!!document.querySelector('.fig.photo img')&&!queuedKeys().length,null,{timeout:5000});
+    ok(true,'the push then brings the photo in without a reload');
+    // a photo pushed after the app stopped waiting for it is still kept
+    await p2.evaluate(async()=>{await takeQueued([{key:'c00000000000abcde',rec:{img:'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=',sig:'x',model:'m',t:1}}])});
+    ok(await p2.evaluate(()=>!!renders['c00000000000abcde']),'a photo that arrives after the app stopped waiting is kept anyway');
+    // one never seen for 45 minutes is given up on
+    const gone=await p2.evaluate(async()=>{rqSet({keys:['c00000000000fffff'],failed:[],total:1,at:{c00000000000fffff:Date.now()-46*60000}});await checkQueue();return queuedKeys().length});
+    ok(gone===0,'a photo unseen for 45 minutes counts as lost');
+    KV.lag=false;
     ok(errs2.length===0,'no page errors ('+errs2.join('; ')+')');
     await ctx2.close();
   }finally{globalThis.fetch=realFetch;await browser.close()}
