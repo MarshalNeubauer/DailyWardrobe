@@ -54,7 +54,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(off.next==='2026-11-27','stepping through the days skips it');
     ok(/hol/.test(off.cls)&&/day off: Thanksgiving Day/.test(off.label)&&/A day off: Thanksgiving Day/.test(off.msg),`the month marks it and the day says why ("${off.msg}")`);
     // rotation: the suit planned for the day before is not held back for a holiday, and nothing is recorded as worn on it
-    const rot=await p.evaluate(async()=>{TODAY_OVERRIDE='2026-11-30T12:00:00';cache={};sel=new Date(2026,10,30);view={y:2026,m:10};renderToday();await new Promise(r=>setTimeout(r,400));return {rec:!!dayRecs['2026-11-26'],wed:!!dayRecs['2026-11-25']}});
+    const rot=await p.evaluate(async()=>{TODAY_OVERRIDE='2026-11-30T12:00:00';cache={};sel=new Date(2026,10,30);view={y:2026,m:10};renderToday();
+      for(let k=0;k<100&&!dayRecs['2026-11-27'];k++)await new Promise(r=>setTimeout(r,50));   // past days are recorded in order: once the Friday is, the holiday before it has been passed over (a fixed 400 ms was too short on a busy machine)
+      return {rec:!!dayRecs['2026-11-26'],wed:!!dayRecs['2026-11-25']}});
     ok(!rot.rec&&rot.wed,'nothing is recorded as worn on the holiday (the workday before it is)');
     // untick a holiday you work: it is planned again
     await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};dayRecs={};sel=new Date(2026,10,23);view={y:2026,m:10};renderToday();openSettings('daysoff')});
