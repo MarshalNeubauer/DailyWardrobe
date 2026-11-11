@@ -69,23 +69,32 @@ function saveSettings(){
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
    balanced), else from the item photo; the Add card's sliders choose the zoom and the spot. Items with a close-up show it as their
    small fabric square across the app (swatchSVG in draw.js). */
-function cropSwatch(canvas,zoom=1,cx=.5,cy=.5){
+function cropSwatch(canvas,zoom=1,cx=.5,cy=.5,light){
   const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/(Number(zoom)||1)),o=document.createElement('canvas');o.width=o.height=128;
   const sx=Math.max(0,Math.min(canvas.width-sampleSize,(Number(cx)||.5)*canvas.width-sampleSize/2)),sy=Math.max(0,Math.min(canvas.height-sampleSize,(Number(cy)||.5)*canvas.height-sampleSize/2));
-  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);return o.toDataURL('image/png')}
+  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(light)matchLight(o,light);return o.toDataURL('image/png')}
+/* a close-up's exposure says little (a white shirt shot in dim light reads grey): the swatch's lightness is set from the tagged colour,
+   keeping the close-up's texture (each pixel's lightness above or below the cloth's median) and its hue. Near white, the texture's
+   swing is narrowed so the lightest threads stay under paper white instead of clipping. */
+function matchLight(o,hex){const x=o.getContext('2d',{willReadFrequently:true}),D=x.getImageData(0,0,o.width,o.height),d=D.data,n=d.length/4,lab=new Array(n);
+  for(let i=0;i<n;i++)lab[i]=rgbLab(d[4*i],d[4*i+1],d[4*i+2]);
+  const Ls=lab.map(l=>l[0]).sort((a,b)=>a-b),med=Ls[n>>1],hi=Ls[Math.floor(n*.97)]-med,lo=med-Ls[Math.floor(n*.03)],Lt=rgbLab(...hexRgb(hex))[0];
+  const s=Math.min(1,hi>0?Math.max(.25,(99.5-Lt)/hi):1,lo>0?Math.max(.25,(Lt-.5)/lo):1);
+  for(let i=0;i<n;i++){const [L,a,b]=lab[i],c=hexRgb(labHex([Math.max(0,Math.min(100,Lt+(L-med)*s)),a,b]));d[4*i]=c[0];d[4*i+1]=c[1];d[4*i+2]=c[2]}
+  x.putImageData(D,0,0)}
 function generateSwatch(q){
   const canvas=q.texCanvas||q.big;if(!canvas)return '';
-  q.swatch=cropSwatch(canvas,q.zoom,q.cx,q.cy);q.swSrc=q.texCanvas?'tex':'photo';
+  q.swatch=cropSwatch(canvas,q.zoom,q.cx,q.cy,q.texCanvas&&q.primaryColor?colOf(q):null);q.swSrc=q.texCanvas?'tex':'photo';
   return q.swatch;
 }
 /* a saved item's swatch, cut from the middle of its close-up (or, without one, its photo) */
 async function refreshSwatch(it){if(!FABRIC.includes(it.type))return;const src=it.texture&&TEXTURE_TYPES.includes(it.type)?it.texture:it.photo;if(!src){delete it.swatch;delete it.swSrc;return}
   try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
-    it.swatch=cropSwatch(c);it.swSrc=src===it.photo?'photo':'tex'}catch(e){console.warn('swatch not cut',e)}}
-/* once: items that already have a close-up get their swatch cut from it */
-async function texSwatches(){if(localStorage.getItem('tex_swatch')==='1')return 0;let n=0;
-  for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)&&it.swSrc!=='tex'){await refreshSwatch(it);if(it.swSrc==='tex'){await put(it);n++}}
-  localStorage.setItem('tex_swatch','1');if(n)cache={};return n}
+    const tex=src!==it.photo;it.swatch=cropSwatch(c,1,.5,.5,tex&&it.primaryColor?colOf(it):null);it.swSrc=tex?'tex':'photo'}catch(e){console.warn('swatch not cut',e)}}
+/* once: items that already have a close-up get their swatch cut from it, lightness set from the tagged colour (tex_swatch2) */
+async function texSwatches(){if(localStorage.getItem('tex_swatch2')==='1')return 0;let n=0;
+  for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'){await put(it);n++}}
+  localStorage.setItem('tex_swatch2','1');if(n)cache={};return n}
 
 function updateSwatchParam(i, param, val){
   queue[i][param]=Number(val);
@@ -324,7 +333,7 @@ async function addMulti(f){
 async function saveAll(){const n=queue.filter(q=>!q.busy&&!q.err).length;for(let i=queue.length-1;i>=0;i--){const q=queue[i];if(!q.busy&&!q.err)await save(i)}
   multiMsg(`Saved ${n} item${n===1?'':'s'} to your wardrobe.`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
+const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${i.texture}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${desc(i)||TYPES[i.type]||''}</b></figcaption>`;
@@ -426,6 +435,7 @@ async function sete(id,k,v){
   it[k]=v==='none'?null:v;
   if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if((v==='watch'||v==='tieclip')&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';if(v==='belt'&&!it.metal)it.metal='silver'}
   if(k==='primaryColor')delete it.color;
+  if((k==='primaryColor'||k==='type')&&it.swSrc==='tex')await refreshSwatch(it);   // the close-up swatch takes its lightness from the colour
   await put(it);cache={};renderWardrobe();
 }
 function patSummary(i){

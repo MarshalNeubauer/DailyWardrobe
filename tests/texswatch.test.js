@@ -14,11 +14,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(a.src==='photo'&&/^data:image\/png/.test(a.sw)&&!a.note,'without a close-up the precision swatch is cut from the item photo');
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].swSrc==='tex',null,{timeout:20000});
-    const b=await p.evaluate(()=>{const q=queue[0],el=document.querySelector('#swatch-img-0');return {src:q.swSrc,changed:q.swatch,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy),
+    const b=await p.evaluate(()=>{const q=queue[0],el=document.querySelector('#swatch-img-0');return {src:q.swSrc,changed:q.swatch,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q)),
       shown:el&&el.style.backgroundImage.includes(q.swatch.slice(30,80)),note:/From the fabric close-up/.test(document.querySelector('#queue').textContent)}});
     ok(b.src==='tex'&&b.changed!==a.sw&&b.same,'adding the close-up cuts the precision swatch from it');
     ok(b.shown&&b.note,'the inspector shows it and says it comes from the close-up');
-    const z=await p.evaluate(()=>{updateSwatchParam(0,'zoom',3);updateSwatchParam(0,'cx',.2);const q=queue[0];return {same:q.swatch===cropSwatch(q.texCanvas,3,.2,q.cy),src:q.swSrc}});
+    const z=await p.evaluate(()=>{updateSwatchParam(0,'zoom',3);updateSwatchParam(0,'cx',.2);const q=queue[0];return {same:q.swatch===cropSwatch(q.texCanvas,3,.2,q.cy,colOf(q)),src:q.swSrc}});
     ok(z.same&&z.src==='tex','the zoom and position sliders work on the close-up');
     await p.evaluate(()=>{dropTexture(0)});
     ok(await p.evaluate(()=>queue[0].swSrc==='photo'),'removing the close-up goes back to the item photo');
@@ -44,9 +44,25 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- once: an item that already had a close-up gets its swatch cut from it
     const mig=await p.evaluate(async id=>{const it=items.find(x=>x.id===id);await setTexture(id,(await (async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();
         return await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)})})()));
-      it.swatch='data:image/png;base64,OLD';delete it.swSrc;localStorage.removeItem('tex_swatch');const n=await texSwatches(),again=await texSwatches();
+      it.swatch='data:image/png;base64,OLD';delete it.swSrc;localStorage.removeItem('tex_swatch2');const n=await texSwatches(),again=await texSwatches();
       return {n,again,src:it.swSrc,changed:it.swatch!=='data:image/png;base64,OLD'}},it.id);
     ok(mig.n===1&&mig.again===0&&mig.src==='tex'&&mig.changed,'items that already have a close-up get their swatch cut from it, once');
+    // ---- lightness from the tagged colour: the user's white shirt close-up (shot dim, reads grey) makes a white swatch with its weave
+    const lt=await p.evaluate(async()=>{const rd=async u=>{const b=await (await fetch(u)).blob();return await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)})};
+      const stat=async url=>{const im=await imgOf(url),c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,128,128).data,L=[];
+        for(let i=0;i<d.length;i+=4)L.push(rgbLab(d[i],d[i+1],d[i+2])[0]);L.sort((a,b)=>a-b);return {med:L[L.length>>1],swing:L[Math.floor(L.length*.9)]-L[Math.floor(L.length*.1)],top:L[Math.floor(L.length*.99)]}};
+      const tex=await rd('tests/fixtures/shirt-diamond-closeup.jpg'),sh={id:'sw1',type:'shirt',primaryColor:'white',pattern:'woven',texture:tex,photo:'data:image/png;base64,PHOTO'};
+      const raw=await stat(cropSwatch(await (async()=>{const im=await imgOf(tex),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c})()));
+      await refreshSwatch(sh);const w=await stat(sh.swatch),white=rgbLab(...hexRgb(colOf(sh)))[0];
+      sh.primaryColor='lightblue';await refreshSwatch(sh);const lb=await stat(sh.swatch),lbL=rgbLab(...hexRgb(colOf(sh)))[0];
+      return {raw,w,white,lb,lbL}});
+    ok(lt.raw.med<70&&Math.abs(lt.w.med-lt.white)<4,`the white shirt's swatch is white, not the close-up's grey (median L* ${lt.w.med.toFixed(0)} for white ${lt.white.toFixed(0)}; the close-up as shot ${lt.raw.med.toFixed(0)})`);
+    ok(lt.w.swing>1.5&&lt.w.top<=100,`its weave still shows (a ${lt.w.swing.toFixed(1)} L* swing), the lightest threads under paper white`);
+    ok(Math.abs(lt.lb.med-lt.lbL)<4,`tagged another colour, the swatch takes that colour's lightness (L* ${lt.lb.med.toFixed(0)} for ${lt.lbL.toFixed(0)})`);
+    const card=await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})]);
+      const q=queue[0];const c=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([c],'c.jpg',{type:'image/jpeg'}));
+      const before=q.swatch;setq(0,'primaryColor','navy');return {changed:q.swatch!==before,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q))}});
+    ok(card.changed&&card.same,'changing the colour on the Add card re-cuts the close-up swatch to match');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
   }finally{await browser.close()}
