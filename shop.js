@@ -2,7 +2,7 @@
    (like the piece picker): the top picks, then a section per kind of piece with what the owner has, a verdict and up to
    five ideas each with its reasons, and how the wardrobe copes with a formal day, a wedding, a funeral and a day without a
    jacket. The analysis itself is analysis.js, run in analysis-worker.js; sections appear as they finish.
-   - Escape, the backdrop, ×, changing tab and a swipe down (see below closeShop) close it
+   - Escape, the backdrop, ×, changing tab and a swipe down (shopSwipe) close it
    - the result is kept on the device (meta 'shop': {sig, at, res}) and shown at once next time; it is checked again when
      the wardrobe changed since (shopSig) or it is over a week old
    - "Bought it" adds the piece as bought, on the way (item.order + item.paused, optional arrival date)
@@ -26,7 +26,7 @@ function shopButton(){
 const shopFindIn=(r,key)=>{for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
 
 function openShop(){
-  shopOpen=true;shopForm=null;shopMsg='';renderShop();
+  shopOpen=true;shopForm=null;shopMsg='';shopSwipe();renderShop();
   $('#shop-sheet').classList.add('on');$('#shop-backdrop').classList.add('on');$('#shop-sheet').scrollTop=0;
   if(!shopBusy&&!shopFresh())analyzeWardrobe();
 }
@@ -37,9 +37,11 @@ document.addEventListener('keydown',e=>{if(shopOpen&&e.key==='Escape')closeShop(
    made on the first move of a touch, before the browser starts scrolling. The sheet follows the finger and the backdrop
    lightens; let go past a quarter of the sheet's height, or with a flick, and it closes, else it springs back (both by the
    sheet's own CSS transition, from where the finger left it). A section arriving from the check meanwhile is drawn once the
-   finger lifts (shopStale): redrawing removes the element the touch started on, and its moves would stop coming. */
-let shopDrag=false,shopStale=false;
-(()=>{const v=$('#shop-sheet'),bd=$('#shop-backdrop');if(!v)return;let st=null;
+   finger lifts (shopStale): redrawing removes the element the touch started on, and its moves would stop coming.
+   The listeners are installed the first time the sheet opens (openShop), not when the script loads: a test that never opens
+   the sheet never runs this, so `npm test` can tell which tests a change here can affect (see CLAUDE.md, Testing). */
+let shopDrag=false,shopStale=false,shopSwipeOn=false;
+function shopSwipe(){if(shopSwipeOn)return;const v=$('#shop-sheet'),bd=$('#shop-backdrop');if(!v)return;shopSwipeOn=true;let st=null;
   const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
   const held=on=>{for(const el of [v,bd])if(el)el.style.transition=on?'none':''};
   v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.shop-top-head');
@@ -54,7 +56,7 @@ let shopDrag=false,shopStale=false;
     if(d>v.offsetHeight*.25||(vy>.5&&d>30))closeShop();
     put(0);if(shopStale){shopStale=false;if(shopOpen)renderShop()}};
   v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true});
-})();
+}
 
 /* run the analysis in the background; the sheet fills in section by section */
 function analyzeWardrobe(){
@@ -121,7 +123,7 @@ function renderShop(){
     if(hid.length)body+=`<section class="shop-cat" id="shop-c-hidden"><h3>Hidden ideas</h3><p class="mut"><small>Marked "Not for me": never suggested again.</small></p>${hid.map(k=>`<div class="shop-hid"><span class="cap">${esc(shopKeyName(k))}</span><button type="button" onclick="shopUnhide('${esc(k)}')">Show again</button></div>`).join('')}</section>`;
     body+=`<p class="mut shop-foot"><small>${full.checked} possible purchases compared with what you own; the best ${full.sims-1} planned day by day.</small></p>`}
   else if(!shopBusy&&!r)body+='<p class="mut"><small>Plans your next six months with what you own, then checks what each possible purchase would change.</small></p>';
-  el.innerHTML=`<div class="pick-head shop-top-head"><b id="shop-title">What to buy</b><button class="pick-x" onclick="closeShop()" aria-label="Close">×</button></div><div class="shop-body">${body}</div>`;
+  el.innerHTML=`<div class="pick-head shop-top-head"><i class="shop-grab" aria-hidden="true"></i><b id="shop-title">What to buy</b><button class="pick-x" onclick="closeShop()" aria-label="Close">×</button></div><div class="shop-body">${body}</div>`;
   el.scrollTop=y;
 }
 /* a hidden idea in words, from its key (type|colour group|pattern class) */

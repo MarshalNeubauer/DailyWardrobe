@@ -23,9 +23,9 @@ module.exports=async({ok,chromium,url})=>{
       return {left:n.left-f.left<=16&&f.bottom-n.bottom<=16,right:f.right-y.right<=16&&f.bottom-y.bottom<=16,size:Math.round(n.width),seg:!!document.querySelector('.seg'),pill:!!document.querySelector('.lastworn')}});
     ok(m.left&&m.right&&m.size>=40,`✕ sits in the bottom-left corner of the picture and ✓ in the bottom-right (${m.size}px)`);
     ok(!m.seg&&!m.pill,'no Worn / Not worn buttons below; no last-worn text for a look never worn');
-    await p.click('.wmark.no');await p.waitForFunction(()=>planFor()[key(sel)].worn===false);
+    await p.click('.wmark.no');await p.waitForFunction(()=>planFor()[key(sel)].worn===false&&!!document.querySelector('.wmark.no.on'));
     ok(await p.evaluate(()=>!!document.querySelector('.wmark.no.on')&&!document.querySelector('.wmark.yes.on')),'tapping ✕ records it as not worn');
-    await p.click('.wmark.yes');await p.waitForFunction(()=>planFor()[key(sel)].worn===true);
+    await p.click('.wmark.yes');await p.waitForFunction(()=>planFor()[key(sel)].worn===true&&!!document.querySelector('.wmark.yes.on'));   // (the marks are redrawn a moment after the day is saved)
     ok(await p.evaluate(()=>!!document.querySelector('.wmark.yes.on')&&!document.querySelector('.wmark.no.on')),'tapping ✓ switches it to worn');
     await p.click('.wmark.yes');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined);
     ok(true,'tapping the chosen mark again clears it');

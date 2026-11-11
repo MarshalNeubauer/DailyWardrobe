@@ -26,7 +26,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     ok(await F('a.js',['LIMIT'],{...SRC,'c.js':'start(LIMIT);\n'})==='a.js:over,say b.js:far c.js:+top','top-level code that names it makes its file top-level');
     ok(await js(A,A.replace('handle(e)','handle(e,1)'))==='@document.addEventListenerpaste','an unnamed listener is named after the code before it');
     ok(await js(A,A.replace('}  y','} y'))==='two'&&await js(A,A.replace('return a+1','return  a+1'))==='','spacing counts inside a string, not in code');
-    ok(await js(A,A+'onresize=()=>{};\n')==='onresize +top'&&await js(A,A+'(()=>{state.x=1})();\n')==='@ +top','new code that runs at load (an assignment, an IIFE) is top-level code');
+    ok(await js(A,A+'onresize=()=>{};\n')==='onresize +top'&&await js(A,A+'(()=>{state.x=1})();\n')==='@{state.x1} +top','new code that runs at load (an assignment, an IIFE) is top-level code');
     ok(await js(A,A.replace('return a+1}','return a+1'))===' +top','a file that no longer parses selects everything that loads it');
     const M=`const help=x=>x*2;\nexport class Hub {\n  constructor(){this.n=0}\n  bump(){this.n++}\n}\nexport default {\n  async fetch(req){return help(1)}\n};\n`;
     ok(await js(M,M.replace('x*2','x*3'))==='help'&&await js(M,M.replace('this.n++','this.n+=2'))==='bump','an ES module (worker.js) is read too: a helper, a class method');
@@ -34,14 +34,31 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     ok(lx&&lx.com.length===2&&lx.com[0][1]-lx.com[0][0]===7,'// inside strings, patterns and templates is not a comment');
     ok(I.jsLex("const a='x")===null&&I.jsLex('f(){')===null,'a text it cannot follow is not trusted');
 
+    /* a block called on the spot runs at load in every test; its own functions (the listeners it installs) are units */
+    const B=A+`(()=>{const el=document;let st=null;\n  el.addEventListener('touchstart',e=>{st=1},{passive:true});\n  el.addEventListener('touchmove',e=>{st=LIMIT},{passive:true});\n  const end=()=>{st=null};\n  el.addEventListener('touchend',end);\n})();\n`,BK='@{consteldocument}';
+    const blk=(await I.scan(B)).find(u=>u.kids);
+    ok(blk&&blk.n===BK&&blk.kids.map(k=>k.n).join()===[BK+'>@el.addEventListenertouchstart',BK+'>@el.addEventListenertouchmove',BK+'>end'].join(),'a block called on the spot is named after its first statement, and its functions after what they are installed for ('+(blk&&blk.kids.map(k=>k.n.slice(BK.length+1)).join(', '))+')');
+    ok(await js(B,B.replace('st=1}','st=5}'))===BK+'>@el.addEventListenertouchstart','an edit inside one of its listeners names that listener only');
+    ok(await js(B,B.replace('st=null};','st=0};'))===BK+'>end'&&await js(B,B.replace('// adds one','// adds 1'))==='','so does an edit inside a function it declares; a comment still touches nothing');
+    ok(await js(B,B.replace('let st=null','let st=0'))===BK&&await js(B,B.replace("el.addEventListener('touchend',end);","el.addEventListener('touchend',end);el.addEventListener('touchcancel',end);"))===BK,'an edit to the block\'s own code (it runs at load) names the block: every test that loads the file');
+    ok(await js(B,B.replace("  const end=","  el.addEventListener('click',e=>{st=9});\n  const end="))===BK+','+BK+'>@el.addEventListenerclick','a listener added to a block is new load-time code: the block (and the listener, which no test has run yet)');
+    ok((await js(B,B.replace(/\(\(\)=>\{const el[\s\S]*$/,''))).endsWith(' +top')&&(await js(A,B)).endsWith(' +top')&&(await js(A,B)).startsWith(BK+','),'a block added or removed whole is top-level code');
+    const flB=I.follow('app.js',['LIMIT'],new Map([['app.js',await I.analyse(B)]]));
+    ok([...flB.files.get('app.js').units].sort().join()===[BK+'>@el.addEventListenertouchmove'].join()&&!flB.files.get('app.js').top,'a changed constant named in one of its listeners touches that listener, not the block');
+
     /* CSS */
     const C=`:root{--gap:12px}\n/* cards */\n.card{padding:8px}\n.card .dot{width:40px}\n@media (min-width:600px){\n  .card{padding:12px}\n  .wide{display:grid}\n}\n@keyframes spin{to{transform:rotate(360deg)}}\n`,known=['card','dot','wide'];
     ok(css(C,C.replace('40px','44px'),known)==='.card .dot','a changed declaration names its rule');
     ok(css(C,C.replace('/* cards */','/* the cards */'),known)===''&&css(C,C.replace('.card{padding:8px}','.card{padding:8px}\n\n/* more */'),known)==='','comments and blank lines touch nothing');
     ok(css(C,C+'.badge{color:red}\n.card .badge:hover{color:blue}\n',known)==='','a rule for a class the app never had touches no existing test');
     ok(css(C,C+'.card{margin:0}\n',known)==='.card','another rule for a selector that already applies everywhere names that selector');
-    ok(css(C,C+'.card.dot{margin:0}\n',known)===' +top'&&css(C,C+'.wide{margin:0}\n',known)===' +top','a new selector for existing classes (or one that only applied in @media) selects every page test');
-    ok(css(C,C.replace('.card .dot','.card.dot'),known)==='.card .dot +top','a selector changed by one space is a changed selector');
+    ok(css(C,C+'.card.dot{margin:0}\n',known)==='.card'&&css(C,C+'.card::before{content:""}\n.card .dot:hover>b,.card:not(.dot){margin:0}\n',known)==='.card +top'&&css(C,C+'.card::before{content:""}\n.wide .card:hover,.card:not(.dot){margin:0}\n',known)==='.card',
+      'a new selector whose last part needs what a plain rule already asks for (.card.dot, .card::before, .wide .card:hover, .card:not(.dot)) can only apply where that rule does: its tests; one part that no plain rule covers (… > b) and it is every page test');
+    ok(css(C,C+'.card:not(.badge){margin:0}\n',known)==='.card'&&css(C,C+'.badge .card{margin:0}\n.card>.badge{color:red}\n',known)==='','a new class inside :not() is not a rule for something new; a new class the element or one around it must have is');
+    ok(css(C,C+'@media (max-width:400px){\n  .card{margin:0}\n  .card.dot{margin:1px}\n}\n',known)==='.card'&&css(C,C+'@media (max-width:400px){.wide{margin:0}}\n',known)===' +top','a whole new @media block is only its rules: the tests of the plain rules they sit inside (none for .wide: every page test)');
+    ok(css(C,C.replace(/@media[^@]*/,''),known)==='.card | .wide','a whole @media block removed names the rules it held');
+    ok(css(C,C+'.card .dot b{margin:0}\n',known)===' +top'&&css(C,C+'.wide{margin:0}\n',known)===' +top','a new selector for existing classes that no plain rule covers (or one that only applied in @media) selects every page test');
+    ok(css(C,C.replace('.card .dot','.card.dot'),known)==='.card | .card .dot','a selector changed by one space is a changed selector: the tests that used the old one, and those where the new one can apply');
     ok(css(C,C.replace('600px','700px'),known)===' +top'&&css(C,C.replace('360deg','180deg'),known)===' +top','an @media condition or @keyframes selects every page test');
     ok(css(C,C.replace('  .wide{display:grid}\n',''),known)==='.wide','a removed rule names its selector');
 
@@ -99,12 +116,48 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     ok(fs.statSync(path.join(ROOT,'.githooks','pre-push')).mode&0o111&&/impact\.js pre-push/.test(fs.readFileSync(path.join(ROOT,'.githooks','pre-push'),'utf8')),'the push check is in the repo and executable');
     fs.unlinkSync(path.join(repo,I.MAP));commit('no map');main();ok((await I.select(repo,T)).all,'without the map everything runs');
 
+    /* main moved and was merged in: only a test that both changes can affect runs again */
+    {const repo=path.join(dir,'moved'),T=['a.test.js','b.test.js','c.test.js'],L='const five=()=>5;\nconst six=()=>6;\n';fs.mkdirSync(path.join(repo,'tests'),{recursive:true});
+      const git=(...a)=>sh(repo,'-c','user.name=t','-c','user.email=t@example.com',...a),commit=m=>{git('add','-A');git('commit','-q','--allow-empty','-m',m)},put=(f,t)=>fs.writeFileSync(path.join(repo,f),t);
+      const pass=async m=>{await I.save(repo,new Map(),T,true);commit(m)};   // `npm test` passed: the map is stamped, and committed
+      // main gets a change (with its own passing run), then the branch merges it in
+      const onMain=async(m,edit)=>{git('checkout','-q','mainline');edit();await pass(m);git('update-ref','refs/remotes/origin/main','HEAD');git('checkout','-q','work');git('merge','-q','--no-edit','mainline')};
+      put('app.js',A);put('lib.js',L);put('README.md','hello\n');put('.gitattributes',I.MAP+' merge=union\n');
+      put(I.MAP,['a.test.js\tapp.js\t'+I.LOADED+'\tone','a.test.js\tlib.js\t'+I.LOADED+'\tfive','b.test.js\tapp.js\t'+I.LOADED+'\tone','c.test.js\tlib.js\t'+I.LOADED+'\tfive\tsix',''].join('\n'));
+      git('init','-q','-b','mainline');commit('start');await pass('tested');git('update-ref','refs/remotes/origin/main','HEAD');
+      git('checkout','-q','-b','work');put('app.js',A.replace('a+1','a+2'));
+      let r=await I.select(repo,T);ok(!r.all&&r.tests.sort().join()==='a.test.js,b.test.js','(the branch changes one(): the two tests that run it)');
+      await pass('mine, tested');
+      await onMain('docs',()=>put('README.md','hello there\n'));r=await I.select(repo,T);
+      ok(!r.all&&r.tests.length===0&&/main has moved/.test(r.report)&&/Nothing more needs to run/.test(r.report),'main moved by a docs change only: nothing runs again');
+      await pass('merged, tested');
+      await onMain('lib',()=>put('lib.js',L.replace('=>6','=>66')));r=await I.select(repo,T);
+      ok(!r.all&&r.tests.length===0,'main changed a function none of the branch\'s tests runs: nothing runs again ('+(r.tests||[]).join()+')');
+      await pass('merged, tested');
+      await onMain('lib',()=>put('lib.js',L.replace('=>5','=>55').replace('=>6','=>66')));r=await I.select(repo,T);
+      ok(!r.all&&r.tests.join()==='a.test.js'&&/1 of the 2 this branch selects/.test(r.report),'main changed a function one of them runs: that test runs again, the other does not ('+(r.tests||[]).join()+')');
+      // without a pass on the merged files, the earlier pass still counts for the next move of main
+      await onMain('tooling',()=>put('tests/run.js','// runner\n'));r=await I.select(repo,T);
+      ok(!r.all&&r.tests.sort().join()==='a.test.js,b.test.js'&&/can affect every test/.test(r.report),'main changed the runner: the branch\'s tests all run again');
+      git('checkout','-q','mainline');git('rm','-q','tests/run.js');await pass('no runner');git('update-ref','refs/remotes/origin/main','HEAD');git('checkout','-q','work');git('merge','-q','--no-edit','mainline');await pass('merged, tested');
+      await onMain('same file',()=>put('app.js',A.replace('()=>3,','()=>33,')));r=await I.select(repo,T);
+      ok(!r.all&&r.tests.sort().join()==='a.test.js,b.test.js'&&/Both sides changed app\.js/.test(r.report),'both sides changed the same file: the branch\'s tests all run again');
+      await pass('merged, tested');
+      await onMain('lib',()=>put('lib.js',L.replace('=>6','=>67')));put('app.js',fs.readFileSync(path.join(repo,'app.js'),'utf8').replace('a+2','a+3'));r=await I.select(repo,T);
+      ok(!r.all&&r.tests.sort().join()==='a.test.js,b.test.js','an edit made after the merge was not in the run that passed: its tests run');
+      commit('edited after the merge, not tested');
+      await onMain('lib',()=>put('lib.js',L.replace('=>6','=>68')));r=await I.select(repo,T);
+      ok(!r.all&&r.tests.sort().join()==='a.test.js,b.test.js','the pass that counts is on the branch\'s own files as they are now: an earlier one, from before an untested edit, saves nothing')}
+
     /* the runner's own record of this test */
     if(impactRec){const b=await chromium.launch(),p=await b.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
       await p.evaluate(()=>openStats());await p.waitForSelector('#stats:not([hidden])');await p.reload();await p.waitForFunction(()=>window.appReady);
+      await p.evaluate(()=>show('wardrobe'));await p.keyboard.press('ArrowRight');
       fs.readFileSync(path.join(ROOT,'wrangler.toml'));
       const {m,odd}=await impactRec.peek(),has=(f,k)=>!!(m.get(f)&&m.get(f).has(k));
       ok(has('stats.js','openStats')&&has('app.js',I.LOADED),'functions a page ran are recorded, also those from before a reload');
+      const blocks=[...m.get('app.js')].filter(k=>k.includes('>')),keyed=k=>/^@\{constel\$wardrobe\}>@document\.addEventListenerkeydown$/.test(k);
+      ok(has('app.js','@{constel$wardrobe}')&&blocks.some(keyed)&&!blocks.some(k=>/touchmove/.test(k)),'of a block that runs at load, the listeners that really fired are recorded (a key was pressed, nothing was touched: '+blocks.filter(keyed).length+' of '+blocks.length+')');
       ok(odd===0,'Chromium and Node agree on where every function starts, so a page\'s functions go by the names a diff is read with ('+odd+' did not)');
       ok([...(m.get('styles.css')||[])].some(k=>k.startsWith('#stats')),'CSS rules that applied are recorded');
       ok(has('index.html',I.LOADED)&&has('wrangler.toml',I.ANY)&&!m.has('worker.js'),'so are the files served to the page and the files the test read');

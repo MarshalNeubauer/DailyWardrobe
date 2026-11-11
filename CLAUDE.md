@@ -15,6 +15,11 @@
   1. merge `origin/main` into the branch and resolve any conflicts;
   2. if `main` changed `CACHE` in `sw.js` or `PLAN_RULES` in planner.js, and this branch bumps it too, bump it again to one above `main`'s value (two sessions bumping to the same number is a single bump, so phones would miss the second change);
   3. re-run `npm test` on the merged result, push, and only then merge. If tests fail after the merge, apply the "Don't merge" rule.
+- **The re-run after merging `main` is small.** It runs only the tests that both `main`'s incoming change and yours can affect, and says so ("main has moved since `npm test` last passed on this branch").
+- When `main` brought only docs, or code that none of your tests uses, it prints "Nothing more needs to run" and stamps the map for the merged files: commit the map, push and merge.
+- The re-run is your whole selection again, as before, when both sides changed the same file (a second `CACHE` bump in `sw.js` counts), when `main` changed `tests/run.js`, `tests/impact.js` or `package.json`, or when you edited a file after the merge.
+- The small re-run needs `npm test` to have passed on the branch before `main` was merged in, with its map committed: so test and commit first, then fetch and merge `main`.
+- Measured: a branch that selects 89 tests (100 s); `main` moved by a docs change: 0 run again (1 s); `main` changed `openStats()`: 6 run again (7 s).
 - **No GitHub test run.** GitHub doesn't run the tests on pull requests (the user dropped it to save the wait). Your own `npm test` on the final branch is the only gate: merge right after it passes, without waiting on GitHub checks or subscribing to the PR.
 - **`npm test` runs only the checks the change can affect** (the user's rule: never the whole suite for a small change). It compares the branch with `origin/main`, prints what changed and why each test runs, and runs nothing for a docs-only change.
 - `npm run test:all` runs every check. It is not needed before a merge; use it only when the selection looks too small for what you changed.
@@ -215,7 +220,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - sections: top picks (`shopGo` opens the idea in its section), one per category with what is owned, a verdict and its ideas, occasions, hidden ideas
 - an idea is folded to its picture, name and first reason; open it shows every reason, sample outfits drawn with `figureSvg` from the owner's pieces, "Bought it" and "Not for me"
 - "Bought it" (`shopBought`) adds the piece as bought, on the way (`order`+`paused`, optional `arrives`) and checks again; "Not for me" (`shopHide`) adds its key to `settings.shopSkip` and hides it at once
-- swiping the sheet down closes it, like the item sheet: its header (`.shop-top-head`, with a grabber) is a handle at any time, its content only while scrolled to the top; the sheet follows the finger and the backdrop lightens, and it closes past a quarter of its height or on a flick, else springs back (the handler after `closeShop`; `tests/shopswipe.test.js`)
+- swiping the sheet down closes it, like the item sheet: its header (`.shop-top-head`, with a grabber) is a handle at any time, its content only while scrolled to the top; the sheet follows the finger and the backdrop lightens, and it closes past a quarter of its height or on a flick, else springs back (`shopSwipe`; `tests/shopswipe.test.js`)
+- `shopSwipe()` installs the swipe listeners the first time the sheet opens (from `openShop`, once: `shopSwipeOn`), and the grabber is its own element (`<i class="shop-grab">` in the header), so a change to either selects only the tests that open the sheet
 - the sheet and its backdrop slide and fade away on closing (`visibility` switches off after the transition; not `.on` = no pointer events); the handler only sets an inline transform and lets the CSS transition finish from there
 - `renderShop` during a swipe (`shopDrag`) is put off until the finger lifts (`shopStale`): a redraw removes the element the touch started on and its moves stop coming
 - the result is kept on the device (`meta` key `shop`: `{sig, at, res}`) and shown without checking again while the wardrobe is unchanged (`shopSig`) and it is under a week old; sections appear as the worker finishes them (`{cat}` messages)
@@ -385,10 +391,30 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 
 - After a tap, tests wait with `settle(page, ms)` (passed to every test file) instead of a fixed `waitForTimeout`: it returns once no animation runs and the scroll is still, waiting up to 2×`ms` (`DEBUG_SETTLE=1` logs each wait)
 - `tests/run.js` gives every `tests/*.test.js` file one shared Chromium (a file's `chromium.launch()`/`close()` open and close only its own contexts) and prints the slowest files at the end.
+- tests run several at a time: `tests/run.js` starts worker processes (`node tests/run.js --worker`; `together`, `worker`), one fewer than the processor cores, at most 8; `TEST_JOBS=<n>` sets the number, and `TEST_JOBS=1` runs them one after another in one process, printing as it goes
+- each worker process has its own local server, Chromium, recorder and Node coverage (`bench`) and runs one test at a time, so two tests never share any of them; the built-in suites of `run.js` are handed out like the files
+- a test's lines are kept in its worker and printed together when it finishes (`• name`, then its checks); the parent adds up the counts and what each test used, and writes `tests/impact.map` once at the end
+- the slowest tests start first, by the times of the last run (`node_modules/.cache/dw-test-times.json`, never committed)
+- a worker process that dies fails the test it was running, and another takes its place
+- measured on 4 cores, recording on: the whole suite takes 273 s one after another and 103 s three at a time (three runs, 1426 checks, none failed); four at a time (74–87 s without recording) made one or two timing-dependent checks fail in each of three runs, hence one fewer than the cores
+- a test that fails while others are running is run once more by itself after the rest (`RETRY_MAX` 5 such tests at most; more than that is not the load), which is how every test ran before; only that run counts, and the summary names it ("failed with other tests running, passed by itself")
+- when the summary names a test that way, make its check wait for its condition: a test must not rely on a quiet machine (`settle`, `waitForFunction`, a short polling loop, not a fixed time); `daysoff`, `itempics`, `wardrobetap`, `todaytight`, `tagging` each had such a check, and `itempics` and `weather` (the formal day's shirt) were still seen failing under load once
+- `window.appReady` is set once the kept photos are loaded (`loadRenders`, which starts `renders` afresh): tests put photos into `renders` right after it, and on a busy machine the load came later and wiped them (`navfit` waited 30 s for a photo)
+- the recorder loads `worker.js` in Node before any test (`prepare`) and gives what ran then to every test that runs any of it: Node loads a module once per process, so its load-time code used to be noted for the first test that imported it only
+- the map from a parallel run against one recorded one after another (both from nothing, 31,251 entries): 47–82 entries differ, where two parallel runs differ by 26–65; all are functions a timer fires (the scheduled sync, `prefetchRenders`, `lockUpcoming`), a few more of them in parallel because a test takes longer; the map only adds up, so that only selects more
 - test selection (`tests/impact.js`; `npm test` = `node tests/run.js --changed`, `--changed --list` only says what would run): while a test runs, the runner records in `tests/impact.map` every top-level function it runs (the app's scripts in the page over CDP coverage, `worker.js` in Node), every `styles.css` rule that applied to an element, the files its pages were served (`<loaded>`) and the files it read itself or ran in a Web Worker (`<any>`)
 - for a change, `git diff` against `origin/main` (committed, uncommitted and new files) is turned into the edited top-level functions and CSS rules (`jsImpact`, `cssImpact`); a test runs when it uses one of them, reads the file, was edited itself or is not in the map yet; comments and spacing select nothing
 - a changed top-level constant is followed by name to the functions and constants that name it, in the scripts that share its scope (`follow`), and to the test files that name it
-- what can't be narrowed selects every test that loads the file: other top-level code, `index.html`, a new selector made of existing classes, an `@media` condition, `@keyframes`, a script V8 can't parse
+- what can't be narrowed selects every test that loads the file: other top-level code, `index.html`, a new selector that no plain rule covers, an `@media` condition, `@keyframes`, a script V8 can't parse
+- a top-level block called on the spot (`(()=>{…})()`) runs at load in every test, so by itself it tells no tests apart: its own functions (the listeners it installs) are recorded and selected as units, named `<block>>name` (`units`, `kids`, `flat`; `scan` lists them by compiling the block's body inside a function that does nothing)
+- the block's own name (`@{<its first statement>}`) stands for its load-time code: an edit there, a listener added to it, or a whole block added or removed still selects every test that loads the file (left as it was: what runs at load can reach any test, and a new block has no record to select by)
+- a listener in a block is named after the code before it (`@el.addEventListenertouchmove`); two alike in one file share a name, which only selects more
+- a selector new to the sheet (a rule added or its selector changed, inside `@media` or not) can only apply where its last compound matches: when an old unconditional rule's plain selector (one compound of a tag, classes and ids) asks for no more than that compound (`.head` for `.sheet .head::before`, `.card` for `.card.on`), only the tests that used that old rule are selected (`within` in `cssImpact`)
+- no such plain rule (`.card .dot b`, a class only styled inside `@media`): every test that loads the sheet, as before
+- a whole `@media` block added or removed counts as its rules; an edited condition is still the stylesheet as a whole
+- a class inside `:not(…)` no longer makes a rule "for a new class" (`.card:not(.fresh)` styles the old cards); `selNeeds` reads only what an element must have, outside brackets
+- after `main` was merged in, `select` looks for the newest commit of the branch from before that merge whose fingerprint is in the map (`lastPass`): `npm test` passed there, and it passed on `main`, so a test can only have turned if both the change that came in (`impactOf` from that commit) and the branch's own (`impactOf` from `origin/main`) can affect it
+- the tests both select run; with a file changed on both sides (docs and the map aside), or when the incoming change selects everything, the branch's whole selection runs; without such a commit nothing changes
 - `tests/run.js`, `tests/impact.js` and `package.json` select everything; so does a missing map or a missing `origin/main`
 - a change to a file the browser gets also runs the built-in suite "renders the outfit without errors" (the app still starts); `sw.js` is otherwise covered only by `tests/sw.test.js`, since service-worker code isn't recorded
 - the map adds up: what a test used is added to what it used before (timers make two runs differ slightly), names and tests that no longer exist are dropped (`save`)
@@ -399,5 +425,18 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 - the push check is `.githooks/pre-push` (`node tests/impact.js pre-push`, `prePush`): it refuses an uncommitted map and prints a note when the commit's files were not passed by `npm test` (a note only, so a branch with failing tests can still be pushed); every test run switches it on in the clone (`installHook`: `git config core.hooksPath .githooks`, unless hooks are already set up otherwise)
 - docs-only changes (`*.md`) need no `npm test`: they are not part of the fingerprint
 - `NO_IMPACT=1` turns the recording off; `TEST_BASE=<commit>` compares with another commit; `tests/impact.test.js` checks the selection
+
+### Writing a change the selector can narrow
+
+- New behaviour goes inside a function that is called from where it is used, not in a block that runs when the script loads: `shopSwipe()` is called from `openShop()`, so only tests that open the sheet run it.
+- A listener is installed by such a function the first time it is needed (a flag like `shopSwipeOn` keeps it to once), not by a top-level `(()=>{…})()` or `document.addEventListener(…)`.
+- A new top-level `const`/`let` is fine: it is followed by name to the functions that use it.
+- Don't add the call to a function that every test runs (`show()`, `renderToday()`, `closeShop()`): an edit there selects everything; call it from the narrowest function that needs it.
+- A new visual element gets its own class name (`.shop-grab`), not a new selector built from existing classes or a `::before` on an existing element: a rule for a class the app never had selects no existing test.
+- State for an existing element also gets a new class (`.x.new-state`) rather than new declarations in its base rule: a rule that applies on every page (`#shop-sheet`, `body`, `.card`) selects every page test when its declarations change, and rightly so.
+- Check before running: `node tests/run.js --changed --list` says what changed and which tests it selects; "top-level code" or "the stylesheet as a whole" in that line means the change can be restructured.
+- Measured on the swipe-down change (handler and grabber): as a load-time block with `.shop-top-head::before` it selected 89 of 91; as `shopSwipe()` from `openShop()` with `.shop-grab` it selects 5 (`shop`, `shopswipe`, the start-up suite, and two tests that read `shop.js` as text).
+- The slide-away part of that change edits the rules of `#shop-sheet` and `#shop-backdrop`, which are on every page: it selects 89 of 91 however it is written.
+- Other measurements: an edit inside the item sheet's `touchmove` listener selected 89 of 91 and now 5; a new `.ivhead::after` rule selected 89 and now 17.
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.

@@ -5,15 +5,18 @@
 //   - every rule of styles.css that applied to an element (CSS rule usage),
 //   - every other file its pages were served (<loaded>) and every file it read itself or ran in a Web Worker (<any>).
 // For a change, the edited functions and CSS rules are worked out from `git diff` against origin/main, and only the tests
-// that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector for existing
-// classes, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / package.json select all.
+// that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector that no plain
+// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / package.json select all.
+// A block that runs at load, `(()=>{…})()`, is recorded by the functions it holds (units), and a selector new to the sheet
+// selects the tests of the plain rule it can only apply inside (cssImpact). After main has been merged into a branch that
+// had passed, only the tests that both sides' changes can affect run again (select, lastPass).
 //
 // The map has to travel with the change it was recorded for. Two things see to that:
 //   - a passing `npm test` writes into the map a fingerprint of the files it ran on (`# tested`). When origin/main's map
 //     doesn't carry the fingerprint of origin/main's own files (the map was left out of a commit, the last edit wasn't
 //     tested, two changes were merged without a run on the result), the next `npm test` runs everything and records anew;
 //   - `git push` is refused while the map has changes that aren't committed (.githooks/pre-push, switched on by tests/run.js).
-const fs=require('fs'),path=require('path'),vm=require('vm'),inspector=require('inspector'),crypto=require('crypto'),{execFileSync}=require('child_process'),{fileURLToPath}=require('url');
+const fs=require('fs'),path=require('path'),vm=require('vm'),inspector=require('inspector'),crypto=require('crypto'),{execFileSync}=require('child_process'),{fileURLToPath,pathToFileURL}=require('url');
 const MAP='tests/impact.map',ANY='<any>',LOADED='<loaded>',SMOKE='run.js: renders the outfit without errors';
 const realRead=fs.readFileSync;
 
@@ -24,15 +27,42 @@ const nodeCov=()=>covOn||(covOn=post('Profiler.enable').then(()=>post('Profiler.
 /* an unnamed top-level function (an event listener, an IIFE) is named after the code just before it */
 const anon=(src,a)=>'@'+(src?src.slice(Math.max(0,a-60),a).split(/[;\n{}]/).pop().replace(/[^\w$.]/g,'').slice(-48):'');
 /* V8's function list for one script → its top-level functions [{n,a,b,c}] (name, range, call count), in order */
+/* A top-level function that is called on the spot, `(()=>{…})()`, runs when the script loads, so every test that loads the
+   file runs it: by itself it tells no two tests apart. What does is the functions it holds (the listeners it installs), so
+   those are units too (`kids`, one level down, named '<block>>name'), and the block's own name stands for the code that
+   runs at load. The block is named after the code before it and its first statement: both are code of the script or of the
+   block itself, so whoever changes a name has changed load-time code, and every test that ran the block runs again */
+const called=(src,a,b)=>!!src&&/[(!]\s*(?:async\s*)?$/.test(src.slice(Math.max(0,a-12),a)+(/^async\b/.test(src.slice(a,a+6))?'async':''))&&/^\s*\)?\s*\(/.test(src.slice(b,b+24));
+/* where the body of the function at [a,b) starts: its first `{` outside brackets (-1 for an arrow that is one expression) */
+const bodyOf=(src,a,b)=>{if(src[b-1]!=='}')return -1;let d=0;for(let i=a;i<b;i++){const c=src[i];if(c==='('||c==='[')d++;else if(c===')'||c===']')d--;else if(c==='{'&&!d)return i}return -1};
+const blockName=(src,f)=>{const at=bodyOf(src,f.a,f.b);return f.n+'{'+(at<0?'':src.slice(at+1,at+200).split(/[;\n{}]/)[0].replace(/[^\w$.]/g,'').slice(0,32))+'}'};
+const kidName=(src,top,k)=>top.n+'>'+(/^[\w$]+$/.test(k.n||'')?k.n:anon(src,k.a));   // V8's guess for a listener (`el.addEventListener.passive`) is the same for each of them
 const units=(fns,src,shift=0)=>{const L=fns.map(f=>({n:f.functionName,a:f.ranges[0].startOffset-shift,b:f.ranges[0].endOffset-shift,c:f.ranges[0].count})).sort((x,y)=>x.a-y.a||y.b-x.b);
   if(L.length&&L[0].a<=0&&L.every(f=>f.b<=L[0].b))L.shift();   // the script itself
-  const out=[];let end=-Infinity;for(const f of L){if(f.a<end)continue;end=f.b;if(!f.n)f.n=anon(src,f.a);out.push(f)}return out};
+  const out=[];let end=-Infinity,top=null,kend=0;
+  for(const f of L){
+    if(f.a>=end){end=f.b;if(!f.n)f.n=anon(src,f.a);top=called(src,f.a,f.b)?f:null;if(top){top.n=blockName(src,top);top.kids=[];kend=-Infinity}out.push(f)}
+    else if(top&&f.a>=kend){kend=f.b;f.n=kidName(src,top,f);top.kids.push(f)}}
+  return out};
+/* every unit: the top-level functions and the functions of the blocks among them */
+const flat=U=>U.flatMap(u=>u.kids?[u,...u.kids]:[u]);
 let seq=0;
 /* compiled inside a branch that is never taken, so nothing runs: V8 still lists every top-level function. null when it doesn't parse */
 const scan=async src=>{await nodeCov();const id='impact-scan-'+(++seq)+'.js',pre='if(Math.random()<0){';
   const code=pre+src.replace(/^export default\b/gm,'void          ').replace(/^export\b/gm,'      ')+'\n}';
   try{new vm.Script(code,{filename:id}).runInNewContext({Math})}catch(e){return null}
-  const e=(await post('Profiler.takePreciseCoverage')).result.find(x=>x.url===id);return e?units(e.functions,src,pre.length):null};
+  const e=(await post('Profiler.takePreciseCoverage')).result.find(x=>x.url===id);if(!e)return null;
+  const U=units(e.functions,src,pre.length);
+  // V8 lists a function's own functions only once it has been compiled, and nothing here runs. So the body of each block is
+  // compiled the same way inside a function that is called (and does nothing): its functions are then listed like top-level ones
+  for(const f of U){if(!f.kids)continue;const at=bodyOf(src,f.a,f.b);if(at<0)continue;
+    const id2='impact-scan-'+(++seq)+'.js',pre2='(async function(){if(Math.random()<0){';
+    try{new vm.Script(pre2+src.slice(at+1,f.b-1)+'\n}})()',{filename:id2}).runInNewContext({Math})}catch(e){return null}
+    const e2=(await post('Profiler.takePreciseCoverage')).result.find(x=>x.url===id2);if(!e2)return null;
+    // (the wrapper is the outermost function and is dropped like a script; -1: V8 counts from 0, the body from the character after `{`)
+    const K=e2.functions.map(k=>({n:k.functionName,a:k.ranges[0].startOffset-pre2.length+at+1,b:k.ranges[0].endOffset-pre2.length+at+1,c:0})).filter(k=>k.a>at&&k.b<f.b).sort((x,y)=>x.a-y.a||y.b-x.b);
+    let kend=-Infinity;for(const k of K){if(k.a<kend)continue;kend=k.b;k.n=kidName(src,f,k);f.kids.push(k)}}
+  return U};
 
 /* ---------- comments and literals of a JS text (null when unsure) ---------- */
 const jsLex=src=>{const com=[],lit=[],n=src.length,st=[];let i=0,depth=0,last='',word='';
@@ -77,7 +107,8 @@ const analysed=new Map();
 const analyse=async src=>{if(analysed.has(src))return analysed.get(src);const u=await scan(src);let r=null;
   if(u){r={s:src,u,lx:null,code:null,segs:null};const lx=jsLex(src);
     if(lx){const code=blank(src,[...lx.com,...lx.lit].sort((x,y)=>x[0]-y[0])),v=await scan(code);
-      if(v&&v.length===u.length&&v.every((f,k)=>f.a===u[k].a&&f.b===u[k].b)){r.lx=lx;r.code=code;
+      const fu=flat(u),fv=v?flat(v):[];
+      if(v&&fv.length===fu.length&&fv.every((f,k)=>f.a===fu[k].a&&f.b===fu[k].b)){r.lx=lx;r.code=code;
         let view='',at=0;for(const f of u){view+=code.slice(at,f.a)+'ƒ'+' '.repeat(f.b-f.a-1);at=f.b}r.view=view+code.slice(at);r.segs=segments(r.view)}}}
   analysed.set(src,r);return r};
 const nameRe=n=>new RegExp('(?<![\\w$.])'+n.replace(/\$/g,'\\$')+'(?![\\w$])');
@@ -118,9 +149,15 @@ const jsImpact=async(oldS,newS,H)=>{const out={units:new Set(),syms:new Set(),to
   const com=S=>S.lx?S.lx.com:[],real=(S,i)=>!inAny(com(S),i)&&(!/\s/.test(S.s[i])||(S.lx&&inAny(S.lx.lit,i)));
   // a piece is cosmetic when it is only comments, and whitespace outside strings
   const cosmetic=(S,p,q)=>{if(p===q)return true;if(!S.lx)return false;for(let i=p;i<q;i++)if(real(S,i))return false;return true};
+  // inside a block called on the spot: the functions of the block the edit lies in, and the block itself when its own code changed
+  const touched=(S,f,p,q,out)=>{if(!f.kids||!f.kids.length){out.add(f.n);return}
+    if(p===q){const k=f.kids.find(k=>k.a<p&&p<k.b);out.add(k?k.n:f.n);return}
+    const x=Math.max(p,f.a),y=Math.min(q,f.b);let own=false;for(const k of f.kids)if(k.a<y&&k.b>x)out.add(k.n);
+    for(let i=x;i<y&&!own;i++)if(real(S,i)&&!f.kids.some(k=>k.a<=i&&i<k.b))own=true;
+    if(own)out.add(f.n)};
   const one=h=>{const R=[[h[0],h[1]],[h[2],h[3]]],r={units:new Set(),syms:new Set(),top:false};if(sides.every((S,k)=>cosmetic(S,...R[k])))return r;
     sides.forEach((S,k)=>{const [p,q]=R[k],gaps=[];let res='',at=p;
-      for(const f of S.u)if(p===q?f.a<p&&p<f.b:f.a<q&&f.b>p){r.units.add(f.n);if(f.a>at){gaps.push([at,f.a]);res+=codeOf(S.s,com(S),at,f.a)}res+='ƒ';at=Math.max(at,f.b)}
+      for(const f of S.u)if(p===q?f.a<p&&p<f.b:f.a<q&&f.b>p){touched(S,f,p,q,r.units);if(f.a>at){gaps.push([at,f.a]);res+=codeOf(S.s,com(S),at,f.a)}res+='ƒ';at=Math.max(at,f.b)}
       if(at<q){gaps.push([at,q]);res+=codeOf(S.s,com(S),at,q)}
       if(TRIVIAL.test(res))return;
       // code outside the functions changed: a `const X=…` statement is followed by name (syms); anything else is top-level code
@@ -135,28 +172,50 @@ const jsImpact=async(oldS,newS,H)=>{const out={units:new Set(),syms:new Set(),to
 const follow=(file,syms,sources)=>{const out=new Map(),at=g=>{if(!out.has(g))out.set(g,{units:new Set(),top:false});return out.get(g)},seen=new Set(),queue=[...syms];
   while(queue.length){const n=queue.shift();if(seen.has(n))continue;seen.add(n);const re=nameRe(n);
     for(const [g,A] of sources){if(!A)continue;if(!A.segs){if(re.test(A.s))at(g).top=true;continue}
-      for(const u of A.u)if(re.test(A.code.slice(u.a,u.b)))at(g).units.add(u.n);
+      for(const u of A.u){if(!u.kids||!u.kids.length){if(re.test(A.code.slice(u.a,u.b)))at(g).units.add(u.n);continue}
+        let own='',i=u.a;for(const k of u.kids){if(re.test(A.code.slice(k.a,k.b)))at(g).units.add(k.n);own+=A.code.slice(i,k.a)+' ';i=k.b}
+        if(re.test(own+A.code.slice(i,u.b)))at(g).units.add(u.n)}
       for(const sg of A.segs)if(re.test(A.view.slice(sg.a,sg.b))){if(sg.names)queue.push(...sg.names);else at(g).top=true}}}   // (a statement's other names may be built from it)
   return {files:out,names:seen}};
 
 /* ---------- CSS: rules by selector ---------- */
 const normSel=s=>s.replace(/\/\*[\s\S]*?\*\//g,' ').replace(/\s+/g,' ').trim();
-/* → {rules:[{key,a,ba,bb,b,cond}], com}: style rules (key = selector; null for @keyframes and the like), cond = inside @media/@supports */
-const cssScan=src=>{const rules=[],com=[],n=src.length;let i=0;
+/* → {rules:[{key,a,ba,bb,b,cond}], groups:[{a,b}], com}: style rules (key = selector; null for @keyframes and the like),
+   cond = inside @media/@supports; groups = those @media/@supports blocks, from the `@` to the closing brace */
+const cssScan=src=>{const rules=[],groups=[],com=[],n=src.length;let i=0;
   const skip=()=>{if(src[i]==='/'&&src[i+1]==='*'){const j=src.indexOf('*/',i+2);if(j<0)throw 0;com.push([i,j+2]);i=j+2;return true}
     if(src[i]==='"'||src[i]==="'"){const c=src[i];let j=i+1;while(j<n&&src[j]!==c){if(src[j]==='\\')j++;j++}if(j>=n)throw 0;i=j+1;return true}return false};
   const block=cond=>{for(;;){while(i<n&&(/\s/.test(src[i])||(src[i]==='/'&&src[i+1]==='*')))if(!skip())i++;
     if(i>=n){if(cond)throw 0;return}if(src[i]==='}'){if(!cond)throw 0;i++;return}
     const a=i;while(i<n&&!'{;}'.includes(src[i]))if(!skip())i++;if(i>=n||src[i]==='}')throw 0;
     const pre=normSel(src.slice(a,i));if(src[i]===';'){i++;rules.push({key:null,a,ba:i,bb:i,b:i,cond});continue}
-    const ba=++i;if(/^@(media|supports|container|layer)\b/.test(pre)){block(true);continue}
+    const ba=++i;if(/^@(media|supports|container|layer)\b/.test(pre)){block(true);groups.push({a,b:i});continue}
     let d=1;while(i<n&&d){if(skip())continue;if(src[i]==='{')d++;else if(src[i]==='}')d--;i++}if(d)throw 0;
     rules.push({key:pre[0]==='@'?null:pre,a,ba,bb:i-1,b:i,cond})}};
-  try{block(false)}catch(e){return null}return {rules,com}};
+  try{block(false)}catch(e){return null}return {rules,groups,com}};
+/* ---- selectors: can a new rule only apply where a rule that is already there applies? ---- */
+/* a selector list at its commas, a selector at its combinators (both outside brackets) */
+const selSplit=(s,seps)=>{const out=[];let d=0,cur='';for(const c of s){if(c==='('||c==='[')d++;else if(c===')'||c===']')d--;if(!d&&seps.includes(c)){out.push(cur);cur=''}else cur+=c}out.push(cur);return out.map(x=>x.trim()).filter(Boolean)};
+/* what an element must have to match a compound selector: its tag, classes and ids. Whatever is in brackets or follows a
+   colon only narrows it further, except that `:not(.x)` asks for the opposite: nothing inside brackets counts. null when unsure */
+const selNeeds=c=>{if(/[\\&]/.test(c))return null;let t='',d=0;for(const ch of c){if(ch==='('||ch==='[')d++;else if(ch===')'||ch===']')d--;else if(!d)t+=ch}
+  t=t.replace(/::?[\w-]+/g,'');const m=/^(\*|[a-zA-Z][\w-]*)?((?:[.#][\w-]+)*)$/.exec(t);if(!m)return null;
+  return new Set([...(m[1]&&m[1]!=='*'?[m[1].toLowerCase()]:[]),...(m[2].match(/[.#][\w-]+/g)||[])])};
+/* a selector that is one compound of a tag, classes and ids and nothing else: every element it describes matches it */
+const selPlain=p=>/^(?:\*|[a-zA-Z][\w-]*)?(?:[.#][\w-]+)*$/.test(p)&&p!=='*';
 /* isNew(name): is this class/id unknown to the old app? Then a rule for it can only style what changed code adds */
 const cssImpact=(oldS,newS,H,isNew)=>{const out={units:new Set(),top:false},O=cssScan(oldS),N=cssScan(newS);if(!O||!N){out.top=true;return out}
   const plainOld=new Set(O.rules.filter(r=>r.key&&!r.cond).map(r=>r.key));
-  const novel=key=>key.split(',').every(part=>(part.match(/[.#][\w-]+/g)||[]).some(t=>isNew(t.slice(1))));
+  // a selector that asks for a class or id the old app never names can only style what changed code adds
+  const novel=part=>selSplit(part,' >+~').some(c=>{const n=selNeeds(c);return !!n&&[...n].some(t=>/^[.#]/.test(t)&&isNew(t.slice(1)))});
+  // the old sheet's unconditional rules whose selector (or one of the list) is plain: [key, what it needs]
+  const plain=O.rules.filter(r=>r.key&&!r.cond).flatMap(r=>selSplit(r.key,',').filter(selPlain).map(p=>[r.key,selNeeds(p)])).filter(x=>x[1]&&x[1].size);
+  /* A selector that is new to the sheet (a rule added, a selector changed, inside @media or not) applies to an element only
+     if its last compound matches it. When an old rule's plain selector asks for no more than that compound does (`.head`
+     for `.sheet .head::before`), the old rule applied to every such element, so the tests that used it are the only ones
+     the new rule can reach. The old rule asking for the most is taken; null when there is none */
+  const within=part=>{const c=selSplit(part,' >+~').pop(),need=c?selNeeds(c):null;if(!need)return null;let best=null;
+    for(const [key,n] of plain)if([...n].every(t=>need.has(t))&&(!best||n.size>best[1].size))best=[key,n];return best&&best[0]};
   const side=(r0,S,src,p,q,isOld)=>{const real=i=>!inAny(S.com,i)&&!/\s/.test(src[i]);
     for(const r of S.rules){if(!(p===q?r.a<p&&p<r.b:r.a<q&&r.b>p))continue;
       let any=false;for(let i=Math.max(p,r.a);i<Math.min(q,r.b);i++)if(real(i)){any=true;break}
@@ -164,8 +223,10 @@ const cssImpact=(oldS,newS,H,isNew)=>{const out={units:new Set(),top:false},O=cs
       const sel=r.key&&(p===q?p<r.ba-1:p<r.ba-1&&q>r.a);if(!any&&!sel)continue;
       if(!r.key){r0.top=true;continue}
       if(p>=r.ba&&q<=r.bb){r0.units.add(r.key);continue}                                   // its declarations only
-      if(isOld||plainOld.has(r.key))r0.units.add(r.key);else if(!novel(r.key))r0.top=true}   // a rule added, removed, or its selector changed
-    for(let i=p;i<q;i++)if(real(i)&&!S.rules.some(r=>r.a<=i&&i<r.b)){r0.top=true;break}};   // outside the rules: an @media condition, a brace
+      if(isOld||plainOld.has(r.key)){r0.units.add(r.key);continue}                         // a rule removed, or one with a selector the sheet already had
+      for(const part of selSplit(r.key,',')){if(novel(part))continue;const k=within(part);if(k)r0.units.add(k);else{r0.top=true;break}}}   // a rule added, or its selector changed
+    // outside the rules: an @media condition, a brace. A whole @media block that came or went is only its rules
+    for(let i=p;i<q;i++)if(real(i)&&!S.rules.some(r=>r.a<=i&&i<r.b)&&!S.groups.some(g=>p<=g.a&&g.b<=q&&g.a<=i&&i<g.b)){r0.top=true;break}};
   const one=h=>{const r={units:new Set(),top:false};side(r,O,oldS,h[0],h[1],true);side(r,N,newS,h[2],h[3],false);return r};
   for(const alts of H){const r=least(alts.map(one));for(const u of r.units)out.units.add(u);if(r.top)out.top=true}
   return out};
@@ -211,7 +272,7 @@ const installHook=root=>{try{if(fs.existsSync(path.join(root,'.githooks','pre-pu
 // passed: `npm test` (or the whole suite) ran and nothing failed: the map then says which files it stands for
 const save=async(root,results,all,passed)=>{const out=load(root)||new Map(),alive=new Map();
   const names=async f=>{if(!alive.has(f)){let t=null,k=null;try{t=realRead(path.join(root,f),'utf8')}catch(e){}
-      if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)){const u=await scan(t);if(u)k=new Set(u.map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
+      if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)){const u=await scan(t);if(u)k=new Set(flat(u).map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
       alive.set(f,k)}return alive.get(f)};
   for(const [k,r] of results){if(r.bad){out.set(k,new Map([[ANY,new Set([ANY])]]));continue}
     const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
@@ -242,12 +303,9 @@ const pick=(map,all,changes)=>{const out=new Map(),add=(t,why)=>{if(all.includes
   for(const t of all){if(!map.has(t))add(t,'not in the map yet');else if(real&&map.get(t).has(ANY))add(t,'what it uses is unknown')}
   return {tests:out}};
 
-const select=async(root,all)=>{const base=baseOf(root),map=load(root);
-  if(!base)return {all:true,report:'No origin/main to compare with: running everything.'};
-  if(!map)return {all:true,report:'No '+MAP+' yet: running everything.'};
-  const fp=fingerprint(root,base);
-  if(!fp||!stampsOf(git(root,'show',base+':'+MAP)).includes(fp))return {all:true,report:'The '+MAP+' on origin/main was not recorded for the files that are there (a change went in without it, or without a passing `npm test`): running everything.'};
-  const files=changedFiles(root,base);if(!files)return {all:true,report:'git could not list the changes: running everything.'};
+/* what changed between a commit and the files as they are now → {files, said, all, why} or {files, said, tests: Map(test → reason)} */
+const impactOf=async(root,base,all,map)=>{
+  const files=changedFiles(root,base);if(!files)return {files:[],said:[],all:true,why:'git could not list the changes'};
   const oldOf=f=>git(root,'show',base+':'+f),newOf=f=>{try{return realRead(path.join(root,f),'utf8')}catch(e){return null}};
   let corpus=null;const isNew=name=>{if(corpus==null)corpus=(git(root,'ls-tree','--name-only',base)||'').split('\n').filter(f=>/\.(?:js|html|css)$/.test(f)).map(f=>oldOf(f)||'').join('\n');
     return !new RegExp('(?<![\\w-])'+name.replace(/[^\w-]/g,'\\$&')+'(?![\\w-])').test(corpus)};
@@ -259,7 +317,7 @@ const select=async(root,all)=>{const base=baseOf(root),map=load(root);
     const o=oldOf(f),n=newOf(f),d=o!=null&&n!=null?git(root,'diff','-U0','--no-renames',base,'--',f):null;
     let im={units:new Set(),top:true};if(d!=null){const H=hunksOf(d,o,n);im=js?await jsImpact(o,n,H):cssImpact(o,n,H,isNew)}
     changes.push({file:f,kind:js?'js':'css',...im});
-    const what=[...im.units].map(u=>js&&u[0]!=='@'?u+'()':u);if(im.syms)what.push(...im.syms);if(im.top)what.push(js?'top-level code':'the stylesheet as a whole');
+    const what=[...im.units].map(u=>js&&!u.includes('@')?u+'()':u);if(im.syms)what.push(...im.syms);if(im.top)what.push(js?'top-level code':'the stylesheet as a whole');
     said.push(f+' ('+(what.join(', ')||(js?'comments or spacing only':'only comments, spacing or rules for new classes'))+')')}
   // a changed constant: the functions that name it (worker.js and sw.js are worlds of their own, the other scripts share one), and the tests that do
   for(const c of [...changes]){if(!c.syms||!c.syms.size)continue;const alone=c.file==='worker.js'||c.file==='sw.js',sources=new Map();
@@ -268,14 +326,41 @@ const select=async(root,all)=>{const base=baseOf(root),map=load(root);
     for(const [g,x] of fl.files){let e=changes.find(e=>e.file===g&&e.kind==='js');if(!e){e={file:g,kind:'js',units:new Set(),top:false};changes.push(e)}for(const u of x.units)e.units.add(u);if(x.top)e.top=true}
     for(const n of fl.names){const re=nameRe(n),tests=all.filter(t=>{const src=newOf('tests/'+(t.startsWith('run.js: ')?'run.js':t));return src!=null&&re.test(src)});
       if(tests.length)changes.push({file:c.file,kind:'named',name:n,tests})}}
-  const r=pick(map,all,changes);
-  const head='Changed since origin/main: '+(said.join('; ')||'nothing')+'\n';
-  if(r.all)return {all:true,report:head+'Running everything: '+r.why+'.'};
-  const list=[...r.tests].map(([t,why])=>'  '+t+'  ('+why+')').join('\n');
-  return {all:false,tests:[...r.tests.keys()],report:head+(r.tests.size?'Running '+r.tests.size+' of '+all.length+' test files and built-in suites:\n'+list:'No check can be affected by this change.')}};
+  return {files,said,...pick(map,all,changes)}};
+
+/* Main moved while this branch was being worked on, and was merged in. `npm test` passed on the branch as it was before
+   (the map carries that commit's fingerprint), and it passed on main (checked by the caller). The files as they are now
+   differ from each of those two states by one side's change, so a test can only have turned if BOTH changes can affect it:
+   the one that came in from main, and the branch's own. → the newest such commit of this branch, or null */
+const DOC=f=>f===MAP||/\.md$/.test(f)||f==='LICENSE';
+const lastPass=(root,base)=>{let stamps;try{stamps=stampsOf(realRead(path.join(root,MAP),'utf8'))}catch(e){return null}if(!stamps.length)return null;
+  for(const c of (git(root,'rev-list','--first-parent','-n','40',base+'..HEAD')||'').split('\n').filter(Boolean)){
+    try{execFileSync('git',['merge-base','--is-ancestor',base,c],{cwd:root,stdio:'ignore'});continue}catch(e){if(e.status!==1)return null}   // (it already holds this main: not what we look for)
+    const fp=fingerprint(root,c);if(fp&&stamps.includes(fp))return c}
+  return null};
+
+const select=async(root,all)=>{const base=baseOf(root),map=load(root);
+  if(!base)return {all:true,report:'No origin/main to compare with: running everything.'};
+  if(!map)return {all:true,report:'No '+MAP+' yet: running everything.'};
+  const fp=fingerprint(root,base);
+  if(!fp||!stampsOf(git(root,'show',base+':'+MAP)).includes(fp))return {all:true,report:'The '+MAP+' on origin/main was not recorded for the files that are there (a change went in without it, or without a passing `npm test`): running everything.'};
+  const mine=await impactOf(root,base,all,map);
+  const head='Changed since origin/main: '+(mine.said.join('; ')||'nothing')+'\n';
+  if(mine.all)return {all:true,report:head+'Running everything: '+mine.why+'.'};
+  let tests=mine.tests,note='';
+  const prev=mine.tests.size?lastPass(root,base):null;
+  if(prev){const theirs=await impactOf(root,prev,all,map),id=prev.slice(0,7);
+    const both=theirs.files.filter(f=>!DOC(f)&&mine.files.includes(f));
+    note='main has moved since `npm test` last passed on this branch ('+id+'). Come in from main since then: '+(theirs.said.join('; ')||'nothing')+'\n';
+    if(theirs.all)note+='That can affect every test ('+theirs.why+'), so all '+tests.size+' run again.\n';
+    else if(both.length)note+='Both sides changed '+both.join(', ')+', so all '+tests.size+' run again.\n';
+    else{tests=new Map([...mine.tests].filter(([t])=>theirs.tests.has(t)).map(([t,why])=>[t,why+'; main: '+theirs.tests.get(t)]));
+      note+='Only a test that both changes can affect needs to run again: '+tests.size+' of the '+mine.tests.size+' this branch selects.\n'}}
+  const list=[...tests].map(([t,why])=>'  '+t+'  ('+why+')').join('\n');
+  return {all:false,tests:[...tests.keys()],report:head+note+(tests.size?'Running '+tests.size+' of '+all.length+' test files and built-in suites:\n'+list:prev&&mine.tests.size?'Nothing more needs to run.':'No check can be affected by this change.')}};
 
 /* ---------- recording what a test uses ---------- */
-const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new Map(),canon=new Map();
+const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new Map(),canon=new Map(),atLoad=new Map();
   const relOf=p=>{if(p instanceof URL)p=fileURLToPath(p);if(Buffer.isBuffer(p))p=p.toString();if(typeof p!=='string')return null;
     const r=path.relative(root,path.resolve(p));return !r||r.startsWith('..')||path.isAbsolute(r)||/^(?:node_modules|\.git)(?:\/|$)/.test(r)||r===MAP?null:r.split(path.sep).join('/')};
   const srcOf=f=>{if(!srcs.has(f)){let s=null;try{s=realRead(path.join(root,f),'utf8')}catch(e){}srcs.set(f,s)}return srcs.get(f)};
@@ -291,7 +376,7 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
   // a function goes by the name scan() gives it (the name a diff is read with), found by where it starts; Chromium's own
   // name is only used where the two disagree (c.odd counts those)
   const addJs=(c,result,node)=>{for(const e of result){const f=urlRel(e.url);if(!f||!/\.js$/.test(f)||(node&&f.includes('/')))continue;const C=canon.get(f);
-    if(e.functions.some(x=>x.ranges[0].count))c.add(f,LOADED);for(const u of units(e.functions,srcOf(f)))if(u.c){if(C&&C.has(u.a))c.add(f,C.get(u.a));else{c.odd++;c.add(f,u.n)}}}};
+    if(e.functions.some(x=>x.ranges[0].count))c.add(f,LOADED);for(const u of flat(units(e.functions,srcOf(f))))if(u.c){if(C&&C.has(u.a))c.add(f,C.get(u.a));else{c.odd++;c.add(f,u.n)}}}};
   const addCss=(c,L,usage)=>{for(const u of usage||[]){if(!u.used)continue;const f=urlRel(L.sheets.get(u.styleSheetId)||'');if(!f||!/\.css$/.test(f))continue;
     if(!scans.has(f))scans.set(f,cssScan(srcOf(f)));const S=scans.get(f);if(!S)continue;const r=S.rules.find(r=>r.a<=u.startOffset&&u.startOffset<r.b);if(r&&r.key)c.add(f,r.key)}};
   const take=async(page,final)=>{const L=live.get(page);if(!L)return;if(final||page.isClosed())live.delete(page);
@@ -316,14 +401,23 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
       ctx.newPage=async(...a)=>{const p=await np(...a);await start(ctx,p);return p};ctx.on('page',p=>{start(ctx,p)});
       ctx.close=async(...a)=>{for(const p of [...live.keys()])if(p.context()===ctx)await take(p,true);return cc(...a)};return ctx},
     /* before the first test: the functions of every script, by where they start */
-    async prepare(){for(const f of fs.readdirSync(root).filter(f=>/\.js$/.test(f))){const u=await scan(srcOf(f));if(u)canon.set(f,new Map(u.map(x=>[x.a,x.n])))}},
+    async prepare(){for(const f of fs.readdirSync(root).filter(f=>/\.js$/.test(f))){const u=await scan(srcOf(f));if(u)canon.set(f,new Map(flat(u).map(x=>[x.a,x.n])))}
+      // Node loads a module once per process, so what runs while worker.js loads (its tables) would be noted for the first test
+      // that imports it and for no other: a different test in every worker process. It is loaded here instead, before any
+      // test, and what ran then goes to every test that runs any of it (end)
+      const warn=process.emitWarning;process.emitWarning=()=>{};   // (Node's note that worker.js is an ES module without a package type: once per process is noise)
+      for(const f of ['worker.js'])if(srcOf(f)!=null)try{await nodeCov();await post('Profiler.takePreciseCoverage');await import(pathToFileURL(path.join(root,f)).href);
+        const c=mk('load');addJs(c,(await post('Profiler.takePreciseCoverage')).result,true);if(c.m.has(f))atLoad.set(f,c.m.get(f))}catch(e){}
+      process.emitWarning=warn},
     served(f){if(cur&&f&&!/\.js$/.test(f))cur.add(f,LOADED)},
     /* what the running test has used so far (for tests/impact.test.js) */
     async peek(){for(const p of [...live.keys()])await take(p,false);return cur&&{m:cur.m,odd:cur.odd}},
     async begin(key,self){await nodeCov();await post('Profiler.takePreciseCoverage');cur=mk(key);cur.self=self||null},
     async end(){const c=cur;for(const p of [...live.keys()])await take(p,true);
-      try{addJs(c,(await post('Profiler.takePreciseCoverage')).result,true)}catch(e){c.bad=true}cur=null;return {m:c.m,bad:c.bad}}}};
+      try{addJs(c,(await post('Profiler.takePreciseCoverage')).result,true)}catch(e){c.bad=true}
+      for(const [f,S] of atLoad)if(c.m.has(f))for(const k of S)c.add(f,k);
+      cur=null;return {m:c.m,bad:c.bad}}}};
 
-module.exports={MAP,ANY,LOADED,SMOKE,units,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,recorder,fingerprint,stampsOf,prePush,installHook};
+module.exports={MAP,ANY,LOADED,SMOKE,units,flat,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,impactOf,lastPass,recorder,fingerprint,stampsOf,prePush,installHook};
 
 if(require.main===module&&process.argv[2]==='pre-push'){const r=prePush(path.resolve(__dirname,'..'));if(r.msg)console.error(r.msg);process.exit(r.ok?0:1)}
