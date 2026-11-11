@@ -9,6 +9,10 @@
 // Today shows the assembled picture once the master, the zones and the outfit's pieces are on the device (asmFor / asmEnsure);
 // an outfit it can't do (no jacket, no tie, a vest), or with a piece still missing, keeps its own photo.
 const ASM_VER=1,ASM_DE=14;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+/* ASM_ON: are assembled pictures in use? Off since the owner rejected the first master (zoomed out, the lower hand too low; the
+   vest master's buttons read as seven): Today shows each outfit's own photo again, nothing is fetched or made, and Settings hides
+   Item photos. Everything else stays, to be switched back on with new masters (a new ASM_VER makes every device start afresh). */
+let ASM_ON=false;
 const asmImg=u=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('could not read a photo'));im.src=u});
 /* a photo as pixels, W wide and high (its own width when not given: photos are square) */
 async function asmData(u,W){const im=await asmImg(u),w=W||im.naturalWidth,c=document.createElement('canvas');c.width=c.height=w;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,w,w);return x.getImageData(0,0,w,w)}
@@ -201,7 +205,7 @@ async function asmPhoto(o){if(!asmCan(o))return null;const m=renders[asmMasterKe
 let asmOut={};const ASM_KEEP=80,asmBusy=new Set(),asmTried=new Set();
 const asmOutKey=o=>asmKey('out/'+asmParts(o).map(p=>p.key).join('+'));
 const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
-const asmWants=o=>asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
+const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
    (Settings: Regenerate) wins: that was the owner's choice. */
 function asmFor(o){if(!asmWants(o))return null;const full=renders[comboKey(o)];if(full&&full.t>renders[asmMasterKey()].t)return null;
@@ -227,7 +231,7 @@ async function asmGet(key,force){if(renders[key])return true;const W=workerBase(
 const ASM_NONE_MS=6*3600e3;
 const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());return !!k};
 /* bring what this outfit needs onto the device, put its picture together, keep it and show it */
-async function asmEnsure(o){if(!asmCan(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
+async function asmEnsure(o){if(!ASM_ON||!asmCan(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
   try{if(!await asmGet(mk)||(o.vest&&!await asmGet(asmVestKey())))return;
     if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
     const parts=asmParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
@@ -255,7 +259,7 @@ function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if
 let asmState={checked:false,missing:[],total:0},asmSyncing=null;
 /* look at the worker: bring home what it has, note what it lacks. One look at a time; a forced one (Settings, a new item) waits for
    the look under way and then looks again, asking afresh for photos that were missing before. */
-function asmSync(force){if(!workerBase())return Promise.resolve(asmState);if(asmSyncing)return force?asmSyncing.then(()=>asmSync(true)):asmSyncing;
+function asmSync(force){if(!ASM_ON||!workerBase())return Promise.resolve(asmState);if(asmSyncing)return force?asmSyncing.then(()=>asmSync(true)):asmSyncing;
   asmSyncing=(async()=>{
     try{if(force)asmTried.clear();const has=await asmGet(asmMasterKey(),force),kept=await asmZonesKept();if(has&&asmNeeds().some(n=>n.kind==='vestmaster'))await asmGet(asmVestKey());
       // no master on the worker: nothing else is asked for (the pieces are edits of it). Calibration photos are not needed once their zones are kept
@@ -281,7 +285,7 @@ const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmParts(o).filter(p=>(!renders[p.key]||asmBad.has(p.key))&&!have.has(p.key)).map(p=>({kind:'piece',slot:p.slot,item:p.item,key:p.key,what:nm(p.item)}));
   if(miss.length)await asmMake(miss);else await asmEnsure(o);return 'asm'}
 /* Settings: Realistic photos, "Item photos" */
-function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto');if(!st||!btn)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
+function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
   const money=v=>v<1?Math.round(v*100)+'¢':'$'+v.toFixed(2),queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key)),making=asmNeeds().filter(n=>queued.has(n.key)).length;
   if(!workerBase()){st.textContent='Set the Worker URL and App Token first.';btn.disabled=true;btn.textContent='Make item photos';return}
   if(!asmState.checked){st.textContent='Looking at what your worker has…';btn.disabled=true;btn.textContent='Make item photos';return}
@@ -300,7 +304,7 @@ function setAsmAuto(v){settings.asmAuto=v!=='off';saveUserSettings()}
 /* a new item (or one put back in rotation): make its photo by itself. At most ASM_AUTO at a time: a restore or a changed wardrobe
    that suddenly needs many is left to the button in Settings, with its cost shown. */
 let asmAutoTimer=0,ASM_AUTO_MS=4000;const ASM_AUTO=3;
-function asmAutoSoon(){clearTimeout(asmAutoTimer);asmAutoTimer=setTimeout(async()=>{if(settings.asmAuto===false||!workerBase())return;
+function asmAutoSoon(){if(!ASM_ON)return;clearTimeout(asmAutoTimer);asmAutoTimer=setTimeout(async()=>{if(settings.asmAuto===false||!workerBase())return;
   try{const stt=await asmSync(),queued=new Set(queuedKeys()),m=stt.missing.filter(n=>n.kind==='piece'&&!queued.has(n.key));
     if(!renders[asmMasterKey()]||!m.length||m.length>ASM_AUTO||stt.missing.some(n=>n.kind!=='piece'))return;
     const n=await asmMake(m);if(n)toast(`Making ${n===1?'a photo of '+m[0].what:n+' item photos'} on your worker (about ${Math.round(asmCostOf(m)*100)}¢).`,5000)}catch(e){console.warn('automatic item photo failed',e)}},ASM_AUTO_MS)}

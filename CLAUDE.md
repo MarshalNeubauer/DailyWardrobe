@@ -134,6 +134,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 ### `assemble.js`
 
+- assembled pictures are switched off (`ASM_ON` false in assemble.js) since the owner rejected the first master: zoomed out, the lower hand at the groin, and the vest master's buttons read as seven; Today shows each outfit's own photo, nothing is fetched or made, Settings hides Item photos (`#asm-group`)
+- the owner is having new masters made (a suit master and a vest master); to switch back on: set `ASM_ON` true and bump `ASM_VER`, so every device drops the old set and takes the new one; the 57 item photos and 5 calibration photos must be remade from the new masters (about $4.60)
+- what a master must be for this code: 1024×1024; a plain solid jacket, plain white shirt, the owner's watch, no tie bar or pocket square; a solid bright tie in a colour none of the owner's ties has (dark green was too close to navy); the vest master an edit of the suit master, so hands, watch and background line up pixel for pixel; ideally no hand over the tie or the waistcoat's buttons
+- check a new master's framing against the owner's liking before making anything from it: the first was generated once from the app's drawing and never compared with the existing photos
+- `tests/assemble.test.js` sets `ASM_ON=true` in the page for the checks of the machinery, and checks the shipped state is off
 - assembled outfit photos (loaded after tagging.js): one master photo fixes the pose, every item has one photo that is the master with only that piece changed, and an outfit's picture is put together on the device by copying pieces onto the master, with no image model
 - the master (`asmMasterOutfit`, key `asmMasterKey()`): a plain mid-grey suit, white shirt, green tie and the owner's watch, no tie bar; things are added on top of it, never taken off
 - zones (`asmZones`): four calibration photos (the master with the jacket, shirt, tie or watch in a loud flat colour, `ASM_CALIB`) show where each piece is; a pixel goes to the piece whose calibration photo changed it most, if by more than `ASM_DE` (14, CIE Lab: a dark green and a dark navy of one brightness still differ); zones are kept packed in `meta` as `asm:zones:<master key>` and refused when a piece is missing or absurdly large (`asmZonesOk`)
