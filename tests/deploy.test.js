@@ -25,4 +25,6 @@ module.exports=async({ok,ROOT})=>{
   ok(!/--with-deps/.test(wf)&&/timeout [^\n]*playwright install-deps chromium \|\| echo/.test(inst),'system packages (apt) are tried for a limited time and never fail the deploy');
   ok(/for i in 1 2 3; do npx playwright install chromium && exit 0;/.test(inst)&&/\n\s+exit 1\s*$/.test(inst),'the browser download is tried three times');
   ok(/^    timeout-minutes: \d+$/m.test(wf),'the job has a time limit');
+  // npm install must leave the checkout as it was: a package-lock.json written on the runner counts as a change, and then every test runs
+  ok(/- run: npm install --no-package-lock\n/.test(wf)&&!/npm (?:install|i|ci)(?! --no-package-lock)\b/.test(wf)&&!fs.existsSync(path.join(ROOT,'package-lock.json')),'npm install writes no package-lock.json (the selection would take it for a change)');
 };

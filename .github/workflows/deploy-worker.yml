@@ -35,7 +35,9 @@ jobs:
         if: steps.cfg.outputs.ready == 'yes'
         with:
           node-version: 22
-      - run: npm install
+      # no package-lock.json: written here it is a new file in the checkout, which the test selection below takes for a
+      # change and answers with every test (the first run of this workflow did just that)
+      - run: npm install --no-package-lock
         if: steps.cfg.outputs.ready == 'yes'
       # The tests: only what the change since origin/main can affect (tests/impact.js). On main that is nothing when the
       # merged branch was tested before the merge (tests/impact.map carries the fingerprint of these very files), and
