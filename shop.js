@@ -2,6 +2,7 @@
    (like the piece picker): the top picks, then a section per kind of piece with what the owner has, a verdict and up to
    five ideas each with its reasons, and how the wardrobe copes with a formal day, a wedding, a funeral and a day without a
    jacket. The analysis itself is analysis.js, run in analysis-worker.js; sections appear as they finish.
+   - Escape, the backdrop, ×, changing tab and a swipe down (see below closeShop) close it
    - the result is kept on the device (meta 'shop': {sig, at, res}) and shown at once next time; it is checked again when
      the wardrobe changed since (shopSig) or it is over a week old
    - "Bought it" adds the piece as bought, on the way (item.order + item.paused, optional arrival date)
@@ -31,6 +32,29 @@ function openShop(){
 }
 function closeShop(){if(!shopOpen)return;shopOpen=false;const s=$('#shop-sheet'),b=$('#shop-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on')}
 document.addEventListener('keydown',e=>{if(shopOpen&&e.key==='Escape')closeShop()});
+/* swiping the sheet down closes it, as on the Wardrobe's item sheet: the header (with the grabber) is a handle at any time, the
+   content only while it is scrolled to the top (further down, a downward swipe scrolls it back up, as it must). The choice is
+   made on the first move of a touch, before the browser starts scrolling. The sheet follows the finger and the backdrop
+   lightens; let go past a quarter of the sheet's height, or with a flick, and it closes, else it springs back (both by the
+   sheet's own CSS transition, from where the finger left it). A section arriving from the check meanwhile is drawn once the
+   finger lifts (shopStale): redrawing removes the element the touch started on, and its moves would stop coming. */
+let shopDrag=false,shopStale=false;
+(()=>{const v=$('#shop-sheet'),bd=$('#shop-backdrop');if(!v)return;let st=null;
+  const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
+  const held=on=>{for(const el of [v,bd])if(el)el.style.transition=on?'none':''};
+  v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.shop-top-head');
+    st=!shopOpen||e.touches.length>1||e.target.closest('input,textarea')||(!head&&v.scrollTop>0)?null:{x:t.clientX,y:t.clientY,on:false,d:0,ly:t.clientY,lt:Date.now(),vy:0}},{passive:true});
+  v.addEventListener('touchmove',e=>{
+    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=shopDrag=true;held(true)}else{st=null;return}}   // downward: ours; anything else is a scroll
+    e.preventDefault();const now=Date.now();if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
+    st.d=Math.max(0,dy);put(st.d)},{passive:false});
+  const end=()=>{
+    if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;shopDrag=false;held(false);
+    if(d>v.offsetHeight*.25||(vy>.5&&d>30))closeShop();
+    put(0);if(shopStale){shopStale=false;if(shopOpen)renderShop()}};
+  v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true});
+})();
 
 /* run the analysis in the background; the sheet fills in section by section */
 function analyzeWardrobe(){
@@ -80,7 +104,7 @@ function shopCat(c){
     ${c.recs.some(x=>!shopHid(x))?c.recs.filter(x=>!shopHid(x)).map(x=>shopRec(x)).join(''):`<p class="shop-none"><small>No idea here would improve your outfits.</small></p>`}</section>`;
 }
 function renderShop(){
-  const el=$('#shop-sheet');if(!el)return;const y=el.scrollTop,r=shopPart||(shop&&shop.res),full=r&&!r.partial?r:null,stale=shop&&!shopBusy&&shop.sig!==shopSig();
+  const el=$('#shop-sheet');if(!el)return;if(shopDrag){shopStale=true;return}const y=el.scrollTop,r=shopPart||(shop&&shop.res),full=r&&!r.partial?r:null,stale=shop&&!shopBusy&&shop.sig!==shopSig();
   const b=full&&full.base,idle=b?b.idle.length:0;
   let body='';
   if(shopBusy)body+=`<div class="shop-busy"><span class="st-bar" id="shop-prog"><i style="width:${Math.round(100*(shopBusy.i+1)/shopBusy.n)}%"></i></span><small class="mut">${esc(shopBusyText())}</small></div>`;
