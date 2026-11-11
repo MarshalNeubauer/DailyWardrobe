@@ -51,6 +51,18 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.b.shirtA>4&&r.b.tinted>0&&r.b.white<1.5,`the shirt is pink, and the bit of cuff the smaller watch uncovers is tinted to it, not left white (${r.b.tinted} pixels tinted, ${r.b.white.toFixed(2)}% white)`);
     ok(r.onlyTie===1,'a piece that is left out stays as the master shows it');
     // ---- keys, what an outfit needs, and the picture from the kept photos ----
+    // as shipped, assembled pictures are switched off: no picture, nothing wanted, nothing asked of the worker, Settings hides Item photos
+    const off=await p.evaluate(async()=>{let n=0;const I=(type,primaryColor,x={})=>({id:'off'+type+(n++),type,primaryColor,pattern:'solid',...x});
+      const o={top:I('blazer','khaki'),shirt:I('shirt','black'),tie:I('tie','navy'),watch:I('watch','silver',{metal:'silver'}),suitDay:false};
+      renders[asmMasterKey()]={sig:asmMasterSig(o),img:'data:image/jpeg;base64,AAAA',model:'',t:5};renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OWN',model:'gpt',t:1};
+      asmOut[asmOutKey(o)]={img:'data:image/jpeg;base64,ASM',stamp:asmStamp(o),t:9};
+      const calls=[],f0=window.fetch;window.fetch=async(...a)=>{calls.push(String(a[0]));return new Response('{}',{status:404})};localStorage.setItem('worker_url','https://off.test/');localStorage.setItem('app_token','t');
+      const r={on:ASM_ON,wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img,pending:asmPending(o)};await asmEnsure(o);await asmSync(true);asmAutoSoon();openSettings('photos');renderAsmUI();
+      r.calls=calls.length;r.hidden=document.querySelector('#asm-group').hidden&&getComputedStyle(document.querySelector('#asm-group')).display==='none';r.timer=asmAutoTimer;
+      ASM_ON=true;r.forOn=(asmFor(o)||{}).img;renderAsmUI();r.shownOn=!document.querySelector('#asm-group').hidden;
+      window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[asmMasterKey()];delete renders[comboKey(o)];delete asmOut[asmOutKey(o)];closeSettings&&closeSettings();return r});
+    ok(off.on===false&&off.wants===false&&off.for===null&&off.shown==='data:image/jpeg;base64,OWN'&&off.pending===false&&off.calls===0&&off.hidden&&!off.timer,`assembled pictures are switched off: Today shows the outfit's own photo, nothing is asked of the worker or made for a new item, and Settings hides Item photos (${off.calls} requests)`);
+    ok(off.forOn==='data:image/jpeg;base64,ASM'&&off.shownOn,'switched on (ASM_ON), the assembled picture is shown again and Settings offers Item photos');
     const k=await p.evaluate(async()=>{const url=async n=>{const d=await asmData('tests/fixtures/asm-'+n+'.jpg'),c=document.createElement('canvas');c.width=c.height=d.width;c.getContext('2d').putImageData(d,0,0);return c.toDataURL('image/jpeg',.9)};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const watch=I('watch','silver',{metal:'silver'}),jk=I('blazer','khaki',{pattern:'windowpane'}),black=I('shirt','black'),black2=I('shirt','black'),white=I('shirt','white'),tie=I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),tie2=I('tie','burgundy'),clip=I('tieclip','silver',{metal:'silver'}),gold=I('watch','gold',{metal:'gold'});
@@ -177,7 +189,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const K=await a.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
           items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('shirt','lightblue'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('watch','black',{metal:'silver'}),
             I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-          settings.workdays=[0,1,2,3,4];settings.vestMode='never';dayRecs={};TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};ASM_AUTO_MS=60;   // today is the day shown: a stray "new day" check changes nothing
+          settings.workdays=[0,1,2,3,4];settings.vestMode='never';dayRecs={};TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};ASM_AUTO_MS=60;ASM_ON=true;   // today is the day shown: a stray "new day" check changes nothing
           const o=planFor()[key(sel)];return {can:asmCan(o),master:asmMasterKey(),sig:asmMasterSig({watch:o.watch,shirt:asmMasterItem('shirt','white')}),calib:['jacket','shirt','tie','watch'].map(asmCalibKey),
             jacket:asmPieceKey('jacket',o.top),shirt:asmPieceKey('shirt',o.shirt),tie:asmPieceKey('tie',o.tie),combo:comboKey(o)}});
         const keep=(k,f,sig='')=>store.set('render:'+k,JSON.stringify({sig,img:fx(f),model:'m',t:1000}));
