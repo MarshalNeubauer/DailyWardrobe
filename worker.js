@@ -357,12 +357,14 @@ const PDIR = { type: 'object', additionalProperties: false, required: ['bands'],
 /* a small figure repeated on a grid (a neat / foulard, mini squares, dots): the grid, the ground between the figures, and each
    figure's shape, place in the grid, colours (two alternate like a checkerboard) and size */
 const PCOL = { type: 'object', additionalProperties: false, required: ['name', 'hex'], properties: { name: { type: 'string' }, hex: { type: 'string' } } };
-const MOTIF_SHAPES = ['square', 'square-with-dot', 'diamond', 'dot', 'ring', 'cross', 'flower', 'other'];
-const PFIG = { type: 'object', additionalProperties: false, required: ['shape', 'placement', 'colours', 'centre', 'sizePct'],
+const MOTIF_SHAPES = ['square', 'square-with-dot', 'diamond', 'dot', 'ring', 'cross', 'flower', 'figure', 'other'];
+const PFIG = { type: 'object', additionalProperties: false, required: ['shape', 'placement', 'colours', 'centre', 'sizePct', 'bitmap', 'name'],
   properties: { shape: { type: 'string', enum: MOTIF_SHAPES }, placement: { type: 'string', enum: ['cell', 'corner', 'alternate-cells'] },
-    colours: { type: 'array', items: PCOL }, centre: { anyOf: [PCOL, { type: 'null' }] }, sizePct: { type: 'number' } } };
-const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid', 'ground', 'figures'],
-  properties: { grid: { type: 'string', enum: ['straight', 'diagonal'] }, ground: PCOL, figures: { type: 'array', items: PFIG } } };
+    colours: { type: 'array', items: PCOL }, centre: { anyOf: [PCOL, { type: 'null' }] }, sizePct: { type: 'number' },
+    bitmap: { anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }] }, name: { type: 'string' } } };
+const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid', 'ground', 'figures', 'cellAspect', 'rowOffset'],
+  properties: { grid: { type: 'string', enum: ['straight', 'diagonal'] }, ground: PCOL, figures: { type: 'array', items: PFIG },
+    cellAspect: { type: 'number' }, rowOffset: { type: 'string', enum: ['none', 'half'] } } };
 /* a weave texture (a dress shirt's dobby diamonds, herringbone, oxford): the cloth is one colour and the pattern is in how the
    threads float, so it is read as a small bitmap of one repeat (1 = reads raised / catches the light) */
 const TEXTURE_KINDS = ['diamond', 'herringbone', 'twill', 'oxford', 'royal-oxford', 'pinpoint', 'end-on-end', 'birdseye', 'honeycomb', 'dobby-dot', 'basket', 'other'];
@@ -384,9 +386,11 @@ pattern: seams and the pattern shift across them, folds, shadows, sheen, moire, 
 stripes made uneven by drape or by the camera's angle (report the regular spacing they were woven at).
 
 layout — stripes (lines one way), check, windowpane (thin lines both ways on a plain ground, large panes), plaid (several
-  colours both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds),
+  colours both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds, and
+  a shirt's figured dobby whose small figures are woven in a second, clearly different colour, e.g. grey chevrons on white),
   texture (the cloth is one colour, or nearly, and the pattern is in the weave itself: a dress shirt's dobby diamonds,
-  herringbone, twill, oxford, pinpoint, end-on-end, birdseye, honeycomb), or none.
+  herringbone, twill, oxford, pinpoint, end-on-end, birdseye, honeycomb), or none. When the figures stand out in their own
+  colour at a glance, it is a motif, not a texture.
 across — one full repeat of the main lines, measured across them (for vertical lines from left to right, for a tie's diagonal
   stripes across the stripes): every band in order, the ground included, each with role (ground or line), a plain colour name,
   an sRGB hex of how that thread looks in neutral daylight (a light blue line is light blue even where the photo greys it),
@@ -399,12 +403,20 @@ motif — for a motif only (null otherwise), as woven, one grid cell being one r
   ground: the colour that shows between the figures (a plain colour name and an sRGB hex as in "across");
   figures: each kind of figure, largest first, with
     shape: square, square-with-dot (a small square with a dot of another colour in its middle), diamond (a square on its point
-      in a straight grid), dot, ring, cross, flower, or other;
+      in a straight grid), dot, ring, cross, flower, figure (any other small shape: draw it in "bitmap"), or other;
+    bitmap: for shape figure, the figure alone as a small bitmap, top row first: each row a string of 1 and 0 of the same
+      length, 3 to 16 each way, 1 where the figure's colour is, 0 where the ground shows, with the figure's own proportions
+      (a downward chevron 5 wide and 4 tall: ["10001","11011","01110","00100"]); null for the other shapes;
+    name: what the figure is in a few words (e.g. "downward chevron", "small square with a dot");
     placement: cell (one in every grid cell), corner (one where four cells meet, between the cell figures), or alternate-cells
       (only in every other cell, like the dark squares of a checkerboard);
     colours: its colour, or two colours when neighbouring figures alternate like a checkerboard (purple and navy squares);
     centre: the dot's colour for square-with-dot (null otherwise);
     sizePct: the figure's width as a percentage of the grid spacing (cell figures that nearly touch: 80; a small accent: 30).
+  cellAspect: a grid cell's height divided by its width as the cloth hangs (figures stacked closer than the columns are
+    apart: under 1, e.g. 0.6; a square grid: 1);
+  rowOffset: half when every other row is shifted by half a cell (a brick or dropped layout), none when the figures line up
+    in straight columns.
   repeatsInCloseup and repeatsAcrossItem then count grid cells, measured along a row.
 texture — for a texture only (null otherwise), what the weave looks like up close (read it from the close-up):
   kind: diamond (a lattice of small diamonds), herringbone, twill (fine diagonal ribs), oxford, royal-oxford, pinpoint,
@@ -434,10 +446,17 @@ function cleanPattern(p) {
     const t = b.reduce((a, x) => a + x.w, 0); return b.length >= 2 && t > 0 ? { bands: b.map(x => ({ ...x, w: +(x.w / t).toFixed(4) })) } : null; };
   const num = (v, lo, hi, d) => Math.max(lo, Math.min(hi, +v || d));
   const col = c => c && hex(c.hex) ? { name: txt(c.name, 30), hex: hex(c.hex) } : null;
+  /* a figure's bitmap: rows of 1/0 (also #/. and x/-), the same length, 3-16 each way, with some of the figure in it */
+  const bitmap = b => { if (!Array.isArray(b)) return null;
+    const rows = b.slice(0, 16).map(r => String(r).replace(/[^01#.xX-]/g, '').replace(/[#xX]/g, '1').replace(/[.-]/g, '0').slice(0, 16)).filter(Boolean);
+    const w = Math.max(0, ...rows.map(r => r.length)), g = rows.map(r => r.padEnd(w, '0'));
+    return g.length >= 2 && w >= 2 && g.join('').includes('1') ? g : null; };
   const motif = m => { if (!m || !col(m.ground) || !Array.isArray(m.figures)) return null;
-    const f = m.figures.slice(0, 3).map(x => ({ shape: MOTIF_SHAPES.includes(x.shape) ? x.shape : 'other', placement: ['cell', 'corner', 'alternate-cells'].includes(x.placement) ? x.placement : 'cell',
-      colours: (x.colours || []).map(col).filter(Boolean).slice(0, 2), centre: x.shape === 'square-with-dot' ? col(x.centre) : null, size: num(x.sizePct, 5, 100, 50) / 100 })).filter(x => x.colours.length);
-    return f.length ? { grid: m.grid === 'diagonal' ? 'diagonal' : 'straight', ground: col(m.ground), figures: f } : null; };
+    const f = m.figures.slice(0, 3).map(x => { const bm = x.shape === 'figure' ? bitmap(x.bitmap) : null;
+      return { shape: MOTIF_SHAPES.includes(x.shape) && (x.shape !== 'figure' || bm) ? x.shape : 'other', placement: ['cell', 'corner', 'alternate-cells'].includes(x.placement) ? x.placement : 'cell',
+        colours: (x.colours || []).map(col).filter(Boolean).slice(0, 2), centre: x.shape === 'square-with-dot' ? col(x.centre) : null, size: num(x.sizePct, 5, 100, 50) / 100,
+        ...(bm ? { bitmap: bm } : {}), name: txt(x.name, 40) }; }).filter(x => x.colours.length);
+    return f.length ? { grid: m.grid === 'diagonal' ? 'diagonal' : 'straight', ground: col(m.ground), figures: f, cellAspect: num(m.cellAspect, .25, 4, 1), rowOffset: m.rowOffset === 'half' ? 'half' : 'none' } : null; };
   /* the texture's bitmap: rows of 1/0 (also #/. and x/-), the same length, 2-24 each way, with both tones in it */
   const texture = t => { if (!t || !Array.isArray(t.grid) || !col(t.ground)) return null;
     const rows = t.grid.slice(0, 24).map(r => String(r).replace(/[^01#.xX-]/g, '').replace(/[#xX]/g, '1').replace(/[.-]/g, '0').slice(0, 24)).filter(Boolean);
