@@ -338,11 +338,12 @@ function patternDiagram(i,role){const fab=i.sett&&i.sett.tex?{def:id=>fabricDef(
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${vb}"><defs>${fab.def('pd',0)}</defs><rect x="-10" y="-10" width="400" height="400" fill="#ececea"/>${shape}</svg>`;
   return new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(im,0,0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>ok(null);
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
-/* the references with the pattern drawings put in after their item's photos (at most 8 in all) */
+/* the references with the pattern drawings put in after their item's photos; a tie sent without its photo (outfitRefs) has its
+   drawing right before its close-up (at most 8 in all) */
 /* every drawing is added; trimRefs keeps the 8 that matter most */
 async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie','tie','the tie'],['top','top',o.suitDay?'the suit':'the blazer'],['shirt','shirt','the shirt'],...(o.top?[]:[['bot','bot','the trousers']])];
   for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||(i.sett.tex&&s!=='shirt'))continue;const img=await patternDiagram(i,role);if(!img)continue;
-    let at=labels.findIndex(l=>l.startsWith(name));at=at<0?refs.length:at+1;
+    let at=labels.findIndex(l=>l.startsWith(name));at=at>=0?at+1:role==='tie'?labels.findIndex(l=>l.startsWith('a close-up of the tie fabric')):-1;if(at<0)at=refs.length;
     refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
   const wk=labels.findIndex(l=>l.startsWith('the wristwatch'));   // the watch is small in the picture: its dial enlarged is a second reference
   if(wk>=0){const d=await dialCrop(refs[wk]),t=await halfTurn(refs[wk]);
@@ -360,12 +361,13 @@ const halfTurn=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const c=d
 const DIAL_PART=.48,dialLabel=w=>`an enlargement of the same wristwatch's dial (${w&&w.dial?'a '+colName(w.dial)+' dial':'its dial'}${w&&w.watchStyle==='chronograph'?' with its subdials':''}: copy its layout, hands and markings)`;
 const dialCrop=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height)*DIAL_PART,c=document.createElement('canvas');c.width=c.height=640;
   c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,640,640);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
-/* the worker takes 8 references: when there are more, the least needed go first (the shirt's close-up, then the watch dial's enlargement, then the shirt's texture drawing: the
-   drawing is in the tagged colour with the weave readable, while a close-up shot in dim light reads grey and the generator is told to
-   match its colour; then
-   the other drawings and close-ups), never an item's own photo. Cutting the list at 8 dropped the watch, which comes last, once the
-   pattern drawings were added, and the generator drew a generic one. */
-function refRank(l){return /^a close-up of the shirt/.test(l)?0:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:/^an enlargement/.test(l)?.5:9}
+/* the worker takes 8 references: when there are more, the least needed go first (the watch dial's enlargement, then the shirt's
+   close-up, then the shirt's texture drawing, then the other drawings and close-ups), never an item's own photo. Cutting the
+   list at 8 dropped the watch, which comes last, once the pattern drawings were added, and the generator drew a generic one.
+   The shirt's close-up used to go first (shot in dim light it reads grey, and the generator is told to match its colour); the
+   owner asked for it to be sent, in the place of the tie's photo (outfitRefs). With that photo gone at most one reference is
+   over, so only the enlargement ever goes: in a fully patterned outfit, where it was dropped before too. */
+function refRank(l){return /^an enlargement/.test(l)?0:/^a close-up of the shirt/.test(l)?.5:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
 function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
   while(keep.length>max){let worst=0;for(let n=1;n<keep.length;n++)if(refRank(labels[keep[n]])<refRank(labels[keep[worst]]))worst=n;keep.splice(worst,1)}
   return {refs:keep.map(k=>refs[k]),labels:keep.map(k=>labels[k])}}

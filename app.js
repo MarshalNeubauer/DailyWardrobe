@@ -928,11 +928,13 @@ function figurePng(o,w=780){
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
 /* generate and keep the photo for one outfit; throws with a readable message */
 /* reference photos for an outfit photo, each labelled: the jacket and tie photos, and the watch's own photo or its product
-   picture (no shirt photo: an outfit photo is shared by every shirt of that colour) */
+   picture (no shirt photo: an outfit photo is shared by every shirt of that colour). A tie with a close-up goes without its
+   photo (the owner's choice after a trial: the close-up and the pattern drawing carry the tie, and its place goes to the
+   shirt's close-up); a tie without one keeps its photo, its only picture */
 function outfitRefs(o){const refs=[],labels=[];const add=(img,l)=>{if(img){refs.push(img);labels.push(l)}};
   const tex=(i,what)=>add(i&&i.texture,`a close-up of the ${what} fabric (match its exact colour and weave)`);   // a fabric close-up, when the item has one
   const top=o.suitDay?'suit':'blazer';add(o.top&&o.top.photo,'the '+top);tex(o.top,top);
-  if(!o.top){add(o.bot&&o.bot.photo,'the trousers');tex(o.bot,'trouser')}tex(o.shirt,'shirt');add(o.tie&&o.tie.photo,'the tie');tex(o.tie,'tie');
+  if(!o.top){add(o.bot&&o.bot.photo,'the trousers');tex(o.bot,'trouser')}tex(o.shirt,'shirt');if(!(o.tie&&o.tie.texture))add(o.tie&&o.tie.photo,'the tie');tex(o.tie,'tie');
   if(o.watch)add((itemPic(o.watch)||{}).img||o.watch.photo,'the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)');
   return {refs,labels}}
 async function renderCombo(o){
