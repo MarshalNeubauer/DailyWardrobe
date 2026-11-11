@@ -63,6 +63,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     let cx=null;const f0=globalThis.fetch;globalThis.fetch=async(h,i)=>{cx=i.body.get('complexity');return f0(h,i)};
     await rm({model:'gpt-image-2.6-sunburst',complexity:'medium'});const m1=sent.model,c1=cx;await rm({model:'dall-e-3; drop',complexity:'huge'});const m2=sent.model,c2=cx;globalThis.fetch=f0;
     ok(m1==='gpt-image-2.6-sunburst'&&c1==='medium'&&m2==='gpt-image-x'&&c2===null,`a request can name a GPT Image model and a complexity; anything else falls back to the worker's model (${m1}/${c1}, ${m2}/${c2})`);
+    // a one-piece edit of a kept photo (the tie only): the photo first, a mask, the swap prompt; the answer carries OpenAI's token counts
+    let sw=null;globalThis.fetch=async(h,i)=>{const f=i.body;sw={prompt:f.get('prompt'),n:f.getAll('image[]').length,first:f.getAll('image[]')[0].type,mask:f.get('mask'),markup:f.get('markup')};return f0(h,i)};
+    reply=()=>[200,{data:[{b64_json:JPG}],usage:{input_tokens:900,output_tokens:1400,total_tokens:2300}}];
+    const sr=await rm({image:PHOTO,swap:{what:'tie',text:'a burgundy woven tie'},mask:PNG1,markup:PNG1,refs:[PHOTO],labels:['the tie']}),sj=await sr.json();
+    ok(sw.first==='image/jpeg'&&sw.n===2&&sw.mask&&sw.mask.type==='image/png'&&!sw.markup&&/^Edit the first image/.test(sw.prompt)&&/Replace only the tie with: a burgundy woven tie\. The images after the first show the new tie, in this order: the tie\./.test(sw.prompt)&&/must stay exactly as it is/.test(sw.prompt),
+      'a swap request edits the kept photo: the photo first, then the new piece, the mask (not also a markup layer) and a prompt that replaces only that piece');
+    ok(sj.usage&&sj.usage.input_tokens===900&&sj.usage.output_tokens===1400&&/^data:image\/jpeg/.test(sj.image),'the answer carries OpenAI\'s token counts');
+    await rm({image:PHOTO,swap:{what:'tie',text:'a burgundy woven tie'},markup:PNG1});const mk=sw.markup&&!sw.mask;
+    await rm({image:PNG1,outfit:'a navy suit',mask:PNG1});
+    ok(mk&&!sw.mask&&/^Turn the first image/.test(sw.prompt),'without a mask the markup layer is sent; a mask without a swap is ignored (a normal photo)');
+    globalThis.fetch=f0;
     const res=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}),env);
     ok(res.status===403,'/render needs the app token');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

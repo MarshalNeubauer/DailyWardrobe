@@ -532,6 +532,12 @@ He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
 Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
 Soft natural daylight, softly blurred bright office background, 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
+/* a one-piece edit of a kept photo (a test path: is changing only the tie cheaper than a whole new photo?): body.image is the
+   photo, body.swap {what, text} the piece and its description, refs its photos, body.mask (or body.markup) where it is */
+const SWAP_PROMPT = (what, text) => `Edit the first image (a photograph of a man's torso). Replace only the ${what} with: ${text}{REFS}.
+The new ${what} takes the place of the old one: same position, size, knot, drape and lighting, lying under the hand and the tie bar where they cover it.
+Everything else must stay exactly as it is in the first image: the jacket and its pattern, the shirt and collar, the tie bar, the wristwatch, both hands, the pose, the background, the light and the framing.
+No added text, captions or watermark.`;
 function dataUrlToBlob(u) {
   const m = String(u || '').match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/s);
   if (!m) return null;
@@ -553,7 +559,7 @@ async function handleRender(req, env, json) {
   // keep a copy per outfit combination so it is reused on any day and shown on every device (GET /render?key=...)
   const id = renderId(body);
   if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(r.rec), renderTtl(id));
-  return json({ image: r.rec.img, model: r.rec.model });
+  return json({ image: r.rec.img, model: r.rec.model, usage: r.usage });   // usage: OpenAI's token counts for this photo
 }
 /* one realistic outfit photo from the app's inputs (the rasterised illustration, item photos, outfit text) via OpenAI's image edit;
    -> {ok, rec} or {ok:false, status, error, retry} (retry: worth trying again later: network, rate limit, OpenAI server error) */
@@ -573,8 +579,14 @@ async function outfitPhoto(body, env) {
   const refText = !refs.length ? '' : labels.length === refs.length
     ? `. The photos after the illustration show the actual items, in this order: ${labels.join('; ')}. Match each one exactly`
     : ', and match the photos of the actual items that follow it';
-  form.append('prompt', RENDER_PROMPT(outfit, !!body.nojacket).replace('{REFS}', refText));
-  form.append('image[]', base, 'outfit.png');
+  const swap = body.swap && /^[a-z ]{2,30}$/.test(String(body.swap.what || '')) ? { what: body.swap.what, text: String(body.swap.text || '').replace(/[{}`]/g, '').slice(0, 1500) || `another ${body.swap.what}` } : null;
+  const swapRefs = !refs.length ? '' : `. The images after the first show the new ${swap && swap.what}${labels.length === refs.length ? `, in this order: ${labels.join('; ')}` : ''}. Match it exactly`;
+  form.append('prompt', swap ? SWAP_PROMPT(swap.what, swap.text).replace('{REFS}', swapRefs) : RENDER_PROMPT(outfit, !!body.nojacket).replace('{REFS}', refText));
+  form.append('image[]', base, `outfit.${base.type.split('/')[1]}`);
+  // where to edit: a mask (PNG with an alpha channel, the first image's size) or, for GPT Image 2.5 and later, a markup layer (not both)
+  const mask = swap && dataUrlToBlob(body.mask), markup = swap && !mask && dataUrlToBlob(body.markup);
+  if (mask) form.append('mask', mask, 'mask.png');
+  if (markup) form.append('markup', markup, 'markup.png');
   refs.forEach((b, i) => form.append('image[]', b, `item-${i + 1}.${b.type.split('/')[1]}`));
   form.append('size', '1024x1024');
   form.append('quality', QUALITIES.includes(body.quality) ? body.quality : env.OPENAI_IMAGE_QUALITY || 'medium');
@@ -595,7 +607,7 @@ async function outfitPhoto(body, env) {
   const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
   if (!b64) return { ok: false, status: 502, retry: true, error: 'OpenAI returned no image' };
   console.log(`rendered by ${model}; usage ${JSON.stringify(out.usage || {})}`);
-  return { ok: true, rec: { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() } };
+  return { ok: true, usage: out.usage || null, rec: { sig: String(body.sig || ''), img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() } };
 }
 /* ---- background photos: the app uploads each outfit's inputs once (POST /render {mode:'queue'}); they wait in KV as job:<key>
    and a Cloudflare Queue message ({key}) makes the photo later, so the app can be closed. GET /render-queue reports progress. ---- */
