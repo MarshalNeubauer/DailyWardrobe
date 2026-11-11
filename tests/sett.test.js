@@ -135,6 +135,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(wp.j&&wp.j.blueBand&&wp.j.blueCross&&Math.abs(wp.j.cr-8.84)<.5&&wp.j.a===0,`… and from the whole jacket, where the lines are a pixel or two wide (${JSON.stringify(wp.j)})`);
     ok(wp.both&&wp.both.src==='photo+closeup'&&wp.both.blue&&wp.both.tr===9,'with both, the close-up\'s bands and the jacket\'s scale are used');
     ok(wp.noRef&&wp.both.ground.chroma>.85&&wp.both.ground.hue<6,`a khaki close-up's own light slubs are not taken for a white reference, so the khaki keeps its colour (${Math.round(wp.both.ground.chroma*100)}% of its chroma, hue within ${wp.both.ground.hue.toFixed(1)}°)`);
+    // the user's own khaki linen windowpane blazer (its synced photo and close-up): the close-up's lines wave with the drape and
+    // its panes run 135-175px, which defeated matching the repeat; the lines are found one by one in strips instead
+    const real=await p.evaluate(async()=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
+      const ph=await ld('tests/fixtures/blazer-windowpane.jpg'),tx=await ld('tests/fixtures/blazer-windowpane-closeup.jpg');
+      const s=settFrom({full:ph,box:{x:220,y:420,w:180,h:280},tex:tx,type:'blazer',weave:{repeatsAcross:9}}),L=h=>rgbLab(...hexRgb(h));
+      const ground=s.bands.reduce((x,y)=>y[1]>x[1]?y:x),line=s.bands.filter(b=>b!==ground).map(b=>L(b[0])).sort((a,b)=>a[2]-b[2])[0];
+      return {src:s.src,cr:s.cr,tr:s.tr,ground:L(ground[0]),line,cross:!!s.cross&&s.cross.bands.some(b=>b[0])}});
+    ok(real.src==='photo+closeup'&&Math.abs(real.cr-3.5)<.6&&real.tr===9,`the real blazer: the close-up's lines are found (${real.cr} panes across it) and used, the jacket at 9 panes across`);
+    ok(real.ground[2]>10&&real.ground[0]>60&&real.line&&real.ground[2]-real.line[2]>5&&real.cross,`… a khaki ground (L* ${real.ground[0].toFixed(0)}, b* ${real.ground[2].toFixed(0)}, set to the jacket photo's exposure) with bluer lines both ways (b* ${real.line&&real.line[2].toFixed(0)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

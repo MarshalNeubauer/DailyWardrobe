@@ -190,9 +190,9 @@ function settBands(labs,minShare){
     if(bands.every((b,i)=>i<n||dE00(b.lab,bands[i%n].lab)<6&&Math.abs(b.w-bands[i%n].w)<=Math.max(2,bands[i%n].w*.25))){bands=bands.slice(0,n).map((b,i)=>({lab:b.lab,w:bands.filter((_,j)=>j%n===i).reduce((s,x)=>s+x.w,0),steps:b.steps}));break}}
   // a narrow band (a pinstripe, a pinline) is blurred into its neighbours by the camera: its colour is its strongest step
   // (the one furthest from the colour around it) and its width the steps at half that contrast or more
-  if(bands.length>=2)bands=bands.map((b,i)=>{if(b.steps.length>6||b.w/bands.reduce((s,x)=>s+x.w,0)>.2)return b;
+  if(bands.length>=2)bands=bands.map((b,i)=>{if(b.w/bands.reduce((s,x)=>s+x.w,0)>.2)return b;
     const nb2=[bands[(i+bands.length-1)%bands.length],bands[(i+1)%bands.length]],ground=nb2[0].w>=nb2[1].w?nb2[0].lab:nb2[1].lab;
-    const con=b.steps.map(st=>dE00(st,ground)),pk=Math.max(...con),k=con.indexOf(pk);if(pk<8)return b;
+    const con=b.steps.map(st=>dE00(st,ground)),pk=Math.max(...con),k=con.indexOf(pk);if(pk<5)return b;   // (a blue line on khaki linen is about 7)
     return {lab:b.steps[k],w:Math.max(1,con.filter(c=>c>=pk*.5).length),steps:b.steps}});
   const tot=bands.reduce((s,b)=>s+b.w,0);return bands.map(b=>({lab:b.lab,w:b.w/tot}))}
 /* the sett of a rectangle of a canvas (sx, sy, sw, sh in its pixels). The directions are found on a 320px copy; the bands and
@@ -225,31 +225,48 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
     return {Q,f0,rp:detrend(rp,Math.max(9,Math.round(rp.length*.2)))}};
   const colourVar=(G,rs,d)=>{const v=rs.map(r=>variance(resProj(G,r,d).rp));return v[0]+.5*(v[1]+v[2])};
   let ca=0,cv=-1;for(let d=30;d<=150;d+=2){const v=colourVar(g0,r0,d);if(v>cv){cv=v;ca=d}}
-  // the sharp copy: profile, repeat, bands
-  const G=labGrid(src,sx,sy,sw,sh,Math.max(320,Math.min(900,Math.round(Math.max(sw,sh))))),{W,H}=G,n=W*H;
-  const P=projIdx(W,H,th),pl=projAvg(G.L,P),pa=projAvg(G.A,P),pb=projAvg(G.B,P),ok=keepOf(pl.cnt,G),first=ok.indexOf(true),last=ok.lastIndexOf(true);
-  const cut=a=>a.slice(first,last+1),prof={L:cut(pl.avg),A:cut(pa.avg),B:cut(pb.avg)};
-  // the repeat, in colour, with and without the profile's slow drift (light falling off across a photo can look like a short
-  // repeat; it wins only when it is clearly the better match: a long irregular sequence (a plaid tie with no full repeat in view)
-  // can show a false one once its drift is taken out. The bands themselves are measured on the untouched pixels.
-  const dt=v=>detrend(v,Math.max(9,Math.round(v.length*.35))),minLag=Math.max(8,Math.round(prof.L.length*.02));   // not the weave's own texture
-  const pRaw=periodCh([prof.L,prof.A,prof.B],[1,.7,.7],minLag),pDt=periodCh([dt(prof.L),dt(prof.A),dt(prof.B)],[1,.7,.7],minLag);
-  // both candidates are scored on the drift-free profile (the drift itself makes any short lag look alike)
-  const D3=[dt(prof.L),dt(prof.A),dt(prof.B)],score=pp=>pp?corrAt(D3,[1,.7,.7],Math.round(pp.T)):-1;
+  // the sharp copy, read in strips running along the lines: a draped cloth's lines wave, so one straight projection across the
+  // whole picture smears them into nothing (a linen windowpane close-up showed no repeat at all). Within a strip a line is nearly
+  // straight; the repeat is found from all the strips together, and each strip is shifted to line up with the others.
+  const G=labGrid(src,sx,sy,sw,sh,Math.max(320,Math.min(900,Math.round(Math.max(sw,sh))))),{W,H}=G,n=W*H,K=8,w3=[1,.7,.7];
+  const SP=stripProfiles(G,[G.L,G.A,G.B],th,K),first=SP.first,len=SP.len,prof={L:SP.whole[0],A:SP.whole[1],B:SP.whole[2]};
+  // the repeat, in colour, with and without the slow drift (light falling off across a photo can look like a short repeat); the
+  // drift-free one wins only when it is clearly the better match, both being scored on the drift-free strips (the drift itself
+  // makes any short lag look alike); without a plain repeat it counts only above 0.75 (a plaid tie with no full repeat in view)
+  const dt=v=>detrend(v,Math.max(9,Math.round(v.length*.35))),minLag=Math.max(8,Math.round(len*.02));   // not the weave's own texture
+  const allC=SP.strips.flat(),allW=SP.strips.flatMap(()=>w3),D3=allC.map(dt);
+  const pRaw=periodCh(allC,allW,minLag),pDt=periodCh(D3,allW,minLag),score=pp=>pp?corrAt(D3,allW,Math.round(pp.T)):-1;
   const pd=pRaw?(pDt&&score(pDt)>score(pRaw)?pDt:pRaw):(pDt&&pDt.corr>.75?pDt:null);
-  const T=pd&&pd.T<prof.L.length*.8?pd.T:prof.L.length;   // no repeat inside the picture: what is seen counts as one repeat
+  const T0=pd&&pd.T<len*.8?pd.T:len;   // no repeat inside the picture: what is seen counts as one repeat
+  let T=T0;const shift=stripShifts(SP.strips.map(st=>st.map(dt)),w3,Math.min(Math.floor(T/2),Math.round(len*.08)));
+  // where matching the repeat is weak, sparse lines found one by one (lineModel) set the repeat instead
+  const LM=(!pd||pd.corr<.6)?lineModel(SP.strips,Math.max(8,Math.round(len*.04))):null;if(LM)T=LM.T;
+  const tAdj=new Float32Array(n);for(let i=0;i<n;i++){const pi=SP.P.idx[i],t=pi-first;tAdj[i]=t<0||t>=len||!SP.ok[pi]?-1:LM?LM.off(SP.grp[i],t):t+shift[SP.grp[i]]}
+  // a line's peak can land on its core or on a lighter edge strip by strip: each strip's folded repeat is nudged (a few steps)
+  // to match the most distinct one, so the line comes out sharp
+  if(LM){const Mf=Math.max(24,Math.min(400,Math.round(T))),f=Array.from({length:K},()=>[0,1,2].map(()=>new Float64Array(Mf))),fc=Array.from({length:K},()=>new Float64Array(Mf));
+    for(let i=0;i<n;i++){if(tAdj[i]<0)continue;const g=SP.grp[i],q=Math.floor(tAdj[i]/T*Mf)%Mf;f[g][0][q]+=G.L[i];f[g][1][q]+=G.A[i];f[g][2][q]+=G.B[i];fc[g][q]++}
+    const folds=f.map((ch,g)=>ch.map(a=>{const v=[...a].map((x,q)=>fc[g][q]?x/fc[g][q]:NaN),m=v.filter(x=>!isNaN(x)),mm=m.reduce((a,b)=>a+b,0)/(m.length||1);return v.map(x=>isNaN(x)?mm:x)}));
+    // circular: three copies so a shift wraps round
+    const nudge=stripShifts(folds.map(ch=>ch.map(a=>[...a,...a,...a])),w3,Math.max(2,Math.round(Mf*.06)));
+    for(let i=0;i<n;i++)if(tAdj[i]>=0)tAdj[i]=((tAdj[i]+nudge[SP.grp[i]]*T/Mf)%T+T)%T}
+  // each pixel's band (the median of its step in the lined-up repeat), so what is left over is the crossing lines
+  const F0=foldBins(G,tAdj,T,null),M0=F0.labs.length,_dbg=self.SETT_DEBUG&&console.log('fold b*',F0.labs.map(l=>l?Math.round(l[2]):'-').join(','),' L',F0.labs.map(l=>l?Math.round(l[0]):'-').join(',')),binOf=t=>Math.floor((((t%T)+T)%T)/T*M0)%M0;
   const cvMain=variance(prof.L)+.5*(variance(prof.A)+variance(prof.B));let cross=null,inLine=null;
-  if(self.SETT_DEBUG)console.log('sett',JSON.stringify({W,H,coh:+coh.toFixed(2),bv:+bv.toFixed(2),th:Math.round(th*180/Math.PI),T:+T.toFixed(1),len:prof.L.length,cv:+cv.toFixed(2),ca,cvMain:+cvMain.toFixed(1)}));
+  if(self.SETT_DEBUG)console.log('sett',JSON.stringify({W,H,coh:+coh.toFixed(2),bv:+bv.toFixed(2),th:Math.round(th*180/Math.PI),T:+T.toFixed(1),lines:LM&&{T:LM.T,cv:+LM.cv.toFixed(2),n:LM.pk.map(p=>p.length)},len,cv:+cv.toFixed(2),ca,cvMain:+cvMain.toFixed(1),shift}));
   if(cv>Math.max(1,cvMain*.005)){   // lines of about 1 unit of colour or more stand out, whatever the main stripes do
-    const rs=[new Float32Array(n),new Float32Array(n),new Float32Array(n)];for(let i=0;i<n;i++){const pi=P.idx[i];rs[0][i]=G.L[i]-pl.avg[pi];rs[1][i]=G.A[i]-pa.avg[pi];rs[2][i]=G.B[i]-pb.avg[pi]}
-    const pr=rs.map(r=>resProj(G,r,ca)),{Q,f0}=pr[0],rp=pr[0].rp,rA=pr[1].rp,rB=pr[2].rp;
-    const cp=periodCh([rp,rA,rB],[1,.7,.7],Math.max(8,Math.round(rp.length*.04))),   // crossing lines are never as close as the weave's texture
-      Tc=cp&&cp.T<rp.length*.8?cp.T:rp.length;
-    // one repeat of the residual, in colour and smoothed: where it stands out are the lines. Each step's kind is its strongest
-    // direction of change (lighter, darker, bluer, yellower, redder, greener), so neighbouring lines of different colours stay apart
-    const M=Math.max(24,Math.min(400,Math.round(Tc))),fold=[0,1,2].map(()=>new Float64Array(M)),fc=new Float64Array(M);
-    rp.forEach((v,i)=>{const q=Math.floor(((i%Tc)/Tc)*M)%M;fold[0][q]+=v;fold[1][q]+=rA[i];fold[2][q]+=rB[i];fc[q]++});
-    const sm=f=>{const v=[...f].map((x,q)=>x/(fc[q]||1));return v.map((_,q)=>(v[(q+M-1)%M]+2*v[q]+v[(q+1)%M])/4)},fl=fold.map(sm);
+    const rs=[new Float32Array(n),new Float32Array(n),new Float32Array(n)];
+    for(let i=0;i<n;i++){const lab=tAdj[i]<0?[G.L[i],G.A[i],G.B[i]]:F0.labs[binOf(tAdj[i])];rs[0][i]=G.L[i]-lab[0];rs[1][i]=G.A[i]-lab[1];rs[2][i]=G.B[i]-lab[2]}
+    const cang=th+ca*Math.PI/180,SC=stripProfiles(G,rs,cang,K),lenC=SC.len,DC=SC.strips.map(st=>st.map(v=>detrend(v,Math.max(9,Math.round(v.length*.2)))));
+    const cp=periodCh(DC.flat(),DC.flatMap(()=>w3),Math.max(8,Math.round(lenC*.04))),   // crossing lines are never as close as the weave's texture
+      LC=(!cp||cp.corr<.6)?lineModel(DC,Math.max(8,Math.round(lenC*.04))):null,
+      Tc=LC?LC.T:cp&&cp.T<lenC*.8?cp.T:lenC,shC=stripShifts(DC,w3,Math.min(Math.floor(Tc/2),Math.round(lenC*.08)));
+    const tc=new Float32Array(n);for(let i=0;i<n;i++){const pi=SC.P.idx[i],t=pi-SC.first;tc[i]=t<0||t>=lenC||!SC.ok[pi]?-1:LC?LC.off(SC.grp[i],t):t+shC[SC.grp[i]]}
+    // one repeat of the residual, lined up, in colour and smoothed: where it stands out are the lines. Each step's kind is its
+    // strongest direction of change (lighter, darker, bluer, yellower, redder, greener), so neighbouring lines stay apart
+    const M=Math.max(24,Math.min(400,Math.round(Tc))),fold=[0,1,2].map(()=>new Float64Array(M)),fc=new Float64Array(M),qOf=t=>Math.floor((((t%Tc)+Tc)%Tc)/Tc*M)%M;
+    for(let i=0;i<n;i++){if(tc[i]<0)continue;const q=qOf(tc[i]);fold[0][q]+=rs[0][i];fold[1][q]+=rs[1][i];fold[2][q]+=rs[2][i];fc[q]++}
+    const sm=f=>{const v=[...f].map((x,q)=>x/(fc[q]||1)),mv=v.reduce((a,b)=>a+b,0)/M;return v.map((_,q)=>(v[(q+M-1)%M]+2*v[q]+v[(q+1)%M])/4-mv)},fl=fold.map(sm);
     const mag=fl[0].map((v,q)=>Math.hypot(v,.85*fl[1][q],.85*fl[2][q])),mm=mag.reduce((a,b)=>a+b,0)/M,msd=Math.sqrt(variance(mag));
     const thr=Math.min(mm+1.1*msd,.6*Math.max(...mag));   // (a gingham's even square wave is all lines: .6 of the peak)
     const kindOf=q=>{const c=[fl[0][q],.85*fl[1][q],.85*fl[2][q]];let k=0;for(let j=1;j<3;j++)if(Math.abs(c[j])>Math.abs(c[k]))k=j;return (k+1)*Math.sign(c[k])};
@@ -265,10 +282,10 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
     const lineW=runs.filter(r=>r.l).reduce((a,r)=>a+r.w,0),kinds={};for(const r of runs)if(r.l)kinds[r.l]=(kinds[r.l]||0)+r.w;
     const keepKind=lineW>.6*M?+Object.entries(kinds).sort((a,b)=>b[1]-a[1])[0][0]:null;
     inLine=new Uint8Array(n);
-    for(let i=0;i<n;i++){const t=Q.idx[i]-f0;if(t<0||t>=rp.length)continue;const q=Math.floor(((t%Tc)/Tc)*M)%M,ru=runs[rid[q]];if(!ru||!ru.l)continue;
+    for(let i=0;i<n;i++){if(tc[i]<0)continue;const ru=runs[rid[qOf(tc[i])]];if(!ru||!ru.l)continue;
       if(ru.l!==keepKind)inLine[i]=1;
       if(rs[0][i]*ru.v[0]+rs[1][i]*ru.v[1]+rs[2][i]*ru.v[2]<=0)continue;   // this pixel leans the line's way
-      const pi=P.idx[i];ru.s[0]+=2*G.L[i]-pl.avg[pi];ru.s[1]+=2*G.A[i]-pa.avg[pi];ru.s[2]+=2*G.B[i]-pb.avg[pi];ru.s[3]++}
+      const b=[G.L[i]-rs[0][i],G.A[i]-rs[1][i],G.B[i]-rs[2][i]];ru.s[0]+=2*G.L[i]-b[0];ru.s[1]+=2*G.A[i]-b[1];ru.s[2]+=2*G.B[i]-b[2];ru.s[3]++}
     const labOfRun=ru=>{if(!ru.s[3])return null;const a=ru.s[1]/ru.s[3],b=ru.s[2]/ru.s[3],C=Math.hypot(a,b),k=C>70?70/C:1;   // capped: a cloth is not neon
       return [Math.max(0,Math.min(100,ru.s[0]/ru.s[3])),a*k,b*k]};
     // threads that look alike share one colour (so the drawing isn't speckled with near-identical shades)
@@ -276,13 +293,61 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
     for(const c of cols)c.hex=labHex(c.sum.map(v=>v/c.n));
     const out=[];for(const ru of runs){const h=ru.l&&ru.c?ru.c.hex:null;if(out.length&&out[out.length-1][0]===h)out[out.length-1][1]+=ru.w;else out.push([h,ru.w])}
     if(out.some(x=>x[0]))cross={d:ca,bands:out.map(([c,w])=>[c,+(w/M).toFixed(3)]),r:+Math.max(.2,Math.min(5,Tc/T)).toFixed(2)};else inLine=null;
-    if(self.SETT_DEBUG)console.log('cross',JSON.stringify({Tc:+Tc.toFixed(1),len:rp.length,thr:+thr.toFixed(2),runs:runs.length,cols:cols.map(c=>c.hex)}));
+    if(self.SETT_DEBUG)console.log('cross',JSON.stringify({Tc:+Tc.toFixed(1),lines:!!LC,len:lenC,thr:+thr.toFixed(2),runs:runs.length,cols:cols.map(c=>c.hex),shC}));
   }
-  // the bands: per-step medians, leaving out the pixels under crossing lines (a gingham's white stays white)
-  const bands=settBands(foldMedian(G,P,first,prof.L.length,ok,T,inLine),.008);if(bands.length<2)return null;
+  // the bands: per-step medians of the lined-up repeat, leaving out the pixels under crossing lines (a gingham's white stays white)
+  const bands=settBands(foldBins(G,tAdj,T,inLine).labs.filter(Boolean),.008);if(bands.length<2)return null;
   // start the repeat at its widest band, so the drawing and the description agree on where it begins
   let si=0;bands.forEach((b,i)=>{if(b.w>bands[si].w)si=i});const ord=bands.slice(si).concat(bands.slice(0,si));
   return {v:2,a:Math.round(th*180/Math.PI),bands:ord.map(b=>[labHex(b.lab),+b.w.toFixed(3)]),cross,cr:+Math.max(.3,Math.min(60,Math.min(W,H)/T)).toFixed(2)}}
+/* sparse lines (a windowpane, a pinstripe): each line found on its own in every strip. A draped cloth spaces its lines a little
+   unevenly (a linen windowpane's panes ran 165 +- 15 px), which defeats matching the whole repeat; lining every pixel up on its
+   own nearest line does not care. Lines are where the colour stands out from its surroundings (a moving average), at least
+   minSep apart, and found in at least three of the strips; the model holds when there are two or more per strip and their gaps
+   vary by under 25%. */
+function linePeaks(chs,minSep){const n=chs[0].length,w=Math.max(9,Math.round(n*.12)),base=chs.map(ch=>{const d=detrend(ch,w);return d});
+  const e0=base[0].map((v,i)=>Math.hypot(v,.85*base[1][i],.85*base[2][i])),e=e0.map((v,i)=>((e0[i-1]??v)+2*v+(e0[i+1]??v))/4);
+  const m=e.reduce((a,b)=>a+b,0)/n,sd=Math.sqrt(variance(e)),thr=Math.max(2.5,m+1.5*sd),cand=[];
+  for(let i=1;i<n-1;i++)if(e[i]>thr&&e[i]>=e[i-1]&&e[i]>=e[i+1])cand.push(i);
+  cand.sort((a,b)=>e[b]-e[a]);const keep=[];for(const c of cand)if(keep.every(k=>Math.abs(k-c)>=minSep))keep.push(c);return keep.sort((a,b)=>a-b)}
+function lineModel(strips,minSep){const raw=strips.map(st=>linePeaks(st,minSep)),tol=Math.max(minSep,Math.round(strips[0][0].length*.05));
+  // a line runs through the cloth: it is kept only where several strips have it at about the same place (a slub, a fold or
+  // moire shows in one); with fewer than three strips any peak counts
+  const need=Math.max(2,Math.ceil(strips.length*.4)-1);   // other strips that must have it too (3 of 4, 4 of 8)
+  const pk=raw.map((p,g)=>strips.length<3?p:p.filter(v=>raw.filter((q,h)=>h!==g&&q.some(w=>Math.abs(w-v)<=tol)).length>=need));
+  if(pk.some(p=>p.length<2))return null;
+  const gaps=pk.flatMap(p=>p.slice(1).map((v,i)=>v-p[i])).sort((a,b)=>a-b),T=gaps[gaps.length>>1],mean=gaps.reduce((a,b)=>a+b,0)/gaps.length;
+  // a gap that skips one line (a faint line missed) counts as two
+  const norm=gaps.map(g=>g/T>1.7?g/Math.round(g/T):g),sd=Math.sqrt(variance(norm)),cv=sd/(norm.reduce((a,b)=>a+b,0)/norm.length);
+  if(cv>.25||T<minSep)return null;
+  // each position's offset from its nearest line in its strip (the line at 0, both sides wrapping into one repeat)
+  const near=(p,t)=>{let b=p[0];for(const v of p)if(Math.abs(v-t)<Math.abs(b-t))b=v;return b};
+  return {T,pk,cv,off:(g,t)=>{const o=t-near(pk[g],t);return ((o%T)+T)%T}}}
+/* profiles of a grid along an angle, whole and in K strips running along the lines (within a strip a wavy line is nearly
+   straight). Steps without enough pixels in a strip take the whole profile's value. */
+function stripProfiles(G,chans,ang,K){
+  const {W,H}=G,n=W*H,P=projIdx(W,H,ang),cs=Math.cos(ang),sn=Math.sin(ang),u=new Float32Array(n);let lo=1e9,hi=-1e9;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const v=-(x-W/2)*sn+(y-H/2)*cs;u[y*W+x]=v;if(v<lo)lo=v;if(v>hi)hi=v}
+  const grp=new Uint8Array(n),span=(hi-lo)/K||1;for(let i=0;i<n;i++)grp[i]=Math.max(0,Math.min(K-1,Math.floor((u[i]-lo)/span)));   // (u is single precision: its smallest can fall a hair below lo)
+  const C=chans.length,sum=chans.map(()=>new Float64Array(P.len)),cnt=new Float64Array(P.len),ss=Array.from({length:K},()=>chans.map(()=>new Float64Array(P.len))),sc=Array.from({length:K},()=>new Float64Array(P.len));
+  for(let i=0;i<n;i++){const t=P.idx[i],g=grp[i];cnt[t]++;sc[g][t]++;for(let c=0;c<C;c++){const v=chans[c][i];sum[c][t]+=v;ss[g][c][t]+=v}}
+  const minC=Math.min(W,H)/3,ok=[...cnt].map(v=>v>=minC),first=ok.indexOf(true),last=ok.lastIndexOf(true),len=last-first+1;
+  const whole=chans.map((_,c)=>{const a=[];for(let t=first;t<=last;t++)a.push(sum[c][t]/cnt[t]);return a});
+  const strips=ss.map((sg,g)=>chans.map((_,c)=>{const a=[];for(let t=first;t<=last;t++)a.push(sc[g][t]>=minC/K/2?sg[c][t]/sc[g][t]:whole[c][t-first]);return a}));
+  return {P,grp,first,len,whole,strips,ok}}
+/* how far to shift each strip (at most max steps) to line up with the most varied one */
+function stripShifts(strips,wts,max){
+  const v0=s=>s.reduce((a,ch,c)=>a+wts[c]*variance(ch),0),ref=strips.reduce((b,s,k)=>v0(s)>v0(strips[b])?k:b,0),R=strips[ref];
+  const mean=a=>a.reduce((x,y)=>x+y,0)/a.length,Rm=R.map(mean);
+  return strips.map((s,k)=>{if(k===ref||max<1)return 0;const Sm=s.map(mean);let best=0,bv=-1e18;
+    for(let d=-max;d<=max;d++){let v=0;for(let c=0;c<s.length;c++){const ch=s[c],r=R[c];for(let i=Math.max(0,-d);i<ch.length&&i+d<r.length;i++)v+=wts[c]*(ch[i]-Sm[c])*(r[i+d]-Rm[c])}if(v>bv){bv=v;best=d}}return best})}
+/* one repeat in M steps from pixels' lined-up positions (t; -1 = outside), each step the median colour of its pixels (a median,
+   so lines crossing the band don't tint it); steps with no pixels are null */
+function foldBins(G,tAdj,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))),bins=Array.from({length:M},()=>[[],[],[]]);
+  for(let i=0;i<G.L.length;i++){const t=tAdj[i];if(t<0||skip&&skip[i])continue;const b=bins[Math.floor((((t%T)+T)%T)/T*M)%M];b[0].push(G.L[i]);b[1].push(G.A[i]);b[2].push(G.B[i])}
+  const med=v=>{v.sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};let labs=bins.map(b=>b[0].length?[med(b[0]),med(b[1]),med(b[2])]:null);
+  if(labs.every(l=>!l))return {labs};const fill=labs.slice();for(let q=0;q<M;q++)if(!fill[q]){let d=1;while(!labs[(q+d)%M]&&!labs[(q-d+M)%M])d++;fill[q]=labs[(q+d)%M]||labs[(q-d+M)%M]}
+  return {labs:skip?labs:fill}}
 /* a sett from a whole canvas (its middle 90%): a close-up */
 function settFromCanvas(c,box,opt){if(box){const b={x:box.x/1000*c.width,y:box.y/1000*c.height,w:box.w/1000*c.width,h:box.h/1000*c.height};return analyzeSett(c,b.x,b.y,b.w,b.h,opt)}
   return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9,opt)}
