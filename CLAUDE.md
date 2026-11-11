@@ -234,6 +234,7 @@ Cloudflare Worker. Every endpoint except tagging requires `APP_TOKEN`.
   - Its consumer (`queue()` export) makes the photo in the background, retrying temporary OpenAI errors and recording others as `jobfail:<key>`.
   - GET `/render-queue` lists pending and failed jobs.
   - The Settings month batch uses the queue and falls back to generating on the page when the worker has no queue.
+  - Today's Generate and Settings → Regenerate also use the queue (`generateRender` → `queueCombo(o,replace)`), so the app can be swiped, closed or locked; `{replace:true}` makes the worker queue and make it though a photo is kept; the button shows "Making photo…" while the combination is queued (`renderPending`), a failure shows its reason with "Try again" (`renderFail`); the app checks the queue every 20 s while open; a worker without the queue still makes it on the page
 - Deployed automatically by `.github/workflows/deploy-worker.yml` (Wrangler, config in `wrangler.toml`) when a merge to `main` changes it.
   - It creates the queue if missing, so the token needs Queues edit.
   - Needs the repo's `CLOUDFLARE_API_TOKEN` secret and `CLOUDFLARE_ACCOUNT_ID` / `WARDROBE_KV_ID` variables; until then the workflow skips and the user deploys by hand.

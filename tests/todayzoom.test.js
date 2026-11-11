@@ -84,8 +84,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     delay=0;
     const bg=await p.evaluate(()=>{rqSet({keys:['c1','c2'],failed:[],total:2});const a=document.querySelector('#busy').textContent;rqSet({keys:[],failed:[],total:2});return {a,off:!document.querySelector('#busy').classList.contains('on')}});
     ok(/Making 2 photos in the background/.test(bg.a)&&bg.off,`photos being made in the background show until they're done ("${bg.a}")`);
-    const gen=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];rendering=true;renderToday();const b=document.querySelector('.render-btn');const r={spin:!!(b&&b.querySelector('.spin')),t:b&&b.textContent};rendering=false;renderToday();return r});
-    ok(gen.spin&&/Generating photo/.test(gen.t),'"Generating photo…" on Today spins too');
+    const gen=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];rendering=comboKey(o);renderToday();const b=document.querySelector('.render-btn');const r={spin:!!(b&&b.querySelector('.spin')),t:b&&b.textContent};rendering=false;renderToday();return r});
+    ok(gen.spin&&/Making photo/.test(gen.t),'"Making photo…" on Today spins too');
     const dz=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];renderToday();const t=zoomTarget(),r=t.getBoundingClientRect();toggleZoom(r.x+r.width/2,r.y+r.height/3);
       const out={tag:t.tagName,tf:t.style.transform};zoomOut();return out});
     ok(dz.tag==='svg'&&/translate\(-?[\d.]+px, ?-?[\d.]+px\) scale\(2\.5\)/.test(dz.tf),`the drawing (no photo yet) zooms too (${dz.tf})`);
