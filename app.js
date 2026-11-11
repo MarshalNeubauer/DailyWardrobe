@@ -809,7 +809,7 @@ async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
   const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
   try{const q=await queueCombo(o,replace);
-    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.failed=s.failed||[];rqSet(s);startQueueWatch()}
+    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open: your worker has no background queue.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
   catch(e){renderMsg={k:day,t:/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t send the photo to your worker: '+(e.message||e)}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)renderToday();renderRegenUI()}
@@ -917,7 +917,7 @@ async function startBatch(){
     catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden/i.test(e.message)){batch.stop=true}}
   }
   const b=batch;batch=null;const el=$('#batch-status');
-  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.sentAt=Date.now();q.failed=q.failed||[];
+  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.sentAt=Date.now();q.at={...(q.at||{}),...Object.fromEntries(queued.map(k=>[k,q.sentAt]))};q.failed=q.failed||[];
     q.msg=`Sent ${queued.length} photo${queued.length===1?'':'s'} to your worker. They’re being made in the background (about a minute each); you can close the app. They appear as they finish.`;rqSet(q);startQueueWatch()}
   else if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
   if(queued.length&&b.fail&&el){el.dataset.keep=1;el.textContent=rqGet().msg+` ${b.fail} couldn’t be sent (${b.err}).`;setTimeout(()=>{delete el.dataset.keep},6000)}
@@ -950,15 +950,19 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
       if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;removed.add(k);
         const o=planFor()[key(sel)];if(o&&comboKey(o)===k)shown=true}
       else if(!g.ok&&g.status!==404)continue;
-      else removed.add(k)}   // neither waiting, failed nor finished: lost (expired), stop waiting for it
+      else if(Date.now()-sentAt(q,k)>LOST_MS)removed.add(k)}   // neither waiting, failed nor finished for a long time: lost (expired), stop waiting for it
+      // (a job just sent can be missing from the worker's list for up to a minute: KV lists are only eventually consistent)
     // applied to the list as it is now: a push may have taken some meanwhile, and new photos may have been sent
-    const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
+    const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));if(q2.at)for(const k of removed)delete q2.at[k];q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
     rqSet(q2);renderBatchUI();renderRegenUI();if((shown||removed.size)&&!$('#today').hidden)renderToday();
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
 /* Bringing photos home. The worker pushes: while photos are waiting and the app is on screen, a request to GET /render-wait is held
    open, and the worker answers it the moment a queue job finishes, with the photo itself (waitPush). Polling GET /render-queue
    stays as the backup (a worker without the push, a dropped connection), timed by what a photo takes: none is ready within 40 s
    of sending, so the first look is then; after that every 7 s, every 20 s after 3 minutes (a month batch) and every minute after 15. */
+/* when each photo was sent (rqGet().at), and how long one may go unseen before it counts as lost: the queue retries a failing
+   photo for several minutes and a month batch makes two at a time, so 45 minutes */
+const LOST_MS=45*60000,sentAt=(q,k)=>(q.at&&q.at[k])||q.sentAt||0;
 const queueDelay=age=>age<40000?40000-age:age<180000?7000:age<900000?20000:60000;
 function scheduleQueueCheck(){clearTimeout(rqTimer);rqTimer=null;const q=rqGet();if(!q.keys.length)return;
   rqTimer=setTimeout(async()=>{rqTimer=null;if(document.visibilityState==='visible')await checkQueue();scheduleQueueCheck()},Math.max(1000,queueDelay(Date.now()-(q.sentAt||0))))}
@@ -973,9 +977,10 @@ async function waitPush(){const W=workerBase(),keys=queuedKeys();if(pushOn||noPu
   finally{pushOn=false}
   if(pause)await new Promise(ok=>setTimeout(ok,pause));waitPush()}
 /* finished (or failed) queued photos, from the push or from polling */
-async function takeQueued(res){const mine=new Set(queuedKeys());res=res.filter(m=>m&&mine.has(m.key));if(!res.length)return;
+async function takeQueued(res){res=(res||[]).filter(m=>m&&m.key);if(!res.length)return;
+  // every finished photo is kept, even one the app had stopped waiting for: it is for an outfit the user asked for
   for(const m of res)if(m.rec&&m.rec.img)await keepRender(m.key,{sig:m.rec.sig||'',img:await shrinkUrl(m.rec.img,900),model:m.rec.model||'',t:m.rec.t||Date.now()},false);
-  const q=rqGet();for(const m of res){if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
+  const q=rqGet(),mine=new Set(q.keys);for(const m of res){if(!mine.has(m.key))continue;if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
   finishQueueMsg(q);rqSet(q);renderBatchUI();renderRegenUI();if(!$('#today').hidden)renderToday()}
 function finishQueueMsg(q){const done=(q.total||0)-q.keys.length-q.failed.length;
   q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
