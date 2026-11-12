@@ -58,7 +58,7 @@ const sClass=i=>{const p=patInfo(i,'shirt');return p?p.type:'plain'};
 const tClass=i=>{const p=patInfo(i,'tie');return p?p.type:patOf(i)==='knit'?'knit':patOf(i)==='woven'?'tex':'plain'};
 const shopClass=i=>i.type==='tie'?tClass(i):i.type==='shirt'?sClass(i):i.type==='shoes'||i.type==='belt'?finish(i.leather):jClass(i);
 const shopGroup=i=>i.type==='tie'?tieGroup(i):i.type==='shirt'?shirtGroup(i):i.type==='shoes'||i.type==='belt'?leatherGroup(planCol(i)):jacketGroup(i);
-const CLASS_NAMES={plain:'plain',tex:'woven',knit:'knit',stripe:'striped',check:'checked',motif:'dotted or figured',smooth:'smooth leather',suede:'suede',grain:'grain leather',patent:'patent'};
+const CLASS_NAMES={plain:'plain',tex:'woven',knit:'knit',stripe:'striped',check:'checked',motif:'dotted or figured',smooth:'smooth leather',suede:'suede',grain:'grain leather',patent:'patent',textile:'canvas or knit'};
 const GROUP_LABELS={tie:{black:'black / charcoal',grey:'grey / silver',red:'burgundy / red',purple:'purple',brown:'brown / tan'},shirt:{lightblue:'light blue',purple:'lavender',yellow:'pale yellow',green:'mint',red:'burgundy',white:'white / cream'},
   jacket:{red:'burgundy',charcoal:'slate',tan:'tan / khaki',green:'green / olive',brown:'brown / taupe'},leather:{burgundy:'oxblood / burgundy'}};
 const GROUP_HEX={red:'burgundy',lightblue:'lightblue',yellow:'paleyellow',beige:'beige',charcoal:'slate',gold:'gold',cream:'cream'};

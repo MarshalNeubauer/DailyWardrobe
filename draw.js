@@ -217,15 +217,19 @@ function fabricDef(id,item,role,ctx){
 function leatherLayers(P,item,d,toe){
   const L=item&&item.leather||'calf',base=item?colOf(item):'#2b2b2e';
   const col=L==='suede'?mix(base,'#fff',.07):L==='cordovan'?mix(base,'#1e0808',.15):base;
-  const hi={calf:.32,cordovan:.42,patent:.9,suede:0,'pebble-grain':.12,'scotch-grain':.2}[L]??.32;
+  const hi={calf:.32,cordovan:.42,patent:.9,suede:0,'pebble-grain':.12,'scotch-grain':.2,canvas:0,knit:0}[L]??.32;
   let defs=`<radialGradient id="${P}hl" gradientUnits="userSpaceOnUse" cx="${toe.x}" cy="${toe.y}" r="${toe.r*(L==='patent'?.7:1)}"><stop offset="0" stop-color="${L==='cordovan'?'#fff3ec':'#fff'}" stop-opacity="${hi}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
   let tex='',extra='';
   if(L==='suede'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="1.5" height="1.5"><circle cx=".4" cy=".5" r=".36" fill="#000" opacity=".18"/><circle cx="1.15" cy="1.1" r=".3" fill="#fff" opacity=".12"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
   if(L==='pebble-grain'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="2.2" height="1.9"><circle cx=".6" cy=".55" r=".55" fill="#fff" fill-opacity=".06" stroke="#000" stroke-opacity=".3" stroke-width=".22"/><circle cx="1.7" cy="1.45" r=".5" fill="#fff" fill-opacity=".06" stroke="#000" stroke-opacity=".3" stroke-width=".22"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
   if(L==='scotch-grain'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="1.2" height="1.1"><circle cx=".35" cy=".3" r=".3" fill="none" stroke="#000" stroke-opacity=".28" stroke-width=".16"/><circle cx=".95" cy=".85" r=".26" fill="#fff" fill-opacity=".1"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
+  // sneakers' textiles: canvas a fine plain weave, knit rows of small Vs; neither shines
+  if(L==='canvas'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="1.4" height="1.4"><path d="M0,.35 H1.4 M0,1.05 H1.4" stroke="#000" stroke-opacity=".16" stroke-width=".3"/><path d="M.35,0 V1.4 M1.05,0 V1.4" stroke="#fff" stroke-opacity=".1" stroke-width=".3"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
+  if(L==='knit'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="2" height="1.6"><path d="M0,.2 L1,1.2 L2,.2" fill="none" stroke="#000" stroke-opacity=".22" stroke-width=".35"/><path d="M0,.7 L1,1.7 L2,.7" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width=".3"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
   if(L==='patent')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.18}" rx="${toe.r*.55}" ry="${toe.r*.09}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".75"/>`;
   if(L==='cordovan')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.15}" rx="${toe.r*.4}" ry="${toe.r*.12}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".3"/>`;
-  return {defs,body:`<path d="${d}" fill="${col}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/>${tex}<path d="${d}" fill="url(#${P}hl)"/>${extra}`,sole:mix(base,'#000',.6)};
+  // (the last outline: a faint light edge on the dark theme, --shoe-edge, so a black shoe doesn't vanish into the dark card)
+  return {defs,body:`<path d="${d}" fill="${col}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/>${tex}<path d="${d}" fill="url(#${P}hl)"/>${extra}<path d="${d}" fill="none" style="stroke:var(--shoe-edge,transparent)" stroke-width=".6"/>`,sole:mix(base,'#000',.6)};
 }
 
 /* cap-toe oxford in side profile (toe left), for wardrobe thumbnails; box 0..100 x 0..50 */
@@ -243,6 +247,74 @@ function drawOxfordSide(item,P){
     `<path d="M52,12.6 L83,11.1" stroke="#000" stroke-opacity=".5" stroke-width=".7"/>`+eyelets+
     `<path d="M53.5,14.2 L56,15.6 M56,14.1 L58.6,15.5 M58.6,14 L61.2,15.4 M61.2,13.8 L63.8,15.2" stroke="${lace}" stroke-width=".55"/>`;
 }
+
+/* the other shoe styles, in the same side profile and box as the oxford (toe left, sole on y≈39–45): each must read as what it is */
+/* derby: open lacing (the quarters sewn on top of the vamp, their edge visible), a plain toe */
+function drawDerbySide(item,P){
+  const U='M5,39 C2,34 4,30 12,28.5 C24,26.5 34,23 41,18 C45,15 48,13 52,12.5 L83,11 C90,10.8 94.5,14 95,21 L95,39 Z';
+  const lay=leatherLayers(P,item,U,{x:16,y:31,r:16,rot:-12}),lace=item?(lum(colOf(item))>.35?mix(colOf(item),'#000',.6):mix(colOf(item),'#fff',.55)):'#111',edge=item?mix(colOf(item),'#000',.5):'#000';
+  let eyelets='';for(let k=0;k<4;k++){const x=56+k*3.2,y=13.6-k*.12;eyelets+=`<circle cx="${x}" cy="${y+1.4}" r=".6" fill="#000" opacity=".6"/>`}
+  return `<defs>${lay.defs}</defs>`+
+    `<path d="M4,39 C4,43.5 6.5,45.5 12,45.5 L58,45.5 C64,43 70,43 74,45.5 L94,45.5 L95.5,39 Z" fill="${lay.sole}"/>${lay.body}`+
+    `<path d="M6,39.6 L94,39.6" stroke="#fff" stroke-opacity=".22" stroke-width=".35" stroke-dasharray=".8 .6"/>`+
+    // the quarter's flap over the vamp, open at the front: its edge runs down and back to the heel seam
+    `<path d="M53.5,12.6 C53,17 55,20.5 60,22.5 C66,25 72,27.5 77,31 C80,33.5 82,36 83,39" fill="none" stroke="${edge}" stroke-width=".9"/>`+
+    `<path d="M54.6,13 C54.4,16.6 56.2,19.6 60.4,21.4" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".35" stroke-dasharray=".7 .5"/>`+
+    `<path d="M52,12.6 L83,11.1" stroke="#000" stroke-opacity=".5" stroke-width=".7"/>`+eyelets+
+    `<path d="M55,15.2 L59.6,14.2 M58.4,15.6 L62.8,14 M61.6,15.4 L66,13.8 M54.8,14.4 L66,14" stroke="${lace}" stroke-width=".55"/>`;
+}
+/* loafer: no laces, a low throat, a moccasin apron seam over the toe and a penny strap across the saddle */
+function drawLoaferSide(item,P){
+  const U='M5,39 C2,34 4,30 12,28.5 C24,26.5 34,23.5 41,20.5 C46,18.6 52,18.3 58,18.6 L84,17 C90,16.8 94.5,19 95,24 L95,39 Z';
+  const lay=leatherLayers(P,item,U,{x:16,y:31,r:16,rot:-12}),edge=item?mix(colOf(item),'#000',.38):'#222',strap=item?mix(colOf(item),'#000',.12):'#333';
+  return `<defs>${lay.defs}</defs>`+
+    `<path d="M4,39 C4,43.5 6.5,45.5 12,45.5 L58,45.5 C64,43 70,43 74,45.5 L94,45.5 L95.5,39 Z" fill="${lay.sole}"/>${lay.body}`+
+    `<path d="M6,39.6 L94,39.6" stroke="#fff" stroke-opacity=".22" stroke-width=".35" stroke-dasharray=".8 .6"/>`+
+    // the apron: a raised seam from the toe round to the throat
+    `<path d="M14,29 C22,24.6 32,22 42,21 C47,20.6 51,20.5 55,20.6" fill="none" stroke="${edge}" stroke-width=".8"/>`+
+    `<path d="M14.6,30.4 C22.6,26 32.6,23.4 42.4,22.4" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width=".35" stroke-dasharray=".6 .5"/>`+
+    // the penny strap with its slot, and the throat's dark opening
+    `<path d="M50,21.2 C56,20.4 64,20.2 72,21.4 L72,25.6 C64,24.4 56,24.6 50,25.4 Z" fill="${strap}" stroke="${edge}" stroke-width=".6"/>`+
+    `<path d="M57,22.4 C59.6,22 62.4,22 65,22.4" stroke="#000" stroke-opacity=".7" stroke-width="1.1" stroke-linecap="round"/>`+
+    `<path d="M58,18.6 L84,17" stroke="#000" stroke-opacity=".55" stroke-width=".8"/>`;
+}
+/* chelsea boot: the shaft up above the ankle, an elastic gusset at the side, a pull tab at the back */
+function drawBootSide(item,P){
+  const U='M5,39 C2,34 4,30 12,28.5 C24,26.5 33,23.5 40,19 C44,16 46.5,10 47.5,3 L84,3 C85,10 88.5,15 95,20 L95,39 Z';
+  const lay=leatherLayers(P,item,U,{x:16,y:31,r:16,rot:-12}),c=item?colOf(item):'#3a2a20',gus=mix(c,'#000',.55),edge=mix(c,'#000',.35);
+  let ribs='';for(let k=0;k<6;k++){const x=63+k*1.7;ribs+=`<path d="M${x},${5+k*.2} L${x+.6},${24-k*.1}" stroke="#000" stroke-opacity=".35" stroke-width=".35"/>`}
+  return `<defs>${lay.defs}</defs>`+
+    `<path d="M4,39 C4,43.5 6.5,45.5 12,45.5 L58,45.5 C64,43 70,43 74,45.5 L94,45.5 L95.5,39 Z" fill="${lay.sole}"/>${lay.body}`+
+    `<path d="M6,39.6 L94,39.6" stroke="#fff" stroke-opacity=".22" stroke-width=".35" stroke-dasharray=".8 .6"/>`+
+    `<path d="M61,4 C61,12 62,20 66,26 L72,26 C75,20 76,12 76,4 Z" fill="${gus}"/>`+ribs+
+    `<path d="M61,4 C61,12 62,20 66,26 L72,26 C75,20 76,12 76,4" fill="none" stroke="${edge}" stroke-width=".6"/>`+
+    `<path d="M80,3 L80,-3 C80,-4.2 82.6,-4.2 82.6,-3 L82.6,3" fill="${edge}" stroke="#000" stroke-opacity=".35" stroke-width=".4"/>`+
+    `<path d="M47.5,3 L84,3" stroke="#000" stroke-opacity=".5" stroke-width=".8"/>`;
+}
+/* sneaker: a thick rubber cupsole (its second colour, else white) with a toe bumper, a rounded toe, a padded collar that rises at
+   the ankle with the tongue standing above the laces, a lace panel with wide laces crossing it, a side stripe and a heel tab */
+function drawSneakerSide(item,P){
+  const U='M8,35.5 C4.5,33 5,26.5 13,25 C22,23.4 30,21 37,17 C41,14.8 44,13.2 47.5,12.6 L70,12.6 C73,10.6 77,9.2 81,9.2 C86,9.2 90.5,10.6 92.5,14 C94.2,18 94.6,26 94.2,35.5 Z';
+  const lay=leatherLayers(P,item,U,{x:17,y:30,r:15,rot:-10}),c=item?colOf(item):'#eee',lt=lum(c)>.6;
+  const sc=item&&item.secondaryColor&&item.secondaryColor!=='none'&&COLORS[item.secondaryColor]?COLORS[item.secondaryColor]:'#f4f2ec',se=mix(sc,'#000',.28);
+  const edge=mix(c,'#000',lt?.28:.45),panel=mix(c,lt?'#000':'#fff',lt?.06:.1),lace=lt?mix(c,'#000',.55):mix(c,'#fff',.82),stripe=lt?mix(c,'#000',.18):mix(c,'#fff',.22);
+  let laces='';for(let k=0;k<5;k++){const x=50+k*4.1;laces+=`<path d="M${x},${15.4+k*.1} L${x+3.3},${12.8+k*.08}" stroke="${lace}" stroke-width="1.5" stroke-linecap="round"/><path d="M${x+.2},${12.9+k*.08} L${x+3.1},${15.3+k*.1}" stroke="${mix(lace,'#000',.25)}" stroke-width="1" stroke-linecap="round" opacity=".7"/>`}
+  return `<defs>${lay.defs}</defs>`+
+    // the cupsole: taller than a dress shoe's, rising round the toe; a line where the sidewall meets the outsole
+    `<path d="M5.5,34 C2.5,36 3,43 7.5,45.5 C9,46.3 11,46.6 13,46.6 L91,46.6 C94.5,46.6 96,44.6 96,41.5 L95.6,34 Z" fill="${sc}" stroke="${se}" stroke-width=".6"/>`+
+    `<path d="M4.6,42 C10,42.4 50,42.4 95.8,42" fill="none" stroke="${se}" stroke-width=".7"/>`+
+    `<path d="M6,35.4 C7.5,32.6 11,31.6 16,31.8" fill="none" stroke="${se}" stroke-width=".6"/>`+lay.body+
+    // the toe cap and the side stripe
+    `<path d="M7.6,32 C9,28.2 13,26.4 19,25.6 C23,25.1 26,24.4 28.4,23.6" fill="none" stroke="${edge}" stroke-width=".8"/>`+
+    `<path d="M40,31.5 C50,27 60,22.6 72,20.4 C74,22.4 74.4,24.8 73,27 C63,28.6 53,31.6 44,35.4 Z" fill="${stripe}" stroke="${edge}" stroke-width=".5"/>`+
+    // the lace panel, the tongue standing above it, and the laces
+    `<path d="M46,13 C48,12.5 68,12.4 71,12.6 C72.4,16 72.4,19 71,21.4 C64,20 54,20 47.6,21.6 C46,18.6 45.4,15.6 46,13 Z" fill="${panel}" stroke="${edge}" stroke-width=".6"/>`+
+    `<path d="M66,12.8 C66.6,9.4 68.6,7.6 71.4,7.8 C73.4,8 74.2,9.8 73.6,12.4 Z" fill="${mix(c,'#000',.08)}" stroke="${edge}" stroke-width=".6"/>`+laces+
+    // the padded collar and the heel tab
+    `<path d="M73.6,12.2 C77,10.4 82,9.6 86.4,10 C89.4,10.4 91.6,11.8 92.4,14.2" fill="none" stroke="${edge}" stroke-width="1.1"/>`+
+    `<path d="M90,10.6 C91.6,7.6 94.4,7.8 94.8,11.2 L94.6,16 L92.6,14 Z" fill="${edge}"/>`;
+}/* the drawing for a pair of shoes, by its style (shoeStyle in core.js; none = oxford) */
+const drawShoeSide=(item,P)=>({derby:drawDerbySide,loafer:drawLoaferSide,boot:drawBootSide,sneaker:drawSneakerSide})[shoeStyle(item)]?.(item,P)||drawOxfordSide(item,P);
 
 /* dress sock, side view, traced from a catalogue photo of a fine merino dress sock: slanted cuff with a heathered welt,
    leg leaning back, heel pocket, foot pointing right, flat knitted toe cap (the sock's secondary colour); box ~0..60 x 0..72 */
@@ -390,6 +462,15 @@ function swatchSVG(i,drawn){
   return `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
 }
 
+/* what tells chinos and jeans from dress trousers on the fabric square (box 10..90): jeans a denim twill, gold double
+   topstitching along a seam and a copper rivet; chinos a fine cotton twill and a slanted pocket's seam. Dress trousers: nothing */
+function trouserMarks(i,P){const k=typeof trouserKind==='function'?trouserKind(i):'dress';if(k==='dress')return '';
+  const tw=`<pattern id="${P}tw" patternUnits="userSpaceOnUse" width="${k==='jeans'?2.4:1.8}" height="${k==='jeans'?2.4:1.8}" patternTransform="rotate(-35)"><rect width="${k==='jeans'?1:.7}" height="${k==='jeans'?2.4:1.8}" fill="#fff" opacity="${k==='jeans'?.16:.08}"/></pattern>`;
+  const twill=`<defs>${tw}</defs><rect x="10" y="10" width="80" height="80" fill="url(#${P}tw)"/>`;
+  if(k==='jeans')return twill+`<path d="M62,10 C60,40 61,66 66,90" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/>`+
+    `<path d="M64.2,10 C62.2,40 63.2,66 68.2,90 M66.4,10 C64.4,40 65.4,66 70.4,90" fill="none" stroke="#d9a441" stroke-width=".7" stroke-dasharray="1.6 1"/>`+
+    `<path d="M10,26 C24,24 40,25 58,30" fill="none" stroke="#d9a441" stroke-width=".7" stroke-dasharray="1.6 1"/><circle cx="58" cy="30" r="2.3" fill="#b87333" stroke="#6e4220" stroke-width=".6"/><circle cx="57.4" cy="29.4" r=".8" fill="#f1c48a"/>`;
+  return twill+`<path d="M58,10 L72,40" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".9"/><path d="M60,10 L74,40" fill="none" stroke="#000" stroke-opacity=".18" stroke-width=".4" stroke-dasharray="1.2 .8"/>`}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -400,9 +481,9 @@ function itemThumb(i,full){
   else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     const shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':'M10,10 H90 V90 H10 Z';
-    g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`;
+    g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`+trouserMarks(i,P);
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
-  else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawOxfordSide(i,P)}</g>`;
+  else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
   else if(i.type==='belt')g=`<g transform="translate(50 50) scale(1.42)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat'||i.type==='raincoat'){const c=colOf(i),e=mix(c,'#000',.35),rain=i.type==='raincoat';

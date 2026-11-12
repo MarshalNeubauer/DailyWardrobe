@@ -24,7 +24,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(!['silver','gold','pink','purple','red','white','oxblood','paleyellow'].some(c=>r.suit.includes(c))&&['taupe','khaki','navy','charcoal'].every(c=>r.suit.includes(c)),'suits offer suiting colours only (no watch metals, no shirt or tie colours)');
     ok(['mint','periwinkle','lavender','ivory'].every(c=>r.shirt.includes(c))&&!['silver','gold','olive','oxblood','khaki','tan'].some(c=>r.shirt.includes(c)),'shirts offer shirt colours');
     ok(['silver','rust','lavender','gold'].every(c=>r.tie.includes(c))&&!r.tie.includes('white'),'ties include silver, rust and lavender; no white ties');
-    ok(r.shoes.join()==='black,brown,tan,oxblood,burgundy,navy,grey,taupe'&&r.clip.join()==='silver,gold,grey,black','shoes are leather colours; tie clips are metal colours');
+    ok(r.shoes.join()==='black,brown,tan,oxblood,burgundy,navy,grey,taupe,white,cream'&&r.clip.join()==='silver,gold,grey,black','shoes are leather colours, plus white and cream for sneakers; tie clips are metal colours');
     ok(!r.socks.includes('white')&&r.rain.includes('khaki')&&!r.rain.includes('red'),'no white dress socks; raincoats come in trench colours');
     ok(r.fit==='lightgrey,khaki,cream,burgundy,grey,black,cream,lightgrey'||/^lightgrey,/.test(r.fit),`off-list tags move to the closest allowed colour (${r.fit})`);
     ok(/^(white|cream),/.test(r.acc),`stripe colours have their own list (${r.acc})`);

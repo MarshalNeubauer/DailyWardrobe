@@ -917,8 +917,8 @@ body.nocon .conn-only,.connhide{display:none!important}
 /* ---- layout and design pass ---- */
 /* text fields: white (the card colour) on the light theme, grey-filled (the page colour) on the dark one: the owner's choice */
 :root{--field:var(--card);--swatch-edge:rgba(16,24,32,.22)}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--field:var(--bg);--swatch-edge:rgba(233,238,240,.28)}}
-:root[data-theme=dark]{--field:var(--bg);--swatch-edge:rgba(233,238,240,.28)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--field:var(--bg);--swatch-edge:rgba(233,238,240,.28);--shoe-edge:rgba(233,238,240,.32)}}
+:root[data-theme=dark]{--field:var(--bg);--swatch-edge:rgba(233,238,240,.28);--shoe-edge:rgba(233,238,240,.32)}
 :is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box{background:var(--field)!important}
 /* swatches: a thin edge so navy and charcoal show on a dark card */
 .dot{border:1px solid var(--swatch-edge)}
