@@ -350,7 +350,7 @@ async function asmMake(list){const W=workerBase();if(!W)throw new Error('Set the
     const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify(job)}),j=await r.json().catch(()=>({}));
     if(r.ok&&j.queued){asmBad.delete(n.key);delete renders[n.key];if(n.kind==='master')localStorage.removeItem('asm_none');const q=rqGet();q.keys=[...new Set([...q.keys,n.key])];q.total=(q.total||0)+1;q.sentAt=Date.now();q.at={...(q.at||{}),[n.key]:q.sentAt};q.failed=q.failed||[];rqSet(q);sent++}
     else if(r.ok&&j.exists){asmTried.delete(n.key);await asmGet(n.key)}
-    else throw new Error(j.error||`HTTP ${r.status}`)}
+    else throw new Error(j.message||j.error||`HTTP ${r.status}`)}
   asmState.missing=asmState.missing.filter(n=>!list.includes(n));if(sent)startQueueWatch();return sent}
 const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 /* Today's Generate for an outfit that can be assembled: make its missing pieces (about 8¢ each) instead of a whole photo */
