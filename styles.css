@@ -640,3 +640,25 @@ body.iv-on #toast,body.iv-on #busy{z-index:960;bottom:calc(78px + env(safe-area-
 .shop-hid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .shop-foot{text-align:center}
 @media(max-width:360px){.shop-figs{grid-template-columns:1fr}}
+/* ---- wardrobe ---- */
+/* the Wardrobe's search field with the sort control beside it; an item's name, brand, material and notes; "nothing matches" */
+.wfind{display:flex;gap:8px;align-items:center;margin:0 0 10px}
+.wsearch{position:relative;flex:1;min-width:0;display:flex}
+#wardrobe .wsearch input{flex:1;width:100%;padding:0 44px 0 38px;background:var(--card);outline-offset:-2px}
+.wsicon{position:absolute;left:11px;top:50%;width:18px;height:18px;margin-top:-9px;fill:none;stroke:var(--mut);stroke-width:2;stroke-linecap:round;pointer-events:none}
+#wardrobe .wclear{position:absolute;right:0;top:0;width:44px;height:44px;min-height:0;padding:0;border:0;background:none;color:var(--mut);font-size:22px;font-weight:400;line-height:1}
+#wardrobe .wclear[hidden]{display:none}
+#wardrobe .wsort{flex:0 0 auto;width:132px;background:var(--card);font-weight:600;text-overflow:ellipsis}
+.wwear{font-size:12.5px;line-height:1.3;color:var(--mut)}
+.wnone{margin:18px 0;padding:22px 16px;border:1px dashed var(--line);border-radius:var(--r-card);text-align:center}
+.wnone b{display:block;font-size:16px;line-height:1.3;overflow-wrap:anywhere}.wnone p{margin:6px 0 0;font-size:14px}.wnone .btns{justify-content:center}
+.rowtap .named,.gimeta .named{min-width:0;overflow-wrap:anywhere}
+:is(#item-view,#add) .wfld{flex:0 0 58%;width:58%;max-width:58%}
+:is(#item-view,#add) label.wnotes{display:block;padding:7px 0;font-size:14px;font-weight:600}
+:is(#item-view,#add) .wnotes textarea{display:block;width:100%;min-height:64px;margin:6px 0 0;padding:10px 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:15px;font-weight:400;line-height:1.4;resize:vertical}
+.morefold{margin:8px 0 4px}
+#add .morebtn{width:100%;justify-content:space-between;padding:0 12px}
+.morechev{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.morefold.open .morechev{transform:rotate(180deg)}
+.morein{padding:6px 0 0}
+.morein>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:14px;font-weight:600}
+.morein>label select{flex:0 0 58%;width:58%;max-width:58%}
