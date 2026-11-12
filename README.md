@@ -51,6 +51,40 @@ Secrets are set once in the Cloudflare dashboard (or `wrangler secret put NAME`)
 
 The owner connects their own device under Settings → Connection with the server's address and `APP_TOKEN`, and sends each tester an invite link.
 
+## Pre-building the assembled outfit pictures
+
+An assembled outfit picture is put together from the master photo and one photo per piece. A phone can do that itself, but it takes a few seconds a look, and longer with large masters. A computer can build every look ahead of time and upload it, so phones only download the finished picture.
+
+**When:** after the masters, the calibration photos and the item pieces are made, and again whenever a piece is made again, or after a release that changes how pictures are assembled (`ASM_ZV` in `assemble.js`). Pictures built before such a change are ignored by phones until it is run again.
+
+**How**, in PowerShell from the repository folder (after `npm install` and `npx playwright install chromium`, as for the tests):
+
+```
+$env:DW_WORKER='https://<your worker>.workers.dev/'; $env:DW_TOKEN='<APP_TOKEN>'; npm run assemble
+```
+
+Options go after `--`, e.g. `npm run assemble -- --dry --days 60`:
+
+| Option | What it does |
+| --- | --- |
+| `--days N` | how far ahead to plan (default 120) |
+| `--dry` | build and report, upload nothing |
+| `--origin URL` | the app's address, if it isn't `https://marshalneubauer.github.io/DailyWardrobe/` |
+
+**What it does:**
+1. It runs the app in a headless browser, connected as the owner.
+2. It loads the wardrobe from the backup. The backup is never written.
+3. It builds the picture of every look in the coming workdays with the same code a phone runs, from the same photos.
+4. It uploads each picture to the server, tagged with the photos it was built from. A look whose picture on the server is already current is skipped, so a second run uploads nothing.
+
+**On a phone:**
+- It asks for a look's picture before downloading its pieces, and uses it if it is at least as new as every photo the phone holds.
+- If a piece was made again since the upload, or nothing was uploaded for the look (a swap, a new look), the phone builds it itself, as before.
+
+**Costs:**
+- Each upload is one write on the server's storage. The free plan allows 1,000 a day for everything, so run it once after making pieces, not in a loop.
+- The code (`DW_TOKEN`) is only read from the environment: never put it in a file in the repository.
+
 ## Running the tests
 
 ```

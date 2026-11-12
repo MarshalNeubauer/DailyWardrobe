@@ -1430,7 +1430,7 @@ function renderToday(){
 let foldQuiet=false;
 function foldAll(){foldQuiet=true;try{if(openRow)toggleRow(openRow);if(belowOpen)pickPiece(belowOpen);if(scoreOpen)toggleScore();if(listOpen)toggleList();if(monthOpen)toggleMonth()}
   catch(e){console.warn(e)}finally{foldQuiet=false}scoreOpen=listOpen=monthOpen=false;belowOpen=openRow=null;zoomOut()}
-/* ---- double-tap the Today picture (the photo, or the drawing) to zoom in on the tapped spot, again to zoom back out; while
+/* ---- double-tap the Today picture (the photo, or the drawing) to zoom in on the tie and shirt, again to zoom back out; while
    zoomed, a drag pans it (and doesn't change the day). 2.5x: the outfit photo is 1024 px square and fills about 390 px on a phone,
    so 2.5x shows it at about its own resolution (any more is only blur), with a collar, tie knot or shirt front filling the frame. ---- */
 const ZOOM=2.5;let zoom=null,zoomPan=null,lastTap=null,zoomTouchAt=0;
@@ -1440,8 +1440,10 @@ function applyZoom(anim){const c=$('#mannequin-container'),t=zoomTarget();if(!c|
   t.style.transform=on?`translate(${zoom.x.toFixed(1)}px,${zoom.y.toFixed(1)}px) scale(${ZOOM})`:''}
 function clampZoom(){const c=$('#mannequin-container');if(!c||!zoom)return;const W=c.clientWidth,H=c.clientHeight;   // the frame, which the picture fills (an <svg> has no offsetWidth)
   zoom.x=Math.min(0,Math.max(W*(1-ZOOM),zoom.x));zoom.y=Math.min(0,Math.max(H*(1-ZOOM),zoom.y))}
-function toggleZoom(cx,cy){const t=zoomTarget();if(!t)return;
-  if(zoom)zoom=null;else{const r=t.getBoundingClientRect(),px=cx-r.left,py=cy-r.top;zoom={k:key(sel),x:px*(1-ZOOM),y:py*(1-ZOOM)};clampZoom()}
+/* wherever it is tapped, it zooms in on the tie and the shirt: centred across, the top of the picture (the collar and the knot)
+   at the top of the frame, as the owner asked; a drag then pans from there */
+function toggleZoom(){const c=$('#mannequin-container'),t=zoomTarget();if(!c||!t)return;
+  if(zoom)zoom=null;else{zoom={k:key(sel),x:c.clientWidth*(1-ZOOM)/2,y:0};clampZoom()}
   applyZoom(true)}
 function zoomOut(){if(zoom){zoom=null;applyZoom(true)}}
 (()=>{const el=$('#today'),inPic=e=>{const c=e.target.closest&&e.target.closest('#mannequin-container');return c&&!e.target.closest('button,a')?c:null};
