@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	4f357c688bc47e5a83d0
-# tested	25229f3152228d76c755
+# tested	be996a4445c59af3e7f7
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -137,8 +136,6 @@ assemble.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
 assemble.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
 assemble.test.js	tests/fixtures/asm-watch.jpg	<any>	<loaded>
 assemble.test.js	ui.js	advClose	advToggle	askAnswer	askConfirm	askEls	connSummary	needConn	renderConnUI	uiEsc
-assemble.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	dataUrlToBlob	delRender	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hubOf	jobMsg	keepSnapshots	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
-assemble.test.js	ui.js	advClose	advToggle	askAnswer	askConfirm	askEls	connSummary	isConnected	needConn	renderConnUI	uiEsc
 assemble.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	WATCH_KEY	dataUrlToBlob	delRender	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hubOf	jobMsg	keepSnapshots	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
 boxfold.test.js	<every page test>	<every page test>
 boxfold.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	aAn	adviceFor	belowBox	boxFold	boxStop	boxUnfold	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	foldEdge	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	noMotion	pageScroll	piecesBox	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	revealNeed	saveDay	schedulePrefetch	scoreCard	shirtPatterned	shirtTextured	shortRest	shortTop	slotLabel	slotPool	slots	stackSVG	tieWord	toggleList	toggleScore	vestRow	workerBase	wornMarks
@@ -666,8 +663,6 @@ month.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	loc
 month.test.js	tagging.js	benchPool	benchRuns	outfitRefsFull	patternPrompt	renderBenchUI	renderCustomUI	renderWeaveUI	settText	trimRefs	weavePool
 month.test.js	tests/fixedplan.js	<any>
 month.test.js	ui.js	advClose	askAnswer	askConfirm	askEls	connSummary	needConn	renderConnUI	uiEsc
-month.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	dataUrlToBlob	dropParts	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	isParted	keepSnapshots	kvMeta	orNull	outfitPhoto	ownerOnly	photoCap	queueRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	usedOf	utcDay	whoIs
-month.test.js	ui.js	advClose	askAnswer	askConfirm	askEls	connSummary	isConnected	needConn	renderConnUI	uiEsc
 month.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	WATCH_KEY	dataUrlToBlob	dropParts	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	isParted	keepSnapshots	kvMeta	orNull	outfitPhoto	ownerOnly	photoCap	queueRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	usedOf	utcDay	whoIs
 monthswipe.test.js	<every page test>	<every page test>
 monthswipe.test.js	app.js	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchmove	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchmove	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchmove	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	@{constroot$today}>start	aAn	adviceFor	belowBox	boxFold	boxStop	boxUnfold	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	foldAll	foldEdge	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keepInView	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthUnfold	mvSig	noMotion	pageScroll	piecesBox	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	reveal	revealNeed	saveDay	saveUserSettings	schedulePrefetch	scoreCard	shirtPatterned	shirtTextured	shortRest	shortTop	slotLabel	slotPool	slots	stackSVG	stepDay	tieWord	toggleMonth	toggleScore	vestRow	workerBase	wornMarks	zoomOut
@@ -820,8 +815,6 @@ occasions.test.js	styles.css	#about-update[hidden]	#adv-photos:has(#asm-group[hi
 occasions.test.js	sync.js	@document.addEventListenervisibilitychange	localState	scheduleSync	setSyncStatus	showSyncStatus	syncMark	syncNow	syncOnce	syncUrl
 occasions.test.js	tagging.js	benchPool	benchRuns	outfitRefsFull	patternPrompt	renderBenchUI	renderCustomUI	renderWeaveUI	settText	trimRefs	weavePool
 occasions.test.js	ui.js	advClose	connSummary	needConn	renderConnUI
-occasions.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	dataUrlToBlob	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	orNull	outfitPhoto	ownerOnly	photoCap	queueRender	renderId	sameText	sha256Hex	spend	usedOf	utcDay	whoIs
-occasions.test.js	ui.js	advClose	connSummary	isConnected	needConn	renderConnUI
 occasions.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	WATCH_KEY	dataUrlToBlob	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	orNull	outfitPhoto	ownerOnly	photoCap	queueRender	renderId	sameText	sha256Hex	spend	usedOf	utcDay	whoIs
 onorder.test.js	<every page test>	<every page test>
 onorder.test.js	app.js	@addEventListenerpopstate	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	E	S	aAn	addManual	adviceFor	belowBox	canPick	cap1	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	dropItem	esc	fetchItemPic	fetchRemoteRender	figureStage	fmtDay	fnv64	generateSwatch	hasOutfit	histDrop	histPush	idsOf	itemBody	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	metaPut	monthLink	noMotion	openItem	orderHint	orderRow	photoTools	piecesBox	planOn	prefetchRenders	put	putRaw	recordDays	renderAdd	renderFor	renderPending	renderStalled	renderWardrobe	replanFuture	resetCard	save	saveDay	saveUserSettings	schedulePrefetch	scoreCard	setArrives	setOrder	setq	shadeRow	sheetSlides	shirtColFix	shirtPatterned	shirtTextured	slotLabel	slotPool	slots	stackSVG	texSlot	toast	togglePause	vestRow	wardList	wardPic	wbNote	workerBase	wornMarks
@@ -924,8 +917,6 @@ patternphoto.test.js	tagging.js	dropDir	linS	nearName	outfitRefsFull	patternDiag
 patternphoto.test.js	tests/fixedplan.js	<any>
 patternphoto.test.js	tests/fixtures/tie-plaid.jpg	<loaded>
 patternphoto.test.js	ui.js	needConn
-patternphoto.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	dataUrlToBlob	fetch	handleRender	orNull	outfitPhoto	photoCap	renderId	sameText	sha256Hex	spend	utcDay	whoIs
-patternphoto.test.js	ui.js	isConnected	needConn
 patternphoto.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	WATCH_KEY	dataUrlToBlob	fetch	handleRender	orNull	outfitPhoto	photoCap	renderId	sameText	sha256Hex	spend	utcDay	whoIs
 photoedit.test.js	<every page test>	<every page test>
 photoedit.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	E	aAn	applyCrop	cap1	cropDrag	cropEditor	cropGeom	esc	fetchItemPic	fnv64	imgOf	itemBody	itemDesc	itemKey	itemPic	layoutCrop	loadImg	metaPut	noMotion	photoPair	photoTools	put	putRaw	renderWardrobe	replacePhoto	replanFuture	rotatePhoto	saveUserSettings	setPhoto	setPic	shadeRow	shrink	startCrop	tagSwInner	toast	togglePhotoTools	undoPhoto	wardList	wardPic	workerBase
@@ -1034,8 +1025,6 @@ queue.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	loc
 queue.test.js	tagging.js	benchPool	benchRuns	outfitRefsFull	patternPrompt	renderBenchUI	renderCustomUI	renderWeaveUI	settText	trimRefs	weavePool
 queue.test.js	tests/fixedplan.js	<any>
 queue.test.js	ui.js	advClose	askAnswer	askConfirm	askEls	connSummary	needConn	renderConnUI	uiEsc
-queue.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	SWAP_PROMPT	dataUrlToBlob	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hubOf	jobMsg	keepSnapshots	kvMeta	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	refundJob	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
-queue.test.js	ui.js	advClose	askAnswer	askConfirm	askEls	connSummary	isConnected	needConn	renderConnUI	uiEsc
 queue.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	SWAP_PROMPT	WATCH_KEY	dataUrlToBlob	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hubOf	jobMsg	keepSnapshots	kvMeta	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	refundJob	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
 queue.test.js	wrangler.toml	<any>
 refresh.test.js	<every page test>	<every page test>
@@ -1096,8 +1085,6 @@ render-sync.test.js	sync.js	@document.addEventListenervisibilitychange	localStat
 render-sync.test.js	tagging.js	outfitRefsFull	patternPrompt	settText	trimRefs
 render-sync.test.js	tests/fixedplan.js	<any>
 render-sync.test.js	ui.js	needConn
-render-sync.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	dataUrlToBlob	fetch	getRender	handleRender	orNull	outfitPhoto	photoCap	putRender	queueRender	renderId	renderTtl	sameText	sha256Hex	spend	utcDay	whoIs
-render-sync.test.js	ui.js	isConnected	needConn
 render-sync.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	WATCH_KEY	dataUrlToBlob	fetch	getRender	handleRender	orNull	outfitPhoto	photoCap	putRender	queueRender	renderId	renderTtl	sameText	sha256Hex	spend	utcDay	whoIs
 render.test.js	<every page test>	<every page test>
 render.test.js	account.js	acctCall	acctEsc	isTester	loadAccount	rememberRole	renderAccountUI
@@ -1120,8 +1107,6 @@ render.test.js	sync.js	@document.addEventListenervisibilitychange	localState	sch
 render.test.js	tagging.js	benchEstimate	benchPool	benchRuns	outfitRefsFull	patternPrompt	renderBenchUI	renderCustomUI	renderWeaveUI	settText	trimRefs	visTok	weavePool
 render.test.js	tests/fixedplan.js	<any>
 render.test.js	ui.js	advClose	connNote	connSummary	needConn	renderConnUI
-render.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	SWAP_PROMPT	dataUrlToBlob	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	orNull	outfitPhoto	ownerOnly	photoCap	putRender	queueRender	renderId	sameText	sha256Hex	spend	unspend	usedOf	utcDay	whoIs
-render.test.js	ui.js	advClose	connNote	connSummary	isConnected	needConn	renderConnUI
 render.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	ROUTES.* /sync	SWAP_PROMPT	WATCH_KEY	dataUrlToBlob	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	orNull	outfitPhoto	ownerOnly	photoCap	putRender	queueRender	renderId	sameText	sha256Hex	spend	unspend	usedOf	utcDay	whoIs
 replan.test.js	<every page test>	<every page test>
 replan.test.js	account.js	isTester	loadAccount	renderAccountUI
@@ -1967,8 +1952,6 @@ todayqueue.test.js	sync.js	@document.addEventListenervisibilitychange	localState
 todayqueue.test.js	tagging.js	benchPool	benchRuns	outfitRefsFull	patternPrompt	renderBenchUI	renderCustomUI	renderWeaveUI	settText	trimRefs	weavePool
 todayqueue.test.js	tests/fixedplan.js	<any>
 todayqueue.test.js	ui.js	advClose	connSummary	needConn	renderConnUI
-todayqueue.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	RenderHub	dataUrlToBlob	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	hubOf	jobMsg	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	refundJob	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	tellHub	usedOf	utcDay	waitForRenders	whoIs
-todayqueue.test.js	ui.js	advClose	connSummary	isConnected	needConn	renderConnUI
 todayqueue.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	RENDER_PROMPT	RenderHub	WATCH_KEY	dataUrlToBlob	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	hubOf	jobMsg	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	refundJob	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	tellHub	usedOf	utcDay	waitForRenders	whoIs
 todaytight.test.js	<every page test>	<every page test>
 todaytight.test.js	app.js	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchmove	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchmove	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchmove	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	aAn	adviceFor	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	foldAll	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFillSoon	monthLink	piecesBox	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	saveDay	saveUserSettings	schedulePrefetch	scoreCard	setWorn	shirtPatterned	shirtTextured	slotLabel	slotPool	slots	stackSVG	stepDay	vestRow	workerBase	wornMarks	zoomOut
