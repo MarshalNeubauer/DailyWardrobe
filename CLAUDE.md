@@ -332,6 +332,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - IndexedDB storage (items, day history, settings; generated photos in `meta` as `render:<combination key>`)
 - forms (the Wardrobe editor can replace, rotate, zoom-crop and undo an item's photo without touching its tags: `photoTools`, `setPhoto`)
+- an item's photo is kept at `PH_MAX` (720px, JPEG .85) by Add too (`cardPics`), as Replace photo always did; it was 360px (JPEG .8), and the owner's suit, cropped later, went to the photo generator as a 270px piece of a mirror selfie; photos added before stay as they are; the backup grows with them (it was 14.7 MB for 91 items)
+- zoom & crop cuts from the best copy (`cropSource`): the sharp copy kept on this device when the photo was read (`tagImgOf`, up to 2048px), turned to match the photo, when it is the same picture (same shape, mean grey difference at 24x24 up to `CROP_MATCH` 12); else from the photo; the output is still at most `PH_MAX`
+- a replaced or already cropped photo no longer matches the sharp copy, so it is cropped from itself; Replace photo does not renew the sharp copy, since the pattern re-read (`rereadSett`) reads it together with the pattern box (`pbox`) measured on the original
 - screens:
   - Today: worn / not worn are ✕ and ✓ over the picture's bottom corners on today and past days, with a "Last worn" pill between them when the look was worn before (`wornMarks`, `setWorn`)
   - no "Below the waist" heading
