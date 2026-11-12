@@ -1,10 +1,10 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a00df40f305f817940c0
+# tested	e3f491f92b82d6850436
 <every page test>	analysis.js	<loaded>
 <every page test>	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterScripts	applyTheme	applyZoom	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txs	workerBase	zoomTarget
 <every page test>	assemble.js	<loaded>	@	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
 <every page test>	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	itemSeason	key	occOf	offDays	offName	seasonFit	todayDate
-<every page test>	detect.js	<loaded>
+<every page test>	detect.js	<loaded>	@
 <every page test>	draw.js	<loaded>
 <every page test>	figure.js	<loaded>	@{}
 <every page test>	planner.js	<loaded>	clothesScore	comboRepeat	itemVote	lookRepeat	outfit	outfitScore	pairDown	pairUp	pairVote	patInfo	patternScore	planSim	planStart	shirtRepeat	tieRepeat
@@ -60,7 +60,7 @@ claudepattern.test.js	app.js	@document.addEventListenervisibilitychange	S	addFil
 claudepattern.test.js	apple-touch-icon.png	<loaded>
 claudepattern.test.js	assemble.js	asmAutoSoon	asmCan	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPieceKey	asmVestKept	asmZonesKept	renderAsmUI
 claudepattern.test.js	core.js	COLOR_OPTS	accentOf	colBase	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	inRotation	labHex	labOf	lum	nm	normCol	normColFor	normPat	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbLab	shadeName	thirdOf	watchOpts
-claudepattern.test.js	detect.js	@	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	usableSett	variance
+claudepattern.test.js	detect.js	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	usableSett	variance
 claudepattern.test.js	draw.js	fabricDef	itemThumb
 claudepattern.test.js	icon-192.png	<loaded>
 claudepattern.test.js	icon-512.png	<loaded>
@@ -81,7 +81,7 @@ climate.test.js	app.js	@document.addEventListenervisibilitychange	aAn	adviceFor	
 climate.test.js	apple-touch-icon.png	<loaded>
 climate.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmWants	renderAsmUI
 climate.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf
-climate.test.js	detect.js	@	texPat	usableSett
+climate.test.js	detect.js	texPat	usableSett
 climate.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 climate.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 climate.test.js	icon-192.png	<loaded>
@@ -154,7 +154,7 @@ daypieces.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel
 daypieces.test.js	apple-touch-icon.png	<loaded>
 daypieces.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmMasterKey	asmPending	asmWants
 daypieces.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf	watchOpts
-daypieces.test.js	detect.js	@	usableSett
+daypieces.test.js	detect.js	usableSett
 daypieces.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	drawWatch	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 daypieces.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 daypieces.test.js	icon-192.png	<loaded>
@@ -170,7 +170,7 @@ daysoff.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$toda
 daysoff.test.js	apple-touch-icon.png	<loaded>
 daysoff.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 daysoff.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf
-daysoff.test.js	detect.js	@	texPat	usableSett
+daysoff.test.js	detect.js	texPat	usableSett
 daysoff.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 daysoff.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 daysoff.test.js	icon-192.png	<loaded>
@@ -221,7 +221,7 @@ figure.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$to
 figure.test.js	apple-touch-icon.png	<loaded>
 figure.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmMasterKey	asmPending	asmWants
 figure.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	thirdOf	watchOpts
-figure.test.js	detect.js	@	usableSett
+figure.test.js	detect.js	usableSett
 figure.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 figure.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 figure.test.js	icon-192.png	<loaded>
@@ -279,7 +279,7 @@ history.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$toda
 history.test.js	apple-touch-icon.png	<loaded>
 history.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmMasterKey	asmPending	asmWants
 history.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf	watchOpts
-history.test.js	detect.js	@	usableSett
+history.test.js	detect.js	usableSett
 history.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 history.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 history.test.js	icon-192.png	<loaded>
@@ -541,7 +541,7 @@ patternphoto.test.js	app.js	@document.addEventListenervisibilitychange	applyWb	b
 patternphoto.test.js	apple-touch-icon.png	<loaded>
 patternphoto.test.js	assemble.js	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 patternphoto.test.js	core.js	accentOf	colName	colOf	colorDesc	colourNameRe	dE00	hasVest	hexRgb	labHex	labOf	lum	mix	nm	patBase	patLabel	prettyCols	primaryCol	rgbHex	rgbLab	thirdOf
-patternphoto.test.js	detect.js	@	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	usableSett	variance
+patternphoto.test.js	detect.js	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	usableSett	variance
 patternphoto.test.js	draw.js	fabricDef	figBg	figFabric	figureSvg
 patternphoto.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 patternphoto.test.js	icon-192.png	<loaded>
@@ -574,7 +574,7 @@ picker.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$to
 picker.test.js	apple-touch-icon.png	<loaded>
 picker.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmMasterKey	asmPending	asmWants
 picker.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf	watchOpts
-picker.test.js	detect.js	@	usableSett
+picker.test.js	detect.js	usableSett
 picker.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 picker.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 picker.test.js	icon-192.png	<loaded>
@@ -645,7 +645,7 @@ refresh.test.js	manifest.webmanifest	<loaded>
 refresh.test.js	planner.js	colourRepeat	fam	frozenOutfit	jacketGroup	pcol	rateOutfit	scoreAdvice	shirtLook	tieLook
 refresh.test.js	shop.js	shopButton	shopRecs
 refresh.test.js	styles.css	#mannequin-container	#refresh-btn.spin	#spanel .mpanel-in	#toast.on	#today .row .dot	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .shopbtn	.btn	.cap	.chip	.chip.on	.chips	.dot	.dot svg	.fig	.fig .wornbar	.fig .wornbar>*	.fig>svg	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pcount	.phead h2	.pstrip	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.row	.row .mut	.row .mut.none	.row .swap	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score .scap	.score li	.score li small	.score li.hard .sbar i	.score li.hard span:first-child	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.spin	.stack	.thumb	.thumb svg	.warn	.wmark	.wslide	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	<loaded>
-refresh.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	localState	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNow	syncOnce	syncUrl	synced
+refresh.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	localState	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNow	syncOnce	syncRedraw	syncUrl	synced
 refresh.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	fetch	getRender	handleSync	keepSnapshots	orNull	renderId	syncVersion
 refs.test.js	<every page test>	<every page test>
 refs.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	itemDesc	itemKey	itemPic	outfitRefs
@@ -698,7 +698,7 @@ replan.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$to
 replan.test.js	apple-touch-icon.png	<loaded>
 replan.test.js	assemble.js	asmCan	asmFor	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmWants	renderAsmUI
 replan.test.js	core.js	LUM	colBase	colName	colorDesc	colourNameRe	hasVest	inRotation	lumCol	nm	occLabel	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	sockToe
-replan.test.js	detect.js	@	texPat	usableSett
+replan.test.js	detect.js	texPat	usableSett
 replan.test.js	icon-192.png	<loaded>
 replan.test.js	icon-512.png	<loaded>
 replan.test.js	index.html	<loaded>
@@ -726,7 +726,7 @@ reviewfixes.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$
 reviewfixes.test.js	apple-touch-icon.png	<loaded>
 reviewfixes.test.js	assemble.js	asmAutoSoon	asmCan	asmEnsure	asmFor	asmPending	asmWants
 reviewfixes.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	stamp	thirdOf
-reviewfixes.test.js	detect.js	@	detectQueued	usableSett
+reviewfixes.test.js	detect.js	detectQueued	usableSett
 reviewfixes.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 reviewfixes.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 reviewfixes.test.js	icon-192.png	<loaded>
@@ -822,7 +822,7 @@ run.js: outfit score	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncU
 run.js: pattern detection on synthetic fabric photos	<every page test>	<every page test>
 run.js: pattern detection on synthetic fabric photos	apple-touch-icon.png	<loaded>
 run.js: pattern detection on synthetic fabric photos	core.js	accentOf	colOf	hasVest	hexRgb	lum	mix	primaryCol	rgbHex
-run.js: pattern detection on synthetic fabric photos	detect.js	@	analyzeChecks	analyzeStripes	boxBlur	detectPattern	foldBands	lumGrid	mapRuns	normAng	period	periodCh	project	sobel	variance
+run.js: pattern detection on synthetic fabric photos	detect.js	analyzeChecks	analyzeStripes	boxBlur	detectPattern	foldBands	lumGrid	mapRuns	normAng	period	periodCh	project	sobel	variance
 run.js: pattern detection on synthetic fabric photos	icon-192.png	<loaded>
 run.js: pattern detection on synthetic fabric photos	icon-512.png	<loaded>
 run.js: pattern detection on synthetic fabric photos	index.html	<loaded>
@@ -854,7 +854,7 @@ run.js: renders the outfit without errors	app.js	@{constel$today}>@addEventListe
 run.js: renders the outfit without errors	apple-touch-icon.png	<loaded>
 run.js: renders the outfit without errors	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmMasterKey	asmPending	asmWants
 run.js: renders the outfit without errors	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf	watchOpts
-run.js: renders the outfit without errors	detect.js	@	usableSett
+run.js: renders the outfit without errors	detect.js	usableSett
 run.js: renders the outfit without errors	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 run.js: renders the outfit without errors	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 run.js: renders the outfit without errors	icon-192.png	<loaded>
@@ -899,7 +899,7 @@ scoreanim.test.js	app.js	@{constb$ivbody}>@document.addEventListenerkeydown	@{co
 scoreanim.test.js	apple-touch-icon.png	<loaded>
 scoreanim.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmPending	asmWants
 scoreanim.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	thirdOf
-scoreanim.test.js	detect.js	@	usableSett
+scoreanim.test.js	detect.js	usableSett
 scoreanim.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 scoreanim.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 scoreanim.test.js	icon-192.png	<loaded>
@@ -932,7 +932,7 @@ sett.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}>
 sett.test.js	apple-touch-icon.png	<loaded>
 sett.test.js	assemble.js	asmAutoSoon	asmCan	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPieceKey	asmVestKept	asmZonesKept	renderAsmUI
 sett.test.js	core.js	COLOR_OPTS	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	desc	fitCol	hasVest	hexRgb	inRotation	labHex	labOf	lum	mergeState	mix	nm	normCol	normColFor	normPat	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	shadeName	stamp	stateSig	thirdOf	watchOpts
-sett.test.js	detect.js	@	analyzeSett	binMedians	boxBlurWH	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	usableSett	variance
+sett.test.js	detect.js	analyzeSett	binMedians	boxBlurWH	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	usableSett	variance
 sett.test.js	draw.js	fabricDef	itemThumb
 sett.test.js	icon-192.png	<loaded>
 sett.test.js	icon-512.png	<loaded>
@@ -1030,7 +1030,7 @@ shop.test.js	index.html	<loaded>
 shop.test.js	manifest.webmanifest	<loaded>
 shop.test.js	planner.js	<any>	beltFit	colourRepeat	colsOf	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	jacketGroup	leatherGroup	metalOf	nearCost	pairScore	pcol	rateOutfit	scoreAdvice	shirt	shirtGroup	shirtLook	shirtScore	shoeFormality	shoeScore	sockEcho	sockScore	tie	tieGroup	tieLook	tieScore	top	watchFit
 shop.test.js	shop.js	@document.addEventListenerkeydown	analyzeWardrobe	openShop	renderShop	shopBought	shopBusyText	shopButton	shopCat	shopFind	shopFindIn	shopFresh	shopGo	shopHid	shopHide	shopKeyName	shopOutfit	shopRec	shopRecs	shopSamples	shopSig	shopSwipe
-shop.test.js	styles.css	#add	#mannequin-container	#shop-backdrop.on	#shop-sheet .btns	#shop-sheet button.pri	#shop-sheet button:where(:not(.pick-x,.shop-toprow,.shop-rechead))	#shop-sheet input[type=date]	#shop-sheet p	#shop-sheet.on	#spanel .mpanel-in	#today .row .dot	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi .pausetag	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .shopbtn	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.cap	.chip	.chip.on	.chips	.daygrid	.daygrid .side	.daygrid .stage	.dot	.dot svg	.fig	.fig .wornbar	.fig .wornbar>*	.fig>svg	.gi	.gi,.card	.gi.paused .giopen .ph,.gi.paused .giopen svg	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.gotoday	.gotoday::after	.grid	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.ordate input	.ordate,.card .ordate	.pausetag	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pcount	.phead h2	.pick-head	.pick-head b	.pick-x	.pri	.pstrip	.rec-img .thumb	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.row	.row .mut	.row .swap	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.sc	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.shop-busy	.shop-busy .st-bar	.shop-busy .st-bar i	.shop-buy	.shop-buy .ordate	.shop-cat	.shop-cat h3	.shop-chev	.shop-fig	.shop-fig figcaption	.shop-figs	.shop-foot	.shop-g	.shop-g i	.shop-grab	.shop-hid	.shop-lead	.shop-mix	.shop-more	.shop-msg	.shop-n	.shop-occ	.shop-occ small,.shop-occ ul	.shop-rec	.shop-rec.flash	.shop-rechead	.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb	.shop-rechead .rec-txt	.shop-rechead .rec-txt b	.shop-tag	.shop-tag.better	.shop-tag.fix	.shop-tag.gap,.shop-tag.variety	.shop-top	.shop-top li	.shop-top-head	.shop-top-head b	.shop-topnm	.shop-topnm b	.shop-toprow	.shop-toprow .rec-img .thumb	.shop-v	.shop-v.covered	.shop-v.needed	.shop-v.worth	.shop-why	.shop-why li	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.st-bar	.st-bar i	.stack	.thumb	.thumb svg	.warn	.wmark	.wslide	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	<loaded>	button:focus-visible,select:focus-visible,input:focus-visible
+shop.test.js	styles.css	#add	#mannequin-container	#shop-backdrop.on	#shop-sheet .btns	#shop-sheet button.pri	#shop-sheet button:where(:not(.pick-x,.shop-toprow,.shop-rechead))	#shop-sheet input[type=date]	#shop-sheet p	#shop-sheet.on	#spanel .mpanel-in	#today .row .dot	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi .pausetag	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .shopbtn	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.cap	.chip	.chip.on	.chips	.daygrid	.daygrid .side	.daygrid .stage	.dot	.dot svg	.fig	.fig .wornbar	.fig .wornbar>*	.fig>svg	.gi	.gi,.card	.gi.paused .giopen .ph,.gi.paused .giopen svg	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.gotoday	.gotoday::after	.grid	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.ordate input	.ordate,.card .ordate	.pausetag	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pcount	.phead h2	.pick-head	.pick-head b	.pick-x	.pri	.pstrip	.rec-img .thumb	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.row	.row .mut	.row .swap	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.sc	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.shop-busy	.shop-busy .st-bar	.shop-busy .st-bar i	.shop-buy	.shop-buy .ordate	.shop-cat	.shop-cat h3	.shop-chev	.shop-fig	.shop-fig figcaption	.shop-figs	.shop-foot	.shop-g	.shop-g i	.shop-grab	.shop-hid	.shop-lead	.shop-mix	.shop-more	.shop-msg	.shop-n	.shop-occ	.shop-occ small,.shop-occ ul	.shop-rec	.shop-rec.flash	.shop-rechead	.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb	.shop-rechead .rec-txt	.shop-rechead .rec-txt b	.shop-tag	.shop-tag.better	.shop-tag.fix	.shop-tag.gap,.shop-tag.variety	.shop-top	.shop-top li	.shop-top-head	.shop-top-head b	.shop-topnm	.shop-topnm b	.shop-toprow	.shop-toprow .rec-img .thumb	.shop-v	.shop-v.covered	.shop-v.needed	.shop-v.worth	.shop-why	.shop-why li	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.st-bar	.st-bar i	.stack	.thumb	.thumb svg	.warn	.wmark	.wslide	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	<loaded>	button:focus-visible,select:focus-visible,input:focus-visible
 shop.test.js	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 shopswipe.test.js	<every page test>	<every page test>
 shopswipe.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	esc	renderWardrobe	wardList	wardPic
@@ -1059,7 +1059,7 @@ snapshots.test.js	index.html	<loaded>
 snapshots.test.js	manifest.webmanifest	<loaded>
 snapshots.test.js	planner.js	colsOf	fam	frozenOutfit	pcol	rateOutfit	tieGroup	tieLook	tieScore
 snapshots.test.js	styles.css	#add	#batch-btn[disabled]	#itempic-btn[disabled]	#mannequin-container	#settings-modal .days	#settings-modal .dtog	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mpanel-in	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date]	#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal label.btn	#spanel .mpanel-in	#today .row .dot	.btn	.cap	.daygrid	.daygrid .side	.daygrid .stage	.days	.dot	.dot svg	.dtog	.fchips	.fig	.fig .wornbar	.fig .wornbar>*	.fig>svg	.gotoday	.gotoday::after	.hlist	.hlist:empty	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mpanel-in>.srow:first-child,.mpanel-in>.shelp+.srow	.offadd input[type=date]	.pchip	.pchip svg	.pri	.pstrip	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.row	.row .mut	.row .mut.none	.row .swap	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.sactions:empty	.sbar	.sbar i	.sbody	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score .scap	.score li	.score li small	.score li.hard .sbar i	.score li.hard span:first-child	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slabel	.slink	.slink .chev	.srow	.srow select	.srow.stack	.srow.stack input	.stack	.wmark	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) select	<loaded>	select,input[type="text"],input[type="range"]
-snapshots.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	loadSnapshots	localState	rollBack	rollBackState	setSyncMark	setSyncStatus	showSyncStatus	snapLabel	syncMark	syncNow	syncOnce	syncUrl	synced
+snapshots.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	loadSnapshots	localState	rollBack	rollBackState	setSyncMark	setSyncStatus	showSyncStatus	snapLabel	syncMark	syncNow	syncOnce	syncRedraw	syncUrl	synced
 snapshots.test.js	tagging.js	benchPool	benchRuns	renderBenchUI	renderCustomUI	renderWeaveUI	weavePool
 snapshots.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	fetch	getRender	handleSync	keepSnapshots	listSnapshots	orNull	renderId	syncVersion
 socktoe.test.js	<every page test>	<every page test>
@@ -1102,7 +1102,7 @@ sw.test.js	app.js	<any>	@document.addEventListenervisibilitychange	@{constel$tod
 sw.test.js	apple-touch-icon.png	<any>
 sw.test.js	assemble.js	<any>
 sw.test.js	core.js	<any>	hasVest
-sw.test.js	detect.js	<any>	@
+sw.test.js	detect.js	<any>
 sw.test.js	draw.js	<any>
 sw.test.js	figure.js	<any>
 sw.test.js	icon-192.png	<any>
@@ -1121,7 +1121,7 @@ sync.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}>
 sync.test.js	apple-touch-icon.png	<loaded>
 sync.test.js	assemble.js	asmAutoSoon	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 sync.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mergeState	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	stamp	stateSig	thirdOf
-sync.test.js	detect.js	@	texPat	usableSett
+sync.test.js	detect.js	texPat	usableSett
 sync.test.js	draw.js	buckleDefs	drawBelt	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	swatchSVG
 sync.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 sync.test.js	icon-192.png	<loaded>
@@ -1130,8 +1130,8 @@ sync.test.js	index.html	<loaded>
 sync.test.js	manifest.webmanifest	<loaded>
 sync.test.js	planner.js	colourRepeat	colsOf	darkShirt	darkUnderLight	fam	frozenOutfit	jacketGroup	metalOf	pcol	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtScore	sockEcho	sockScore	tieGroup	tieLook	tieScore
 sync.test.js	shop.js	shopButton	shopRecs
-sync.test.js	styles.css	#add	#batch-btn[disabled]	#itempic-btn[disabled]	#mannequin-container	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mpanel-in	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date]	#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal label.btn	#spanel .mpanel-in	#today .row .dot	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .shopbtn	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.cap	.chip	.chip.on	.chips	.daygrid	.daygrid .side	.daygrid .stage	.days	.dot	.dot svg	.dtog	.dtog.on	.fchips	.fig	.fig .wornbar	.fig .wornbar>*	.fig>svg	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hlist	.hlist:empty	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mpanel-in>.srow:first-child,.mpanel-in>.shelp+.srow	.offadd input[type=date]	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pcount	.phead h2	.pri	.pstrip	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.row	.row .mut	.row .mut.none	.row .swap	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.sactions:empty	.sbar	.sbar i	.sbody	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score .scap	.score li	.score li small	.score li.hard .sbar i	.score li.hard span:first-child	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slabel	.slink	.slink .chev	.srow	.srow select	.srow.stack	.srow.stack input	.stack	.thumb	.thumb svg	.wmark	.wslide	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) select	<loaded>	select,input[type="text"],input[type="range"]
-sync.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	localState	restoreBackup	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNow	syncOnce	syncUrl	synced
+sync.test.js	styles.css	#add	#batch-btn[disabled]	#itempic-btn[disabled]	#mannequin-container	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox.open .mpanel-in	#settings-modal .mpanel-in	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date]	#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal label.btn	#spanel .mpanel-in	#today .row .dot	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .shopbtn	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.cap	.chip	.chip.on	.chips	.daygrid	.daygrid .side	.daygrid .stage	.days	.dot	.dot svg	.dtog	.dtog.on	.fchips	.fig	.fig .wornbar	.fig .wornbar>*	.fig>svg	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hlist	.hlist:empty	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mpanel-in>.srow:first-child,.mpanel-in>.shelp+.srow	.offadd input[type=date]	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pcount	.phead h2	.pri	.pstrip	.render-btn	.render-ctl	.render-msg	.render-msg:empty	.row	.row .mut	.row .mut.none	.row .swap	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.sactions:empty	.sbar	.sbar i	.sbody	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score .scap	.score li	.score li small	.score li.hard .sbar i	.score li.hard span:first-child	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slabel	.slink	.slink .chev	.srow	.srow select	.srow.stack	.srow.stack input	.stack	.thumb	.thumb svg	.wmark	.wslide	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#settings-modal) select	<loaded>	select,input[type="text"],input[type="range"]
+sync.test.js	sync.js	@document.addEventListenervisibilitychange	applyMerged	localState	restoreBackup	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNow	syncOnce	syncRedraw	syncUrl	synced
 sync.test.js	tagging.js	benchPool	benchRuns	renderBenchUI	renderCustomUI	renderWeaveUI	weavePool
 sync.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	fetch	getRender	handleSync	keepSnapshots	orNull	renderId	syncVersion
 tagging.test.js	<every page test>	<every page test>
@@ -1261,7 +1261,7 @@ todaytight.test.js	app.js	@{constel$todayinPice}>@el.addEventListenertouchend	@{
 todaytight.test.js	apple-touch-icon.png	<loaded>
 todaytight.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmPending	asmWants
 todaytight.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	thirdOf
-todaytight.test.js	detect.js	@	usableSett
+todaytight.test.js	detect.js	usableSett
 todaytight.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 todaytight.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 todaytight.test.js	icon-192.png	<loaded>
@@ -1276,7 +1276,7 @@ todayzoom.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$to
 todayzoom.test.js	apple-touch-icon.png	<loaded>
 todayzoom.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 todayzoom.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	labHex	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	sockToe	thirdOf
-todayzoom.test.js	detect.js	@	settSig	texPat	usableSett
+todayzoom.test.js	detect.js	settSig	texPat	usableSett
 todayzoom.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	texTileUrl	texTones
 todayzoom.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 todayzoom.test.js	icon-192.png	<loaded>
@@ -1384,7 +1384,7 @@ weather.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$toda
 weather.test.js	apple-touch-icon.png	<loaded>
 weather.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmWants	renderAsmUI
 weather.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	occLabel	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	thirdOf	watchOpts	watchText
-weather.test.js	detect.js	@	texPat	usableSett
+weather.test.js	detect.js	texPat	usableSett
 weather.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 weather.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 weather.test.js	icon-192.png	<loaded>

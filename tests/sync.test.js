@@ -44,6 +44,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   // the screen refreshes after a sync brings new items
   await add(A.p,{type:'suit',primaryColor:'navy'});await sync(A.p);await B.p.click('#n-wardrobe');await sync(B.p);
   ok((await B.p.textContent('#wardrobe')).includes('Suit'),'the open screen refreshes when synced items arrive');
+  // changes synced in while Settings is open (the start-up sync comes back 2.5 s after launch) leave it open: the tab on screen
+  // is redrawn once it closes
+  await add(A.p,{type:'socks',primaryColor:'charcoal'});await sync(A.p);await B.p.evaluate(()=>openSettings('backup'));await sync(B.p);
+  const so=await B.p.evaluate(()=>{const n=()=>document.querySelectorAll('#wardrobe .gi').length,open=settingsOpen(),before=n();closeSettings();return {open,before,ward:n(),items:items.length}});
+  await B.p.evaluate(()=>show('today'));await add(A.p,{type:'belt',primaryColor:'brown'});await sync(A.p);
+  await B.p.evaluate(()=>openSettings('backup'));await sync(B.p);
+  const st=await B.p.evaluate(()=>({open:settingsOpen(),stale:todayStale}));await B.p.evaluate(()=>closeSettings());
+  const after=await B.p.evaluate(()=>({stale:todayStale,today:!$('#today').hidden}));
+  ok(so.open&&so.ward===so.items&&so.before===so.items-1&&st.open&&st.stale&&!after.stale&&after.today,`a sync that brings changes while Settings is open leaves it open; the tab on screen (Wardrobe, Today) is redrawn when it closes (${JSON.stringify({so,st,after})})`);
 
   // a delete and an edit made while a sync is still in flight must not be undone by that sync
   const [d1,e1]=[await add(A.p,{type:'tie',primaryColor:'gold'}),await add(A.p,{type:'tie',primaryColor:'purple'})];await sync(A.p);

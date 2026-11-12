@@ -20,7 +20,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok((await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'x-app-token':'t'},body:JSON.stringify({mode:'item'})}),env)).status===400,'an empty description is refused');
     // app
     const ctx=await browser.newContext({viewport:{width:390,height:900}});
-    await ctx.route(HOST+'**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
+    // the worker answers no /sync: the items below are set in memory only, and a sync merges in what is saved, so the start-up
+    // sync (300 ms after the database opens) or one scheduled by a day record saved while Today draws emptied them on a busy
+    // machine; this test is about item pictures (sync.test.js covers syncing, and a sync with Settings open, which used to close
+    // it and time out the click on #itempic-btn below)
+    await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:503,body:'sync is off in this test'});const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
