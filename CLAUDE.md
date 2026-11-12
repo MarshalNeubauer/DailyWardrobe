@@ -493,6 +493,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - deleting from the device only also removes the connection (otherwise the next sync would bring the wardrobe back); the confirmation says the server's copy stays and comes back on connecting again
 - what to say after the restart is carried in `sessionStorage.about_note` (`ABOUT_NOTE`) and shown as a toast by `aboutStart()`
 - the privacy note is a `<details class="about-fold">` in index.html; styles under `/* ---- about ---- */` at the end of styles.css (`.about-text`, `.about-note`, `.fb-item`, `.about-confirm`, `.about-fold`)
+- the privacy note names everyone who gets something: the server's owner (who can read the backup, photos and feedback), Cloudflare and GitHub Pages (visit logs), Anthropic, OpenAI, Open-Meteo (the weather location) and Nager.Date / Google (the country only)
 - `tests/about.test.js` mocks the server (`/me`, `/feedback`, `/account`) with `page.route`
 - rewritten: what the app is, joining by invite link, privacy, hosting (GitHub Pages + the Cloudflare Worker and its settings), running the tests; the screenshots `wa0.png`…`wa6.png` in the root were deleted (nothing referenced them)
 
@@ -627,6 +628,10 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - testers see no costs: `showCost()` (app.js) is false for a tester, and the photo prompts and Settings → Realistic photos leave out "about 7¢"; the owner's Advanced fold (item photos, the accuracy check) keeps its costs
 - About's Feedback line (`#fb-help`, set by `renderAbout`) says "it goes to the person who invited you" to testers only; the owner reads the feedback there
 - `tests/testerview.test.js`: the costs, the feedback line and Settings' Backup line
+- an invitation link on a phone already connected with another code: if the phone has a wardrobe of its own (`acctHasLocal`), `connectFromLink` asks first ("Clear and switch"), clears the device (`wipeDevice`, about.js), stores the new connection and reloads; with nothing on the phone it switches at once and drops `sync_mark`, `last_sync`, `sync_status`. Before, the sync merged the phone's wardrobe into the new account (the owner trying a tester's link copied the owner's wardrobe into theirs)
+- iPhone: a Home Screen app keeps storage of its own, apart from Safari's, so it starts unconnected; a tester who connects in Safari (`iosInSafari`: an iOS device, not `standalone`) gets `homeScreenGuide()` (add to Home Screen, open it, paste the link; "Copy link"), and Connection says so and has "Copy my invitation link" (`copyInviteLink`, `myInviteLink`: rebuilt from `worker_url` and `app_token`; testers only, never the owner's code)
+- the owner's list: a switched-off invitation has "Delete their data" (`purgeInvite` → `DELETE /invites?id=&purge=1`)
+- `tests/invitelink.test.js`: the switch, the iPhone guide and copy, the purge button
 
 ### `ui.js`
 
@@ -662,6 +667,9 @@ Cloudflare Worker. Every endpoint needs the owner's `APP_TOKEN` or a tester's in
 - `/pattern` motif: `layout:'motif'` with `motif {grid: straight|diagonal, ground {name,hex}, figures [{shape (MOTIF_SHAPES), placement: cell|corner|alternate-cells, colours (1, or 2 alternating), centre (square-with-dot), sizePct}]}`; `across`/`along` are null; `repeatsInCloseup`/`repeatsAcrossItem` count grid cells
 - `/tag-many`: several items in one photo. Claude lists every item with a confidence and a rough box in thousandths; the app crops each into its own Add card.
 - `/sync`: KV binding `WARDROBE`. The backup's `{rev, saved}` is kept as the KV key's metadata, so `?v=` and the PUT conflict check don't load the backup.
+- all testers together have a daily total (`ALL_CAPS`: tag 150, pattern 40, photo 40, item 60, upload 300, feedback 100; the `TESTER_DAILY_TOTAL` variable, JSON, changes any), counted like one more tester under the id `all` (hub `renders:u:all:`, or KV `use:all:<day>`) after the tester's own cap; over it the call is refused in plain words (`all:true`) and the tester's own count goes back; `unspend` and `refundJob` give back both; the owner is never counted. Set budget limits on the OpenAI and Anthropic accounts as well: this only bounds what testers can spend
+- `DELETE /invites?id=&purge=1` (owner): switches the invitation off, deletes everything under `u:<id>:` (the queue finishes a large one), their feedback and today's count, and takes them off the list; the code stays refused ("switched off")
+- a switched-off tester may still `DELETE /account` (`whoIs` returns `offWho`, the router lets only that route through); every other route answers 403 "invite off"
 - `/sync` takes backups up to 48 MiB (`BACKUP_MAX`); KV holds 25 MiB a value, so one over 20 MiB (`PART_MAX`) is kept in parts: the first under the key, with `parts:n` in its metadata, the rest as `<key>~<rev>~<i>`, written before the key; reads (`storedResponse`, `partedStream`) stream them back part by part, daily copies copy them (`copyStored`), a new version deletes the old version's parts (`dropParts`), "Delete everything" takes `wardrobe:v1~…` too
 - a PUT over 20 MiB is never parsed whole (`putParted`, `BIG_HEAD`): sync.js sends `data` last so the worker reads `baseRev`, `day` and `reason` from the first bytes; an older app (data first) is answered 413 "update the app"; `tests/snapshots.test.js` checks 30, 46 and 51 MB backups
 - `/fetch`: downloads photo links for the app.

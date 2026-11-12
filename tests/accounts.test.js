@@ -92,7 +92,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const lists0=n.list;await drain();const [gA,gO,gB]=[await wA,await wO,await wB];
     ok(gA.length===1&&gA[0].rec.sig==='tess'&&gO.length===1&&gO[0].rec.sig==='owner'&&gB.length===0,'GET /render-wait hands each person their own finished photo; someone else waiting for the same key gets nothing');
     ok(JSON.parse(store.get('render:'+QK)).sig==='owner'&&JSON.parse(store.get(A.ns+'render:'+QK)).sig==='tess'&&!store.has('job:'+QK)&&!store.has(A.ns+'job:'+QK)&&n.list===lists0,'the consumer writes each photo under its person and clears the job, without a KV list');
-    ok([...hubs.keys()].sort().join()===['renders','renders:'+A.ns,'renders:'+B.ns].sort().join(),'one hub per person: the owner\'s is still the one named "renders"');
+    ok([...hubs.keys()].sort().join()===['renders','renders:'+A.ns,'renders:'+B.ns,'renders:u:all:'].sort().join(),'one hub per person: the owner\'s is still the one named "renders"; one more counts all the testers together');
     imgReply=()=>[400,{error:{message:'not allowed'}}];
     await call('POST','render',O,{mode:'queue',key:K2,image:PNG});await drain();
     ok(store.has('jobfail:'+K2)&&!store.has('job:'+K2)&&!store.has('jobrun:'+K2),'a failed photo of the owner\'s is recorded as jobfail:<key>');
@@ -148,6 +148,27 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // ---- revoking
     ok((await J(await call('DELETE','invites?id='+B.id,O))).ok&&(await call('GET','me',B.code)).status===403&&(await call('GET','sync',B.code)).status===403&&(await photo(B.code)).status===403&&(await call('GET','me',A.code)).status===200,'a revoked code gets 403 everywhere, at once; the other tester carries on');
     ok((await J(await call('GET','invites',O))).invites.find(v=>v.id===B.id).off===true&&(await call('DELETE','invites?id=nobody',O)).status===404,'the list shows it as switched off');
+    // all testers together have a ceiling a day (TESTER_DAILY_TOTAL changes it); the owner never counts towards it
+    {const allUsed=()=>{const u=hubs.get('renders:u:all:').hub&&hubs.get('renders:u:all:').st.get('use');return u?+u.n.photo||0:0},u0=allUsed();
+      r=await J(await call('POST','invites',O,{name:'Fi'}));const F={id:r.id,code:r.code};
+      const e3={...env,TESTER_DAILY_TOTAL:JSON.stringify({photo:u0+1})};
+      const s1=(await call('POST','render',F.code,{image:PNG,outfit:'a navy suit'},e3)).status,r2=await J(await call('POST','render',F.code,{image:PNG,outfit:'a navy suit'},e3));
+      const own=(await J(await call('GET','me',F.code))).used.photo,o3=(await call('POST','render',O,{image:PNG,outfit:'a navy suit'},e3)).status;
+      ok(s1===200&&r2.s===429&&r2.all===true&&/everyone testing the app/.test(r2.message)&&own===1&&allUsed()===u0+1&&o3===200,`over the total for all testers a call is refused in plain words and the tester's own count is given back; the owner carries on (${r2.message})`);
+      ok(allUsed()===u0+1&&(await call('POST','render',A.code,{image:PNG,outfit:'x'},e3)).status===429&&(await call('POST','render',A.code,{image:PNG,outfit:'x'})).status===200,'it holds for every tester; the default total is higher');}
+    // a switched-off tester can still delete what they stored; the owner can delete it for them
+    {r=await J(await call('POST','invites',O,{name:'Gus'}));const G={id:r.id,code:r.code,ns:`u:${r.id}:`};
+      await put(G.code,{who:'gus'},'2026-03-01');await call('POST','feedback',G.code,{text:'from gus'});await call('DELETE','invites?id='+G.id,O);
+      const gm=await J(await call('GET','me',G.code));
+      r=await J(await call('DELETE','account',G.code,{confirm:'delete'}));
+      ok(gm.s===403&&gm.error==='invite off'&&r.ok&&!keysOf(G.ns).length&&!(await J(await call('GET','feedback',O))).items.some(m=>m.text==='from gus')&&(await call('GET','sync',G.code)).status===403,'a switched-off tester can still delete their data (and nothing else)');
+      r=await J(await call('POST','invites',O,{name:'Hal'}));const H={id:r.id,code:r.code,ns:`u:${r.id}:`};
+      await put(H.code,{who:'hal'},'2026-03-01');await call('PUT','render',H.code,rec('hal'));await call('POST','feedback',H.code,{text:'from hal'});
+      const keep=keysOf('').filter(k=>!k.startsWith(H.ns)&&k!=='invites:index'&&k!=='feedback:log'&&k!=='invite:'+sha(H.code)).join('|');
+      await call('DELETE','invites?id='+H.id,O);const h0=keysOf(H.ns).length;
+      r=await J(await call('DELETE','invites?id='+H.id+'&purge=1',O));const hm=await J(await call('GET','me',H.code));
+      ok(h0>0&&r.ok&&!keysOf(H.ns).length&&!(await J(await call('GET','invites',O))).invites.some(v=>v.id===H.id)&&!(await J(await call('GET','feedback',O))).items.some(m=>m.text==='from hal')&&hm.error==='invite off'&&keysOf('').filter(k=>!k.startsWith(H.ns)&&k!=='invites:index'&&k!=='feedback:log'&&k!=='invite:'+sha(H.code)).join('|')===keep,'the owner deletes a switched-off tester\'s data: their keys, feedback and list entry go; the code stays refused; nothing else is touched');
+      ok((await call('DELETE','invites?id='+A.id+'&purge=1',A.code)).status===403,'only the owner can');}
     // ---- deleting an account
     r=await J(await call('POST','invites',O,{name:'Cy'}));const C={id:r.id,code:r.code,ns:`u:${r.id}:`};
     await put(C.code,{who:'cy'},'2026-03-01');await call('PUT','render',C.code,rec('cy'));await call('POST','feedback',C.code,{text:'bye'});
