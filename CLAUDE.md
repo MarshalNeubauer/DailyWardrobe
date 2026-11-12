@@ -207,12 +207,23 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the jobs (`asmMasterJob`, `asmCalibJob`, `asmPieceJob`): each is a `POST /render {mode:'queue'}`; pieces name the master by `baseKey` and swap one piece (`swap`), a tie bar is added (`swap.add`)
 - the fixtures `tests/fixtures/asm-*.jpg` are the real photos (900px): the master, six one-piece edits, the vest master, its calibration photo and one suit with its waistcoat; `tests/assemble.test.js`
 - `asmFullWins(o)`: a photo made for the outfit after the master (Settings: Regenerate) wins; `asmFor` gives null for it and `asmEnsure` does nothing for it: `asmEnsure` used to read that null as "not made yet", put the picture together and redraw Today, which ran `asmEnsure` again, so after a Regenerate the phone stayed busy and every redraw cut off swipes and scrolls
+- off the page: the pixel work (about 1 s on a computer, 3–4 s on a phone, in blocks of up to 2.4 s that froze swipes) runs in a Web Worker, `asm-worker.js`, which `importScripts('assemble.js')` and swaps in its own `asmData` (createImageBitmap + OffscreenCanvas) and `asmJpeg`; the picture is pixel-identical to the page's (measured: mean difference 0)
+- `asmJob(o)` gathers what a picture needs as plain data (photos as data URLs, kept zones packed); `asmBuild(job)` does the pixel work in either thread (`asmMem` keeps the decoded master and its zones); `asmRun(job, front)` sends it to the worker, one at a time, the day on screen first (`asmQ`); `asmPhoto(o, front)` keeps the zones worked out on the way and marks `asmBad`
+- no worker (it failed to load, or no OffscreenCanvas: `{ready:false}`, `asmWorkerDown`): pictures are built on the page as before, and nothing is built ahead (`asmOffPage`); `window.ASM_NO_WORKER` forces that in tests
+- building ahead (`asmAhead`, started `ASM_AHEAD_WAIT` 1.2 s after `asmEnsure` runs for the day on screen, `asmAheadSoon`): the looks of the workdays of the next `ASM_AHEAD` (60) days, nearest the day on screen first, one at a time, only from photos the worker already keeps (nothing ordered or paid for); it starts over when Today is drawn again and skips built looks; stops while the app is hidden
+- `ASM_KEEP` is 150 kept pictures (the next 60 days are about 43 workdays)
+- a picture for the day on screen that is ready while a finger is down waits for the finger to lift (`asmShow`, `asmTouchWatch`): a redraw removes what the touch started on and stops the swipe
+- `tests/asmahead.test.js`: worker = page, 44 workdays built ahead with no long task, eight unseen days swiped to each show the picture on the first drawing, no redraw under a finger, nothing ahead without a worker
 - `ASM_ON` is `true` in assemble.js today (the bullets saying it is off are out of date)
 - `asmNeeds()` asks for a waistcoat piece only for suits with `hasVest`
 - not done: assembled pictures (switched off) still need a tie (`asmCan`), so a tieless outfit keeps a photo of its own, and `asmNeeds()` does not yet skip jacket or tie pieces the dress code excludes
 - `tests/dress.test.js`: the default plan against the recorded signature (`GOLD`, recorded from commit 671db36 with the test's own `PLAN_SIG` and `WARD`); the four combinations; the score; Today, the drawing, the photo text, key and the worker's prompt; stats and what to buy; the Settings switches in both themes at 390 and 626px; the waistcoat default, the migration, a new wardrobe, and two devices on one backup in either order
 - `tests/multi.test.js`: "saved suits have their matching vest by default" now expects no waistcoat (the intended change)
 - test wardrobes put into `items` by a test have no `settings.vestDef`, so their suits with no `vest` value still read as three-piece, as before
+
+### `asm-worker.js`
+
+- the Web Worker that puts assembled pictures together (see `assemble.js`); in `ASSETS` in sw.js
 
 ### `detect.js`
 

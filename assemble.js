@@ -240,41 +240,79 @@ function asmParts(o){const inf=asmInfo()||{},out=[];
     if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt))continue;   // as the master shows it
     out.push(slot==='jacket'&&o.vest?{slot,vest:true,key:asmPieceKey('vest',i),item:i}:{slot,key:asmPieceKey(slot,i),item:i})}   // a vest day: the suit's piece with its waistcoat
   return out}
-/* the zones of the kept master: from storage, else worked out from the four calibration photos and kept */
-let asmZ=null;
-async function asmZonesFor(master){const mk=asmMasterKey();if(asmZ&&asmZ.k===mk&&asmZ.z.W===master.width)return asmZ.z;
-  const kept=await metaGet('asm:zones:'+mk);if(kept&&kept.W===master.width&&kept.v===ASM_ZV){asmZ={k:mk,z:asmUnpackZones(kept)};return asmZ.z}
-  const calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;calib[s]=await asmData(r.img,master.width)}
-  const z=asmZones(master,calib);if(!asmZonesOk(z))return null;
-  await metaPut('asm:zones:'+mk,asmPackZones(z));asmZ={k:mk,z};return z}
-/* the waistcoat's zone for the kept vest master: from storage, else worked out from the vest master and its calibration photo and kept */
-let asmV=null;
-async function asmVestFor(z){const vk=asmVestKey(),r=renders[vk];if(!r)return null;if(asmV&&asmV.k===vk&&asmV.t===r.t&&asmV.m.length===z.W*z.W)return asmV.m;
-  const kept=await metaGet('asm:vest:'+vk);if(kept&&kept.W===z.W&&kept.t===r.t&&kept.v===ASM_ZV){asmV={k:vk,t:r.t,m:asmUnpack(kept.m,z.W*z.W)};return asmV.m}
-  const c=renders[asmCalibKey('vest')];if(!c)return null;
-  const m=asmVestZone(await asmData(r.img,z.W),await asmData(c.img,z.W),z),share=asmCount(m)/(z.W*z.W);if(share<.01||share>.2)return null;   // no waistcoat, or half the picture: not believable
-  await metaPut('asm:vest:'+vk,{v:ASM_ZV,W:z.W,t:r.t,m:asmPack(m)});asmV={k:vk,t:r.t,m};return m}
 const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('asm:vest:'+asmVestKey());return !!(k&&k.t===r.t&&k.v===ASM_ZV)};
 /* Did an edit keep the picture? Outside its own piece (and a margin) a photo must still be the master. The generator once answered
    a swap with a collage: the figure moved aside, the reference photos pasted beside it. -> the share of outside pixels that changed */
 const ASM_DRIFT=.12;
 function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(piece),own=asmBox(slot==='bar'?z.tie:z[slot],W,slot==='watch'?24:10,true),v=vest?asmBox(vest,W,10,true):null;let n=0,ch=0;
   for(let i=0;i<N;i+=3){if(own[i]||(v&&v[i]))continue;n++;if(asmDE(L,L0,i)>ASM_DE+4)ch++}return n?ch/n:1}
-/* the outfit's assembled picture as a JPEG data URL, or null when it can't be made (yet): no master, a piece missing or one that
-   came out wrong (asmBad), an outfit of another kind */
-const asmBad=new Set();
-async function asmPhoto(o){if(!asmCan(o))return null;const m=renders[asmMasterKey()];if(!m)return null;
+/* ---- putting the picture together off the page. The pixel work takes about a second on a computer and three or four on a phone,
+   in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
+   this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
+/* everything the pixel work needs, as plain data (photos as data URLs, kept zones packed), or null when something is missing */
+async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;
   const parts=asmParts(o);if(parts.some(p=>!renders[p.key]||asmBad.has(p.key)))return null;
-  const master=await asmData(m.img),z=await asmZonesFor(master);if(!z)return null;
-  const V=o.vest?await asmVestFor(z):null;if(o.vest&&!V)return null;
-  const P={};for(const p of parts){const d=await asmData(renders[p.key].img,master.width);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){asmBad.add(p.key);return null}P[p.slot]=d}
+  const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
+    parts:parts.map(p=>({slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};
+  if(!job.zones){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}
+  if(o.vest){const vk=asmVestKey(),r=renders[vk];if(!r)return null;const kv=await metaGet('asm:vest:'+vk);
+    job.vest={k:vk,t:r.t,kept:kv&&kv.t===r.t&&kv.v===ASM_ZV?kv:null};
+    if(!job.vest.kept){const c=renders[asmCalibKey('vest')];if(!c)return null;job.vest.img=r.img;job.vest.calib=c.img}}
+  return job}
+/* the decoded master and its unpacked zones, kept between pictures in whichever thread builds them */
+let asmMem=null;
+/* build one picture from a job -> {url} (a JPEG data URL), or {bad: a piece's key} for a piece that didn't keep the picture, or {};
+   with zones worked out here, {zones} / {vestZone} to keep (packed) */
+async function asmBuild(job){
+  if(!asmMem||asmMem.k!==job.mk||asmMem.t!==job.mt)asmMem={k:job.mk,t:job.mt,d:await asmData(job.master)};
+  const M=asmMem,master=M.d,W=master.width,out={};
+  if(!M.z){if(job.zones&&job.zones.W===W)M.z=asmUnpackZones(job.zones);
+    else{if(M.zbad||!job.calib)return out;const c={};for(const s of ['jacket','shirt','tie','watch'])c[s]=await asmData(job.calib[s],W);
+      const z=asmZones(master,c);if(!asmZonesOk(z)){M.zbad=true;return out}M.z=z;out.zones=asmPackZones(z)}}
+  const z=M.z;let V=null;
+  if(job.vest){const J=job.vest;
+    if(M.v&&M.v.k===J.k&&M.v.t===J.t)V=M.v.m;
+    else if(J.kept&&J.kept.W===W){V=asmUnpack(J.kept.m,W*W);M.v={k:J.k,t:J.t,m:V}}
+    else{if(!J.img||(M.vbad===J.k+J.t))return out;const m=asmVestZone(await asmData(J.img,W),await asmData(J.calib,W),z),share=asmCount(m)/(W*W);
+      if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
+      V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
+  const P={};for(const p of job.parts){const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
   if(V)P.vest=V;
-  const img=asmCompose(master,z,P),c=document.createElement('canvas');c.width=c.height=img.width;c.getContext('2d').putImageData(img,0,0);
-  return c.toDataURL('image/jpeg',.9)}
+  out.url=await asmJpeg(asmCompose(master,z,P));return out}
+/* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
+async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)}
+/* the worker: one picture at a time; the day on screen goes to the front of the line (asmRun(job, true)) */
+let asmW=null;
+const asmQ=[];
+function asmWorker(){if(asmW!==null)return asmW;asmW=false;
+  if(typeof Worker==='undefined'||window.ASM_NO_WORKER)return asmW;
+  try{const w=new Worker('asm-worker.js'),st={w,ok:null,busy:null};
+    w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;if(!st.ok)asmWorkerDown();else asmPump();return}
+      const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump()};
+    w.onerror=e=>{e.preventDefault&&e.preventDefault();asmWorkerDown()};
+    asmW=st}catch(e){console.warn('no assembly worker',e)}
+  return asmW}
+/* the worker can't run (it failed to load, or the browser has no OffscreenCanvas): what is waiting is built on the page */
+function asmWorkerDown(){const st=asmW;asmW=false;if(st&&st.w)try{st.w.terminate()}catch{}
+  const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left)asmBuild(t.job).then(t.ok,t.no)}
+let asmSeq=0;
+function asmPump(){const st=asmW;if(!st||!st.ok||st.busy||!asmQ.length)return;const t=asmQ.shift();st.busy=t;st.w.postMessage({id:t.id,job:t.job})}
+/* is the picture work off the page (or still finding out)? the build-ahead runs only then */
+const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
+function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);
+  return new Promise((ok,no)=>{const t={id:++asmSeq,job,ok,no};if(front)asmQ.unshift(t);else asmQ.push(t);asmPump()})}
+/* the outfit's assembled picture as a JPEG data URL, or null when it can't be made (yet): no master, a piece missing or one that
+   came out wrong (asmBad), an outfit of another kind. Zones worked out on the way are kept (meta) */
+const asmBad=new Set();
+async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;const r=await asmRun(job,front);
+  if(r.zones)await metaPut('asm:zones:'+job.mk,r.zones);
+  if(r.vestZone)await metaPut('asm:vest:'+job.vest.k,r.vestZone);
+  if(r.bad){asmBad.add(r.bad);return null}
+  return r.url||null}
 /* ---- on Today: the assembled picture stands in for the outfit's photo ---- */
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP), each with the newest date among the photos
    it was made from: a piece made again makes it stale */
-let asmOut={};const ASM_KEEP=80,asmBusy=new Set(),asmTried=new Set();
+let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
 const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key).join('+'));
 const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
@@ -307,16 +345,45 @@ const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());
 /* bring what this outfit needs onto the device, put its picture together, keep it and show it */
 /* not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet" put the picture
    together and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
-async function asmEnsure(o){if(!ASM_ON||!asmCan(o)||asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
+async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&renders[asmMasterKey()])asmAheadSoon();if(asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
   try{if(!await asmGet(mk)||asmFullWins(o)||(o.vest&&!await asmGet(asmVestKey())))return;
     if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
     const parts=asmParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
     if(!await asmZonesKept())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));
-    const img=await asmPhoto(o);if(!img)return;
+    const img=await asmPhoto(o,!ahead);if(!img)return;
     const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);
     const old=Object.keys(asmOut).sort((a,b)=>asmOut[b].t-asmOut[a].t).slice(ASM_KEEP);for(const x of old){delete asmOut[x];txs('meta','readwrite',st=>st.delete('asm:out:'+x))}
-    const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)refreshToday()}
+    const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()}
   catch(e){console.warn('could not assemble',e)}finally{asmBusy.delete(mk+comboKey(o))}}
+/* the day on screen's picture is ready: Today is redrawn, but not under a finger (a redraw removes what the touch started on and the
+   swipe or scroll stops); then it waits for the finger to lift */
+let asmTouch=0,asmLate=false;
+function asmTouchWatch(){if(asmTouchWatch.on)return;asmTouchWatch.on=true;
+  addEventListener('touchstart',e=>{asmTouch=e.touches.length},{passive:true,capture:true});
+  const up=e=>{asmTouch=e.touches.length;if(!asmTouch&&asmLate){asmLate=false;setTimeout(()=>{if(!$('#today').hidden)refreshToday()},250)}};
+  addEventListener('touchend',up,{passive:true,capture:true});addEventListener('touchcancel',up,{passive:true,capture:true})}
+function asmShow(){asmTouchWatch();if(asmTouch){asmLate=true;return}refreshToday()}
+/* ---- building ahead: the outfits of the next ASM_AHEAD days are put together in the background, nearest the day on screen first,
+   so swiping to a day shows its picture at once instead of the drawing for the seconds the picture takes. Only off the page (the
+   worker), one at a time, and only from photos the worker already keeps: nothing is ordered or paid for. It starts a moment after
+   Today is drawn (asmAheadSoon, from asmEnsure) and starts over when the day on screen or the plan changes; a built look is skipped. */
+const ASM_AHEAD=60;
+const ASM_AHEAD_WAIT=1200;
+let asmAheadT=0,asmAheadOn=false,asmAheadAgain=false;
+function asmAheadSoon(){clearTimeout(asmAheadT);asmAheadT=setTimeout(asmAhead,ASM_AHEAD_WAIT)}
+/* the workdays from today to ASM_AHEAD days on, with the day on screen and its neighbours first: [[date, outfit]] (planned a day at a
+   time with a pause between, so planning months ahead doesn't hold the page either) */
+async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),out=[];
+  for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;
+    if(i&&i%10===0)await new Promise(r=>setTimeout(r,0));if(asmAheadAgain)return [];
+    const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
+  return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
+async function asmAhead(){if(!ASM_ON||!renders[asmMasterKey()]||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
+  try{do{asmAheadAgain=false;const seen=new Set();
+      for(const o of await asmAheadDays()){if(asmAheadAgain||document.hidden||!asmOffPage())break;const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);
+        if(asmFullWins(o)||asmFor(o))continue;await asmEnsure(o,true)}}
+    while(asmAheadAgain)}
+  catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false}}
 /* are any of this outfit's pieces being made right now? */
 const asmPending=o=>asmWants(o)&&asmParts(o).some(p=>queuedKeys().includes(p.key)&&!renderStalled(p.key));
 /* ---- every photo the wardrobe needs, and making the missing ones ---- */
