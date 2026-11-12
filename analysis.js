@@ -226,8 +226,8 @@ function runAnalysis(list,T,weeks,progress,onCat){
       const tier=fix?'fix':x.staple?'gap':covered?'optional':x.newG||x.newCell?'variety':'optional';
       recs.push(rec(x.c,f,{tier,why,rank:fix?8*Math.max(0,f.dProb)+6*Math.max(0,f.dRest):x.score+4*Math.max(-3,Math.min(3,edge))}))}
     const note=!R.own.length?`You have no ${W[1]} in rotation.`:idle.length>=2?`${idle.length} of your ${several(R.own.length,cat)} ${idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months, so nothing here is needed.`
-      :covered?`Each of your ${several(R.own.length,cat)} is planned only about ${Math.round(per)} times in the next ${Math.round(weeks/4.33)} months, so nothing here is needed.`
-      :`Each is planned about ${Math.round(per)} times in the next ${D} workdays.`;
+      :covered?`Each of your ${several(R.own.length,cat)} is planned only about ${Math.round(per)===1?'once':Math.round(per)+' times'} in the next ${Math.round(weeks/4.33)} months, so nothing here is needed.`
+      :`Each is planned about ${Math.round(per)===1?'once':Math.round(per)+' times'} in the next ${D} workdays.`;
     const cat1={key:cat,title:TITLES[cat],own:ownMix(cat,R),notes:[note],recs};cats.push(cat1);onCat&&onCat(cat1)}
 
   /* shoes and belts, socks, accessories and coats: simulate each */

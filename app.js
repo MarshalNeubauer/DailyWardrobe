@@ -37,14 +37,15 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
   set('daysoff',[h&&h.country?`${h.country} holidays`:'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
-  set('photos','Outfit photos for the month, and item pictures');
+  set('photos',typeof isConnected==='function'&&!isConnected()?'Needs a connection':'Outfit photos for the month, and item pictures');
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
-  set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'} · shirt weaves · benchmark`);
+  set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
-  set('backup',w?'Backed up daily to your worker':'Needs a connection');set('connection',host||'Not connected')}
+  set('backup',w?'Backed up every day':'Not backed up yet: needs a connection');set('connection',typeof connSummary==='function'?connSummary():host||'Not connected')}
 function openSettings(section){
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
+  if(typeof advClose==='function')advClose();   // the Advanced folds start closed every time
   if(cat)setTimeout(()=>{const el=$('#sc-'+cat),m=$('#settings-modal');if(el&&m)m.scrollTop=el.offsetTop-m.querySelector('.shead').offsetHeight-8},0);else if($('#settings-modal'))$('#settings-modal').scrollTop=0;
   if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
   if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
@@ -159,7 +160,7 @@ addEventListener('resize',fitNavSoon);
 const afterScripts=f=>document.readyState==='complete'?f():addEventListener('load',()=>f(),{once:true});
 // once every script of the page has run (DOMContentLoaded comes after the last one, and unlike load it doesn't wait for pictures)
 const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
-const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by Workers AI (${q.model.replace(/^@cf\//,'')}).`;
+const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by AI (${q.model.replace(/^@cf\//,'')}).`;
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
 async function ask(c,extra){
   try {
@@ -286,12 +287,12 @@ async function fetchPhoto(link){
   try{const r=await fetch(url.href,{mode:'cors',credentials:'omit'});
     if(r.ok){const b=await r.blob();if(/^image\//.test(b.type))return b}}catch(e){/* blocked by the site (no CORS): use the worker */}
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok)throw new Error('That site doesn’t let the app download the photo directly. Set the Worker URL and App Token in ⚙ Settings to fetch it through your worker, or save the photo and use Choose photos.');
+  if(!w||!tok)throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
   let r;try{r=await fetch(new URL('fetch',w.replace(/\/*$/,'/')).href+'?url='+encodeURIComponent(url.href),{headers:{'x-app-token':tok}})}
-  catch{throw new Error('Couldn’t reach your worker to fetch the photo.')}
+  catch{throw new Error('Couldn’t reach the server to fetch the photo.')}
   if(!r.ok){let m='';try{m=(await r.json()).error}catch{}
-    if(r.status===404||r.status===405)m='Your worker doesn’t support photo links yet: redeploy it with the latest worker.js.';
-    throw new Error(m||`The worker couldn’t fetch the photo (${r.status}).`)}
+    if(r.status===404||r.status===405)m='The server doesn’t support photo links yet: it needs an update.';
+    throw new Error(m||`The server couldn’t fetch the photo (${r.status}).`)}
   const b=await r.blob();if(!/^image\//.test(b.type))throw new Error('That link is not a photo.');return b;
 }
 async function addFromUrl(link){
@@ -343,7 +344,7 @@ function cropBox(img,box,max){
 }
 async function addMulti(f){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token')||'';
-  if(!w){multiMsg('Set the Worker URL in ⚙ Settings first: finding several items needs your worker.');return}
+  if(!w){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
   const holder={id:crypto.randomUUID(),busy:1,multiBusy:1};queue.push(holder);renderAdd();
   try{
     const raw=shrink(await loadImg(f),2576),wb=wbGains(raw),img=applyWb(raw,wb);   // one light reading for the whole photo; Claude reads up to 2576px
@@ -351,7 +352,7 @@ async function addMulti(f){
       body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes()})});
     const j=await r.json().catch(()=>({}));
     queue.splice(queue.indexOf(holder),1);
-    if(!r.ok){multiMsg(r.status===404||r.status===405?'Your worker doesn’t support several items yet: it needs the latest worker.js.':`Couldn’t find the items: ${j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
+    if(!r.ok){multiMsg(r.status===404||r.status===405?'The server doesn’t support several items yet: it needs an update.':`Couldn’t find the items: ${j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
     const list=j.items||[];
     if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
     list.forEach((it,n)=>{
@@ -486,7 +487,7 @@ function itemBody(i){
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,hasVest(i)?'yes':'no'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
-  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div></div>`:''}${wardFieldsEnd(i)}</section>`;
+  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns"><button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}"${claudeOnly(i.type,i.pattern)&&!isConnected()?` disabled class="needconn" title="${NEED_CONN}"`:''}>Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div>${claudeOnly(i.type,i.pattern)?connNote():''}</div>`:''}${wardFieldsEnd(i)}</section>`;
   // the photo tools stay beside the photos: one row when there is nothing to edit yet, else folded under "Edit photos"
   const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
   const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
@@ -515,7 +516,7 @@ async function redetect(id){
   let st=null;
   const sw=await load(it.swatch);if(sw)st=detectPattern(it,sw,0,0,sw.width);
   if(!st){const ph=await load(it.photo);if(ph){const mn=Math.min(ph.width,ph.height)*.7;st=detectPattern(it,ph,(ph.width-mn)/2,(ph.height-mn)/2,mn)}}
-  if(!st){alert('Could not find a clear repeating pattern in the photo. Re-adding it with the swatch centred on the fabric usually works.');return}
+  if(!st){tell('Could not find a clear repeating pattern in the photo. Adding it again with the fabric in the middle of the picture usually works.');return}
   it.stripes=st;await put(it);cache={};renderWardrobe();
 }
 /* take an item out of rotation, or put it back. Taking it out also lets go of the upcoming days it was pinned to (a swap or a
@@ -696,7 +697,7 @@ async function replanButton(){const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
   const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true);
   if(!n&&!locked){renderReplanUI('Nothing to reset: every upcoming day follows the planner.');return}
-  if(n&&!confirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'} and let the planner choose again? Formal days, today and past days stay as they are.`))return;
+  if(n&&!await askConfirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'}?\n\nThe planner chooses ${n===1?'that day':'those days'} again. Formal days, today and past days stay as they are.`,{ok:'Re-plan'}))return;
   const m=await replanFuture();renderReplanUI(m?`${m} day${m===1?'':'s'} planned again.`:'The coming days were planned again.');todayStale=true}
 function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
@@ -888,9 +889,9 @@ function figureStage(o){
   if(typeof asmEnsure==='function')setTimeout(()=>asmEnsure(o),0);   // and its item photos, to put the outfit's picture together here
   schedulePrefetch();   // and the rest of the month's photos, nearest first
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
-  const ck=comboKey(o),pend=renderPending(o),busyElse=!!rendering&&!pend,fail=renderFail[ck],stalled=!pend&&renderStalled(ck);
-  const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it to your worker…':'Your worker is making it (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made: ${fail}`:stalled?'Your worker has been on this photo for over 10 minutes, far longer than one takes. Send it again?':'';
-  const ctl=(!r||pend?`<div class="render-ctl"><button class="btn render-btn" onclick="generateRender()"${pend||busyElse?' disabled':''}>${pend?'<span class="spin" aria-hidden="true"></span>Making photo…':r?'Regenerate photo':fail||stalled?'Try again':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${esc(msg)}</p>`;
+  const ck=comboKey(o),pend=renderPending(o),busyElse=!!rendering&&!pend,fail=renderFail[ck],stalled=!pend&&renderStalled(ck),noConn=!r&&!pend&&typeof isConnected==='function'&&!isConnected();   // not connected: the button is there, switched off, with the reason under it
+  const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it…':'It is being made (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made: ${fail}`:stalled?'This photo has been in the making for over 10 minutes, far longer than one takes. Send it again?':noConn?NEED_CONN:'';
+  const ctl=(!r||pend?`<div class="render-ctl"><button class="btn render-btn${noConn?' needconn':''}" onclick="generateRender()"${pend||busyElse||noConn?' disabled':''}>${pend?'<span class="spin" aria-hidden="true"></span>Making photo…':r?'Regenerate photo':fail||stalled?'Try again':'Generate realistic photo'}</button></div>`:'')+`<p class="mut render-msg" id="render-msg">${esc(msg)}</p>`;
   return (photo?`<div class="fig photo" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${wornMarks(o)}</div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}</div>`)+ctl+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
@@ -1004,12 +1005,12 @@ function outfitRefs(o){const refs=[],labels=[];const add=(img,l)=>{if(img){refs.
   return {refs,labels}}
 async function renderCombo(o){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
+  if(!w||!tok)throw new Error('Connect in ⚙ Settings first.');
   const image=await figurePng(o);
   const {refs,labels}=await outfitRefsFull(o);
   const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,labels,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o),...(o.top?{}:{nojacket:true})})});
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error((r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.message||j.error||`HTTP ${r.status}`));
+  if(!r.ok)throw new Error((r.status===404||r.status===405)?'The server doesn’t support photos yet: it needs an update.':(j.message||j.error||`HTTP ${r.status}`));
   const rec={sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()};
   await keepRender(comboKey(o),rec,false);   // the worker already kept a copy
   return rec;
@@ -1026,8 +1027,8 @@ async function generateRender(){
   // an outfit that is put together from item photos needs only its missing items made (a Regenerate still makes a whole photo)
   try{const q=!replace&&typeof asmWants==='function'&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
     if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
-    else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open: your worker has no background queue.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
-  catch(e){renderMsg={k:day,t:/Worker URL|worker doesn|Today’s limit/.test(e.message)?e.message:'Couldn’t send the photo to your worker: '+(e.message||e)}}
+    else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open until it is done.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
+  catch(e){renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(e.message)?e.message:'Couldn’t send the photo: '+(e.message||e)}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)refreshToday();renderRegenUI()}
 }
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day */
@@ -1086,7 +1087,7 @@ async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTr
   try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
     await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)refreshToday();else if(!$('#wardrobe').hidden&&!phEdit.crop)renderWardrobe()}catch(e){console.warn('item picture unavailable',e)}}
 async function renderItemPic(i){
-  const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
+  const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.error||`HTTP ${r.status}`);
   await keepRender(itemKey(i),{sig:'item',img:await itemImg(j.image),model:j.model||'',t:Date.now(),grey:1},false);
@@ -1094,12 +1095,12 @@ async function renderItemPic(i){
 const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type))return false;const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
 let itemBatch=false;
 function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
-  b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt and sock has a picture';b.disabled=!n}
+  b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt and sock has a picture';b.disabled=!n;if(typeof needConn==='function')needConn(b)}
 async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();if(!todo.length)return;
-  if(!confirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'} for your shoes, belts, socks, trousers and coats?\n\nAbout $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`))return;
+  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, trousers and coats. About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`,{ok:'Generate'}))return;
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='';
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
-    try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Worker URL|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
+    try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
 /* ---- Settings: generate the month's missing photos in one go ---- */
 let batch=null;
@@ -1113,12 +1114,12 @@ function batchCombos(){
 const monthName=()=>new Date(view.y,view.m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
 function renderBatchUI(){const el=$('#batch-status'),btn=$('#batch-btn');if(!el||!btn)return;
   if(batch){el.textContent=batch.msg;btn.textContent='Stop';btn.onclick=()=>{batch.stop=true;batch.msg='Stopping after the current photo…';renderBatchUI()};return}
-  const n=batchCombos().length;btn.textContent=n?`Generate ${n} photo${n===1?'':'s'} for ${monthName()}`:`All of ${monthName()} has photos`;btn.disabled=!n;btn.onclick=startBatch;
-  const q=rqGet();if(q.keys.length&&!el.dataset.keep){el.textContent=q.msg||`Making ${q.keys.length} photo${q.keys.length===1?'':'s'} on your worker in the background.`;return}
-  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet. Each costs about 7¢ (OpenAI); outfits that share a look share a photo. They’re made on your worker, so you can close the app once they’re sent.`:''}
+  const n=batchCombos().length;btn.textContent=n?`Generate ${n} photo${n===1?'':'s'} for ${monthName()}`:`All of ${monthName()} has photos`;btn.disabled=!n;btn.onclick=startBatch;if(typeof needConn==='function'&&needConn(btn)){el.textContent='';return}
+  const q=rqGet();if(q.keys.length&&!el.dataset.keep){el.textContent=q.msg||`Making ${q.keys.length} photo${q.keys.length===1?'':'s'} in the background.`;return}
+  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet. Each costs about 7¢; outfits that share a look share a photo. They’re made in the background, so you can close the app once they’re sent.`:''}
 async function startBatch(){
   if(batch)return;let todo=batchCombos();if(!todo.length){renderBatchUI();return}
-  if(!confirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\nAbout $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. They’re sent to your worker, which makes them in the background: once they’re sent you can close the app.`))return;
+  if(!await askConfirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\nAbout $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. They’re made in the background: once they’re sent you can close the app.`,{ok:'Generate'}))return;
   batch={done:0,fail:0,n:todo.length,stop:false,msg:'Starting…'};renderBatchUI();
   let noQueue=false;const queued=[];
   // a photo another device already made is fetched instead of generated; the rest are queued on the worker (or, on a
@@ -1129,20 +1130,20 @@ async function startBatch(){
       if(!renders[ck]){renderTried.delete(ck);await fetchRemoteRender(o,'')}
       if(renders[ck]){batch.done++;continue}
       if(!noQueue){const q=await queueCombo(o);if(q==='queued'){queued.push(ck);continue}if(q==='done'){batch.done++;continue}noQueue=true;
-        batch.msg=`Generating ${i} of ${batch.n}… keep the app open (your worker has no background queue).`;renderBatchUI()}
+        batch.msg=`Generating ${i} of ${batch.n}… keep the app open until they are done.`;renderBatchUI()}
       await renderCombo(o);batch.done++}
-    catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden|Today’s limit/i.test(e.message)){batch.stop=true}}
+    catch(e){batch.fail++;batch.err=e.message;if(/Connect in|server doesn|OPENAI_API_KEY|forbidden|Today’s limit/i.test(e.message)){batch.stop=true}}
   }
   const b=batch;batch=null;const el=$('#batch-status');
   if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.sentAt=Date.now();q.at={...(q.at||{}),...Object.fromEntries(queued.map(k=>[k,q.sentAt]))};q.failed=q.failed||[];
-    q.msg=`Sent ${queued.length} photo${queued.length===1?'':'s'} to your worker. They’re being made in the background (about a minute each); you can close the app. They appear as they finish.`;rqSet(q);startQueueWatch()}
+    q.msg=`Sent ${queued.length} photo${queued.length===1?'':'s'} to be made. They’re being made in the background (about a minute each); you can close the app. They appear as they finish.`;rqSet(q);startQueueWatch()}
   else if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
   if(queued.length&&b.fail&&el){el.dataset.keep=1;el.textContent=rqGet().msg+` ${b.fail} couldn’t be sent (${b.err}).`;setTimeout(()=>{delete el.dataset.keep},6000)}
   renderBatchUI();if(!$('#today').hidden)refreshToday();
 }
 /* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
 async function queueCombo(o,replace=false){
-  const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
+  const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
   const image=await figurePng(o),{refs,labels}=await outfitRefsFull(o),ck=comboKey(o);
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o),...(o.top?{}:{nojacket:true}),...(replace?{replace:true}:{})})});
   const j=await r.json().catch(()=>({}));
@@ -1201,7 +1202,7 @@ async function takeQueued(res){res=(res||[]).filter(m=>m&&m.key);if(!res.length)
   const q=rqGet(),mine=new Set(q.keys);for(const m of res){if(!mine.has(m.key))continue;if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
   finishQueueMsg(q);rqSet(q);renderBatchUI();renderRegenUI();if(!$('#today').hidden)refreshToday()}
 function finishQueueMsg(q){const done=(q.total||0)-q.keys.length-q.failed.length;
-  q.msg=q.keys.length?`Making photos on your worker: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
+  q.msg=q.keys.length?`Making photos: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
     :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
   if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}}
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
@@ -1249,12 +1250,12 @@ function renderToday(){
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';const first=typeof setupToday==='function'?setupToday():'';   // what is still needed for a first outfit (setup.js)
-  if(!isWorkday(sel))side=first,stage=offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
-    :`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`;
+  if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
+    :`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`);   // the checklist comes first on every day, above the figure or the day's note
   else if(!items.length||(first&&!hasOutfit(o)))stage=first||'<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
-  else{stage=figureStage(o);
+  else{stage=first+figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${first}${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
+    side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);fitNavSoon();
   if(items.length){recordDays(p).then(lockUpcoming);
   }
@@ -1542,7 +1543,7 @@ function renderWardrobe(){
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=wardFresh();
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount" id="wcount">${wardCount(list)}</span></div>${typeof shopButton==='function'?shopButton():''}${wardBar()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+wardGrid(list)+'</div>';
+  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount" id="wcount">${wardCount(list)}</span></div>${typeof shopButton==='function'?shopButton():''}${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
   renderItem();wardBack(wf);
 }
@@ -1553,8 +1554,9 @@ const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.ma
 function renderAdd(){
   closeSettings();
   const workerSet = !!localStorage.getItem('worker_url');
-  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
+  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || (aiModel?`Last photo read by ${/^claude/.test(aiModel)?'Claude':'AI'} (${aiModel}).`:'Photos are read automatically: the type, colours and pattern are filled in for you.');
   const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
+  if(typeof addGate==='function')addGate();
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
 ${tagFailNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
@@ -1562,10 +1564,10 @@ ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
   <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
   <div style="flex:1;font-size:13px">
-    <b>Precision Swatch Inspector</b>${q.texCanvas?'<small class="mut" style="display:block">From the fabric close-up</small>':''}
-    <label>Zoom: <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label>
-    <label>X-Pos: <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label>
-    <label>Y-Pos: <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label>
+    <b>Fabric swatch</b><small class="mut" style="display:block">${q.texCanvas?'From the fabric close-up':'From the photo'}: zoom and move it to a clean patch of cloth</small>
+    <label>Zoom <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label>
+    <label>Left–right <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label>
+    <label>Up–down <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label>
   </div>
 </div>`:''}
 <label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>
@@ -1619,10 +1621,10 @@ async function fetchHolidays(cc){
   try{const out=[];for(const y of new Set([+from.slice(0,4),+to.slice(0,4)])){const r=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/${cc}`);if(r.status!==200)continue;
       for(const h of await r.json())if(h.global!==false&&(!h.types||h.types.includes('Public')))out.push({d:h.date,n:h.name||h.localName})}
     if(out.length)return tidy(out)}catch(e){/* unreachable or unknown country: try the worker */}
-  const W=workerBase();if(!W)throw new Error(`No holiday list for ${countryName(cc)} without your worker: set the Worker URL and App Token above.`);
+  const W=workerBase();if(!W)throw new Error(`No holiday list for ${countryName(cc)} until the app is connected (Settings → Connection).`);
   let r;try{r=await fetch(new URL('holidays',W.url).href+'?country='+cc,{headers:{'x-app-token':W.tok},cache:'no-store'})}catch{throw new Error('Couldn’t reach your worker for the holiday list.')}
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(j.holidaysError||(r.status===404||r.status===405?'Your worker doesn’t have holiday lists yet: it needs the latest worker.js.':j.error||`HTTP ${r.status}`));
+  if(!r.ok)throw new Error(j.holidaysError||(r.status===404||r.status===405?'The server doesn’t have holiday lists yet: it needs an update.':j.error||`HTTP ${r.status}`));
   return tidy((j.holidays||[]).map(h=>({d:h.date,n:h.name})))}
 async function setHolidayCountry(cc,quiet){
   if(!cc){settings.holidays=null;holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI();return}
@@ -1679,9 +1681,9 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
 function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn)return;const o=planFor()[key(sel)],l=shortDate(sel);
   const r=o&&renderFor(o),pend=renderPending(o);btn.disabled=!o||!!rendering||pend;btn.textContent=pend?'Making photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
-  if(st)st.textContent=o?(r?'Makes a new realistic photo of the day shown on Today (about 7¢); it replaces the current one for every day with this look.':'The day shown on Today has no photo yet (about 7¢).'):'Pick a workday on Today first.'}
+  if(st)st.textContent=o?(r?'Makes a new realistic photo of the day shown on Today (about 7¢); it replaces the current one for every day with this look.':'The day shown on Today has no photo yet (about 7¢).'):'Pick a workday on Today first.';if(typeof needConn==='function'&&needConn(btn)&&st)st.textContent=''}
 function renderSettingsExtras(){
-  if(typeof renderDressUI==='function')renderDressUI();renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();
+  if(typeof renderDressUI==='function')renderDressUI();renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();if(typeof renderConnUI==='function')renderConnUI();
   if(typeof renderAsmUI==='function'){renderAsmUI();asmSync()}
   if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
@@ -1699,8 +1701,8 @@ function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=
   renderSettingsExtras();clearLocks().then(saveUserSettings)}
 function setUnits(v){settings.units=v;saveUserSettings();settingsSummaries()}
 function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
-function useMyLocation(){if(!navigator.geolocation){alert('Location is not available on this device.');return}
-  navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:'your current location'}),()=>alert('Location permission was denied. Search for your city instead.'))}
+function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
+  navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:'your current location'}),()=>tell('Location permission was denied. Search for your city instead.'))}
 async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();if(!q)return;
   try{const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=5&language=en&name='+encodeURIComponent(q));const j=await r.json();
     const res=(j.results||[]).map(c=>({lat:c.latitude,lon:c.longitude,name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', ')}));
@@ -1724,7 +1726,7 @@ async function refreshAll(){
     items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};cache={};
     await loadWeather(true);
     if(typeof renderTried!=='undefined')renderTried.clear();remoteKeys=null;
-    const v=['today','wardrobe','add','stats','pack'].find(t=>$('#'+t)&&!$('#'+t).hidden)||'today';show(v);
+    const v=['today','wardrobe','add','stats','pack','care'].find(t=>$('#'+t)&&!$('#'+t).hidden)||'today';show(v);
     if(!msg){const diff=items.length-n0;msg=`Refreshed · ${items.length} item${items.length===1?'':'s'}${diff>0?` (${diff} new)`:diff<0?` (${-diff} removed)`:''}`}
     if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(g=>g&&g.update()).catch(()=>{});
   }catch(e){msg='Refresh failed: '+(e.message||e)}

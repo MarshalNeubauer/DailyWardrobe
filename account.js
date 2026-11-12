@@ -84,7 +84,7 @@ async function copyInvite(){if(!acct.link)return;const inp=document.querySelecto
   try{await navigator.clipboard.writeText(acct.link.url);acctToast('Link copied')}
   catch{if(inp){inp.focus();inp.select();try{document.execCommand('copy');acctToast('Link copied')}catch{acctToast('Select the link and copy it')}}}}
 async function revokeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(!v)return;
-  if(!confirm(`Revoke ${v.name}’s invitation?\n\nTheir app stops working with your server. What they stored stays until you delete it.`))return;
+  if(!await askConfirm(`Revoke ${v.name}’s invitation?\n\nTheir app stops working with your server. What they stored stays until you delete it.`,{ok:'Revoke',danger:true}))return;
   const r=await acctCall('invites?id='+encodeURIComponent(id),{method:'DELETE'});
   if(r.status===200){v.off=true;acctToast(v.name+'’s invitation is switched off')}else acct.msg=r.j.message||'Couldn’t revoke it. Try again.';
   renderAccountUI()}

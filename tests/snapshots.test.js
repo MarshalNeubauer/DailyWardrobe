@@ -63,14 +63,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await A.p.evaluate(()=>loadSnapshots());
   const opts=await A.p.evaluate(()=>[...document.querySelectorAll('#snap-list option')].map(o=>o.value).filter(Boolean));
   ok(opts.includes('2026-11-09'),`Settings lists the daily backups (${opts.join(', ')})`);
-  await A.p.evaluate(async()=>{$('#snap-list').value='2026-11-09';await rollBack()});
+  await A.p.evaluate(async()=>{$('#snap-list').value='2026-11-09';const r=rollBack();$('#ask-ok').click();await r});   // the app's own question: answered yes
   const a=await A.p.evaluate(()=>({st:$('#snap-status').textContent,wd:settings.workdays.length}));
   ok(await sig(A.p)===good&&a.wd===5,`roll back restores the deleted tie, the old colour, drops the junk and the settings (${a.st})`);
   await B.p.evaluate(()=>syncNow());
   ok(await sig(B.p)===good&&await B.p.evaluate(()=>settings.workdays.length===5),'the other device follows the roll-back on its next sync');
   ok(store.has('snap:before-restore')&&JSON.parse(store.get('snap:before-restore')).data.items.some(i=>i.id==='junk'),'the damaged state is kept as "before the last roll-back", so the roll-back can be undone');
   // and undo it
-  await A.p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value='before-restore';await rollBack()});
+  await A.p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value='before-restore';const r=rollBack();$('#ask-ok').click();await r});
   ok((await sig(A.p)).includes('junk'),'rolling back to "before the last roll-back" undoes it');
   ok(A.errs.length===0&&B.errs.length===0,'no page errors ('+[...A.errs,...B.errs].join('; ')+')');
   await browser.close();

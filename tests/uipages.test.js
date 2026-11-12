@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>{closeSettings();openSettings('weather')});await settle(p,300);
     const w=await p.evaluate(()=>({open:[...document.querySelectorAll('#settings-modal .scat.open')].map(c=>c.id),top:document.querySelector('#sc-weather').getBoundingClientRect().top}));
     ok(w.open.join()==='sc-weather'&&w.top<200,`openSettings('weather') opens just Weather, scrolled into view (top ${Math.round(w.top)}px)`);
-    await p.evaluate(()=>openSettings('connection'));await p.fill('#cfg-url','https://new.example.dev/');await p.click('.shead .sdone');
+    await p.evaluate(()=>openSettings('connection'));await p.click('#adv-connection .adv-head');await p.fill('#cfg-url','https://new.example.dev/');await p.click('.shead .sdone');
     ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://new.example.dev/'&&!settingsOpen()),'Done saves the connection and closes Settings');
     // ---- Wardrobe
     await p.evaluate(()=>show('wardrobe'));
@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(lab==='Type,Colour,Second colour,Third colour','the item card and the Wardrobe editor use the same labels');
     ok(await p.evaluate(()=>[...document.querySelectorAll('#queue select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
     // ---- one size for controls, one style for page titles
-    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.pback):not(.fchip button):not(.month-link):not(.slink)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
+    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
       take(document.querySelector('#add'));openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));closeSettings();
       const titles=[];for(const s of ['wardrobe','add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);

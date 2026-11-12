@@ -98,7 +98,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const names=await p.evaluate(()=>[...document.querySelectorAll('#wardrobe .gi .gimeta b')].map(b=>b.textContent.toLowerCase()));
     ok(names.join('|')===names.slice().sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base',numeric:true})).join('|')&&names.includes('wedding suit')&&sAz.length===12,`A to Z by the title shown, a name included (…${names.slice(-2).join(', ')})`);
     await p.reload();await p.waitForFunction(()=>window.appReady);
-    ok(await p.evaluate(()=>{show('wardrobe');return document.querySelector('#wsort').value==='az'&&localStorage.getItem('ward_sort')==='az'}),'the sort order is remembered on the device');
+    ok(await p.evaluate(()=>{show('wardrobe');const s=document.querySelector('#wsort');return (s?s.value:wardSort())==='az'&&/* an empty wardrobe (after the reload) has no sort control */localStorage.getItem('ward_sort')==='az'}),'the sort order is remembered on the device');
     await p.evaluate(()=>{setWardSort('type')});
 
     // ---- the fields: item sheet

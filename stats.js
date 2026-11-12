@@ -33,14 +33,14 @@ function whyUnused(i){
     for(const pt of pants.length?pants:[null])for(const sh of by('shirt'))for(const x of wearsTie()?by('tie'):[null]){const q=clothesScore(j,pt,sh,x,j.type==='suit',day);if(q>t.all)t.all=q;if(!(q<=t.shirt[sh.id]))t.shirt[sh.id]=q;if(x&&!(q<=t.tie[x.id]))t.tie[x.id]=q}
     return [j.id,t]})));
   const gap=(kind,id)=>{const T=table();return Math.min(...jackets.map(j=>T[j.id].all-(T[j.id][kind][id]??-1e9)))};
-  const n=v=>Math.round(v);
+  const n=v=>Math.round(v),pts=v=>n(v)===1?'1 point':n(v)+' points';
   switch(i.type){
     case 'pants':{if(!blazerDays)return 'You have no blazer days, so odd trousers are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
       const g=Math.min(...by('blazer').map(j=>Math.max(...by('pants').map(p=>pairScore(j,p)+patternScore([[j,'top'],[p,'bot']])))-(pairScore(j,i)+patternScore([[j,'top'],[i,'bot']]))));
-      return g>QWIN?`They don't suit any of your blazers well enough: ${n(g)} points behind the best pair at the closest.`:'They suit a blazer, but other pairs have rested longer: they come up later than six months.'}
+      return g>QWIN?`They don't suit any of your blazers well enough: ${pts(g)} behind the best pair at the closest.`:'They suit a blazer, but other pairs have rested longer: they come up later than six months.'}
     case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts have rested longer: it comes up later than six months.';
-      return darkShirt(i)?`A dark shirt needs a light jacket${wearsTie()?' and a tie lighter than itself':''}; the best such outfit is ${n(g)} points behind your others.`:`With every jacket it is at least ${n(g)} points behind your other shirts.`}
-    case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties have rested longer: it comes up later than six months.':`With every jacket and shirt it is at least ${n(g)} points behind your other ties.`}
+      return darkShirt(i)?`A dark shirt needs a light jacket${wearsTie()?' and a tie lighter than itself':''}; the best such outfit is ${pts(g)} behind your others.`:`With every jacket it is at least ${pts(g)} behind your other shirts.`}
+    case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties have rested longer: it comes up later than six months.':`With every jacket and shirt it is at least ${pts(g)} behind your other ties.`}
     case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for colour variety.';
     case 'blazer':return !blazerDays?'You have no blazer days set in Settings.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other blazers take every blazer day first.';
     case 'shoes':{const ok=jackets.some(j=>(j.type==='suit'?[j]:by('pants')).some(b=>shoeScore(j,b,i)>-50));
@@ -139,7 +139,8 @@ function renderStats(){
     :'<p class="mut"><small>Nothing yet. When you swap a piece away or choose one yourself, the planner remembers the pairing.</small></p>'}</section>`;
 }
 async function forgetLearned(kind,k){
-  if(!kind){if(!confirm('Forget everything the planner learned from your changes?'))return;settings.learn=null}
+  if(!kind){const was=settings.learn;settings.learn=null;await saveUserSettings();renderStats();   // done at once, with Undo (ui pass: no question first)
+    toast('Forgot what the planner learned.',6000,{label:'Undo',fn:async()=>{settings.learn=was;await saveUserSettings();cache={};if(!$('#stats').hidden)renderStats()}});cache={};return}
   else{const L={p:{...(settings.learn&&settings.learn.p)},i:{...(settings.learn&&settings.learn.i)}};delete L[kind][k];settings.learn=L}
   await saveUserSettings();renderStats()}
 function statsToggle(d){const t=d.dataset.type;if(statsOpen[t]===d.open)return;statsOpen[t]=d.open;if(d.open&&!d.querySelector('.st-row')){const y=scrollY;renderStats();scrollTo(0,y)}}

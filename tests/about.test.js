@@ -30,9 +30,9 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await p.evaluate(()=>$('#about-update').hidden&&getComputedStyle($('#about-update')).display==='none'&&!/new version/.test($('#toast').textContent)),'Check for updates: "You have the latest version", no Update button, no prompt');
       ok(await p.evaluate(()=>{const b=$('#about-check').getBoundingClientRect();return b.height>=44&&document.documentElement.scrollWidth<=innerWidth}),'44px controls, no sideways scroll');
       ok(await p.evaluate(()=>{const d=$('#about-privacy');const shut=!d.open;d.querySelector('summary').click();return shut&&d.open&&/Anthropic/.test(d.textContent)&&/OpenAI/.test(d.textContent)&&/Nothing else is shared/.test(d.textContent)}),'the privacy note is a fold naming Anthropic and OpenAI');
-      ok(await text(p,'#fb-status')==='Feedback needs a connection.','not connected: feedback says it needs a connection');
-      await p.fill('#fb-text','hello');await p.click('#fb-send');
-      ok(/needs a connection/.test(await text(p,'#fb-status'))&&await p.inputValue('#fb-text')==='hello','Send without a connection says so and keeps the text');
+      ok(/^Feedback needs a connection/.test(await text(p,'#fb-status'))&&await p.isDisabled('#fb-send'),'not connected: feedback says it needs a connection and Send is switched off');
+      await p.fill('#fb-text','hello');await p.evaluate(()=>sendFeedback());
+      ok(/needs a connection/.test(await text(p,'#fb-status'))&&await p.inputValue('#fb-text')==='hello','sending without a connection says so and keeps the text');
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')');await ctx.close()}
 
     /* a newer version on the server */
@@ -46,8 +46,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await p.evaluate(()=>window.__same===1&&appVersion()<aboutNew&&!$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
       // unsaved Add cards: asked first
       await p.evaluate(()=>{queue=[{},{}]});
-      let asked='';p.once('dialog',d=>{asked=d.message();d.dismiss()});
-      await p.click('#about-update');await p.waitForFunction(()=>!aboutUpdating);
+      await p.click('#about-update');await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));const asked=await text(p,'#ask-sheet');   // the app's own question (ui.js), not a browser dialog
+      await p.click('#ask-cancel');await p.waitForFunction(()=>!aboutUpdating&&!document.querySelector('#ask-sheet.on'));
       ok(/2 unsaved cards on the Add tab/.test(asked)&&await p.evaluate(()=>window.__same===1),'with unsaved Add cards Update asks first, and No leaves the page as it is');
       await p.evaluate(()=>{queue=[]});
       await Promise.all([p.waitForFunction(()=>window.__same===undefined&&window.appReady,null,{timeout:20000}),p.click('#about-update')]);
