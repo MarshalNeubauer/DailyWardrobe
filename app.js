@@ -774,23 +774,64 @@ function monthGridHtml(){
    (top: the tapped element, e.g. the tile row for a tile's photo) reaches the top of the screen. Follows the box while it
    grows, so the page moves with the unfolding; a touch or wheel by the user stops it. */
 let revealRun=0;
+/* how far to scroll so el shows above the tab bar, without the top of `top` going past the top of the screen (sat: the notch's inset) */
+function revealNeed(el,top,sat){if(sat===undefined){const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove()}
+  const nav=document.querySelector('body>nav'),bottom=(nav?nav.getBoundingClientRect().top:innerHeight)-12,need=el.getBoundingClientRect().bottom-bottom,cap=(top||el).getBoundingClientRect().top-(sat+8);return Math.max(0,Math.min(need,cap))}
 function reveal(el,top){top=top||el;const run=++revealRun,t0=performance.now(),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);
   const sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove();
   const stop=()=>{revealRun++;off()},off=()=>{removeEventListener('touchstart',stop);removeEventListener('wheel',stop)};
   addEventListener('touchstart',stop,{passive:true,once:true});addEventListener('wheel',stop,{passive:true,once:true});
-  const want=()=>{const nav=document.querySelector('body>nav'),bottom=(nav?nav.getBoundingClientRect().top:innerHeight)-12,
-      need=el.getBoundingClientRect().bottom-bottom,cap=top.getBoundingClientRect().top-(sat+8);return Math.max(0,Math.min(need,cap))};
+  const want=()=>revealNeed(el,top,sat);
   const step=now=>{if(run!==revealRun)return;const d=want(),done=now-t0>(reduce?0:700);
     if(reduce||done){if(d>.5)scrollBy(0,d);off();return}
     if(d>.5)scrollBy(0,Math.max(1,d*.2));requestAnimationFrame(step)};
   requestAnimationFrame(step)}
-function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
-  if(monthOpen){monthPanel={y:sel.getFullYear(),m:sel.getMonth()};$('#mpanel-in').innerHTML=monthGridHtml();box.classList.remove('instant');void box.offsetHeight}
-  box.classList.toggle('open',monthOpen);$('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
+function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;const pin=$('#mpanel-in');
+  if(monthOpen){monthPanel={y:sel.getFullYear(),m:sel.getMonth()};monthFill();box.classList.remove('instant')}
+  if(pin)pin.inert=!monthOpen;
+  $('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
-  if(monthOpen)reveal(box);else{revealRun++;keepInView(box)}}
-function monthStep(n,from){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(!el)return;el.innerHTML=monthGridHtml();$('#mbox').classList.add('instant');
+  if(monthOpen)monthUnfold(box);else{revealRun++;monthFold(box)}}
+/* Unfolding and folding the month without animating its height: an animated height laid the page out and repainted every day's
+   drawing on every frame (30 layouts and 285 paints for one unfold), which was choppy on a phone. The page is laid out once, at the
+   start of an unfold or the end of a fold, and the movement is a clip over the card, a slide for whatever is below it and a fade of
+   the days, all of which the GPU draws; the scroll is the browser's own smooth scroll. */
+const MONTH_MS=420;
+const MONTH_EASE='cubic-bezier(.2,.8,.2,1)';
+let monthAnim=null;   // {list: running animations, end: what finishing early must still do}
+function monthStop(){const a=monthAnim;monthAnim=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
+const monthBelow=box=>{const k=[...box.parentNode.children];return k.slice(k.indexOf(box)+1)};
+const monthClip=g=>`inset(0 0 ${Math.max(0,g)}px 0 round 14px)`;
+function monthUnfold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in');box.classList.remove('mshut');box.classList.add('mfast','open');
+  const g=pan?pan.offsetHeight:0,d=revealNeed(box,box);
+  if(noMotion()||!g){if(d>.5)scrollBy(0,d);return}
+  const o={duration:MONTH_MS,easing:MONTH_EASE},list=[box.animate([{clipPath:monthClip(g)},{clipPath:monthClip(0)}],o)];
+  for(const e of monthBelow(box))list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
+  if(pin)list.push(pin.animate([{opacity:0,transform:'translateY(-8px)'},{opacity:1,transform:'none'}],{...o,duration:340,delay:60,fill:'backwards'}));
+  const a=monthAnim={list,end:null};list[0].finished.then(()=>{if(monthAnim===a)monthAnim=null},()=>{});
+  if(d>.5)scrollBy({top:d,behavior:'smooth'})}
+function monthFold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in'),g=pan?pan.offsetHeight:0;
+  const close=()=>{box.classList.add('mfast');box.classList.remove('open','instant','mshut')};
+  if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
+  // the page gets shorter at the end: scroll now to where it can stay, so it doesn't jump then (and bring the card's top back into view)
+  const top=box.getBoundingClientRect().top,max=Math.max(0,document.documentElement.scrollHeight-g-innerHeight);
+  let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
+  if(want<scrollY-.5)scrollTo({top:want,behavior:noMotion()?'auto':'smooth'});
+  box.classList.add('mfast','mshut');
+  const o={duration:MONTH_MS-60,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
+  for(const e of monthBelow(box))list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
+  if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,duration:200}));
+  const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=monthAnim={list,end};
+  list[0].finished.then(()=>{if(monthAnim!==a)return;monthAnim=null;end();for(const x of list)x.cancel()},()=>{})}
+/* the month's days are put into the folded box while the app is idle (monthFillSoon, from monthLink), so a tap only unfolds it */
+function monthFill(){const el=$('#mpanel-in');if(!el||!monthPanel)return;const sig=monthPanel.y+'-'+monthPanel.m+'|'+key(sel);
+  if(el.dataset.fill===sig&&el.firstElementChild)return;el.innerHTML=monthGridHtml();el.dataset.fill=sig}
+let monthFillT=0;
+function monthFillSoon(){clearTimeout(monthFillT);monthFillT=setTimeout(()=>{
+  const run=()=>{if(monthOpen||!$('#mpanel-in'))return;monthPanel={y:sel.getFullYear(),m:sel.getMonth()};monthFill()};
+  if(window.requestIdleCallback)requestIdleCallback(run,{timeout:1500});else run()},600)}
+function monthStep(n,from){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(!el)return;el.innerHTML=monthGridHtml();el.dataset.fill='';$('#mbox').classList.add('instant');
   const sw=$('#mswipe');if(!sw||!from||matchMedia('(prefers-reduced-motion: reduce)').matches)return;   // the new month slides in from the side it was swiped from
   sw.style.transition='none';sw.style.transform=`translateX(${from}px)`;sw.style.opacity='0';void sw.offsetWidth;
   sw.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sw.style.transform='translateX(0)';sw.style.opacity='1'}
@@ -808,9 +849,10 @@ function monthLink(){
   const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(hasOutfit(o))days.push([new Date(d),o])}
   const f=new Date(view.y,view.m,1),n=Object.keys(planFor()).filter(k=>{const d=keyDate(k);return d.getMonth()===view.m&&d.getFullYear()===view.y}).length;
   if(monthOpen&&!monthPanel)monthPanel={y:view.y,m:view.m};
+  if(!monthOpen)monthFillSoon();
   return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" onclick="toggleMonth()" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip">${days.map(([d,o])=>`<span class="mli"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o)}</span>`).join('')}</span>
     <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${n} outfit${n===1?'':'s'} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in">${monthOpen?monthGridHtml():''}</div></div></section>`;
+    <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in"${monthOpen?` data-fill="${monthPanel.y+'-'+monthPanel.m+'|'+key(sel)}">${monthGridHtml()}`:' inert>'}</div></div></section>`;
 }
 
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */

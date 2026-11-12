@@ -193,6 +193,11 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 @keyframes mcIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
 .mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev{transition:none}
 @media (prefers-reduced-motion:reduce){.mpanel,.mpanel-in,.mbox .chev{transition:none}.mbox.open .mc{animation:none}}
+/* the month folds and unfolds without animating its height (app.js monthUnfold/monthFold): the page is laid out once and a clip, a slide
+   and a fade run on the GPU; .mfast turns the height and padding transitions and the per-day pop-in off */
+#mbox.mfast .mpanel,#mbox.mfast .mpanel-in{transition:none}
+#mbox.mfast .mc:not(.blank){animation:none}
+#mbox.mshut .chev{transform:none}   /* folding: the arrow turns back at once, though the box stays open until the clip has closed */
 /* day actions in one row: worn toggle, formal toggle, reset icon */
 .dayact{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin:4px 0 10px}
 .seg{display:flex;flex:0 1 auto;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
