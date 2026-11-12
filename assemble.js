@@ -313,13 +313,82 @@ const asmCan=o=>!!(o&&o.top&&o.shirt&&o.tie&&o.watch);
 function asmParts(o){const inf=asmInfo()||{},out=[];
   for(const slot of ['jacket','shirt','tie','bar','watch']){const i=o[ASM_SLOT[slot]];if(!i||(slot==='bar'&&o.vest))continue;const sig=asmLook(slot,i);
     if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt))continue;   // as the master shows it
-    if(slot==='shirt'&&asmPaintable(i)){out.push({slot,key:asmPieceKey(slot,i),item:i,paint:colOf(i)});continue}   // painted here: no photo
+    if(slot==='shirt'&&asmPaintable(i)){out.push({slot,key:asmPieceKey(slot,i),item:i,paint:colOf(i),wk:asmWeaveSig(i)});continue}   // painted here (its weave laid over): no photo
     out.push(slot==='jacket'&&o.vest?{slot,vest:true,key:asmPieceKey('vest',i),item:i}:{slot,key:asmPieceKey(slot,i),item:i})}   // a vest day: the suit's piece with its waistcoat
   return out}
 /* A plain shirt (no pattern, no woven texture) needs no photo: the master's white shirt is painted in its colour (colOf: the tagged
    colour and its shade) on the device, keeping the master's folds and shadows (asmPaint). The owner's choice, 2026-11-12: eleven
    plain colours painted this way looked right, a navy one included, and their colour is the tagged one, where the generator pushed it. */
-const asmPaintable=i=>!!i&&i.type==='shirt'&&!shirtPatterned(i)&&!shirtTextured(i)&&!texPat('shirt',i.pattern);
+/* (since the woven shirts below) every shirt that is not striped, checked or figured is painted */
+const asmPaintable=i=>!!i&&i.type==='shirt'&&!shirtPatterned(i);
+/* Woven shirts are painted too, their weave laid over the colour (the owner's choice, 2026-11-12, from renders of his own shirts on
+   the 2048 master): one repeat of the weave as the app draws it (fabricDef, from the saved reading), as a lightness ratio, multiplied
+   into the painted shirt, upright on the front and along the arm on each cuff, with the swing the app gives that cloth (texTones' rule).
+   asmWeave(i) -> null (plain), {f:'fleck'} or {f:'tile', mm, hb}:
+   - herringbone: the size from Claude's count across the shirt (ASM_SHIRT_MM / sett.tr); a count at the server's cap (80) or none
+     gives 12 mm (ASM_HB_TR 45: the owner's pink herringbone as he chose it)
+   - a figured weave read from its close-up (dobby diamonds, basket, twill…): the repeat measured in the close-up (asmTexMm), never
+     finer than ASM_TEX_MIN_MM: Claude's counts are capped (60 a close-up, 80 a shirt), and his white diamond's uncapped 65 was 3x too big
+   - end-on-end, and a weave never read: plain with a faint thread-sized fleck (enlarged, end-on-end's one-thread reading became a
+     pinstripe or a check) */
+const ASM_TEXV=1;   // how weaves are drawn: in the picture's key, so a change makes the pictures again
+const ASM_SHIRT_MM=550;   // what Claude's "repeats across the item" spans on a shirt
+const ASM_TR_CAP=80;   // worker.js cleanPattern's cap on repeatsAcrossItem
+const ASM_HB_TR=45;   // a herringbone without a real count: 12 mm
+const ASM_CLOSEUP_MM=80;   // the width of cloth a phone close-up shows
+const ASM_TEX_MIN_MM=2.9;   // a figured weave is never drawn finer (about 9 px at 2048)
+const ASM_PX_MM=3.2;   // the 2048 master: about 32 px a centimetre (shoulder seams ~1460 px apart, ~46 cm; the tie ~6.7 cm mid-chest)
+const ASM_FLECK_DL=2.5;   // the fleck's swing (L*): the least the app draws
+const ASM_FLECK=96;   // the fleck tile, master pixels at 2048
+function asmWeave(i){if(!i||!texPat('shirt',i.pattern))return null;const p=patBase(i.pattern),s=usableSett(i),t=s&&s.tex,k=t?t.kind:p;
+  if(k==='herringbone'||(!t&&p==='herringbone')){const tr=+(s&&s.tr)||0;return {f:'tile',hb:true,mm:ASM_SHIRT_MM/(tr>0&&tr<ASM_TR_CAP?tr:ASM_HB_TR)}}
+  if(!t||k==='end-on-end')return {f:'fleck'};
+  return {f:'tile',mm:0}}
+/* what decides how the weave looks (its reading, its count, its close-up), short, for the picture's key: '' for a plain shirt */
+const asmWeaveSig=i=>{const w=asmWeave(i);if(!w)return '';const s=usableSett(i),c=i.texture||'';
+  return fnv64(['w'+ASM_TEXV,w.f,w.hb?w.mm.toFixed(2):'',settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
+/* one repeat of the weave as the app draws it (fabricDef), as each pixel's light over the tile's mean -> {r, TW, TH, ar (height/width)} */
+const asmTexMemo=new Map();
+async function asmTexTile(i,wk){if(asmTexMemo.has(wk))return asmTexMemo.get(wk);
+  const def=fabricDef('asmtx',i,'shirt'),num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');if(!w||!h)return null;
+  const S=Math.max(1,Math.ceil(256/w)),TW=Math.round(w*S),TH=Math.max(1,Math.round(h*S)),L=ASM_LIN;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${TW}" height="${TH}" viewBox="0 0 ${w} ${h}"><defs>${def}</defs><rect width="${w}" height="${h}" fill="url(#asmtx)"/></svg>`;
+  const im=await asmImg('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))),c=document.createElement('canvas');c.width=TW;c.height=TH;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,TW,TH);const d=x.getImageData(0,0,TW,TH).data,r=new Float32Array(TW*TH);let s=0;
+  for(let k=0;k<r.length;k++){const j=4*k;r[k]=.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]];s+=r[k]}s/=r.length;if(!(s>0))return null;for(let k=0;k<r.length;k++)r[k]/=s;
+  const t={r,TW,TH,ar:h/w};if(asmTexMemo.size>40)asmTexMemo.clear();asmTexMemo.set(wk,t);return t}
+/* the weave's repeat across a close-up, in its pixels: the first correlation peak (shifted sideways) whose double comes back too (a
+   true repeat does; grain and noise don't), after a 3x3 blur (noise) less a 49x49 one (light falloff, folds) -> px, or 0 */
+function asmRepeatPx(d){const w=d.width,h=d.height,p=d.data,L=new Float32Array(w*h);for(let k=0;k<w*h;k++)L[k]=.3*p[4*k]+.59*p[4*k+1]+.11*p[4*k+2];
+  const blur=(S,R)=>{const t=new Float32Array(w*h),o=new Float32Array(w*h),cl=(v,n)=>v<0?0:v>n-1?n-1:v,n=2*R+1;
+    for(let y=0;y<h;y++){let s=0;for(let q=-R;q<=R;q++)s+=S[y*w+cl(q,w)];for(let q=0;q<w;q++){t[y*w+q]=s/n;s+=S[y*w+cl(q+R+1,w)]-S[y*w+cl(q-R,w)]}}
+    for(let q=0;q<w;q++){let s=0;for(let y=-R;y<=R;y++)s+=t[cl(y,h)*w+q];for(let y=0;y<h;y++){o[y*w+q]=s/n;s+=t[cl(y+R+1,h)*w+q]-t[cl(y-R,h)*w+q]}}return o};
+  const a1=blur(L,1),a2=blur(L,24),hp=new Float32Array(w*h);for(let k=0;k<w*h;k++)hp[k]=a1[k]-a2[k];
+  const M=Math.min(110,(w>>1)-31),ac=dx=>{let s=0,n=0;for(let y=30;y<h-30;y+=2)for(let q=30;q<w-30-dx;q+=2){s+=hp[y*w+q]*hp[y*w+q+dx];n++}return n?s/n:0};
+  if(M<8)return 0;const a0=ac(0);if(!(a0>0))return 0;const c=[0];for(let dx=1;dx<=M;dx++)c.push(ac(dx)/a0);
+  let best=0,bs=-1;for(let k=3;k<M;k++)if(c[k]>c[k-1]&&c[k]>=c[k+1]&&c[k]>.04){const k2=2*k,c2=k2+1<=M?Math.max(c[k2-1],c[k2],c[k2+1]):0,sc=c[k]+.5*c2;if(sc>bs){bs=sc;best=k}}
+  return best}
+/* a figured weave's repeat in mm, measured in its close-up (ASM_CLOSEUP_MM across), never finer than ASM_TEX_MIN_MM */
+const asmMmMemo=new Map();
+async function asmTexMm(i){const c=i.texture||'',k=i.id+'|'+c.length+c.slice(-40);if(asmMmMemo.has(k))return asmMmMemo.get(k);let mm=0;
+  if(c)try{const d=await asmData(c),n=asmRepeatPx(d);if(n)mm=ASM_CLOSEUP_MM*n/d.width}catch{}
+  mm=Math.max(ASM_TEX_MIN_MM,mm);asmMmMemo.set(k,mm);return mm}
+/* what the pixel work needs to lay a shirt's weave (page side): the tile, its size in mm and its swing, or {fleck} */
+async function asmTexFor(i,hex,wk){const w=asmWeave(i);if(!w)return null;if(w.f==='fleck')return {fleck:true,dL:ASM_FLECK_DL};
+  const t=await asmTexTile(i,wk);if(!t)return {fleck:true,dL:ASM_FLECK_DL};const s=usableSett(i),rel=(s&&s.tex&&s.tex.rel)||.1,L0=rgbLab(...hexRgb(hex))[0];
+  return {r:t.r,TW:t.TW,TH:t.TH,ar:t.ar,mm:w.hb?w.mm:await asmTexMm(i),dL:Math.max(2.5,Math.min(7,.4*rel*Math.max(L0,25)))}}
+/* (either thread) the tile scaled to its swing on that colour (its 5th to 95th percentile spread = dL in L*, around 1) and to the
+   picture (px a repeat): {r, TW, TH, rx, ry}. A fleck: one-pixel columns (warp threads) in short runs of random light, the same on
+   every device */
+function asmTexReady(T,hex,W){if(!T)return null;let r,TW,TH,rx,ry;
+  if(T.fleck){TW=TH=ASM_FLECK;r=new Float32Array(TW*TH);let seed=7;const rnd=()=>{seed=(Math.imul(seed,1103515245)+12345)>>>0;return seed/4294967296};
+    for(let x=0;x<TW;x++){const col=(rnd()-.5)*.6;let y=0;while(y<TH){const len=2+Math.floor(rnd()*4),v=col+(rnd()-.5);for(let k=0;k<len&&y<TH;k++,y++)r[y*TW+x]=v}}
+    rx=ry=ASM_FLECK*W/ASM_SIZE}
+  else{TW=T.TW;TH=T.TH;r=Float32Array.from(T.r);rx=T.mm*ASM_PX_MM*W/ASM_SIZE;ry=rx*T.ar}
+  const h=String(hex).replace('#',''),Y0=[0,2,4].reduce((s,k,c)=>s+[.2126,.7152,.0722][c]*ASM_LIN[parseInt(h.slice(k,k+2),16)||0],0),f=Y0>.008856?Math.cbrt(Y0):7.787*Y0+16/116,L0=116*f-16;
+  const Yl=L=>{const g=(L+16)/116;return g>6/29?g*g*g:3*(6/29)**2*(g-4/29)},want=(Yl(Math.min(100,L0+T.dL/2))-Yl(Math.max(0,L0-T.dL/2)))/Math.max(1e-4,Yl(L0));
+  const srt=Float32Array.from(r).sort(),sp=srt[Math.floor(srt.length*.95)]-srt[Math.floor(srt.length*.05)];let m=0;for(const v of r)m+=v;m/=r.length;
+  const g=sp>0?want/sp:0;for(let k=0;k<r.length;k++)r[k]=1+(r[k]-m)*g;return {r,TW,TH,rx,ry}}
 const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint);   // the parts that need a photo from the worker
 /* The master with its shirt painted in hex, the way the owner's chosen recolour was made (shirt-recolor.js, 2026-11-12), with the
    shirt's black calibration photo (asmCalibKey('shirt')): a pixel is shirt where the master is near-grey and the calibration photo much
@@ -350,11 +419,30 @@ function asmPaintPrep(master,calib,full){const W=master.width,H=master.height,N=
   for(let q=0;q<n;q++){const k=idx[q],j=4*k;P.A[q]=A[k];P.sm[q]=Math.min(1.15,Y(M,j)/Rm);P.sc[q]=Math.min(1.6,Y(C,j)/Rc);P.bg[q]=k;
     if(A[k]>=1)continue;const x=k%W,y=(k/W)|0;let best=1e9;
     for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=H)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const p=yy*W+xx,d=dx*dx+dy*dy;if(!A[p]&&d<best){best=d;P.bg[q]=p}}}}
-  return P}
-function asmPaint(master,calib,hex,prep){const P=prep||asmPaintPrep(master,calib),s=master.data,d=new Uint8ClampedArray(s),L=ASM_LIN;
+  P.ang=asmShirtAngles(A,idx,W,H);return P}
+/* which way a woven shirt's threads run, per painted pixel (P.idx order): the shirt's pieces (the front with its collar, each cuff)
+   are its connected parts; the front's weave is upright, a cuff's runs along the arm, so the tile's width follows the visible band
+   (its long axis, from its second moments). Soft edge pixels take the part beside them; a speck goes with the front */
+function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),parts=[];
+  for(const s of idx){if(lab[s]>=0||A[s]<=.5)continue;const id=parts.length,st=[s];lab[s]=id;let n=0,sx=0,sy=0,sxx=0,syy=0,sxy=0;
+    while(st.length){const k=st.pop(),x=k%W,y=(k-x)/W;n++;sx+=x;sy+=y;sxx+=x*x;syy+=y*y;sxy+=x*y;
+      if(x>0&&lab[k-1]<0&&A[k-1]>.5){lab[k-1]=id;st.push(k-1)}if(x<W-1&&lab[k+1]<0&&A[k+1]>.5){lab[k+1]=id;st.push(k+1)}
+      if(y>0&&lab[k-W]<0&&A[k-W]>.5){lab[k-W]=id;st.push(k-W)}if(y<H-1&&lab[k+W]<0&&A[k+W]>.5){lab[k+W]=id;st.push(k+W)}}
+    const mx=sx/n,my=sy/n;parts.push({n,th:.5*Math.atan2(2*(sxy/n-mx*my),(sxx/n-mx*mx)-(syy/n-my*my))})}
+  const front=parts.reduce((b,p,i)=>p.n>(parts[b]?parts[b].n:-1)?i:b,0),big=parts.length?parts[front].n*.02:0;
+  const ang=parts.map((p,i)=>{if(i===front||p.n<big)return 0;let t=p.th;while(t>Math.PI/2)t-=Math.PI;while(t<-Math.PI/2)t+=Math.PI;return t});
+  for(let pass=0;pass<6;pass++)for(const k of idx)if(lab[k]<0){const x=k%W;const q=x>0&&lab[k-1]>=0?k-1:x<W-1&&lab[k+1]>=0?k+1:k>=W&&lab[k-W]>=0?k-W:k+W<N&&lab[k+W]>=0?k+W:-1;if(q>=0)lab[k]=lab[q]}
+  const out=new Float32Array(idx.length);for(let q=0;q<idx.length;q++){const l=lab[idx[q]];out[q]=l>=0?ang[l]:0}return out}
+/* tex (optional, asmTexReady): the weave, multiplied into each pixel's light, averaged over 3x3 points a pixel so a fine weave
+   doesn't shimmer, turned by the pixel's part (P.ang) */
+function asmPaint(master,calib,hex,prep,tex){const P=prep||asmPaintPrep(master,calib),s=master.data,d=new Uint8ClampedArray(s),L=ASM_LIN,W=master.width;
   const h=String(hex).replace('#',''),t=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),w=Math.cbrt(.2126*t[0]+.7152*t[1]+.0722*t[2]);
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)};
-  for(let q=0;q<P.idx.length;q++){const j=4*P.idx[q],b=4*P.bg[q],A=P.A[q],sh=w*P.sm[q]+(1-w)*P.sc[q];
+  const T=tex,at=T&&((u,v)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0,
+    g=(i,j)=>T.r[((j+T.TH)%T.TH)*T.TW+(i+T.TW)%T.TW];return (g(x0,y0)*(1-fx)+g(x0+1,y0)*fx)*(1-fy)+(g(x0,y0+1)*(1-fx)+g(x0+1,y0+1)*fx)*fy});
+  for(let q=0;q<P.idx.length;q++){const k=P.idx[q],j=4*k,b=4*P.bg[q],A=P.A[q];let sh=w*P.sm[q]+(1-w)*P.sc[q];
+    if(T){const x=k%W,y=(k-x)/W,th=P.ang?P.ang[q]:0,cs=Math.cos(th),sn=Math.sin(th);let m=0;
+      for(let a=0;a<3;a++)for(let e=0;e<3;e++){const X=x+(e+.5)/3,Y=y+(a+.5)/3;m+=at((X*cs+Y*sn)/T.rx,(Y*cs-X*sn)/T.ry)}sh*=m/9}
     for(let c=0;c<3;c++)d[j+c]=Math.round(A*gam(t[c]*sh)+(1-A)*s[b+c])}
   return new ImageData(d,master.width,master.height)}
 const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('asm:vest:'+asmVestKey());return !!(k&&k.t===r.t&&k.v===ASM_ZV)};
@@ -370,7 +458,7 @@ function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),
 async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;
   const parts=asmParts(o);if(parts.some(p=>!p.paint&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
-    parts:parts.map(p=>p.paint?{slot:p.slot,key:p.key,paint:p.paint}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img})};
+    parts:await Promise.all(parts.map(async p=>p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
   if(parts.some(p=>p.paint)){const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}   // a painted shirt takes its shading from the black calibration shirt too
   if(!job.zones){job.zoneImg=asmZoneImgs();   // zones made outside the app, when they're here; else the calibration photos
     if(!job.zoneImg){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}}
@@ -401,7 +489,8 @@ async function asmBuild(job){
       if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
   if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){const nt=asmBox(z.tie,W,asmPx(ASM_HALO+2,W),true);for(let i=0;i<W*W;i++)nt[i]=nt[i]&&z.shirt[i]?1:0;M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W),nt);M.ppt=job.paintCalib.t;M.paint={}}
-  const P={};for(const p of job.parts){if(p.paint){M.paint=M.paint||{};P[p.slot]=M.paint[p.paint]=M.paint[p.paint]||asmPaint(master,null,p.paint,M.pp);continue}   // nothing outside the shirt changes: no drift to check
+  const P={};for(const p of job.parts){if(p.paint){M.paint=M.paint||{};const pk=p.paint+(p.tex&&p.wk?'~'+p.wk:'');   // nothing outside the shirt changes: no drift to check
+      P[p.slot]=M.paint[pk]=M.paint[pk]||asmPaint(master,null,p.paint,M.pp,p.tex&&p.wk?asmTexReady(p.tex,p.paint,W):null);continue}
     const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
   if(V)P.vest=V;
   out.url=await asmJpeg(asmCompose(master,z,P));return out}
@@ -439,7 +528,7 @@ async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;c
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP), each with the newest date among the photos
    it was made from: a piece made again makes it stale */
 let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
-const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint:'')).join('+'));   // a painted shirt's colour is in the key: a new shade is a new picture
+const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')).join('+'));   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
 const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmPhotoParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
@@ -553,7 +642,7 @@ function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if
   const vests=settings.vestMode==='never'?[]:items.filter(i=>hasVest(i)&&inRotation(i));
   if(vests.length){add('vestmaster',null,null,asmVestKey(),'the pose with a waistcoat');add('vestcalib','vest',null,asmCalibKey('vest'),'finding the waistcoat')}
   for(const i of items){const slot=ASM_TYPE[i.type];if(!slot||!inRotation(i))continue;const sig=asmLook(slot,i);
-    if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt)||(slot==='shirt'&&asmPaintable(i)))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));   // a plain shirt is painted: nothing to make
+    if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt)||(slot==='shirt'&&asmPaintable(i)))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));   // a plain or woven shirt is painted: nothing to make
     if(vests.includes(i))add('piece','vest',i,asmPieceKey('vest',i),nm(i)+' with its waistcoat')}
   return out}
 /* asmState: what a look at the worker found. missing: photos nobody has made (or that came out wrong) */

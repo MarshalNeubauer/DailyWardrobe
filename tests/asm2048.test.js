@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {hex:colOf(navy),lit,dark,paint:sp&&sp.paint,photo:asmPhotoParts(o).map(x=>x.slot).join(),plain:asmPaintable(navy),dobby:asmPaintable(dob),stripe:asmPaintable(str),
         key:asmOutKey(o)!==asmOutKey({...o,shirt:{...navy,shade:-2}})}});
     const hx=h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));
-    ok(pt.plain&&!pt.dobby&&!pt.stripe,'a plain shirt is painted; a woven (dobby) or patterned (stripe) one still needs a photo');
+    ok(pt.plain&&pt.dobby&&!pt.stripe,'a plain shirt is painted, and a woven (dobby) one with its weave (tests/asmweave.test.js); a patterned (stripe) one still needs a photo');
     ok(pt.paint===pt.hex&&!/shirt/.test(pt.photo),`its part is painted in the tagged colour and asks the worker for no photo (photo parts: ${pt.photo})`);
     ok(pt.lit.every((v,k)=>Math.abs(v-hx(pt.hex)[k])<=8)&&pt.dark.every((v,k)=>v<pt.lit[k]),`the lit cloth is the shirt's colour (${pt.lit} for ${pt.hex}), the shadow darker (${pt.dark})`);
     ok(pt.key,'a new shade of the shirt is a new picture');
