@@ -21,9 +21,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='auto';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')};
   const reqs=[];
   const device=async()=>{const ctx=await browser.newContext({viewport:{width:390,height:900}});
-    // the worker answers no /sync: the wardrobe is set in memory only (setup), and a sync landing late (the start-up one, 300 ms
-    // after the database opens) emptied it in a full run four at a time, so the plan, and the photos it fetched, changed under the test
-    await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:503,body:'sync is off in this test'});reqs.push(q.method()+' '+q.url().slice(HOST.length));
+    await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:503,headers:{'access-control-allow-origin':'*'},body:'{}'});   // no /sync: the start-up sync merges away the items set in memory
+      reqs.push(q.method()+' '+q.url().slice(HOST.length));
       const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));

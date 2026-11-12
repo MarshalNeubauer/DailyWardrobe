@@ -280,7 +280,9 @@ const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmP
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
    (Settings: Regenerate) wins: that was the owner's choice. */
-function asmFor(o){if(!asmWants(o))return null;const full=renders[comboKey(o)];if(full&&full.t>renders[asmMasterKey()].t)return null;
+/* a photo made for this outfit after the master (Settings: Regenerate): it is shown, and nothing is put together for the outfit */
+const asmFullWins=o=>{const full=renders[comboKey(o)],m=renders[asmMasterKey()];return !!(full&&m&&full.t>m.t)};
+function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
   const a=asmOut[asmOutKey(o)];return a&&a.stamp===asmStamp(o)?{img:a.img,model:'assembled',t:a.t,sig:comboSig(o)}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
   await asmDropOld()}
@@ -303,8 +305,10 @@ async function asmGet(key,force){if(renders[key])return true;const W=workerBase(
 const ASM_NONE_MS=6*3600e3;
 const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());return !!(k&&k.v===ASM_ZV)};
 /* bring what this outfit needs onto the device, put its picture together, keep it and show it */
-async function asmEnsure(o){if(!ASM_ON||!asmCan(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
-  try{if(!await asmGet(mk)||(o.vest&&!await asmGet(asmVestKey())))return;
+/* not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet" put the picture
+   together and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
+async function asmEnsure(o){if(!ASM_ON||!asmCan(o)||asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
+  try{if(!await asmGet(mk)||asmFullWins(o)||(o.vest&&!await asmGet(asmVestKey())))return;
     if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
     const parts=asmParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
     if(!await asmZonesKept())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));
@@ -321,7 +325,7 @@ function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if
   add('master',null,null,asmMasterKey(),'the master pose');
   for(const sl of ['jacket','shirt','tie','watch'])add('calib',sl,null,asmCalibKey(sl),'finding the '+sl);
   // waistcoats: the vest master, and a second piece for every suit that has one (unless vests are never worn)
-  const vests=settings.vestMode==='never'?[]:items.filter(i=>i.type==='suit'&&i.vest!=='no'&&inRotation(i));
+  const vests=settings.vestMode==='never'?[]:items.filter(i=>hasVest(i)&&inRotation(i));
   if(vests.length){add('vestmaster',null,null,asmVestKey(),'the pose with a waistcoat');add('vestcalib','vest',null,asmCalibKey('vest'),'finding the waistcoat')}
   for(const i of items){const slot=ASM_TYPE[i.type];if(!slot||!inRotation(i))continue;const sig=asmLook(slot,i);
     if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));
@@ -350,7 +354,7 @@ async function asmMake(list){const W=workerBase();if(!W)throw new Error('Set the
     const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify(job)}),j=await r.json().catch(()=>({}));
     if(r.ok&&j.queued){asmBad.delete(n.key);delete renders[n.key];if(n.kind==='master')localStorage.removeItem('asm_none');const q=rqGet();q.keys=[...new Set([...q.keys,n.key])];q.total=(q.total||0)+1;q.sentAt=Date.now();q.at={...(q.at||{}),[n.key]:q.sentAt};q.failed=q.failed||[];rqSet(q);sent++}
     else if(r.ok&&j.exists){asmTried.delete(n.key);await asmGet(n.key)}
-    else throw new Error(j.error||`HTTP ${r.status}`)}
+    else throw new Error(j.message||j.error||`HTTP ${r.status}`)}
   asmState.missing=asmState.missing.filter(n=>!list.includes(n));if(sent)startQueueWatch();return sent}
 const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 /* Today's Generate for an outfit that can be assembled: make its missing pieces (about 8¢ each) instead of a whole photo */

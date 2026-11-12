@@ -42,7 +42,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await B.p.reload();await B.p.waitForFunction(()=>window.appReady&&items.map(i=>i.type+':'+i.primaryColor).sort().join(',')==='belt:black,shirt:white',null,{timeout:5000}).catch(()=>{});
   ok((await names(B.p))==='belt:black,shirt:white','synced wardrobe persists on the device');
   // the screen refreshes after a sync brings new items
-  await add(A.p,{type:'suit',primaryColor:'navy'});await sync(A.p);await B.p.click('#n-wardrobe');await sync(B.p);
+  await add(A.p,{type:'suit',primaryColor:'navy',vest:'no'});await sync(A.p);await B.p.click('#n-wardrobe');await sync(B.p);   // (the suit with its vest value, as the app saves suits: one without would be given it once, a change of its own; tests/dress.test.js)
   ok((await B.p.textContent('#wardrobe')).includes('Suit'),'the open screen refreshes when synced items arrive');
   // changes synced in while Settings is open (the start-up sync comes back 2.5 s after launch) leave it open: the tab on screen
   // is redrawn once it closes

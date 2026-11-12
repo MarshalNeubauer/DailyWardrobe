@@ -185,7 +185,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00'});return p};
     const sync=p=>p.evaluate(()=>syncNow()),get=p=>p.evaluate(()=>{const i=items.find(x=>x.id==='s1');return i?{away:i.away||null,paused:!!i.paused,arrives:i.arrives||null,cleaned:i.cleaned||null}:null});
     const A=await device(),B=await device();
-    await A.evaluate(async()=>{for(const it of [{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',added:1},{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid',added:1}]){await put(it);items.push(it)}});
+    await A.evaluate(async()=>{for(const it of [{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',vest:'no',added:1},{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid',vest:'no',added:1}]){await put(it);items.push(it)}});
     await sync(A);await sync(B);
     await A.evaluate(()=>careSend('s1','cleaner','2026-11-20'));await sync(A);await sync(B);
     const b1=await get(B);

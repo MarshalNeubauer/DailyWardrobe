@@ -23,12 +23,14 @@ function whyUnused(i){
   if(i.paused&&i.away)return (i.away.why==='laundry'?'It\'s in the laundry':'It\'s at the cleaner\'s')+(i.away.back?`: it joins your outfits again after ${fmtDay(i.away.back)}.`:': it joins your outfits again once you mark it back.');
   if(i.paused&&i.order)return i.arrives?`It's on the way: it joins your outfits after ${fmtDay(i.arrives)}.`:'It\'s on the way: put it back in rotation once it arrives.';
   if(i.paused)return 'You took it out of rotation, so the planner leaves it out.';
+  if(dressOut(i.type))return `Your dress code leaves out ${i.type==='tie'||i.type==='tieclip'?'ties':'jackets'} (Settings, Schedule), so it is planned only for a formal day, a wedding or a funeral.`;
+  if(!wearsJacket()&&typeof dressWhyUnused==='function'){const w=dressWhyUnused(i);if(w)return w}
   const by=t=>items.filter(x=>x.type===t),suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
   const day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0},jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
   // every jacket's best outfit, overall and with each shirt and each tie: worked out once for the page (fitMemo), not once per unused piece
   // (a wardrobe of 250 took a minute and a half)
   const table=()=>fitMemo||(fitMemo=Object.fromEntries(jackets.map(j=>{const t={all:-1e9,shirt:{},tie:{}},pants=j.type==='suit'?[j]:by('pants');
-    for(const pt of pants.length?pants:[null])for(const sh of by('shirt'))for(const x of by('tie')){const q=clothesScore(j,pt,sh,x,j.type==='suit',day);if(q>t.all)t.all=q;if(!(q<=t.shirt[sh.id]))t.shirt[sh.id]=q;if(!(q<=t.tie[x.id]))t.tie[x.id]=q}
+    for(const pt of pants.length?pants:[null])for(const sh of by('shirt'))for(const x of wearsTie()?by('tie'):[null]){const q=clothesScore(j,pt,sh,x,j.type==='suit',day);if(q>t.all)t.all=q;if(!(q<=t.shirt[sh.id]))t.shirt[sh.id]=q;if(x&&!(q<=t.tie[x.id]))t.tie[x.id]=q}
     return [j.id,t]})));
   const gap=(kind,id)=>{const T=table();return Math.min(...jackets.map(j=>T[j.id].all-(T[j.id][kind][id]??-1e9)))};
   const n=v=>Math.round(v);
@@ -37,7 +39,7 @@ function whyUnused(i){
       const g=Math.min(...by('blazer').map(j=>Math.max(...by('pants').map(p=>pairScore(j,p)+patternScore([[j,'top'],[p,'bot']])))-(pairScore(j,i)+patternScore([[j,'top'],[i,'bot']]))));
       return g>QWIN?`They don't suit any of your blazers well enough: ${n(g)} points behind the best pair at the closest.`:'They suit a blazer, but other pairs have rested longer: they come up later than six months.'}
     case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts have rested longer: it comes up later than six months.';
-      return darkShirt(i)?`A dark shirt needs a light jacket and a tie lighter than itself; the best such outfit is ${n(g)} points behind your others.`:`With every jacket it is at least ${n(g)} points behind your other shirts.`}
+      return darkShirt(i)?`A dark shirt needs a light jacket${wearsTie()?' and a tie lighter than itself':''}; the best such outfit is ${n(g)} points behind your others.`:`With every jacket it is at least ${n(g)} points behind your other shirts.`}
     case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties have rested longer: it comes up later than six months.':`With every jacket and shirt it is at least ${n(g)} points behind your other ties.`}
     case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for colour variety.';
     case 'blazer':return !blazerDays?'You have no blazer days set in Settings.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other blazers take every blazer day first.';
@@ -75,7 +77,7 @@ function buildStats(){fitMemo=null;
     const r=rateOutfit(o),t=trend[TREND_WEEKS-1-a];t.n++;t.sum+=r.score;if(r.hard.length)t.hard++}
   const tn=trend.reduce((a,t)=>a+t.n,0),wornAvg=tn?Math.round(trend.reduce((a,t)=>a+t.sum,0)/tn):null,wornHard=trend.reduce((a,t)=>a+t.hard,0);
   const planHard=rates.filter(x=>x[2].hard.length).length;
-  return {worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned)}}
+  return {worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned&&!dressOut(r.i.type))}}
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
 const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true)}</span>`;
 const GROUP_NAMES={grey:'Grey',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
