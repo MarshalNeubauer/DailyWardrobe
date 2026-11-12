@@ -1,8 +1,8 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8c2a461a4fef5caf869d
+# tested	6526871ff3e4f9d9ccbb
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	analysis.js	<loaded>
-<every page test>	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterScripts	applyTheme	applyZoom	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txFail	txs	window.fetch	workerBase	zoomTarget
+<every page test>	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	applyTheme	applyZoom	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txFail	txs	window.fetch	workerBase	zoomTarget
 <every page test>	assemble.js	<loaded>	@	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
 <every page test>	care.js	<loaded>	careShow
 <every page test>	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	itemSeason	key	occOf	offDays	offName	seasonFit	todayDate
