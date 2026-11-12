@@ -731,8 +731,8 @@ async function queueStatus(req, env, json, who) {
       if (resends > 3) {
         const error = 'The worker couldn’t get this photo made after several tries. Try again.';
         await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${k}`, 'json'));
-        await env.WARDROBE.put(`${ns}jobfail:${k}`, JSON.stringify({ error, t: now }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${k}`); await env.WARDROBE.delete(`${ns}jobrun:${k}`);
-        await tellHub(env, ns, { key: k, error }); continue;
+        await env.WARDROBE.put(`${ns}jobfail:${k}`, JSON.stringify({ error: failFor(ns, error), t: now }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${k}`); await env.WARDROBE.delete(`${ns}jobrun:${k}`);
+        await tellHub(env, ns, { key: k, error: failFor(ns, error) }); continue;
       }
       await env.RENDER_QUEUE.send(jobMsg(k, ns)); r = { ...r, attempts: 0, at: now, resends };
       await env.WARDROBE.put(`${ns}jobrun:${k}`, JSON.stringify(r), JOB_TTL);
@@ -758,7 +758,7 @@ async function runRenderJob(msg, env) {
   const run0 = await env.WARDROBE.get(`${ns}jobrun:${key}`, 'json');
   await env.WARDROBE.put(`${ns}jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now(), resends: run0 && run0.resends || 0 }), JOB_TTL);   // for GET /render-queue
   if (!job.replace && await env.WARDROBE.get(`${ns}render:${key}`)) { await refundJob(env, ns, job); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
-  if (!env.OPENAI_API_KEY) { await refundJob(env, ns, job); await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
+  if (!env.OPENAI_API_KEY) { await refundJob(env, ns, job); await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: failFor(ns, 'Add an OPENAI_API_KEY secret to the worker.'), t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
   const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env, ns);
   if (r.ok) {
     await env.WARDROBE.put(`${ns}render:${key}`, JSON.stringify(r.rec), renderTtl(key));
@@ -769,9 +769,9 @@ async function runRenderJob(msg, env) {
   if (r.retry && (msg.attempts || 1) < 4) return msg.retry({ delaySeconds: 60 });
   console.log(`photo ${key} failed: ${r.error}`);
   await refundJob(env, ns, job);
-  await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: r.error, t: Date.now() }), FAIL_TTL);
+  await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: failFor(ns, r.error), t: Date.now() }), FAIL_TTL);
   await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
-  await tellHub(env, ns, { key, error: r.error });
+  await tellHub(env, ns, { key, error: failFor(ns, r.error) });
   msg.ack();
 }
 /* ---- the push to an open app (GET /render-wait): the app holds a request open while its photos are being made, and the queue
@@ -1129,12 +1129,14 @@ async function handleSync(req, env, json, cors, who) {
     if (+(req.headers.get('content-length') || 0) > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
     const buf = await req.arrayBuffer();
     if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
-    if (buf.byteLength > PART_MAX) return putParted(env, json, cors, ns, new Uint8Array(buf));
+    // a tester's backups a day are capped (each is a KV write, and the whole team shares 1,000 a day); a conflict gives it back
+    const over = await spend(env, who, 'backup'); if (over) return json(over.body, over.status);
+    if (buf.byteLength > PART_MAX) { const r = await putParted(env, json, cors, ns, new Uint8Array(buf)); if (r.status === 409) await unspend(env, who, 'backup'); return r; }
     let body;
     try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); }
     const none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env, ns);
     const rev = m ? m.rev : ((await env.WARDROBE.get(KEY, 'json')) || none).rev;
-    if ((body.baseRev ?? -1) !== rev) return isParted(m) ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', ...((await env.WARDROBE.get(KEY, 'json')) || none) }, 409);
+    if ((body.baseRev ?? -1) !== rev) { await unspend(env, who, 'backup'); return isParted(m) ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', ...((await env.WARDROBE.get(KEY, 'json')) || none) }, 409); }
     await keepSnapshots(env, m, body, ns);
     const next = { rev: rev + 1, saved: Date.now(), data: body.data };
     await env.WARDROBE.put(KEY, JSON.stringify(next), { metadata: { rev: next.rev, saved: next.saved } });
@@ -1167,12 +1169,39 @@ async function whoIs(env, token) {
   if (!CODE_RE.test(token) || !env.WARDROBE) return no;
   const rec = await env.WARDROBE.get(`invite:${h}`, 'json');
   if (!rec || !UID_RE.test(String(rec.id || ''))) return no;
-  const who = { id: rec.id, name: String(rec.name || ''), role: 'tester', ns: `u:${rec.id}:`, caps: { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) }, hash: h };
+  const first = firstWeek(rec), caps = { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) };
+  if (first) for (const k of Object.keys(DEFAULT_CAPS)) caps[k] = caps[k] * FIRST_WEEK_X;   // a tester's first week: twice the daily limits
+  const who = { id: rec.id, name: String(rec.name || ''), role: 'tester', ns: `u:${rec.id}:`, caps, hash: h, ...(first ? { firstUntil: rec.created + FIRST_WEEK_MS } : {}) };
   // switched off: refused everywhere, except that the tester may still delete what they stored (DELETE /account, the router)
   if (rec.off) return { status: 403, error: 'invite off', message: INVITE_OFF, offWho: { ...who, off: true } };
   return { who };
 }
 const INVITE_OFF = 'This invitation has been switched off.';
+
+/* ---- a tester's errors in plain words. What the owner needs to fix the server (the API's own message, which secret or binding is
+   missing, what to do in which dashboard) means nothing to a tester: their answers carry a plain sentence instead, chosen by the
+   route, and the original goes to the worker's log. A sentence already written for people (a daily limit, a photo too large) is
+   left as it is. Also used for a tester's failed queued photos (jobfail). ---- */
+const TECH_RE = /\b(API|api|OpenAI|Claude|Anthropic|secret|binding|KV|worker|Worker|Cloudflare|token|quota|billing|Billing|dashboard|Console|HTTP|status \d|RENDER_|OPENAI_|ANTHROPIC_|APP_TOKEN)\b|ECONN|fetch failed|TypeError|undefined/;
+const PLAIN = {
+  photo: 'The photo service had a problem. Try again later.',
+  tag: 'The photo couldn’t be read just now. Try again later, or add the item by hand.',
+  pattern: 'The pattern couldn’t be read just now. Try again later.',
+  sync: 'The backup couldn’t be reached just now. Your wardrobe is safe on this phone; it will try again.',
+  other: 'Something went wrong on the server. Try again later.',
+};
+const plainKind = p => (/^\/(render|render-queue|render-wait)$/.test(p) ? 'photo' : p === '/pattern' ? 'pattern' : p === '' || p === '/tag-many' ? 'tag' : p === '/sync' ? 'sync' : 'other');
+function plainText(s, p) { return typeof s === 'string' && TECH_RE.test(s) ? PLAIN[plainKind(p)] : s; }
+function plainFor(body, p) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return body;
+  let changed = false; const out = { ...body };
+  for (const k of ['error', 'detail', 'message']) if (typeof out[k] === 'string' && TECH_RE.test(out[k])) { out[k] = k === 'error' ? 'server' : PLAIN[plainKind(p)]; changed = true; }
+  if (changed) { if (!out.message) out.message = PLAIN[plainKind(p)]; if (!out.detail && (body.detail || plainKind(p) === 'tag')) out.detail = out.message; console.log('tester error', p, JSON.stringify(body).slice(0, 500)); }
+  if (Array.isArray(out.failed)) out.failed = out.failed.map(f => f && typeof f.error === 'string' ? { ...f, error: plainText(f.error, '/render') } : f);
+  return out;
+}
+/* a failed queued photo's reason as it is kept: plain for a tester (ns), the original for the owner */
+const failFor = (ns, error) => { if (ns && TECH_RE.test(String(error || ''))) { console.log('tester photo failed', ns, String(error).slice(0, 300)); return PLAIN.photo; } return error; };
 
 /* ---- daily caps, testers only (the owner has none and is not counted). Per UTC day: tag = POST / and /tag-many, pattern =
    /pattern, photo = outfit photos (direct, queued, replaced), item = item pictures and one-piece edits. An invitation may carry
@@ -1181,9 +1210,12 @@ const INVITE_OFF = 'This invitation has been switched off.';
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
 const DEFAULT_CAPS = { tag: 40, pattern: 10, photo: 12, item: 20 };
-const EXTRA_CAPS = { upload: 60, feedback: 20 };
-const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages' };
-const USE_RE = /^(tag|pattern|photo|item|upload|feedback)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30 };
+/* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
+const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
+const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
+const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups' };
+const USE_RE = /^(tag|pattern|photo|item|upload|feedback|backup)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
@@ -1213,7 +1245,7 @@ async function useCount(env, id, what, n, cap, day) {
    invitations (each tester's own caps still apply first). Counted like one more tester, under the id 'all' (a tester's id is
    8–24 characters, so it can't be one); the owner is never counted. The worker's TESTER_DAILY_TOTAL variable (JSON, e.g.
    {"photo":20}) changes any of them. About $15 a day at most with these numbers. */
-const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100 }, ALL_ID = 'all';
+const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100, backup: 300 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };
@@ -1227,7 +1259,7 @@ async function spend(env, who, what, day = utcDay()) {
   if (r.off) return { status: 403, body: { error: 'invite off', message: INVITE_OFF } };
   if (r.fail) return { status: 503, body: { error: 'busy', message: 'Couldn’t check today’s limit. Try again in a moment.' } };
   if (!r.ok) {
-    const message = `Today’s limit of ${cap} ${CAP_WORDS[what]} is used up. It starts again at midnight UTC.`;
+    const message = what === 'backup' ? `Today’s ${cap} backups are used up. Your changes are kept on this phone and backed up tomorrow.` : `Today’s limit of ${cap} ${CAP_WORDS[what]} is used up. It starts again at midnight UTC.`;
     return { status: 429, body: { error: 'limit', what, cap, used: r.used, message, detail: message } };
   }
   const all = await useCount(env, ALL_ID, what, 1, allCaps(env)[what], day);
@@ -1260,7 +1292,7 @@ async function usedOf(env, id, day) {
 /* GET /me -> {id, name, role, caps, used, day}: who the app is connected as, and today's use against each cap (caps null: the owner) */
 async function handleMe(req, env, json, who) {
   const day = utcDay();
-  return json({ id: who.id, name: who.name, role: who.role, caps: who.caps ? Object.fromEntries(Object.keys(DEFAULT_CAPS).map(k => [k, who.caps[k]])) : null, used: await usedOf(env, who.id, day), day });
+  return json({ id: who.id, name: who.name, role: who.role, ...(who.firstUntil ? { firstUntil: who.firstUntil } : {}), caps: who.caps ? Object.fromEntries(Object.keys(DEFAULT_CAPS).map(k => [k, who.caps[k]])) : null, used: await usedOf(env, who.id, day), day });
 }
 const smallBody = async (req, limit) => { try { const r = await readCapped(req.body, limit); return r.over ? null : JSON.parse(new TextDecoder().decode(r.bytes)); } catch { return null; } };
 const ownerOnly = (who, json) => (who.role === 'owner' ? null : json({ error: 'owner only' }, 403));
@@ -1413,16 +1445,18 @@ export default {
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
       ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
     };
+    let viewer = null, where = '';   // who is asking (set once known) and the route: a tester's answers are put in plain words
     const json = (body, status = 200) =>
-      new Response(JSON.stringify(body), { status, headers: { ...cors, 'content-type': 'application/json' } });
+      new Response(JSON.stringify(viewer && viewer.role === 'tester' ? plainFor(body, where) : body), { status, headers: { ...cors, 'content-type': 'application/json' } });
 
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
-    const path = new URL(req.url).pathname.replace(/\/+$/, '');
+    const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
     const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
     const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
     if (route) {
       const a = await whoIs(env, req.headers.get('x-app-token') || '');
+      viewer = a.who || a.offWho || null;
       if (!a.who && a.offWho && req.method === 'DELETE' && path === '/account') return route[0](req, env, json, a.offWho, cors);
       return a.who ? route[0](req, env, json, a.who, cors) : deny(a, route[1]);
     }
@@ -1440,7 +1474,7 @@ export default {
     try { body = JSON.parse(new TextDecoder().decode(inBody.bytes)); } catch { return json({ error: 'bad json' }, 400); }
     if (!body || typeof body !== 'object') return json({ error: 'bad json' }, 400);
     if (!a) { a = await whoIs(env, body.appToken || ''); if (!a.who) return deny(a, UNSET); }
-    const who = a.who;
+    const who = a.who; viewer = who;
 
     // The model wants the image as a data URI inside the user message.
     let image = String(body.image || '');
@@ -1502,7 +1536,7 @@ export default {
         // a job that keeps crashing is recorded as failed (the queue would otherwise drop it silently and leave it "pending")
         const key = String(msg.body && msg.body.key || ''), ns = msgNs(msg);
         if ((msg.attempts || 1) < 4 || !COMBO_RE.test(key) || ns === null) { msg.retry({ delaySeconds: 60 }); continue; }
-        try { const error = 'The worker failed making it: ' + String(e && e.message || e);
+        try { const error = failFor(ns, 'The worker failed making it: ' + String(e && e.message || e));
           await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${key}`, 'json'));
           await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); await tellHub(env, ns, { key, error }); } catch {}
         msg.ack();

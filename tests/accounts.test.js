@@ -53,8 +53,12 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(store.has('invite:'+sha(r.code))&&![...store.values()].some(v=>String(v).includes(r.code)),'only the SHA-256 of the code is kept (invite:<hash>); the code itself is nowhere in the store');
     r=await J(await call('POST','invites',O,{name:'Bo',caps:{photo:3,item:2,tag:2,pattern:1}}));const B={id:r.id,code:r.code,ns:`u:${r.id}:`};
     ok((await call('POST','invites',A.code,{name:'x'})).status===403&&(await call('GET','invites',A.code)).status===403&&(await call('DELETE','invites?id='+B.id,A.code)).status===403&&(await call('POST','invites',O,{name:''})).status===400,'invitations are the owner\'s: a tester can\'t make, list or revoke them; a name is needed');
+    // a new invitation's first week has twice the limits; the testers below are made a week older so the usual limits apply
+    {me=await J(await call('GET','me',A.code));
+      ok(JSON.stringify(me.caps)===JSON.stringify({tag:80,pattern:20,photo:24,item:40})&&me.firstUntil>Date.now()+6.9*86400000,`a tester's first week: twice every daily limit, and /me says until when (${JSON.stringify(me.caps)})`);
+      for(const x of [A,B]){const k='invite:'+sha(x.code),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec))}}
     me=await J(await call('GET','me',B.code));
-    ok(me.id===B.id&&me.name==='Bo'&&me.role==='tester'&&me.caps.photo===3&&me.caps.item===2&&me.caps.tag===2&&me.caps.pattern===1,'GET /me: a tester with the caps of their invitation');
+    ok(!me.firstUntil&&me.id===B.id&&me.name==='Bo'&&me.role==='tester'&&me.caps.photo===3&&me.caps.item===2&&me.caps.tag===2&&me.caps.pattern===1,'GET /me: a tester with the caps of their invitation');
     me=await J(await call('GET','me',A.code));
     ok(JSON.stringify(me.caps)===JSON.stringify({tag:40,pattern:10,photo:12,item:20}),'an invitation without caps gets the defaults: 40 readings, 10 patterns, 12 photos, 20 item pictures');
     // ---- sync and snapshots, each to their own
@@ -140,6 +144,22 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       const s=[];for(let i=0;i<4;i++)s.push((await call('POST','render',B.code,{image:PNG},e2)).status);
       ok(s.join()==='200,200,200,429'&&JSON.parse(store.get(k)).photo===3&&ttl.get(k)===3*86400,'without the RENDER_HUB binding the count is kept in KV as use:<id>:<day> for three days');
       store.delete(k)}
+    // ---- a tester's errors are in plain words; the owner's keep the detail
+    {imgReply=()=>[400,{error:{message:'Your organization must be verified to use the model gpt-image-2'}}];
+      const rt=await J(await photo(A.code)),ro=await J(await photo(O));
+      ok(!/OpenAI|verif|organization|model/i.test(JSON.stringify(rt))&&rt.error==='server'&&/photo service had a problem/.test(rt.message),`a tester's failed photo says so plainly (${rt.message})`);
+      ok(/OpenAI/.test(ro.error)&&/verif/.test(ro.error),'the owner still sees what to fix');
+      await call('POST','render',A.code,{mode:'queue',key:'c7777777777777777',image:PNG});await drain();
+      const jf=JSON.parse(store.get(A.ns+'jobfail:c7777777777777777')||'{}'),qs=await J(await call('GET','render-queue?keys=c7777777777777777',A.code));
+      ok(/photo service had a problem/.test(jf.error)&&!JSON.stringify(qs).includes('OpenAI'),'a tester\'s queued photo that failed is kept and reported in plain words too');
+      imgReply=()=>[200,{data:[{b64_json:JPG}]}];}
+    // ---- a tester's backups: 30 a day; a conflict doesn't count
+    {r=await J(await call('POST','invites',O,{name:'Kit'}));const K={id:r.id,code:r.code};{const k='invite:'+sha(K.code),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec))}
+      const rev=async()=>(await J(await call('GET','sync',K.code))).rev||0,st=[];
+      ok((await call('PUT','sync',K.code,{baseRev:99,data:{items:[]},day:'2026-03-01'})).status===409,'(a conflict first)');
+      for(let i=0;i<31;i++)st.push(await J(await call('PUT','sync',K.code,{baseRev:await rev(),data:{items:[{id:'k'+i}]},day:'2026-03-01'})));
+      ok(st.slice(0,30).every(x=>x.s===200)&&st[30].s===429&&st[30].what==='backup'&&/backed up tomorrow/.test(st[30].message),`30 backups a day, the 31st is refused in plain words; the conflict before didn't count (${st[30].message})`);
+      ok((await call('PUT','sync',O,{baseRev:(await J(await call('GET','sync',O))).rev||0,data:{items:[]},day:'2026-03-01'})).status===200,'the owner has no such limit');}
     // ---- feedback
     ok((await J(await call('POST','feedback',A.code,{text:'The tie looks purple.',version:'144',where:'today'}))).ok&&(await call('POST','feedback',A.code,{text:'x'.repeat(4001)})).status===400&&(await call('POST','feedback',A.code,{text:'  '})).status===400,'POST /feedback takes up to 4,000 characters');
     await call('POST','feedback',B.code,{text:'x'.repeat(4000),version:7});
@@ -213,7 +233,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
 
     // ---- the app
     store.clear();meta.clear();hubs.clear();sent=[];
-    r=await J(await call('POST','invites',O,{name:'Tess',caps:{photo:1,item:0,tag:1,pattern:0}}));const T=r.code;
+    r=await J(await call('POST','invites',O,{name:'Tess',caps:{photo:1,item:0,tag:1,pattern:0}}));const T=r.code;{const k='invite:'+sha(T),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec))}   // past the first week
     const serve=async ctx=>ctx.route(HOST+'**',async route=>{const q=route.request();
       if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:503,headers:{'access-control-allow-origin':'*'},body:'{}'});   // no /sync: the start-up sync would merge away the items set in memory
       const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:['GET','HEAD'].includes(q.method())?undefined:q.postData()}),env);
