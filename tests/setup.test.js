@@ -133,7 +133,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await s.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('.fig')),'and gone once that person has all three');
     // the button, and a day that is not a workday
     await s.evaluate(()=>{items=[];delete settings.dress;settings.workdays=[1,2,3,4];cache={};sel=new Date(2026,10,14);show('today')});
-    ok(await s.evaluate(()=>!!document.querySelector('.side #firstrun')&&/isn.t a workday/.test(document.querySelector('#today').textContent)),'on a day that is not a workday the checklist sits under the note');
+    ok(await s.evaluate(()=>!!document.querySelector('#stage #firstrun')&&/isn.t a workday/.test(document.querySelector('#today').textContent)),'on a day that is not a workday the checklist sits above the note');   // ui pass: the checklist comes first
     await s.click('#fr-add');
     ok(await s.evaluate(()=>!document.querySelector('#add').hidden),'its button opens the Add tab');
     ok(!s.errs.length,'no errors with the checklist: '+s.errs.join(' | '));

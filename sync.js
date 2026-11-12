@@ -34,7 +34,7 @@ async function applyMerged(m,local){
 function syncRedraw(v){if(!v||v==='add')return;if(!settingsOpen())return show(v);if(v==='today')todayStale=true;else viewStale=v}
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0;
-  el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Set the Worker URL to turn on backup.');
+  el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Not connected: connect in Settings → Connection to turn on backup.');
   if(last&&!syncing&&!/failed|turn on/i.test(el.textContent))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}`}
 /* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
 async function syncNow(){
@@ -48,8 +48,8 @@ const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.st
 const synced=()=>{localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus()};
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
-  if(!url){setSyncStatus('Set the Worker URL to turn on backup.');return false}
-  if(!token){setSyncStatus('Add your App Token (the APP_TOKEN secret on the worker) to turn on backup.');return false}
+  if(!url){setSyncStatus('Not connected: connect in Settings → Connection to turn on backup.');return false}
+  if(!token){setSyncStatus('The connection has no code yet: add it in Settings → Connection to turn on backup.');return false}
   syncing=true;setSyncStatus('Syncing…');
   try{
     for(let attempt=0;attempt<3;attempt++){
@@ -85,16 +85,16 @@ async function downloadBackup(){
 }
 async function restoreBackup(file){
   if(!file)return;let data;
-  try{data=JSON.parse(await file.text())}catch{alert('That file is not a Daily Wardrobe backup.');return}
-  if(data.app!=='daily-wardrobe'||!Array.isArray(data.items)){alert('That file is not a Daily Wardrobe backup.');return}
+  try{data=JSON.parse(await file.text())}catch{tell('That file is not a Daily Wardrobe backup.');return}
+  if(data.app!=='daily-wardrobe'||!Array.isArray(data.items)){tell('That file is not a Daily Wardrobe backup.');return}
   const local=await localState();await applyMerged(mergeState(local,data),local);
-  alert(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}.`);showSyncStatus();scheduleSync();
+  tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}.`);showSyncStatus();scheduleSync();
 }
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
 const snapLabel=s=>{const t=new Date(s.saved).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   return s.id==='before-restore'?`Before the last roll-back (${t})`:/^\d{4}-\d{2}$/.test(s.id)?`Start of ${new Date(s.id+'-02').toLocaleDateString(undefined,{month:'long',year:'numeric'})} (${t})`:t};
 async function loadSnapshots(){const sel=$('#snap-list'),st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';if(!sel||sel.dataset.loaded)return;
-  if(!url||!token){st.textContent='Set the Worker URL and App Token first.';return}
+  if(!url||!token){st.textContent=NEED_CONN;return}
   try{const r=await fetch(url+'?snaps=1',{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'HTTP '+r.status);
     sel.dataset.loaded=1;const list=j.snaps||[];
     sel.innerHTML=`<option value="">${list.length?'Choose a day…':'No daily backups yet'}</option>`+list.map(s=>`<option value="${s.id}">${snapLabel(s)}</option>`).join('');
@@ -109,7 +109,7 @@ function rollBackState(local,snap,now=Date.now()){
   return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:now})),settings:snap.settings?{...snap.settings,updated:now}:null}}
 async function rollBack(){const id=$('#snap-list')&&$('#snap-list').value,st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!id){st.textContent='Choose a day first.';return}
-  if(!confirm(`Roll back to ${$('#snap-list').selectedOptions[0].textContent}?\n\nThe wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`))return;
+  if(!await askConfirm(`Roll back to ${$('#snap-list').selectedOptions[0].textContent}?\n\nThe wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`,{ok:'Roll back',danger:true}))return;
   try{st.textContent='Rolling back…';await syncNow();
     const r=await fetch(url+'?snap='+encodeURIComponent(id),{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'HTTP '+r.status);
     if(!j.data||!Array.isArray(j.data.items))throw new Error('that backup is empty');

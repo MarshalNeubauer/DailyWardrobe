@@ -114,11 +114,11 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p.evaluate(()=>{for(let k=0;k<3;k++){const it={id:'bk'+k,type:'tie',primaryColor:'burgundy',pattern:'solid',photo:items[0].photo,added:1};items.push(it)}renderBenchUI()});
     const bu=await p.evaluate(()=>({btns:[...document.querySelectorAll('#bench-box .bench-pct button')].map(b=>b.textContent),txt:document.querySelector('#bench-box').textContent}));
     ok(bu.btns.join()==='25%,50%,75%,100%'&&/1 of 4 items with photos · about \$/.test(bu.txt),`the benchmark offers 25/50/75/100% with the count and an estimate (${bu.txt.match(/\d+ of \d+[^)]*\)/)})`);
-    await p.click('#bench-box .bench-pct button:has-text("50%")');
+    await p.click('#adv-tagging .adv-head');await p.click('#bench-box .bench-pct button:has-text("50%")');
     ok(/2 of 4 items/.test(await p.textContent('#bench-box')),'choosing 50% picks half the items with photos');
     reply=()=>({...base,...extra,type:'tie',primaryColor:'burgundy',pattern:'solid'});
     const before=bodies.length;await p.evaluate(()=>{const id=items[0].id;settings.tagFixes=[...settings.tagFixes,{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk0'},{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk1'},{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk2'},{field:'pattern',type:'suit',from:'solid',to:'twill',id}]});
-    await p.evaluate(()=>runBench(50));
+    await p.evaluate(()=>{const r=runBench(50);document.querySelector('#ask-ok').click();return r});
     const bb=bodies.slice(before),run=await p.evaluate(()=>benchRuns()[0]);
     ok(bb.length===2&&run.n===2&&run.pct===50,'Run benchmark re-tags that share');
     const nfix=await p.evaluate(()=>settings.tagFixes.length);const ownN=await p.evaluate(()=>{const n={};for(const f of settings.tagFixes)n[f.id]=(n[f.id]||0)+1;return n}),allowed=new Set(Object.values(ownN).map(k=>nfix-k));
@@ -127,7 +127,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // stats page
     await p.evaluate(()=>{closeSettings();show('stats')});
     const st=await p.textContent('#st-tagging');
-    ok(/Photo tagging/.test(st)&&/Colour\d+%right/.test(st.replace(/\s/g,''))&&/Last benchmark/.test(st),'the stats page shows how often each tag was right, and the last benchmark: '+st.replace(/\s+/g,' ').slice(0,160));
+    ok(/Photo tagging/.test(st)&&/Colour\d+%right/.test(st.replace(/\s/g,''))&&/Last accuracy check/.test(st),'the stats page shows how often each tag was right, and the last benchmark: '+st.replace(/\s+/g,' ').slice(0,160));
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await browser.close();
   }finally{globalThis.fetch=realFetch}

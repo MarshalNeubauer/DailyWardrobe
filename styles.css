@@ -440,17 +440,17 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
    page title 22px · section title 16px · body 15px · help 13px; buttons, inputs and selects all 44px tall,
    radius 12px on controls and 14px on cards; cards are --card with a 1px --line border; 12px between cards, 8px between controls. */
 :root{--r-ctl:12px;--r-card:14px;--ctl-h:44px;--in-h:44px;--danger:#c0473f}
-#wardrobe,#item-view,#add,#stats,#settings-modal{font-size:15px}
-:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button)){
+#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal{font-size:15px}
+:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button)){
   min-height:var(--ctl-h);padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);
   font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1.2;text-align:center}
-:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn).pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn).danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
-:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :is(button,.btn)[disabled]{opacity:.5}
-:is(#wardrobe,#item-view,#add,#stats,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number]){
+:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]{opacity:.5}
+:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number]){
   height:var(--in-h);padding:0 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:15px;min-width:0;max-width:none}
-:is(#wardrobe,#item-view,#add,#stats,#settings-modal) select{padding-right:8px}
-:is(#wardrobe,#item-view,#add,#stats,#settings-modal) .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select{padding-right:8px}
+:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
 :is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi{border:1px solid var(--line);border-radius:var(--r-card)}
 /* page header: title, and a line under it */
 .phead{display:flex;align-items:center;gap:10px;margin:4px 0 14px;min-height:44px}
@@ -666,16 +666,10 @@ body.iv-on #toast,body.iv-on #busy{z-index:960;bottom:calc(78px + env(safe-area-
 
 /* ---- pack ---- */
 /* the packing list page (pack.js): the other pages' design (44px controls, 12px radius, bordered 14px cards) */
-#pack{font-size:15px}
-#pack :where(button){min-height:var(--ctl-h);padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1.2;text-align:center}
-#pack button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-#pack :where(select,input[type=date]){height:var(--in-h);padding:0 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:15px;min-width:0;max-width:100%;width:100%}
-#pack select{padding-right:8px}
-#pack .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+#pack :where(select,input[type=date]){width:100%;max-width:100%}   /* the rest is the shared page rule (design system above) */
 #pack .pk-card{border:1px solid var(--line);border-radius:var(--r-card);padding:14px;margin:0 0 12px}
 #pack .pk-card h3{font-size:16px;margin:0 0 4px}
 #pack .pk-card h4{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin:14px 0 2px}
-#pack .empty{padding:24px 0;text-align:center}
 .pk-dates,.pk-caps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .pk-caps{margin:10px 0 0}
 .pk-f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--mut);min-width:0}
@@ -804,10 +798,6 @@ span.pk-tick{cursor:default}
 .morein>label select{flex:0 0 58%;width:58%;max-width:58%}
 /* ---- care ---- */
 /* the Care page takes the design system of the other pages (44px controls, 12px radius, bordered 14px cards) */
-#care{font-size:15px}
-#care :where(button):where(:not(.linkbtn)){min-height:var(--ctl-h);padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);
-  font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1.2;text-align:center}
-#care button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 #care .phead.nav{display:flex;margin:4px 0 14px}
 #care .care-card{border:1px solid var(--line);border-radius:var(--r-card);padding:14px;margin:0 0 12px}
 #care .care-card h3{font-size:16px;line-height:1.3;margin:0 0 4px}
@@ -848,3 +838,51 @@ span.pk-tick{cursor:default}
 .acct-inv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}.acct-inv-top b{font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct-inv.off b{color:var(--mut)}
 .acct-tag{flex:none;font-size:12px;font-weight:600;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+/* ---- ui ---- */
+/* the accent as text: a darker gold on the light theme (4.5:1 on --bg and --card); fills and the dark theme keep --acc */
+:root{--acc-ink:#7a5900}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--acc-ink:var(--acc)}}
+:root[data-theme=dark]{--acc-ink:var(--acc)}
+.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw{color:var(--acc-ink)}
+.gotoday{border-color:var(--acc-ink)}
+/* the app's own question (askConfirm in ui.js): a sheet from the bottom like the piece picker, above every other layer */
+#ask-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;display:none}#ask-backdrop.on{display:block}
+#ask-sheet{position:fixed;left:0;right:0;bottom:0;z-index:2101;background:var(--card);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;
+  max-height:78vh;overflow:auto;padding:20px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.35);transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);visibility:hidden;max-width:520px;margin:0 auto;outline:0;overscroll-behavior:contain}
+#ask-sheet.on{transform:none;visibility:visible}
+.ask-q{margin:0 0 6px;font-size:18px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.ask-more{margin:0 0 6px;font-size:14px;line-height:1.45;color:var(--mut);overflow-wrap:anywhere}
+.ask-btns{display:flex;gap:8px;margin:14px 0 0}
+.ask-btns button{flex:1 1 0;min-width:0;min-height:44px;margin:0;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;font-weight:600;line-height:1.2}
+.ask-btns button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ask-btns button.ask-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+@media(prefers-reduced-motion:reduce){#ask-sheet{transition:none}}
+/* a toast shows over Settings, the setup and the sheets too (it sat under them) */
+#toast,body.iv-on #toast{z-index:2050;width:max-content}   /* max-content: at left:50% it wrapped at half the screen's width */
+/* Settings: the links to the other pages are one card; what only the owner needs is under an Advanced fold */
+.sgh.sgh-first{margin-top:2px}
+.slinks{border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);overflow:hidden}
+.slinks .slink{border:0;border-radius:0;background:none;margin:0;min-height:60px;padding:10px 14px}
+.slinks .slink+.slink{border-top:1px solid var(--line)}
+.adv{border-top:1px solid var(--line);margin:4px 0 -8px}
+#settings-modal button.adv-head{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;min-height:52px;padding:6px 0;border:0;border-radius:0;background:none;text-align:left;font-size:14px;font-weight:700}
+.adv-t{display:flex;flex-direction:column;gap:1px;min-width:0}.adv-t small{font-size:12.5px;font-weight:400;line-height:1.3;color:var(--mut)}
+.adv-head .chev{flex:none;font-size:22px;line-height:1;color:var(--mut);transition:transform .2s}.adv.open .adv-head .chev{transform:rotate(90deg)}
+.adv-in{display:none;padding:0 0 12px}.adv.open .adv-in{display:block}
+.adv-in>.sgroup:first-child{border-top:0;padding-top:0}
+#adv-photos:has(#asm-group[hidden]){display:none}
+/* a button that needs the server while the app is not connected: the reason under it */
+.connnote{margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--mut)}
+.conn-tick{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:10px;background:#2e8b57;color:#fff;font-size:13px;font-weight:700;vertical-align:-3px;margin-right:4px}
+.conn-msg{color:var(--danger)}
+/* the danger red on the dark theme: #c0473f on the dark card is 3.5:1 */
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--danger:#e2695f}}
+:root[data-theme=dark]{--danger:#e2695f}
+/* a Settings row whose dropdown doesn't fit beside its label puts it on a line of its own (it was cut off: "Sometimes, under a light jac") */
+#settings-modal .srow{flex-wrap:wrap}#settings-modal .srow select{max-width:100%}
+/* Realistic photos while not connected: the reason once, at the top, not under every button */
+#sp-photos .sgroup .connnote{display:none}#photos-conn{margin:4px 0 10px}#photos-conn:empty{display:none}
+/* the setup's switches look like the dress-code switches in Settings (on = ink, not gold) */
+.su-sw[aria-checked=true] .su-knob{background:var(--ink)}.su-sw[aria-checked=true] .su-knob::after{background:var(--bg)}
+/* "Several items" while not connected */
+#add .addpick .btn.needconn{opacity:.55;cursor:default}
