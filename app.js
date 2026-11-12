@@ -559,11 +559,55 @@ const slots=o=>{const nj=!o.top&&!needsJacket(o),nt=!o.tie&&!needsTie(o)&&!(o.fr
     (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
-  document.querySelectorAll('.ritem.open').forEach(r=>{if(r!==el){r.classList.remove('open','instant');const b=r.querySelector('.rowtap');if(b)b.setAttribute('aria-expanded','false')}});
-  if(opening){el.querySelector('.rpanel-in').innerHTML=rowPanel(o[s]);el.classList.remove('instant');void el.offsetHeight}
-  el.classList.toggle('open',opening);openRow=opening?s:null;const b=el.querySelector('.rowtap');b.setAttribute('aria-expanded',opening);
+  // another open photo (a row, or the tile's photo above the list) shuts at once; one above the tapped row is made up for by the scroll, so the row stays under the finger
+  document.querySelectorAll('.ritem.open').forEach(r=>{if(r!==el){picSnap(r,el);const b=r.querySelector('.rowtap');if(b)b.setAttribute('aria-expanded','false')}});
+  if(opening)el.querySelector('.rpanel-in').innerHTML=rowPanel(o[s]);
+  openRow=opening?s:null;const b=el.querySelector('.rowtap');b.setAttribute('aria-expanded',opening);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/(Show|Hide) the photo/,opening?'Hide the photo':'Show the photo'));
-  if(opening)reveal(el)}
+  if(opening)picOpenReady(el,el,()=>openRow===s);else{revealRun++;picShut(el)}}
+/* A piece's photo (a row of the pieces list, or a tile's photo under the tiles) opens and shuts like the cards (boxUnfold/boxFold):
+   the page is laid out once; the photo's own area is clipped open downward while what lies below it on the page slides down in step
+   (picBelow: the rows after it, the cards under its card, the cards under the stage), and the card it is in (the pieces list) is
+   clipped to its old edge and grows with it; the photo drops in with the days' bounce. Shutting is the same backwards: the photo
+   lifts out with the days' dip, then the space closes. A row's running animations are kept on it (el._pa). */
+const PIC_MS=380;
+function picStop(el){const a=el._pa;el._pa=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
+/* what lies below el on Today (top at or under `bottom`), and the cards el sits in */
+function picBelow(el,bottom){const out=[],root=$('#today');for(let n=el;n&&n!==root&&n.parentElement;n=n.parentElement)for(let s=n.nextElementSibling;s;s=s.nextElementSibling)if(s.getBoundingClientRect().top>=bottom-1)out.push(s);return out}
+function picCards(el){const out=[],root=$('#today');for(let n=el.parentElement;n&&n!==root;n=n.parentElement)if(n.classList.contains('mbox'))out.push(n);return out}
+/* the photo must be decoded first, or its height isn't known yet and the rest of it would jump in afterwards */
+async function picOpenReady(el,top,still){const im=el.querySelector('.rpanel-in img');
+  if(im&&!(im.complete&&im.naturalWidth))await Promise.race([im.decode().catch(()=>{}),new Promise(r=>setTimeout(r,300))]);
+  if(el.isConnected&&still())picOpen(el,top)}
+function picOpen(el,top){picStop(el);const b0=el.getBoundingClientRect(),below=picBelow(el,b0.bottom),cards=picCards(el),c0=cards.map(c=>c.getBoundingClientRect().height);
+  el.classList.remove('instant');el.classList.add('pfast','open');
+  const b1=el.getBoundingClientRect(),g=b1.bottom-b0.bottom,d=revealNeed(el,top);
+  if(noMotion()||g<1){if(d>.5)scrollBy(0,d);return}
+  const o={duration:PIC_MS,easing:MONTH_EASE},list=[el.animate([{clipPath:`inset(0 0 ${Math.max(0,b1.height-b0.height)}px 0)`},{clipPath:'inset(0 0 0 0)'}],o)];
+  cards.forEach((c,i)=>list.push(c.animate([{clipPath:monthClip(c.getBoundingClientRect().height-c0[i])},{clipPath:monthClip(0)}],o)));
+  for(const e of below)list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
+  const pin=el.querySelector('.rpanel-in');if(pin)list.push(pin.animate([{opacity:0,transform:'translateY(-10px) scale(.96)'},{opacity:1,transform:'none'}],{duration:440,delay:40,easing:'cubic-bezier(.34,1.56,.64,1)',fill:'backwards'}));
+  const a=el._pa={list,end:null};list[0].finished.then(()=>{if(el._pa===a)el._pa=null},()=>{});
+  if(d>.5)pageScroll(scrollY+d,o.duration)}
+function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.classList.remove('open','instant')};
+  if(noMotion()||foldQuiet||!el.classList.contains('open')){close();keepInView(el);return}
+  // the sizes shut, read before anything moves (two layouts, nothing drawn in between)
+  const b1=el.getBoundingClientRect(),below=picBelow(el,b1.bottom),cards=picCards(el),c1=cards.map(c=>c.getBoundingClientRect().height);
+  el.classList.add('pfast');el.classList.remove('open');const b0=el.getBoundingClientRect(),c0=cards.map(c=>c.getBoundingClientRect().height);el.classList.add('open');
+  const g=b1.bottom-b0.bottom;if(g<1){close();return}
+  const top=el.getBoundingClientRect().top,max=Math.max(0,document.documentElement.scrollHeight-g-innerHeight);
+  let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
+  const pin=el.querySelector('.rpanel-in'),wait=150,o={duration:PIC_MS-40,delay:wait,easing:MONTH_EASE,fill:'forwards'};
+  if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
+  const list=[el.animate([{clipPath:'inset(0 0 0 0)'},{clipPath:`inset(0 0 ${Math.max(0,b1.height-b0.height)}px 0)`}],o)];
+  cards.forEach((c,i)=>list.push(c.animate([{clipPath:monthClip(0)},{clipPath:monthClip(c1[i]-c0[i])}],o)));
+  for(const e of below)list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
+  if(pin)list.push(pin.animate([{opacity:1,transform:'none'},{opacity:1,offset:.25},{opacity:0,transform:'translateY(-10px) scale(.96)'}],{duration:280,easing:'cubic-bezier(.36,0,.66,-.56)',fill:'forwards'}));
+  const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=el._pa={list,end};
+  list[0].finished.then(()=>{if(el._pa!==a)return;el._pa=null;end();for(const x of list)x.cancel()},()=>{})}
+/* shut at once (another photo is opening): when it lay above `keep`, scroll by what it gave back, so `keep` doesn't move */
+function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().bottom<=keep.getBoundingClientRect().top+1,h0=r.getBoundingClientRect().height;
+  r.classList.add('pfast');r.classList.remove('open','instant');if(above){const dh=h0-r.getBoundingClientRect().height;if(dh>0)scrollBy(0,-dh)}}
 
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
@@ -750,19 +794,19 @@ function boxUnfold(box){boxStop(box);const pan=box.querySelector('.mpanel');box.
   const o={duration:MONTH_MS,easing:MONTH_EASE},list=[box.animate([{clipPath:monthClip(g)},{clipPath:monthClip(0)}],o)];
   for(const e of monthBelow(box))list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
   const a=box._fa={list,end:null};list[0].finished.then(()=>{if(box._fa===a)box._fa=null},()=>{});
-  if(d>.5)scrollBy({top:d,behavior:'smooth'})}
+  if(d>.5)pageScroll(scrollY+d,o.duration)}
 function boxFold(box,items){boxStop(box);const pan=box.querySelector('.mpanel'),pin=box.querySelector('.mpanel-in'),g=pan?pan.offsetHeight:0;
   const close=()=>{box.classList.add('bfast');box.classList.remove('open','instant','bshut','blift')};
   if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
   // the page gets shorter at the end: scroll now to where it can stay (and bring the card's top back into view)
   const top=box.getBoundingClientRect().top,max=Math.max(0,document.documentElement.scrollHeight-g-innerHeight);
   let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
-  if(want<scrollY-.5)scrollTo({top:want,behavior:'smooth'});
   const its=[...box.querySelectorAll(items)];its.forEach((e,i)=>{e.classList.add('bli');e.style.setProperty('--bi',i)});box.style.setProperty('--bn',its.length);
   const wait=Math.round((its.length*BOX_LIFT+260)*.55);box.classList.add('bfast','bshut','blift');
   const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
   for(const e of monthBelow(box))list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
   if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,delay:wait+Math.round((MONTH_MS-60)*.35),duration:200}));
+  if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
   const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=box._fa={list,end};
   list[0].finished.then(()=>{if(box._fa!==a)return;box._fa=null;end();for(const x of list)x.cancel()},()=>{})}
 function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
@@ -825,6 +869,17 @@ function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
   $('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
   if(monthOpen)monthUnfold(box);else{revealRun++;monthFold(box)}}
+/* the page's scroll during an unfold or a fold, moved frame by frame on the animations' own curve (MONTH_EASE), duration and delay, so
+   the page and the clip move together: the browser's own smooth scroll keeps its own pace (WebKit, Safari's engine, covered a 1,000 px
+   scroll in one frame where Chromium takes half a second), and the page lurched against the animation. A touch or the wheel stops it. */
+let pageRun=0;
+function pageScroll(to,ms,delay=0){const run=++pageRun,from=scrollY;if(noMotion()||Math.abs(to-from)<1){scrollTo(0,to);return}let t0=null;
+  const stop=()=>{pageRun++;off()},off=()=>{removeEventListener('touchstart',stop);removeEventListener('wheel',stop)};
+  addEventListener('touchstart',stop,{passive:true,once:true});addEventListener('wheel',stop,{passive:true,once:true});
+  const step=now=>{if(run!==pageRun)return;if(t0===null)t0=now+delay;const t=Math.min(1,Math.max(0,(now-t0)/ms));scrollTo(0,from+(to-from)*easeMonth(t));if(t<1)requestAnimationFrame(step);else off()};
+  requestAnimationFrame(step)}
+/* MONTH_EASE, cubic-bezier(.2,.8,.2,1), as a function of time 0..1 (x found by halving, 20 steps) */
+function easeMonth(x){const c=(a,b,t)=>3*a*t*(1-t)*(1-t)+3*b*t*t*(1-t)+t*t*t;let lo=0,hi=1;for(let i=0;i<20;i++){const m=(lo+hi)/2;if(c(.2,.2,m)<x)lo=m;else hi=m}return c(.8,1,(lo+hi)/2)}
 /* Unfolding and folding the month without animating its height: an animated height laid the page out and repainted every day's
    drawing on every frame (30 layouts and 285 paints for one unfold), which was choppy on a phone. The page is laid out once, at the
    start of an unfold or the end of a fold, and the movement is a clip over the card, a slide for whatever is below it and a fade of
@@ -844,20 +899,20 @@ function monthUnfold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in')
   if(pin)list.push(pin.animate([{opacity:0},{opacity:1}],{...o,duration:240,fill:'backwards'}));   // the title, weekdays and buttons fade in; the days drop in (.mdrop)
   monthDrop(box);
   const a=monthAnim={list,end:null};list[0].finished.then(()=>{if(monthAnim===a)monthAnim=null},()=>{});
-  if(d>.5)scrollBy({top:d,behavior:'smooth'})}
+  if(d>.5)pageScroll(scrollY+d,o.duration)}
 function monthFold(box){monthStop();clearTimeout(monthDropT);box.classList.remove('mdrop');const pan=$('#mpanel'),pin=$('#mpanel-in'),g=pan?pan.offsetHeight:0;
   const close=()=>{box.classList.add('mfast');box.classList.remove('open','instant','mshut','mdrop','mlift')};
   if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
   // the page gets shorter at the end: scroll now to where it can stay, so it doesn't jump then (and bring the card's top back into view)
   const top=box.getBoundingClientRect().top,max=Math.max(0,document.documentElement.scrollHeight-g-innerHeight);
   let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
-  if(want<scrollY-.5)scrollTo({top:want,behavior:noMotion()?'auto':'smooth'});
   // the days lift out last first (styles.css .mlift, MONTH_LIFT ms apart, 280 ms each); the card starts closing once about half
   // of them are gone
   const n=box.querySelectorAll('.mc:not(.blank)').length,wait=Math.round((n*MONTH_LIFT+280)*.55);
   box.style.setProperty('--mn',n);box.classList.add('mfast','mshut','mlift');
   const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
   for(const e of monthBelow(box))list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
+  if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
   if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,delay:wait+Math.round((MONTH_MS-60)*.35),duration:200}));   // the title and weekdays, once the days are gone (a fade of the whole panel any earlier hid the days lifting out)
   const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=monthAnim={list,end};
   list[0].finished.then(()=>{if(monthAnim!==a)return;monthAnim=null;end();for(const x of list)x.cancel()},()=>{})}
@@ -1242,15 +1297,13 @@ function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:t
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(queuedKeys().length){checkQueue();startQueueWatch()}
   newDayCheck();try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(settings.location&&(!c||Date.now()-c.t>3*3600e3))loadWeather()}catch{}
   remoteKeys=null;schedulePrefetch()});   // photos made on another device meanwhile
-function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||!o[s])return;const opening=belowOpen!==s;
+function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||!o[s])return;const opening=belowOpen!==s,was=el.classList.contains('open');
   belowOpen=opening?s:null;
   document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('onclick')===`pickPiece('${s}')`;t.setAttribute('aria-expanded',on);
     t.setAttribute('aria-label',t.getAttribute('aria-label').replace(/(Show|Hide) the photo/,on?'Hide the photo':'Show the photo'))});
   const inn=el.querySelector('.rpanel-in');
-  if(opening){const was=el.classList.contains('open');inn.innerHTML=rowPanel(o[s]);if(!was){el.classList.remove('instant');void el.offsetHeight}}
-  else el.classList.remove('instant');
-  el.classList.toggle('open',opening);
-  if(opening)reveal(el,$('.below'))}
+  if(opening&&was){picStop(el);inn.innerHTML=rowPanel(o[s]);if(!noMotion())inn.animate([{opacity:0},{opacity:1}],{duration:200});return}   // another tile while one is open: its photo takes the place
+  if(opening){inn.innerHTML=rowPanel(o[s]);picOpenReady(el,$('.below'),()=>belowOpen===s)}else{revealRun++;picShut(el)}}
 /* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
 const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
 const todayBtn=()=>{const h=homeDay();if(key(sel)===key(h))return '';const isT=+h===+todayDate();
