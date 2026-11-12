@@ -24,7 +24,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(h.title==='Packing list'&&h.back&&h.today&&h.prev==='pack-btn',`Settings has a Packing list link next to Wardrobe stats; it opens a page of its own with a back button`);
     ok(h.a==='2026-11-16'&&h.b==='2026-11-20'&&h.count==='5 days',`the trip defaults to the next working week (${h.a} to ${h.b}, ${h.count})`);
     await p.click('#pack .pback');
-    ok(await p.evaluate(()=>document.querySelector('#pack').hidden&&!document.querySelector('#today').hidden),'the back button returns to Today');
+    ok(await p.evaluate(()=>document.querySelector('#pack').hidden&&!document.querySelector('#today').hidden&&settingsOpen()),'the back button returns to Settings, where it was opened, over Today');
+    await p.evaluate(()=>closeSettings());
     await p.evaluate(()=>{if(!monthOpen)toggleMonth()});await p.waitForSelector('#mpanel-in .mhead');await settle(p,600);
     ok(await p.evaluate(()=>!document.querySelector('#mpanel-in .pack-open')&&!/Packing list/.test(document.querySelector('#mpanel-in').textContent)),'the open month on Today has no packing-list button (the owner took it out); the page is in Settings');
     await p.evaluate(()=>{monthOpen=false;openPack()});await p.waitForFunction(()=>!document.querySelector('#pack').hidden);

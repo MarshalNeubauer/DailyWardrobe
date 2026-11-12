@@ -1708,6 +1708,15 @@ function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav')
   const a=TABS.indexOf(from),dx=a>=0&&ti>=0?(ti>a?28:-28):0;if(el._pg)el._pg.cancel();
   const an=el._pg=el.animate([{opacity:0,transform:dx?`translateX(${dx}px)`:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:PAGE_MS,easing:MONTH_EASE});
   an.finished.then(()=>{if(el._pg===an)el._pg=null},()=>{})}
+/* a page opened from Settings or from Today (stats, packing, care: openStats, openPack, openCare call subOpen first) goes back with its ‹
+   (subBack) to where it was opened from: Settings as it was, the same categories open and scrolled the same, over the page under it; or
+   the page it came from, scrolled where it was. (The ‹ always went to Today, out of Settings entirely.) */
+let subFrom=null;
+function subOpen(){const m=$('#settings-modal');let page=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden})||'today';
+  if(!TABS.includes(page))page='today';   // one of these pages opened from another: its ‹ goes to Today
+  subFrom={page,y:scrollY,set:settingsOpen()&&m?{cats:SET_CATS.filter(k=>{const e=$('#sc-'+k);return e&&e.classList.contains('open')}),top:m.scrollTop}:null}}
+function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;show(f.page);scrollTo(0,f.y);
+  if(!f.set)return;openSettings();for(const k of f.set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=f.set.top}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
   if(typeof setupYield==='function')setupYield(t);
