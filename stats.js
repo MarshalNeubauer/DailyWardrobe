@@ -20,6 +20,7 @@ function plannedDays(){const T=todayDate(),end=new Date(T.getFullYear(),T.getMon
   return out.sort((a,b)=>keyDate(a[0])-keyDate(b[0]))}
 /* why a piece is never worn, in a sentence (by the planner's own rules) */
 function whyUnused(i){
+  if(i.paused&&i.away)return (i.away.why==='laundry'?'It\'s in the laundry':'It\'s at the cleaner\'s')+(i.away.back?`: it joins your outfits again after ${fmtDay(i.away.back)}.`:': it joins your outfits again once you mark it back.');
   if(i.paused&&i.order)return i.arrives?`It's on the way: it joins your outfits after ${fmtDay(i.arrives)}.`:'It\'s on the way: put it back in rotation once it arrives.';
   if(i.paused)return 'You took it out of rotation, so the planner leaves it out.';
   const by=t=>items.filter(x=>x.type===t),suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
