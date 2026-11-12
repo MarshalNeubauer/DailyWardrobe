@@ -320,7 +320,13 @@ function asmParts(o){const inf=asmInfo()||{},out=[];
    colour and its shade) on the device, keeping the master's folds and shadows (asmPaint). The owner's choice, 2026-11-12: eleven
    plain colours painted this way looked right, a navy one included, and their colour is the tagged one, where the generator pushed it. */
 /* (since the woven shirts below) every shirt that is not striped, checked or figured is painted */
-const asmPaintable=i=>!!i&&i.type==='shirt'&&!shirtPatterned(i);
+const asmPaintable=i=>!!i&&i.type==='shirt'&&(!shirtPatterned(i)||asmMotif(i));
+/* a figured shirt (a small figure on a grid, read from its close-up: the owner's grey chevron dobby, his lavender micro-print neat) is
+   painted too, in colour: one repeat of the app's own drawing of the reading (two cells each way), each pixel as its colour over the
+   reading's ground, so the ground becomes the tagged colour and the figures keep their contrast to it (a dim close-up read the white
+   chevron shirt's ground as #c9c9d4). The cell's size from the close-up (ASM_CLOSEUP_MM / cells seen in it), never finer than
+   ASM_TEX_MIN_MM: Claude's count across the shirt is the server's cap (80) for both. Stripes and checks are still photographed. */
+const asmMotif=i=>{const s=usableSett(i);return !!(s&&s.motif&&s.motif.figs&&s.motif.figs.length&&s.cr>0)};
 /* Woven shirts are painted too, their weave laid over the colour (the owner's choice, 2026-11-12, from renders of his own shirts on
    the 2048 master): one repeat of the weave as the app draws it (fabricDef, from the saved reading), as a lightness ratio, multiplied
    into the painted shirt, upright on the front and along the arm on each cuff, with the swing the app gives that cloth (texTones' rule).
@@ -340,7 +346,8 @@ const ASM_TEX_MIN_MM=2.9;   // a figured weave is never drawn finer (about 9 px 
 const ASM_PX_MM=3.2;   // the 2048 master: about 32 px a centimetre (shoulder seams ~1460 px apart, ~46 cm; the tie ~6.7 cm mid-chest)
 const ASM_FLECK_DL=2.5;   // the fleck's swing (L*): the least the app draws
 const ASM_FLECK=96;   // the fleck tile, master pixels at 2048
-function asmWeave(i){if(!i||!texPat('shirt',i.pattern))return null;const p=patBase(i.pattern),s=usableSett(i),t=s&&s.tex,k=t?t.kind:p;
+function asmWeave(i){if(i&&i.type==='shirt'&&asmMotif(i)){const s=usableSett(i);return {f:'col',mm:2*Math.max(ASM_TEX_MIN_MM,ASM_CLOSEUP_MM/s.cr),rot:(+s.a||0)*Math.PI/180}}   // mm: the drawing's tile, two cells
+  if(!i||!texPat('shirt',i.pattern))return null;const p=patBase(i.pattern),s=usableSett(i),t=s&&s.tex,k=t?t.kind:p;
   if(k==='herringbone'||(!t&&p==='herringbone')){const tr=+(s&&s.tr)||0;return {f:'tile',hb:true,mm:ASM_SHIRT_MM/(tr>0&&tr<ASM_TR_CAP?tr:ASM_HB_TR)}}
   if(!t||k==='end-on-end')return {f:'fleck'};
   return {f:'tile',mm:0}}
@@ -357,6 +364,16 @@ async function asmTexTile(i,wk){if(asmTexMemo.has(wk))return asmTexMemo.get(wk);
   const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,TW,TH);const d=x.getImageData(0,0,TW,TH).data,r=new Float32Array(TW*TH);let s=0;
   for(let k=0;k<r.length;k++){const j=4*k;r[k]=.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]];s+=r[k]}s/=r.length;if(!(s>0))return null;for(let k=0;k<r.length;k++)r[k]/=s;
   const t={r,TW,TH,ar:h/w};if(asmTexMemo.size>40)asmTexMemo.clear();asmTexMemo.set(wk,t);return t}
+/* a figured shirt's repeat in colour: each pixel's linear colour over the reading's ground, per channel -> {c (3 a pixel), TW, TH, ar}.
+   The drawing's own turn (a diagonal grid) is left out and applied when painting, so the tile repeats */
+async function asmColTile(i,wk){const mk='c'+wk;if(asmTexMemo.has(mk))return asmTexMemo.get(mk);const s=usableSett(i),g=s&&s.motif&&s.motif.ground;if(!g)return null;
+  const def=fabricDef('asmtx',i,'shirt').replace(/ patternTransform="[^"]*"/,''),num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');if(!w||!h)return null;
+  const S=Math.max(1,Math.ceil(256/w)),TW=Math.round(w*S),TH=Math.max(1,Math.round(h*S)),L=ASM_LIN;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${TW}" height="${TH}" viewBox="0 0 ${w} ${h}"><defs>${def}</defs><rect width="${w}" height="${h}" fill="url(#asmtx)"/></svg>`;
+  const im=await asmImg('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))),cv=document.createElement('canvas');cv.width=TW;cv.height=TH;
+  const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,TW,TH);const d=x.getImageData(0,0,TW,TH).data,G=hexRgb(g).map(v=>Math.max(.004,L[v])),c=new Float32Array(3*TW*TH);
+  for(let k=0;k<TW*TH;k++)for(let q=0;q<3;q++)c[3*k+q]=Math.min(8,L[d[4*k+q]]/G[q]);
+  const t={c,TW,TH,ar:h/w};if(asmTexMemo.size>40)asmTexMemo.clear();asmTexMemo.set(mk,t);return t}
 /* the weave's repeat across a close-up, in its pixels: the first correlation peak (shifted sideways) whose double comes back too (a
    true repeat does; grain and noise don't), after a 3x3 blur (noise) less a 49x49 one (light falloff, folds) -> px, or 0 */
 function asmRepeatPx(d){const w=d.width,h=d.height,p=d.data,L=new Float32Array(w*h);for(let k=0;k<w*h;k++)L[k]=.3*p[4*k]+.59*p[4*k+1]+.11*p[4*k+2];
@@ -375,12 +392,14 @@ async function asmTexMm(i){const c=i.texture||'',k=i.id+'|'+c.length+c.slice(-40
   mm=Math.max(ASM_TEX_MIN_MM,mm);asmMmMemo.set(k,mm);return mm}
 /* what the pixel work needs to lay a shirt's weave (page side): the tile, its size in mm and its swing, or {fleck} */
 async function asmTexFor(i,hex,wk){const w=asmWeave(i);if(!w)return null;if(w.f==='fleck')return {fleck:true,dL:ASM_FLECK_DL};
+  if(w.f==='col'){const t=await asmColTile(i,wk);return t?{col:true,c:t.c,TW:t.TW,TH:t.TH,ar:t.ar,mm:w.mm,rot:w.rot}:null}
   const t=await asmTexTile(i,wk);if(!t)return {fleck:true,dL:ASM_FLECK_DL};const s=usableSett(i),rel=(s&&s.tex&&s.tex.rel)||.1,L0=rgbLab(...hexRgb(hex))[0];
   return {r:t.r,TW:t.TW,TH:t.TH,ar:t.ar,mm:w.hb?w.mm:await asmTexMm(i),dL:Math.max(2.5,Math.min(7,.4*rel*Math.max(L0,25)))}}
 /* (either thread) the tile scaled to its swing on that colour (its 5th to 95th percentile spread = dL in L*, around 1) and to the
    picture (px a repeat): {r, TW, TH, rx, ry}. A fleck: one-pixel columns (warp threads) in short runs of random light, the same on
    every device */
 function asmTexReady(T,hex,W){if(!T)return null;let r,TW,TH,rx,ry;
+  if(T.col){rx=T.mm*ASM_PX_MM*W/ASM_SIZE;return {col:true,c:T.c,TW:T.TW,TH:T.TH,rx,ry:rx*T.ar,rot:T.rot||0}}   // a figured shirt: its colours as drawn
   if(T.fleck){TW=TH=ASM_FLECK;r=new Float32Array(TW*TH);let seed=7;const rnd=()=>{seed=(Math.imul(seed,1103515245)+12345)>>>0;return seed/4294967296};
     for(let x=0;x<TW;x++){const col=(rnd()-.5)*.6;let y=0;while(y<TH){const len=2+Math.floor(rnd()*4),v=col+(rnd()-.5);for(let k=0;k<len&&y<TH;k++,y++)r[y*TW+x]=v}}
     rx=ry=ASM_FLECK*W/ASM_SIZE}
@@ -440,7 +459,14 @@ function asmPaint(master,calib,hex,prep,tex){const P=prep||asmPaintPrep(master,c
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)};
   const T=tex,at=T&&((u,v)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0,
     g=(i,j)=>T.r[((j+T.TH)%T.TH)*T.TW+(i+T.TW)%T.TW];return (g(x0,y0)*(1-fx)+g(x0+1,y0)*fx)*(1-fy)+(g(x0,y0+1)*(1-fx)+g(x0+1,y0+1)*fx)*fy});
+  // a figured shirt (T.col): each point's colour over the ground, per channel, bilinear like the weave, 3x3 points a pixel
+  const cat=T&&T.col&&((u,v,o)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0;
+    for(let c=0;c<3;c++){const G=(i,j)=>T.c[3*(((j+T.TH)%T.TH)*T.TW+(i+T.TW)%T.TW)+c];
+      o[c]+=(G(x0,y0)*(1-fx)+G(x0+1,y0)*fx)*(1-fy)+(G(x0,y0+1)*(1-fx)+G(x0+1,y0+1)*fx)*fy}}),cm=[0,0,0];
   for(let q=0;q<P.idx.length;q++){const k=P.idx[q],j=4*k,b=4*P.bg[q],A=P.A[q];let sh=w*P.sm[q]+(1-w)*P.sc[q];
+    if(cat){const x=k%W,y=(k-x)/W,th=(P.ang?P.ang[q]:0)+T.rot,cs=Math.cos(th),sn=Math.sin(th);cm[0]=cm[1]=cm[2]=0;
+      for(let a=0;a<3;a++)for(let e=0;e<3;e++){const X=x+(e+.5)/3,Y=y+(a+.5)/3;cat((X*cs+Y*sn)/T.rx,(Y*cs-X*sn)/T.ry,cm)}
+      for(let c=0;c<3;c++)d[j+c]=Math.round(A*gam(t[c]*sh*cm[c]/9)+(1-A)*s[b+c]);continue}
     if(T){const x=k%W,y=(k-x)/W,th=P.ang?P.ang[q]:0,cs=Math.cos(th),sn=Math.sin(th);let m=0;
       for(let a=0;a<3;a++)for(let e=0;e<3;e++){const X=x+(e+.5)/3,Y=y+(a+.5)/3;m+=at((X*cs+Y*sn)/T.rx,(Y*cs-X*sn)/T.ry)}sh*=m/9}
     for(let c=0;c<3;c++)d[j+c]=Math.round(A*gam(t[c]*sh)+(1-A)*s[b+c])}

@@ -43,6 +43,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       let bad=0,n=0;for(let q=0;q<P.idx.length;q++){const A=P.A[q];if(A>=1||A<=0)continue;const k=P.idx[q];if(k%W!==20)continue;n++;const j=4*k,want=[0x16,0x16,0x1a].map((v,c)=>A*v+(1-A)*skin[c]);
         if(want.some((v,c)=>Math.abs(out[j+c]-v)>12))bad++}return {n,bad}});
     ok(ne.n>0&&ne.bad===0,`a painted collar's soft edge blends into the neck beyond it, with none of the master's white (${ne.bad} of ${ne.n} edge pixels off)`);
+    // a figured shirt (a motif reading) is painted in colour: the ground the tagged colour, the figures darker, no photo asked for
+    const mf=await p.evaluate(async()=>{const i={id:'mf',type:'shirt',primaryColor:'white',secondaryColor:'grey',pattern:'dobby',
+        sett:{v:3,motif:{grid:'straight',ground:'#c9c9d4',groundName:'white',figs:[{shape:'square',place:'cell',size:.5,cols:['#716f7b'],names:['grey']}],aspect:1},a:0,cr:10,tr:80,src:'claude+pixels'}};
+      const W=256,N=W*W,mk=v=>{const d=new Uint8ClampedArray(4*N);for(let k=0;k<N;k++)d.set([v,v,v,255],4*k);return new ImageData(d,W,W)},hex=colOf(i),wk=asmWeaveSig(i),wv=asmWeave(i);
+      const tex=await asmTexFor(i,hex,wk),out=asmPaint(mk(240),mk(20),hex,null,asmTexReady(tex,hex,W)).data,Lm=[];for(let k=0;k<N;k++)Lm.push(out[4*k+1]);const s=[...Lm].sort((a,b)=>a-b);
+      const o={top:{id:'j',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:i,tie:{id:'t',type:'tie',primaryColor:'red',pattern:'solid'},watch:{id:'w',type:'watch',primaryColor:'silver'}};
+      return {paint:asmPaintable(i),f:wv&&wv.f,mm:wv&&wv.mm,col:!!(tex&&tex.col),med:s[Math.floor(N*.8)],lo:s[Math.floor(N*.05)],tag:hexRgb(hex)[1],photo:asmPhotoParts(o).map(x=>x.slot).join()}});
+    ok(mf.paint&&mf.f==='col'&&mf.mm===16&&mf.col&&!/shirt/.test(mf.photo),`a figured shirt is painted in colour, its repeat two cells from the close-up (${mf.mm} mm), with no photo (photo parts: ${mf.photo})`);
+    ok(Math.abs(mf.med-mf.tag)<=8&&mf.lo<mf.med*.6,`its ground is the tagged colour (${mf.med} for ${mf.tag}) and its figures keep their contrast (${mf.lo})`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
