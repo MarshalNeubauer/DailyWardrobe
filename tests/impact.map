@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	88059ab0248dea04ac9a
+# tested	8d6d18764520c3978c62
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -80,7 +80,7 @@ accounts.test.js	sync.js	@addEventListenerpagehide	@document.addEventListenervis
 accounts.test.js	tagging.js	aiFields	benchPool	benchRuns	claudeOnly	claudePattern	confTxt	customForTag	measureCard	measuredAlt	motifPat	outfitRefsFull	patternPrompt	readSett	readable	renderBenchUI	renderCustomUI	renderWeaveUI	settNote	settText	settable	tagExtras	tagFixes	tagNotes	takeExtras	trimRefs	wbGains	wbRead	weavePool
 accounts.test.js	tests/fixedplan.js	<any>
 accounts.test.js	ui.js	addGate	advClose	askAnswer	askConfirm	askEls	connSummary	needConn	renderConnUI	uiEsc
-accounts.test.js	wardrobe.js	moreRow
+accounts.test.js	wardrobe.js	matRow	moreRow
 accounts.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	ITEM_BG	ITEM_PROMPT	RENDER_PROMPT	ROUTES.* /sync	ROUTES.GET /fetch	RenderHub	SWAP_PROMPT	WATCH_KEY	allCaps	cleanCaps	cleanCustom	cleanPattern	cleanTag	correctionsText	customText	dataUrlToBlob	delRender	dropFail	dropParts	dropPush	dropTesterExtras	failFor	fetch	firstWeek	getRender	handleAccount	handleFeedback	handleFetchImage	handleInvites	handleMe	handlePattern	handleRender	handleSync	handleTagMany	hasWatch	hubOf	isParted	itemPhoto	jobMsg	keepSnapshots	kvMeta	listSnapshots	measuredText	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	plainFor	plainKind	plainText	publicHost	putRender	queue	queueRender	queueStatus	readCapped	refundJob	renderId	renderItem	renderTtl	runRenderJob	runWipe	sameText	sget	sha256Hex	smallBody	spend	sput	storedResponse	storedVersion	syncVersion	tagSchema	tagWithClaude	tellHub	txt	unspend	useCount	usedOf	utcDay	waitForRenders	whoIs	wipeSome
 accounts.test.js	wrangler.toml	<any>
 asmahead.test.js	<every page test>	<every page test>
@@ -190,9 +190,10 @@ care.test.js	ui.js	advClose	connNote	connSummary	needConn	renderConnUI	uiEsc
 care.test.js	wardrobe.js	fldRow	ivOn	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 care.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	dropParts	fetch	getRender	handleSync	isParted	keepSnapshots	kvMeta	orNull	renderId	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	unspend	utcDay	whoIs
 casual.test.js	<every page test>	<every page test>
-casual.test.js	app.js	S	addManual	appPush	cap1	noMotion	openAdd	orderRow	renderAdd	setq	shadeRow	shirtColFix	subOpen	texSlot	wbNote
+casual.test.js	app.js	@addEventListenerpopstate	E	S	aAn	addManual	appPush	cap1	esc	fetchItemPic	fnv64	histPush	itemBody	itemDesc	itemKey	itemPic	noMotion	openAdd	openItem	orderRow	photoTools	renderAdd	renderWardrobe	setq	shadeRow	sheetSlides	shirtColFix	subOpen	texSlot	wardList	wardPic	wbNote	workerBase
 casual.test.js	apple-touch-icon.png	<loaded>
-casual.test.js	core.js	COLOR_OPTS	LUM	accentOf	colBase	colName	colOf	colorDesc	colsFor	fitCol	hasVest	hexRgb	itemSeason	labOf	leatherLabel	leatherWord	leathersFor	lum	lumCol	mix	nm	normCol	normColFor	normPat	patBase	patLabel	patName	patOf	planCol	primaryCol	pw	rgbHex	seasonFit	shadeName	shoeStyle	thirdOf	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
+casual.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState
+casual.test.js	core.js	COLOR_OPTS	LUM	accentOf	colBase	colName	colOf	colorDesc	colsFor	desc	fitCol	hasVest	hexRgb	itemName	itemSeason	itemTitle	labOf	leatherLabel	leatherWord	leathersFor	lum	lumCol	mix	nm	normCol	normColFor	normPat	patBase	patLabel	patName	patOf	planCol	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 casual.test.js	detect.js	texPat	usableSett
 casual.test.js	draw.js	drawBootSide	drawDerbySide	drawLoaferSide	drawOxfordSide	drawShoeSide	drawSneakerSide	fabricDef	itemThumb	leatherLayers	trouserMarks
 casual.test.js	icon-192.png	<loaded>
@@ -201,11 +202,13 @@ casual.test.js	index.html	<loaded>
 casual.test.js	manifest.webmanifest	<loaded>
 casual.test.js	planner.js	beltFit	buildPlan	clothesScore	colourRepeat	colsOf	comboRepeat	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	tieGroup	tieLook	tieRepeat	tieScore
 casual.test.js	safety.js	guardUnsaved	tagFailNote
-casual.test.js	styles.css	#add #queue .card	#add #queue .card .btns .pri	#add #queue .card>.btns:last-of-type	#add #queue .card>label select,#item-view .card>label select	#add #queue .card>label,#item-view .card>label	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .morebtn	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#add .texslot	#multi-status	#multi-status:empty	#paste-status:empty	#save-all .btn	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.aic	.btn	.btns	.card label	.drop-hint	.gi,.card	.morechev	.morefold	.ordrow	.ordrow .rotbtn	.paste-box	.paste-box .btn	.paste-box input	.phead	.phead .pback	.phead h2	.psub	.rv .thumb	.shaderow	.shctl	.shctl .shbtn	.shctl .shval	.shlab	.slabel	.texslot	.texslot .btn	.thumb	.thumb svg	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	<loaded>	body.nocon .conn-only,.connhide	nav.tab-none::before	select,input[type="text"],input[type="range"]
+casual.test.js	stats.js	wornDays
+casual.test.js	styles.css	#add #queue .card	#add #queue .card .btns .pri	#add #queue .card>.btns:last-of-type	#add #queue .card>label select,#item-view .card>label select	#add #queue .card>label,#item-view .card>label	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .morebtn	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#add .texslot	#item-backdrop.on,#item-backdrop.closing	#item-view .card.ivsec	#item-view .phtools	#item-view .phtools :is(button,.btn)	#item-view .phtools>:last-child:nth-child(odd)	#item-view.on,#item-view.closing	#multi-status	#multi-status:empty	#paste-status:empty	#save-all .btn	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .phead .padd	#wardrobe .wclear	#wardrobe .wclear[hidden]	#wardrobe .wsearch input	#wardrobe .wsort	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.aic	.btn	.btns	.cap	.card label	.chip	.chip.on	.chips	.drop-hint	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbody	.ivchev	.ivdel	.ivdel button	.ivdraw	.ivdraw .thumb	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivph	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivt	.ivt .gtype	.ivt h2	.ivtags .shaderow	.morechev	.morefold	.ordrow	.ordrow .rotbtn	.paste-box	.paste-box .btn	.paste-box input	.phead	.phead .pback	.phead .pcount	.phead h2	.phtools	.phtools button,.phtools .btn	.psub	.rv .thumb	.shaderow	.shctl	.shctl .shbtn	.shctl .shval	.shelp	.shlab	.slabel	.texslot	.texslot .btn	.thumb	.thumb svg	.wfind	.wsearch	.wsicon	.wslide	:is(#item-view,#add) .wfld	:is(#item-view,#add) .wnotes textarea	:is(#item-view,#add) label.wnotes	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	<loaded>	body.iv-on #toast,body.iv-on #busy	body.nocon .conn-only,.connhide	nav.tab-none::before	select,input[type="text"],input[type="range"]
+casual.test.js	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 casual.test.js	tagging.js	claudeOnly	motifPat	readSett	readable	settable	tagNotes
 casual.test.js	tests/fixedplan.js	<any>
 casual.test.js	ui.js	addGate
-casual.test.js	wardrobe.js	moreRow
+casual.test.js	wardrobe.js	fldRow	ivOn	matRow	moreRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 casual.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	customText	fetch	measuredText	orNull	readCapped	sameText	sha256Hex	spend	tagSchema	tagWithClaude	utcDay	whoIs
 claude.test.js	<every page test>	<every page test>
 claude.test.js	app.js	@document.addEventListenervisibilitychange	S	addFiles	aiLabel	applyWb	ask	busyStart	cap1	cardPics	cropSwatch	esc	fill	fnv64	generateSwatch	loadImg	metaPut	noMotion	normTag	orderRow	photoPair	renderAdd	renderBusy	replanFuture	saveUserSettings	shadeRow	shrink	tagSwInner	texSlot	wbNote	workerBase
@@ -225,7 +228,7 @@ claude.test.js	sync.js	@addEventListenerpagehide	@document.addEventListenervisib
 claude.test.js	tagging.js	aiFields	claudeOnly	confTxt	customForTag	measureCard	measuredAlt	motifPat	readSett	readable	settNote	settable	tagExtras	tagFixes	tagNotes	takeExtras	wbGains	wbRead
 claude.test.js	tests/fixedplan.js	<any>
 claude.test.js	ui.js	addGate	needConn
-claude.test.js	wardrobe.js	moreRow
+claude.test.js	wardrobe.js	matRow	moreRow
 claude.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	cleanCustom	cleanTag	correctionsText	customText	fetch	getRender	handleSync	measuredText	orNull	readCapped	sameText	sha256Hex	spend	tagSchema	tagWithClaude	unspend	utcDay	whoIs
 claudepattern.test.js	<every page test>	<every page test>
 claudepattern.test.js	account.js	acctCall	isTester	loadAccount	renderAccountUI
@@ -253,7 +256,7 @@ claudepattern.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe-closeup.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
 claudepattern.test.js	ui.js	addGate	needConn
-claudepattern.test.js	wardrobe.js	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
+claudepattern.test.js	wardrobe.js	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 claudepattern.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanPattern	fetch	handlePattern	orNull	sameText	sha256Hex	spend	tagWithClaude	txt	utcDay	whoIs
 climate.test.js	<every page test>	<every page test>
 climate.test.js	account.js	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -296,7 +299,7 @@ colouraudit.test.js	sync.js	scheduleSync	setSyncStatus	showSyncStatus	syncNow	sy
 colouraudit.test.js	tagging.js	claudeOnly	motifPat	readSett	readable	settable	tagNotes
 colouraudit.test.js	tests/fixedplan.js	<any>
 colouraudit.test.js	ui.js	addGate
-colouraudit.test.js	wardrobe.js	moreRow
+colouraudit.test.js	wardrobe.js	matRow	moreRow
 colouraudit.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	customText	fetch	measuredText	orNull	readCapped	sameText	sha256Hex	spend	tagSchema	tagWithClaude	utcDay	whoIs
 colours.test.js	<every page test>	<every page test>
 colours.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@el.addEventListenerclick	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@root.addEventListenerclick	S	aAn	addManual	adviceFor	belowBox	boxStop	boxUnfold	canPick	cap1	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	foldEdge	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthBelow	monthFillSoon	monthLink	noMotion	orderRow	piecesBox	piecesLine	planOn	prefetchRenders	recordDays	renderAdd	renderFor	renderPending	renderStalled	renderWardrobe	replanFuture	resetCard	reveal	revealNeed	saveDay	saveUserSettings	schedulePrefetch	scoreCard	shadeRow	shareMark	shirtPatterned	shirtTextured	slotLabel	slotPool	slots	stackSVG	texSlot	toggleScore	vestRow	wardList	wardPic	wbNote	workerBase	wornBar	wornMarks
@@ -319,7 +322,7 @@ colours.test.js	sync.js	scheduleSync	setSyncStatus	showSyncStatus	syncNow	syncOn
 colours.test.js	tagging.js	tagNotes
 colours.test.js	tests/fixedplan.js	<any>
 colours.test.js	ui.js	addGate
-colours.test.js	wardrobe.js	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
+colours.test.js	wardrobe.js	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 compare.test.js	<every page test>	<every page test>
 compare.test.js	account.js	isTester
 compare.test.js	app.js	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constv$itemviewb$ivbodybd$itemba}>@v.addEventListenertouchstart	@{constv$itemviewb$ivbodybd$itemba}>end	E	cap1	esc	fnv64	histPush	itemBody	metaPut	noMotion	openItem	patSummary	photoPair	photoTools	put	putRaw	renderWardrobe	replanFuture	saveUserSettings	sete	shadeRow	sheetSlides	stepItem	tagSwInner	toggleCompare	wardList	wardPic	workerBase
@@ -443,7 +446,7 @@ display.test.js	sync.js	scheduleSync	setSyncStatus	showSyncStatus	syncNow	syncOn
 display.test.js	tagging.js	tagNotes
 display.test.js	tests/fixedplan.js	<any>
 display.test.js	ui.js	addGate
-display.test.js	wardrobe.js	moreRow
+display.test.js	wardrobe.js	matRow	moreRow
 dress.test.js	<every page test>	<every page test>
 dress.test.js	account.js	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 dress.test.js	analysis.js	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	simFacts	smallCandidates	tClass
@@ -510,7 +513,7 @@ figuremotif.test.js	tagging.js	aiFields	calibLab	claudeOnly	claudePattern	closeT
 figuremotif.test.js	tests/fixedplan.js	<any>
 figuremotif.test.js	tests/fixtures/shirt-chevron-closeup.png	<loaded>
 figuremotif.test.js	ui.js	addGate	needConn
-figuremotif.test.js	wardrobe.js	moreRow	wardSaveFields
+figuremotif.test.js	wardrobe.js	matRow	moreRow	wardSaveFields
 figuremotif.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanPattern	fetch	handlePattern	orNull	sameText	sha256Hex	spend	tagWithClaude	txt	utcDay	whoIs
 foldtap.test.js	<every page test>	<every page test>
 foldtap.test.js	account.js	isTester
@@ -690,7 +693,7 @@ measalt.test.js	tests/fixedplan.js	<any>
 measalt.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 measalt.test.js	tests/fixtures/suit-mink.jpg	<loaded>
 measalt.test.js	ui.js	addGate
-measalt.test.js	wardrobe.js	moreRow
+measalt.test.js	wardrobe.js	matRow	moreRow
 measalt.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	customText	fetch	measuredText	orNull	readCapped	sameText	sha256Hex	spend	tagSchema	tagWithClaude	utcDay	whoIs
 month.test.js	<every page test>	<every page test>
 month.test.js	account.js	acctCall	acctEsc	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -777,7 +780,7 @@ motif.test.js	tests/fixedplan.js	<any>
 motif.test.js	tests/fixtures/tie-neat-closeup.jpg	<loaded>
 motif.test.js	tests/fixtures/tie-neat.jpg	<loaded>
 motif.test.js	ui.js	addGate	needConn
-motif.test.js	wardrobe.js	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
+motif.test.js	wardrobe.js	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 motif.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanPattern	fetch	handlePattern	orNull	sameText	sha256Hex	spend	tagWithClaude	txt	utcDay	whoIs
 moveoutfit.test.js	<every page test>	<every page test>
 moveoutfit.test.js	account.js	isTester
@@ -819,7 +822,7 @@ multi.test.js	sync.js	@addEventListenerpagehide	@document.addEventListenervisibi
 multi.test.js	tagging.js	aiFields	claudeOnly	confTxt	customForTag	keepTagImg	measuredAlt	motifPat	readable	recordTagResult	settNote	settable	tagFixes	tagNotes	wbGains	wbRead
 multi.test.js	tests/fixedplan.js	<any>
 multi.test.js	ui.js	addGate	needConn
-multi.test.js	wardrobe.js	moreRow	wardSaveFields
+multi.test.js	wardrobe.js	matRow	moreRow	wardSaveFields
 multi.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	cleanCustom	correctionsText	customText	fetch	getRender	handleSync	handleTagMany	orNull	sameText	sha256Hex	spend	tagSchema	tagWithClaude	utcDay	whoIs
 navbar.test.js	<every page test>	<every page test>
 navbar.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	aAn	adviceFor	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFillSoon	monthLink	piecesBox	piecesLine	planOn	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	saveDay	saveUserSettings	schedulePrefetch	scoreCard	shareMark	shirtPatterned	shirtTextured	slotLabel	slotPool	slots	stackSVG	vestRow	workerBase	wornBar	wornMarks
@@ -968,7 +971,7 @@ paste.test.js	sync.js	localState	scheduleSync	setSyncStatus	showSyncStatus	syncM
 paste.test.js	tagging.js	benchPool	benchRuns	claudeOnly	confTxt	customForTag	keepTagImg	measuredAlt	motifPat	readable	recordTagResult	renderBenchUI	renderCustomUI	renderWeaveUI	settNote	settable	tagExtras	tagFixes	tagNotes	wbGains	wbRead	weavePool
 paste.test.js	tests/fixedplan.js	<any>
 paste.test.js	ui.js	addGate	advClose	connSummary	needConn	renderConnUI
-paste.test.js	wardrobe.js	moreRow	wardSaveFields
+paste.test.js	wardrobe.js	matRow	moreRow	wardSaveFields
 paste.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	ROUTES.GET /fetch	fetch	getRender	handleFetchImage	handleInvites	handleMe	handleSync	orNull	ownerOnly	publicHost	readCapped	sameText	sha256Hex	usedOf	utcDay	whoIs
 patternphoto.test.js	<every page test>	<every page test>
 patternphoto.test.js	app.js	@document.addEventListenervisibilitychange	applyWb	busyStart	comboKey	comboSig	esc	figurePng	fnv64	keepRender	keptPhoto	lookSig	metaPut	outfitRefs	outfitText	queueCombo	renderBusy	renderCombo	replanFuture	saveUserSettings	shirtPatterned	shirtTextured	shrinkUrl	workerBase
@@ -1342,7 +1345,7 @@ run.js: add an item without a photo; it persists	sync.js	@addEventListenerpagehi
 run.js: add an item without a photo; it persists	tagging.js	claudeOnly	motifPat	readSett	readable	recordTagResult	settable	tagNotes
 run.js: add an item without a photo; it persists	tests/fixedplan.js	<any>
 run.js: add an item without a photo; it persists	ui.js	addGate
-run.js: add an item without a photo; it persists	wardrobe.js	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
+run.js: add an item without a photo; it persists	wardrobe.js	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 run.js: figure draws the tie, and the shirt when there is no jacket	<every page test>	<every page test>
 run.js: figure draws the tie, and the shirt when there is no jacket	app.js	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	fnv64	metaPut	replanFuture	saveUserSettings	workerBase
 run.js: figure draws the tie, and the shirt when there is no jacket	apple-touch-icon.png	<loaded>
@@ -1487,7 +1490,7 @@ safety.test.js	sync.js	@addEventListenerpagehide	@document.addEventListenervisib
 safety.test.js	tagging.js	aiFields	claudeOnly	confTxt	customForTag	keepTagImg	measureCard	measuredAlt	motifPat	readSett	readable	recordTagResult	settNote	settable	tagExtras	tagFixes	tagImgOf	tagNotes	takeExtras	wbGains	wbRead
 safety.test.js	tests/fixedplan.js	<any>
 safety.test.js	ui.js	addGate	needConn
-safety.test.js	wardrobe.js	moreRow	wardSaveFields
+safety.test.js	wardrobe.js	matRow	moreRow	wardSaveFields
 safetysync.test.js	<every page test>	<every page test>
 safetysync.test.js	account.js	isTester
 safetysync.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	addTombstones	atomic	fnv64	loadClimate	metaPut	nextWorkday	onSyncedData	planRulesCheck	replanFuture	saveUserSettings	temp	unit	workerBase	wxChip	wxIcon
@@ -1710,7 +1713,7 @@ shirtweave.test.js	tagging.js	aiFields	calibLab	claudeOnly	claudePattern	closeTa
 shirtweave.test.js	tests/fixedplan.js	<any>
 shirtweave.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<loaded>
 shirtweave.test.js	ui.js	addGate	connNote	needConn
-shirtweave.test.js	wardrobe.js	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
+shirtweave.test.js	wardrobe.js	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 shirtweave.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanPattern	fetch	handlePattern	orNull	sameText	sha256Hex	spend	tagWithClaude	txt	utcDay	whoIs
 shop.test.js	<every page test>	<every page test>
 shop.test.js	account.js	isTester
@@ -1952,7 +1955,7 @@ tagging.test.js	sync.js	@addEventListenerpagehide	@document.addEventListenervisi
 tagging.test.js	tagging.js	addCustomColor	addCustomPattern	aiFields	benchEstimate	benchPool	benchRuns	benchScoreTxt	benchTagOne	calibLab	claudeOnly	closeTagImg	confTxt	customForTag	groupOf	keepTagImg	linS	measHint	measureCard	measureCloth	measuredAlt	motifPat	nearestCols	newColForm	newPatForm	openColForm	openPatForm	readPatternWithClaude	readSett	readable	recordTagResult	refineFromCloseup	removeCustom	renderBenchUI	renderCustomUI	renderWeaveUI	runBench	sLin	saveColForm	savePatForm	settNote	settable	shuffle	tagExtras	tagFixes	tagImgOf	tagNotes	tagStatsCard	takeExtras	typeGroup	valName	visTok	wbGains	wbRead	weavePool
 tagging.test.js	tests/fixedplan.js	<any>
 tagging.test.js	ui.js	addGate	advClose	advToggle	askAnswer	askConfirm	askEls	connNote	connSummary	needConn	renderConnUI	uiEsc
-tagging.test.js	wardrobe.js	moreRow	wardSaveFields
+tagging.test.js	wardrobe.js	matRow	moreRow	wardSaveFields
 tagging.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	cleanCustom	cleanTag	correctionsText	customText	fetch	getRender	handleInvites	handleMe	handleSync	handleTagMany	measuredText	orNull	ownerOnly	readCapped	sameText	sha256Hex	spend	tagSchema	tagWithClaude	txt	usedOf	utcDay	whoIs
 tagswatch.test.js	<every page test>	<every page test>
 tagswatch.test.js	account.js	isTester
@@ -2031,7 +2034,7 @@ texswatch.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 texswatch.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 texswatch.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<loaded>
 texswatch.test.js	ui.js	addGate
-texswatch.test.js	wardrobe.js	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
+texswatch.test.js	wardrobe.js	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 texture.test.js	<every page test>	<every page test>
 texture.test.js	account.js	isTester
 texture.test.js	app.js	<any>	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	E	S	addFiles	addTexture	aiLabel	applyWb	ask	cap1	cardPics	cropSwatch	esc	fill	fnv64	generateSwatch	histPush	imgOf	itemBody	loadImg	matchLight	metaPut	noMotion	openItem	orderRow	outfitRefs	photoPair	photoTools	put	putRaw	refreshSwatch	renderAdd	renderWardrobe	replaceTexture	replanFuture	save	saveUserSettings	setPic	setTexture	setq	shadeRow	sheetSlides	shirtColFix	shrink	tagSwInner	texGains	texSlot	toast	toggleWb	undoPhoto	wardList	wardPic	wbNote	workerBase
@@ -2248,7 +2251,7 @@ wardpic.test.js	<every page test>	<every page test>
 wardpic.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	E	aAn	cap1	closeItem	esc	fetchItemPic	fnv64	histDrop	itemBody	itemDesc	itemKey	itemPic	metaPut	noMotion	photoPair	photoTools	renderWardrobe	replanFuture	saveUserSettings	shadeRow	sheetSlides	tagSwInner	wardList	wardPic	workerBase
 wardpic.test.js	apple-touch-icon.png	<loaded>
 wardpic.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState
-wardpic.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	desc	hexRgb	itemName	itemTitle	leatherWord	leathersFor	lum	mix	patBase	patLabel	primaryCol	rgbHex	sentence	shadeName	shoeStyle	sockToe	thirdOf	titleCls	trouserKind
+wardpic.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	desc	hexRgb	itemName	itemTitle	leatherLabel	leatherWord	leathersFor	lum	mix	patBase	patLabel	primaryCol	rgbHex	sentence	shadeName	shoeStyle	sockToe	thirdOf	titleCls	trouserKind
 wardpic.test.js	detect.js	usableSett
 wardpic.test.js	draw.js	drawOxfordSide	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	trouserMarks
 wardpic.test.js	icon-192.png	<loaded>

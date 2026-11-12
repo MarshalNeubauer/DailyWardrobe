@@ -57,6 +57,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         boots:leathersFor({type:'shoes',shoeStyle:'boot'}).join(),belt:leathersFor({type:'belt'}).includes('canvas')}});
     ok(mat.label==='Material'&&mat.opts==='Leather,Suede,Canvas,Knit'&&mat.leather==='calf',`a sneaker has Material: ${mat.opts}; switching a cordovan loafer to a sneaker makes it leather (${mat.leather})`);
     ok(!/canvas|knit/.test(mat.boots)&&!mat.belt,'boots and belts stay in leathers');
+    // the item sheet: Material right under Style, above Notes
+    const sheet=await p.evaluate(async()=>{closeSettings&&closeSettings();items=[{id:'sn9',type:'shoes',primaryColor:'white',pattern:'solid',leather:'canvas',shoeStyle:'sneaker',added:1}];cache={};show('wardrobe');openItem('sn9');await new Promise(r=>setTimeout(r,400));
+      const labs=[...document.querySelectorAll('#item-view label')].map(l=>(l.firstChild&&l.firstChild.textContent||'').trim()).filter(Boolean);
+      const sel=[...document.querySelectorAll('#item-view select')].find(s=>/'leather'/.test(s.getAttribute('onchange')||''));
+      return {labs:labs.join(','),opts:sel?[...sel.options].map(o=>o.textContent).join():'',val:sel&&sel.value}});
+    const li=sheet.labs.split(',');
+    ok(li.indexOf('Material')===li.indexOf('Style')+1&&li.indexOf('Material')<li.indexOf('Notes')&&sheet.opts==='Leather,Suede,Canvas,Knit'&&sheet.val==='canvas',`the item sheet has Material right under Style and above Notes (${sheet.labs}; ${sheet.opts})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
   // the photo reader is told about both
