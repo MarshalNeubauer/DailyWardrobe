@@ -203,6 +203,10 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
    at phone speed) */
 @media (prefers-reduced-motion:no-preference){#mbox.mdrop .mc:not(.blank){animation:mcDrop .44s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(var(--i) * 12ms + 60ms)}}
 @keyframes mcDrop{from{opacity:0;transform:translateY(-12px) scale(.94)}60%{opacity:1}to{opacity:1;transform:none}}
+/* folding is the drop played backwards: the last day leaves first, each dips a little and rises away (a back-in easing, the mirror of
+   the landing bounce), then the card closes behind them (app.js monthFold adds .mlift and --mn, the number of days) */
+@media (prefers-reduced-motion:no-preference){#mbox.mlift .mc:not(.blank){animation:mcLift .28s cubic-bezier(.36,0,.66,-.56) both;animation-delay:calc((var(--mn) - 1 - var(--i)) * 8ms)}}
+@keyframes mcLift{from{opacity:1;transform:none}25%{opacity:1}to{opacity:0;transform:translateY(-12px) scale(.94)}}
 /* day actions in one row: worn toggle, formal toggle, reset icon */
 .dayact{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin:4px 0 10px}
 .seg{display:flex;flex:0 1 auto;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
@@ -705,8 +709,6 @@ span.pk-tick{cursor:default}
 #pack .pk-out{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 /* the links to it: under Wardrobe stats in Settings, and at the top of Today's open month */
 .pack-link{margin-top:8px}
-.pack-open{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:44px;margin:0 0 10px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
-.pack-open .pack-chev{font-size:20px;line-height:1;color:var(--mut)}
 @media(max-width:340px){.pk-dn{width:70px}#pack .pk-wear{min-width:56px;padding:0 8px}}
 
 /* ---- setup ---- */
