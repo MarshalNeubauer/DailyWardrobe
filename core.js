@@ -110,6 +110,17 @@ const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tie
 /* items that can carry a second photo: a close-up of the cloth (its weave and true colour), used for the realistic photos */
 const TEXTURE_TYPES=['suit','blazer','pants','shirt','tie'];
 const METAL_TYPES=['watch','tieclip','belt','cufflinks'],SEASON_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];
+/* what an item is made of (item.material): the common choices per type; the dropdown adds Other (typed in) and None. Shoes and
+   belts have their leather, watches their band and metal, so they have no list. */
+const MATERIALS_BY={
+  suit:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','corduroy','velvet','polyester blend'],
+  blazer:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','hopsack','corduroy','velvet','polyester blend'],
+  pants:['wool','wool blend','flannel','cotton','cotton twill','linen','linen blend','corduroy','tweed','polyester blend'],
+  shirt:['poplin','twill','oxford','pinpoint oxford','end-on-end','chambray','linen','linen blend','flannel','cotton blend'],
+  tie:['silk','knitted silk','grenadine','wool','wool blend','cashmere','linen','cotton','polyester'],
+  socks:['cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
+  overcoat:['wool','wool blend','cashmere','cashmere blend','tweed','camel hair','cotton'],
+  raincoat:['cotton gabardine','waxed cotton','nylon','polyester','waterproof shell']};
 const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather']],CUFFS=[['button','Button cuffs'],['french','French cuffs']];
 
 /* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
@@ -177,6 +188,11 @@ const colorDesc = i => {
 };
 const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'||i.type==='tieclip'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'||i.type==='tieclip'?'':' · ')+i.metal:'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+(TYPES[i.type]||'item').toLowerCase():'none';
+/* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
+   (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
+const itemName=i=>i&&typeof i.name==='string'?i.name.trim():'';
+const itemTitle=i=>itemName(i)||desc(i);
+const titleCls=i=>itemName(i)?'named':'cap';
 const bg=i=>i?(i.swatch?`url(${i.swatch})`:COLORS[primaryCol(i)]||METAL[i.metal]||'#ccc'):'#ccc';
 
 /* brightness of a named colour (0-255), worked out once per colour: the planner asks tens of thousands of times a month */
