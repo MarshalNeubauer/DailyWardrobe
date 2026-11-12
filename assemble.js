@@ -218,7 +218,13 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
     if(Math.hypot(ga,gb)>12){const g=new Uint8Array(N);for(let i=0;i<N;i++)if(lab[i]===1&&Math.hypot(Lp[3*i+1]-ga,Lp[3*i+2]-gb)<12)g[i]=1;
       const a=asmAreas(g,W);for(let i=0;i<N;i++){const k=a.lab[i];if(!k||a.size[k]>N/1500)continue;const x=i%W;let j=-1;for(let d=1;d<px(30)&&j<0;d++){if(x-d>=0&&lab[i-d]===1&&!g[i-d])j=i-d;else if(x+d<W&&lab[i+d]===1&&!g[i+d])j=i+d}
         if(j>=0){o[4*i]=o[4*j];o[4*i+1]=o[4*j+1];o[4*i+2]=o[4*j+2]}}}}
-  if(P.shirt)copy(P.shirt.data,z.shirt,2);
+  if(P.shirt){copy(P.shirt.data,z.shirt,2);
+    // the shirt's own edge, like the jacket's: its zone stops a pixel or two short of the collar's edge against the neck, and the
+    // master's white left there was a thin white line along a coloured collar. The ASM_EDGE pixels just outside the zone that no
+    // piece has taken come from the shirt's photo too (elsewhere it is the master there: the skin, the wall)
+    // (not beside the tie, whose edge and halo fill decide those pixels: there it put a hard step of light shirt above the knot)
+    const ring=asmBox(z.shirt,W,px(ASM_EDGE),true),byTie=asmBox(z.tie,W,px(ASM_HALO+ASM_EDGE),true),sd=P.shirt.data;
+    for(let i=0;i<N;i++)if(ring[i]&&!byTie[i]&&!lab[i]&&!z.shirt[i]&&!z.tie[i]&&!z.watch[i]&&!(V0&&V0[i])){const j=4*i;o[j]=sd[j];o[j+1]=sd[j+1];o[j+2]=sd[j+2];lab[i]=2}}
   asmKeyFill(o,lab,z,master,W);
   let tieM=null;if(P.tie){tieM=asmTieMask(z,P.tie,master);
     if(V){   // under a waistcoat only the tie's top shows: the part joined to the knot
@@ -257,7 +263,11 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
       for(let dy=-Q;dy<=Q;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-Q;dx<=Q;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx,d=dx*dx+dy*dy;
         if(clean[q]){if(d<fb){fb=d;ft=q}}else if(!out1[q]&&!z.watch[q]&&!(V&&V[q])&&d<bb){bb=d;bq=q}}}
       if(ft<0||(tieM[i]&&bq<0))continue;const a=(cnt[i]-1)/1000,j=4*i,b=tieM[i]?4*bq:j;
-      for(let k=0;k<3;k++)o[j+k]=a*T[4*ft+k]+(1-a)*pic[b+k];
+      // the tie's colour there: the mean of its clean pixels a little beyond the nearest (the nearest alone, copied outward, drew a
+      // white figure near the edge out as a comb of short bars over the knot, 2026-11-12 at 2048)
+      const rr=Math.sqrt(fb)+px(1),r2=rr*rr,RR=Math.ceil(rr),tc=[0,0,0];let tn=0;
+      for(let dy=-RR;dy<=RR;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-RR;dx<=RR;dx++){const xx=x+dx;if(xx<0||xx>=W||dx*dx+dy*dy>r2)continue;const q=yy*W+xx;if(clean[q]){tc[0]+=T[4*q];tc[1]+=T[4*q+1];tc[2]+=T[4*q+2];tn++}}}
+      for(let k=0;k<3;k++)o[j+k]=a*(tc[k]/tn)+(1-a)*pic[b+k];
       soft[i]=1}}
   let barM=null;if(P.bar&&!V){barM=asmBarMask(master,z,P.bar,tieM);if(barM)copy(P.bar.data,barM,4)}
   let w=null;if(P.watch){w=asmWatch(master,z,P.watch,P.shirt);copy(w.src,w.mask,5)}
@@ -330,14 +340,22 @@ function asmPaintPrep(master,calib,full){const W=master.width,H=master.height,N=
   const maj=box(a,3);for(let k=0;k<N;k++)if(maj[k]<=.5)a[k]=0;
   const A=box(a,2),idx=[];if(full)for(let k=0;k<N;k++)if(full[k])A[k]=1;for(let k=0;k<N;k++)if(A[k]>0)idx.push(k);
   const lit=(d)=>{const v=[];for(const k of idx)if(A[k]>.9)v.push(Y(d,4*k));v.sort((x,y)=>x-y);return v[Math.floor(v.length*.9)]||1},Rm=lit(M),Rc=lit(C);
-  const n=idx.length,P={idx:Int32Array.from(idx),A:new Float32Array(n),sm:new Float32Array(n),sc:new Float32Array(n)};
-  for(let q=0;q<n;q++){const k=idx[q],j=4*k;P.A[q]=A[k];P.sm[q]=Math.min(1.15,Y(M,j)/Rm);P.sc[q]=Math.min(1.6,Y(C,j)/Rc)}
+  // the soft edge's outer pixels that are the master's lit white shirt (near-grey, at least half as light as its lit cloth) are shirt,
+  // not a share of something else: left part-painted they were a pale line along the collar against the neck on a black shirt (skin
+  // is too coloured to pass; the wall beyond the shirt's zone is never copied)
+  for(const k of idx)if(A[k]<1){const j=4*k,ch=Math.max(M[j],M[j+1],M[j+2])-Math.min(M[j],M[j+1],M[j+2]);if(ch<25&&Y(M,j)>Rm*.5)A[k]=1}
+  // what a soft edge pixel is mixed with: the nearest pixel beyond the shirt (A 0), not the master's own pixel, which is part white
+  // shirt itself (where the collar meets the neck it was half skin, half white collar: a grey dotted line along a coloured collar)
+  const n=idx.length,P={idx:Int32Array.from(idx),A:new Float32Array(n),sm:new Float32Array(n),sc:new Float32Array(n),bg:new Int32Array(n)},R=6;
+  for(let q=0;q<n;q++){const k=idx[q],j=4*k;P.A[q]=A[k];P.sm[q]=Math.min(1.15,Y(M,j)/Rm);P.sc[q]=Math.min(1.6,Y(C,j)/Rc);P.bg[q]=k;
+    if(A[k]>=1)continue;const x=k%W,y=(k/W)|0;let best=1e9;
+    for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=H)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const p=yy*W+xx,d=dx*dx+dy*dy;if(!A[p]&&d<best){best=d;P.bg[q]=p}}}}
   return P}
 function asmPaint(master,calib,hex,prep){const P=prep||asmPaintPrep(master,calib),s=master.data,d=new Uint8ClampedArray(s),L=ASM_LIN;
   const h=String(hex).replace('#',''),t=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),w=Math.cbrt(.2126*t[0]+.7152*t[1]+.0722*t[2]);
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)};
-  for(let q=0;q<P.idx.length;q++){const j=4*P.idx[q],A=P.A[q],sh=w*P.sm[q]+(1-w)*P.sc[q];
-    for(let c=0;c<3;c++)d[j+c]=Math.round(A*gam(t[c]*sh)+(1-A)*s[j+c])}
+  for(let q=0;q<P.idx.length;q++){const j=4*P.idx[q],b=4*P.bg[q],A=P.A[q],sh=w*P.sm[q]+(1-w)*P.sc[q];
+    for(let c=0;c<3;c++)d[j+c]=Math.round(A*gam(t[c]*sh)+(1-A)*s[b+c])}
   return new ImageData(d,master.width,master.height)}
 const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('asm:vest:'+asmVestKey());return !!(k&&k.t===r.t&&k.v===ASM_ZV)};
 /* Did an edit keep the picture? Outside its own piece (and a margin) a photo must still be the master. The generator once answered

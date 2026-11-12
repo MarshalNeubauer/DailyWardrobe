@@ -37,6 +37,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const out=(m,s=0)=>{for(let i=0;i<N;i++)if(m[i]&&i%W>=71)s++;return s};
       return {without:out(asmTieMask(z,tie)),with:out(asmTieMask(z,tie,master)),inside:asmTieMask(z,tie,master).reduce((a,v,i)=>a+(v&&i%W>=52&&i%W<68?1:0),0)}});
     ok(tm.with===0&&tm.without>0&&tm.inside===16*120,`the tie's outline stops where its photo is still the master (${tm.with} shadow pixels taken as tie, ${tm.without} without that check)`);
+    // the painted shirt's soft edge is mixed with what lies beyond it (the neck), not the master's own half-white pixel: a grey line
+    const ne=await p.evaluate(()=>{const W=40,N=W*W,mk=f=>{const d=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++)d.set([...f(i%W),255],4*i);return new ImageData(d,W,W)};
+      const skin=[180,130,110],master=mk(x=>x<20?[240,240,240]:x===20?[210,185,175]:skin),calib=mk(x=>x<=20?[20,20,20]:skin),P=asmPaintPrep(master,calib),out=asmPaint(master,null,'#16161a',P).data;   // x 20: half skin, half white collar
+      let bad=0,n=0;for(let q=0;q<P.idx.length;q++){const A=P.A[q];if(A>=1||A<=0)continue;const k=P.idx[q];if(k%W!==20)continue;n++;const j=4*k,want=[0x16,0x16,0x1a].map((v,c)=>A*v+(1-A)*skin[c]);
+        if(want.some((v,c)=>Math.abs(out[j+c]-v)>12))bad++}return {n,bad}});
+    ok(ne.n>0&&ne.bad===0,`a painted collar's soft edge blends into the neck beyond it, with none of the master's white (${ne.bad} of ${ne.n} edge pixels off)`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
