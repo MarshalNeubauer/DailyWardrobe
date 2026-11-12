@@ -308,13 +308,31 @@ function asmParts(o){const inf=asmInfo()||{},out=[];
    plain colours painted this way looked right, a navy one included, and their colour is the tagged one, where the generator pushed it. */
 const asmPaintable=i=>!!i&&i.type==='shirt'&&!shirtPatterned(i)&&!shirtTextured(i)&&!texPat('shirt',i.pattern);
 const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint);   // the parts that need a photo from the worker
-/* the master with its shirt (zone m) painted in hex: in linear light each pixel is the colour times its brightness relative to the white
-   shirt's lit cloth (the 60th percentile of the zone), so folds, shadows and the edges against the jacket and the skin stay */
-function asmPaint(master,m,hex){const W=master.width,N=W*W,s=master.data,d=new Uint8ClampedArray(s),L=ASM_LIN,lum=j=>.2126*L[s[j]]+.7152*L[s[j+1]]+.0722*L[s[j+2]];
-  const lit=[];for(let i=0;i<N;i+=5)if(m[i])lit.push(lum(4*i));lit.sort((a,b)=>a-b);const ref=lit[Math.floor(lit.length*.6)]||1;
-  const h=String(hex).replace('#',''),c=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),enc=v=>{v=v<0?0:v>1?1:v;return 255*(v>.0031308?1.055*v**(1/2.4)-.055:12.92*v)};
-  for(let i=0;i<N;i++){if(!m[i])continue;const j=4*i,r=lum(j)/ref;d[j]=enc(c[0]*r);d[j+1]=enc(c[1]*r);d[j+2]=enc(c[2]*r)}
-  return new ImageData(d,W,master.height)}
+/* The master with its shirt painted in hex, the way the owner's chosen recolour was made (shirt-recolor.js, 2026-11-12), with the
+   shirt's black calibration photo (asmCalibKey('shirt')): a pixel is shirt where the master is near-grey and the calibration photo much
+   darker (soft from 0.12 to 0.37 in cube-root lightness), specks dropped (7x7 majority), its edge softened (5x5); the shading mixes,
+   by the colour's lightness, the white shirt's folds (the master, against its 90th-percentile lit cloth, up to 1.15) and the black
+   shirt's (the calibration photo, up to 1.6): a light colour keeps the white shirt's shadows, a dark one the black shirt's highlights.
+   The first painter (the master's shading alone) gave dark shirts a flat, washed look. asmPaintPrep does the colour-free part once. */
+function asmPaintPrep(master,calib){const W=master.width,H=master.height,N=W*H,M=master.data,C=calib.data,L=ASM_LIN;
+  const Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],a=new Float32Array(N);
+  for(let k=0;k<N;k++){const j=4*k,chroma=Math.max(M[j],M[j+1],M[j+2])-Math.min(M[j],M[j+1],M[j+2]);if(chroma>=40)continue;
+    const drop=Math.cbrt(Y(M,j))-Math.cbrt(Y(C,j));a[k]=drop<=.12?0:drop>=.37?1:(drop-.12)/.25}
+  const box=(src,R)=>{const t=new Float32Array(N),o=new Float32Array(N),cl=(v,n)=>v<0?0:v>n-1?n-1:v,n=2*R+1;
+    for(let y=0;y<H;y++){let s=0;for(let x=-R;x<=R;x++)s+=src[y*W+cl(x,W)];for(let x=0;x<W;x++){t[y*W+x]=s/n;s+=src[y*W+cl(x+R+1,W)]-src[y*W+cl(x-R,W)]}}
+    for(let x=0;x<W;x++){let s=0;for(let y=-R;y<=R;y++)s+=t[cl(y,H)*W+x];for(let y=0;y<H;y++){o[y*W+x]=s/n;s+=t[cl(y+R+1,H)*W+x]-t[cl(y-R,H)*W+x]}}return o};
+  const maj=box(a,3);for(let k=0;k<N;k++)if(maj[k]<=.5)a[k]=0;
+  const A=box(a,2),idx=[];for(let k=0;k<N;k++)if(A[k]>0)idx.push(k);
+  const lit=(d)=>{const v=[];for(const k of idx)if(A[k]>.9)v.push(Y(d,4*k));v.sort((x,y)=>x-y);return v[Math.floor(v.length*.9)]||1},Rm=lit(M),Rc=lit(C);
+  const n=idx.length,P={idx:Int32Array.from(idx),A:new Float32Array(n),sm:new Float32Array(n),sc:new Float32Array(n)};
+  for(let q=0;q<n;q++){const k=idx[q],j=4*k;P.A[q]=A[k];P.sm[q]=Math.min(1.15,Y(M,j)/Rm);P.sc[q]=Math.min(1.6,Y(C,j)/Rc)}
+  return P}
+function asmPaint(master,calib,hex,prep){const P=prep||asmPaintPrep(master,calib),s=master.data,d=new Uint8ClampedArray(s),L=ASM_LIN;
+  const h=String(hex).replace('#',''),t=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),w=Math.cbrt(.2126*t[0]+.7152*t[1]+.0722*t[2]);
+  const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)};
+  for(let q=0;q<P.idx.length;q++){const j=4*P.idx[q],A=P.A[q],sh=w*P.sm[q]+(1-w)*P.sc[q];
+    for(let c=0;c<3;c++)d[j+c]=Math.round(A*gam(t[c]*sh)+(1-A)*s[j+c])}
+  return new ImageData(d,master.width,master.height)}
 const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('asm:vest:'+asmVestKey());return !!(k&&k.t===r.t&&k.v===ASM_ZV)};
 /* Did an edit keep the picture? Outside its own piece (and a margin) a photo must still be the master. The generator once answered
    a swap with a collage: the figure moved aside, the reference photos pasted beside it. -> the share of outside pixels that changed */
@@ -329,6 +347,7 @@ async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=ren
   const parts=asmParts(o);if(parts.some(p=>!p.paint&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
     parts:parts.map(p=>p.paint?{slot:p.slot,key:p.key,paint:p.paint}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img})};
+  if(parts.some(p=>p.paint)){const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}   // a painted shirt takes its shading from the black calibration shirt too
   if(!job.zones){job.zoneImg=asmZoneImgs();   // zones made outside the app, when they're here; else the calibration photos
     if(!job.zoneImg){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}}
   if(o.vest){const vk=asmVestKey(),r=renders[vk];if(!r)return null;const kv=await metaGet('asm:vest:'+vk);
@@ -357,7 +376,8 @@ async function asmBuild(job){
       const m=asmUpMask(asmVestZone(await asmData(J.img,zw),await asmData(J.calib,zw),zs),zw,W),share=asmCount(m)/(W*W);   // at ASM_BASE too, then enlarged
       if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
-  const P={};for(const p of job.parts){if(p.paint){M.paint=M.paint||{};P[p.slot]=M.paint[p.paint]=M.paint[p.paint]||asmPaint(master,z.shirt,p.paint);continue}   // nothing outside the shirt changes: no drift to check
+  if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W));M.ppt=job.paintCalib.t;M.paint={}}
+  const P={};for(const p of job.parts){if(p.paint){M.paint=M.paint||{};P[p.slot]=M.paint[p.paint]=M.paint[p.paint]||asmPaint(master,null,p.paint,M.pp);continue}   // nothing outside the shirt changes: no drift to check
     const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
   if(V)P.vest=V;
   out.url=await asmJpeg(asmCompose(master,z,P));return out}
@@ -427,6 +447,7 @@ async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
   if(!await asmGet(asmMasterKey(),true)||!asmWants(o)||(o.vest&&!await asmGet(asmVestKey())))return null;
   if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
   if((await Promise.all(asmPhotoParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
+  if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return null;
   if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
@@ -462,6 +483,7 @@ async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&rende
     if(await asmGetPre(o)){const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow();return}   // built on the computer: no pieces to download, nothing to compute
     if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
     const parts=asmPhotoParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
+    if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return;   // the black shirt a painted shirt is shaded from
     if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
     const img=await asmPhoto(o,!ahead);if(!img)return;
     const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();

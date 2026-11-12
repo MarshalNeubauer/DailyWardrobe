@@ -30,9 +30,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {n,green,stripes}});
     ok(k.n>0&&k.green===0,`green the master's tie left in another piece is cleaned up (${k.n} found, ${k.green} left)`);
     ok(k.stripes===5*120,`by a sideways copy of the cloth beside it, so its weave carries on (${k.stripes} of ${5*120} pixels in pattern)`);
-    // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour with the master's shading
-    const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120;d.set([v,v,v,255],4*i)}   // a white shirt, its right half in shadow
-      const m=new Uint8Array(N).fill(1),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
+    // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
+    const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
+      const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
       const out=asmPaint(new ImageData(d,W,W),m,colOf(navy)).data,lit=[...out.slice(0,3)],dark=[...out.slice(4*30,4*30+3)];
       const o={top:{id:'j',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:navy,tie:{id:'t',type:'tie',primaryColor:'red',pattern:'solid'},watch:{id:'w',type:'watch',primaryColor:'silver'}};
       const parts=asmParts(o),sp=parts.find(x=>x.slot==='shirt');
