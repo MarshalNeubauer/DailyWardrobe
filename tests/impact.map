@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	16e00f85e25ad79cac57
-# tested	b8212ee22b28e3a0fb48
+# tested	e72771092e555d8d8bdd
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctStart
 <every page test>	analysis.js	<loaded>
@@ -350,7 +349,7 @@ dress.test.js	account.js	acctBase	loadAccount	renderAccountUI
 dress.test.js	analysis.js	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	simFacts	smallCandidates	tClass
 dress.test.js	app.js	@addEventListenerpopstate	@document.addEventListenervisibilitychange	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	E	S	aAn	addTombstones	adviceFor	atomic	batchCombos	belowBox	canPick	cap1	clearLocks	closeItem	comboKey	comboKeyV1	comboSig	comboSigV1	countryName	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	generateSwatch	hasOutfit	histDrop	histPush	idsOf	isoDate	itemBody	itemDesc	itemKey	itemPic	itemPicHtml	keepInView	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metalWord	missingItemPics	monthGridHtml	monthLink	monthName	mvSig	nextWorkday	noMotion	onSyncedData	openItem	openSettings	orderRow	outfitText	photoTools	piecesBox	planOn	prefetchRenders	put	putRaw	recordDays	renderAdd	renderBatchUI	renderDaysOffUI	renderFor	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	renderStalled	renderWardrobe	resetCard	reveal	save	saveDay	saveSettings	schedulePrefetch	scoreCard	setCatOpen	settingsSummaries	shadeRow	sheetSlides	shirtPatterned	shirtTextured	shortDate	shortRest	shortTop	slotLabel	slotPool	slots	stackSVG	texSlot	tieWord	toggleMonth	unit	vestRow	wardList	wardPic	wbNote	wornMarks
 dress.test.js	apple-touch-icon.png	<loaded>
-dress.test.js	assemble.js	asmAutoSoon	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
+dress.test.js	assemble.js	asmAutoSoon	asmCan	asmEnsure	asmFor	asmFullWins	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 dress.test.js	care.js	careBadge	careCard	careCounts	careLimit	careNote	careNoun	careState	careTimes	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 dress.test.js	core.js	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	arriveN	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	lumCol	mergeState	mix	needsJacket	needsTie	nm	normPat	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	shadeName	sockToe	stamp	stateSig	thirdOf	titleCls	watchOpts	watchText
 dress.test.js	detect.js	detectQueued	texPat	usableSett
