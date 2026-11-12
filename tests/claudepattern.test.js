@@ -76,6 +76,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {navy:dE00(L(s.bands[0][0]),L('#24243e')),blue:dE00(L(s.bands[1][0]),L('#5387c2')),white:L(s2.bands[1][0])[0],grey:L(s2.bands[2][0])[0]}});
     ok(eq.navy<2&&eq.blue<2,`a half-navy, half-blue tie keeps both colours (ΔE00 ${eq.navy.toFixed(1)} and ${eq.blue.toFixed(1)} from the cloth)`);
     ok(eq.white>82&&eq.grey>62&&eq.white>eq.grey+12,`a tie's thin white edging stays lighter than the grey band it borders (L* ${eq.white.toFixed(0)} against ${eq.grey.toFixed(0)})`);
+    // a tie's read stripes and figures are drawn without the faint white sheen line: turned with the pattern it showed as light bands
+    const sh=await p.evaluate(()=>{const band={id:'sb',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',sett:{v:2,a:-45,bands:[['#141e33',.69],['#c0c3c1',.04],['#8b8d93',.23],['#c0c3c1',.04]],cross:null,cr:3.5,tr:2.5,src:'claude+pixels'}};
+      const mot={id:'sm',type:'tie',primaryColor:'navy',pattern:'foulard',sett:{v:3,motif:{grid:'diagonal',ground:'#313363',figs:[{shape:'square',place:'cell',size:.9,cols:['#755ea0']}]},a:45,cr:17,tr:20,src:'claude+pixels'}};
+      return [fabricDef('x1',band,'tie'),fabricDef('x2',mot,'tie'),fabricDef('x3',band,'tie','fig')].map(d=>/stroke="#fff"/.test(d))});
+    ok(sh.every(v=>!v),`a tie's stripes and figures have no white sheen line across them (${sh.join(', ')})`);
     // the Add card: after the close-up, Claude reads the pattern
     await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});

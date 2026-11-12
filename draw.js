@@ -94,8 +94,8 @@ function fabricDef(id,item,role,ctx){
       for(let i=0;i<n;i++)for(let j=0;j<n;j++){const alt=(i+j)%2;if(f.place==='alternate-cells'&&alt)continue;
         const col=f.cols[f.cols.length>1?alt:0],y=(corner?j:j+.5)*Tv,x=(corner?i:i+.5)*T+(m.off&&j%2?T/2:0);
         body+=fig(f,x,y,col);if(x+f.size*T/2>W2)body+=fig(f,x-W2,y,col)}}
-    const sheen=role==='tie'?`<path d="M0,${f2(H2)} L${f2(W2)},0" stroke="#fff" stroke-opacity=".05" stroke-width="${f2(T/6)}"/>`:'';
-    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(W2)}" height="${f2(H2)}"${se.a?` patternTransform="rotate(${se.a})"`:''}><rect width="${f2(W2)}" height="${f2(H2)}" fill="${m.ground}"/>${body}${sheen}</pattern>`;
+    // (no tie sheen line here: repeated every tile and turned with the pattern, it showed as faint light bands across the swatch)
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(W2)}" height="${f2(H2)}"${se.a?` patternTransform="rotate(${se.a})"`:''}><rect width="${f2(W2)}" height="${f2(H2)}" fill="${m.ground}"/>${body}</pattern>`;
   }
   if(se&&se.v===2&&se.bands&&se.bands.length>1&&p!=='solid'){
     const across=se.tr||(se.tw?1/se.tw:1.5),T=ctx==='dot'?8:ctx==='fig'?Math.max(2,Math.min(60,(role==='tie'?29:role==='shirt'?180:200)/across)):Math.max(14,Math.min(110,100/Math.max(.9,se.cr||1)));
@@ -103,8 +103,9 @@ function fabricDef(id,item,role,ctx){
     const minW=ctx==='fig'?.35:ctx==='dot'?.5:.6;   // a windowpane's or pinstripe's hairline stays visible
     let x=0;const main=se.bands.map(([h,f])=>{const w=f*T,x0=x;x+=w;return `<rect x="${x0.toFixed(3)}" width="${(Math.max(w,minW)+.06).toFixed(3)}" height="${Tv.toFixed(3)}" fill="${h}"/>`}).join('');
     let y=0;const over=cx?cx.bands.map(([h,f])=>{const w=f*Tv,y0=y;y+=w;return h?`<rect y="${y0.toFixed(3)}" height="${(Math.max(w,minW)+.06).toFixed(3)}" width="${T.toFixed(3)}" fill="${h}" opacity=".5"/>`:''}).join(''):'';
-    const sheen=role==='tie'?`<path d="M0,0 L${T},${Tv}" stroke="#fff" stroke-opacity=".05" stroke-width="${(T/30).toFixed(2)}"/>`:'';
-    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${T.toFixed(3)}" height="${Tv.toFixed(3)}"${rot(se.a)?` patternTransform="${rot(se.a)}"`:''}>${main}${over}${sheen}</pattern>`;
+    // (no tie sheen line: one per repeat, turned 45° with the stripes it lay almost level, light grey bands across the owner's
+    // navy & white & grey stripe tie in the item sheet, 2026-11-12)
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${T.toFixed(3)}" height="${Tv.toFixed(3)}"${rot(se.a)?` patternTransform="${rot(se.a)}"`:''}>${main}${over}</pattern>`;
   }
   if(st&&(!st.kind||st.kind==='stripes')&&[...STRIPE_PATS,...CHECK_PATS].includes(p)&&st.b&&st.b.length>1){
     const T=role==='tie'?8:role==='shirt'?5:10;
