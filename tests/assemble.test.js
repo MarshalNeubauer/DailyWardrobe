@@ -137,7 +137,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // on Today: the assembled picture stands in for the outfit's photo, unless a photo was made for this outfit after the master
       out.forBefore=asmFor(o);asmTried.clear();await asmEnsure(o);const a=asmFor(o);out.forAfter=!!a&&a.model==='assembled'&&a.img.length>40000;out.keptOut=!!(await metaGet('asm:out:'+asmOutKey(o)));
       renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OLD',model:'gpt',t:500};out.overOld=renderFor(o).model;
-      renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};out.underNew=renderFor(o).model;delete renders[comboKey(o)];
+      renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};out.underNew=renderFor(o).model;
+      // and then nothing is put together for it: asmEnsure runs at every redraw of Today, and assembling and redrawing again looped after a Regenerate
+      {let made=0,redraws=0;const p0=asmPhoto,r0=refreshToday;asmPhoto=async x=>{made++;return p0(x)};refreshToday=()=>{redraws++};
+        try{asmTried.clear();await asmEnsure(o);await asmEnsure(o)}finally{asmPhoto=p0;refreshToday=r0}out.fullLoop={made,redraws}}
+      delete renders[comboKey(o)];
       renders[asmPieceKey('tie',tie)]={...keep,t:3000};out.stale=asmFor(o);renders[asmPieceKey('tie',tie)]=keep;
       // the jobs
       const mj=await asmMasterJob(),cj=asmCalibJob('tie'),tj=await asmPieceJob('tie',{...tie,photo:await url('tie')}),bj=await asmPieceJob('bar',clip),sj=await asmPieceJob('shirt',{...black,photo:await url('shirt-black')}),jj=await asmPieceJob('jacket',{...jk,photo:await url('jacket')}),wj=await asmPieceJob('watch',{...gold,photo:await url('watch')});
@@ -164,6 +168,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       'the vest master adds a waistcoat to the master; its calibration photo and each suit\'s vest photo are edits of the vest master');
     ok(k.drift.slice(0,3).every(v=>v<.06)&&k.drift[3]>.3&&k.collage===null&&k.bad,`a real piece leaves the rest of the picture alone; one that moved the figure is refused (${k.drift.map(v=>(100*v).toFixed(1)+'%').join(', ')} changed outside the piece)`);
     ok(k.forBefore===null&&k.forAfter&&k.keptOut&&k.overOld==='assembled'&&k.underNew==='gpt'&&k.stale===null,'Today takes the assembled picture (kept on the device) over an older photo of the outfit; a photo made after the master wins, and a piece made again makes the picture stale');
+    ok(k.fullLoop.made===0&&k.fullLoop.redraws===0,`an outfit whose own photo wins (after a Regenerate) is not put together and Today is not redrawn for it: that looped and froze swiping and scrolling (${k.fullLoop.made} assembled, ${k.fullLoop.redraws} redraws)`);
     ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===2&&k.needs.split('piece:tie').length===3&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt or the master's watch (${k.needs})`);
     const J=k.jobs;
     ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/dark grey herringbone suit/.test(J.mj.outfit)&&/burgundy tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit),'the master job is a normal outfit photo of the master\'s clothes (dark grey herringbone, white shirt, burgundy tie), marked as the master, at high quality');
