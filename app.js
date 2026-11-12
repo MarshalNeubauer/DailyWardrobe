@@ -738,11 +738,38 @@ function scoreCard(o){
     <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()">${fixes}<ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':c.hard?'miss hard':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':c.hard?'!':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}${A&&A.stuck.includes(c.label)?' <span class="lim">Nothing you own does better here.</span>':''}</small>`:''}</li>`).join('')}</ul>${r.hard.length?`<p class="scap">A real mistake keeps the score at ${HARD_CAP} or below, however well the rest matches.</p>`:''}</div></div></section>`;
 }
 
-function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;box.classList.remove('instant');void box.offsetHeight;
-  box.classList.toggle('open',scoreOpen);const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
+/* the score box and the pieces list unfold and fold like the month (monthUnfold / monthFold): the page is laid out once and a clip
+   over the card and a slide of what is under it move; their own entry cascades (the checks and their bars, the pieces) still play.
+   Folding is that cascade backwards: the last check or piece lifts out first (BOX_LIFT ms apart, styles.css .blift), the card closes
+   once about half are gone. A box's running animations are kept on it (box._fa) so a tap in the middle finishes the last move. */
+const BOX_LIFT=20;
+function boxStop(box){const a=box._fa;box._fa=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
+function boxUnfold(box){boxStop(box);const pan=box.querySelector('.mpanel');box.classList.remove('instant','bshut','blift');box.classList.add('bfast','open');
+  const g=pan?pan.offsetHeight:0,d=revealNeed(box,box);
+  if(noMotion()||!g){if(d>.5)scrollBy(0,d);return}
+  const o={duration:MONTH_MS,easing:MONTH_EASE},list=[box.animate([{clipPath:monthClip(g)},{clipPath:monthClip(0)}],o)];
+  for(const e of monthBelow(box))list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
+  const a=box._fa={list,end:null};list[0].finished.then(()=>{if(box._fa===a)box._fa=null},()=>{});
+  if(d>.5)scrollBy({top:d,behavior:'smooth'})}
+function boxFold(box,items){boxStop(box);const pan=box.querySelector('.mpanel'),pin=box.querySelector('.mpanel-in'),g=pan?pan.offsetHeight:0;
+  const close=()=>{box.classList.add('bfast');box.classList.remove('open','instant','bshut','blift')};
+  if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
+  // the page gets shorter at the end: scroll now to where it can stay (and bring the card's top back into view)
+  const top=box.getBoundingClientRect().top,max=Math.max(0,document.documentElement.scrollHeight-g-innerHeight);
+  let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
+  if(want<scrollY-.5)scrollTo({top:want,behavior:'smooth'});
+  const its=[...box.querySelectorAll(items)];its.forEach((e,i)=>{e.classList.add('bli');e.style.setProperty('--bi',i)});box.style.setProperty('--bn',its.length);
+  const wait=Math.round((its.length*BOX_LIFT+260)*.55);box.classList.add('bfast','bshut','blift');
+  const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
+  for(const e of monthBelow(box))list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
+  if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,delay:wait+Math.round((MONTH_MS-60)*.35),duration:200}));
+  const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=box._fa={list,end};
+  list[0].finished.then(()=>{if(box._fa!==a)return;box._fa=null;end();for(const x of list)x.cancel()},()=>{})}
+function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
+  const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
   const sm=box.querySelector('.lbl small');if(sm)sm.textContent='Outfit score · '+(scoreOpen?'tap to fold away':'tap for why');
-  if(scoreOpen)reveal(box);else{revealRun++;keepInView(box)}}
+  if(scoreOpen)boxUnfold(box);else{revealRun++;boxFold(box,'#spanel .sfix, #spanel li, #spanel .scap')}}
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
@@ -1242,9 +1269,9 @@ function piecesBox(o){
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
 /* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
 function keepInView(box){if(foldQuiet)return;const r=box.getBoundingClientRect();if(r.top<8)scrollBy({top:r.top-8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
-function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;box.classList.remove('instant');void box.offsetHeight;
-  box.classList.toggle('open',listOpen);const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
-  if(listOpen)reveal(box);else{revealRun++;keepInView(box)}}
+function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;
+  const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
+  if(listOpen)boxUnfold(box);else{revealRun++;boxFold(box,'#ipanel .list>*')}}
 function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
