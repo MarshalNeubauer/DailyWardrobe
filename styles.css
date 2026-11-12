@@ -482,7 +482,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 #settings-modal{position:fixed;inset:0;z-index:1000;background:var(--bg);color:var(--ink);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* the page behind Settings doesn't scroll (setLock in app.js) */
 @media (min-width:600px){#settings-modal{inset:auto;top:4vh;bottom:4vh;left:50%;width:min(600px,94vw);transform:translateX(-50%);border-radius:18px;border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.45)}}
-.shead{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.shead{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--bg);border-bottom:1px solid var(--line)}
 @media (min-width:600px){.shead{padding-top:12px}}
 .shead h2{font-size:22px}.shead .sdone{min-width:84px}
 .sbody{padding:14px 16px calc(28px + env(safe-area-inset-bottom));max-width:600px;margin:0 auto}
@@ -526,7 +526,7 @@ html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* 
 #wardrobe .chip{min-height:36px;padding:0 14px;border-radius:18px;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 #wardrobe .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 /* What to buy: the button on the Wardrobe tab, and its sheet (shop.js) */
-#wardrobe .shopbtn{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;text-align:left;padding:10px 14px;margin:0 0 12px;border-radius:var(--r-card);min-height:56px}
+:is(#wardrobe,#stats) .shopbtn{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;text-align:left;padding:10px 14px;margin:0 0 12px;border-radius:var(--r-card);min-height:56px}
 .shopbtn-t{display:flex;flex-direction:column;gap:2px;min-width:0}.shopbtn-t b{font-size:16px}.shopbtn-t small{font-size:13px;font-weight:400;color:var(--mut);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .shopbtn-c{font-size:22px;color:var(--mut);flex:none}
 /* Wardrobe item sheet: an item opens in a sheet that slides up over the Wardrobe, the full width of a phone and up to just under
@@ -914,3 +914,25 @@ body.tester #adv-connection{display:none}
 body.nocon .conn-only,.connhide{display:none!important}
 .conn-off-note:empty{display:none}
 .conn-off-note .linkbtn{margin-left:4px}
+/* ---- layout and design pass ---- */
+/* text fields: white (the card colour) on the light theme, grey-filled (the page colour) on the dark one: the owner's choice */
+:root{--field:var(--card);--swatch-edge:rgba(16,24,32,.22)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--field:var(--bg);--swatch-edge:rgba(233,238,240,.28)}}
+:root[data-theme=dark]{--field:var(--bg);--swatch-edge:rgba(233,238,240,.28)}
+:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box{background:var(--field)!important}
+/* swatches: a thin edge so navy and charcoal show on a dark card */
+.dot{border:1px solid var(--swatch-edge)}
+.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic{border:1px solid var(--swatch-edge)}
+/* Settings: a dropdown fills its row, and the whole width once it wraps under its label */
+#settings-modal .srow select{flex:1 1 100%;max-width:100%;width:100%}   /* every dropdown on its own line under its label, the row's full width (they were three widths, one cut off) */
+/* Today's date: the short weekday below 360px, so "11" never wraps alone */
+.day h2 .dshort{display:none}
+@media (max-width:359px){.day h2 .dlong{display:none}.day h2 .dshort{display:inline}}
+/* share: a round button at the picture's top right, like ✕ and ✓ */
+.fig .wshare{position:absolute;top:10px;right:10px;z-index:3;width:40px;height:40px;margin:0;padding:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);background:rgba(16,24,32,.42);color:#fff;display:grid;place-items:center;cursor:pointer;transition:opacity .2s}
+.fig .wshare:active{transform:scale(.92)}
+#mannequin-container.zoomed .wshare{opacity:0;pointer-events:none}
+/* Wardrobe's + Add, and What to buy while it waits for a bigger wardrobe */
+#wardrobe .phead .padd{flex:none;min-height:40px;padding:0 14px}
+.shopbtn.locked{cursor:default;border:1px solid var(--line);background:var(--card);color:var(--ink)}.shopbtn.locked small{white-space:normal}
+#stats .shopbtn{margin:0 0 14px}

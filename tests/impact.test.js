@@ -179,7 +179,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
       const blocks=[...m.get('app.js')].filter(k=>k.includes('>')),keyed=k=>/^@\{constel\$wardrobe\}>@document\.addEventListenerkeydown$/.test(k);
       ok(has('app.js','@{constel$wardrobe}')&&blocks.some(keyed)&&!blocks.some(k=>/touchmove/.test(k)),'of a block that runs at load, the listeners that really fired are recorded (a key was pressed, nothing was touched: '+blocks.filter(keyed).length+' of '+blocks.length+')');
       ok(odd===0,'Chromium and Node agree on where every function starts, so a page\'s functions go by the names a diff is read with ('+odd+' did not)');
-      ok([...(m.get('styles.css')||[])].some(k=>k.startsWith('#stats')),'CSS rules that applied are recorded');
+      ok([...(m.get('styles.css')||[])].some(k=>k.includes('#stats')),'CSS rules that applied are recorded');
       ok(has('index.html',I.LOADED)&&has('wrangler.toml',I.ANY)&&!m.has('worker.js'),'so are the files served to the page and the files the test read');
       await b.close()}
   }finally{fs.rmSync(dir,{recursive:true,force:true})}

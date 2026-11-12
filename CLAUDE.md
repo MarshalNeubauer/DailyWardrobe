@@ -43,7 +43,12 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - tests must open the fold before clicking inside it, and the Advanced sections other than Connection's show only with `body.owner` (a test adds the class, or connects as the owner) (`document.querySelector('#adv-schedule .adv-head').click()`)
 - wording: nothing a tester reads says worker, Cloudflare, KV, token or benchmark ("the server", "Connect in ⚙ Settings first.", "it needs an update"); `tests/ui.test.js` reads all of Settings for those words
 - error texts the code tests by pattern changed with it: `/Connect in|server doesn|Today’s limit/` in `generateRender`, `startItemPics`, `startBatch`
-- the three page links (Wardrobe stats, Packing list, Laundry & cleaning) are one card (`.slinks`) under a "Your wardrobe" heading, each with a short line
+- the page links (Packing list, Laundry & cleaning) are one card (`.slinks`) under a "Your wardrobe" heading, each with a short line; Wardrobe stats left Settings for the Insights tab
+- the tabs are Today, Wardrobe and Insights (`TABS`; `#n-stats` shows the `#stats` page, titled Insights, with no ‹); Add is a page of the Wardrobe (`openAdd`: the Wardrobe header's "+ Add" `#ward-add`, the setup's buttons, a pasted photo), with a ‹ back to where it was opened (`SUBS` has `add`; `subOpen`/`subBack`)
+- Insights starts with "What to buy" (`shopButton()`; it left the Wardrobe), then the stats
+- What to buy waits for a wardrobe big enough to judge (`shopGate`, `SHOP_MIN`: 3 jackets, or 3 pairs of trousers when the dress code has no jackets; 5 shirts; 4 ties when ties are worn; 2 pairs of shoes, all in rotation): until then the card says what to add and doesn't open (`openShop` returns)
+- Today's picture has a round share button at its top right (`shareMark`/`shareOutfit`, `.wshare`, like ✕ and ✓, hidden while zoomed): the phone's share sheet gets the photo or the drawing (`figurePng`) and "<day>: <pieces>" (`shareText`); without a share sheet the line is copied
+- Today's date is "Thu, November 12" below 360px (`.dlong`/`.dshort`) so the day never wraps alone
 - a Settings row whose dropdown doesn't fit beside its label wraps it onto its own line (Dark shirts was cut off at 390px)
 - About: Send is switched off while not connected
 
@@ -54,7 +59,10 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `#pack` is not in the `:is(#wardrobe,#item-view,#add,#stats,#settings-modal)` design-system rules (shared lines); the `/* ---- pack ---- */` block repeats the button, input and card rules for it
 - `/* ---- safety ---- */`: `.nostore` (the full-page message), `.tagfail` (the Add card's tagging failure)
 - the block `/* ---- wardrobe ---- */` at the end: `.wfind` (search field and sort on one row), `.wsearch`, `.wclear`, `.wsort`, `.wwear`, `.wnone`, `.named`, `.wfld`, `.wnotes`, `.morefold` / `.morebtn` / `.morein`
-- `--acc-ink`: the accent as text. #7a5900 on the light theme (5:1 on `--bg` and `--card`; `--acc` #d9a21b is 2.1:1), `--acc` on the dark theme; used by the weather link, `.gotoday`, `.linkbtn`, the eyebrows and the Settings icons; fills, borders and the tab bar keep `--acc`
+- text fields: `--field`, the card colour (white) on the light theme and the page colour (grey) on the dark one, for every input, select and textarea of the pages, Settings, the setup and the sheets (the owner's choice; they were two fills on one theme)
+- swatches and item thumbnails in lists have a thin `--swatch-edge` border (dark on light, light on dark): navy and charcoal disappeared on the dark card
+- every dropdown in Settings is on its own line under its label, full width (`#settings-modal .srow select{flex:1 1 100%}`)
+- Settings' sticky header is opaque (`var(--bg)`): text scrolled under it showed through- `--acc-ink`: the accent as text. #7a5900 on the light theme (5:1 on `--bg` and `--card`; `--acc` #d9a21b is 2.1:1), `--acc` on the dark theme; used by the weather link, `.gotoday`, `.linkbtn`, the eyebrows and the Settings icons; fills, borders and the tab bar keep `--acc`
 - `--danger` is #e2695f on the dark theme (#c0473f was 3.5:1 on the dark card)
 - `#pack` and `#care` are in the design system's page selectors (`:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal)`); their own copies of the button, input and `.btns` rules are gone
 - `#toast` is above Settings, the setup and the sheets (z-index 2050, under a question) and `width:max-content`: at `left:50%` it wrapped at half the screen's width

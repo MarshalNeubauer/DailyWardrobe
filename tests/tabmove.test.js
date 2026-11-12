@@ -15,13 +15,13 @@ module.exports=async({ok,chromium,url,settle})=>{
     const marker=await p.evaluate(()=>{const nav=document.querySelector('body>nav'),b=document.querySelector('#n-wardrobe').getBoundingClientRect(),m=new DOMMatrix(getComputedStyle(nav,'::before').transform);
       return {x:Math.round(m.m41),left:Math.round(b.left),w:Math.round(parseFloat(getComputedStyle(nav,'::before').width)),bw:Math.round(b.width),anim:getComputedStyle(nav,'::before').transitionProperty}});
     ok(Math.abs(marker.x-marker.left)<=1&&Math.abs(marker.w-marker.bw)<=1&&/transform/.test(marker.anim),`the tab bar's marker slides to Wardrobe and sits over it (${marker.x}px, the tab at ${marker.left}px)`);
-    const a=await go('add');ok(a.from==='translateX(28px)'&&a.ti==='2',`Wardrobe → Add: from the right again (${a.from}), the marker on the third tab`);
+    const a=await go('stats');ok(a.from==='translateX(28px)'&&a.ti==='2'&&!a.none,`Wardrobe → Insights: from the right again (${a.from}), the marker on the third tab`);
     await settle(p,400);
-    const t=await go('today');ok(t.from==='translateX(-28px)'&&t.ti==='0'&&!t.none,`Add → Today: Today comes from the left (${t.from})`);
+    const t=await go('today');ok(t.from==='translateX(-28px)'&&t.ti==='0'&&!t.none,`Insights → Today: Today comes from the left (${t.from})`);
     await settle(p,400);
-    const s=await go('stats');ok(s.from==='translateY(14px)'&&s.none,`a page opened from Settings (stats) rises in, and the marker fades as no tab is showing (${s.from})`);
+    const s=await go('add');ok(s.from==='translateY(14px)'&&s.none,`Add (a page opened from the Wardrobe) rises in, and the marker fades as no tab is showing (${s.from})`);
     await settle(p,400);
-    const same=await p.evaluate(()=>{show('stats');return document.querySelector('#stats').getAnimations().length});
+    const same=await p.evaluate(()=>{show('add');return document.querySelector('#add').getAnimations().length});
     ok(same===0,'showing the page that is already there doesn\'t move it');
     // a tap during the move: the page takes it (it is never covered)
     await p.evaluate(()=>show('today'));await p.click('#n-wardrobe',{timeout:2000});
