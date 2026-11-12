@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	fc9911099d0e095eebe9
+# tested	bb3084a3e41826356af2
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -95,6 +95,7 @@ asm2048.test.js	icon-512.png	<loaded>
 asm2048.test.js	index.html	<loaded>
 asm2048.test.js	manifest.webmanifest	<loaded>
 asm2048.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	<loaded>
+asm2048.test.js	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 asm2048.test.js	tests/fixedplan.js	<any>
 asmahead.test.js	<every page test>	<every page test>
 asmahead.test.js	account.js	isTester
