@@ -419,12 +419,104 @@ const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp);   // the p
    within 22 L* of the master suit's median, not skin) is painted from the master's lightness alone, so no grey outline is left. The
    painted picture is the suit's piece (as a photo of the suit with its waistcoat would be), so asmCompose's jacket edge handling
    applies. Patterned suits (pinstripe, windowpane, twill, herringbone…) are still photographed. */
-const ASM_SUITV=1;   // how suits are painted: in the picture's key
-const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&patBase(i.pattern)==='solid'&&!usableSett(i);
-const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i)].join('|')).slice(0,10);
+const ASM_SUITV=2;   // how suits are painted: in the picture's key
+const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i.pattern)==='solid'&&!usableSett(i))||asmSuitBands(i));
+const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitBands(i)?settSig(usableSett(i))+'|'+(asmLinen(i)?'linen':'')+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
+/* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
+   too, from the reading: one repeat of the app's own drawing (fabricDef) in the reading's colours, sized by its repeats across the
+   jacket (ASM_SHIRT_MM / sett.tr at ASM_PX_MM), upright on the body and along the arm on each sleeve (the sleeve zone pictures, made
+   with SAM like the others), each pixel's colour times the suit's shading. Lines are painted bold: no line narrower than ASM_LINE_PX
+   at 2048 (widened into the ground beside it), and lines crossing the other way at full strength (fabricDef draws them at half, for a
+   swatch); a 2% line on a 5 cm pane was 3 px and read faint. A linen jacket (material, or Claude's description of the cloth) gets a
+   linen texture in its shading: threads two pixels wide, each a little lighter or darker, plain-woven, with slubs. */
+// windowpanes and checks only: the owner's navy pinstripe suit, painted, came out bright royal blue with crisp white stripes where
+// his close-up is a muted navy twill with soft stripes (Claude's colours and the bold-line rule both suit a windowpane, not that)
+const asmSuitBands=i=>{const s=usableSett(i);return !!(s&&s.v===2&&s.bands&&s.bands.length>1&&s.tr>0&&CHECK_PATS.includes(patBase(i.pattern)))};
+const asmLinen=i=>!!i&&(/linen/i.test(i.material||'')||/linen/i.test((i.patternSpec&&i.patternSpec.description)||i.patternText||''));
+const ASM_LINE_PX=4;   // the narrowest painted line at 2048
+/* the parts of a jacket whose cloth runs its own way: each sleeve (an upper arm and a forearm) and each lapel (one straight part: on the
+   owner's windowpane blazer the panes run along the lapel, 2026-11-12); zone pictures made with SAM; the sleeves are needed, the lapels
+   used when they are there */
+const ASM_SLEEVES=['sleeveR','sleeveL'],ASM_LAPELS=['lapelR','lapelL'],ASM_CUTS=[...ASM_SLEEVES,...ASM_LAPELS];
+const asmSleeveImgs=()=>{const o={};for(const s of ASM_SLEEVES){const r=renders[asmZoneKey(s)];if(!r)return null;o[s]=r.img}for(const s of ASM_LAPELS){const r=renders[asmZoneKey(s)];if(r)o[s]=r.img}return o};
+/* (page side) the jacket's drawing, lines widened to ASM_LINE_PX at its painted size -> {c, TW, TH, mm (one repeat across), linen} */
+const asmSuitTexMemo=new Map();
+async function asmSuitTex(i){const k=asmSuitSig(i);if(asmSuitTexMemo.has(k))return asmSuitTexMemo.get(k);const s=usableSett(i),mm=ASM_SHIRT_MM/s.tr,px=mm*ASM_PX_MM;
+  const bold=bands=>{if(!bands)return bands;const g=bands.reduce((a,b)=>b[1]>a[1]?b:a)[0],min=ASM_LINE_PX/px,out=bands.map(b=>[b[0],b[1]]);let need=0;
+      for(const b of out)if(b[0]&&b[0]!==g&&b[1]<min){need+=min-b[1];b[1]=min}
+      const gw=out.filter(b=>!b[0]||b[0]===g).reduce((a,b)=>a+b[1],0);if(gw>need)for(const b of out)if(!b[0]||b[0]===g)b[1]*=1-need/gw;return out};
+  // Claude's own colours, band by band, where the reading has them (the owner's choice, 2026-11-12): measured from the pixels, a thin
+  // line is blurred into the ground and reads weak (his windowpane's off-white #e6ddcf for Claude's #eeeadf, its blue #a1bbd3 for #8eb2d6)
+  const sp=i.patternSpec,cl=(bands,spec,cross)=>spec&&spec.bands&&spec.bands.length===bands.length?bands.map((b,k)=>[cross&&!b[0]?null:spec.bands[k].hex,b[1]]):bands;
+  const sb=cl(s.bands,sp&&sp.across,false),sc=s.cross?cl(s.cross.bands,sp&&sp.along,true):null;
+  const it={...i,sett:{...s,bands:bold(sb),cross:s.cross?{...s.cross,bands:bold(sc)}:null}};
+  const def=fabricDef('asmsuit',it,'blazer').replace(/ patternTransform="[^"]*"/,'').replace(/ opacity="\.5"/g,''),num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');
+  if(!w||!h)return null;const S=Math.max(1,Math.ceil(256/w)),TW=Math.round(w*S),TH=Math.max(1,Math.round(h*S)),L=ASM_LIN;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${3*TW}" height="${3*TH}" viewBox="0 0 ${3*w} ${3*h}"><defs>${def}</defs><rect width="${3*w}" height="${3*h}" fill="url(#asmsuit)"/></svg>`;
+  const im=await asmImg('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))),cv=document.createElement('canvas');cv.width=3*TW;cv.height=3*TH;
+  const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,3*TW,3*TH);const d=x.getImageData(TW,TH,TW,TH).data,c=new Float32Array(3*TW*TH);
+  for(let q=0;q<TW*TH;q++)for(let j=0;j<3;j++)c[3*q+j]=L[d[4*q+j]];
+  const r={c,TW,TH,mm,linen:asmLinen(i)};if(asmSuitTexMemo.size>20)asmSuitTexMemo.clear();asmSuitTexMemo.set(k,r);return r}
+/* a linen texture, 256 px square, the same on every device: each light factor around 1 (threads two pixels wide, each a little
+   lighter or darker, plain-woven warp over weft in turn, with slubs: a run of thicker, lighter thread every so often) */
+let asmLinenMemo=null;
+function asmLinenTile(){if(asmLinenMemo)return asmLinenMemo;const T=256,n=T/2,r=new Float32Array(T*T);let seed=11;const rnd=()=>{seed=(Math.imul(seed,1103515245)+12345)>>>0;return seed/4294967296};
+  const warp=[],weft=[];for(let k=0;k<n;k++){warp.push((rnd()-.5)*.9);weft.push((rnd()-.5)*.9)}
+  const slubW=new Float32Array(T*n),slubF=new Float32Array(T*n);for(let k=0;k<n;k++)for(let t=0;t<2;t++){const at=Math.floor(rnd()*T),len=8+Math.floor(rnd()*26),v=.9+rnd()*.8;
+    for(let s=0;s<len;s++){slubW[k*T+(at+s)%T]=v;slubF[k*T+(at+s)%T]=v*(rnd()<.5?1:.6)}}
+  for(let y=0;y<T;y++)for(let x=0;x<T;x++){const cx=x>>1,cy=y>>1,up=(cx+cy)%2===0;r[y*T+x]=up?warp[cx]+slubW[cx*T+y]:weft[cy]+slubF[cy*T+x]}
+  let m=0,v=0;for(const a of r)m+=a;m/=r.length;for(const a of r)v+=(a-m)*(a-m);const sd=Math.sqrt(v/r.length)||1;for(let k=0;k<r.length;k++)r[k]=1+(r[k]-m)/sd*.055;   // about 5% of the light
+  return asmLinenMemo={r,T}}
+/* each sleeve's direction: on a 16 px grid, the second moments of the sleeve within 96 px give its local axis; the axes are split in two
+   (upper arm and forearm) when they differ by over 25°; each group's pixels take its mean axis around its own centre -> {seg (0 = the
+   body, upright), segs:[{cs, sn, cx, cy}]} for the base picture */
+function asmSleeveSegs(masks,W,N){const seg=new Uint8Array(N),segs=[{cs:1,sn:0,cx:0,cy:0}],f=Math.max(1,Math.round(W/512)),S=Math.ceil(W/f),G=Math.max(2,Math.round(16/f)),R=Math.round(96/f),GC=Math.ceil(S/G);   // worked out on a copy f times smaller
+  for(const mm of masks){const mf=mm&&(mm.m||mm),one=!!(mm&&mm.one);if(!mf)continue;const m=new Uint8Array(S*S);/* one: a single straight part (a lapel) */for(let y=0;y<S;y++)for(let x=0;x<S;x++)m[y*S+x]=mf[Math.min(W-1,y*f)*W+Math.min(W-1,x*f)];
+    const I=[0,1,2,3,4,5].map(()=>new Float64Array((S+1)*(S+1)));   // integral images: n, x, y, xx, yy, xy
+    for(let y=0;y<S;y++){const rs=[0,0,0,0,0,0];for(let x=0;x<S;x++){const v=m[y*S+x]?1:0;rs[0]+=v;rs[1]+=v*x;rs[2]+=v*y;rs[3]+=v*x*x;rs[4]+=v*y*y;rs[5]+=v*x*y;
+        for(let q=0;q<6;q++)I[q][(y+1)*(S+1)+x+1]=I[q][y*(S+1)+x+1]+rs[q]}}
+    const box=(q,x0,y0,x1,y1)=>I[q][y1*(S+1)+x1]-I[q][y0*(S+1)+x1]-I[q][y1*(S+1)+x0]+I[q][y0*(S+1)+x0];
+    const pts=[];for(let y=G>>1;y<S;y+=G)for(let x=G>>1;x<S;x+=G){if(!m[y*S+x])continue;const x0=Math.max(0,x-R),y0=Math.max(0,y-R),x1=Math.min(S,x+R),y1=Math.min(S,y+R),n=box(0,x0,y0,x1,y1);if(n<20)continue;
+      const mx=box(1,x0,y0,x1,y1)/n,my=box(2,x0,y0,x1,y1)/n,cxx=box(3,x0,y0,x1,y1)/n-mx*mx,cyy=box(4,x0,y0,x1,y1)/n-my*my,cxy=box(5,x0,y0,x1,y1)/n-mx*my,th=.5*Math.atan2(2*cxy,cxx-cyy);
+      pts.push({x,y,c:Math.cos(2*th),s:Math.sin(2*th)})}
+    if(!pts.length)continue;
+    // a lapel's direction is the whole lapel's long axis: it is about as wide as the local window, which saw it nearly upright (6°)
+    if(one){const n=box(0,0,0,S,S);if(n>20){const mx=box(1,0,0,S,S)/n,my=box(2,0,0,S,S)/n,cxx=box(3,0,0,S,S)/n-mx*mx,cyy=box(4,0,0,S,S)/n-my*my,cxy=box(5,0,0,S,S)/n-mx*my,th=.5*Math.atan2(2*cxy,cxx-cyy);
+      for(const p of pts){p.c=Math.cos(2*th);p.s=Math.sin(2*th)}}}
+    // two groups by the doubled angle (k-means, started from the two most different axes)
+    const away=from=>pts.reduce((s,p)=>(p.c*from.c+p.s*from.s)<(s.c*from.c+s.s*from.s)?p:s,pts[0]),b=away(pts[0]),a=away(b);
+    let A={c:a.c,s:a.s},B={c:b.c,s:b.s},grp=new Uint8Array(pts.length);
+    for(let it=0;it<8;it++){const sum=[[0,0,0],[0,0,0]];pts.forEach((p,k)=>{grp[k]=(p.c*B.c+p.s*B.s)>(p.c*A.c+p.s*A.s)?1:0;const t=sum[grp[k]];t[0]+=p.c;t[1]+=p.s;t[2]++});
+      for(const [g,t] of [[A,sum[0]],[B,sum[1]]])if(t[2]){const l=Math.hypot(t[0],t[1])||1;g.c=t[0]/l;g.s=t[1]/l}}
+    const ang=g=>.5*Math.atan2(g.s,g.c),split=!one&&Math.abs(Math.atan2(Math.sin(2*(ang(A)-ang(B))),Math.cos(2*(ang(A)-ang(B)))))/2>25*Math.PI/180;
+    if(!split)grp.fill(0);const groups=split?[A,B]:[{c:(A.c+B.c),s:(A.s+B.s)}];
+    const cell=new Int16Array(GC*GC).fill(-1);pts.forEach((p,k)=>{cell[Math.floor(p.y/G)*GC+Math.floor(p.x/G)]=grp[k]});
+    const base=segs.length,cent=groups.map(()=>[0,0,0]),cg=new Int16Array(GC*GC).fill(-1);   // each grid cell's group, gaps filled from the nearest
+    for(let gy=0;gy<GC;gy++)for(let gx=0;gx<GC;gx++){let g=cell[gy*GC+gx];for(let r2=1;g<0&&r2<6;r2++)for(let dy=-r2;dy<=r2&&g<0;dy++)for(let dx=-r2;dx<=r2&&g<0;dx++){const xx=gx+dx,yy=gy+dy;if(xx>=0&&yy>=0&&xx<GC&&yy<GC)g=cell[yy*GC+xx]}cg[gy*GC+gx]=g<0?0:g}
+    // one upper arm and one forearm: the groups smoothed (majority within 2 cells, 4 times), then every island but each group's
+    // largest joins the group around it (cell by cell the axes were mixed, and the panes broke into blocks and crosses)
+    if(split){const inside=new Uint8Array(GC*GC);for(let k=0;k<GC*GC;k++)inside[k]=cell[k]>=0?1:0;
+      // first by position: a cell joins the part whose arm line (through the part's centre, along its axis) is nearer; the strip along
+      // a forearm's underside read the upper arm's direction and stayed with it
+      const ctr=[[0,0,0],[0,0,0]];for(let k=0;k<GC*GC;k++)if(inside[k]){const t=ctr[cg[k]];t[0]+=k%GC;t[1]+=Math.floor(k/GC);t[2]++}
+      if(ctr[0][2]&&ctr[1][2]){const lines=[A,B].map((g,k)=>{const th=ang(g);return {x:ctr[k][0]/ctr[k][2],y:ctr[k][1]/ctr[k][2],c:Math.cos(th),s:Math.sin(th)}});
+        for(let k=0;k<GC*GC;k++){if(!inside[k])continue;const x=k%GC,y=Math.floor(k/GC),d=lines.map(l=>Math.abs(-(x-l.x)*l.s+(y-l.y)*l.c));cg[k]=d[1]<d[0]?1:0}}
+      for(let pass=0;pass<4;pass++){const nx=cg.slice();for(let gy=0;gy<GC;gy++)for(let gx=0;gx<GC;gx++){if(!inside[gy*GC+gx])continue;let a1=0,n1=0;
+          for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=gx+dx,yy=gy+dy;if(xx<0||yy<0||xx>=GC||yy>=GC||!inside[yy*GC+xx])continue;n1++;a1+=cg[yy*GC+xx]}
+          nx[gy*GC+gx]=a1*2>n1?1:0}cg.set(nx)}
+      const comp=new Int32Array(GC*GC).fill(-1),size=[],grpOf=[];
+      for(let s0=0;s0<GC*GC;s0++){if(!inside[s0]||comp[s0]>=0)continue;const id=size.length,st=[s0];comp[s0]=id;let n2=0;
+        while(st.length){const c=st.pop();n2++;const cx=c%GC,cy=(c-cx)/GC;for(const [xx,yy] of [[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]]){if(xx<0||yy<0||xx>=GC||yy>=GC)continue;const d2=yy*GC+xx;if(inside[d2]&&comp[d2]<0&&cg[d2]===cg[s0]){comp[d2]=id;st.push(d2)}}}
+        size.push(n2);grpOf.push(cg[s0])}
+      const big=[0,1].map(g=>size.reduce((b,s2,k)=>grpOf[k]===g&&(b<0||s2>size[b])?k:b,-1));
+      for(let k=0;k<GC*GC;k++)if(inside[k]&&comp[k]>=0&&!big.includes(comp[k]))cg[k]=1-cg[k]}
+    for(let k=0;k<N;k++){if(!mf[k])continue;const x=k%W,y=(k-x)/W,g=cg[Math.min(GC-1,Math.floor(y/f/G))*GC+Math.min(GC-1,Math.floor(x/f/G))];seg[k]=base+g;const c=cent[g];c[0]+=x;c[1]+=y;c[2]++}
+    groups.forEach((g,k)=>{const th=ang(g)-Math.PI/2,c=cent[k];segs.push({cs:Math.cos(th),sn:Math.sin(th),cx:c[2]?c[0]/c[2]:0,cy:c[2]?c[1]/c[2]:0})})}
+  return {seg,segs}}
 /* the colour-free part, once per base picture and calibration: the pixels to paint and their shading. base: the master, or the
    waistcoat master on a waistcoat day; zj: the jacket zone; zv, cv (waistcoat days): the waistcoat zone and its calibration photo */
-function asmSuitPrep(base,cj,zj,zv,cv){const W=base.width,N=W*base.height,L=ASM_LIN,B=base.data,Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],lab=asmLab(base);
+function asmSuitPrep(base,cj,zj,zv,cv,sleeves){const P=asmSuitPrep0(base,cj,zj,zv,cv);if(sleeves&&sleeves.length){const s=asmSleeveSegs(sleeves,base.width,base.width*base.height);P.seg=s.seg;P.segs=s.segs}return P}
+function asmSuitPrep0(base,cj,zj,zv,cv){const W=base.width,N=W*base.height,L=ASM_LIN,B=base.data,Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],lab=asmLab(base);
   const zl=[];for(let k=0;k<N;k+=7)if(zj[k])zl.push(lab[3*k]);zl.sort((a,b)=>a-b);const Lmed=zl[zl.length>>1]||50;
   const ring=asmBox(zj,W,asmPx(3,W),true),kind=new Uint8Array(N);let n=0;
   for(let k=0;k<N;k++){if(zv&&zv[k])kind[k]=3;else if(zj[k])kind[k]=1;else if(ring[k]&&Math.hypot(lab[3*k+1],lab[3*k+2])<8&&Math.abs(lab[3*k]-Lmed)<22)kind[k]=2;if(kind[k])n++}
@@ -433,6 +525,18 @@ function asmSuitPrep(base,cj,zj,zv,cv){const W=base.width,N=W*base.height,L=ASM_
   for(let k=0;k<N;k++){const t=kind[k];if(!t)continue;const j=4*k;let s=t===3?(cv?.5*(Y(B,j)/Rmv+Y(cv.data,j)/Rcv):Y(B,j)/Rmv):t===2?Y(B,j)/Rm:.5*(Y(B,j)/Rm+Y(cj.data,j)/Rc);
     idx[q]=k;sh[q]=s<.05?.05:s>1.6?1.6:s;q++}
   return {base,idx,sh}}
+/* the base picture with a patterned jacket painted (an ImageData): T from asmSuitTex; each pixel the drawing's colour (bilinear, 2x2
+   points a pixel) in its part's direction, times its shading, and the linen texture's light when the cloth is linen */
+function asmSuitPaintTex(P,T){const W=P.base.width,L=ASM_LIN,d=new Uint8ClampedArray(P.base.data),rep=T.mm*ASM_PX_MM*W/ASM_SIZE,repv=rep*T.TH/T.TW,cm=[0,0,0],
+    gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},lin=T.linen?asmLinenTile():null,ls=W/ASM_SIZE;
+  const at=(u,v)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0;
+    for(let q=0;q<3;q++){const G=(a,b)=>T.c[3*(((b+T.TH)%T.TH)*T.TW+(a+T.TW)%T.TW)+q];cm[q]+=(G(x0,y0)*(1-fx)+G(x0+1,y0)*fx)*(1-fy)+(G(x0,y0+1)*(1-fx)+G(x0+1,y0+1)*fx)*fy}};
+  const body={cs:1,sn:0,cx:0,cy:0};
+  for(let q=0;q<P.idx.length;q++){const k=P.idx[q],j=4*k,x=k%W,y=(k-x)/W,g=P.seg?P.segs[P.seg[k]]||body:body;cm[0]=cm[1]=cm[2]=0;
+    for(let a=0;a<2;a++)for(let e=0;e<2;e++){const X=x+(e+.5)/2-g.cx,Y=y+(a+.5)/2-g.cy;at((X*g.cs+Y*g.sn)/rep,(Y*g.cs-X*g.sn)/repv)}
+    let sh=P.sh[q];if(lin){const X=x-g.cx,Y=y-g.cy,u=Math.floor((X*g.cs+Y*g.sn)/ls),v=Math.floor((Y*g.cs-X*g.sn)/ls);sh*=lin.r[(((v%lin.T)+lin.T)%lin.T)*lin.T+(((u%lin.T)+lin.T)%lin.T)]}
+    for(let c=0;c<3;c++)d[j+c]=Math.round(gam(cm[c]/4*sh))}
+  return new ImageData(d,W,P.base.height)}
 /* the base picture with the suit painted in hex (an ImageData) */
 function asmSuitPaint(P,hex){const L=ASM_LIN,h=String(hex).replace('#',''),t=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),d=new Uint8ClampedArray(P.base.data),
     gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},G=new Uint8ClampedArray(3*1601);
@@ -568,12 +672,13 @@ function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),
 async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;
   const parts=asmParts(o);if(parts.some(p=>!p.paint&&!p.tp&&!p.sp&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
-    parts:await Promise.all(parts.map(async p=>p.sp?{slot:p.slot,vest:!!p.vest,key:p.key,sp:p.sp,hex:colOf(p.item)}:p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
+    parts:await Promise.all(parts.map(async p=>p.sp?{slot:p.slot,vest:!!p.vest,key:p.key,sp:p.sp,hex:colOf(p.item),tex:asmSuitBands(p.item)?await asmSuitTex(p.item):null}:p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
   if(parts.some(p=>p.paint)){const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}
   if(parts.some(p=>p.tp)){const c=renders[asmCalibKey('tie')];if(!c)return null;job.tieCalib={t:c.t,img:c.img}}   // a painted tie is shaded from the master's tie and the magenta calibration tie   // a painted shirt takes its shading from the black calibration shirt too
   if(!job.zones){job.zoneImg=asmZoneImgs();   // zones made outside the app, when they're here; else the calibration photos
     if(!job.zoneImg){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}}
   if(parts.some(p=>p.sp)){const c=renders[asmCalibKey('jacket')];if(!c)return null;job.suitCalib={t:c.t,img:c.img}}   // a painted suit is shaded from the master's suit and the red calibration suit
+  if(parts.some(p=>p.sp&&asmSuitBands(p.item)))job.sleeveImg=asmSleeveImgs();   // a patterned jacket's sleeves run along the arm (upright everywhere without them)
   if(o.vest){const vk=asmVestKey(),r=renders[vk];if(!r)return null;const kv=await metaGet('asm:vest:'+vk);
     job.vest={k:vk,t:r.t,kept:kv&&kv.t===r.t&&kv.v===ASM_ZV?kv:null};
     if(parts.some(p=>p.sp)){const c=renders[asmCalibKey('vest')];if(!c)return null;job.suitVest={t:r.t+'|'+c.t,img:r.img,calib:c.img}}   // painted on the waistcoat master, the waistcoat from its own calibration photo
@@ -603,10 +708,13 @@ async function asmBuild(job){
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
   if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){const nt=asmBox(z.tie,W,asmPx(ASM_HALO+2,W),true);for(let i=0;i<W*W;i++)nt[i]=nt[i]&&z.shirt[i]?1:0;M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W),nt);M.ppt=job.paintCalib.t;M.paint={}}
   if(job.tieCalib&&(!M.tpp||M.tppt!==job.tieCalib.t)){M.tpp=asmTiePrep(master,await asmData(job.tieCalib.img,W),z.tie);M.tppt=job.tieCalib.t;M.ties={}}
-  if(job.suitCalib&&job.parts.some(p=>p.sp&&!p.vest)&&(!M.spp||M.sppt!==job.suitCalib.t)){M.spp=asmSuitPrep(master,await asmData(job.suitCalib.img,W),z.jacket);M.sppt=job.suitCalib.t;M.suits={}}
-  if(job.suitCalib&&job.suitVest&&V&&(!M.sppv||M.sppvt!==job.suitVest.t+'|'+job.suitCalib.t)){M.sppv=asmSuitPrep(await asmData(job.suitVest.img,W),await asmData(job.suitCalib.img,W),z.jacket,V,await asmData(job.suitVest.calib,W));M.sppvt=job.suitVest.t+'|'+job.suitCalib.t;M.suits={}}
+  const slv=job.sleeveImg&&job.parts.some(p=>p.sp&&p.tex)?'s'+Object.keys(job.sleeveImg).length:'';   // the sleeves are worked out only for a patterned jacket
+  if(slv&&(!M.sleeves||M.sleevesN!==Object.keys(job.sleeveImg).length)){M.sleeves=await Promise.all(ASM_CUTS.map(async s=>job.sleeveImg[s]?{m:await asmMaskFromImg(job.sleeveImg[s],W),one:ASM_LAPELS.includes(s)}:null));M.sleevesN=Object.keys(job.sleeveImg).length}
+  const sl=slv?M.sleeves:null;
+  if(job.suitCalib&&job.parts.some(p=>p.sp&&!p.vest)&&(!M.spp||M.sppt!==job.suitCalib.t+slv)){M.spp=asmSuitPrep(master,await asmData(job.suitCalib.img,W),z.jacket,null,null,sl);M.sppt=job.suitCalib.t+slv;M.suits={}}
+  if(job.suitCalib&&job.suitVest&&V&&(!M.sppv||M.sppvt!==job.suitVest.t+'|'+job.suitCalib.t+slv)){M.sppv=asmSuitPrep(await asmData(job.suitVest.img,W),await asmData(job.suitCalib.img,W),z.jacket,V,await asmData(job.suitVest.calib,W),sl);M.sppvt=job.suitVest.t+'|'+job.suitCalib.t+slv;M.suits={}}
   const P={};for(const p of job.parts){if(p.sp){const pr=p.vest?M.sppv:M.spp;if(!pr)return out;M.suits=M.suits||{};const k=p.sp+(p.vest?'v':'');if(!M.suits[k]&&Object.keys(M.suits).length>=4)M.suits={};   // a painted suit: no drift to check
-      P.jacket=M.suits[k]=M.suits[k]||asmSuitPaint(pr,p.hex);continue}
+      P.jacket=M.suits[k]=M.suits[k]||(p.tex?asmSuitPaintTex(pr,p.tex):asmSuitPaint(pr,p.hex));continue}
     if(p.tp){if(!M.tpp)return out;M.ties=M.ties||{};P.tie=M.ties[p.tp]=M.ties[p.tp]||asmTiePaint(master,M.tpp,p.tie);continue}   // a painted tie: only its zone changes
     if(p.paint){M.paint=M.paint||{};const pk=p.paint+(p.tex&&p.wk?'~'+p.wk:'');   // nothing outside the shirt changes: no drift to check
       P[p.slot]=M.paint[pk]=M.paint[pk]||asmPaint(master,null,p.paint,M.pp,p.tex&&p.wk?asmTexReady(p.tex,p.paint,W):null);continue}
@@ -682,6 +790,7 @@ async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
   if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return null;
   if(asmParts(o).some(p=>p.tp)&&!await asmGet(asmCalibKey('tie')))return null;
   if(asmParts(o).some(p=>p.sp)&&(!await asmGet(asmCalibKey('jacket'))||(o.vest&&!await asmGet(asmCalibKey('vest')))))return null;
+  if(asmParts(o).some(p=>p.sp&&asmSuitBands(p.item)))await Promise.all(ASM_CUTS.map(s=>asmGet(asmZoneKey(s))));
   if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
@@ -720,6 +829,7 @@ async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&rende
     if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return;   // the black shirt a painted shirt is shaded from
     if(asmParts(o).some(p=>p.tp)&&!await asmGet(asmCalibKey('tie')))return;   // the magenta tie a painted tie is shaded from
     if(asmParts(o).some(p=>p.sp)&&(!await asmGet(asmCalibKey('jacket'))||(o.vest&&!await asmGet(asmCalibKey('vest')))))return;   // the red suit (and orange waistcoat) a painted suit is shaded from
+    if(asmParts(o).some(p=>p.sp&&asmSuitBands(p.item)))await Promise.all(ASM_CUTS.map(s=>asmGet(asmZoneKey(s))));   // the sleeves' zone pictures (without them the pattern stays upright)
     if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
     const img=await asmPhoto(o,!ahead);if(!img)return;
     const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();

@@ -278,11 +278,15 @@ function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
 /* once: Claude-read patterns saved without a pattern box were exposure-matched to the whole item photo (wall and all, a navy
    pinstripe came out lavender): recolour them from the saved reading and the close-up, no new call to Claude */
 /* (2: again, once, after settFromSpec took the ground from the pixels nearest Claude's ground and stopped dulling tie stripes) */
-async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='2')return 0;let n=0;
-  for(const it of items)if(it.patternSpec&&it.patternSpec.across&&it.sett&&it.sett.src==='claude+pixels'&&!it.pbox&&it.texture)try{
-    const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
-    const s=settFromSpec(it.patternSpec,{tex:c,type:it.type});if(s&&JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
-  localStorage.setItem('spec_recolour','2');if(n)cache={};return n}
+/* (3: again, and now readings with a pattern box too, read as a new reading is (rereadSett): the box in the sharp copy kept on this
+   device, else in the item photo. Skipped before, the owner's khaki windowpane blazer kept dull lines (#e0d9c9 for Claude's #eeeadf) */
+async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3')return 0;let n=0;
+  const canvasOf=async src=>{if(!src)return null;const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c};
+  for(const it of items)if(it.patternSpec&&it.patternSpec.across&&it.sett&&it.sett.src==='claude+pixels'&&it.texture)try{
+    const c=await canvasOf(it.texture),full=it.pbox?await canvasOf(await tagImgOf(it.id)||it.photo):null;
+    const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
+    if(s&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
+  localStorage.setItem('spec_recolour','3');if(n)cache={};return n}
 /* Settings: Claude reads the weave of every textured shirt with a close-up that has no reading yet, one at a time */
 const weavePool=()=>items.filter(i=>texPat(i.type,i.pattern)&&i.texture&&!(i.sett&&(i.sett.tex||i.sett.motif)));let weaveRun=null;
 function renderWeaveUI(){const el=$('#weave-box');if(!el)return;const n=weavePool().length;
