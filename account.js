@@ -30,6 +30,18 @@ async function connectFromLink(text){const p=inviteParts(text);
   if(r.status===0){acctToast('Couldn’t reach the server. Open the invitation link again when you’re online.',5000);return false}
   dropInviteHash();
   if(r.status!==200||!r.j||!r.j.id){acctToast(r.j&&r.j.message||'That invitation link didn’t work. Ask for a new one.',5000);return false}
+  // already connected with another code: the wardrobe on this phone belongs to that account. Merging it into the new one (what
+  // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
+  const cur=acctBase();
+  if(cur&&cur.tok&&cur.tok!==p.code){
+    if(acctHasLocal()){
+      if(!await askConfirm(`Switch this phone to ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThis phone is connected to another wardrobe. To switch, its wardrobe is cleared from this phone first; its backup on the server stays as it is.`,{ok:'Clear and switch',danger:true})){acctToast('Kept the current connection.');return false}
+      if(typeof wipeDevice==='function')await wipeDevice();
+      localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
+      try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note','Connected as '+(r.j.name||'a tester'))}catch{}
+      location.reload();return true}
+    for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k);   // what the old account's syncs left
+  }
   localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);
   acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
@@ -39,7 +51,21 @@ async function connectFromLink(text){const p=inviteParts(text);
   renderAccountUI();
   if(typeof renderAdd==='function'&&document.querySelector('#add')&&!document.querySelector('#add').hidden)renderAdd();
   if(window.syncNow)syncNow();
+  if(r.j.role==='tester'&&iosInSafari())setTimeout(homeScreenGuide,1200);
   return true}
+/* anything of its own on this phone: items, or days with a record */
+function acctHasLocal(){try{return (typeof items!=='undefined'&&items.length>0)||(typeof dayRecs!=='undefined'&&Object.keys(dayRecs).length>0)}catch{return false}}
+/* ---- iPhone: an invitation opens in Safari, but a Home Screen app keeps storage of its own, so it starts unconnected. Testers are
+   told to add the app to the Home Screen and paste their link there; the link can be copied from Connection any time. ---- */
+const iosDevice=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standaloneApp=()=>navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+const iosInSafari=()=>iosDevice()&&!standaloneApp();
+const myInviteLink=()=>{const b=acctBase();return b&&b.tok?location.origin+location.pathname+'#invite='+b.tok+'&w='+encodeURIComponent(b.url):''};
+async function copyInviteLink(){const l=myInviteLink();if(!l)return false;
+  try{await navigator.clipboard.writeText(l);acctToast('Your invitation link is copied.');return true}
+  catch{const f=document.querySelector('#acct-mylink');if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
+async function homeScreenGuide(){
+  if(await askConfirm('Put Daily Wardrobe on your Home Screen\n\n1. Tap Copy link below.\n2. Tap Share, then “Add to Home Screen”.\n3. Open Daily Wardrobe from your Home Screen and paste the link when it asks.\n\nThe app on your Home Screen keeps its own copy of everything, so it needs the link once. In Safari, iPhone can clear the app’s data after a week without a visit.',{ok:'Copy link',cancel:'Later'}))copyInviteLink()}
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
 function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}}
@@ -68,9 +94,13 @@ function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)r
   else if(acct.state==='no')h=`<p class="shelp acct-bad">${acctEsc(acct.msg||'The server didn’t accept this connection. Check the address and the code above.')}</p>`;
   else if(acct.state==='off')h='<p class="shelp">Couldn’t reach the server just now.</p>';
   else if(m&&m.role==='tester')h=`<div class="slabel">Connected as ${acctEsc(m.name||'a tester')}</div>
-    <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.</p>`;
+    <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.</p>
+    ${iosInSafari()?'<p class="shelp acct-ios">You’re using the app in Safari. Add it to your Home Screen, open it there and paste your invitation link: iPhone keeps the two apart, and can clear Safari’s copy after a week.</p>':''}
+    <div class="sactions"><button type="button" onclick="copyInviteLink()">Copy my invitation link</button></div>
+    <p class="shelp">To connect the app on your Home Screen or another phone. Keep it to yourself: it opens your wardrobe.</p>
+    <input type="text" id="acct-mylink" class="acct-mylink" readonly hidden aria-label="Your invitation link">`;
   else if(m){
-    const list=(acct.invites||[]).map(v=>`<div class="acct-inv${v.off?' off':''}" data-id="${acctEsc(v.id)}"><div class="acct-inv-top"><b>${acctEsc(v.name)}</b>${v.off?'<span class="acct-tag">Switched off</span>':`<button type="button" class="danger" onclick="revokeInvite('${acctEsc(v.id)}')">Revoke</button>`}</div>
+    const list=(acct.invites||[]).map(v=>`<div class="acct-inv${v.off?' off':''}" data-id="${acctEsc(v.id)}"><div class="acct-inv-top"><b>${acctEsc(v.name)}</b>${v.off?`<span class="acct-tag">Switched off</span><button type="button" class="danger" onclick="purgeInvite('${acctEsc(v.id)}')">Delete their data</button>`:`<button type="button" class="danger" onclick="revokeInvite('${acctEsc(v.id)}')">Revoke</button>`}</div>
       ${v.off?'':`<div class="acct-uses">${acctUse(v.used,v.caps)}</div>`}</div>`).join('');
     h=`<div class="slabel">Connected as the owner</div>
     <div class="slabel acct-h">Invite testers</div><p class="shelp">Each tester gets a wardrobe of their own on your server and a daily limit on photos and readings. Send them the link; it is shown only once.</p>
@@ -90,9 +120,15 @@ async function copyInvite(){if(!acct.link)return;const inp=document.querySelecto
   try{await navigator.clipboard.writeText(acct.link.url);acctToast('Link copied')}
   catch{if(inp){inp.focus();inp.select();try{document.execCommand('copy');acctToast('Link copied')}catch{acctToast('Select the link and copy it')}}}}
 async function revokeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(!v)return;
-  if(!await askConfirm(`Revoke ${v.name}’s invitation?\n\nTheir app stops working with your server. What they stored stays until you delete it.`,{ok:'Revoke',danger:true}))return;
+  if(!await askConfirm(`Revoke ${v.name}’s invitation?\n\nTheir app stops working with your server. What they stored stays until you tap "Delete their data" (here, once it is switched off).`,{ok:'Revoke',danger:true}))return;
   const r=await acctCall('invites?id='+encodeURIComponent(id),{method:'DELETE'});
   if(r.status===200){v.off=true;acctToast(v.name+'’s invitation is switched off')}else acct.msg=r.j.message||'Couldn’t revoke it. Try again.';
+  renderAccountUI()}
+/* a switched-off invitation: delete everything the tester stored on the server (backup, photos, feedback) and take it off the list */
+async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(!v)return;
+  if(!await askConfirm(`Delete ${v.name}’s data?\n\nTheir wardrobe backup, photos and feedback are deleted from your server. This can’t be undone.`,{ok:'Delete',danger:true}))return;
+  const r=await acctCall('invites?id='+encodeURIComponent(id)+'&purge=1',{method:'DELETE'});
+  if(r.status===200){acct.invites=acct.invites.filter(x=>x.id!==id);acctToast(v.name+'’s data is deleted')}else acct.msg=r.j.message||'Couldn’t delete it. Try again.';
   renderAccountUI()}
 /* start-up: Settings draws the box whenever it opens (its extras are redrawn there), and an invitation link in the address
    connects the app once the page's scripts are in */
