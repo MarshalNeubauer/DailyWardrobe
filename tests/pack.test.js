@@ -25,10 +25,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(h.a==='2026-11-16'&&h.b==='2026-11-20'&&h.count==='5 days',`the trip defaults to the next working week (${h.a} to ${h.b}, ${h.count})`);
     await p.click('#pack .pback');
     ok(await p.evaluate(()=>document.querySelector('#pack').hidden&&!document.querySelector('#today').hidden),'the back button returns to Today');
-    await p.evaluate(()=>{if(!monthOpen)toggleMonth()});await p.waitForSelector('#mpanel-in .pack-open');await settle(p,600);
-    await p.click('#mpanel-in .pack-open');await p.waitForFunction(()=>!document.querySelector('#pack').hidden);
-    ok(true,'the open month on Today has a "Packing list for a trip" button that opens the page');
-    await p.evaluate(()=>{if(monthOpen){monthOpen=false}});
+    await p.evaluate(()=>{if(!monthOpen)toggleMonth()});await p.waitForSelector('#mpanel-in .mhead');await settle(p,600);
+    ok(await p.evaluate(()=>!document.querySelector('#mpanel-in .pack-open')&&!/Packing list/.test(document.querySelector('#mpanel-in').textContent)),'the open month on Today has no packing-list button (the owner took it out); the page is in Settings');
+    await p.evaluate(()=>{monthOpen=false;openPack()});await p.waitForFunction(()=>!document.querySelector('#pack').hidden);
 
     // ---- the days and the list for a fixed wardrobe and range
     const d1=await p.evaluate(()=>({rows:[...document.querySelectorAll('#pk-days .pk-day')].map(r=>({t:r.querySelector('.pk-dn').textContent,stack:!!r.querySelector('svg.stack'),what:r.querySelector('.pk-what').textContent})),
@@ -178,10 +177,6 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       }
       await p.evaluate(()=>{delete document.documentElement.dataset.theme;delete navigator.share});
     }
-    // the month's button on Today, at the narrowest width
-    await p.setViewportSize({width:320,height:640});await setup();await p.evaluate(()=>{if(!monthOpen)toggleMonth()});await p.waitForSelector('#mpanel-in .pack-open');await settle(p,600);
-    const mb=await p.evaluate(()=>{const b=document.querySelector('#mpanel-in .pack-open').getBoundingClientRect(),g=document.querySelector('#mpanel-in .mhead').getBoundingClientRect();return {h:Math.round(b.height),above:b.bottom<=g.top+1,side:document.documentElement.scrollWidth-innerWidth}});
-    ok(mb.h===44&&mb.above&&mb.side<=0,'the month\'s Packing list button is 44px tall, above the month, and fits at 320px');
     ok(errs.length===0,`no page errors (${errs.slice(0,2).join(' | ')})`);
   }finally{await browser.close()}
 };

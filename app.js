@@ -767,7 +767,7 @@ function monthGridHtml(){
     cells.push(`<button class="mc ${!wd?'rest':past?'worn':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
   // no arrows, hint or legend: a swipe (or a mouse drag) inside the box moves between months (monthDrag); the title is centred; the cells still
   // show worn / today / planned / rest by their own look
-  return `${typeof packMonthBtn==='function'?packMonthBtn():''}<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3></div>
+  return `<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3></div>
     <div class="mgrid mdow" aria-hidden="true">${['S','M','T','W','T','F','S'].map(x=>`<span>${x}</span>`).join('')}</div>
     <div class="mgrid">${cells.join('')}</div></div>
     <button class="foldbar" onclick="toggleMonth()" aria-label="Fold away the month"><span class="fchev" aria-hidden="true">›</span>Fold away</button>`;
@@ -801,6 +801,7 @@ function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
    the days, all of which the GPU draws; the scroll is the browser's own smooth scroll. */
 const MONTH_MS=420;
 const MONTH_EASE='cubic-bezier(.2,.8,.2,1)';
+const MONTH_LIFT=8;   // ms between the days lifting out when the month folds
 let monthAnim=null;   // {list: running animations, end: what finishing early must still do}
 function monthStop(){const a=monthAnim;monthAnim=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
 const monthBelow=box=>{const k=[...box.parentNode.children];return k.slice(k.indexOf(box)+1)};
@@ -815,16 +816,19 @@ function monthUnfold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in')
   const a=monthAnim={list,end:null};list[0].finished.then(()=>{if(monthAnim===a)monthAnim=null},()=>{});
   if(d>.5)scrollBy({top:d,behavior:'smooth'})}
 function monthFold(box){monthStop();clearTimeout(monthDropT);box.classList.remove('mdrop');const pan=$('#mpanel'),pin=$('#mpanel-in'),g=pan?pan.offsetHeight:0;
-  const close=()=>{box.classList.add('mfast');box.classList.remove('open','instant','mshut','mdrop')};
+  const close=()=>{box.classList.add('mfast');box.classList.remove('open','instant','mshut','mdrop','mlift')};
   if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
   // the page gets shorter at the end: scroll now to where it can stay, so it doesn't jump then (and bring the card's top back into view)
   const top=box.getBoundingClientRect().top,max=Math.max(0,document.documentElement.scrollHeight-g-innerHeight);
   let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
   if(want<scrollY-.5)scrollTo({top:want,behavior:noMotion()?'auto':'smooth'});
-  box.classList.add('mfast','mshut');
-  const o={duration:MONTH_MS-60,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
+  // the days lift out last first (styles.css .mlift, MONTH_LIFT ms apart, 280 ms each); the card starts closing once about half
+  // of them are gone
+  const n=box.querySelectorAll('.mc:not(.blank)').length,wait=Math.round((n*MONTH_LIFT+280)*.55);
+  box.style.setProperty('--mn',n);box.classList.add('mfast','mshut','mlift');
+  const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
   for(const e of monthBelow(box))list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
-  if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,duration:200}));
+  if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,delay:wait+Math.round((MONTH_MS-60)*.35),duration:200}));   // the title and weekdays, once the days are gone (a fade of the whole panel any earlier hid the days lifting out)
   const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=monthAnim={list,end};
   list[0].finished.then(()=>{if(monthAnim!==a)return;monthAnim=null;end();for(const x of list)x.cancel()},()=>{})}
 /* the days drop in one after another while the box unfolds (styles.css .mdrop): the class stays only as long as that takes, so a
