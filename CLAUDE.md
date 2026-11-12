@@ -25,6 +25,7 @@
 - `npm run test:all` runs every check. It is not needed before a merge; use it only when the selection looks too small for what you changed.
 - Test runs rewrite `tests/impact.map` (what each test uses). Commit it with the change: later sessions choose their tests from it.
 - **The map must be in the commit (enforced).** `git push` is refused while `tests/impact.map` has uncommitted changes; commit it and push again. Never bypass it with `--no-verify`.
+- **A changed app file needs a new `CACHE` name (enforced).** The service worker serves one version at a time, so phones take changed files only when `CACHE` in sw.js changes; `git push` is refused when a file in sw.js's `ASSETS` differs from `origin/main` while `CACHE` is still `origin/main`'s (`cacheStale` in tests/impact.js, part of the pre-push check): bump it to one above `main`'s, run `npm test`, commit and push again.
 - If a change reaches `main` without its map, or without a passing `npm test` on the final files, the next session's `npm test` notices and runs every check. So run `npm test` after your last code edit, then commit everything it changed.
 - A conflict in `tests/impact.map` needs no thought: `.gitattributes` merges it by keeping both sides' lines (`merge=union`).
 - Never tell the user to download a backup file before a change: the worker keeps daily backups and Settings → Roll back undoes a bad change (see `sync.js`).

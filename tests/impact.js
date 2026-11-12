@@ -257,9 +257,17 @@ const fingerprint=(root,commit)=>{let rows;
       const h=execFileSync('git',['hash-object','--stdin-paths'],{cwd:root,input:files.join('\n')+'\n',maxBuffer:1<<28,stdio:['pipe','pipe','ignore']}).toString().trim().split('\n');rows=files.map((f,i)=>[f,h[i]])}
   }catch(e){return null}
   return crypto.createHash('sha256').update(rows.filter(([f])=>f!==MAP&&!/\.md$/.test(f)&&f!=='LICENSE').map(r=>r.join(' ')).sort().join('\n')).digest('hex').slice(0,20)};
+/* the service worker serves one version at a time (sw.js): a phone only takes changed app files when CACHE in sw.js has a new name.
+   So a commit that changes a file in sw.js's ASSETS against origin/main while CACHE is still origin/main's is refused. */
+const cacheOf=t=>{const m=/const CACHE='([^']+)'/.exec(t||'');return m?m[1]:null};
+const cacheStale=root=>{const mine=git(root,'show','HEAD:sw.js'),theirs=git(root,'show','origin/main:sw.js');if(!mine||!theirs||!cacheOf(mine)||cacheOf(mine)!==cacheOf(theirs))return '';
+  const a=/const ASSETS=\[([^\]]*)\]/.exec(mine),files=a?[...a[1].matchAll(/'([^']+)'/g)].map(m=>m[1]).filter(f=>f!=='./'):[];if(!files.length)return '';
+  const ch=(git(root,'diff','--name-only','origin/main','HEAD','--',...files)||'').trim().split('\n').filter(Boolean);
+  return ch.length?'App files changed ('+ch.slice(0,4).join(', ')+(ch.length>4?', …':'')+') but CACHE in sw.js is still '+cacheOf(mine)+", the same as main's.\nPhones only take new files when CACHE has a new name: bump it to one above main's, run `npm test`, commit and push again.":''};
 /* before a push (.githooks/pre-push → `node tests/impact.js pre-push`): the map may not be left behind */
 const prePush=root=>{const dirty=(git(root,'status','--porcelain','--',MAP)||'').trim();
   if(dirty)return {ok:false,msg:MAP+' has changes that are not committed. It records what each test uses, and later sessions choose their tests from it:\ncommit it with your change, then push again.'};
+  const stale=cacheStale(root);if(stale)return {ok:false,msg:stale};
   const fp=fingerprint(root,'HEAD');
   if(fp&&!stampsOf(git(root,'show','HEAD:'+MAP)).includes(fp))return {ok:true,msg:'Note: `npm test` has not passed on exactly these files (or its '+MAP+' is not in the commit).\nIf this reaches main as it is, the next `npm test` there runs every check.'};
   return {ok:true,msg:''}};
@@ -418,6 +426,6 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
       for(const [f,S] of atLoad)if(c.m.has(f))for(const k of S)c.add(f,k);
       cur=null;return {m:c.m,bad:c.bad}}}};
 
-module.exports={MAP,ANY,LOADED,SMOKE,units,flat,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,impactOf,lastPass,recorder,fingerprint,stampsOf,prePush,installHook};
+module.exports={MAP,ANY,LOADED,SMOKE,units,flat,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,impactOf,lastPass,recorder,fingerprint,stampsOf,prePush,cacheStale,installHook};
 
 if(require.main===module&&process.argv[2]==='pre-push'){const r=prePush(path.resolve(__dirname,'..'));if(r.msg)console.error(r.msg);process.exit(r.ok?0:1)}
