@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	55037532ec9ae2d31bdb
-# tested	d2a18fb4eac5523ed84a
+# tested	8eae740b2744bce9c4a5
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -1005,9 +1004,8 @@ plannerfix.test.js	styles.css	#setup	#setup .su-skip	#setup button	#setup button
 plannerfix.test.js	sync.js	scheduleSync	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 plannerfix.test.js	tests/fixedplan.js	<any>
 prefetch.test.js	<every page test>	<every page test>
-prefetch.test.js	app.js	@document.addEventListenervisibilitychange	aAn	addTombstones	adviceFor	atomic	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fnv64	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	keptPhoto	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	onSyncedData	piecesBox	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	saveDay	saveUserSettings	schedulePrefetch	scoreCard	shirtPatterned	shirtTextured	shortRest	shortTop	shrinkUrl	slotLabel	slotPool	slots	stackSVG	tieWord	vestRow	workerBase	wornMarks
 prefetch.test.js	account.js	isTester
-prefetch.test.js	app.js	@document.addEventListenervisibilitychange	aAn	addTombstones	adviceFor	atomic	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fnv64	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	onSyncedData	piecesBox	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	saveDay	saveUserSettings	schedulePrefetch	scoreCard	shirtPatterned	shirtTextured	shortRest	shortTop	shrinkUrl	slotLabel	slotPool	slots	stackSVG	tieWord	vestRow	workerBase	wornMarks
+prefetch.test.js	app.js	@document.addEventListenervisibilitychange	aAn	addTombstones	adviceFor	atomic	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fnv64	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	keptPhoto	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	onSyncedData	piecesBox	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	saveDay	saveUserSettings	schedulePrefetch	scoreCard	shirtPatterned	shirtTextured	shortRest	shortTop	shrinkUrl	slotLabel	slotPool	slots	stackSVG	tieWord	vestRow	workerBase	wornMarks
 prefetch.test.js	apple-touch-icon.png	<loaded>
 prefetch.test.js	care.js	careNote
 prefetch.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	primaryCol	rgbHex	sockToe	thirdOf	titleCls
