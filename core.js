@@ -202,8 +202,14 @@ const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
 const itemName=i=>i&&typeof i.name==='string'?i.name.trim():'';
-const itemTitle=i=>itemName(i)||desc(i);
+const itemTitle=i=>itemName(i)||sentence(desc(i));
 const titleCls=i=>itemName(i)?'named':'cap';
+/* one title style everywhere: a description starts with a capital and the rest stays as written ("Navy hopsack suit"); a name the
+   user typed is shown exactly as typed. (The .cap class used to capitalise every word, names included.) */
+/* an average score as shown: one decimal, rounded down, so it reads 100 only when every day scored 100 (99.6 used to show as 100
+   beside a list of what costs points) */
+const avgText=v=>v==null||!isFinite(v)?'–':v>=100?'100':(Math.floor(v*10)/10).toFixed(1);
+const sentence=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};
 const bg=i=>i?(i.swatch?`url(${i.swatch})`:COLORS[primaryCol(i)]||METAL[i.metal]||'#ccc'):'#ccc';
 
 /* brightness of a named colour (0-255), worked out once per colour: the planner asks tens of thousands of times a month */

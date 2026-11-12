@@ -31,6 +31,12 @@ module.exports=async({ok,chromium,url})=>{
     ok(/^Last backup failed · last saved Mar 3$/.test(f),`a failed try says so, with the last good day (${f})`);
     ok(/^Backup failed: not backed up yet$/.test(await line({last_sync:null,sync_status:'Backup failed: HTTP 500'})),'a first try that failed says nothing is backed up');
     ok(/^Not backed up yet: needs a connection$/.test(await p.evaluate(()=>{localStorage.removeItem('worker_url');settingsSummaries();return document.querySelector('#sum-backup').textContent})),'without a connection it says so');
+    // one title style: descriptions start with a capital, the rest as written; a typed name exactly as typed
+    const ti=await p.evaluate(()=>{const a={id:'t1',type:'suit',primaryColor:'navy',pattern:'pinstripe',secondaryColor:'white',added:1},b={...a,id:'t2',name:'navy hopsack'};
+      return {a:itemTitle(a),b:itemTitle(b),cb:careName(b),tt:getComputedStyle(Object.assign(document.body.appendChild(document.createElement('span')),{className:'cap',textContent:'x'})).textTransform,
+        s:[avgText(100),avgText(99.96),avgText(97.24),avgText(null)]}});
+    ok(/^Navy [^A-Z]+$/.test(ti.a)&&ti.b==='navy hopsack'&&/: navy hopsack$/.test(ti.cb)&&ti.tt==='none',`a description is sentence case ("${ti.a}"), a typed name is kept as typed everywhere ("${ti.b}", "${ti.cb}")`);
+    ok(ti.s.join()==='100,99.9,97.2,–','an average score has one decimal, rounded down, so it reads 100 only when every day did');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

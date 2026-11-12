@@ -22,11 +22,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     sent=[];await post({image:PNG,refs:[PNG,PNG],labels:['the suit','the wristwatch (copy it exactly: case shape, bezel)'],outfit:'a navy suit',key:'c3333333333333333'});
     const pr=sent[0].body.get('prompt');
     ok(/in this order: the suit; the wristwatch \(copy it exactly: case shape, bezel\)\. Match each one exactly/.test(pr),'outfit photos name each reference photo, the watch included');
-    ok(/printing on a watch dial stays/.test(pr),'the dial printing is allowed to stay as in the photo');
     sent=[];await post({image:PNG,refs:[PNG],labels:['the suit'],outfit:'a navy suit; a stainless steel chronograph wristwatch',key:'c3333333333333334'});
     const pw=sent[0].body.get('prompt');
     ok(/The wristwatch is a key detail\. Its face in the illustration is the real watch's photo/.test(pw)&&pw.indexOf('key detail')<pw.indexOf('He is wearing'),'with a watch, its own short sentence comes before the outfit list');
     ok(!/key detail/.test(pr),'without a watch in the outfit text there is no watch sentence');
+    ok(/fist on the jacket front with the wristwatch on that wrist/.test(pw)&&/printing on a watch dial/.test(pw)&&!/no wristwatch/.test(pw),'with a watch the pose puts it on the wrist, and the dial printing is allowed to stay as in the photo');
+    ok(!/wristwatch on that wrist|crown and pushers|watch dial/.test(pr)&&/He wears no wristwatch: both wrists are bare/.test(pr),'without one the pose and the closing line say nothing of a watch, and the wrists are bare');
+    sent=[];await post({image:PNG,refs:[PNG],labels:['the shirt'],outfit:'a white shirt; grey trousers',nojacket:true,key:'c3333333333333335'});
+    const pn=sent[0].body.get('prompt');
+    ok(/shirt sleeves/.test(pn)&&!/next to the wristwatch|watch dial/.test(pn)&&/no wristwatch/.test(pn),'the same on a day without a jacket');
     // queued item picture: made later by the queue consumer, by image edit from the reference photo
     const qsent=[];env.RENDER_QUEUE={send:async m=>{qsent.push(m)}};sent=[];
     const qr=await (await post({mode:'item',item:'a stainless steel chronograph',key:'c5555555555555555',ref:PNG,queue:true})).json();
