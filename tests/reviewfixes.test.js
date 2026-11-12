@@ -55,7 +55,7 @@ module.exports=async({ok,chromium,url,settle:settleFor})=>{
     ok(day.c==='2026-11-15'&&/Sunday/.test(day.head),`when the new day is a day off, it shows the next workday (${day.c})`);
     // "Last worn": a record dated before a piece was added is the planner's warm-up, not something worn
     const lw=await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};const o=planFor()[key(sel)];
-      const rec=d=>({date:d,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest});dayRecs={'2026-9-3':rec('2026-9-3')};cache={};
+      const rec=d=>({date:d,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,worn:true});dayRecs={'2026-9-3':rec('2026-9-3')};cache={};
       items.forEach(i=>i.added=1);const real=lastWorn(o);items.forEach(i=>i.added=+new Date(2026,10,7));const warm=lastWorn(o);items.forEach(i=>i.added=1);dayRecs={};cache={};
       return {real:real&&key(real),warm}});
     ok(lw.real==='2026-9-3'&&lw.warm===null,`"Last worn" ignores days from before the pieces were in the wardrobe (${lw.real}, ${lw.warm})`);
