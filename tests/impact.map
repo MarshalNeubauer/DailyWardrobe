@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8bd6912f823ce37d1b89
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -86,7 +85,7 @@ accounts.test.js	wrangler.toml	<any>
 asm2048.test.js	<every page test>	<every page test>
 asm2048.test.js	app.js	fnv64	lookSig	shirtPatterned	shirtTextured
 asm2048.test.js	apple-touch-icon.png	<loaded>
-asm2048.test.js	assemble.js	<any>	asmAreas	asmBig	asmBox	asmCalibJob	asmCalibKey	asmClothOf	asmColTile	asmDE	asmData	asmImg	asmInfo	asmKey	asmKeyFill	asmLab	asmLinen	asmLinenTile	asmLook	asmMajor	asmMasterKey	asmMotif	asmNeeds	asmOutKey	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmPx	asmShirtAngles	asmSleeveSegs	asmStripeCount	asmSuitBands	asmSuitPaint	asmSuitPaintTex	asmSuitPaintable	asmSuitPrep	asmSuitPrep0	asmSuitSig	asmSuitTex	asmTexFor	asmTexReady	asmTieFor	asmTieMask	asmTiePaint	asmTiePrep	asmTieSig	asmTieTile	asmTubeAt	asmVestKey	asmVestMasterJob	asmVestTag	asmWeave	asmWeaveSig	asmZoneKey	asmZonesFromImgs
+asm2048.test.js	assemble.js	<any>	asmAreas	asmBig	asmBox	asmCalibJob	asmCalibKey	asmClothOf	asmColTile	asmDE	asmData	asmImg	asmInfo	asmKey	asmKeyFill	asmLab	asmLinen	asmLinenTile	asmLook	asmMajor	asmMasterKey	asmMotif	asmNeeds	asmOutKey	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmPx	asmShirtAngles	asmSleeveSegs	asmStripeCount	asmSuitBands	asmSuitPaint	asmSuitPaintTex	asmSuitPaintable	asmSuitPrep	asmSuitPrep0	asmSuitSig	asmSuitTex	asmTexFor	asmTexReady	asmTieFor	asmTieMask	asmTiePaint	asmTiePrep	asmTieSig	asmTieTile	asmTubeAt	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestMasterJob	asmVestTag	asmWeave	asmWeaveSig	asmZoneKey	asmZonesFromImgs
 asm2048.test.js	core.js	accentOf	colName	colOf	colorDesc	hasVest	hexRgb	inRotation	labHex	lum	mix	nm	patBase	patLabel	primaryCol	rgbHex	rgbLab	shadeHex	thirdOf	typeWord
 asm2048.test.js	detect.js	settSig	texPat	usableSett
 asm2048.test.js	draw.js	fabricDef

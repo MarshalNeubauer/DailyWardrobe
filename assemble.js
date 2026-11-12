@@ -482,6 +482,7 @@ function asmLinenTile(){if(asmLinenMemo)return asmLinenMemo;const T=256,n=T/2,r=
    A sleeve's centre line: its two ends are the points of the sleeve furthest apart travelling inside it (the shoulder and the cuff);
    between them a straight line for the upper arm and one for the forearm, meeting at the elbow, rounded (below). Each point of the sleeve is then placed by how far along that line it is and how far to one side (asmTubeAt), so a stripe
    runs down the upper arm and round the elbow onto the forearm unbroken, and on the inside of the bend the cloth gathers into the crease.
+   An elbow bent over ASM_CREASE_DEG instead has a crease right across (see below), and every part is a cylinder (asmTubeTabs).
    (Before: the sleeve was split into an upper arm and a forearm turned apart, and the owner's windowpane panes met in a broken line; then
    one line through both parts' axes, which misplaced the elbow on his right arm and ran the line back on itself.) Worked out on a copy at
    most 512 px. */
@@ -502,12 +503,32 @@ function asmSleeveSegs(masks,W,N){const seg=new Uint8Array(N),segs=[{cs:1,sn:0,c
     const maxd=Math.max(1,dA[B]),bins=Array.from({length:maxd+1},()=>[0,0,0,0,0,0]);
     for(let k=0;k<SS;k++){if(!m[k]||dA[k]<0)continue;const o=bins[Math.min(maxd,dA[k])],x=k%S+.5,y=Math.floor(k/S)+.5;o[0]++;o[1]+=x;o[2]+=y;o[3]+=x*x;o[4]+=y*y;o[5]+=x*y}
     const fit=o=>{if(o[0]<3)return null;const x=o[1]/o[0],y=o[2]/o[0],cxx=o[3]/o[0]-x*x,cyy=o[4]/o[0]-y*y,cxy=o[5]/o[0]-x*y,th=.5*Math.atan2(2*cxy,cxx-cyy),
-        tr=cxx+cyy,det=cxx*cyy-cxy*cxy,lmin=tr/2-Math.sqrt(Math.max(0,tr*tr/4-det));return {x,y,dx:Math.cos(th),dy:Math.sin(th),err:lmin*o[0]}};
+        tr=cxx+cyy,det=cxx*cyy-cxy*cxy,lmin=tr/2-Math.sqrt(Math.max(0,tr*tr/4-det));return {x,y,dx:Math.cos(th),dy:Math.sin(th),err:lmin*o[0],r:Math.sqrt(3*Math.max(0,lmin))}};
     const pre=[[0,0,0,0,0,0]];for(const o of bins)pre.push(pre[pre.length-1].map((v,j)=>v+o[j]));const sum=(a,b)=>pre[b].map((v,j)=>v-pre[a][j]);
     const all=fit(sum(0,maxd+1));let best=null;
     for(let sp=Math.round(maxd*.25);sp<=Math.round(maxd*.75);sp++){const u=fit(sum(0,sp)),l=fit(sum(sp,maxd+1));if(!u||!l)continue;const e=u.err+l.err;if(!best||e<best.e)best={e,u,l}}
     const cell=k=>[k%S+.5,Math.floor(k/S)+.5],onto=(L,p)=>{const t=(p[0]-L.x)*L.dx+(p[1]-L.y)*L.dy;return [L.x+L.dx*t,L.y+L.dy*t]},sc=p=>[p[0]*f,p[1]*f];
     let pts;const bent=best&&all&&best.e<all.err*.8&&Math.abs(best.u.dx*best.l.dy-best.u.dy*best.l.dx)>.25;
+    // a real elbow (bent over ASM_CREASE_DEG): the forearm lies in front, and the upper arm's cloth ends in a crease across the sleeve
+    // from the crook (the inside corner) out to the elbow, half way between square to the upper arm and along the forearm (the target
+    // photo and the master both: the upper arm's stripes stop at the forearm's top fold, the forearm's run on to the elbow's edge)
+    if(bent){const sA=cell(A)[1]<cell(B)[1],Up=sA?best.u:best.l,Lo=sA?best.l:best.u,S0=sc(cell(sA?A:B)),C0=sc(cell(sA?B:A)),dn=Up.dx*Lo.dy-Up.dy*Lo.dx,
+        t0=((Lo.x-Up.x)*Lo.dy-(Lo.y-Up.y)*Lo.dx)/dn,E=[(Up.x+Up.dx*t0)*f,(Up.y+Up.dy*t0)*f],nrm=v=>{const l=Math.hypot(v[0],v[1])||1;return [v[0]/l,v[1]/l]};
+      let ud=[Up.dx,Up.dy],ld=[Lo.dx,Lo.dy];if((E[0]-S0[0])*ud[0]+(E[1]-S0[1])*ud[1]<0)ud=[-ud[0],-ud[1]];if((C0[0]-E[0])*ld[0]+(C0[1]-E[1])*ld[1]<0)ld=[-ld[0],-ld[1]];
+      const cb=ud[0]*ld[0]+ud[1]*ld[1];
+      if(cb<Math.cos(ASM_CREASE_DEG*Math.PI/180)){
+        const mk=(pU,ud,rU,pL,ld,rL)=>{const cb=ud[0]*ld[0]+ud[1]*ld[1],nU=nrm([cb*ud[0]-ld[0],cb*ud[1]-ld[1]]),nL=nrm([ud[0]-cb*ld[0],ud[1]-cb*ld[1]]);   // outward normals
+          // the crook: where the upper arm's and the forearm's inside edges meet
+          const b1=nU[0]*pU[0]+nU[1]*pU[1]-rU,b2=nL[0]*pL[0]+nL[1]*pL[1]-rL,dd=nU[0]*nL[1]-nU[1]*nL[0],K=Math.abs(dd)>.2?[(b1*nL[1]-b2*nU[1])/dd,(nU[0]*b2-nL[0]*b1)/dd]:E;
+          const q=nrm([nU[0]-ld[0],nU[1]-ld[1]]);let mv=[-q[1],q[0]];if(mv[0]*(C0[0]-K[0])+mv[1]*(C0[1]-K[1])<0)mv=[-mv[0],-mv[1]];
+          return asmTubeTabs({crease:{x:K[0],y:K[1],mx:mv[0],my:mv[1],r0:rU,r1:rL},parts:[{x:pU[0],y:pU[1],dx:ud[0],dy:ud[1],nx:nU[0],ny:nU[1]},{x:pL[0],y:pL[1],dx:ld[0],dy:ld[1],nx:nL[0],ny:nL[1]}]},mf,W,N)};
+        let g=mk([Up.x*f,Up.y*f],ud,Up.r*f,[Lo.x*f,Lo.y*f],ld,Lo.r*f);
+        // the fitted lines straightened by the middles of the cloth across (the forearm's line took in some of the elbow), then the parts again
+        const re=p=>{const t=p.t;if(!t)return [[p.x,p.y],[p.dx,p.dy],0];const hs=Array.from(t.R).sort((a,b)=>a-b),med=hs[hs.length>>1];let n=0,sa=0,sc2=0,saa=0,sac=0;
+          for(let i=Math.floor(t.n*.15);i<Math.ceil(t.n*.85);i++){const a=t.a0+(i+.5)*t.bs,c=t.c[i];n++;sa+=a;sc2+=c;saa+=a*a;sac+=a*c}
+          const sl=n>2?(n*sac-sa*sc2)/Math.max(1e-6,n*saa-sa*sa):0,c0=n?(sc2-sl*sa)/n:0,d=nrm([p.dx+sl*p.nx,p.dy+sl*p.ny]);return [[p.x+c0*p.nx,p.y+c0*p.ny],d,med]};
+        for(let it=0;it<2;it++){const a=re(g.parts[0]),b=re(g.parts[1]);g=mk(a[0],a[1],a[2]||Up.r*f,b[0],b[1],b[2]||Lo.r*f)}
+        segs.push(g);continue}}
     if(bent){const U=best.u,Lw=best.l,den=U.dx*Lw.dy-U.dy*Lw.dx,t=((Lw.x-U.x)*Lw.dy-(Lw.y-U.y)*Lw.dx)/den,E=[U.x+U.dx*t,U.y+U.dy*t],P0=onto(U,cell(A)),P2=onto(Lw,cell(B));
       const r=Math.min(.35*Math.hypot(P0[0]-E[0],P0[1]-E[1]),.35*Math.hypot(P2[0]-E[0],P2[1]-E[1]),30),tw=(P,d)=>{const l=Math.hypot(P[0]-E[0],P[1]-E[1])||1;return [E[0]+(P[0]-E[0])/l*d,E[1]+(P[1]-E[1])/l*d]},Q1=tw(P0,r),Q2=tw(P2,r);
       pts=[P0,Q1];for(let s2=1;s2<16;s2++){const u=s2/16,v=1-u;pts.push([v*v*Q1[0]+2*v*u*E[0]+u*u*Q2[0],v*v*Q1[1]+2*v*u*E[1]+u*u*Q2[1]])}pts.push(Q2,P2)}
@@ -516,16 +537,55 @@ function asmSleeveSegs(masks,W,N){const seg=new Uint8Array(N),segs=[{cs:1,sn:0,c
     const ext=(a,b)=>{const dx=a[0]-b[0],dy=a[1]-b[1],l=Math.hypot(dx,dy)||1,d=400*W/ASM_SIZE;return [a[0]+dx/l*d,a[1]+dy/l*d]};
     pts.unshift(ext(pts[0],pts[1]));pts.push(ext(pts[pts.length-1],pts[pts.length-2]));
     const poly=new Float32Array(pts.flat()),cum=new Float32Array(pts.length);for(let q=1;q<pts.length;q++)cum[q]=cum[q-1]+Math.hypot(pts[q][0]-pts[q-1][0],pts[q][1]-pts[q-1][1]);
-    segs.push({poly,cum})}
+    segs.push(asmTubeTabs({parts:[{poly,cum}]},mf,W,N))}
   return {seg,segs}}
-/* a point's place on a sleeve's centre line -> [across (signed, px), along (px)]: the nearest point of the line */
-function asmTubeAt(g,X,Y){const p=g.poly,n=p.length/2;let best=Infinity,u=0,v=0;
+const ASM_CREASE_DEG=30;   // a sleeve bent further than this has an elbow crease (below it, one tube bent round a rounded line)
+const ASM_TUBE_K=1.15;   // a sleeve seen as a cylinder: the cloth at its edges turns away, the stripes there closer together; the cylinder's
+                         // radius is this times half the sleeve's width (1: the edge exactly side-on, stripes squeezed to nothing)
+/* a point's place on a polyline (the nearest point) -> [across (signed, px), along (px)] */
+function asmPolyAt(g,X,Y){const p=g.poly,n=p.length/2;let best=Infinity,u=0,v=0;
   for(let q=0;q<n-1;q++){const ax=p[2*q],ay=p[2*q+1],dx=p[2*q+2]-ax,dy=p[2*q+3]-ay,l2=dx*dx+dy*dy||1;let t=((X-ax)*dx+(Y-ay)*dy)/l2;t=t<0?0:t>1?1:t;
     const px=ax+dx*t,py=ay+dy*t,d2=(X-px)*(X-px)+(Y-py)*(Y-py);if(d2<best){best=d2;const l=Math.sqrt(l2);u=((X-ax)*dy-(Y-ay)*dx)/l;v=g.cum[q]+t*l}}
   return [u,v]}
+/* which part a point is: past the crease the forearm, before it the upper arm; but a point on a part's inside (towards the other part)
+   over 1.3 of its half width from its line belongs to the other one (the forearm's top edge by the cuff is not upper arm, nor is the
+   upper arm's inside below the crook forearm) */
+const asmTubePart=(g,X,Y)=>{const k=g.crease;if(!k)return g.parts[0];const U=g.parts[0],L=g.parts[1];
+  return (X-k.x)*k.mx+(Y-k.y)*k.my>0?((X-L.x)*L.nx+(Y-L.y)*L.ny<-1.3*k.r1?U:L):((X-U.x)*U.nx+(Y-U.y)*U.ny<-1.3*k.r0?L:U)};
+const asmTubeRaw=(p,X,Y)=>{if(p.poly)return asmPolyAt(p,X,Y);const dx=X-p.x,dy=Y-p.y;return [dx*p.nx+dy*p.ny,dx*p.dx+dy*p.dy]};
+/* each part's width along its length, from the sleeve's own outline: every 8 px (at 2048) along it, the middle of the cloth across (c)
+   and half its width (R), kept within 0.7–1.2 of the part's usual half width (a seam, a hand or the crease cuts the outline short) and
+   smoothed over about 40 px either way; the middle follows the arm's real line where the fitted straight line misses it */
+function asmTubeTabs(g,mf,W,N){const bs=Math.max(2,Math.round(W/256)),sm=Math.max(1,Math.round(W/51/bs)),np=g.parts.length,amin=new Array(np).fill(Infinity),amax=new Array(np).fill(-Infinity);
+  for(let k=0;k<N;k++){if(!mf[k])continue;const x=k%W+.5,y=(k-k%W)/W+.5,pi=g.parts.length>1&&asmTubePart(g,x,y)===g.parts[1]?1:0,a=asmTubeRaw(g.parts[pi],x,y)[1];if(a<amin[pi])amin[pi]=a;if(a>amax[pi])amax[pi]=a}
+  const T=g.parts.map((p,pi)=>{if(!(amax[pi]>=amin[pi]))return null;const n=Math.floor((amax[pi]-amin[pi])/bs)+1;return {a0:amin[pi],bs,n,lo:new Float32Array(n).fill(Infinity),hi:new Float32Array(n).fill(-Infinity),ct:new Int32Array(n)}});
+  for(let k=0;k<N;k++){if(!mf[k])continue;const x=k%W+.5,y=(k-k%W)/W+.5,pi=g.parts.length>1&&asmTubePart(g,x,y)===g.parts[1]?1:0,t=T[pi];if(!t)continue;const r=asmTubeRaw(g.parts[pi],x,y),i=Math.min(t.n-1,Math.floor((r[1]-t.a0)/bs));
+    if(r[0]<t.lo[i])t.lo[i]=r[0];if(r[0]>t.hi[i])t.hi[i]=r[0];t.ct[i]++}
+  g.parts.forEach((p,pi)=>{const t=T[pi];if(!t)return;const n=t.n,ok=[];for(let i=0;i<n;i++)if(t.ct[i]>=2)ok.push(i);if(!ok.length)return;
+    const hw=ok.map(i=>(t.hi[i]-t.lo[i])/2).sort((a,b)=>a-b),med=hw[hw.length>>1]||1,c=new Float32Array(n),R=new Float32Array(n);let j=0;
+    // a cross-section much narrower than usual is cut short (the shoulder's point, the cuff under the hand, the crease): it takes the
+    // nearest full one's, so the stripes run on straight and the outline cuts them
+    const full=ok.filter(i=>t.hi[i]-t.lo[i]>=1.5*med);if(full.length)ok.splice(0,ok.length,...full);
+    for(let i=0;i<n;i++){while(j<ok.length-1&&Math.abs(ok[j+1]-i)<=Math.abs(ok[j]-i))j++;const s=ok[j],h=(t.hi[s]-t.lo[s])/2;c[i]=(t.hi[s]+t.lo[s])/2;R[i]=h<.7*med?.7*med:h>1.2*med?1.2*med:h}
+    const box=(a,sm)=>{for(let rep=0;rep<2;rep++){const b=Float32Array.from(a);for(let i=0;i<n;i++){let s=0,m=0;for(let d=-sm;d<=sm;d++){const ii=i+d;if(ii>=0&&ii<n){s+=b[ii];m++}}a[i]=s/m}}};
+    for(let i=0;i<n;i++)c[i]=Math.max(-.35*med,Math.min(.35*med,c[i]));box(c,3*sm);box(R,sm);
+    p.t={a0:t.a0,bs,n,c,R}});
+  return g}
+/* a point's place on a sleeve -> [across (px of cloth, from the middle; the cylinder turned flat), along (px)]: its part (the upper arm
+   or, past the crease, the forearm), its place across and along that part, and across, the cloth turned flat (a point at x of a
+   cylinder of radius R from its middle is R·asin(x/R) of cloth from it) */
+function asmTubeAt(g,X,Y){const p=asmTubePart(g,X,Y),r=asmTubeRaw(p,X,Y),t=p.t;if(!t)return r;
+  let f=(r[1]-t.a0)/t.bs-.5;f=f<0?0:f>t.n-1?t.n-1:f;const i=Math.floor(f),j=Math.min(t.n-1,i+1),w=f-i,c=t.c[i]*(1-w)+t.c[j]*w,R=(t.R[i]*(1-w)+t.R[j]*w)*ASM_TUBE_K;
+  const x=(r[0]-c)/R,ax=Math.abs(x);   // past 0.95 of the radius (a bulge wider than the sleeve's usual width) the cloth carries on at the slope there
+  return [ax<.95?R*Math.asin(x):Math.sign(x)*R*(1.2532+(ax-.95)*3.2026),r[1]]}
 /* the colour-free part, once per base picture and calibration: the pixels to paint and their shading. base: the master, or the
    waistcoat master on a waistcoat day; zj: the jacket zone; zv, cv (waistcoat days): the waistcoat zone and its calibration photo */
-function asmSuitPrep(base,cj,zj,zv,cv,sleeves){const P=asmSuitPrep0(base,cj,zj,zv,cv);if(sleeves&&sleeves.length){const s=asmSleeveSegs(sleeves,base.width,base.width*base.height);P.seg=s.seg;P.segs=s.segs}return P}
+function asmSuitPrep(base,cj,zj,zv,cv,sleeves){const P=asmSuitPrep0(base,cj,zj,zv,cv);if(sleeves&&sleeves.length){const s=asmSleeveSegs(sleeves,base.width,base.width*base.height);P.seg=s.seg;P.segs=s.segs;
+    // the painted ring just outside the jacket's zone takes the part beside it: as the body's, it put short upright dashes along a sleeve's edge
+    const W=base.width,sg=s.seg;let todo=[];for(const k of P.idx)if(!zj[k]&&!sg[k])todo.push(k);
+    for(let it=0;it<8&&todo.length;it++){const set=[],left=[];for(const k of todo){const x=k%W,v=x>0&&sg[k-1]||x<W-1&&sg[k+1]||k>=W&&sg[k-W]||sg[k+W]||0;if(v)set.push(k,v);else left.push(k)}
+      for(let q=0;q<set.length;q+=2)sg[set[q]]=set[q+1];todo=left}}
+  return P}
 function asmSuitPrep0(base,cj,zj,zv,cv){const W=base.width,N=W*base.height,L=ASM_LIN,B=base.data,Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],lab=asmLab(base);
   const zl=[];for(let k=0;k<N;k+=7)if(zj[k])zl.push(lab[3*k]);zl.sort((a,b)=>a-b);const Lmed=zl[zl.length>>1]||50;
   const ring=asmBox(zj,W,asmPx(3,W),true),kind=new Uint8Array(N);let n=0;
@@ -541,7 +601,7 @@ function asmSuitPaintTex(P,T){const W=P.base.width,L=ASM_LIN,d=new Uint8ClampedA
     gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},lin=T.linen?asmLinenTile():null,ls=W/ASM_SIZE;
   const at=(u,v)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0;
     for(let q=0;q<3;q++){const G=(a,b)=>T.c[3*(((b+T.TH)%T.TH)*T.TW+(a+T.TW)%T.TW)+q];cm[q]+=(G(x0,y0)*(1-fx)+G(x0+1,y0)*fx)*(1-fy)+(G(x0,y0+1)*(1-fx)+G(x0+1,y0+1)*fx)*fy}};
-  const body={cs:1,sn:0,cx:0,cy:0},uv=(g,X,Y)=>g.poly?asmTubeAt(g,X,Y):[(X-g.cx)*g.cs+(Y-g.cy)*g.sn,(Y-g.cy)*g.cs-(X-g.cx)*g.sn];   // across, along (px)
+  const body={cs:1,sn:0,cx:0,cy:0},uv=(g,X,Y)=>g.parts?asmTubeAt(g,X,Y):[(X-g.cx)*g.cs+(Y-g.cy)*g.sn,(Y-g.cy)*g.cs-(X-g.cx)*g.sn];   // across, along (px)
   const cl=T.cloth,hb=cl&&(cl.kind==='herringbone'||cl.kind==='twill'),pitch=4*ls,cw=cl&&cl.cw?cl.cw*W/ASM_SIZE:0,off=cl&&cl.off?cl.off*W/ASM_SIZE:0;
   for(let q=0;q<P.idx.length;q++){const k=P.idx[q],j=4*k,x=k%W,y=(k-x)/W,g=P.seg?P.segs[P.seg[k]]||body:body;cm[0]=cm[1]=cm[2]=0;
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uv(g,x+(e+.5)/2,y+(a+.5)/2);at(c[0]/rep,c[1]/repv)}
