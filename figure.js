@@ -52,9 +52,10 @@ ${withWatch && watch ? `<g class="fig-watch" transform="translate(0 ${f(h + 19)}
 <rect x="-16" y="-11" width="32" height="22" rx="3" fill="${hex(watch.strap, '#9AA1AA')}"/><rect x="-16" y="-11" width="32" height="22" rx="3" fill="url(#${P}gCuff)"/>
 <rect class="fig-crown" x="-3" y="14" width="6" height="5" rx="1.5" fill="${hex(wm[1], '#9AA1AA')}"/>
 <circle r="15" fill="url(#${P}gCase)"/><circle r="12" fill="${hex(watch.dial, '#F6F6F3')}"/>
-<g stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1" stroke-linecap="round"><path d="M 0 -10.5 L 0 -8"/><path d="M 0 8 L 0 10.5"/><path d="M -10.5 0 L -8 0"/><path d="M 8 0 L 10.5 0"/></g>
-<path d="M 0 0 L 0 -7" stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1.4" stroke-linecap="round"/><path d="M 0 0 L 5 3" stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1.4" stroke-linecap="round"/>
-<path d="M -9 -7 A 12 12 0 0 1 4 -11.3" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" fill="none" stroke-linecap="round"/></g>` : ''}
+${watch.img ? `<clipPath id="${P}wface"><circle r="15"/></clipPath><image href="${watch.img}" x="-15" y="-15" width="30" height="30" preserveAspectRatio="xMidYMid slice" transform="rotate(90)" clip-path="url(#${P}wface)"/>` : ''}
+${watch.blank ? '' : `<g stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1" stroke-linecap="round"><path d="M 0 -10.5 L 0 -8"/><path d="M 0 8 L 0 10.5"/><path d="M -10.5 0 L -8 0"/><path d="M 8 0 L 10.5 0"/></g>
+<path d="M 0 0 L 0 -7" stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1.4" stroke-linecap="round"/><path d="M 0 0 L 5 3" stroke="${hex(watch.marks, '#1D2125')}" stroke-width="1.4" stroke-linecap="round"/>`}
+${watch.img ? '' : `<path d="M -9 -7 A 12 12 0 0 1 4 -11.3" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" fill="none" stroke-linecap="round"/>`}</g>` : ''}
 </g>`; };
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 400" width="100%" role="img" aria-label="${esc(ariaLabel)}" style="display:block;height:auto">

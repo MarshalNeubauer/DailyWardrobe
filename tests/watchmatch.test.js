@@ -23,6 +23,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const pr=sent[0].body.get('prompt');
     ok(/in this order: the suit; the wristwatch \(copy it exactly: case shape, bezel\)\. Match each one exactly/.test(pr),'outfit photos name each reference photo, the watch included');
     ok(/printing on a watch dial stays/.test(pr),'the dial printing is allowed to stay as in the photo');
+    sent=[];await post({image:PNG,refs:[PNG],labels:['the suit'],outfit:'a navy suit; a stainless steel chronograph wristwatch',key:'c3333333333333334'});
+    const pw=sent[0].body.get('prompt');
+    ok(/The wristwatch is a key detail\. Its face in the illustration is the real watch's photo/.test(pw)&&pw.indexOf('key detail')<pw.indexOf('He is wearing'),'with a watch, its own short sentence comes before the outfit list');
+    ok(!/key detail/.test(pr),'without a watch in the outfit text there is no watch sentence');
     // queued item picture: made later by the queue consumer, by image edit from the reference photo
     const qsent=[];env.RENDER_QUEUE={send:async m=>{qsent.push(m)}};sent=[];
     const qr=await (await post({mode:'item',item:'a stainless steel chronograph',key:'c5555555555555555',ref:PNG,queue:true})).json();
@@ -47,7 +51,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // long descriptions are not cut off
     sent=[];const long='a watch '+'with many details '.repeat(70)+'END';await post({mode:'item',item:long,key:'c4444444444444444',ref:PNG});
     ok(/END/.test(sent[0].body.get('prompt')),'a long, precise item description reaches the image model in full');
-    ok(/chronograph \(three subdials and a date window\) wristwatch with a polished bezel engraved with numerals, a white dial and an integrated stainless steel bracelet.*\(small seconds at 10/.test(r.txt),`outfit photo prompts describe the watch precisely, details included (${r.txt})`);
+    // with the owner's details the stock "(three subdials and a date window)" is left out: it got a stock chronograph drawn (2026-11-12)
+    ok(/steel chronograph wristwatch with a polished bezel engraved with numerals, a white dial and an integrated stainless steel bracelet.*\(described upright, 12 o'clock at the top.*small seconds at 10/.test(r.txt)&&!/three subdials/.test(r.txt),`outfit photo prompts describe the watch precisely, details included, said to describe it upright (${r.txt})`);
     ok(r.pic&&/three-quarter view/.test(r.desc),'watches get product pictures');
     ok(r.refs==='data:image/jpeg;base64,AAA,data:image/jpeg;base64,BBB'&&/^the suit\|the wristwatch/.test(r.labels),'the watch picture goes to outfit photos as a labelled reference');
     ok(r.key,'changing the watch style or details gives a new outfit photo');

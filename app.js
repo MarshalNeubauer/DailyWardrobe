@@ -1094,16 +1094,18 @@ const shirtTexText=i=>`a ${colName(primaryCol(i))} dress shirt woven with a fine
 function outfitText(o){
   const pt=(i,role)=>{const t=patternPrompt(i,role);return t?` (${t})`:''};   // the pattern measured and described (tagging.js)
   const parts=[o.top&&`a ${nm(o.top)}${pt(o.top,'top')}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt,'shirt')}`:shirtTextured(o.shirt)?shirtTexText(o.shirt):`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?(o.tie?'':', worn with the collar open and the top button undone, with no tie'):`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot,'bot')} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie,'tie')}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
-    o.watch&&watchText(o.watch),o.links&&`${metalWord(o.links)} cufflinks`];
+    o.watch&&watchText(o.watch,{worn:true}),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
 /* draw the figure SVG onto a canvas and return a PNG data URL. With a jacket the picture is the square FIG_CROP of the drawing
    (viewBox units): the shoulders fill its width and it ends just under the pocket flaps, the close framing the photo generator
    copies (sent whole, 390x400, it came back zoomed out, down to the hips). A no-jacket day keeps the whole drawing */
 const FIG_CROP={x:11,y:0,s:368};
-function figurePng(o,w=780){
+async function figurePng(o,w=780){
   const crop=o&&o.top?FIG_CROP:null,k=crop?w/crop.s:w/390,W=Math.round(390*k),H=Math.round(400*k);
-  const svg=figureSvg(o,'r-').replace('width="100%"',`width="${W}" height="${H}"`).replace('style="display:block;height:auto"','');
+  // the watch's face on the drawing is its own photo's dial (as the dial reference is cut), turned as worn in figure.js
+  const wp=o&&o.watch&&(o.watch.photo||(itemPic(o.watch)||{}).img),face=wp&&typeof dialCrop==='function'?await dialCrop(wp):null;
+  const svg=figureSvg(o,'r-',{photo:true,face}).replace('width="100%"',`width="${W}" height="${H}"`).replace('style="display:block;height:auto"','');
   return new Promise((ok,no)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=w;c.height=crop?w:H;const x=c.getContext('2d');
     x.fillStyle=figBg();x.fillRect(0,0,c.width,c.height);x.drawImage(im,crop?-crop.x*k:0,crop?-crop.y*k:0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>no(new Error('could not draw the illustration'));
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
@@ -1118,7 +1120,8 @@ function outfitRefs(o){const refs=[],labels=[];const add=(img,l)=>{if(img){refs.
   const tex=(i,what)=>add(i&&i.texture,`a close-up of the ${what} fabric (match its exact colour and weave)`);   // a fabric close-up, when the item has one
   const top=o.suitDay?'suit':'blazer';add(o.top&&o.top.photo,'the '+top);tex(o.top,top);
   if(!o.top){add(o.bot&&o.bot.photo,'the trousers');tex(o.bot,'trouser')}tex(o.shirt,'shirt');if(!(o.tie&&o.tie.texture))add(o.tie&&o.tie.photo,'the tie');tex(o.tie,'tie');
-  if(o.watch)add((itemPic(o.watch)||{}).img||o.watch.photo,'the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)');
+  // the owner's own photo of the watch first: a product picture is the generator's redrawing, and its dial's details are already lost
+  if(o.watch)add(o.watch.photo||(itemPic(o.watch)||{}).img,'the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)');
   return {refs,labels}}
 async function renderCombo(o){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
