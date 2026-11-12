@@ -7,15 +7,17 @@
 
 /* ---- Settings → Schedule → Dress code: two switches ---- */
 const DRESS_ROWS=[['jacket','Jackets (suits and blazers)','Off if you don\'t wear a suit or blazer to work: workdays are planned as a shirt and trousers.'],
-  ['tie','Ties','Off if you don\'t wear a tie: outfits get an open collar and no tie clip.']];
-const dressOn=k=>k==='jacket'?wearsJacket():wearsTie();
+  ['tie','Ties','Off if you don\'t wear a tie: outfits get an open collar and no tie clip.'],
+  ['jeans','Jeans with a blazer','On if jeans are fine at work under a blazer. Without a jacket, jeans are always fine.']];
+/* settings.dress.jeans: off unless switched on (jeans are planned only on days without a jacket); shown while jackets are worn */
+const dressOn=k=>k==='jacket'?wearsJacket():k==='tie'?wearsTie():!!(settings.dress&&settings.dress.jeans);
 function renderDressUI(){const el=$('#cfg-dress');if(!el)return;const j=wearsJacket();
-  el.innerHTML=DRESS_ROWS.map(([k,label,help])=>{const on=dressOn(k);
+  el.innerHTML=DRESS_ROWS.filter(([k])=>k!=='jeans'||j).map(([k,label,help])=>{const on=dressOn(k);
     return `<div class="dress-row"><span class="dress-txt"><b id="dress-l-${k}">${label}</b><small id="dress-h-${k}">${help}</small></span><button type="button" class="dress-sw${on?' on':''}" id="dress-${k}" role="switch" aria-checked="${on}" aria-labelledby="dress-l-${k}" aria-describedby="dress-h-${k}" onclick="setDress('${k}',${!on})"><i></i></button></div>`}).join('')
     +(j?'':'<p class="shelp dress-note">Blazer days and the suit vest don\'t apply without jackets, so they are hidden. A day you mark as formal, a wedding or a funeral is still dressed in full from what you own.</p>');
   for(const id of ['#blazer-group','#vest-row']){const e=$(id);if(e)e.classList.toggle('dress-hide',!j)}}
 /* a change re-plans the coming week too (clearLocks), like the other planner settings */
-async function setDress(k,on){settings.dress={jacket:wearsJacket(),tie:wearsTie(),[k]:!!on};await clearLocks();await saveUserSettings();todayStale=true;renderDressUI();settingsSummaries()}
+async function setDress(k,on){settings.dress={jacket:wearsJacket(),tie:wearsTie(),...(settings.dress&&settings.dress.jeans?{jeans:true}:{}),[k]:!!on};if(!settings.dress.jeans)delete settings.dress.jeans;await clearLocks();await saveUserSettings();todayStale=true;renderDressUI();settingsSummaries()}
 /* the Schedule category's one-line summary, when the dress code is not the usual one ('' otherwise: app.js writes its own) */
 function dressSummary(){const j=wearsJacket(),t=wearsTie();return j&&t?'':j?'no ties':t?'no jackets':'no jackets or ties'}
 /* why a piece is never worn, for a wardrobe without jackets (stats.js whyUnused; null = its usual answer) */

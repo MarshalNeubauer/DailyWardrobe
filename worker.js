@@ -24,7 +24,7 @@ const SUITING = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','nav
 const TYPE_COLORS = {
   suit: [[...SUITING,'cream'], SUIT_LINES],
   blazer: [[...SUITING,'cream','burgundy','wine','rust'], SUIT_LINES],
-  pants: [[...SUITING,'cream','lightblue'], SUIT_LINES],
+  pants: [[...SUITING,'cream','lightblue','stone','denim'], SUIT_LINES],
   shirt: [['white','ivory','cream','paleyellow','beige','pink','lavender','periwinkle','mint','lightblue','blue','steelblue','lightgrey','midgrey','grey','slate','charcoal','navy','darknavy','black','burgundy'],
     ['white','navy','darknavy','blue','lightblue','steelblue','red','burgundy','pink','lavender','purple','grey','lightgrey','charcoal','black','green','mint','brown','gold']],
   tie: [['navy','darknavy','deepblue','blue','steelblue','lightblue','slate','black','charcoal','grey','silver','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust','cream'],
@@ -57,7 +57,9 @@ ${TYPE_COLOR_TEXT}
   than navy; darknavy is navy so dark it is almost black; slate is a dark blue-grey, greyer than navy and bluer than charcoal;
   wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
   than burgundy; khaki is the light sandy beige of classic chinos and cotton dress trousers, lighter and greener than tan,
-  which is a warmer, deeper camel brown; taupe is a greyish brown, between grey and tan;
+  which is a warmer, deeper camel brown; stone is the pale grey-beige of stone chinos, greyer and lighter than khaki;
+  denim is the indigo blue of jeans (trousers only; a faded light-blue pair is lightblue);
+  taupe is a greyish brown, between grey and tan;
   deeptaupe is a dark taupe, a deep greyish brown, darker and greyer than brown and much darker than taupe (a mink or
     espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown; brown is a clearly warm, coloured brown); rust is a burnt orange-brown;
   ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
@@ -103,6 +105,13 @@ Use "solid" for suits, blazers and trousers whose weave is only visible up close
 
 metal — for tieclip, watch, cufflinks and belt (the buckle): gold, silver or other (the case and bracelet metal for watches). Otherwise null.
 
+trouserKind — trousers (pants) only, otherwise null: dress (pressed wool or cotton dress trousers with a crease), chinos (casual
+  cotton twill trousers, no crease, often with patch or slanted pockets), jeans (denim with rivets and five pockets).
+
+shoeStyle — shoes only, otherwise null: oxford (closed lacing, often a cap toe), derby (open lacing, the quarters sewn on top),
+  loafer (no laces: penny, tassel, horsebit), boot (above the ankle: chelsea, chukka, dress boot), sneaker (trainers, any sport or
+  minimal leather sneaker).
+
 leather — shoes and belts: calf (smooth, moderate shine), cordovan (dense, deep glossy shine with rolling creases), suede (matte napped),
   patent (mirror gloss), pebble-grain (large tumbled grain), scotch-grain (fine embossed grain). Otherwise null.
 
@@ -117,7 +126,7 @@ const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
   'brown','tan','khaki','taupe','deeptaupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
-  'paleyellow','ivory','beige','lavender','periwinkle','mint'];   // per-type lists: TYPE_COLORS
+  'paleyellow','ivory','beige','lavender','periwinkle','mint','stone','denim'];   // per-type lists: TYPE_COLORS
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
@@ -126,7 +135,7 @@ const orNull = values => ({ anyOf: [{ type: 'string', enum: values }, { type: 'n
 // Structured output: the reply is guaranteed to be JSON matching this schema.
 const TAG_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['type','primaryColor','secondaryColor','tertiaryColor','pattern','metal','leather','dial','band','bezel'],
+  required: ['type','primaryColor','secondaryColor','tertiaryColor','pattern','metal','leather','dial','band','bezel','trouserKind','shoeStyle'],
   properties: {
     type: { type: 'string', enum: TYPE_LIST },
     primaryColor: { type: 'string', enum: COLOR_LIST },
@@ -135,6 +144,8 @@ const TAG_SCHEMA = {
     pattern: { type: 'string', enum: PATTERN_LIST },
     metal: orNull(['gold','silver','other']),
     leather: orNull(['calf','cordovan','suede','patent','pebble-grain','scotch-grain']),
+    trouserKind: orNull(['dress','chinos','jeans']),
+    shoeStyle: orNull(['oxford','derby','loafer','boot','sneaker']),
     dial: orNull(DIAL_COLS),
     band: orNull(['bracelet','leather']),
     bezel: orNull(['fluted','smooth']),

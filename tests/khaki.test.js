@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       lighter:lumOf('khaki')>lumOf('tan')+10,fam:fam('khaki'),belt:leatherGroup('khaki'),
       desc:itemDesc({type:'pants',primaryColor:'khaki',pattern:'solid'}),wool:itemDesc({type:'pants',primaryColor:'tan',pattern:'solid'})}));
     ok(r.pants&&!r.shirt,'khaki is offered for trousers (not dress shirts)');
-    ok(r.norm==='khaki,khaki,khaki'&&r.camel==='tan','khaki, chino and stone tag as khaki; camel stays tan');
+    ok(r.norm==='khaki,khaki,stone'&&r.camel==='tan','khaki and chino tag as khaki, stone is its own trouser colour now (chinos); camel stays tan');
     ok(r.lighter&&r.fam==='tan'&&r.belt==='tan','khaki is lighter than tan and follows the tan rules');
     ok(/khaki cotton twill dress trousers/.test(r.desc)&&/tan wool dress trousers/.test(r.wool),'the khaki item picture asks for cotton twill');
     // a blazer day with a navy blazer wears the khaki trousers
