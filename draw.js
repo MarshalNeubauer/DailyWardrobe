@@ -431,10 +431,13 @@ let figBgMemo=null;
 const figBg=()=>{const k=(document.documentElement.dataset.theme||'')+'|'+(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'d':'l');
   if(figBgMemo&&figBgMemo.k===k)return figBgMemo.v;
   const v=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),c=/^#[0-9a-f]{3,8}$/i.test(v)?v:'#e8ebec';figBgMemo={k,v:c};return c};
-function figureSvg(o,prefix='fig-'){
+/* photo:true = the drawing the photo generator starts from (figurePng): the watch's face is its own photo (the owner's, else its
+   product picture), turned as worn; the generator edits this drawing, so it starts from the real dial in the right place and size
+   (from its references and words alone it drew a stock chronograph). With no photo the dial is left blank, not three drawn hands */
+function figureSvg(o,prefix='fig-',{photo=false,face=null}={}){   // face: the watch photo's dial crop (dialCrop), given by figurePng
   let watch=null;
   if(o.watch){const wo=watchOpts(o.watch),tones=METAL_TONES[o.watch.metal]||METAL_TONES.silver,dial=COLORS[wo.dial]||'#12151A';
-    watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
+    watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125',blank:photo,img:photo&&face||null}}
   return outfitFigureSvg({
     suit:figFabric(o.top||o.shirt,o.top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),
     watch,clip:o.clip&&!o.vest?{color:METAL[o.clip.metal]||METAL.other}:null,vest:!!(o.vest&&o.top),jacket:!!o.top,bg:figBg(),idPrefix:prefix,
