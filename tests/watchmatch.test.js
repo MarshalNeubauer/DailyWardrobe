@@ -33,7 +33,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // app
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const w={id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph',details:'small seconds at 10, 15/30/45 minute counter at 2'};
-      const svg=itemThumb(w),plain=itemThumb({...w,watchStyle:'date',bezel:'smooth',band:'bracelet'});
+      // the date watch's window shows today's day: on the 12th it read as a 12 numeral, so the clock reads the 3rd while drawing
+      const RD=Date;window.Date=class extends RD{constructor(...a){super(...(a.length?a:[2026,10,3,12]))}};let svg,plain;
+      try{svg=itemThumb(w);plain=itemThumb({...w,watchStyle:'date',bezel:'smooth',band:'bracelet'})}finally{window.Date=RD}
       const o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid',photo:'data:image/jpeg;base64,AAA'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:{id:'t',type:'tie',primaryColor:'burgundy',pattern:'solid'},watch:w};
       renders[itemKey(w)]={sig:'item',img:'data:image/jpeg;base64,BBB'};const ref=outfitRefs(o);
       return {opts:[WATCH_STYLES,BANDS,BEZELS].map(l=>l.map(x=>x[0]).join()).join(' | '),

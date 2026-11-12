@@ -52,6 +52,7 @@ function openSettings(section){
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
 }
 let todayStale=false;   // a change made in Settings that Today should show once Settings closes
+let viewStale=null;   // the Wardrobe or stats page, when a sync brought changes while Settings was open (syncRedraw): redrawn once it closes
 const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.display==='block';
 /* a redraw from work done in the background (photos arriving, the weather, the plan rules check at start-up): while Settings is open
    it waits for Settings to close (todayStale), since drawing Today closes Settings, which snapped shut when opened right after launch */
@@ -60,6 +61,7 @@ function closeSettings(){
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
   if(todayStale){todayStale=false;renderToday()}
+  if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
   if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
