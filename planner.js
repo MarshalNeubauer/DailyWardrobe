@@ -1,6 +1,6 @@
 /* Daily Wardrobe: outfit rules, planning and scoring (no DOM access; also loaded by the analysis worker) */
 /* colour families for the rules: dark grey behaves like charcoal, light grey like grey, oxblood like burgundy */
-const FAM={mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan',taupe:'tan',deeptaupe:'brown',rust:'brown',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(planCol(i));
+const FAM={stone:'tan',denim:'blue',mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan',taupe:'tan',deeptaupe:'brown',rust:'brown',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal'},fam=c=>FAM[c]||c,pcol=i=>fam(planCol(i));
 /* acceptable shoe colours for each trouser colour, best first */
 const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','brown','burgundy'],navy:['brown','burgundy','black','tan'],brown:['brown','tan','burgundy'],tan:['brown','tan','burgundy'],olive:['brown','tan','burgundy'],blue:['brown','black','burgundy']};
 /* ---- clothing rules (suit/blazer, trousers, shirt, tie) ----
@@ -135,7 +135,13 @@ function clothesScore(top,bot,shirt,tie,suitDay,day){
   return v;
 }
 const WARM=['brown','tan','olive'];
-const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b),tc=t?pcol(t):'';const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;if(t&&((WARM.includes(tc)&&sc==='black')||(tc==='black'&&sc!=='black')))v-=50;return v};
+/* a shoe's style against the trousers: an oxford goes with anything; derbies and loafers a little less with a suit; boots and sneakers
+   only with chinos or jeans (with a suit or dress trousers they score as shoes that don't suit, -50 or worse) */
+const SHOE_FIT={oxford:{suit:0,dress:0,casual:0},derby:{suit:-4,dress:0,casual:0},loafer:{suit:-8,dress:-2,casual:0},boot:{suit:-60,dress:-20,casual:0},sneaker:{suit:-60,dress:-60,casual:0}};
+const shoeCtx=b=>b.type==='suit'?'suit':trouserKind(b)==='dress'?'dress':'casual';
+const SNEAKER_COLS=['white','cream','grey','black','navy','brown','tan'];
+const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b),tc=t?pcol(t):'';const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;
+  if(k<0&&shoeStyle(s)==='sneaker'&&shoeCtx(b)==='casual'&&SNEAKER_COLS.includes(sc))v=4;   /* a white or neutral sneaker goes with any chinos or jeans */if(t&&((WARM.includes(tc)&&sc==='black')||(tc==='black'&&sc!=='black')))v-=50;return v+SHOE_FIT[shoeStyle(s)][shoeCtx(b)]};
 /* socks: the trousers' colour first, then the shoes', then a sock that picks up the shirt's or the tie's colour (echo: their colour groups,
    from sockEcho), then a quiet neutral */
 const sockEcho=(shirt,tie)=>[shirt&&shirtGroup(shirt),tie&&tieGroup(tie)].filter(g=>g&&!['white','black','grey','navy','brown'].includes(g));
@@ -148,6 +154,7 @@ const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',khaki:'tan',burgun
 const finish=l=>l==='suede'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':'smooth';
 const metalOf=i=>i&&i.metal||'silver';
 function beltFit(shoe,belt){
+  if(shoeStyle(shoe)==='sneaker')return 0;   // sneakers don't call for a matching belt: any belt will do
   if(leatherGroup(planCol(belt))!==leatherGroup(planCol(shoe)))return null;
   const fs=finish(shoe.leather),fb=finish(belt.leather);
   if(fs===fb)return 3;
@@ -251,7 +258,10 @@ if(lock)for(const sl in LT){const id=lock[sl],t=LT[sl];if(!id||!t||force[sl]||(s
   if(!x||(sl==='shoes'&&day.clim.rain&&finish(x.leather)==='suede')||seasonFit(x,day.clim.season)<=-15||(sl==='shirt'&&washing(x)&&by(t).some(i=>!washing(i)))){lock=null;break}}
 const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
   const s=skip[slot]||[],l=lock&&lock[slot];if(l&&!s.includes(l)){const x=all.find(i=>i.id===l);if(x)return [x]}
-  const left=all.filter(i=>!s.includes(i.id)),any=left.length?left:all;return slot==='shirt'?washed(any):any};
+  const left=all.filter(i=>!s.includes(i.id)),any=left.length?left:all;if(slot==='bot'){const ok=any.filter(botFits);return ok.length?ok:any}return slot==='shirt'?washed(any):any};
+// the trousers a day allows: dress trousers only on a formal day, a wedding or a funeral; jeans with a blazer only when the dress code
+// says so (settings.dress.jeans); chinos with a blazer, and anything on a day without a jacket
+const botFits=i=>{const k=trouserKind(i);if(full&&!casual)return k==='dress';if(!suitDay&&!noJ&&k==='jeans')return !!(settings.dress&&settings.dress.jeans);return true};
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
