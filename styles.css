@@ -640,3 +640,13 @@ body.iv-on #toast,body.iv-on #busy{z-index:960;bottom:calc(78px + env(safe-area-
 .shop-hid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .shop-foot{text-align:center}
 @media(max-width:360px){.shop-figs{grid-template-columns:1fr}}
+/* ---- about ---- */
+.about-text{display:block;width:100%;box-sizing:border-box;min-height:96px;margin:0 0 8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px;line-height:1.4;resize:vertical}
+.about-note{margin:8px 0 0}.about-note.about-bad{color:var(--danger)}
+.fb-list{margin:14px 0 0}.fb-item{padding:10px 0;border-top:1px solid var(--line)}.fb-item small{color:var(--mut);font-size:12px}.fb-item p{margin:4px 0 0;font-size:14px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.about-confirm{margin:12px 0 0;padding:12px 14px;border:1px solid color-mix(in srgb,var(--danger) 45%,var(--line));border-radius:14px;font-size:14px;line-height:1.4}
+.about-confirm p{margin:0 0 6px}.about-confirm ul{margin:0 0 10px;padding-left:20px}.about-confirm li{margin:2px 0}.about-confirm .sactions{margin-top:10px}
+.about-fold summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;cursor:pointer;list-style:none}
+.about-fold summary::-webkit-details-marker{display:none}.about-fold summary::after{content:"›";color:var(--mut);font-size:20px;font-weight:400;transition:transform .2s}.about-fold[open] summary::after{transform:rotate(90deg)}
+.about-fold p{margin:0 0 8px;font-size:13px;line-height:1.45;color:var(--mut)}
+#about-update[hidden]{display:none}
