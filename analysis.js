@@ -23,7 +23,7 @@ function noteKind(n){
   for(const [m,label] of k)if(n.includes(m))return label;return 'other';
 }
 /* bought and on its way: owned, as far as the next purchase goes */
-const shopList=list=>list.map(i=>{if(!(i.order&&i.paused))return i;const {paused,arrives,...r}=i;return r});
+const shopList=list=>list.map(i=>{if(!((i.order||i.away)&&i.paused))return i;const {paused,arrives,...r}=i;return r});
 const CLOTHES=['suit','blazer','pants','shirt','tie'];
 
 /* plan the horizon with a given wardrobe and measure it */

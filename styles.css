@@ -790,3 +790,28 @@ span.pk-tick{cursor:default}
 .morein{padding:6px 0 0}
 .morein>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:14px;font-weight:600}
 .morein>label select{flex:0 0 58%;width:58%;max-width:58%}
+/* ---- care ---- */
+/* the Care page takes the design system of the other pages (44px controls, 12px radius, bordered 14px cards) */
+#care{font-size:15px}
+#care :where(button):where(:not(.linkbtn)){min-height:var(--ctl-h);padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1.2;text-align:center}
+#care button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#care .phead.nav{display:flex;margin:4px 0 14px}
+#care .care-card{border:1px solid var(--line);border-radius:var(--r-card);padding:14px;margin:0 0 12px}
+#care .care-card h3{font-size:16px;line-height:1.3;margin:0 0 4px}
+.care-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.care-card>.care-row:first-of-type{border-top:0}.care-card>.shelp+.care-row{border-top:1px solid var(--line)}
+.care-main{flex:1 1 150px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.care-nm{font-size:14px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.care-main small{font-size:12.5px;line-height:1.3}
+.care-acts{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 100%}.care-acts button{flex:1 1 auto}
+.care-foot{margin:16px 0 0;text-align:center}.care-foot .linkbtn{min-height:44px;font-size:14px}
+.carelink{margin-top:8px}
+/* the Wardrobe grid: a quiet tag on a piece that is due */
+.caretag{display:table;margin:6px 4px 2px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid color-mix(in srgb,var(--acc) 55%,var(--line));color:var(--ink)}
+/* the item sheet's Care card */
+.ivcare .carecount{margin:0 0 10px}.ivcare .carecount.due{color:var(--ink)}
+.ivcare .careback{margin:0 0 10px}.ivcare .btns button{flex:1 1 auto}
+.ivcare .careback input{height:44px;padding:0 12px;border-radius:12px;min-width:0}
+/* Today: one quiet line when a piece reaches its number of wears */
+.carenote{margin:10px 2px 0;font-size:13px;line-height:1.4;color:var(--mut)}.carenote a{color:inherit;text-decoration:underline}
+@media (min-width:600px){.care-acts{flex:0 1 auto}}
