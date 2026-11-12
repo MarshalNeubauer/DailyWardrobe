@@ -26,7 +26,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()))},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
+    // the worker is set before the page loads: set on a first page and then reloaded, that first page's delayed start-up work (the
+    // assembled pictures' look at the worker) could still ask for a photo before the reload, which read as a download made twice
+    await ctx.addInitScript(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()))},HOST);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);
     return {p,errs,ctx}};
   try{
     // the plan's combinations for November, worked out once; the worker has photos for all but two of them

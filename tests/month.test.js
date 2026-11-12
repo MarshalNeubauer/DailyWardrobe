@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       planned:c.filter(x=>x.classList.contains('planned')).length,thu:c[18].querySelectorAll('.stack rect[fill^="url"]').length,sun:c[14].querySelectorAll('.stack rect[fill^="url"]').length,
       label:c[8].getAttribute('aria-label'),legend:!!document.querySelector('#mbox .mlegend'),anim:getComputedStyle(c[3]).animationName}});
     ok(m.today&&m.open&&m.exp==='true'&&m.h>closedH+250,`the month unfolds in place on Today (box ${Math.round(closedH)}px → ${Math.round(m.h)}px)`);
-    ok(m.anim==='mcIn','the days settle in with an animation');
+    ok(m.anim==='none','the days come in with the box in one fade, not an animation per day (thirty of them made the unfolding choppy; tests/monthunfold.test.js)');
     ok(m.title==='November 2026'&&m.n===30,'30 day cells; November 2026 starts on a Sunday');
     ok(m.rest==='6,7,13,14,20,21,27,28','Fridays and Saturdays are rest days');
     ok(m.todayCell==='9'&&m.worn===6&&m.planned===16,`today is outlined, earlier workdays read as worn (${m.worn}), later ones planned (${m.planned})`);
