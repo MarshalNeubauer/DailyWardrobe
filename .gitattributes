@@ -1,2 +1,4 @@
+# every text file is checked out with LF, also on Windows (Git for Windows defaults to core.autocrlf=true): tests read sources with \n patterns, and tests/impact.js fingerprints the folder's files against the committed ones
+* text=auto eol=lf
 # what each test uses, rewritten by test runs: when two branches both changed it, keep both sides' lines (tests/impact.js adds them up)
 tests/impact.map merge=union linguist-generated
