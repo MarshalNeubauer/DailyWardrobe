@@ -67,6 +67,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     let cx=null;const f0=globalThis.fetch;globalThis.fetch=async(h,i)=>{cx=i.body.get('complexity');return f0(h,i)};
     await rm({model:'gpt-image-2.6-sunburst',complexity:'medium'});const m1=sent.model,c1=cx;await rm({model:'dall-e-3; drop',complexity:'huge'});const m2=sent.model,c2=cx;globalThis.fetch=f0;
     ok(m1==='gpt-image-2.6-sunburst'&&c1==='medium'&&m2==='gpt-image-x'&&c2===null,`a request can name a GPT Image model and a complexity; anything else falls back to the worker's model (${m1}/${c1}, ${m2}/${c2})`);
+    // the owner's request may ask for a size (a piece of an assembled picture comes back at its master's size); anything else is 1024
+    let sz=null;globalThis.fetch=async(h,i)=>{sz=i.body.get('size');return f0(h,i)};
+    await rm({size:'2048x2048'});const s1=sz;await rm({size:'1536x1536'});const s2=sz;await rm({size:'4096x4096'});const s3=sz;await rm({});const s4=sz;globalThis.fetch=f0;
+    ok(s1==='2048x2048'&&s2==='1536x1536'&&s3==='1024x1024'&&s4==='1024x1024',`a request may ask for 1536 or 2048; anything else, or nothing, is 1024 (${s1}, ${s2}, ${s3}, ${s4})`);
+    {// a queued job keeps the size it asked for; a tester's request can't choose one (like model and quality)
+      const store=new Map(),KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,getWithMetadata:async k=>({value:store.get(k)??null,metadata:null}),put:async(k,v)=>{store.set(k,v)},delete:async k=>{store.delete(k)},list:async()=>({keys:[],list_complete:true})};
+      const env2={...env,WARDROBE:KV,RENDER_QUEUE:{send:async()=>{}}};
+      await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({mode:'queue',key:'c5555555555555551',image:PNG1,outfit:'a navy suit',size:'2048x2048'})}),env2);
+      const job=JSON.parse(store.get('job:c5555555555555551')||'{}');
+      const code='TesterCode_0123456789abcdefABCDEF',hash=require('crypto').createHash('sha256').update(code).digest('hex');
+      store.set('invite:'+hash,JSON.stringify({id:'tester0001',name:'Tess',caps:{photo:5},created:Date.now()}));
+      globalThis.fetch=async(h,i)=>{sz=i.body.get('size');return f0(h,i)};sz=null;
+      await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json','x-app-token':code},body:JSON.stringify({image:PNG1,outfit:'a navy suit',size:'2048x2048'})}),env2);globalThis.fetch=f0;
+      ok(job.size==='2048x2048'&&sz==='1024x1024',`a queued job keeps its size (${job.size}); a tester's request is made at 1024 whatever it asks (${sz})`);}
     // a one-piece edit of a kept photo (the tie only): the photo first, a mask, the swap prompt; the answer carries OpenAI's token counts
     let sw=null;globalThis.fetch=async(h,i)=>{const f=i.body;sw={prompt:f.get('prompt'),n:f.getAll('image[]').length,first:f.getAll('image[]')[0].type,mask:f.get('mask'),markup:f.get('markup')};return f0(h,i)};
     reply=()=>[200,{data:[{b64_json:JPG}],usage:{input_tokens:900,output_tokens:1400,total_tokens:2300}}];
