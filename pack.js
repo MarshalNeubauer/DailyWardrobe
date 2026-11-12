@@ -8,8 +8,8 @@
 const PACK_MAX=31;        // a trip is at most this many days
 const PACK_TRIPS=8;       // ticks are remembered for this many trips
 const PACK_TRIES=3;       // sets of jackets / of shoes tried for a lighter plan
-const PACK_NOUN={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pair of dress pants','pairs of dress pants'],shirt:['shirt','shirts'],tie:['tie','ties'],tieclip:['tie clip','tie clips'],watch:['watch','watches'],shoes:['pair of shoes','pairs of shoes'],belt:['belt','belts'],socks:['pair of socks','pairs of socks'],cufflinks:['pair of cufflinks','pairs of cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats']};
-const PACK_TITLE={suit:'Suits',blazer:'Blazers',pants:'Dress pants',shirt:'Shirts',tie:'Ties',tieclip:'Tie clips',watch:'Watch',shoes:'Shoes',belt:'Belts',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Coats',raincoat:'Coats'};
+const PACK_NOUN={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pair of trousers','pairs of trousers'],shirt:['shirt','shirts'],tie:['tie','ties'],tieclip:['tie clip','tie clips'],watch:['watch','watches'],shoes:['pair of shoes','pairs of shoes'],belt:['belt','belts'],socks:['pair of socks','pairs of socks'],cufflinks:['pair of cufflinks','pairs of cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats']};
+const PACK_TITLE={suit:'Suits',blazer:'Blazers',pants:'Trousers',shirt:'Shirts',tie:'Ties',tieclip:'Tie clips',watch:'Watch',shoes:'Shoes',belt:'Belts',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Coats',raincoat:'Coats'};
 const PACK_COUNTED=['suit','blazer','pants','shirt','tie','shoes','socks'];   // the count line at the top
 let packT=null;           // the trip on screen: {a, b (YYYY-MM-DD), j, s (most jackets / pairs of shoes, 0 = no limit)}
 let packMemo=null;        // the lighter plan last worked out

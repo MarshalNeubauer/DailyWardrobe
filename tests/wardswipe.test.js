@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       ok(mid&&mid.slide.includes('translateX(-')&&mid.chips===s0.chips,`${name}: the grid follows the finger; the chips stay put`);
       ok(mid.overflow===0&&s.overflow===0,`${name}: page never wider than the screen`);
       await swipe(w-80,w-300);s=await state();ok(s.flt==='blazer'&&s.n===1,`${name}: next swipe goes to Blazers`);
-      await swipe(w-80,w-300);s=await state();ok(s.flt==='tie',`${name}: empty types (dress pants, shirts) are skipped (${s.flt})`);
+      await swipe(w-80,w-300);s=await state();ok(s.flt==='tie',`${name}: empty types (trousers, shirts) are skipped (${s.flt})`);
       await swipe(80,300);s=await state();ok(s.flt==='blazer',`${name}: swiping right goes back`);
       await p.evaluate(()=>{flt='shoes';renderWardrobe()});await swipe(w-80,w-300);s=await state();ok(s.flt==='shoes',`${name}: the last type stays put on a further swipe`);
       await p.evaluate(()=>{flt='all';renderWardrobe()});await swipe(80,300);s=await state();ok(s.flt==='all'&&s.slide.includes('translateX(0'),`${name}: All is the first; a swipe right springs back`);

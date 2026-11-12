@@ -35,7 +35,7 @@ function whyUnused(i){
   const gap=(kind,id)=>{const T=table();return Math.min(...jackets.map(j=>T[j.id].all-(T[j.id][kind][id]??-1e9)))};
   const n=v=>Math.round(v),pts=v=>n(v)===1?'1 point':n(v)+' points';
   switch(i.type){
-    case 'pants':{if(!blazerDays)return 'You have no blazer days, so odd trousers are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
+    case 'pants':{if(!blazerDays)return 'You have no blazer days, so separate trousers are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
       const g=Math.min(...by('blazer').map(j=>Math.max(...by('pants').map(p=>pairScore(j,p)+patternScore([[j,'top'],[p,'bot']])))-(pairScore(j,i)+patternScore([[j,'top'],[i,'bot']]))));
       return g>QWIN?`They don't suit any of your blazers well enough: ${pts(g)} behind the best pair at the closest.`:'They suit a blazer, but other pairs have rested longer: they come up later than six months.'}
     case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts have rested longer: it comes up later than six months.';

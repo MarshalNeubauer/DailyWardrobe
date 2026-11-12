@@ -81,9 +81,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.selectOption('#cfg-country','KW');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='KW'&&settings.holidays.list.length>0,null,{timeout:8000});
     ok(nager>n0&&await p.evaluate(()=>settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&!isWorkday(new Date(2027,1,25))&&settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker');
     // the list is fetched again after a month, keeping what was unticked
-    const again=await p.evaluate(async()=>{await toggleHoliday('2027-02-25',false);settings.holidays={...settings.holidays,fetched:Date.now()-40*864e5,list:settings.holidays.list.slice(0,2)};refreshHolidays();
-      await new Promise(r=>setTimeout(r,1200));return {n:settings.holidays.list.length,skip:settings.holidays.skip.join(),fresh:Date.now()-settings.holidays.fetched<60000}});
-    ok(again.n===4&&again.skip==='2027-02-25'&&again.fresh,'the holiday list refreshes after a month and keeps the days you unticked');
+    // (it syncs first, so a device that was away doesn't stamp its old settings over another device's newer ones: syncNow is a stand-in here)
+    const again=await p.evaluate(async()=>{await toggleHoliday('2027-02-25',false);settings.holidays={...settings.holidays,fetched:Date.now()-40*864e5,list:settings.holidays.list.slice(0,2)};await metaPut('settings',settings);
+      const real=syncNow;let synced=0;syncNow=async()=>{synced++;return true};try{await refreshHolidays()}finally{syncNow=real}
+      return {n:settings.holidays.list.length,skip:settings.holidays.skip.join(),fresh:Date.now()-settings.holidays.fetched<60000,synced}});
+    ok(again.n===4&&again.skip==='2027-02-25'&&again.fresh&&again.synced===1,'the holiday list refreshes after a month, after a sync, and keeps the days you unticked');
+    const stay=await p.evaluate(async()=>{const real=syncNow,st=settings.holidays,stale={...st,fetched:Date.now()-40*864e5,list:st.list.slice(0,1)};
+      // the sync brought another device's settings, which refreshed the list already: nothing is fetched or saved over them
+      settings.holidays=stale;await metaPut('settings',{...settings,holidays:{...st,fetched:Date.now()}});
+      syncNow=async()=>true;await refreshHolidays();const a=settings.holidays.list.length;
+      // the sync failed (offline): not this time
+      settings.holidays=stale;await metaPut('settings',settings);syncNow=async()=>false;await refreshHolidays();const b=settings.holidays.list.length;
+      syncNow=real;settings.holidays=st;await metaPut('settings',settings);return {a,b,n:st.list.length}});
+    ok(stay.a===stay.n&&stay.b===1,`no refetch when the synced settings are fresh already, or when the sync fails (${JSON.stringify(stay)})`);
     // choosing "No public holidays" turns them off
     await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!settings.holidays&&!document.querySelector('#holiday-list .hrow'),null,{timeout:5000}).catch(()=>{});   // the list is redrawn after the setting clears
     ok(await p.evaluate(()=>isWorkday(new Date(2027,1,25))&&document.querySelectorAll('#holiday-list .hrow').length===0),'"No public holidays" makes them workdays again');

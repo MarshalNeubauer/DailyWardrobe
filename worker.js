@@ -994,14 +994,59 @@ async function kvMeta(env, key) {
     return r.value == null ? null : r.metadata || {};
   } catch { return undefined; }
 }
-async function syncVersion(env, ns = '') {
-  const key = ns + SYNC_KEY, got = await kvMeta(env, key);
+async function syncVersion(env, ns = '') { return storedVersion(env, ns + SYNC_KEY); }
+/* a stored backup's (or dated copy's) metadata {rev, saved, parts?}, or null */
+async function storedVersion(env, key) {
+  const got = await kvMeta(env, key);
   if (got !== undefined) return got && Number.isInteger(got.rev) ? got : null;
   if (typeof env.WARDROBE.list !== 'function') return null;
   try {
     const l = await env.WARDROBE.list({ prefix: key, limit: 10 }), k = (l.keys || []).find(x => x.name === key), m = k && k.metadata;
     return m && Number.isInteger(m.rev) ? m : null;
   } catch { return null; }
+}
+/* ---- large backups. KV keeps at most 25 MiB in one value, so a backup over PART_MAX is stored in parts: the first under the
+   key itself, whose metadata says {rev, saved, parts: n}, the others as <key>~<rev>~<i>. The parts are written before the key,
+   and carry the rev, so a reader never mixes two versions. Each part is one KV write, so a 48 MB backup costs 3 writes a save
+   instead of 1 (and 2 deletes of the version before). Up to PART_MAX nothing changes: one value, as before. The stored text is the same either way: {"rev":…,"saved":…,"data":…}. ---- */
+const BACKUP_MAX = 48 * 1024 * 1024, PART_MAX = 20 * 1024 * 1024;
+const partKey = (key, rev, i) => `${key}~${rev}~${i}`;
+const isParted = m => !!(m && Number.isInteger(m.parts) && m.parts > 1);
+const asBytes = v => typeof v === 'string' ? new TextEncoder().encode(v) : new Uint8Array(v);
+/* the stored bytes of a parted value as a stream, part by part (never all in memory); lead goes first, and skip drops that many
+   bytes from the start of the first part */
+function partedStream(env, key, m, lead = '', skip = 0) {
+  let i = 0;
+  return new ReadableStream({
+    async pull(c) {
+      if (i === 0 && lead) c.enqueue(new TextEncoder().encode(lead));
+      if (i >= m.parts) { c.close(); return; }
+      const v = await env.WARDROBE.get(i ? partKey(key, m.rev, i) : key, 'arrayBuffer');
+      if (v == null) { c.error(new Error('a part of the backup is missing')); return; }
+      let b = asBytes(v); if (i === 0 && skip) b = b.subarray(skip);
+      i++; c.enqueue(b);
+    }
+  });
+}
+/* copy a stored value (one or in parts) to another key: the dated copies */
+async function copyStored(env, from, to, m, opt) {
+  const meta = { rev: m.rev, saved: m.saved, ...(isParted(m) ? { parts: m.parts } : {}) };
+  if (!isParted(m)) { const cur = await env.WARDROBE.get(from); if (cur && cur !== SYNC_NONE) await env.WARDROBE.put(to, cur, { ...opt, metadata: meta }); return; }
+  for (let i = 1; i < m.parts; i++) { const v = await env.WARDROBE.get(partKey(from, m.rev, i), 'arrayBuffer'); if (v == null) return; await env.WARDROBE.put(partKey(to, m.rev, i), v, opt); }
+  const v = await env.WARDROBE.get(from, 'arrayBuffer'); if (v != null) await env.WARDROBE.put(to, v, { ...opt, metadata: meta });
+}
+/* the parts of the version before, once a new one is stored */
+async function dropParts(env, key, old) {
+  if (!isParted(old)) return;
+  for (let i = 1; i < old.parts; i++) try { await env.WARDROBE.delete(partKey(key, old.rev, i)); } catch { }
+}
+/* a stored value as a response: passed through as stored (a parted one streamed), with lead in front of it instead of its
+   opening brace when given ({"error":"conflict", …}) */
+async function storedResponse(env, key, m, cors, lead, status = 200) {
+  const headers = { ...cors, 'content-type': 'application/json' };
+  if (isParted(m)) return new Response(partedStream(env, key, m, lead || '', lead ? 1 : 0), { status, headers });
+  const t = (await env.WARDROBE.get(key)) || SYNC_NONE;
+  return new Response(lead ? lead + t.slice(1) : t, { status, headers });
 }
 /* GET /sync returns the stored backup {rev, saved, data}; GET /sync?v=<rev>:<saved> answers {rev, saved, same:true} with no
    data when that is still the stored version, so a device with nothing new neither downloads nor uploads anything.
@@ -1023,6 +1068,7 @@ async function keepSnapshots(env, m, body, ns = '') {
   const todo = want.filter(([k]) => !have.has(k));
   if (body.reason === 'restore') todo.push([`${ns}snap:before-restore`, SNAP_DAYS]);
   if (!todo.length) return;
+  if (isParted(m)) { if (m.saved) for (const [k, days] of todo) await copyStored(env, ns + SYNC_KEY, k, m, { expirationTtl: days * 86400 }); return; }
   const cur = await env.WARDROBE.get(ns + SYNC_KEY);
   if (!cur || cur === SYNC_NONE) return;                       // nothing stored yet
   let meta = m;
@@ -1035,6 +1081,26 @@ async function listSnapshots(env, ns = '') {
   return (l.keys || []).filter(k => k.metadata && k.metadata.saved).map(k => ({ id: k.name.slice(ns.length + 5), saved: k.metadata.saved, rev: k.metadata.rev }))
     .sort((a, b) => b.saved - a.saved || b.id.localeCompare(a.id));   // same moment: the later date first
 }
+/* PUT /sync over PART_MAX: the body is never parsed whole (that took more memory than a Worker has). The app sends
+   {"baseRev":n,"day":"…"[,"reason":"restore"],"data":…} with data last (sync.js), so the leading fields are read from the first
+   bytes, and what follows "data": up to the closing brace is stored as it came, behind {"rev":…,"saved":…,"data":. */
+const BIG_HEAD = /^\{"baseRev":(-?\d+),"day":("(?:[^"\\]|\\.)*")(?:,"reason":"(restore)")?,"data":/;
+async function putParted(env, json, cors, ns, all) {
+  const KEY = ns + SYNC_KEY, h = BIG_HEAD.exec(new TextDecoder().decode(all.subarray(0, 300)));
+  if (!h || all[all.length - 1] !== 0x7d) return json({ error: 'backup too large for this version of the app: update the app (Settings → About)' }, 413);
+  const body = { baseRev: +h[1], day: JSON.parse(h[2]), ...(h[3] ? { reason: h[3] } : {}) };
+  const m = await syncVersion(env, ns), rev = m ? m.rev : 0;
+  if (body.baseRev !== rev) return m ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', rev: 0, saved: 0, data: null }, 409);
+  await keepSnapshots(env, m, body, ns);
+  const saved = Date.now(), lead = new TextEncoder().encode(`{"rev":${rev + 1},"saved":${saved},"data":`);
+  const rest = all.subarray(new TextEncoder().encode(h[0]).length), total = lead.length + rest.length, parts = Math.ceil(total / PART_MAX);
+  // part i holds bytes [i*PART_MAX, (i+1)*PART_MAX) of lead+rest; the later parts first, the key (part 0) last
+  for (let i = 1; i < parts; i++) await env.WARDROBE.put(partKey(KEY, rev + 1, i), rest.slice(i * PART_MAX - lead.length, (i + 1) * PART_MAX - lead.length).buffer);
+  const first = new Uint8Array(Math.min(PART_MAX, total)); first.set(lead); first.set(rest.subarray(0, first.length - lead.length), lead.length);
+  await env.WARDROBE.put(KEY, first.buffer, { metadata: { rev: rev + 1, saved, parts } });
+  await dropParts(env, KEY, m);
+  return json({ rev: rev + 1, saved });
+}
 async function handleSync(req, env, json, cors, who) {
   const ns = who.ns, KEY = ns + SYNC_KEY;
   if (!env.WARDROBE) return json({ error: 'Add a KV namespace binding named WARDROBE to the worker to enable backups.' }, 501);
@@ -1044,25 +1110,31 @@ async function handleSync(req, env, json, cors, who) {
     if (q.has('snap')) {
       const id = q.get('snap');
       if (!/^(\d{4}-\d{2}(-\d{2})?|before-restore)$/.test(id)) return json({ error: 'bad snapshot id' }, 400);
-      const t = await env.WARDROBE.get(`${ns}snap:${id}`);
+      const sk = `${ns}snap:${id}`, sm = await storedVersion(env, sk);
+      if (isParted(sm)) return storedResponse(env, sk, sm, cors);
+      const t = await env.WARDROBE.get(sk);
       if (!t) return json({ error: 'no such backup' }, 404);
       return new Response(t, { headers: { ...cors, 'content-type': 'application/json' } });
     }
-    if (v) { const m = await syncVersion(env, ns); if (m && `${m.rev}:${m.saved}` === v) return json({ rev: m.rev, saved: m.saved, same: true }); }
+    const m = await syncVersion(env, ns);
+    if (v && m && `${m.rev}:${m.saved}` === v) return json({ rev: m.rev, saved: m.saved, same: true });
     // passed through as stored: no need to parse and rebuild several MB of JSON
-    return new Response((await env.WARDROBE.get(KEY)) || SYNC_NONE, { headers: { ...cors, 'content-type': 'application/json' } });
+    return storedResponse(env, KEY, m, cors);
   }
   if (req.method === 'PUT') {
-    const text = await req.text();
-    if (text.length > 24 * 1024 * 1024) return json({ error: 'backup too large (over 24 MB)' }, 413);
+    if (+(req.headers.get('content-length') || 0) > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
+    const buf = await req.arrayBuffer();
+    if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
+    if (buf.byteLength > PART_MAX) return putParted(env, json, cors, ns, new Uint8Array(buf));
     let body;
-    try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+    try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); }
     const none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env, ns);
     const rev = m ? m.rev : ((await env.WARDROBE.get(KEY, 'json')) || none).rev;
-    if ((body.baseRev ?? -1) !== rev) return json({ error: 'conflict', ...((await env.WARDROBE.get(KEY, 'json')) || none) }, 409);
+    if ((body.baseRev ?? -1) !== rev) return isParted(m) ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', ...((await env.WARDROBE.get(KEY, 'json')) || none) }, 409);
     await keepSnapshots(env, m, body, ns);
     const next = { rev: rev + 1, saved: Date.now(), data: body.data };
     await env.WARDROBE.put(KEY, JSON.stringify(next), { metadata: { rev: next.rev, saved: next.saved } });
+    await dropParts(env, KEY, m);
     return json({ rev: next.rev, saved: next.saved });
   }
   return json({ error: 'method not allowed' }, 405);
@@ -1237,7 +1309,7 @@ async function wipeSome(env, ns, budget) {   // -> true once nothing is left
     for (;;) {
       if (budget < 2) return false;
       const l = await env.WARDROBE.list({ prefix: p, limit: Math.max(1, budget - 1) }); budget--;
-      const keys = (l.keys || []).map(k => k.name).filter(n => (ns ? n.startsWith(ns) : !/^(u:|invite|feedback:)/.test(n) && (p.endsWith(':') || n === p))).slice(0, budget);
+      const keys = (l.keys || []).map(k => k.name).filter(n => (ns ? n.startsWith(ns) : !/^(u:|invite|feedback:)/.test(n) && (p.endsWith(':') || n === p || n.startsWith(p + '~')))).slice(0, budget);   // (<key>~<rev>~<i>: a large backup's parts)
       if (!keys.length) break;
       for (const k of keys) { await env.WARDROBE.delete(k); budget--; }
     }
