@@ -8,7 +8,12 @@
 // Order: master, then the jacket, shirt, tie, tie bar and watch; pixels along the joins are rebuilt from clean pixels either side.
 // Today shows the assembled picture once the master, the zones and the outfit's pieces are on the device (asmFor / asmEnsure);
 // an outfit it can't do (no jacket, no tie, a vest), or with a piece still missing, keeps its own photo.
-const ASM_VER=2;
+const ASM_VER=3;
+/* ASM_VER 3 (2026-11-12): masters at 2048 (ASM_SIZE): a plain mid grey suit (a flecked master left a dotted outline), a white shirt, a
+   bright kelly green tie (a colour none of the owner's ties has: burgundy, his own, confused the halo of the master's tie), his
+   Seiko with its dial turned as worn by hand (the generator always drew it upright); the waistcoat master is that photo with a
+   low-cut waistcoat copied in. Masters and calibration photos were made outside the app and put on the worker by hand. */
+const ASM_SIZE=2048,ASM_SZ=ASM_SIZE+'x'+ASM_SIZE;   // every job asks the worker for the masters' size: a piece is an edit of a master and must line up with it
 const ASM_DE=14;
 const ASM_EDGE=3;
 const ASM_HALO=4;
@@ -17,7 +22,7 @@ const ASM_HAND=4;
 const ASM_SOFT=2;
 /* ASM_ZV: how zones are worked out. Zones and assembled pictures kept on a device carry it, so they are made again when it changes
    (2: a zone reaches the picture's edge; 3, 4: no halo of the master's tie; 5: the edge ring keeps off the hands' shadow line; 6: no rim of a piece's own skin round the fist; 7: the tie's smooth outline and soft edge; 8: the whole edge ring away from the hands) */
-const ASM_ZV=8;   // ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
+const ASM_ZV=9;   // 9: pixel distances scale with the picture (asmPx). ASM_DE: a colour difference (CIE Lab) that counts as "this pixel changed"
 /* ASM_VER 2: the masters the owner approved, made from the redrawn figure (close framing, the lower hand at the waist button, the
    watch turned as worn, a blurred light office): his dark grey herringbone suit, a white shirt, a burgundy tie and his watch, and
    the same photo with the suit's waistcoat. Version 1's master (zoomed out, the lower hand too low) was rejected; every key
@@ -35,6 +40,9 @@ function asmLab(d){let o=asmLabs.get(d);if(o)return o;const p=d.data,n=p.length>
     o[3*i]=116*Y-16;o[3*i+1]=500*(X-Y);o[3*i+2]=200*(Y-Z)}
   asmLabs.set(d,o);return o}
 const asmDE=(A,B,i,j=i)=>Math.hypot(A[3*i]-B[3*j],A[3*i+1]-B[3*j+1],A[3*i+2]-B[3*j+2]);
+/* every distance in pixels below was tuned on 900px pictures: asmPx(n, W) is that distance at width W (900: n itself, 2048: about
+   2.3n). At 2048 the 900px distances left the waistcoat's edge wavy (its zone smoothed over 2px) and the jacket's edge ring too thin */
+const ASM_BASE=900,asmPx=(n,W)=>W<=ASM_BASE?n:Math.round(n*W/ASM_BASE);   // never smaller than tuned (a small test picture keeps them)
 /* ---- masks: one byte per pixel ---- */
 /* grow (any) or shrink a mask by r pixels (a square); a running count along rows, then columns, so a wide reach costs no more.
    Shrinking used to take a piece off wherever it reached the picture's edge (the reach ran off the picture and counted as "off"):
@@ -67,22 +75,39 @@ function asmUnpack(r,n){const m=new Uint8Array(n);let i=0,v=0;for(const k of r){
 /* ---- zones: where each piece is on the master ---- */
 /* Each calibration photo is the master with one piece in a loud colour. A pixel belongs to the piece whose calibration photo changed
    it most (an edit also shifts other pixels a little: the watch's dial in the jacket photo), if that change is real (ASM_DE). */
-function asmZones(master,calib){const W=master.width,N=W*W,L0=asmLab(master),best=new Float32Array(N),who=new Uint8Array(N),slots=['jacket','shirt','tie','watch'];
+function asmZones(master,calib){const W=master.width,N=W*W,L0=asmLab(master),best=new Float32Array(N),who=new Uint8Array(N),slots=['jacket','shirt','tie','watch'],px=n=>asmPx(n,W);
   slots.forEach((s,k)=>{if(!calib[s])return;const L=asmLab(calib[s]);for(let i=0;i<N;i++){const d=asmDE(L,L0,i);if(d>best[i]){best[i]=d;who[i]=k+1}}});
   const min={jacket:N/400,shirt:N/3000,tie:N/7000,watch:N/4000},hole={jacket:N/350,shirt:N/2500,tie:N/2500,watch:N/2500},z={W};
   slots.forEach((s,k)=>{let m=new Uint8Array(N);for(let i=0;i<N;i++)if(who[i]===k+1&&best[i]>ASM_DE)m[i]=1;
-    m=asmBox(asmBox(m,W,2,true),W,2,false);z[s]=asmFill(asmBig(m,W,min[s]),W,hole[s])});
+    m=asmBox(asmBox(m,W,px(2),true),W,px(2),false);z[s]=asmFill(asmBig(m,W,min[s]),W,hole[s])});
   // the watch is one thing: its biggest area and what lies right next to it
-  if(asmCount(z.watch)){const a=asmAreas(z.watch,W);let top=1;for(let k=2;k<a.size.length;k++)if(a.size[k]>a.size[top])top=k;const near=asmBox(asmBig(z.watch,W,0,k=>k===top),W,12,true);for(let i=0;i<N;i++)if(!near[i])z.watch[i]=0}
+  if(asmCount(z.watch)){const a=asmAreas(z.watch,W);let top=1;for(let k=2;k<a.size.length;k++)if(a.size[k]>a.size[top])top=k;const near=asmBox(asmBig(z.watch,W,0,k=>k===top),W,px(12),true);for(let i=0;i<N;i++)if(!near[i])z.watch[i]=0}
   // one zone per pixel: the watch over the tie over the shirt over the jacket
   for(let i=0;i<N;i++){if(z.watch[i])z.tie[i]=z.shirt[i]=z.jacket[i]=0;else if(z.tie[i])z.shirt[i]=z.jacket[i]=0;else if(z.shirt[i])z.jacket[i]=0}
   return z}
 /* Where a waistcoat shows: its calibration photo is the vest master with the waistcoat in a loud colour, so the waistcoat is where
    the two differ (found against the plain master instead, a grey waistcoat over a shadowed white shirt left a ragged edge) */
-function asmVestZone(vestMaster,calib,z){const W=z.W,N=W*W,L0=asmLab(vestMaster),L=asmLab(calib);let m=new Uint8Array(N);
+function asmVestZone(vestMaster,calib,z){const W=z.W,N=W*W,L0=asmLab(vestMaster),L=asmLab(calib),px=n=>asmPx(n,W);let m=new Uint8Array(N);
   for(let i=0;i<N;i++)if(!z.watch[i]&&asmDE(L,L0,i)>ASM_DE)m[i]=1;
-  m=asmBox(asmBox(m,W,2,true),W,2,false);const a=asmAreas(m,W);let top=0;for(let k=1;k<a.size.length;k++)if(!top||a.size[k]>a.size[top])top=k;
-  return top?asmMajor(asmFill(asmBig(m,W,0,k=>a.size[k]>=N/1500||k===top),W,N/1500),W,2):m}
+  m=asmBox(asmBox(m,W,px(2),true),W,px(2),false);const a=asmAreas(m,W);let top=0;for(let k=1;k<a.size.length;k++)if(!top||a.size[k]>a.size[top])top=k;
+  return top?asmMajor(asmFill(asmBig(m,W,0,k=>a.size[k]>=N/1500||k===top),W,N/1500),W,px(2)):m}
+/* Zones of a picture bigger than ASM_BASE are worked out at ASM_BASE (where every distance in asmZones and asmVestZone was tuned) and
+   then enlarged: each pixel takes the zone its four nearest small pixels vote for, weighted by how near they are, so the outlines
+   come out smooth and no pixel is left between two zones. Worked out at 2048 instead (every distance scaled), the smoothing filled
+   the gap between a knuckle and the lapel and the jacket's zone cut a corner off the hand; with the 900 distances at 2048 the
+   waistcoat's edge was wavy. */
+function asmUpLabels(lab,w,W){const o=new Uint8Array(W*W),k=w/W,v=new Float32Array(5);
+  for(let y=0;y<W;y++){const sy=Math.min(w-1,Math.max(0,(y+.5)*k-.5)),y0=Math.floor(sy),y1=Math.min(w-1,y0+1),fy=sy-y0;
+    for(let x=0;x<W;x++){const sx=Math.min(w-1,Math.max(0,(x+.5)*k-.5)),x0=Math.floor(sx),x1=Math.min(w-1,x0+1),fx=sx-x0;v.fill(0);
+      v[lab[y0*w+x0]]+=(1-fx)*(1-fy);v[lab[y0*w+x1]]+=fx*(1-fy);v[lab[y1*w+x0]]+=(1-fx)*fy;v[lab[y1*w+x1]]+=fx*fy;
+      let b=0;for(let c=1;c<5;c++)if(v[c]>v[b])b=c;o[y*W+x]=b}}
+  return o}
+const ASM_SLOTS=['jacket','shirt','tie','watch'];
+function asmUpZones(z,W){if(z.W===W)return z;const w=z.W,lab=new Uint8Array(w*w);ASM_SLOTS.forEach((s,k)=>{for(let i=0;i<w*w;i++)if(z[s][i])lab[i]=k+1});
+  const up=asmUpLabels(lab,w,W),o={W};ASM_SLOTS.forEach((s,k)=>{const m=new Uint8Array(W*W);for(let i=0;i<W*W;i++)if(up[i]===k+1)m[i]=1;o[s]=m});return o}
+const asmUpMask=(m,w,W)=>w===W?m:asmUpLabels(m,w,W);
+/* a mask made smaller (the nearest pixel): the watch's zone, to work the waistcoat's zone out at ASM_BASE */
+function asmDownMask(m,W,w){const o=new Uint8Array(w*w),k=W/w;for(let y=0;y<w;y++){const yy=Math.min(W-1,Math.floor((y+.5)*k));for(let x=0;x<w;x++)o[y*w+x]=m[yy*W+Math.min(W-1,Math.floor((x+.5)*k))]}return o}
 const asmPackZones=z=>({v:ASM_ZV,W:z.W,jacket:asmPack(z.jacket),shirt:asmPack(z.shirt),tie:asmPack(z.tie),watch:asmPack(z.watch)});
 const asmUnpackZones=p=>{const n=p.W*p.W;return {W:p.W,jacket:asmUnpack(p.jacket,n),shirt:asmUnpack(p.shirt,n),tie:asmUnpack(p.tie,n),watch:asmUnpack(p.watch,n)}};
 /* are these zones believable? each piece has to be there and of a sensible size (a calibration edit that changed nothing, or the whole
@@ -91,25 +116,25 @@ function asmZonesOk(z){const N=z.W*z.W,f=s=>asmCount(z[s])/N;return f('jacket')>
 /* ---- one outfit ---- */
 /* The tie's own outline in its photo. A new tie is a pixel or two wider or narrower than the master's, so inside a band around the
    zone's edge each pixel is tie or not by the colours next to it: nearer to a tie pixel just inside, or to the cloth just outside? */
-function asmTieMask(z,tie){const W=z.W,N=W*W,L=asmLab(tie),core=asmBox(z.tie,W,3,false),wide=asmBox(z.tie,W,3,true),m=new Uint8Array(core),R=6;
+function asmTieMask(z,tie){const W=z.W,N=W*W,L=asmLab(tie),px=n=>asmPx(n,W),core=asmBox(z.tie,W,px(3),false),wide=asmBox(z.tie,W,px(3),true),m=new Uint8Array(core),R=px(6);
   for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!wide[i]||core[i])continue;let dT=1e9,dS=1e9;
     for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const j=yy*W+xx;
       if(core[j]){const d=asmDE(L,L,i,j);if(d<dT)dT=d}else if(!wide[j]){const d=asmDE(L,L,i,j);if(d<dS)dS=d}}}
     m[i]=dT===1e9?z.tie[i]:dS===1e9?1:dT<=dS?1:0}
-  return asmBig(asmMajor(asmBox(asmBox(m,W,1,true),W,1,false),W,2),W,N/20000)}   // asmMajor: each pixel was decided by itself, which left the outline ragged
+  return asmBig(asmMajor(asmBox(asmBox(m,W,px(1),true),W,px(1),false),W,px(2)),W,N/20000)}   // asmMajor: each pixel was decided by itself, which left the outline ragged
 /* the tie bar in its photo: the biggest thing on the tie that the master (which has none) doesn't show */
-function asmBarMask(master,z,bar,tieM){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(bar),on=asmBox(tieM||z.tie,W,3,true);let m=new Uint8Array(N);
+function asmBarMask(master,z,bar,tieM){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(bar),px=n=>asmPx(n,W),on=asmBox(tieM||z.tie,W,px(3),true);let m=new Uint8Array(N);
   for(let i=0;i<N;i++)if(on[i]&&asmDE(L,L0,i)>ASM_DE+4)m[i]=1;
-  m=asmBox(asmBox(m,W,1,true),W,1,false);const a=asmAreas(m,W);let top=0;for(let k=1;k<a.size.length;k++)if(!top||a.size[k]>a.size[top])top=k;
-  return top&&a.size[top]>=N/40000?asmBox(asmBig(m,W,0,k=>k===top),W,1,true):null}
+  m=asmBox(asmBox(m,W,px(1),true),W,px(1),false);const a=asmAreas(m,W);let top=0;for(let k=1;k<a.size.length;k++)if(!top||a.size[k]>a.size[top])top=k;
+  return top&&a.size[top]>=N/40000?asmBox(asmBig(m,W,0,k=>k===top),W,px(1),true):null}
 /* another watch: the master watch's zone and whatever the new one changed around it. Where a smaller watch uncovers the cuff, its
    photo shows the MASTER's shirt there: those pixels (the cuff's colour, and joined to the cuff) are tinted to the outfit's shirt. */
-function asmWatch(master,z,watch,shirt){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(watch),near=asmBox(z.watch,W,20,true);let m=new Uint8Array(N);
+function asmWatch(master,z,watch,shirt){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(watch),px=n=>asmPx(n,W),near=asmBox(z.watch,W,px(20),true);let m=new Uint8Array(N);
   for(let i=0;i<N;i++)if(z.watch[i]||(near[i]&&asmDE(L,L0,i)>ASM_DE+4))m[i]=1;
-  m=asmBox(asmBox(m,W,2,true),W,2,false);const a=asmAreas(m,W),hit=new Set();for(let i=0;i<N;i++)if(z.watch[i]&&a.lab[i])hit.add(a.lab[i]);
-  m=asmBox(asmBig(m,W,0,k=>hit.has(k)),W,1,true);
+  m=asmBox(asmBox(m,W,px(2),true),W,px(2),false);const a=asmAreas(m,W),hit=new Set();for(let i=0;i<N;i++)if(z.watch[i]&&a.lab[i])hit.add(a.lab[i]);
+  m=asmBox(asmBig(m,W,0,k=>hit.has(k)),W,px(1),true);
   const src=new Uint8ClampedArray(watch.data);let tinted=0;
-  if(shirt){const zone=asmBox(m,W,28,true),from=[0,0,0],to=[0,0,0];let n=0;
+  if(shirt){const zone=asmBox(m,W,px(28),true),from=[0,0,0],to=[0,0,0];let n=0;
     for(let i=0;i<N;i++)if(zone[i]&&z.shirt[i]&&!m[i]){n++;for(let k=0;k<3;k++){from[k]+=master.data[4*i+k];to[k]+=shirt.data[4*i+k]}}
     if(n>20){const f=from.map(v=>v/n),t=to.map(v=>v/n),fl=asmLab(new ImageData(new Uint8ClampedArray([...f,255]),1,1)),cuff=i=>Math.hypot(L[3*i]-fl[0],L[3*i+1]-fl[1],L[3*i+2]-fl[2])<12;
       // from the cuff's edge inward, through cuff-coloured pixels only (a white dial in the middle of the watch is not reached)
@@ -119,21 +144,21 @@ function asmWatch(master,z,watch,shirt){const W=z.W,N=W*W,L0=asmLab(master),L=as
   return {mask:m,src,tinted}}
 /* Pixels on a join between two pieces carry a little of the wrong neighbour (a tie made over a white shirt has a pale edge): each is
    rebuilt from the clean pixels around it, nearer ones counting more. */
-function asmSeams(o,lab,W,soft){const N=W*W,seam=new Uint8Array(N),J=v=>v===7?1:v;   // 7, the jacket's edge ring, is the jacket
+function asmSeams(o,lab,W,soft){const N=W*W,seam=new Uint8Array(N),J=v=>v===7?1:v,S=asmPx(2,W);   // 7, the jacket's edge ring, is the jacket; S: how far round a seam pixel clean pixels are looked for
   const join=(a,b)=>J(a)!==J(b);   // (soft: pixels of the tie's soft edge, already blended: not rebuilt)
   for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x,v=lab[i];if((x<W-1&&join(lab[i+1],v))||(y<W-1&&join(lab[i+W],v))){seam[i]=1;if(x<W-1&&join(lab[i+1],v))seam[i+1]=1;if(y<W-1&&join(lab[i+W],v))seam[i+W]=1}}
   if(soft)for(let i=0;i<N;i++)if(soft[i])seam[i]=0;
   const src=new Uint8ClampedArray(o);
   for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!seam[i])continue;let r=0,g=0,b=0,w=0;
-    for(let dy=-2;dy<=2;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-2;dx<=2;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const j=yy*W+xx;if(seam[j])continue;const k=1/(dx*dx+dy*dy);r+=src[4*j]*k;g+=src[4*j+1]*k;b+=src[4*j+2]*k;w+=k}}
+    for(let dy=-S;dy<=S;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-S;dx<=S;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const j=yy*W+xx;if(seam[j])continue;const k=1/(dx*dx+dy*dy);r+=src[4*j]*k;g+=src[4*j+1]*k;b+=src[4*j+2]*k;w+=k}}
     if(w){o[4*i]=r/w;o[4*i+1]=g/w;o[4*i+2]=b/w}}
   return seam}
 /* master + zones + the outfit's piece photos {jacket, shirt, tie, bar, watch} (each optional: what is left out stays as the master
    shows it) -> the outfit's picture. info, when given, is filled with what was done (for tests). */
-function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(master.data),lab=new Uint8Array(N),soft=new Uint8Array(N),V0=P.vest||null;   // V0: the waistcoat's zone (the jacket piece is then a suit with its waistcoat)
+function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(master.data),lab=new Uint8Array(N),soft=new Uint8Array(N),V0=P.vest||null,px=n=>asmPx(n,W);   // V0: the waistcoat's zone (the jacket piece is then a suit with its waistcoat)
   // the shirt and tie run 3px under the waistcoat's edge where they meet it (along it the suit's photo still shows the master's
   // shirt and tie), but not where the waistcoat meets the jacket
-  let V=null;if(V0){const open=new Uint8Array(N);for(let i=0;i<N;i++)if((z.shirt[i]||z.tie[i])&&!V0[i])open[i]=1;const near=asmBox(open,W,3,true);V=new Uint8Array(N);for(let i=0;i<N;i++)if(V0[i]&&!near[i])V[i]=1}
+  let V=null;if(V0){const open=new Uint8Array(N);for(let i=0;i<N;i++)if((z.shirt[i]||z.tie[i])&&!V0[i])open[i]=1;const near=asmBox(open,W,px(3),true);V=new Uint8Array(N);for(let i=0;i<N;i++)if(V0[i]&&!near[i])V[i]=1}
   const copy=(s,m,id)=>{for(let i=0;i<N;i++)if(m[i]&&!(V&&V[i]&&id!==1&&id!==5)){const j=4*i;o[j]=s[j];o[j+1]=s[j+1];o[j+2]=s[j+2];lab[i]=id}};   // nothing but the suit (and a watch) goes over the waistcoat
   if(P.jacket){copy(P.jacket.data,z.jacket,1);if(V0)copy(P.jacket.data,V0,1);
     // the jacket's own outline: its zone stops a pixel or two short of the cloth's soft edge, and the master's dark edge left there
@@ -143,16 +168,16 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
     // pixels of the master jacket's colour left a dotted outline: the master's herringbone is light and dark dots, and only the dark
     // ones passed.) Within ASM_HAND+2 of the master's skin, only what is cloth in both photos: never skin, the master's or the piece's
     // (a suit's photo redraws the hands a little, and its fist's outline came out ragged).
-    const own=V0?z.jacket.map((v,i)=>v||V0[i]):z.jacket,ring=asmBox(own,W,ASM_EDGE,true),Lm=asmLab(master),Lj=asmLab(P.jacket),isSkin=(L,i)=>L[3*i+1]>8&&L[3*i+2]>10&&L[3*i]>50;   // lit skin: the dark rim of a hand over the master's burgundy tie is reddish too, and is not kept
+    const own=V0?z.jacket.map((v,i)=>v||V0[i]):z.jacket,ring=asmBox(own,W,px(ASM_EDGE),true),Lm=asmLab(master),Lj=asmLab(P.jacket),isSkin=(L,i)=>L[3*i+1]>8&&L[3*i+2]>10&&L[3*i]>50;   // lit skin: the dark rim of a hand over the master's burgundy tie is reddish too, and is not kept
     const skin=new Uint8Array(N);for(let i=0;i<N;i++)if(!own[i]&&!z.shirt[i]&&!z.tie[i]&&!z.watch[i]&&isSkin(Lm,i))skin[i]=1;
-    const byHand=asmBox(asmBox(skin,W,1,false),W,ASM_HAND+2,true);
+    const byHand=asmBox(asmBox(skin,W,px(1),false),W,px(ASM_HAND+2),true);
     for(let i=0;i<N;i++){if(!ring[i]||lab[i]||z.shirt[i]||z.tie[i]||z.watch[i])continue;if(byHand[i]&&(isSkin(Lm,i)||isSkin(Lj,i)))continue;
       const j=4*i;o[j]=P.jacket.data[j];o[j+1]=P.jacket.data[j+1];o[j+2]=P.jacket.data[j+2];lab[i]=7}}
   if(P.jacket){   // A suit's photo redraws the hands a little (most with a waistcoat): where its hand is a pixel or two larger than the
     // master's, a rim of ITS skin lies in the jacket's zone, outside the master's hand, and reads as a dotted outline round the fist.
     // Beside the master's skin, a jacket pixel that is the master's skin colour there and not the cloth's takes the nearest cloth.
     const Lm=asmLab(master),Lp=asmLab(P.jacket),skin=new Uint8Array(N);for(let i=0;i<N;i++)if(!lab[i]&&!z.shirt[i]&&!z.tie[i]&&!z.watch[i]&&Lm[3*i+1]>8&&Lm[3*i+2]>10&&Lm[3*i]>35)skin[i]=1;
-    const core=asmBox(skin,W,1,false),by=asmBox(core,W,ASM_HAND,true),far=asmBox(core,W,ASM_HAND+6,true),over=new Uint8Array(N),R=ASM_HAND+6;
+    const core=asmBox(skin,W,px(1),false),by=asmBox(core,W,px(ASM_HAND),true),far=asmBox(core,W,px(ASM_HAND+6),true),over=new Uint8Array(N),R=px(ASM_HAND+6);
     for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(lab[i]!==1||!by[i])continue;let s=[0,0,0,0],c=[0,0,0,0];
       for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx;
         if(core[q]){s[0]+=Lm[3*q];s[1]+=Lm[3*q+1];s[2]+=Lm[3*q+2];s[3]++}else if(lab[q]===1&&!by[q]){c[0]+=Lp[3*q];c[1]+=Lp[3*q+1];c[2]+=Lp[3*q+2];c[3]++}}}
@@ -164,7 +189,7 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
   if(V0&&P.jacket){   // the master's tie also shows in the suit's photo where no zone covers it (its tip below the waistcoat): small specks of its colour are filled from beside them
     const Lm=asmLab(master),Lp=asmLab(P.jacket);let ga=0,gb=0,n=0;for(let i=0;i<N;i++)if(z.tie[i]){ga+=Lm[3*i+1];gb+=Lm[3*i+2];n++}ga/=n||1;gb/=n||1;
     if(Math.hypot(ga,gb)>12){const g=new Uint8Array(N);for(let i=0;i<N;i++)if(lab[i]===1&&Math.hypot(Lp[3*i+1]-ga,Lp[3*i+2]-gb)<12)g[i]=1;
-      const a=asmAreas(g,W);for(let i=0;i<N;i++){const k=a.lab[i];if(!k||a.size[k]>N/1500)continue;const x=i%W;let j=-1;for(let d=1;d<30&&j<0;d++){if(x-d>=0&&lab[i-d]===1&&!g[i-d])j=i-d;else if(x+d<W&&lab[i+d]===1&&!g[i+d])j=i+d}
+      const a=asmAreas(g,W);for(let i=0;i<N;i++){const k=a.lab[i];if(!k||a.size[k]>N/1500)continue;const x=i%W;let j=-1;for(let d=1;d<px(30)&&j<0;d++){if(x-d>=0&&lab[i-d]===1&&!g[i-d])j=i-d;else if(x+d<W&&lab[i+d]===1&&!g[i+d])j=i+d}
         if(j>=0){o[4*i]=o[4*j];o[4*i+1]=o[4*j+1];o[4*i+2]=o[4*j+2]}}}}
   if(P.shirt)copy(P.shirt.data,z.shirt,2);
   let tieM=null;if(P.tie){tieM=asmTieMask(z,P.tie);
@@ -179,18 +204,18 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
     // the zone's leftovers and the cracks between the tie's zone and another take the nearest clean pixel of their own piece, in
     // any direction. (Filling the whole band from the side put lapel grey into the slivers of shirt beside the tie: two bumps.)
     // Never the hands or the wall: what belongs to no piece and is more than a crack between two.
-    const halo=asmBox(z.tie,W,ASM_HALO,true),free=new Uint8Array(N);for(let i=0;i<N;i++)if(!(z.shirt[i]||z.jacket[i]||z.tie[i]||z.watch[i]||(V0&&V0[i])))free[i]=1;
-    const open=asmBox(asmBox(free,W,3,false),W,4,true),hand=i=>free[i]&&open[i],zid=i=>z.tie[i]?0:z.shirt[i]?2:(z.jacket[i]||(V0&&V0[i])||lab[i]===7)?1:0;
+    const halo=asmBox(z.tie,W,px(ASM_HALO),true),free=new Uint8Array(N);for(let i=0;i<N;i++)if(!(z.shirt[i]||z.jacket[i]||z.tie[i]||z.watch[i]||(V0&&V0[i])))free[i]=1;
+    const open=asmBox(asmBox(free,W,px(3),false),W,px(4),true),hand=i=>free[i]&&open[i],zid=i=>z.tie[i]?0:z.shirt[i]?2:(z.jacket[i]||(V0&&V0[i])||lab[i]===7)?1:0;
     const src=new Uint8ClampedArray(o),Lo=asmLab(new ImageData(src,W,W)),Lt=asmLab(master),mean=[null,[0,0,0],[0,0,0]],g=[0,0,0];
     for(let i=0;i<N;i++){if(z.tie[i]){g[0]+=Lt[3*i+1];g[1]+=Lt[3*i+2];g[2]++}else if(!halo[i]){const k=zid(i);if(k){mean[k][0]+=Lo[3*i+1];mean[k][1]+=Lo[3*i+2];mean[k][2]++}}}
     const dir=[null,null,null];for(const k of [1,2]){const m=mean[k];if(!m[2]||!g[2])continue;const dx=g[0]/g[2]-m[0]/m[2],dy=g[1]/g[2]-m[1]/m[2],len=Math.hypot(dx,dy);if(len>=12)dir[k]=[m[0]/m[2],m[1]/m[2],dx/len,dy/len]}   // a tie near the cloth's own colour leaves no halo to see
     const tinted=i=>{const d=dir[zid(i)];return !!d&&(Lo[3*i+1]-d[0])*d[2]+(Lo[3*i+2]-d[1])*d[3]>ASM_TINT};
     const need=new Uint8Array(N);for(let i=0;i<N;i++)if(!tieM[i]&&!(V&&V[i])&&!z.watch[i]&&(z.tie[i]||(halo[i]&&!hand(i)&&(zid(i)?tinted(i):true))))need[i]=1;
     // (what the master's wider tie leaves uncovered is shirt, which the tie lies on, even where a lapel is nearer: a shirt pixel counts as SHIRT_PREF nearer)
-    const R=14,SHIRT_PREF=.25;for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!need[i])continue;const want=zid(i);let j=-1,best=1e9;
+    const R=px(14),SHIRT_PREF=.25;for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!need[i])continue;const want=zid(i);let j=-1,best=1e9;
       for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx,k=zid(q);
         if(k&&(!want||k===want)&&!need[q]&&!tieM[q]&&!z.watch[q]&&!(V&&V[q])){const d=(dx*dx+dy*dy)*(!want&&k===2?SHIRT_PREF:1);if(d<best){best=d;j=q}}}}
-      if(j<0&&z.tie[i])for(let k=1;k<48&&j<0;k++){if(x-k>=0&&!z.tie[i-k]&&!z.watch[i-k])j=i-k;else if(x+k<W&&!z.tie[i+k]&&!z.watch[i+k])j=i+k}   // the master's tie must not stay
+      if(j<0&&z.tie[i])for(let k=1;k<px(48)&&j<0;k++){if(x-k>=0&&!z.tie[i-k]&&!z.watch[i-k])j=i-k;else if(x+k<W&&!z.tie[i+k]&&!z.watch[i+k])j=i+k}   // the master's tie must not stay
       if(j>=0){o[4*i]=src[4*j];o[4*i+1]=src[4*j+1];o[4*i+2]=src[4*j+2];if(z.tie[i]||!lab[i])lab[i]=lab[j]&&lab[j]!==7?lab[j]:6}}
     copy(P.tie.data,tieM,3);
     // The tie's SOFT EDGE. Its photo was made over the master's white shirt, so the outermost pixels of its outline are part tie,
@@ -198,8 +223,8 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
     // as a shape instead: along it (within 1px), each pixel is the tie's clean colour from just inside, over the outfit's colour
     // from just outside, in the share of the tie's mask around it. (Reading that share from the colours of the tie's photo put
     // white specks on a plaid tie beside a lapel: there is no telling a pale stripe from the white shirt.)
-    const T=P.tie.data,clean=asmBox(tieM,W,2,false),in1=asmBox(tieM,W,1,false),out1=asmBox(tieM,W,1,true),pic=new Uint8ClampedArray(o),Q=ASM_SOFT+3,cnt=new Uint16Array(N);
-    for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!out1[i]||in1[i])continue;let c=0,n=0;for(let dy=-2;dy<=2;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-2;dx<=2;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;n++;c+=tieM[yy*W+xx]}}cnt[i]=1+Math.round(1000*c/n)}
+    const T=P.tie.data,clean=asmBox(tieM,W,px(2),false),in1=asmBox(tieM,W,px(1),false),out1=asmBox(tieM,W,px(1),true),pic=new Uint8ClampedArray(o),Q=px(ASM_SOFT+3),cnt=new Uint16Array(N),C2=px(2);
+    for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!out1[i]||in1[i])continue;let c=0,n=0;for(let dy=-C2;dy<=C2;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-C2;dx<=C2;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;n++;c+=tieM[yy*W+xx]}}cnt[i]=1+Math.round(1000*c/n)}
     for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!cnt[i]||z.watch[i]||(V&&V[i])||(!tieM[i]&&hand(i)))continue;let ft=-1,fb=1e9,bq=-1,bb=1e9;
       for(let dy=-Q;dy<=Q;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-Q;dx<=Q;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx,d=dx*dx+dy*dy;
         if(clean[q]){if(d<fb){fb=d;ft=q}}else if(!out1[q]&&!z.watch[q]&&!(V&&V[q])&&d<bb){bb=d;bq=q}}}
@@ -214,7 +239,7 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
 /* ---- keys, and what an outfit needs ---- */
 /* ASM_VEST: which vest master this is. Its photos (the vest master, its calibration photo, each suit's vest piece) carry it in their
    keys, so a remade vest master replaces the old one on every device: version 1 drew a seven-button waistcoat */
-const ASM_VEST=2,asmVestTag=(v=ASM_VEST)=>v>1?String(v):'';
+const ASM_VEST=3,asmVestTag=(v=ASM_VEST)=>v>1?String(v):'';
 const asmKey=t=>'c'+fnv64('asm/'+ASM_VER+'/'+t),asmMasterKey=()=>asmKey('master/jacket'),asmCalibKey=(s,v)=>asmKey('calib/'+s+(s==='vest'?asmVestTag(v):''));
 /* the vest master: the master with a waistcoat added. A suit worn with its waistcoat has a second piece ('vest'), an edit of this one */
 const asmVestKey=v=>asmKey('master/vest'+asmVestTag(v));
@@ -227,7 +252,7 @@ const asmPieceKey=(slot,i,v)=>asmKey('piece/'+slot+(slot==='vest'?asmVestTag(v):
    made from the owner's own items and put on the worker by hand; this describes it, for the day one has to be made again */
 const asmMasterItem=(type,primaryColor,pattern='solid')=>({id:'asm-'+type,type,primaryColor,pattern});
 function asmMasterOutfit(){const watch=items.find(i=>i.type==='watch'&&inRotation(i))||items.find(i=>i.type==='watch');
-  return {top:asmMasterItem('suit','darkgrey','herringbone'),shirt:asmMasterItem('shirt','white'),tie:asmMasterItem('tie','burgundy'),watch,suitDay:true}}
+  return {top:asmMasterItem('suit','midgrey','solid'),shirt:asmMasterItem('shirt','white'),tie:asmMasterItem('tie','green'),watch,suitDay:true}}   // (the kept master's tie is a bright kelly green; the app's list has only a darker green)
 /* what the kept master was made with (its watch and shirt need no piece of their own): {watch, shirt}, carried in the master
    photo's own record (sig 'asm/master {…}'), so every device that has the master knows */
 const asmMasterSig=o=>'asm/master '+JSON.stringify({watch:o.watch?asmLook('watch',o.watch):'',shirt:asmLook('shirt',o.shirt)});
@@ -244,7 +269,7 @@ const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('as
 /* Did an edit keep the picture? Outside its own piece (and a margin) a photo must still be the master. The generator once answered
    a swap with a collage: the figure moved aside, the reference photos pasted beside it. -> the share of outside pixels that changed */
 const ASM_DRIFT=.12;
-function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(piece),own=asmBox(slot==='bar'?z.tie:z[slot],W,slot==='watch'?24:10,true),v=vest?asmBox(vest,W,10,true):null;let n=0,ch=0;
+function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(piece),own=asmBox(slot==='bar'?z.tie:z[slot],W,asmPx(slot==='watch'?24:10,W),true),v=vest?asmBox(vest,W,asmPx(10,W),true):null;let n=0,ch=0;
   for(let i=0;i<N;i+=3){if(own[i]||(v&&v[i]))continue;n++;if(asmDE(L,L0,i)>ASM_DE+4)ch++}return n?ch/n:1}
 /* ---- putting the picture together off the page. The pixel work takes about a second on a computer and three or four on a phone,
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
@@ -267,13 +292,14 @@ async function asmBuild(job){
   if(!asmMem||asmMem.k!==job.mk||asmMem.t!==job.mt)asmMem={k:job.mk,t:job.mt,d:await asmData(job.master)};
   const M=asmMem,master=M.d,W=master.width,out={};
   if(!M.z){if(job.zones&&job.zones.W===W)M.z=asmUnpackZones(job.zones);
-    else{if(M.zbad||!job.calib)return out;const c={};for(const s of ['jacket','shirt','tie','watch'])c[s]=await asmData(job.calib[s],W);
-      const z=asmZones(master,c);if(!asmZonesOk(z)){M.zbad=true;return out}M.z=z;out.zones=asmPackZones(z)}}
+    else{if(M.zbad||!job.calib)return out;const zw=Math.min(W,ASM_BASE),m0=zw<W?await asmData(job.master,zw):master,c={};for(const s of ASM_SLOTS)c[s]=await asmData(job.calib[s],zw);
+      const z0=asmZones(m0,c);if(!asmZonesOk(z0)){M.zbad=true;return out}M.z=asmUpZones(z0,W);out.zones=asmPackZones(M.z)}}   // worked out at ASM_BASE, enlarged to the picture
   const z=M.z;let V=null;
   if(job.vest){const J=job.vest;
     if(M.v&&M.v.k===J.k&&M.v.t===J.t)V=M.v.m;
     else if(J.kept&&J.kept.W===W){V=asmUnpack(J.kept.m,W*W);M.v={k:J.k,t:J.t,m:V}}
-    else{if(!J.img||(M.vbad===J.k+J.t))return out;const m=asmVestZone(await asmData(J.img,W),await asmData(J.calib,W),z),share=asmCount(m)/(W*W);
+    else{if(!J.img||(M.vbad===J.k+J.t))return out;const zw=Math.min(W,ASM_BASE),zs=zw<W?{W:zw,watch:asmDownMask(z.watch,W,zw)}:z;
+      const m=asmUpMask(asmVestZone(await asmData(J.img,zw),await asmData(J.calib,zw),zs),zw,W),share=asmCount(m)/(W*W);   // at ASM_BASE too, then enlarged
       if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
   const P={};for(const p of job.parts){const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
@@ -337,7 +363,7 @@ async function asmGet(key,force){if(renders[key])return true;const W=workerBase(
   if(key===mk&&!force&&Date.now()-(+localStorage.getItem('asm_none')||0)<ASM_NONE_MS)return false;
   asmTried.add(key);
   try{const r=await fetch(W.url+'?key='+key,{headers:{'x-app-token':W.tok},cache:'no-store'}),j=r.ok?await r.json().catch(()=>null):null;
-    if(j&&j.img){await keepRender(key,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);if(key===mk)localStorage.removeItem('asm_none');return true}
+    if(j&&j.img){await keepRender(key,{sig:j.sig||'',img:j.img/* kept as made (it was shrunk to 900px): the zones are measured at the masters' size */,model:j.model||'',t:j.t||Date.now()},false);if(key===mk)localStorage.removeItem('asm_none');return true}
     if(key===mk&&r.status===404)localStorage.setItem('asm_none',String(Date.now()))}catch(e){console.warn('piece unavailable',e)}
   return false}
 const ASM_NONE_MS=6*3600e3;
@@ -387,7 +413,7 @@ async function asmAhead(){if(!ASM_ON||!renders[asmMasterKey()]||!asmOffPage()||d
 /* are any of this outfit's pieces being made right now? */
 const asmPending=o=>asmWants(o)&&asmParts(o).some(p=>queuedKeys().includes(p.key)&&!renderStalled(p.key));
 /* ---- every photo the wardrobe needs, and making the missing ones ---- */
-const ASM_TYPE={suit:'jacket',blazer:'jacket',shirt:'shirt',tie:'tie',tieclip:'bar',watch:'watch'},ASM_COST={master:.24,calib:.065,vestmaster:.065,vestcalib:.065,piece:.08};
+const ASM_TYPE={suit:'jacket',blazer:'jacket',shirt:'shirt',tie:'tie',tieclip:'bar',watch:'watch'},ASM_COST={master:.46,calib:.13,vestmaster:.44,vestcalib:.13,piece:.14};   // at 2048 (measured 2026-11-12: master and waistcoat master at high 44-46¢, a medium edit about 12-14¢)
 function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if(!seen.has(k)){seen.add(k);out.push({kind,slot,item,key:k,what})}},inf=asmInfo()||{};
   add('master',null,null,asmMasterKey(),'the master pose');
   for(const sl of ['jacket','shirt','tie','watch'])add('calib',sl,null,asmCalibKey(sl),'finding the '+sl);
@@ -455,10 +481,11 @@ function asmAutoSoon(){if(!ASM_ON)return;clearTimeout(asmAutoTimer);asmAutoTimer
 const ASM_CALIB={jacket:'a jacket of exactly the same cut in a solid, flat, bright pure red cloth with no pattern or texture',shirt:'a plain solid black dress shirt',
   tie:'a plain solid bright magenta tie with no pattern',vest:'a waistcoat of exactly the same cut and buttons in a solid, flat, bright pure orange cloth with no pattern or texture',watch:'a wristwatch of the same size with a bright blue case, a bright blue dial and a bright blue rubber strap'};
 async function asmMasterJob(){const o=asmMasterOutfit(),{refs,labels}=await outfitRefsFull(o);
-  return {mode:'queue',key:asmMasterKey(),image:await figurePng(o),refs,labels,outfit:outfitText(o),sig:asmMasterSig(o),master:true,quality:'high'}}
-const asmVestMasterJob=()=>({mode:'queue',key:asmVestKey(),baseKey:asmMasterKey(),refs:[],labels:[],sig:'asm/master/vest',swap:{what:'waistcoat',add:true,
-  text:'a matching waistcoat (vest) in exactly the same cloth as the suit jacket, worn under the jacket and buttoned up. Its V-shaped opening shows the shirt collar, the tie knot and the top of the tie; lower down the tie runs behind the waistcoat, and the waistcoat fills the opening of the jacket above its button'}});
-const asmCalibJob=s=>({mode:'queue',key:asmCalibKey(s),baseKey:s==='vest'?asmVestKey():asmMasterKey(),swap:{what:s==='vest'?'waistcoat':s,text:ASM_CALIB[s]},refs:[],labels:[],sig:'asm/calib/'+s});
+  return {mode:'queue',key:asmMasterKey(),image:await figurePng(o),refs,labels,outfit:outfitText(o),sig:asmMasterSig(o),master:true,quality:'high',size:ASM_SZ}}
+/* the waistcoat is cut low, to show as much tie as possible (the owner's choice, version 3) */
+const asmVestMasterJob=()=>({mode:'queue',key:asmVestKey(),baseKey:asmMasterKey(),refs:[],labels:[],sig:'asm/master/vest',quality:'high',size:ASM_SZ,swap:{what:'waistcoat',add:true,
+  text:'a matching waistcoat (vest) in exactly the same cloth as the suit jacket, worn under the jacket and buttoned. It is cut LOW: a deep, narrow V opening whose bottom point is just above the hand that rests on the chest, so the shirt and the tie show all the way down to there, as much of the tie as possible. Below the V the tie runs behind the waistcoat, and the waistcoat fills the opening of the jacket from the V down to the jacket\'s button. Do not move either hand: where a hand lies over the waistcoat, the waistcoat goes under it'}});
+const asmCalibJob=s=>({mode:'queue',key:asmCalibKey(s),baseKey:s==='vest'?asmVestKey():asmMasterKey(),swap:{what:s==='vest'?'waistcoat':s,text:ASM_CALIB[s]},refs:[],labels:[],sig:'asm/calib/'+s,size:ASM_SZ});
 /* A shirt's description for its piece. A woven texture is asked for bolder than life: at this size (the shirt shows in a strip either
    side of the tie) a true-to-life weave can't be seen at all. The wording matters: "easy to see in this photo" made the generator
    paste the reference photos into the picture. */
@@ -478,4 +505,4 @@ async function asmPieceJob(slot,i){const pt=role=>{const t=patternPrompt(i,role)
   let refs=[],labels=[];if(o){const r=await outfitRefsFull(o),k=r.labels.map((l,n)=>re.test(l)?n:-1).filter(n=>n>=0);refs=k.map(n=>r.refs[n]);labels=k.map(n=>r.labels[n])}
   if(slot==='shirt'&&i.photo){refs.unshift(i.photo);labels.unshift('the shirt')}   // an outfit's references leave the shirt's photo out (photos are shared by colour); its own piece needs it
   if(slot==='tie'&&i.photo&&!labels.includes('the tie')){refs.unshift(i.photo);labels.unshift('the tie')}   // so do they a tie's photo when it has a close-up (the place goes to the shirt's close-up); its own piece keeps it
-  return {mode:'queue',key:asmPieceKey(slot,i),baseKey:slot==='vest'?asmVestKey():asmMasterKey(),swap:{what:slot==='bar'?'tie bar':slot==='vest'?'jacket':slot,text:prettyCols(text),...(slot==='bar'?{add:true}:{})},refs,labels,sig:'asm/piece/'+slot+'/'+asmLook(slot,i)}}
+  return {mode:'queue',key:asmPieceKey(slot,i),baseKey:slot==='vest'?asmVestKey():asmMasterKey(),swap:{what:slot==='bar'?'tie bar':slot==='vest'?'jacket':slot,text:prettyCols(text),...(slot==='bar'?{add:true}:{})},refs,labels,sig:'asm/piece/'+slot+'/'+asmLook(slot,i),size:ASM_SZ}}

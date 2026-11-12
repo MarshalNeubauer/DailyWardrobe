@@ -65,7 +65,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x,r=Math.hypot(x-60,y-60),skin=L[3*i+1]>8&&L[3*i+2]>10&&L[3*i]>60;if(r>21.5&&r<30&&skin)rim++;if(r<18&&skin)hand++;if(r>32&&o.data[4*i+2]===90)cloth++}
       return {rim,hand,cloth,h:ASM_HAND}});
     ok(hd.rim===0&&hd.hand>900&&hd.cloth>9000,`where a suit's photo shows a larger hand than the master's, its rim of skin outside the master's hand becomes cloth (${hd.rim} skin pixels left round the fist; the hand and the cloth are untouched)`);
-    ok(ed.stale===false&&ed.v===8,'zones kept from before that fix are not used: they are worked out again');
+    ok(ed.stale===false&&ed.v===9,'zones kept from before that fix are not used: they are worked out again');
     ok(!r.noneOk,'calibration photos that changed nothing give zones that are refused');
     ok(r.a.moved===0&&r.a.watchKept===1,`outside the pieces the picture is the master, pixel for pixel, and the owner's watch stays the master's own (${r.a.moved} pixels differ)`);
     ok(r.a.ringN>300&&r.a.ringOk===1&&r.a.ringSeam<r.a.ringN/100,`the jacket's own edge comes from its photo: ${r.a.ringN} pixels just outside its zone where the master shows a leftover of its own jacket, none on another piece and next to none on the hands (${r.a.ringSeam} skin pixels; the master's dark edge left there read as an outline)`);
@@ -92,7 +92,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[asmMasterKey()];delete renders[comboKey(o)];delete asmOut[asmOutKey(o)];closeSettings&&closeSettings();return r});
     ok(off.on===false&&off.wants===false&&off.for===null&&off.shown==='data:image/jpeg;base64,OWN'&&off.pending===false&&off.calls===0&&off.hidden&&!off.timer,`assembled pictures are switched off: Today shows the outfit's own photo, nothing is asked of the worker or made for a new item, and Settings hides Item photos (${off.calls} requests)`);
     ok(off.forOn==='data:image/jpeg;base64,ASM'&&off.shownOn,'switched on (ASM_ON), the assembled picture is shown again and Settings offers Item photos');
-    ok(off.shipped===true&&off.ver===2,'as shipped, assembled pictures are on, with the second masters (ASM_VER 2)');
+    ok(off.shipped===true&&off.ver===3,'as shipped, assembled pictures are on, with the third masters (ASM_VER 3: 2048, plain mid grey suit, kelly green tie)');
     const k=await p.evaluate(async()=>{const url=async n=>{const d=await asmData('tests/fixtures/asm-'+n+'.jpg'),c=document.createElement('canvas');c.width=c.height=d.width;c.getContext('2d').putImageData(d,0,0);return c.toDataURL('image/jpeg',.9)};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const watch=I('watch','silver',{metal:'silver'}),jk=I('blazer','khaki',{pattern:'windowpane'}),black=I('shirt','black'),black2=I('shirt','black'),white=I('shirt','white'),tie=I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),tie2=I('tie','burgundy'),clip=I('tieclip','silver',{metal:'silver'}),gold=I('watch','gold',{metal:'gold'});
@@ -162,7 +162,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.made&&k.zonesKept&&k.shirtL<38&&k.jacketB>8,`with everything kept on the device the outfit's picture is made and its zones stored (shirt lightness ${k.shirtL.toFixed(0)}, jacket yellowness ${k.jacketB.toFixed(1)})`);
     ok(k.gold===null&&k.vest===null&&k.vwants===false,'an outfit whose watch has no piece yet, or a vest day before the vest photos are there, gets no assembled picture (it keeps its own photo)');
     ok(k.vmade&&k.vkept&&k.vwants2,'with the vest master, its calibration photo and the suit\'s vest photo on the device, a vest day is put together, and the waistcoat\'s zone is kept');
-    ok(k.drop.differ&&k.drop.dropped===3&&k.drop.again===0&&k.drop.gone&&!k.drop.stored&&k.drop.kept&&k.drop.flag==='2','a remade vest master has new keys: photos from the earlier one still on a device are dropped once, the new ones kept');
+    ok(k.drop.differ&&k.drop.dropped===3&&k.drop.again===0&&k.drop.gone&&!k.drop.stored&&k.drop.kept&&k.drop.flag==='3','a remade vest master has new keys: photos from the earlier one still on a device are dropped once, the new ones kept');
     const VJ=k.vjobs;
     ok(VJ.vj.baseKey===k.jobs.mj.key&&VJ.vj.swap.what==='waistcoat'&&VJ.vj.swap.add===true&&VJ.vcj.baseKey===VJ.vj.key&&VJ.vcj.swap.what==='waistcoat'&&/orange/.test(VJ.vcj.swap.text)&&VJ.vpj.baseKey===VJ.vj.key&&VJ.vpj.swap.what==='jacket'&&/navy & light blue pinstripe suit, a three-piece suit/.test(VJ.vpj.swap.text),
       'the vest master adds a waistcoat to the master; its calibration photo and each suit\'s vest photo are edits of the vest master');
@@ -171,7 +171,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.fullLoop.made===0&&k.fullLoop.redraws===0,`an outfit whose own photo wins (after a Regenerate) is not put together and Today is not redrawn for it: that looped and froze swiping and scrolling (${k.fullLoop.made} assembled, ${k.fullLoop.redraws} redraws)`);
     ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===2&&k.needs.split('piece:tie').length===3&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt or the master's watch (${k.needs})`);
     const J=k.jobs;
-    ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/dark grey herringbone suit/.test(J.mj.outfit)&&/burgundy tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit),'the master job is a normal outfit photo of the master\'s clothes (dark grey herringbone, white shirt, burgundy tie), marked as the master, at high quality');
+    ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/mid grey suit/.test(J.mj.outfit)&&/green tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit)&&J.mj.size==='2048x2048','the master job is a normal outfit photo of the master\'s clothes (plain mid grey suit, white shirt, green tie), marked as the master, at high quality and 2048 ('+J.mj.size+')');
     ok(J.cj.baseKey===J.mj.key&&J.cj.swap.what==='tie'&&/magenta/.test(J.cj.swap.text)&&J.tj.baseKey===J.mj.key&&J.tj.swap.what==='tie'&&/navy & pink stripe tie/.test(J.tj.swap.text)&&J.tj.refs===1,'calibration and piece jobs edit the kept master (by its key) and swap one piece, with the item\'s own photo');
     ok(k.tieClose[0]==='the tie'&&k.tieClose.some(l=>/^a close-up of the tie fabric/.test(l)),`a tie with a close-up still has its photo in its own piece job, first (${k.tieClose.map(l=>l.slice(0,22)).join(' | ')})`);
     ok(J.bj.swap.what==='tie bar'&&J.bj.swap.add===true&&/silver tie bar/.test(J.bj.swap.text)&&J.sj.swap.what==='shirt'&&J.sj.refs===1&&/plain black dress shirt/.test(J.sj.swap.text)&&J.jj.swap.what==='jacket'&&J.jj.refs===1&&J.wj.swap.what==='watch'&&J.wj.refs===2,'a tie bar is added, and a shirt, jacket or watch swapped, each from its own photo (the watch with its dial enlarged)');
@@ -248,7 +248,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         ok(sent.length===1&&sent[0].key===s4.key&&/green tie/.test(s4.toast),`adding an item sends its photo to be made, and says so ("${s4.toast}")`);
         sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'tie-new2',type:'tie',primaryColor:'gold',pattern:'solid'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
           await asmSync(true);renderAsmUI();return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,auto:settings.asmAuto}});
-        ok(sent.length===0&&s5.auto===false&&/1 to make, about 8¢/.test(s5.st)&&/gold tie/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
+        ok(sent.length===0&&s5.auto===false&&/1 to make, about 14¢/.test(s5.st)&&/gold tie/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
         await a.evaluate(()=>{const f=document.querySelector('#adv-photos');if(!f.classList.contains('open'))f.querySelector('.adv-head').click()});await a.click('#asm-btn');await a.click('#ask-ok');await a.waitForFunction(()=>/Making/.test(document.querySelector('#asm-btn').textContent),null,{timeout:15000});
         const st6=await a.textContent('#asm-status');
         ok(sent.length===1&&/2 photos are being made/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);
