@@ -640,3 +640,12 @@ body.iv-on #toast,body.iv-on #busy{z-index:960;bottom:calc(78px + env(safe-area-
 .shop-hid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .shop-foot{text-align:center}
 @media(max-width:360px){.shop-figs{grid-template-columns:1fr}}
+/* ---- safety ---- */
+.nostore{position:fixed;inset:0;z-index:2000;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));overflow:auto}
+.nostore-in{max-width:440px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 20px;margin:auto}
+.nostore-in h1{font-size:22px;line-height:1.2;margin:0 0 12px}.nostore-in p{margin:0 0 12px;line-height:1.45}
+.nostore-why{color:var(--mut);font-size:13px;overflow-wrap:anywhere}
+.nostore-btn{width:100%;min-height:44px;border-radius:12px;background:var(--ink);color:var(--bg);border:1px solid var(--ink);font-weight:700;font-size:16px}
+.tagfail{display:flex;flex-direction:column;gap:10px;border:1px solid color-mix(in srgb,var(--danger) 45%,var(--line));border-radius:12px;padding:10px 12px;margin:0 0 12px}
+.tagfail p{margin:0;font-size:14px;line-height:1.4;overflow-wrap:anywhere}.tagfail b{color:var(--danger)}.tagfail-do{color:var(--mut)}
+.tagfail-btn{min-height:44px;border-radius:12px;font-weight:700}

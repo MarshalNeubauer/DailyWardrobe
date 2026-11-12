@@ -31,7 +31,7 @@ async function applyMerged(m,local){
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0;
   el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Set the Worker URL to turn on backup.');
-  if(last&&!syncing&&!/failed|turn on/i.test(el.textContent))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} items`}
+  if(last&&!syncing&&!/failed|turn on/i.test(el.textContent))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}`}
 /* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
 async function syncNow(){
   if(syncRun){await syncRun.catch(()=>{});if(syncRun)await syncRun.catch(()=>{})}
@@ -54,6 +54,7 @@ async function syncOnce(){
       const r=await fetch(url+(quick?'?v='+encodeURIComponent(mark.v):''),{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(remote.error||'HTTP '+r.status);
       if(quick&&remote.same){synced();return true}
+      if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
       const now=mergeState(await applyMerged(merged,local),remote.data||{});
@@ -83,7 +84,7 @@ async function restoreBackup(file){
   try{data=JSON.parse(await file.text())}catch{alert('That file is not a Daily Wardrobe backup.');return}
   if(data.app!=='daily-wardrobe'||!Array.isArray(data.items)){alert('That file is not a Daily Wardrobe backup.');return}
   const local=await localState();await applyMerged(mergeState(local,data),local);
-  alert(`Restored. Your wardrobe now has ${items.length} items.`);showSyncStatus();scheduleSync();
+  alert(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}.`);showSyncStatus();scheduleSync();
 }
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
 const snapLabel=s=>{const t=new Date(s.saved).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
@@ -111,6 +112,6 @@ async function rollBack(){const id=$('#snap-list')&&$('#snap-list').value,st=$('
     const local=await localState(),next=rollBackState(local,j.data);
     await applyMerged(mergeState(local,next),local);
     restoring=true;const ok=await syncNow();delete $('#snap-list').dataset.loaded;
-    st.textContent=ok?`Rolled back. The wardrobe has ${items.length} items.`:`Rolled back on this device (${items.length} items), but the backup could not be updated yet: ${localStorage.getItem('sync_status')||''}`}
+    st.textContent=ok?`Rolled back. The wardrobe has ${items.length} item${items.length===1?'':'s'}.`:`Rolled back on this device (${items.length} item${items.length===1?'':'s'}), but the backup could not be updated yet: ${localStorage.getItem('sync_status')||''}`}
   catch(e){st.textContent='Roll back failed: '+(e.message||e)}}
 db.then(()=>setTimeout(syncNow,300));
