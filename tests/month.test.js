@@ -27,15 +27,15 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/November wear plan/.test(t.txt),'the box names the month');
     // the month unfolds in place: still on Today, panel grows from the box
     const closedH=await p.evaluate(()=>document.querySelector('#mbox').getBoundingClientRect().height);
-    await p.click('#mbox .month-link');await settle(p,600);
+    await p.evaluate(()=>{document.querySelector('#mbox .month-link').click();const c=document.querySelectorAll('#mbox .mc:not(.blank)');window.__anim=getComputedStyle(c[3]).animationName+'|'+getComputedStyle(c[3]).animationTimingFunction});await settle(p,600);
     const m=await p.evaluate(()=>{const c=[...document.querySelectorAll('#mbox .mc:not(.blank)')];return {today:!$('#today').hidden,open:$('#mbox').classList.contains('open'),
       exp:document.querySelector('#mbox .month-link').getAttribute('aria-expanded'),h:document.querySelector('#mbox').getBoundingClientRect().height,title:document.querySelector('#mbox .mhead h3').textContent,
       n:c.length,rest:c.filter(x=>x.classList.contains('rest')).map(x=>x.querySelector('.dn').textContent).join(),
       todayCell:c.filter(x=>x.classList.contains('today')).map(x=>x.querySelector('.dn').textContent).join(),worn:c.filter(x=>x.classList.contains('worn')).length,
       planned:c.filter(x=>x.classList.contains('planned')).length,thu:c[18].querySelectorAll('.stack rect[fill^="url"]').length,sun:c[14].querySelectorAll('.stack rect[fill^="url"]').length,
-      label:c[8].getAttribute('aria-label'),legend:!!document.querySelector('#mbox .mlegend'),anim:getComputedStyle(c[3]).animationName}});
+      label:c[8].getAttribute('aria-label'),legend:!!document.querySelector('#mbox .mlegend'),anim:window.__anim,after:getComputedStyle(c[3]).animationName}});
     ok(m.today&&m.open&&m.exp==='true'&&m.h>closedH+250,`the month unfolds in place on Today (box ${Math.round(closedH)}px → ${Math.round(m.h)}px)`);
-    ok(m.anim==='none','the days come in with the box in one fade, not an animation per day (thirty of them made the unfolding choppy; tests/monthunfold.test.js)');
+    ok(/^mcDrop\|cubic-bezier\(0\.34, 1\.56/.test(m.anim),`the days drop in one after another as the box unfolds, landing with a little bounce (${m.anim})`);
     ok(m.title==='November 2026'&&m.n===30,'30 day cells; November 2026 starts on a Sunday');
     ok(m.rest==='6,7,13,14,20,21,27,28','Fridays and Saturdays are rest days');
     ok(m.todayCell==='9'&&m.worn===6&&m.planned===16,`today is outlined, earlier workdays read as worn (${m.worn}), later ones planned (${m.planned})`);
