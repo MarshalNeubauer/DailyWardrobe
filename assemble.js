@@ -155,6 +155,30 @@ function asmSeams(o,lab,W,soft){const N=W*W,seam=new Uint8Array(N),J=v=>v===7?1:
   return seam}
 /* master + zones + the outfit's piece photos {jacket, shirt, tie, bar, watch} (each optional: what is left out stays as the master
    shows it) -> the outfit's picture. info, when given, is filled with what was done (for tests). */
+/* The master's tie is a bright green none of the owner's ties has, so in another piece's photo green beside the tie can only be the
+   master's tie left over. A piece that redrew it a little to one side (the pink herringbone shirt's, 15px left, 2026-11-12) put a
+   green strip into the shirt's zone, wider than the halo band. Near the tie (ASM_KEY_NEAR), a jacket or shirt pixel within
+   ASM_KEY_DE of the master tie's hue, in a zone whose own cloth is not that hue, takes the nearest clean pixel of its own piece. */
+const ASM_KEY_NEAR=40,ASM_KEY_DE=16;
+function asmKeyFill(o,lab,z,master,W){const N=W*W,px=n=>asmPx(n,W),Lm=asmLab(master);let ga=0,gb=0,n=0;
+  for(let i=0;i<N;i++)if(z.tie[i]){ga+=Lm[3*i+1];gb+=Lm[3*i+2];n++}if(!n)return 0;ga/=n;gb/=n;if(Math.hypot(ga,gb)<20)return 0;   // a dull master tie: nothing to key on
+  const Lo=asmLab(new ImageData(new Uint8ClampedArray(o),W,W)),near=asmBox(z.tie,W,px(ASM_KEY_NEAR),true),hue=i=>Math.hypot(Lo[3*i+1]-ga,Lo[3*i+2]-gb)<ASM_KEY_DE;
+  const m=[0,[0,0,0],[0,0,0]];for(let i=0;i<N;i++){const k=lab[i];if((k===1||k===2)&&!near[i]){m[k][0]+=Lo[3*i+1];m[k][1]+=Lo[3*i+2];m[k][2]++}}
+  const keyed=[false,...[1,2].map(k=>!m[k][2]||Math.hypot(m[k][0]/m[k][2]-ga,m[k][1]/m[k][2]-gb)>ASM_KEY_DE*2)];   // a green suit or shirt is left alone
+  let g=new Uint8Array(N),c=0;for(let i=0;i<N;i++){const k=lab[i];if(near[i]&&!z.tie[i]&&(k===1||k===2)&&keyed[k]&&hue(i)){g[i]=1;c++}}if(!c)return 0;
+  g=asmBox(g,W,px(2),true);for(let i=0;i<N;i++)if(g[i]&&lab[i]!==1&&lab[i]!==2)g[i]=0;   // and the soft pixels around each (with 1px a pale line of its edge was left)
+  // each green area is covered with a copy of the cloth beside it, moved sideways by the area's widest run plus 2px, the same shift
+  // for the whole area so a weave carries on (filling each pixel from its nearest clean one smeared a herringbone into streaks)
+  const src=new Uint8ClampedArray(o),R=px(14),A=asmAreas(g,W),K=A.size.length,run=new Int32Array(K);
+  for(let y=0;y<W;y++){let x=0;while(x<W){const k=A.lab[y*W+x];if(!k){x++;continue}let e=x;while(e<W&&A.lab[y*W+e]===k)e++;run[k]=Math.max(run[k],e-x);x=e}}
+  const ok=(i,j)=>j>=0&&j<N&&Math.abs((j%W)-(i%W))<W/2&&lab[j]===lab[i]&&!g[j],side=new Int32Array(K),cnt=[new Int32Array(K),new Int32Array(K)];
+  for(let i=0;i<N;i++){const k=A.lab[i];if(!k)continue;const s=run[k]+px(2);if(ok(i,i-s))cnt[0][k]++;if(ok(i,i+s))cnt[1][k]++}
+  for(let k=1;k<K;k++)side[k]=cnt[0][k]>=cnt[1][k]?-(run[k]+px(2)):run[k]+px(2);
+  for(let i=0;i<N;i++){const k=A.lab[i];if(!k)continue;const j=i+side[k];if(ok(i,j)){o[4*i]=src[4*j];o[4*i+1]=src[4*j+1];o[4*i+2]=src[4*j+2];g[i]=2}}
+  for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(g[i]!==1)continue;let j=-1,best=1e9;   // what the shift couldn't reach: the nearest clean pixel
+    for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx,d=dx*dx+dy*dy;if(d<best&&lab[q]===lab[i]&&!g[q]){best=d;j=q}}}
+    if(j>=0){o[4*i]=src[4*j];o[4*i+1]=src[4*j+1];o[4*i+2]=src[4*j+2]}}
+  return c}
 function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(master.data),lab=new Uint8Array(N),soft=new Uint8Array(N),V0=P.vest||null,px=n=>asmPx(n,W);   // V0: the waistcoat's zone (the jacket piece is then a suit with its waistcoat)
   // the shirt and tie run 3px under the waistcoat's edge where they meet it (along it the suit's photo still shows the master's
   // shirt and tie), but not where the waistcoat meets the jacket
@@ -192,6 +216,7 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
       const a=asmAreas(g,W);for(let i=0;i<N;i++){const k=a.lab[i];if(!k||a.size[k]>N/1500)continue;const x=i%W;let j=-1;for(let d=1;d<px(30)&&j<0;d++){if(x-d>=0&&lab[i-d]===1&&!g[i-d])j=i-d;else if(x+d<W&&lab[i+d]===1&&!g[i+d])j=i+d}
         if(j>=0){o[4*i]=o[4*j];o[4*i+1]=o[4*j+1];o[4*i+2]=o[4*j+2]}}}}
   if(P.shirt)copy(P.shirt.data,z.shirt,2);
+  asmKeyFill(o,lab,z,master,W);
   let tieM=null;if(P.tie){tieM=asmTieMask(z,P.tie);
     if(V){   // under a waistcoat only the tie's top shows: the part joined to the knot
       for(let i=0;i<N;i++)if(V[i])tieM[i]=0;const a=asmAreas(tieM,W);let top=0;for(let i=0;i<N&&!top;i++){const k=a.lab[i];if(k&&a.size[k]>N/8000)top=k}

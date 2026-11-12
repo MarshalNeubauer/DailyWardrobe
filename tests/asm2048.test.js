@@ -20,6 +20,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         n:z.jacket.reduce((a,b)=>a+b,0),keys:new Set(keys).size===5&&keys.every(k=>/^c[0-9a-f]{16}$/.test(k))}});
     ok(z.one==='1,1,1,1'&&z.over===0,`zone pictures made outside the app: white is the piece, one zone per pixel, watch over tie over shirt over jacket (${z.one}; overlaps ${z.over})`);
     ok(z.keys,'each zone picture has a worker key of its own');
+    // a piece that moved the master's green tie sideways: the green left in the shirt's zone is covered with the cloth beside it
+    const k=await p.evaluate(()=>{const W=120,N=W*W,img=f=>{const d=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const c=f(i%W,(i/W)|0);d.set([...c,255],4*i)}return new ImageData(d,W,W)};
+      const G=[40,150,70],P=[230,180,200],Gr=[120,120,120],z={W,tie:new Uint8Array(N),shirt:new Uint8Array(N),jacket:new Uint8Array(N),watch:new Uint8Array(N)},lab=new Uint8Array(N);
+      for(let i=0;i<N;i++){const x=i%W;if(x>=55&&x<70)z.tie[i]=1;else if(x>=30&&x<95){z.shirt[i]=1;lab[i]=2}else{z.jacket[i]=1;lab[i]=1}}
+      const master=img(x=>x>=55&&x<70?G:x>=30&&x<95?[235,235,235]:Gr);
+      const out=img(x=>x>=46&&x<70?G:x>=30&&x<95?(x%4<2?P:[210,160,180]):Gr);   // the shirt piece: its green 9px further left, a striped pink
+      const n=asmKeyFill(out.data,lab,z,master,W);let green=0,stripes=0;for(let i=0;i<N;i++){if(!lab[i])continue;const j=4*i,o=out.data;if(o[j+1]-o[j]>40)green++;const x=i%W;if(lab[i]===2&&x>=46&&x<51&&(o[j]===230||o[j]===210)&&o[j]===o[j+16])stripes++}   // cloth, not a smear: its stripes still repeat every 4px
+      return {n,green,stripes}});
+    ok(k.n>0&&k.green===0,`green the master's tie left in another piece is cleaned up (${k.n} found, ${k.green} left)`);
+    ok(k.stripes===5*120,`by a sideways copy of the cloth beside it, so its weave carries on (${k.stripes} of ${5*120} pixels in pattern)`);
     const src=fs.readFileSync(path.join(ROOT,'assemble.js'),'utf8');
     ok(!/shrinkUrl\([^)]*900\)/.test(src),'assembled-picture photos are kept as made, not shrunk to 900px');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
