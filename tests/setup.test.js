@@ -77,6 +77,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(/✓/.test(await p.textContent('#su-conn'))&&/Connected/.test(await p.textContent('#su-conn')),'and the step shows Connected with a tick');
     await next(p,'done');
     ok(await p.evaluate(()=>!document.querySelector('#su-skip')&&/Add my first item/.test(document.querySelector('#su-next').textContent)&&/no ties/.test(document.querySelector('.su-sum').textContent)&&/connected/.test(document.querySelector('.su-sum').textContent)),'the last step sums up the answers and offers to add the first item');
+    const sum=await p.evaluate(()=>{const d=setupDress(),li=[...document.querySelectorAll('.su-sum li')].find(l=>/Workdays/.test(l.textContent));
+      return {days:li.querySelector('b').textContent,want:[...settings.workdays].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '),jacket:d.jacket,help:document.querySelector('#su-step .su-help').textContent}});
+    ok(sum.days===sum.want,'the summary lists the workdays in the Week step\'s order, Sunday first: '+sum.days);
+    ok(sum.jacket?/a suit or blazer, .* and shoes, plus trousers if you wear a blazer rather than a suit\.$/.test(sum.help):/trousers/.test(sum.help)&&!/plus trousers/.test(sum.help),'the last step asks for trousers only as needed (not with a suit): '+sum.help);
     await p.click('#su-next');
     await p.waitForFunction(()=>!document.querySelector('#setup.on')&&!document.querySelector('#add').hidden);
     ok(await stored(p,`s=>s.setupDone>0&&s.vestMode==='always'`),'Done stores setupDone (and keeps the vest that was chosen)');

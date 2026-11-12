@@ -74,11 +74,14 @@ function setupStep(k){const d=setupDress();
 <div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
 ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
 <p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colours yourself: no automatic photo reading and no outfit photos. You can connect later in Settings.</p>`;
-  const days=l=>l.length?[...l].sort((a,b)=>((a+6)%7)-((b+6)%7)).map(i=>DAY_NAMES[i].slice(0,3)).join(', '):'none';
+  /* in the Week step's order (Sunday first, as Settings shows them) */
+  const days=l=>l.length?[...l].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '):'none';
+  /* trousers are needed only without a suit (the Today checklist says "not needed with a suit"): said as a condition, not as a must */
+  const nd=setupNeeds(),opt=nd.find(n=>n.k==='pants'&&n.sub),must=nd.filter(n=>n!==opt).map(n=>n.short).join(', ').replace(/, ([^,]*)$/,' and $1');
   const wear=[d.jacket?'jackets':'no jackets',d.tie?'ties':'no ties'].join(', ');
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
 <ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li><li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':'not connected'}</b></li></ul>
-${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${setupNeeds().map(n=>n.short).join(', ').replace(/, ([^,]*)$/,' and $1')}.</p>`}`;
+${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus trousers if you wear a blazer rather than a suit':''}.</p>`}`;
 }
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
   setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false)">Skip</button>`}</div>

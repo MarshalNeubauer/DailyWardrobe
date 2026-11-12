@@ -561,6 +561,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - Today's checklist (`setupToday()`, called by `renderToday`; rows from `setupNeeds()`): "Get your first outfit" lists a suit or blazer (jackets on), a shirt, a tie (ties on), trousers (no suit in the wardrobe, or jackets off) and shoes, ticks what is in rotation, and has a button to the Add tab; it returns '' once every row is ticked
 - where the checklist goes: in place of the picture while the day has no outfit at all (an empty wardrobe, or no jacket and no shirt), above the score card while the planner already dresses part of the day (a shirt alone), and under the note on a day that is not a workday
 - the empty Wardrobe (`setupWardEmpty()`, `#wempty`): a card with a drawn hanger and "Add your first item"; a type filter with nothing in it keeps "Nothing here yet"
+- the last step's summary lists the workdays Sunday first, as the Week step and Settings show them (it used to put Sunday last)
+- the last step asks for trousers only as a condition while jackets are on and no suit is owned ("…, plus trousers if you wear a blazer rather than a suit"), as the Today checklist's "not needed with a suit" does
+- the default workdays stay Sunday to Thursday (`settings.workdays` [0,1,2,3,4], `getDay()` numbering): the owner's choice
 - `tests/setup.test.js` covers the steps and what each stores, Skip and Done, an install with items, "Run setup again", both connection paths, stepping aside, the checklist for a suit-and-tie person and a no-jacket, no-tie person, and no sideways scroll at 320/390/626px in light and dark
 
 ### `wardrobe.js`
