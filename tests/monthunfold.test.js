@@ -21,11 +21,13 @@ module.exports=async({ok,chromium,url,settle})=>{
     const l0=await lay();
     const during=await p.evaluate(()=>{const a0=performance.now();document.querySelector('#mbox .month-link').click();const tap=performance.now()-a0;
       const an=document.getAnimations().map(a=>Object.keys(a.effect.getKeyframes()[0]).filter(k=>!['offset','easing','composite','computedOffset'].includes(k)).join('+'));
-      return {tap,an,cells:document.querySelectorAll('#mbox .mc').length,inert:$('#mpanel-in').inert,heightAnim:getComputedStyle($('#mpanel')).transitionDuration}});
+      return {tap,an,drop:getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName,cells:document.querySelectorAll('#mbox .mc').length,inert:$('#mpanel-in').inert,heightAnim:getComputedStyle($('#mpanel')).transitionDuration}});
     await settle(p,700);await p.waitForFunction(()=>!document.getAnimations().length,null,{timeout:3000});
     const layouts=await lay()-l0;
     const opened=await p.evaluate(()=>{const b=$('#mbox').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect();return {open:monthOpen&&$('#mbox').classList.contains('open'),inert:$('#mpanel-in').inert,clip:getComputedStyle($('#mbox')).clipPath,fold:$('#mbox .foldbar').getBoundingClientRect().bottom<=nav.top+1,top:b.top>=0}});
-    ok(during.an.includes('clipPath')&&during.an.includes('opacity+transform')&&during.heightAnim==='0s'&&!during.inert,`unfolding is a clip over the card and a fade of the days, the height is not animated (${during.an.join(', ')})`);
+    ok(during.an.includes('clipPath')&&during.an.includes('opacity')&&during.heightAnim==='0s'&&!during.inert,`unfolding is a clip over the card and a fade of the days, the height is not animated (${during.an.join(', ')})`);
+    const drop=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,1100));const gone=!$('#mbox').classList.contains('mdrop');monthStep(1);const again=getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName;monthStep(-1);return {gone,again}});
+    ok(during.drop==='mcDrop'&&drop.gone&&drop.again==='none',`the days drop in only while the box unfolds: not again on a month swiped to (${during.drop}, then ${drop.again})`);
     ok(layouts<=8,`unfolding lays the page out ${layouts} times (it was about 30, once a frame)`);
     ok(opened.open&&!opened.inert&&opened.clip==='none'&&opened.fold&&opened.top,'unfolded: the whole month shows, scrolled so "Fold away" is above the tab bar, with no clip left');
     // what lies under the box slides with it: the Reset card on a changed day
@@ -36,8 +38,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.waitForFunction(()=>!document.getAnimations().length,null,{timeout:3000});
     // folding: the days fade and the clip closes, then the box is laid out shut; the page doesn't jump at the end
     await p.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await settle(p,300);
-    const fold=await p.evaluate(()=>new Promise(res=>{const tops=[];document.querySelector('#mbox .foldbar').click();const an=document.getAnimations().length,chev=$('#mbox').classList.contains('mshut')&&getComputedStyle($('#mbox .chev')).transitionProperty;
-      const f=()=>{tops.push(Math.round($('#mbox').getBoundingClientRect().top));if(document.getAnimations().length||tops.length<5)requestAnimationFrame(f);else res({an,chev,tops,open:$('#mbox').classList.contains('open'),inert:$('#mpanel-in').inert,h:$('#mpanel').offsetHeight,over:scrollY-(document.documentElement.scrollHeight-innerHeight)})};requestAnimationFrame(f)}));
+    const fold=await p.evaluate(()=>new Promise(res=>{const tops=[];document.querySelector('#mbox .foldbar').click();const cs=[...document.querySelectorAll('#mbox .mc:not(.blank)')],first=getComputedStyle(cs[0]),last=getComputedStyle(cs[cs.length-1]),clipA=$('#mbox').getAnimations().find(a=>a.effect.getKeyframes()[0].clipPath);
+      const lift={name:first.animationName,ease:first.animationTimingFunction,d0:parseFloat(first.animationDelay),dn:parseFloat(last.animationDelay),clipDelay:clipA?clipA.effect.getTiming().delay:-1};const an=document.getAnimations().length,chev=$('#mbox').classList.contains('mshut')&&getComputedStyle($('#mbox .chev')).transitionProperty;
+      const f=()=>{tops.push(Math.round($('#mbox').getBoundingClientRect().top));if(document.getAnimations().length||tops.length<5)requestAnimationFrame(f);else res({lift,an,chev,tops,open:$('#mbox').classList.contains('open'),inert:$('#mpanel-in').inert,h:$('#mpanel').offsetHeight,over:scrollY-(document.documentElement.scrollHeight-innerHeight)})};requestAnimationFrame(f)}));
+    ok(fold.lift.name==='mcLift'&&/cubic-bezier\(0\.36, 0, 0\.66, -0\.56\)/.test(fold.lift.ease)&&fold.lift.dn===0&&fold.lift.d0>0.15&&fold.lift.clipDelay>100,`folding plays the drop backwards: the last day lifts out first, the first last (${Math.round(fold.lift.d0*1000)} ms later), each with a little dip, and the card closes after them (from ${Math.round(fold.lift.clipDelay)} ms)`);
     let jump=0;for(let i=1;i<fold.tops.length;i++)jump=Math.max(jump,Math.abs(fold.tops[i]-fold.tops[i-1]));
     ok(fold.an>=2&&!!fold.chev&&!fold.open&&fold.inert&&fold.h===0&&fold.over<=1,`folding: the arrow turns back at once, the clip closes and the box ends shut, inert, with nothing scrolled past the page's end ${JSON.stringify({...fold,tops:fold.tops.length})}`);
     ok(jump<120,`folding from the bottom of the page moves the box smoothly, no jump at the end (largest step ${jump}px between frames: ${fold.tops.join(" ")})`);

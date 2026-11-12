@@ -10,6 +10,9 @@
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),{fork}=require('child_process'),{chromium,devices}=require('playwright'),impact=require('./impact');
 const ROOT=path.resolve(__dirname,'..'),readFile=fs.readFile;
 let rec=null;   // records what each test uses (tests/impact.js); NO_IMPACT=1 turns it off
+// TEST_BROWSER=webkit runs every test on WebKit (Safari's engine; tests/webkit.js); the recorder is Chromium only, so it is off
+const WEBKIT=process.env.TEST_BROWSER==='webkit';
+if(WEBKIT)process.env.NO_IMPACT='1';
 const TYPES={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml'};
 const server=http.createServer((q,r)=>{let f=path.join(ROOT,decodeURIComponent(q.url.split('?')[0]));if(f.endsWith('/'))f+='index.html';
   readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}if(rec)rec.served(path.relative(ROOT,f).split(path.sep).join('/'));
@@ -219,7 +222,7 @@ const REAL_SUITES=new Set(['renders the outfit without errors','planner: indepen
 const bench=async()=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
   if(!process.env.NO_IMPACT){rec=impact.recorder(ROOT);await rec.prepare()}
-  let shared=null;const browserOf=async()=>shared||(shared=await chromium.launch());
+  let shared=null;const browserOf=async()=>shared||(shared=WEBKIT?require('./webkit').wrapBrowser(await require('playwright').webkit.launch()):await chromium.launch());
   // the built-in suites get the fixed plan too, except those about the planner and the start-up check, which keeps the real
   // planner so a planner change that breaks start-up is caught by it
   const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1],fixed=!REAL_SUITES.has(name);

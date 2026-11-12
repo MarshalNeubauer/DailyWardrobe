@@ -165,7 +165,6 @@ async function packCopy(){if(!packNow)return;const text=packNow.text;let ok=fals
 async function packShare(){if(!packNow||!navigator.share)return;try{await navigator.share({title:'Packing list',text:packNow.text})}catch(e){}}
 
 /* ---- the page ---- */
-function packMonthBtn(){return `<button type="button" class="pack-open" onclick="openPack()"><span>Packing list for a trip</span><span class="pack-chev" aria-hidden="true">›</span></button>`}
 function packShow(t){const el=$('#pack');if(!el)return;el.hidden=t!=='pack';if(t==='pack')renderPack()}
 function openPack(){closeSettings();show('pack');scrollTo({top:0})}
 function renderPack(){
