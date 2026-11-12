@@ -1526,7 +1526,8 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
 /* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
 let itemHist=false,itemBack=false;
 try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
-function histPush(){if(itemHist||itemBack)return;try{history.pushState({item:1},'');itemHist=true}catch{}}
+function histPush(){if(itemHist||itemBack||subPend)return;   // (subPend: a step back that drops a stats/packing/care page's entry is on its way; the item gets its entry once it lands)
+try{history.pushState({item:1},'');itemHist=true}catch{}}
 function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
 addEventListener('popstate',()=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
@@ -1704,13 +1705,21 @@ function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav')
    (subBack) to where it was opened from: Settings as it was, the same categories open and scrolled the same, over the page under it; or
    the page it came from, scrolled where it was. (The ‹ always went to Today, out of Settings entirely.) */
 let subFrom=null;
-function subOpen(){const m=$('#settings-modal');let page=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden})||'today';
+/* the phone's Back (button or swipe) does the same as the ‹: one history entry while such a page is open (subHist); show() takes it
+   away again when the page is left any other way (the ‹, a tab), with a history.back() of our own (subPend) that the popstate below
+   lets pass. (The item sheet keeps its own entry the same way: histPush.) */
+const SUBS=['stats','pack','care'];let subHist=false,subPend=false;
+addEventListener('popstate',()=>{if(subPend){subPend=false;if(editing)histPush();return}   // an item opened meanwhile gets its entry now
+  if(subHist){subHist=false;if(SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))subBack()}});
+function subOpen(){if(!subHist&&!subPend&&!itemBack){try{history.pushState({sub:1},'');subHist=true}catch{}}
+  const m=$('#settings-modal');let page=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden})||'today';
   if(!TABS.includes(page))page='today';   // one of these pages opened from another: its ‹ goes to Today
   subFrom={page,y:scrollY,set:settingsOpen()&&m?{cats:SET_CATS.filter(k=>{const e=$('#sc-'+k);return e&&e.classList.contains('open')}),top:m.scrollTop}:null}}
 function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;show(f.page);scrollTo(0,f.y);
   if(!f.set)return;openSettings();for(const k of f.set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=f.set.top}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
+  if(subHist&&!SUBS.includes(t)){subHist=false;subPend=true;try{history.back()}catch{subPend=false}}   // left by the ‹ or a tab: its Back entry goes
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
