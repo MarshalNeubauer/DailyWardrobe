@@ -32,7 +32,7 @@ const TYPE_COLORS = {
   tieclip: [['silver','gold','grey','black'], ['black','white','navy','gold','silver']],
   cufflinks: [['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'], ['silver','gold','black','white','navy','blue','burgundy','red','green']],
   watch: [['black','brown','tan','oxblood','navy','grey','green','silver','gold'], ['black','brown','white','grey','navy']],
-  shoes: [LEATHER_COLS, ['black','brown','tan','white','navy']],
+  shoes: [[...LEATHER_COLS,'white','cream'], ['black','brown','tan','white','navy','cream','grey']],   // white/cream: sneakers; second colour: a sneaker's sole
   belt: [LEATHER_COLS, ['black','brown','tan','navy']],
   socks: [['black','charcoal','darkgrey','grey','midgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green','burgundy','wine','red','rust','purple','pink','gold'],
     ['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','burgundy','red','rust','pink','purple','lavender','green','olive','gold','brown','tan']],
@@ -113,7 +113,8 @@ shoeStyle — shoes only, otherwise null: oxford (closed lacing, often a cap toe
   minimal leather sneaker).
 
 leather — shoes and belts: calf (smooth, moderate shine), cordovan (dense, deep glossy shine with rolling creases), suede (matte napped),
-  patent (mirror gloss), pebble-grain (large tumbled grain), scotch-grain (fine embossed grain). Otherwise null.
+  patent (mirror gloss), pebble-grain (large tumbled grain), scotch-grain (fine embossed grain); sneakers may also be canvas (woven
+  cotton) or knit (a knitted textile upper); a smooth leather sneaker is calf. Otherwise null.
 
 dial, band, bezel — watches only, otherwise null:
   dial: the dial colour, from the watch dial list above.
@@ -143,7 +144,7 @@ const TAG_SCHEMA = {
     tertiaryColor: { type: 'string', enum: [...COLOR_LIST, 'none'] },
     pattern: { type: 'string', enum: PATTERN_LIST },
     metal: orNull(['gold','silver','other']),
-    leather: orNull(['calf','cordovan','suede','patent','pebble-grain','scotch-grain']),
+    leather: orNull(['calf','cordovan','suede','patent','pebble-grain','scotch-grain','canvas','knit']),
     trouserKind: orNull(['dress','chinos','jeans']),
     shoeStyle: orNull(['oxford','derby','loafer','boot','sneaker']),
     dial: orNull(DIAL_COLS),

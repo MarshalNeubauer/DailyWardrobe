@@ -151,7 +151,7 @@ const sockScore=(bot,sh,s,echo)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?
    Belt and shoes must be the same colour group (black / brown / tan / burgundy-oxblood) and a compatible finish:
    suede with suede, smooth with smooth or grain. Patent is black-tie only. Metals (buckle, watch, tie clip) should agree. */
 const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',khaki:'tan',burgundy:'burgundy',oxblood:'burgundy',wine:'burgundy'})[c]||c;
-const finish=l=>l==='suede'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':'smooth';
+const finish=l=>l==='suede'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':l==='canvas'||l==='knit'?'textile':'smooth';
 const metalOf=i=>i&&i.metal||'silver';
 function beltFit(shoe,belt){
   if(shoeStyle(shoe)==='sneaker')return 0;   // sneakers don't call for a matching belt: any belt will do

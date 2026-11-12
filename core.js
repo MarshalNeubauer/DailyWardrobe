@@ -35,7 +35,7 @@ const COLS_BY={
   tieclip:{p:['silver','gold','grey','black'],a:['black','white','navy','gold','silver']},
   cufflinks:{p:['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'],a:['silver','gold','black','white','navy','blue','burgundy','red','green']},
   watch:{p:['black','brown','tan','oxblood','navy','grey','green','silver','gold'],a:['black','brown','white','grey','navy']},
-  shoes:{p:LEATHER_COLS,a:['black','brown','tan','white','navy']},
+  shoes:{p:[...LEATHER_COLS,'white','cream'],a:['black','brown','tan','white','navy','cream','grey']},   // white and cream: sneakers (the planner keeps them off dress outfits); the second colour is a sneaker's sole
   belt:{p:LEATHER_COLS,a:['black','brown','tan','navy']},
   socks:{p:['black','charcoal','darkgrey','grey','midgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green','burgundy','wine','red','rust','purple','pink','gold'],
     a:['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','burgundy','red','rust','pink','purple','lavender','green','olive','gold','brown','tan']},
@@ -115,7 +115,7 @@ const METAL_TYPES=['watch','tieclip','belt','cufflinks'],SEASON_TYPES=['suit','b
 const MATERIALS_BY={
   suit:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','corduroy','velvet','polyester blend'],
   blazer:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','hopsack','corduroy','velvet','polyester blend'],
-  pants:['wool','wool blend','flannel','cotton','cotton twill','linen','linen blend','corduroy','tweed','polyester blend'],
+  pants:['wool','wool blend','flannel','cotton','cotton twill','denim','stretch denim','linen','linen blend','corduroy','tweed','polyester blend'],
   shirt:['poplin','twill','oxford','pinpoint oxford','end-on-end','chambray','linen','linen blend','flannel','cotton blend'],
   tie:['silk','knitted silk','grenadine','wool','wool blend','cashmere','linen','cotton','polyester'],
   socks:['cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
@@ -241,7 +241,13 @@ const thirdOf=i=>i&&i.tertiaryColor&&COLORS[i.tertiaryColor]||null;
 const accentOf=i=>{const s=i&&i.secondaryColor&&COLORS[i.secondaryColor];if(s)return s;const b=colOf(i);return lum(b)>.55?mix(b,'#000',.35):mix(b,'#fff',.45)};
 
 /* accessory option lists */
-const LEATHERS=['calf','cordovan','suede','patent','pebble-grain','scotch-grain'];
+const LEATHERS=['calf','cordovan','suede','patent','pebble-grain','scotch-grain'],SHOE_TEXTILES=['canvas','knit'];
+/* the materials a pair of shoes (or a belt) can be in, by style: sneakers in leather, suede, canvas or knit; boots and loafers in the
+   leathers they are made of; oxfords, derbies and belts in every leather. The field stays item.leather ("calf" reads "Leather"
+   on a sneaker) */
+const leathersFor=i=>i&&i.type==='shoes'?({sneaker:['calf','suede','canvas','knit'],boot:['calf','suede','pebble-grain','scotch-grain','cordovan'],loafer:['calf','suede','patent','cordovan']})[shoeStyle(i)]||LEATHERS:LEATHERS;
+const leatherWord=(i,l)=>i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'&&l==='calf'?'leather':patLabel(l);
+const leatherLabel=i=>i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'?'Material':'Leather';
 const WATCH_STYLES=[['annual-calendar','Dual time + annual calendar'],['chronograph','Chronograph: three subdials + date'],['date','Three hands + date'],['no-date','Three hands']];
 const BANDS=[['bracelet','Metal bracelet'],['integrated','Integrated metal bracelet'],['leather','Leather strap']],BEZELS=[['fluted','Fluted'],['smooth','Smooth'],['engraved','Polished, engraved numerals']];
 /* a watch in words, for picture prompts: the options plus the owner's own details. With details the style's stock layout is left out
