@@ -556,15 +556,19 @@ async function handleFetchImage(req, env, json, cors) {
    fixes the pose and framing; photos of the actual items (refs) and the written outfit keep colours and patterns right. */
 /* the room behind him, spelled out: "bright office background" came back as blown-out windows, harsh and different every time */
 const BACKDROP = 'Soft natural daylight from the left, gentle shadows. The background is far out of focus, a smooth creamy blur with no sharp detail anywhere: a plain light office wall in soft off-white and pale warm grey, evenly lit, light but not glowing and not blown out; at the lower right the blurred corner of a light wooden desk with a dark laptop on it; along the far left edge a soft, slightly brighter strip of daylight. Nothing else behind him: no rows of desks, no chairs, no shelves, no lamps, no plants, no people.';
+/* the watch in its own short sentence, early: at the end of the outfit list, after a long description, the generator drew a stock
+   chronograph. The app puts the watch's own photo on the illustration's wrist (figureSvg photo:true) and sends the watch first */
+const WATCH_KEY = outfit => /wristwatch/.test(outfit) ? `The wristwatch is a key detail. Its face in the illustration is the real watch's photo, already turned as worn: keep that dial as it is there, the same subdials in the same places and sizes, the same hands and markings, only made photorealistic. Do not draw a typical chronograph.
+` : '';
 const RENDER_PROMPT = (outfit, nojacket) => nojacket ? `Turn the first image (an illustration) into a photorealistic photograph.
 Keep exactly the same pose, crop and framing: a man's torso from the chin down to the hips, no face, in shirt sleeves with no jacket; his forearms cross at the waist, one hand rests on his chest next to the wristwatch, the other hand rests at his waist.
-He is wearing: ${outfit}.
+${WATCH_KEY(outfit)}He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item: no jacket, and no tie unless one is listed.
 A crisp cotton dress shirt with natural folds, buttoned cuffs, realistic hands and skin.
 ${BACKDROP} 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`
   : `Turn the first image (an illustration) into a photorealistic photograph.
 Keep exactly the same pose, crop and framing: a man's torso from just under the chin down to just below the jacket pocket flaps, no face, both shoulders and both elbows fully inside the picture, with a narrow strip of background visible at either side of the arms exactly as in the illustration; his left forearm lies across his chest, the hand a loose fist on the jacket front with the wristwatch on that wrist facing the camera, worn the usual way for a left wrist: its crown and pushers point toward the hand, so the camera sees the dial turned half a turn, 12 o'clock at the bottom and 6 o'clock at the top, exactly as the watch's photos after the illustration are turned; his other hand is raised to the jacket's waist button, fastening it, directly under the first wrist so that it almost touches that cuff.
-He is wearing: ${outfit}.
+${WATCH_KEY(outfit)}He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
 Real wool suiting with natural drape and texture, crisp cotton shirt, a silk tie if one is listed (if none is listed he wears no tie: the shirt collar is open, the top button undone), realistic hands and skin.
 ${BACKDROP} 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;

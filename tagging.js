@@ -346,19 +346,29 @@ async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie'
     let at=labels.findIndex(l=>l.startsWith(name));at=at>=0?at+1:role==='tie'?labels.findIndex(l=>l.startsWith('a close-up of the tie fabric')):-1;if(at<0)at=refs.length;
     refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
   const wk=labels.findIndex(l=>l.startsWith('the wristwatch'));   // the watch is small in the picture: its dial enlarged is a second reference
-  if(wk>=0){const d=await dialCrop(refs[wk]),t=await halfTurn(refs[wk]);
-    if(t){refs[wk]=t;labels[wk]=WATCH_WORN}   // turned as it sits on the wrist, so the generator copies it the right way round
-    if(d){refs.splice(wk+1,0,t?await halfTurn(d)||d:d);labels.splice(wk+1,0,dialLabel(o.watch)+(t?', turned the same way':''))}}
+  if(wk>=0){const src=refs[wk],t=await turnBy(src,WATCH_TURN),d=await dialCrop(src),dt=d&&await turnBy(d,WATCH_TURN);
+    refs.splice(wk,1);labels.splice(wk,1);
+    // the watch goes FIRST, right after the illustration, and its dial enlarged as a reference of its own (refRank 9: never trimmed):
+    // last in the list and its dial halved in a shared image, the generator drew a stock chronograph
+    const w=[[t||src,t?WATCH_WORN:'the wristwatch (copy it exactly: case, bezel, dial and subdials, hands, bracelet links)'],...(dt?[[dt,WATCH_DIAL]]:[])];
+    refs.unshift(...w.map(x=>x[0]));labels.unshift(...w.map(x=>x[1]))}
   return trimRefs(refs,labels)}
+/* how the watch's photo is turned before it is sent, in degrees clockwise (its photos are taken upright, 12 o'clock at the top) */
+const WATCH_TURN=180;
+/* the whole dial turns with the crown (never mirrored): with the crown toward the hand, what is at 6 o'clock on an upright watch is at
+   the top (the owner's chronograph shows the time in its 6 o'clock subdial, and it came back with the crown turned and that subdial not) */
+const WATCH_DIAL="an enlargement of the same wristwatch's dial, turned the same way: copy its subdials, their places and sizes, the hands and the markings exactly";
+/* turned by a multiple of 90° clockwise */
+const turnBy=(u,deg)=>new Promise(ok=>{const q=((deg/90|0)%4+4)%4;if(!q)return ok(u);const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),side=q%2;
+  c.width=side?im.height:im.width;c.height=side?im.width:im.height;const x=c.getContext('2d');x.translate(c.width/2,c.height/2);x.rotate(q*Math.PI/2);
+  x.drawImage(im,-im.width/2,-im.height/2);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
 /* the middle of the watch's photo (DIAL_PART of its shorter side), enlarged: with the whole watch alone the generator drew a generic
    dial, with this it drew the owner's white dial and its subdials */
 /* on the left wrist, the arm across the chest and the back of the hand to the camera, a watch is seen half a turn round: the crown
    toward the hand, 12 o'clock at the bottom. From upright photos the generator drew it upright, the crown toward the elbow (the
    owner: "backwards") */
-const WATCH_WORN="the wristwatch, turned as worn: crown toward the hand, 12 o'clock at the bottom (copy it exactly: case, bezel, dial and subdials, hands, bracelet links)";
-const halfTurn=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');
-  x.translate(c.width,c.height);x.rotate(Math.PI);x.drawImage(im,0,0);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
-const DIAL_PART=.48,dialLabel=w=>`an enlargement of the same wristwatch's dial (${w&&w.dial?'a '+colName(w.dial)+' dial':'its dial'}${w&&w.watchStyle==='chronograph'?' with its subdials':''}: copy its layout, hands and markings)`;
+const WATCH_WORN="the wristwatch, turned as worn: crown toward the hand, the whole dial turned with it, 6 o'clock at the top (copy case, bezel, dial, bracelet exactly)";
+const DIAL_PART=.48;
 const dialCrop=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height)*DIAL_PART,c=document.createElement('canvas');c.width=c.height=640;
   c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,640,640);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
 /* the worker takes 8 references: when there are more, the least needed go first (the watch dial's enlargement, then the shirt's
@@ -367,7 +377,8 @@ const dialCrop=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const s=M
    The shirt's close-up used to go first (shot in dim light it reads grey, and the generator is told to match its colour); the
    owner asked for it to be sent, in the place of the tie's photo (outfitRefs). With that photo gone at most one reference is
    over, so only the enlargement ever goes: in a fully patterned outfit, where it was dropped before too. */
-function refRank(l){return /^an enlargement/.test(l)?0:/^a close-up of the shirt/.test(l)?.5:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
+/* (since the watch's dial came back generic: its enlargement is never trimmed, so the shirt's close-up goes first again) */
+function refRank(l){return /^an enlargement/.test(l)?9:/^a close-up of the shirt/.test(l)?.5:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
 function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
   while(keep.length>max){let worst=0;for(let n=1;n<keep.length;n++)if(refRank(labels[keep[n]])<refRank(labels[keep[worst]]))worst=n;keep.splice(worst,1)}
   return {refs:keep.map(k=>refs[k]),labels:keep.map(k=>labels[k])}}

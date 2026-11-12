@@ -231,12 +231,14 @@ const accentOf=i=>{const s=i&&i.secondaryColor&&COLORS[i.secondaryColor];if(s)re
 const LEATHERS=['calf','cordovan','suede','patent','pebble-grain','scotch-grain'];
 const WATCH_STYLES=[['annual-calendar','Dual time + annual calendar'],['chronograph','Chronograph: three subdials + date'],['date','Three hands + date'],['no-date','Three hands']];
 const BANDS=[['bracelet','Metal bracelet'],['integrated','Integrated metal bracelet'],['leather','Leather strap']],BEZELS=[['fluted','Fluted'],['smooth','Smooth'],['engraved','Polished, engraved numerals']];
-/* a watch in words, for picture prompts: the options plus the owner's own details */
-const watchText=w=>{const o=watchOpts(w),metal=w.metal==='gold'?'gold':w.metal==='other'?'gunmetal':'stainless steel';
-  const style={'annual-calendar':'dual-time annual-calendar','chronograph':'chronograph (three subdials and a date window)','date':'three-hand date','no-date':'three-hand'}[o.style]||'';
+/* a watch in words, for picture prompts: the options plus the owner's own details. With details the style's stock layout is left out
+   (the owner's chronograph tells the time in one large subdial; "three subdials and a date window" got a stock chronograph drawn).
+   worn = the outfit photo, where the watch is seen turned half a turn: the details describe it upright, and say so */
+const watchText=(w,{worn=false}={})=>{const o=watchOpts(w),metal=w.metal==='gold'?'gold':w.metal==='other'?'gunmetal':'stainless steel',det=w.details&&String(w.details).trim();
+  const style=(det?{'annual-calendar':'dual-time annual-calendar','chronograph':'chronograph','date':'three-hand date','no-date':'three-hand'}:{'annual-calendar':'dual-time annual-calendar','chronograph':'chronograph (three subdials and a date window)','date':'three-hand date','no-date':'three-hand'})[o.style]||'';
   const bezel={fluted:'a fluted bezel',smooth:'a smooth polished bezel',engraved:'a polished bezel engraved with numerals'}[o.bezel]||'';
   const band=o.band==='leather'?`a ${colName(primaryCol(w))} leather strap`:o.band==='integrated'?`an integrated ${metal} bracelet that flows out of the case`:`a ${metal} link bracelet`;
-  return `a ${metal} ${style} wristwatch with ${bezel}, a ${colName(o.dial)} dial and ${band}`+(w.details?` (${String(w.details).trim()})`:'')};
+  return `a ${metal} ${style} wristwatch with ${bezel}, a ${colName(o.dial)} dial and ${band}`+(det?` (${worn?'described upright, 12 o\'clock at the top; as worn the whole watch is turned half a turn, so every position in this description turns with it: ':''}${det})`:'')};
 const watchOpts=w=>({dial:w&&w.dial||'white',band:w&&w.band||'bracelet',bezel:w&&w.bezel||'fluted',style:w&&w.watchStyle||'annual-calendar'});
 const METAL_TONES={gold:['#fbefc4','#d4b04a','#8a6d12'],silver:['#f7f8f9','#c4c8cd','#767b82'],other:['#d2d4d7','#868a90','#45494e']};
 
