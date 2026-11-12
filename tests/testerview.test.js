@@ -16,6 +16,12 @@ module.exports=async({ok,chromium,url})=>{
     await as('owner');const o=await texts();
     ok(o.cost===true&&/about 7¢/.test(o.regen)&&!/invited you/.test(o.fb)&&/^What works, what doesn’t, what is missing\.$/.test(o.fb),`the owner sees costs, and no "person who invited you" (${o.fb})`);
     ok(await p.evaluate(()=>{localStorage.setItem('app_token','another');return acctRole()===null&&showCost()}),'a remembered role belongs to its code: another code is asked again');
+    // the owner's tools (the Advanced sections) are the owner's only
+    const advs=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');if(r){localStorage.setItem('app_token','code-'+r);acct.me=null;rememberRole({role:r})}else{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')}applyRole();
+      openSettings('schedule');return ['schedule','photos','tagging','connection'].filter(k=>getComputedStyle(document.querySelector('#adv-'+k)).display!=='none').join()},role);
+    const vt=await advs('tester'),vo=await advs('owner'),vn=await advs(null);
+    ok(vt===''&&/^schedule,(photos,)?tagging,connection$/.test(vo)&&vn==='connection',`Advanced sections: none for a tester, all of them for the owner (Realistic photos' only while item photos are on), only the server address and code before connecting (tester "${vt}", owner "${vo}", not connected "${vn}")`);
+    await p.evaluate(()=>{closeSettings();localStorage.setItem('worker_url','https://w.test/')});
     // Backup line
     const line=s=>p.evaluate(s=>{localStorage.setItem('app_token','x');for(const [k,v] of Object.entries(s))v==null?localStorage.removeItem(k):localStorage.setItem(k,v);settingsSummaries();return document.querySelector('#sum-backup').textContent},s);
     const now=Date.now(),old=new Date(2026,2,3,12).getTime();

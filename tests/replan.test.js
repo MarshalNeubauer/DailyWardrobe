@@ -27,6 +27,7 @@ module.exports=async({ok,chromium,url})=>{
     // Settings button
     await p.evaluate(()=>openSettings('schedule'));
     ok(/1 upcoming day keeps pieces from a swap/.test(await p.textContent('#replan-status')),'Settings says how many upcoming days keep swapped pieces');
+    await p.evaluate(()=>document.body.classList.add('owner'));   // (Re-plan is among the owner's tools)
     await p.click('#adv-schedule .adv-head');await p.click('#replan-btn');await p.click('#ask-ok');await p.waitForFunction(()=>/planned again/.test($('#replan-status').textContent),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>!dayRecs['2026-11-18'].force&&/1 day planned again/.test($('#replan-status').textContent)),'Re-plan upcoming days clears them on demand');
     await p.click('#replan-btn');

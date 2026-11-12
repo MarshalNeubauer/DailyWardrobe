@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Wardrobe"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head><body>
-<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe">↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
+<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe" hidden>↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
 <main>
 <section id="today"></section>
 <section id="wardrobe" hidden></section>
@@ -91,10 +91,10 @@
 <p class="sgh">Photos &amp; tagging</p>
 <section class="mbox scat" id="sc-photos"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Realistic photos</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-photos"><div class="mpanel-in">
-<p class="shelp connnote" id="photos-conn"></p>
-<div class="sgroup"><div class="slabel">Outfit photos</div><p class="shelp" id="batch-status"></p><div class="sactions"><button id="batch-btn" type="button">Generate photos for this month</button></div></div>
-<div class="sgroup"><div class="slabel">This day's photo</div><p class="shelp" id="regen-status"></p><div class="sactions"><button id="regen-btn" type="button" onclick="generateRender()">Regenerate photo</button></div></div>
-<div class="sgroup"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product pictures for the shoes, belts and socks shown under the figure.</p><div class="sactions"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div></div>
+<p class="shelp conn-off-note" id="photos-conn" data-what="Making outfit photos"></p>
+<div class="sgroup conn-only"><div class="slabel">Outfit photos</div><p class="shelp" id="batch-status"></p><div class="sactions"><button id="batch-btn" type="button">Generate photos for this month</button></div></div>
+<div class="sgroup conn-only"><div class="slabel">This day's photo</div><p class="shelp" id="regen-status"></p><div class="sactions"><button id="regen-btn" type="button" onclick="generateRender()">Regenerate photo</button></div></div>
+<div class="sgroup conn-only"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product pictures for the shoes, belts and socks shown under the figure.</p><div class="sactions"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div></div>
 <div class="adv" id="adv-photos"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-photos" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-photos"><div class="sgroup" id="asm-group" hidden><div class="slabel">Item photos</div><p class="shelp" id="asm-status"></p><div class="sactions"><button id="asm-btn" type="button" onclick="asmMakeMissing()">Make item photos</button></div>
 <label class="srow">New items <select id="cfg-asm-auto" onchange="setAsmAuto(this.value)"><option value="on">Make their photo when added</option><option value="off">Only when I ask</option></select></label></div></div></div>
 </div></div></section>
@@ -109,9 +109,9 @@
 <section class="mbox scat" id="sc-backup"><button type="button" class="month-link scat-head" onclick="toggleCat('backup')" aria-expanded="false" aria-controls="sp-backup"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="M12 11v6M9.5 13.5 12 11l2.5 2.5"/></svg></span><span class="mltxt"><b>Backup &amp; sync</b><small id="sum-backup"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-backup"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Sync</div><p class="shelp" id="sync-status"></p>
-<p class="shelp">Once you are connected, your wardrobe is backed up and kept in sync across your devices.</p>
-<div class="sactions"><button type="button" onclick="syncNow()">Sync now</button><button type="button" onclick="downloadBackup()">Download backup</button><label class="btn">Restore file<input type="file" accept="application/json,.json" hidden onchange="restoreBackup(this.files[0]);this.value=''"></label></div></div>
-<div class="sgroup"><div class="slabel">Daily backups</div><p class="shelp">The server keeps the wardrobe as it was at the start of each day for 30 days, and the first of each month for a year. Rolling back replaces the wardrobe, history and settings on every device with that copy.</p>
+<p class="shelp conn-off-note" id="backup-conn" data-what="Backing up and syncing"></p>
+<div class="sactions"><button type="button" class="conn-only" onclick="syncNow()">Sync now</button><button type="button" onclick="downloadBackup()">Download backup</button><label class="btn">Restore file<input type="file" accept="application/json,.json" hidden onchange="restoreBackup(this.files[0]);this.value=''"></label></div></div>
+<div class="sgroup conn-only"><div class="slabel">Daily backups</div><p class="shelp">The server keeps the wardrobe as it was at the start of each day for 30 days, and the first of each month for a year. Rolling back replaces the wardrobe, history and settings on every device with that copy.</p>
 <div class="sform"><select id="snap-list" onfocus="loadSnapshots()" aria-label="Daily backup"><option value="">Choose a day…</option></select><button id="snap-btn" type="button" onclick="rollBack()">Roll back</button></div>
 <p class="shelp" id="snap-status"></p></div>
 </div></div></section>
@@ -128,11 +128,11 @@
 <div class="mpanel" id="sp-about"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel" id="about-ver">Version</div><p class="shelp" id="about-status" role="status"></p>
 <div class="sactions"><button type="button" id="about-check" onclick="checkForUpdate(true)">Check for updates</button><button type="button" class="pri" id="about-update" hidden onclick="updateNow()">Update</button></div></div>
-<div class="sgroup"><div class="slabel">Feedback</div><p class="shelp" id="fb-help">What works, what doesn’t, what is missing: it goes to the person who invited you.</p>
+<div class="sgroup"><div class="slabel">Feedback</div><p class="shelp conn-off-note" id="fb-conn" data-what="Sending feedback"></p><div class="conn-only"><p class="shelp" id="fb-help">What works, what doesn’t, what is missing: it goes to the person who invited you.</p>
 <textarea id="fb-text" class="about-text" rows="4" maxlength="4000" placeholder="Your feedback" aria-label="Your feedback"></textarea>
 <div class="sactions"><button type="button" class="pri" id="fb-send" onclick="sendFeedback()">Send</button></div>
 <p class="shelp about-note" id="fb-status" role="status"></p>
-<div id="fb-list" class="fb-list" hidden></div></div>
+<div id="fb-list" class="fb-list" hidden></div></div></div>
 <div class="sgroup"><div class="slabel">Your data</div><p class="shelp">Delete your wardrobe, history, settings and photos. The app then starts as new.</p>
 <div class="sactions"><button type="button" class="danger" id="del-open" onclick="askDelete()">Delete my data</button></div>
 <div id="del-confirm" class="about-confirm" hidden></div>

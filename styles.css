@@ -90,7 +90,7 @@ button{touch-action:manipulation}
 .drop-hint{font-size:12px;margin:2px 0 8px}
 @media (hover:none){.drop-hint{display:none}}
 body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
-#refresh-btn{display:inline-block}
+#refresh-btn{display:inline-block}#refresh-btn[hidden]{display:none}
 #refresh-btn.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* working on it: a spinning ring, in the pill above the tab bar (#busy, app.js renderBusy) and beside "Generating photo…" and the like */
@@ -906,3 +906,11 @@ span.pk-tick{cursor:default}
 .su-sw[aria-checked=true] .su-knob{background:var(--ink)}.su-sw[aria-checked=true] .su-knob::after{background:var(--bg)}
 /* "Several items" while not connected */
 #add .addpick .btn.needconn{opacity:.55;cursor:default}
+/* ---- who sees what (applyRole in account.js) ---- */
+/* the owner's tools: only for the owner; a tester never sees the server address and code; not connected, the parts that need the
+   server are hidden and one line at the top of their section says what connecting turns on (.conn-off-note) */
+body:not(.owner) :is(#adv-schedule,#adv-photos,#adv-tagging){display:none}
+body.tester #adv-connection{display:none}
+body.nocon .conn-only,.connhide{display:none!important}
+.conn-off-note:empty{display:none}
+.conn-off-note .linkbtn{margin-left:4px}
