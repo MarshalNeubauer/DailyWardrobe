@@ -243,6 +243,18 @@ const ASM_VEST=3,asmVestTag=(v=ASM_VEST)=>v>1?String(v):'';
 const asmKey=t=>'c'+fnv64('asm/'+ASM_VER+'/'+t),asmMasterKey=()=>asmKey('master/jacket'),asmCalibKey=(s,v)=>asmKey('calib/'+s+(s==='vest'?asmVestTag(v):''));
 /* the vest master: the master with a waistcoat added. A suit worn with its waistcoat has a second piece ('vest'), an edit of this one */
 const asmVestKey=v=>asmKey('master/vest'+asmVestTag(v));
+/* zones made outside the app (version 3: SAM 2 on the masters, checked by eye): one black-and-white picture per piece, white = the
+   piece, kept on the worker like any photo. When they are there the app reads its zones from them; without them it works the zones
+   out from the calibration photos as before. The waistcoat's zone belongs to the vest master and carries its version. */
+const ASM_ZONE_SLOTS=['jacket','shirt','tie','watch'],asmZoneKey=s=>asmKey('zone/'+(s==='vest'?'vest'+asmVestTag():s));
+const asmZoneImgs=()=>{const o={};for(const s of ASM_ZONE_SLOTS){const r=renders[asmZoneKey(s)];if(!r)return null;o[s]=r.img}return o};
+/* the zones from their pictures: white (over half) is the piece; one zone per pixel, the watch over the tie over the shirt over the jacket */
+async function asmZonesFromImgs(imgs,W){const z={W},N=W*W;for(const s of ASM_ZONE_SLOTS){const d=(await asmData(imgs[s],W)).data,m=new Uint8Array(N);for(let i=0;i<N;i++)if(d[4*i]>127)m[i]=1;z[s]=m}
+  for(let i=0;i<N;i++){if(z.watch[i])z.tie[i]=z.shirt[i]=z.jacket[i]=0;else if(z.tie[i])z.shirt[i]=z.jacket[i]=0;else if(z.shirt[i])z.jacket[i]=0}
+  return z}
+async function asmMaskFromImg(img,W){const d=(await asmData(img,W)).data,N=W*W,m=new Uint8Array(N);for(let i=0;i<N;i++)if(d[4*i]>127)m[i]=1;return m}
+/* the zones' pictures onto the device when no zones are kept: true when all four are there */
+const asmGetZones=async()=>(await Promise.all(ASM_ZONE_SLOTS.map(s=>asmGet(asmZoneKey(s))))).every(Boolean);
 const ASM_SLOT={jacket:'top',vest:'top',shirt:'shirt',tie:'tie',bar:'clip',watch:'watch'};   // a piece and the outfit slot it dresses
 /* how a piece looks, for its key: lookSig, and for a shirt in a woven texture that was never read the weave's name too (lookSig
    counts those by colour alone; here every shirt look gets its own photo) */
@@ -279,10 +291,12 @@ async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=ren
   const parts=asmParts(o);if(parts.some(p=>!renders[p.key]||asmBad.has(p.key)))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
     parts:parts.map(p=>({slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};
-  if(!job.zones){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}
+  if(!job.zones){job.zoneImg=asmZoneImgs();   // zones made outside the app, when they're here; else the calibration photos
+    if(!job.zoneImg){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}}
   if(o.vest){const vk=asmVestKey(),r=renders[vk];if(!r)return null;const kv=await metaGet('asm:vest:'+vk);
     job.vest={k:vk,t:r.t,kept:kv&&kv.t===r.t&&kv.v===ASM_ZV?kv:null};
-    if(!job.vest.kept){const c=renders[asmCalibKey('vest')];if(!c)return null;job.vest.img=r.img;job.vest.calib=c.img}}
+    if(!job.vest.kept){const zv=renders[asmZoneKey('vest')];if(zv)job.vest.zoneImg=zv.img;
+      else{const c=renders[asmCalibKey('vest')];if(!c)return null;job.vest.img=r.img;job.vest.calib=c.img}}}
   return job}
 /* the decoded master and its unpacked zones, kept between pictures in whichever thread builds them */
 let asmMem=null;
@@ -292,12 +306,15 @@ async function asmBuild(job){
   if(!asmMem||asmMem.k!==job.mk||asmMem.t!==job.mt)asmMem={k:job.mk,t:job.mt,d:await asmData(job.master)};
   const M=asmMem,master=M.d,W=master.width,out={};
   if(!M.z){if(job.zones&&job.zones.W===W)M.z=asmUnpackZones(job.zones);
+    else if(job.zoneImg){if(M.zbad)return out;const z=await asmZonesFromImgs(job.zoneImg,W);if(!asmZonesOk(z)){M.zbad=true;return out}M.z=z;out.zones=asmPackZones(z)}   // made outside the app
     else{if(M.zbad||!job.calib)return out;const zw=Math.min(W,ASM_BASE),m0=zw<W?await asmData(job.master,zw):master,c={};for(const s of ASM_SLOTS)c[s]=await asmData(job.calib[s],zw);
       const z0=asmZones(m0,c);if(!asmZonesOk(z0)){M.zbad=true;return out}M.z=asmUpZones(z0,W);out.zones=asmPackZones(M.z)}}   // worked out at ASM_BASE, enlarged to the picture
   const z=M.z;let V=null;
   if(job.vest){const J=job.vest;
     if(M.v&&M.v.k===J.k&&M.v.t===J.t)V=M.v.m;
     else if(J.kept&&J.kept.W===W){V=asmUnpack(J.kept.m,W*W);M.v={k:J.k,t:J.t,m:V}}
+    else if(J.zoneImg){if(M.vbad===J.k+J.t)return out;const m=await asmMaskFromImg(J.zoneImg,W),share=asmCount(m)/(W*W);
+      if(share<.005||share>.2){M.vbad=J.k+J.t;return out}V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}   // made outside the app
     else{if(!J.img||(M.vbad===J.k+J.t))return out;const zw=Math.min(W,ASM_BASE),zs=zw<W?{W:zw,watch:asmDownMask(z.watch,W,zw)}:z;
       const m=asmUpMask(asmVestZone(await asmData(J.img,zw),await asmData(J.calib,zw),zs),zw,W),share=asmCount(m)/(W*W);   // at ASM_BASE too, then enlarged
       if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
@@ -369,9 +386,9 @@ async function asmGetPre(o){const k=asmOutKey(o),W=workerBase();if(!W||asmTried.
    one that came out wrong). It downloads what the look needs like asmEnsure, but never takes a picture built earlier */
 async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
   if(!await asmGet(asmMasterKey(),true)||!asmWants(o)||(o.vest&&!await asmGet(asmVestKey())))return null;
-  if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
+  if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
   if((await Promise.all(asmParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
-  if(!await asmZonesKept())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));
+  if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
   await asmDropOld()}
@@ -404,9 +421,9 @@ const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());
 async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&renders[asmMasterKey()])asmAheadSoon();if(asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
   try{if(!await asmGet(mk)||asmFullWins(o)||(o.vest&&!await asmGet(asmVestKey())))return;
     if(await asmGetPre(o)){const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow();return}   // built on the computer: no pieces to download, nothing to compute
-    if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
+    if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
     const parts=asmParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
-    if(!await asmZonesKept())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));
+    if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
     const img=await asmPhoto(o,!ahead);if(!img)return;
     const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();
     const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()}
