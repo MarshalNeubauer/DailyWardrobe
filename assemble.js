@@ -419,7 +419,7 @@ const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp);   // the p
    within 22 L* of the master suit's median, not skin) is painted from the master's lightness alone, so no grey outline is left. The
    painted picture is the suit's piece (as a photo of the suit with its waistcoat would be), so asmCompose's jacket edge handling
    applies. Patterned suits (pinstripe, windowpane, twill, herringbone…) are still photographed. */
-const ASM_SUITV=3;   // how suits are painted: in the picture's key
+const ASM_SUITV=4;   // how suits are painted: in the picture's key
 const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i.pattern)==='solid'&&!usableSett(i))||asmSuitBands(i));
 const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
 /* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
@@ -433,6 +433,15 @@ const asmSuitBands=i=>{const s=usableSett(i);return !!(s&&s.v===2&&s.bands&&s.ba
 const asmLinen=i=>!!i&&(/linen/i.test(i.material||'')||/linen/i.test((i.patternSpec&&i.patternSpec.description)||i.patternText||''));
 const ASM_LINE_PX=4;   // the narrowest painted line at 2048 (a windowpane's, a check's)
 const ASM_STRIPE_PX=3;   // a stripe's: a pinstripe is about a millimetre (3 px), and at 4 the owner's navy pinstripe read heavy and white
+/* a stripe suit's line and cloth as they read in a photo (fitted to the owner's navy pinstripe close-up, 2026-11-13, by a score of
+   stripe spacing, width, contrast, colours, weave and brokenness region by region, lit and shadowed): Claude's line colour is the
+   stripe's brightest yarn, but a pinstripe is a few yarns half-hidden in the twill and at this scale reads only a share (mix) of the way
+   from the ground to it; soft (a Gaussian across, soft px at 2048, so about 2.5 mm wide and chalky, not a crisp 1 mm line); slightly broken
+   along its length (its strength varies by up to brk, over blen px); the weave under it faint (weave, of the visible brightness: at .2
+   the herringbone showed as a pattern of its own). A dark cloth (ground under 6% light) is also less saturated (chroma) and its
+   shading steeper (gain * shading^gam): a dark navy worsted's folds go nearly black and its lit parts are greyish, not royal blue;
+   the master's grey suit's shading is flatter. Before: crisp, bright, high-contrast lines on a bright royal blue. */
+const ASM_STRIPE={mix:.18,soft:2,weave:.08,brk:.3,blen:8,chroma:.4,gam:1.4,gain:.9};
 /* the cloth's own weave laid in the shading, from its material or Claude's description: linen (asmLinenTile), herringbone or twill
    (diagonal lines 4 px apart at 2048, 20% (twill 16%) of the visible brightness, with an 8% fleck along each thread; a herringbone's columns turn at each break, half a stripe repeat wide with its
    breaks on the stripes for a stripe, as on the owner's pinstripe, else 8 mm) -> {kind, cw, off, amp} in px at 2048, or null */
@@ -441,7 +450,7 @@ function asmClothOf(i,s,mm){const t=((i.patternSpec&&i.patternSpec.description)|
   const stripe=STRIPE_PATS.includes(patBase(i.pattern))&&s&&s.bands;
   if(/herringbone/i.test(t)){let cw=8*ASM_PX_MM,off=0;
     if(stripe){const rp=mm*ASM_PX_MM,g=s.bands.reduce((a,b)=>b[1]>a[1]?b:a)[0];let x=0,c=0;for(const b of s.bands){if(b[0]!==g){c=x+b[1]/2;break}x+=b[1]}cw=rp/2;off=c*rp}
-    return {kind:'herringbone',cw,off,amp:.2}}
+    return {kind:'herringbone',cw,off,amp:stripe?ASM_STRIPE.weave:.2}}
   if(/twill|serge|gabardine/i.test(t))return {kind:'twill',amp:.16};
   return null}
 /* the parts of a jacket whose cloth runs its own way: each sleeve (an upper arm and a forearm) and each lapel (one straight part: on the
@@ -458,7 +467,7 @@ async function asmSuitTex(i){const k=asmSuitSig(i);if(asmSuitTexMemo.has(k))retu
   // Claude's own colours, band by band, where the reading has them (the owner's choice, 2026-11-12): measured from the pixels, a thin
   // line is blurred into the ground and reads weak (his windowpane's off-white #e6ddcf for Claude's #eeeadf, its blue #a1bbd3 for #8eb2d6)
   const sp=i.patternSpec,cl=(bands,spec,cross)=>spec&&spec.bands&&spec.bands.length===bands.length?bands.map((b,k)=>[cross&&!b[0]?null:spec.bands[k].hex,b[1]]):bands;
-  const sb=cl(s.bands,sp&&sp.across,false),sc=s.cross?cl(s.cross.bands,sp&&sp.along,true):null;
+  const stp=STRIPE_PATS.includes(patBase(i.pattern)),sb=cl(s.bands,sp&&sp.across,false),sc=s.cross?cl(s.cross.bands,sp&&sp.along,true):null;
   const it={...i,sett:{...s,bands:bold(sb),cross:s.cross?{...s.cross,bands:bold(sc)}:null}};
   const def=fabricDef('asmsuit',it,'blazer').replace(/ patternTransform="[^"]*"/,'').replace(/ opacity="\.5"/g,''),num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');
   if(!w||!h)return null;const S=Math.max(1,Math.ceil(256/w)),TW=Math.round(w*S),TH=Math.max(1,Math.round(h*S)),L=ASM_LIN;
@@ -466,7 +475,15 @@ async function asmSuitTex(i){const k=asmSuitSig(i);if(asmSuitTexMemo.has(k))retu
   const im=await asmImg('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))),cv=document.createElement('canvas');cv.width=3*TW;cv.height=3*TH;
   const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,3*TW,3*TH);const d=x.getImageData(TW,TH,TW,TH).data,c=new Float32Array(3*TW*TH);
   for(let q=0;q<TW*TH;q++)for(let j=0;j<3;j++)c[3*q+j]=L[d[4*q+j]];
-  const r={c,TW,TH,mm,linen:asmLinen(i),cloth:asmClothOf(i,s,mm)};if(asmSuitTexMemo.size>20)asmSuitTexMemo.clear();asmSuitTexMemo.set(k,r);return r}
+  const r={c,TW,TH,mm,linen:asmLinen(i),cloth:asmClothOf(i,s,mm)};
+  if(stp){const bb=it.sett.bands,gb=bb.reduce((a,b)=>b[1]>a[1]?b:a),hx=String(gb[0]||'#000').replace('#',''),g=[0,2,4].map(q=>L[parseInt(hx.slice(q,q+2),16)||0]);
+    let x0=0,lo=0;for(const b of bb){if(b!==gb&&b[0]){lo=(x0+b[1]/2)/bb.reduce((a,b)=>a+b[1],0);break}x0+=b[1]}
+    const Z=ASM_STRIPE,dark=.2126*g[0]+.7152*g[1]+.0722*g[2]<.06,ch=dark?Z.chroma:1,chr=v=>{const Y=.2126*v[0]+.7152*v[1]+.0722*v[2];for(let q=0;q<3;q++)v[q]=Math.max(0,Y+ch*(v[q]-Y))};   // the stripe's place in the repeat (lo), the ground's colour (g)
+    if(ch!==1){chr(g);const t=[0,0,0];for(let q=0;q<TW*TH;q++){for(let j=0;j<3;j++)t[j]=c[3*q+j];chr(t);for(let j=0;j<3;j++)c[3*q+j]=t[j]}}
+    if(Z.soft>0){const sg=Z.soft*TW/(mm*ASM_PX_MM),R=Math.ceil(3*sg),kw=[];for(let o=-R;o<=R;o++)kw.push(Math.exp(-o*o/(2*sg*sg)));const ks=kw.reduce((a,b)=>a+b),t=new Float32Array(c.length);
+      for(let y=0;y<TH;y++)for(let x=0;x<TW;x++)for(let j=0;j<3;j++){let a=0;for(let o=-R;o<=R;o++)a+=kw[o+R]*c[3*(y*TW+((x+o)%TW+TW)%TW)+j];t[3*(y*TW+x)+j]=a/ks}
+      c.set(t)}
+    Object.assign(r,{g,k:Z.mix,brk:Z.brk,blen:Z.blen,gam:dark?Z.gam:1,gain:dark?Z.gain:1,loff:lo})}if(asmSuitTexMemo.size>20)asmSuitTexMemo.clear();asmSuitTexMemo.set(k,r);return r}
 /* a linen texture, 256 px square, the same on every device: each light factor around 1 (threads two pixels wide, each a little
    lighter or darker, plain-woven warp over weft in turn, with slubs: a run of thicker, lighter thread every so often) */
 let asmLinenMemo=null;
@@ -542,10 +559,12 @@ function asmSuitPaintTex(P,T){const W=P.base.width,L=ASM_LIN,d=new Uint8ClampedA
   const at=(u,v)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0;
     for(let q=0;q<3;q++){const G=(a,b)=>T.c[3*(((b+T.TH)%T.TH)*T.TW+(a+T.TW)%T.TW)+q];cm[q]+=(G(x0,y0)*(1-fx)+G(x0+1,y0)*fx)*(1-fy)+(G(x0,y0+1)*(1-fx)+G(x0+1,y0+1)*fx)*fy}};
   const body={cs:1,sn:0,cx:0,cy:0},uv=(g,X,Y)=>g.poly?asmTubeAt(g,X,Y):[(X-g.cx)*g.cs+(Y-g.cy)*g.sn,(Y-g.cy)*g.cs-(X-g.cx)*g.sn];   // across, along (px)
-  const cl=T.cloth,hb=cl&&(cl.kind==='herringbone'||cl.kind==='twill'),pitch=4*ls,cw=cl&&cl.cw?cl.cw*W/ASM_SIZE:0,off=cl&&cl.off?cl.off*W/ASM_SIZE:0;
+  const st=T.k!=null,cl=T.cloth,hb=cl&&(cl.kind==='herringbone'||cl.kind==='twill'),pitch=4*ls,cw=cl&&cl.cw?cl.cw*W/ASM_SIZE:0,off=cl&&cl.off?cl.off*W/ASM_SIZE:0;
   for(let q=0;q<P.idx.length;q++){const k=P.idx[q],j=4*k,x=k%W,y=(k-x)/W,g=P.seg?P.segs[P.seg[k]]||body:body;cm[0]=cm[1]=cm[2]=0;
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uv(g,x+(e+.5)/2,y+(a+.5)/2);at(c[0]/rep,c[1]/repv)}
     let sh=P.sh[q],tw=1;
+    if(st){const c=uv(g,x+.5,y+.5),si=Math.floor(c[0]/rep-T.loff+.5),tt=c[1]/(T.blen*ls),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),hh=j=>((Math.imul(si|0,374761393)^Math.imul(j|0,668265263))>>>0)%2048/1024-1,nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
+      for(let e=0;e<3;e++)cm[e]=4*T.g[e]+(cm[e]-4*T.g[e])*T.k*nz;sh=T.gain*Math.pow(sh,T.gam)}
     if(lin||hb){const c=uv(g,x+.5,y+.5);
       if(lin){const u=Math.floor(c[0]/ls),v=Math.floor(c[1]/ls);sh*=lin.r[(((v%lin.T)+lin.T)%lin.T)*lin.T+(((u%lin.T)+lin.T)%lin.T)]}
       // diagonal twill lines, turning at each herringbone column, as a share of the visible brightness: as a share of linear light, 5%

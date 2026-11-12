@@ -117,8 +117,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const P=asmSuitPrep(new ImageData(d,W,W),new ImageData(cj,W,W),zj),out=asmSuitPaintTex(P,T).data,vals=[];
       for(let y=950;y<1050;y++)for(let x=926;x<956;x++)vals.push(out[4*(y*W+x)+2]);   // the blue channel, in the navy between stripes
       const m=vals.reduce((a,b)=>a+b,0)/vals.length,sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)**2,0)/vals.length);
-      return {cloth:T.cloth,sd:+sd.toFixed(1),mean:Math.round(m)}});
+      const row=[];for(let x=900;x<1100;x++){let v=0;for(let y=950;y<1050;y++)v+=out[4*(y*W+x)+2];row.push(v/100)}row.sort((a,b)=>a-b);   // the stripes' lift over the navy, averaged along them
+      return {cloth:T.cloth,sd:+sd.toFixed(1),mean:Math.round(m),lift:+(row[row.length-3]-row[row.length>>1]).toFixed(1),mix:T.k,gam:T.gam}});
     ok(hb.cloth&&hb.cloth.kind==='herringbone'&&Math.abs(hb.cloth.cw-22)<.5&&Math.abs(hb.cloth.off-42.24)<.5,`a herringbone cloth is laid in, its columns half a stripe repeat wide (${hb.cloth&&hb.cloth.cw} px) with their breaks on the stripes (${hb.cloth&&hb.cloth.off} px)`);
+    ok(hb.mix<.5&&hb.gam>1&&hb.lift>3&&hb.lift<25,`the stripe reads soft and low on the dark navy, as in a photo, not crisp and white (lifted ${hb.lift} levels over the navy; ${hb.mix} of the way to Claude's line colour; shading steepened, ^${hb.gam})`);
     ok(hb.sd>=4,`the weave shows on a dark navy: its brightness varies by ${hb.sd} levels around ${hb.mean}`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
