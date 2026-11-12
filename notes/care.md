@@ -29,6 +29,7 @@
 ### `planner.js`
 
 - `settings.laundryDays` (default 1, 0 = off; Settings → Care): in `outfit()`, a shirt worn within that many days is in the wash and left out of the day's shirts (`washing`, `washed` in `pool()`), unless there is no other shirt; a forced shirt stays
+- not on a formal day, a wedding or a funeral: the occasion's shirt outweighs the washing (`tests/weather.test.js`: the one white French-cuff shirt worn the day before a formal day was left out)
 - a lock whose shirt was worn within those days (a shirt picked by hand today that tomorrow was already showing) is dropped, when another shirt is free
 
 ### `analysis.js`
@@ -56,6 +57,9 @@
 - "Nearly due" = one wear short, only for limits of 3 or more.
 
 ## Not done / to know
+
+- `tests/watchmatch.test.js` ("a chronograph is drawn with subdials…") fails on this branch's starting commit too (checked on an untouched copy); it has nothing to do with this change, but because of it `npm test` did not stamp the map as tested.
+- `tests/uipages.test.js` now expects eight Settings categories (`sc-care` after `sc-weather`): an intended change; other streams adding categories will touch the same line.
 
 - There is no packing list in this branch, so nothing was done for it. If another stream adds one, it should pick pieces with `inRotation(i, n)` and an away piece is handled.
 - Pull-to-refresh / the refresh button on the Care page lands on Today (`refreshAll` looks for the visible page in its own list); left alone to keep the app.js edit small.
