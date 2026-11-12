@@ -532,7 +532,7 @@ ${BACKDROP} 50mm lens, editorial menswear photography. No added text, captions o
 Keep exactly the same pose, crop and framing: a man's torso from just under the chin down to just below the jacket pocket flaps, no face, both shoulders and both elbows fully inside the picture, with a narrow strip of background visible at either side of the arms exactly as in the illustration; his left forearm lies across his chest, the hand a loose fist on the jacket front with the wristwatch on that wrist facing the camera, worn the usual way for a left wrist: its crown and pushers point toward the hand, so the camera sees the dial turned half a turn, 12 o'clock at the bottom and 6 o'clock at the top, exactly as the watch's photos after the illustration are turned; his other hand is raised to the jacket's waist button, fastening it, directly under the first wrist so that it almost touches that cuff.
 He is wearing: ${outfit}.
 Every garment must keep the colour and pattern shown in the illustration${'{REFS}'}. Do not add, remove or change any item.
-Real wool suiting with natural drape and texture, crisp cotton shirt, silk tie, realistic hands and skin.
+Real wool suiting with natural drape and texture, crisp cotton shirt, a silk tie if one is listed (if none is listed he wears no tie: the shirt collar is open, the top button undone), realistic hands and skin.
 ${BACKDROP} 50mm lens, editorial menswear photography. No added text, captions or watermark (printing on a watch dial stays as in its photo).`;
 /* a one-piece edit of a kept photo (a test path: is changing one piece cheaper than a whole new photo?): body.image is the
    photo, body.swap {what, text} the piece (one of SWAP_KEEP) and its description, refs its photos, body.mask (or body.markup) where it is */

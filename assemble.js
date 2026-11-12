@@ -321,7 +321,7 @@ function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if
   add('master',null,null,asmMasterKey(),'the master pose');
   for(const sl of ['jacket','shirt','tie','watch'])add('calib',sl,null,asmCalibKey(sl),'finding the '+sl);
   // waistcoats: the vest master, and a second piece for every suit that has one (unless vests are never worn)
-  const vests=settings.vestMode==='never'?[]:items.filter(i=>i.type==='suit'&&i.vest!=='no'&&inRotation(i));
+  const vests=settings.vestMode==='never'?[]:items.filter(i=>hasVest(i)&&inRotation(i));
   if(vests.length){add('vestmaster',null,null,asmVestKey(),'the pose with a waistcoat');add('vestcalib','vest',null,asmCalibKey('vest'),'finding the waistcoat')}
   for(const i of items){const slot=ASM_TYPE[i.type];if(!slot||!inRotation(i))continue;const sig=asmLook(slot,i);
     if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));

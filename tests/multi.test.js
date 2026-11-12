@@ -75,7 +75,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(mixed.tiny,'even a sliver-sized box gives a usable crop');
     await p.click('#save-all button');await p.waitForFunction(()=>queue.length===0);
     const s2=await p.evaluate(()=>({suits:items.filter(i=>i.type==='suit').map(i=>hasVest(i)).join(),n:items.length}));
-    ok(s2.n===15&&s2.suits==='true,true','saved suits have their matching vest by default');
+    ok(s2.n===15&&s2.suits==='false,false','saved suits have no waistcoat unless the card says so (the default since the dress code)');
     // errors
     reply=()=>[200,{model:'m',stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify({items:[]})}]}];
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})],true)});
