@@ -218,6 +218,7 @@ const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
    cost about half a second each) and the recorder of what each test uses. With several tests at once, each worker process
    (below) has its own set of these, so no two tests ever share a server, a browser, a recorder or Node's coverage. */
 const FIXED_PLAN=path.join(__dirname,'fixedplan.js');
+const ASM_OFF={content:'window.ASM_TEST_OFF=true'};   // assembled pictures off in a test page (assemble.js ASM_ON)
 const REAL_SUITES=new Set(['renders the outfit without errors','planner: independent outfit checklist','planner: shoes, belts, leather and metals','outfit score']);
 const bench=async()=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
@@ -226,18 +227,20 @@ const bench=async()=>{
   // the built-in suites get the fixed plan too, except those about the planner and the start-up check, which keeps the real
   // planner so a planner change that breaks start-up is caught by it
   const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1],fixed=!REAL_SUITES.has(name);
-    const ctx=await browser.newContext({...devices['iPhone 13']});if(fixed)await ctx.addInitScript({path:FIXED_PLAN});if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
+    const ctx=await browser.newContext({...devices['iPhone 13']});if(fixed)await ctx.addInitScript({path:FIXED_PLAN});await ctx.addInitScript(ASM_OFF);if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
     page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
     await page.goto(url);await page.waitForFunction(()=>window.appReady);
     // a suite's own contexts are recorded too
-    const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext(o);if(fixed)await c.addInitScript({path:FIXED_PLAN});if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
+    const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext(o);if(fixed)await c.addInitScript({path:FIXED_PLAN});await c.addInitScript(ASM_OFF);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
     try{await fn({page,ctx,browser:b,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
     if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
     await ctx.close()};
   // the fixed plan (fixedplan.js) goes into every page of a test file unless the file says module.exports.realPlanner=true: a
   // test that doesn't need the planner's choices then doesn't run the planner, and a planner change doesn't select it
   const file=async f=>{const browser=await browserOf(),mine=new Set(),mod=require(path.join(__dirname,f)),fixed=!mod.realPlanner;
-    const track=async c=>{c=await c;if(fixed)await c.addInitScript({path:FIXED_PLAN});if(rec)rec.context(c);mine.add(c);return c};
+    // assembled pictures (assemble.js) are switched off too unless the file says module.exports.assembled=true (ASM_TEST_OFF)
+    const asmOff=!mod.assembled;
+    const track=async c=>{c=await c;if(fixed)await c.addInitScript({path:FIXED_PLAN});if(asmOff)await c.addInitScript(ASM_OFF);if(rec)rec.context(c);mine.add(c);return c};
     const b=new Proxy(browser,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
       :k==='newContext'?o=>track(t.newContext(o)):k==='newPage'?async o=>{const c=await track(t.newContext(o));return c.newPage()}
       :typeof t[k]==='function'?t[k].bind(t):t[k]});
@@ -314,7 +317,10 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on
   const passed=!failures&&!ONLY;
   // which tests ran with the fixed plan (their planner.js entries are replaced in the map, not added to)
-  const fixedOf=key=>key.startsWith('run.js: ')?!REAL_SUITES.has(key.slice(8)):!/module\.exports\.realPlanner\s*=\s*true/.test(fs.readFileSync(path.join(__dirname,key),'utf8'));
+  // the files a test ran with switched off (the fixed plan: planner.js; assembled pictures off: assemble.js): their entries are replaced
+  const fixedOf=key=>{if(key.startsWith('run.js: '))return REAL_SUITES.has(key.slice(8))?['assemble.js']:['planner.js','assemble.js'];
+    const src=fs.readFileSync(path.join(__dirname,key),'utf8'),out=[];
+    if(!/module\.exports\.realPlanner\s*=\s*true/.test(src))out.push('planner.js');if(!/module\.exports\.assembled\s*=\s*true/.test(src))out.push('assemble.js');return out};
   if(!process.env.NO_IMPACT&&(results.size||passed))try{await impact.save(ROOT,results,ALL,passed,fixedOf)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
   // the slowest files, so the suite can be kept quick
   if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${label(f)} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`+(jobs>1?` (${jobs} at a time; one after another ${(times.reduce((a,t)=>a+t[1],0)/1000).toFixed(0)}s)`:''));

@@ -180,7 +180,8 @@ const follow=(file,syms,sources)=>{const out=new Map(),at=g=>{if(!out.has(g))out
 
 /* ---------- CSS: rules by selector ---------- */
 const normSel=s=>s.replace(/\/\*[\s\S]*?\*\//g,' ').replace(/\s+/g,' ').trim();
-/* → {rules:[{key,a,ba,bb,b,cond}], groups:[{a,b}], com}: style rules (key = selector; null for @keyframes and the like),
+/* → {rules:[{key,kf,a,ba,bb,b,cond}], groups:[{a,b}], com}: style rules (key = selector; null for @keyframes and the like, kf = a
+   @keyframes block's name),
    cond = inside @media/@supports; groups = those @media/@supports blocks, from the `@` to the closing brace */
 const cssScan=src=>{const rules=[],groups=[],com=[],n=src.length;let i=0;
   const skip=()=>{if(src[i]==='/'&&src[i+1]==='*'){const j=src.indexOf('*/',i+2);if(j<0)throw 0;com.push([i,j+2]);i=j+2;return true}
@@ -191,7 +192,7 @@ const cssScan=src=>{const rules=[],groups=[],com=[],n=src.length;let i=0;
     const pre=normSel(src.slice(a,i));if(src[i]===';'){i++;rules.push({key:null,a,ba:i,bb:i,b:i,cond});continue}
     const ba=++i;if(/^@(media|supports|container|layer)\b/.test(pre)){block(true);groups.push({a,b:i});continue}
     let d=1;while(i<n&&d){if(skip())continue;if(src[i]==='{')d++;else if(src[i]==='}')d--;i++}if(d)throw 0;
-    rules.push({key:pre[0]==='@'?null:pre,a,ba,bb:i-1,b:i,cond})}};
+    const kf=/^@(?:-webkit-)?keyframes\s+([\w-]+)/.exec(pre);rules.push({key:pre[0]==='@'?null:pre,kf:kf?kf[1]:null,a,ba,bb:i-1,b:i,cond})}};
   try{block(false)}catch(e){return null}return {rules,groups,com}};
 /* ---- selectors: can a new rule only apply where a rule that is already there applies? ---- */
 /* a selector list at its commas, a selector at its combinators (both outside brackets) */
@@ -221,6 +222,9 @@ const cssImpact=(oldS,newS,H,isNew)=>{const out={units:new Set(),top:false},O=cs
       let any=false;for(let i=Math.max(p,r.a);i<Math.min(q,r.b);i++)if(real(i)){any=true;break}
       // spacing or a comment: it matters inside a selector (`.a .b` is not `.a.b`), nowhere else
       const sel=r.key&&(p===q?p<r.ba-1:p<r.ba-1&&q>r.a);if(!any&&!sel)continue;
+      // a @keyframes block: it moves only what a rule naming it animates, so it is those rules (in this sheet: a new animation used
+      // only by new rules touches nothing old, the new rules count by themselves); any other at-rule is the whole sheet
+      if(!r.key&&r.kf){const re=new RegExp('(?<![\\w-])'+r.kf+'(?![\\w-])');for(const x of S.rules)if(x.key&&re.test(src.slice(x.ba,x.bb)))r0.units.add(x.key);continue}
       if(!r.key){r0.top=true;continue}
       if(p>=r.ba&&q<=r.bb){r0.units.add(r.key);continue}                                   // its declarations only
       if(isOld||plainOld.has(r.key)){r0.units.add(r.key);continue}                         // a rule removed, or one with a selector the sheet already had
@@ -278,15 +282,15 @@ const installHook=root=>{try{if(fs.existsSync(path.join(root,'.githooks','pre-pu
    the next, or a path only taken on a weekend, stays known. Names that no longer exist in the sources are dropped, and so
    are tests that no longer exist */
 // passed: `npm test` (or the whole suite) ran and nothing failed: the map then says which files it stands for
-// fixedOf(test): the test ran with the fixed plan (tests/fixedplan.js), so the planner never runs in it by a timer: what it used
-// of planner.js is replaced, not added to, and what an earlier run with the real planner left there (or a branch whose map is
+// fixedOf(test): the files the test ran with switched off (true = ['planner.js']: the fixed plan, tests/fixedplan.js; 'assemble.js':
+// assembled pictures off), so nothing in them runs by a timer: what it used of them is replaced, not added to, and what an earlier run with the real planner left there (or a branch whose map is
 // older) drops out the next time it runs; without that the old entries would select it for every planner change for good
 const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Map(),alive=new Map();
   const names=async f=>{if(!alive.has(f)){let t=null,k=null;try{t=realRead(path.join(root,f),'utf8')}catch(e){}
       if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)){const u=await scan(t);if(u)k=new Set(flat(u).map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
       alive.set(f,k)}return alive.get(f)};
   for(const [k,r] of results){if(r.bad){out.set(k,new Map([[ANY,new Set([ANY])]]));continue}
-    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();if(fixedOf&&fixedOf(k))e.delete('planner.js');for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
+    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();{const r=fixedOf&&fixedOf(k);for(const f of r===true?['planner.js']:r||[])e.delete(f)}for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
   for(const k of [...out.keys()])if(!all.includes(k))out.delete(k);
   for(const e of out.values())for(const [f,S] of [...e]){if(f===ANY)continue;const ok=await names(f);if(!ok){e.delete(f);continue}
     if(ok!==true)for(const x of [...S])if(x!==ANY&&x!==LOADED&&!ok.has(x))S.delete(x);if(!S.size)e.delete(f)}

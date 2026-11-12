@@ -52,6 +52,11 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     ok(css(C,C.replace('/* cards */','/* the cards */'),known)===''&&css(C,C.replace('.card{padding:8px}','.card{padding:8px}\n\n/* more */'),known)==='','comments and blank lines touch nothing');
     ok(css(C,C+'.badge{color:red}\n.card .badge:hover{color:blue}\n',known)==='','a rule for a class the app never had touches no existing test');
     ok(css(C,C+'.card{margin:0}\n',known)==='.card','another rule for a selector that already applies everywhere names that selector');
+    {const K='.a{animation:spin 1s both}\n.b{color:red}\n.c{animation-name:fade}\n@keyframes spin{from{opacity:0}to{opacity:1}}\n@keyframes fade{to{opacity:0}}\n@font-face{font-family:x}\n';
+      ok(css(K,K.replace('opacity:0}to','opacity:.2}to'),['a','b','c'])==='.a','a changed @keyframes names only the rules that animate with it');
+      ok(css(K,K+'@keyframes pop{to{transform:scale(1.1)}}\n',['a','b','c'])==='','a new @keyframes no rule names yet touches nothing');
+      ok(css(K,K.replace('@keyframes fade{to{opacity:0}}','@keyframes fade{to{opacity:.5}}'),['a','b','c'])==='.c','animation-name counts too');
+      ok(css(K,K.replace('font-family:x','font-family:y'),['a','b','c'])===' +top','another at-rule is still the whole sheet')}
     ok(css(C,C+'.card.dot{margin:0}\n',known)==='.card'&&css(C,C+'.card::before{content:""}\n.card .dot:hover>b,.card:not(.dot){margin:0}\n',known)==='.card +top'&&css(C,C+'.card::before{content:""}\n.wide .card:hover,.card:not(.dot){margin:0}\n',known)==='.card',
       'a new selector whose last part needs what a plain rule already asks for (.card.dot, .card::before, .wide .card:hover, .card:not(.dot)) can only apply where that rule does: its tests; one part that no plain rule covers (… > b) and it is every page test');
     ok(css(C,C+'.card:not(.badge){margin:0}\n',known)==='.card'&&css(C,C+'.badge .card{margin:0}\n.card>.badge{color:red}\n',known)==='','a new class inside :not() is not a rule for something new; a new class the element or one around it must have is');
@@ -59,7 +64,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     ok(css(C,C.replace(/@media[^@]*/,''),known)==='.card | .wide','a whole @media block removed names the rules it held');
     ok(css(C,C+'.card .dot b{margin:0}\n',known)===' +top'&&css(C,C+'.wide{margin:0}\n',known)===' +top','a new selector for existing classes that no plain rule covers (or one that only applied in @media) selects every page test');
     ok(css(C,C.replace('.card .dot','.card.dot'),known)==='.card | .card .dot','a selector changed by one space is a changed selector: the tests that used the old one, and those where the new one can apply');
-    ok(css(C,C.replace('600px','700px'),known)===' +top'&&css(C,C.replace('360deg','180deg'),known)===' +top','an @media condition or @keyframes selects every page test');
+    ok(css(C,C.replace('600px','700px'),known)===' +top'&&css(C,C.replace('360deg','180deg'),known)==='','an @media condition selects every page test; a @keyframes no rule uses selects nothing (one in use: below)');
     ok(css(C,C.replace('  .wide{display:grid}\n',''),known)==='.wide','a removed rule names its selector');
 
     /* choosing */
