@@ -321,7 +321,32 @@ const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!rend
 /* a photo made for this outfit after the master (Settings: Regenerate): it is shown, and nothing is put together for the outfit */
 const asmFullWins=o=>{const full=renders[comboKey(o)],m=renders[asmMasterKey()];return !!(full&&m&&full.t>m.t)};
 function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
-  const a=asmOut[asmOutKey(o)];return a&&a.stamp===asmStamp(o)?{img:a.img,model:'assembled',t:a.t,sig:comboSig(o)}:null}
+  const a=asmOut[asmOutKey(o)];return a&&asmFresh(o,a)?{img:a.img,model:'assembled',t:a.t,sig:comboSig(o)}:null}
+/* ---- pictures built ahead on a computer (tools/asm-prebuild.js, npm run assemble) ----
+   The computer runs this very code on the owner's wardrobe and uploads each look's picture to the worker as an ordinary photo
+   record under its look key (render:<asmOutKey>), signed 'asm/out/z<ASM_ZV>/<stamp>': the zone version and the newest date among
+   the master and the pieces it was made from (asmStamp). A phone asks for that before it downloads the look's pieces (asmGetPre,
+   once a session per look; a look nobody built is a 404 and is made here as before). A picture made from older photos than this
+   phone holds (a piece made again since), or with other zones, is not used. */
+const ASM_PRE_RE=/^asm\/out\/z(\d+)\/(\d+)$/;
+/* is a kept picture still right? Made here: its stamp is the stamp now. Built on the computer: no older than any photo this phone
+   holds for the look (the phone may not hold the pieces at all: it never needed them) */
+const asmFresh=(o,a)=>a.stamp===asmStamp(o)||(!!a.pre&&a.stamp>=asmStamp(o));
+function asmTrim(){const old=Object.keys(asmOut).sort((a,b)=>asmOut[b].t-asmOut[a].t).slice(ASM_KEEP);for(const x of old){delete asmOut[x];txs('meta','readwrite',st=>st.delete('asm:out:'+x))}}
+async function asmGetPre(o){const k=asmOutKey(o),W=workerBase();if(!W||asmTried.has('pre:'+k))return false;asmTried.add('pre:'+k);
+  try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'}),j=r.ok?await r.json().catch(()=>null):null;
+    const m=j&&j.img&&ASM_PRE_RE.exec(String(j.sig||''));if(!m||+m[1]!==ASM_ZV)return false;
+    const rec={img:j.img,stamp:+m[2],t:Date.now(),pre:true};if(!asmFresh(o,rec))return false;
+    asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();return true}
+  catch(e){console.warn('no built picture',e);return false}}
+/* for the computer: one look's picture made exactly as a phone makes it -> {key, sig, img}, or null when it can't be (a piece missing,
+   one that came out wrong). It downloads what the look needs like asmEnsure, but never takes a picture built earlier */
+async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
+  if(!await asmGet(asmMasterKey(),true)||!asmWants(o)||(o.vest&&!await asmGet(asmVestKey())))return null;
+  if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
+  if((await Promise.all(asmParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
+  if(!await asmZonesKept())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));
+  const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
   await asmDropOld()}
 /* photos made from an earlier vest master that this device still holds are dropped, once per version (localStorage.asm_vest) */
@@ -332,7 +357,12 @@ async function asmDropOld(){const had=+localStorage.getItem('asm_vest')||1;if(ha
     localStorage.setItem('asm_vest',String(ASM_VEST))}catch(e){console.warn(e)}
   return n}
 /* one photo from the worker onto the device (each asked for once a session; a queued photo arrives by itself) */
-async function asmGet(key,force){if(renders[key])return true;const W=workerBase(),mk=asmMasterKey();if(!W||asmTried.has(key))return false;
+/* one download at a time per photo: a second ask while the first is on its way waits for it (it used to answer "missing" at once,
+   because the key was already marked as tried: the computer's build, tools/asm-prebuild.js, met Today's own download at start-up) */
+const asmGetting=new Map();
+function asmGet(key,force){if(renders[key])return Promise.resolve(true);if(asmGetting.has(key))return asmGetting.get(key);
+  const p=asmGetOnce(key,force).finally(()=>asmGetting.delete(key));asmGetting.set(key,p);return p}
+async function asmGetOnce(key,force){if(renders[key])return true;const W=workerBase(),mk=asmMasterKey();if(!W||asmTried.has(key))return false;
   // a worker with no master yet is not asked again at every start (ASM_NONE_MS), only when Settings looks
   if(key===mk&&!force&&Date.now()-(+localStorage.getItem('asm_none')||0)<ASM_NONE_MS)return false;
   asmTried.add(key);
@@ -347,12 +377,12 @@ const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());
    together and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
 async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&renders[asmMasterKey()])asmAheadSoon();if(asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
   try{if(!await asmGet(mk)||asmFullWins(o)||(o.vest&&!await asmGet(asmVestKey())))return;
+    if(await asmGetPre(o)){const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow();return}   // built on the computer: no pieces to download, nothing to compute
     if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
     const parts=asmParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
     if(!await asmZonesKept())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));
     const img=await asmPhoto(o,!ahead);if(!img)return;
-    const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);
-    const old=Object.keys(asmOut).sort((a,b)=>asmOut[b].t-asmOut[a].t).slice(ASM_KEEP);for(const x of old){delete asmOut[x];txs('meta','readwrite',st=>st.delete('asm:out:'+x))}
+    const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();
     const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()}
   catch(e){console.warn('could not assemble',e)}finally{asmBusy.delete(mk+comboKey(o))}}
 /* the day on screen's picture is ready: Today is redrawn, but not under a finger (a redraw removes what the touch started on and the
