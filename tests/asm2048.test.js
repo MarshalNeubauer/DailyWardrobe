@@ -101,12 +101,25 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const lg=asmSleeveSegs([{m:lp,one:true}],W,N),lapel=(()=>{const g=lg.segs[lg.seg[280*W+Math.round(250+Math.tan(20*Math.PI/180)*180)]];let a=Math.atan2(g.sn,g.cs)*180/Math.PI;while(a>90)a-=180;while(a<-90)a+=180;return Math.round(Math.abs(a))})(),lparts=lg.segs.length-1;
       const lt=asmLinenTile();let mean=0,sd=0;for(const v of lt.r)mean+=v;mean/=lt.r.length;for(const v of lt.r)sd+=(v-mean)**2;sd=Math.sqrt(sd/lt.r.length);
       return {paint:[asmSuitPaintable(wp),asmSuitPaintable(tw),asmSuitPaintable(pin)].join(),linen:T.linen,mm:+T.mm.toFixed(1),linePx:+(best/T.TW*px).toFixed(1),
-        parts:sg.segs.length-1,lapel,lparts,upper:angOf(120*W+100),fore:angOf(340*W+350),body:sg.seg[10*W+300],mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
-    ok(pj.paint==='true,false,false'&&pj.mm===50,`a windowpane read in bands is painted (a twill without a reading, and a pinstripe, are still photographed), its pane ${pj.mm} mm (550 mm / 11 across)`);
+        parts:sg.segs.length-1,lapel,lparts,body:sg.seg[10*W+300],tube:(()=>{const g=sg.segs[sg.seg[150*W+100]];if(!g||!g.poly)return null;const a=asmTubeAt(g,80,150),b=asmTubeAt(g,350,360),c=asmTubeAt(g,120,150);return {a:a.map(Math.round),b:b.map(Math.round),c:c.map(Math.round)}})(),mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
+    ok(pj.paint==='true,false,true'&&pj.mm===50,`a windowpane or a pinstripe read in bands is painted (a twill without a reading is still photographed), the windowpane's pane ${pj.mm} mm (550 mm / 11 across)`);
     ok(pj.linePx>=3.6,`its lines are painted in Claude's colours and bold: the 2% off-white line is ${pj.linePx} px at 2048 (it would be ${(.02*pj.mm*3.2).toFixed(1)}; 4 is the least, less a pixel of antialiasing)`);
-    ok(pj.parts===2&&(pj.upper<10||pj.upper>170)&&Math.abs(pj.fore-90)<10&&pj.body===0,`a bent sleeve is split into its upper arm and forearm, the pattern upright on one (${pj.upper}°) and turned along the other (${pj.fore}°)`);
+    {const T2=pj.tube;ok(pj.parts===1&&T2&&Math.abs(Math.abs(T2.a[0])-20)<=4&&Math.abs(Math.abs(T2.b[0])-20)<=4&&Math.sign(T2.a[0])===Math.sign(T2.b[0])&&Math.sign(T2.c[0])!==Math.sign(T2.a[0])&&Math.abs(T2.b[1]-T2.a[1])>150&&pj.body===0,`a bent sleeve is one tube of cloth: a line 20 px off its centre on the upper arm (${T2&&T2.a}) carries on 20 px off it, on the same side, along the forearm (${T2&&T2.b}), round the elbow`)}
     ok(pj.lparts===1&&Math.abs(pj.lapel-20)<4,`a lapel is one part, the pattern along its length (${pj.lapel}° from upright, drawn at 20°)`);
     ok(pj.linen&&Math.abs(pj.mean-1)<.01&&Math.abs(pj.sd-.055)<.01,`a linen jacket gets a linen texture in its shading (mean ${pj.mean}, spread ${pj.sd})`);
+    // a navy pinstripe on a herringbone (the owner's): the cloth's weave is laid in, its columns breaking on the stripes, and it shows on
+    // a dark navy (as a share of linear light it was under one level of 255); the stripe is painted 3 px, not 4
+    const hb=await p.evaluate(async()=>{const it={id:'ph',type:'suit',primaryColor:'navy',secondaryColor:'lightblue',pattern:'pinstripe',
+        patternSpec:{across:{bands:[{role:'ground',hex:'#2b3858',w:.92},{role:'line',hex:'#7c89a8',w:.08}]},along:null,description:'Navy worsted with a fine herringbone weave, crossed by thin pinstripes'},
+        sett:{v:2,a:0,bands:[['#2c324b',.92],['#6c7490',.08]],cross:null,cr:6,tr:40,src:'claude+pixels'}};
+      const T=await asmSuitTex(it),W=2048,N=W*W,d=new Uint8ClampedArray(4*N).fill(160),zj=new Uint8Array(N),cj=new Uint8ClampedArray(4*N);
+      for(let y=900;y<1100;y++)for(let x=900;x<1100;x++)zj[y*W+x]=1;for(let k=0;k<N;k++){cj[4*k]=220;cj[4*k+1]=30;cj[4*k+2]=30;cj[4*k+3]=255}
+      const P=asmSuitPrep(new ImageData(d,W,W),new ImageData(cj,W,W),zj),out=asmSuitPaintTex(P,T).data,vals=[];
+      for(let y=950;y<1050;y++)for(let x=926;x<956;x++)vals.push(out[4*(y*W+x)+2]);   // the blue channel, in the navy between stripes
+      const m=vals.reduce((a,b)=>a+b,0)/vals.length,sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)**2,0)/vals.length);
+      return {cloth:T.cloth,sd:+sd.toFixed(1),mean:Math.round(m)}});
+    ok(hb.cloth&&hb.cloth.kind==='herringbone'&&Math.abs(hb.cloth.cw-22)<.5&&Math.abs(hb.cloth.off-42.24)<.5,`a herringbone cloth is laid in, its columns half a stripe repeat wide (${hb.cloth&&hb.cloth.cw} px) with their breaks on the stripes (${hb.cloth&&hb.cloth.off} px)`);
+    ok(hb.sd>=4,`the weave shows on a dark navy: its brightness varies by ${hb.sd} levels around ${hb.mean}`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
