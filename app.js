@@ -61,7 +61,7 @@ function openSettings(section){
   renderSettingsExtras();settingsSummaries();if(queuedKeys().length)checkQueue();
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
-  setLock(true);
+  setLock(true);appPush('set');   // the phone's Back closes it (appPush, by show())
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
    to Today underneath, and Settings stood still under the finger until that scroll ended; also notes the last touch for toggleCat */
@@ -76,7 +76,7 @@ function refreshToday(){if(settingsOpen()){todayStale=true;return}renderToday()}
 function closeSettings(){
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
-  setLock(false);
+  setLock(false);appDrop('set');   // closed by Done or anything else: its Back entry goes
   if(todayStale){todayStale=false;renderToday()}
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
@@ -1534,7 +1534,7 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
 /* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
 let itemHist=false,itemBack=false;
 try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
-function histPush(){if(itemHist||itemBack||subPend)return;   // (subPend: a step back that drops a stats/packing/care page's entry is on its way; the item gets its entry once it lands)
+function histPush(){if(itemHist||itemBack||appPend)return;   // (appPend: a step back that drops Settings' or a stats/packing/care page's entry is on its way; the item gets its entry once it lands)
 try{history.pushState({item:1},'');itemHist=true}catch{}}
 function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
 addEventListener('popstate',()=>{
@@ -1713,21 +1713,27 @@ function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav')
    (subBack) to where it was opened from: Settings as it was, the same categories open and scrolled the same, over the page under it; or
    the page it came from, scrolled where it was. (The ‹ always went to Today, out of Settings entirely.) */
 let subFrom=null;
-/* the phone's Back (button or swipe) does the same as the ‹: one history entry while such a page is open (subHist); show() takes it
-   away again when the page is left any other way (the ‹, a tab), with a history.back() of our own (subPend) that the popstate below
-   lets pass. (The item sheet keeps its own entry the same way: histPush.) */
-const SUBS=['stats','pack','care'];let subHist=false,subPend=false;
-addEventListener('popstate',()=>{if(subPend){subPend=false;if(editing)histPush();return}   // an item opened meanwhile gets its entry now
-  if(subHist){subHist=false;if(SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))subBack()}});
-function subOpen(){if(!subHist&&!subPend&&!itemBack){try{history.pushState({sub:1},'');subHist=true}catch{}}
+/* The phone's Back (button or swipe) steps back one level: on one of these pages it does what the ‹ does, in Settings what Done does.
+   There is one history entry while Settings or such a page is open (appHist), and appKind says whose it is: opening a page from Settings
+   hands Settings' entry on to the page ('set' → 'sub') and its ‹ hands it back, so Back never needs two presses. Left any other way
+   (Done, a tab, the ‹ to Today) the entry is taken away with a history.back() of our own (appPend) that the popstate below lets pass;
+   appKeep holds it while subBack moves from the page to Settings. (The item sheet keeps its own entry the same way: histPush.) */
+const SUBS=['stats','pack','care'];let appHist=false,appKind='',appPend=false,appKeep=false;
+function appPush(kind){if(appHist){appKind=kind;return}if(appPend||itemBack)return;try{history.pushState({app:kind},'');appHist=true;appKind=kind}catch{}}
+function appDrop(kind){if(!appHist||appKeep||appKind!==kind)return;appHist=false;appPend=true;try{history.back()}catch{appPend=false}}
+addEventListener('popstate',()=>{if(appPend){appPend=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
+  if(!appHist)return;appHist=false;
+  if(appKind==='sub'&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))subBack();else if(settingsOpen())saveSettings()});
+function subOpen(){appPush('sub');
   const m=$('#settings-modal');let page=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden})||'today';
   if(!TABS.includes(page))page='today';   // one of these pages opened from another: its ‹ goes to Today
   subFrom={page,y:scrollY,set:settingsOpen()&&m?{cats:SET_CATS.filter(k=>{const e=$('#sc-'+k);return e&&e.classList.contains('open')}),top:m.scrollTop}:null}}
-function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;show(f.page);scrollTo(0,f.y);
+function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
+  appKeep=!!f.set;try{show(f.page)}finally{appKeep=false}scrollTo(0,f.y);   // back to Settings: the entry stays, for Settings now
   if(!f.set)return;openSettings();for(const k of f.set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=f.set.top}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
-  if(subHist&&!SUBS.includes(t)){subHist=false;subPend=true;try{history.back()}catch{subPend=false}}   // left by the ‹ or a tab: its Back entry goes
+  if(!SUBS.includes(t))appDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}

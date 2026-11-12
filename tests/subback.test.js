@@ -33,16 +33,38 @@ module.exports=async({ok,chromium,url,settle})=>{
     const pushed=await p.evaluate(()=>({len:history.length,state:history.state}));
     await p.evaluate(()=>history.back());await p.waitForFunction(()=>settingsOpen(),null,{timeout:3000}).catch(()=>{});await settle(p,300);
     const bk=await p.evaluate(()=>({open:settingsOpen(),backup:document.querySelector('#sc-backup').classList.contains('open'),stats:!document.querySelector('#stats').hidden,ward:!document.querySelector('#wardrobe').hidden}));
-    ok(pushed.len>=h0&&pushed.state&&pushed.state.sub===1&&bk.open&&bk.backup&&!bk.stats&&bk.ward,`the phone's Back on Wardrobe stats goes back to Settings as it was, over the Wardrobe (${JSON.stringify(bk)})`);
+    ok(pushed.len>=h0&&pushed.state&&pushed.state.app&&bk.open&&bk.backup&&!bk.stats&&bk.ward,`the phone's Back on Wardrobe stats goes back to Settings as it was, over the Wardrobe (${JSON.stringify(bk)})`);
     // left with the ‹ or a tab, the page's Back entry goes with it: the next Back doesn't bring the page or Settings back
     for(const how of ['pback','tab']){
       await p.evaluate(()=>{closeSettings();show('today');openSettings()});await settle(p,200);
       await p.evaluate(()=>document.querySelector('#pack-btn').click());await p.waitForFunction(()=>!document.querySelector('#pack').hidden);await settle(p,200);
       if(how==='pback')await p.click('#pack .pback');else await p.click('#n-add');
       await settle(p,400);
-      const st=await p.evaluate(()=>({state:history.state,pack:!document.querySelector('#pack').hidden}));
-      ok(!(st.state&&st.state.sub)&&!st.pack,`left by ${how==='pback'?'the ‹':'a tab'}, the packing list's Back entry is gone with it`);
+      const st=await p.evaluate(()=>({state:history.state,pack:!document.querySelector('#pack').hidden,open:settingsOpen()}));
+      ok(!st.pack&&(how==='pback'?st.open&&st.state&&st.state.app:!(st.state&&st.state.app)),how==='pback'?'left by the ‹, back in Settings: the one Back entry is Settings\' again':'left by a tab, the packing list\'s Back entry is gone with it');
     }
+    // Settings: the phone's Back closes it, like Done (the page under it stays where it was); Done takes its Back entry away
+    await p.evaluate(()=>{closeSettings();show('today')});await settle(p,300);
+    await p.evaluate(()=>{show('wardrobe');document.querySelector('main').style.minHeight='3000px';scrollTo(0,250);openSettings()});await settle(p,300);
+    const st1=await p.evaluate(()=>({state:history.state,open:settingsOpen()}));
+    await p.evaluate(()=>history.back());await p.waitForFunction(()=>!settingsOpen(),null,{timeout:3000}).catch(()=>{});await settle(p,200);
+    const cl=await p.evaluate(()=>({open:settingsOpen(),ward:!document.querySelector('#wardrobe').hidden,y:scrollY,lock:document.documentElement.classList.contains('set-lock')}));
+    ok(st1.open&&st1.state&&st1.state.app==='set'&&!cl.open&&!cl.lock&&cl.ward&&cl.y===250,`the phone's Back closes Settings, leaving the Wardrobe where it was (${JSON.stringify(cl)})`);
+    await p.evaluate(()=>openSettings());await settle(p,200);await p.click('#settings-modal .sdone');await settle(p,400);
+    ok(await p.evaluate(()=>!settingsOpen()&&!(history.state&&history.state.app)),'closed by Done, Settings\' Back entry goes with it');
+    // Settings → stats → Back → Settings → Back → closed: one press a level
+    await p.evaluate(()=>openSettings());await settle(p,200);await p.evaluate(()=>document.querySelector('#stats-btn').click());await settle(p,300);
+    await p.evaluate(()=>history.back());await p.waitForFunction(()=>settingsOpen(),null,{timeout:3000}).catch(()=>{});await settle(p,300);
+    const lv1=await p.evaluate(()=>({open:settingsOpen(),stats:!document.querySelector('#stats').hidden}));
+    await p.evaluate(()=>history.back());await p.waitForFunction(()=>!settingsOpen(),null,{timeout:3000}).catch(()=>{});await settle(p,300);
+    const lv2=await p.evaluate(()=>({open:settingsOpen(),ward:!document.querySelector('#wardrobe').hidden}));
+    ok(lv1.open&&!lv1.stats&&!lv2.open&&lv2.ward,`Back from stats opens Settings again, and the next Back closes it (${JSON.stringify([lv1,lv2])})`);
+    // and the ‹ hands the entry back to Settings: Back then closes Settings at once
+    await p.evaluate(()=>openSettings());await settle(p,200);await p.evaluate(()=>document.querySelector('#pack-btn').click());await settle(p,300);
+    await p.click('#pack .pback');await settle(p,400);
+    await p.evaluate(()=>history.back());await p.waitForFunction(()=>!settingsOpen(),null,{timeout:3000}).catch(()=>{});await settle(p,300);
+    ok(await p.evaluate(()=>!settingsOpen()&&document.querySelector('#pack').hidden),'after the packing list\'s ‹ back to Settings, one Back closes Settings');
+    await p.evaluate(()=>{document.querySelector('main').style.minHeight=''});
     // left for the Wardrobe and an item opened at once: the step back that drops the page's entry doesn't shut the item; its own Back does
     await p.evaluate(()=>{closeSettings();show('today');openCare()});await settle(p,200);
     await p.evaluate(()=>{flt='all';show('wardrobe');openItem(items[0].id)});await settle(p,600);
