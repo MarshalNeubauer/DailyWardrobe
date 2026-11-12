@@ -876,17 +876,18 @@ function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;
   $('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
   if(monthOpen)monthUnfold(box);else{revealRun++;monthFold(box)}}
-/* the page's scroll during an unfold or a fold, moved frame by frame on the animations' own curve (MONTH_EASE), duration and delay, so
-   the page and the clip move together: the browser's own smooth scroll keeps its own pace (WebKit, Safari's engine, covered a 1,000 px
-   scroll in one frame where Chromium takes half a second), and the page lurched against the animation. A touch or the wheel stops it. */
-let pageRun=0;
-function pageScroll(to,ms,delay=0){const run=++pageRun,from=scrollY;if(noMotion()||Math.abs(to-from)<1){scrollTo(0,to);return}let t0=null;
-  const stop=()=>{pageRun++;off()},off=()=>{removeEventListener('touchstart',stop);removeEventListener('wheel',stop)};
-  addEventListener('touchstart',stop,{passive:true,once:true});addEventListener('wheel',stop,{passive:true,once:true});
-  const step=now=>{if(run!==pageRun)return;if(t0===null)t0=now+delay;const t=Math.min(1,Math.max(0,(now-t0)/ms));scrollTo(0,from+(to-from)*easeMonth(t));if(t<1)requestAnimationFrame(step);else off()};
-  requestAnimationFrame(step)}
-/* MONTH_EASE, cubic-bezier(.2,.8,.2,1), as a function of time 0..1 (x found by halving, 20 steps) */
-function easeMonth(x){const c=(a,b,t)=>3*a*t*(1-t)*(1-t)+3*b*t*t*(1-t)+t*t*t;let lo=0,hi=1;for(let i=0;i<20;i++){const m=(lo+hi)/2;if(c(.2,.2,m)<x)lo=m;else hi=m}return c(.8,1,(lo+hi)/2)}
+/* the page's scroll during an unfold or a fold, on the animations' own curve (MONTH_EASE), duration and delay, so the page and the clip
+   move together. The page is scrolled once, at the start, and Today is slid back by the same amount and eased to rest with the cards:
+   one more animation the browser runs with the others, no script on any frame. (The browser's own smooth scroll kept its own pace, and
+   WebKit covered a 1,000 px scroll in one frame; a scrollTo on every frame from script, the next try, ran out of step with the clip and
+   the slide on an iPhone, whose scrolling and animations aren't drawn by the page's script, and the cards juddered.) A second call while
+   one runs starts from where the page is drawn, so nothing jumps. */
+function pageScroll(to,ms,delay=0){const pg=$('#today'),from=scrollY;
+  let left=0;if(pg&&pg._ps){const m=/matrix.*,\s*([-\d.e]+)\)$/.exec(getComputedStyle(pg).transform);left=m?+m[1]:0;pg._ps.cancel();pg._ps=null}
+  scrollTo(0,to);const off=scrollY-from+left;   // the browser stops at the page's end: slide by what it really scrolled
+  if(!pg||noMotion()||Math.abs(off)<1||pg.hidden)return;
+  const a=pg._ps=pg.animate([{transform:`translateY(${off}px)`},{transform:'none'}],{duration:ms,delay,easing:MONTH_EASE,fill:'backwards'});
+  a.finished.then(()=>{if(pg._ps===a)pg._ps=null},()=>{})}
 /* Unfolding and folding the month without animating its height: an animated height laid the page out and repainted every day's
    drawing on every frame (30 layouts and 285 paints for one unfold), which was choppy on a phone. The page is laid out once, at the
    start of an unfold or the end of a fold, and the movement is a clip over the card, a slide for whatever is below it and a fade of
