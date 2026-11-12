@@ -722,6 +722,11 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 - the push check is `.githooks/pre-push` (`node tests/impact.js pre-push`, `prePush`): it refuses an uncommitted map and prints a note when the commit's files were not passed by `npm test` (a note only, so a branch with failing tests can still be pushed); every test run switches it on in the clone (`installHook`: `git config core.hooksPath .githooks`, unless hooks are already set up otherwise)
 - docs-only changes (`*.md`) need no `npm test`: they are not part of the fingerprint
 - `NO_IMPACT=1` turns the recording off; `TEST_BASE=<commit>` compares with another commit; `tests/impact.test.js` checks the selection
+- Safari's engine: `npm run test:webkit` (`TEST_BROWSER=webkit`) runs every test on Playwright's WebKit instead of Chromium, with no map and no selection; the owner uses only Safari on an iPhone, so run it after changes to touch, focus, storage or layout
+- WebKit is not preinstalled: `node /opt/node-tools/node_modules/playwright/cli.js install webkit` then `… install-deps webkit` (apt); a cloud container loses it when it is reclaimed
+- `tests/webkit.js` stands in for what only Chromium has: CORS-free mocks (headers added, preflights answered), CDP touches (synthetic touch events, a tap also clicks, no native scrolling), and service workers blocked (with one in control Playwright's WebKit stops routing POST/PUT to the mocks)
+- first WebKit run (2026-11-12, WebKit 26.6): 1991 passed, 22 failed; the expected harness failures are native scrolling under a swipe (`shopswipe`, `wardrobetap`), `sw.test.js`, and "access control checks" from fake hosts asked from a Web Worker or sw.js; the one real bug found is `wardrobe.test` (a shared save timer, `wardTypeT`, drops a text field's edit when the sheet is redrawn before its `change` fires)
+- WebKit's Linux build is not iOS Safari: no safe areas, URL-bar resizing, momentum scrolling, ITP or 7-day storage eviction; the phone stays the last check for those
 
 ### Writing a change the selector can narrow
 

@@ -4,7 +4,8 @@
   "description": "Daily Wardrobe: static web app (GitHub Pages) + Cloudflare worker",
   "scripts": {
     "test": "node tests/run.js --changed",
-    "test:all": "node tests/run.js"
+    "test:all": "node tests/run.js",
+    "test:webkit": "TEST_BROWSER=webkit node tests/run.js"
   },
   "devDependencies": {
     "playwright": "1.63.0"
