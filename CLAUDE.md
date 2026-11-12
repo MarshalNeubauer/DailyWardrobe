@@ -808,5 +808,9 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 - Measured on the swipe-down change (handler and grabber): as a load-time block with `.shop-top-head::before` it selected 89 of 91; as `shopSwipe()` from `openShop()` with `.shop-grab` it selects 5 (`shop`, `shopswipe`, the start-up suite, and two tests that read `shop.js` as text).
 - The slide-away part of that change edits the rules of `#shop-sheet` and `#shop-backdrop`, which are on every page: it selects 89 of 91 however it is written.
 - Other measurements: an edit inside the item sheet's `touchmove` listener selected 89 of 91 and now 5; a new `.ivhead::after` rule selected 89 and now 17.
+- The suite runs on Windows too (the owner's PC, `C:\code\DailyWardrobe`, 16 cores: 2169 checks in 42 s, 8 at a time); `.gitattributes` checks every text file out with LF (`* text=auto eol=lf`), since Git for Windows defaults to `core.autocrlf=true` and CRLF broke source checks that look for `\n`
+- a test that makes its own git repo turns `core.autocrlf` off in it (`impact.test.js`): that repo has no `.gitattributes`, and a merge there wrote CRLF on Windows
+- on Windows, read a file's executable bit from git (`git ls-files -s`: `100755`), not `fs.statSync`, which shows none there
+- on Windows PowerShell, `npm` and `npx` may be blocked by the script policy: `npm.cmd` / `npx.cmd` work; install with `npm.cmd install --no-package-lock`
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.

@@ -92,7 +92,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     fs.writeFileSync(path.join(repo,'app.js'),A);fs.writeFileSync(path.join(repo,'README.md'),'hello\n');
     const rows=['a.test.js\tapp.js\t'+I.LOADED+'\tone','b.test.js\tapp.js\t'+I.LOADED+'\ttwo',''].join('\n'),commit=m=>{sh(repo,'add','-A');sh(repo,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm',m)};
     const main=()=>sh(repo,'update-ref','refs/remotes/origin/main','HEAD'),mapText=()=>fs.readFileSync(path.join(repo,I.MAP),'utf8');
-    sh(repo,'init','-q');fs.writeFileSync(path.join(repo,I.MAP),rows);commit('x');main();
+    sh(repo,'init','-q');sh(repo,'config','core.autocrlf','false');fs.writeFileSync(path.join(repo,I.MAP),rows);commit('x');main();
     const T=['a.test.js','b.test.js'];let r=await I.select(repo,T);
     ok(r.all&&/not recorded for the files/.test(r.report),'a map on main without the fingerprint of main\'s files is not trusted: everything runs');
     // a passing run writes the fingerprint of the files it ran on; the same files give the same one, committed or not
@@ -111,7 +111,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     // map (or a run with the real planner) left there drops out; a test with the real planner keeps adding up as before
     {const fx=path.join(dir,'fixedmap');fs.mkdirSync(path.join(fx,'tests'),{recursive:true});
       fs.writeFileSync(path.join(fx,'planner.js'),'function outfit(){return 1}\nfunction tieScore(){return 2}\n');fs.writeFileSync(path.join(fx,'app.js'),'function one(){return 1}\n');
-      sh(fx,'init','-q');fs.writeFileSync(path.join(fx,I.MAP),['a.test.js\tplanner.js\t'+I.LOADED+'\toutfit\ttieScore','b.test.js\tplanner.js\t'+I.LOADED+'\toutfit',''].join('\n'));
+      sh(fx,'init','-q');sh(fx,'config','core.autocrlf','false');fs.writeFileSync(path.join(fx,I.MAP),['a.test.js\tplanner.js\t'+I.LOADED+'\toutfit\ttieScore','b.test.js\tplanner.js\t'+I.LOADED+'\toutfit',''].join('\n'));
       const m=()=>new Map([['app.js',new Set([I.LOADED,'one'])],['planner.js',new Set([I.LOADED])]]);
       await I.save(fx,new Map([['a.test.js',{m:m(),bad:false}],['b.test.js',{m:m(),bad:false}]]),['a.test.js','b.test.js'],false,k=>k==='a.test.js');
       const fm=I.load(fx),pa=[...(fm.get('a.test.js').get('planner.js')||[])],pb=[...(fm.get('b.test.js').get('planner.js')||[])];
@@ -132,7 +132,8 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     fs.writeFileSync(path.join(repo,'app.js'),A);commit('code without the map');main();ok((await I.select(repo,['a.test.js','c.test.js'])).all,'a code change merged without its map is noticed: everything runs');
     fs.mkdirSync(path.join(repo,'.githooks'));fs.writeFileSync(path.join(repo,'.githooks','pre-push'),'#!/bin/sh\n');I.installHook(repo);
     ok(sh(repo,'config','--get','core.hooksPath').trim()==='.githooks','a test run switches the push check on in the clone');
-    ok(fs.statSync(path.join(ROOT,'.githooks','pre-push')).mode&0o111&&/impact\.js pre-push/.test(fs.readFileSync(path.join(ROOT,'.githooks','pre-push'),'utf8')),'the push check is in the repo and executable');
+    // the mode git records (Windows has no executable bit for fs.statSync to show)
+    ok(/^100755 /.test(sh(ROOT,'ls-files','-s','.githooks/pre-push'))&&/impact\.js pre-push/.test(fs.readFileSync(path.join(ROOT,'.githooks','pre-push'),'utf8')),'the push check is in the repo and executable');
     fs.unlinkSync(path.join(repo,I.MAP));commit('no map');main();ok((await I.select(repo,T)).all,'without the map everything runs');
 
     /* main moved and was merged in: only a test that both changes can affect runs again */
@@ -143,7 +144,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
       const onMain=async(m,edit)=>{git('checkout','-q','mainline');edit();await pass(m);git('update-ref','refs/remotes/origin/main','HEAD');git('checkout','-q','work');git('merge','-q','--no-edit','mainline')};
       put('app.js',A);put('lib.js',L);put('README.md','hello\n');put('.gitattributes',I.MAP+' merge=union\n');
       put(I.MAP,['a.test.js\tapp.js\t'+I.LOADED+'\tone','a.test.js\tlib.js\t'+I.LOADED+'\tfive','b.test.js\tapp.js\t'+I.LOADED+'\tone','c.test.js\tlib.js\t'+I.LOADED+'\tfive\tsix',''].join('\n'));
-      git('init','-q','-b','mainline');commit('start');await pass('tested');git('update-ref','refs/remotes/origin/main','HEAD');
+      git('init','-q','-b','mainline');git('config','core.autocrlf','false');commit('start');await pass('tested');git('update-ref','refs/remotes/origin/main','HEAD');
       git('checkout','-q','-b','work');put('app.js',A.replace('a+1','a+2'));
       let r=await I.select(repo,T);ok(!r.all&&r.tests.sort().join()==='a.test.js,b.test.js','(the branch changes one(): the two tests that run it)');
       await pass('mine, tested');
