@@ -26,7 +26,7 @@ const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],bl
     lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>c.label[0]+c.pts).join('')+' '+o.notes.length)}}
   let h=0x811c9dc5;for(const c of lines.join('\\n'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return {n:lines.length,h:h.toString(16),first:lines[0]}}`;
 /* recorded from the app before the dress code (commit 671db36), with the same two strings */
-const GOLD={full:'fb07c45e',small:'54325d1f'};
+const GOLD={full:'fb07c45e',small:'27343082'};   // small: recorded again after the shirt rule (care.js: a worn shirt waits a day), which changes a wardrobe this small; full is the pre-dress-code recording
 const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
 
 module.exports=async({ok,chromium,url,ROOT,settle})=>{
