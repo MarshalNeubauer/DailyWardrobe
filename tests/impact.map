@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	e3f491f92b82d6850436
+# tested	8c399726f70fd6872f2e
 <every page test>	analysis.js	<loaded>
 <every page test>	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@daysreadonlyss.getAllmetaGetsettings.then	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterScripts	applyTheme	applyZoom	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	metaPut	planFor	planMonth	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	replanFuture	rqGet	saveUserSettings	settingsOpen	show	texSwatches	todayBtn	tx	txs	workerBase	zoomTarget
 <every page test>	assemble.js	<loaded>	@	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
@@ -18,7 +19,7 @@ assemble.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$tod
 assemble.test.js	apple-touch-icon.png	<loaded>
 assemble.test.js	assemble.js	asmAreas	asmAutoSoon	asmBarMask	asmBig	asmBox	asmCalibJob	asmCan	asmCompose	asmCostOf	asmCount	asmDE	asmData	asmDrift	asmEnsure	asmFill	asmFor	asmGet	asmImg	asmInfo	asmLab	asmLook	asmMajor	asmMake	asmMakeMissing	asmMasterItem	asmMasterJob	asmMasterKey	asmMasterOutfit	asmMasterSig	asmNeeds	asmOutKey	asmPack	asmPackZones	asmParts	asmPending	asmPhoto	asmPieceJob	asmPieceKey	asmQueueOutfit	asmSeams	asmShirtText	asmStamp	asmTieMask	asmUnpack	asmUnpackZones	asmVestFor	asmVestKept	asmVestMasterJob	asmVestZone	asmWants	asmWatch	asmZones	asmZonesFor	asmZonesKept	asmZonesOk	renderAsmUI	setAsmAuto
 assemble.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mergeState	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	stateSig	thirdOf	watchOpts	watchText
-assemble.test.js	detect.js	texPat	usableSett
+assemble.test.js	detect.js	@	texPat	usableSett
 assemble.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 assemble.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 assemble.test.js	icon-192.png	<loaded>
@@ -45,7 +46,7 @@ claude.test.js	app.js	@document.addEventListenervisibilitychange	S	addFiles	aiLa
 claude.test.js	apple-touch-icon.png	<loaded>
 claude.test.js	assemble.js	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 claude.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	desc	fitCol	hasVest	hexRgb	lum	mix	normCol	normColFor	normPat	patBase	patLabel	patName	primaryCol	rgbHex	shadeName	thirdOf	watchOpts
-claude.test.js	detect.js	texPat	usableSett
+claude.test.js	detect.js	@	texPat	usableSett
 claude.test.js	draw.js	fabricDef	itemThumb
 claude.test.js	icon-192.png	<loaded>
 claude.test.js	icon-512.png	<loaded>
@@ -236,7 +237,7 @@ figuremotif.test.js	app.js	@document.addEventListenervisibilitychange	S	addFiles
 figuremotif.test.js	apple-touch-icon.png	<loaded>
 figuremotif.test.js	assemble.js	asmAutoSoon	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 figuremotif.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	labHex	labOf	lum	normCol	normColFor	normPat	patBase	patLabel	patName	primaryCol	rgbLab	shadeName	thirdOf	watchOpts
-figuremotif.test.js	detect.js	settSig	texPat	usableSett
+figuremotif.test.js	detect.js	@	settSig	texPat	usableSett
 figuremotif.test.js	draw.js	fabricDef	figFabric	itemThumb
 figuremotif.test.js	icon-192.png	<loaded>
 figuremotif.test.js	icon-512.png	<loaded>
@@ -308,7 +309,7 @@ itempics.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$tod
 itempics.test.js	apple-touch-icon.png	<loaded>
 itempics.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 itempics.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mergeState	mix	nm	occLabel	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	stateSig	thirdOf
-itempics.test.js	detect.js	texPat	usableSett
+itempics.test.js	detect.js	@	texPat	usableSett
 itempics.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 itempics.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 itempics.test.js	icon-192.png	<loaded>
@@ -380,7 +381,7 @@ month.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}
 month.test.js	apple-touch-icon.png	<loaded>
 month.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 month.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mergeState	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	stateSig	thirdOf
-month.test.js	detect.js	texPat	usableSett
+month.test.js	detect.js	@	texPat	usableSett
 month.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 month.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 month.test.js	icon-192.png	<loaded>
@@ -412,7 +413,7 @@ motif.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}
 motif.test.js	apple-touch-icon.png	<loaded>
 motif.test.js	assemble.js	asmAutoSoon	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 motif.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	labHex	labOf	lum	normCol	normColFor	normPat	patBase	patLabel	patName	primaryCol	rgbLab	shadeName	thirdOf	watchOpts
-motif.test.js	detect.js	settSig	texPat	usableSett
+motif.test.js	detect.js	@	settSig	texPat	usableSett
 motif.test.js	draw.js	fabricDef	figFabric	itemThumb
 motif.test.js	icon-192.png	<loaded>
 motif.test.js	icon-512.png	<loaded>
@@ -445,7 +446,7 @@ multi.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}
 multi.test.js	apple-touch-icon.png	<loaded>
 multi.test.js	assemble.js	asmAutoSoon	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 multi.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	desc	fitCol	hasVest	hexRgb	labOf	lum	mix	normCol	normColFor	normPat	patBase	patLabel	patName	primaryCol	rgbHex	shadeName	thirdOf	watchOpts
-multi.test.js	detect.js	analyzeStripes	boxBlur	detectPattern	detectQueued	lumGrid	sobel	texPat	usableSett
+multi.test.js	detect.js	@	analyzeStripes	boxBlur	detectPattern	detectQueued	lumGrid	sobel	texPat	usableSett
 multi.test.js	draw.js	fabricDef	itemThumb
 multi.test.js	icon-192.png	<loaded>
 multi.test.js	icon-512.png	<loaded>
@@ -490,7 +491,7 @@ occasions.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$to
 occasions.test.js	apple-touch-icon.png	<loaded>
 occasions.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 occasions.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	occLabel	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf	watchOpts	watchText
-occasions.test.js	detect.js	texPat	usableSett
+occasions.test.js	detect.js	@	texPat	usableSett
 occasions.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 occasions.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 occasions.test.js	icon-192.png	<loaded>
@@ -524,7 +525,7 @@ paste.test.js	app.js	@document.addEventListenerdrop	@document.addEventListenerpa
 paste.test.js	apple-touch-icon.png	<loaded>
 paste.test.js	assemble.js	asmAutoSoon	asmCan	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 paste.test.js	core.js	COLOR_OPTS	accentOf	colBase	colName	colOf	colorDesc	colsFor	desc	hasVest	hexRgb	inRotation	lum	mix	nm	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	shadeName	thirdOf	watchOpts
-paste.test.js	detect.js	detectQueued	texPat	usableSett
+paste.test.js	detect.js	@	detectQueued	texPat	usableSett
 paste.test.js	draw.js	fabricDef	itemThumb
 paste.test.js	icon-192.png	<loaded>
 paste.test.js	icon-512.png	<loaded>
@@ -600,7 +601,7 @@ prefetch.test.js	app.js	@document.addEventListenervisibilitychange	aAn	addTombst
 prefetch.test.js	apple-touch-icon.png	<loaded>
 prefetch.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 prefetch.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mergeState	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	stateSig	thirdOf
-prefetch.test.js	detect.js	texPat	usableSett
+prefetch.test.js	detect.js	@	texPat	usableSett
 prefetch.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 prefetch.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 prefetch.test.js	icon-192.png	<loaded>
@@ -617,7 +618,7 @@ queue.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}
 queue.test.js	apple-touch-icon.png	<loaded>
 queue.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 queue.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mergeState	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	stateSig	thirdOf
-queue.test.js	detect.js	texPat	usableSett
+queue.test.js	detect.js	@	texPat	usableSett
 queue.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 queue.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 queue.test.js	icon-192.png	<loaded>
@@ -635,7 +636,7 @@ refresh.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$toda
 refresh.test.js	apple-touch-icon.png	<loaded>
 refresh.test.js	assemble.js	asmAutoSoon	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmMasterKey	asmNeeds	asmPending	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 refresh.test.js	core.js	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	lum	mergeState	mix	nm	patBase	patOf	planCol	prettyCols	primaryCol	rgbHex	stamp	stateSig	thirdOf
-refresh.test.js	detect.js	usableSett
+refresh.test.js	detect.js	@	usableSett
 refresh.test.js	draw.js	fabricDef	figBg	figFabric	figureSvg	itemThumb	swatchSVG
 refresh.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 refresh.test.js	icon-192.png	<loaded>
@@ -664,7 +665,7 @@ render-sync.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$
 render-sync.test.js	apple-touch-icon.png	<loaded>
 render-sync.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 render-sync.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	thirdOf
-render-sync.test.js	detect.js	texPat	usableSett
+render-sync.test.js	detect.js	@	texPat	usableSett
 render-sync.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 render-sync.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 render-sync.test.js	icon-192.png	<loaded>
@@ -681,7 +682,7 @@ render.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today
 render.test.js	apple-touch-icon.png	<loaded>
 render.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 render.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	sockToe	thirdOf	watchOpts	watchText
-render.test.js	detect.js	texPat	usableSett
+render.test.js	detect.js	@	texPat	usableSett
 render.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 render.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 render.test.js	icon-192.png	<loaded>
@@ -1002,7 +1003,7 @@ shirtweave.test.js	app.js	@document.addEventListenervisibilitychange	S	addFiles	
 shirtweave.test.js	apple-touch-icon.png	<loaded>
 shirtweave.test.js	assemble.js	asmAutoSoon	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 shirtweave.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	labHex	labOf	lum	mix	normCol	normColFor	normPat	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	shadeName	thirdOf	watchOpts
-shirtweave.test.js	detect.js	settSig	texPat	usableSett
+shirtweave.test.js	detect.js	@	settSig	texPat	usableSett
 shirtweave.test.js	draw.js	fabricDef	itemThumb	texTileUrl	texTones
 shirtweave.test.js	icon-192.png	<loaded>
 shirtweave.test.js	icon-512.png	<loaded>
@@ -1050,7 +1051,7 @@ snapshots.test.js	app.js	@document.addEventListenervisibilitychange	addTombstone
 snapshots.test.js	apple-touch-icon.png	<loaded>
 snapshots.test.js	assemble.js	asmAutoSoon	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 snapshots.test.js	core.js	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	mergeState	mix	nm	patBase	patOf	planCol	prettyCols	primaryCol	rgbHex	stamp	stateSig	thirdOf
-snapshots.test.js	detect.js	texPat	usableSett
+snapshots.test.js	detect.js	@	texPat	usableSett
 snapshots.test.js	draw.js	fabricDef	figBg	figFabric	figureSvg	swatchSVG
 snapshots.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 snapshots.test.js	icon-192.png	<loaded>
@@ -1067,7 +1068,7 @@ socktoe.test.js	app.js	@document.addEventListenervisibilitychange	E	S	busyLabelF
 socktoe.test.js	apple-touch-icon.png	<loaded>
 socktoe.test.js	assemble.js	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 socktoe.test.js	core.js	COLOR_OPTS	accentOf	colBase	colName	colOf	colorDesc	colsFor	desc	hasVest	hexRgb	lum	mix	normPat	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	shadeName	sockToe	thirdOf
-socktoe.test.js	detect.js	usableSett
+socktoe.test.js	detect.js	@	usableSett
 socktoe.test.js	draw.js	drawSock	fabricDef	itemThumb
 socktoe.test.js	icon-192.png	<loaded>
 socktoe.test.js	icon-512.png	<loaded>
@@ -1139,7 +1140,7 @@ tagging.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$toda
 tagging.test.js	apple-touch-icon.png	<loaded>
 tagging.test.js	assemble.js	asmAutoSoon	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 tagging.test.js	core.js	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	desc	fitCol	hasVest	hexRgb	inRotation	labHex	labOf	lum	lumCol	mix	nm	normCol	normColFor	normPat	ownColKey	ownPatKey	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	shadeName	thirdOf	watchOpts
-tagging.test.js	detect.js	detectQueued	texPat	usableSett
+tagging.test.js	detect.js	@	detectQueued	texPat	usableSett
 tagging.test.js	draw.js	fabricDef	figBg	figFabric	figureSvg	itemThumb	swatchSVG
 tagging.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 tagging.test.js	icon-192.png	<loaded>
@@ -1244,7 +1245,7 @@ todayqueue.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$t
 todayqueue.test.js	apple-touch-icon.png	<loaded>
 todayqueue.test.js	assemble.js	asmCan	asmEnsure	asmFor	asmGet	asmInfo	asmLook	asmMasterKey	asmNeeds	asmPending	asmPieceKey	asmVestKept	asmWants	asmZonesKept	renderAsmUI
 todayqueue.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sockToe	thirdOf
-todayqueue.test.js	detect.js	texPat	usableSett
+todayqueue.test.js	detect.js	@	texPat	usableSett
 todayqueue.test.js	draw.js	buckleDefs	drawBelt	drawOxfordSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 todayqueue.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 todayqueue.test.js	icon-192.png	<loaded>
