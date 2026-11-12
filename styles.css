@@ -640,6 +640,181 @@ body.iv-on #toast,body.iv-on #busy{z-index:960;bottom:calc(78px + env(safe-area-
 .shop-hid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .shop-foot{text-align:center}
 @media(max-width:360px){.shop-figs{grid-template-columns:1fr}}
+/* ---- safety ---- */
+.nostore{position:fixed;inset:0;z-index:2000;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));overflow:auto}
+.nostore-in{max-width:440px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 20px;margin:auto}
+.nostore-in h1{font-size:22px;line-height:1.2;margin:0 0 12px}.nostore-in p{margin:0 0 12px;line-height:1.45}
+.nostore-why{color:var(--mut);font-size:13px;overflow-wrap:anywhere}
+.nostore-btn{width:100%;min-height:44px;border-radius:12px;background:var(--ink);color:var(--bg);border:1px solid var(--ink);font-weight:700;font-size:16px}
+.tagfail{display:flex;flex-direction:column;gap:10px;border:1px solid color-mix(in srgb,var(--danger) 45%,var(--line));border-radius:12px;padding:10px 12px;margin:0 0 12px}
+.tagfail p{margin:0;font-size:14px;line-height:1.4;overflow-wrap:anywhere}.tagfail b{color:var(--danger)}.tagfail-do{color:var(--mut)}
+.tagfail-btn{min-height:44px;border-radius:12px;font-weight:700}
+
+/* ---- pack ---- */
+/* the packing list page (pack.js): the other pages' design (44px controls, 12px radius, bordered 14px cards) */
+#pack{font-size:15px}
+#pack :where(button){min-height:var(--ctl-h);padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1.2;text-align:center}
+#pack button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#pack :where(select,input[type=date]){height:var(--in-h);padding:0 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:15px;min-width:0;max-width:100%;width:100%}
+#pack select{padding-right:8px}
+#pack .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+#pack .pk-card{border:1px solid var(--line);border-radius:var(--r-card);padding:14px;margin:0 0 12px}
+#pack .pk-card h3{font-size:16px;margin:0 0 4px}
+#pack .pk-card h4{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin:14px 0 2px}
+#pack .empty{padding:24px 0;text-align:center}
+.pk-dates,.pk-caps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pk-caps{margin:10px 0 0}
+.pk-f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--mut);min-width:0}
+.pk-help{font-size:13px;line-height:1.35;margin:0}
+.pk-note{font-size:14px;line-height:1.4;margin:12px 0 0}
+.pk-tag{font-size:12px;font-weight:600;color:var(--ink);background:color-mix(in srgb,var(--acc) 28%,transparent);border-radius:8px;padding:2px 8px;margin-left:6px;vertical-align:1px}
+.pk-day{display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 0;border-bottom:1px solid var(--line)}
+.pk-day:last-child{border-bottom:0;padding-bottom:0}
+.pk-dn{flex:none;width:86px;font-size:13px;font-weight:600}
+.pk-day.off .pk-dn{color:var(--mut)}
+.pk-stack{flex:none;width:28px;height:38px;border-radius:3px}
+.pk-what{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pk-what b{font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+.pk-what small{font-size:13px;line-height:1.3;color:var(--mut);overflow-wrap:anywhere}
+.pk-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pk-count{font-size:14px;font-weight:600;line-height:1.4;margin:2px 0 0}
+.pk-line{display:flex;align-items:center;gap:8px;min-height:48px;border-bottom:1px solid var(--line)}
+.pk-group .pk-line:last-of-type{border-bottom:0}
+.pk-tick{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}
+span.pk-tick{cursor:default}
+.pk-tick input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--acc)}
+.pk-tick input:checked~.pk-nm{color:var(--mut);text-decoration:line-through}
+.pk-sw{flex:none;width:26px;height:26px;border-radius:6px;overflow:hidden;border:1px solid #0003}
+.pk-sw:empty{border-style:dashed;border-color:var(--line)}
+.pk-sw svg{display:block;width:100%;height:100%}
+.pk-nm{flex:1;min-width:0;line-height:1.3;overflow-wrap:anywhere}
+.pk-nm small{color:var(--mut);font-size:13px;white-space:nowrap}
+#pack .pk-wear{flex:none;min-width:64px;padding:0 12px;font-size:14px;color:var(--mut)}
+#pack .pk-line.worn .pk-wear{color:var(--ink)}
+.pk-travel .pk-help{margin:6px 0 10px}
+#pack .pk-out{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+/* the links to it: under Wardrobe stats in Settings, and at the top of Today's open month */
+.pack-link{margin-top:8px}
+.pack-open{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:44px;margin:0 0 10px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.pack-open .pack-chev{font-size:20px;line-height:1;color:var(--mut)}
+@media(max-width:340px){.pk-dn{width:70px}#pack .pk-wear{min-width:56px;padding:0 8px}}
+
+/* ---- setup ---- */
+/* first-run setup (setup.js): a full-screen flow like Settings, under it (z-index) so Settings can still open over it */
+#setup{display:none;position:fixed;inset:0;z-index:980;flex-direction:column;background:var(--bg);color:var(--ink);font-size:15px;outline:0}
+#setup.on{display:flex}
+@media (min-width:600px){#setup{inset:auto;top:4vh;bottom:4vh;left:50%;width:min(600px,94vw);transform:translateX(-50%);border-radius:18px;border:1px solid var(--line);box-shadow:0 0 0 100vmax rgba(0,0,0,.5),0 20px 50px rgba(0,0,0,.45);overflow:hidden}}
+.su-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line)}
+@media (min-width:600px){.su-head{padding-top:12px}}
+.su-ttl{min-width:0;display:flex;flex-direction:column}.su-ttl h2{font-size:22px;line-height:1.2}.su-ttl small{font-size:13px}
+.su-prog{flex:none;display:flex;gap:4px;padding:8px 16px 0}.su-prog i{flex:1;height:3px;border-radius:2px;background:var(--line)}.su-prog i.on{background:var(--acc)}
+.su-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.su-in{max-width:520px;margin:0 auto;padding:16px 16px 20px}
+.su-bar{flex:none;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card)}
+.su-bar .pri{flex:1}
+#setup button{min-height:var(--ctl-h);padding:0 16px;margin:0;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;font-weight:600;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+#setup button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#setup button[disabled]{opacity:.5}
+#setup .su-skip{flex:none;min-width:72px}
+#setup :is(select,input[type=text]){height:var(--in-h);padding:0 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;min-width:0;max-width:none;width:auto}
+.su-lead{margin:0 0 12px;font-size:18px;line-height:1.4}
+.su-help{margin:0 0 10px;font-size:14px;line-height:1.45;color:var(--mut)}
+.su-err{color:var(--danger)}
+.su-group{padding:14px 0;border-top:1px solid var(--line)}.su-group:first-child{border-top:0;padding-top:0}
+.su-label{font-size:15px;font-weight:700;margin:0 0 4px}
+.su-days{display:flex;flex-wrap:wrap;gap:6px}
+#setup .su-day{min-width:44px;padding:0 8px;font-size:14px}
+#setup .su-day.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#setup .su-sw{width:100%;justify-content:space-between;gap:12px;min-height:64px;padding:10px 14px;margin:0 0 8px;border-radius:var(--r-card);text-align:left}
+.su-swt{display:flex;flex-direction:column;gap:2px;min-width:0}.su-swt b{font-size:16px}.su-swt small{font-size:13px;font-weight:400;line-height:1.3}
+.su-knob{flex:none;position:relative;width:46px;height:28px;border-radius:14px;background:var(--line);transition:background .15s}
+.su-knob::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:11px;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.su-sw[aria-checked=true] .su-knob{background:var(--acc)}.su-sw[aria-checked=true] .su-knob::after{transform:translateX(18px)}
+.su-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px;font-size:15px;font-weight:600}
+#setup .su-row select{flex:0 1 auto;max-width:62%}
+.su-form{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}#setup .su-form input{flex:1 1 160px}
+.su-acts{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.su-acts:empty{display:none}
+.su-tick{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:11px;background:#2e8b57;color:#fff;font-size:14px;font-weight:700;vertical-align:-4px}
+.su-ok{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:18px;font-weight:700}
+.su-note{margin:14px 0 0;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);font-size:14px;line-height:1.45}
+.su-sum{list-style:none;margin:0 0 14px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--card)}
+.su-sum li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.su-sum li:first-child{border-top:0}
+.su-sum span{color:var(--mut);flex:none}.su-sum b{text-align:right;min-width:0;overflow-wrap:anywhere}
+.setup-again{margin:14px 0 0}
+/* Today, while the wardrobe can't dress a day yet: what is still needed */
+.firstrun{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left}
+.stage .firstrun{margin:8px 0}.side>.firstrun{margin:var(--gap) 0 0}
+.firstrun h3{margin:0 0 4px;font-size:19px;line-height:1.25}
+.fr-sub{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--mut)}
+.fr-list{list-style:none;margin:0 0 14px;padding:0}
+.fr-it{display:flex;align-items:center;gap:10px;min-height:44px;border-top:1px solid var(--line)}.fr-it:first-child{border-top:0}
+.fr-tick{flex:none;width:24px;height:24px;border-radius:12px;border:2px solid var(--line);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.fr-it.done .fr-tick{background:#2e8b57;border-color:#2e8b57}
+.fr-t{flex:1;min-width:0;font-weight:600}.fr-t small{font-weight:400}.fr-it.done .fr-t{color:var(--mut)}
+.fr-st{flex:none;font-size:13px}
+.fr-add{width:100%;min-height:44px;margin:0;border-radius:12px;font-size:15px;font-weight:600}
+/* the Wardrobe tab with nothing in it */
+.wempty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:24px 16px!important}
+.wempty-pic{width:120px;height:84px;fill:none;stroke:var(--mut);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.wempty-pic .we-hang{stroke:var(--ink);fill:color-mix(in srgb,var(--acc) 22%,transparent)}.wempty-pic .we-hook{stroke:var(--ink)}.wempty-pic .we-ghost{opacity:.45}
+.wempty-t{font-size:17px}.wempty-s{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--mut);max-width:320px}
+/* ---- about ---- */
+.about-text{display:block;width:100%;box-sizing:border-box;min-height:96px;margin:0 0 8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px;line-height:1.4;resize:vertical}
+.about-note{margin:8px 0 0}.about-note.about-bad{color:var(--danger)}
+.fb-list{margin:14px 0 0}.fb-item{padding:10px 0;border-top:1px solid var(--line)}.fb-item small{color:var(--mut);font-size:12px}.fb-item p{margin:4px 0 0;font-size:14px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.about-confirm{margin:12px 0 0;padding:12px 14px;border:1px solid color-mix(in srgb,var(--danger) 45%,var(--line));border-radius:14px;font-size:14px;line-height:1.4}
+.about-confirm p{margin:0 0 6px}.about-confirm ul{margin:0 0 10px;padding-left:20px}.about-confirm li{margin:2px 0}.about-confirm .sactions{margin-top:10px}
+.about-fold summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;cursor:pointer;list-style:none}
+.about-fold summary::-webkit-details-marker{display:none}.about-fold summary::after{content:"›";color:var(--mut);font-size:20px;font-weight:400;transition:transform .2s}.about-fold[open] summary::after{transform:rotate(90deg)}
+.about-fold p{margin:0 0 8px;font-size:13px;line-height:1.45;color:var(--mut)}
+#about-update[hidden]{display:none}
+/* ---- wardrobe ---- */
+/* the Wardrobe's search field with the sort control beside it; an item's name, brand, material and notes; "nothing matches" */
+.wfind{display:flex;gap:8px;align-items:center;margin:0 0 10px}
+.wsearch{position:relative;flex:1;min-width:0;display:flex}
+#wardrobe .wsearch input{flex:1;width:100%;padding:0 44px 0 38px;background:var(--card);outline-offset:-2px}
+.wsicon{position:absolute;left:11px;top:50%;width:18px;height:18px;margin-top:-9px;fill:none;stroke:var(--mut);stroke-width:2;stroke-linecap:round;pointer-events:none}
+#wardrobe .wclear{position:absolute;right:0;top:0;width:44px;height:44px;min-height:0;padding:0;border:0;background:none;color:var(--mut);font-size:22px;font-weight:400;line-height:1}
+#wardrobe .wclear[hidden]{display:none}
+#wardrobe .wsort{flex:0 0 auto;width:132px;background:var(--card);font-weight:600;text-overflow:ellipsis}
+.wwear{font-size:12.5px;line-height:1.3;color:var(--mut)}
+.wnone{margin:18px 0;padding:22px 16px;border:1px dashed var(--line);border-radius:var(--r-card);text-align:center}
+.wnone b{display:block;font-size:16px;line-height:1.3;overflow-wrap:anywhere}.wnone p{margin:6px 0 0;font-size:14px}.wnone .btns{justify-content:center}
+.rowtap .named,.gimeta .named{min-width:0;overflow-wrap:anywhere}
+:is(#item-view,#add) .wfld{flex:0 0 58%;width:58%;max-width:58%}
+:is(#item-view,#add) label.wnotes{display:block;padding:7px 0;font-size:14px;font-weight:600}
+:is(#item-view,#add) .wnotes textarea{display:block;width:100%;min-height:64px;margin:6px 0 0;padding:10px 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:15px;font-weight:400;line-height:1.4;resize:vertical}
+.morefold{margin:8px 0 4px}
+#add .morebtn{width:100%;justify-content:space-between;padding:0 12px}
+.morechev{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.morefold.open .morechev{transform:rotate(180deg)}
+.morein{padding:6px 0 0}
+.morein>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:14px;font-weight:600}
+.morein>label select{flex:0 0 58%;width:58%;max-width:58%}
+/* ---- care ---- */
+/* the Care page takes the design system of the other pages (44px controls, 12px radius, bordered 14px cards) */
+#care{font-size:15px}
+#care :where(button):where(:not(.linkbtn)){min-height:var(--ctl-h);padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1.2;text-align:center}
+#care button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#care .phead.nav{display:flex;margin:4px 0 14px}
+#care .care-card{border:1px solid var(--line);border-radius:var(--r-card);padding:14px;margin:0 0 12px}
+#care .care-card h3{font-size:16px;line-height:1.3;margin:0 0 4px}
+.care-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.care-card>.care-row:first-of-type{border-top:0}.care-card>.shelp+.care-row{border-top:1px solid var(--line)}
+.care-main{flex:1 1 150px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.care-nm{font-size:14px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.care-main small{font-size:12.5px;line-height:1.3}
+.care-acts{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 100%}.care-acts button{flex:1 1 auto}
+.care-foot{margin:16px 0 0;text-align:center}.care-foot .linkbtn{min-height:44px;font-size:14px}
+.carelink{margin-top:8px}
+/* the Wardrobe grid: a quiet tag on a piece that is due */
+.caretag{display:table;margin:6px 4px 2px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid color-mix(in srgb,var(--acc) 55%,var(--line));color:var(--ink)}
+/* the item sheet's Care card */
+.ivcare .carecount{margin:0 0 10px}.ivcare .carecount.due{color:var(--ink)}
+.ivcare .careback{margin:0 0 10px}.ivcare .btns button{flex:1 1 auto}
+.ivcare .careback input{height:44px;padding:0 12px;border-radius:12px;min-width:0}
+/* Today: one quiet line when a piece reaches its number of wears */
+.carenote{margin:10px 2px 0;font-size:13px;line-height:1.4;color:var(--mut)}.carenote a{color:inherit;text-decoration:underline}
+@media (min-width:600px){.care-acts{flex:0 1 auto}}
 /* ---- server ---- */
 .acct-box .acct-h{margin-top:14px}
 .acct-uses{display:grid;gap:2px;margin:2px 0 8px}

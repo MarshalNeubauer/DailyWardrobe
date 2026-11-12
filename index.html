@@ -15,6 +15,8 @@
 <section id="today"></section>
 <section id="wardrobe" hidden></section>
 <section id="stats" hidden></section>
+<section id="pack" hidden></section>
+<section id="care" hidden></section>
 <section id="add" hidden><div class="phead"><h2>Add to wardrobe</h2></div><p id="note" class="psub"></p>
 <div class="addpick"><label class="btn pri" id="add-one"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>One item</span><small>A photo of it, then a close-up of the fabric</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><label class="btn" id="add-group"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg><span>Several items</span><small>One photo of a rail, a pile or a few on hangers</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files],true);this.value=''"></label></div>
 <div class="card addmore"><div class="slabel">Other ways to add</div>
@@ -42,6 +44,8 @@
 <div class="shead"><h2 id="set-title">Settings</h2><button type="button" class="pri sdone" onclick="saveSettings()">Done</button></div>
 <div class="sbody">
 <button type="button" class="slink" id="stats-btn" onclick="openStats()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="mltxt"><b>Wardrobe stats</b><small>Wear counts, unworn pieces and why, what costs points, what the planner learned</small></span><span class="chev" aria-hidden="true">›</span></button>
+<button type="button" class="slink pack-link" id="pack-btn" onclick="openPack()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V5h6v3M4 13h16"/></svg></span><span class="mltxt"><b>Packing list</b><small>What to pack for a trip, from the outfits planned for its days</small></span><span class="chev" aria-hidden="true">›</span></button>
+<button type="button" class="slink carelink" id="care-btn" onclick="openCare()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Laundry &amp; cleaning</b><small>What is due for cleaning, and what is away at the cleaner's or in the laundry</small></span><span class="chev" aria-hidden="true">›</span></button>
 <p class="sgh">Planning</p>
 <section class="mbox scat" id="sc-schedule"><button type="button" class="month-link scat-head" onclick="toggleCat('schedule')" aria-expanded="false" aria-controls="sp-schedule"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="mltxt"><b>Schedule</b><small id="sum-schedule"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-schedule"><div class="mpanel-in">
@@ -74,6 +78,12 @@
 <label class="srow">Units <select id="cfg-units" onchange="setUnits(this.value)"><option value="F">°F</option><option value="C">°C</option></select></label>
 </div></div></section>
 
+<section class="mbox scat" id="sc-care"><button type="button" class="month-link scat-head" onclick="toggleCat('care')" aria-expanded="false" aria-controls="sp-care"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Care</b><small id="sum-care"></small></span><span class="chev" aria-hidden="true">›</span></button>
+<div class="mpanel" id="sp-care"><div class="mpanel-in">
+<div class="sgroup"><div class="slabel">Due for cleaning</div><p class="shelp">How many times a piece is worn before the app says it is due. It counts the days you wore it; Laundry &amp; cleaning, at the top of Settings, lists what is due.</p><div id="care-limits"></div></div>
+<div class="sgroup"><div class="slabel">Shirts in the wash</div><p class="shelp">A shirt you wore is not planned again for this long, unless you have no other shirt.</p>
+<label class="srow">A worn shirt waits <select id="cfg-laundry" onchange="setLaundryDays(this.value)" aria-label="How long a worn shirt waits before it is planned again"></select></label></div>
+</div></div></section>
 <p class="sgh">Photos &amp; tagging</p>
 <section class="mbox scat" id="sc-photos"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Realistic photos</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-photos"><div class="mpanel-in">
@@ -108,6 +118,26 @@
 <div class="sgroup acct-box" id="acct-box" hidden></div>
 </div></div></section>
 
+<section class="mbox scat" id="sc-about"><button type="button" class="month-link scat-head" onclick="toggleCat('about');renderAbout()" aria-expanded="false" aria-controls="sp-about"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span class="mltxt"><b>About</b><small id="sum-about">Version · feedback · your data</small></span><span class="chev" aria-hidden="true">›</span></button>
+<div class="mpanel" id="sp-about"><div class="mpanel-in">
+<div class="sgroup"><div class="slabel" id="about-ver">Version</div><p class="shelp" id="about-status" role="status"></p>
+<div class="sactions"><button type="button" id="about-check" onclick="checkForUpdate(true)">Check for updates</button><button type="button" class="pri" id="about-update" hidden onclick="updateNow()">Update</button></div></div>
+<div class="sgroup"><div class="slabel">Feedback</div><p class="shelp">What works, what doesn’t, what is missing: it goes to the person who invited you.</p>
+<textarea id="fb-text" class="about-text" rows="4" maxlength="4000" placeholder="Your feedback" aria-label="Your feedback"></textarea>
+<div class="sactions"><button type="button" class="pri" id="fb-send" onclick="sendFeedback()">Send</button></div>
+<p class="shelp about-note" id="fb-status" role="status"></p>
+<div id="fb-list" class="fb-list" hidden></div></div>
+<div class="sgroup"><div class="slabel">Your data</div><p class="shelp">Delete your wardrobe, history, settings and photos. The app then starts as new.</p>
+<div class="sactions"><button type="button" class="danger" id="del-open" onclick="askDelete()">Delete my data</button></div>
+<div id="del-confirm" class="about-confirm" hidden></div>
+<p class="shelp about-note" id="del-status" role="status"></p></div>
+<div class="sgroup"><details class="about-fold" id="about-privacy"><summary>Privacy</summary>
+<p>Your wardrobe lives on this device and, once you are connected, in your own backup on the server.</p>
+<p>The photos of your items are sent to Anthropic to be read (type, colour, pattern) and to OpenAI to make the outfit pictures.</p>
+<p>Nothing else is shared with anyone.</p></details></div>
+</div></div></section>
+
+<div class="sactions setup-again"><button type="button" id="setup-again" onclick="setupOpen(true)">Run setup again</button></div>
 <p class="sfoot">Daily Wardrobe</p>
 </div>
 </div>
@@ -118,10 +148,16 @@
 <script src="detect.js"></script>
 <script src="figure.js"></script><script src="draw.js"></script>
 <script src="app.js"></script>
+<script src="safety.js"></script>
 <script src="tagging.js"></script>
 <script src="assemble.js"></script>
 <script src="stats.js"></script>
+<script src="pack.js"></script>
+<script src="wardrobe.js"></script>
+<script src="care.js"></script>
 <script src="shop.js"></script>
 <script src="sync.js"></script>
 <script src="account.js"></script>
+<script src="setup.js"></script>
+<script src="about.js"></script>
 </body></html>

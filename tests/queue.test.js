@@ -58,7 +58,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- app: send, close, come back ----
     store.clear();sent=[];calls=0;
     const ctx=await browser.newContext({viewport:{width:390,height:900}});
-    await ctx.route(HOST+'**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
+    // the worker answers no /sync: the wardrobe below is set in memory only and the start-up sync (300 ms after the database
+    // opens) merged it away on a busy machine; syncing is covered by sync.test.js
+    await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:503,body:'sync is off in this test'});const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));let dialog='';p.on('dialog',d=>{dialog=d.message();d.accept()});
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');localStorage.setItem('last_sync',Date.now()+864e5)},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);

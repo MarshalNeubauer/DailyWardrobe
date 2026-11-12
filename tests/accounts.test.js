@@ -230,7 +230,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
           const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));await addFiles([new File([b],'s.jpg',{type:'image/jpeg'})])})};
         await add();await add();
         await p.waitForFunction(()=>/limit of 1 photo readings is used up/.test(document.querySelector('#note').textContent),null,{timeout:15000});
-        ok(await p.evaluate(()=>/Photo tagging failed: Today’s limit of 1 photo readings is used up\. It starts again at midnight UTC\./.test(document.querySelector('#note').textContent)),'the Add card says a reading limit in the server\'s words');
+        ok(await p.evaluate(()=>document.querySelector('#note').textContent.includes('Today’s limit of 1 photo readings is used up. It starts again at midnight UTC.')&&/limit of 1 photo readings/.test(document.querySelector('#queue').textContent)),'the Add card says a reading limit in the server\'s words');
         await p.evaluate(u=>{document.querySelector('#toast').textContent='';claudePattern({image:u,type:'tie'})},PNG);
         await p.waitForFunction(()=>/limit of 0 pattern readings is used up/.test(document.querySelector('#toast').textContent)&&document.querySelector('#toast').classList.contains('on'));
         ok(true,'a pattern reading over the cap says so in a toast');

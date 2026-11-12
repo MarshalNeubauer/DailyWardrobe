@@ -8,7 +8,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(ph=>{items=[{id:'a',type:'blazer',primaryColor:'tan',secondaryColor:'lightblue',pattern:'windowpane',photo:ph,texture:ph,added:3},
-      {id:'b',type:'suit',primaryColor:'navy',pattern:'solid',photo:ph,added:2},{id:'c',type:'tie',primaryColor:'navy',pattern:'solid',photo:ph,texture:ph,added:1}];flt='all';editing=null;show('wardrobe')},PH);
+      {id:'b',type:'pants',primaryColor:'navy',pattern:'solid',photo:ph,added:2},{id:'c',type:'tie',primaryColor:'navy',pattern:'solid',photo:ph,texture:ph,added:1}];flt='all';editing=null;show('wardrobe')},PH);
     const look=()=>p.evaluate(()=>{const q=s=>document.querySelector(s),r=s=>{const b=q(s).getBoundingClientRect();return [b.left,b.top,b.width,b.height].map(Math.round).join()},pair=q('#ivpair');if(!pair)return null;
       const cs=getComputedStyle(q('#ivpair .cmpdraw'));
       return {cmp:pair.classList.contains('cmp'),pressed:q('#ivpair .tagsw').getAttribute('aria-pressed'),draw:r('#ivpair .cmpdraw'),photo:r('#ivpair .phfig img.ph'),sw:r('#ivpair .tagsw .ph.thumb'),tex:r('#ivpair .swtex'),

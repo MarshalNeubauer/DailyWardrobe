@@ -1,23 +1,64 @@
 # Daily Wardrobe
 
-Phone-friendly wardrobe app. `index.html` is the whole front end. `worker.js` is the small server that reads photos with Claude so your API key never sits in the repo.
+A phone-first web app that plans what to wear to work. You photograph your suits, blazers, trousers, shirts, ties, shoes and accessories; the app reads each photo, then plans an outfit for every working day: pieces that go together, rotated so nothing is worn too often, adjusted to the weather forecast and to occasions such as a wedding or a formal day.
 
-## Deploy
+What it does:
 
-1. **Front end.** Put `index.html` in the root of your repo. In GitHub: Settings → Pages → Deploy from a branch → `main` / root. The app is then at `https://YOURNAME.github.io/REPO/`.
-2. **Photo reading.** Create a Cloudflare Worker, paste in `worker.js`, and add these settings:
-   - `ANTHROPIC_API_KEY` (secret): your key from console.anthropic.com
-   - `APP_TOKEN` (secret): any long random string
-   - `ALLOWED_ORIGIN`: `https://YOURNAME.github.io` (no path, no trailing slash)
-   - `MODEL` (optional): defaults to `claude-sonnet-5-5`
-3. **Connect the phone.** Open the site, tap ⚙, enter the worker URL and the `APP_TOKEN`. Both are stored only in that browser.
-4. **Install.** Share → Add to Home Screen.
+- **Today**: the day's outfit as a picture, its pieces, a score with what could be put right, and the month's plan. Swap any piece, mark the day worn or not, move an outfit to another day.
+- **Wardrobe**: every item with its photo, colour, pattern and fabric close-up; take a piece out of rotation or add one that is on its way.
+- **Add**: one photo per item, or one photo of several items. Colour, pattern and type are read for you and can be corrected.
+- **What to buy**: what the wardrobe is missing, tested against the next six months of planning.
+- **Stats**: what was really worn, and what never is.
+- **Settings**: working days, days off and occasions, weather, photos, backup and sync, and About (version and updates, feedback, deleting your data, privacy).
 
-Without step 2 the app still works: colour and pattern come from the pixels and you pick the item type yourself.
+It installs to the home screen (Share → Add to Home Screen) and works offline once opened.
 
-## Behaviour
+## Joining as a tester
 
-- Wardrobe data (photos, swatches) is stored in the browser on that phone. It is not synced between devices. Clearing site data deletes it.
-- Today is the home tab. Sunday–Wednesday are full suits, Thursday is blazer + dress pants + shirt + tie, Friday and Saturday are empty.
-- A suit or blazer is not repeated within 3 days when you own enough of them. Change `COOL` in `index.html` to adjust.
-- Thursday needs items of type Blazer and Dress pants. Add them like anything else.
+Testers join with an **invite link** from the app's owner. Open the link on your phone: it opens the app and connects it to the owner's server, so photo reading, outfit pictures and your own backup work without any setup. Then add the app to your home screen.
+
+- Your wardrobe is yours: it lives on your device and in your own backup on the server.
+- When a new version is out the app says so and offers **Update**; it never restarts by itself.
+- **Settings → About** is where you send feedback, and where you can delete your data, from the device alone or from the server too.
+
+Without an invite the app still runs on its own: outfits are planned and drawn, but photos are not read for you, no outfit pictures are made and nothing is backed up.
+
+## Privacy
+
+The wardrobe is kept on the device and in the person's own backup on the server. Item photos are sent to Anthropic to be read and to OpenAI to make the outfit pictures. Nothing else is shared.
+
+## Hosting
+
+Two parts, no build step.
+
+**The app** is a set of static files (`index.html`, `styles.css`, the scripts, `sw.js`) served by **GitHub Pages** from the `main` branch: Settings → Pages → Deploy from a branch → `main` / root. A merge to `main` is a release. Every release bumps the number in `sw.js` (`CACHE='dw-v<n>'`): that number is the version the app shows, and it is how installed copies learn there is something new.
+
+**The server** is one **Cloudflare Worker** (`worker.js`, configured by `wrangler.toml`). It reads photos, makes the outfit pictures, keeps each person's backup and daily copies, and handles invites and feedback. It needs:
+
+| Setting | Kind | What for |
+| --- | --- | --- |
+| `APP_TOKEN` | secret | the owner's key to the server; any long random string |
+| `ANTHROPIC_API_KEY` | secret | reading photos with Claude |
+| `OPENAI_API_KEY` | secret | making outfit and item pictures |
+| `ALLOWED_ORIGIN` | variable | the app's address, e.g. `https://NAME.github.io` (no path) |
+| `CLAUDE_MODEL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_QUALITY` | variables, optional | which models to use |
+| `WARDROBE` | KV namespace | backups, kept pictures, feedback |
+| `RENDER_QUEUE` | Queue `wardrobe-renders` | pictures made in the background |
+| `RENDER_HUB` | Durable Object | tells an open app its picture is ready |
+| `AI` | Workers AI binding, optional | photo reading when there is no Anthropic key |
+
+Secrets are set once in the Cloudflare dashboard (or `wrangler secret put NAME`) and never live in this repository. `.github/workflows/deploy-worker.yml` deploys the worker whenever a merge to `main` changes it; for that the repository needs the secret `CLOUDFLARE_API_TOKEN` and the variables `CLOUDFLARE_ACCOUNT_ID` and `WARDROBE_KV_ID`. Until they are set the workflow skips and the worker is deployed by hand (`npx wrangler deploy`).
+
+The owner connects their own device under Settings → Connection with the server's address and `APP_TOKEN`, and sends each tester an invite link.
+
+## Running the tests
+
+```
+npm install
+npx playwright install chromium
+npm test            # only the checks the current change can affect
+npm run test:all    # every check
+node tests/run.js about   # the test files whose name contains "about"
+```
+
+The tests serve the repository locally, drive the app in headless Chromium at phone sizes, and run `worker.js` with mocked bindings: nothing touches a real server. `npm test` compares the branch with `origin/main` and uses `tests/impact.map` (what each test uses) to pick the tests; commit the map with the change. `CLAUDE.md` describes every file and the working rules in detail.

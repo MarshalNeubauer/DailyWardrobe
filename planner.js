@@ -170,7 +170,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are cleared; formal days, today and the past stay) */
-const PLAN_RULES=10;
+const PLAN_RULES=11;
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
@@ -240,11 +240,15 @@ const rb=i=>Math.min(rest(i),10)*.4+over(i,10)*.01;
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
 const LT={top:suitDay?'suit':'blazer',bot:suitDay?null:'pants',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tieclip',links:'cufflinks'};
 let lock=rec&&rec.lock||null;
+// the washing cycle (settings.laundryDays, default 1): a shirt worn within that many days is in the wash, so it is left out of the
+// day's shirts unless there is no other; a lock holding such a shirt (it was worn on a day before, by hand) lets go. Not on a
+// formal day, a wedding or a funeral: the occasion's shirt outweighs the washing, as its suit outweighs rotation
+const LD=day.formal||(day.occ&&!casual)?0:Math.max(0,+(settings.laundryDays??1)||0),washing=i=>LD>0&&since(i)<=LD,washed=l=>{const f=l.filter(i=>!washing(i));return f.length?f:l};
 if(lock)for(const sl in LT){const id=lock[sl],t=LT[sl];if(!id||!t||force[sl]||(skip[sl]||[]).includes(id))continue;const x=by(t).find(i=>i.id===id);
-  if(!x||(sl==='shoes'&&day.clim.rain&&finish(x.leather)==='suede')||seasonFit(x,day.clim.season)<=-15){lock=null;break}}
+  if(!x||(sl==='shoes'&&day.clim.rain&&finish(x.leather)==='suede')||seasonFit(x,day.clim.season)<=-15||(sl==='shirt'&&washing(x)&&by(t).some(i=>!washing(i)))){lock=null;break}}
 const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
   const s=skip[slot]||[],l=lock&&lock[slot];if(l&&!s.includes(l)){const x=all.find(i=>i.id===l);if(x)return [x]}
-  const left=all.filter(i=>!s.includes(i.id));return left.length?left:all};
+  const left=all.filter(i=>!s.includes(i.id)),any=left.length?left:all;return slot==='shirt'?washed(any):any};
 const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
