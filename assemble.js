@@ -280,7 +280,9 @@ const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmP
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
    (Settings: Regenerate) wins: that was the owner's choice. */
-function asmFor(o){if(!asmWants(o))return null;const full=renders[comboKey(o)];if(full&&full.t>renders[asmMasterKey()].t)return null;
+/* a photo made for this outfit after the master (Settings: Regenerate): it is shown, and nothing is put together for the outfit */
+const asmFullWins=o=>{const full=renders[comboKey(o)],m=renders[asmMasterKey()];return !!(full&&m&&full.t>m.t)};
+function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
   const a=asmOut[asmOutKey(o)];return a&&a.stamp===asmStamp(o)?{img:a.img,model:'assembled',t:a.t,sig:comboSig(o)}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
   await asmDropOld()}
@@ -303,8 +305,10 @@ async function asmGet(key,force){if(renders[key])return true;const W=workerBase(
 const ASM_NONE_MS=6*3600e3;
 const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());return !!(k&&k.v===ASM_ZV)};
 /* bring what this outfit needs onto the device, put its picture together, keep it and show it */
-async function asmEnsure(o){if(!ASM_ON||!asmCan(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
-  try{if(!await asmGet(mk)||(o.vest&&!await asmGet(asmVestKey())))return;
+/* not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet" put the picture
+   together and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
+async function asmEnsure(o){if(!ASM_ON||!asmCan(o)||asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
+  try{if(!await asmGet(mk)||asmFullWins(o)||(o.vest&&!await asmGet(asmVestKey())))return;
     if(o.vest&&!await asmVestKept())await asmGet(asmCalibKey('vest'));
     const parts=asmParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
     if(!await asmZonesKept())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));
