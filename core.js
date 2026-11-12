@@ -126,10 +126,21 @@ const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather'
 /* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
    temperature units and the weather location */
 let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'auto',updated:0};
-/* three-piece suits: a suit has a matching vest unless marked 'no'. vestMode: 'auto' (suit days that aren't hot, and
+/* three-piece suits: a suit may have a matching vest (hasVest). vestMode: 'auto' (suit days that aren't hot, and
    formal days), 'always' (every suit day) or 'never'; a day can override it. A vest means no tie clip. */
 const VESTS=[['yes','Matching vest'],['no','No vest']],VEST_MODES=[['auto','Suit days, except hot ones'],['always','Every suit day'],['never','Never']];
-const hasVest=i=>!!i&&i.type==='suit'&&i.vest!=='no';
+/* a suit has a waistcoat only when it says so (vest:'yes'). A wardrobe from before that rule (no settings.vestDef yet: dress.js,
+   migrateVests) keeps the old reading, where a suit with no value had one, until its suits have been given their value */
+const hasVest=i=>!!i&&i.type==='suit'&&(i.vest==='yes'||(i.vest==null&&!settings.vestDef));
+/* the dress code (settings.dress = {jacket, tie}; a missing object or key means yes): does the user wear jackets, ties? */
+const wearsJacket=()=>!(settings.dress&&settings.dress.jacket===false);
+const wearsTie=()=>!(settings.dress&&settings.dress.tie===false);
+/* is an outfit without a jacket (a tie) short of one? Not on a no-jacket day, and not when the dress code leaves it out
+   (a formal day, wedding or funeral is dressed in full from what is owned, but nothing is asked for) */
+const needsJacket=o=>o.occasion!=='casual'&&wearsJacket();
+const needsTie=o=>o.occasion!=='casual'&&wearsTie();
+/* an item type the dress code leaves out: never planned on an ordinary day, so not counted as unused and not suggested */
+const dressOut=t=>(!wearsTie()&&(t==='tie'||t==='tieclip'))||(!wearsJacket()&&(t==='suit'||t==='blazer'));
 /* days off: the chosen country's public holidays (settings.holidays: {country, list:[{d:'2026-12-25',n:'Christmas Day'}],
    skip:[dates the user works anyway]}) and the user's own days off (settings.daysOff: [{d, n}]). A day off is planned like
    a weekend: no outfit, and it does not count as worn. offName(d) -> the day's name, or '' on an ordinary day. */
