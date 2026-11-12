@@ -53,7 +53,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     reply=()=>[400,{error:{message:'Your organization must be verified to use the model gpt-image-2.'}}];
     await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering,null,{timeout:15000});await drain();await p.evaluate(()=>checkQueue());await settle(p,200);
     const f=await p.evaluate(()=>({t:document.querySelector('.render-btn').textContent,dis:document.querySelector('.render-btn').disabled,msg:document.querySelector('#render-msg').textContent}));
-    ok(f.t==='Try again'&&!f.dis&&/couldn’t be made: .*verif/i.test(f.msg),`a failed photo says why and offers to try again ("${f.msg}")`);
+    ok(f.t==='Try again'&&!f.dis&&/couldn’t be made\. .*verif/i.test(f.msg),`a failed photo says why and offers to try again ("${f.msg}")`);
     ok(await p.evaluate(()=>noPush),'a worker without the push: the app just polls');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();

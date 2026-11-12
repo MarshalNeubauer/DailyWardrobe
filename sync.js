@@ -1,6 +1,6 @@
 /* Daily Wardrobe: backup and sync through the Cloudflare worker (KV), plus download/restore of a backup file.
    Runs at start-up, a few seconds after any change, when the app comes back to the foreground, and on demand. */
-let restoring=false,syncing=false,syncTimer=null,syncAgain=false,syncRun=null;
+let restoring=false,syncing=false,syncTimer=null,syncAgain=false,syncRun=null,syncDue=0;
 const syncUrl=()=>{const u=(localStorage.getItem('worker_url')||'').trim();if(!u)return null;try{return new URL('sync',u.endsWith('/')?u:u+'/').href}catch{return null}};
 async function localState(){
   const [its,days,tombstones,settings]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('tombstones'),metaGet('settings')]);
@@ -45,27 +45,38 @@ async function syncNow(){
    While both still hold, a sync is one tiny request: nothing is downloaded or uploaded (the backup is several MB of photos). */
 const syncMark=()=>{try{const m=JSON.parse(localStorage.getItem('sync_mark')||'null');return m&&m.url===syncUrl()&&m.v&&m.sig?m:null}catch{return null}};
 const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:rev+':'+saved,sig}))}catch{}};
-const synced=()=>{localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus()};
+const synced=()=>{syncDue=0;localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus()};
+/* an invitation that was switched off: said once, and the app stops trying (localStorage.invite_ended holds that code) */
+const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and the app keeps working without a connection.';
+function inviteEnded(token){if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);if(typeof tell==='function')tell(ENDED)}
+/* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day */
+const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Not connected.');return false}
   if(!token){setSyncStatus('Not connected: paste your invite link under Connection.');return false}
+  if(localStorage.getItem('invite_ended')===token){setSyncStatus(ENDED);return false}
   syncing=true;setSyncStatus('Syncing…');
   try{
     for(let attempt=0;attempt<3;attempt++){
       // nothing changed here since the last sync: ask only whether the backup is still that version
       const mark=attempt?null:syncMark(),local=await localState(),quick=!!mark&&stateSig(mergeState(local,{}))===mark.sig;
       const r=await fetch(url+(quick?'?v='+encodeURIComponent(mark.v):''),{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
-      if(!r.ok)throw new Error(remote.error||'HTTP '+r.status);
+      if(r.status===403&&remote.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
+      if(!r.ok)throw new Error(remote.message||remote.error||'HTTP '+r.status);
       if(quick&&remote.same){synced();return true}
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
       const now=mergeState(await applyMerged(merged,local),remote.data||{});
       if(remote.data&&stateSig(now)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();return true}
+      if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoring?{reason:'restore'}:{}),data:now})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
-      const pr=await p.json().catch(()=>({}));if(!p.ok)throw new Error(pr.error||'HTTP '+p.status);
+      const pr=await p.json().catch(()=>({}));
+      if(p.status===429&&pr.what==='backup'){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',pr.message||'Today’s backups are used up.');setSyncStatus(pr.message||'Today’s backups are used up.');return false}
+      if(p.status===403&&pr.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
+      if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
       setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;
       if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
       return true;
@@ -74,8 +85,16 @@ async function syncOnce(){
   }catch(e){setSyncStatus('Backup failed: '+(e.message||e));return false}
   finally{syncing=false}
 }
-function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,2500)}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});
+/* after a change: the owner's phone backs up 2.5 s later. A tester's waits until the app goes to the background or closes, or 15
+   minutes after the first change still waiting (TESTER_SYNC_MS), so every tap doesn't upload the whole wardrobe (several MB). */
+const TESTER_SYNC_MS=15*60000;
+function scheduleSync(){clearTimeout(syncTimer);
+  if(typeof isTester==='function'&&isTester()){if(!syncDue)syncDue=Date.now();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-Date.now()));return}
+  syncTimer=setTimeout(syncNow,2500)}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
+  else if(document.visibilityState==='visible'&&Date.now()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});
+addEventListener('pagehide',()=>{if(syncDue)syncNow()});
 
 /* backup file: works without Cloudflare (saves to Files on iPhone) */
 async function downloadBackup(){

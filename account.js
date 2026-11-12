@@ -42,7 +42,7 @@ async function connectFromLink(text){const p=inviteParts(text);
       location.reload();return true}
     for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k);   // what the old account's syncs left
   }
-  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);
+  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');
   acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
@@ -99,7 +99,7 @@ function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)r
   else if(acct.state==='no')h=`<p class="shelp acct-bad">${acctEsc(acct.msg||'The server didn’t accept this connection. Check the address and the code above.')}</p>`;
   else if(acct.state==='off')h='<p class="shelp">Couldn’t reach the server just now.</p>';
   else if(m&&m.role==='tester')h=`<div class="slabel">Connected as ${acctEsc(m.name||'a tester')}</div>
-    <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.</p>
+    <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.${m.firstUntil&&m.firstUntil>Date.now()?` Your first week has twice the usual limits, until ${new Date(m.firstUntil).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}.`:''}</p>
     ${iosInSafari()?'<p class="shelp acct-ios">You’re using the app in Safari. Add it to your Home Screen, open it there and paste your invitation link: iPhone keeps the two apart, and can clear Safari’s copy after a week.</p>':''}
     <div class="sactions"><button type="button" onclick="copyInviteLink()">Copy my invitation link</button></div>
     <p class="shelp">To connect the app on your Home Screen or another phone. Keep it to yourself: it opens your wardrobe.</p>
