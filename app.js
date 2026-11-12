@@ -26,8 +26,9 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 const SET_CATS=['schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open)}
-function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();
-  if(open)setTimeout(()=>{const m=$('#settings-modal'),r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
+function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();const t0=Date.now();
+  // the scroll to show what opened gives way to a finger or wheel that moved since the tap: on an iPhone it fought a scroll already under way
+  if(open)setTimeout(()=>{const m=$('#settings-modal');if((m._touch||0)>t0)return;const r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
     const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
 function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};
   const days=l=>{const s=[...l].sort((a,b)=>((a+6)%7)-((b+6)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
@@ -53,7 +54,12 @@ function openSettings(section){
   renderSettingsExtras();settingsSummaries();if(queuedKeys().length)checkQueue();
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
+  setLock(true);
 }
+/* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
+   to Today underneath, and Settings stood still under the finger until that scroll ended; also notes the last touch for toggleCat */
+function setLock(on){document.documentElement.classList.toggle('set-lock',on);const m=$('#settings-modal');
+  if(on&&m&&!m._tw){m._tw=true;const mark=()=>{m._touch=Date.now()};m.addEventListener('touchstart',mark,{passive:true});m.addEventListener('wheel',mark,{passive:true})}}
 let todayStale=false;   // a change made in Settings that Today should show once Settings closes
 let viewStale=null;   // the Wardrobe or stats page, when a sync brought changes while Settings was open (syncRedraw): redrawn once it closes
 const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.display==='block';
@@ -63,6 +69,7 @@ function refreshToday(){if(settingsOpen()){todayStale=true;return}renderToday()}
 function closeSettings(){
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
+  setLock(false);
   if(todayStale){todayStale=false;renderToday()}
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }

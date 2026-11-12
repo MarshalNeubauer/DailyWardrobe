@@ -468,6 +468,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 /* ---- Settings: a full-screen page with a header that stays put, a stats link and categories that unfold ---- */
 #modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999}
 #settings-modal{position:fixed;inset:0;z-index:1000;background:var(--bg);color:var(--ink);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* the page behind Settings doesn't scroll (setLock in app.js) */
 @media (min-width:600px){#settings-modal{inset:auto;top:4vh;bottom:4vh;left:50%;width:min(600px,94vw);transform:translateX(-50%);border-radius:18px;border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.45)}}
 .shead{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 @media (min-width:600px){.shead{padding-top:12px}}
