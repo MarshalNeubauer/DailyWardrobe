@@ -75,7 +75,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     store.clear();
     const pre=await p.evaluate(()=>comboKey(batchCombos()[1]));
     store.set('render:'+pre,JSON.stringify({sig:'x',img:'data:image/jpeg;base64,'+JPG,model:'gpt-image-2',t:5}));
-    await p.click('#batch-btn');
+    await p.click('#batch-btn');await p.click('#ask-ok');
     await p.waitForFunction(()=>!batch,null,{timeout:30000});
     const after=await p.evaluate(()=>({left:batchCombos().length,btn:$('#batch-btn').textContent,status:$('#batch-status').textContent,disabled:$('#batch-btn').disabled}));
     ok(calls===before.n-1,`one photo per distinct look, generated in a row (${calls} of ${before.n}); the one already on the worker was fetched, not paid for again`);
