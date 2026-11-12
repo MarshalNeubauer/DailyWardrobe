@@ -300,8 +300,21 @@ const asmCan=o=>!!(o&&o.top&&o.shirt&&o.tie&&o.watch);
 function asmParts(o){const inf=asmInfo()||{},out=[];
   for(const slot of ['jacket','shirt','tie','bar','watch']){const i=o[ASM_SLOT[slot]];if(!i||(slot==='bar'&&o.vest))continue;const sig=asmLook(slot,i);
     if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt))continue;   // as the master shows it
+    if(slot==='shirt'&&asmPaintable(i)){out.push({slot,key:asmPieceKey(slot,i),item:i,paint:colOf(i)});continue}   // painted here: no photo
     out.push(slot==='jacket'&&o.vest?{slot,vest:true,key:asmPieceKey('vest',i),item:i}:{slot,key:asmPieceKey(slot,i),item:i})}   // a vest day: the suit's piece with its waistcoat
   return out}
+/* A plain shirt (no pattern, no woven texture) needs no photo: the master's white shirt is painted in its colour (colOf: the tagged
+   colour and its shade) on the device, keeping the master's folds and shadows (asmPaint). The owner's choice, 2026-11-12: eleven
+   plain colours painted this way looked right, a navy one included, and their colour is the tagged one, where the generator pushed it. */
+const asmPaintable=i=>!!i&&i.type==='shirt'&&!shirtPatterned(i)&&!shirtTextured(i)&&!texPat('shirt',i.pattern);
+const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint);   // the parts that need a photo from the worker
+/* the master with its shirt (zone m) painted in hex: in linear light each pixel is the colour times its brightness relative to the white
+   shirt's lit cloth (the 60th percentile of the zone), so folds, shadows and the edges against the jacket and the skin stay */
+function asmPaint(master,m,hex){const W=master.width,N=W*W,s=master.data,d=new Uint8ClampedArray(s),L=ASM_LIN,lum=j=>.2126*L[s[j]]+.7152*L[s[j+1]]+.0722*L[s[j+2]];
+  const lit=[];for(let i=0;i<N;i+=5)if(m[i])lit.push(lum(4*i));lit.sort((a,b)=>a-b);const ref=lit[Math.floor(lit.length*.6)]||1;
+  const h=String(hex).replace('#',''),c=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),enc=v=>{v=v<0?0:v>1?1:v;return 255*(v>.0031308?1.055*v**(1/2.4)-.055:12.92*v)};
+  for(let i=0;i<N;i++){if(!m[i])continue;const j=4*i,r=lum(j)/ref;d[j]=enc(c[0]*r);d[j+1]=enc(c[1]*r);d[j+2]=enc(c[2]*r)}
+  return new ImageData(d,W,master.height)}
 const asmVestKept=async()=>{const r=renders[asmVestKey()],k=r&&await metaGet('asm:vest:'+asmVestKey());return !!(k&&k.t===r.t&&k.v===ASM_ZV)};
 /* Did an edit keep the picture? Outside its own piece (and a margin) a photo must still be the master. The generator once answered
    a swap with a collage: the figure moved aside, the reference photos pasted beside it. -> the share of outside pixels that changed */
@@ -313,9 +326,9 @@ function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the pixel work needs, as plain data (photos as data URLs, kept zones packed), or null when something is missing */
 async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;
-  const parts=asmParts(o);if(parts.some(p=>!renders[p.key]||asmBad.has(p.key)))return null;
+  const parts=asmParts(o);if(parts.some(p=>!p.paint&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
-    parts:parts.map(p=>({slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};
+    parts:parts.map(p=>p.paint?{slot:p.slot,key:p.key,paint:p.paint}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img})};
   if(!job.zones){job.zoneImg=asmZoneImgs();   // zones made outside the app, when they're here; else the calibration photos
     if(!job.zoneImg){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}}
   if(o.vest){const vk=asmVestKey(),r=renders[vk];if(!r)return null;const kv=await metaGet('asm:vest:'+vk);
@@ -344,7 +357,8 @@ async function asmBuild(job){
       const m=asmUpMask(asmVestZone(await asmData(J.img,zw),await asmData(J.calib,zw),zs),zw,W),share=asmCount(m)/(W*W);   // at ASM_BASE too, then enlarged
       if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
-  const P={};for(const p of job.parts){const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
+  const P={};for(const p of job.parts){if(p.paint){M.paint=M.paint||{};P[p.slot]=M.paint[p.paint]=M.paint[p.paint]||asmPaint(master,z.shirt,p.paint);continue}   // nothing outside the shirt changes: no drift to check
+    const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
   if(V)P.vest=V;
   out.url=await asmJpeg(asmCompose(master,z,P));return out}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
@@ -381,8 +395,8 @@ async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;c
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP), each with the newest date among the photos
    it was made from: a piece made again makes it stale */
 let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
-const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key).join('+'));
-const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
+const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint:'')).join('+'));   // a painted shirt's colour is in the key: a new shade is a new picture
+const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmPhotoParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
    (Settings: Regenerate) wins: that was the owner's choice. */
@@ -412,7 +426,7 @@ async function asmGetPre(o){const k=asmOutKey(o),W=workerBase();if(!W||asmTried.
 async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
   if(!await asmGet(asmMasterKey(),true)||!asmWants(o)||(o.vest&&!await asmGet(asmVestKey())))return null;
   if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
-  if((await Promise.all(asmParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
+  if((await Promise.all(asmPhotoParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
   if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
@@ -447,7 +461,7 @@ async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&rende
   try{if(!await asmGet(mk)||asmFullWins(o)||(o.vest&&!await asmGet(asmVestKey())))return;
     if(await asmGetPre(o)){const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow();return}   // built on the computer: no pieces to download, nothing to compute
     if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
-    const parts=asmParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
+    const parts=asmPhotoParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
     if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
     const img=await asmPhoto(o,!ahead);if(!img)return;
     const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();
@@ -483,7 +497,7 @@ async function asmAhead(){if(!ASM_ON||!renders[asmMasterKey()]||!asmOffPage()||d
     while(asmAheadAgain)}
   catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false}}
 /* are any of this outfit's pieces being made right now? */
-const asmPending=o=>asmWants(o)&&asmParts(o).some(p=>queuedKeys().includes(p.key)&&!renderStalled(p.key));
+const asmPending=o=>asmWants(o)&&asmPhotoParts(o).some(p=>queuedKeys().includes(p.key)&&!renderStalled(p.key));
 /* ---- every photo the wardrobe needs, and making the missing ones ---- */
 const ASM_TYPE={suit:'jacket',blazer:'jacket',shirt:'shirt',tie:'tie',tieclip:'bar',watch:'watch'},ASM_COST={master:.46,calib:.13,vestmaster:.44,vestcalib:.13,piece:.14};   // at 2048 (measured 2026-11-12: master and waistcoat master at high 44-46¢, a medium edit about 12-14¢)
 function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if(!seen.has(k)){seen.add(k);out.push({kind,slot,item,key:k,what})}},inf=asmInfo()||{};
@@ -493,7 +507,7 @@ function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if
   const vests=settings.vestMode==='never'?[]:items.filter(i=>hasVest(i)&&inRotation(i));
   if(vests.length){add('vestmaster',null,null,asmVestKey(),'the pose with a waistcoat');add('vestcalib','vest',null,asmCalibKey('vest'),'finding the waistcoat')}
   for(const i of items){const slot=ASM_TYPE[i.type];if(!slot||!inRotation(i))continue;const sig=asmLook(slot,i);
-    if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));
+    if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt)||(slot==='shirt'&&asmPaintable(i)))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));   // a plain shirt is painted: nothing to make
     if(vests.includes(i))add('piece','vest',i,asmPieceKey('vest',i),nm(i)+' with its waistcoat')}
   return out}
 /* asmState: what a look at the worker found. missing: photos nobody has made (or that came out wrong) */
@@ -523,7 +537,7 @@ async function asmMake(list){const W=workerBase();if(!W)throw new Error('Connect
   asmState.missing=asmState.missing.filter(n=>!list.includes(n));if(sent)startQueueWatch();return sent}
 const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 /* Today's Generate for an outfit that can be assembled: make its missing pieces (about 8¢ each) instead of a whole photo */
-async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmParts(o).filter(p=>(!renders[p.key]||asmBad.has(p.key))&&!have.has(p.key)).map(p=>({kind:'piece',slot:p.slot,item:p.item,key:p.key,what:nm(p.item)}));
+async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmPhotoParts(o).filter(p=>(!renders[p.key]||asmBad.has(p.key))&&!have.has(p.key)).map(p=>({kind:'piece',slot:p.slot,item:p.item,key:p.key,what:nm(p.item)}));
   if(miss.length)await asmMake(miss);else await asmEnsure(o);return 'asm'}
 /* Settings: Realistic photos, "Item photos" */
 function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
