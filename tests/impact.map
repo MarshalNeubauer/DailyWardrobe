@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	71bf753cfc3e4d2c75c2
+# tested	714192c927b787497add
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -1231,7 +1231,7 @@ render.test.js	sync.js	@addEventListenerpagehide	@document.addEventListenervisib
 render.test.js	tagging.js	benchEstimate	benchPool	benchRuns	outfitRefsFull	patternPrompt	renderBenchUI	renderCustomUI	renderWeaveUI	settText	trimRefs	visTok	weavePool
 render.test.js	tests/fixedplan.js	<any>
 render.test.js	ui.js	advClose	connNote	connSummary	needConn	renderConnUI
-render.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	ROUTES.* /sync	SWAP_PROMPT	WATCH_KEY	dataUrlToBlob	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	orNull	outfitPhoto	ownerOnly	photoCap	putRender	queueRender	renderId	sameText	sha256Hex	spend	unspend	usedOf	utcDay	whoIs
+render.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	ROUTES.* /sync	SWAP_PROMPT	WATCH_KEY	allCaps	cleanCaps	dataUrlToBlob	dropFail	fetch	firstWeek	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	hubOf	jobMsg	orNull	outfitPhoto	ownerOnly	photoCap	plainFor	putRender	queueRender	renderId	sameText	sha256Hex	spend	unspend	useCount	usedOf	utcDay	whoIs
 replan.test.js	<every page test>	<every page test>
 replan.test.js	account.js	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 replan.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	aAn	appPush	backupSummary	batchCombos	cap1	comboKey	comboKeyV1	comboSig	comboSigV1	countryName	esc	fnv64	isoDate	itemDesc	itemKey	keyDate	lookSig	metaPut	missingItemPics	monthName	nextWorkday	openSettings	planRulesCheck	renderBatchUI	renderDaysOffUI	renderFor	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	replanButton	replanFuture	saveDay	saveUserSettings	setCatOpen	settingsSummaries	shirtPatterned	shirtTextured	shortDate	showCost	toast	unit	workerBase

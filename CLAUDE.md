@@ -723,6 +723,7 @@ Cloudflare Worker. Every endpoint needs the owner's `APP_TOKEN` or a tester's in
 - `/render` POST otherwise: a realistic outfit photo via OpenAI's image edit API (`nojacket:true` uses a shirt-sleeves pose prompt).
   - Secret `OPENAI_API_KEY`; optional `OPENAI_IMAGE_MODEL` (default `gpt-image-2`) and `OPENAI_IMAGE_QUALITY`.
   - An outfit request or queued job may set its own `quality`, `model` (a `gpt-image-*` id) and `complexity`, to try another model under a test key.
+  - and its own `size` (`IMG_SIZES`: 1024x1024, 1536x1536, 2048x2048; anything else or nothing is 1024x1024): a piece of an assembled picture is an edit of the master and must come back at the master's size; a queued job keeps it; a tester's request can't choose one (deleted with model and quality)
   - a direct outfit request (not a queued job) answers with OpenAI's token counts (`usage`), to measure what a photo costs
   - a photo's record keeps OpenAI's token counts (`usage`), so `GET /render?key=` shows what it cost
   - a queued job can be a one-piece edit too (`swap`, `mask`, `markup` kept in the job): a direct request waiting minutes is cut off by some proxies
