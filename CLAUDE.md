@@ -418,6 +418,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
   - Settings button generates the missing ones
 - batch photo generation
 - background download of the worker's photos for the month on screen and the next, nearest day first (`prefetchRenders`, after one `GET /render?list=1`)
+- outfit photos are kept on the device as the worker made them (`keptPhoto`, app.js): they used to be shrunk to 900px and re-encoded at JPEG .85 (`shrinkUrl(…,900)`), softer than the 1024 original on a 3x phone and when zoomed; assembled-picture photos (assemble.js `asmGet`) still keep 900px, since their kept zones were measured at that size; photos kept before stay 900px until made again
+- measured 2026-11-12 on the owner's outfit: `gpt-image-2` accepts any size divisible by 16 up to 3840 on the long edge; 2048x2048 at medium used 3568 output tokens (1024x1024: 1756), about 15 to 16 cents a photo against 11, a 567 KB JPEG, visibly sharper in the watch, tie and shirt weave; the worker still asks for 1024x1024
 - swipe gestures
 - occasions in Settings (`setOccasion`, `addFormalDay`, `renderFormalUI`; `hasOutfit(o)` is true for a no-jacket day too, whose photo key includes the trousers and whose request sends `nojacket`)
 - days off in Settings (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`)
