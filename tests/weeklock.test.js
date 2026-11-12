@@ -63,6 +63,15 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>{openSettings('schedule')});await settle(p,300);
     await p.click('#cfg-blazer button:nth-child(3)');await p.waitForFunction(()=>!Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>todayDate()),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>!Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>todayDate())),'changing the blazer days releases them too');
+    // days the app was not opened on: once they are past, the locked workdays are recorded with the pieces they showed (they kept
+    // only the lock, so they never counted as worn and their outfits could still change)
+    await setup();await locked();
+    const lk=await p.evaluate(()=>Object.fromEntries(['2026-11-12','2026-11-13','2026-11-16','2026-11-17'].map(k=>[k,JSON.stringify(dayRecs[k].lock)])));
+    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-18T12:00:00';cache={};sel=new Date(2026,10,18);renderToday()});
+    await p.waitForFunction(()=>['2026-11-12','2026-11-13','2026-11-16','2026-11-17'].every(k=>dayRecs[k]&&dayRecs[k].ids),null,{timeout:8000}).catch(()=>{});
+    const past=await p.evaluate(lk=>{const strip=x=>{const c={...x};delete c.coat;return JSON.stringify(c)},ks=Object.keys(lk);
+      return {ids:ks.every(k=>dayRecs[k].ids&&strip(dayRecs[k].ids)===lk[k]),worn:ks.every(k=>wornDays().some(w=>w.date===k))}},lk);
+    ok(past.ids&&past.worn,`locked workdays that passed without the app being opened are recorded with the pieces they showed and count as worn (${JSON.stringify(past)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

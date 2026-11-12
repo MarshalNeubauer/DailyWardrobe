@@ -566,7 +566,9 @@ async function recordDays(p){
   for(const [k,o] of Object.entries(p)){
     if(dayRecs!==mine)break;   // the history was replaced meanwhile (sync, restore): this plan is stale, record nothing more
     if(!SLOTS.some(s=>o[s])||o.frozen)continue;const d=keyDate(k);
-    if(d<T&&!dayRecs[k]){await saveDay({date:k,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},true);changed=true}
+    // a past day with no pieces recorded: none at all, or only the week's lock (lockUpcoming), as on a day the app was not opened;
+    // recorded with what the record already has, else it never became history (no wear counts, an outfit that could still change)
+    if(d<T&&!(dayRecs[k]&&dayRecs[k].ids)){await saveDay({...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},true);changed=true}
     else if(k===tk){const r=dayRecs[k],ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){await saveDay({...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest},true);changed=true}}
   }
   if(changed&&window.scheduleSync)scheduleSync();
