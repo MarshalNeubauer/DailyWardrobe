@@ -25,9 +25,13 @@ async function applyMerged(m,local){
     await atomic('days',d.date,cur=>!cur||(cur.updated||0)<(d.updated||0)?{put:d}:null)}
   if(m.settings){const cs=await metaGet('settings');if(!cs||(cs.updated||0)<=(m.settings.updated||0))await metaPut('settings',m.settings)}
   const now=await localState();
-  if(stateSig(now)!==stateSig(local)){items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);const v=['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden);if(v&&v!=='add')show(v)}
+  if(stateSig(now)!==stateSig(local)){items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden))}
   return now;
 }
+/* after a sync brought changes: redraw the tab on screen. show() and renderToday() close Settings, which snapped shut when it was
+   opened in the first seconds after launch and the start-up sync (scheduleSync, 2.5 s) came back with changes; while it is open,
+   the tab waits for it to close (todayStale, viewStale) */
+function syncRedraw(v){if(!v||v==='add')return;if(!settingsOpen())return show(v);if(v==='today')todayStale=true;else viewStale=v}
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0;
   el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Set the Worker URL to turn on backup.');
