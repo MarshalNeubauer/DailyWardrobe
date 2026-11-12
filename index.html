@@ -110,6 +110,25 @@
 </div></div></section>
 
 <div class="sactions setup-again"><button type="button" id="setup-again" onclick="setupOpen(true)">Run setup again</button></div>
+<section class="mbox scat" id="sc-about"><button type="button" class="month-link scat-head" onclick="toggleCat('about');renderAbout()" aria-expanded="false" aria-controls="sp-about"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span class="mltxt"><b>About</b><small id="sum-about">Version · feedback · your data</small></span><span class="chev" aria-hidden="true">›</span></button>
+<div class="mpanel" id="sp-about"><div class="mpanel-in">
+<div class="sgroup"><div class="slabel" id="about-ver">Version</div><p class="shelp" id="about-status" role="status"></p>
+<div class="sactions"><button type="button" id="about-check" onclick="checkForUpdate(true)">Check for updates</button><button type="button" class="pri" id="about-update" hidden onclick="updateNow()">Update</button></div></div>
+<div class="sgroup"><div class="slabel">Feedback</div><p class="shelp">What works, what doesn’t, what is missing: it goes to the person who invited you.</p>
+<textarea id="fb-text" class="about-text" rows="4" maxlength="4000" placeholder="Your feedback" aria-label="Your feedback"></textarea>
+<div class="sactions"><button type="button" class="pri" id="fb-send" onclick="sendFeedback()">Send</button></div>
+<p class="shelp about-note" id="fb-status" role="status"></p>
+<div id="fb-list" class="fb-list" hidden></div></div>
+<div class="sgroup"><div class="slabel">Your data</div><p class="shelp">Delete your wardrobe, history, settings and photos. The app then starts as new.</p>
+<div class="sactions"><button type="button" class="danger" id="del-open" onclick="askDelete()">Delete my data</button></div>
+<div id="del-confirm" class="about-confirm" hidden></div>
+<p class="shelp about-note" id="del-status" role="status"></p></div>
+<div class="sgroup"><details class="about-fold" id="about-privacy"><summary>Privacy</summary>
+<p>Your wardrobe lives on this device and, once you are connected, in your own backup on the server.</p>
+<p>The photos of your items are sent to Anthropic to be read (type, colour, pattern) and to OpenAI to make the outfit pictures.</p>
+<p>Nothing else is shared with anyone.</p></details></div>
+</div></div></section>
+
 <p class="sfoot">Daily Wardrobe</p>
 </div>
 </div>
@@ -128,4 +147,5 @@
 <script src="shop.js"></script>
 <script src="sync.js"></script>
 <script src="setup.js"></script>
+<script src="about.js"></script>
 </body></html>

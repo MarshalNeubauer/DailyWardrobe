@@ -23,7 +23,7 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
-const SET_CATS=['schedule','daysoff','weather','photos','tagging','backup','connection'];
+const SET_CATS=['schedule','daysoff','weather','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open)}
 function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();
