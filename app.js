@@ -1689,7 +1689,19 @@ ${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).di
 ${moreRow(q,i)}${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
 }
 
+/* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
+   fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
+   (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
+const PAGES=['today','wardrobe','add','stats','pack','care'],TABS=['today','wardrobe','add'],PAGE_MS=320;
+function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav'),ti=TABS.indexOf(t);
+  if(nav){nav.style.setProperty('--ti',Math.max(0,ti));nav.classList.toggle('tab-none',ti<0)}
+  if(!el||!from||from===t||noMotion())return;
+  if(el._ps){el._ps.cancel();el._ps=null}   // a scroll slide left from an unfold (pageScroll) on Today
+  const a=TABS.indexOf(from),dx=a>=0&&ti>=0?(ti>a?28:-28):0;if(el._pg)el._pg.cancel();
+  const an=el._pg=el.animate([{opacity:0,transform:dx?`translateX(${dx}px)`:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:PAGE_MS,easing:MONTH_EASE});
+  an.finished.then(()=>{if(el._pg===an)el._pg=null},()=>{})}
 function show(t){
+  const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
@@ -1697,6 +1709,7 @@ function show(t){
   if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
   if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
+  pageIn(t,from);
 }
 
 db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();refreshHolidays();loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});

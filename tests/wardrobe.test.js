@@ -206,6 +206,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await q.evaluate(()=>{const I=(id,type,primaryColor,added,x={})=>({id,type,primaryColor,pattern:'solid',added,...x});
         items=[I('su1','suit','navy',5,{name:'The very long name of a suit that was bought for a wedding in May',brand:'Halden',material:'wool',notes:'n'}),I('sh1','shirt','white',4),I('ti1','tie','burgundy',3),I('sx1','shoes','black',11,{leather:'calf'})];
         settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};flt='all';show('wardrobe')});
+      await q.waitForFunction(()=>!document.querySelector('#wardrobe').getAnimations().length);   // the page has eased in (pageIn): measured where it rests
       const m=await q.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect(),inp=r('#wsearch'),so=r('#wsort'),cs=getComputedStyle(document.querySelector('#wsearch')),chips=r('#wardrobe .chips'),lum=c=>{const v=c.match(/[\d.]+/g).map(Number);return v[0]*.3+v[1]*.59+v[2]*.11};
         return {ih:Math.round(inp.height),sh:Math.round(so.height),iw:Math.round(inp.width),above:inp.bottom<=chips.top,row:Math.abs(inp.top-so.top)<1,rad:cs.borderRadius,over:document.documentElement.scrollWidth-innerWidth,
           contrast:Math.abs(lum(cs.color)-lum(cs.backgroundColor)),bg:lum(cs.backgroundColor),right:Math.round(so.right)<=innerWidth}});
