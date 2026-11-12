@@ -11,15 +11,16 @@ module.exports=async({ok,chromium,url,settle})=>{
       items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('watch','grey',{metal:'silver'})];
       settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};scoreOpen=listOpen=false;show('today')});
-    const cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable');
-    const lay=async()=>(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value;
+    let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
+    const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
+    const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
     for(const [name,id,toggle,items] of [['score','#sbox','toggleScore','#spanel li'],['pieces list','#ibox','toggleList','#ipanel .list>*']]){
       await p.evaluate(()=>scrollTo(0,0));await settle(p,300);
       const l0=await lay();
       const u=await p.evaluate(([id,toggle])=>{window[toggle]();const b=$(id);return {clip:b.getAnimations().some(a=>a.effect.getKeyframes()[0].clipPath),trans:getComputedStyle(b.querySelector('.mpanel')).transitionDuration}},[id,toggle]);
       await p.waitForFunction(id=>!$(id).getAnimations().length,id,{timeout:3000});await settle(p,800);
       const layouts=await lay()-l0;
-      ok(u.clip&&u.trans==='0s'&&layouts<=8,`the ${name} unfolds with a clip, its height not animated, the page laid out ${layouts} times`);
+      ok(u.clip&&u.trans==='0s'&&layouts<=8,`the ${name} unfolds with a clip, its height not animated, the page laid out ${laid(layouts)}`);
       const f=await p.evaluate(([id,toggle,items])=>new Promise(res=>{const b=$(id),its=[...b.querySelectorAll(items)];window[toggle]();
         const cs=its.map(e=>getComputedStyle(e)),lift={name:cs[0].animationName,d0:parseFloat(cs[0].animationDelay),dn:parseFloat(cs[cs.length-1].animationDelay),n:its.length},chev=b.classList.contains('bshut');
         const tops=[];const f=()=>{tops.push(Math.round(b.getBoundingClientRect().top));if(b.getAnimations().length||tops.length<5)requestAnimationFrame(f);else res({lift,chev,tops,open:b.classList.contains('open'),h:b.querySelector('.mpanel').offsetHeight})};requestAnimationFrame(f)}),[id,toggle,items]);

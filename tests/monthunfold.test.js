@@ -16,8 +16,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     const folded=await p.evaluate(()=>({inert:$('#mpanel-in').inert,open:$('#mbox').classList.contains('open'),h:$('#mpanel').offsetHeight}));
     ok(folded.inert&&!folded.open&&folded.h===0,'the folded month box already holds the days (put in while idle), with no height, and takes no taps or focus');
     // unfolding: the page is laid out a few times, not on every frame; a clip, a slide and a fade move
-    const cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable');
-    const lay=async()=>(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value;
+    let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
+    const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
+    const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
     const l0=await lay();
     const during=await p.evaluate(()=>{const a0=performance.now();document.querySelector('#mbox .month-link').click();const tap=performance.now()-a0;
       const an=document.getAnimations().map(a=>Object.keys(a.effect.getKeyframes()[0]).filter(k=>!['offset','easing','composite','computedOffset'].includes(k)).join('+'));
@@ -28,7 +29,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(during.an.includes('clipPath')&&during.an.includes('opacity')&&during.heightAnim==='0s'&&!during.inert,`unfolding is a clip over the card and a fade of the days, the height is not animated (${during.an.join(', ')})`);
     const drop=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,1100));const gone=!$('#mbox').classList.contains('mdrop');monthStep(1);const again=getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName;monthStep(-1);return {gone,again}});
     ok(during.drop==='mcDrop'&&drop.gone&&drop.again==='none',`the days drop in only while the box unfolds: not again on a month swiped to (${during.drop}, then ${drop.again})`);
-    ok(layouts<=8,`unfolding lays the page out ${layouts} times (it was about 30, once a frame)`);
+    ok(layouts<=8,`unfolding lays the page out ${laid(layouts)} (it was about 30, once a frame)`);
     ok(opened.open&&!opened.inert&&opened.clip==='none'&&opened.fold&&opened.top,'unfolded: the whole month shows, scrolled so "Fold away" is above the tab bar, with no clip left');
     // what lies under the box slides with it: the Reset card on a changed day
     await p.evaluate(async()=>{toggleMonth();await new Promise(r=>setTimeout(r,600));const o=planFor()[key(sel)];await saveDay({...(dayRecs[key(sel)]||{date:key(sel)}),force:{tie:items.find(i=>i.type==='tie'&&i.id!==o.tie.id).id}});cache={};renderToday();scrollTo(0,0)});
@@ -44,7 +45,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(fold.lift.name==='mcLift'&&/cubic-bezier\(0\.36, 0, 0\.66, -0\.56\)/.test(fold.lift.ease)&&fold.lift.dn===0&&fold.lift.d0>0.15&&fold.lift.clipDelay>100,`folding plays the drop backwards: the last day lifts out first, the first last (${Math.round(fold.lift.d0*1000)} ms later), each with a little dip, and the card closes after them (from ${Math.round(fold.lift.clipDelay)} ms)`);
     let jump=0;for(let i=1;i<fold.tops.length;i++)jump=Math.max(jump,Math.abs(fold.tops[i]-fold.tops[i-1]));
     ok(fold.an>=2&&!!fold.chev&&!fold.open&&fold.inert&&fold.h===0&&fold.over<=1,`folding: the arrow turns back at once, the clip closes and the box ends shut, inert, with nothing scrolled past the page's end ${JSON.stringify({...fold,tops:fold.tops.length})}`);
-    ok(jump<120,`folding from the bottom of the page moves the box smoothly, no jump at the end (largest step ${jump}px between frames: ${fold.tops.join(" ")})`);
+    // a jump is one frame covering most of the way; an ease-out starts fast (WebKit's frames come further apart than Chromium's)
+    const way=Math.abs(fold.tops[fold.tops.length-1]-fold.tops[0]),moving=fold.tops.filter((v,i)=>i&&Math.abs(v-fold.tops[i-1])>2).length;
+    ok(way<4||(jump<=way*.4&&moving>=6),`folding from the bottom of the page moves the box smoothly over ${moving} frames, no jump (largest step ${jump} of ${way}px: ${fold.tops.join(" ")})`);
     // reduced motion: no animation, it just opens and shuts
     await p.emulateMedia({reducedMotion:'reduce'});
     const rm=await p.evaluate(()=>{toggleMonth();const own=()=>document.getAnimations().filter(x=>!(x instanceof CSSTransition)&&!(x instanceof CSSAnimation)).length,a=own(),o=$('#mbox').classList.contains('open');toggleMonth();return {a,o,b:own(),shut:!$('#mbox').classList.contains('open')}});
