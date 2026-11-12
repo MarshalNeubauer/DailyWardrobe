@@ -310,7 +310,9 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   keepTimes(times);
   // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on
   const passed=!failures&&!ONLY;
-  if(!process.env.NO_IMPACT&&(results.size||passed))try{await impact.save(ROOT,results,ALL,passed)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
+  // which tests ran with the fixed plan (their planner.js entries are replaced in the map, not added to)
+  const fixedOf=key=>key.startsWith('run.js: ')?!REAL_SUITES.has(key.slice(8)):!/module\.exports\.realPlanner\s*=\s*true/.test(fs.readFileSync(path.join(__dirname,key),'utf8'));
+  if(!process.env.NO_IMPACT&&(results.size||passed))try{await impact.save(ROOT,results,ALL,passed,fixedOf)}catch(e){console.log('could not write '+impact.MAP+': '+e.message)}
   // the slowest files, so the suite can be kept quick
   if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${label(f)} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`+(jobs>1?` (${jobs} at a time; one after another ${(times.reduce((a,t)=>a+t[1],0)/1000).toFixed(0)}s)`:''));
   if(alone.length)console.log('\nfailed with other tests running, passed by '+(alone.length>1?'themselves':'itself')+' (a check there depends on timing: make it wait for its condition): '+alone.map(label).join(', '));

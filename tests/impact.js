@@ -278,12 +278,15 @@ const installHook=root=>{try{if(fs.existsSync(path.join(root,'.githooks','pre-pu
    the next, or a path only taken on a weekend, stays known. Names that no longer exist in the sources are dropped, and so
    are tests that no longer exist */
 // passed: `npm test` (or the whole suite) ran and nothing failed: the map then says which files it stands for
-const save=async(root,results,all,passed)=>{const out=load(root)||new Map(),alive=new Map();
+// fixedOf(test): the test ran with the fixed plan (tests/fixedplan.js), so the planner never runs in it by a timer: what it used
+// of planner.js is replaced, not added to, and what an earlier run with the real planner left there (or a branch whose map is
+// older) drops out the next time it runs; without that the old entries would select it for every planner change for good
+const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Map(),alive=new Map();
   const names=async f=>{if(!alive.has(f)){let t=null,k=null;try{t=realRead(path.join(root,f),'utf8')}catch(e){}
       if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)){const u=await scan(t);if(u)k=new Set(flat(u).map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
       alive.set(f,k)}return alive.get(f)};
   for(const [k,r] of results){if(r.bad){out.set(k,new Map([[ANY,new Set([ANY])]]));continue}
-    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
+    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();if(fixedOf&&fixedOf(k))e.delete('planner.js');for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
   for(const k of [...out.keys()])if(!all.includes(k))out.delete(k);
   for(const e of out.values())for(const [f,S] of [...e]){if(f===ANY)continue;const ok=await names(f);if(!ok){e.delete(f);continue}
     if(ok!==true)for(const x of [...S])if(x!==ANY&&x!==LOADED&&!ok.has(x))S.delete(x);if(!S.size)e.delete(f)}
