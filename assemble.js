@@ -345,7 +345,7 @@ function asmSync(force){if(!ASM_ON||!workerBase())return Promise.resolve(asmStat
     return asmState})();
   return asmSyncing}
 /* send these to the worker's queue; they come home like any queued photo */
-async function asmMake(list){const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');let sent=0;
+async function asmMake(list){const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');let sent=0;
   for(const n of list){const job=n.kind==='master'?await asmMasterJob():n.kind==='calib'||n.kind==='vestcalib'?asmCalibJob(n.slot):n.kind==='vestmaster'?asmVestMasterJob():await asmPieceJob(n.slot,n.item);if(asmBad.has(n.key))job.replace=true;
     const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify(job)}),j=await r.json().catch(()=>({}));
     if(r.ok&&j.queued){asmBad.delete(n.key);delete renders[n.key];if(n.kind==='master')localStorage.removeItem('asm_none');const q=rqGet();q.keys=[...new Set([...q.keys,n.key])];q.total=(q.total||0)+1;q.sentAt=Date.now();q.at={...(q.at||{}),[n.key]:q.sentAt};q.failed=q.failed||[];rqSet(q);sent++}
@@ -359,18 +359,18 @@ async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmParts(
 /* Settings: Realistic photos, "Item photos" */
 function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
   const money=v=>v<1?Math.round(v*100)+'¢':'$'+v.toFixed(2),queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key)),making=asmNeeds().filter(n=>queued.has(n.key)).length;
-  if(!workerBase()){st.textContent='Set the Worker URL and App Token first.';btn.disabled=true;btn.textContent='Make item photos';return}
-  if(!asmState.checked){st.textContent='Looking at what your worker has…';btn.disabled=true;btn.textContent='Make item photos';return}
+  if(!workerBase()){st.textContent='';btn.textContent='Make item photos';needConn(btn);return}needConn(btn);
+  if(!asmState.checked){st.textContent='Looking at which photos are already made…';btn.disabled=true;btn.textContent='Make item photos';return}
   const master=m.find(n=>n.kind==='master'),pieces=m.filter(n=>n.kind==='piece').length,have=asmState.total-asmState.missing.filter(n=>n.kind==='piece').length;
   if(master){st.textContent='Outfit pictures can be put together on this device from one photo per item, instead of a new photo for every outfit. It starts with one master photo of the pose (about '+money(ASM_COST.master)+').';btn.disabled=false;btn.textContent='Make the master photo';return}
-  if(making&&!m.length){st.textContent=`Your worker is making ${making} photo${making===1?'':'s'}. They appear as they finish; you can close the app.`;btn.disabled=true;btn.textContent='Making…';return}
+  if(making&&!m.length){st.textContent=`${making} photo${making===1?' is':'s are'} being made. They appear as they finish; you can close the app.`;btn.disabled=true;btn.textContent='Making…';return}
   if(!m.length){st.textContent=`All ${asmState.total} item photos are here. Outfit pictures are put together on this device at no cost.`;btn.disabled=true;btn.textContent='All item photos made';return}
   st.textContent=`${have} of ${asmState.total} item photos are here. ${m.length} to make, about ${money(asmCostOf(m))}${pieces?` (${money(ASM_COST.piece)} an item)`:''}: ${m.slice(0,4).map(n=>n.what).join(', ')}${m.length>4?` and ${m.length-4} more`:''}.`;
   btn.disabled=false;btn.textContent=`Make ${m.length} photo${m.length===1?'':'s'}`}
 async function asmMakeMissing(){const queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key));if(!m.length)return;const master=m.find(n=>n.kind==='master'),list=master?[master]:m;
-  if(!confirm(`Make ${list.length} photo${list.length===1?'':'s'} on your worker?\n\nAbout $${asmCostOf(list).toFixed(2)} (OpenAI). They are made in the background: once they're sent you can close the app.`))return;
+  if(!await askConfirm(`Make ${list.length} photo${list.length===1?'':'s'}?\n\nAbout $${asmCostOf(list).toFixed(2)}. They are made in the background: once they’re sent you can close the app.`,{ok:'Make'}))return;
   const st=$('#asm-status'),btn=$('#asm-btn');if(btn)btn.disabled=true;if(st)st.textContent='Sending…';
-  try{await asmMake(list)}catch(e){if(st){st.textContent='Couldn’t send them to your worker: '+(e.message||e);return}}
+  try{await asmMake(list)}catch(e){if(st){st.textContent='Couldn’t send them: '+(e.message||e);return}}
   renderAsmUI();renderBatchUI()}
 function setAsmAuto(v){settings.asmAuto=v!=='off';saveUserSettings()}
 /* a new item (or one put back in rotation): make its photo by itself. At most ASM_AUTO at a time: a restore or a changed wardrobe
@@ -379,7 +379,7 @@ let asmAutoTimer=0,ASM_AUTO_MS=4000;const ASM_AUTO=3;
 function asmAutoSoon(){if(!ASM_ON)return;clearTimeout(asmAutoTimer);asmAutoTimer=setTimeout(async()=>{if(settings.asmAuto===false||!workerBase())return;
   try{const stt=await asmSync(),queued=new Set(queuedKeys()),m=stt.missing.filter(n=>n.kind==='piece'&&!queued.has(n.key));
     if(!renders[asmMasterKey()]||!m.length||m.length>ASM_AUTO||stt.missing.some(n=>n.kind!=='piece'))return;
-    const n=await asmMake(m);if(n)toast(`Making ${n===1?'a photo of '+m[0].what:n+' item photos'} on your worker (about ${Math.round(asmCostOf(m)*100)}¢).`,5000)}catch(e){console.warn('automatic item photo failed',e)}},ASM_AUTO_MS)}
+    const n=await asmMake(m);if(n)toast(`Making ${n===1?'a photo of '+m[0].what:n+' item photos'} (about ${Math.round(asmCostOf(m)*100)}¢).`,5000)}catch(e){console.warn('automatic item photo failed',e)}},ASM_AUTO_MS)}
 /* ---- the worker jobs that make the photos (sent by a later step; each is one POST /render {mode:'queue'}) ---- */
 const ASM_CALIB={jacket:'a jacket of exactly the same cut in a solid, flat, bright pure red cloth with no pattern or texture',shirt:'a plain solid black dress shirt',
   tie:'a plain solid bright magenta tie with no pattern',vest:'a waistcoat of exactly the same cut and buttons in a solid, flat, bright pure orange cloth with no pattern or texture',watch:'a wristwatch of the same size with a bright blue case, a bright blue dial and a bright blue rubber strap'};

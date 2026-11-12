@@ -72,11 +72,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       if(clear)for(const x of Object.keys(renders))delete renders[x];show('today');openSettings('photos')};
     await p.evaluate(setup,true);
     const n=await p.evaluate(()=>batchCombos().length);
-    await p.click('#batch-btn');await p.waitForFunction(()=>!batch,null,{timeout:30000});
+    await p.click('#batch-btn');dialog=await p.textContent('#ask-sheet');await p.click('#ask-ok');await p.waitForFunction(()=>!batch&&rqGet().keys.length,null,{timeout:30000});   // the app's own question (ui.js)
     const s1=await p.evaluate(()=>({q:rqGet(),status:$('#batch-status').textContent,left:batchCombos().length}));
     ok(/close the app/.test(dialog),'the confirmation says the photos are made in the background');
     ok(calls===0&&sent.length===n&&s1.q.keys.length===n&&s1.left===0,`all ${n} looks are sent to the queue and nothing is generated while the app waits`);
-    ok(/Sent \d+ photos to your worker.*close the app/.test(s1.status),`Settings says they are being made in the background (${s1.status})`);
+    ok(/Sent \d+ photos to be made.*close the app/.test(s1.status),`Settings says they are being made in the background (${s1.status})`);
     // the app is closed; the worker works through the queue
     await p.close();const done1=sent.slice(0,2);sent=sent.slice(2);for(const b of done1){const m={body:b,attempts:1,ack(){},retry(){}};await worker.queue({messages:[m]},env)}
     const p2=await ctx.newPage();p2.on('pageerror',e=>errs.push(e.message));await p2.goto(url);await p2.waitForFunction(()=>window.appReady);

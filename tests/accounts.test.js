@@ -251,7 +251,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await ctx.grantPermissions(['clipboard-read','clipboard-write']).catch(()=>{});await p.click('#acct-copy');
       await p.waitForFunction(()=>/copied|copy it/i.test(document.querySelector('#toast').textContent));
       ok(true,'Copy copies it (or says to select it)');
-      await p.click('#acct-list .acct-inv:last-child button.danger');await p.waitForFunction(()=>/Switched off/.test(document.querySelector('#acct-list .acct-inv:last-child').textContent));
+      await p.click('#acct-list .acct-inv:last-child button.danger');await p.click('#ask-ok');await p.waitForFunction(()=>/Switched off/.test(document.querySelector('#acct-list .acct-inv:last-child').textContent));
       ok((await call('GET','me',lp.get('invite'))).status===403&&(await call('GET','me',T)).status===200,'Revoke switches that tester off, and only that one');
       await p.evaluate(()=>{closeSettings()});await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>document.querySelector('#acct-create'));
       ok(await p.evaluate(()=>!document.querySelector('#acct-link-url')),'the link is shown once: it is gone when Settings is opened again');

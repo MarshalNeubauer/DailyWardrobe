@@ -18,7 +18,7 @@
 <section id="pack" hidden></section>
 <section id="care" hidden></section>
 <section id="add" hidden><div class="phead"><h2>Add to wardrobe</h2></div><p id="note" class="psub"></p>
-<div class="addpick"><label class="btn pri" id="add-one"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>One item</span><small>A photo of it, then a close-up of the fabric</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><label class="btn" id="add-group"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg><span>Several items</span><small>One photo of a rail, a pile or a few on hangers</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files],true);this.value=''"></label></div>
+<div class="addpick"><label class="btn pri" id="add-one"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>One item</span><small>A photo of it, then a close-up of the fabric</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><label class="btn" id="add-group"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg><span>Several items</span><small id="add-group-sub">One photo of a rail, a pile or a few on hangers</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files],true);this.value=''"></label></div>
 <div class="card addmore"><div class="slabel">Other ways to add</div>
 <div class="paste-box"><input type="url" id="photo-url" inputmode="url" autocomplete="off" placeholder="Paste a photo or a link to one" onkeydown="if(event.key==='Enter'){event.preventDefault();addLink()}"><button class="btn" onclick="pasteFromClipboard()">Paste</button><button class="btn pri" onclick="addLink()">Add</button></div>
 <p id="paste-status" class="mut"></p><p class="mut drop-hint">On a computer you can also drag photos here, or press Ctrl+V / ⌘V anywhere.</p>
@@ -43,9 +43,12 @@
 <div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="set-title">
 <div class="shead"><h2 id="set-title">Settings</h2><button type="button" class="pri sdone" onclick="saveSettings()">Done</button></div>
 <div class="sbody">
-<button type="button" class="slink" id="stats-btn" onclick="openStats()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="mltxt"><b>Wardrobe stats</b><small>Wear counts, unworn pieces and why, what costs points, what the planner learned</small></span><span class="chev" aria-hidden="true">›</span></button>
-<button type="button" class="slink pack-link" id="pack-btn" onclick="openPack()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V5h6v3M4 13h16"/></svg></span><span class="mltxt"><b>Packing list</b><small>What to pack for a trip, from the outfits planned for its days</small></span><span class="chev" aria-hidden="true">›</span></button>
-<button type="button" class="slink carelink" id="care-btn" onclick="openCare()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Laundry &amp; cleaning</b><small>What is due for cleaning, and what is away at the cleaner's or in the laundry</small></span><span class="chev" aria-hidden="true">›</span></button>
+<p class="sgh sgh-first">Your wardrobe</p>
+<div class="slinks" id="slinks">
+<button type="button" class="slink" id="stats-btn" onclick="openStats()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="mltxt"><b>Wardrobe stats</b><small>What you wear, what you don’t, and why</small></span><span class="chev" aria-hidden="true">›</span></button>
+<button type="button" class="slink pack-link" id="pack-btn" onclick="openPack()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V5h6v3M4 13h16"/></svg></span><span class="mltxt"><b>Packing list</b><small>What to pack for a trip</small></span><span class="chev" aria-hidden="true">›</span></button>
+<button type="button" class="slink carelink" id="care-btn" onclick="openCare()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Laundry &amp; cleaning</b><small>What is due, and what is away</small></span><span class="chev" aria-hidden="true">›</span></button>
+</div>
 <p class="sgh">Planning</p>
 <section class="mbox scat" id="sc-schedule"><button type="button" class="month-link scat-head" onclick="toggleCat('schedule')" aria-expanded="false" aria-controls="sp-schedule"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="mltxt"><b>Schedule</b><small id="sum-schedule"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-schedule"><div class="mpanel-in">
@@ -54,7 +57,7 @@
 <div class="sgroup" id="blazer-group"><div class="slabel">Blazer days</div><p class="shelp">Business-casual days get a blazer and trousers; other workdays get a suit.</p><div class="days" id="cfg-blazer"></div></div>
 <label class="srow" id="vest-row">Suit vest <select id="cfg-vest" onchange="setVestMode(this.value)"><option value="auto">Suit days, except hot ones</option><option value="always">Every suit day</option><option value="never">Never</option></select></label>
 <label class="srow">Dark shirts <select id="cfg-dark" onchange="setDarkShirts(this.value)"><option value="some">Sometimes, under a light jacket</option><option value="often">Often, like any other shirt</option><option value="never">Never</option></select></label>
-<div class="sgroup"><div class="slabel">Re-plan</div><p class="shelp" id="replan-status"></p><div class="sactions"><button type="button" id="replan-btn" onclick="replanButton()">Re-plan upcoming days</button></div></div>
+<div class="adv" id="adv-schedule"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-schedule" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-schedule"><div class="sgroup"><div class="slabel">Re-plan</div><p class="shelp" id="replan-status"></p><div class="sactions"><button type="button" id="replan-btn" onclick="replanButton()">Re-plan upcoming days</button></div></div></div></div>
 </div></div></section>
 <section class="mbox scat" id="sc-daysoff"><button type="button" class="month-link scat-head" onclick="toggleCat('daysoff')" aria-expanded="false" aria-controls="sp-daysoff"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg></span><span class="mltxt"><b>Days off &amp; occasions</b><small id="sum-daysoff"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-daysoff"><div class="mpanel-in">
@@ -88,35 +91,37 @@
 <p class="sgh">Photos &amp; tagging</p>
 <section class="mbox scat" id="sc-photos"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Realistic photos</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-photos"><div class="mpanel-in">
-<div class="sgroup" id="asm-group" hidden><div class="slabel">Item photos</div><p class="shelp" id="asm-status"></p><div class="sactions"><button id="asm-btn" type="button" onclick="asmMakeMissing()">Make item photos</button></div>
-<label class="srow">New items <select id="cfg-asm-auto" onchange="setAsmAuto(this.value)"><option value="on">Make their photo when added</option><option value="off">Only when I ask</option></select></label></div>
+<p class="shelp connnote" id="photos-conn"></p>
 <div class="sgroup"><div class="slabel">Outfit photos</div><p class="shelp" id="batch-status"></p><div class="sactions"><button id="batch-btn" type="button">Generate photos for this month</button></div></div>
 <div class="sgroup"><div class="slabel">This day's photo</div><p class="shelp" id="regen-status"></p><div class="sactions"><button id="regen-btn" type="button" onclick="generateRender()">Regenerate photo</button></div></div>
 <div class="sgroup"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product pictures for the shoes, belts and socks shown under the figure.</p><div class="sactions"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div></div>
+<div class="adv" id="adv-photos"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-photos" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-photos"><div class="sgroup" id="asm-group" hidden><div class="slabel">Item photos</div><p class="shelp" id="asm-status"></p><div class="sactions"><button id="asm-btn" type="button" onclick="asmMakeMissing()">Make item photos</button></div>
+<label class="srow">New items <select id="cfg-asm-auto" onchange="setAsmAuto(this.value)"><option value="on">Make their photo when added</option><option value="off">Only when I ask</option></select></label></div></div></div>
 </div></div></section>
 <section class="mbox scat" id="sc-tagging"><button type="button" class="month-link scat-head" onclick="toggleCat('tagging')" aria-expanded="false" aria-controls="sp-tagging"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span><span class="mltxt"><b>Photo tagging</b><small id="sum-tagging"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-tagging"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Your colours &amp; patterns</div><div id="custom-list"></div></div>
-<div class="sgroup"><div class="slabel">Shirt weaves</div><div id="weave-box"></div></div>
-<div class="sgroup"><div class="slabel">Tagging benchmark</div><div id="bench-box"></div></div>
+<div class="adv" id="adv-tagging"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-tagging" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-tagging"><div class="sgroup"><div class="slabel">Shirt weaves</div><div id="weave-box"></div></div>
+<div class="sgroup"><div class="slabel">Accuracy check</div><div id="bench-box"></div></div></div></div>
 </div></div></section>
 
 <p class="sgh">Account</p>
 <section class="mbox scat" id="sc-backup"><button type="button" class="month-link scat-head" onclick="toggleCat('backup')" aria-expanded="false" aria-controls="sp-backup"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="M12 11v6M9.5 13.5 12 11l2.5 2.5"/></svg></span><span class="mltxt"><b>Backup &amp; sync</b><small id="sum-backup"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-backup"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Sync</div><p class="shelp" id="sync-status"></p>
-<p class="shelp">Your wardrobe is backed up to your Cloudflare Worker and kept in sync across your devices.</p>
+<p class="shelp">Once you are connected, your wardrobe is backed up and kept in sync across your devices.</p>
 <div class="sactions"><button type="button" onclick="syncNow()">Sync now</button><button type="button" onclick="downloadBackup()">Download backup</button><label class="btn">Restore file<input type="file" accept="application/json,.json" hidden onchange="restoreBackup(this.files[0]);this.value=''"></label></div></div>
-<div class="sgroup"><div class="slabel">Daily backups</div><p class="shelp">The worker keeps the wardrobe as it was at the start of each day for 30 days, and the first of each month for a year. Rolling back replaces the wardrobe, history and settings on every device with that copy.</p>
+<div class="sgroup"><div class="slabel">Daily backups</div><p class="shelp">The server keeps the wardrobe as it was at the start of each day for 30 days, and the first of each month for a year. Rolling back replaces the wardrobe, history and settings on every device with that copy.</p>
 <div class="sform"><select id="snap-list" onfocus="loadSnapshots()" aria-label="Daily backup"><option value="">Choose a day…</option></select><button id="snap-btn" type="button" onclick="rollBack()">Roll back</button></div>
 <p class="shelp" id="snap-status"></p></div>
 </div></div></section>
 <section class="mbox scat" id="sc-connection"><button type="button" class="month-link scat-head" onclick="toggleCat('connection')" aria-expanded="false" aria-controls="sp-connection"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="mltxt"><b>Connection</b><small id="sum-connection"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-connection"><div class="mpanel-in">
-<p class="shelp">The Cloudflare Worker that tags photos, makes the realistic photos and keeps your backup. Saved when you tap Done.</p>
-<label class="srow stack">Worker URL <input type="text" id="cfg-url" placeholder="https://your-worker.workers.dev" autocomplete="off" inputmode="url"></label>
-<label class="srow stack">App token <input type="text" id="cfg-token" placeholder="Your secret token" autocomplete="off"></label>
+<div class="sgroup" id="conn-box"></div>
 <div class="sgroup acct-box" id="acct-box" hidden></div>
+<div class="adv" id="adv-connection"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-connection" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-connection"><p class="shelp">The server reads your photos, makes the realistic photos and keeps your backup. An invite link fills these in; saved when you tap Done.</p>
+<label class="srow stack">Server address <input type="text" id="cfg-url" placeholder="https://…" autocomplete="off" inputmode="url"></label>
+<label class="srow stack">Code <input type="text" id="cfg-token" placeholder="Your code" autocomplete="off"></label></div></div>
 </div></div></section>
 
 <section class="mbox scat" id="sc-about"><button type="button" class="month-link scat-head" onclick="toggleCat('about');renderAbout()" aria-expanded="false" aria-controls="sp-about"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span class="mltxt"><b>About</b><small id="sum-about">Version · feedback · your data</small></span><span class="chev" aria-hidden="true">›</span></button>
@@ -149,6 +154,7 @@
 <script src="detect.js"></script>
 <script src="figure.js"></script><script src="draw.js"></script>
 <script src="app.js"></script>
+<script src="ui.js"></script>
 <script src="safety.js"></script>
 <script src="dress.js"></script>
 <script src="tagging.js"></script>

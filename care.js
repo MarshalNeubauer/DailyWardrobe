@@ -21,7 +21,7 @@ const careWashed=t=>t==='shirt'||t==='socks';   // washed at home rather than cl
 const careWord=t=>careWashed(t)?'washing':'cleaning';
 const careNoun=i=>i.type==='pants'?'trousers':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
 const careTimes=n=>n===1?'once':n===2?'twice':n+' times';
-const careName=i=>`${TYPES[i.type]||'Item'}: ${desc(i)||careNoun(i)}`;
+const careName=i=>`${TYPES[i.type]||'Item'}: ${typeof esc==='function'&&String(i.name||'').trim()?esc(String(i.name).trim()):desc(i)||careNoun(i)}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
 function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fromEntries(items.map(i=>[i.id,i]));
   for(const r of wornDays()){const k=isoKey(r.d);

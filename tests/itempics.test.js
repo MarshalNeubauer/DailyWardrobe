@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(d.drawn===0,'without pictures the tiles keep their drawings');
     await p.evaluate(()=>openSettings('photos'));
     ok(/^Generate 5 item pictures$/.test(await p.textContent('#itempic-btn')),'Settings offers to generate the missing item pictures');
-    await p.click('#itempic-btn');await p.waitForFunction(()=>!itemBatch,null,{timeout:20000});
+    await p.click('#itempic-btn');await p.click('#ask-ok');await p.waitForFunction(()=>!itemBatch&&!missingItemPics().length,null,{timeout:20000}).catch(()=>{});
     const after=await p.evaluate(()=>{closeSettings();renderToday();return {left:missingItemPics().length,status:$('#itempic-status').textContent,
       tiles:[...document.querySelectorAll('.below .tile')].map(t=>!!t.querySelector('img.item-pic')),piece:(pickPiece('shoes'),!!document.querySelector('#bbox.open .rpic'))}});
     ok(gens.length===6&&after.left===0&&/Done: 5 pictures ready/.test(after.status),'five pictures generated, nothing left');
