@@ -76,3 +76,4 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   }finally{await browser.close()}
 };
 function keyDate2(k){const [y,m,d]=k.split('-').map(Number);return +new Date(y,m-1,d)}
+module.exports.realPlanner=true;   // runs the real planner (locks hold what the planner chose); other tests get tests/fixedplan.js

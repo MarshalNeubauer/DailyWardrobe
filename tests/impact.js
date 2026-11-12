@@ -6,7 +6,7 @@
 //   - every other file its pages were served (<loaded>) and every file it read itself or ran in a Web Worker (<any>).
 // For a change, the edited functions and CSS rules are worked out from `git diff` against origin/main, and only the tests
 // that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector that no plain
-// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / package.json select all.
+// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / fixedplan.js / package.json select all.
 // A block that runs at load, `(()=>{…})()`, is recorded by the functions it holds (units), and a selector new to the sheet
 // selects the tests of the plain rule it can only apply inside (cssImpact). After main has been merged into a branch that
 // had passed, only the tests that both sides' changes can affect run again (select, lastPass).
@@ -278,12 +278,15 @@ const installHook=root=>{try{if(fs.existsSync(path.join(root,'.githooks','pre-pu
    the next, or a path only taken on a weekend, stays known. Names that no longer exist in the sources are dropped, and so
    are tests that no longer exist */
 // passed: `npm test` (or the whole suite) ran and nothing failed: the map then says which files it stands for
-const save=async(root,results,all,passed)=>{const out=load(root)||new Map(),alive=new Map();
+// fixedOf(test): the test ran with the fixed plan (tests/fixedplan.js), so the planner never runs in it by a timer: what it used
+// of planner.js is replaced, not added to, and what an earlier run with the real planner left there (or a branch whose map is
+// older) drops out the next time it runs; without that the old entries would select it for every planner change for good
+const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Map(),alive=new Map();
   const names=async f=>{if(!alive.has(f)){let t=null,k=null;try{t=realRead(path.join(root,f),'utf8')}catch(e){}
       if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)){const u=await scan(t);if(u)k=new Set(flat(u).map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
       alive.set(f,k)}return alive.get(f)};
   for(const [k,r] of results){if(r.bad){out.set(k,new Map([[ANY,new Set([ANY])]]));continue}
-    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
+    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();if(fixedOf&&fixedOf(k))e.delete('planner.js');for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
   for(const k of [...out.keys()])if(!all.includes(k))out.delete(k);
   for(const e of out.values())for(const [f,S] of [...e]){if(f===ANY)continue;const ok=await names(f);if(!ok){e.delete(f);continue}
     if(ok!==true)for(const x of [...S])if(x!==ANY&&x!==LOADED&&!ok.has(x))S.delete(x);if(!S.size)e.delete(f)}
@@ -292,7 +295,7 @@ const save=async(root,results,all,passed)=>{const out=load(root)||new Map(),aliv
   if(text!==was)fs.writeFileSync(path.join(root,MAP),text)};
 
 /* ---------- choosing ---------- */
-const FULL=/^(?:tests\/run\.js|tests\/impact\.js|package(?:-lock)?\.json)$/;
+const FULL=/^(?:tests\/run\.js|tests\/impact\.js|tests\/fixedplan\.js|package(?:-lock)?\.json)$/;   // (fixedplan.js is put into the pages of most tests, not served: nothing records it)
 const servedFile=f=>!f.includes('/')&&/\.(?:js|html|css|webmanifest|png|svg|ico)$/.test(f)&&f!=='worker.js';
 /* changes: [{file, kind:'test'|'js'|'css'|'other', units:Set, top}] → {all, why} or {tests:Map(test → reason)} */
 const pick=(map,all,changes)=>{const out=new Map(),add=(t,why)=>{if(all.includes(t)&&!out.has(t))out.set(t,why)};

@@ -75,3 +75,4 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
+module.exports.realPlanner=true;   // runs the real planner (occasion days are planned); other tests get tests/fixedplan.js

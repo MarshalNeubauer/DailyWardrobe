@@ -60,3 +60,4 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok((backup().daysOff||[]).length===0&&(await A.p.evaluate(()=>(settings.daysOff||[]).length))===0,'so a change made on another device meanwhile is not undone');
   }finally{await browser.close()}
 };
+module.exports.realPlanner=true;   // runs the real planner (it checks noting new planning rules); other tests get tests/fixedplan.js

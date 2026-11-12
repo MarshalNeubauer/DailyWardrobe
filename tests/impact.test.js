@@ -102,6 +102,15 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     // saving: what a test used is added to what is known, names that are gone are dropped
     await I.save(repo,new Map([['a.test.js',{m:new Map([['app.js',new Set(['two','gone'])],['old.js',new Set([I.LOADED])]]),bad:false}],['c.test.js',{m:new Map(),bad:true}]]),['a.test.js','c.test.js']);
     const sv=I.load(repo);ok([...sv.get('a.test.js').get('app.js')].sort().join()===[I.LOADED,'one','two'].sort().join()&&!sv.get('a.test.js').has('old.js')&&!sv.has('b.test.js')&&sv.get('c.test.js').has(I.ANY),'the map adds up what a test uses, forgets functions, files and tests that are gone, and marks a test it could not follow');
+    // a test that ran with the fixed plan (tests/fixedplan.js): its planner.js entries are replaced, not added to, so what an older
+    // map (or a run with the real planner) left there drops out; a test with the real planner keeps adding up as before
+    {const fx=path.join(dir,'fixedmap');fs.mkdirSync(path.join(fx,'tests'),{recursive:true});
+      fs.writeFileSync(path.join(fx,'planner.js'),'function outfit(){return 1}\nfunction tieScore(){return 2}\n');fs.writeFileSync(path.join(fx,'app.js'),'function one(){return 1}\n');
+      sh(fx,'init','-q');fs.writeFileSync(path.join(fx,I.MAP),['a.test.js\tplanner.js\t'+I.LOADED+'\toutfit\ttieScore','b.test.js\tplanner.js\t'+I.LOADED+'\toutfit',''].join('\n'));
+      const m=()=>new Map([['app.js',new Set([I.LOADED,'one'])],['planner.js',new Set([I.LOADED])]]);
+      await I.save(fx,new Map([['a.test.js',{m:m(),bad:false}],['b.test.js',{m:m(),bad:false}]]),['a.test.js','b.test.js'],false,k=>k==='a.test.js');
+      const fm=I.load(fx),pa=[...(fm.get('a.test.js').get('planner.js')||[])],pb=[...(fm.get('b.test.js').get('planner.js')||[])];
+      ok(pa.join()===I.LOADED&&pb.includes('outfit')&&fm.get('a.test.js').get('app.js').has('one'),`a fixed-plan test's planner entries are replaced (${pa.join()}), a real-planner test's still add up (${pb.join()})`)}
     // enforcing that the map is committed with its change
     ok(I.stampsOf(mapText()).length===0,'a run that did not pass leaves no fingerprint');
     let pp=I.prePush(repo);ok(!pp.ok&&/not committed/.test(pp.msg),'a push is refused while the map has uncommitted changes');

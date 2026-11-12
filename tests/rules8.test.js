@@ -31,3 +31,4 @@ module.exports=async({ok,chromium,url})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
+module.exports.realPlanner=true;   // runs the real planner (it checks planning rules); other tests get tests/fixedplan.js
