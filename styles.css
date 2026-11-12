@@ -698,3 +698,63 @@ span.pk-tick{cursor:default}
 .pack-open{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:44px;margin:0 0 10px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .pack-open .pack-chev{font-size:20px;line-height:1;color:var(--mut)}
 @media(max-width:340px){.pk-dn{width:70px}#pack .pk-wear{min-width:56px;padding:0 8px}}
+
+/* ---- setup ---- */
+/* first-run setup (setup.js): a full-screen flow like Settings, under it (z-index) so Settings can still open over it */
+#setup{display:none;position:fixed;inset:0;z-index:980;flex-direction:column;background:var(--bg);color:var(--ink);font-size:15px;outline:0}
+#setup.on{display:flex}
+@media (min-width:600px){#setup{inset:auto;top:4vh;bottom:4vh;left:50%;width:min(600px,94vw);transform:translateX(-50%);border-radius:18px;border:1px solid var(--line);box-shadow:0 0 0 100vmax rgba(0,0,0,.5),0 20px 50px rgba(0,0,0,.45);overflow:hidden}}
+.su-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line)}
+@media (min-width:600px){.su-head{padding-top:12px}}
+.su-ttl{min-width:0;display:flex;flex-direction:column}.su-ttl h2{font-size:22px;line-height:1.2}.su-ttl small{font-size:13px}
+.su-prog{flex:none;display:flex;gap:4px;padding:8px 16px 0}.su-prog i{flex:1;height:3px;border-radius:2px;background:var(--line)}.su-prog i.on{background:var(--acc)}
+.su-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.su-in{max-width:520px;margin:0 auto;padding:16px 16px 20px}
+.su-bar{flex:none;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card)}
+.su-bar .pri{flex:1}
+#setup button{min-height:var(--ctl-h);padding:0 16px;margin:0;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;font-weight:600;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+#setup button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#setup button[disabled]{opacity:.5}
+#setup .su-skip{flex:none;min-width:72px}
+#setup :is(select,input[type=text]){height:var(--in-h);padding:0 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;min-width:0;max-width:none;width:auto}
+.su-lead{margin:0 0 12px;font-size:18px;line-height:1.4}
+.su-help{margin:0 0 10px;font-size:14px;line-height:1.45;color:var(--mut)}
+.su-err{color:var(--danger)}
+.su-group{padding:14px 0;border-top:1px solid var(--line)}.su-group:first-child{border-top:0;padding-top:0}
+.su-label{font-size:15px;font-weight:700;margin:0 0 4px}
+.su-days{display:flex;flex-wrap:wrap;gap:6px}
+#setup .su-day{min-width:44px;padding:0 8px;font-size:14px}
+#setup .su-day.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#setup .su-sw{width:100%;justify-content:space-between;gap:12px;min-height:64px;padding:10px 14px;margin:0 0 8px;border-radius:var(--r-card);text-align:left}
+.su-swt{display:flex;flex-direction:column;gap:2px;min-width:0}.su-swt b{font-size:16px}.su-swt small{font-size:13px;font-weight:400;line-height:1.3}
+.su-knob{flex:none;position:relative;width:46px;height:28px;border-radius:14px;background:var(--line);transition:background .15s}
+.su-knob::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:11px;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.su-sw[aria-checked=true] .su-knob{background:var(--acc)}.su-sw[aria-checked=true] .su-knob::after{transform:translateX(18px)}
+.su-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px;font-size:15px;font-weight:600}
+#setup .su-row select{flex:0 1 auto;max-width:62%}
+.su-form{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}#setup .su-form input{flex:1 1 160px}
+.su-acts{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.su-acts:empty{display:none}
+.su-tick{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:11px;background:#2e8b57;color:#fff;font-size:14px;font-weight:700;vertical-align:-4px}
+.su-ok{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:18px;font-weight:700}
+.su-note{margin:14px 0 0;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);font-size:14px;line-height:1.45}
+.su-sum{list-style:none;margin:0 0 14px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--card)}
+.su-sum li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.su-sum li:first-child{border-top:0}
+.su-sum span{color:var(--mut);flex:none}.su-sum b{text-align:right;min-width:0;overflow-wrap:anywhere}
+.setup-again{margin:14px 0 0}
+/* Today, while the wardrobe can't dress a day yet: what is still needed */
+.firstrun{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left}
+.stage .firstrun{margin:8px 0}.side>.firstrun{margin:var(--gap) 0 0}
+.firstrun h3{margin:0 0 4px;font-size:19px;line-height:1.25}
+.fr-sub{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--mut)}
+.fr-list{list-style:none;margin:0 0 14px;padding:0}
+.fr-it{display:flex;align-items:center;gap:10px;min-height:44px;border-top:1px solid var(--line)}.fr-it:first-child{border-top:0}
+.fr-tick{flex:none;width:24px;height:24px;border-radius:12px;border:2px solid var(--line);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.fr-it.done .fr-tick{background:#2e8b57;border-color:#2e8b57}
+.fr-t{flex:1;min-width:0;font-weight:600}.fr-t small{font-weight:400}.fr-it.done .fr-t{color:var(--mut)}
+.fr-st{flex:none;font-size:13px}
+.fr-add{width:100%;min-height:44px;margin:0;border-radius:12px;font-size:15px;font-weight:600}
+/* the Wardrobe tab with nothing in it */
+.wempty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:24px 16px!important}
+.wempty-pic{width:120px;height:84px;fill:none;stroke:var(--mut);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.wempty-pic .we-hang{stroke:var(--ink);fill:color-mix(in srgb,var(--acc) 22%,transparent)}.wempty-pic .we-hook{stroke:var(--ink)}.wempty-pic .we-ghost{opacity:.45}
+.wempty-t{font-size:17px}.wempty-s{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--mut);max-width:320px}

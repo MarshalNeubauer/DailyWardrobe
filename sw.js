@@ -4,7 +4,7 @@
    so the app also works offline. Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tagging.js) and survive updates. */
 const CACHE='dw-v143';
-const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','safety.js','tagging.js','assemble.js','stats.js','pack.js','shop.js','sync.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
+const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','safety.js','tagging.js','assemble.js','stats.js','pack.js','shop.js','sync.js','setup.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{

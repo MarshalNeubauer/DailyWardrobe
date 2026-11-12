@@ -1190,13 +1190,13 @@ function renderToday(){
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
-  let stage='',side='';
-  if(!isWorkday(sel))stage=offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
+  let stage='',side='';const first=typeof setupToday==='function'?setupToday():'';   // what is still needed for a first outfit (setup.js)
+  if(!isWorkday(sel))side=first,stage=offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
     :`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`;
-  else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
+  else if(!items.length||(first&&!hasOutfit(o)))stage=first||'<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+    side=`${first}${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);fitNavSoon();
   if(items.length){recordDays(p).then(lockUpcoming);
   }
@@ -1483,7 +1483,7 @@ function renderWardrobe(){
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=wardList();
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${typeof shopButton==='function'?shopButton():''}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button></div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
+  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${typeof shopButton==='function'?shopButton():''}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button></div>`).join('')}</div>`:!items.length&&typeof setupWardEmpty==='function'?setupWardEmpty():'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
   renderItem();
 }
@@ -1494,7 +1494,7 @@ const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.ma
 function renderAdd(){
   closeSettings();
   const workerSet = !!localStorage.getItem('worker_url');
-  if($('#note')) $('#note').textContent = !workerSet ? 'Worker URL not set! Tap ⚙ in the top right to configure your Cloudflare Worker.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
+  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
   const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
@@ -1521,6 +1521,7 @@ ${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confi
 }
 
 function show(t){
+  if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
@@ -1528,7 +1529,7 @@ function show(t){
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});show('today');loadWeather();refreshHolidays();loadRenders().then(()=>typeof asmLoad==='function'?asmLoad():0).then(()=>{window.appReady=true;if(typeof asmSync==='function')afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();refreshHolidays();loadRenders().then(()=>typeof asmLoad==='function'?asmLoad():0).then(()=>{window.appReady=true;if(typeof asmSync==='function')afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady is set once the kept photos are loaded too (loadRenders, asmLoad): loadRenders starts `renders` afresh, and a test that put a photo there the moment the items were in lost it on a busy machine) */
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
