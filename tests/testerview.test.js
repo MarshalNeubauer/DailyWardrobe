@@ -8,7 +8,9 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the role is remembered for the connection's code
     const as=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','code-'+r);acct.me=null;rememberRole({role:r})},role);
-    const texts=()=>p.evaluate(()=>{const o=planFor()[key(sel)];return {cost:showCost(),regen:(renderRegenUI(),(document.querySelector('#regen-status')||{}).textContent||''),
+    // a workday on Today (the regenerate line names a price only for a day with an outfit: run on a Friday, a day off in the
+    // default Sunday-to-Thursday week, this failed whatever the code)
+    const texts=()=>p.evaluate(()=>{const was=[typeof TODAY_OVERRIDE==='undefined'?undefined:TODAY_OVERRIDE,sel];TODAY_OVERRIDE='2026-11-16T12:00:00';sel=new Date(2026,10,16);cache={};const o=planFor()[key(sel)];const regen=(renderRegenUI(),(document.querySelector('#regen-status')||{}).textContent||'');TODAY_OVERRIDE=was[0];sel=was[1];cache={};return {cost:showCost(),regen,
       fb:(renderAbout(),document.querySelector('#fb-help').textContent)}});
     await as('tester');const t=await texts();
     ok(t.cost===false&&!/¢/.test(t.regen),`a tester sees no costs (${t.regen})`);
