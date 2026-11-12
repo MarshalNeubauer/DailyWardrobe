@@ -52,6 +52,25 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {paint:asmPaintable(i),f:wv&&wv.f,mm:wv&&wv.mm,col:!!(tex&&tex.col),med:s[Math.floor(N*.8)],lo:s[Math.floor(N*.05)],tag:hexRgb(hex)[1],photo:asmPhotoParts(o).map(x=>x.slot).join()}});
     ok(mf.paint&&mf.f==='col'&&mf.mm===16&&mf.col&&!/shirt/.test(mf.photo),`a figured shirt is painted in colour, its repeat two cells from the close-up (${mf.mm} mm), with no photo (photo parts: ${mf.photo})`);
     ok(Math.abs(mf.med-mf.tag)<=8&&mf.lo<mf.med*.6,`its ground is the tagged colour (${mf.med} for ${mf.tag}) and its figures keep their contrast (${mf.lo})`);
+    // ties are painted on the device: no photo; a plain tie is its tagged colour, a striped one has its stripes (the close-up's count
+    // wins over a reading that is half the truth), the knot a quarter turn from the blade
+    const tp=await p.evaluate(async()=>{const W=160,N=W*W,img=f=>{const d=new Uint8ClampedArray(4*N);for(let k=0;k<N;k++)d.set([...f(k%W,(k/W)|0),255],4*k);return new ImageData(d,W,W)};
+      const zt=new Uint8Array(N);for(let k=0;k<N;k++){const x=k%W,y=(k/W)|0;if(y>=10&&y<150&&Math.abs(x-80)<(y<40?14:y<48?6:12+y/20))zt[k]=1}   // a knot, a narrow neck, the blade
+      const master=img(()=>[60,150,80]),calib=img(()=>[200,40,160]),P=asmTiePrep(master,calib,zt);
+      const plain=asmTiePaint(master,P,{hex:'#6d1f2c'}).data,j=4*(100*W+80);
+      const cl=document.createElement('canvas');cl.width=cl.height=220;const g=cl.getContext('2d');g.fillStyle='#16151d';g.fillRect(0,0,220,220);g.strokeStyle='#e090a0';g.lineWidth=6;
+      for(let t=-440;t<440;t+=40*Math.SQRT2){g.beginPath();g.moveTo(t,0);g.lineTo(t+220,220);g.stroke()}const close=cl.toDataURL('image/png');   // stripes 40px apart: 5.5 across
+      const n=asmStripeCount(await asmData(close));
+      const tie={id:'st',type:'tie',primaryColor:'navy',secondaryColor:'pink',pattern:'stripe',texture:close,sett:{v:2,a:-45,bands:[['#16151d',.85],['#e090a0',.15]],cross:null,cr:2.75,tr:1.8,src:'claude+pixels'}};
+      const T=await asmTieFor(tie),st=asmTiePaint(master,P,T).data;let pinkB=0,pinkK=0,nb=0,nk=0;
+      for(let k=0;k<N;k++){if(!zt[k])continue;const y=(k/W)|0,pk=st[4*k]>st[4*k+2]+20;if(y>P.yk){nb++;if(pk)pinkB++}else{nk++;if(pk)pinkK++}}
+      const o={top:{id:'j',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'s',type:'shirt',primaryColor:'white'},tie,watch:{id:'w',type:'watch',primaryColor:'silver'}};
+      return {plain:[...plain.slice(j,j+3)],hex:hexRgb('#6d1f2c'),n:+n.toFixed(2),across:T.across,yk:P.yk,pinkB:pinkB/nb,pinkK:pinkK/Math.max(1,nk),
+        photo:asmPhotoParts(o).map(x=>x.slot).join(),tp:!!asmParts(o).find(x=>x.slot==='tie').tp,needs:(items.push(tie),asmNeeds().some(q=>q.kind==='piece'&&q.slot==='tie'))}});
+    ok(tp.tp&&!/tie/.test(tp.photo)&&!tp.needs,`a tie is painted on the device and needs no photo (photo parts: ${tp.photo})`);
+    ok(tp.plain.every((v,c)=>Math.abs(v-tp.hex[c])<=3),`a plain tie is its tagged colour (${tp.plain} for ${tp.hex})`);
+    ok(Math.abs(tp.n-5.5)<.6&&Math.abs(tp.across-3.6)<.4,`the close-up's stripes are counted (${tp.n} across it, 5.5 drawn), and a reading that counted half as many is corrected (${tp.across} across the blade, read 1.8)`);
+    ok(tp.yk>=38&&tp.yk<=48&&tp.pinkB>.08&&tp.pinkB<.3&&tp.pinkK>.05,`the stripes are painted on the blade and in the knot (knot above row ${tp.yk}; ${(100*tp.pinkB).toFixed(0)}% / ${(100*tp.pinkK).toFixed(0)}% stripe)`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
