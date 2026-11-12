@@ -620,7 +620,7 @@ async function handleRender(req, env, json, who) {
   if (text.length > 20e6) return json({ error: 'request too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
   // an invited tester gets the server's own model and quality: a request of theirs can't pick a dearer one
-  if (who.role !== 'owner') { delete body.model; delete body.quality; delete body.complexity; }
+  if (who.role !== 'owner') { delete body.model; delete body.quality; delete body.complexity; delete body.size; }
   if (body.mode === 'item') return renderItem(body, env, json, who);
   if (body.mode === 'queue') return queueRender(body, env, json, who);
   const what = photoCap(body), over = await spend(env, who, what); if (over) return json(over.body, over.status);
@@ -636,6 +636,10 @@ async function handleRender(req, env, json, who) {
 const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max'];   // xhigh and max: GPT Image 2.5 and later
 /* a request may name its own image model (to try a newer one under a test key) and, for GPT Image 2.6, a complexity */
 const IMG_MODEL_RE = /^gpt-image-[a-z0-9.-]{1,40}$/, COMPLEXITIES = ['low', 'medium', 'high'];
+/* the size a request may ask for (the owner's only, like model and quality): a piece of an assembled picture is an edit of the
+   master and must come back at the master's size; anything else is 1024x1024 as before. 2048 at medium measured 3568 output
+   tokens against 1756 at 1024 (2026-11-12) */
+const IMG_SIZES = ['1024x1024', '1536x1536', '2048x2048'];
 const OPENAI_MS = 300000;
 async function outfitPhoto(body, env, ns = '') {
   let base = dataUrlToBlob(body.image);
@@ -664,7 +668,7 @@ async function outfitPhoto(body, env, ns = '') {
   if (mask) form.append('mask', mask, 'mask.png');
   if (markup) form.append('markup', markup, 'markup.png');
   refs.forEach((b, i) => form.append('image[]', b, `item-${i + 1}.${b.type.split('/')[1]}`));
-  form.append('size', '1024x1024');
+  form.append('size', IMG_SIZES.includes(body.size) ? body.size : '1024x1024');
   form.append('quality', QUALITIES.includes(body.quality) ? body.quality : env.OPENAI_IMAGE_QUALITY || 'medium');
   if (COMPLEXITIES.includes(body.complexity)) form.append('complexity', body.complexity);
   form.append('output_format', 'jpeg');
@@ -698,7 +702,7 @@ async function queueRender(body, env, json, who) {
   if (!body.replace && await env.WARDROBE.get(`${ns}render:${key}`)) return json({ queued: false, exists: true });   // replace: a regenerate from the app
   const what = photoCap(body), day = utcDay(), over = await spend(env, who, what, day); if (over) return json(over.body, over.status);
   const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 8), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 8), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
-    model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, replace: body.replace ? true : undefined, t: Date.now(),
+    model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, size: IMG_SIZES.includes(body.size) ? body.size : undefined, replace: body.replace ? true : undefined, t: Date.now(),
     ...(body.swap ? { swap: body.swap, mask: body.mask, markup: body.markup } : {}),   // a one-piece edit of a kept photo
     ...(COMBO_RE.test(String(body.baseKey || '')) ? { baseKey: body.baseKey } : {}), ...(body.master ? { master: true } : {}),
     ...(who.caps ? { cap: what, capDay: day } : {}) };   // a tester's job remembers what it counted as, to give it back if it can't be made

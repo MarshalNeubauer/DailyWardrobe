@@ -247,6 +247,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `tests/multi.test.js`: "saved suits have their matching vest by default" now expects no waistcoat (the intended change)
 - test wardrobes put into `items` by a test have no `settings.vestDef`, so their suits with no `vest` value still read as three-piece, as before
 
+- pictures built ahead on a computer: `npm run assemble` (tools/asm-prebuild.js, `DW_WORKER` and `DW_TOKEN` (the owner's code) in the environment, `--days 120`, `--dry`, `--origin`) runs the app in headless Chromium connected as the owner, loads the wardrobe from the backup (its uploads are answered locally: the backup is never written), and for every look of the coming workdays calls `asmPrebuildOne(o)`, which downloads what the look needs and makes the picture exactly as a phone does; it uploads it with `PUT /render` under the look's key (`asmOutKey`), signed `asm/out/z<ASM_ZV>/<asmStamp>`; a look whose upload already has that signature is skipped (no KV write); every request the page makes to the worker goes through the script (`route.fetch`), so the worker's allowed origins and CORS don't matter
+- a phone asks for that upload before downloading a look's pieces (`asmGetPre` in `asmEnsure`, once a session per look): taken when its zone version is the phone's and it is no older than any photo the phone holds for the look (`asmFresh`; the phone may hold no piece at all), kept like a picture made here (`asm:out:`, `pre:true`); otherwise, or on a 404, the phone makes it as before; `tests/asmprebuild.test.js` (the phone's side, and the script end to end against a local worker)
+- run it after the masters, calibration photos and pieces are made, and again after a piece is made again; each upload is one KV write; the computer's pictures are made from the same 900px copies a phone keeps (`asmGet` → `shrinkUrl`)
 ### `asm-worker.js`
 
 - the Web Worker that puts assembled pictures together (see `assemble.js`); in `ASSETS` in sw.js
@@ -720,6 +723,7 @@ Cloudflare Worker. Every endpoint needs the owner's `APP_TOKEN` or a tester's in
 - `/render` POST otherwise: a realistic outfit photo via OpenAI's image edit API (`nojacket:true` uses a shirt-sleeves pose prompt).
   - Secret `OPENAI_API_KEY`; optional `OPENAI_IMAGE_MODEL` (default `gpt-image-2`) and `OPENAI_IMAGE_QUALITY`.
   - An outfit request or queued job may set its own `quality`, `model` (a `gpt-image-*` id) and `complexity`, to try another model under a test key.
+  - and its own `size` (`IMG_SIZES`: 1024x1024, 1536x1536, 2048x2048; anything else or nothing is 1024x1024): a piece of an assembled picture is an edit of the master and must come back at the master's size; a queued job keeps it; a tester's request can't choose one (deleted with model and quality)
   - a direct outfit request (not a queued job) answers with OpenAI's token counts (`usage`), to measure what a photo costs
   - a photo's record keeps OpenAI's token counts (`usage`), so `GET /render?key=` shows what it cost
   - a queued job can be a one-piece edit too (`swap`, `mask`, `markup` kept in the job): a direct request waiting minutes is cut off by some proxies
