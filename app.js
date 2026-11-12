@@ -7,12 +7,14 @@ const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
   r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});
     if(!d.objectStoreNames.contains('days'))d.createObjectStore('days',{keyPath:'date'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'k'})};
   r.onsuccess=()=>ok(r.result);r.onerror=no});
-const txs=async(store,m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result);t.onerror=no})};
+/* a transaction that fails or is aborted (storage full) rejects with the browser's error, marked as a storage failure (safety.js shows it) */
+const txFail=(t,no,m)=>ev=>{let e=t.error||(ev&&ev.target&&ev.target.error)||new Error('the browser stopped it');try{e.dwStore=m==='readonly'?'read':'write'}catch{}no(e)};
+const txs=async(store,m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,m);t.onerror=t.onabort=txFail(t,no,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result)})};
 const tx=(m,f)=>txs('items',m,f);
 const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=(k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
 const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
-  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=no})};
+  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)})};
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
@@ -21,7 +23,7 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
-const SET_CATS=['schedule','daysoff','weather','photos','tagging','backup','connection'];
+const SET_CATS=['schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open)}
 function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();
@@ -167,7 +169,7 @@ async function ask(c,extra){
       headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image:dataUrl,appToken:localStorage.getItem('app_token')||'',...tagExtras(extra)})
     });
-    if(!res.ok){let e='';try{const j=await res.json();e=j.detail||j.error||''}catch{}aiError=`Photo tagging failed: ${e||'HTTP '+res.status}. Fill in the details below.`;return null}
+    if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}aiError=tagFailText(res.status,j,e);return null}
     aiError='';
     const result=await res.json();aiModel=result.model||'';
     let parsed;
@@ -179,7 +181,7 @@ async function ask(c,extra){
     }
     return normTag(parsed,result.model);
   } catch(e) {
-    return null;
+    aiError=tagFailText(0,null,e);return null;
   }
 }
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
@@ -249,6 +251,7 @@ function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`:'';
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
+  guardUnsaved();
   if(multi){multiNote(true);for(const f of files)await addMulti(f);return}
   for(const f of files){
     const q={id:crypto.randomUUID(),busy:1};
@@ -258,7 +261,7 @@ async function addFiles(files,multi){
       const img=await loadImg(f);
       q.raw={big:shrink(img,800),full:shrink(img,TAG_MAX)};q.wb=wbGains(q.raw.big);cardPics(q);   // tagged from the corrected, sharp copy
       const aiResult=await ask(q.tagImg);
-      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureCard(q)}
+      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureCard(q)}else tagFailed(q)
     }catch(e){q.err=1}
     q.busy=0;
     renderAdd();
@@ -379,6 +382,7 @@ async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;l
 const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure><figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure></div>`;
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 function addManual(){
+  guardUnsaved();
   const wo=watchOpts({});
   queue.unshift({id:crypto.randomUUID(),manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});
   renderAdd();
@@ -391,8 +395,9 @@ function orderRow(q,i){return `<div class="ordrow"><button type="button" class="
 function setOrder(i,on){const q=queue[i];if(!q)return;q.order=!!on;if(!on)delete q.arrives;renderAdd()}
 function setArrives(i,v){const q=queue[i];if(!q)return;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))q.arrives=v;else delete q.arrives;renderAdd()}
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
-  for(const it of done){delete it.paused;delete it.order;delete it.arrives;await put(it)}
-  if(done.length){cache={};toast(done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
+  const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
+  for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
+  if(done.length){cache={};toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
 async function save(i){
   const q=queue[i],f=FABRIC.includes(q.type);
   generateSwatch(q);
@@ -408,13 +413,14 @@ async function save(i){
   if(!it.photo)delete it.photo;
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src};
+  wardSaveFields(q,it);   // name, brand, material, notes (wardrobe.js)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (tagging.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (tagging.js)
   if(!it.sett)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
   await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
-  if(q.tagImg)keepTagImg(it.id,q.tagImg);recordTagResult(q,it);   // tagging.js: the sharp copy for the benchmark; what the tagger got wrong
+  if(q.tagImg)keepTagImg(it.id,q.tagImg);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy for the benchmark; what the tagger got wrong
 }
 let editing=null;
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Colour':k==='secondaryColor'?'Second colour':k==='tertiaryColor'?'Third colour':k==='watchStyle'?'Style':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
@@ -473,16 +479,16 @@ function itemBody(i){
   const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:!cmp?photoPair(pic,i,'tagsw-'+i.id):`<div class="pair cmpable${phEdit.cmp?' cmp':''}" id="ivpair"><figure class="phfig" onclick="toggleCompare(true)"><div class="cmpbox"><img class="ph" src="${pic}" alt="Photo"><div class="cmpdraw" aria-hidden="true">${itemThumb(i,true)}</div></div><figcaption><span class="c0">Photo</span><span class="c1">As tagged</span></figcaption></figure>`+
     `<figure class="tagsw" id="tagsw-${i.id}" role="button" tabindex="0" aria-pressed="${!!phEdit.cmp}" aria-label="Compare the drawing and the close-up side by side" onclick="toggleCompare()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCompare()}">${tagSwInner(i)}<figcaption class="c1">Close-up</figcaption></figure></div>`;
   const hero=phEdit.crop?cropEditor(i):`<div class="ivhero">${pair}</div>`;
-  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
+  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${wardFieldsTop(i)}${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patName(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,i.vest==='no'?'no':'yes'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',LEATHERS.map(c=>[c,patLabel(c)]),i.leather||'calf'):''}
   ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
-  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div></div>`:''}</section>`;
+  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns"><button onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div></div>`:''}${wardFieldsEnd(i)}</section>`;
   // the photo tools stay beside the photos: one row when there is nothing to edit yet, else folded under "Edit photos"
   const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
-  const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
-  <div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div></section>`;
+  const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
+  ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
   return `<div class="ivin">${hero}${photos}${tags}${rot}<div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
@@ -522,7 +528,7 @@ async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;i
   await put(it);cache={};renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);cache={};renderWardrobe()}
-async function rm(id){if(!confirm('Delete this item?'))return;await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe()}
+async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast (wardrobe.js)
 
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
@@ -545,7 +551,7 @@ const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of th
 const slots=o=>{const nj=o.occasion==='casual'&&!o.top;const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nj&&!o.tie?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
   .filter(([l,i,s])=>!(s==='clip'&&!i&&!(o.frozen&&pastEdit===key(sel))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn)
 .map(([l,i,s])=>{const open=!!i&&openRow===s;
-  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(desc(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="cap">${desc(i)}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':'Add one on the Add tab'}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':'Add one on the Add tab'}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
     (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
@@ -639,7 +645,7 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
   if(!o.frozen&&pool.length<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
   const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
   const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur;
-    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${i.id}')" aria-label="${esc(desc(i)||nm(i))}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm cap">${desc(i)||nm(i)}</span><small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
+    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${i.id}')" aria-label="${esc(itemTitle(i)||nm(i))}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||nm(i))}</span><small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
   const none=o.frozen&&slot!=='top'&&cur?`<button type="button" onclick="pickItem('${slot}','')">None: I didn't wear one</button>`:'';
   $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
     <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`Every ${label} you own, the best match for the rest of the outfit first.`}</small></p>
@@ -680,7 +686,8 @@ async function replanFuture(){const T=todayDate();let n=0;
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
 async function checkPlanRules(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
-  settings.planRules=PLAN_RULES;await saveUserSettings();if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
+  settings.planRules=PLAN_RULES;await metaPut('settings',settings);   // kept without a new stamp: noting the rules is not a change to the settings, and a stamp made defaults win over the backup's settings
+  if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
 async function replanButton(){const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
   const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true);
@@ -756,7 +763,7 @@ function monthGridHtml(){
     cells.push(`<button class="mc ${!wd?'rest':past?'worn':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
   // no arrows, hint or legend: a swipe (or a mouse drag) inside the box moves between months (monthDrag); the title is centred; the cells still
   // show worn / today / planned / rest by their own look
-  return `<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3></div>
+  return `${typeof packMonthBtn==='function'?packMonthBtn():''}<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3></div>
     <div class="mgrid mdow" aria-hidden="true">${['S','M','T','W','T','F','S'].map(x=>`<span>${x}</span>`).join('')}</div>
     <div class="mgrid">${cells.join('')}</div></div>
     <button class="foldbar" onclick="toggleMonth()" aria-label="Fold away the month"><span class="fchev" aria-hidden="true">›</span>Fold away</button>`;
@@ -1170,7 +1177,7 @@ function piecesBox(o){
   const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':desc(i)||nm(i))}">${swatchSVG(i,true)}</span>`).join('');
   const sum=[o.top?`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&`${colName(primaryCol(o.bot))} trousers`,o.shirt&&`${colName(primaryCol(o.shirt))} shirt`,o.tie&&`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`].filter(Boolean).join(' · ');
   return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
-    <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} pieces</b><small class="cap">${sum||'tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${sum||'tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div></div></div></section>`}
 /* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
@@ -1185,13 +1192,13 @@ function renderToday(){
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
-  let stage='',side='';
-  if(!isWorkday(sel))stage=offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
+  let stage='',side='';const first=typeof setupToday==='function'?setupToday():'';   // what is still needed for a first outfit (setup.js)
+  if(!isWorkday(sel))side=first,stage=offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
     :`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`;
-  else if(!items.length)stage='<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
+  else if(!items.length||(first&&!hasOutfit(o)))stage=first||'<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
   else{stage=figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}`}
+    side=`${first}${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);fitNavSoon();
   if(items.length){recordDays(p).then(lockUpcoming);
   }
@@ -1348,7 +1355,7 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
    bottom, a tap on the strip of Wardrobe left above it, the phone's Back button or gesture, Esc. ‹ › beside Done, a sideways
    swipe or the arrow keys go to the previous / next item of the list on screen. */
 const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
-const wardList=()=>items.filter(i=>flt==='all'||i.type===flt).sort((a,b)=>a.type.localeCompare(b.type)||b.added-a.added);
+const wardList=()=>wardView();   // the filtered, sorted list on screen (wardrobe.js)
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
 /* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
@@ -1368,7 +1375,7 @@ function renderItem(){
   const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
   if(!i){editing=null;itemShown(false);return}
   const l=wardList(),k=l.findIndex(x=>x.id===i.id);
-  $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="cap">${desc(i)||TYPES[i.type]||'Item'}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
+  $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
   $('#ivbody').innerHTML=itemBody(i);
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}
@@ -1475,12 +1482,13 @@ const WARD_PIC_TYPES=['shoes','belt','socks'];
 const wardPic=i=>{if(!WARD_PIC_TYPES.includes(i.type))return null;const p=itemPic(i);if(p)return p.img;setTimeout(()=>fetchItemPic(i),0);return null};
 function renderWardrobe(){
   closeSettings();if(editing!==phEdit.id)phEdit={id:null,undo:[],crop:null};   // undo lasts while the item stays open
+  const wf=wardKeep();
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
-  const list=wardList();
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount">${items.length} item${items.length===1?'':'s'}</span></div>${typeof shopButton==='function'?shopButton():''}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+(list.length?`<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(desc(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${i.photo}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="cap">${desc(i)}</b></span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:'Out of rotation'}</span>`:''}</button></div>`).join('')}</div>`:'<p class="mut">Nothing here yet. Add photos on the Add tab.</p>')+'</div>';
+  const list=wardFresh();
+  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount" id="wcount">${wardCount(list)}</span></div>${typeof shopButton==='function'?shopButton():''}${wardBar()}<div class="chips">${chips}</div><div class="wslide" id="wslide">`+wardGrid(list)+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
-  renderItem();
+  renderItem();wardBack(wf);
 }
 
 const cap1=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};   // option labels start with a capital ("Grey", "Solid"); values stay as they are
@@ -1489,11 +1497,11 @@ const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.ma
 function renderAdd(){
   closeSettings();
   const workerSet = !!localStorage.getItem('worker_url');
-  if($('#note')) $('#note').textContent = !workerSet ? 'Worker URL not set! Tap ⚙ in the top right to configure your Cloudflare Worker.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
+  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || (aiModel?`Last photo tagged by ${/^claude/.test(aiModel)?'Claude':'Workers AI'} (${aiModel}).`:'Photos are tagged by AI through your Cloudflare Worker.');
   const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
-<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
+${tagFailNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
   <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
@@ -1512,17 +1520,20 @@ ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='no'?'no':'yes','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='shoes'||q.type==='belt'?`<label>Leather ${S(LEATHERS.map(c=>[c,patLabel(c)]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
-${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
+${moreRow(q,i)}${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
 }
 
 function show(t){
+  if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
+  if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
+  if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});show('today');loadWeather();refreshHolidays();loadRenders().then(()=>typeof asmLoad==='function'?asmLoad():0).then(()=>{window.appReady=true;if(typeof asmSync==='function')afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();refreshHolidays();loadRenders().then(()=>typeof asmLoad==='function'?asmLoad():0).then(()=>{window.appReady=true;if(typeof asmSync==='function')afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady is set once the kept photos are loaded too (loadRenders, asmLoad): loadRenders starts `renders` afresh, and a test that put a photo there the moment the items were in lost it on a busy machine) */
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
@@ -1614,6 +1625,7 @@ function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn
 function renderSettingsExtras(){
   renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();
   if(typeof renderAsmUI==='function'){renderAsmUI();asmSync()}
+  if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.';
@@ -1654,7 +1666,7 @@ async function refreshAll(){
     items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};cache={};
     await loadWeather(true);
     if(typeof renderTried!=='undefined')renderTried.clear();remoteKeys=null;
-    const v=['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden)||'today';show(v);
+    const v=['today','wardrobe','add','stats','pack'].find(t=>$('#'+t)&&!$('#'+t).hidden)||'today';show(v);
     if(!msg){const diff=items.length-n0;msg=`Refreshed · ${items.length} item${items.length===1?'':'s'}${diff>0?` (${diff} new)`:diff<0?` (${-diff} removed)`:''}`}
     if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(g=>g&&g.update()).catch(()=>{});
   }catch(e){msg='Refresh failed: '+(e.message||e)}

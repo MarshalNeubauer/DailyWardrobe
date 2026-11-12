@@ -43,6 +43,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - styles
 - design system for every page but Today (scoped to `#wardrobe`, `#item-view`, `#add`, `#stats`, `#settings-modal`; Today keeps its own tuned styles): page header `.phead` (22px title, `.pcount`, `.pback`), buttons and inputs 44px (`--ctl-h`/`--in-h`), radius 12px on controls and 14px on cards, bordered cards, `.pri` filled, `.danger` red outline; the base button rule uses `:where()` so page rules override it; `tests/uipages.test.js` checks sizes, titles and no sideways scroll at 320/466/626px
+- `#pack` is not in the `:is(#wardrobe,#item-view,#add,#stats,#settings-modal)` design-system rules (shared lines); the `/* ---- pack ---- */` block repeats the button, input and card rules for it
+- `/* ---- safety ---- */`: `.nostore` (the full-page message), `.tagfail` (the Add card's tagging failure)
+- the block `/* ---- wardrobe ---- */` at the end: `.wfind` (search field and sort on one row), `.wsearch`, `.wclear`, `.wsort`, `.wwear`, `.wnone`, `.named`, `.wfld`, `.wnotes`, `.morefold` / `.morebtn` / `.morein`
 
 ### `core.js`
 
@@ -52,6 +55,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `inRotation(i)`: false for an item the user took out of rotation (`item.paused`, synced with the item); it stays in the wardrobe and in past outfits
 - bought, on the way: `item.order` with `item.paused`, optionally `item.arrives` (YYYY-MM-DD); `inRotation(i, n)` is true for day number `n` (`di`) after the arrival date (`arriveN`), so the plan includes it from then on
 - `item.shade` (−6…+6 steps of `SHADE_STEP` 4 L*, `shadeHex`/`shadeFor`/`shadeName`): the owner's darker/lighter for the drawn main colour (`colOf`); the tag, the planner (`planCol`, `lumOf`) and photo keys keep the tagged colour; set on the Add card and in the editor (`shadeRow`, `stepShadeQ`/`matchShadeQ`, `stepShadeE`/`matchShadeE`), "Match close-up" from the close-up's measured lightness
+- (no change) `inRotation(i, n)` / `arriveN` serve pieces away being cleaned too: `item.arrives` holds `item.away.back`
+- `MATERIALS_BY`: the materials offered per item type for `item.material` (suit, blazer, pants, shirt, tie, socks, overcoat, raincoat; lower-case names, shown with `cap1`); shoes and belts (their `leather`), watches (band and metal), cufflinks and tie clips have no list
+- `itemName(i)` / `itemTitle(i)` / `titleCls(i)`: an item's own name (`item.name`), what it is called on screen (the name, else `desc(i)`), and the class for it (`named`: shown as typed; `cap`: a description, capitalised)
+- they are in core.js, not wardrobe.js, because Today is drawn at start-up, which can be before the later scripts have loaded: with them in wardrobe.js the start-up render threw now and then and the app came up with an empty wardrobe (`items=[]` in the start-up `catch`)
+- the planner's texts (`desc`, `nm`, `rateOutfit` notes, `outfitText`) never use the name
 
 ### `planner.js`
 
@@ -95,6 +103,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - working on it: every POST to the worker's AI endpoints (`/` tagging, `/tag-many`, `/pattern`, `/render` and item pictures, not `mode:'queue'`) is caught by a `fetch` hook (`busyLabelFor`) that shows `#busy`, a spinning pill above the tab bar, with what is running (`busyStart`/`renderBusy`); photos waiting in the background queue show there too; `.spin` is the ring, also in "Generating photo…", the Add card's busy state and "Claude is reading the pattern…"
 - a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`), a prompt line (`shirtTexText`) and a drawing of its texture with 2.5× contrast (`fabricDef(…,'dia')`) after its close-up
+- `settings.laundryDays` (default 1, 0 = off; Settings → Care): in `outfit()`, a shirt worn within that many days is in the wash and left out of the day's shirts (`washing`, `washed` in `pool()`), unless there is no other shirt; a forced shirt stays
+- not on a formal day, a wedding or a funeral: the occasion's shirt outweighs the washing (`tests/weather.test.js`: the one white French-cuff shirt worn the day before a formal day was left out)
+- a lock whose shirt was worn within those days (a shirt picked by hand today that tomorrow was already showing) is dropped, when another shirt is free
 
 ### `tagging.js`
 
@@ -246,6 +257,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - two fixes for the same days are not both top picks: the best is taken, the rest re-checked as if it were bought (same section: kept as alternatives with `dup`; coats, belts and cufflinks: dropped)
 - `occasionCheck` dresses one formal day, wedding, funeral and no-jacket day and lists what is missing
 - `settings.shopSkip` (keys `type|colour group|pattern class`, synced) are left out of every check
+- `shopList` counts a piece that is away being cleaned (`item.away`) as owned, like one on the way
 
 ### `shop.js`
 
@@ -338,7 +350,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - swipe gestures
 - occasions in Settings (`setOccasion`, `addFormalDay`, `renderFormalUI`; `hasOutfit(o)` is true for a no-jacket day too, whose photo key includes the trousers and whose request sends `nojacket`)
 - days off in Settings (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`)
-- Settings is a full-screen page (a centred panel from 600px): a sticky header with Done (`saveSettings`: saves the connection fields and closes), a Wardrobe stats link, then categories that unfold like Today's cards (`SET_CATS`: schedule, daysoff, weather, photos, tagging, backup, connection; `.scat`, `toggleCat`, `setCatOpen`), each with a one-line summary (`settingsSummaries`); `openSettings('<key>')` opens one category and scrolls to it, and tests must open the category before clicking inside it
+- Settings is a full-screen page (a centred panel from 600px): a sticky header with Done (`saveSettings`: saves the connection fields and closes), a Wardrobe stats link, then categories that unfold like Today's cards (`SET_CATS`: schedule, daysoff, weather, care, photos, tagging, backup, connection, about; `.scat`, `toggleCat`, `setCatOpen`), each with a one-line summary (`settingsSummaries`); `openSettings('<key>')` opens one category and scrolls to it, and tests must open the category before clicking inside it
 - background redraws of Today (photos arriving, weather, the start-up plan check, the queue) go through `refreshToday()`: while Settings is open they set `todayStale` and wait for it to close, since `renderToday` closes Settings (it snapped shut when opened right after launch)
 - a sync that brings changes redraws the tab on screen through `syncRedraw` (sync.js): while Settings is open it only marks it (`todayStale`, `viewStale` for the Wardrobe or stats page) and `closeSettings` redraws it; `show()` used to close Settings when the start-up sync (300 ms after the database opens) came back with changes
 - out of rotation: the item sheet's Rotation card has "Take out of rotation" / "Put back in rotation" (`togglePause`); taking it out releases upcoming days it was pinned to (`force`), the picker and "Suggest another" leave it out (`slotPool`/`swapSlot`; correcting a past day still offers it), and its grid box is dimmed with an "Out of rotation" tag (`.gi.paused`, `.pausetag`)
@@ -347,6 +359,14 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - weather:
   - 16-day forecast
   - beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in `localStorage.wx_norm`, so `dayClimate()` does not fall back to a temperate calendar
+- `checkArrivals()` also brings back pieces that were away being cleaned (`item.away`): `cleaned` = the date they were due back, and the toast says they are back (`careBackText`)
+- `show(t)` ends with `packShow(t)` (pack.js), which hides or shows `#pack`; the Refresh button's list of pages includes `pack`
+- `txs` and `atomic` reject on `onabort` too (`txFail`): a transaction aborted by a full disk used to settle neither way, so the Add card just stayed; the rejection is the browser's error marked `dwStore`
+- `checkPlanRules()` stores `settings.planRules` with `metaPut` and no new stamp (not `saveUserSettings`): the stamp made a fresh install's defaults newer than the backup's settings, and on an existing device it could undo a setting changed on another device since its last sync
+- only `saveUserSettings()` stamps the settings, and only something the user did should call it
+- Today's pieces card says "1 piece"; the backup status, restore and roll-back messages say "1 item"
+- the Add tab's note while not connected (`renderAdd`): "Photos won't be read automatically. Paste your invite link in Settings → Connection, or add items by hand."
+- `renderWardrobe` draws the header count (`#wcount`), `wardBar()` above the chips and the grid through `wardGrid(wardFresh())` (wardrobe.js)
 
 ### `stats.js`
 
@@ -361,6 +381,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - colour balance
 - pairings and rest
 - what the planner learned (`forgetLearned`)
+- `whyUnused`: a piece that is away says "It's at the cleaner's" / "It's in the laundry", with the date it joins the outfits again
 
 ### `sync.js`
 
@@ -370,11 +391,137 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - any local change takes the full merge path
 - daily backups: before the first `/sync` PUT of each calendar day (the app sends its `day`), the worker keeps the stored backup as `snap:<YYYY-MM-DD>` (30 days) and `snap:<YYYY-MM>` (400 days); `GET /sync?snaps=1` lists them, `GET /sync?snap=<id>` returns one
 - Settings → "Roll back" (`loadSnapshots`/`rollBack`/`rollBackState` in sync.js) replaces items, days and settings with a snapshot by giving them a new stamp and tombstoning everything else, so it wins the merge on every device; the PUT carries `reason:'restore'` and the worker first keeps the replaced backup as `snap:before-restore`
+- `syncOnce` calls `adoptBackupSettings` (safety.js) on the downloaded backup before merging
+
+### `about.js`
+
+- Settings → About (`SET_CATS` ends with `about`; markup `#sc-about` in index.html, whose head calls `toggleCat('about');renderAbout()`): version and updates, feedback, deleting one's data, the privacy note; loaded last
+- `appVersion()`: the number in `sw.js`'s `CACHE` (`swVersionOf`), read once at start-up by fetching `sw.js` (`aboutReadVersion`): the service worker answers from the cache the page's files came from, so it is the version running, not the newest; null until read or when it can't be
+- `checkForUpdate(manual)` (start-up, back in the foreground if the last check is over `ABOUT_FRONT_MS` 1 min old, every `ABOUT_CHECK_MS` 30 min, and the "Check for updates" button): `aboutLatest()` fetches `sw.js?check=<time>` with `cache:'no-store'`; a higher number starts the download (`reg.update()`), shows the toast "A new version is ready" with Update once per version (`aboutToasted`) and the Update button in About (`aboutShow`); it never reloads
+- `updateNow()`: asks first when the Add tab has unsaved cards (`queue.length`, a `confirm`), then `reg.update()`, sends the waiting worker `{type:'skipWaiting'}` once it is installed and reloads on `controllerchange`; with no service worker, or none newer, it just reloads; a failed download or 45 s without the new worker (`ABOUT_INSTALL_MS`) says so and reloads nothing
+- `aboutAdopt()`: a waiting worker of the very version the page already runs (the first start after sw.js stopped taking over by itself, when the old worker had loaded the new files from the network) is told to take over without a reload (`aboutAsk` asks a worker its version; it also listens for `updatefound`, since the browser's own check comes after the page loads)
+- feedback (`sendFeedback`): `POST /feedback {text, version, where:'settings'}` with `x-app-token`; thanks on success, the server's `error` on failure, "isn't available yet" for a 404, "needs a connection" when not connected (`aboutConn` reads `worker_url`/`app_token`)
+- `loadFeedback()` (from `renderAbout`, and after sending): `GET /me`, and only for `role:'owner'` `GET /feedback`, listed newest first in `#fb-list` (name, date, version, text as plain text); any other answer shows nothing
+- delete my data: `askDelete()` unfolds `#del-confirm` with what goes and the buttons "Delete everything" (connected only), "Delete from this device only" and Cancel; `deleteMyData(server)` → `wipeDevice()` → reload
+- `wipeDevice()`: clears every store of the IndexedDB database, closes it and deletes it (`ABOUT_DB`), deletes the `dw-keep-*` caches, and when online the service worker's caches and registration (offline they stay, or the restart would find no app), and removes the app's localStorage keys (`ABOUT_KEYS`, `ABOUT_KEY_PREFIXES`: `nav_fit`); other keys on the origin are left alone (GitHub Pages sites of one account share an origin, so no `localStorage.clear()`)
+- a new localStorage key must be added to `ABOUT_KEYS`: `tests/about.test.js` reads the scripts' sources and fails on a key that isn't there
+- "Delete everything" sends `DELETE /account {confirm:'delete'}` first, with the connection already taken out of localStorage and the sync timer stopped so no backup goes up meanwhile; a 404 (older server) still clears the device and says the server's copy is still there; any other failure deletes nothing, puts the connection back and gives the reason
+- deleting from the device only also removes the connection (otherwise the next sync would bring the wardrobe back); the confirmation says the server's copy stays and comes back on connecting again
+- what to say after the restart is carried in `sessionStorage.about_note` (`ABOUT_NOTE`) and shown as a toast by `aboutStart()`
+- the privacy note is a `<details class="about-fold">` in index.html; styles under `/* ---- about ---- */` at the end of styles.css (`.about-text`, `.about-note`, `.fb-item`, `.about-confirm`, `.about-fold`)
+- `tests/about.test.js` mocks the server (`/me`, `/feedback`, `/account`) with `page.route`
+- rewritten: what the app is, joining by invite link, privacy, hosting (GitHub Pages + the Cloudflare Worker and its settings), running the tests; the screenshots `wa0.png`…`wa6.png` in the root were deleted (nothing referenced them)
+
+### `care.js`
+
+- laundry and dry cleaning (loaded after stats.js); kept light: nothing has to be logged, the app counts from the days worn and the user taps only when a piece goes out or comes back
+- away: `item.away = {why:'laundry'|'cleaner', since, back|null}` is stored together with `item.paused` and `item.arrives = back`, the mechanism of a piece bought and on the way: `inRotation(i, n)`, `planSim`'s `byOn(n)`, the picker, "Suggest another" and the locked week need no code of their own, and the plan takes the piece back from the day after its date
+- `careSend(id, why, back)` sends a piece away (not one already out of rotation) and releases the upcoming days pinned to it (`careRelease`, as `togglePause` does); its toast has Undo (`careUnsend`, which doesn't count as cleaned); `careSetBack(id, date)` sets or clears the date
+- coming back sets `item.cleaned` (YYYY-MM-DD) and deletes `away`, `paused`, `arrives`: by itself in `checkArrivals()` (app.js) the day after `away.back`, with `cleaned` = that date on every device, or with "It's back" (`careBack`), cleaned today
+- wears since cleaning: `careCounts()` counts, per item, the days of `wornDays()` (stats.js) dated after `item.cleaned`; kept on the plan cache (`cache.careW`), so anything that resets `cache={}` recounts
+- a wear on the day of `item.cleaned` itself is not counted (the piece was cleaned after it); so a piece marked back in the morning and worn that same day loses that one wear
+- limits: `careLimit(type)` = `settings.care[type]`, else `CARE_DEF` (suit 5, blazer 6, pants 4, shirt 1), else 0 = never; `careState(i)` → `{wears, limit, each, due, near, over}`: due at the limit, near one wear short (limits of 3 and more)
+- a limit of 1 (shirts) means washed after every wear (`each`): such pieces are never flagged one by one (every worn shirt would carry a tag); the Care page shows them as one line per type with "All washed today" (`careCleanedType`)
+- "Cleaned today" / "Washed today" (`careCleaned`) sets `item.cleaned` without sending the piece away, with Undo
+- the item sheet's Care card (`careCard(i)`, `#ivcare`, appended to the Rotation card's markup in `itemBody` so the sheet's last line is untouched): the count ("Worn 4 times since cleaning (Nov 3) · due after 5"), "Send to the dry cleaner" / "In the laundry" (the laundry first for shirts and socks, `careWashed`), and while away: since when, an optional "Back on" date and "It's back"; only for `CARE_ABLE` types, not for a piece on the way
+- while a piece is away the Rotation card has no button (it says the piece is away, see Care): "Put back in rotation" would have brought it back without `cleaned`
+- the Wardrobe grid: `careTag(i)` ("At the cleaner's · back Nov 20" / "In the laundry") in the `.pausetag`, and `careBadge(i)`, a quiet `.caretag` "Due for cleaning" on a due piece
+- the page (`#care`, `openCare`, `renderCare`, `careLists()`; in Settings as "Laundry & cleaning" under Wardrobe stats): Due for cleaning (most overdue first), Nearly due, Washed after every wear, Away now; each row has "Send to the cleaner" and "Cleaned today", away rows "It's back"
+- `show()` in app.js calls `careShow(t)` for every page, which hides `#care` or shows and draws it (`show('care')`), so `show()`'s own list of pages is unchanged
+- Today: `careNote(o)` adds one quiet line (`#carenote`) under the cards, on today only, when today's suit, blazer or odd trousers reaches its limit with this wear or is past it; nothing otherwise
+- Settings → Care (`#sc-care`, `renderCareUI` from `renderSettingsExtras`; `'care'` is in `SET_CATS` in app.js, after weather): a dropdown per type in `CARE_TYPES` (`setCareLimit`: Never, After every wear, After 2–10 wears) and "A worn shirt waits" (`setLaundryDays`, which releases the coming week's locks like `setDarkShirts`); the summary `#sum-care` is written by `renderCareUI`
+- `tests/care.test.js` covers all of it, with two devices for `away` / `cleaned` / the settings and sizes at 320, 390 and 626px in both themes
+
+### `pack.js`
+
+- the packing list page (Settings → Packing list `#pack-btn`, and "Packing list for a trip" at the top of Today's open month, `packMonthBtn` from `monthGridHtml`): the `#pack` section, shown by `show('pack')` through `packShow(t)` (called at the end of `show()`), `openPack`/`renderPack`
+- the trip (`packTrip()`, `localStorage.pack_trip` `{a, b, j, s}`: first and last day as `YYYY-MM-DD`, most jackets and pairs of shoes, 0 = no limit) defaults to the workdays of the week starting next Monday (`packDefault`); a stored trip that is over makes way for it; at most `PACK_MAX` (31) days (`packSetDate`)
+- `packDays(t, plan)`: every day of the range with its outfit from `planMonth` (or from a plan passed in), `o` null on a day off or a day with nothing planned; the page lists each with the month's stack drawing (`stackSVG`) and `shortTop`/`shortRest`
+- `packList(days, wear)` → `{groups, worn, counts, total}`: every distinct piece once with its days (`n`), grouped by type in `TYPES` order (`PACK_TITLE`); a suit's `o.bot` is the suit itself and is not counted again; a suit worn with its vest says so
+- one belt per shoe colour worn (`leatherGroup` of the shoes): the belt planned most often with that colour, so two brown belts planned on different days are one line
+- what the wardrobe lacks is a line without an item (keys `x-belt-<group>`, `x-links`, `x-coat`): a belt for shoes with none that matches, cufflinks for a French-cuff shirt, a coat on a cold or wet day
+- the count line (`packCount`, `PACK_COUNTED`: suits, blazers, dress pants, shirts, ties, shoes, socks; nouns in `PACK_NOUN`)
+- ticks and travel wear are kept per trip on the device (`localStorage.pack_marks`: `{'<a>_<b>': {t:[line keys], w:[item ids], at}}`, the newest `PACK_TRIPS` 8; `packMark`/`packSetMark`, `packTick`, `packWear`); a piece marked Wear moves to "Wearing on the way" and is not counted; `packWearDay` marks the first outfit day's whole outfit (`packWornIds`: its belt is the list's belt for that shoe colour)
+- pack lighter (`packLight(t, base)`, memoised on the `cache` object): with a limit below what the trip uses, the trip's days are planned again on a copy of the day records (`packPlanOf(recs, end)`: `planSim` from the shared start with `dayRecs` swapped, like `planWith`)
+- `packLightRecs(days, AJ, AS)`: each live day rules out (`rec.skip.top` / `.shoes`) every jacket of its kind and every pair of shoes not in the allowed sets, drops its lock, and takes the other kind of jacket (`rec.kind`) when none of its own kind is allowed and the day has no occasion; pieces picked by hand (`rec.force`) and days already worn are never changed and come first in the allowed sets (`packTally`)
+- up to `PACK_TRIES` (3) sets of jackets × 3 sets of shoes are tried, the most worn first (`packSets`), with one suit and one blazer first when the limit is 2+ and the trip has both; the best by `packRate` wins (outfit scores, −50 for a hard check, −1000 for an incomplete outfit, −3000 for each piece over the limit); measured 100 ms on the test wardrobe
+- the page shows the lighter plan's outfits and list with what it saves (`packSaved`) and the average score before and after; nothing is saved until "Keep this plan", which locks the trip's days to it (`packLock` → `packLockDays`, which also saves `rec.kind` for a day that took the other kind)
+- keep these outfits: `packLockDays` gives every live day of the trip `rec.lock = lockIds(o)` (the app's own lock, which only covers 7 days); `packLockState` counts the days whose lock is what the plan shows; the page says Locked / n of m days locked / Not locked; `packRelease` removes the locks
+- `clearLocks()` (a planner setting, an occasion, Re-plan) releases a trip's lock like any other; the page then says Not locked
+- `packText(t, days, list)` is the plain-text list (title, count line, groups, travel wear, the outfits per day); `packCopy` uses `navigator.clipboard`, falling back to a hidden textarea; Share (`packShare`) only where `navigator.share` exists
+- `tests/pack.test.js`; `PACK_SHOTS=<folder>` saves pictures of the page at 320/390/626px in both themes
+
+### `safety.js`
+
+- data safety (loaded right after app.js, before tagging.js and sync.js): failed saves, storage that can't be opened, keeping the wardrobe, kept tagging copies, tagging failures, unsaved Add cards, a device's first sync; `tests/safety.test.js`, `tests/safetysync.test.js`
+- `storeFailure(e)`: an error is a storage failure when `txs`/`atomic` marked it (`e.dwStore` = 'read' or 'write'), it is a `QuotaExceededError`, or it is an IndexedDB request's error event
+- `saveFailed(e)` toasts it in plain words (`storeFailText`: "Couldn’t save: your phone’s storage is full…", else the browser's reason), once per 1.5 s since one failed save rejects more than one promise (`put` chains a `.then`)
+- the `unhandledrejection` listener shows storage failures nobody caught and leaves every other rejection alone; Add's `save()` has no try/catch of its own, its rejection arrives there and the card stays to be saved again
+- `dbDown`/`dbErr` are set by safety.js's own `db.then` at load: it is queued before sync.js's `db.then`, so the listener already knows storage is down when that one rejects, and stays quiet
+- `storageDown(e)` (from the start-up chain's `catch`, through `afterScripts`): when `db` didn't open (or a start-up read failed) it puts `#nostore` over the whole page ("Your wardrobe can’t be opened here … can’t be loaded or saved", the browser's reason, Try again = reload) and makes `header`, `main` and `nav` inert; other start-up errors still fall back to the empty Today as before
+- `askPersist()`: `navigator.storage.persist()` once (`localStorage.persist_asked`, the answer in `persist_ok`), from `save()` after an Add card is stored, and from `safetyStart()` for a wardrobe that already has items
+- `safetyStart()` runs at the end of the start-up chain (after `appReady`): `pruneTagImgs()` and the persist request
+- `pruneTagImgs()`: removes from Cache Storage `dw-keep-tagimg` the sharp copies whose item is not in `items` (nor an Add card); at start-up only, since a deleted item can be undone for a few seconds; never with an empty wardrobe (a lost one comes back from the backup)
+- tagging failures: `ask()` (app.js) calls `tagFailText(status, json, error)` for a refused answer or a thrown error; it returns the Add page's note (`aiError`) and keeps the plain reason in `tagWhy`; a 429 `{error:'limit', message}` shows the server's `message` as is
+- `addFiles` calls `tagFailed(q)` when `ask()` gave nothing and a server is set: `q.tagErr`, drawn by `tagFailNote(q,i)` at the top of the card (`.tagfail`: "This photo wasn’t tagged." + the reason + Try again); `retryTag(i)` asks again and fills the card; the card can still be filled in by hand and saved
+- `guardUnsaved()` (from `addFiles` and `addManual`, once: `guardOn`) installs the `beforeunload` listener: leaving asks first while `queue` holds a card that is not a failed read
+- `adoptBackupSettings(local, data)` (called by `syncOnce` before the merge): on a device that has never finished a sync (no `localStorage.last_sync`) whose stored settings carry a newer stamp than the backup's, the backup's settings win key by key (`{...local, ...backup}`, the backup's stamp), are stored and applied at once; keys only the device has (`setupDone`) stay; why: first-run setup stamps its settings before the device is connected, and they replaced the backup's holidays, days off, own colours and learned preferences
+- after its first finished sync a device's changes count by stamp like any other's
+
+### `setup.js`
+
+- first-run setup and the empty states (loaded last, after sync.js): `#setup`, a full-screen flow in the style of Settings (a centred panel from 600px), made by `setupEl()` the first time it is needed; it is not in index.html
+- `setupStart()` runs once at start-up, after the wardrobe, history and settings are read (the start-up chain in app.js calls it through `afterScripts`): it opens the setup when the wardrobe is empty, no day was ever recorded and `settings.setupDone` is not set
+- someone who already has items never sees it: `setupStart` sets `settings.setupDone` in memory only, and it is stored with the next settings change (storing it at once would count as a change on the device and turn the next sync into a full one)
+- steps (`SETUP_STEPS`: welcome, week, wear, weather, connect, done; `setupStep(k)` draws one, `setupGo(±1)` moves, `setupDraw()` redraws): each has Back and Next, and Skip in the header finishes at once
+- the steps store through the app's own functions: `setupDay` → `toggleDay`, `setupUnits` → `setUnits`, `setupVest` → `setVestMode`, `setupPick` → `setLocation`, `setupLocate` → `useMyLocation`, `setupSearch` → `findCity`
+- `setupSearch` puts its text in Settings' own `#cfg-city`, calls `findCity()` and reads `window._cities` (null afterwards = the search failed); `setupLocate` polls for `settings.location` to change, since `useMyLocation` gives no answer back
+- What you wear: two switches write `settings.dress = {jacket, tie}` (`setupSetDress`; `setupDress()` reads it, a missing object or key = true) and release the coming week's locks (`clearLocks`); the planner does not read it in this file
+- the vest: a new person who doesn't choose gets `settings.vestMode='never'` when the setup finishes (`setupFinish`, only for a setup that opened by itself); the stored default stays `auto` for everyone else
+- Connection: connected = `localStorage.worker_url` and `app_token` both set (`setupConnected`), shown with a tick; otherwise a field for the invite link, given to `connectFromLink(text)` when the app has it, else read by `setupParseLink` (`#invite=<code>&w=<encoded address>` → `app_token`, `worker_url`)
+- `setupFinish(toAdd)`: Skip (stays on Today) and the last step's button (goes to the Add tab; to Today when there are items) both store `settings.setupDone = Date.now()` through `saveUserSettings`
+- Settings → "Run setup again" (`#setup-again`, under Connection) calls `setupOpen(true)`: the same flow, showing the stored vest choice and not forcing "no vest"
+- a setup that opened by itself steps aside without being marked done when the app is driven past it (`setupYield(t)`, called first thing in `show()` and from `setupToday`): items came in (a sync on a new device, a restore) or another tab was opened; one started from Settings stays
+- while it is up, `header`, `main` and `nav` are `inert` (`setupInert`); its z-index (980) is under Settings (1000)
+- in a browser driven by a test program (`navigator.webdriver`) the setup does not open by itself unless the page sets `window.SETUP_AUTO=true` before the scripts load (`setupAuto()`): every test starts as a new install, and tests such as `theme` and "add an item without a photo" click the header and the tab bar straight away; `tests/setup.test.js` sets it with `addInitScript`
+- Today's checklist (`setupToday()`, called by `renderToday`; rows from `setupNeeds()`): "Get your first outfit" lists a suit or blazer (jackets on), a shirt, a tie (ties on), trousers (no suit in the wardrobe, or jackets off) and shoes, ticks what is in rotation, and has a button to the Add tab; it returns '' once every row is ticked
+- where the checklist goes: in place of the picture while the day has no outfit at all (an empty wardrobe, or no jacket and no shirt), above the score card while the planner already dresses part of the day (a shirt alone), and under the note on a day that is not a workday
+- the empty Wardrobe (`setupWardEmpty()`, `#wempty`): a card with a drawn hanger and "Add your first item"; a type filter with nothing in it keeps "Nothing here yet"
+- `tests/setup.test.js` covers the steps and what each stores, Skip and Done, an install with items, "Run setup again", both connection paths, stepping aside, the checklist for a suit-and-tie person and a no-jacket, no-tie person, and no sideways scroll at 320/390/626px in light and dark
+
+### `wardrobe.js`
+
+- the Wardrobe tab's search and sort, the item fields `name` / `brand` / `material` / `notes`, and Delete with Undo (loaded after stats.js; app.js calls in from `renderWardrobe`, `wardList`, `itemBody`, `save` and `rm`)
+- search: a field above the type chips (`wardBar`, `#wsearch`, `wardQ`); every word typed must be in the item's name, brand, notes, material, type, colour names or pattern (`wardHay`, `wardMatch`; case and accents ignored); it combines with the type chip and stays when the chip changes
+- typing redraws only the grid and the count (`wardSearch` → `wardRefresh`: `#wslide`, `#wcount`, `#wclear`), never the field, so the focus and the keyboard stay; a full `renderWardrobe` while the field is in use (a sync arriving) puts the focus and the caret back (`wardKeep`/`wardBack`)
+- the header count reads "n items", or "n of m items" when a chip or the search narrows the list (`wardCount`); × in the field clears it (`wardClear`, also Escape)
+- nothing matches: `#wnone` (`wardGrid`) says so, with "Clear search" and, when a chip is on and other types match, how many and "Search all types"
+- sort: the dropdown beside the search field (`#wsort`, `WARD_SORTS`, `setWardSort`), remembered in `localStorage.ward_sort`: By type (the type chips' order, newest first within a type), Newest first, Most worn, Longest since worn (never worn first), Colour, A to Z (by the title shown)
+- By type used to sort by the type's key, so "All" began with belts; it now follows `Object.keys(TYPES)`, suits first
+- Most worn and Longest since worn count the days really worn (`wardWear` over `wornDays()` in stats.js) and each box says "Worn n times" / "Last worn 3 Nov" / "Not worn yet" (`.wwear`)
+- Colour groups by family (`WARD_FAMS`: neutrals, blues, browns, greens, reds, purples, then pieces shown by their metal; `WARD_FAM` over the planner's `fam`), light to dark within each (`lumCol`, the item's `shade` counted)
+- `wardView()` is the list on screen (chip, search, sort) and `wardList()` in app.js returns it, so the item sheet's ‹ ›, swipes and "n of m" follow the filtered, sorted list; it is kept in `wardMemo` until the next redraw (`wardFresh`), since the sheet's swipe asks for it on every touch move
+- `wardGrid(list)` draws the grid (moved here from `renderWardrobe`): a box's title is `itemTitle(i)`
+- fields: `item.name` (60 characters), `item.brand` (40), `item.material` (40), `item.notes` (500) (`WARD_FIELDS`, `WARD_MAX`); an empty one is removed from the item
+- the item sheet's Details card has Name and Brand at its top (`wardFieldsTop`), Material and Notes at its end (`wardFieldsEnd`); `setItemField` saves a text field when it is left and 600 ms after the last keystroke (`itemFieldSoon`: a sheet swiped away never tells a field it was left) without redrawing the sheet (the next field tapped would lose its focus); only the header's title and the grid follow
+- Material (`matRow`) is None, the type's `MATERIALS_BY` list, Other; Other shows "Which material?" and the text typed is the material (`'other'` until something is typed); types without a list show no Material row
+- the Add card has "More details" (`moreRow`, `toggleMore`, `q.more`), folded until tapped, with the same four fields (`setQField`, kept on the card as typed); folded with something in it, it says "n filled in"; `wardSaveFields(q,it)` in `save()` copies them onto the item
+- a name is the item's title in the Wardrobe grid, the item sheet's header, Today's pieces list and the piece picker (and their `aria-label`s)
+- the fields are ordinary item properties, so they sync, back up, restore and roll back with the item (whole items are merged, newest wins)
+- Delete (`rm` → `wardDelete`) no longer asks: it removes the item at once, closes the sheet and shows the toast "Deleted <name>" with Undo for `WARD_UNDO_MS` (8 s)
+- Undo (`wardUndelete`) writes the item back as it was (same id, photos, close-up, tags, fields, rotation state, its place in `items`) with `updated` one above the deletion's time, and saves again any day record that referred to it and was changed meanwhile (a day re-planned without it)
+- why that survives a sync: the tombstone stays, and in `mergeState` a tombstone only wins over an item whose stamp is not newer; so the restored item wins on every device, also on one that had already taken the deletion; a delete that is not undone propagates as before
+- `tests/wardrobe.test.js`: search by each field and with a chip, each sort order, the sheet stepping through the filtered list, the fields (sheet, Add card, two synced devices, backup file restored on an empty device), the name in its four places, materials by type, delete / Undo with and without a sync in between, sizes and no sideways scroll at 320 / 390 / 626px in both themes
 
 ### `sw.js`
 
-- service worker: network-first app files, offline fallback
+- service worker: one version at a time (see the bullets below; it used to fetch every app file fresh on each load)
 - Add new app files to `ASSETS` and bump `CACHE`
+- service worker: one version at a time. Installing downloads every file in `ASSETS` afresh (`cache:'reload'`) into the version's own cache (`CACHE`), and the page is then served from that cache only (cache-first; a file not in it comes from the network and is kept); works offline
+- why: the earlier handler was network-first with a 4 s race per file, so an app reopened on a slow connection right after a release ran some new files and some old ones from the cache
+- a new version installs in the background and waits (no `skipWaiting` at install): it takes over when the app is next started, or when the page sends `{type:'skipWaiting'}` (about.js `updateNow`); `{type:'version'}` with a message port answers the worker's version number
+- a request made with `cache:'no-store'` is not handled (about.js reads the newest `sw.js` that way); `sw.js` itself is in `ASSETS`, so the page can read its own version from the cache
+- `tests/sw.test.js` serves releases from its own server: a reload stays on the installed version, a bumped `sw.js` prompts and waits, Update switches and reloads with every file new, a version left waiting runs after the app is closed and opened, and a worker following the earlier network-first one takes over without a reload
 
 ### `worker.js`
 

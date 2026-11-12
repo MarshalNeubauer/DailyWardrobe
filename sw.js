@@ -1,25 +1,35 @@
 /* Daily Wardrobe service worker.
-   Network-first for the app's own files: every load fetches fresh copies (revalidating past the browser's HTTP cache),
-   so updates show up immediately with no '?v=' tricks. If the network fails or is slow, the last cached copy is used,
-   so the app also works offline. Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
+   One version at a time: installing downloads every app file afresh (past the browser's HTTP cache) into this version's own
+   cache, and the page is then served from that cache only, so it never runs some files of one release and some of the next
+   (the old network-first handler with its 4 s race did, on a slow connection right after a release), and it works offline.
+   A new version installs in the background and WAITS: it takes over when the app is next started, or at once when the page
+   asks ({type:'skipWaiting'}, about.js: the "Update" button, which then reloads). So a release reaches phones only when
+   CACHE below is bumped: this file must change for the browser to see a new version.
+   A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
+   Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tagging.js) and survive updates. */
-const CACHE='dw-v143';
-const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','tagging.js','assemble.js','stats.js','shop.js','sync.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
+const CACHE='dw-v144';
+const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','safety.js','tagging.js','assemble.js','stats.js','care.js','wardrobe.js','pack.js','shop.js','sync.js','setup.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'reload'})))))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+self.addEventListener('message',e=>{const d=e.data||{};
+  if(d.type==='skipWaiting')self.skipWaiting();
+  else if(d.type==='version'&&e.ports&&e.ports[0])e.ports[0].postMessage({version:+CACHE.replace(/\D+/g,'')||null})});
 self.addEventListener('fetch',e=>{
   const req=e.request,url=new URL(req.url);
-  if(req.method!=='GET'||url.origin!==location.origin)return;   // let the browser handle it
+  if(req.method!=='GET'||url.origin!==location.origin||req.cache==='no-store')return;   // let the browser handle it
   e.respondWith((async()=>{
     const cache=await caches.open(CACHE);
+    const hit=await cache.match(req,{ignoreSearch:true});
+    if(hit)return hit;
+    // not one of this version's files (or the cache was cleared): the network, kept for offline use
     try{
-      // give the network ~4s, then fall back to the cached copy
-      const res=await Promise.race([fetch(req,{cache:'no-cache'}),new Promise((_,no)=>setTimeout(()=>no(new Error('slow')),4000))]);
+      const res=await fetch(req,{cache:'no-cache'});
       if(res&&res.ok)cache.put(req,res.clone());
       return res;
     }catch(err){
-      const hit=await cache.match(req,{ignoreSearch:true})||(req.mode==='navigate'&&await cache.match('index.html'));
-      if(hit)return hit;
+      const page=req.mode==='navigate'&&await cache.match('index.html');
+      if(page)return page;
       throw err;
     }
   })());
