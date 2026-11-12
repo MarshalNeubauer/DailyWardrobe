@@ -63,8 +63,12 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       dayRecs['2026-11-16']={date:'2026-11-16',force:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,...(o.clip?{clip:o.clip.id}:{}),...(o.watch?{watch:o.watch.id}:{})},vest:!!o.vest};
       cache={};const o2=planFor()['2026-11-16'];const d=lastWorn(o2);
       // a white shirt instead of light blue is a different look; another light blue shirt would be the same
-      const diff=lastWorn({...o2,shirt:{...o2.shirt,primaryColor:'pink'}});return {d:d&&key(d),diff}});
+      const diff=lastWorn({...o2,shirt:{...o2.shirt,primaryColor:'pink'}});
+      // a later day with the same look that nobody marked worn was only planned: it doesn't count
+      dayRecs['2026-11-9']={date:'2026-11-9',ids:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,clip:null,watch:null},suitDay:true,vestOn:!!o.vest};
+      const unmarked=lastWorn(o2);delete dayRecs['2026-11-9'];return {d:d&&key(d),diff,unmarked:unmarked&&key(unmarked)}});
     ok(cap.d==='2026-11-2'&&cap.diff===null,'last worn finds the most recent day with the same look');
+    ok(cap.unmarked==='2026-11-2',`a day never marked worn isn't "last worn" (${cap.unmarked})`);
     await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};figView='photo';renderToday()});
     ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
     // Settings: generate the month's missing photos

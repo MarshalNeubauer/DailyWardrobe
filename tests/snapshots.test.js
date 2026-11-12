@@ -35,6 +35,32 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await put(st(6),'not-a-date');
   ok([...store.keys()].some(k=>/^snap:\d{4}-\d{2}-\d{2}$/.test(k)),'a missing or bad day falls back to the worker\'s own date');
 
+  // large backups: over 20 MB the worker keeps parts (a KV value holds 25 MiB at most) and streams them back; over 48 MB it refuses
+  store.clear();meta.clear();ttl.clear();
+  {const big=n=>({items:[{id:'big',type:'suit',primaryColor:'navy',added:1,photo:'data:image/jpeg;base64,'+'A'.repeat(n)}],days:[],tombstones:{},settings:null});
+    const raw=o=>worker.fetch(new Request(HOST+'sync',{method:'PUT',headers:{'x-app-token':'secret','content-type':'application/json'},body:typeof o==='string'?o:JSON.stringify(o)}),env);
+    const r1=await raw({baseRev:0,day:'2026-11-10',data:big(30e6)});
+    ok(r1.status===200&&meta.get('wardrobe:v1').parts===2&&store.has('wardrobe:v1~1~1'),`a 30 MB backup is stored in two parts (${r1.status})`);
+    let back=await (await call('GET')).json();
+    ok(back.rev===1&&back.saved===meta.get('wardrobe:v1').saved&&back.data.items[0].photo.length===30e6+23,'and comes back whole');
+    const r2=await raw({baseRev:1,day:'2026-11-11',data:big(46e6)});
+    ok(r2.status===200&&meta.get('wardrobe:v1').parts===3&&store.has('wardrobe:v1~2~2')&&!store.has('wardrobe:v1~1~1'),`a 46 MB backup takes three parts; the version before's parts are gone (${r2.status})`);
+    ok(meta.get('snap:2026-11-11').parts===2&&store.has('snap:2026-11-11~1~1')&&ttl.get('snap:2026-11-11~1~1')===30*86400,'the daily copy of a parted backup keeps its parts, for 30 days');
+    const s=await (await call('GET','?snap=2026-11-11')).json();
+    ok(s.rev===1&&s.data.items[0].photo.length===30e6+23,'and the copy comes back whole');
+    const L=await (await call('GET','?snaps=1')).json();
+    ok(L.snaps.every(x=>!x.id.includes('~')),'parts are not listed as backups');
+    const c=await raw({baseRev:0,day:'2026-11-11',data:big(25e6)});const cj=await c.json();
+    ok(c.status===409&&cj.error==='conflict'&&cj.rev===2&&cj.data.items[0].photo.length===46e6+23,'a conflict hands back the stored parted backup to merge with');
+    back=await (await call('GET','?v=2:'+meta.get('wardrobe:v1').saved)).json();
+    ok(back.same===true,'an unchanged parted backup costs one tiny request');
+    ok((await raw({baseRev:2,day:'2026-11-11',data:big(51e6)})).status===413,'over 48 MB is refused');
+    const old=await raw(JSON.stringify({baseRev:2,data:big(25e6),day:'2026-11-11'}));
+    ok(old.status===413&&/update the app/.test((await old.json()).error),'a large backup from an app that sends its data first is asked to update');
+    const r3=await call('PUT','',{baseRev:2,data:st(9),day:'2026-11-11'});
+    ok(r3.status===200&&typeof store.get('wardrobe:v1')==='string'&&!meta.get('wardrobe:v1').parts&&![...store.keys()].some(k=>k.startsWith('wardrobe:v1~')),'a small backup after a large one is one value again, and the parts are gone');
+    ok((await (await call('GET')).json()).data.items[0].id==='i9','and reads back');}
+
   // app: two devices; device A gets damaged, rolls back; device B follows
   store.clear();meta.clear();ttl.clear();
   const browser=await chromium.launch();

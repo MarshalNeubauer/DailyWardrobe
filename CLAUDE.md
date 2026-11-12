@@ -302,7 +302,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `shopList` counts a piece that is away being cleaned (`item.away`) as owned, like one on the way
 - the what-to-buy check follows the dress code: `compatBase` leaves out the types it excludes, the Ties (or Suits and Blazers) sections are skipped, no tie clip is suggested, reasons don't count ties, and excluded pieces are not listed as never planned; `shopSig` adds `|nojacket` / `|notie`, so the check runs again after a change
 - without ties a shirt idea is ranked by the jackets it works with, a suit or blazer idea by the shirts
-- not done: without jackets there are no shirt or trouser ideas (their ranking is built on jackets); shoes, belts, socks and coats are still checked against the real plan
+- shoes, belts, socks and coats are checked against the real plan whatever the dress code
+- without jackets `compatBase` has one stand-in jacket, `NOJ` (`{id:'nojacket'}`), with every pair of trousers, scored like the planner's no-jacket day (`clothesScore(null,…)` with `day.nojkt`): shirt and tie ideas are ranked by the trousers (and shirts or ties) they suit, trouser ideas by the shirts (and ties); trouser candidates are made for every colour (`clothesCandidates`); `NOJ` is never named or counted as an idle piece
+- `tests/dress.test.js` checks the what-to-buy ideas without jackets, with and without ties
 
 ### `shop.js`
 
@@ -468,6 +470,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - daily backups: before the first `/sync` PUT of each calendar day (the app sends its `day`), the worker keeps the stored backup as `snap:<YYYY-MM-DD>` (30 days) and `snap:<YYYY-MM>` (400 days); `GET /sync?snaps=1` lists them, `GET /sync?snap=<id>` returns one
 - Settings → "Roll back" (`loadSnapshots`/`rollBack`/`rollBackState` in sync.js) replaces items, days and settings with a snapshot by giving them a new stamp and tombstoning everything else, so it wins the merge on every device; the PUT carries `reason:'restore'` and the worker first keeps the replaced backup as `snap:before-restore`
 - `syncOnce` calls `adoptBackupSettings` (safety.js) on the downloaded backup before merging
+- the PUT body is `{baseRev, day, reason?, data}` with `data` last (the worker reads a large backup's leading fields without parsing it)
+- the monthly holiday refetch (`refreshHolidays`, app.js) syncs first and refetches only if the synced settings still need it, never offline: its save stamps the settings newest, which on a device away for weeks used to undo another device's newer change
+- Settings' Backup line (`backupSummary`, app.js): "Backed up today / <day>", "Last backup failed · last saved <day>" while `sync_status` says failed, "Not backed up yet"
+- "Last worn" on Today (`lastWorn`) counts only days marked ✓; an unmarked past day was only planned (the stats' wear counts still take unmarked past days as worn)
+- one name for the type `pants` on screen: "Trousers" (`TYPES`, the packing list, Care); photo prompts still say "dress trousers"
 
 ### `about.js`
 
@@ -563,6 +570,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - Today's checklist (`setupToday()`, called by `renderToday`; rows from `setupNeeds()`): "Get your first outfit" lists a suit or blazer (jackets on), a shirt, a tie (ties on), trousers (no suit in the wardrobe, or jackets off) and shoes, ticks what is in rotation, and has a button to the Add tab; it returns '' once every row is ticked
 - where the checklist goes: in place of the picture while the day has no outfit at all (an empty wardrobe, or no jacket and no shirt), above the score card while the planner already dresses part of the day (a shirt alone), and under the note on a day that is not a workday
 - the empty Wardrobe (`setupWardEmpty()`, `#wempty`): a card with a drawn hanger and "Add your first item"; a type filter with nothing in it keeps "Nothing here yet"
+- the last step's summary lists the workdays Sunday first, as the Week step and Settings show them (it used to put Sunday last)
+- the last step asks for trousers only as a condition while jackets are on and no suit is owned ("…, plus trousers if you wear a blazer rather than a suit"), as the Today checklist's "not needed with a suit" does
+- the default workdays stay Sunday to Thursday (`settings.workdays` [0,1,2,3,4], `getDay()` numbering): the owner's choice
 - `tests/setup.test.js` covers the steps and what each stores, Skip and Done, an install with items, "Run setup again", both connection paths, stepping aside, the checklist for a suit-and-tie person and a no-jacket, no-tie person, and no sideways scroll at 320/390/626px in light and dark
 
 ### `wardrobe.js`
@@ -612,6 +622,10 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - an older server answers `/me` 404 or 405: the box stays empty (`acct.state` 'old'); 403 shows that the connection was not accepted
 - a daily limit reaches the user as the server's `message`: the Add card and "several items" show it through `detail` (the worker sends the sentence as both), Generate photo shows the sentence alone (`generateRender`'s catch knows "Today’s limit"), `renderCombo`, `renderItemPic`, `queueCombo` and `asmMake` throw `j.message||j.error`, the month batch and the item-picture batch stop at it, and a pattern reading (which falls back to the pixel reader without a word) toasts it through `limitNote` (shown again if another toast replaced it)
 - `tests/accounts.test.js` covers the server side and the app (the link, the Connection page at 390px light and 626px dark, each limit message)
+- the role from `/me` is remembered for the connection's code (`rememberRole`, `localStorage.acct_role` `{tok, role}`; `acctRole()`, `isTester()`), so the app knows it at start-up; a connection made before that asks `/me` once, 4 s after start
+- testers see no costs: `showCost()` (app.js) is false for a tester, and the photo prompts and Settings → Realistic photos leave out "about 7¢"; the owner's Advanced fold (item photos, the accuracy check) keeps its costs
+- About's Feedback line (`#fb-help`, set by `renderAbout`) says "it goes to the person who invited you" to testers only; the owner reads the feedback there
+- `tests/testerview.test.js`: the costs, the feedback line and Settings' Backup line
 
 ### `ui.js`
 
@@ -647,6 +661,8 @@ Cloudflare Worker. Every endpoint needs the owner's `APP_TOKEN` or a tester's in
 - `/pattern` motif: `layout:'motif'` with `motif {grid: straight|diagonal, ground {name,hex}, figures [{shape (MOTIF_SHAPES), placement: cell|corner|alternate-cells, colours (1, or 2 alternating), centre (square-with-dot), sizePct}]}`; `across`/`along` are null; `repeatsInCloseup`/`repeatsAcrossItem` count grid cells
 - `/tag-many`: several items in one photo. Claude lists every item with a confidence and a rough box in thousandths; the app crops each into its own Add card.
 - `/sync`: KV binding `WARDROBE`. The backup's `{rev, saved}` is kept as the KV key's metadata, so `?v=` and the PUT conflict check don't load the backup.
+- `/sync` takes backups up to 48 MiB (`BACKUP_MAX`); KV holds 25 MiB a value, so one over 20 MiB (`PART_MAX`) is kept in parts: the first under the key, with `parts:n` in its metadata, the rest as `<key>~<rev>~<i>`, written before the key; reads (`storedResponse`, `partedStream`) stream them back part by part, daily copies copy them (`copyStored`), a new version deletes the old version's parts (`dropParts`), "Delete everything" takes `wardrobe:v1~…` too
+- a PUT over 20 MiB is never parsed whole (`putParted`, `BIG_HEAD`): sync.js sends `data` last so the worker reads `baseRev`, `day` and `reason` from the first bytes; an older app (data first) is answered 413 "update the app"; `tests/snapshots.test.js` checks 30, 46 and 51 MB backups
 - `/fetch`: downloads photo links for the app.
 - `/holidays?country=XX`: public holidays from Google's public holiday calendars, for countries Nager.Date lacks (the app asks Nager.Date itself first).
 - `/render` POST with `mode:'item'`: a product picture of one item from a text description via OpenAI image generation, stored under the given key.

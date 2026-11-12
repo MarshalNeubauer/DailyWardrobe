@@ -116,7 +116,7 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok'];
+const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));
@@ -164,6 +164,8 @@ async function deleteMyData(server){
 
 /* ---- the page ---- */
 function renderAbout(){aboutShow();
+  // the owner reads the feedback (below it) rather than sending it to someone: no "goes to the person who invited you"
+  if($('#fb-help'))$('#fb-help').textContent='What works, what doesn’t, what is missing'+(typeof acctRole==='function'&&acctRole()==='owner'?'.':': it goes to the person who invited you.');
   if($('#fb-send'))$('#fb-send').disabled=!aboutConn();   // no connection: the button is off, with the reason under it
   if(!aboutConn()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status','Feedback needs a connection (Settings → Connection).');
   loadFeedback()}

@@ -32,11 +32,11 @@ module.exports=async({ok,chromium,url})=>{
     const un=await p.evaluate(()=>[...document.querySelectorAll('#st-unused .st-row')].map(r=>r.querySelector('.st-nm').textContent+' → '+r.querySelector('small').textContent));
     const why=n=>(un.find(u=>u.toLowerCase().startsWith(n))||'');
     ok(s.unused==='belt18,cufflinks20,pants7'&&un.length===3,`the pieces never worn are listed (${s.unused})`);
-    ok(/don't suit any of your blazers well enough/.test(why('dress pants: black'))&&/None of your shoes match it/.test(why('belt: tan'))&&/no French-cuff shirt/.test(why('cufflinks')),`each with its reason (${un.join(' | ')})`);
+    ok(/don't suit any of your blazers well enough/.test(why('trousers: black'))&&/None of your shoes match it/.test(why('belt: tan'))&&/no French-cuff shirt/.test(why('cufflinks')),`each with its reason (${un.join(' | ')})`);
     // wear counts by type: suits open, others unfold on tap (their rows are only built then)
     const wc=await p.evaluate(()=>({types:[...document.querySelectorAll('#st-wear .st-type summary b')].map(b=>b.textContent).join(),open:[...document.querySelectorAll('#st-wear .st-type[open]')].map(d=>d.dataset.type).join(),
       suitRows:[...document.querySelectorAll('#st-wear .st-type[data-type=suit] .st-row')].map(r=>r.textContent.replace(/\s+/g,' ').trim()),shirtRows:document.querySelectorAll('#st-wear .st-type[data-type=shirt] .st-row').length}));
-    ok(/^Suits,Blazer,Dress pants,Dress shirts,Ties/.test(wc.types)&&wc.open==='suit'&&wc.shirtRows===0,`wear counts are grouped by type, suits unfolded (${wc.types})`);
+    ok(/^Suits,Blazer,Trousers,Dress shirts,Ties/.test(wc.types)&&wc.open==='suit'&&wc.shirtRows===0,`wear counts are grouped by type, suits unfolded (${wc.types})`);
     ok(wc.suitRows.length===4&&/worn 2× · last Nov 8 · planned \d+× · next Nov \d+/.test(wc.suitRows.find(r=>/^navy/i.test(r))||''),`a row shows worn, last worn, planned and next (${wc.suitRows.find(r=>/^navy/i.test(r))})`);
     await p.click('#st-wear .st-type[data-type=shirt] summary');await p.waitForFunction(()=>document.querySelectorAll('#st-wear .st-type[data-type=shirt] .st-row').length===3);
     ok(await p.evaluate(()=>document.querySelector('#st-wear .st-type[data-type=shirt]').open&&document.querySelector('#st-wear .st-type[data-type=suit]').open),'tapping a type unfolds it and keeps the others as they were');

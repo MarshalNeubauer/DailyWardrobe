@@ -30,6 +30,13 @@ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.clas
   // the scroll to show what opened gives way to a finger or wheel that moved since the tap: on an iPhone it fought a scroll already under way
   if(open)setTimeout(()=>{const m=$('#settings-modal');if((m._touch||0)>t0)return;const r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
     const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
+/* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
+   sync_status while a try fails and last_sync when one works) */
+function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
+  const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+    return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
+  if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
+  return last?`Backed up ${when(last)}`:'Not backed up yet'}
 function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};
   const days=l=>{const s=[...l].sort((a,b)=>((a+6)%7)-((b+6)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
     const run=s.length>2&&s.every((d,i)=>!i||(s[i-1]+1)%7===d);return run?`${n(s[0])}–${n(s[s.length-1])}`:s.map(n).join(', ')};
@@ -42,7 +49,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
   set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
-  set('backup',w?'Backed up every day':'Not backed up yet: needs a connection');set('connection',typeof connSummary==='function'?connSummary():host||'Not connected')}
+  set('backup',backupSummary(w));set('connection',typeof connSummary==='function'?connSummary():host||'Not connected')}
 function openSettings(section){
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
@@ -1141,10 +1148,11 @@ async function generateRender(){
   catch(e){renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(e.message)?e.message:'Couldn’t send the photo: '+(e.message||e)}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)refreshToday();renderRegenUI()}
 }
-/* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day */
+/* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day.
+   Only days marked ✓ count: a past day nobody marked was only planned, and "Last worn" on it said more than anyone knew */
 function lastWorn(o){
   const ck=comboKey(o),T=todayDate(),lim=Math.min(+keyDate(key(sel)),+T);let best=null;
-  for(const r of Object.values(dayRecs)){if(!r.ids||r.worn===false)continue;const d=keyDate(r.date);if(+d>=lim||(best&&d<=best))continue;
+  for(const r of Object.values(dayRecs)){if(!r.ids||r.worn!==true)continue;const d=keyDate(r.date);if(+d>=lim||(best&&d<=best))continue;
     const get=id=>id&&items.find(i=>i.id===id)||null,x={suitDay:!!r.suitDay,top:get(r.ids.top),bot:get(r.ids.bot),shirt:get(r.ids.shirt),tie:get(r.ids.tie),clip:get(r.ids.clip),watch:get(r.ids.watch),vest:!!r.vestOn};
     if([x.top,x.shirt,x.tie].some(i=>i&&(i.added||0)>+d+864e5))continue;   // dated before a piece was added: a warm-up day of the planner, never worn
     if((x.top||x.shirt)&&comboKey(x)===ck)best=d}
@@ -1207,7 +1215,7 @@ let itemBatch=false;
 function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
   b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt and sock has a picture';b.disabled=!n;if(typeof needConn==='function')needConn(b)}
 async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();if(!todo.length)return;
-  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, trousers and coats. About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`,{ok:'Generate'}))return;
+  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, trousers and coats.${showCost()?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}`,{ok:'Generate'}))return;
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='';
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
     try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
@@ -1226,10 +1234,10 @@ function renderBatchUI(){const el=$('#batch-status'),btn=$('#batch-btn');if(!el|
   if(batch){el.textContent=batch.msg;btn.textContent='Stop';btn.onclick=()=>{batch.stop=true;batch.msg='Stopping after the current photo…';renderBatchUI()};return}
   const n=batchCombos().length;btn.textContent=n?`Generate ${n} photo${n===1?'':'s'} for ${monthName()}`:`All of ${monthName()} has photos`;btn.disabled=!n;btn.onclick=startBatch;if(typeof needConn==='function'&&needConn(btn)){el.textContent='';return}
   const q=rqGet();if(q.keys.length&&!el.dataset.keep){el.textContent=q.msg||`Making ${q.keys.length} photo${q.keys.length===1?'':'s'} in the background.`;return}
-  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet. Each costs about 7¢; outfits that share a look share a photo. They’re made in the background, so you can close the app once they’re sent.`:''}
+  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet.${showCost()?' Each costs about 7¢.':''} Outfits that share a look share a photo. They’re made in the background, so you can close the app once they’re sent.`:''}
 async function startBatch(){
   if(batch)return;let todo=batchCombos();if(!todo.length){renderBatchUI();return}
-  if(!await askConfirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\nAbout $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. They’re made in the background: once they’re sent you can close the app.`,{ok:'Generate'}))return;
+  if(!await askConfirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\n${showCost()?`About $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. `:''}They’re made in the background: once they’re sent you can close the app.`,{ok:'Generate'}))return;
   batch={done:0,fail:0,n:todo.length,stop:false,msg:'Starting…'};renderBatchUI();
   let noQueue=false;const queued=[];
   // a photo another device already made is fetched instead of generated; the rest are queued on the worker (or, on a
@@ -1730,7 +1738,7 @@ function show(t){
   pageIn(t,from);
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();refreshHolidays();loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady also waits for every script to have run (afterDom; afterScripts waits for the load event, pictures too, and held it up 30 s once): on a slow load app.js's start-up finished while about.js
    was still to come, and a test read the page before about.js had shown its note after a restart)
@@ -1774,7 +1782,17 @@ async function setHolidayCountry(cc,quiet){
   catch(e){if(quiet)return;holidayMsg=e.message||'Couldn’t load the holiday list.'}
   renderDaysOffUI()}
 /* the list goes stale (new year, tentative dates confirmed): fetched again once a month, keeping the days you unticked */
-function refreshHolidays(){const h=settings.holidays;if(h&&h.country&&Date.now()-(h.fetched||0)>30*864e5)setHolidayCountry(h.country,true)}
+/* the monthly refetch saves the settings with a new stamp, and the newest settings win a sync: on a device that had been away
+   for a while, stamping its old settings would undo a change made on another device since. So it syncs first, and refetches
+   only if the settings it then has still need it (another device may have done it already). Offline: not this time. */
+async function refreshHolidays(){const due=()=>{const h=settings.holidays;return !!(h&&h.country&&Date.now()-(h.fetched||0)>30*864e5)};
+  if(!due())return;
+  if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
+    if(!await syncNow())return;
+    const st=await metaGet('settings');if(st)settings={...settings,...st};if(!due())return}
+  return setHolidayCountry(settings.holidays.country,true)}
+/* testers have daily limits instead of costs: no "about 7¢" for them (account.js knows who is connected) */
+const showCost=()=>!(typeof isTester==='function'&&isTester());
 async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const skip=new Set(h.skip||[]);on?skip.delete(d):skip.add(d);
   settings.holidays={...h,skip:[...skip].sort()};await saveUserSettings();todayStale=true;renderDaysOffUI()}
 const isoToDate=v=>{const [y,m,d]=String(v).split('-').map(Number);return new Date(y,m-1,d)};
@@ -1820,7 +1838,7 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
 function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn)return;const o=planFor()[key(sel)],l=shortDate(sel);
   const r=o&&renderFor(o),pend=renderPending(o);btn.disabled=!o||!!rendering||pend;btn.textContent=pend?'Making photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
-  if(st)st.textContent=o?(r?'Makes a new realistic photo of the day shown on Today (about 7¢); it replaces the current one for every day with this look.':'The day shown on Today has no photo yet (about 7¢).'):'Pick a workday on Today first.';if(typeof needConn==='function'&&needConn(btn)&&st)st.textContent=''}
+  if(st)st.textContent=o?(r?`Makes a new realistic photo of the day shown on Today${showCost()?' (about 7¢)':''}; it replaces the current one for every day with this look.`:`The day shown on Today has no photo yet${showCost()?' (about 7¢)':''}.`):'Pick a workday on Today first.';if(typeof needConn==='function'&&needConn(btn)&&st)st.textContent=''}
 function renderSettingsExtras(){
   if(typeof renderDressUI==='function')renderDressUI();renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();if(typeof renderConnUI==='function')renderConnUI();
   if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
