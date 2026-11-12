@@ -810,11 +810,12 @@ function monthUnfold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in')
   if(noMotion()||!g){if(d>.5)scrollBy(0,d);return}
   const o={duration:MONTH_MS,easing:MONTH_EASE},list=[box.animate([{clipPath:monthClip(g)},{clipPath:monthClip(0)}],o)];
   for(const e of monthBelow(box))list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
-  if(pin)list.push(pin.animate([{opacity:0,transform:'translateY(-8px)'},{opacity:1,transform:'none'}],{...o,duration:340,delay:60,fill:'backwards'}));
+  if(pin)list.push(pin.animate([{opacity:0},{opacity:1}],{...o,duration:240,fill:'backwards'}));   // the title, weekdays and buttons fade in; the days drop in (.mdrop)
+  monthDrop(box);
   const a=monthAnim={list,end:null};list[0].finished.then(()=>{if(monthAnim===a)monthAnim=null},()=>{});
   if(d>.5)scrollBy({top:d,behavior:'smooth'})}
-function monthFold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in'),g=pan?pan.offsetHeight:0;
-  const close=()=>{box.classList.add('mfast');box.classList.remove('open','instant','mshut')};
+function monthFold(box){monthStop();clearTimeout(monthDropT);box.classList.remove('mdrop');const pan=$('#mpanel'),pin=$('#mpanel-in'),g=pan?pan.offsetHeight:0;
+  const close=()=>{box.classList.add('mfast');box.classList.remove('open','instant','mshut','mdrop')};
   if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
   // the page gets shorter at the end: scroll now to where it can stay, so it doesn't jump then (and bring the card's top back into view)
   const top=box.getBoundingClientRect().top,max=Math.max(0,document.documentElement.scrollHeight-g-innerHeight);
@@ -826,6 +827,11 @@ function monthFold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in'),g
   if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,duration:200}));
   const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=monthAnim={list,end};
   list[0].finished.then(()=>{if(monthAnim!==a)return;monthAnim=null;end();for(const x of list)x.cancel()},()=>{})}
+/* the days drop in one after another while the box unfolds (styles.css .mdrop): the class stays only as long as that takes, so a
+   month swiped to, a re-plan or a move doesn't play it again */
+let monthDropT=0;
+function monthDrop(box){clearTimeout(monthDropT);box.classList.remove('mdrop');void box.offsetWidth;box.classList.add('mdrop');
+  const n=box.querySelectorAll('.mc:not(.blank)').length;monthDropT=setTimeout(()=>box.classList.remove('mdrop'),n*12+60+440+50)}
 /* the month's days are put into the folded box while the app is idle (monthFillSoon, from monthLink), so a tap only unfolds it */
 function monthFill(){const el=$('#mpanel-in');if(!el||!monthPanel)return;const sig=monthPanel.y+'-'+monthPanel.m+'|'+key(sel);
   if(el.dataset.fill===sig&&el.firstElementChild)return;el.innerHTML=monthGridHtml();el.dataset.fill=sig}
@@ -833,7 +839,7 @@ let monthFillT=0;
 function monthFillSoon(){clearTimeout(monthFillT);monthFillT=setTimeout(()=>{
   const run=()=>{if(monthOpen||!$('#mpanel-in'))return;monthPanel={y:sel.getFullYear(),m:sel.getMonth()};monthFill()};
   if(window.requestIdleCallback)requestIdleCallback(run,{timeout:1500});else run()},600)}
-function monthStep(n,from){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(!el)return;el.innerHTML=monthGridHtml();el.dataset.fill='';$('#mbox').classList.add('instant');
+function monthStep(n,from){let {y,m}=monthPanel;m+=n;if(m>11){m=0;y++}if(m<0){m=11;y--}monthPanel={y,m};const el=$('#mpanel-in');if(!el)return;el.innerHTML=monthGridHtml();el.dataset.fill='';$('#mbox').classList.remove('mdrop');$('#mbox').classList.add('instant');
   const sw=$('#mswipe');if(!sw||!from||matchMedia('(prefers-reduced-motion: reduce)').matches)return;   // the new month slides in from the side it was swiped from
   sw.style.transition='none';sw.style.transform=`translateX(${from}px)`;sw.style.opacity='0';void sw.offsetWidth;
   sw.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sw.style.transform='translateX(0)';sw.style.opacity='1'}

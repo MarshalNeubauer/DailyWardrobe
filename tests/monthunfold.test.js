@@ -21,11 +21,13 @@ module.exports=async({ok,chromium,url,settle})=>{
     const l0=await lay();
     const during=await p.evaluate(()=>{const a0=performance.now();document.querySelector('#mbox .month-link').click();const tap=performance.now()-a0;
       const an=document.getAnimations().map(a=>Object.keys(a.effect.getKeyframes()[0]).filter(k=>!['offset','easing','composite','computedOffset'].includes(k)).join('+'));
-      return {tap,an,cells:document.querySelectorAll('#mbox .mc').length,inert:$('#mpanel-in').inert,heightAnim:getComputedStyle($('#mpanel')).transitionDuration}});
+      return {tap,an,drop:getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName,cells:document.querySelectorAll('#mbox .mc').length,inert:$('#mpanel-in').inert,heightAnim:getComputedStyle($('#mpanel')).transitionDuration}});
     await settle(p,700);await p.waitForFunction(()=>!document.getAnimations().length,null,{timeout:3000});
     const layouts=await lay()-l0;
     const opened=await p.evaluate(()=>{const b=$('#mbox').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect();return {open:monthOpen&&$('#mbox').classList.contains('open'),inert:$('#mpanel-in').inert,clip:getComputedStyle($('#mbox')).clipPath,fold:$('#mbox .foldbar').getBoundingClientRect().bottom<=nav.top+1,top:b.top>=0}});
-    ok(during.an.includes('clipPath')&&during.an.includes('opacity+transform')&&during.heightAnim==='0s'&&!during.inert,`unfolding is a clip over the card and a fade of the days, the height is not animated (${during.an.join(', ')})`);
+    ok(during.an.includes('clipPath')&&during.an.includes('opacity')&&during.heightAnim==='0s'&&!during.inert,`unfolding is a clip over the card and a fade of the days, the height is not animated (${during.an.join(', ')})`);
+    const drop=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,1100));const gone=!$('#mbox').classList.contains('mdrop');monthStep(1);const again=getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName;monthStep(-1);return {gone,again}});
+    ok(during.drop==='mcDrop'&&drop.gone&&drop.again==='none',`the days drop in only while the box unfolds: not again on a month swiped to (${during.drop}, then ${drop.again})`);
     ok(layouts<=8,`unfolding lays the page out ${layouts} times (it was about 30, once a frame)`);
     ok(opened.open&&!opened.inert&&opened.clip==='none'&&opened.fold&&opened.top,'unfolded: the whole month shows, scrolled so "Fold away" is above the tab bar, with no clip left');
     // what lies under the box slides with it: the Reset card on a changed day
