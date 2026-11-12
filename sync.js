@@ -34,7 +34,7 @@ async function applyMerged(m,local){
 function syncRedraw(v){if(!v||v==='add')return;if(!settingsOpen())return show(v);if(v==='today')todayStale=true;else viewStale=v}
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0;
-  el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Not connected: connect in Settings → Connection to turn on backup.');
+  el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Not connected.');
   if(last&&!syncing&&!/failed|turn on/i.test(el.textContent))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}`}
 /* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
 async function syncNow(){
@@ -48,8 +48,8 @@ const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.st
 const synced=()=>{localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus()};
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
-  if(!url){setSyncStatus('Not connected: connect in Settings → Connection to turn on backup.');return false}
-  if(!token){setSyncStatus('The connection has no code yet: add it in Settings → Connection to turn on backup.');return false}
+  if(!url){setSyncStatus('Not connected.');return false}
+  if(!token){setSyncStatus('Not connected: paste your invite link under Connection.');return false}
   syncing=true;setSyncStatus('Syncing…');
   try{
     for(let attempt=0;attempt<3;attempt++){

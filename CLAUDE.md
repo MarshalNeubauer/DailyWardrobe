@@ -40,7 +40,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - markup and script tags
 - what only the owner needs is in an "Advanced · For the person who runs the server" fold (`.adv`, `#adv-schedule`, `#adv-photos`, `#adv-tagging`, `#adv-connection`), closed every time Settings opens: Re-plan; Item photos; Shirt weaves and the accuracy check (the former "Tagging benchmark"); the server address and the code (`#cfg-url`, `#cfg-token`, still saved by Done)
-- tests must open the fold before clicking inside it (`document.querySelector('#adv-schedule .adv-head').click()`)
+- tests must open the fold before clicking inside it, and the Advanced sections other than Connection's show only with `body.owner` (a test adds the class, or connects as the owner) (`document.querySelector('#adv-schedule .adv-head').click()`)
 - wording: nothing a tester reads says worker, Cloudflare, KV, token or benchmark ("the server", "Connect in ⚙ Settings first.", "it needs an update"); `tests/ui.test.js` reads all of Settings for those words
 - error texts the code tests by pattern changed with it: `/Connect in|server doesn|Today’s limit/` in `generateRender`, `startItemPics`, `startBatch`
 - the three page links (Wardrobe stats, Packing list, Laundry & cleaning) are one card (`.slinks`) under a "Your wardrobe" heading, each with a short line
@@ -641,9 +641,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - no `confirm()`, `alert()` or `prompt()` is left in the app's scripts (`tests/ui.test.js` checks the source); tests click `#ask-ok` / `#ask-cancel` instead of accepting a dialog
 - "Forget everything" on the stats page forgets at once and offers Undo in the toast, instead of asking first (`forgetLearned`)
 - `isConnected()`: a server address and a code are stored; `NEED_CONN` is the one sentence shown wherever something needs the connection
-- `needConn(btn)`: called by the function that draws a button, after it set the button's own state: not connected → disabled, `needconn` class, the reason as its title and once under its row (`.connnote`); used by the month batch, this day's photo, item pictures, item photos; Today's Generate, the item sheet's "Read pattern from photo" (only for a weave the server alone can read, `claudeOnly`), Shirt weaves and the accuracy check write the same into their own markup
-- Realistic photos while not connected shows the reason once at the top (`#photos-conn`), not under every button
-- `addGate()` (from `renderAdd`): "Several items" is switched off with "Needs a connection" while not connected; "One item" works without
+- `needConn(btn)`: called by the function that draws a button: not connected → its row is hidden (`.connhide`), not switched off; used by the month batch, this day's photo, item pictures, item photos; Today has no Generate button and no message while not connected; the item sheet has no "Read pattern from photo" for a weave only the server can read (`claudeOnly`); Shirt weaves and the accuracy check are owner tools
+- what needs the server is hidden while not connected: `.conn-only` in index.html (Realistic photos' three groups, Sync now, Daily backups, the Feedback form) under `body.nocon`; a `.conn-off-note` at the top of the section (`data-what`) says "<what> needs a connection" with a Connect button (`goConnect`: opens Connection, cursor in the link field), filled by `renderConnUI`; nothing in Settings says "Settings → Connection" any more
+- `applyRole()` (account.js) sets `body.owner`, `body.tester`, `body.nocon`: the Advanced sections of Schedule, Realistic photos and Photo tagging are the owner's only; Connection's (the server address and code) is hidden from a tester and shown while not connected, so the owner can connect a new phone; ↻ Refresh is gone from the header (`hidden`)
+- Realistic photos while not connected shows one line at the top (`#photos-conn`) and none of its buttons
+- `addGate()` (from `renderAdd`): "Several items" is not shown while not connected; "One item" works without
 - `renderConnUI()` / `connPaste()` / `connSummary()`: Settings → Connection starts with what a connection gives and, while not connected, a field for the invite link (`connectFromLink`); the summary reads "Not connected", "Connected as <name>" or "Connected as the owner"
 - `advToggle(btn)` / `advClose()`: the Advanced folds in Settings
 

@@ -23,7 +23,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(a.navx>0&&a.navx<=64&&(Math.abs(a.gap-12)<=1||a.navx===64),`on a phone the tab bar grows to one 12px gap below the tiles (gap ${a.gap}px, ${a.navx}px taller, buttons ${a.btn}px)`);
     const d=await run(466,710);   // like the user's screenshot: about 35px between the tiles and the bar, the score card peeking out
     ok(d.navx>15&&d.navx<40&&Math.abs(d.gap-12)<=1,`with ~35px to spare (466×710) the bar's top lands 12px below the tiles (gap ${d.gap}px, ${d.navx}px taller)`);
-    ok(d.keep.btn&&d.keep.drawing===d.navx&&d.keep.weekend===d.navx,`the bar keeps that size on a day with only the drawing (${d.keep.drawing}px) and on a weekend (${d.keep.weekend}px)`);
+    ok(d.keep.drawing===d.navx&&d.keep.weekend===d.navx,`the bar keeps that size on a day with only the drawing (${d.keep.drawing}px) and on a weekend (${d.keep.weekend}px)`);
     // the user's bug: measured before the photo loaded (it has no height yet), the bar jumped to 64px and was kept there
     {const ctx=await browser.newContext({viewport:{width:466,height:710},isMobile:true,hasTouch:true});
       await ctx.route('https://slow.test/**',async r=>{await new Promise(z=>setTimeout(z,1500));const c=Buffer.from((await (await ctx.newPage()).evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=1024;c.getContext('2d').fillRect(0,0,9,9);return c.toDataURL('image/jpeg').split(',')[1]})),'base64');r.fulfill({status:200,contentType:'image/jpeg',body:c})});

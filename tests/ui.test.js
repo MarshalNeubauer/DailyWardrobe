@@ -74,27 +74,28 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.fill('#conn-link','not a link');await p.click('#conn-go');await p.waitForFunction(()=>/didn’t work/.test(document.querySelector('#conn-msg').textContent));
     ok(await p.evaluate(()=>!localStorage.getItem('worker_url')),'a link that is no invite link says so and connects nothing');
 
-    /* ---- buttons that need a connection ---- */
+    /* ---- what needs a connection: not shown until the app is connected (a switched-off button looked broken) ---- */
     await p.evaluate(()=>{openSettings('photos')});await settle(p,300);
-    const off=await p.evaluate(()=>({btn:['#batch-btn','#regen-btn','#itempic-btn'].map(s=>{const b=document.querySelector(s);return b.disabled&&b.title===NEED_CONN}),note:document.querySelector('#photos-conn').textContent,vis:!!document.querySelector('#photos-conn').offsetParent,
-      notes:[...document.querySelectorAll('#sp-photos .connnote')].filter(e=>e.offsetParent).length}));
-    ok(off.btn.every(Boolean)&&off.note===await p.evaluate(()=>NEED_CONN)&&off.vis&&off.notes===1,`not connected: the month batch, this day's photo and item pictures are switched off, with the reason once at the top (“${off.note}”)`);
+    const off=await p.evaluate(()=>({vis:['#batch-btn','#regen-btn','#itempic-btn'].map(s=>!!document.querySelector(s).offsetParent),note:document.querySelector('#photos-conn').textContent,noteVis:!!document.querySelector('#photos-conn').offsetParent,
+      go:!!document.querySelector('#photos-conn button'),backup:(openSettings('backup'),{sync:!!document.querySelector('#sp-backup button[onclick="syncNow()"]').offsetParent,snaps:!!document.querySelector('#snap-list').offsetParent,file:!!document.querySelector('#sp-backup button[onclick="downloadBackup()"]').offsetParent,note:document.querySelector('#backup-conn').textContent})}));
+    ok(off.vis.every(v=>!v)&&/^Making outfit photos needs a connection/.test(off.note)&&off.noteVis&&off.go,`not connected: Realistic photos shows one line saying what connecting turns on, with a Connect button, and none of its buttons (“${off.note}”)`);
+    ok(!off.backup.sync&&!off.backup.snaps&&off.backup.file&&/^Backing up and syncing needs a connection/.test(off.backup.note),'Backup: no Sync now or daily backups; the backup file still works');
+    await p.evaluate(()=>{openSettings('photos');document.querySelector('#photos-conn button').click()});await settle(p,600);
+    ok(await p.evaluate(()=>document.querySelector('#sc-connection').classList.contains('open')&&document.activeElement===document.querySelector('#conn-link')),'Connect opens Connection with the cursor in the invite-link field');
     await p.evaluate(()=>{closeSettings();show('today')});
-    const g0=await p.evaluate(()=>{const b=document.querySelector('.render-btn');return {dis:b.disabled,cls:b.classList.contains('needconn'),msg:document.querySelector('#render-msg').textContent,one:document.querySelector('#render-msg').getBoundingClientRect().height<24}});
-    ok(g0.dis&&g0.cls&&g0.msg===await p.evaluate(()=>NEED_CONN)&&g0.one,`Today's Generate button is switched off with the reason under it on one line (“${g0.msg}”)`);
+    const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:document.querySelector('#render-msg').textContent,refresh:!!document.querySelector('#refresh-btn').offsetParent}));
+    ok(!g0.btn&&!g0.msg&&!g0.refresh,'Today: no Generate button and no "needs a connection" under the figure; no Refresh in the header');
     await p.evaluate(()=>show('add'));
-    ok(await p.evaluate(()=>{const l=document.querySelector('#add-group');return l.classList.contains('needconn')&&l.querySelector('input').disabled&&/Needs a connection/.test(l.textContent)&&!document.querySelector('#add-one input').disabled}),'Add: "Several items" is switched off with the reason; "One item" works without a connection');
+    ok(await p.evaluate(()=>!document.querySelector('#add-group').offsetParent&&!!document.querySelector('#add-one').offsetParent),'Add: "Several items" is not shown; "One item" is');
     await p.evaluate(()=>{const s=items.find(i=>i.type==='shirt');s.pattern='herringbone';s.texture='data:image/png;base64,iVBORw0KGgo=';show('wardrobe');openItem(s.id)});await settle(p,500);
-    const rp=await p.evaluate(()=>{const b=document.querySelector('#readpat-btn');return b?{dis:b.disabled,note:!!document.querySelector('.ivpat .connnote')}:null});
-    ok(rp&&rp.dis&&rp.note,'the item sheet: "Read pattern from photo" for a weave only the server can read is switched off with the reason');
-    await p.evaluate(()=>{closeItem();openSettings('tagging');document.querySelector('#adv-tagging .adv-head').click()});
-    ok(await p.evaluate(()=>{const b=document.querySelector('#weave-btn');return !!b&&b.disabled&&!!document.querySelector('#weave-box .connnote')}),'Shirt weaves: its button is switched off with the reason');
-    // connected: everything is on again
+    ok(await p.evaluate(()=>!document.querySelector('#readpat-btn')&&!document.querySelector('.ivpat .connnote')),'the item sheet: no "Read pattern from photo" for a weave only the server can read');
+    await p.evaluate(()=>closeItem());
+    // connected: everything is there again
     await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');closeSettings();show('today')},SRV);
-    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b.disabled&&!b.classList.contains('needconn'),msg:document.querySelector('#render-msg').textContent,
-      batch:!document.querySelector('#batch-btn').disabled,regen:!document.querySelector('#regen-btn').disabled,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
-      closeSettings();show('add');r.group=!document.querySelector('#add-group input').disabled&&!/Needs a connection/.test(document.querySelector('#add-group').textContent);return r});
-    ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/Outfit photos/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons work and the reasons are gone (${on.conn})`);
+    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!!b&&!b.disabled,msg:document.querySelector('#render-msg').textContent,
+      batch:!!document.querySelector('#batch-btn').offsetParent&&!document.querySelector('#batch-btn').disabled,regen:!!document.querySelector('#regen-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
+      closeSettings();show('add');r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
+    ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/Outfit photos/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons are there and work (${on.conn})`);
     await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
 
     /* ---- the accent as text ---- */

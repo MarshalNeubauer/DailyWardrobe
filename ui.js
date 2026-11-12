@@ -32,11 +32,12 @@ function tell(message,ms){if(typeof toast==='function')toast(String(message),ms|
 /* ---- connection ---- */
 const NEED_CONN='Needs a connection (Settings → Connection).';
 const isConnected=()=>!!((localStorage.getItem('worker_url')||'').trim()&&(localStorage.getItem('app_token')||'').trim());
-/* a button that needs the server: disabled with the reason as its title while the app is not connected -> true when it was disabled */
-/* called by the function that draws the button, after it set the button's own state: the reason goes under the button's row once */
-function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.closest('.sactions,.btns,.render-ctl')||btn,nx=box.nextElementSibling,note=nx&&nx.classList.contains('connnote')?nx:null;
-  if(off){btn.disabled=true;btn.title=NEED_CONN;btn.classList.add('needconn');if(!note)box.insertAdjacentHTML('afterend',connNote())}
-  else{if(btn.classList.contains('needconn')){btn.classList.remove('needconn');btn.removeAttribute('title')}if(note)note.remove()}
+/* a button that needs the server: its row is hidden while the app is not connected -> true when it was hidden. A switched-off
+   button with "Needs a connection" under it made the app look broken to someone who had not connected yet; the sections that
+   only work connected say once, at their top, what connecting turns on (renderConnUI, body.nocon in styles.css). */
+function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.closest('.sactions,.btns,.render-ctl')||btn;
+  box.classList.toggle('connhide',off);
+  if(btn.classList.contains('needconn')){btn.classList.remove('needconn');btn.removeAttribute('title')}
   return off}
 /* the reason as a line of text ('' when connected) */
 const connNote=()=>isConnected()?'':`<p class="connnote">${NEED_CONN}</p>`;
@@ -51,11 +52,15 @@ function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)retu
 <div class="sform"><input type="text" id="conn-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();connPaste()}"><button type="button" class="pri" id="conn-go" onclick="connPaste()"${connBusy?' disabled':''}>${connBusy?'Connecting…':'Connect'}</button></div>
 <p class="shelp conn-msg" id="conn-msg" role="status">${uiEsc(connMsg)}</p>`;
   if(typed&&el.querySelector('#conn-link'))el.querySelector('#conn-link').value=typed;
-  const ph=document.querySelector('#photos-conn');if(ph)ph.textContent=isConnected()?'':NEED_CONN}
+  for(const ph of document.querySelectorAll('.conn-off-note'))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" onclick="goConnect()">Connect</button>`;
+  if(typeof applyRole==='function')applyRole()}
+/* from a section that needs the server: open Connection and put the cursor in the invite-link field */
+function goConnect(){if(typeof toggleCat!=='function')return;const c=document.querySelector('#sc-connection');if(c&&!c.classList.contains('open'))toggleCat('connection');
+  setTimeout(()=>{const f=document.querySelector('#conn-link');if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.focus({preventScroll:true})}},350)}
 /* the Add tab: "Several items" finds the items in one photo on the server, so it is switched off (with the reason) while not connected */
 const ADD_GROUP_SUB='One photo of a rail, a pile or a few on hangers';
 function addGate(){const l=document.querySelector('#add-group'),s=document.querySelector('#add-group-sub'),inp=l&&l.querySelector('input');if(!l||!s||!inp)return;const off=!isConnected();
-  l.classList.toggle('needconn',off);l.setAttribute('aria-disabled',off);inp.disabled=off;s.textContent=off?'Needs a connection':ADD_GROUP_SUB}
+  l.classList.toggle('connhide',off);l.classList.remove('needconn');l.removeAttribute('aria-disabled');inp.disabled=off;s.textContent=ADD_GROUP_SUB}   // not connected: the card is not shown
 async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp&&inp.value||'').trim();if(!t||connBusy)return;
   connBusy=true;connMsg='';renderConnUI();let ok=false;
   try{ok=typeof connectFromLink==='function'&&!!(await connectFromLink(t))}catch(e){ok=false}

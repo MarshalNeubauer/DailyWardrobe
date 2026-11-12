@@ -68,10 +68,15 @@ async function homeScreenGuide(){
   if(await askConfirm('Put Daily Wardrobe on your Home Screen\n\n1. Tap Copy link below.\n2. Tap Share, then “Add to Home Screen”.\n3. Open Daily Wardrobe from your Home Screen and paste the link when it asks.\n\nThe app on your Home Screen keeps its own copy of everything, so it needs the link once. In Safari, iPhone can clear the app’s data after a week without a visit.',{ok:'Copy link',cancel:'Later'}))copyInviteLink()}
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
-function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}}
+function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}if(typeof applyRole==='function')applyRole()}
 function acctRole(){if(acct.me&&acct.me.role)return acct.me.role;
   try{const r=JSON.parse(localStorage.getItem('acct_role')||'null'),b=acctBase();return r&&b&&r.tok===b.tok?r.role:null}catch{return null}}
 const isTester=()=>acctRole()==='tester';
+/* body classes for what to show: owner (the Advanced sections, the owner's tools), tester, nocon (not connected: the parts that
+   need the server are hidden, styles.css). The owner's server address and code (Connection → Advanced) stay reachable while
+   not connected, so the owner can connect a new phone; a tester never sees them. */
+function applyRole(){const b=document.body;if(!b)return;const r=acctRole(),on=typeof isConnected==='function'?isConnected():!!acctBase();
+  b.classList.toggle('owner',on&&r==='owner');b.classList.toggle('tester',on&&r==='tester');b.classList.toggle('nocon',!on)}
 function acctToast(t,ms){if(typeof toast==='function')toast(t,ms)}
 /* a daily limit was reached where the app has no place of its own to say so (a pattern reading falls back to the pixel reader
    and toasts its own result): the server's sentence is shown, and once more if another toast replaced it right away */
@@ -86,7 +91,7 @@ async function loadAccount(){const b=acctBase();
   if(r.status===200&&r.j&&r.j.id){acct.me=r.j;acct.state='ok';rememberRole(r.j)}
   else{acct.me=null;acct.msg=r.j&&r.j.message||'';acct.state=r.status===0?'off':r.status===404||r.status===405?'old':'no'}
   if(acct.me&&acct.me.role==='owner'){const l=await acctCall('invites');if(l.status===200&&Array.isArray(l.j.invites))acct.invites=l.j.invites}
-  acct.at=0;renderAccountUI()}
+  acct.at=0;renderAccountUI();applyRole()}
 const acctUse=(used,caps)=>ACCT_CAPS.map(([k,name])=>`<div class="acct-use"><span>${name} today:</span> <b>${+(used&&used[k])||0} of ${+(caps&&caps[k])||0}</b></div>`).join('');
 function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)return;
   const m=acct.me,typed=el.querySelector('#acct-name')?el.querySelector('#acct-name').value:'';let h='';
@@ -132,7 +137,7 @@ async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(
   renderAccountUI()}
 /* start-up: Settings draws the box whenever it opens (its extras are redrawn there), and an invitation link in the address
    connects the app once the page's scripts are in */
-function acctStart(){
+function acctStart(){applyRole();
   if(typeof renderSettingsExtras==='function'&&!renderSettingsExtras.acct){const draw=renderSettingsExtras;renderSettingsExtras=function(){draw();if(typeof settingsOpen==='function'&&!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
       renderAccountUI();loadAccount()};renderSettingsExtras.acct=1}
   if(/(^#|&)invite=/.test(location.hash)){const go=()=>connectFromLink(location.href);document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
