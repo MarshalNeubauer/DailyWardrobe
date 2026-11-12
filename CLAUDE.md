@@ -340,6 +340,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - procedural fabric patterns (`fabricDef`)
 - an item's `sett` is drawn first: its bands, the crossing lines over them at half opacity, at its angle (ties) or snapped (others); a swatch shows at least one repeat, the figure keeps the repeat's share of the item's width (`fabricDef(..., 'fig')`)
+- a tie's read stripes (`v:2` bands) and figures (motif) have no white sheen line any more: one per repeat, turned with the pattern, it lay almost level and showed as light grey bands across the item sheet's swatch (2026-11-12)
 - a motif `sett` is drawn as a 2×2-cell tile (two colours alternate like a checkerboard; `corner` figures where four cells meet; `alternate-cells` in every other cell), turned 45° for a diagonal grid; swatch scale from `cr` (cells in the close-up), figure scale from `tr` (cells across the item)
 - a `figure` is drawn from its bitmap, its rows' runs of 1 as rects, at the figure's own proportions; cells are `T` wide and `T*aspect` tall, offset rows shift half a cell, and a figure crossing the tile's edge is drawn again on the other side
 - `outfitText()` adds an item's `patternText` (Claude's description) for the photo generator, and `comboSig` includes the sett and description, so such an item gets its own photo
