@@ -116,12 +116,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(!/tie/.test(st.unused)&&st.ties===0&&st.pairs===0&&/dress code leaves out ties/.test(st.why),`without ties the stats don't count ties or tie clips as never worn (${st.unused||'none'})`);
     ok(!/suit|blazer|tie/.test(st.unused2)&&st.jackets2===0&&/dress code leaves out jackets/.test(st.whySuit)&&!/Infinity|NaN|blazer|jacket/.test(st.whyAll),`without jackets they don't count suits and blazers either (${st.unused2||'none'}: ${st.whyAll})`);
     const shop=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'small');dayRecs={};const T=todayDate(),out={};
-      for(const [n,d] of [['def',null],['noTie',{jacket:true,tie:false}],['none',{jacket:false,tie:false}]]){if(d)settings.dress=d;else delete settings.dress;const r=runAnalysis(items,T,6),recs=r.cats.flatMap(c=>c.recs);
+      for(const [n,d] of [['def',null],['noTie',{jacket:true,tie:false}],['none',{jacket:false,tie:false}],['noJacket',{jacket:false,tie:true}]]){if(d)settings.dress=d;else delete settings.dress;const r=runAnalysis(items,T,6),recs=r.cats.flatMap(c=>c.recs);
         out[n]={cats:r.cats.map(c=>c.key).join(),types:[...new Set(recs.flatMap(x=>x.items.map(i=>i.type)))].join(),why:recs.flatMap(x=>x.why).join(' '),idle:r.base.idle.map(i=>i.type).join(),avg:r.base.avg,sig:shopSig().split('|').slice(-2).join('|')}}
       delete settings.dress;cache={};return out})()`);
     ok(/tie/.test(shop.def.cats)&&/suit/.test(shop.def.cats)&&!/nojacket|notie/.test(shop.def.sig),`by default the what-to-buy check covers suits and ties (${shop.def.cats})`);
     ok(!/\btie\b/.test(shop.noTie.cats)&&!/tie/.test(shop.noTie.types)&&!/\bties?\b|tie clip/.test(shop.noTie.why)&&!/tie/.test(shop.noTie.idle)&&/suit/.test(shop.noTie.cats)&&/shirt/.test(shop.noTie.types)&&/notie/.test(shop.noTie.sig),`without ties it suggests no tie or tie clip and names none in its reasons (${shop.noTie.types})`);
     ok(!/suit|blazer|\btie\b/.test(shop.none.cats)&&!/suit|blazer|tie/.test(shop.none.types)&&!/suit|blazer|tie/.test(shop.none.idle)&&shop.none.avg>=85&&/nojacket\|notie/.test(shop.none.sig),`without jackets it suggests no suit or blazer, and checks again (${shop.none.cats}; ${shop.none.types||'no ideas'})`);
+    ok(/shirt/.test(shop.none.types)&&/pants/.test(shop.none.cats)&&/of your \d+ trousers/.test(shop.none.why)&&!/nojacket/.test(shop.none.why),`without jackets shirts and trousers still get ideas, judged against each other (${shop.none.types}; ${shop.none.cats})`);
+    ok(/shirt/.test(shop.noJacket.types)&&/tie/.test(shop.noJacket.cats)&&/pants/.test(shop.noJacket.cats)&&!/suit|blazer/.test(shop.noJacket.types),`without jackets but with ties: shirts, ties and trousers (${shop.noJacket.types}; ${shop.noJacket.cats})`);
 
     // ---- 6. Settings ----
     await p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');dayRecs={};delete settings.dress;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);

@@ -63,7 +63,7 @@ async function syncOnce(){
       // upload what is actually stored now (it may include edits made during this sync)
       const now=mergeState(await applyMerged(merged,local),remote.data||{});
       if(remote.data&&stateSig(now)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();return true}
-      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,data:now,day:isoKey(new Date()),...(restoring?{reason:'restore'}:{})})});
+      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoring?{reason:'restore'}:{}),data:now})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));if(!p.ok)throw new Error(pr.error||'HTTP '+p.status);
       setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;

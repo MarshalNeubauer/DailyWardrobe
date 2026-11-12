@@ -74,15 +74,19 @@ const listAnd=a=>(a=[...new Set(a)]).length<2?a.join(''):a.slice(0,-1).join(', '
 function compatBase(L,season){
   const R=L.filter(i=>inRotation(i)&&!dressOut(i.type)),lists={},by=t=>lists[t]||(lists[t]=R.filter(i=>i.type===t));   // (without what the dress code leaves out)
   const suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
-  const day={formal:false,clim:{season:season||'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0};
-  const jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
+  // without jackets (the dress code) every workday is trousers, shirt (and tie): one stand-in "jacket", NOJ, that is no jacket
+  // at all, with every pair of trousers, so shirts, ties and trousers are still judged against each other the planner's way
+  const noJ=!wearsJacket();
+  const day={formal:false,clim:{season:season||'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0,...(noJ?{nojkt:true}:{})};
+  const jackets=noJ?[NOJ]:[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
   const pairs=(j,ps)=>ps.map(p=>[pairScore(j,p)+patternScore([[j,'top'],[p,'bot']]),p]).sort((a,b)=>b[0]-a[0]).slice(0,3).map(x=>x[1]);   // a blazer's three best trousers
-  const P={};for(const j of jackets)P[j.id]=j.type==='suit'?[j]:pairs(j,by('pants'));
-  const q=(j,pt,sh,x)=>clothesScore(j,pt,sh,x,j.type==='suit',day);
+  const P={};for(const j of jackets)P[j.id]=j===NOJ?by('pants'):j.type==='suit'?[j]:pairs(j,by('pants'));
+  const q=(j,pt,sh,x)=>j===NOJ?clothesScore(null,pt,sh,x,false,day):clothesScore(j,pt,sh,x,j.type==='suit',day);
   const qmax={};for(const j of jackets){let m=-1e9;for(const pt of P[j.id].length?P[j.id]:[null])for(const sh of by('shirt').length?by('shirt'):[null])for(const x of by('tie').length?by('tie'):[null]){const v=q(j,pt,sh,x);if(v>m)m=v}qmax[j.id]=m}
   const qs=Object.values(qmax).sort((a,b)=>a-b),qmed=qs.length?qs[qs.length>>1]:0;
-  return {by,day,jackets,P,q,qmax,qmed,pairs,suitDays,blazerDays};
+  return {by,day,jackets,P,q,qmax,qmed,pairs,suitDays,blazerDays,noJ};
 }
+const NOJ={id:'nojacket',type:'none'};
 function compat(B,it){
   const {by,jackets,P,q,qmax,pairs}=B,J=new Set(),Sh=new Set(),Ti=new Set(),Pt=new Set(),lift=[];let combos=0;
   const none=a=>a.length?a:[null];
@@ -94,6 +98,7 @@ function compat(B,it){
   else if(it.type==='shirt')for(const j of jackets)scan(j,P[j.id],[it],by('tie'),qmax[j.id]);
   else if(it.type==='suit')scan(it,[it],by('shirt'),by('tie'),-1e9);
   else if(it.type==='blazer')scan(it,pairs(it,by('pants')),by('shirt'),by('tie'),-1e9);
+  else if(it.type==='pants'&&B.noJ)scan(NOJ,[it],by('shirt'),by('tie'),qmax[NOJ.id]);
   else if(it.type==='pants')for(const j of jackets.filter(j=>j.type==='blazer'))if(pairs(j,[...by('pants'),it]).includes(it))scan(j,[it],by('shirt'),by('tie'),qmax[j.id]);
   return {combos,quality:lift.length?lift.reduce((a,b)=>a+b,0)/lift.length:-2*QWIN,J:[...J],Sh:[...Sh],Ti:[...Ti],Pt:[...Pt]};
 }
@@ -114,7 +119,8 @@ function clothesCandidates(B){
   for(const c of cols('suit'))for(const [p,a] of [['solid'],['pinstripe','white'],['glen-check'],['windowpane','lightblue']])mk({type:'suit',primaryColor:c,pattern:p,...(a?{secondaryColor:a}:{})});
   if(B.blazerDays||!B.by('suit').length){
     for(const c of cols('blazer'))for(const [p,a] of [['solid'],['glen-check'],['windowpane','lightblue']])mk({type:'blazer',primaryColor:c,pattern:p,...(a?{secondaryColor:a}:{})});
-    if(B.by('blazer').length)for(const c of cols('pants'))for(const p of ['solid','glen-check'])mk({type:'pants',primaryColor:c,pattern:p})}
+    if(B.by('blazer').length&&!B.noJ)for(const c of cols('pants'))for(const p of ['solid','glen-check'])mk({type:'pants',primaryColor:c,pattern:p})}
+  if(B.noJ)for(const c of cols('pants'))for(const p of ['solid','glen-check'])mk({type:'pants',primaryColor:c,pattern:p});   // without jackets the trousers are every day's
   for(const c of cols('shirt')){mk({type:'shirt',primaryColor:c,cuff:'button'});
     for(const p of ['stripe','gingham'])mk({type:'shirt',primaryColor:c,pattern:p,secondaryColor:c==='white'?'blue':'white',cuff:'button'})}
   for(const c of cols('tie')){for(const p of ['solid','woven','knit'])mk({type:'tie',primaryColor:c,pattern:p});
@@ -146,13 +152,16 @@ function shopDetail(it,L){const p=patOf(it)||'solid',a=it.secondaryColor&&colNam
 function rankClothes(L,B,C,cat,base,skip){
   const own=L.filter(i=>i.type===cat&&inRotation(i)),gc={},cc={},cell={};
   for(const i of own){const g=shopGroup(i),k=shopClass(i);gc[g]=(gc[g]||0)+1;cc[k]=(cc[k]||0)+1;cell[g+':'+k]=(cell[g+':'+k]||0)+1}
-  const nJ=B.jackets.length||1,nS=B.by('shirt').length||1,nT=B.by('tie').length||1,nBl=B.jackets.filter(j=>j.type==='blazer').length||1,out=[];
+  const nJ=B.jackets.length||1,nS=B.by('shirt').length||1,nT=B.by('tie').length||1,nBl=B.jackets.filter(j=>j.type==='blazer').length||1,nP=B.by('pants').length||1,out=[];
+  // without jackets: how many of the trousers (for a shirt or tie) or shirts (for trousers) it makes a good outfit with
+  const noJShare=k=>cat==='tie'?Math.sqrt(k.Pt.length/nP*k.Sh.length/nS):cat==='shirt'?(wearsTie()?Math.sqrt(k.Pt.length/nP*k.Ti.length/nT):k.Pt.length/nP)
+    :cat==='pants'?(wearsTie()?Math.sqrt(k.Sh.length/nS*k.Ti.length/nT):k.Sh.length/nS):0;
   const stapleGap=it=>(STAPLES[cat]||[]).some(([f,cls])=>f===pcol(it)&&cls.includes(shopClass(it))&&!own.some(o=>pcol(o)===f&&cls.includes(shopClass(o))));
   for(const c of C){if(c.cat!==cat)continue;const it=c.items[0];if(skip.has(shopKey(it)))continue;
     const k=compat(B,it),g=shopGroup(it),cl=shopClass(it);
-    const share=cat==='tie'?Math.sqrt(k.J.length/nJ*k.Sh.length/nS):!wearsTie()?(cat==='shirt'?k.J.length/nJ:cat==='pants'?k.J.length/nBl:k.Sh.length/nS):cat==='shirt'?Math.sqrt(k.J.length/nJ*k.Ti.length/nT):cat==='pants'?k.J.length/nBl:Math.sqrt(k.Sh.length/nS*k.Ti.length/nT);
+    const share=B.noJ?noJShare(k):cat==='tie'?Math.sqrt(k.J.length/nJ*k.Sh.length/nS):!wearsTie()?(cat==='shirt'?k.J.length/nJ:cat==='pants'?k.J.length/nBl:k.Sh.length/nS):cat==='shirt'?Math.sqrt(k.J.length/nJ*k.Ti.length/nT):cat==='pants'?k.J.length/nBl:Math.sqrt(k.Sh.length/nS*k.Ti.length/nT);
     if(!k.combos||share<.2)continue;
-    const idle=[...k.J,...k.Sh,...k.Ti,...k.Pt].filter(id=>id!==it.id&&!base.use[id]),newG=!gc[g],newCell=!cell[g+':'+cl],staple=stapleGap(it);
+    const idle=[...k.J,...k.Sh,...k.Ti,...k.Pt].filter(id=>id!==it.id&&id!==NOJ.id&&!base.use[id]),newG=!gc[g],newCell=!cell[g+':'+cl],staple=stapleGap(it);
     const bold=cat==='tie'?0:cl==='check'?10:cl==='stripe'?8:0;   // a bold cloth is the second suit in a colour, not the first
     const score=50*share+(newG?30:10/(1+gc[g])+(newCell?12:0))+(cc[cl]?0:6)+(staple?60:0)+Math.min(12,4*idle.length)+1.5*k.quality-bold;
     out.push({c,it,g,cl,score,share,newG,newCell,staple,k,idle})}
@@ -202,11 +211,11 @@ function runAnalysis(list,T,weeks,progress,onCat){
     const covered=idle.length>=2||(R.own.length>1&&per<D/25);
     if(dressOut(cat))continue;   // ties, or suits and blazers, the dress code leaves out
     if(cat==='blazer'&&!B.blazerDays&&B.by('suit').length)continue;
-    if(cat==='pants'&&(!B.blazerDays||!B.by('blazer').length))continue;
+    if(cat==='pants'&&!B.noJ&&(!B.blazerDays||!B.by('blazer').length))continue;
     let tried=0;for(const x of R.top){if(recs.length>=SHOP_PER_CAT||tried++>=SHOP_PER_CAT+3)break;tick(TITLES[cat]);const f=simFacts(L,T,weeks,base,x.c.items);sims++;
       const fix=f.dProb>=1||f.dRest>=2;
       // not worth buying if the planner would hardly wear it, or its outfits would be worse than the usual ones
-      const usual=cat==='suit'?base.avgSuit:cat==='blazer'||cat==='pants'?base.avgOdd:base.avg,edge=f.ownAvg==null?0:f.ownAvg-(usual||base.avg);
+      const odd=cat==='blazer'||(cat==='pants'&&!B.noJ),usual=cat==='suit'?base.avgSuit:odd?base.avgOdd:base.avg,edge=f.ownAvg==null?0:f.ownAvg-(usual||base.avg);
       if(!fix&&!x.staple&&(f.worn<2||edge<-1.5))continue;
       const why=fix?fixWhy(f):[],k=x.k,gl=groupLabel(cat,x.g),cn=CLASS_NAMES[x.cl],n=R.gc[x.g]||0;
       if(x.staple){const f=pcol(x.it),same=R.own.filter(o=>pcol(o)===f),fn=colName(f);
@@ -214,15 +223,18 @@ function runAnalysis(list,T,weeks,progress,onCat){
       else if(x.newG)why.push(`A colour you don't have: no ${gl} ${W[1]} now.`);
       else if(x.newCell)why.push(`You have ${several(n,cat)} in ${gl}, none ${cn}.`);
       else why.push(`You have ${several(R.cell[x.g+':'+x.cl],cat)} like it; another spreads the wear.`);
-      const nJ=B.jackets.length,nS=B.by('shirt').length,nT=B.by('tie').length;
-      if(cat==='tie')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')} and ${k.Sh.length} of your ${plural(nS,'shirt')}.`);
+      const nJ=B.jackets.length,nS=B.by('shirt').length,nT=B.by('tie').length,nP=B.by('pants').length,ties=wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:'';
+      if(B.noJ&&cat==='tie')why.push(`Works with ${k.Pt.length} of your ${several(nP,'pants')} and ${k.Sh.length} of your ${plural(nS,'shirt')}.`);
+      else if(B.noJ&&cat==='shirt')why.push(`Works with ${k.Pt.length} of your ${several(nP,'pants')}${ties}.`);
+      else if(B.noJ&&cat==='pants')why.push(`Dresses well with ${k.Sh.length} of your ${plural(nS,'shirt')}${ties}.`);
+      else if(cat==='tie')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')} and ${k.Sh.length} of your ${plural(nS,'shirt')}.`);
       else if(cat==='shirt')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}.`);
       else if(cat==='pants')why.push(`Pairs with ${listAnd(k.J.map(nmOf))}.`);
       else{const it=x.c.items[0],wantS=SH[pcol(it)]||['black','brown'],shoe=cat==='suit'?wantS.map(w=>inRot('shoes').find(s=>pcol(s)===w&&shoeScore(it,it,s)>-50)).find(Boolean):null;
         why.push(`Dresses well with ${k.Sh.length} of your ${plural(nS,'shirt')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}`+(cat==='blazer'&&k.Pt.length?`; trousers: ${listAnd(k.Pt.map(nmOf))}`:'')
           +(cat==='suit'?(shoe?`; shoes: your ${nm(shoe)}`:`; it needs ${wantS[0]} shoes, which you don't have`):'')+'.')}
       if(x.idle.length)why.push(`Pairs with ${x.idle.length===1?'a piece':plural(x.idle.length,'piece')} you own that ${x.idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months: ${listAnd(x.idle.slice(0,3).map(nmOf))}${x.idle.length>3?' and more':''}.`);
-      why.push(`Planned on ${f.worn} of the next ${D} workdays${f.ownAvg!=null?`; those outfits score ${Math.round(f.ownAvg)} on average (your ${cat==='suit'?'suit days':cat==='blazer'||cat==='pants'?'blazer days':'outfits'} now: ${Math.round(usual||base.avg)})`:''}.`);
+      why.push(`Planned on ${f.worn} of the next ${D} workdays${f.ownAvg!=null?`; those outfits score ${Math.round(f.ownAvg)} on average (your ${cat==='suit'?'suit days':odd?'blazer days':'outfits'} now: ${Math.round(usual||base.avg)})`:''}.`);
       const tier=fix?'fix':x.staple?'gap':covered?'optional':x.newG||x.newCell?'variety':'optional';
       recs.push(rec(x.c,f,{tier,why,rank:fix?8*Math.max(0,f.dProb)+6*Math.max(0,f.dRest):x.score+4*Math.max(-3,Math.min(3,edge))}))}
     const note=!R.own.length?`You have no ${W[1]} in rotation.`:idle.length>=2?`${idle.length} of your ${several(R.own.length,cat)} ${idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months, so nothing here is needed.`

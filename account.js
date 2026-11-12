@@ -31,7 +31,7 @@ async function connectFromLink(text){const p=inviteParts(text);
   dropInviteHash();
   if(r.status!==200||!r.j||!r.j.id){acctToast(r.j&&r.j.message||'That invitation link didn’t work. Ask for a new one.',5000);return false}
   localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);
-  acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};
+  acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
   acctToast('Connected as '+(r.j.name||'a tester'));
@@ -40,6 +40,12 @@ async function connectFromLink(text){const p=inviteParts(text);
   if(typeof renderAdd==='function'&&document.querySelector('#add')&&!document.querySelector('#add').hidden)renderAdd();
   if(window.syncNow)syncNow();
   return true}
+/* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
+   knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
+function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}}
+function acctRole(){if(acct.me&&acct.me.role)return acct.me.role;
+  try{const r=JSON.parse(localStorage.getItem('acct_role')||'null'),b=acctBase();return r&&b&&r.tok===b.tok?r.role:null}catch{return null}}
+const isTester=()=>acctRole()==='tester';
 function acctToast(t,ms){if(typeof toast==='function')toast(t,ms)}
 /* a daily limit was reached where the app has no place of its own to say so (a pattern reading falls back to the pixel reader
    and toasts its own result): the server's sentence is shown, and once more if another toast replaced it right away */
@@ -51,7 +57,7 @@ async function loadAccount(){const b=acctBase();
   if(Date.now()-acct.at<3000)return;acct.at=Date.now();   // Settings redraws its extras more than once in a row
   if(!acct.me){acct.state='wait';renderAccountUI()}
   const r=await acctCall('me');
-  if(r.status===200&&r.j&&r.j.id){acct.me=r.j;acct.state='ok'}
+  if(r.status===200&&r.j&&r.j.id){acct.me=r.j;acct.state='ok';rememberRole(r.j)}
   else{acct.me=null;acct.msg=r.j&&r.j.message||'';acct.state=r.status===0?'off':r.status===404||r.status===405?'old':'no'}
   if(acct.me&&acct.me.role==='owner'){const l=await acctCall('invites');if(l.status===200&&Array.isArray(l.j.invites))acct.invites=l.j.invites}
   acct.at=0;renderAccountUI()}
@@ -93,5 +99,6 @@ async function revokeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if
 function acctStart(){
   if(typeof renderSettingsExtras==='function'&&!renderSettingsExtras.acct){const draw=renderSettingsExtras;renderSettingsExtras=function(){draw();if(typeof settingsOpen==='function'&&!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
       renderAccountUI();loadAccount()};renderSettingsExtras.acct=1}
-  if(/(^#|&)invite=/.test(location.hash)){const go=()=>connectFromLink(location.href);document.readyState==='complete'?go():addEventListener('load',go,{once:true})}}
+  if(/(^#|&)invite=/.test(location.hash)){const go=()=>connectFromLink(location.href);document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
+  else if(acctBase()&&!acctRole())setTimeout(()=>{if(!acctRole())loadAccount()},4000)}   // connected before roles were remembered: ask once
 acctStart();

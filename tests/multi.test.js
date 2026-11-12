@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         vestOpt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='Matching vest')),
         suitPats:PATS_BY.suit.includes(queue[0].pattern),tiny:queue[4].photo.length>100}});
     ok(mixed.cards==='suit:navy:pinstripe:white,suit:charcoal:solid:,blazer:navy:solid:,pants:grey:solid:,pants:lightblue:solid:','suits, blazer and trousers each get their own card with the right type, colour and pattern');
-    ok(/Found 5 items \(2 suits, 1 blazer, 2 dress pants\)/.test(mixed.status),`the summary counts each kind (${mixed.status})`);
+    ok(/Found 5 items \(2 suits, 1 blazer, 2 trousers\)/.test(mixed.status),`the summary counts each kind (${mixed.status})`);
     ok(mixed.suitPats&&mixed.vestOpt,'suit cards use the suiting patterns and offer the vest option');
     ok(mixed.cards.includes('pants:lightblue'),'a shirt colour tagged on trousers moves to the closest trouser colour (lavender → light blue)');
     ok(mixed.tiny,'even a sliver-sized box gives a usable crop');

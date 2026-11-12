@@ -42,7 +42,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(l1.ids===l1.want&&l1.days&&l1.once,`To pack has every distinct piece of the five outfits once, with the days it is worn (${l1.total} lines)`);
     ok(l1.belts===l1.groups&&l1.belts>=1,`one belt per shoe colour worn (${l1.belts} for ${l1.groups} colour${l1.groups===1?'':'s'})`);
     ok(l1.order.every((v,i)=>!i||v>l1.order[i-1])&&l1.titles[0]==='Suits'&&l1.dom===l1.total,`grouped by type in the Wardrobe's order (${l1.titles.join(', ')})`);
-    const want=[['suit','suit','suits'],['blazer','blazer','blazers'],['pants','pair of dress pants','pairs of dress pants'],['shirt','shirt','shirts'],['tie','tie','ties'],['shoes','pair of shoes','pairs of shoes'],['socks','pair of socks','pairs of socks']]
+    const want=[['suit','suit','suits'],['blazer','blazer','blazers'],['pants','pair of trousers','pairs of trousers'],['shirt','shirt','shirts'],['tie','tie','ties'],['shoes','pair of shoes','pairs of shoes'],['socks','pair of socks','pairs of socks']]
       .filter(([t])=>l1.c[t]).map(([t,one,many])=>`${l1.c[t]} ${l1.c[t]===1?one:many}`).join(' · ');
     ok(l1.count===want&&/suits? · /.test(want),`the count line at the top: ${l1.count}`);
     ok(await p.evaluate(()=>packNow.list.groups.some(g=>g.type==='watch')&&document.querySelectorAll('#pk-list .pk-line input[type=checkbox]').length===packNow.list.total),'the watch is on the list, and every line has a checkbox');

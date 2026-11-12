@@ -316,7 +316,7 @@ if(needCoat&&!coat)notes.push(clim.rain?'Rain is forecast and there is no rainco
 if(day.occ==='funeral'&&tie&&pcol(tie)!=='black')notes.push('No black tie in your wardrobe for a funeral: the darkest, plainest one was chosen.');
 if(day.occ==='funeral'&&top&&occ.top(top)<18)notes.push('No black, charcoal or navy suit for a funeral: the darkest one was chosen.');
 if(day.occ==='wedding'&&top&&pcol(top)==='black')notes.push('Only a black suit was available: black is usually avoided at a daytime wedding.');
-if(noJ&&!bot)notes.push('No separate trousers in your wardrobe for a day without a jacket. Add a pair of dress trousers.');
+if(noJ&&!bot)notes.push('No separate trousers in your wardrobe for a day without a jacket. Add a pair of trousers.');
 if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
 return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)}}
 /* ---- outfit score ----
