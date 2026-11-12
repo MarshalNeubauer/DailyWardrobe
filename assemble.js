@@ -429,7 +429,9 @@ const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitBands(i)?settSig(usable
    at 2048 (widened into the ground beside it), and lines crossing the other way at full strength (fabricDef draws them at half, for a
    swatch); a 2% line on a 5 cm pane was 3 px and read faint. A linen jacket (material, or Claude's description of the cloth) gets a
    linen texture in its shading: threads two pixels wide, each a little lighter or darker, plain-woven, with slubs. */
-const asmSuitBands=i=>{const s=usableSett(i);return !!(s&&s.v===2&&s.bands&&s.bands.length>1&&s.tr>0)};
+// windowpanes and checks only: the owner's navy pinstripe suit, painted, came out bright royal blue with crisp white stripes where
+// his close-up is a muted navy twill with soft stripes (Claude's colours and the bold-line rule both suit a windowpane, not that)
+const asmSuitBands=i=>{const s=usableSett(i);return !!(s&&s.v===2&&s.bands&&s.bands.length>1&&s.tr>0&&CHECK_PATS.includes(patBase(i.pattern)))};
 const asmLinen=i=>!!i&&(/linen/i.test(i.material||'')||/linen/i.test((i.patternSpec&&i.patternSpec.description)||i.patternText||''));
 const ASM_LINE_PX=4;   // the narrowest painted line at 2048
 const ASM_SLEEVES=['sleeveR','sleeveL'];
