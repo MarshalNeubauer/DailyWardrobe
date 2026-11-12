@@ -64,7 +64,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(bk.cleaned==='2026-11-11'&&!bk.paused&&!bk.arr&&!bk.away,'"It\'s back" puts it in rotation again, cleaned today');
     await p.click('#care-each-shirt .caredone');await p.waitForFunction(()=>!document.querySelector('#care-each-shirt'));
     ok(await p.evaluate(()=>['sh1','sh2','sh3'].every(id=>items.find(i=>i.id===id).cleaned==='2026-11-11')),'"All washed today" resets every worn shirt');
-    await p.click('#care .pback');ok(await p.evaluate(()=>document.querySelector('#care').hidden&&!document.querySelector('#today').hidden),'the back button leaves the Care page for Today');
+    await p.click('#care .pback');ok(await p.evaluate(()=>document.querySelector('#care').hidden&&settingsOpen()),'the back button leaves the Care page for Settings, where it was opened');
+    await p.evaluate(()=>closeSettings());
 
     // ---- away from the item sheet: the plan, the locked week, the picker, the grid, the stats
     await p.evaluate(SETUP);await p.evaluate(()=>show('today'));
