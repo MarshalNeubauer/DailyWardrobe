@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a303a4e6c873e2f02d10
+# tested	dfc4cc3da59521763bd4
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -86,7 +86,7 @@ accounts.test.js	wrangler.toml	<any>
 asm2048.test.js	<every page test>	<every page test>
 asm2048.test.js	app.js	fnv64	lookSig	shirtPatterned	shirtTextured
 asm2048.test.js	apple-touch-icon.png	<loaded>
-asm2048.test.js	assemble.js	<any>	asmAreas	asmBox	asmCalibJob	asmCalibKey	asmData	asmImg	asmInfo	asmKey	asmKeyFill	asmLab	asmLook	asmMasterKey	asmOutKey	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmPx	asmVestKey	asmVestMasterJob	asmVestTag	asmZoneKey	asmZonesFromImgs
+asm2048.test.js	assemble.js	<any>	asmAreas	asmBig	asmBox	asmCalibJob	asmCalibKey	asmDE	asmData	asmImg	asmInfo	asmKey	asmKeyFill	asmLab	asmLook	asmMajor	asmMasterKey	asmOutKey	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmPx	asmTieMask	asmVestKey	asmVestMasterJob	asmVestTag	asmZoneKey	asmZonesFromImgs
 asm2048.test.js	core.js	colOf	hexRgb	labHex	patBase	primaryCol	rgbLab	shadeHex
 asm2048.test.js	detect.js	texPat	usableSett
 asm2048.test.js	icon-192.png	<loaded>

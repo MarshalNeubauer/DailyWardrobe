@@ -116,8 +116,11 @@ function asmZonesOk(z){const N=z.W*z.W,f=s=>asmCount(z[s])/N;return f('jacket')>
 /* ---- one outfit ---- */
 /* The tie's own outline in its photo. A new tie is a pixel or two wider or narrower than the master's, so inside a band around the
    zone's edge each pixel is tie or not by the colours next to it: nearer to a tie pixel just inside, or to the cloth just outside? */
-function asmTieMask(z,tie){const W=z.W,N=W*W,L=asmLab(tie),px=n=>asmPx(n,W),core=asmBox(z.tie,W,px(3),false),wide=asmBox(z.tie,W,px(3),true),m=new Uint8Array(core),R=px(6);
-  for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!wide[i]||core[i])continue;let dT=1e9,dS=1e9;
+/* master (optional): outside the master's tie the tie's photo is the master unchanged, so a pixel there that still matches it is not
+   tie. Without it, the shirt's grey shadow beside the tie (nearer the dark tie's colour than the lit shirt's) was taken as tie: a
+   pale line along a tie on a very dark shirt (2026-11-12, 2048) */
+function asmTieMask(z,tie,master){const W=z.W,N=W*W,L=asmLab(tie),Lm=master?asmLab(master):null,px=n=>asmPx(n,W),core=asmBox(z.tie,W,px(3),false),wide=asmBox(z.tie,W,px(3),true),m=new Uint8Array(core),R=px(6);
+  for(let y=0;y<W;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!wide[i]||core[i])continue;if(Lm&&!z.tie[i]&&asmDE(L,Lm,i)<ASM_DE){m[i]=0;continue}let dT=1e9,dS=1e9;
     for(let dy=-R;dy<=R;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const j=yy*W+xx;
       if(core[j]){const d=asmDE(L,L,i,j);if(d<dT)dT=d}else if(!wide[j]){const d=asmDE(L,L,i,j);if(d<dS)dS=d}}}
     m[i]=dT===1e9?z.tie[i]:dS===1e9?1:dT<=dS?1:0}
@@ -217,7 +220,7 @@ function asmCompose(master,z,P,info){const W=z.W,N=W*W,o=new Uint8ClampedArray(m
         if(j>=0){o[4*i]=o[4*j];o[4*i+1]=o[4*j+1];o[4*i+2]=o[4*j+2]}}}}
   if(P.shirt)copy(P.shirt.data,z.shirt,2);
   asmKeyFill(o,lab,z,master,W);
-  let tieM=null;if(P.tie){tieM=asmTieMask(z,P.tie);
+  let tieM=null;if(P.tie){tieM=asmTieMask(z,P.tie,master);
     if(V){   // under a waistcoat only the tie's top shows: the part joined to the knot
       for(let i=0;i<N;i++)if(V[i])tieM[i]=0;const a=asmAreas(tieM,W);let top=0;for(let i=0;i<N&&!top;i++){const k=a.lab[i];if(k&&a.size[k]>N/8000)top=k}
       tieM=asmBig(tieM,W,0,k=>k===top)}
@@ -314,7 +317,10 @@ const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint);   // the parts that need
    by the colour's lightness, the white shirt's folds (the master, against its 90th-percentile lit cloth, up to 1.15) and the black
    shirt's (the calibration photo, up to 1.6): a light colour keeps the white shirt's shadows, a dark one the black shirt's highlights.
    The first painter (the master's shading alone) gave dark shirts a flat, washed look. asmPaintPrep does the colour-free part once. */
-function asmPaintPrep(master,calib){const W=master.width,H=master.height,N=W*H,M=master.data,C=calib.data,L=ASM_LIN;
+/* full (optional): pixels painted whole whatever the mask says, the shirt beside the master's tie (asmBuild): the mask leaves out the
+   master tie's green edge and softens toward it, which kept a share of the master's white there, a pale line beside the tie on a dark
+   shirt (very dark navy, 2026-11-12); that join is the tie's to make (its soft edge, the halo fill) */
+function asmPaintPrep(master,calib,full){const W=master.width,H=master.height,N=W*H,M=master.data,C=calib.data,L=ASM_LIN;
   const Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],a=new Float32Array(N);
   for(let k=0;k<N;k++){const j=4*k,chroma=Math.max(M[j],M[j+1],M[j+2])-Math.min(M[j],M[j+1],M[j+2]);if(chroma>=40)continue;
     const drop=Math.cbrt(Y(M,j))-Math.cbrt(Y(C,j));a[k]=drop<=.12?0:drop>=.37?1:(drop-.12)/.25}
@@ -322,7 +328,7 @@ function asmPaintPrep(master,calib){const W=master.width,H=master.height,N=W*H,M
     for(let y=0;y<H;y++){let s=0;for(let x=-R;x<=R;x++)s+=src[y*W+cl(x,W)];for(let x=0;x<W;x++){t[y*W+x]=s/n;s+=src[y*W+cl(x+R+1,W)]-src[y*W+cl(x-R,W)]}}
     for(let x=0;x<W;x++){let s=0;for(let y=-R;y<=R;y++)s+=t[cl(y,H)*W+x];for(let y=0;y<H;y++){o[y*W+x]=s/n;s+=t[cl(y+R+1,H)*W+x]-t[cl(y-R,H)*W+x]}}return o};
   const maj=box(a,3);for(let k=0;k<N;k++)if(maj[k]<=.5)a[k]=0;
-  const A=box(a,2),idx=[];for(let k=0;k<N;k++)if(A[k]>0)idx.push(k);
+  const A=box(a,2),idx=[];if(full)for(let k=0;k<N;k++)if(full[k])A[k]=1;for(let k=0;k<N;k++)if(A[k]>0)idx.push(k);
   const lit=(d)=>{const v=[];for(const k of idx)if(A[k]>.9)v.push(Y(d,4*k));v.sort((x,y)=>x-y);return v[Math.floor(v.length*.9)]||1},Rm=lit(M),Rc=lit(C);
   const n=idx.length,P={idx:Int32Array.from(idx),A:new Float32Array(n),sm:new Float32Array(n),sc:new Float32Array(n)};
   for(let q=0;q<n;q++){const k=idx[q],j=4*k;P.A[q]=A[k];P.sm[q]=Math.min(1.15,Y(M,j)/Rm);P.sc[q]=Math.min(1.6,Y(C,j)/Rc)}
@@ -376,7 +382,7 @@ async function asmBuild(job){
       const m=asmUpMask(asmVestZone(await asmData(J.img,zw),await asmData(J.calib,zw),zs),zw,W),share=asmCount(m)/(W*W);   // at ASM_BASE too, then enlarged
       if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
-  if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W));M.ppt=job.paintCalib.t;M.paint={}}
+  if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){const nt=asmBox(z.tie,W,asmPx(ASM_HALO+2,W),true);for(let i=0;i<W*W;i++)nt[i]=nt[i]&&z.shirt[i]?1:0;M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W),nt);M.ppt=job.paintCalib.t;M.paint={}}
   const P={};for(const p of job.parts){if(p.paint){M.paint=M.paint||{};P[p.slot]=M.paint[p.paint]=M.paint[p.paint]||asmPaint(master,null,p.paint,M.pp);continue}   // nothing outside the shirt changes: no drift to check
     const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
   if(V)P.vest=V;

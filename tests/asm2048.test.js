@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.size===2048&&r.ver===3&&r.vest===3&&r.zv===9,`the third masters are 2048 (ASM_VER ${r.ver}, ASM_VEST ${r.vest}, zones version ${r.zv})`);
     ok(r.calib==='2048x2048'&&r.vestCalib==='2048x2048'&&r.vm.size==='2048x2048'&&r.vm.quality==='high',`calibration and waistcoat master jobs ask for 2048 (the waistcoat master at high quality)`);
     ok(/cut LOW/.test(r.vm.swap.text)&&/Do not move either hand/.test(r.vm.swap.text),'the waistcoat master is asked for cut low, the hands left where they are');
-    ok(r.cost.piece===.14&&r.cost.master===.46,`the costs shown are the 2048 ones (a piece ${Math.round(r.cost.piece*100)}¢, the master ${Math.round(r.cost.master*100)}¢)`);
+    ok(r.cost.piece===.14&&r.cost.master===.46,`the costs shown are the 2048 ones (a piece ${Math.round(r.cost.piece*100)}Â¢, the master ${Math.round(r.cost.master*100)}Â¢)`);
     const z=await p.evaluate(async()=>{const W=60,pic=(x0,y0,x1,y1)=>{const c=document.createElement('canvas');c.width=c.height=W;const g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,W,W);g.fillStyle='#fff';g.fillRect(x0,y0,x1-x0,y1-y0);return c.toDataURL('image/png')};
       const z=await asmZonesFromImgs({jacket:pic(0,0,60,60),shirt:pic(20,0,40,30),tie:pic(25,0,35,40),watch:pic(30,30,40,40)},W),at=(s,x,y)=>z[s][y*W+x];
       const keys=['jacket','shirt','tie','watch','vest'].map(asmZoneKey);
@@ -30,6 +30,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {n,green,stripes}});
     ok(k.n>0&&k.green===0,`green the master's tie left in another piece is cleaned up (${k.n} found, ${k.green} left)`);
     ok(k.stripes===5*120,`by a sideways copy of the cloth beside it, so its weave carries on (${k.stripes} of ${5*120} pixels in pattern)`);
+    // the shirt's grey shadow beside the tie, in the tie's photo (as in the master), is not tie: it was a pale line on a dark shirt
+    const tm=await p.evaluate(()=>{const W=120,N=W*W,img=f=>{const d=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++)d.set([...f(i%W),255],4*i);return new ImageData(d,W,W)};
+      const z={W,tie:new Uint8Array(N),shirt:new Uint8Array(N),jacket:new Uint8Array(N),watch:new Uint8Array(N)};for(let i=0;i<N;i++){const x=i%W;if(x>=50&&x<70)z.tie[i]=1;else z.shirt[i]=1}
+      const bg=x=>x>=70&&x<73?[95,95,95]:[205,205,205],master=img(x=>x>=50&&x<70?[40,150,70]:bg(x)),tie=img(x=>x>=50&&x<70?[30,30,60]:bg(x));
+      const out=(m,s=0)=>{for(let i=0;i<N;i++)if(m[i]&&i%W>=71)s++;return s};
+      return {without:out(asmTieMask(z,tie)),with:out(asmTieMask(z,tie,master)),inside:asmTieMask(z,tie,master).reduce((a,v,i)=>a+(v&&i%W>=52&&i%W<68?1:0),0)}});
+    ok(tm.with===0&&tm.without>0&&tm.inside===16*120,`the tie's outline stops where its photo is still the master (${tm.with} shadow pixels taken as tie, ${tm.without} without that check)`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
