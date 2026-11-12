@@ -6,7 +6,7 @@
 //   - every other file its pages were served (<loaded>) and every file it read itself or ran in a Web Worker (<any>).
 // For a change, the edited functions and CSS rules are worked out from `git diff` against origin/main, and only the tests
 // that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector that no plain
-// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / package.json select all.
+// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / fixedplan.js / package.json select all.
 // A block that runs at load, `(()=>{…})()`, is recorded by the functions it holds (units), and a selector new to the sheet
 // selects the tests of the plain rule it can only apply inside (cssImpact). After main has been merged into a branch that
 // had passed, only the tests that both sides' changes can affect run again (select, lastPass).
@@ -292,7 +292,7 @@ const save=async(root,results,all,passed)=>{const out=load(root)||new Map(),aliv
   if(text!==was)fs.writeFileSync(path.join(root,MAP),text)};
 
 /* ---------- choosing ---------- */
-const FULL=/^(?:tests\/run\.js|tests\/impact\.js|package(?:-lock)?\.json)$/;
+const FULL=/^(?:tests\/run\.js|tests\/impact\.js|tests\/fixedplan\.js|package(?:-lock)?\.json)$/;   // (fixedplan.js is put into the pages of most tests, not served: nothing records it)
 const servedFile=f=>!f.includes('/')&&/\.(?:js|html|css|webmanifest|png|svg|ico)$/.test(f)&&f!=='worker.js';
 /* changes: [{file, kind:'test'|'js'|'css'|'other', units:Set, top}] → {all, why} or {tests:Map(test → reason)} */
 const pick=(map,all,changes)=>{const out=new Map(),add=(t,why)=>{if(all.includes(t)&&!out.has(t))out.set(t,why)};

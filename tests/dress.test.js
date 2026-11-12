@@ -249,3 +249,4 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   }finally{await browser.close()}
 };
 module.exports.PLAN_SIG=PLAN_SIG;module.exports.WARD=WARD;
+module.exports.realPlanner=true;   // runs the real planner (the dress code is planning); other tests get tests/fixedplan.js

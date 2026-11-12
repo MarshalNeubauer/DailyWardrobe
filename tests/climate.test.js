@@ -40,3 +40,4 @@ module.exports=async({ok,chromium,url})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
+module.exports.realPlanner=true;   // runs the real planner (the climate changes the plan); other tests get tests/fixedplan.js

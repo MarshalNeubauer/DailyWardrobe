@@ -93,3 +93,4 @@ module.exports=async({ok,chromium,url})=>{
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
 };
+module.exports.realPlanner=true;   // runs the real planner (the weather changes the plan); other tests get tests/fixedplan.js

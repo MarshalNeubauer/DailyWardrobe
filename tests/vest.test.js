@@ -45,3 +45,4 @@ module.exports=async({ok,chromium,url})=>{
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
 };
+module.exports.realPlanner=true;   // runs the real planner (the waistcoat follows the season in the planner); other tests get tests/fixedplan.js

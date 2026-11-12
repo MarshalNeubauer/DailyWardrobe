@@ -536,6 +536,7 @@ async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast 
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
 let cache={};
 function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];
+  if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
   const start=planStart(y,m),T=todayDate();
   if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=buildPlan(y,m);
   return cache[k]=(cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0))}
@@ -689,7 +690,8 @@ async function replanFuture(){const T=todayDate();let n=0;
     const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
-async function checkPlanRules(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
+async function checkPlanRules(){if(!window.TEST_PLAN)return planRulesCheck()}   // (PLAN_RULES is read in planRulesCheck only: a bump selects only the tests that plan for real)
+async function planRulesCheck(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
   settings.planRules=PLAN_RULES;await metaPut('settings',settings);   // kept without a new stamp: noting the rules is not a change to the settings, and a stamp made defaults win over the backup's settings
   if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
 async function replanButton(){const T=todayDate();
@@ -722,10 +724,10 @@ let scoreOpen=false;
    checks nothing owned improves. Worked out once per outfit (kept until the day's pieces change); not for past or worn days */
 let adviceMemo={k:'',v:null};
 function adviceFor(o){if(!o||o.frozen||!hasOutfit(o))return null;const k=key(sel)+JSON.stringify(idsOf(o))+!!o.vest+items.length;
-  if(adviceMemo.k!==k)adviceMemo={k,v:scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
+  if(adviceMemo.k!==k)adviceMemo={k,v:window.TEST_PLAN?TEST_PLAN.advice(o):scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
 function applyFix(slot,id){return pickItem(slot,id)}
 function scoreCard(o){
-  const r=rateOutfit(o),tone=r.hard.length?'low':r.score>=80?'good':r.score>=65?'ok':'low',A=adviceFor(o);
+  const r=window.TEST_PLAN?TEST_PLAN.rate(o):rateOutfit(o),tone=r.hard.length?'low':r.score>=80?'good':r.score>=65?'ok':'low',A=adviceFor(o);
   const sub=scoreOpen?'tap to fold away':'tap for why',fix=A&&A.fixes.length>0;
   const line=r.hard.length?`${r.hard.length} thing${r.hard.length===1?'':'s'} to put right`:fix&&A.best>r.score?`Could be ${A.best} with what you own`:A&&r.score<100?'The best your wardrobe allows':'Outfit score';
   const fixes=!fix?'':`<div class="sfix" onclick="event.stopPropagation()"><small>${r.hard.length?'These would put it right:':'Today\'s pieces were chosen for variety. These would score higher:'}</small>${A.fixes.map(f=>`<button type="button" class="sfixbtn" onclick="applyFix('${f.slot}','${f.item.id}')" aria-label="Wear the ${esc(desc(f.item)||nm(f.item))} ${esc(slotLabel(f.slot,o).toLowerCase())}: ${f.gain} more points"><span class="dot">${swatchSVG(f.item,true)}</span><span class="cap sfixnm">${desc(f.item)||nm(f.item)} <span class="mut">${slotLabel(f.slot,o).toLowerCase()}</span></span><b>+${f.gain}</b></button>`).join('')}</div>`;
