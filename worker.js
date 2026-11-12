@@ -4,8 +4,9 @@
 //   ANTHROPIC_API_KEY  secret; your Claude API key from platform.claude.com. When set, photos are tagged by Claude.
 //   CLAUDE_MODEL    optional, defaults to claude-opus-5-5 (e.g. claude-sonnet-5-5 or claude-haiku-5-5 cost less)
 //   AI              Workers AI binding, variable name "AI"   (used only when ANTHROPIC_API_KEY is not set)
-//   APP_TOKEN       secret; must match the App Token in the app's settings (recommended — without it anyone can use your quota)
-//   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin)
+//   APP_TOKEN       secret; the owner's token, the App Token in the app's settings. Required: without it every route refuses.
+//                   Invited testers connect with a code of their own (POST /invites), each with their own storage and daily caps.
+//   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin; several: separate with commas)
 //   MODEL           optional Workers AI model, defaults to @cf/meta/llama-3.2-11b-vision-instruct
 //   (GET /fetch?url=… also uses APP_TOKEN: it downloads photo links for the app; so does GET /holidays?country=XX)
 //   OPENAI_API_KEY  secret; enables POST /render (the "realistic photo" button). Requires APP_TOKEN.
@@ -327,8 +328,7 @@ Rules:
 
 For each item give these fields:
 ` + PROMPT.slice(PROMPT.indexOf('type —'));
-async function handleTagMany(req, env, json) {
-  if (env.APP_TOKEN && (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function handleTagMany(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
   const text = await req.text();
   if (text.length > 15e6) return json({ error: 'photo too large' }, 413);
@@ -336,8 +336,9 @@ async function handleTagMany(req, env, json) {
   const custom = cleanCustom(body.custom), base = tagSchema(custom, false);
   const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
     properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
+  const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
   const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT + customText(custom) + correctionsText(body.corrections), maxTokens: 16000, effort: 'medium' });
-  if (c.status !== 200) return json(c.body, c.status);
+  if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
     const b = it.box || {}, x = clamp(b.x), y = clamp(b.y);
@@ -470,16 +471,16 @@ function cleanPattern(p) {
     repeatsInCloseup: num(p.repeatsInCloseup, .2, 60, 1), repeatsAcrossItem: num(p.repeatsAcrossItem, .2, 80, 1), paneAspect: num(p.paneAspect, .3, 3, 1),
     ignored: txt(p.ignored, 200), description: txt(p.description, 600) };
 }
-async function handlePattern(req, env, json) {
-  if (env.APP_TOKEN && (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function handlePattern(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Reading a pattern needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
   const text = await req.text();
   if (text.length > 20e6) return json({ error: 'photos too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
   const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
+  const over = await spend(env, who, 'pattern'); if (over) return json(over.body, over.status);
   const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: kind + PATTERN_PROMPT, closeup: cm, effort: 'high', maxTokens: 16000 });
-  if (c.status !== 200) return json(c.body, c.status);
+  if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
   const out = cleanPattern(c.body);
   if (!out.across && !out.motif && !out.texture) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
   return json({ ...out, model: c.body.model });
@@ -487,34 +488,67 @@ async function handlePattern(req, env, json) {
 
 /* GET /fetch?url=… downloads a photo for the app when the site won't let the browser fetch it directly (no CORS).
    A link to a web page (e.g. a shop's product page) returns the page's share image (og:image / twitter:image).
-   Requires APP_TOKEN; only http(s); images only; 15 MB cap. */
-const IMG_LIMIT = 15e6;
+   Requires APP_TOKEN; only http(s); images only; 15 MB cap. Only public web addresses: an IP address, localhost or an internal
+   name is refused, for the link itself, every redirect on the way and the page's share image. Nothing is read past the caps. */
+const IMG_LIMIT = 15e6, HTML_LIMIT = 600000;
+/* a host on the public web: a name with a dot, not an IP address (the URL parser has already turned 0x7f.1 or 2130706433 into
+   dotted form), not localhost and not a name that only resolves inside a network */
+function publicHost(h) {
+  h = String(h || '').toLowerCase().replace(/\.$/, '');
+  if (!h || h.startsWith('[') || h.includes(':') || /^[\d.]+$/.test(h) || !h.includes('.')) return false;
+  return !/(^|\.)(localhost|local|internal|intranet|lan|home|corp|private|localdomain|home\.arpa|in-addr\.arpa|ip6\.arpa|onion)$/.test(h);
+}
+/* a body read up to `limit` bytes and no further -> {bytes, over}: over means there was more, and the rest was not read */
+async function readCapped(stream, limit) {
+  if (!stream) return { bytes: new Uint8Array(0), over: false };
+  const rd = stream.getReader(), parts = []; let n = 0, over = false;
+  for (;;) {
+    const { done, value } = await rd.read(); if (done) break;
+    if (n + value.byteLength > limit) { parts.push(value.subarray(0, limit - n)); n = limit; over = true; try { await rd.cancel(); } catch { } break; }
+    parts.push(value); n += value.byteLength;
+  }
+  const bytes = new Uint8Array(n); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.byteLength; }
+  return { bytes, over };
+}
 async function handleFetchImage(req, env, json, cors) {
-  if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to fetch photo links.' }, 403);
-  if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   let u;
   try { u = new URL(new URL(req.url).searchParams.get('url') || ''); } catch { return json({ error: 'That is not a valid link.' }, 400); }
   if (!/^https?:$/.test(u.protocol)) return json({ error: 'Only http and https links are supported.' }, 400);
-  const get = href => fetch(href, { redirect: 'follow', headers: { 'user-agent': 'Mozilla/5.0 (compatible; DailyWardrobe photo fetch)', accept: 'image/*,text/html;q=0.8,*/*;q=0.5' } });
+  const NOT_PUBLIC = 'That link is not on the public web.';
+  if (!publicHost(u.hostname)) return json({ error: NOT_PUBLIC }, 400);
+  // redirects are followed by hand (5 at most), so each stop is checked too; null: one of them left the public web
+  const get = async href => {
+    for (let hop = 0; hop < 6; hop++) {
+      const r = await fetch(href, { redirect: 'manual', headers: { 'user-agent': 'Mozilla/5.0 (compatible; DailyWardrobe photo fetch)', accept: 'image/*,text/html;q=0.8,*/*;q=0.5' } });
+      const to = r.status >= 300 && r.status < 400 && r.headers.get('location');
+      if (!to) return r;
+      let next; try { next = new URL(to, href); } catch { return r; }
+      if (!/^https?:$/.test(next.protocol) || !publicHost(next.hostname)) return null;
+      href = next.href;
+    }
+    return new Response('', { status: 508 });
+  };
   let r = await get(u.href);
+  if (!r) return json({ error: NOT_PUBLIC }, 400);
   if (!r.ok) return json({ error: `The link returned an error (${r.status}).` }, 502);
   let type = r.headers.get('content-type') || '';
   if (type.includes('text/html')) {
-    const html = (await r.text()).slice(0, 600000);
+    const html = new TextDecoder().decode((await readCapped(r.body, HTML_LIMIT)).bytes);
     const meta = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image(?::src)?)["'][^>]*content=["']([^"']+)["']/i)
       || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image(?::src)?)["']/i);
     if (!meta) return json({ error: 'No photo found on that page. Try a direct link to the image.' }, 422);
     const img = new URL(meta[1].replace(/&amp;/g, '&'), u);
-    if (!/^https?:$/.test(img.protocol)) return json({ error: 'No usable photo found on that page.' }, 422);
+    if (!/^https?:$/.test(img.protocol) || !publicHost(img.hostname)) return json({ error: 'No usable photo found on that page.' }, 422);
     r = await get(img.href);
+    if (!r) return json({ error: 'No usable photo found on that page.' }, 422);
     if (!r.ok) return json({ error: `The page's photo returned an error (${r.status}).` }, 502);
     type = r.headers.get('content-type') || '';
   }
   if (!type.startsWith('image/')) return json({ error: 'That link is not a photo.' }, 415);
   if (+(r.headers.get('content-length') || 0) > IMG_LIMIT) return json({ error: 'That photo is too large (over 15 MB).' }, 413);
-  const buf = await r.arrayBuffer();
-  if (buf.byteLength > IMG_LIMIT) return json({ error: 'That photo is too large (over 15 MB).' }, 413);
-  return new Response(buf, { headers: { ...cors, 'content-type': type, 'cache-control': 'no-store' } });
+  const got = await readCapped(r.body, IMG_LIMIT);
+  if (got.over) return json({ error: 'That photo is too large (over 15 MB).' }, 413);
+  return new Response(got.bytes, { headers: { ...cors, 'content-type': type, 'cache-control': 'no-store' } });
 }
 
 /* POST /render {image, refs, outfit, nojacket?} -> {image: data URL, model}
@@ -559,20 +593,21 @@ function dataUrlToBlob(u) {
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new Blob([bytes], { type: m[1] });
 }
-async function handleRender(req, env, json) {
-  if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to generate photos.' }, 403);
-  if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function handleRender(req, env, json, who) {
   if (!env.OPENAI_API_KEY) return json({ error: 'Add an OPENAI_API_KEY secret to the worker to generate realistic photos.' }, 501);
   const text = await req.text();
   if (text.length > 20e6) return json({ error: 'request too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
-  if (body.mode === 'item') return renderItem(body, env, json);
-  if (body.mode === 'queue') return queueRender(body, env, json);
-  const r = await outfitPhoto(body, env);
-  if (!r.ok) return json({ error: r.error }, r.status);
+  // an invited tester gets the server's own model and quality: a request of theirs can't pick a dearer one
+  if (who.role !== 'owner') { delete body.model; delete body.quality; delete body.complexity; }
+  if (body.mode === 'item') return renderItem(body, env, json, who);
+  if (body.mode === 'queue') return queueRender(body, env, json, who);
+  const what = photoCap(body), over = await spend(env, who, what); if (over) return json(over.body, over.status);
+  const r = await outfitPhoto(body, env, who.ns);
+  if (!r.ok) { await unspend(env, who, what); return json({ error: r.error }, r.status); }
   // keep a copy per outfit combination so it is reused on any day and shown on every device (GET /render?key=...)
   const id = renderId(body);
-  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(r.rec), renderTtl(id));
+  if (env.WARDROBE && id) await env.WARDROBE.put(`${who.ns}render:${id}`, JSON.stringify(r.rec), renderTtl(id));
   return json({ image: r.rec.img, model: r.rec.model, usage: r.usage });   // usage: OpenAI's token counts for this photo
 }
 /* one realistic outfit photo from the app's inputs (the rasterised illustration, item photos, outfit text) via OpenAI's image edit;
@@ -581,11 +616,11 @@ const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max'];   // xhigh and max:
 /* a request may name its own image model (to try a newer one under a test key) and, for GPT Image 2.6, a complexity */
 const IMG_MODEL_RE = /^gpt-image-[a-z0-9.-]{1,40}$/, COMPLEXITIES = ['low', 'medium', 'high'];
 const OPENAI_MS = 300000;
-async function outfitPhoto(body, env) {
+async function outfitPhoto(body, env, ns = '') {
   let base = dataUrlToBlob(body.image);
   // baseKey: edit a photo kept here (an item's piece is an edit of the master), so the app doesn't upload the master with every piece
   if (!base && COMBO_RE.test(String(body.baseKey || '')) && env.WARDROBE) {
-    const kept = await env.WARDROBE.get(`render:${body.baseKey}`, 'json');
+    const kept = await env.WARDROBE.get(`${ns}render:${body.baseKey}`, 'json');
     base = dataUrlToBlob(kept && kept.img);
     if (!base) return { ok: false, status: 409, retry: true, error: 'the photo to edit is not there yet' };   // the master may still be on its way
   }
@@ -633,25 +668,34 @@ async function outfitPhoto(body, env) {
 /* ---- background photos: the app uploads each outfit's inputs once (POST /render {mode:'queue'}); they wait in KV as job:<key>
    and a Cloudflare Queue message ({key}) makes the photo later, so the app can be closed. GET /render-queue reports progress. ---- */
 const JOB_TTL = { expirationTtl: 3 * 86400 }, FAIL_TTL = { expirationTtl: 7 * 86400 };
-async function queueRender(body, env, json) {
+async function queueRender(body, env, json, who) {
+  const ns = who.ns;
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'Background photos need the RENDER_QUEUE and WARDROBE bindings on the worker.', noQueue: true }, 501);
   const key = String(body.key || '');
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image) && !COMBO_RE.test(String(body.baseKey || ''))) return json({ error: 'no illustration' }, 400);
-  if (!body.replace && await env.WARDROBE.get(`render:${key}`)) return json({ queued: false, exists: true });   // replace: a regenerate from the app
+  if (!body.replace && await env.WARDROBE.get(`${ns}render:${key}`)) return json({ queued: false, exists: true });   // replace: a regenerate from the app
+  const what = photoCap(body), day = utcDay(), over = await spend(env, who, what, day); if (over) return json(over.body, over.status);
   const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 8), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 8), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
     model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, replace: body.replace ? true : undefined, t: Date.now(),
     ...(body.swap ? { swap: body.swap, mask: body.mask, markup: body.markup } : {}),   // a one-piece edit of a kept photo
-    ...(COMBO_RE.test(String(body.baseKey || '')) ? { baseKey: body.baseKey } : {}), ...(body.master ? { master: true } : {}) };
-  await env.WARDROBE.put(`job:${key}`, JSON.stringify(job), JOB_TTL);
-  await env.WARDROBE.delete(`jobfail:${key}`);
-  await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: 0, at: Date.now() }), JOB_TTL);   // queued, not started (GET /render-queue resends it if it never starts)
-  await env.RENDER_QUEUE.send({ key });
+    ...(COMBO_RE.test(String(body.baseKey || '')) ? { baseKey: body.baseKey } : {}), ...(body.master ? { master: true } : {}),
+    ...(who.caps ? { cap: what, capDay: day } : {}) };   // a tester's job remembers what it counted as, to give it back if it can't be made
+  await env.WARDROBE.put(`${ns}job:${key}`, JSON.stringify(job), JOB_TTL);
+  await dropFail(env, ns, key);
+  await env.WARDROBE.put(`${ns}jobrun:${key}`, JSON.stringify({ attempts: 0, at: Date.now() }), JOB_TTL);   // queued, not started (GET /render-queue resends it if it never starts)
+  await env.RENDER_QUEUE.send(jobMsg(key, ns));
   return json({ queued: true });
 }
+/* the queue's message: {key} for the owner, as it always was, and {key, ns} for a tester, so the consumer reads and writes that
+   person's keys (a message without ns is the owner's) */
+const jobMsg = (key, ns) => (ns ? { key, ns } : { key });
+/* an earlier failure of this photo is forgotten when it is queued again. KV counts a delete as one of the day's 1,000 writes even
+   when there was nothing to delete, so it is looked for first (reads are plentiful) */
+async function dropFail(env, ns, key) { if (await env.WARDROBE.get(`${ns}jobfail:${key}`)) await env.WARDROBE.delete(`${ns}jobfail:${key}`); }
 const START_STALE_MS = 3 * 60000, RUN_STALE_MS = 20 * 60000;
-async function queueStatus(req, env, json) {
-  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function queueStatus(req, env, json, who) {
+  const ns = who.ns;
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
   // The app names the photos it waits for (?keys=a,b): each is looked up with reads, never a KV list. Lists are capped at 1,000 a
   // day on the free plan, and polling with two lists a time used them up, after which every list threw (error 1101) until midnight UTC.
@@ -661,9 +705,11 @@ async function queueStatus(req, env, json) {
   if (want.length) {
     pending = []; failedByKey = [];
     for (const k of want) {
-      const f = await env.WARDROBE.get(`jobfail:${k}`, 'json'); if (f) { failedByKey.push({ key: k, error: f.error || 'failed' }); continue; }
-      if (await env.WARDROBE.get(`jobrun:${k}`) || await env.WARDROBE.get(`job:${k}`)) pending.push(k);
+      const f = await env.WARDROBE.get(`${ns}jobfail:${k}`, 'json'); if (f) { failedByKey.push({ key: k, error: f.error || 'failed' }); continue; }
+      if (await env.WARDROBE.get(`${ns}jobrun:${k}`) || await env.WARDROBE.get(`${ns}job:${k}`)) pending.push(k);
     }
+  } else if (ns) {
+    return json({ pending: [], running: {}, failed: [] });   // a tester's app always names its photos: no KV list is spent on it
   } else {
     try { pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4)); }
     catch (e) { return json({ error: 'The worker has used up its daily KV list allowance; update the app.', detail: String(e && e.message) }, 503); }
@@ -673,66 +719,71 @@ async function queueStatus(req, env, json) {
   // stopped) is sent to the queue again, up to 3 times, then recorded as failed: no photo sits "pending" for days.
   const running = {}, now = Date.now();
   for (const k of pending.slice(0, 20)) {
-    let r = await env.WARDROBE.get(`jobrun:${k}`, 'json');
-    if (!r) { const j = await env.WARDROBE.get(`job:${k}`, 'json'); if (!j) continue; r = { attempts: 0, at: +j.t || now }; }   // a job from before jobrun
+    let r = await env.WARDROBE.get(`${ns}jobrun:${k}`, 'json');
+    if (!r) { const j = await env.WARDROBE.get(`${ns}job:${k}`, 'json'); if (!j) continue; r = { attempts: 0, at: +j.t || now }; }   // a job from before jobrun
     const stale = r.attempts ? now - r.at > RUN_STALE_MS : now - r.at > START_STALE_MS;
     if (stale) {
       const resends = (r.resends || 0) + 1;
       if (resends > 3) {
         const error = 'The worker couldn’t get this photo made after several tries. Try again.';
-        await env.WARDROBE.put(`jobfail:${k}`, JSON.stringify({ error, t: now }), FAIL_TTL); await env.WARDROBE.delete(`job:${k}`); await env.WARDROBE.delete(`jobrun:${k}`);
-        await tellHub(env, { key: k, error }); continue;
+        await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${k}`, 'json'));
+        await env.WARDROBE.put(`${ns}jobfail:${k}`, JSON.stringify({ error, t: now }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${k}`); await env.WARDROBE.delete(`${ns}jobrun:${k}`);
+        await tellHub(env, ns, { key: k, error }); continue;
       }
-      await env.RENDER_QUEUE.send({ key: k }); r = { ...r, attempts: 0, at: now, resends };
-      await env.WARDROBE.put(`jobrun:${k}`, JSON.stringify(r), JOB_TTL);
+      await env.RENDER_QUEUE.send(jobMsg(k, ns)); r = { ...r, attempts: 0, at: now, resends };
+      await env.WARDROBE.put(`${ns}jobrun:${k}`, JSON.stringify(r), JOB_TTL);
     }
     running[k] = r;
   }
   for (const k of Object.keys(running)) if (!pending.includes(k)) delete running[k];
   let failed = failedByKey;
   if (!failed) { failed = [];
-    try { for (const k of (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) { const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' }); } }
+    try { for (const k of ns ? [] : (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) { const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' }); } }
     catch { } }
   return json({ pending, running, failed });
 }
 /* the queue consumer: one photo per message; temporary failures retry after a minute, others are recorded for the app */
 async function runRenderJob(msg, env) {
-  const key = String(msg.body && msg.body.key || '');
-  const job = COMBO_RE.test(key) ? await env.WARDROBE.get(`job:${key}`, 'json') : null;
+  if (msg.body && msg.body.wipe) return runWipe(msg, env);   // the rest of a deleted account (DELETE /account)
+  const key = String(msg.body && msg.body.key || ''), ns = msgNs(msg);
+  if (ns === null) return msg.ack();   // not a namespace this worker writes: nothing is touched
+  const job = COMBO_RE.test(key) ? await env.WARDROBE.get(`${ns}job:${key}`, 'json') : null;
   // the job is written to KV just before its message is sent, and KV can take up to a minute to show a new key in another
   // location: a consumer that can't see it yet tries again shortly (acking it lost the photo, which then sat "pending" for days)
   if (!job) { if (COMBO_RE.test(key) && (msg.attempts || 1) < 6) return msg.retry({ delaySeconds: 20 }); return msg.ack(); }
-  const run0 = await env.WARDROBE.get(`jobrun:${key}`, 'json');
-  await env.WARDROBE.put(`jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now(), resends: run0 && run0.resends || 0 }), JOB_TTL);   // for GET /render-queue
-  if (!job.replace && await env.WARDROBE.get(`render:${key}`)) { await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
-  if (!env.OPENAI_API_KEY) { await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); return msg.ack(); }
-  const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env);
+  const run0 = await env.WARDROBE.get(`${ns}jobrun:${key}`, 'json');
+  await env.WARDROBE.put(`${ns}jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now(), resends: run0 && run0.resends || 0 }), JOB_TTL);   // for GET /render-queue
+  if (!job.replace && await env.WARDROBE.get(`${ns}render:${key}`)) { await refundJob(env, ns, job); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
+  if (!env.OPENAI_API_KEY) { await refundJob(env, ns, job); await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: 'Add an OPENAI_API_KEY secret to the worker.', t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
+  const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env, ns);
   if (r.ok) {
-    await env.WARDROBE.put(`render:${key}`, JSON.stringify(r.rec), renderTtl(key));
-    await env.WARDROBE.delete(`job:${key}`); await env.WARDROBE.delete(`jobrun:${key}`);
-    await tellHub(env, { key, rec: r.rec });
+    await env.WARDROBE.put(`${ns}render:${key}`, JSON.stringify(r.rec), renderTtl(key));
+    await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
+    await tellHub(env, ns, { key, rec: r.rec });
     return msg.ack();
   }
   if (r.retry && (msg.attempts || 1) < 4) return msg.retry({ delaySeconds: 60 });
   console.log(`photo ${key} failed: ${r.error}`);
-  await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error: r.error, t: Date.now() }), FAIL_TTL);
-  await env.WARDROBE.delete(`job:${key}`); await env.WARDROBE.delete(`jobrun:${key}`);
-  await tellHub(env, { key, error: r.error });
+  await refundJob(env, ns, job);
+  await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: r.error, t: Date.now() }), FAIL_TTL);
+  await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
+  await tellHub(env, ns, { key, error: r.error });
   msg.ack();
 }
 /* ---- the push to an open app (GET /render-wait): the app holds a request open while its photos are being made, and the queue
    job hands each finished photo (or its failure) to one Durable Object, RenderHub, which answers the waiting requests at once with
    the photo itself (KV can take up to a minute to show a new key elsewhere). Results are kept 10 minutes for an app between two
    waits. Without the RENDER_HUB binding the app just polls GET /render-queue. ---- */
-const hubOf = env => env.RENDER_HUB && env.RENDER_HUB.get(env.RENDER_HUB.idFromName('renders'));
-async function tellHub(env, m) {
-  const hub = hubOf(env); if (!hub) return;
+/* one RenderHub per person: the owner's is the one named 'renders', as before; a tester's is 'renders:u:<id>:'. A hub only ever
+   holds its own person's photos, so a wait can't be answered with someone else's. The tester's hub also counts the day's use. */
+const hubOf = (env, ns = '') => env.RENDER_HUB && env.RENDER_HUB.get(env.RENDER_HUB.idFromName('renders' + (ns ? ':' + ns : '')));
+async function tellHub(env, ns, m) {
+  const hub = hubOf(env, ns); if (!hub) return;
   try { await hub.fetch('https://hub/notify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(m) }); }
   catch (e) { console.log('hub notify failed', e && e.message); }   // the app still finds it by polling
 }
-async function waitForRenders(req, env, json) {
-  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
-  const hub = hubOf(env); if (!hub) return json({ error: 'no push', noPush: true }, 501);
+async function waitForRenders(req, env, json, who) {
+  const hub = hubOf(env, who.ns); if (!hub) return json({ error: 'no push', noPush: true }, 501);
   const u = new URL(req.url), keys = String(u.searchParams.get('keys') || '').split(',').filter(k => COMBO_RE.test(k)).slice(0, 60);
   if (!keys.length) return json({ error: 'no keys' }, 400);
   const ms = Math.max(1000, Math.min(100000, +u.searchParams.get('ms') || 90000));
@@ -740,7 +791,11 @@ async function waitForRenders(req, env, json) {
   return json(await r.json().catch(() => []), r.ok ? 200 : 502);
 }
 export class RenderHub {
-  constructor(ctx, env) { this.ctx = ctx; this.waiting = new Set(); this.recent = new Map(); }
+  constructor(ctx, env) { this.ctx = ctx; this.waiting = new Set(); this.recent = new Map(); this.mem = new Map(); }
+  /* the day's use and the "switched off" mark are kept in the object's own storage (no KV write per AI call); where a test or an
+     old binding gives no storage, in memory */
+  async sget(k) { const s = this.ctx && this.ctx.storage; return s ? await s.get(k) : this.mem.get(k); }
+  async sput(k, v) { const s = this.ctx && this.ctx.storage; if (s) await s.put(k, v); else this.mem.set(k, v); }
   async fetch(req) {
     const u = new URL(req.url), now = Date.now();
     for (const [k, v] of this.recent) if (now - v.at > 600000) this.recent.delete(k);
@@ -759,6 +814,24 @@ export class RenderHub {
       const ms = Math.max(1000, Math.min(100000, +u.searchParams.get('ms') || 90000));
       return out(await new Promise(resolve => { const w = { keys, resolve }; w.timer = setTimeout(() => { this.waiting.delete(w); resolve([]); }, ms); this.waiting.add(w); }));
     }
+    // POST /use {what, n, cap, day}: count n of `what` for that UTC day unless it would pass the cap -> {ok, used}; n < 0 gives back
+    // (only for the day being counted). One object handles one request at a time, so two calls at once can't both take the last one.
+    if (u.pathname === '/use') {
+      const m = await req.json().catch(() => null); if (!m || !USE_RE.test(String(m.what || '')) || !DAY_KEY.test(String(m.day || ''))) return out({ ok: false, bad: true });
+      if (await this.sget('off')) return out({ ok: false, off: true });
+      let use = await this.sget('use'); if (!use || use.day !== m.day) { if (m.n < 0) return out({ ok: true, used: 0 }); use = { day: m.day, n: {} }; }
+      const have = +use.n[m.what] || 0, n = Math.round(+m.n) || 0;
+      if (n > 0 && have + n > +m.cap) return out({ ok: false, used: have });
+      use.n[m.what] = Math.max(0, have + n); await this.sput('use', use);
+      return out({ ok: true, used: use.n[m.what] });
+    }
+    if (u.pathname === '/used') { const use = await this.sget('use'); return out({ used: use && use.day === u.searchParams.get('day') ? use.n : {}, off: !!(await this.sget('off')) }); }
+    if (u.pathname === '/off') { await this.sput('off', true); return out({ ok: true }); }   // an invitation switched off: no more AI calls, at once
+    if (u.pathname === '/wipe') {   // the account was deleted
+      this.recent.clear(); this.mem.clear(); const s = this.ctx && this.ctx.storage; if (s && s.deleteAll) await s.deleteAll();
+      if (u.searchParams.get('off')) await this.sput('off', true);
+      return out({ ok: true });
+    }
     return new Response('not found', { status: 404 });
   }
 }
@@ -774,7 +847,8 @@ Recreate it faithfully, detail for detail: the same case or shape, proportions, 
 markings, numerals, hands and printing, the same bracelet, strap or links. Do not redesign, simplify or add anything.
 Show it on its own, off the wrist: ${ITEM_BG().replace(/^P/, 'p')}, soft even daylight, centred and in frame, sharp focus,
 catalogue style. No hands, no person, no props, no added text or watermark.`;
-async function renderItem(body, env, json) {
+async function renderItem(body, env, json, who) {
+  const ns = who.ns;
   const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 1500);
   if (!item) return json({ error: 'no item description' }, 400);
   // background: the picture is made by the queue consumer (an edit from a reference photo can take minutes); fetch it later with GET ?key=
@@ -782,15 +856,17 @@ async function renderItem(body, env, json) {
     const key = String(body.key || '');
     if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
     if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
-    await env.WARDROBE.put(`job:${key}`, JSON.stringify({ kind: 'item', key, item, ref: body.ref || null, t: Date.now() }), JOB_TTL);
-    await env.WARDROBE.delete(`jobfail:${key}`);
-    await env.RENDER_QUEUE.send({ key });
+    const day = utcDay(), over = await spend(env, who, 'item', day); if (over) return json(over.body, over.status);
+    await env.WARDROBE.put(`${ns}job:${key}`, JSON.stringify({ kind: 'item', key, item, ref: body.ref || null, t: Date.now(), ...(who.caps ? { cap: 'item', capDay: day } : {}) }), JOB_TTL);
+    await dropFail(env, ns, key);
+    await env.RENDER_QUEUE.send(jobMsg(key, ns));
     return json({ queued: true });
   }
+  const over = await spend(env, who, 'item'); if (over) return json(over.body, over.status);
   const r = await itemPhoto({ item, ref: body.ref }, env);
-  if (!r.ok) return json({ error: r.error }, r.status);
+  if (!r.ok) { await unspend(env, who, 'item'); return json({ error: r.error }, r.status); }
   const id = renderId(body);
-  if (env.WARDROBE && id) await env.WARDROBE.put(`render:${id}`, JSON.stringify(r.rec), renderTtl(id));
+  if (env.WARDROBE && id) await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify(r.rec), renderTtl(id));
   return json({ image: r.rec.img, model: r.rec.model });
 }
 /* one product picture: from the item's own photo by image edit when there is one, otherwise from the description */
@@ -824,8 +900,8 @@ const renderId = o => { const k = String(o && o.key || ''), d = String(o && o.da
 /* dated copies go after 90 days; test photos (keys starting c7e57, made to compare models or methods) after 7 */
 const renderTtl = id => (DAY_RE.test(id) ? { expirationTtl: 90 * 86400 } : /^c7e57/.test(id) ? { expirationTtl: 7 * 86400 } : undefined);
 /* PUT /render {key, rec}: a device uploads a photo the worker doesn't have yet */
-async function putRender(req, env, json) {
-  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function putRender(req, env, json, who) {
+  const ns = who.ns;
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
   const text = await req.text();
   if (text.length > 4e6) return json({ error: 'photo too large' }, 413);
@@ -833,36 +909,36 @@ async function putRender(req, env, json) {
   const rec = b && b.rec;
   const id = renderId(b);
   if (!id || !rec || !/^data:image\/(jpeg|png|webp);base64,/.test(String(rec.img || ''))) return json({ error: 'bad photo' }, 400);
-  const cur = await env.WARDROBE.get(`render:${id}`, 'json');
+  const cur = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
   if (cur && (cur.t || 0) >= (rec.t || 0)) return json({ ok: true, kept: 'newer' });
-  await env.WARDROBE.put(`render:${id}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), renderTtl(id));
+  const over = await spend(env, who, 'upload'); if (over) return json(over.body, over.status);   // every upload is a KV write
+  await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), renderTtl(id));
   return json({ ok: true });
 }
 /* DELETE /render?key=c... -> the kept photo is removed (one that was made wrong; the app stops using its own copies by changing the key) */
-async function delRender(req, env, json) {
-  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function delRender(req, env, json, who) {
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
   const k = new URL(req.url).searchParams.get('key') || '';
   if (!COMBO_RE.test(k)) return json({ error: 'bad key' }, 400);
-  await env.WARDROBE.delete(`render:${k}`);
+  await env.WARDROBE.delete(`${who.ns}render:${k}`);
   return json({ ok: true });
 }
 /* GET /render?key=c... (or the older ?day=) -> the stored photo, or 404 */
-async function getRender(req, env, json) {
-  if (!env.APP_TOKEN || (req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function getRender(req, env, json, who) {
+  const ns = who.ns;
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 404);
   const q = new URL(req.url).searchParams;
   // GET /render?list=1 -> {keys}: every outfit or item photo kept here, so a device can download the ones it lacks in one go
   if (q.get('list')) {
     if (typeof env.WARDROBE.list !== 'function') return json({ error: 'listing not available' }, 501);
     const keys = []; let cursor;
-    try { do { const page = await env.WARDROBE.list({ prefix: 'render:c', cursor }); for (const k of page.keys) keys.push(k.name.slice(7)); cursor = page.list_complete ? null : page.cursor; } while (cursor && keys.length < 20000); }
+    try { do { const page = await env.WARDROBE.list({ prefix: `${ns}render:c`, cursor }); for (const k of page.keys) keys.push(k.name.slice(ns.length + 7)); cursor = page.list_complete ? null : page.cursor; } while (cursor && keys.length < 20000); }
     catch (e) { return json({ error: 'listing not available right now', detail: String(e && e.message) }, 503); }   // the daily list allowance: the app then asks per photo
     return json({ keys: keys.filter(k => COMBO_RE.test(k)) });
   }
   const id = renderId({ key: q.get('key'), day: q.get('day') });
   if (!id) return json({ error: 'bad key' }, 400);
-  const rec = await env.WARDROBE.get(`render:${id}`, 'json');
+  const rec = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
   return rec ? json(rec) : json({ error: 'none' }, 404);
 }
 
@@ -885,8 +961,6 @@ function parseHolidayIcs(text) {
   return out;
 }
 async function handleHolidays(req, env, json) {
-  if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to load holiday lists.' }, 403);
-  if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
   const cc = (new URL(req.url).searchParams.get('country') || '').toLowerCase();
   if (!/^[a-z]{2}$/.test(cc)) return json({ error: 'country must be a two-letter code' }, 400);
   let all = [];
@@ -908,10 +982,24 @@ async function handleHolidays(req, env, json) {
 const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
 /* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
    metadata, written in the same put as the backup itself. null for a backup saved before this, or where KV can't list. */
-async function syncVersion(env) {
+/* a key's metadata by a read, without loading its value (the value comes as a stream that is never read): null when the key is not
+   there, {} when it has none; undefined when it can't be told this way (a KV without getWithMetadata) and the caller lists instead.
+   KV lists are capped at 1,000 a day for everyone together, reads at 100,000: with testers a list per sync would use them up. */
+async function kvMeta(env, key) {
+  if (typeof env.WARDROBE.getWithMetadata !== 'function') return undefined;
+  try {
+    const r = await env.WARDROBE.getWithMetadata(key, { type: 'stream' });
+    if (!r) return undefined;
+    if (r.value && typeof r.value.cancel === 'function') r.value.cancel().catch(() => { });
+    return r.value == null ? null : r.metadata || {};
+  } catch { return undefined; }
+}
+async function syncVersion(env, ns = '') {
+  const key = ns + SYNC_KEY, got = await kvMeta(env, key);
+  if (got !== undefined) return got && Number.isInteger(got.rev) ? got : null;
   if (typeof env.WARDROBE.list !== 'function') return null;
   try {
-    const l = await env.WARDROBE.list({ prefix: SYNC_KEY, limit: 10 }), k = (l.keys || []).find(x => x.name === SYNC_KEY), m = k && k.metadata;
+    const l = await env.WARDROBE.list({ prefix: key, limit: 10 }), k = (l.keys || []).find(x => x.name === key), m = k && k.metadata;
     return m && Number.isInteger(m.rev) ? m : null;
   } catch { return null; }
 }
@@ -924,107 +1012,339 @@ async function syncVersion(env) {
    month as snap:<YYYY-MM> for a year. A restore from the app (body.reason 'restore') first keeps the backup it replaces as
    snap:before-restore, so a restore can itself be undone. Copied as stored text, not parsed (the backup is several MB). */
 const SNAP_DAYS = 30, SNAP_MONTHS = 400, SNAP_DAY = /^\d{4}-\d{2}-\d{2}$/;
-async function keepSnapshots(env, m, body) {
+async function keepSnapshots(env, m, body, ns = '') {
   const day = SNAP_DAY.test(body.day || '') ? body.day : new Date().toISOString().slice(0, 10), month = day.slice(0, 7);
-  const want = [[`snap:${day}`, SNAP_DAYS], [`snap:${month}`, SNAP_MONTHS]];
+  const want = [[`${ns}snap:${day}`, SNAP_DAYS], [`${ns}snap:${month}`, SNAP_MONTHS]];
+  // which of the two are already kept: asked for by a read each where KV can; else by one list, as before
   let have = new Set();
-  try { have = new Set(((await env.WARDROBE.list({ prefix: 'snap:' })).keys || []).map(k => k.name)); } catch { }
+  const seen = await Promise.all(want.map(([k]) => kvMeta(env, k)));
+  if (seen.every(s => s !== undefined)) seen.forEach((s, i) => { if (s) have.add(want[i][0]); });
+  else try { have = new Set(((await env.WARDROBE.list({ prefix: `${ns}snap:` })).keys || []).map(k => k.name)); } catch { }
   const todo = want.filter(([k]) => !have.has(k));
-  if (body.reason === 'restore') todo.push(['snap:before-restore', SNAP_DAYS]);
+  if (body.reason === 'restore') todo.push([`${ns}snap:before-restore`, SNAP_DAYS]);
   if (!todo.length) return;
-  const cur = await env.WARDROBE.get(SYNC_KEY);
+  const cur = await env.WARDROBE.get(ns + SYNC_KEY);
   if (!cur || cur === SYNC_NONE) return;                       // nothing stored yet
   let meta = m;
   if (!meta) { try { const o = JSON.parse(cur); meta = { rev: o.rev, saved: o.saved }; } catch { return; } }
   if (!meta.saved) return;
   for (const [k, days] of todo) await env.WARDROBE.put(k, cur, { expirationTtl: days * 86400, metadata: { rev: meta.rev, saved: meta.saved } });
 }
-async function listSnapshots(env) {
-  const l = await env.WARDROBE.list({ prefix: 'snap:' });
-  return (l.keys || []).filter(k => k.metadata && k.metadata.saved).map(k => ({ id: k.name.slice(5), saved: k.metadata.saved, rev: k.metadata.rev }))
+async function listSnapshots(env, ns = '') {
+  const l = await env.WARDROBE.list({ prefix: `${ns}snap:` });
+  return (l.keys || []).filter(k => k.metadata && k.metadata.saved).map(k => ({ id: k.name.slice(ns.length + 5), saved: k.metadata.saved, rev: k.metadata.rev }))
     .sort((a, b) => b.saved - a.saved || b.id.localeCompare(a.id));   // same moment: the later date first
 }
-async function handleSync(req, env, json, cors) {
-  if (!env.APP_TOKEN) return json({ error: 'Set an APP_TOKEN secret on the worker to enable backups.' }, 403);
-  if ((req.headers.get('x-app-token') || '') !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+async function handleSync(req, env, json, cors, who) {
+  const ns = who.ns, KEY = ns + SYNC_KEY;
   if (!env.WARDROBE) return json({ error: 'Add a KV namespace binding named WARDROBE to the worker to enable backups.' }, 501);
   if (req.method === 'GET') {
     const q = new URL(req.url).searchParams, v = q.get('v');
-    if (q.has('snaps')) return json({ snaps: await listSnapshots(env) });
+    if (q.has('snaps')) return json({ snaps: await listSnapshots(env, ns) });
     if (q.has('snap')) {
       const id = q.get('snap');
       if (!/^(\d{4}-\d{2}(-\d{2})?|before-restore)$/.test(id)) return json({ error: 'bad snapshot id' }, 400);
-      const t = await env.WARDROBE.get('snap:' + id);
+      const t = await env.WARDROBE.get(`${ns}snap:${id}`);
       if (!t) return json({ error: 'no such backup' }, 404);
       return new Response(t, { headers: { ...cors, 'content-type': 'application/json' } });
     }
-    if (v) { const m = await syncVersion(env); if (m && `${m.rev}:${m.saved}` === v) return json({ rev: m.rev, saved: m.saved, same: true }); }
+    if (v) { const m = await syncVersion(env, ns); if (m && `${m.rev}:${m.saved}` === v) return json({ rev: m.rev, saved: m.saved, same: true }); }
     // passed through as stored: no need to parse and rebuild several MB of JSON
-    return new Response((await env.WARDROBE.get(SYNC_KEY)) || SYNC_NONE, { headers: { ...cors, 'content-type': 'application/json' } });
+    return new Response((await env.WARDROBE.get(KEY)) || SYNC_NONE, { headers: { ...cors, 'content-type': 'application/json' } });
   }
   if (req.method === 'PUT') {
     const text = await req.text();
     if (text.length > 24 * 1024 * 1024) return json({ error: 'backup too large (over 24 MB)' }, 413);
     let body;
     try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
-    const none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env);
-    const rev = m ? m.rev : ((await env.WARDROBE.get(SYNC_KEY, 'json')) || none).rev;
-    if ((body.baseRev ?? -1) !== rev) return json({ error: 'conflict', ...((await env.WARDROBE.get(SYNC_KEY, 'json')) || none) }, 409);
-    await keepSnapshots(env, m, body);
+    const none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env, ns);
+    const rev = m ? m.rev : ((await env.WARDROBE.get(KEY, 'json')) || none).rev;
+    if ((body.baseRev ?? -1) !== rev) return json({ error: 'conflict', ...((await env.WARDROBE.get(KEY, 'json')) || none) }, 409);
+    await keepSnapshots(env, m, body, ns);
     const next = { rev: rev + 1, saved: Date.now(), data: body.data };
-    await env.WARDROBE.put(SYNC_KEY, JSON.stringify(next), { metadata: { rev: next.rev, saved: next.saved } });
+    await env.WARDROBE.put(KEY, JSON.stringify(next), { metadata: { rev: next.rev, saved: next.saved } });
     return json({ rev: next.rev, saved: next.saved });
   }
   return json({ error: 'method not allowed' }, 405);
 }
 
+/* ================= people: the owner and invited beta testers =================
+   One function, whoIs, says who is calling from the x-app-token header. The owner's token is the APP_TOKEN secret; a tester's is
+   the code of an invitation the owner made (POST /invites), of which only the SHA-256 is kept, as invite:<hash>.
+   Each person's data lives under their own key prefix (ns): '' for the owner, so every key the owner already has keeps its exact
+   name (wardrobe:v1, snap:…, render:…, job:…, jobfail:…, jobrun:…), and 'u:<id>:' for a tester (u:<id>:wardrobe:v1, …).
+   Without APP_TOKEN nothing runs: every route refuses. */
+const OWNER = { id: 'owner', name: 'Owner', role: 'owner', ns: '', caps: null };
+const CODE_RE = /^[A-Za-z0-9_-]{24,80}$/, UID_RE = /^[a-z0-9]{8,24}$/, NS_RE = /^u:[a-z0-9]{8,24}:$/;
+const INVITE_INDEX = 'invites:index', FEEDBACK_KEY = 'feedback:log', MAX_INVITES = 30;
+const sha256Hex = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s))))].map(b => b.toString(16).padStart(2, '0')).join('');
+/* two digests compared in full, whatever differs: the time taken says nothing about the secret */
+const sameText = (a, b) => { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
+/* -> {who: {id, name, role, ns, caps, hash?}} or {status, error, message?, unset?} */
+async function whoIs(env, token) {
+  token = String(token || '');
+  const no = { status: 403, error: 'forbidden token' };
+  if (!env.APP_TOKEN) return { ...no, unset: true };
+  if (!token) return no;
+  const h = await sha256Hex(token);
+  if (sameText(h, await sha256Hex(env.APP_TOKEN))) return { who: OWNER };
+  if (!CODE_RE.test(token) || !env.WARDROBE) return no;
+  const rec = await env.WARDROBE.get(`invite:${h}`, 'json');
+  if (!rec || !UID_RE.test(String(rec.id || ''))) return no;
+  if (rec.off) return { status: 403, error: 'invite off', message: INVITE_OFF };
+  return { who: { id: rec.id, name: String(rec.name || ''), role: 'tester', ns: `u:${rec.id}:`, caps: { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) }, hash: h } };
+}
+const INVITE_OFF = 'This invitation has been switched off.';
+
+/* ---- daily caps, testers only (the owner has none and is not counted). Per UTC day: tag = POST / and /tag-many, pattern =
+   /pattern, photo = outfit photos (direct, queued, replaced), item = item pictures and one-piece edits. An invitation may carry
+   its own numbers. Two more that the app doesn't show keep a tester from using up the KV's 1,000 writes a day: photo uploads
+   (PUT /render) and feedback messages.
+   Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
+   KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
+const DEFAULT_CAPS = { tag: 40, pattern: 10, photo: 12, item: 20 };
+const EXTRA_CAPS = { upload: 60, feedback: 20 };
+const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages' };
+const USE_RE = /^(tag|pattern|photo|item|upload|feedback)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
+function cleanCaps(c) {
+  const out = {};
+  if (c && typeof c === 'object') for (const k of Object.keys(DEFAULT_CAPS)) if (c[k] != null && Number.isFinite(+c[k]) && +c[k] >= 0) out[k] = Math.min(100000, Math.round(+c[k]));
+  return out;
+}
+const photoCap = body => (body && body.swap ? 'item' : 'photo');
+/* count n of `what` for tester `id` on `day`, unless that passes `cap` -> {ok, used} | {ok:false, used} | {ok:false, off} | {ok:false, fail} */
+async function useCount(env, id, what, n, cap, day) {
+  const hub = hubOf(env, `u:${id}:`);
+  if (hub) {
+    try {
+      const r = await hub.fetch('https://hub/use', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ what, n, cap, day }) });
+      const j = await r.json();
+      return j && !j.bad ? j : { ok: false, fail: true };
+    } catch (e) { console.log('use count failed', e && e.message); return { ok: false, fail: true }; }
+  }
+  if (!env.WARDROBE) return { ok: false, fail: true };
+  const key = `use:${id}:${day}`, use = (await env.WARDROBE.get(key, 'json')) || {}, have = +use[what] || 0;
+  if (n > 0 && have + n > cap) return { ok: false, used: have };
+  if (n < 0 && !have) return { ok: true, used: 0 };
+  use[what] = Math.max(0, have + n);
+  await env.WARDROBE.put(key, JSON.stringify(use), USE_TTL);
+  return { ok: true, used: use[what] };
+}
+/* before a capped call: null when it may go ahead (and is now counted), else {status, body} to answer with */
+async function spend(env, who, what, day = utcDay()) {
+  if (!who.caps) return null;
+  const cap = who.caps[what] ?? EXTRA_CAPS[what], r = await useCount(env, who.id, what, 1, cap, day);
+  if (r.ok) return null;
+  if (r.off) return { status: 403, body: { error: 'invite off', message: INVITE_OFF } };
+  if (r.fail) return { status: 503, body: { error: 'busy', message: 'Couldn’t check today’s limit. Try again in a moment.' } };
+  const message = `Today’s limit of ${cap} ${CAP_WORDS[what]} is used up. It starts again at midnight UTC.`;
+  return { status: 429, body: { error: 'limit', what, cap, used: r.used, message, detail: message } };
+}
+async function unspend(env, who, what, day = utcDay()) { if (who.caps) try { await useCount(env, who.id, what, -1, 0, day); } catch { } }
+/* a queued photo that could not be made gives its count back (the job says what it counted as, and on which day) */
+async function refundJob(env, ns, job) {
+  if (ns && job && USE_RE.test(String(job.cap || '')) && DAY_KEY.test(String(job.capDay || ''))) try { await useCount(env, ns.slice(2, -1), job.cap, -1, 0, job.capDay); } catch { }
+}
+/* whose a queue message is: '' the owner's (no ns, as every message was before), 'u:<id>:' a tester's, null when it is neither */
+const msgNs = msg => { const n = msg.body && msg.body.ns; return n == null || n === '' ? '' : NS_RE.test(String(n)) ? String(n) : null; };
+async function usedOf(env, id, day) {
+  let n = {};
+  const hub = id !== 'owner' && hubOf(env, `u:${id}:`);
+  try {
+    if (hub) n = (await (await hub.fetch(`https://hub/used?day=${day}`)).json()).used || {};
+    else if (id !== 'owner' && env.WARDROBE) n = (await env.WARDROBE.get(`use:${id}:${day}`, 'json')) || {};
+  } catch { }
+  return Object.fromEntries(Object.keys(DEFAULT_CAPS).map(k => [k, +n[k] || 0]));
+}
+/* GET /me -> {id, name, role, caps, used, day}: who the app is connected as, and today's use against each cap (caps null: the owner) */
+async function handleMe(req, env, json, who) {
+  const day = utcDay();
+  return json({ id: who.id, name: who.name, role: who.role, caps: who.caps ? Object.fromEntries(Object.keys(DEFAULT_CAPS).map(k => [k, who.caps[k]])) : null, used: await usedOf(env, who.id, day), day });
+}
+const smallBody = async (req, limit) => { try { const r = await readCapped(req.body, limit); return r.over ? null : JSON.parse(new TextDecoder().decode(r.bytes)); } catch { return null; } };
+const ownerOnly = (who, json) => (who.role === 'owner' ? null : json({ error: 'owner only' }, 403));
+const NO_KV = { error: 'Add a KV namespace binding named WARDROBE to the worker.' };
+
+/* ---- invitations (owner only). POST /invites {name, caps?} -> {id, code, name}: the code (32 URL-safe characters from 24 random
+   bytes) is shown this once; KV keeps invite:<sha256 of the code> = {id, name, caps, created, off}. GET /invites -> {invites, day}
+   with today's use, from one index document (invites:index) rather than a KV list. DELETE /invites?id= switches one off: its
+   hub refuses AI calls at once, and KV shows the record as off to every other route within about a minute. ---- */
+async function handleInvites(req, env, json, who) {
+  const no = ownerOnly(who, json); if (no) return no;
+  if (!env.WARDROBE) return json(NO_KV, 501);
+  const index = (await env.WARDROBE.get(INVITE_INDEX, 'json')) || { list: [] }, list = Array.isArray(index.list) ? index.list : [];
+  if (req.method === 'GET') {
+    const day = utcDay();
+    const invites = await Promise.all(list.map(async v => ({ id: v.id, name: v.name, caps: { ...DEFAULT_CAPS, ...cleanCaps(v.caps) }, created: v.created, off: !!v.off,
+      used: v.off ? Object.fromEntries(Object.keys(DEFAULT_CAPS).map(k => [k, 0])) : await usedOf(env, v.id, day) })));
+    return json({ invites, day });
+  }
+  if (req.method === 'POST') {
+    const b = await smallBody(req, 4000), name = String(b && b.name || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name) return json({ error: 'name', message: 'Give the tester a name.' }, 400);
+    if (list.filter(v => !v.off).length >= MAX_INVITES) return json({ error: 'full', message: `There are already ${MAX_INVITES} invitations. Revoke one first.` }, 400);
+    const id = [...crypto.getRandomValues(new Uint8Array(10))].map(x => 'abcdefghijklmnopqrstuvwxyz0123456789'[x % 36]).join('');
+    const code = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const hash = await sha256Hex(code), caps = cleanCaps(b.caps), rec = { id, name, caps: Object.keys(caps).length ? caps : null, created: Date.now(), off: false };
+    await env.WARDROBE.put(`invite:${hash}`, JSON.stringify(rec));
+    await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: [...list, { ...rec, hash }] }));
+    return json({ id, code, name });
+  }
+  if (req.method === 'DELETE') {
+    const id = new URL(req.url).searchParams.get('id') || '', v = list.find(x => x.id === id);
+    if (!v) return json({ error: 'no such invitation' }, 404);
+    v.off = true;
+    const hub = hubOf(env, `u:${v.id}:`);
+    if (hub) try { await hub.fetch('https://hub/off', { method: 'POST' }); } catch (e) { console.log('hub off failed', e && e.message); }
+    const rec = (await env.WARDROBE.get(`invite:${v.hash}`, 'json')) || { id: v.id, name: v.name, caps: v.caps || null, created: v.created };
+    await env.WARDROBE.put(`invite:${v.hash}`, JSON.stringify({ ...rec, off: true }));
+    await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list }));
+    return json({ ok: true });
+  }
+  return json({ error: 'method not allowed' }, 405);
+}
+
+/* ---- feedback. POST /feedback {text, version, where} -> {ok:true} from anyone connected (text up to 4,000 characters);
+   GET /feedback (owner) -> {items:[{t, name, text, version, where}]}, newest first. One document, feedback:log, holding the last
+   180 days (500 messages at most): one KV write per message and one read to show them, no list. ---- */
+const FEEDBACK_MS = 180 * 86400000, FEEDBACK_MAX = 500;
+async function handleFeedback(req, env, json, who) {
+  if (!env.WARDROBE) return json(NO_KV, 501);
+  const log = (await env.WARDROBE.get(FEEDBACK_KEY, 'json')) || { items: [] }, now = Date.now();
+  const items = (Array.isArray(log.items) ? log.items : []).filter(m => m && now - m.t < FEEDBACK_MS);
+  if (req.method === 'GET') {
+    const no = ownerOnly(who, json); if (no) return no;
+    return json({ items: items.map(({ t, name, text, version, where }) => ({ t, name, text, version, where })).sort((a, b) => b.t - a.t) });
+  }
+  const b = await smallBody(req, 40000), text = String(b && b.text || '').trim();
+  if (!text) return json({ error: 'empty', message: 'Write a few words first.' }, 400);
+  if (text.length > 4000) return json({ error: 'too long', message: 'That is over 4,000 characters. Shorten it a little.' }, 400);
+  const over = await spend(env, who, 'feedback'); if (over) return json(over.body, over.status);
+  items.push({ t: now, id: who.id, name: who.name, text, version: String(b.version ?? '').slice(0, 40), where: String(b.where ?? '').slice(0, 80) });
+  await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: items.slice(-FEEDBACK_MAX) }), { expirationTtl: FEEDBACK_MS / 1000 });
+  return json({ ok: true });
+}
+
+/* ---- DELETE /account {confirm:'delete'} -> {ok:true}: everything kept for the caller is deleted, and nothing of anyone else's.
+   A tester: every key under u:<id>:, the day's count, the invitation (the code stops working at once) and their feedback.
+   The owner: the owner's own key families only (the backup, snap:, render:, job:, jobfail:, jobrun:), never u:…, invite:… or
+   the invitation list. A Worker may make only so many KV calls per request, so a first part goes now and the queue finishes
+   the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the next part. ---- */
+const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:'];
+async function wipeSome(env, ns, budget) {   // -> true once nothing is left
+  for (const p of ns ? [ns] : OWNER_FAMILIES) {
+    for (;;) {
+      if (budget < 2) return false;
+      const l = await env.WARDROBE.list({ prefix: p, limit: Math.max(1, budget - 1) }); budget--;
+      const keys = (l.keys || []).map(k => k.name).filter(n => (ns ? n.startsWith(ns) : !/^(u:|invite|feedback:)/.test(n) && (p.endsWith(':') || n === p))).slice(0, budget);
+      if (!keys.length) break;
+      for (const k of keys) { await env.WARDROBE.delete(k); budget--; }
+    }
+  }
+  return true;
+}
+async function handleAccount(req, env, json, who) {
+  if (!env.WARDROBE) return json(NO_KV, 501);
+  const b = await smallBody(req, 2000);
+  if (!b || b.confirm !== 'delete') return json({ error: 'confirm', message: 'Deleting needs {"confirm":"delete"}.' }, 400);
+  const hub = hubOf(env, who.ns);
+  if (who.role === 'tester') {
+    await env.WARDROBE.delete(`invite:${who.hash}`);   // first: the code stops working
+    const index = await env.WARDROBE.get(INVITE_INDEX, 'json');
+    if (index && Array.isArray(index.list) && index.list.some(v => v.id === who.id)) await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: index.list.filter(v => v.id !== who.id) }));
+    const log = await env.WARDROBE.get(FEEDBACK_KEY, 'json');
+    if (log && Array.isArray(log.items) && log.items.some(m => m.id === who.id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== who.id) }), { expirationTtl: FEEDBACK_MS / 1000 });
+    const use = `use:${who.id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
+  }
+  if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
+  const done = await wipeSome(env, who.ns, 30);
+  if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
+  return json({ ok: true, ...(done ? {} : { more: true }) });
+}
+/* the queue finishing a deleted account: {wipe: 'owner' | 'u:<id>:', n}; a part per message until nothing is left */
+async function runWipe(msg, env) {
+  const w = String(msg.body.wipe), ns = w === 'owner' ? '' : NS_RE.test(w) ? w : null, n = +msg.body.n || 1;
+  if (ns !== null && !(await wipeSome(env, ns, 40)) && n < 400) await env.RENDER_QUEUE.send({ wipe: w, n: n + 1 });
+  msg.ack();
+}
+
+/* every route but the root (POST / tags one photo, below): [handler(req, env, json, who, cors), what to say when APP_TOKEN is not set] */
+const TAG_LIMIT = 15e6, UNSET = 'Set an APP_TOKEN secret on the worker: nothing runs without it.';
+const ROUTES = {
+  '* /sync': [(req, env, json, who, cors) => handleSync(req, env, json, cors, who), 'Set an APP_TOKEN secret on the worker to enable backups.'],
+  'GET /render-queue': [queueStatus],
+  'GET /render-wait': [waitForRenders],
+  'GET /fetch': [(req, env, json, who, cors) => handleFetchImage(req, env, json, cors), 'Set an APP_TOKEN secret on the worker to fetch photo links.'],
+  'GET /holidays': [handleHolidays, 'Set an APP_TOKEN secret on the worker to load holiday lists.'],
+  'POST /tag-many': [handleTagMany, UNSET],
+  'POST /pattern': [handlePattern, UNSET],
+  'POST /render': [handleRender, 'Set an APP_TOKEN secret on the worker to generate photos.'],
+  'GET /render': [getRender],
+  'PUT /render': [putRender],
+  'DELETE /render': [delRender],
+  'GET /me': [handleMe, UNSET],
+  'GET /invites': [handleInvites, UNSET],
+  'POST /invites': [handleInvites, UNSET],
+  'DELETE /invites': [handleInvites, UNSET],
+  'GET /feedback': [handleFeedback, UNSET],
+  'POST /feedback': [handleFeedback, UNSET],
+  'DELETE /account': [handleAccount, UNSET],
+};
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
+    // ALLOWED_ORIGIN may list several origins, separated by commas; the one that matches is the one echoed
+    const allowed = String(env.ALLOWED_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
     const cors = {
-      'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
+      'Access-Control-Allow-Origin': !allowed.length ? '*' : allowed.includes(origin) ? origin : allowed[0],
       'Access-Control-Allow-Headers': 'content-type,x-app-token',
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
     };
     const json = (body, status = 200) =>
       new Response(JSON.stringify(body), { status, headers: { ...cors, 'content-type': 'application/json' } });
 
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (env.ALLOWED_ORIGIN && origin !== env.ALLOWED_ORIGIN) return json({ error: 'forbidden origin' }, 403);
+    if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
-    if (path === '/sync') return handleSync(req, env, json, cors);
-    if (path === '/render-queue' && req.method === 'GET') return queueStatus(req, env, json);
-    if (path === '/render-wait' && req.method === 'GET') return waitForRenders(req, env, json);
-    if (path === '/fetch' && req.method === 'GET') return handleFetchImage(req, env, json, cors);
-    if (path === '/holidays' && req.method === 'GET') return handleHolidays(req, env, json);
-    if (path === '/tag-many' && req.method === 'POST') return handleTagMany(req, env, json);
-    if (path === '/pattern' && req.method === 'POST') return handlePattern(req, env, json);
-    if (path === '/render' && req.method === 'POST') return handleRender(req, env, json);
-    if (path === '/render' && req.method === 'GET') return getRender(req, env, json);
-    if (path === '/render' && req.method === 'PUT') return putRender(req, env, json);
-    if (path === '/render' && req.method === 'DELETE') return delRender(req, env, json);
+    const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
+    const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
+    if (route) {
+      const a = await whoIs(env, req.headers.get('x-app-token') || '');
+      return a.who ? route[0](req, env, json, a.who, cors) : deny(a, route[1]);
+    }
     if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
+    // POST / : tag one photo. The app sends the token as a header; an older cached app only in the body, so without the header
+    // the body is read first (15 MB at most, and no further).
+    const header = req.headers.get('x-app-token') || '';
+    let a = header || !env.APP_TOKEN ? await whoIs(env, header) : null;
+    if (a && !a.who) return deny(a, UNSET);
+    if (+(req.headers.get('content-length') || 0) > TAG_LIMIT) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
+    const inBody = await readCapped(req.body, TAG_LIMIT);
+    if (inBody.over) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
     let body;
-    try { body = await req.json(); } catch { return json({ error: 'bad json' }, 400); }
-
-    // The app sends the token both as a header and in the body.
-    const token = req.headers.get('x-app-token') || body.appToken || '';
-    if (env.APP_TOKEN && token !== env.APP_TOKEN) return json({ error: 'forbidden token' }, 403);
+    try { body = JSON.parse(new TextDecoder().decode(inBody.bytes)); } catch { return json({ error: 'bad json' }, 400); }
+    if (!body || typeof body !== 'object') return json({ error: 'bad json' }, 400);
+    if (!a) { a = await whoIs(env, body.appToken || ''); if (!a.who) return deny(a, UNSET); }
+    const who = a.who;
 
     // The model wants the image as a data URI inside the user message.
     let image = String(body.image || '');
     if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
     if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
 
+    if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
+    const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
     if (env.ANTHROPIC_API_KEY) {
       const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
       const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + measuredText(body.measured) + correctionsText(body.corrections);
       const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
-      if (c.status === 200) c.body = cleanTag(c.body);
+      if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
       return json(c.body, c.status);
     }
-    if (!env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
 
     const model = env.MODEL || DEFAULT_MODEL;
     const input = {
@@ -1069,10 +1389,11 @@ export default {
       catch (e) {
         console.log('photo job error', e && e.message);
         // a job that keeps crashing is recorded as failed (the queue would otherwise drop it silently and leave it "pending")
-        const key = String(msg.body && msg.body.key || '');
-        if ((msg.attempts || 1) < 4 || !COMBO_RE.test(key)) { msg.retry({ delaySeconds: 60 }); continue; }
+        const key = String(msg.body && msg.body.key || ''), ns = msgNs(msg);
+        if ((msg.attempts || 1) < 4 || !COMBO_RE.test(key) || ns === null) { msg.retry({ delaySeconds: 60 }); continue; }
         try { const error = 'The worker failed making it: ' + String(e && e.message || e);
-          await env.WARDROBE.put(`jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`job:${key}`); await tellHub(env, { key, error }); } catch {}
+          await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${key}`, 'json'));
+          await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); await tellHub(env, ns, { key, error }); } catch {}
         msg.ack();
       }
     }

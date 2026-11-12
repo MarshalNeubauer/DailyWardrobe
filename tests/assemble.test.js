@@ -85,9 +85,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o={top:I('blazer','khaki'),shirt:I('shirt','black'),tie:I('tie','navy'),watch:I('watch','silver',{metal:'silver'}),suitDay:false};
       renders[asmMasterKey()]={sig:asmMasterSig(o),img:'data:image/jpeg;base64,AAAA',model:'',t:5};renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OWN',model:'gpt',t:1};
       asmOut[asmOutKey(o)]={img:'data:image/jpeg;base64,ASM',stamp:asmStamp(o),t:9};
-      const calls=[],f0=window.fetch;window.fetch=async(...a)=>{calls.push(String(a[0]));return new Response('{}',{status:404})};localStorage.setItem('worker_url','https://off.test/');localStorage.setItem('app_token','t');
+      const calls=[],f0=window.fetch;window.fetch=async(...a)=>{calls.push(String(a[0]));return new Response('{}',{status:404})};   /* (opening Settings asks who is connected, GET /me: account.js; not counted) */localStorage.setItem('worker_url','https://off.test/');localStorage.setItem('app_token','t');
       const shipped=ASM_ON;ASM_ON=false;const r={shipped,ver:ASM_VER,on:ASM_ON,wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img,pending:asmPending(o)};await asmEnsure(o);await asmSync(true);asmAutoSoon();openSettings('photos');renderAsmUI();
-      r.calls=calls.length;r.hidden=document.querySelector('#asm-group').hidden&&getComputedStyle(document.querySelector('#asm-group')).display==='none';r.timer=asmAutoTimer;
+      r.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.hidden=document.querySelector('#asm-group').hidden&&getComputedStyle(document.querySelector('#asm-group')).display==='none';r.timer=asmAutoTimer;
       ASM_ON=true;r.forOn=(asmFor(o)||{}).img;renderAsmUI();r.shownOn=!document.querySelector('#asm-group').hidden;
       window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[asmMasterKey()];delete renders[comboKey(o)];delete asmOut[asmOutKey(o)];closeSettings&&closeSettings();return r});
     ok(off.on===false&&off.wants===false&&off.for===null&&off.shown==='data:image/jpeg;base64,OWN'&&off.pending===false&&off.calls===0&&off.hidden&&!off.timer,`assembled pictures are switched off: Today shows the outfit's own photo, nothing is asked of the worker or made for a new item, and Settings hides Item photos (${off.calls} requests)`);

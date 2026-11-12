@@ -944,7 +944,7 @@ async function renderCombo(o){
   const {refs,labels}=await outfitRefsFull(o);
   const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,labels,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o),...(o.top?{}:{nojacket:true})})});
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error((r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.error||`HTTP ${r.status}`));
+  if(!r.ok)throw new Error((r.status===404||r.status===405)?'Your worker doesn’t support photos yet: redeploy it with the latest worker.js.':(j.message||j.error||`HTTP ${r.status}`));
   const rec={sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()};
   await keepRender(comboKey(o),rec,false);   // the worker already kept a copy
   return rec;
@@ -962,7 +962,7 @@ async function generateRender(){
   try{const q=!replace&&typeof asmWants==='function'&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
     if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open: your worker has no background queue.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
-  catch(e){renderMsg={k:day,t:/Worker URL|worker doesn/.test(e.message)?e.message:'Couldn’t send the photo to your worker: '+(e.message||e)}}
+  catch(e){renderMsg={k:day,t:/Worker URL|worker doesn|Today’s limit/.test(e.message)?e.message:'Couldn’t send the photo to your worker: '+(e.message||e)}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)refreshToday();renderRegenUI()}
 }
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day */
@@ -1023,7 +1023,7 @@ async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTr
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Set the Worker URL and App Token in ⚙ Settings first.');
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
-  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.error||`HTTP ${r.status}`);
   await keepRender(itemKey(i),{sig:'item',img:await itemImg(j.image),model:j.model||'',t:Date.now(),grey:1},false);
 }
 const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type))return false;const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
@@ -1034,7 +1034,7 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   if(!confirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'} for your shoes, belts, socks, trousers and coats?\n\nAbout $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`))return;
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='';
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
-    try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Worker URL|OPENAI_API_KEY|forbidden/i.test(err))break}}
+    try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Worker URL|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
 /* ---- Settings: generate the month's missing photos in one go ---- */
 let batch=null;
@@ -1066,7 +1066,7 @@ async function startBatch(){
       if(!noQueue){const q=await queueCombo(o);if(q==='queued'){queued.push(ck);continue}if(q==='done'){batch.done++;continue}noQueue=true;
         batch.msg=`Generating ${i} of ${batch.n}… keep the app open (your worker has no background queue).`;renderBatchUI()}
       await renderCombo(o);batch.done++}
-    catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden/i.test(e.message)){batch.stop=true}}
+    catch(e){batch.fail++;batch.err=e.message;if(/Worker URL|worker doesn|OPENAI_API_KEY|forbidden|Today’s limit/i.test(e.message)){batch.stop=true}}
   }
   const b=batch;batch=null;const el=$('#batch-status');
   if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.sentAt=Date.now();q.at={...(q.at||{}),...Object.fromEntries(queued.map(k=>[k,q.sentAt]))};q.failed=q.failed||[];
@@ -1085,7 +1085,7 @@ async function queueCombo(o,replace=false){
   if(r.ok&&j.exists){renderTried.delete(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
   if(r.ok&&j.image){await keepRender(ck,{sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()},false);return 'done'}   // an older worker made it right away
   if(r.status===501||r.status===404||r.status===405)return 'noqueue';
-  throw new Error(j.error||`HTTP ${r.status}`)}
+  throw new Error(j.message||j.error||`HTTP ${r.status}`)}
 const RQ='render_queue';
 const rqGet=()=>{try{const q=JSON.parse(localStorage.getItem(RQ)||'{}');return {keys:[],failed:[],...q}}catch{return {keys:[],failed:[]}}};
 const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):localStorage.removeItem(RQ)}catch{}renderBusy()};

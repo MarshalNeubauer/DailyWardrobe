@@ -640,3 +640,15 @@ body.iv-on #toast,body.iv-on #busy{z-index:960;bottom:calc(78px + env(safe-area-
 .shop-hid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .shop-foot{text-align:center}
 @media(max-width:360px){.shop-figs{grid-template-columns:1fr}}
+/* ---- server ---- */
+.acct-box .acct-h{margin-top:14px}
+.acct-uses{display:grid;gap:2px;margin:2px 0 8px}
+.acct-use{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.5;color:var(--mut)}.acct-use b{color:var(--ink);font-weight:600;white-space:nowrap}
+.acct-bad{color:var(--danger)}
+.acct-link{margin:4px 0 12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.acct-link input[type=text]{width:100%;max-width:none;height:44px;border-radius:12px;font-size:13px;background:var(--card)}
+.acct-link .shelp{margin:8px 0 0}
+.acct-inv{padding:10px 0;border-top:1px solid var(--line)}
+.acct-inv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}.acct-inv-top b{font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-inv.off b{color:var(--mut)}
+.acct-tag{flex:none;font-size:12px;font-weight:600;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:3px 10px}

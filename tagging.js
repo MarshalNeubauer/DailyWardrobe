@@ -381,7 +381,8 @@ function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
 async function claudePattern({image,closeup,type}){const w=localStorage.getItem('worker_url');if(!w||!image)return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type})});
-    const j=await r.json().catch(()=>({}));return r.ok&&(j.across||j.motif||j.texture)&&j.layout!=='none'?j:null}catch{return null}}
+    const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
+    return r.ok&&(j.across||j.motif||j.texture)&&j.layout!=='none'?j:null}catch{return null}}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];
   for(let i=0;i<d.length;i+=4*st)out.push(rgbLab(d[i],d[i+1],d[i+2]));return out}
 const medLab=ls=>[0,1,2].map(k=>{const v=ls.map(l=>l[k]).sort((a,b)=>a-b);return v[v.length>>1]});
