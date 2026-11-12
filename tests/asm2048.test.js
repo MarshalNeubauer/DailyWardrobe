@@ -84,6 +84,25 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         sp:!!asmParts(o).find(x=>x.slot==='jacket').sp,vkey:asmParts({...o,vest:true}).find(x=>x.slot==='jacket').key===asmPieceKey('vest',brown),needs}});
     ok(su.paint==='true,false,false'&&su.sp&&!/jacket/.test(su.photo)&&su.vkey&&su.needs==='p,t',`a solid suit is painted and needs no photo; a pinstripe or twill suit still does (needs: ${su.needs})`);
     ok(su.zone.every((v,c)=>Math.abs(v-su.hex[c])<=3)&&su.edge.every((v,c)=>Math.abs(v-su.hex[c])<=20)&&su.wall[0]===232,`the suit is its tagged colour (${su.zone} for ${su.hex}), its soft grey edge too (${su.edge}), and the wall beyond is left alone`);
+    // a patterned jacket read in bands (the owner's khaki windowpane) is painted from its reading: Claude's colours, no line under
+    // ASM_LINE_PX, the sleeves split into an upper arm and a forearm each along its own axis, a linen texture when the cloth is linen
+    const pj=await p.evaluate(async()=>{const spec={across:{bands:[{role:'ground',hex:'#cbb38e',w:.905},{role:'line',hex:'#eeeadf',w:.02},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#8eb2d6',w:.025},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#eeeadf',w:.02}]},
+        along:{bands:[{role:'ground',hex:'#cbb38e',w:.905},{role:'line',hex:'#eeeadf',w:.02},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#8eb2d6',w:.025},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#eeeadf',w:.02}]},description:'a slubby linen-blend ground'};
+      const bands=spec.across.bands.map(b=>[b.role==='ground'?'#baa98e':b.hex==='#eeeadf'?'#e0d9c9':'#97b0c5',b.w]),wp={id:'wp',type:'blazer',primaryColor:'khaki',pattern:'windowpane',patternSpec:spec,
+        sett:{v:2,a:0,bands,cross:{d:90,bands:bands.map((b,k)=>[k===0||k===2||k===4?null:b[0],b[1]]),r:1.05},cr:3.8,tr:11,src:'claude+pixels'}};
+      const tw={id:'tw',type:'suit',primaryColor:'black',pattern:'twill'},T=await asmSuitTex(wp),px=T.mm*ASM_PX_MM,L=ASM_LIN,lin=h=>hexRgb(h).map(v=>L[v]);
+      // the drawing's widest run of Claude's blue across a row, in painted pixels at 2048
+      const blue=lin('#eeeadf')/* the off-white line */,row=Math.floor(T.TH*.4);let run=0,best=0;for(let x=0;x<T.TW;x++){const j=3*(row*T.TW+x),d=Math.hypot(T.c[j]-blue[0],T.c[j+1]-blue[1],T.c[j+2]-blue[2]);run=d<.05?run+1:0;best=Math.max(best,run)}
+      // an L-shaped sleeve: an upright upper arm, a level forearm
+      const W=512,N=W*W,m=new Uint8Array(N);for(let k=0;k<N;k++){const x=k%W,y=(k/W)|0;if((x>=60&&x<140&&y>=40&&y<300)||(x>=60&&x<420&&y>=300&&y<380))m[k]=1}
+      const sg=asmSleeveSegs([m],W,N),angOf=k=>{const g=sg.segs[sg.seg[k]];return Math.round(Math.abs(Math.atan2(g.sn,g.cs))*180/Math.PI)};
+      const lt=asmLinenTile();let mean=0,sd=0;for(const v of lt.r)mean+=v;mean/=lt.r.length;for(const v of lt.r)sd+=(v-mean)**2;sd=Math.sqrt(sd/lt.r.length);
+      return {paint:[asmSuitPaintable(wp),asmSuitPaintable(tw)].join(),linen:T.linen,mm:+T.mm.toFixed(1),linePx:+(best/T.TW*px).toFixed(1),
+        parts:sg.segs.length-1,upper:angOf(120*W+100),fore:angOf(340*W+350),body:sg.seg[10*W+300],mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
+    ok(pj.paint==='true,false'&&pj.mm===50,`a windowpane read in bands is painted (a twill without a reading is still photographed), its pane ${pj.mm} mm (550 mm / 11 across)`);
+    ok(pj.linePx>=3.6,`its lines are painted in Claude's colours and bold: the 2% off-white line is ${pj.linePx} px at 2048 (it would be ${(.02*pj.mm*3.2).toFixed(1)}; 4 is the least, less a pixel of antialiasing)`);
+    ok(pj.parts===2&&(pj.upper<10||pj.upper>170)&&Math.abs(pj.fore-90)<10&&pj.body===0,`a bent sleeve is split into its upper arm and forearm, the pattern upright on one (${pj.upper}°) and turned along the other (${pj.fore}°)`);
+    ok(pj.linen&&Math.abs(pj.mean-1)<.01&&Math.abs(pj.sd-.055)<.01,`a linen jacket gets a linen texture in its shading (mean ${pj.mean}, spread ${pj.sd})`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};

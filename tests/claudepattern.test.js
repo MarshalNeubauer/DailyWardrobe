@@ -61,7 +61,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const it={id:'pinsuit',type:'suit',primaryColor:'navy',pattern:'pinstripe',texture:url,patternSpec:spec,sett:{v:2,a:0,bands:[['#63657d',.47],['#b1b6ce',.06],['#63657d',.47]],cross:null,cr:7,tr:40,src:'claude+pixels'}};
       items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts(),again=await recolourSpecSetts();
       const L=rgbLab(...hexRgb(it.sett.bands[0][0]));items.splice(items.indexOf(it),1);return {n,again,L:L[0],d:dE00(L,rgbLab(...hexRgb('#2b365a'))),flag:localStorage.getItem('spec_recolour')}});
-    ok(mig.n===1&&mig.again===0&&mig.d<10&&mig.L<35&&mig.flag==='2',`a saved lavender pinstripe is recoloured once on start from its saved reading (L* ${mig.L.toFixed(0)}, ΔE00 ${mig.d.toFixed(1)} from navy)`);
+    ok(mig.n===1&&mig.again===0&&mig.d<10&&mig.L<35&&mig.flag==='3',`a saved lavender pinstripe is recoloured once on start from its saved reading (L* ${mig.L.toFixed(0)}, ΔE00 ${mig.d.toFixed(1)} from navy)`);
+    // a reading with a pattern box is recoloured too, from the box in the item photo (it was skipped, and kept its dull lines)
+    const bx=await p.evaluate(async SPEC=>{const du=async u=>{const b=await (await fetch(u)).blob();return await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)})};
+      const spec={...SPEC,across:{bands:SPEC.across.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:SPEC.along.bands.map(b=>({...b,w:b.widthPct/100}))}};
+      const it={id:'wpbox',type:'blazer',primaryColor:'khaki',pattern:'windowpane',photo:await du('tests/fixtures/blazer-windowpane.jpg'),texture:await du('tests/fixtures/blazer-windowpane-closeup.jpg'),pbox:{x:220,y:420,w:180,h:280},patternSpec:spec,
+        sett:{v:2,a:0,bands:spec.across.bands.map(b=>['#808080',b.w]),cross:{d:90,bands:spec.along.bands.map(b=>[b.role==='ground'?null:'#808080',b.w]),r:1.1},cr:3.5,tr:9,src:'claude+pixels'}};
+      items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts();items.splice(items.indexOf(it),1);
+      return {n,grey:it.sett.bands.filter(b=>b[0]==='#808080').length}},SPEC);
+    ok(bx.n===1&&bx.grey===0,`a reading with a pattern box is recoloured once too (${bx.n} recoloured, ${bx.grey} bands left grey)`);
     // a tie of equal navy and blue stripes, and one with thin white edging beside a grey band (the owner's, 2026-11-12): the ground
     // is measured from the pixels nearest Claude's ground (the whole close-up's median landed between navy and blue), a tie's
     // stripes get none of the ground mixed in, and a thin line's colour comes from its pixels furthest from the ground
