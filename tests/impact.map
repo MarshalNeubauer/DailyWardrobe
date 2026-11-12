@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	7dc4906034f4b049459d
+# tested	9d39e66cad943c81691d
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctStart
 <every page test>	analysis.js	<loaded>
@@ -1248,7 +1248,7 @@ safety.test.js	sync.js	@document.addEventListenervisibilitychange	localState	syn
 safety.test.js	tagging.js	aiFields	claudeOnly	confTxt	customForTag	keepTagImg	measureCard	measuredAlt	motifPat	readSett	readable	recordTagResult	settNote	settable	tagExtras	tagFixes	tagImgOf	tagNotes	takeExtras	wbGains	wbRead
 safety.test.js	wardrobe.js	moreRow	wardSaveFields
 safetysync.test.js	<every page test>	<every page test>
-safetysync.test.js	app.js	@document.addEventListenervisibilitychange	addTombstones	atomic	loadClimate	nextWorkday	onSyncedData	temp	unit	wxChip	wxIcon
+safetysync.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	addTombstones	atomic	loadClimate	nextWorkday	onSyncedData	temp	unit	wxChip	wxIcon
 safetysync.test.js	apple-touch-icon.png	<loaded>
 safetysync.test.js	assemble.js	asmCan	asmGet	asmInfo	asmMasterKey	asmNeeds	asmVestKept	asmZonesKept	renderAsmUI
 safetysync.test.js	core.js	colourNameRe	mergeState	prettyCols	stateSig
