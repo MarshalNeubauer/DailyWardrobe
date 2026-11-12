@@ -207,6 +207,11 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
    the landing bounce), then the card closes behind them (app.js monthFold adds .mlift and --mn, the number of days) */
 @media (prefers-reduced-motion:no-preference){#mbox.mlift .mc:not(.blank){animation:mcLift .28s cubic-bezier(.36,0,.66,-.56) both;animation-delay:calc((var(--mn) - 1 - var(--i)) * 8ms)}}
 @keyframes mcLift{from{opacity:1;transform:none}25%{opacity:1}to{opacity:0;transform:translateY(-12px) scale(.94)}}
+/* the score box and the pieces list unfold and fold the same way (app.js boxUnfold / boxFold): laid out once, a clip and a slide;
+   folding lifts their checks or pieces out last first (.blift, --bi each, --bn on the box) with the month's dip, then the card closes */
+.mbox.bfast .mpanel,.mbox.bfast .mpanel-in{transition:none}
+.mbox.bshut .chev{transform:none}
+@media (prefers-reduced-motion:no-preference){.mbox.blift .bli{animation:mcLift .26s cubic-bezier(.36,0,.66,-.56) calc((var(--bn) - 1 - var(--bi)) * 20ms) both!important}}
 /* day actions in one row: worn toggle, formal toggle, reset icon */
 .dayact{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin:4px 0 10px}
 .seg{display:flex;flex:0 1 auto;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
