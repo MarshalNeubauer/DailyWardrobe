@@ -82,7 +82,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/No clothing items were found/.test(await p.textContent('#multi-status')),'a photo with nothing found says so');
     await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',r=>r.fulfill({status:405,contentType:'application/json',body:'{"error":"method not allowed"}'}));
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})],true)});
-    ok(/needs the latest worker\.js/.test(await p.textContent('#multi-status')),'an old worker is explained');
+    ok(/needs an update/.test(await p.textContent('#multi-status')),'an old worker is explained');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

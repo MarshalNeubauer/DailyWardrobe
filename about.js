@@ -62,7 +62,7 @@ function checkForUpdate(manual){
 async function updateNow(){
   if(aboutUpdating)return;
   const n=typeof queue!=='undefined'&&queue?queue.length:0;
-  if(n&&!confirm(`You have ${n} unsaved card${n===1?'':'s'} on the Add tab. Updating restarts the app and ${n===1?'it':'they'} will be lost.\n\nUpdate now?`))return;
+  if(n&&!await askConfirm(`Update now?\n\nYou have ${n} unsaved card${n===1?'':'s'} on the Add tab. Updating restarts the app and ${n===1?'it':'they'} will be lost.`,{ok:'Update'}))return;
   aboutUpdating=true;aboutMsg='Updating…';aboutShow();
   let done=false;const reload=()=>{if(done)return;done=true;location.reload()};
   const fail=t=>{if(done)return;done=true;aboutUpdating=false;aboutMsg=t;aboutShow();if(typeof toast==='function')toast(t,5000)};
@@ -164,7 +164,8 @@ async function deleteMyData(server){
 
 /* ---- the page ---- */
 function renderAbout(){aboutShow();
-  if(!aboutConn()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status','Feedback needs a connection.');
+  if($('#fb-send'))$('#fb-send').disabled=!aboutConn();   // no connection: the button is off, with the reason under it
+  if(!aboutConn()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status','Feedback needs a connection (Settings → Connection).');
   loadFeedback()}
 let aboutStarted=false;
 function aboutStart(){

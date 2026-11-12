@@ -42,7 +42,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
 
   // a site without CORS and no worker configured: says what to do
   await p.fill('#photo-url','https://nocors.test/a.png');await p.press('#photo-url','Enter');await settle(9);
-  ok(/Worker URL/.test(await status())&&(await photos())===2,`without a worker, a blocked link explains the options ("${await status()}")`);
+  ok(/Connect in/.test(await status())&&(await photos())===2,`without a worker, a blocked link explains the options ("${await status()}")`);
 
   // with the worker: blocked sites go through /fetch, shop pages give their og:image
   await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret');pasteMsg('')},HOST);
@@ -63,7 +63,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await p.evaluate(()=>pasteMsg(''));
   await ctx.route(HOST+'fetch**',r=>r.fulfill({status:405,contentType:'application/json',body:'{"error":"method not allowed"}'}));
   await p.fill('#photo-url','https://nocors.test/a.png');await p.click('.paste-box >> text=Add');await settle(99);
-  ok(/redeploy/.test(await status()),'an old worker without photo links says to redeploy it');
+  ok(/needs an update/.test(await status()),'an old worker without photo links says to redeploy it');
   await ctx.unroute(HOST+'fetch**');
 
   // the Paste button reads the clipboard

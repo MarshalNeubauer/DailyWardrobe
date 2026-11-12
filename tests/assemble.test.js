@@ -249,9 +249,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'tie-new2',type:'tie',primaryColor:'gold',pattern:'solid'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
           await asmSync(true);renderAsmUI();return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,auto:settings.asmAuto}});
         ok(sent.length===0&&s5.auto===false&&/1 to make, about 8¢/.test(s5.st)&&/gold tie/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
-        await a.click('#asm-btn');await a.waitForFunction(()=>/Making/.test(document.querySelector('#asm-btn').textContent),null,{timeout:15000});
+        await a.evaluate(()=>{const f=document.querySelector('#adv-photos');if(!f.classList.contains('open'))f.querySelector('.adv-head').click()});await a.click('#asm-btn');await a.click('#ask-ok');await a.waitForFunction(()=>/Making/.test(document.querySelector('#asm-btn').textContent),null,{timeout:15000});
         const st6=await a.textContent('#asm-status');
-        ok(sent.length===1&&/Your worker is making 2 photos/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);
+        ok(sent.length===1&&/2 photos are being made/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);
         ok(errs2.length===0,'no page errors with the worker ('+errs2.join('; ')+')');
       }finally{await ctx.close()}}
   }finally{globalThis.fetch=realFetchAll;await browser.close()}
