@@ -3,7 +3,7 @@
 //   node tests/run.js --changed   only the checks the change since origin/main can affect (`npm test`; see tests/impact.js)
 //   node tests/run.js --changed --list   say which those are, and run nothing
 //   node tests/run.js <name>      the tests/*.test.js files whose name contains <name> (or TEST_ONLY=<name>)
-//   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 8); TEST_JOBS=1 runs
+//   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 16); TEST_JOBS=1 runs
 //                                 them one after another in this process, printing as it goes
 // Serves the repo over HTTP, drives the app in headless Chromium and checks rendering, gestures, layout,
 // the outfit rules (with an independent checklist), pattern detection and the Cloudflare worker.
@@ -263,7 +263,7 @@ const lastTimes=()=>{try{return JSON.parse(fs.readFileSync(TIMES,'utf8'))}catch(
 const keepTimes=times=>{try{fs.mkdirSync(path.dirname(TIMES),{recursive:true});fs.writeFileSync(TIMES,JSON.stringify({...lastTimes(),...Object.fromEntries(times)}))}catch(e){}};
 /* how many at once: one fewer than the processor cores (each test is a Node process and a Chromium with its own helpers).
    With one per core, on 4 cores, a check that waits a fixed time failed in each of three runs; with one fewer, none did */
-const jobsWanted=()=>{const n=parseInt(process.env.TEST_JOBS,10);return n>=1?n:Math.max(1,Math.min(8,(os.availableParallelism?os.availableParallelism():os.cpus().length)-1))};   // one fewer than the cores: four at a time on four cores starved pages (a 30 s page load) once the suite passed 2000 checks
+const jobsWanted=()=>{const n=parseInt(process.env.TEST_JOBS,10);return n>=1?n:Math.max(1,Math.min(16,(os.availableParallelism?os.availableParallelism():os.cpus().length)-1))};   // one fewer than the cores: four at a time on four cores starved pages (a 30 s page load) once the suite passed 2000 checks; at most 16: on 32 threads 16 took 27 s, 28 took 26–52 s with a test failing under load
 
 /* a worker process (`node tests/run.js --worker`, started by the parent below): it runs the tests it is handed, one at a
    time, keeps what each prints and sends it back whole with the counts and what the test used */

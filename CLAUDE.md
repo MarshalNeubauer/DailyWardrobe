@@ -812,5 +812,7 @@ Colours always come from the item's tagged colours, matched by brightness rank, 
 - a test that makes its own git repo turns `core.autocrlf` off in it (`impact.test.js`): that repo has no `.gitattributes`, and a merge there wrote CRLF on Windows
 - on Windows, read a file's executable bit from git (`git ls-files -s`: `100755`), not `fs.statSync`, which shows none there
 - on Windows PowerShell, `npm` and `npx` may be blocked by the script policy: `npm.cmd` / `npx.cmd` work; install with `npm.cmd install --no-package-lock`
+- the runner's default is now at most 16 processes (one fewer than the cores below that, so the 4-core cloud still runs 3); measured on the owner's 16-core / 32-thread PC (2026-11-12, two whole runs each): 8 at a time 42 s, 12 30 s, 16 27 s, 28 26 s and 52 s (`wardrobetap` failed under load and was run again)
+- the shop sheet's swipe speed comes from `e.timeStamp` (when the touch happened), not `Date.now()` when it was handled: under load the test's flick read as a slow pull; `tests/shopswipe.test.js` gives every CDP touch its own `timestamp`, so its gestures have the same speed however busy the machine is
 
 The user's phone may run the Dark Reader extension. The page opts out via the `darkreader-lock` meta tag; keep it.
