@@ -315,6 +315,7 @@ function asmParts(o){const inf=asmInfo()||{},out=[];
     if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt))continue;   // as the master shows it
     if(slot==='shirt'&&asmPaintable(i)){out.push({slot,key:asmPieceKey(slot,i),item:i,paint:colOf(i),wk:asmWeaveSig(i)});continue}   // painted here (its weave laid over): no photo
     if(slot==='tie'){out.push({slot,key:asmPieceKey(slot,i),item:i,tp:asmTieSig(i)});continue}   // a tie is painted here too (asmTiePaint): no photo
+    if(slot==='jacket'&&asmSuitPaintable(i)){out.push({slot,vest:!!o.vest,key:asmPieceKey(o.vest?'vest':'jacket',i),item:i,sp:asmSuitSig(i)});continue}   // a solid suit or blazer is painted too (asmSuitPaint)
     out.push(slot==='jacket'&&o.vest?{slot,vest:true,key:asmPieceKey('vest',i),item:i}:{slot,key:asmPieceKey(slot,i),item:i})}   // a vest day: the suit's piece with its waistcoat
   return out}
 /* A plain shirt (no pattern, no woven texture) needs no photo: the master's white shirt is painted in its colour (colOf: the tagged
@@ -409,7 +410,35 @@ function asmTexReady(T,hex,W){if(!T)return null;let r,TW,TH,rx,ry;
   const Yl=L=>{const g=(L+16)/116;return g>6/29?g*g*g:3*(6/29)**2*(g-4/29)},want=(Yl(Math.min(100,L0+T.dL/2))-Yl(Math.max(0,L0-T.dL/2)))/Math.max(1e-4,Yl(L0));
   const srt=Float32Array.from(r).sort(),sp=srt[Math.floor(srt.length*.95)]-srt[Math.floor(srt.length*.05)];let m=0;for(const v of r)m+=v;m/=r.length;
   const g=sp>0?want/sp:0;for(let k=0;k<r.length;k++)r[k]=1+(r[k]-m)*g;return {r,TW,TH,rx,ry}}
-const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp);   // the parts that need a photo from the worker
+const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp);   // the parts that need a photo from the worker
+/* ---- solid suits and blazers are painted on the master too (the owner's choice, 2026-11-12, from a prototype of his brown and very
+   dark navy suits, with and without the waistcoat): the master's jacket zone (on a waistcoat day: the waistcoat master's, and the
+   waistcoat zone with it) in the suit's tagged colour (colOf), shaded by the master's plain grey suit and the red jacket calibration
+   photo (the orange waistcoat calibration for the waistcoat), each pixel's lightness over its lit cloth (75th percentile), averaged; the
+   master suit's own fine grain comes through as a natural cloth texture. The suit's soft grey edge just outside the zone (near-grey,
+   within 22 L* of the master suit's median, not skin) is painted from the master's lightness alone, so no grey outline is left. The
+   painted picture is the suit's piece (as a photo of the suit with its waistcoat would be), so asmCompose's jacket edge handling
+   applies. Patterned suits (pinstripe, windowpane, twill, herringbone…) are still photographed. */
+const ASM_SUITV=1;   // how suits are painted: in the picture's key
+const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&patBase(i.pattern)==='solid'&&!usableSett(i);
+const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i)].join('|')).slice(0,10);
+/* the colour-free part, once per base picture and calibration: the pixels to paint and their shading. base: the master, or the
+   waistcoat master on a waistcoat day; zj: the jacket zone; zv, cv (waistcoat days): the waistcoat zone and its calibration photo */
+function asmSuitPrep(base,cj,zj,zv,cv){const W=base.width,N=W*base.height,L=ASM_LIN,B=base.data,Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],lab=asmLab(base);
+  const zl=[];for(let k=0;k<N;k+=7)if(zj[k])zl.push(lab[3*k]);zl.sort((a,b)=>a-b);const Lmed=zl[zl.length>>1]||50;
+  const ring=asmBox(zj,W,asmPx(3,W),true),kind=new Uint8Array(N);let n=0;
+  for(let k=0;k<N;k++){if(zv&&zv[k])kind[k]=3;else if(zj[k])kind[k]=1;else if(ring[k]&&Math.hypot(lab[3*k+1],lab[3*k+2])<8&&Math.abs(lab[3*k]-Lmed)<22)kind[k]=2;if(kind[k])n++}
+  const pct=(d,want)=>{const v=[];for(let k=0;k<N;k+=5)if(kind[k]===want)v.push(Y(d,4*k));v.sort((a,b)=>a-b);return v[Math.floor(v.length*.75)]||1};
+  const Rm=pct(B,1),Rc=pct(cj.data,1),Rmv=zv?pct(B,3):1,Rcv=zv&&cv?pct(cv.data,3):1,idx=new Int32Array(n),sh=new Float32Array(n);let q=0;
+  for(let k=0;k<N;k++){const t=kind[k];if(!t)continue;const j=4*k;let s=t===3?(cv?.5*(Y(B,j)/Rmv+Y(cv.data,j)/Rcv):Y(B,j)/Rmv):t===2?Y(B,j)/Rm:.5*(Y(B,j)/Rm+Y(cj.data,j)/Rc);
+    idx[q]=k;sh[q]=s<.05?.05:s>1.6?1.6:s;q++}
+  return {base,idx,sh}}
+/* the base picture with the suit painted in hex (an ImageData) */
+function asmSuitPaint(P,hex){const L=ASM_LIN,h=String(hex).replace('#',''),t=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),d=new Uint8ClampedArray(P.base.data),
+    gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},G=new Uint8ClampedArray(3*1601);
+  for(let c=0;c<3;c++)for(let s=0;s<=1600;s++)G[c*1601+s]=Math.round(gam(t[c]*s/1000));   // the colour at each shading, a thousandth apart
+  for(let q=0;q<P.idx.length;q++){const j=4*P.idx[q],s=Math.round(P.sh[q]*1000);d[j]=G[s];d[j+1]=G[1601+s];d[j+2]=G[3202+s]}
+  return new ImageData(d,P.base.width,P.base.height)}
 /* ---- ties are painted on the master too (the owner's choice, 2026-11-12, from a prototype of his black, navy & pink stripe, charcoal
    check and purple foulard ties): the master's tie zone is painted with one repeat of the app's own drawing of the tie's reading
    (fabricDef, its turn and the swatch's faint sheen line left out, rendered three tiles each way and the middle one read, since a lone
@@ -537,15 +566,17 @@ function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the pixel work needs, as plain data (photos as data URLs, kept zones packed), or null when something is missing */
 async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;
-  const parts=asmParts(o);if(parts.some(p=>!p.paint&&!p.tp&&(!renders[p.key]||asmBad.has(p.key))))return null;
+  const parts=asmParts(o);if(parts.some(p=>!p.paint&&!p.tp&&!p.sp&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
-    parts:await Promise.all(parts.map(async p=>p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
+    parts:await Promise.all(parts.map(async p=>p.sp?{slot:p.slot,vest:!!p.vest,key:p.key,sp:p.sp,hex:colOf(p.item)}:p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
   if(parts.some(p=>p.paint)){const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}
   if(parts.some(p=>p.tp)){const c=renders[asmCalibKey('tie')];if(!c)return null;job.tieCalib={t:c.t,img:c.img}}   // a painted tie is shaded from the master's tie and the magenta calibration tie   // a painted shirt takes its shading from the black calibration shirt too
   if(!job.zones){job.zoneImg=asmZoneImgs();   // zones made outside the app, when they're here; else the calibration photos
     if(!job.zoneImg){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}}
+  if(parts.some(p=>p.sp)){const c=renders[asmCalibKey('jacket')];if(!c)return null;job.suitCalib={t:c.t,img:c.img}}   // a painted suit is shaded from the master's suit and the red calibration suit
   if(o.vest){const vk=asmVestKey(),r=renders[vk];if(!r)return null;const kv=await metaGet('asm:vest:'+vk);
     job.vest={k:vk,t:r.t,kept:kv&&kv.t===r.t&&kv.v===ASM_ZV?kv:null};
+    if(parts.some(p=>p.sp)){const c=renders[asmCalibKey('vest')];if(!c)return null;job.suitVest={t:r.t+'|'+c.t,img:r.img,calib:c.img}}   // painted on the waistcoat master, the waistcoat from its own calibration photo
     if(!job.vest.kept){const zv=renders[asmZoneKey('vest')];if(zv)job.vest.zoneImg=zv.img;
       else{const c=renders[asmCalibKey('vest')];if(!c)return null;job.vest.img=r.img;job.vest.calib=c.img}}}
   return job}
@@ -572,7 +603,11 @@ async function asmBuild(job){
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
   if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){const nt=asmBox(z.tie,W,asmPx(ASM_HALO+2,W),true);for(let i=0;i<W*W;i++)nt[i]=nt[i]&&z.shirt[i]?1:0;M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W),nt);M.ppt=job.paintCalib.t;M.paint={}}
   if(job.tieCalib&&(!M.tpp||M.tppt!==job.tieCalib.t)){M.tpp=asmTiePrep(master,await asmData(job.tieCalib.img,W),z.tie);M.tppt=job.tieCalib.t;M.ties={}}
-  const P={};for(const p of job.parts){if(p.tp){if(!M.tpp)return out;M.ties=M.ties||{};P.tie=M.ties[p.tp]=M.ties[p.tp]||asmTiePaint(master,M.tpp,p.tie);continue}   // a painted tie: only its zone changes
+  if(job.suitCalib&&job.parts.some(p=>p.sp&&!p.vest)&&(!M.spp||M.sppt!==job.suitCalib.t)){M.spp=asmSuitPrep(master,await asmData(job.suitCalib.img,W),z.jacket);M.sppt=job.suitCalib.t;M.suits={}}
+  if(job.suitCalib&&job.suitVest&&V&&(!M.sppv||M.sppvt!==job.suitVest.t+'|'+job.suitCalib.t)){M.sppv=asmSuitPrep(await asmData(job.suitVest.img,W),await asmData(job.suitCalib.img,W),z.jacket,V,await asmData(job.suitVest.calib,W));M.sppvt=job.suitVest.t+'|'+job.suitCalib.t;M.suits={}}
+  const P={};for(const p of job.parts){if(p.sp){const pr=p.vest?M.sppv:M.spp;if(!pr)return out;M.suits=M.suits||{};const k=p.sp+(p.vest?'v':'');if(!M.suits[k]&&Object.keys(M.suits).length>=4)M.suits={};   // a painted suit: no drift to check
+      P.jacket=M.suits[k]=M.suits[k]||asmSuitPaint(pr,p.hex);continue}
+    if(p.tp){if(!M.tpp)return out;M.ties=M.ties||{};P.tie=M.ties[p.tp]=M.ties[p.tp]||asmTiePaint(master,M.tpp,p.tie);continue}   // a painted tie: only its zone changes
     if(p.paint){M.paint=M.paint||{};const pk=p.paint+(p.tex&&p.wk?'~'+p.wk:'');   // nothing outside the shirt changes: no drift to check
       P[p.slot]=M.paint[pk]=M.paint[pk]||asmPaint(master,null,p.paint,M.pp,p.tex&&p.wk?asmTexReady(p.tex,p.paint,W):null);continue}
     const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
@@ -612,7 +647,7 @@ async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;c
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP), each with the newest date among the photos
    it was made from: a piece made again makes it stale */
 let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
-const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')+(p.tp?'='+p.tp:'')).join('+'));   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
+const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')+(p.tp?'='+p.tp:'')+(p.sp?'='+p.sp:'')).join('+'));   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
 const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmPhotoParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
@@ -646,6 +681,7 @@ async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
   if((await Promise.all(asmPhotoParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
   if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return null;
   if(asmParts(o).some(p=>p.tp)&&!await asmGet(asmCalibKey('tie')))return null;
+  if(asmParts(o).some(p=>p.sp)&&(!await asmGet(asmCalibKey('jacket'))||(o.vest&&!await asmGet(asmCalibKey('vest')))))return null;
   if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
@@ -683,6 +719,7 @@ async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&rende
     const parts=asmPhotoParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
     if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return;   // the black shirt a painted shirt is shaded from
     if(asmParts(o).some(p=>p.tp)&&!await asmGet(asmCalibKey('tie')))return;   // the magenta tie a painted tie is shaded from
+    if(asmParts(o).some(p=>p.sp)&&(!await asmGet(asmCalibKey('jacket'))||(o.vest&&!await asmGet(asmCalibKey('vest')))))return;   // the red suit (and orange waistcoat) a painted suit is shaded from
     if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
     const img=await asmPhoto(o,!ahead);if(!img)return;
     const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();
@@ -728,7 +765,7 @@ function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if
   const vests=settings.vestMode==='never'?[]:items.filter(i=>hasVest(i)&&inRotation(i));
   if(vests.length){add('vestmaster',null,null,asmVestKey(),'the pose with a waistcoat');add('vestcalib','vest',null,asmCalibKey('vest'),'finding the waistcoat')}
   for(const i of items){const slot=ASM_TYPE[i.type];if(!slot||!inRotation(i))continue;const sig=asmLook(slot,i);
-    if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt)||(slot==='shirt'&&asmPaintable(i))||slot==='tie')continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));   // a plain or woven shirt is painted: nothing to make
+    if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt)||(slot==='shirt'&&asmPaintable(i))||slot==='tie'||(slot==='jacket'&&asmSuitPaintable(i)))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));   // a plain or woven shirt is painted: nothing to make
     if(vests.includes(i))add('piece','vest',i,asmPieceKey('vest',i),nm(i)+' with its waistcoat')}
   return out}
 /* asmState: what a look at the worker found. missing: photos nobody has made (or that came out wrong) */

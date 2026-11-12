@@ -71,6 +71,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(tp.plain.every((v,c)=>Math.abs(v-tp.hex[c])<=3),`a plain tie is its tagged colour (${tp.plain} for ${tp.hex})`);
     ok(Math.abs(tp.n-5.5)<.6&&Math.abs(tp.across-3.6)<.4,`the close-up's stripes are counted (${tp.n} across it, 5.5 drawn), and a reading that counted half as many is corrected (${tp.across} across the blade, read 1.8)`);
     ok(tp.yk>=38&&tp.yk<=48&&tp.pinkB>.08&&tp.pinkB<.3&&tp.pinkK>.05,`the stripes are painted on the blade and in the knot (knot above row ${tp.yk}; ${(100*tp.pinkB).toFixed(0)}% / ${(100*tp.pinkK).toFixed(0)}% stripe)`);
+    // a solid suit is painted on the device too: no photo; its zone is the tagged colour, and the master suit's soft grey edge just
+    // outside the zone is painted with it (no grey outline); a pinstripe or twill suit still has its photo made
+    const su=await p.evaluate(()=>{const W=120,N=W*W,img=f=>{const d=new Uint8ClampedArray(4*N);for(let k=0;k<N;k++)d.set([...f(k%W),255],4*k);return new ImageData(d,W,W)};
+      const zj=new Uint8Array(N);for(let k=0;k<N;k++)if(k%W<60)zj[k]=1;
+      const base=img(x=>x<60?[128,128,128]:x<62?[120,120,122]:[232,228,222]),cj=img(x=>x<60?[220,30,30]:[232,228,222]),P=asmSuitPrep(base,cj,zj);
+      const brown={id:'b',type:'suit',primaryColor:'brown',pattern:'solid'},pin={id:'p',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe'},tw={id:'t',type:'suit',primaryColor:'black',pattern:'twill'};
+      const out=asmSuitPaint(P,colOf(brown)).data,at=x=>[...out.slice(4*(60*W+x),4*(60*W+x)+3)];
+      const o={top:brown,shirt:{id:'s',type:'shirt',primaryColor:'white'},tie:{id:'ti',type:'tie',primaryColor:'red',pattern:'solid'},watch:{id:'w',type:'watch',primaryColor:'silver'}};
+      items.push(brown,pin,tw);const needs=[...new Set(asmNeeds().filter(q=>q.kind==='piece'&&(q.slot==='jacket'||q.slot==='vest')).map(q=>q.item.id))].join();items.splice(-3,3);
+      return {zone:at(30),edge:at(61),wall:at(80),hex:hexRgb(colOf(brown)),paint:[brown,pin,tw].map(asmSuitPaintable).join(),photo:asmPhotoParts(o).map(x=>x.slot).join(),
+        sp:!!asmParts(o).find(x=>x.slot==='jacket').sp,vkey:asmParts({...o,vest:true}).find(x=>x.slot==='jacket').key===asmPieceKey('vest',brown),needs}});
+    ok(su.paint==='true,false,false'&&su.sp&&!/jacket/.test(su.photo)&&su.vkey&&su.needs==='p,t',`a solid suit is painted and needs no photo; a pinstripe or twill suit still does (needs: ${su.needs})`);
+    ok(su.zone.every((v,c)=>Math.abs(v-su.hex[c])<=3)&&su.edge.every((v,c)=>Math.abs(v-su.hex[c])<=20)&&su.wall[0]===232,`the suit is its tagged colour (${su.zone} for ${su.hex}), its soft grey edge too (${su.edge}), and the wall beyond is left alone`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
