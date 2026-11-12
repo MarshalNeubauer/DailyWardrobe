@@ -590,11 +590,12 @@ function picOpen(el,top){picStop(el);const b0=el.getBoundingClientRect(),below=p
   el.classList.remove('instant');el.classList.add('pfast','open');
   const b1=el.getBoundingClientRect(),g=b1.bottom-b0.bottom,d=revealNeed(el,top);
   if(noMotion()||g<1){if(d>.5)scrollBy(0,d);return}
-  const o={duration:PIC_MS,easing:MONTH_EASE},list=[el.animate([{clipPath:`inset(0 0 ${Math.max(0,b1.height-b0.height)}px 0)`},{clipPath:'inset(0 0 0 0)'}],o)];
-  cards.forEach((c,i)=>list.push(c.animate([{clipPath:monthClip(c.getBoundingClientRect().height-c0[i])},{clipPath:monthClip(0)}],o)));
+  // the photo's own edge and its card's edge are strips that slide (foldEdge), like the cards' own: no clip-path for Safari to repaint
+  const o={duration:PIC_MS,easing:MONTH_EASE},edges=[foldEdge(el,Math.max(0,b1.height-b0.height),0,o),...cards.map((c,i)=>foldEdge(c,c.getBoundingClientRect().height-c0[i],0,o))];
+  const list=edges.map(e=>e.anim),drop=()=>edges.forEach(e=>e.drop());
   for(const e of below)list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
   const pin=el.querySelector('.rpanel-in');if(pin)list.push(pin.animate([{opacity:0,transform:'translateY(-10px) scale(.96)'},{opacity:1,transform:'none'}],{duration:440,delay:40,easing:'cubic-bezier(.34,1.56,.64,1)',fill:'backwards'}));
-  const a=el._pa={list,end:null};list[0].finished.then(()=>{if(el._pa===a)el._pa=null},()=>{});
+  const a=el._pa={list,end:drop};list[0].finished.then(()=>{if(el._pa===a){el._pa=null;drop()}},()=>{});
   if(d>.5)pageScroll(scrollY+d,o.duration)}
 function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.classList.remove('open','instant')};
   if(noMotion()||foldQuiet||!el.classList.contains('open')){close();keepInView(el);return}
@@ -606,11 +607,10 @@ function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.c
   let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
   const pin=el.querySelector('.rpanel-in'),wait=150,o={duration:PIC_MS-40,delay:wait,easing:MONTH_EASE,fill:'forwards'};
   if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
-  const list=[el.animate([{clipPath:'inset(0 0 0 0)'},{clipPath:`inset(0 0 ${Math.max(0,b1.height-b0.height)}px 0)`}],o)];
-  cards.forEach((c,i)=>list.push(c.animate([{clipPath:monthClip(0)},{clipPath:monthClip(c1[i]-c0[i])}],o)));
+  const edges=[foldEdge(el,0,Math.max(0,b1.height-b0.height),o),...cards.map((c,i)=>foldEdge(c,0,c1[i]-c0[i],o))],list=edges.map(e=>e.anim);
   for(const e of below)list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
   if(pin)list.push(pin.animate([{opacity:1,transform:'none'},{opacity:1,offset:.25},{opacity:0,transform:'translateY(-10px) scale(.96)'}],{duration:280,easing:'cubic-bezier(.36,0,.66,-.56)',fill:'forwards'}));
-  const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=el._pa={list,end};
+  const end=()=>{edges.forEach(e=>e.drop());if(scrollY>max)scrollTo(0,max);close()},a=el._pa={list,end};
   list[0].finished.then(()=>{if(el._pa!==a)return;el._pa=null;end();for(const x of list)x.cancel()},()=>{})}
 /* shut at once (another photo is opening): when it lay above `keep`, scroll by what it gave back, so `keep` doesn't move */
 function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().bottom<=keep.getBoundingClientRect().top+1,h0=r.getBoundingClientRect().height;
@@ -807,12 +807,16 @@ function boxUnfold(box){boxStop(box);const pan=box.querySelector('.mpanel');box.
    a clip-path on the card: Safari repaints a clip on the page's own thread every frame but slides the cards below on its compositor, so
    on a phone the edge and the cards drifted apart and the folding juddered; now every moving part is a slide the browser runs together.
    drop() takes it away, where the card's own edge then is. */
-function foldEdge(box,from,to,o){const cs=getComputedStyle(box),R=parseFloat(cs.borderBottomLeftRadius)||0,bw=parseFloat(cs.borderBottomWidth)||0,H=box.offsetHeight;
-  const w=document.createElement('div');w.className='fedge';w.setAttribute('aria-hidden','true');w.style.inset=-bw+'px';w.style.borderRadius=cs.borderRadius;
-  const s=document.createElement('i');s.style.cssText=`top:${H-R}px;height:${R+Math.max(from,to)+2}px;--fr:${R}px;--fl:${cs.borderBottomColor};--fw:${bw}px`;w.appendChild(s);
-  box.classList.add('fedge-on');box.appendChild(w);
+/* The same strip serves a piece's photo row (a straight bottom line, the card's colour under it) and the tile photo under the stage (no
+   border, the page under it): it draws whatever bottom border the element has and fills with what is behind the element. */
+function foldEdge(box,from,to,o){const cs=getComputedStyle(box),px=v=>parseFloat(v)||0,R=px(cs.borderBottomLeftRadius),bw=px(cs.borderBottomWidth),H=box.offsetHeight,eh=Math.max(R,bw);
+  let under='';for(let n=box.parentElement;n&&!under;n=n.parentElement){const c=getComputedStyle(n).backgroundColor;if(c&&!/^(transparent|rgba\(.*,\s*0\))$/.test(c))under=c}
+  const w=document.createElement('div');w.className='fedge';w.setAttribute('aria-hidden','true');
+  w.style.inset=`${-px(cs.borderTopWidth)}px ${-px(cs.borderRightWidth)}px ${-bw}px ${-px(cs.borderLeftWidth)}px`;w.style.borderRadius=cs.borderRadius;
+  const s=document.createElement('i');s.style.cssText=`top:${H-eh}px;height:${eh+Math.max(from,to)+2}px;--fr:${R}px;--fh:${eh}px;--fl:${cs.borderBottomColor};--fw:${bw}px;--fs:${px(cs.borderLeftWidth)}px;--fb:${under||'var(--bg)'}`;w.appendChild(s);
+  box.classList.add('fedge-on');if(cs.overflow!=='visible')box.classList.add('fedge-bfc');box.appendChild(w);   // a card stays its own formatting context, a row is left as it is
   const anim=s.animate([{transform:`translateY(${-from}px)`},{transform:`translateY(${-to}px)`}],o);
-  return {anim,drop:()=>{w.remove();box.classList.remove('fedge-on')}}}
+  return {anim,drop:()=>{w.remove();box.classList.remove('fedge-on','fedge-bfc')}}}
 function boxFold(box,items){boxStop(box);const pan=box.querySelector('.mpanel'),pin=box.querySelector('.mpanel-in'),g=pan?pan.offsetHeight:0;
   const close=()=>{box.classList.add('bfast');box.classList.remove('open','instant','bshut','blift')};
   if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
@@ -910,7 +914,6 @@ const MONTH_LIFT=8;   // ms between the days lifting out when the month folds
 let monthAnim=null;   // {list: running animations, end: what finishing early must still do}
 function monthStop(){const a=monthAnim;monthAnim=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
 const monthBelow=box=>{const k=[...box.parentNode.children];return k.slice(k.indexOf(box)+1)};
-const monthClip=g=>`inset(0 0 ${Math.max(0,g)}px 0 round 14px)`;
 function monthUnfold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in');box.classList.remove('mshut');box.classList.add('mfast','open');
   const g=pan?pan.offsetHeight:0,d=revealNeed(box,box);
   if(noMotion()||!g){if(d>.5)scrollBy(0,d);return}

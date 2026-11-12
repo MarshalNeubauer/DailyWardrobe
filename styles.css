@@ -213,10 +213,10 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 /* the card's moving bottom edge while it unfolds or folds (app.js foldEdge): a strip over the card, clipped to the card's shape, that draws
    the card's rounded bottom border (::before; its spread paints the page's background outside the curve) with the page's background under
    it, and slides with the cards below. The card lets it reach over its own border while it is there, and stays its own formatting context */
-.mbox.fedge-on{position:relative;overflow:visible;display:flow-root}
+.fedge-on{position:relative;overflow:visible}.fedge-on.fedge-bfc{display:flow-root}
 .fedge{position:absolute;overflow:hidden;pointer-events:none}
-.fedge>i{position:absolute;left:0;right:0;overflow:hidden;background:linear-gradient(transparent var(--fr),var(--bg) var(--fr));will-change:transform}
-.fedge>i::before{content:"";position:absolute;left:0;right:0;top:0;height:var(--fr);box-sizing:border-box;border:var(--fw) solid var(--fl);border-top:0;border-radius:0 0 var(--fr) var(--fr);box-shadow:0 0 0 var(--fr) var(--bg)}
+.fedge>i{position:absolute;left:0;right:0;overflow:hidden;background:linear-gradient(transparent var(--fh),var(--fb) var(--fh));will-change:transform}
+.fedge>i::before{content:"";position:absolute;left:0;right:0;top:0;height:var(--fh);box-sizing:border-box;border-style:solid;border-color:var(--fl);border-width:0 var(--fs) var(--fw) var(--fs);border-radius:0 0 var(--fr) var(--fr);box-shadow:0 0 0 var(--fr) var(--fb)}
 .mbox.bshut .chev{transform:none}
 @media (prefers-reduced-motion:no-preference){.mbox.blift .bli{animation:mcLift .26s cubic-bezier(.36,0,.66,-.56) calc((var(--bn) - 1 - var(--bi)) * 20ms) both!important}}
 /* day actions in one row: worn toggle, formal toggle, reset icon */
