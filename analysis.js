@@ -291,7 +291,7 @@ function runAnalysis(list,T,weeks,progress,onCat){
   const picks=[],per={};for(const t of ['fix','better','gap','variety']){const pool=top.filter(x=>x.tier===t);while(pool.length){const seen=new Set();for(let i=0;i<pool.length;)if(seen.has(pool[i].cat))i++;else{const x=pool.splice(i,1)[0];seen.add(x.cat);
     if((per[x.cat]=(per[x.cat]||0)+1)<=(x.cat==='extra'?3:2))picks.push(x)}}}
   return {v:2,weeks,months:Math.round(weeks/4.33),season,checked,sims,
-    base:{days:D,avg:Math.round(base.avg),problems:base.problems,rest:base.rest,looks:base.looks,b2b:base.b2b,
+    base:{days:D,avg:base.avg,problems:base.problems,rest:base.rest,looks:base.looks,b2b:base.b2b,
       idle:base.idle.map(id=>{const i=L.find(x=>x.id===id);return {id,type:i.type,name:prettyCols(nm(i))}}),
       marked:Object.entries(base.marked).sort((a,b)=>b[1]-a[1]).map(([l,n])=>[l,n])},
     cats,top:picks.slice(0,SHOP_TOP).map(({cat,key})=>({cat,key})),occasions,hidden:[...skip]};
