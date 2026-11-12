@@ -247,7 +247,7 @@ const LEATHERS=['calf','cordovan','suede','patent','pebble-grain','scotch-grain'
    on a sneaker) */
 const leathersFor=i=>i&&i.type==='shoes'?({sneaker:['calf','suede','canvas','knit'],boot:['calf','suede','pebble-grain','scotch-grain','cordovan'],loafer:['calf','suede','patent','cordovan']})[shoeStyle(i)]||LEATHERS:LEATHERS;
 const leatherWord=(i,l)=>i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'&&l==='calf'?'leather':patLabel(l);
-const leatherLabel=i=>i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'?'Material':'Leather';
+const leatherLabel=i=>i&&i.type==='shoes'?'Material':'Leather';   // shoes: "Material" (a sneaker can be canvas or knit); belts: "Leather"
 const WATCH_STYLES=[['annual-calendar','Dual time + annual calendar'],['chronograph','Chronograph: three subdials + date'],['date','Three hands + date'],['no-date','Three hands']];
 const BANDS=[['bracelet','Metal bracelet'],['integrated','Integrated metal bracelet'],['leather','Leather strap']],BEZELS=[['fluted','Fluted'],['smooth','Smooth'],['engraved','Polished, engraved numerals']];
 /* a watch in words, for picture prompts: the options plus the owner's own details. With details the style's stock layout is left out

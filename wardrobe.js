@@ -99,13 +99,13 @@ async function setItemField(id,k,v){
   if(v)it[k]=v;else delete it[k];await put(it);
   if(k==='material')return renderWardrobe();   // Other shows or hides its field
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
-/* the Add card: the same four behind "More details", folded until asked for; each keystroke is kept on the card (nothing is redrawn) */
+/* the Add card: name, brand and notes behind "More details", folded until asked for (the Material is out with the other fields, above it); each keystroke is kept on the card (nothing is redrawn) */
 function toggleMore(i){const q=queue[i];if(!q)return;q.more=!q.more;renderAdd()}
 function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];if(k==='material')renderAdd()}
 function moreRow(q,i){
-  const n=WARD_FIELDS.filter(k=>k==='material'?MATERIALS_BY[q.type]&&q[k]:q[k]&&String(q[k]).trim()).length,on=k=>`oninput="setQField(${i},'${k}',this.value)"`;
+  const n=WARD_FIELDS.filter(k=>k!=='material'&&q[k]&&String(q[k]).trim()).length,on=k=>`oninput="setQField(${i},'${k}',this.value)"`;
   return `<div class="morefold${q.more?' open':''}"><button type="button" class="morebtn" aria-expanded="${!!q.more}" onclick="toggleMore(${i})"><span>More details${n?` <small class="mut">· ${n} filled in</small>`:''}</span><svg class="morechev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`+
-    (q.more?`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${matRow(q.type,q.material,`setQField(${i},'material',`)}${notesRow(q.notes,on)}</div>`:'')+`</div>`}
+    (q.more?`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${notesRow(q.notes,on)}</div>`:'')+`</div>`}
 /* copies them from the Add card onto the item being saved */
 function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=String(q[k]??'').trim().slice(0,WARD_MAX[k]);if(v&&(k!=='material'||MATERIALS_BY[it.type]))it[k]=v}}
 

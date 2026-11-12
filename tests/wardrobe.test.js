@@ -158,13 +158,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(/^More details/.test(add0.btn)&&add0.exp==='false'&&!add0.open&&add0.labs==='Type,Colour,Second colour,Third colour','the Add card has "More details" folded away, after the tags');
     const h0=await p.evaluate(()=>document.querySelector('#queue .card').getBoundingClientRect().height);
     await p.click('#queue .morebtn');await p.waitForSelector('#queue .morein');
-    const addM=await p.evaluate(()=>[...document.querySelector('#queue .wmat').options].map(o=>o.textContent));
-    ok(addM.includes('Knitted silk')&&!addM.includes('Poplin')&&await p.evaluate(h=>document.querySelector('#queue .card').getBoundingClientRect().height>h+150,h0),'unfolded it has Name, Brand, Material (a tie\'s) and Notes');
+    const addM=await p.evaluate(()=>({opts:[...document.querySelector('#queue .wmat').options].map(o=>o.textContent),out:!document.querySelector('#queue .wmat').closest('.morefold'),above:!!(document.querySelector('#queue .wmat').compareDocumentPosition(document.querySelector('#queue .morefold'))&Node.DOCUMENT_POSITION_FOLLOWING),inside:!!document.querySelector('#queue .morein .wmat')}));
+    ok(addM.opts.includes('Knitted silk')&&!addM.opts.includes('Poplin')&&addM.out&&addM.above&&!addM.inside&&await p.evaluate(h=>document.querySelector('#queue .card').getBoundingClientRect().height>h+100,h0),'Material (a tie\'s) is out with the other fields, above More details; unfolded it has Name, Brand and Notes');
     await p.fill('#queue .wf-name','Club tie');await p.fill('#queue .wf-brand','Marlowe');await p.fill('#queue .wf-notes','A gift');await p.selectOption('#queue .wmat','knitted silk');
     await p.waitForFunction(()=>queue[0].material==='knitted silk'&&queue[0].name==='Club tie');
     ok(await p.evaluate(()=>document.querySelector('#queue .wf-name').value==='Club tie'&&document.querySelector('#queue .wf-notes').value==='A gift'),'what was typed stays when the card redraws');
     await p.click('#queue .morebtn');await p.waitForFunction(()=>!document.querySelector('#queue .morein'));
-    ok(/4 filled in/.test(await p.textContent('#queue .morebtn')),'folded again, it says how many are filled in');
+    ok(/3 filled in/.test(await p.textContent('#queue .morebtn')),'folded again, it says how many of its own are filled in');
     await p.click('#queue .card .btns .pri');await p.waitForFunction(()=>items.some(i=>i.name==='Club tie'));
     const saved=await p.evaluate(()=>{const i=items.find(x=>x.name==='Club tie');return [i.type,i.brand,i.material,i.notes].join('|')});
     ok(saved==='tie|Marlowe|knitted silk|A gift',`Confirm saves them with the item (${saved})`);
