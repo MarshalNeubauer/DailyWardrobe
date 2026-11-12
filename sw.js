@@ -8,7 +8,7 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tagging.js) and survive updates. */
-const CACHE='dw-v181';
+const CACHE='dw-v182';
 const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','ui.js','safety.js','dress.js','tagging.js','assemble.js','asm-worker.js','stats.js','care.js','wardrobe.js','pack.js','shop.js','sync.js','account.js','remind.js','setup.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'reload'})))))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
@@ -39,7 +39,7 @@ self.addEventListener('fetch',e=>{
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 async function reminderNote(){let line='';
   try{const c=await caches.open('dw-keep-remind'),r=await c.match('remind.json');if(r)line=(await r.json())[dayKey(new Date())]||''}catch{}
-  return self.registration.showNotification('Today’s outfit',{body:line||'Open the app to see what to wear today.',icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
+  return self.registration.showNotification('Todayâ€™s outfit',{body:line||'Open the app to see what to wear today.',icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
 self.addEventListener('push',e=>{e.waitUntil(reminderNote())});
 self.addEventListener('notificationclick',e=>{e.notification.close();
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{const c=cs.find(x=>'focus' in x);return c?c.focus():self.clients.openWindow('./')}))});
