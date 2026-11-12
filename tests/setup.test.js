@@ -70,6 +70,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.fill('#su-link','hello there');await p.click('#su-connect');
     await p.waitForFunction(()=>!!document.querySelector('#setup .su-err'));
     ok(await p.evaluate(()=>!localStorage.getItem('worker_url')&&!localStorage.getItem('app_token')&&document.querySelector('#su-link').value==='hello there'),'text that is no invite link stores nothing and says so');
+    await p.evaluate(()=>{connectFromLink=undefined});   // account.js is loaded now and would ask the server; this checks the fallback without it (tests/accounts.test.js covers connectFromLink)
     await p.fill('#su-link','https://app.example.test/#invite=abc123&w='+encodeURIComponent('https://server.example.test/api'));await p.click('#su-connect');
     await p.waitForFunction(()=>!!document.querySelector('#su-conn'));
     ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://server.example.test/api'&&localStorage.getItem('app_token')==='abc123'),'an invite link is read without connectFromLink: its server address and code are stored');

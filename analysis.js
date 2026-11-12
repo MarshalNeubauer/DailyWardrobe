@@ -47,7 +47,7 @@ function evalPlan(list,T,weeks){
         const tr=o.bot||o.top;if(o.shoes&&tr){const w=(SH[pcol(tr)]||['black','brown'])[0],x=want[w]||(want[w]={want:0,got:0});x.want++;if(pcol(o.shoes)===w){x.got++;first++}}
         for(const sl of SLOTS){const it=o[sl];if(!it||(sl==='bot'&&o.suitDay))continue;use[it.id]=(use[it.id]||0)+1;(when[it.id]||(when[it.id]=[])).push(k)}}
       if(s){prev2=prev;prev=s}if(o.shoes){pShoe=o.shoes.id;pN=dn}}
-    const idle=list.filter(i=>[...CLOTHES,'shoes'].includes(i.type)&&inRotation(i)&&!use[i.id]).map(i=>i.id);
+    const idle=list.filter(i=>[...CLOTHES,'shoes'].includes(i.type)&&!dressOut(i.type)&&inRotation(i)&&!use[i.id]).map(i=>i.id);
     return {days:n,avg:n?sum/n:0,avgSuit:nS?sumS/nS:0,avgOdd:n-nS?(sum-sumS)/(n-nS):0,problems,rest,jrep,trep,lrep,b2b,first,looks:looks.size,idle,use,when,lost,marked,kinds,want,score,plans};
   }finally{items=keep}
 }
@@ -72,7 +72,7 @@ const listAnd=a=>(a=[...new Set(a)]).length<2?a.join(''):a.slice(0,-1).join(', '
 
 /* ---- fit: which owned pieces a candidate makes a good outfit with ---- */
 function compatBase(L,season){
-  const R=L.filter(i=>inRotation(i)),lists={},by=t=>lists[t]||(lists[t]=R.filter(i=>i.type===t));
+  const R=L.filter(i=>inRotation(i)&&!dressOut(i.type)),lists={},by=t=>lists[t]||(lists[t]=R.filter(i=>i.type===t));   // (without what the dress code leaves out)
   const suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
   const day={formal:false,clim:{season:season||'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0};
   const jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
@@ -150,7 +150,7 @@ function rankClothes(L,B,C,cat,base,skip){
   const stapleGap=it=>(STAPLES[cat]||[]).some(([f,cls])=>f===pcol(it)&&cls.includes(shopClass(it))&&!own.some(o=>pcol(o)===f&&cls.includes(shopClass(o))));
   for(const c of C){if(c.cat!==cat)continue;const it=c.items[0];if(skip.has(shopKey(it)))continue;
     const k=compat(B,it),g=shopGroup(it),cl=shopClass(it);
-    const share=cat==='tie'?Math.sqrt(k.J.length/nJ*k.Sh.length/nS):cat==='shirt'?Math.sqrt(k.J.length/nJ*k.Ti.length/nT):cat==='pants'?k.J.length/nBl:Math.sqrt(k.Sh.length/nS*k.Ti.length/nT);
+    const share=cat==='tie'?Math.sqrt(k.J.length/nJ*k.Sh.length/nS):!wearsTie()?(cat==='shirt'?k.J.length/nJ:cat==='pants'?k.J.length/nBl:k.Sh.length/nS):cat==='shirt'?Math.sqrt(k.J.length/nJ*k.Ti.length/nT):cat==='pants'?k.J.length/nBl:Math.sqrt(k.Sh.length/nS*k.Ti.length/nT);
     if(!k.combos||share<.2)continue;
     const idle=[...k.J,...k.Sh,...k.Ti,...k.Pt].filter(id=>id!==it.id&&!base.use[id]),newG=!gc[g],newCell=!cell[g+':'+cl],staple=stapleGap(it);
     const bold=cat==='tie'?0:cl==='check'?10:cl==='stripe'?8:0;   // a bold cloth is the second suit in a colour, not the first
@@ -200,6 +200,7 @@ function runAnalysis(list,T,weeks,progress,onCat){
   for(const cat of CLOTHES){const R=ranked[cat],recs=[],idle=idleOf(cat),W=TYPE_WORD[cat],per=R.own.length?R.own.reduce((a,i)=>a+(base.use[i.id]||0),0)/R.own.length:0;
     // enough of them already: two or more never come up, or each comes up less than once in five weeks
     const covered=idle.length>=2||(R.own.length>1&&per<D/25);
+    if(dressOut(cat))continue;   // ties, or suits and blazers, the dress code leaves out
     if(cat==='blazer'&&!B.blazerDays&&B.by('suit').length)continue;
     if(cat==='pants'&&(!B.blazerDays||!B.by('blazer').length))continue;
     let tried=0;for(const x of R.top){if(recs.length>=SHOP_PER_CAT||tried++>=SHOP_PER_CAT+3)break;tick(TITLES[cat]);const f=simFacts(L,T,weeks,base,x.c.items);sims++;
@@ -215,10 +216,10 @@ function runAnalysis(list,T,weeks,progress,onCat){
       else why.push(`You have ${several(R.cell[x.g+':'+x.cl],cat)} like it; another spreads the wear.`);
       const nJ=B.jackets.length,nS=B.by('shirt').length,nT=B.by('tie').length;
       if(cat==='tie')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')} and ${k.Sh.length} of your ${plural(nS,'shirt')}.`);
-      else if(cat==='shirt')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')} and ${k.Ti.length} of your ${plural(nT,'tie')}.`);
+      else if(cat==='shirt')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}.`);
       else if(cat==='pants')why.push(`Pairs with ${listAnd(k.J.map(nmOf))}.`);
       else{const it=x.c.items[0],wantS=SH[pcol(it)]||['black','brown'],shoe=cat==='suit'?wantS.map(w=>inRot('shoes').find(s=>pcol(s)===w&&shoeScore(it,it,s)>-50)).find(Boolean):null;
-        why.push(`Dresses well with ${k.Sh.length} of your ${plural(nS,'shirt')} and ${k.Ti.length} of your ${plural(nT,'tie')}`+(cat==='blazer'&&k.Pt.length?`; trousers: ${listAnd(k.Pt.map(nmOf))}`:'')
+        why.push(`Dresses well with ${k.Sh.length} of your ${plural(nS,'shirt')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}`+(cat==='blazer'&&k.Pt.length?`; trousers: ${listAnd(k.Pt.map(nmOf))}`:'')
           +(cat==='suit'?(shoe?`; shoes: your ${nm(shoe)}`:`; it needs ${wantS[0]} shoes, which you don't have`):'')+'.')}
       if(x.idle.length)why.push(`Pairs with ${x.idle.length===1?'a piece':plural(x.idle.length,'piece')} you own that ${x.idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months: ${listAnd(x.idle.slice(0,3).map(nmOf))}${x.idle.length>3?' and more':''}.`);
       why.push(`Planned on ${f.worn} of the next ${D} workdays${f.ownAvg!=null?`; those outfits score ${Math.round(f.ownAvg)} on average (your ${cat==='suit'?'suit days':cat==='blazer'||cat==='pants'?'blazer days':'outfits'} now: ${Math.round(usual||base.avg)})`:''}.`);
@@ -256,7 +257,7 @@ function runAnalysis(list,T,weeks,progress,onCat){
   for(const s of [SM.shoes,SM.extra]){s.recs.sort((a,b)=>TIER_ORDER[a.tier]-TIER_ORDER[b.tier]||b.rank-a.rank);
     // one idea per shoe colour and finish
     const seen=new Set();s.recs=s.recs.filter(r=>!seen.has(r.key)&&seen.add(r.key)).slice(0,SHOP_PER_CAT);
-    if(s.key==='extra'&&!s.recs.length)s.notes.push('Socks, tie clip, cufflinks and coats: nothing would improve an outfit in the plan.');
+    if(s.key==='extra'&&!s.recs.length)s.notes.push(`Socks, ${wearsTie()?'tie clip, ':''}cufflinks and coats: nothing would improve an outfit in the plan.`);
     cats.push(s);onCat&&onCat(s)}
 
   /* two purchases that fix the same days are not both needed: keep the best, then re-check the rest as if it had been bought */
@@ -299,9 +300,9 @@ function smallCandidates(L,B,base,skip){
   const seenB=new Set();for(const s of by('shoes')){const k=leatherGroup(planCol(s))+fin(s);if(seenB.has(k)||fin(s)==='patent'||by('belt').some(b=>beltFit(s,b)!==null))continue;seenB.add(k);
     mk([{type:'belt',primaryColor:COLS_BY.belt.p.includes(primaryCol(s))?primaryCol(s):leatherGroup(planCol(s)),leather:fin(s)==='suede'?'suede':'calf',metal}],{forShoes:nm(s),forId:s.id})}
   // socks for trousers that have no matching pair
-  const have=new Set(by('socks').map(pcol)),fams=new Set([...by('suit'),...(B.blazerDays?by('pants'):[])].map(pcol));
+  const have=new Set(by('socks').map(pcol)),fams=new Set([...by('suit'),...(B.blazerDays||!wearsJacket()?by('pants'):[])].map(pcol));
   for(const f of fams){if(have.has(f))continue;const c=COLS_BY.socks.p.find(x=>fam(x)===f&&!CUSTOM_COL[x]);if(c)mk([{type:'socks',primaryColor:c}],{forFam:colName(f)})}
-  const clips=by('tieclip');if(!clips.some(c=>metalOf(c)===metal)&&metal!=='other')mk([{type:'tieclip',primaryColor:metal==='gold'?'gold':'silver',metal}]);
+  const clips=by('tieclip');if(wearsTie()&&!clips.some(c=>metalOf(c)===metal)&&metal!=='other')mk([{type:'tieclip',primaryColor:metal==='gold'?'gold':'silver',metal}]);
   if(!by('cufflinks').length&&by('shirt').some(s=>s.cuff==='french'))mk([{type:'cufflinks',primaryColor:metal==='gold'?'gold':'silver',metal}]);
   if(!by('overcoat').length&&(base.kinds['cold with no overcoat']||base.kinds['rain with no raincoat']))mk([{type:'overcoat',primaryColor:'charcoal'}]);
   if(!by('raincoat').length&&(base.kinds['rain with no raincoat']||base.kinds['cold with no overcoat']))mk([{type:'raincoat',primaryColor:'tan'}]);

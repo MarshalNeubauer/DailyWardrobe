@@ -123,13 +123,23 @@ ${tie ? `<use href="#${P}bladeP" fill="url(#${P}tie)"/>
 <path d="M 195 80 L 195 100" stroke="#000" stroke-opacity=".3" stroke-width="5" filter="url(#${P}fBlurS)"/>
 <use href="#${P}knotP" fill="url(#${P}tie)"/>
 <use href="#${P}knotP" fill="url(#${P}gTie)"/>
-<path d="M 185 77 C 191 84 199 84 205 77" stroke="#000" stroke-opacity=".3" stroke-width="1.2" fill="none"/>` : ''}
-<!-- collar points resting on the knot -->
+<path d="M 185 77 C 191 84 199 84 205 77" stroke="#000" stroke-opacity=".3" stroke-width="1.2" fill="none"/>` : `<!-- no tie: the collar open on the throat, the placket buttoned below it -->
+<g class="fig-open"><path d="M 176 36 L 214 36 L 195 108 Z" fill="${skin}"/><path d="M 176 36 L 214 36 L 195 108 Z" fill="url(#${P}gNeck)"/>
+<path d="M 177 40 L 195 108 L 213 40" stroke="#000" stroke-opacity=".28" stroke-width="5" fill="none" filter="url(#${P}fBlurS)"/>
+<path d="M 177 40 L 195 108 L 213 40" stroke="#000" stroke-opacity=".3" stroke-width="1" fill="none"/>
+${jacket ? `<path d="M 189 110 L 189 262 M 201 110 L 201 262" stroke="#000" stroke-opacity=".16" stroke-width="1"/>
+${[128, 170, 212].map(y => `<circle cx="195" cy="${y}" r="3.2" fill="#FFFFFF" fill-opacity=".85" stroke="#000" stroke-opacity=".4" stroke-width=".7"/><circle cx="195" cy="${y}" r=".9" fill="#000" fill-opacity=".35"/>`).join('')}` : ''}</g>`}
+${tie ? `<!-- collar points resting on the knot -->
 <path d="M 152 62 L 180 100 L 190 52 M 238 62 L 210 100 L 200 52" stroke="#000" stroke-opacity=".35" stroke-width="5" fill="none" filter="url(#${P}fBlurS)"/>
 <path d="M 154 50 C 166 45 180 46 189 51 L 178 98 C 166 90 155 76 148 62 Z" fill="url(#${P}shirt)"/><path d="M 154 50 C 166 45 180 46 189 51 L 178 98 C 166 90 155 76 148 62 Z" fill="url(#${P}gCollar)"/>
 <path d="M 189 51 L 178 98 C 166 90 155 76 148 62" stroke="#000" stroke-opacity=".32" stroke-width="1.1" fill="none"/>
 <path d="M 236 50 C 224 45 210 46 201 51 L 212 98 C 224 90 235 76 242 62 Z" fill="url(#${P}shirt)"/><path d="M 236 50 C 224 45 210 46 201 51 L 212 98 C 224 90 235 76 242 62 Z" fill="url(#${P}gCollar)"/>
-<path d="M 201 51 L 212 98 C 224 90 235 76 242 62" stroke="#000" stroke-opacity=".32" stroke-width="1.1" fill="none"/>
+<path d="M 201 51 L 212 98 C 224 90 235 76 242 62" stroke="#000" stroke-opacity=".32" stroke-width="1.1" fill="none"/>` : `<!-- collar leaves lying open, their points on the shirt front -->
+<path d="M 152 62 L 170 98 L 178 46 M 238 62 L 220 98 L 212 46" stroke="#000" stroke-opacity=".35" stroke-width="5" fill="none" filter="url(#${P}fBlurS)"/>
+<path d="M 154 50 C 162 45 171 43 178 44 L 169 96 C 160 88 152 76 148 62 Z" fill="url(#${P}shirt)"/><path d="M 154 50 C 162 45 171 43 178 44 L 169 96 C 160 88 152 76 148 62 Z" fill="url(#${P}gCollar)"/>
+<path d="M 178 44 L 169 96 C 160 88 152 76 148 62" stroke="#000" stroke-opacity=".32" stroke-width="1.1" fill="none"/>
+<path d="M 236 50 C 228 45 219 43 212 44 L 221 96 C 230 88 238 76 242 62 Z" fill="url(#${P}shirt)"/><path d="M 236 50 C 228 45 219 43 212 44 L 221 96 C 230 88 238 76 242 62 Z" fill="url(#${P}gCollar)"/>
+<path d="M 212 44 L 221 96 C 230 88 238 76 242 62" stroke="#000" stroke-opacity=".32" stroke-width="1.1" fill="none"/>`}
 ${tie && clip ? `<g class="fig-clip"><rect x="178" y="152" width="36" height="5" rx="2.5" fill="#000" fill-opacity=".35" filter="url(#${P}fBlurXS)"/>
 <rect x="179" y="148" width="34" height="3.8" rx="1.9" fill="${hex(clip.color, '#A9AFB8')}"/>
 <rect x="179" y="148" width="34" height="1.4" rx=".7" fill="#FFFFFF" fill-opacity=".65"/></g>` : ''}

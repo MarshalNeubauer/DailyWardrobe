@@ -9,7 +9,7 @@
    - "Not for me" hides that colour and pattern for good (settings.shopSkip: keys type|colour group|pattern class, synced) */
 let shop=null,shopBusy=null,shopPart=null,shopWorker=null,shopOpen=false,shopShown={},shopForm=null,shopMsg='',shopFigN=0;
 const SHOP_STALE=7*864e5;
-const shopSig=()=>items.map(i=>i.id+':'+stamp(i)).sort().join(',')+'|'+JSON.stringify([settings.workdays,settings.blazerDays,settings.vestMode||'auto']);
+const shopSig=()=>items.map(i=>i.id+':'+stamp(i)).sort().join(',')+'|'+JSON.stringify([settings.workdays,settings.blazerDays,settings.vestMode||'auto'])+(wearsJacket()?'':'|nojacket')+(wearsTie()?'':'|notie');
 const shopFresh=()=>!!shop&&shop.sig===shopSig()&&Date.now()-(shop.at||0)<SHOP_STALE;
 const shopHid=x=>(settings.shopSkip||[]).includes(x.key);
 const shopRecs=r=>r?r.cats.reduce((a,c)=>a+c.recs.filter(x=>!shopHid(x)).length,0):0;
@@ -135,7 +135,8 @@ function shopGo(key){shopShown[key]=true;renderShop();const el=[...document.quer
 /* bought: into the wardrobe as on its way, then check again */
 async function shopBought(key){
   const rec=shopFind(key);if(!rec)return;const v=($('#shop-arr')||{}).value||'',arrives=/^\d{4}-\d{2}-\d{2}$/.test(v)?v:null,now=Date.now();
-  for(const x of rec.items){const it={...x,id:crypto.randomUUID(),added:now,paused:true,order:true,...(arrives?{arrives}:{})};await put(it);items.push(it)}
+  if(typeof dressNewItem==='function')dressNewItem();
+  for(const x of rec.items){const it={...x,...(x.type==='suit'?{vest:'no'}:{}),id:crypto.randomUUID(),added:now,paused:true,order:true,...(arrives?{arrives}:{})};await put(it);items.push(it)}
   cache={};shopForm=null;shopMsg=`Added to your wardrobe as on the way: ${rec.name}${arrives?`, arriving ${fmtDay(arrives)}`:''}.`;
   if(!$('#wardrobe').hidden&&!editing)renderWardrobe();
   analyzeWardrobe();
