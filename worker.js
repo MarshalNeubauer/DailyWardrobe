@@ -1167,8 +1167,10 @@ async function whoIs(env, token) {
   if (!CODE_RE.test(token) || !env.WARDROBE) return no;
   const rec = await env.WARDROBE.get(`invite:${h}`, 'json');
   if (!rec || !UID_RE.test(String(rec.id || ''))) return no;
-  if (rec.off) return { status: 403, error: 'invite off', message: INVITE_OFF };
-  return { who: { id: rec.id, name: String(rec.name || ''), role: 'tester', ns: `u:${rec.id}:`, caps: { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) }, hash: h } };
+  const who = { id: rec.id, name: String(rec.name || ''), role: 'tester', ns: `u:${rec.id}:`, caps: { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) }, hash: h };
+  // switched off: refused everywhere, except that the tester may still delete what they stored (DELETE /account, the router)
+  if (rec.off) return { status: 403, error: 'invite off', message: INVITE_OFF, offWho: { ...who, off: true } };
+  return { who };
 }
 const INVITE_OFF = 'This invitation has been switched off.';
 
@@ -1207,20 +1209,42 @@ async function useCount(env, id, what, n, cap, day) {
   await env.WARDROBE.put(key, JSON.stringify(use), USE_TTL);
   return { ok: true, used: use[what] };
 }
+/* every tester together, per UTC day: a ceiling on what the owner's API keys can be made to pay for, whatever the number of
+   invitations (each tester's own caps still apply first). Counted like one more tester, under the id 'all' (a tester's id is
+   8–24 characters, so it can't be one); the owner is never counted. The worker's TESTER_DAILY_TOTAL variable (JSON, e.g.
+   {"photo":20}) changes any of them. About $15 a day at most with these numbers. */
+const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100 }, ALL_ID = 'all';
+function allCaps(env) {
+  let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
+  const out = { ...ALL_CAPS };
+  for (const k of Object.keys(ALL_CAPS)) if (o[k] != null && Number.isFinite(+o[k]) && +o[k] >= 0) out[k] = Math.round(+o[k]);
+  return out;
+}
 /* before a capped call: null when it may go ahead (and is now counted), else {status, body} to answer with */
 async function spend(env, who, what, day = utcDay()) {
   if (!who.caps) return null;
   const cap = who.caps[what] ?? EXTRA_CAPS[what], r = await useCount(env, who.id, what, 1, cap, day);
-  if (r.ok) return null;
   if (r.off) return { status: 403, body: { error: 'invite off', message: INVITE_OFF } };
   if (r.fail) return { status: 503, body: { error: 'busy', message: 'Couldn’t check today’s limit. Try again in a moment.' } };
-  const message = `Today’s limit of ${cap} ${CAP_WORDS[what]} is used up. It starts again at midnight UTC.`;
-  return { status: 429, body: { error: 'limit', what, cap, used: r.used, message, detail: message } };
+  if (!r.ok) {
+    const message = `Today’s limit of ${cap} ${CAP_WORDS[what]} is used up. It starts again at midnight UTC.`;
+    return { status: 429, body: { error: 'limit', what, cap, used: r.used, message, detail: message } };
+  }
+  const all = await useCount(env, ALL_ID, what, 1, allCaps(env)[what], day);
+  if (all.ok) return null;
+  try { await useCount(env, who.id, what, -1, 0, day); } catch { }   // not made: the tester's own count goes back
+  const message = all.fail ? 'Couldn’t check today’s limit. Try again in a moment.' : `Today’s ${CAP_WORDS[what]} for everyone testing the app are used up. They start again at midnight UTC.`;
+  return { status: all.fail ? 503 : 429, body: { error: all.fail ? 'busy' : 'limit', what, all: true, message, detail: message } };
 }
-async function unspend(env, who, what, day = utcDay()) { if (who.caps) try { await useCount(env, who.id, what, -1, 0, day); } catch { } }
+async function unspend(env, who, what, day = utcDay()) {
+  if (who.caps) { try { await useCount(env, who.id, what, -1, 0, day); } catch { } try { await useCount(env, ALL_ID, what, -1, 0, day); } catch { } }
+}
 /* a queued photo that could not be made gives its count back (the job says what it counted as, and on which day) */
 async function refundJob(env, ns, job) {
-  if (ns && job && USE_RE.test(String(job.cap || '')) && DAY_KEY.test(String(job.capDay || ''))) try { await useCount(env, ns.slice(2, -1), job.cap, -1, 0, job.capDay); } catch { }
+  if (ns && job && USE_RE.test(String(job.cap || '')) && DAY_KEY.test(String(job.capDay || ''))) {
+    try { await useCount(env, ns.slice(2, -1), job.cap, -1, 0, job.capDay); } catch { }
+    try { await useCount(env, ALL_ID, job.cap, -1, 0, job.capDay); } catch { }
+  }
 }
 /* whose a queue message is: '' the owner's (no ns, as every message was before), 'u:<id>:' a tester's, null when it is neither */
 const msgNs = msg => { const n = msg.body && msg.body.ns; return n == null || n === '' ? '' : NS_RE.test(String(n)) ? String(n) : null; };
@@ -1268,15 +1292,21 @@ async function handleInvites(req, env, json, who) {
     return json({ id, code, name });
   }
   if (req.method === 'DELETE') {
-    const id = new URL(req.url).searchParams.get('id') || '', v = list.find(x => x.id === id);
+    // ?purge=1 also deletes everything the tester stored (backup, photos, feedback, counts) and takes them off the list;
+    // the code stays refused ("switched off")
+    const q = new URL(req.url).searchParams, id = q.get('id') || '', v = list.find(x => x.id === id), purge = q.get('purge') === '1';
     if (!v) return json({ error: 'no such invitation' }, 404);
     v.off = true;
     const hub = hubOf(env, `u:${v.id}:`);
-    if (hub) try { await hub.fetch('https://hub/off', { method: 'POST' }); } catch (e) { console.log('hub off failed', e && e.message); }
+    if (hub) try { await hub.fetch(purge ? 'https://hub/wipe?off=1' : 'https://hub/off', { method: 'POST' }); } catch (e) { console.log('hub off failed', e && e.message); }
     const rec = (await env.WARDROBE.get(`invite:${v.hash}`, 'json')) || { id: v.id, name: v.name, caps: v.caps || null, created: v.created };
     await env.WARDROBE.put(`invite:${v.hash}`, JSON.stringify({ ...rec, off: true }));
-    await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list }));
-    return json({ ok: true });
+    await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: purge ? list.filter(x => x.id !== v.id) : list }));
+    if (!purge) return json({ ok: true });
+    await dropTesterExtras(env, v.id);
+    const ns = `u:${v.id}:`, done = await wipeSome(env, ns, 30);
+    if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: ns, n: 1 }); return json({ ok: true, purged: true }); }
+    return json({ ok: true, purged: done, ...(done ? {} : { more: true }) });
   }
   return json({ error: 'method not allowed' }, 405);
 }
@@ -1320,6 +1350,12 @@ async function wipeSome(env, ns, budget) {   // -> true once nothing is left
   }
   return true;
 }
+/* what a tester has outside u:<id>:: their feedback and today's count */
+async function dropTesterExtras(env, id) {
+  const log = await env.WARDROBE.get(FEEDBACK_KEY, 'json');
+  if (log && Array.isArray(log.items) && log.items.some(m => m.id === id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== id) }), { expirationTtl: FEEDBACK_MS / 1000 });
+  const use = `use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
+}
 async function handleAccount(req, env, json, who) {
   if (!env.WARDROBE) return json(NO_KV, 501);
   const b = await smallBody(req, 2000);
@@ -1329,9 +1365,7 @@ async function handleAccount(req, env, json, who) {
     await env.WARDROBE.delete(`invite:${who.hash}`);   // first: the code stops working
     const index = await env.WARDROBE.get(INVITE_INDEX, 'json');
     if (index && Array.isArray(index.list) && index.list.some(v => v.id === who.id)) await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: index.list.filter(v => v.id !== who.id) }));
-    const log = await env.WARDROBE.get(FEEDBACK_KEY, 'json');
-    if (log && Array.isArray(log.items) && log.items.some(m => m.id === who.id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== who.id) }), { expirationTtl: FEEDBACK_MS / 1000 });
-    const use = `use:${who.id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
+    await dropTesterExtras(env, who.id);
   }
   if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
   const done = await wipeSome(env, who.ns, 30);
@@ -1389,6 +1423,7 @@ export default {
     const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
     if (route) {
       const a = await whoIs(env, req.headers.get('x-app-token') || '');
+      if (!a.who && a.offWho && req.method === 'DELETE' && path === '/account') return route[0](req, env, json, a.offWho, cors);
       return a.who ? route[0](req, env, json, a.who, cors) : deny(a, route[1]);
     }
     if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
