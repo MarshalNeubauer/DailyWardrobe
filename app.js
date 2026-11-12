@@ -37,7 +37,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
   return last?`Backed up ${when(last)}`:'Not backed up yet'}
-function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};if(typeof applyRole==='function')applyRole();
+function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};if(typeof applyRole==='function')applyRole();if(typeof remindSoon==='function')remindSoon();
   const days=l=>{const s=[...l].sort((a,b)=>((a+6)%7)-((b+6)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
     const run=s.length>2&&s.every((d,i)=>!i||(s[i-1]+1)%7===d);return run?`${n(s[0])}–${n(s[s.length-1])}`:s.map(n).join(', ')};
   const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
@@ -627,7 +627,7 @@ function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
 const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 let swapMsg='';
-async function saveDay(rec,quiet){rec.updated=Date.now();dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync()}
+async function saveDay(rec,quiet){rec.updated=Date.now();dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
   const T=todayDate(),tk=key(T),mine=dayRecs;let changed=false;
@@ -858,7 +858,9 @@ const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: $
   const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' trousers':''}`};
 const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'check',foulard:'foulard',knit:'knit'})[p]||'';
 const shortRest=o=>[o.shirt&&colName(primaryCol(o.shirt))+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
-/* the month plan unfolds in place from the box on Today (no separate page) */
+/* the outfit in a few words, the same everywhere it is named in one line (Today's pieces card, sharing, the morning reminder):
+   "navy suit · white shirt · burgundy stripe tie" (sentence() capitalises it where it starts a line) */
+const piecesLine=o=>[o.top?`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&`${colName(primaryCol(o.bot))} trousers`,o.shirt&&`${colName(primaryCol(o.shirt))} shirt`,o.tie&&`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`].filter(Boolean).join(' · ');/* the month plan unfolds in place from the box on Today (no separate page) */
 let monthOpen=false,monthPanel=null;
 const monthPlan=planMonth;
 function monthGridHtml(){
@@ -996,7 +998,7 @@ const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen
 const SHARE_ICON='<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
 const shareMark=o=>o&&(o.top||o.shirt)?`<button type="button" class="wshare" onclick="shareOutfit()" aria-label="Share this outfit" title="Share this outfit">${SHARE_ICON}</button>`:'';
 function shareText(o){const d=sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
-  return `${d}: ${sentence([shortTop(o),shortRest(o)].filter(Boolean).join(', '))}`}
+  return `${d}: ${sentence(piecesLine(o))}`}
 async function shareOutfit(){const o=planFor()[key(sel)];if(!o)return;const text=shareText(o);let file=null;
   try{const r=renderFor(o),url=r&&r.img?r.img:await figurePng(o,780),blob=await (await fetch(url)).blob();
     file=new File([blob],`outfit-${key(sel)}.${/png/.test(blob.type)?'png':'jpg'}`,{type:blob.type})}catch(e){console.warn('share picture',e)}
@@ -1369,7 +1371,7 @@ let listOpen=false;
 function piecesBox(o){
   const pcs=[['top',o.top],['vest',o.vest?o.top:null],['bot',o.suitDay?null:o.bot],['shirt',o.shirt],['tie',o.tie],['clip',o.clip],['links',o.links],['watch',o.watch],['belt',o.belt],['socks',o.socks],['shoes',o.shoes],['coat',o.coat]].filter(([,i])=>i);
   const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':desc(i)||nm(i))}">${swatchSVG(i,true)}</span>`).join('');
-  const sum=[o.top?`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&`${colName(primaryCol(o.bot))} trousers`,o.shirt&&`${colName(primaryCol(o.shirt))} shirt`,o.tie&&`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`].filter(Boolean).join(' · ');
+  const sum=piecesLine(o);
   return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
     <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${sentence(sum)||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div></div></div></section>`}

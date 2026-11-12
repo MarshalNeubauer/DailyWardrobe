@@ -167,7 +167,7 @@ suite('outfit score',async({page})=>{
 });
 
 suite('add an item without a photo; it persists',async({page})=>{
-  await page.click('#n-add');await page.click('text=Add without photo');
+  await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('text=Add without photo');
   await page.selectOption('#queue .card >> nth=0 >> select[onchange*="\'type\'"]','belt');
   await page.selectOption('#queue .card >> nth=0 >> select[onchange*="\'leather\'"]','suede');
   await page.click('#queue .card >> nth=0 >> text=Confirm');
