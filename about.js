@@ -167,7 +167,7 @@ function renderAbout(){aboutShow();
   // the owner reads the feedback (below it) rather than sending it to someone: no "goes to the person who invited you"
   if($('#fb-help'))$('#fb-help').textContent='What works, what doesn’t, what is missing'+(typeof acctRole==='function'&&acctRole()==='owner'?'.':': it goes to the person who invited you.');
   if($('#fb-send'))$('#fb-send').disabled=!aboutConn();   // no connection: the button is off, with the reason under it
-  if(!aboutConn()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status','Feedback needs a connection (Settings → Connection).');
+  if(!aboutConn()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status','Feedback needs a connection: paste your invite link under Connection, above.');
   loadFeedback()}
 let aboutStarted=false;
 function aboutStart(){

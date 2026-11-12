@@ -9,7 +9,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
       settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
-    const g=await p.evaluate(()=>{const R=s=>document.querySelector(s).getBoundingClientRect(),h=R('header'),t=R('header h1'),b=[...document.querySelectorAll('header button')].map(x=>x.getBoundingClientRect());
+    const g=await p.evaluate(()=>{const R=s=>document.querySelector(s).getBoundingClientRect(),h=R('header'),t=R('header h1'),b=[...document.querySelectorAll('header button')].map(x=>x.getBoundingClientRect()).filter(x=>x.height>0);
       const sc=getComputedStyle(document.querySelector('.score'));
       return {h:h.height,slack:h.height-Math.max(t.height,...b.map(x=>x.height)),btn:Math.min(...b.map(x=>x.height)),day:R('.nav.day').height,
         heading:!!document.querySelector('.below-h'),tiles:document.querySelectorAll('.below .tile').length,

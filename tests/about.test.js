@@ -30,8 +30,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await p.evaluate(()=>$('#about-update').hidden&&getComputedStyle($('#about-update')).display==='none'&&!/new version/.test($('#toast').textContent)),'Check for updates: "You have the latest version", no Update button, no prompt');
       ok(await p.evaluate(()=>{const b=$('#about-check').getBoundingClientRect();return b.height>=44&&document.documentElement.scrollWidth<=innerWidth}),'44px controls, no sideways scroll');
       ok(await p.evaluate(()=>{const d=$('#about-privacy');const shut=!d.open;d.querySelector('summary').click();return shut&&d.open&&/Anthropic/.test(d.textContent)&&/OpenAI/.test(d.textContent)&&/Nothing else leaves your phone/.test(d.textContent)&&/person who invited you/.test(d.textContent)&&/Open-Meteo/.test(d.textContent)&&/Nager\.Date/.test(d.textContent)&&/Cloudflare/.test(d.textContent)}),'the privacy note is a fold naming everyone who gets something: the server’s owner, Cloudflare, GitHub Pages, Anthropic, OpenAI, Open-Meteo, Nager.Date');
-      ok(/^Feedback needs a connection/.test(await text(p,'#fb-status'))&&await p.isDisabled('#fb-send'),'not connected: feedback says it needs a connection and Send is switched off');
-      await p.fill('#fb-text','hello');await p.evaluate(()=>sendFeedback());
+      ok(/^Sending feedback needs a connection/.test(await text(p,'#fb-conn'))&&!(await p.isVisible('#fb-send'))&&!(await p.isVisible('#fb-text')),'not connected: Feedback says it needs a connection, with no form to fill');
+      await p.evaluate(()=>{document.querySelector('#fb-text').value='hello';return sendFeedback()});
       ok(/needs a connection/.test(await text(p,'#fb-status'))&&await p.inputValue('#fb-text')==='hello','sending without a connection says so and keeps the text');
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')');await ctx.close()}
 
