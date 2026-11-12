@@ -40,6 +40,22 @@ module.exports=async({ok,chromium,url})=>{
     const after=await p.evaluate(()=>{cache={};return {plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify({...items[0],photo:0,updated:0}),id:items[0].id,n:items.length}});
     ok(after.plan===before.plan&&after.tags===before.tags&&after.id==='suit0'&&after.n===7,'the item keeps its id and tags, and the plan does not change');
     ok(await p.evaluate(async()=>{const s=await tx('readonly',st=>st.get('suit0'));return s&&s.photo===items[0].photo}),'the new photo is saved (and syncs with the item)');
+    // Add keeps an item's photo at 720px, as Replace does (it was 360px: a suit cropped later went to the photo generator at 270px)
+    const added=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#888';x.fillRect(0,0,800,600);
+      const q={raw:{big:c},wb:null,wbOff:true,zoom:1,cx:.5,cy:.5};cardPics(q);return new Promise(r=>{const im=new Image();im.onload=()=>r([im.width,im.height]);im.src=q.photo})});
+    ok(added[0]===720&&added[1]===540,`Add keeps the photo at up to 720px (${added.join('x')})`);
+    // crop from the best copy: the sharp copy kept when the photo was read (1600x1200), when it is the same picture as the photo
+    const sharp=await mk(1600,1200,"x.fillStyle='#f00';x.fillRect(0,0,w/2,h);x.fillStyle='#00f';x.fillRect(w/2,0,w/2,h);x.fillStyle='#ff0';x.fillRect(0,0,w/4,h/4)");
+    const crop=async(photo,keep)=>p.evaluate(async([photo,keep])=>{await keepTagImg('suit0',keep);items[0].photo=photo;phEdit.undo=[];renderWardrobe();
+      await startCrop('suit0');await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));phEdit.crop.z=4;layoutCrop();await applyCrop('suit0');
+      return new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=items[0].photo})},[photo,keep]);
+    const small=await p.evaluate(u=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=360;c.height=270;c.getContext('2d').drawImage(im,0,0,360,270);r(c.toDataURL('image/jpeg',.8))};im.src=u}),sharp);
+    const turned=await p.evaluate(u=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);r(c.toDataURL('image/jpeg',.9))};im.src=u}),small);
+    const other=await mk(1600,1200,"x.fillStyle='#0a0';x.fillRect(0,0,w,h);x.fillStyle='#fff';x.fillRect(w/3,h/3,w/3,h/3)");
+    const w1=await crop(small,sharp),w2=await crop(turned,sharp),w3=await crop(small,other);
+    ok(w1===300,`a crop is cut from the sharp copy: zoomed 4x on a 360px photo it keeps 300px, not 68 (${w1})`);
+    ok(w2===300,`after Rotate the sharp copy still matches (turned the same way) and is used (${w2})`);
+    ok(w3>=60&&w3<=70,`a sharp copy of another picture (a replaced photo) is not used: the crop comes from the photo itself (${w3})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

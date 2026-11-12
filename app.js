@@ -247,7 +247,9 @@ function applyWb(c,g){const o=document.createElement('canvas');o.width=c.width;o
   if(!g)return o;const D=x.getImageData(0,0,o.width,o.height),d=D.data;
   for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*g.r);d[i+1]=Math.min(255,d[i+1]*g.g);d[i+2]=Math.min(255,d[i+2]*g.b)}x.putImageData(D,0,0);return o}
 /* an Add card's pictures from its uncorrected originals, with or without the correction (Show original toggles it) */
-function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);q.photo=shrink(q.big,360).toDataURL('image/jpeg',.8);
+/* an item's photo is kept at PH_MAX (720px, JPEG .85), the size Replace photo keeps: at 360px (JPEG .8) a suit sent to the photo
+   generator was a 270px crop of a mirror selfie */
+function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);q.photo=shrink(q.big,PH_MAX).toDataURL('image/jpeg',.85);
   if(q.raw.full)q.tagImg=applyWb(q.raw.full,g).toDataURL('image/jpeg',TAG_Q);   // the sharp copy the tagger sees
   if(q.raw.tex){q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85)}generateSwatch(q)}
 /* a close-up with its own white reference (a corner of white paper) is corrected from that; otherwise like its item photo */
@@ -467,6 +469,21 @@ async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.u
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
   phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
+/* the best copy to crop from: the sharp copy kept on this device when the photo was read (tagging.js, up to 2048px), turned as the
+   photo is now, when it shows the same picture (same shape, and alike at 24x24); else the photo itself. A crop from the kept photo
+   alone came out at the size of its piece of a 360px picture (a suit at 270px). A photo replaced, or already cropped, no longer
+   matches the sharp copy, so it is cropped from itself */
+const CROP_MATCH=12;   // the largest mean grey difference (0-255) at 24x24 that still counts as the same picture
+async function cropSource(it){const ph=await imgOf(it.photo);
+  let sharp=null;try{const u=typeof tagImgOf==='function'?await tagImgOf(it.id):null;sharp=u?await imgOf(u):null}catch{sharp=null}
+  if(!sharp||sharp.naturalWidth<=ph.naturalWidth)return ph;
+  const grey=src=>{const N=24,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(src,0,0,N,N);
+    const d=x.getImageData(0,0,N,N).data,g=[];for(let k=0;k<d.length;k+=4)g.push(.3*d[k]+.59*d[k+1]+.11*d[k+2]);return g};
+  const want=grey(ph),ar=ph.naturalWidth/ph.naturalHeight;
+  for(let q=0;q<4;q++){const W=q%2?sharp.naturalHeight:sharp.naturalWidth,H=q%2?sharp.naturalWidth:sharp.naturalHeight;if(Math.abs(W/H-ar)>.02*ar)continue;
+    const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.translate(W/2,H/2);x.rotate(q*Math.PI/2);x.drawImage(sharp,-sharp.naturalWidth/2,-sharp.naturalHeight/2);
+    const g=grey(c);let s=0;for(let k=0;k<g.length;k++)s+=Math.abs(g[k]-want[k]);if(s/g.length<=CROP_MATCH)return c}
+  return ph}
 function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" onpointerdown="cropDrag(event)"><img id="cropimg" src="${i.photo}" alt="Photo being cropped" draggable="false"></div>
   <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" oninput="phEdit.crop.z=+this.value;layoutCrop()" aria-label="Zoom"></label>
   <p class="mut" style="margin:2px 0 6px;font-size:13px">Drag the picture to position it.</p>
@@ -480,8 +497,9 @@ function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const b
   const mv=ev=>{const g=cropGeom();if(!g)return;c.cx-=(ev.clientX-lx)/g.W;c.cy-=(ev.clientY-ly)/g.H;lx=ev.clientX;ly=ev.clientY;layoutCrop()};
   const up=()=>{box.removeEventListener('pointermove',mv);box.removeEventListener('pointerup',up);box.removeEventListener('pointercancel',up)};
   box.addEventListener('pointermove',mv);box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up)}
-async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;const im=await imgOf(it.photo);
-  const side=g.V/g.s,sx=-g.x/g.s,sy=-g.y/g.s,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
+async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;
+  const im=await cropSource(it),f=(im.naturalWidth||im.width)/phEdit.crop.w;   // the frame is measured on the photo; f scales it to the source
+  const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
   c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9))}
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with its tools folded under it, then a
    card for the tags, one for rotation, and Delete on its own at the very end */
