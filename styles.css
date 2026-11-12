@@ -11,7 +11,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Avenir Next"
 header{display:flex;justify-content:space-between;align-items:center;padding:calc(6px + env(safe-area-inset-top)) 12px 6px 16px;background:#101820 repeating-linear-gradient(90deg,transparent 0 11px,#ffffff14 11px 12px);color:#f2f0e8}
 h1,h2{margin:0;font-weight:700;letter-spacing:-.01em}h1{font-size:21px}h2{font-size:19px}
 main{padding:16px;max-width:560px;margin:auto}
-.mut,small{color:var(--mut)}.cap{text-transform:capitalize}
+.mut,small{color:var(--mut)}.cap{text-transform:none}
 button,.btn,select,input{font:inherit;color:inherit}
 button{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
