@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         gaps:[...links.querySelectorAll('.slink')].map(b=>Math.round(b.getBoundingClientRect().height)),radius:getComputedStyle(links).borderTopLeftRadius}});
     ok(!st.hit,`nothing in Settings says worker, Cloudflare, KV, token or benchmark${st.hit?' (“…'+st.hit+'…”)':''}`);
     ok(st.sums[4]==='Needs a connection'&&/^Your own colours & patterns$/.test(st.sums[5])&&/needs a connection/.test(st.sums[6])&&st.sums[7]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(4,8).join(' | ')})`);
-    ok(st.links==='Wardrobe stats,Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the three page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
+    ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
         inside:['#cfg-url','#cfg-token','#replan-btn','#weave-box','#bench-box','#asm-group'].every(inAdv),out:['#cfg-workdays','#batch-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
@@ -85,7 +85,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>{closeSettings();show('today')});
     const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:document.querySelector('#render-msg').textContent,refresh:!!document.querySelector('#refresh-btn').offsetParent}));
     ok(!g0.btn&&!g0.msg&&!g0.refresh,'Today: no Generate button and no "needs a connection" under the figure; no Refresh in the header');
-    await p.evaluate(()=>show('add'));
+    await p.evaluate(()=>openAdd());
     ok(await p.evaluate(()=>!document.querySelector('#add-group').offsetParent&&!!document.querySelector('#add-one').offsetParent),'Add: "Several items" is not shown; "One item" is');
     await p.evaluate(()=>{const s=items.find(i=>i.type==='shirt');s.pattern='herringbone';s.texture='data:image/png;base64,iVBORw0KGgo=';show('wardrobe');openItem(s.id)});await settle(p,500);
     ok(await p.evaluate(()=>!document.querySelector('#readpat-btn')&&!document.querySelector('.ivpat .connnote')),'the item sheet: no "Read pattern from photo" for a weave only the server can read');
@@ -94,7 +94,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');closeSettings();show('today')},SRV);
     const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!!b&&!b.disabled,msg:document.querySelector('#render-msg').textContent,
       batch:!!document.querySelector('#batch-btn').offsetParent&&!document.querySelector('#batch-btn').disabled,regen:!!document.querySelector('#regen-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
-      closeSettings();show('add');r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
+      closeSettings();openAdd();r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
     ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/Outfit photos/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons are there and work (${on.conn})`);
     await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
 

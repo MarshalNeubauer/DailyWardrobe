@@ -20,8 +20,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // ---- the two ways in, and the page
     await p.evaluate(()=>openSettings());await p.click('#pack-btn');await p.waitForFunction(()=>!document.querySelector('#pack').hidden&&!settingsOpen());
     const h=await p.evaluate(()=>({title:document.querySelector('#pack .phead h2').textContent,back:!!document.querySelector('#pack .phead .pback'),today:document.querySelector('#today').hidden,
-      a:document.querySelector('#pk-a').value,b:document.querySelector('#pk-b').value,count:document.querySelector('#pack .pcount').textContent,prev:document.querySelector('#stats-btn').nextElementSibling.id}));
-    ok(h.title==='Packing list'&&h.back&&h.today&&h.prev==='pack-btn',`Settings has a Packing list link next to Wardrobe stats; it opens a page of its own with a back button`);
+      a:document.querySelector('#pk-a').value,b:document.querySelector('#pk-b').value,count:document.querySelector('#pack .pcount').textContent,prev:document.querySelector('#pack-btn').parentElement.firstElementChild.id}));
+    ok(h.title==='Packing list'&&h.back&&h.today&&h.prev==='pack-btn',`Settings has a Packing list link, first under Your wardrobe; it opens a page of its own with a back button`);
     ok(h.a==='2026-11-16'&&h.b==='2026-11-20'&&h.count==='5 days',`the trip defaults to the next working week (${h.a} to ${h.b}, ${h.count})`);
     await p.click('#pack .pback');
     ok(await p.evaluate(()=>document.querySelector('#pack').hidden&&!document.querySelector('#today').hidden&&settingsOpen()),'the back button returns to Settings, where it was opened, over Today');

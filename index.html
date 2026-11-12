@@ -17,7 +17,7 @@
 <section id="stats" hidden></section>
 <section id="pack" hidden></section>
 <section id="care" hidden></section>
-<section id="add" hidden><div class="phead"><h2>Add to wardrobe</h2></div><p id="note" class="psub"></p>
+<section id="add" hidden><div class="phead nav"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Add to wardrobe</h2></div><p id="note" class="psub"></p>
 <div class="addpick"><label class="btn pri" id="add-one"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>One item</span><small>A photo of it, then a close-up of the fabric</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files]);this.value=''"></label><label class="btn" id="add-group"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg><span>Several items</span><small id="add-group-sub">One photo of a rail, a pile or a few on hangers</small><input type="file" accept="image/*" multiple hidden onchange="addFiles([...this.files],true);this.value=''"></label></div>
 <div class="card addmore"><div class="slabel">Other ways to add</div>
 <div class="paste-box"><input type="url" id="photo-url" inputmode="url" autocomplete="off" placeholder="Paste a photo or a link to one" onkeydown="if(event.key==='Enter'){event.preventDefault();addLink()}"><button class="btn" onclick="pasteFromClipboard()">Paste</button><button class="btn pri" onclick="addLink()">Add</button></div>
@@ -27,7 +27,7 @@
 <div id="queue"></div></section>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>
-<nav><button id="n-today" onclick="goToday()">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-add" onclick="show('add')">Add</button></nav>
+<nav><button id="n-today" onclick="goToday()">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-stats" onclick="show('stats')">Insights</button></nav>
 
 <div id="pick-backdrop" onclick="closePicker()"></div>
 <div id="pick-sheet" role="dialog" aria-modal="true" aria-labelledby="pick-title"></div>
@@ -45,7 +45,6 @@
 <div class="sbody">
 <p class="sgh sgh-first">Your wardrobe</p>
 <div class="slinks" id="slinks">
-<button type="button" class="slink" id="stats-btn" onclick="openStats()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="mltxt"><b>Wardrobe stats</b><small>What you wear, what you don’t, and why</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button type="button" class="slink pack-link" id="pack-btn" onclick="openPack()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V5h6v3M4 13h16"/></svg></span><span class="mltxt"><b>Packing list</b><small>What to pack for a trip</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button type="button" class="slink carelink" id="care-btn" onclick="openCare()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Laundry &amp; cleaning</b><small>What is due, and what is away</small></span><span class="chev" aria-hidden="true">›</span></button>
 </div>
