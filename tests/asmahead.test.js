@@ -52,3 +52,5 @@ module.exports=async({ok,chromium,url,settle})=>{
     await ctx.close();
   }finally{await browser.close()}
 };
+
+module.exports.assembled=true;   // tests assembled pictures (assemble.js); other tests run with them switched off (ASM_TEST_OFF)

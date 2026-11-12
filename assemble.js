@@ -24,7 +24,7 @@ const ASM_ZV=8;   // ASM_DE: a colour difference (CIE Lab) that counts as "this 
    carries the version, so its photos are simply no longer asked for.
    ASM_ON: are assembled pictures in use? Off, Today shows each outfit's own photo, nothing is fetched or made, and Settings hides
    Item photos (it was off between the two versions). */
-let ASM_ON=true;
+let ASM_ON=!self.ASM_TEST_OFF;   // (tests switch assembled pictures off unless the test file says module.exports.assembled=true: tests/run.js)
 const asmImg=u=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('could not read a photo'));im.src=u});
 /* a photo as pixels, W wide and high (its own width when not given: photos are square) */
 async function asmData(u,W){const im=await asmImg(u),w=W||im.naturalWidth,c=document.createElement('canvas');c.width=c.height=w;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,w,w);return x.getImageData(0,0,w,w)}

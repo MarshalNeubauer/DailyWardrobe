@@ -18,7 +18,7 @@ const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
-const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync();if(typeof asmAutoSoon==='function'&&ASM_TYPE[i.type])asmAutoSoon()});return r};
+const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync();if(asmLive()&&ASM_TYPE[i.type])asmAutoSoon()});return r};
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
 /* settings management */
@@ -970,7 +970,7 @@ function figureStage(o){
   const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${desc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
-  if(typeof asmEnsure==='function')setTimeout(()=>asmEnsure(o),0);   // and its item photos, to put the outfit's picture together here
+  if(asmLive())setTimeout(()=>asmEnsure(o),0);   // and its item photos, to put the outfit's picture together here
   schedulePrefetch();   // and the rest of the month's photos, nearest first
   // a photo replaces the illustration; the button is only there while a day has none (regenerating lives in Settings)
   const ck=comboKey(o),pend=renderPending(o),busyElse=!!rendering&&!pend,fail=renderFail[ck],stalled=!pend&&renderStalled(ck),noConn=!r&&!pend&&typeof isConnected==='function'&&!isConnected();   // not connected: the button is there, switched off, with the reason under it
@@ -1007,7 +1007,10 @@ const legacySig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(
 async function keepRender(ck,rec,share){renders[ck]=rec;await metaPut('render:'+ck,rec);if(share)shareRender(ck,rec)}
 const workerBase=()=>{const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');return w&&tok?{url:new URL('render',w.replace(/\/*$/,'/')).href,tok}:null};
 function shareRender(ck,rec){const W=workerBase();if(W)fetch(W.url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({key:ck,rec})}).catch(()=>{})}
-const renderFor=o=>{const a=typeof asmFor==='function'&&asmFor(o);if(a)return a;   // put together on the device from item photos (assemble.js)
+// assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
+// called while they are off, so a change there selects only the tests that use them
+const asmLive=()=>typeof ASM_ON!=='undefined'&&ASM_ON;
+const renderFor=o=>{const a=asmLive()&&asmFor(o);if(a)return a;   // put together on the device from item photos (assemble.js)
   const ck=comboKey(o);if(renders[ck])return renders[ck];
   const v1=renders[comboKeyV1(o)];if(v1){const rec={...v1,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
   const old=renders[key(sel)];if(old&&old.sig===legacySig(o)){const rec={...old,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
@@ -1102,14 +1105,14 @@ async function renderCombo(o){
 /* Generate (Today) or Regenerate (Settings) the shown day's photo. It goes to the worker's background queue, like the month batch,
    so the app can be swiped to another day, closed or locked: the worker makes it and the app picks it up when it next looks
    (every 20 s while open, and on opening). Only a worker without the queue makes it while the app waits. */
-const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck))||(typeof asmPending==='function'&&asmPending(o)))};
+const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck))||(asmLive()&&asmPending(o)))};
 /* a photo waiting over 10 minutes has stalled (one takes about a minute; retries a few more): the button offers to send it again */
 const STALL_MS=10*60000,renderStalled=ck=>{const q=rqGet();return q.keys.includes(ck)&&Date.now()-sentAt(q,ck)>STALL_MS};
 async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
   const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
   // an outfit that is put together from item photos needs only its missing items made (a Regenerate still makes a whole photo)
-  try{const q=!replace&&typeof asmWants==='function'&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
+  try{const q=!replace&&asmLive()&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
     if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open until it is done.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
   catch(e){renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(e.message)?e.message:'Couldn’t send the photo: '+(e.message||e)}}
@@ -1191,7 +1194,7 @@ let batch=null;
 function batchCombos(){
   const p=planFor(),seen=new Set(),todo=[];
   for(const [k,o] of Object.entries(p)){const d=keyDate(k);if(d.getMonth()!==view.m||d.getFullYear()!==view.y||!o.shirt)continue;
-    if(typeof asmWants==='function'&&asmWants(o))continue;   // put together from item photos (Settings: Item photos), not a photo of its own
+    if(asmLive()&&asmWants(o))continue;   // put together from item photos (Settings: Item photos), not a photo of its own
     const ck=comboKey(o);if(seen.has(ck))continue;seen.add(ck);if(!renders[ck]&&!queuedKeys().includes(ck))todo.push(o)}
   return todo;
 }
@@ -1673,7 +1676,7 @@ function show(t){
   if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();refreshHolidays();loadRenders().then(()=>typeof asmLoad==='function'?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(typeof asmSync==='function')afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();refreshHolidays();loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady also waits for every script to have run (afterDom; afterScripts waits for the load event, pictures too, and held it up 30 s once): on a slow load app.js's start-up finished while about.js
    was still to come, and a test read the page before about.js had shown its note after a restart)
@@ -1766,7 +1769,7 @@ function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn
   if(st)st.textContent=o?(r?'Makes a new realistic photo of the day shown on Today (about 7¢); it replaces the current one for every day with this look.':'The day shown on Today has no photo yet (about 7¢).'):'Pick a workday on Today first.';if(typeof needConn==='function'&&needConn(btn)&&st)st.textContent=''}
 function renderSettingsExtras(){
   if(typeof renderDressUI==='function')renderDressUI();renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();if(typeof renderConnUI==='function')renderConnUI();
-  if(typeof renderAsmUI==='function'){renderAsmUI();asmSync()}
+  if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
   if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
