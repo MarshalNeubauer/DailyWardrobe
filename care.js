@@ -82,7 +82,7 @@ function careLists(){const st=items.filter(i=>!i.order).map(i=>({i,s:careState(i
     away:items.filter(i=>i.away).sort((a,b)=>(a.away.back||'9')<(b.away.back||'9')?-1:1)}}
 /* the Care page */
 function renderCare(){const el=$('#care');if(!el)return;
-  const head=`<div class="phead nav"><button class="pback" onclick="show('today')" aria-label="Back to Today">‹</button><h2>Laundry &amp; cleaning</h2></div>`;
+  const head=`<div class="phead nav"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Laundry &amp; cleaning</h2></div>`;
   if(!items.length){el.innerHTML=head+'<p class="mut empty">Your wardrobe is empty. Add some items first.</p>';return}
   const L=careLists(),pic=i=>typeof statPic==='function'?statPic(i):'';
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
@@ -96,7 +96,7 @@ function renderCare(){const el=$('#care');if(!el)return;
     (L.each.length?card('care-each','Washed after every wear','',L.each.map(g=>`<div class="care-row care-group" id="care-each-${g.t}"><div class="care-main"><span class="care-nm">${g.list.length} ${g.list.length===1?careNoun(g.list[0]):(CARE_PLURAL[g.t]||'pieces').toLowerCase()} worn since washing</span><small class="mut">${laundryDays()&&g.t==='shirt'?`A worn shirt is not planned again for ${laundryDays()} day${laundryDays()===1?'':'s'}.`:'Tap when the wash is done, or leave it: nothing depends on it.'}</small></div><div class="care-acts"><button type="button" class="caredone" onclick="careCleanedType('${g.t}')">All washed today</button></div></div>`).join('')):'')+
     (L.away.length?card('care-away','Away now','Out of your outfits until they are back.',L.away.map(x=>row(x,`<button type="button" class="pri careitsback" onclick="careBack('${x.id}')">It's back</button>`)).join('')):'')+
     `<p class="care-foot"><button type="button" class="linkbtn" onclick="openSettings('care')">Change how many wears each piece takes</button></p>`}
-function openCare(){closeSettings();show('care');scrollTo({top:0})}
+function openCare(){subOpen();closeSettings();show('care');scrollTo({top:0})}
 /* called by show() in app.js for every page: the Care page is a section of its own beside the others */
 function careShow(t){const el=$('#care');if(!el)return;el.hidden=t!=='care';if(t==='care')renderCare()}
 /* Today: one quiet line when today's suit, blazer or odd trousers reaches its limit with this wear (or is past it) */

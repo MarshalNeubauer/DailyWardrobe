@@ -166,10 +166,10 @@ async function packShare(){if(!packNow||!navigator.share)return;try{await naviga
 
 /* ---- the page ---- */
 function packShow(t){const el=$('#pack');if(!el)return;el.hidden=t!=='pack';if(t==='pack')renderPack()}
-function openPack(){closeSettings();show('pack');scrollTo({top:0})}
+function openPack(){subOpen();closeSettings();show('pack');scrollTo({top:0})}
 function renderPack(){
   const el=$('#pack');if(!el)return;
-  const head=n=>`<div class="phead"><button class="pback" onclick="show('today')" aria-label="Back to Today">‹</button><h2>Packing list</h2>${n?`<span class="pcount">${n}</span>`:''}</div>`;
+  const head=n=>`<div class="phead"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Packing list</h2>${n?`<span class="pcount">${n}</span>`:''}</div>`;
   if(!items.length){packNow=null;el.innerHTML=head('')+`<p class="mut empty">Your wardrobe is empty. Add some items first.</p>`;return}
   const t=packTrip(),base=packDays(t),light=packLight(t,base),days=light?light.days:base,mark=packMark(),list=packList(days,mark.w),live=days.filter(x=>x.o),T=new Set(mark.t),W=new Set(mark.w);
   packNow={days,list,light,text:packText(t,days,list)};packLines=[];
