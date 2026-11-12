@@ -1215,12 +1215,12 @@ const failFor = (ns, error) => { if (ns && TECH_RE.test(String(error || ''))) { 
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
 const DEFAULT_CAPS = { tag: 40, pattern: 10, photo: 12, item: 20 };
-const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30 };
+const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20 };
 /* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups' };
-const USE_RE = /^(tag|pattern|photo|item|upload|feedback|backup)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes' };
+const USE_RE = /^(tag|pattern|photo|item|upload|feedback|backup|push)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
@@ -1250,7 +1250,7 @@ async function useCount(env, id, what, n, cap, day) {
    invitations (each tester's own caps still apply first). Counted like one more tester, under the id 'all' (a tester's id is
    8–24 characters, so it can't be one); the owner is never counted. The worker's TESTER_DAILY_TOTAL variable (JSON, e.g.
    {"photo":20}) changes any of them. About $15 a day at most with these numbers. */
-const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100, backup: 300 }, ALL_ID = 'all';
+const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100, backup: 300, push: 200 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };
@@ -1388,7 +1388,13 @@ async function wipeSome(env, ns, budget) {   // -> true once nothing is left
   return true;
 }
 /* what a tester has outside u:<id>:: their feedback and today's count */
+/* a deleted account's reminders: its subscriptions leave push:subs */
+async function dropPush(env, ns) {
+  const doc = await env.WARDROBE.get(PUSH_KEY, 'json');
+  if (doc && Array.isArray(doc.list) && doc.list.some(x => x.ns === ns)) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list: doc.list.filter(x => x.ns !== ns) }));
+}
 async function dropTesterExtras(env, id) {
+  await dropPush(env, `u:${id}:`);
   const log = await env.WARDROBE.get(FEEDBACK_KEY, 'json');
   if (log && Array.isArray(log.items) && log.items.some(m => m.id === id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== id) }), { expirationTtl: FEEDBACK_MS / 1000 });
   const use = `use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
@@ -1404,6 +1410,7 @@ async function handleAccount(req, env, json, who) {
     if (index && Array.isArray(index.list) && index.list.some(v => v.id === who.id)) await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: index.list.filter(v => v.id !== who.id) }));
     await dropTesterExtras(env, who.id);
   }
+  if (!who.ns) await dropPush(env, '');
   if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
   const done = await wipeSome(env, who.ns, 30);
   if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
@@ -1435,6 +1442,8 @@ const ROUTES = {
   'POST /invites': [handleInvites, UNSET],
   'DELETE /invites': [handleInvites, UNSET],
   'GET /feedback': [handleFeedback, UNSET],
+  'GET /push': [handlePush, UNSET],
+  'POST /push': [handlePush, UNSET],
   'POST /feedback': [handleFeedback, UNSET],
   'DELETE /account': [handleAccount, UNSET],
 };
@@ -1548,4 +1557,86 @@ export default {
       }
     }
   },
+  // Cron trigger (wrangler.toml [triggers], every 15 minutes): the morning reminders due now
+  async scheduled(event, env, ctx) { ctx.waitUntil(sendReminders(env, event && event.scheduledTime ? new Date(event.scheduledTime) : new Date())); },
 };
+
+/* ================= the morning reminder (Web Push) =================
+   A phone that switched the reminder on gives the server its push subscription, the time it wants it (HH:MM in its own time
+   zone, an IANA name) and the dates of its coming workdays (the app knows the plan; the server never plans). Every 15 minutes
+   the cron sends each phone due within that quarter of an hour a push with no body; the app's service worker then shows the
+   outfit line the app kept for that date (sw.js, Cache Storage dw-keep-remind), so no outfit text passes through here and
+   nothing needs encrypting. The push is signed with the VAPID key pair (secrets VAPID_PUBLIC_KEY, base64url of the 65-byte
+   public point, and VAPID_PRIVATE_KEY, base64url of the 32-byte private scalar; VAPID_SUBJECT, the app's https address or a
+   mailto:). One KV document, push:subs, holds every subscription: one read a quarter of an hour, a write only when something
+   was sent or changed. A subscription the push service says is gone (404, 410) is dropped. ---- */
+const PUSH_KEY = 'push:subs', PUSH_MAX = 200, PUSH_STEP = 15;
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = s => Uint8Array.from(atob(String(s).replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((String(s).length + 3) % 4)), c => c.charCodeAt(0));
+const pushReady = env => !!(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY && env.WARDROBE);
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/, DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const subId = async endpoint => (await sha256Hex(endpoint)).slice(0, 24);
+/* the VAPID header for one push service (aud = its origin), a JWT signed ES256 */
+async function vapidAuth(env, endpoint) {
+  const pub = unb64u(env.VAPID_PUBLIC_KEY);
+  const key = await crypto.subtle.importKey('jwk', { kty: 'EC', crv: 'P-256', d: env.VAPID_PRIVATE_KEY, x: b64u(pub.slice(1, 33)), y: b64u(pub.slice(33, 65)), ext: true }, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  const enc = o => b64u(new TextEncoder().encode(JSON.stringify(o)));
+  const head = enc({ typ: 'JWT', alg: 'ES256' }), body = enc({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: env.VAPID_SUBJECT || 'https://github.com/' });
+  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, new TextEncoder().encode(`${head}.${body}`));
+  return `vapid t=${head}.${body}.${b64u(sig)}, k=${env.VAPID_PUBLIC_KEY}`;
+}
+async function pushTo(env, endpoint) {
+  try {
+    const r = await fetch(endpoint, { method: 'POST', headers: { authorization: await vapidAuth(env, endpoint), ttl: '3600', urgency: 'normal', 'content-length': '0' } });
+    return r.status;
+  } catch (e) { console.log('push failed', e && e.message); return 0; }
+}
+/* the date and HH:MM a moment is in a time zone */
+function localNow(now, tz) {
+  try {
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now).map(x => [x.type, x.value]));
+    return { date: `${p.year}-${p.month}-${p.day}`, min: +p.hour * 60 + +p.minute };
+  } catch { return null; }
+}
+async function sendReminders(env, now = new Date()) {
+  if (!pushReady(env)) return { sent: 0 };
+  const doc = (await env.WARDROBE.get(PUSH_KEY, 'json')) || { list: [] }, list = Array.isArray(doc.list) ? doc.list : [];
+  let changed = false, sent = 0;
+  for (const s of [...list]) {
+    const l = localNow(now, s.tz), [h, m] = String(s.time || '').split(':').map(Number);
+    if (!l || s.last === l.date || !(s.dates || []).includes(l.date)) continue;
+    const at = h * 60 + m;
+    if (l.min < at || l.min >= at + PUSH_STEP) continue;   // its quarter of an hour (the cron runs every 15 minutes)
+    const st = await pushTo(env, s.endpoint);
+    if (st === 404 || st === 410) { list.splice(list.indexOf(s), 1); changed = true; continue; }
+    if (st >= 200 && st < 300) { s.last = l.date; sent++; changed = true; }
+  }
+  if (changed) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list }));
+  return { sent };
+}
+/* GET /push -> {key, on, time}: the public key a phone subscribes with (null: reminders not set up on this server), and whether
+   this subscription (?endpoint=) is on. POST /push {endpoint, time, tz, dates} switches it on or updates it; {endpoint, off:true}
+   switches it off. Anyone connected; a tester's are counted (push, 20 a day). */
+async function handlePush(req, env, json, who) {
+  if (req.method === 'GET') {
+    const ep = new URL(req.url).searchParams.get('endpoint') || '', doc = pushReady(env) && ep ? (await env.WARDROBE.get(PUSH_KEY, 'json')) : null;
+    const id = ep ? await subId(ep) : '', s = doc && (doc.list || []).find(x => x.id === id && x.ns === who.ns);
+    return json({ key: pushReady(env) ? env.VAPID_PUBLIC_KEY : null, on: !!s, time: s ? s.time : null });
+  }
+  if (!pushReady(env)) return json({ error: 'off', message: 'Reminders aren’t set up on the server yet.' }, 501);
+  const b = await smallBody(req, 20000), ep = String(b && b.endpoint || '');
+  let host; try { host = new URL(ep); } catch { }
+  if (!host || host.protocol !== 'https:' || !publicHost(host.hostname)) return json({ error: 'bad endpoint' }, 400);
+  const over = await spend(env, who, 'push'); if (over) return json(over.body, over.status);
+  const doc = (await env.WARDROBE.get(PUSH_KEY, 'json')) || { list: [] }, list = Array.isArray(doc.list) ? doc.list : [], id = await subId(ep);
+  const rest = list.filter(x => x.id !== id);
+  if (b.off) { if (rest.length !== list.length) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list: rest })); return json({ ok: true, on: false }); }
+  const time = TIME_RE.test(String(b.time || '')) ? b.time : '07:00', tz = String(b.tz || 'UTC').slice(0, 64);
+  if (!localNow(new Date(), tz)) return json({ error: 'bad time zone' }, 400);
+  const dates = (Array.isArray(b.dates) ? b.dates : []).filter(d => DATE_RE.test(String(d))).slice(0, 31);
+  const old = list.find(x => x.id === id);
+  if (!old && rest.length >= PUSH_MAX) return json({ error: 'full', message: 'Too many phones have reminders on.' }, 400);
+  rest.push({ id, ns: who.ns, endpoint: ep, time, tz, dates, last: old && old.time === time ? old.last : null });
+  await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list: rest }));
+  return json({ ok: true, on: true, time });
+}

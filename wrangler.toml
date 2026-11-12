@@ -37,5 +37,9 @@ class_name = "RenderHub"
 tag = "v1"
 new_sqlite_classes = ["RenderHub"]
 
+# the morning reminders (worker.js sendReminders): every 15 minutes, the phones whose reminder time falls in that quarter of an hour
+[triggers]
+crons = ["*/15 * * * *"]
+
 [observability]
 enabled = true
