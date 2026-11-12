@@ -17,8 +17,19 @@ const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(co
 db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)renderWardrobe()}}).catch(()=>{});
 
 /* the button on the Wardrobe tab */
+/* What to buy needs a wardrobe big enough to judge: on a few pieces it advised buying nearly everything. Until it has 3 jackets
+   (3 pairs of trousers when the dress code has no jackets), 5 shirts, 4 ties (when ties are worn) and 2 pairs of shoes in rotation,
+   the button says what is still to add and doesn't open. -> [] when it may run, else the missing counts in words */
+const SHOP_MIN={jacket:3,pants:3,shirt:5,tie:4,shoes:2};
+function shopGate(){const n=t=>items.filter(i=>(Array.isArray(t)?t.includes(i.type):i.type===t)&&inRotation(i)).length,out=[];
+  const need=(have,min,one,many)=>{if(have<min){const k=min-have;out.push(`${k} more ${k===1?one:many}`)}};
+  if(wearsJacket())need(n(['suit','blazer']),SHOP_MIN.jacket,'jacket','jackets');else need(n('pants'),SHOP_MIN.pants,'pair of trousers','pairs of trousers');
+  need(n('shirt'),SHOP_MIN.shirt,'shirt','shirts');if(wearsTie())need(n('tie'),SHOP_MIN.tie,'tie','ties');need(n('shoes'),SHOP_MIN.shoes,'pair of shoes','pairs of shoes');
+  return out}
 function shopButton(){
   if(!items.length)return '';
+  const gate=shopGate();
+  if(gate.length)return `<div class="shopbtn locked" id="shop-btn" aria-disabled="true"><span class="shopbtn-t"><b>What to buy</b><small>${esc(`Add ${gate.length>1?gate.slice(0,-1).join(', ')+' and '+gate[gate.length-1]:gate[0]} to get advice: it needs enough of your wardrobe to judge.`)}</small></span></div>`;
   const r=shop&&shop.res,n=shopRecs(r),first=r&&r.top.map(t=>shopFindIn(r,t.key)).find(x=>x&&!shopHid(x));
   const sub=shopBusy?'Checking your wardrobe…':r?`${n?`${n} idea${n===1?'':'s'}`:'Nothing needed'}${first?` · first: ${first.name}`:''}${shop.sig===shopSig()?'':' · your wardrobe changed since'}`:'What would improve your outfits most';
   return `<button type="button" class="shopbtn" id="shop-btn" onclick="openShop()" aria-haspopup="dialog"><span class="shopbtn-t"><b>What to buy</b><small>${esc(sub)}</small></span><span class="shopbtn-c" aria-hidden="true">›</span></button>`;
@@ -26,6 +37,7 @@ function shopButton(){
 const shopFindIn=(r,key)=>{for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
 
 function openShop(){
+  if(shopGate().length)return;
   shopOpen=true;shopForm=null;shopMsg='';shopSwipe();renderShop();
   $('#shop-sheet').classList.add('on');$('#shop-backdrop').classList.add('on');$('#shop-sheet').scrollTop=0;
   if(!shopBusy&&!shopFresh())analyzeWardrobe();

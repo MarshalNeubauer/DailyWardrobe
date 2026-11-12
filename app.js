@@ -331,7 +331,7 @@ const clipImages=dt=>[...(dt&&dt.items||[])].filter(x=>x.kind==='file'&&x.type.s
 document.addEventListener('paste',e=>{
   const imgs=clipImages(e.clipboardData),tgt=e.target,inBox=tgt&&tgt.id==='photo-url';
   const typing=tgt&&/^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName)&&!inBox;
-  if(imgs.length){if(typing&&tgt.type!=='url'&&tgt.type!=='text')return;e.preventDefault();if($('#add').hidden)show('add');addBlobs(imgs);return}
+  if(imgs.length){if(typing&&tgt.type!=='url'&&tgt.type!=='text')return;e.preventDefault();if($('#add').hidden)openAdd();addBlobs(imgs);return}
   const text=(e.clipboardData&&e.clipboardData.getData('text/plain')||'').trim();
   if(!typing&&!$('#add').hidden&&isLink(text)){e.preventDefault();const i=$('#photo-url');if(i)i.value=text;addFromUrl(text)}
 });
@@ -341,7 +341,7 @@ document.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.clas
 document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;document.body.classList.remove('dragging');
   const files=[...dt.files].filter(f=>f.type.startsWith('image/'));
   const link=(dt.getData('text/uri-list')||'').split(/\r?\n/).find(l=>l&&!l.startsWith('#'))||dt.getData('text/plain');
-  if(!files.length&&!isLink(link))return;e.preventDefault();if($('#add').hidden)show('add');
+  if(!files.length&&!isLink(link))return;e.preventDefault();if($('#add').hidden)openAdd();
   if(files.length)addBlobs(files);else addFromUrl(link.trim())});
 
 /* ---- several items in one photo: the worker lists every item with a rough box; each becomes its own card ---- */
@@ -990,7 +990,21 @@ const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen
   return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" onclick="pickPiece(belowOpen)">${i?rowPanel(i):''}</div></div></div>`};
 /* did you wear it: ✗ and ✓ over the picture's bottom corners (today and past days); tapping the chosen one again clears it.
    Between them, a small pill says when this look was last worn (nothing when it never was). */
-function wornMarks(o){
+/* share the day's outfit: a round button at the picture's top right, like ✕ and ✓ (the owner chose this place). The phone's own
+   share sheet gets the picture (the photo, or the drawing as a PNG) and a line naming the pieces; without a share sheet the line is
+   copied. */
+const SHARE_ICON='<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
+const shareMark=o=>o&&(o.top||o.shirt)?`<button type="button" class="wshare" onclick="shareOutfit()" aria-label="Share this outfit" title="Share this outfit">${SHARE_ICON}</button>`:'';
+function shareText(o){const d=sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  return `${d}: ${sentence([shortTop(o),shortRest(o)].filter(Boolean).join(', '))}`}
+async function shareOutfit(){const o=planFor()[key(sel)];if(!o)return;const text=shareText(o);let file=null;
+  try{const r=renderFor(o),url=r&&r.img?r.img:await figurePng(o,780),blob=await (await fetch(url)).blob();
+    file=new File([blob],`outfit-${key(sel)}.${/png/.test(blob.type)?'png':'jpg'}`,{type:blob.type})}catch(e){console.warn('share picture',e)}
+  const data={title:'My outfit',text};if(file&&navigator.canShare&&navigator.canShare({files:[file]}))data.files=[file];
+  if(navigator.share){try{await navigator.share(data)}catch(e){if(e&&e.name!=='AbortError')tell('Couldn’t share it.')}return}
+  try{await navigator.clipboard.writeText(text);tell('The outfit is copied.')}catch{tell(text)}}
+function wornMarks(o){return shareMark(o)+wornBar(o)}
+function wornBar(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),can=+d<=+T,lw=lastWorn(o);
   const pill=lw?`<small class="lastworn">Last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
   if(!can)return pill?`<div class="wornbar">${pill}</div>`:'';
@@ -1366,7 +1380,7 @@ function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2>${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}<small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span><small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';const first=typeof setupToday==='function'?setupToday():'';   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
@@ -1663,7 +1677,7 @@ function renderWardrobe(){
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=wardFresh();
-  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount" id="wcount">${wardCount(list)}</span></div>${typeof shopButton==='function'?shopButton():''}${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>';
+  $('#wardrobe').innerHTML=`<div class="phead"><h2>Wardrobe</h2><span class="pcount" id="wcount">${wardCount(list)}</span><button type="button" class="pri padd" id="ward-add" onclick="openAdd()">+ Add</button></div>${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>';
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
   renderItem();wardBack(wf);
 }
@@ -1704,7 +1718,7 @@ ${moreRow(q,i)}${orderRow(q,i)}<div class="btns"><button class="pri" onclick="sa
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
-const PAGES=['today','wardrobe','add','stats','pack','care'],TABS=['today','wardrobe','add'],PAGE_MS=320;
+const PAGES=['today','wardrobe','add','stats','pack','care'],TABS=['today','wardrobe','stats'],PAGE_MS=320;
 function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav'),ti=TABS.indexOf(t);
   if(nav){nav.style.setProperty('--ti',Math.max(0,ti));nav.classList.toggle('tab-none',ti<0)}
   if(!el||!from||from===t||noMotion())return;
@@ -1721,7 +1735,7 @@ let subFrom=null;
    hands Settings' entry on to the page ('set' → 'sub') and its ‹ hands it back, so Back never needs two presses. Left any other way
    (Done, a tab, the ‹ to Today) the entry is taken away with a history.back() of our own (appPend) that the popstate below lets pass;
    appKeep holds it while subBack moves from the page to Settings. (The item sheet keeps its own entry the same way: histPush.) */
-const SUBS=['stats','pack','care'];let appHist=false,appKind='',appPend=false,appKeep=false;
+const SUBS=['add','pack','care'];let appHist=false,appKind='',appPend=false,appKeep=false;
 function appPush(kind){if(appHist){appKind=kind;return}if(appPend||itemBack)return;try{history.pushState({app:kind},'');appHist=true;appKind=kind}catch{}}
 function appDrop(kind){if(!appHist||appKeep||appKind!==kind)return;appHist=false;appPend=true;try{history.back()}catch{appPend=false}}
 addEventListener('popstate',()=>{if(appPend){appPend=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
@@ -1734,6 +1748,8 @@ function subOpen(){appPush('sub');
 function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
   appKeep=!!f.set;try{show(f.page)}finally{appKeep=false}scrollTo(0,f.y);   // back to Settings: the entry stays, for Settings now
   if(!f.set)return;openSettings();for(const k of f.set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=f.set.top}
+/* Add is a page of the Wardrobe (its + Add button), with a ‹ back to where it was opened from (subBack) */
+function openAdd(){subOpen();show('add');scrollTo({top:0})}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
   if(!SUBS.includes(t))appDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes

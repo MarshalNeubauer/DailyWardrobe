@@ -84,7 +84,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.click('#su-next');
     await p.waitForFunction(()=>!document.querySelector('#setup.on')&&!document.querySelector('#add').hidden);
     ok(await stored(p,`s=>s.setupDone>0&&s.vestMode==='always'`),'Done stores setupDone (and keeps the vest that was chosen)');
-    ok(await p.evaluate(()=>['header','main','nav'].every(s=>!document.querySelector(s).inert)&&document.querySelector('#n-add').classList.contains('on')),'and goes to the Add tab, the page usable again');
+    ok(await p.evaluate(()=>['header','main','nav'].every(s=>!document.querySelector(s).inert)&&!document.querySelector('#add').hidden&&!!document.querySelector('#add .pback')),'and goes to the Add page (from the Wardrobe), the page usable again');
     await p.reload();await p.waitForFunction(()=>window.appReady);
     ok(!await shown(p),'after Done the setup does not come back on the next start');
     ok(!p.errs.length,'no errors in the setup: '+p.errs.join(' | '));
@@ -99,7 +99,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await s.reload();await s.waitForFunction(()=>window.appReady);
     ok(!await shown(s),'after Skip the setup does not come back');
     // the Add tab's note while not connected
-    await s.evaluate(()=>show('add'));
+    await s.evaluate(()=>openAdd());
     const note=await s.textContent('#note');
     ok(/won.t be read automatically/.test(note)&&/invite link/.test(note)&&/Settings → Connection/.test(note)&&/by hand/.test(note)&&!/worker|cloudflare/i.test(note),'the Add tab says in plain words that photos are not read without a connection: '+note);
     // the Wardrobe tab, empty
@@ -185,7 +185,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(!await shown(y)&&await y.evaluate(()=>!settings.setupDone&&!document.querySelector('main').inert),'items arriving (a sync, a restore) close a setup that opened by itself, without marking it done');
     await y.context().close();
     const y2=await open();
-    await y2.evaluate(()=>show('add'));
+    await y2.evaluate(()=>openAdd());
     ok(!await shown(y2)&&await y2.evaluate(()=>!settings.setupDone),'so does opening another tab');
     await y2.context().close();
 

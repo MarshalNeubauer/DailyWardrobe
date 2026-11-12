@@ -18,9 +18,9 @@ module.exports=async({ok,chromium,url})=>{
         '2026-11-8':{date:'2026-11-8',ids:ids('suit0','shirt9','tie11'),suitDay:true,worn:true},'2026-11-9':{date:'2026-11-9',ids:ids('suit2','shirt8','tie13'),suitDay:true}};
       sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
     await p.evaluate(()=>openSettings());
-    ok(await p.isVisible('#stats-btn'),'Settings has a Wardrobe stats button');
-    await p.click('#stats-btn');
-    ok(await p.evaluate(()=>!$('#stats').hidden&&$('#today').hidden&&$('#settings-modal').style.display==='none'&&/Wardrobe stats/.test($('#stats h2').textContent)),'it opens the stats page');
+    ok(!(await p.isVisible('#stats-btn'))&&await p.isVisible('#n-stats')&&(await p.textContent('#n-stats'))==='Insights','Insights is a tab (no longer a link in Settings)');
+    await p.evaluate(()=>closeSettings());await p.click('#n-stats');
+    ok(await p.evaluate(()=>!$('#stats').hidden&&$('#today').hidden&&$('#settings-modal').style.display==='none'&&/Insights/.test($('#stats h2').textContent)&&!$('#stats .pback')&&$('#n-stats').classList.contains('on')),'it opens Insights, a tab with no ‹');
     const s=await p.evaluate(()=>{const S=buildStats(),row=id=>S.rows.find(r=>r.i.id===id);
       return {worn:S.worn.map(w=>w.date).join(),navy:row('suit0').worn,ch:row('suit1').worn,tie:row('tie11').worn,last:row('suit0').last&&key(row('suit0').last),plan:S.plan.length,planNavy:row('suit0').planned,next:!!row('suit0').next,
         unused:S.unused.map(r=>r.i.id).sort().join(),avg:S.avg,miss:Object.keys(S.miss),looks:S.looks,minRest:S.minRest,tiles:[...document.querySelectorAll('.st-tile b')].map(b=>b.textContent).join(),
@@ -57,8 +57,8 @@ module.exports=async({ok,chromium,url})=>{
     await p.click('#st-learn .btns button');await p.waitForFunction(()=>/Nothing yet/.test(document.querySelector('#st-learn').textContent));
     ok(await p.evaluate(async()=>!settings.learn&&!(await metaGet('settings')).learn),'"Forget everything" clears it (saved)');
     // lowest days link back to Today; back button; an empty wardrobe
-    await p.click('#stats .nav button');
-    ok(await p.evaluate(()=>!$('#today').hidden&&$('#stats').hidden),'the back arrow returns to Today');
+    await p.click('#n-today');
+    ok(await p.evaluate(()=>!$('#today').hidden&&$('#stats').hidden),'the Today tab returns to Today');
     ok(await p.evaluate(()=>{const keep=items;items=[];openStats();const t=$('#stats').textContent;items=keep;cache={};show('today');return /wardrobe is empty/i.test(t)}),'an empty wardrobe gets a plain message');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

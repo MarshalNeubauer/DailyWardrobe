@@ -41,7 +41,7 @@ function setupClose(){
 function setupFinish(toAdd){
   if(setup.first&&!setup.vestSet)settings.vestMode='never';
   settings.setupDone=Date.now();setupClose();saveUserSettings();
-  show(toAdd&&!items.length?'add':'today');
+  if(toAdd&&!items.length){show('wardrobe');openAdd()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
 }
 /* the app is being driven past a setup that opened by itself (items came in from a sync or a restore, another page was
    opened): it steps aside without being marked as done. One the user started from Settings stays. */
@@ -130,11 +130,11 @@ function setupToday(){
   const rows=setupNeeds(),left=rows.filter(r=>!r.ok).length;if(!left)return '';
   return `<div class="firstrun" id="firstrun"><h3>Get your first outfit</h3><p class="fr-sub">${left===rows.length?'Add these and Today picks an outfit for every workday.':`${rows.length-left} of ${rows.length} added. Add the rest and Today picks an outfit for every workday.`}</p>
 <ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':'Needed'}</small></li>`).join('')}</ul>
-<button type="button" class="fr-add pri" id="fr-add" onclick="show('add')">Add an item</button></div>`;
+<button type="button" class="fr-add pri" id="fr-add" onclick="openAdd()">Add an item</button></div>`;
 }
 /* the Wardrobe tab with nothing in it */
 function setupWardEmpty(){
   return `<div class="card wempty" id="wempty"><svg class="wempty-pic" viewBox="0 0 120 84" aria-hidden="true"><path class="we-rail" d="M8 12h104"/><path class="we-hook" d="M60 12v6a5 5 0 1 0 5 5"/><path class="we-hang" d="M60 30 24 52a4 4 0 0 0 2 7h68a4 4 0 0 0 2-7z"/><path class="we-ghost" d="M26 12v10M94 12v10M20 30l6-8 6 8M88 30l6-8 6 8"/></svg>
 <b class="wempty-t">Your wardrobe is empty</b><p class="wempty-s">Add what you wear to work: a photo of each piece, or pick its type and colours by hand.</p>
-<button type="button" class="pri" id="wempty-add" onclick="show('add')">Add your first item</button></div>`;
+<button type="button" class="pri" id="wempty-add" onclick="openAdd()">Add your first item</button></div>`;
 }
