@@ -41,6 +41,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');return !!document.querySelector('.fig.photo img')},PHOTO);
     ok(kept,'the photo is kept for that day after a reload');
+    // kept as the worker made it, not shrunk to 900px and re-encoded (keptPhoto): Today wants every pixel of a 1024 or 2048 photo
+    ok(await p.evaluate(ph=>{const o=planFor()[key(sel)];return renders[comboKey(o)]&&renders[comboKey(o)].img===ph},PHOTO),'the photo is kept byte for byte as the worker sent it');
+    {const fs=require('fs'),src=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+      ok(!/shrinkUrl\([^)]*,\s*900\)/.test(src),'no outfit photo in app.js is shrunk to 900px any more (assembled pictures keep theirs, in assemble.js)');}
     ok(await p.evaluate(async()=>!(await localState()).renders&&!JSON.stringify(await localState()).includes('render:')),'photos stay on the device (not in backup/sync data)');
     // changing the outfit drops the photo
     ok(await p.evaluate(()=>{const o=planFor()[key(sel)],before=!!renderFor(o),sw={...o,tie:{...o.tie,id:'other',primaryColor:'green'}};return before&&!renderFor(sw)}),'after a swap the stored photo no longer matches, so it is not shown');

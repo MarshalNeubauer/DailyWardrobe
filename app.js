@@ -1059,7 +1059,7 @@ async function fetchRemoteRender(o,day){
       else{const old=await get('day='+encodeURIComponent(day));if(old&&old.img&&old.sig===legacySig(o))j={...old,sig:comboSig(o),legacy:true}}}
     if(!j||!j.img)return;
     if(cur&&cur.t>(j.t||0)){shareRender(ck,cur);return}if(cur&&cur.t===(j.t||0))return;
-    await keepRender(ck,{sig:comboSig(o),img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},!!j.legacy);
+    await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.img),model:j.model||'',t:j.t||Date.now()},!!j.legacy);
     if(planFor()[key(sel)]&&comboKey(planFor()[key(sel)])===ck&&!$('#today').hidden)refreshToday();
   }catch(e){console.warn('remote photo unavailable',e)}
 }
@@ -1077,7 +1077,7 @@ async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetchin
       const one=async()=>{while(i<list.length&&!prefetchAgain){const [,ck,o]=list[i++];if(renders[ck])continue;
         try{const r=await fetch(W.url+'?key='+ck,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;
           if(!j||!j.img){remoteKeys.delete(ck);continue}
-          await keepRender(ck,{sig:comboSig(o),img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);
+          await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.img),model:j.model||'',t:j.t||Date.now()},false);
           const s=planFor()[key(sel)];if(s&&comboKey(s)===ck&&!$('#today').hidden)refreshToday()}catch(e){remoteKeys.delete(ck)}}};
       await Promise.all([one(),one(),one()]);
     }while(prefetchAgain)
@@ -1110,6 +1110,10 @@ async function figurePng(o,w=780){
     x.fillStyle=figBg();x.fillRect(0,0,c.width,c.height);x.drawImage(im,crop?-crop.x*k:0,crop?-crop.y*k:0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>no(new Error('could not draw the illustration'));
     im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
 }
+/* an outfit photo is kept on the device as the worker made it: shrunk to 900px (JPEG .85) it was softer than the 1024 original, and
+   Today shows it up to 390 points wide on a 3x screen (1170 pixels) and zooms 2.5x. Assembled pictures keep their 900px (assemble.js):
+   their kept zones were measured at that size */
+const keptPhoto=u=>u;
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
 /* generate and keep the photo for one outfit; throws with a readable message */
 /* reference photos for an outfit photo, each labelled: the jacket and tie photos, and the watch's own photo or its product
@@ -1131,7 +1135,7 @@ async function renderCombo(o){
   const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,labels,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o),...(o.top?{}:{nojacket:true})})});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error((r.status===404||r.status===405)?'The server doesn’t support photos yet: it needs an update.':(j.message||j.error||`HTTP ${r.status}`));
-  const rec={sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()};
+  const rec={sig:comboSig(o),img:keptPhoto(j.image),model:j.model||'',t:Date.now()};
   await keepRender(comboKey(o),rec,false);   // the worker already kept a copy
   return rec;
 }
@@ -1270,7 +1274,7 @@ async function queueCombo(o,replace=false){
   const j=await r.json().catch(()=>({}));
   if(r.ok&&j.queued)return 'queued';
   if(r.ok&&j.exists){renderTried.delete(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
-  if(r.ok&&j.image){await keepRender(ck,{sig:comboSig(o),img:await shrinkUrl(j.image,900),model:j.model||'',t:Date.now()},false);return 'done'}   // an older worker made it right away
+  if(r.ok&&j.image){await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.image),model:j.model||'',t:Date.now()},false);return 'done'}   // an older worker made it right away
   if(r.status===501||r.status===404||r.status===405)return 'noqueue';
   throw new Error(j.message||j.error||`HTTP ${r.status}`)}
 const RQ='render_queue';
@@ -1287,7 +1291,7 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
       if(pend.has(k)){const run=st.running&&st.running[k];if(run&&run.at>sentAt(q,k))fresh[k]=run.at;continue}   // the worker started it again: wait afresh
       if(fail[k]){newFail.push(fail[k]);renderFail[k]=fail[k];shown=true;removed.add(k);continue}
       const g=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=g.ok?await g.json().catch(()=>null):null;
-      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:await shrinkUrl(j.img,900),model:j.model||'',t:j.t||Date.now()},false);got++;removed.add(k);
+      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:keptPhoto(j.img),model:j.model||'',t:j.t||Date.now()},false);got++;removed.add(k);
         const o=planFor()[key(sel)];if(o&&comboKey(o)===k)shown=true}
       else if(!g.ok&&g.status!==404)continue;
       else if(Date.now()-sentAt(q,k)>LOST_MS)removed.add(k)}   // neither waiting, failed nor finished for a long time: lost (expired), stop waiting for it
@@ -1319,7 +1323,7 @@ async function waitPush(){const W=workerBase(),keys=queuedKeys();if(pushOn||noPu
 /* finished (or failed) queued photos, from the push or from polling */
 async function takeQueued(res){res=(res||[]).filter(m=>m&&m.key);if(!res.length)return;
   // every finished photo is kept, even one the app had stopped waiting for: it is for an outfit the user asked for
-  for(const m of res)if(m.rec&&m.rec.img)await keepRender(m.key,{sig:m.rec.sig||'',img:await shrinkUrl(m.rec.img,900),model:m.rec.model||'',t:m.rec.t||Date.now()},false);
+  for(const m of res)if(m.rec&&m.rec.img)await keepRender(m.key,{sig:m.rec.sig||'',img:keptPhoto(m.rec.img),model:m.rec.model||'',t:m.rec.t||Date.now()},false);
   const q=rqGet(),mine=new Set(q.keys);for(const m of res){if(!mine.has(m.key))continue;if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
   finishQueueMsg(q);rqSet(q);renderBatchUI();renderRegenUI();if(!$('#today').hidden)refreshToday()}
 function finishQueueMsg(q){const done=(q.total||0)-q.keys.length-q.failed.length;
