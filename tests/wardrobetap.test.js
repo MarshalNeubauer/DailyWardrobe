@@ -18,6 +18,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ten shirts in a two-column grid, newest first: s9 s8 / s7 s6 / s5 s4 / ...; then a tie without a photo
     await p.evaluate(ph=>{items=[...Array(10)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:n%2?'white':'lightblue',pattern:'solid',photo:ph,added:n}));
       items.push({id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:0});flt='all';editing=null;show('wardrobe')},PH);
+    await p.waitForFunction(()=>!document.querySelector('#wardrobe').getAnimations().length);   // the page has eased in (pageIn)
     await p.evaluate(()=>window.scrollTo(0,document.getElementById('gi-s7').getBoundingClientRect().top+scrollY-120));
     const y0=await p.evaluate(()=>Math.round(scrollY)),b6=await rect('s6'),b7=await rect('s7');
     // open: tap the photo

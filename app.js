@@ -597,11 +597,12 @@ function picOpen(el,top){picStop(el);const b0=el.getBoundingClientRect(),below=p
   el.classList.remove('instant');el.classList.add('pfast','open');
   const b1=el.getBoundingClientRect(),g=b1.bottom-b0.bottom,d=revealNeed(el,top);
   if(noMotion()||g<1){if(d>.5)scrollBy(0,d);return}
-  const o={duration:PIC_MS,easing:MONTH_EASE},list=[el.animate([{clipPath:`inset(0 0 ${Math.max(0,b1.height-b0.height)}px 0)`},{clipPath:'inset(0 0 0 0)'}],o)];
-  cards.forEach((c,i)=>list.push(c.animate([{clipPath:monthClip(c.getBoundingClientRect().height-c0[i])},{clipPath:monthClip(0)}],o)));
+  // the photo's own edge and its card's edge are strips that slide (foldEdge), like the cards' own: no clip-path for Safari to repaint
+  const o={duration:PIC_MS,easing:MONTH_EASE},edges=[foldEdge(el,Math.max(0,b1.height-b0.height),0,o),...cards.map((c,i)=>foldEdge(c,c.getBoundingClientRect().height-c0[i],0,o))];
+  const list=edges.map(e=>e.anim),drop=()=>edges.forEach(e=>e.drop());
   for(const e of below)list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
   const pin=el.querySelector('.rpanel-in');if(pin)list.push(pin.animate([{opacity:0,transform:'translateY(-10px) scale(.96)'},{opacity:1,transform:'none'}],{duration:440,delay:40,easing:'cubic-bezier(.34,1.56,.64,1)',fill:'backwards'}));
-  const a=el._pa={list,end:null};list[0].finished.then(()=>{if(el._pa===a)el._pa=null},()=>{});
+  const a=el._pa={list,end:drop};list[0].finished.then(()=>{if(el._pa===a){el._pa=null;drop()}},()=>{});
   if(d>.5)pageScroll(scrollY+d,o.duration)}
 function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.classList.remove('open','instant')};
   if(noMotion()||foldQuiet||!el.classList.contains('open')){close();keepInView(el);return}
@@ -613,11 +614,10 @@ function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.c
   let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
   const pin=el.querySelector('.rpanel-in'),wait=150,o={duration:PIC_MS-40,delay:wait,easing:MONTH_EASE,fill:'forwards'};
   if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
-  const list=[el.animate([{clipPath:'inset(0 0 0 0)'},{clipPath:`inset(0 0 ${Math.max(0,b1.height-b0.height)}px 0)`}],o)];
-  cards.forEach((c,i)=>list.push(c.animate([{clipPath:monthClip(0)},{clipPath:monthClip(c1[i]-c0[i])}],o)));
+  const edges=[foldEdge(el,0,Math.max(0,b1.height-b0.height),o),...cards.map((c,i)=>foldEdge(c,0,c1[i]-c0[i],o))],list=edges.map(e=>e.anim);
   for(const e of below)list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
   if(pin)list.push(pin.animate([{opacity:1,transform:'none'},{opacity:1,offset:.25},{opacity:0,transform:'translateY(-10px) scale(.96)'}],{duration:280,easing:'cubic-bezier(.36,0,.66,-.56)',fill:'forwards'}));
-  const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=el._pa={list,end};
+  const end=()=>{edges.forEach(e=>e.drop());if(scrollY>max)scrollTo(0,max);close()},a=el._pa={list,end};
   list[0].finished.then(()=>{if(el._pa!==a)return;el._pa=null;end();for(const x of list)x.cancel()},()=>{})}
 /* shut at once (another photo is opening): when it lay above `keep`, scroll by what it gave back, so `keep` doesn't move */
 function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().bottom<=keep.getBoundingClientRect().top+1,h0=r.getBoundingClientRect().height;
@@ -796,8 +796,8 @@ function scoreCard(o){
     <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()">${fixes}<ul>${r.checks.map((c,n)=>`<li class="${c.pts===c.max?'ok':c.hard?'miss hard':'miss'}" style="--i:${n}"><span>${c.pts===c.max?'✓':c.hard?'!':'•'} ${c.label}</span><span class="pts">${c.pts}/${c.max}</span><span class="sbar" aria-hidden="true"><i style="--p:${c.max?Math.max(0,c.pts)/c.max:1}"></i></span>${c.why?`<small>${c.why}${A&&A.stuck.includes(c.label)?' <span class="lim">Nothing you own does better here.</span>':''}</small>`:''}</li>`).join('')}</ul>${r.hard.length?`<p class="scap">A real mistake keeps the score at ${HARD_CAP} or below, however well the rest matches.</p>`:''}</div></div></section>`;
 }
 
-/* the score box and the pieces list unfold and fold like the month (monthUnfold / monthFold): the page is laid out once and a clip
-   over the card and a slide of what is under it move; their own entry cascades (the checks and their bars, the pieces) still play.
+/* the score box and the pieces list unfold and fold like the month (monthUnfold / monthFold): the page is laid out once and the card's
+   edge (a strip, foldEdge) and what is under it slide; their own entry cascades (the checks and their bars, the pieces) still play.
    Folding is that cascade backwards: the last check or piece lifts out first (BOX_LIFT ms apart, styles.css .blift), the card closes
    once about half are gone. A box's running animations are kept on it (box._fa) so a tap in the middle finishes the last move. */
 const BOX_LIFT=20;
@@ -805,10 +805,25 @@ function boxStop(box){const a=box._fa;box._fa=null;if(!a)return;for(const x of a
 function boxUnfold(box){boxStop(box);const pan=box.querySelector('.mpanel');box.classList.remove('instant','bshut','blift');box.classList.add('bfast','open');
   const g=pan?pan.offsetHeight:0,d=revealNeed(box,box);
   if(noMotion()||!g){if(d>.5)scrollBy(0,d);return}
-  const o={duration:MONTH_MS,easing:MONTH_EASE},list=[box.animate([{clipPath:monthClip(g)},{clipPath:monthClip(0)}],o)];
+  const o={duration:MONTH_MS,easing:MONTH_EASE},c=foldEdge(box,g,0,o),list=[c.anim];
   for(const e of monthBelow(box))list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
-  const a=box._fa={list,end:null};list[0].finished.then(()=>{if(box._fa===a)box._fa=null},()=>{});
+  const a=box._fa={list,end:c.drop};list[0].finished.then(()=>{if(box._fa===a){box._fa=null;c.drop()}},()=>{});
   if(d>.5)pageScroll(scrollY+d,o.duration)}
+/* A card's moving bottom edge, while it unfolds or folds: a strip laid over the card (.fedge) drawing the card's rounded bottom border
+   with the page's background under it, sliding with what is below the card, from `from` px above the card's bottom to `to`. It replaces
+   a clip-path on the card: Safari repaints a clip on the page's own thread every frame but slides the cards below on its compositor, so
+   on a phone the edge and the cards drifted apart and the folding juddered; now every moving part is a slide the browser runs together.
+   drop() takes it away, where the card's own edge then is. */
+/* The same strip serves a piece's photo row (a straight bottom line, the card's colour under it) and the tile photo under the stage (no
+   border, the page under it): it draws whatever bottom border the element has and fills with what is behind the element. */
+function foldEdge(box,from,to,o){const cs=getComputedStyle(box),px=v=>parseFloat(v)||0,R=px(cs.borderBottomLeftRadius),bw=px(cs.borderBottomWidth),H=box.offsetHeight,eh=Math.max(R,bw);
+  let under='';for(let n=box.parentElement;n&&!under;n=n.parentElement){const c=getComputedStyle(n).backgroundColor;if(c&&!/^(transparent|rgba\(.*,\s*0\))$/.test(c))under=c}
+  const w=document.createElement('div');w.className='fedge';w.setAttribute('aria-hidden','true');
+  w.style.inset=`${-px(cs.borderTopWidth)}px ${-px(cs.borderRightWidth)}px ${-bw}px ${-px(cs.borderLeftWidth)}px`;w.style.borderRadius=cs.borderRadius;
+  const s=document.createElement('i');s.style.cssText=`top:${H-eh}px;height:${eh+Math.max(from,to)+2}px;--fr:${R}px;--fh:${eh}px;--fl:${cs.borderBottomColor};--fw:${bw}px;--fs:${px(cs.borderLeftWidth)}px;--fb:${under||'var(--bg)'}`;w.appendChild(s);
+  box.classList.add('fedge-on');if(cs.overflow!=='visible')box.classList.add('fedge-bfc');box.appendChild(w);   // a card stays its own formatting context, a row is left as it is
+  const anim=s.animate([{transform:`translateY(${-from}px)`},{transform:`translateY(${-to}px)`}],o);
+  return {anim,drop:()=>{w.remove();box.classList.remove('fedge-on','fedge-bfc')}}}
 function boxFold(box,items){boxStop(box);const pan=box.querySelector('.mpanel'),pin=box.querySelector('.mpanel-in'),g=pan?pan.offsetHeight:0;
   const close=()=>{box.classList.add('bfast');box.classList.remove('open','instant','bshut','blift')};
   if(noMotion()||!g||foldQuiet||!box.classList.contains('open')){close();keepInView(box);return}
@@ -817,11 +832,11 @@ function boxFold(box,items){boxStop(box);const pan=box.querySelector('.mpanel'),
   let want=top<8?scrollY+top-8:scrollY;want=Math.min(want,max);
   const its=[...box.querySelectorAll(items)];its.forEach((e,i)=>{e.classList.add('bli');e.style.setProperty('--bi',i)});box.style.setProperty('--bn',its.length);
   const wait=Math.round((its.length*BOX_LIFT+260)*.55);box.classList.add('bfast','bshut','blift');
-  const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
+  const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},c=foldEdge(box,0,g,o),list=[c.anim];
   for(const e of monthBelow(box))list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
   if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,delay:wait+Math.round((MONTH_MS-60)*.35),duration:200}));
   if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
-  const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=box._fa={list,end};
+  const end=()=>{c.drop();if(scrollY>max)scrollTo(0,max);close()},a=box._fa={list,end};
   list[0].finished.then(()=>{if(box._fa!==a)return;box._fa=null;end();for(const x of list)x.cancel()},()=>{})}
 function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
   const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
@@ -897,23 +912,23 @@ function pageScroll(to,ms,delay=0){const pg=$('#today'),from=scrollY;
   a.finished.then(()=>{if(pg._ps===a)pg._ps=null},()=>{})}
 /* Unfolding and folding the month without animating its height: an animated height laid the page out and repainted every day's
    drawing on every frame (30 layouts and 285 paints for one unfold), which was choppy on a phone. The page is laid out once, at the
-   start of an unfold or the end of a fold, and the movement is a clip over the card, a slide for whatever is below it and a fade of
-   the days, all of which the GPU draws; the scroll is the browser's own smooth scroll. */
+   start of an unfold or the end of a fold, and the movement is the card's edge sliding (a strip, foldEdge: a clip-path here was
+   repainted every frame by Safari and drifted from the slides), a slide for whatever is below it and a fade of the days, all of which
+   the GPU draws; the scroll is pageScroll's. */
 const MONTH_MS=420;
 const MONTH_EASE='cubic-bezier(.2,.8,.2,1)';
 const MONTH_LIFT=8;   // ms between the days lifting out when the month folds
 let monthAnim=null;   // {list: running animations, end: what finishing early must still do}
 function monthStop(){const a=monthAnim;monthAnim=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
 const monthBelow=box=>{const k=[...box.parentNode.children];return k.slice(k.indexOf(box)+1)};
-const monthClip=g=>`inset(0 0 ${Math.max(0,g)}px 0 round 14px)`;
 function monthUnfold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in');box.classList.remove('mshut');box.classList.add('mfast','open');
   const g=pan?pan.offsetHeight:0,d=revealNeed(box,box);
   if(noMotion()||!g){if(d>.5)scrollBy(0,d);return}
-  const o={duration:MONTH_MS,easing:MONTH_EASE},list=[box.animate([{clipPath:monthClip(g)},{clipPath:monthClip(0)}],o)];
+  const o={duration:MONTH_MS,easing:MONTH_EASE},c=foldEdge(box,g,0,o),list=[c.anim];
   for(const e of monthBelow(box))list.push(e.animate([{transform:`translateY(${-g}px)`},{transform:'none'}],o));
   if(pin)list.push(pin.animate([{opacity:0},{opacity:1}],{...o,duration:240,fill:'backwards'}));   // the title, weekdays and buttons fade in; the days drop in (.mdrop)
   monthDrop(box);
-  const a=monthAnim={list,end:null};list[0].finished.then(()=>{if(monthAnim===a)monthAnim=null},()=>{});
+  const a=monthAnim={list,end:c.drop};list[0].finished.then(()=>{if(monthAnim===a){monthAnim=null;c.drop()}},()=>{});
   if(d>.5)pageScroll(scrollY+d,o.duration)}
 function monthFold(box){monthStop();clearTimeout(monthDropT);box.classList.remove('mdrop');const pan=$('#mpanel'),pin=$('#mpanel-in'),g=pan?pan.offsetHeight:0;
   const close=()=>{box.classList.add('mfast');box.classList.remove('open','instant','mshut','mdrop','mlift')};
@@ -925,11 +940,11 @@ function monthFold(box){monthStop();clearTimeout(monthDropT);box.classList.remov
   // of them are gone
   const n=box.querySelectorAll('.mc:not(.blank)').length,wait=Math.round((n*MONTH_LIFT+280)*.55);
   box.style.setProperty('--mn',n);box.classList.add('mfast','mshut','mlift');
-  const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},list=[box.animate([{clipPath:monthClip(0)},{clipPath:monthClip(g)}],o)];
+  const o={duration:MONTH_MS-60,delay:wait,easing:MONTH_EASE,fill:'forwards'},c=foldEdge(box,0,g,o),list=[c.anim];
   for(const e of monthBelow(box))list.push(e.animate([{transform:'none'},{transform:`translateY(${-g}px)`}],o));
   if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
   if(pin)list.push(pin.animate([{opacity:1},{opacity:0}],{...o,delay:wait+Math.round((MONTH_MS-60)*.35),duration:200}));   // the title and weekdays, once the days are gone (a fade of the whole panel any earlier hid the days lifting out)
-  const end=()=>{if(scrollY>max)scrollTo(0,max);close()},a=monthAnim={list,end};
+  const end=()=>{c.drop();if(scrollY>max)scrollTo(0,max);close()},a=monthAnim={list,end};
   list[0].finished.then(()=>{if(monthAnim!==a)return;monthAnim=null;end();for(const x of list)x.cancel()},()=>{})}
 /* the days drop in one after another while the box unfolds (styles.css .mdrop): the class stays only as long as that takes, so a
    month swiped to, a re-plan or a move doesn't play it again */
@@ -1682,7 +1697,19 @@ ${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).di
 ${moreRow(q,i)}${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
 }
 
+/* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
+   fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
+   (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
+const PAGES=['today','wardrobe','add','stats','pack','care'],TABS=['today','wardrobe','add'],PAGE_MS=320;
+function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav'),ti=TABS.indexOf(t);
+  if(nav){nav.style.setProperty('--ti',Math.max(0,ti));nav.classList.toggle('tab-none',ti<0)}
+  if(!el||!from||from===t||noMotion())return;
+  if(el._ps){el._ps.cancel();el._ps=null}   // a scroll slide left from an unfold (pageScroll) on Today
+  const a=TABS.indexOf(from),dx=a>=0&&ti>=0?(ti>a?28:-28):0;if(el._pg)el._pg.cancel();
+  const an=el._pg=el.animate([{opacity:0,transform:dx?`translateX(${dx}px)`:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:PAGE_MS,easing:MONTH_EASE});
+  an.finished.then(()=>{if(el._pg===an)el._pg=null},()=>{})}
 function show(t){
+  const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
@@ -1690,6 +1717,7 @@ function show(t){
   if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
   if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
+  pageIn(t,from);
 }
 
 db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});

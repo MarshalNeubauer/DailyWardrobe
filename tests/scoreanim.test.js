@@ -1,5 +1,5 @@
 // The score card unfolds smoothly like the pieces list and the month plan (what shows grows over time, not in one frame; since the
-// month's change the box is laid out at once and a clip over it opens, so the visible height is the box's minus the clip):
+// month's change the box is laid out at once and its edge, a strip (app.js foldEdge), slides down, so the visible height runs to the strip's edge):
 // the checks slide in one after another and each bar fills to the points that check scored. It stays open across
 // re-renders without replaying the animation, folds back smoothly, and is reachable by keyboard / screen reader.
 module.exports=async({ok,chromium,url,settle})=>{
@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       panel:document.querySelector('#spanel').getBoundingClientRect().height,same:['#ibox','#mbox'].every(s=>Math.round(document.querySelector(s).getBoundingClientRect().height)===Math.round(b.getBoundingClientRect().height))}});
     ok(r0.tag==='SECTION'&&r0.btn==='false'&&r0.panel===0&&r0.same,'folded: a button with the same size as the other cards, the breakdown hidden');
     // sample the height while it opens: it grows over several frames
-    const s=await p.evaluate(async()=>{const vis=b=>{const m=/inset\(\S+ \S+ ([\d.]+)px/.exec(getComputedStyle(b).clipPath);return Math.round(b.getBoundingClientRect().height-(m?+m[1]:0))};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
+    const s=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
       while(performance.now()-t0<700){hs.push(vis(box));await new Promise(r=>requestAnimationFrame(r))}
       const li=[...box.querySelectorAll('li')],delays=li.map(l=>parseFloat(getComputedStyle(l).animationDelay)),bars=li.map(l=>getComputedStyle(l.querySelector('.sbar i')).animationName);
       return {hs,distinct:new Set(hs).size,final:hs[hs.length-1],first:hs[0],delays,bars,expanded:box.querySelector('.month-link').getAttribute('aria-expanded'),chev:getComputedStyle(box.querySelector('.chev')).transform}});
@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const keep=await p.evaluate(()=>{renderToday();const b=document.querySelector('#sbox');return {open:b.classList.contains('open'),instant:b.classList.contains('instant'),anim:getComputedStyle(b.querySelector('li')).animationName}});
     ok(keep.open&&keep.instant&&keep.anim==='none','it stays open across a re-render, without replaying the animation');
     // folding: shrinks over several frames back to the card size
-    const f=await p.evaluate(async()=>{const vis=b=>{const m=/inset\(\S+ \S+ ([\d.]+)px/.exec(getComputedStyle(b).clipPath);return Math.round(b.getBoundingClientRect().height-(m?+m[1]:0))};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
+    const f=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
       const li=[...box.querySelectorAll('li')],lift={name:getComputedStyle(li[0]).animationName,d0:parseFloat(getComputedStyle(li[0]).animationDelay),dn:parseFloat(getComputedStyle(li[li.length-1]).animationDelay)};
       while(performance.now()-t0<1100){hs.push(vis(box));await new Promise(r=>requestAnimationFrame(r))}return {lift,distinct:new Set(hs).size,last:hs[hs.length-1],ib:Math.round(document.querySelector('#ibox').getBoundingClientRect().height)}});
     ok(f.lift.name==='mcLift'&&f.lift.dn===0&&f.lift.d0>0.1,`folding plays the checks backwards: the last lifts out first, the first ${Math.round(f.lift.d0*1000)} ms later`);
