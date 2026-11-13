@@ -411,7 +411,8 @@ const asmCan=o=>!!(o&&o.top&&o.shirt&&o.tie&&o.watch);
    asmPrebuildOne look for it first); a worker without them leaves every outfit to the earlier way */
 const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* look for the outfit's colour-coded master on the worker, once a session */
-const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(k&&!renders[asmCmKey(k,'master')]&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k)};
+const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(k&&!renders[asmCmKey(k,'master')]&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k);
+  if(k&&renders[asmCmKey(k,'master')])await asmCmBgGet()};   // the background (asm-color.js), once a session, also on a phone that already holds the masters
 const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(k=>renders[asmCmKey(k,'master')]);
 /* the piece photos an outfit needs: [{slot, key, item}] */
 function asmParts(o){const inf=asmInfo()||{},out=[];

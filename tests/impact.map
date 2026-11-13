@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	3e9d2adc390cbf27cbfb
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -167,7 +168,7 @@ asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLOR
 asmcolor.test.js	<every page test>	<every page test>
 asmcolor.test.js	account.js	acctCall	iosDevice	iosInSafari	loadAccount	rememberRole	renderAccountUI
 asmcolor.test.js	app.js	@addEventListenerpopstate	@tocolnavigator.serviceWorker.registersw.js.catch	aAn	addTombstones	appPush	atomic	backupSummary	cap1	comboKey	comboSig	countryName	esc	fnv64	hasOutfit	isoDate	itemDesc	itemKey	keepRender	keyDate	lockUpcoming	lookSig	metaPut	missingItemPics	monthFillSoon	monthLink	openSettings	planOn	recordDays	renderDaysOffUI	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	resetCard	setCatOpen	settingsSummaries	shirtPatterned	shirtTextured	shortDate	unit	workerBase
-asmcolor.test.js	asm-color.js	<any>	asmCmAssets	asmCmEnsure	asmCmGaps	asmCmGet	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmOutKey	asmCmPref	asmCmRoute	asmCmSet	asmCmSig	asmCmStamp	asmCmTile	asmCmUI	asmCmWeaveTag	asmGapUI
+asmcolor.test.js	asm-color.js	<any>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmEnsure	asmCmGaps	asmCmGet	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmOutKey	asmCmPref	asmCmRoute	asmCmSet	asmCmSig	asmCmStamp	asmCmTile	asmCmUI	asmCmWeaveTag	asmGapUI
 asmcolor.test.js	asm-worker.js	<any>
 asmcolor.test.js	assemble.js	<any>	asmCalibKey	asmCan	asmCmLook	asmCmUse	asmDropOld	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmInfo	asmJob	asmKey	asmLoad	asmLook	asmMasterKey	asmMicroKind	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmP2UI	asmPaintable	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTrim	asmVestKept	asmVestKey	asmVestTag	asmWants	asmWants0	asmWorker	asmZonesKept	renderAsmUI
 asmcolor.test.js	care.js	careLimit	laundryDays	renderCareUI
