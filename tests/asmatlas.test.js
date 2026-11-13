@@ -13,6 +13,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const watch=I('watch','silver',{metal:'silver'}),jk=I('suit','navy'),tie=I('tie','burgundy'),navy=I('shirt','navy'),hb=I('shirt','pink',{pattern:'herringbone'});items=[watch,jk,tie,navy,hb];
       put(asmMasterKey(),await url('master'),100,asmMasterSig({watch,shirt:asmMasterItem('shirt','white')}));put(asmCalibKey('shirt'),await url('shirt-black'),200);
       put(asmPieceKey('jacket',jk),await url('jacket'),150);put(asmPieceKey('tie',tie),await url('tie'),150);
+      put(asmCalibKey('jacket'),await url('jacket'),210);put(asmCalibKey('tie'),await url('tie'),220);   // (solid suits and every tie are painted too, each from its calibration photo)
       // the zones' pictures, made here from the fixture's calibration photos (SAM's are made outside the app the same way: white = the piece)
       const M=await asmData(renders[asmMasterKey()].img),W=M.width,c={jacket:await asmData(await url('jacket')),shirt:await asmData(await url('shirt-black')),tie:await asmData(await url('tie')),watch:await asmData(await url('watch'))};
       const z=asmZones(M,c),pic=m=>{const cv=document.createElement('canvas');cv.width=cv.height=W;const x=cv.getContext('2d'),d=x.createImageData(W,W);for(let i=0;i<W*W;i++){const v=m[i]?255:0;d.data.set([v,v,v,255],4*i)}x.putImageData(d,0,0);return cv.toDataURL('image/png')};
