@@ -1081,7 +1081,7 @@ function partedStream(env, key, m, lead = '', skip = 0) {
 }
 /* copy a stored value (one or in parts) to another key: the dated copies */
 async function copyStored(env, from, to, m, opt) {
-  const meta = { rev: m.rev, saved: m.saved, ...(isParted(m) ? { parts: m.parts } : {}) };
+  const meta = { rev: m.rev, saved: m.saved, ...(isParted(m) ? { parts: m.parts } : {}), ...(isPv(m) ? { pv: PV } : {}) };
   if (!isParted(m)) { const cur = await env.WARDROBE.get(from); if (cur && cur !== SYNC_NONE) await env.WARDROBE.put(to, cur, { ...opt, metadata: meta }); return; }
   for (let i = 1; i < m.parts; i++) { const v = await env.WARDROBE.get(partKey(from, m.rev, i), 'arrayBuffer'); if (v == null) return; await env.WARDROBE.put(partKey(to, m.rev, i), v, opt); }
   const v = await env.WARDROBE.get(from, 'arrayBuffer'); if (v != null) await env.WARDROBE.put(to, v, { ...opt, metadata: meta });
@@ -1095,6 +1095,7 @@ async function dropParts(env, key, old) {
    opening brace when given ({"error":"conflict", …}) */
 async function storedResponse(env, key, m, cors, lead, status = 200) {
   const headers = { ...cors, 'content-type': 'application/json' };
+  if (isPv(m)) return pvResponse(env, key, m, cors, lead, status);   // photos by reference: rebuilt whole, as it always was sent
   if (isParted(m)) return new Response(partedStream(env, key, m, lead || '', lead ? 1 : 0), { status, headers });
   const t = (await env.WARDROBE.get(key)) || SYNC_NONE;
   return new Response(lead ? lead + t.slice(1) : t, { status, headers });
@@ -1108,7 +1109,9 @@ async function storedResponse(env, key, m, cors, lead, status = 200) {
    month as snap:<YYYY-MM> for a year. A restore from the app (body.reason 'restore') first keeps the backup it replaces as
    snap:before-restore, so a restore can itself be undone. Copied as stored text, not parsed (the backup is several MB). */
 const SNAP_DAYS = 30, SNAP_MONTHS = 400, SNAP_DAY = /^\d{4}-\d{2}-\d{2}$/;
-async function keepSnapshots(env, m, body, ns = '') {
+/* oldPv: the version being replaced in its by-reference form, when it was stored with its photos inline (a backup converted at this
+   save): its copies are kept small too, their photos already stored */
+async function keepSnapshots(env, m, body, ns = '', oldPv = null) {
   const day = SNAP_DAY.test(body.day || '') ? body.day : new Date().toISOString().slice(0, 10), month = day.slice(0, 7);
   const want = [[`${ns}snap:${day}`, SNAP_DAYS], [`${ns}snap:${month}`, SNAP_MONTHS]];
   // which of the two are already kept: asked for by a read each where KV can; else by one list, as before
@@ -1119,13 +1122,14 @@ async function keepSnapshots(env, m, body, ns = '') {
   const todo = want.filter(([k]) => !have.has(k));
   if (body.reason === 'restore') todo.push([`${ns}snap:before-restore`, SNAP_DAYS]);
   if (!todo.length) return;
+  if (oldPv && m && m.saved) { for (const [k, days] of todo) await env.WARDROBE.put(k, oldPv, { expirationTtl: days * 86400, metadata: pvMeta(m.rev, m.saved) }); return; }
   if (isParted(m)) { if (m.saved) for (const [k, days] of todo) await copyStored(env, ns + SYNC_KEY, k, m, { expirationTtl: days * 86400 }); return; }
   const cur = await env.WARDROBE.get(ns + SYNC_KEY);
   if (!cur || cur === SYNC_NONE) return;                       // nothing stored yet
   let meta = m;
   if (!meta) { try { const o = JSON.parse(cur); meta = { rev: o.rev, saved: o.saved }; } catch { return; } }
   if (!meta.saved) return;
-  for (const [k, days] of todo) await env.WARDROBE.put(k, cur, { expirationTtl: days * 86400, metadata: { rev: meta.rev, saved: meta.saved } });
+  for (const [k, days] of todo) await env.WARDROBE.put(k, cur, { expirationTtl: days * 86400, metadata: { rev: meta.rev, saved: meta.saved, ...(isPv(m) ? { pv: PV } : {}) } });
 }
 async function listSnapshots(env, ns = '') {
   const l = await env.WARDROBE.list({ prefix: `${ns}snap:` });
@@ -1136,12 +1140,15 @@ async function listSnapshots(env, ns = '') {
    {"baseRev":n,"day":"…"[,"reason":"restore"],"data":…} with data last (sync.js), so the leading fields are read from the first
    bytes, and what follows "data": up to the closing brace is stored as it came, behind {"rev":…,"saved":…,"data":. */
 const BIG_HEAD = /^\{"baseRev":(-?\d+),"day":("(?:[^"\\]|\\.)*")(?:,"reason":"(restore)")?,"data":/;
-async function putParted(env, json, cors, ns, all) {
-  const KEY = ns + SYNC_KEY, h = BIG_HEAD.exec(new TextDecoder().decode(all.subarray(0, 300)));
+async function putParted(env, json, cors, who, all) {
+  const ns = who.ns, KEY = ns + SYNC_KEY, h = BIG_HEAD.exec(new TextDecoder().decode(all.subarray(0, 300)));
   if (!h || all[all.length - 1] !== 0x7d) return json({ error: 'backup too large for this version of the app: update the app (Settings → About)' }, 413);
   const body = { baseRev: +h[1], day: JSON.parse(h[2]), ...(h[3] ? { reason: h[3] } : {}) };
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;
   if (body.baseRev !== rev) return m ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', rev: 0, saved: 0, data: null }, 409);
+  // its photos cut out unparsed and stored by hash: what is left is small, and saved like any other backup
+  const sc = await scanPhotos(all);
+  if (sc) { let b = null; try { b = JSON.parse(sc.text); } catch { } if (b) return putWhole(env, json, cors, who, b, sc.pre); }
   await keepSnapshots(env, m, body, ns);
   const saved = Date.now(), lead = new TextEncoder().encode(`{"rev":${rev + 1},"saved":${saved},"data":`);
   const rest = all.subarray(new TextEncoder().encode(h[0]).length), total = lead.length + rest.length, parts = Math.ceil(total / PART_MAX);
@@ -1183,26 +1190,6 @@ async function splitPhotos(data, photos = new Map()) {
   const strs = [...phCollect(data, isPhoto)], hs = await Promise.all(strs.map(phHash)), by = new Map();
   strs.forEach((s, i) => { by.set(s, hs[i]); if (!photos.has(hs[i])) photos.set(hs[i], s); });
   return { refs: by.size ? phMapStr(data, s => by.has(s) ? PH_REF + by.get(s) : s) : data, photos };
-}
-const asciiJson = v => JSON.stringify(v).replace(/[\u007f-￿]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
-/* the stored text of a backup from its referenced form: each reference becomes its photo's JSON string, lit(hash) (null: none, listed
-   in missing and nothing is built) */
-function buildStored(rev, saved, refs, revs, lit) {
-  const S = JSON.stringify(refs === undefined ? null : refs), out = [], ph = {}, missing = new Set();
-  let last = 0, n = 0, m;
-  PH_TOKEN.lastIndex = 0;
-  while ((m = PH_TOKEN.exec(S))) {
-    if (m.index && S[m.index - 1] === '\\') continue;     // (inside someone's text, not a value of its own)
-    const h = m[1], l = lit(h);
-    if (l == null) { missing.add(h); continue; }
-    const seg = S.slice(last, m.index); out.push(seg); n += seg.length;
-    if (!ph[h]) ph[h] = [n, l.length];
-    out.push(l); n += l.length; last = m.index + m[0].length;
-  }
-  if (missing.size) return { missing: [...missing] };
-  out.push(S.slice(last));
-  const lite = asciiJson({ v: 1, data: refs === undefined ? null : refs, revs, ph }), head = `{"rev":${rev},"saved":${saved},"index":`;
-  return { text: head + lite + ',"data":' + out.join('') + '}', meta: { rev, saved, ls: head.length, ll: lite.length, ds: head.length + lite.length + 8 } };
 }
 /* each record's revision in a new version: the one before for a record whose stamp is unchanged, rev for the rest */
 function nextRevs(prev, data, rev) {
@@ -1289,7 +1276,7 @@ async function syncLiteGet(env, json, cors, ns, q) {
   const KEY = ns + SYNC_KEY, m = await syncVersion(env, ns), v = q.get('v');
   if (v && m && `${m.rev}:${m.saved}` === v) return json({ rev: m.rev, saved: m.saved, same: true });
   if (!m && await env.WARDROBE.get(KEY)) return storedResponse(env, KEY, m, cors);   // saved by a worker that kept no version: as before
-  const src = await loadSync(env, KEY, m, false);
+  const src = await loadAny(env, KEY, m, false);
   if (!src) return storedResponse(env, KEY, m, cors);                                 // too large to index here: the whole backup, as before
   const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D = src.lite.data || {}, R = src.lite.revs || {};
   const [sr, ss] = (q.get('since') || '').split(':').map(Number), all = !(sr > 0) || sr > rev || (sr === rev && ss !== saved);
@@ -1304,7 +1291,13 @@ async function syncLiteGet(env, json, cors, ns, q) {
 async function syncPhotos(env, json, cors, ns, q) {
   const hs = [...new Set((q.get('ph') || '').split(','))].filter(h => PH_HEX.test(h)).slice(0, 60);
   if (!hs.length) return json({ error: 'no photos asked for' }, 400);
-  const KEY = ns + SYNC_KEY, m = await syncVersion(env, ns), src = await loadSync(env, KEY, m, true), out = [];
+  const KEY = ns + SYNC_KEY, m = await syncVersion(env, ns), out = [];
+  if (isPv(m)) {   // each from its own key
+    const vs = await Promise.all(hs.map(h => env.WARDROBE.get(phKey(ns, h))));
+    vs.forEach((v, i) => { if (v != null) out.push(`"${hs[i]}":${asText(v)}`); });
+    return new Response(`{"photos":{${out.join(',')}}}`, { headers: { ...cors, 'content-type': 'application/json' } });
+  }
+  const src = await loadSync(env, KEY, m, true);
   if (src && src.lit) for (const h of hs) { const l = src.lit(h); if (l != null) out.push(`"${h}":${l}`); }
   return new Response(`{"photos":{${out.join(',')}}}`, { headers: { ...cors, 'content-type': 'application/json' } });
 }
@@ -1324,7 +1317,7 @@ async function syncLitePost(req, env, json, cors, who) {
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;
   if (!m && await env.WARDROBE.get(KEY)) return give(json({ error: 'legacy' }, 422));
   if ((body.baseRev ?? -1) !== rev) return give(json({ error: 'conflict', rev, saved: m ? m.saved : 0 }, 409));
-  const src = m ? await loadSync(env, KEY, m, true) : { lite: { data: null, revs: {}, ph: {} }, lit: () => null };
+  const src = m ? await loadAny(env, KEY, m, true) : { pv: true, refs: new Set(), lite: { data: null, revs: {}, ph: {} } };
   if (!src) return give(json({ error: 'legacy' }, 422));
   const photos = new Map();
   for (const [h, s] of Object.entries(body.photos || {})) {
@@ -1333,11 +1326,228 @@ async function syncLitePost(req, env, json, cors, who) {
   }
   const { refs: delta } = await splitPhotos(body.delta, photos), cur = src.lite.data || {}, next = mergeLite(cur, delta);
   if (liteSig(cur) === liteSig(next) && m) return give(json({ rev, saved: m.saved }));   // nothing new: nothing written
-  const saved = Date.now(), b = buildStored(rev + 1, saved, next, nextRevs(src.lite, next, rev + 1), h => photos.has(h) ? JSON.stringify(photos.get(h)) : src.lit(h));
-  if (b.missing) return give(json({ error: 'missing photos', missing: b.missing }, 400));
-  await keepSnapshots(env, m, body, ns);
-  await putStored(env, KEY, b, m);
+  // every photo the new version refers to: kept by the backup now, or sent; the backup's own are already stored (or, inline, are stored now)
+  const want = new Map(), missing = [];
+  for (const h of refsOf(next)) {
+    if (src.pv && src.refs.has(h)) continue;
+    if (photos.has(h)) want.set(h, JSON.stringify(photos.get(h)));
+    else if (!src.pv && src.lit(h) != null) want.set(h, src.lit);
+    else missing.push(h);
+  }
+  if (missing.length) return give(json({ error: 'missing photos', missing }, 400));
+  const oldPv = await storePhotos(env, ns, m, src, want);
+  await keepSnapshots(env, m, body, ns, oldPv);
+  const saved = Date.now();
+  await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src.lite, next, rev + 1), next), meta: pvMeta(rev + 1, saved) }, m);
   return json({ rev: rev + 1, saved });
+}
+/* ---- photos stored once (2026-11-13). The backup's photos (99% of it) are kept apart, each once, under <ns>ph:<hash> (hash = phHash,
+   the value the photo's JSON string, metadata {t: when written}), and the backup itself is {"rev","saved","pv":1,"revs","data"} with
+   every photo in data as "dwph:<hash>" (about 130 KB for the owner's 16.7 MB), metadata {rev, saved, pv:1}. A save writes the small
+   value and only the photos not stored yet; the daily and monthly copies are copies of the small value, so they share the photos.
+   Whoever needs the old form (an older app's GET and its 409, ?snap= for Roll back) gets it rebuilt, streamed photo by photo
+   (pvResponse). A backup stored the old way (inline, with or without #284's index) is converted at its next save: its photos are
+   stored first, then its daily copy (small), then the new version. The daily clean-up (photoGc, from the cron at 23:00 UTC) deletes
+   a photo only when neither the backup nor any kept copy refers to it, seen so at two runs a day apart, and written over a day ago. ---- */
+const PV = 1, GC_AGE = 864e5, GC_MAX = 200, GC_GONE = 3 * 864e5, GC_SNAPS = 2;
+const phKey = (ns, h) => `${ns}ph:${h}`, gcKey = ns => `${ns}ph:gc`;
+const isPv = m => !!(m && m.pv);
+const pvMeta = (rev, saved) => ({ rev, saved, pv: PV });
+const asText = v => v == null || typeof v === 'string' ? v : new TextDecoder().decode(asBytes(v));
+const nsOf = key => (/^u:[a-z0-9]{8,24}:/.exec(key) || [''])[0];
+const gcDue = d => d.getUTCHours() === 23 && d.getUTCMinutes() < 15;
+function pvText(rev, saved, revs, data) { return `{"rev":${rev},"saved":${saved},"pv":${PV},"revs":${JSON.stringify(revs || {})},"data":${JSON.stringify(data === undefined ? null : data)}}`; }
+/* the hashes a stored text refers to: "dwph:<hash>" as a value of its own (not inside someone's text) */
+function refsIn(text, out = new Set()) {
+  if (!text) return out;
+  const re = new RegExp(PH_TOKEN.source, 'g'); let x;
+  while ((x = re.exec(text))) if (!(x.index && text[x.index - 1] === '\\')) out.add(x[1]);
+  return out;
+}
+const refsOf = data => refsIn(JSON.stringify(data === undefined ? null : data));
+async function readPv(env, key, m) { const t = await readText(env, key, m); if (t == null) return null; try { return JSON.parse(t); } catch { return null; } }
+/* the backup as loadSync gives it, for either form: {pv, refs, lite: {data, revs, ph}} for one by reference */
+async function loadAny(env, key, m, text) {
+  if (!isPv(m)) return loadSync(env, key, m, text);
+  const o = await readPv(env, key, m);
+  if (!o) return null;
+  const refs = refsOf(o.data);
+  return { pv: true, refs, lite: { data: o.data, revs: o.revs || {}, ph: Object.fromEntries([...refs].map(h => [h, 1])) } };
+}
+async function phThere(env, ns, h) {
+  const m = await kvMeta(env, phKey(ns, h));
+  return m !== undefined ? m !== null : (await env.WARDROBE.get(phKey(ns, h))) != null;
+}
+/* each photo of want (hash -> its JSON string, or a function of the hash giving it) stored: written only when it is not there yet,
+   or when the clean-up has it in view (unreferenced at its last run, or deleted in the last days: KV elsewhere may still show it).
+   -> the hashes that could not be stored (no text for them) */
+async function putPhotos(env, ns, want) {
+  const failed = new Set();
+  if (!want.size) return failed;
+  let gc = {}; try { gc = (await env.WARDROBE.get(gcKey(ns), 'json')) || {}; } catch { }
+  const risky = h => !!((gc.cand && gc.cand[h]) || (gc.gone && gc.gone[h]));
+  for (const [h, lit] of want) {
+    if (!risky(h) && await phThere(env, ns, h)) continue;
+    const l = typeof lit === 'function' ? lit(h) : lit;
+    if (l == null) { failed.add(h); continue; }
+    await env.WARDROBE.put(phKey(ns, h), l, { metadata: { t: Date.now(), n: l.length } });
+  }
+  return failed;
+}
+/* a save's photos stored before anything refers to them; a backup stored inline has all of its own stored too, and -> the
+   by-reference text of that version (for its daily copy), or null when it is already by reference or a photo could not be had */
+async function storePhotos(env, ns, m, src, want) {
+  const conv = !!(m && src && !src.pv);
+  if (conv) for (const h of Object.keys(src.lite.ph || {})) if (!want.has(h)) want.set(h, src.lit);
+  const failed = await putPhotos(env, ns, want);
+  if (!conv || failed.size) return null;
+  const t = pvText(m.rev, m.saved, src.lite.revs, src.lite.data);
+  return t.length <= PART_MAX ? t : null;
+}
+/* a stored by-reference value rebuilt whole, {"rev","saved","data"} with every photo inline, as older apps and Roll back read it;
+   streamed, a few photos at a time (never the whole backup in memory); lead replaces its opening brace ({"error":"conflict", …}) */
+async function pvResponse(env, key, m, cors, lead, status = 200) {
+  const headers = { ...cors, 'content-type': 'application/json' }, ns = nsOf(key), o = await readPv(env, key, m);
+  if (!o) return new Response(lead ? lead + SYNC_NONE.slice(1) : SYNC_NONE, { status, headers });
+  const D = JSON.stringify(o.data === undefined ? null : o.data), segs = [], hs = [], re = new RegExp(PH_TOKEN.source, 'g');
+  let last = 0, x;
+  while ((x = re.exec(D))) { if (x.index && D[x.index - 1] === '\\') continue; segs.push(D.slice(last, x.index)); hs.push(x[1]); last = x.index + x[0].length; }
+  segs.push(D.slice(last));
+  const head = `{"rev":${o.rev},"saved":${o.saved},"data":`, enc = new TextEncoder();
+  let i = 0;
+  return new Response(new ReadableStream({
+    start(c) { c.enqueue(enc.encode((lead ? lead + head.slice(1) : head) + segs[0])); },
+    async pull(c) {
+      if (i >= hs.length) { c.enqueue(enc.encode('}')); c.close(); return; }
+      const n = Math.min(8, hs.length - i), vs = await Promise.all(hs.slice(i, i + n).map(h => env.WARDROBE.get(phKey(ns, h), 'arrayBuffer')));
+      for (let k = 0; k < n; k++, i++) {
+        if (vs[k] == null) { console.log('a stored photo is missing', ns, hs[i]); c.enqueue(enc.encode(`"${PH_REF}${hs[i]}"`)); }
+        else c.enqueue(typeof vs[k] === 'string' ? enc.encode(vs[k]) : asBytes(vs[k]));
+        c.enqueue(enc.encode(segs[i + 1]));
+      }
+    }
+  }), { status, headers });
+}
+/* a large body's photos cut out without parsing it: each JSON string value starting "data: of PH_MIN characters or more with no
+   escapes in it becomes "dwph:<hash>" (the hash over its bytes, which are its UTF-8, = phHash). -> {text: what is left, pre: hash ->
+   a function giving the photo's JSON string as bytes} */
+async function scanPhotos(all) {
+  const n = all.length, enc = new TextEncoder(), out = [], pre = new Map();
+  let last = 0, i = 0, size = 0;
+  const isStart = i => all[i + 1] === 0x64 && all[i + 2] === 0x61 && all[i + 3] === 0x74 && all[i + 4] === 0x61 && all[i + 5] === 0x3a && !(i && all[i - 1] === 0x5c);
+  while ((i = all.indexOf(0x22, i)) >= 0) {
+    if (!isStart(i)) { i++; continue; }
+    let j = i + 1; while (j < n && all[j] !== 0x22 && all[j] !== 0x5c) j++;
+    if (j >= n) break;
+    if (all[j] === 0x5c) { i = j + 1; continue; }   // escapes: left as it is
+    const len = j - i - 1;
+    if (len >= PH_MIN && len + 2 <= PART_MAX) {
+      const d = new Uint8Array(await crypto.subtle.digest('SHA-256', all.subarray(i + 1, j)));
+      const h = [...d.slice(0, 10)].map(b => b.toString(16).padStart(2, '0')).join(''), tok = enc.encode(`"${PH_REF}${h}"`);
+      out.push(all.subarray(last, i), tok); size += i - last + tok.length; last = j + 1;
+      if (!pre.has(h)) { const a = i, b = j + 1; pre.set(h, () => all.slice(a, b)); }
+    }
+    i = j + 1;
+  }
+  if (!pre.size) return null;
+  out.push(all.subarray(last)); size += n - last;
+  if (size > PART_MAX) return null;   // still large without its photos: stored in parts as before
+  const b = new Uint8Array(size); let o = 0; for (const p of out) { b.set(p, o); o += p.length; }
+  return { text: new TextDecoder().decode(b), pre };
+}
+/* every key under a prefix (lists, following the cursor) -> {keys, complete} */
+async function listAll(env, prefix) {
+  const keys = []; let cursor;
+  for (let i = 0; i < 20; i++) {
+    const l = await env.WARDROBE.list({ prefix, ...(cursor ? { cursor } : {}) });
+    keys.push(...(l.keys || []));
+    if (l.list_complete !== false || !l.cursor) return { keys, complete: true };
+    cursor = l.cursor;
+  }
+  return { keys, complete: false };
+}
+/* every photo hash the backup and its kept copies refer to, or null when that can't be told for sure (then nothing is deleted).
+   A copy stored with its photos inline refers to none. */
+async function refsInUse(env, ns) {
+  const l = await listAll(env, ns + 'snap:');
+  if (!l.complete) return null;
+  const used = new Set(), live = await storedVersion(env, ns + SYNC_KEY);
+  const keys = [[ns + SYNC_KEY, live], ...l.keys.filter(k => !k.name.includes('~')).map(k => [k.name, k.metadata || null])];
+  for (const [k, m] of keys) {
+    if (m && !isPv(m)) continue;
+    const t = await readText(env, k, m || undefined);
+    if (t) refsIn(t, used);
+  }
+  return used;
+}
+/* migration of the kept copies stored inline (16 MB each for the owner): a few a day, monthly ones first, converted to the small form
+   once the backup itself is by reference; their photos are stored first; the copy keeps its expiry */
+async function convertSnaps(env, ns, now) {
+  if (!isPv(await storedVersion(env, ns + SYNC_KEY))) return 0;
+  const l = await listAll(env, ns + 'snap:'); let n = 0;
+  const old = l.keys.filter(k => !k.name.includes('~') && k.metadata && k.metadata.saved && !isPv(k.metadata) && !isParted(k.metadata))
+    .sort((a, b) => (SNAP_DAY.test(a.name.slice(ns.length + 5)) ? 1 : 0) - (SNAP_DAY.test(b.name.slice(ns.length + 5)) ? 1 : 0));
+  for (const k of old) {
+    if (n >= GC_SNAPS) break;
+    if (k.expiration && k.expiration - now / 1000 < 3600) continue;
+    const t = asText(await env.WARDROBE.get(k.name)); if (!t) continue;
+    let o; try { o = JSON.parse(t); } catch { continue; }
+    const { refs, photos } = await splitPhotos(o.data), want = new Map();
+    for (const [h, s] of photos) want.set(h, JSON.stringify(s));
+    if ((await putPhotos(env, ns, want)).size) continue;
+    const id = k.name.slice(ns.length + 5), ttl = (SNAP_DAY.test(id) || id === 'before-restore' ? SNAP_DAYS : SNAP_MONTHS) * 86400;
+    await env.WARDROBE.put(k.name, pvText(k.metadata.rev, k.metadata.saved, {}, refs), { metadata: pvMeta(k.metadata.rev, k.metadata.saved), ...(k.expiration ? { expiration: k.expiration } : { expirationTtl: ttl }) });
+    n++;
+  }
+  return n;
+}
+/* one person's clean-up -> {photos, kept, deleted, converted} */
+async function gcSpace(env, ns, now) {
+  const converted = await convertSnaps(env, ns, now);
+  const ph = (await listAll(env, ns + 'ph:')).keys.filter(k => PH_HEX.test(k.name.slice(ns.length + 3)));
+  let gc = null; try { gc = await env.WARDROBE.get(gcKey(ns), 'json'); } catch { }
+  const had = !!gc, cand = { ...(gc && gc.cand) }, gone = { ...(gc && gc.gone) };
+  const used = ph.length ? await refsInUse(env, ns) : new Set();
+  if (!used) return { photos: ph.length, skipped: true, converted };
+  let changed = false; const del = [], stored = new Set();
+  for (const k of ph) {
+    const h = k.name.slice(ns.length + 3); stored.add(h);
+    if (used.has(h)) { if (cand[h]) { delete cand[h]; changed = true; } continue; }
+    const t = (k.metadata && k.metadata.t) || 0;
+    if (cand[h] && now - cand[h] >= GC_AGE && now - t >= GC_AGE) { if (del.length < GC_MAX) del.push(h); }
+    else if (!cand[h]) { cand[h] = now; changed = true; }
+  }
+  for (const h of Object.keys(cand)) if (!stored.has(h)) { delete cand[h]; changed = true; }
+  // deleted only after a fresh look at each (written again meanwhile: not); kept in hand until the backup is read once more
+  const held = new Map();
+  for (const h of del) {
+    const r = typeof env.WARDROBE.getWithMetadata === 'function' ? await env.WARDROBE.getWithMetadata(phKey(ns, h), 'arrayBuffer')
+      : { value: await env.WARDROBE.get(phKey(ns, h), 'arrayBuffer'), metadata: (ph.find(k => k.name === phKey(ns, h)) || {}).metadata };
+    if (!r || r.value == null) { delete cand[h]; changed = true; continue; }
+    if (now - ((r.metadata && r.metadata.t) || 0) < GC_AGE) { cand[h] = now; changed = true; continue; }
+    held.set(h, r); await env.WARDROBE.delete(phKey(ns, h)); delete cand[h]; gone[h] = now; changed = true;
+  }
+  let restored = 0;
+  if (held.size) {
+    const again = await refsInUse(env, ns);
+    for (const [h, r] of held) if (!again || again.has(h)) {   // referred to after all (a save meanwhile): put back
+      await env.WARDROBE.put(phKey(ns, h), r.value, { metadata: { ...(r.metadata || {}), t: now } }); delete gone[h]; restored++;
+    }
+  }
+  for (const h of Object.keys(gone)) if (now - gone[h] > GC_GONE) { delete gone[h]; changed = true; }
+  if (changed || (had && !Object.keys(cand).length && !Object.keys(gone).length)) {
+    if (Object.keys(cand).length || Object.keys(gone).length) await env.WARDROBE.put(gcKey(ns), JSON.stringify({ at: now, cand, gone }));
+    else if (had) await env.WARDROBE.delete(gcKey(ns));
+  }
+  return { photos: ph.length, kept: ph.length - held.size + restored, deleted: held.size - restored, waiting: Object.keys(cand).length, converted };
+}
+/* the daily clean-up of stored photos: the owner and every tester */
+async function photoGc(env, now = Date.now()) {
+  if (!env.WARDROBE) return {};
+  let idx = null; try { idx = await env.WARDROBE.get(INVITE_INDEX, 'json'); } catch { }
+  const spaces = ['', ...((idx && Array.isArray(idx.list) ? idx.list : []).filter(v => v && UID_RE.test(v.id)).map(v => `u:${v.id}:`))], out = {};
+  for (const ns of spaces) try { out[ns || 'owner'] = await gcSpace(env, ns, now); } catch (e) { console.log('photo clean-up failed', ns, e && e.message); out[ns || 'owner'] = { error: true }; }
+  return out;
 }
 async function handleSync(req, env, json, cors, who) {
   const ns = who.ns, KEY = ns + SYNC_KEY;
@@ -1352,7 +1562,7 @@ async function handleSync(req, env, json, cors, who) {
       const id = q.get('snap');
       if (!/^(\d{4}-\d{2}(-\d{2})?|before-restore)$/.test(id)) return json({ error: 'bad snapshot id' }, 400);
       const sk = `${ns}snap:${id}`, sm = await storedVersion(env, sk);
-      if (isParted(sm)) return storedResponse(env, sk, sm, cors);
+      if (isParted(sm) || isPv(sm)) return storedResponse(env, sk, sm, cors);
       const t = await env.WARDROBE.get(sk);
       if (!t) return json({ error: 'no such backup' }, 404);
       return new Response(t, { headers: { ...cors, 'content-type': 'application/json' } });
@@ -1368,22 +1578,35 @@ async function handleSync(req, env, json, cors, who) {
     if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
     // a tester's backups a day are capped (each is a KV write, and the whole team shares 1,000 a day); a conflict gives it back
     const over = await spend(env, who, 'backup'); if (over) return json(over.body, over.status);
-    if (buf.byteLength > PART_MAX) { const r = await putParted(env, json, cors, ns, new Uint8Array(buf)); if (r.status === 409) await unspend(env, who, 'backup'); return r; }
+    if (buf.byteLength > PART_MAX) { const r = await putParted(env, json, cors, who, new Uint8Array(buf)); if (r.status === 409 && !r.refunded) await unspend(env, who, 'backup'); return r; }
     let body;
     try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); }
-    const none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env, ns);
-    const rev = m ? m.rev : ((await env.WARDROBE.get(KEY, 'json')) || none).rev;
-    if ((body.baseRev ?? -1) !== rev) { await unspend(env, who, 'backup'); return isParted(m) ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', ...((await env.WARDROBE.get(KEY, 'json')) || none), index: undefined }, 409); }
-    await keepSnapshots(env, m, body, ns);
-    // stored with its index (the small sync), so a newer app's next sync needs no more than the change
-    const saved = Date.now(), prev = await readLite(env, KEY, m), { refs, photos } = await splitPhotos(body.data);
-    const b = buildStored(rev + 1, saved, refs, nextRevs(prev, refs, rev + 1), h => photos.has(h) ? JSON.stringify(photos.get(h)) : null);
-    if (b.missing) await env.WARDROBE.put(KEY, JSON.stringify({ rev: rev + 1, saved, data: body.data }), { metadata: { rev: rev + 1, saved } });   // (a reference in text sent as a photo's: kept as sent, unindexed)
-    else await putStored(env, KEY, b, m);
-    if (b.missing) await dropParts(env, KEY, m);
-    return json({ rev: rev + 1, saved });
+    return putWhole(env, json, cors, who, body);
   }
   return json({ error: 'method not allowed' }, 405);
+}
+/* an older app's whole backup (PUT /sync {baseRev, day, reason?, data}), its photos inline: stored by reference like any other save.
+   pre: photos already cut out of the body (putParted), hash -> a function giving the photo's JSON string as bytes */
+async function putWhole(env, json, cors, who, body, pre = new Map()) {
+  const ns = who.ns, KEY = ns + SYNC_KEY, none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env, ns);
+  const rev = m ? m.rev : ((await env.WARDROBE.get(KEY, 'json')) || none).rev;
+  if ((body.baseRev ?? -1) !== rev) {
+    await unspend(env, who, 'backup');
+    const r = isParted(m) || isPv(m) ? await storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', ...((await env.WARDROBE.get(KEY, 'json')) || none), index: undefined }, 409);
+    r.refunded = true; return r;
+  }
+  const src = m ? await loadAny(env, KEY, m, true) : null, { refs, photos } = await splitPhotos(body.data), want = new Map();
+  for (const h of refsOf(refs)) {
+    if (src && src.pv && src.refs.has(h)) continue;
+    if (pre.has(h)) want.set(h, pre.get(h));
+    else if (photos.has(h)) want.set(h, JSON.stringify(photos.get(h)));
+    // (else a "dwph:" string that came as text: kept as it came)
+  }
+  const oldPv = await storePhotos(env, ns, m, src, want);
+  await keepSnapshots(env, m, body, ns, oldPv);
+  const saved = Date.now();
+  await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src && src.lite, refs, rev + 1), refs), meta: pvMeta(rev + 1, saved) }, m);
+  return json({ rev: rev + 1, saved });
 }
 
 /* ================= people: the owner and invited beta testers =================
@@ -1609,7 +1832,7 @@ async function handleFeedback(req, env, json, who) {
    The owner: the owner's own key families only (the backup, snap:, render:, job:, jobfail:, jobrun:), never u:…, invite:… or
    the invitation list. A Worker may make only so many KV calls per request, so a first part goes now and the queue finishes
    the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the next part. ---- */
-const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:'];
+const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:', 'ph:'];
 async function wipeSome(env, ns, budget) {   // -> true once nothing is left
   for (const p of ns ? [ns] : OWNER_FAMILIES) {
     for (;;) {
@@ -1795,7 +2018,11 @@ export default {
     }
   },
   // Cron trigger (wrangler.toml [triggers], every 15 minutes): the morning reminders due now
-  async scheduled(event, env, ctx) { ctx.waitUntil(sendReminders(env, event && event.scheduledTime ? new Date(event.scheduledTime) : new Date())); },
+  async scheduled(event, env, ctx) {
+    const now = event && event.scheduledTime ? new Date(event.scheduledTime) : new Date();
+    ctx.waitUntil(sendReminders(env, now));
+    if (gcDue(now)) ctx.waitUntil(photoGc(env, now.getTime()));   // once a day: photos nothing refers to any more
+  },
 };
 
 /* ================= the morning reminder (Web Push) =================
