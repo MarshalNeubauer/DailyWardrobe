@@ -7,7 +7,7 @@ const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
 const tagFixes=skipId=>(settings.tagFixes||[]).filter(f=>f.id!==skipId).slice(-20).map(({field,type,from,to})=>({field,type,from,to}));
-const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{})});
+const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{})});
 
 /* ---- tagging copies: the sharp photo sent to the tagger is kept on this device only (Cache Storage, not synced, not loaded
    at start-up), so the benchmark can re-tag an item from the same picture later ---- */

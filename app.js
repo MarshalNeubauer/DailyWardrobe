@@ -202,6 +202,8 @@ async function ask(c,extra){
   }
 }
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
+const ownColorsOf=o=>{const f=c=>c&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&/[a-z]{2}/i.test(c.name||'')?{name:String(c.name).toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim().slice(0,24),hex:c.hex.toLowerCase()}:null;
+  return o&&typeof o==='object'&&f(o.primary)?{primaryColor:f(o.primary),secondaryColor:f(o.secondary),tertiaryColor:f(o.tertiary)}:null};
 function normTag(parsed,model){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
@@ -219,7 +221,9 @@ function normTag(parsed,model){
       altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
       newColor:parsed.newColor&&parsed.newColor.name?parsed.newColor:null,newPattern:parsed.newPattern&&parsed.newPattern.name?parsed.newPattern:null,
       clothBox:parsed.clothBox&&typeof parsed.clothBox==='object'?parsed.clothBox:null,
-      patternBox:parsed.patternBox&&typeof parsed.patternBox==='object'?parsed.patternBox:null,weave:parsed.weave&&typeof parsed.weave==='object'?parsed.weave:null
+      patternBox:parsed.patternBox&&typeof parsed.patternBox==='object'?parsed.patternBox:null,weave:parsed.weave&&typeof parsed.weave==='object'?parsed.weave:null,
+      // Claude's own colour names and shades, not limited to the list (only when asked with freeColors: colpick.js)
+      ownColors:ownColorsOf(parsed.ownColors)
     };
 }
 
@@ -517,7 +521,7 @@ function itemBody(i){
   const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:!cmp?photoPair(pic,i,'tagsw-'+i.id):`<div class="pair cmpable${phEdit.cmp?' cmp':''}" id="ivpair"><figure class="phfig" onclick="toggleCompare(true)"><div class="cmpbox"><img class="ph" src="${pic}" alt="Photo"><div class="cmpdraw" aria-hidden="true">${itemThumb(i,true)}</div></div><figcaption><span class="c0">Photo</span><span class="c1">As tagged</span></figcaption></figure>`+
     `<figure class="tagsw" id="tagsw-${i.id}" role="button" tabindex="0" aria-pressed="${!!phEdit.cmp}" aria-label="Compare the drawing and the close-up side by side" onclick="toggleCompare()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCompare()}">${tagSwInner(i)}<figcaption class="c1">Close-up</figcaption></figure></div>`;
   const hero=phEdit.crop?cropEditor(i):`<div class="ivhero">${pair}</div>`;
-  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${wardFieldsTop(i)}${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${E(i.id,'primaryColor',cols,primaryCol(i))}${E(i.id,'secondaryColor',acc(i.secondaryColor),i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':E(i.id,'tertiaryColor',acc(i.tertiaryColor),i.tertiaryColor||'none')}
+  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${wardFieldsTop(i)}${COLORS[primaryCol(i)]?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${EC(i.id,'primaryColor',primaryCol(i))}${EC(i.id,'secondaryColor',i.secondaryColor||'none',i.type==='socks'?'Toe cap':'')}${i.type==='socks'?'':EC(i.id,'tertiaryColor',i.tertiaryColor||'none')}
   ${FABRIC.includes(i.type)?E(i.id,'pattern',(PATS_BY[i.type]||['solid']).map(c=>[c,patName(c)]),normPat(i.type,i.pattern)):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',Object.keys(METAL).map(c=>[c,c]),i.metal||'silver'):''}
   ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,hasVest(i)?'yes':'no'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
   ${i.type==='pants'?E(i.id,'trouserKind',TROUSER_KINDS,trouserKind(i)):''}${i.type==='shoes'?E(i.id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):''}${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):''}
@@ -1738,9 +1742,9 @@ ${FABRIC.includes(q.type)&&q.big?`
   </div>
 </div>`:''}
 <label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>
-<label>Colour ${S(COLOR_OPTS(q.type,q.primaryColor),q.primaryColor,'primaryColor',i)}</label>
-<label>${q.type==='socks'?'Toe cap':'Second colour'} ${S([['none','None'], ...COLOR_OPTS(q.type,q.secondaryColor,true)],q.secondaryColor||'none','secondaryColor',i)}</label>
-${q.type==='socks'?'':`<label>Third colour ${S([['none','None'], ...COLOR_OPTS(q.type,q.tertiaryColor,true)],q.tertiaryColor||'none','tertiaryColor',i)}</label>`}
+<label class="colrow">Colour ${colBtn('q',i,'primaryColor',q.primaryColor)}</label>
+<label class="colrow">${q.type==='socks'?'Toe cap':'Second colour'} ${colBtn('q',i,'secondaryColor',q.secondaryColor||'none')}</label>
+${q.type==='socks'?'':`<label class="colrow">Third colour ${colBtn('q',i,'tertiaryColor',q.tertiaryColor||'none')}</label>`}
 ${FABRIC.includes(q.type)?`<label>Pattern ${S((PATS_BY[q.type]||['solid']).map(c=>[c,patName(c)]),q.pattern,'pattern',i)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='yes'?'yes':'no','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:''}${q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:''}${q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:''}

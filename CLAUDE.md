@@ -727,6 +727,20 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - why that survives a sync: the tombstone stays, and in `mergeState` a tombstone only wins over an item whose stamp is not newer; so the restored item wins on every device, also on one that had already taken the deletion; a delete that is not undone propagates as before
 - `tests/wardrobe.test.js`: search by each field and with a chip, each sort order, the sheet stepping through the filtered list, the fields (sheet, Add card, two synced devices, backup file restored on an empty device), the name in its four places, materials by type, delete / Undo with and without a sync in between, sizes and no sideways scroll at 320 / 390 / 626px in both themes
 
+### `colpick.js`
+
+- the colour picker (loaded after wardrobe.js): the Colour, Second colour / Toe cap and Third colour fields of the Add card and the item sheet are a button with a chip and the name (`colBtn`, `EC` in the editor), no longer a `<select>`; the owner couldn't tell what the colour names looked like
+- a tap opens `#col-sheet` (z-index 1201, above the item sheet and the pickers): the item's close-up (or photo; a Close-up / Whole photo switch when it has both) edge to edge with a large chip of the colour being looked at, kept at the top while the chips scroll
+- under it: "Closest to your close-up/photo" (main colour only, from `item.meas` via `nearestCols`: Very close ≤4 ΔE, Close ≤8, Nearest), then every colour `COLOR_OPTS` allows for the type, grouped by family from Lab (`colFamily`: chroma under 9 neutral, then hue bands) and light to dark; accents start with None
+- a tap on a chip only previews it; the bottom button "Use <colour>" / "Keep <colour>" saves through `setq` (Add card) or `sete` (editor); Escape closes it without leaving the item (window keydown in the capture phase)
+- `tests/colpick.test.js`
+- Ask Claude (`colAskRun`, `colAskHtml`): with a close-up, the sheet offers to have Claude read the colours again (cost from `benchEstimate(1)`); the request is the tagger's (`ask`) with the white-balanced close-up, the sharp photo (`tagImgOf`, else the photo) and the close-up's measurement, like `refineFromCloseup` / `benchTagOne`
+- the answer is kept in memory per item (`colAsk`, not saved or synced), so every colour field of that item shows it without asking again; Claude's pick for the field is selected beside the close-up, its runner-up (`altColor`) shown next to it with the confidence and any `newColor`; nothing is saved until "Use …" or "Use all of Claude's colours" (`colAskUseAll`, shown when another colour field would change too)
+- without a close-up it says to add one first; not connected, the button is off with `NEED_CONN`
+- any colour: the picker's ask sends `freeColors:true` (`tagExtras`); the worker then adds `ownColors {primary, secondary, tertiary: {name, hex} | null}` to the schema and prompt (`FREE_EXTRA`, `OWN_COLORS`; tidied in `cleanTag`), Claude's own names and shades not limited to the list; the app keeps them as `ownColors` (`ownColorsOf` in normTag); a normal tag doesn't ask for them
+- a colour Claude named that the app lacks (`colNewFor`: not a built-in's name, not the owner's own key, not within ΔE00 2 of the listed pick) is offered first as a "New · Claude's exact" chip in Claude's shade (`NEW_COL` '+new'), with "Closest you have" beside it; the listed pick stays selected, so a colour is only added when the owner picks it
+- "Add <name> to your colours and use it" (`colAddNew`): `addCustomColor` (synced, `settings.custom`) for the item's type group (`groupOf`), behaving like the nearest built-in colour (`colBaseFor`, as `openColForm`), an accent colour too when it was a second or third colour; then set like any colour; "Use all of Claude's colours" uses listed colours only
+
 ### `dress.js`
 
 - the dress code's Settings switches and the waistcoat default (loaded after app.js)

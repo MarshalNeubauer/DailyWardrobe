@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(a.desc==='black, light grey toe'&&a.desc0==='black',`the name says the toe colour (${a.desc})`);
     ok(a.toe&&!a.toe0,'the drawing shows the toe cap in its colour, and none on a plain sock');
     ok(a.traced,'the sock is drawn from the traced catalogue outline, details clipped inside it');
-    ok(/Toe cap <select/.test(a.form)&&!/Third colour/.test(a.form)&&/Second colour <select/.test(a.form0),'the editor calls a sock\'s secondary colour "Toe cap" and drops the third colour');
+    ok(/Toe cap <button[^>]*colbtn/.test(a.form)&&!/Third colour/.test(a.form)&&/Second colour <button[^>]*colbtn/.test(a.form0),'the editor calls a sock\'s secondary colour "Toe cap" and drops the third colour');
     const req=sent.find(b=>b.mode==='item');
     ok(req&&!('bg' in req)&&/toe cap/.test(req.item),'the app no longer asks for a sock picture on white');
     // a sock photo already kept on pure white is toned down to the warm grey of the other tiles, once; a grey one is left alone

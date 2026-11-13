@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p.click('#queue .offer:not(.measalt) .chipbtn');
     await p.evaluate(()=>{const f=queue[0].colForm;f.base='taupe';});await p.click('#queue .newform button.pri');await p.waitForFunction(()=>queue[0].primaryColor==='ownmushroom');
     const nc=await p.evaluate(()=>({cu:settings.custom.colors,col:queue[0].primaryColor,list:COLS_BY.suit.p.includes('ownmushroom'),blazer:COLS_BY.blazer.p.includes('ownmushroom'),shirt:COLS_BY.shirt.p.includes('ownmushroom'),
-      opt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='Mushroom'))}));
+      opt:(()=>{document.querySelector('#queue .colbtn[data-k="primaryColor"]').click();const t=[...document.querySelectorAll('#col-sheet .cptile .cpnm')].some(e=>e.textContent==='Mushroom');closeColPick();return t})()}));
     ok(nc.cu.length===1&&nc.cu[0].key==='ownmushroom'&&nc.cu[0].base==='taupe'&&nc.col==='ownmushroom','Add as a new colour saves it (with what it behaves like) and the card takes it');
     ok(nc.list&&nc.blazer&&!nc.shirt&&nc.opt,'it is offered for suits, blazers and trousers (the default group), not shirts');
     await p.evaluate(()=>{queue[0].newPattern={name:'seersucker',why:'puckered stripes'};renderAdd()});
