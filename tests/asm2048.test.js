@@ -82,7 +82,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       items.push(brown,pin,tw);const needs=[...new Set(asmNeeds().filter(q=>q.kind==='piece'&&(q.slot==='jacket'||q.slot==='vest')).map(q=>q.item.id))].join();items.splice(-3,3);
       return {zone:at(30),edge:at(61),wall:at(80),hex:hexRgb(colOf(brown)),paint:[brown,pin,tw].map(asmSuitPaintable).join(),photo:asmPhotoParts(o).map(x=>x.slot).join(),
         sp:!!asmParts(o).find(x=>x.slot==='jacket').sp,vkey:asmParts({...o,vest:true}).find(x=>x.slot==='jacket').key===asmPieceKey('vest',brown),needs}});
-    ok(su.paint==='true,false,false'&&su.sp&&!/jacket/.test(su.photo)&&su.vkey&&su.needs==='p,t',`a solid suit is painted and needs no photo; a pinstripe or herringbone suit with no reading still does (needs: ${su.needs})`);
+    ok(su.paint==='true,false,true'&&su.sp&&!/jacket/.test(su.photo)&&su.vkey&&su.needs==='p',`a solid suit and a herringbone are painted and need no photo; a pinstripe with no reading still does (needs: ${su.needs})`);
     ok(su.zone.every((v,c)=>Math.abs(v-su.hex[c])<=3)&&su.edge.every((v,c)=>Math.abs(v-su.hex[c])<=20)&&su.wall[0]===232,`the suit is its tagged colour (${su.zone} for ${su.hex}), its soft grey edge too (${su.edge}), and the wall beyond is left alone`);
     // a patterned jacket read in bands (the owner's khaki windowpane) is painted from its reading: Claude's colours, no line under
     // ASM_LINE_PX, the sleeves split into an upper arm and a forearm each along its own axis, a linen texture when the cloth is linen
@@ -103,7 +103,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {paint:[asmSuitPaintable(wp),asmSuitPaintable(tw),asmSuitPaintable(pin)].join(),linen:T.linen,mm:+T.mm.toFixed(1),linePx:+(best/T.TW*px).toFixed(1),
         parts:sg.segs.length-1,lapel,lparts,body:sg.seg[10*W+300],tube:(()=>{const g=sg.segs[sg.seg[150*W+100]];if(!g||!g.parts||!g.crease)return null;const at=(x,y)=>asmTubeAt(g,x,y).map(v=>Math.round(v*10)/10),part=(x,y)=>g.parts.indexOf(asmTubePart(g,x,y));
         return {up:[at(100,120),at(100,260)],fore:[at(200,340),at(380,340)],parts:[part(100,120),part(100,260),part(130,370),part(200,310),part(380,310)],mid:Math.abs(at(200,344)[0]-at(200,336)[0]),edge:Math.abs(at(200,378)[0]-at(200,370)[0])}})(),mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
-    ok(pj.paint==='true,false,true'&&pj.mm===50,`a windowpane or a pinstripe read in bands is painted (a herringbone without a reading is still photographed), the windowpane's pane ${pj.mm} mm (550 mm / 11 across)`);
+    ok(pj.paint==='true,true,true'&&pj.mm===50,`a windowpane or a pinstripe read in bands is painted (a herringbone without a reading too: its weave), the windowpane's pane ${pj.mm} mm (550 mm / 11 across)`);
     ok(pj.linePx>=3.6,`its lines are painted in Claude's colours and bold: the 2% off-white line is ${pj.linePx} px at 2048 (it would be ${(.02*pj.mm*3.2).toFixed(1)}; 4 is the least, less a pixel of antialiasing)`);
     {const T2=pj.tube,J=JSON.stringify,lean=a=>Math.abs(a[0][0]-a[1][0])/Math.max(1,Math.abs(a[1][1]-a[0][1]));   // the stripe flow (ASM_SLEEVE_FLOW) leans them a little off the part's line
       ok(pj.parts===1&&T2&&pj.body===0&&lean(T2.up)<=.2&&Math.abs(T2.up[1][1]-T2.up[0][1])>100&&lean(T2.fore)<=.2&&Math.abs(T2.fore[1][1]-T2.fore[0][1])>140,
