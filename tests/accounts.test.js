@@ -259,9 +259,9 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
           items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
           settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
-        await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering&&queuedKeys().length===1,null,{timeout:15000});
+        await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering&&queuedKeys().length===1,null,{timeout:15000});
         await p.evaluate(()=>{stepDay(1)});await settle(p,300);
-        await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering&&/limit/.test(document.querySelector('#render-msg').textContent),null,{timeout:15000});
+        await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering&&/limit/.test(document.querySelector('#render-msg').textContent),null,{timeout:15000});
         const msg=await p.evaluate(()=>document.querySelector('#render-msg').textContent);
         ok(msg==='Today’s limit of 1 outfit photos is used up. It starts again at midnight UTC.',`Generate photo over the cap shows the server\'s sentence, nothing else ("${msg}")`);
         const itemErr=await p.evaluate(()=>renderItemPic(items.find(i=>i.type==='shoes')).then(()=>'',e=>e.message));
