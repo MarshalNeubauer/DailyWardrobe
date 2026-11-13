@@ -38,8 +38,10 @@ function renderColPick(keep){if(colPick&&colPick.k==='pattern')return renderPatP
   const fams=COL_FAMS.map(()=>[]);for(const c of colChoices(it,k))fams[colFamily(c)].push(c);
   const groups=fams.map((l,f)=>l.length?`<h4 class="cph">${COL_FAMS[f]}</h4><div class="cpgrid">${l.sort((a,b)=>labOf(b)[0]-labOf(a)[0]).map(c=>tile(c)).join('')}</div>`:'').join('');
   const what=view==='tex'?'Your close-up':'Your photo';
+  // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
+  const drawn=sel===NEW_COL||sel===cur?it:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
   el.innerHTML=`<div class="cptop"><div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap colour':k==='primaryColor'?'Choose the colour':'Choose the '+colLabel(k).toLowerCase()}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
-<div class="cpcmp"><figure class="cpph">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(it,true)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${name(sel)}</figcaption></figure></div>
+<div class="cpcmp"><figure class="cpph">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn,true)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${name(sel)}</figcaption></figure></div>
 ${both?`<div class="cpseg" role="group" aria-label="Compare with"><button type="button" class="${view==='tex'?'on':''}" onclick="colPickView('tex')" aria-pressed="${view==='tex'}">Close-up</button><button type="button" class="${view==='photo'?'on':''}" onclick="colPickView('photo')" aria-pressed="${view==='photo'}">Whole photo</button></div>`:''}</div>
 <p class="cphelp">Tap a colour to see it right beside your ${pic?view==='tex'?'close-up':'photo':'item'}. Pick the one whose edge you can hardly see.</p>
 ${colAskHtml(it,k,tile,name)}
