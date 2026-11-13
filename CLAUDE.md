@@ -723,6 +723,14 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - why that survives a sync: the tombstone stays, and in `mergeState` a tombstone only wins over an item whose stamp is not newer; so the restored item wins on every device, also on one that had already taken the deletion; a delete that is not undone propagates as before
 - `tests/wardrobe.test.js`: search by each field and with a chip, each sort order, the sheet stepping through the filtered list, the fields (sheet, Add card, two synced devices, backup file restored on an empty device), the name in its four places, materials by type, delete / Undo with and without a sync in between, sizes and no sideways scroll at 320 / 390 / 626px in both themes
 
+### `colpick.js`
+
+- the colour picker (loaded after wardrobe.js): the Colour, Second colour / Toe cap and Third colour fields of the Add card and the item sheet are a button with a chip and the name (`colBtn`, `EC` in the editor), no longer a `<select>`; the owner couldn't tell what the colour names looked like
+- a tap opens `#col-sheet` (z-index 1201, above the item sheet and the pickers): the item's close-up (or photo; a Close-up / Whole photo switch when it has both) edge to edge with a large chip of the colour being looked at, kept at the top while the chips scroll
+- under it: "Closest to your close-up/photo" (main colour only, from `item.meas` via `nearestCols`: Very close ≤4 ΔE, Close ≤8, Nearest), then every colour `COLOR_OPTS` allows for the type, grouped by family from Lab (`colFamily`: chroma under 9 neutral, then hue bands) and light to dark; accents start with None
+- a tap on a chip only previews it; the bottom button "Use <colour>" / "Keep <colour>" saves through `setq` (Add card) or `sete` (editor); Escape closes it without leaving the item (window keydown in the capture phase)
+- `tests/colpick.test.js`
+
 ### `dress.js`
 
 - the dress code's Settings switches and the waistcoat default (loaded after app.js)

@@ -25,7 +25,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(v.caps==='As tagged|Close-up',`the captions follow (${v.caps})`);
     ok(moving>0,`the drawing slides across instead of jumping (${moving} transitions)`);
     // an edit redraws the sheet still split up
-    await p.selectOption('#item-view select >> nth=1','navy');await p.waitForFunction(()=>items.find(i=>i.id==='a').primaryColor==='navy');v=await look();
+    await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile[data-c="navy"] >> nth=-1');await p.click('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(i=>i.id==='a').primaryColor==='navy');await p.waitForFunction(()=>(document.querySelector('#ivpair .cmpdraw')||{innerHTML:''}).innerHTML.toLowerCase().includes(COLORS.navy),null,{timeout:3000}).catch(()=>{});v=await look();
     ok(v.cmp&&v.draw===v.photo&&await p.evaluate(()=>document.querySelector('#ivpair .cmpdraw').innerHTML.toLowerCase().includes(COLORS.navy)),'changing the colour keeps them split up, the drawing redrawn in the new colour');
     // tap again (either square) puts them back
     await p.tap('#ivpair .phfig');await settle(p,600);v=await look();
