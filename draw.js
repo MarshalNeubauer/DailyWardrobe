@@ -370,31 +370,34 @@ const drawOxfordSide=(item,P)=>drawShoePair(item,P,'oxford');
 /* the drawing for a pair of shoes, by its style (shoeStyle in core.js; none = oxford) */
 const drawShoeSide=(item,P)=>shoeStyle(item)==='sneaker'?drawSneakerPair(item,P):drawShoePair(item,P,SHOE_ST[shoeStyle(item)]?shoeStyle(item):'oxford');
 
-/* dress sock, side view, traced from a catalogue photo of a fine merino dress sock: slanted cuff with a heathered welt,
-   leg leaning back, heel pocket, foot pointing right, flat knitted toe cap (the sock's secondary colour); box ~0..60 x 0..72 */
-const SOCK_D='M6.2,0 C10.2,0.4 25.5,2.4 29.7,2.9 C31,3.05 31.6,3.3 31.4,4.1 C31,5.5 29.6,9.3 28.9,11.6 C28.2,13.9 27.9,14.7 27.1,17.9 C26.3,21.2 24.4,28.2 23.8,31.1 C23.2,34 23.5,34.1 23.6,35.5 C23.7,36.8 23.9,38 24.3,39.2 C24.7,40.3 25,41.1 25.8,42.4 C26.6,43.7 27.7,45 29.2,46.8 C30.7,48.5 32.9,50.8 34.9,52.8 C36.9,54.7 39.7,57.3 41.2,58.6 C42.7,59.9 42.9,60 44,60.6 C45,61.3 45.4,61.8 47.5,62.6 C49.6,63.3 54.7,64.7 56.5,65.3 C58.2,65.9 57.6,65.7 58,66 C58.4,66.2 58.6,66.4 58.9,66.8 C59.2,67.2 59.6,68 59.7,68.5 C59.8,69 59.7,69.4 59.6,69.8 C59.4,70.2 59.3,70.4 58.9,70.7 C58.5,71 58,71.4 57.1,71.6 C56.1,71.9 56.8,72 53.3,72 C49.8,72 39.8,71.9 36,71.8 C32.3,71.6 32.1,71.4 31,71.1 C29.8,70.9 30.3,71.1 29.2,70.4 C28.2,69.6 26.2,67.5 24.7,66.4 C23.3,65.3 22.1,64.5 20.4,63.6 C18.8,62.8 17.4,62.1 14.7,61.1 C11.9,60.1 6.1,58.5 3.9,57.7 C1.8,56.9 2.4,57 1.9,56.6 C1.3,56.2 1,55.9 0.7,55.3 C0.4,54.7 0.1,53.8 0,52.9 C-0.1,52 0.1,51 0.3,50 C0.5,49 0.7,48.3 1.3,47 C1.8,45.6 2.9,43.9 3.6,42 C4.2,40 4.9,38.9 5.3,35.2 C5.7,31.6 6,24.8 6.1,20.3 C6.3,15.8 6.4,11.3 6.4,8 C6.3,4.7 5.9,1.8 5.9,0.5 C5.9,-0.2 6,0 6.2,0Z';
+/* dress sock, side view, traced from the item picture of the owner's charcoal sock with a burgundy toe (2026-11-13, as the shoes and
+   belt were; it replaces the catalogue-photo tracing): the slanted cuff, the leg leaning back, the heel, the foot pointing right and
+   the flat knitted toe cap, whose colour (the sock's secondary colour) also edges the cuff as on his socks; outline from the
+   picture's pixels with the sole read by hand (the contact shadow made it ragged). Box 0..62.2 x 0..72. */
+const SOCK_D={out:'M0.1,52.5 C0,52.3 0,51.2 0,50.8 C0,50.3 0,50.2 0.1,49.6 C0.3,49.1 0.4,48.5 0.8,47.4 C1.2,46.3 2.3,44.2 2.7,43.1 C3.2,42 3.4,41.5 3.6,40.7 C3.8,39.9 4,39.1 4.1,38.3 C4.3,37.6 4.3,37.5 4.4,36.3 C4.6,35.2 4.7,34.3 4.8,31.5 C5,28.7 5.1,23.1 5.2,19.5 C5.2,15.8 5.2,11.5 5.2,9.4 C5.2,7.3 5.2,8.4 5.1,6.9 C5,5.3 4.6,1.2 4.5,0.1 C4.4,-1 4.4,0.1 4.5,0.1 C4.6,0 3.6,-0.1 4.8,0 C6.1,0.1 9.1,0.4 12.1,0.7 C15.1,1 19.7,1.5 22.9,1.9 C26.1,2.3 29.9,2.9 31.4,3.1 C32.9,3.4 31.9,3.2 32,3.3 C32.1,3.4 32.3,2.9 32.1,3.7 C31.9,4.5 31.2,6.3 30.6,8.2 C30,10.2 29.5,11.7 28.5,15.3 C27.5,19 25.2,27.4 24.5,30.3 C23.8,33.2 24.3,32 24.2,32.7 C24.2,33.4 24.2,33.8 24.3,34.5 C24.4,35.3 24.5,36.4 24.7,37.2 C24.9,38 25.2,38.7 25.6,39.5 C26,40.3 26.6,41.4 27.1,42.1 C27.5,42.7 27.7,42.9 28.1,43.5 C28.6,44.1 28.6,44.2 29.9,45.5 C31.1,46.8 33.6,49.5 35.6,51.4 C37.6,53.3 40.1,55.7 41.7,57 C43.3,58.4 44.2,58.9 45.2,59.6 C46.2,60.2 46.9,60.6 47.6,61 C48.4,61.4 49.1,61.6 49.7,61.9 C50.4,62.2 50.6,62.3 51.6,62.5 C52.5,62.8 54.3,63.2 55.4,63.5 C56.4,63.8 57.4,64.1 58,64.3 C58.7,64.6 59,64.7 59.3,64.9 C59.7,65 59.8,65.1 60.1,65.3 C60.4,65.5 60.9,65.9 61.2,66.3 C61.5,66.6 61.8,67 61.9,67.4 C62.1,67.8 62.4,68.1 62.2,68.6 C62,69.1 61.3,70.1 60.7,70.5 C60.1,71 59.5,71.2 58.3,71.4 C57.1,71.5 55.3,71.6 53.4,71.7 C51.6,71.7 49,71.8 47,71.8 C45,71.8 43.1,71.7 41.3,71.7 C39.6,71.6 38,71.6 36.4,71.5 C34.8,71.4 33.1,71.2 31.8,71 C30.5,70.7 29.8,70.4 28.8,69.7 C27.8,69.1 26.8,68 25.7,67.2 C24.7,66.3 23.9,65.5 22.8,64.7 C21.6,63.8 20.2,62.9 18.7,62.2 C17.2,61.4 15.3,60.6 13.6,59.9 C12,59.2 10.3,58.7 8.6,58.1 C7,57.5 4.7,56.9 3.6,56.3 C2.4,55.7 2.1,55.3 1.5,54.6 C1,53.9 0.6,52.4 0.3,52.1 C0.1,51.7 0.1,52.7 0.1,52.5 Z',
+  cuff:'M3.4,-0.6 L32.9,2.7 L32.9,4.4 L3.4,1.1 Z',
+  cuffl:'M3.4,1.1 L32.9,4.4',
+  toe:'M50.5,61.3 C49.9,63.8 49.4,67 49.3,72.6 L66.3,72.6 L66.3,60.5 Z',
+  toel:'M50.5,61.3 C49.9,63.8 49.4,67 49.3,72.6',
+  heel:'M-1.5,49.2 C5,49.2 7.8,53.3 7,57.7 L-1.5,58.9 Z',
+  sole:'M1,55 C13.1,59.7 25.2,67 34.1,70.6 L66.3,71.2 L66.3,73.5 L-1.5,73.5 Z',
+  ribs:'M6,0.2 L3.1,42.1 M7.5,0.4 L4.4,41.4 M9,0.6 L5.7,40.8 M10.6,0.8 L7,40.1 M12.1,0.9 L8.3,39.4 M13.6,1.1 L9.6,38.7 M15.2,1.3 L10.9,38.1 M16.7,1.5 L12.2,37.4 M18.2,1.7 L13.5,36.7 M19.8,1.9 L14.8,36.1 M21.3,2.1 L16.1,35.4 M22.8,2.3 L17.4,34.7 M24.4,2.4 L18.7,34 M25.9,2.6 L20,33.4 M27.4,2.8 L21.3,32.7 M29,3 L22.6,32 M30.5,3.2 L23.9,31.3'};
 function drawSock(color,P,toe){
-  const ink=lum(color)>.55?'#000':'#fff',welt=mix(color,'#fff',lum(color)>.55?.12:.42);let ribs='';
-  // fine knit lines that follow the leg's lean: from the cuff (6,0)-(31,3.2) down to the ankle (4.6,40)-(24.2,36)
-  for(let k=1;k<16;k++){const t=k/16,x1=6+25*t,y1=3.2*t,x2=4.6+19.6*t,y2=40-4*t;ribs+=`M${x1.toFixed(1)},${y1.toFixed(1)} L${x2.toFixed(1)},${y2.toFixed(1)} `}
-  return `<defs><linearGradient id="${P}sh" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="60" y2="12"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".3" stop-color="#fff" stop-opacity=".07"/><stop offset=".6" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>`+
-    `<clipPath id="${P}sk"><path d="${SOCK_D}"/></clipPath></defs>`+
-    `<path d="${SOCK_D}" fill="${color}"/>`+
+  const S=SOCK_D,ink=lum(color)>.55?'#000':'#fff',welt=mix(color,'#fff',lum(color)>.55?.12:.42);
+  return `<defs><linearGradient id="${P}sh" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="62" y2="12"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".3" stop-color="#fff" stop-opacity=".07"/><stop offset=".6" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>`+
+    `<clipPath id="${P}sk"><path d="${S.out}"/></clipPath></defs>`+
+    `<path d="${S.out}" fill="${color}"/>`+
     `<g clip-path="url(#${P}sk)">`+
-      `<path d="${ribs}" stroke="${ink}" stroke-opacity=".06" stroke-width=".3"/>`+
-      // heathered welt along the slanted cuff
-      `<path d="M4,-0.6 L33,2.6" stroke="${welt}" stroke-width="1.6"/><path d="M4,1.1 L33,4.3" stroke="${ink}" stroke-opacity=".12" stroke-width=".3"/>`+
-      // heel pocket: a darker patch under the ankle seam, closed by the diagonal gusset line
-      `<path d="M-1,42.9 L12.4,42.9 L12.9,47.6 L0.4,53.4 Z" fill="#000" opacity=".08"/>`+
-      `<path d="M-1,42.9 L12.4,42.9 M12.9,47.6 L0.4,53.4" fill="none" stroke="#000" stroke-opacity=".14" stroke-width=".3"/>`+
-      // sole: a soft shadow along the bottom of the foot
-      `<path d="M1,55.5 C12,59.5 22,63.5 30,70.8 L58,71.8 L58,74 L-2,74 Z" fill="#000" opacity=".08"/>`+
-      (toe?`<path class="sock-toe" d="M48.6,61.2 C47.3,64.5 46.5,68.2 46.3,73 L63,73 L63,60 Z" fill="${toe}"/>`+
-        `<path d="M48.6,61.2 C47.3,64.5 46.5,68.2 46.3,73" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".35"/>`+
-        `<path d="M50,73 C52,69 55,66.5 60,66" fill="none" stroke="#000" stroke-opacity=".1" stroke-width=".9"/>`:'')+
-      `<path d="M-2,-2 L64,-2 L64,76 L-2,76 Z" fill="url(#${P}sh)"/>`+
+      // fine knit lines that follow the leg's lean
+      `<path d="${S.ribs}" stroke="${ink}" stroke-opacity=".07" stroke-width=".3"/>`+
+      // the cuff's edge: the toe's colour where there is one (as on his socks), else a heathered welt
+      `<path d="${S.cuff}" fill="${toe||welt}"/><path d="${S.cuffl}" stroke="${ink}" stroke-opacity=".12" stroke-width=".3"/>`+
+      // the heel pocket and a soft shadow along the sole
+      `<path d="${S.heel}" fill="#000" opacity=".08"/><path d="${S.sole}" fill="#000" opacity=".08"/>`+
+      (toe?`<path class="sock-toe" d="${S.toe}" fill="${toe}"/><path d="${S.toel}" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".35"/>`:'')+
+      `<path d="M-2,-2 L66,-2 L66,76 L-2,76 Z" fill="url(#${P}sh)"/>`+
     `</g>`+
-    `<path d="${SOCK_D}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`;
+    `<path d="${S.out}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`;
 }
 
 /* wristwatch seen from above, centred on 0,0; case radius ~15, bracelet to about +/-49.
