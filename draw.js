@@ -412,7 +412,8 @@ function drawSock(color,P,toe){
       (toe?`<path class="sock-toe" d="${S.toe}" fill="${toe}"/><path d="${S.toel}" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".3"/>`:`<path d="${S.toel}" fill="none" stroke="${ink}" stroke-opacity=".14" stroke-width=".3"/>`)+
       `<path d="M0,0 H100 V100 H0 Z" fill="url(#${P}sh)"/></g><path d="${o}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".4"/>`;
   return `<defs><linearGradient id="${P}sh" x1="0" y1="0" x2="1" y2=".2"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".35" stop-color="#fff" stop-opacity=".08"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient>`+
-    `</defs>`+one(S.back,back,'b')+one(S.front,color,'f');
+    // mirrored so the toes point right, as the shoes do (the owner, 2026-11-13; the photo's socks point left)
+    `</defs><g transform="matrix(-1 0 0 1 100 0)">`+one(S.back,back,'b')+one(S.front,color,'f')+`</g>`;
 }
 
 /* wristwatch seen from above, centred on 0,0; case radius ~15, bracelet to about +/-49.
