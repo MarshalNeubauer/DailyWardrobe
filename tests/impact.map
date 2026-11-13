@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	9d98593f6458edce829d
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -508,7 +509,7 @@ colpick.test.js	account.js	isTester
 colpick.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	E	S	ask	busyStart	cap1	closeItem	esc	imgOf	itemBody	metaPut	noMotion	normTag	orderRow	ownColorsOf	photoPair	photoTools	put	putRaw	renderAdd	renderBusy	renderWardrobe	saveUserSettings	sete	setq	shadeRow	tagSwInner	texSlot	toast	wardList	wardPic	wbNote
 colpick.test.js	apple-touch-icon.png	<loaded>
 colpick.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
-colpick.test.js	colpick.js	@window.addEventListenerkeydown	COL_FIELDS	EC	EP	closeColPick	colAddNew	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBaseFor	colBtn	colChoices	colFamily	colLabel	colNear	colNewFor	colPickSel	colTarget	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	renderColPick	renderPatPick	useColPick
+colpick.test.js	colpick.js	@window.addEventListenerkeydown	COL_FIELDS	EC	EP	closeColPick	colAddNew	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBaseFor	colBtn	colChoices	colFamily	colLabel	colNear	colNewFor	colPickSel	colTarget	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	renderColPick	renderPatPick	useColPick
 colpick.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	itemName	itemTitle	labHex	labOf	lum	mix	normCol	normColFor	normPat	ownColKey	ownPatKey	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	shadeName	thirdOf	titleCls
 colpick.test.js	detect.js	texPat	tieWeave	usableSett
 colpick.test.js	draw.js	fabricDef	itemThumb	swatchSVG
