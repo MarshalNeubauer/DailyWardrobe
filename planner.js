@@ -265,7 +265,9 @@ const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find
 // the trousers a day allows: dress trousers only on a formal day, a wedding or a funeral; jeans with a blazer only when the dress code
 // says so (settings.dress.jeans); chinos with a blazer, and anything on a day without a jacket
 const botFits=i=>{const k=trouserKind(i);if(full&&!casual)return k==='dress';if(!suitDay&&!noJ&&k==='jeans')return !!(settings.dress&&settings.dress.jeans);return true};
-const take=b=>{if(!b)return null;const c={...b,rest:rest(b)};last[b.id]=n;return c};
+const was={},take=b=>{if(!b)return null;const c={...b,rest:rest(b)};if(!(b.id in was))was[b.id]=last[b.id];last[b.id]=n;return c};
+// a piece taken off for the day (rec.off) was not worn: its rest goes back to what it was
+const untake=b=>{if(!b||!(b.id in was))return;if(was[b.id]===undefined)delete last[b.id];else last[b.id]=was[b.id]};
 const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
 // suits rotate (least recently worn first); season and formality can override a few days of rest
 // a suit whose only shoes were worn yesterday (a black suit the day after black shoes) waits a day when another suit can go first
@@ -331,7 +333,19 @@ if(day.occ==='funeral'&&top&&occ.top(top)<18)notes.push('No black, charcoal or n
 if(day.occ==='wedding'&&top&&pcol(top)==='black')notes.push('Only a black suit was available: black is usually avoided at a daytime wedding.');
 if(noJ&&!bot)notes.push('No separate trousers in your wardrobe for a day without a jacket. Add a pair of trousers.');
 if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
-return{suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)}}
+const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
+return takeOff(o,rec&&rec.off,untake)}
+/* Pieces taken off for the day (the owner's ask, 2026-11-13: Today's "Take off" on the jacket or the tie; rec.off = {top, tie}). The
+   outfit is planned as usual (the day's other pieces are pinned by force when it is set) and then the piece comes off:
+   - the jacket: on a suit day the suit's trousers stay (o.bot is the suit, o.suitDay false, o.suitBot true) and the waistcoat goes with
+     the jacket (no picture has a waistcoat without its jacket); a blazer is not counted as worn
+   - the tie: the tie clip goes with it; neither is counted as worn
+   o.off says what came off (o.offKind 'suit' or 'blazer'), so Today can put it back; the score asks for neither (needsJacket/needsTie) */
+function takeOff(o,off,untake){if(!off||!(off.top||off.tie))return o;const r={...o,off:{top:!!(off.top&&o.top),tie:!!(off.tie&&o.tie)}};
+  if(r.off.top){r.offKind=o.suitDay?'suit':'blazer';if(o.suitDay){r.bot=o.top;r.suitDay=false;r.suitBot=true}else if(untake)untake(o.top);r.top=null;r.vest=false;
+    r.notes=r.notes.filter(t=>!/jacket|suit|blazer/i.test(t))}
+  if(r.off.tie){if(untake){untake(o.tie);if(o.clip)untake(o.clip)}r.tie=null;r.clip=null;r.notes=r.notes.filter(t=>!/\btie\b/i.test(t))}
+  return r}
 /* ---- outfit score ----
    A readable 0-100 rating of an outfit against the same rules the planner uses.
    Each check earns points out of a maximum; checks that don't apply (no belt owned, suit days have no separate trousers)
@@ -452,7 +466,7 @@ function scoreAdvice(o,pool){
   const swap=(cur,slot,it)=>{const a={...cur,[slot]:it};
     if(slot==='shoes'){let bb=null,bf=-1;for(const b of pool('belt')){const f=beltFit(it,b);if(f!==null&&f>bf){bf=f;bb=b}}a.belt=bb}
     return a};
-  const tries=cur=>{const out=[];for(const slot of ADVICE_SLOTS){if((slot==='bot'&&cur.suitDay)||(slot==='clip'&&(cur.vest||!cur.tie))||(slot!=='clip'&&slot!=='belt'&&!cur[slot]))continue;
+  const tries=cur=>{const out=[];for(const slot of ADVICE_SLOTS){if((slot==='bot'&&(cur.suitDay||cur.suitBot))||(slot==='clip'&&(cur.vest||!cur.tie))||(slot!=='clip'&&slot!=='belt'&&!cur[slot]))continue;
     for(const it of pool(slot)){if(cur[slot]&&cur[slot].id===it.id)continue;const a=swap(cur,slot,it);out.push({slot,item:it,o:a,r:rateOutfit(a)})}}return out};
   const base=rateOutfit(o),T=tries(o),seen={},fixes=[];
   for(const t of T.filter(t=>t.r.score>base.score).sort((a,b)=>b.r.score-a.r.score||(a.item.id<b.item.id?-1:1))){if(seen[t.slot])continue;seen[t.slot]=1;fixes.push({slot:t.slot,item:t.item,gain:t.r.score-base.score,score:t.r.score})}
@@ -466,6 +480,8 @@ function frozenOutfit(rec,n,last){
   const o={suitDay:!!rec.suitDay,frozen:true,worn:rec.worn,formal:!!rec.formal,occasion:occOf(rec),notes:[]};
   for(const s of SLOTS){const id=rec.ids[s],it=id&&items.find(i=>i.id===id);o[s]=it?{...it,rest:Math.min(n-(last[it.id]??-1e5),60)}:null}
   o.vest=!!(rec.vestOn&&o.suitDay&&hasVest(o.top));
+  // a piece taken off that day (rec.off, see takeOff): the record already holds the outfit without it
+  if(rec.off&&(rec.off.top||rec.off.tie)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot?'suit':'blazer'}
   if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
   return o;
 }

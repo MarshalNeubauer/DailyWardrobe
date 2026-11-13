@@ -597,10 +597,25 @@ const vestRow=o=>!(o.suitDay&&hasVest(o.top))?'':`<div class="row vest-row"><spa
 let openRow=null;
 const rowPic=i=>i.photo?`<img class="rpic" src="${i.photo}" alt="Photo of ${esc(desc(i)||nm(i))}">`:itemPic(i)?`<img class="rpic" src="${itemPic(i).img}" alt="Picture of ${esc(desc(i)||nm(i))}">`:`<div class="rpic draw">${itemThumb(i,true)}</div>`;
 const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of this item yet${itemPic(i)?': a generated picture of it.':': this is how the app draws it.'}</small>`);
-const slots=o=>{const nj=!o.top&&!needsJacket(o),nt=!o.tie&&!needsTie(o)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
+/* taking a piece off for the day (the owner's ask, 2026-11-13): the jacket (with its waistcoat; a suit's trousers stay) or the tie (with
+   its clip), on today and the coming days; − beside the piece takes it off, + on its "Taken off" row puts it back (setOff) */
+const offOn=o=>!o.frozen&&o.occasion!=='casual';
+const offBtn=(s,o)=>offOn(o)&&o[s]&&(s==='top'||s==='tie')?`<button class="swap offb" onclick="setOff('${s}',true)" aria-label="Take off the ${s==='top'?(o.suitDay?'suit jacket':'blazer'):'tie'}" title="Take off for the day">−</button>`:'';
+const offRow=(s,o)=>{const l=s==='top'?(o.offKind==='suit'?'Suit':'Blazer'):'Tie',w=s==='top'?(o.offKind==='suit'?'suit jacket':'blazer'):'tie';
+  return `<div class="ritem off-row" id="ri-${s}"><div class="row"><span class="mut">${l}</span><span class="mut none">Taken off${s==='top'&&o.suitBot?': the trousers stay':''}</span>${o.frozen?'':`<button class="swap" onclick="setOff('${s}',false)" aria-label="Put the ${w} back on" title="Put it back on">+</button>`}</div></div>`};
+async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||(slot!=='top'&&slot!=='tie'))return;
+  const r={...(dayRecs[k]||{date:k})},off={...(r.off||{})};
+  if(on){if(!o[slot])return;
+    // the rest of the outfit is pinned, so taking a piece off changes nothing else (and putting it back brings the same piece)
+    const force={...(r.force||{})};for(const s of SLOTS)if(o[s]&&!(s==='bot'&&(o.suitDay||o.suitBot)))force[s]=o[s].id;
+    if(o.top)r.kind=o.suitDay?'suit':'blazer';r.force=force;off[slot]=true}
+  else delete off[slot];
+  if(off.top||off.tie)r.off=off;else delete r.off;delete r.lock;swapMsg='';await saveDay(r);renderToday()}
+const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[[o.suitBot?'Trousers':'Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
   .filter(([l,i,s])=>!(s==='clip'&&!i&&!(o.frozen&&pastEdit===key(sel))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn)
-.map(([l,i,s])=>{const open=!!i&&openRow===s;
-  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':'Add one on the Add tab'}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
+.filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
+.map(([l,i,s])=>{if((s==='top'||s==='tie')&&!i&&o.off&&o.off[s])return offRow(s,o);const open=!!i&&openRow===s;
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)&&!(s==='bot'&&o.suitBot)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':'Add one on the Add tab'}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
     (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
@@ -703,8 +718,10 @@ async function swapSlot(slot){
   // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
   const follow=FOLLOW[slot]||[];
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  rec.skip=skip;rec.force=force;delete rec.lock;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
+  keepOff(force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
 }
+/* a piece taken off (rec.off) stays pinned through a swap or a pick of another piece, so putting it back brings the same one */
+const keepOff=(force,k,slot)=>{const r=dayRecs[k];if(!r||!r.off||!r.force)return;for(const s of ['top','tie','clip'])if(s!==slot&&r.off[s==='clip'?'tie':s]&&r.force[s])force[s]=r.force[s]};
 const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks']};
 /* ---- learning from changes (the votes are read by the planner, see planner.js) ----
    A piece swapped away votes against its pairing with the pieces that stayed (a shirt with the jacket and the tie, a tie
@@ -755,7 +772,7 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   if(!it||(o[slot]&&o[slot].id===id))return;
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  force[slot]=id;const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;
+  force[slot]=id;keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;
   swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);renderToday()}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
@@ -770,8 +787,8 @@ async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k]
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
-async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
-async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;swapMsg='';await saveDay(n);renderToday()}
+async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
 /* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay */
 async function replanFuture(){const T=todayDate();let n=0;

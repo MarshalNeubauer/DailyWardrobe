@@ -137,8 +137,8 @@ const wearsJacket=()=>!(settings.dress&&settings.dress.jacket===false);
 const wearsTie=()=>!(settings.dress&&settings.dress.tie===false);
 /* is an outfit without a jacket (a tie) short of one? Not on a no-jacket day, and not when the dress code leaves it out
    (a formal day, wedding or funeral is dressed in full from what is owned, but nothing is asked for) */
-const needsJacket=o=>o.occasion!=='casual'&&wearsJacket();
-const needsTie=o=>o.occasion!=='casual'&&wearsTie();
+const needsJacket=o=>o.occasion!=='casual'&&!(o.off&&o.off.top)&&wearsJacket();   // (o.off: taken off on Today, see takeOff in planner.js)
+const needsTie=o=>o.occasion!=='casual'&&!(o.off&&o.off.tie)&&wearsTie();
 /* an item type the dress code leaves out: never planned on an ordinary day, so not counted as unused and not suggested */
 const dressOut=t=>(!wearsTie()&&(t==='tie'||t==='tieclip'))||(!wearsJacket()&&(t==='suit'||t==='blazer'));
 /* days off: the chosen country's public holidays (settings.holidays: {country, list:[{d:'2026-12-25',n:'Christmas Day'}],
