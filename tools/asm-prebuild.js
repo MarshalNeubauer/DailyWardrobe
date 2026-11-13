@@ -61,7 +61,9 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
   const CORS={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PUT,DELETE,OPTIONS'};
   await ctx.route(WORKER+'**',async route=>{const q=route.request();
     if(q.method()==='OPTIONS')return route.fulfill({status:204,headers:CORS});
-    if(q.method()==='PUT'&&new URL(q.url()).pathname.endsWith('/sync'))return route.fulfill({status:200,headers:CORS,contentType:'application/json',body:JSON.stringify({rev:0,saved:Date.now()})});
+    // (the small sync's POST is answered with the version it was based on, so the next cycle asks only for what changed after it)
+    if(q.method()!=='GET'&&new URL(q.url()).pathname.endsWith('/sync')){let b={};try{b=JSON.parse(q.postData()||'{}')}catch(e){}
+      return route.fulfill({status:200,headers:CORS,contentType:'application/json',body:JSON.stringify(b&&b.delta?{rev:b.baseRev||0,saved:b.baseSaved||0}:{rev:0,saved:Date.now()})})}
     try{const res=await route.fetch({headers:{...q.headers(),'x-app-token':TOKEN}});return route.fulfill({response:res,headers:{...res.headers(),...CORS}})}
     catch(e){return route.abort()}});
   const page=ctx.pages()[0]||await ctx.newPage();page.on('pageerror',e=>console.warn('page error:',e.message));
