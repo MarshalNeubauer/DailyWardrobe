@@ -150,11 +150,12 @@ function asmTieMask(z,tie,master){const W=z.W,N=W*W,L=asmLab(tie),Lm=master?asmL
    face, the left end a little lighter, fine brushing along it, a touch of the tie's colour reflected low on the face; and a soft shadow
    on the tie below and right of it. Anti-aliased from its exact outline. -> the bar's mask */
 const ASM_BARV=2,ASM_BAR_AT=.6,ASM_BAR_MM=5.5,ASM_BAR_LEN=.8;   // 2: clipped on from the tie's left edge (the owner: "it's a clip, it doesn't float")
-const ASM_METAL={silver:[200,201,204],gold:[208,168,84],gunmetal:[96,99,106]};
-/* its metal: the tagged metal, read with the colour (the owner's clip is metal 'other' and colour silver, which metalWord calls gunmetal) */
-const asmBarMetal=i=>{const c=String(i&&i.primaryColor||'').toLowerCase(),m=i&&i.metal;return m==='gold'||/gold|brass|bronze/.test(c)?'gold':m==='other'&&!/silver|white|chrome|steel|grey|gray|platinum/.test(c)?'gunmetal':'silver'};
-const asmBarSig=i=>'b'+ASM_BARV+asmBarMetal(i);
-function asmBarDraw(o,tieM,W,metal,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Array(N);let first=-1;for(let i=0;i<N&&first<0;i++)if(tieM[i])first=i;if(first<0)return null;
+/* its colour: a tie clip is its colour (no metal field). The metals have their own tones (a swatch colour is too flat for polished
+   metal); any other colour is an enamel bar in that colour (colOf, so a custom colour works too), shaded the same way */
+const ASM_METAL={silver:[200,201,204],white:[226,227,229],lightgrey:[190,192,196],midgrey:[172,174,178],grey:[160,162,166],gold:[208,168,84],rosegold:[206,148,128],gunmetal:[96,99,106]};
+const asmBarRgb=i=>{const c=i&&i.primaryColor;if(ASM_METAL[c])return ASM_METAL[c];const h=String(colOf(i)).replace('#','');return [0,2,4].map(k=>parseInt(h.slice(k,k+2),16)||128)};
+const asmBarSig=i=>'b'+ASM_BARV+asmBarRgb(i).join('.');
+function asmBarDraw(o,tieM,W,rgb,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Array(N);let first=-1;for(let i=0;i<N&&first<0;i++)if(tieM[i])first=i;if(first<0)return null;
   const a=asmAreas(tieM,W),k=a.lab[first],xl=new Float32Array(W).fill(-1),xr=new Float32Array(W).fill(-1);let y0=W,y1=-1;
   for(let y=0;y<W;y++)for(let x=0;x<W;x++){if(a.lab[y*W+x]!==k)continue;if(xl[y]<0)xl[y]=x;xr[y]=x;if(y<y0)y0=y;if(y>y1)y1=y}
   if(y1-y0<40*s)return null;
@@ -163,7 +164,7 @@ function asmBarDraw(o,tieM,W,metal,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Arra
   const ctr=y=>at(y,yy=>(xl[yy]+xr[yy])/2),wd=at(yb,yy=>xr[yy]-xl[yy]+1);let cx=ctr(yb);if(!isFinite(cx)||!isFinite(wd))return null;
   let sl=(ctr(Math.min(y1,yb+D))-ctr(Math.max(y0,yb-D)))/(Math.min(y1,yb+D)-Math.max(y0,yb-D));if(!isFinite(sl))sl=0;
   const nn=Math.hypot(1,sl),ux=1/nn,uy=-sl/nn,vx=sl/nn,vy=1/nn;   // u along the bar (square to the tie), v down the tie
-  const Lh=ASM_BAR_LEN*wd/nn/2,Hh=ASM_BAR_MM*ASM_PX_MM*s/2,r=.42*Hh,bev=Math.max(1.2,.3*Hh),base=ASM_METAL[metal]||ASM_METAL.silver;
+  const Lh=ASM_BAR_LEN*wd/nn/2,Hh=ASM_BAR_MM*ASM_PX_MM*s/2,r=.42*Hh,bev=Math.max(1.2,.3*Hh),base=Array.isArray(rgb)?rgb:ASM_METAL[rgb]||ASM_METAL.silver;   // (a metal's name also works: the tests)
   // a clip slides on from the side: its folded end sits on the tie's left edge (a pixel past it, where it turns round the tie)
   const sh0=-(wd/nn/2)+Lh-1;cx+=sh0*ux;const cy=yb+sh0*uy;
   const rr=u=>u<0?.12*Hh:r;   // the folded end (left) is nearly square; the free end rounded
@@ -185,7 +186,8 @@ function asmBarDraw(o,tieM,W,metal,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Arra
       const nl=Math.hypot(nx,ny)||1,w=1-Math.max(0,e)/bev;f*=1+w*(.9*((nx*lx+ny*ly)/nl)-.1)}   // the bevel: bright facing the light, dark away from it
     f*=1+.035*(hash(Math.floor((v+Hh)*1.6)+977)-.5)+.02*(hash(i)-.5);   // brushed along the bar
     const refl=.1+.18*Math.max(0,vn);   // the tie's colour seen in the face, most low down
-    for(let c=0;c<3;c++){const mc=Math.min(255,base[c]*f)*(1-refl)+src[j+c]*1.4*refl;o[j+c]=cov*Math.min(255,mc)+(1-cov)*o[j+c]}
+    const glint=255*.22*Math.exp(-Math.pow((vn+.42)/.12,2))*(1-.3*u/Lh)*Math.min(1,(u+Lh)/(1.6*Hh));   // a white glint on the streak: a dark enamel bar shines too
+    for(let c=0;c<3;c++){const mc=Math.min(255,base[c]*f+glint)*(1-refl)+src[j+c]*1.4*refl;o[j+c]=cov*Math.min(255,mc)+(1-cov)*o[j+c]}
     if(cov>=.5){m[i]=1;if(lab)lab[i]=4}}
   return m}
 function asmBarMask(master,z,bar,tieM){const W=z.W,N=W*W,L0=asmLab(master),L=asmLab(bar),px=n=>asmPx(n,W),on=asmBox(tieM||z.tie,W,px(3),true);let m=new Uint8Array(N);
@@ -949,7 +951,7 @@ function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),
 async function asmJob(o,p2){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;   // p2: atlas painting (undefined: as this phone is set)
   const parts=asmParts(o);if(parts.some(p=>!p.paint&&!p.tp&&!p.sp&&!p.db&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,p2:(p2===undefined?asmP2On():!!p2)&&asmP2Able(o),
-    parts:await Promise.all(parts.map(async p=>p.sp?{slot:p.slot,vest:!!p.vest,key:p.key,sp:p.sp,hex:colOf(p.item),tex:asmSuitBands(p.item)?await asmSuitTex(p.item):null}:p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.db?{slot:p.slot,key:p.key,db:p.db,metal:asmBarMetal(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
+    parts:await Promise.all(parts.map(async p=>p.sp?{slot:p.slot,vest:!!p.vest,key:p.key,sp:p.sp,hex:colOf(p.item),tex:asmSuitBands(p.item)?await asmSuitTex(p.item):null}:p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.db?{slot:p.slot,key:p.key,db:p.db,rgb:asmBarRgb(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
   if(parts.some(p=>p.paint)){if(asmAtlasOk())job.paintAtlas={t:renders[asmAtlasKey('a')].sig,...Object.fromEntries(ASM_ATLAS.map(p=>[p,renders[asmAtlasKey(p)].img]))};   // measured on a computer: nothing to work out
     else{const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}}   // a painted shirt takes its shading from the black calibration shirt too
   if(parts.some(p=>p.tp)){const c=renders[asmCalibKey('tie')];if(!c)return null;job.tieCalib={t:c.t,img:c.img}}   // a painted tie is shaded from the master's tie and the magenta calibration tie
@@ -1150,7 +1152,7 @@ async function asmBuild(job){
   if(job.suitCalib&&job.suitVest&&V&&(!M.sppv||M.sppvt!==job.suitVest.t+'|'+job.suitCalib.t+slv)){M.sppv=asmSuitPrep(await asmData(job.suitVest.img,W),await asmData(job.suitCalib.img,W),z.jacket,V,await asmData(job.suitVest.calib,W),sl);M.sppvt=job.suitVest.t+'|'+job.suitCalib.t+slv;M.suits={}}
   const P={};for(const p of job.parts){if(p.sp){const pr=p.vest?M.sppv:M.spp;if(!pr)return out;M.suits=M.suits||{};const k=p.sp+(p.vest?'v':'');if(!M.suits[k]&&Object.keys(M.suits).length>=4)M.suits={};   // a painted suit: no drift to check
       P.jacket=M.suits[k]=M.suits[k]||asmSuitEdge(pr,p.tex?asmSuitPaintTex(pr,p.tex):asmSuitPaint(pr,p.hex));continue}
-    if(p.db){P.barDraw=p.metal;continue}   // a drawn tie bar: asmCompose draws it on the tie
+    if(p.db){P.barDraw=p.rgb;continue}   // a drawn tie bar: asmCompose draws it on the tie
     if(p.tp){if(!M.tpp)return out;M.ties=M.ties||{};P.tie=M.ties[p.tp]=M.ties[p.tp]||asmTiePaint(master,M.tpp,p.tie);continue}   // a painted tie: only its zone changes
     if(p.paint){M.paint=M.paint||{};const pk=p.paint+(p.tex&&p.wk?'~'+p.wk:'');   // nothing outside the shirt changes: no drift to check
       P[p.slot]=M.paint[pk]=M.paint[pk]||asmPaint(master,null,p.paint,M.pp,p.tex&&p.wk?asmTexReady(p.tex,p.paint,W):null);continue}
@@ -1392,7 +1394,7 @@ async function asmPieceJob(slot,i){const pt=role=>{const t=patternPrompt(i,role)
   else if(slot==='tie'){o={top:blank,tie:i};re=/\btie\b/;text=`a ${nm(i)}${pt('tie')}`}
   else if(slot==='shirt'){o={top:blank,shirt:i};re=/\bshirt\b/;text=asmShirtText(i)}
   else if(slot==='watch'){o={top:blank,watch:i};re=/wristwatch/;text=watchText(i)}
-  else{o=null;text=`a slim ${metalWord(i)} tie bar, clipped horizontally across the tie about halfway between the knot and the hand, a little narrower than the tie is wide`}
+  else{o=null;text=`a slim ${clipWord(i)} tie bar, clipped horizontally across the tie about halfway between the knot and the hand, a little narrower than the tie is wide`}
   let refs=[],labels=[];if(o){const r=await outfitRefsFull(o),k=r.labels.map((l,n)=>re.test(l)?n:-1).filter(n=>n>=0);refs=k.map(n=>r.refs[n]);labels=k.map(n=>r.labels[n])}
   if(slot==='shirt'&&i.photo){refs.unshift(i.photo);labels.unshift('the shirt')}   // an outfit's references leave the shirt's photo out (photos are shared by colour); its own piece needs it
   if(slot==='tie'&&i.photo&&!labels.includes('the tie')){refs.unshift(i.photo);labels.unshift('the tie')}   // so do they a tie's photo when it has a close-up (the place goes to the shirt's close-up); its own piece keeps it

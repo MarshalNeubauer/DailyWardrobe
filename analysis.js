@@ -135,7 +135,7 @@ function shopName(it){const c=colName(primaryCol(it)),p=patOf(it)||'solid';
     case 'suit':case 'blazer':case 'pants':return p==='solid'?`plain ${c} ${TYPE_WORD[it.type][0]}`:`${c} ${patLabel(p)} ${TYPE_WORD[it.type][0]}`;
     case 'shoes':return `${c} ${finish(it.leather)==='suede'?'suede':finish(it.leather)==='grain'?'grain-leather':'leather'} shoes`;
     case 'belt':return `${c} ${finish(it.leather)==='suede'?'suede ':''}belt`;
-    case 'tieclip':return `${it.metal} tie clip`;case 'cufflinks':return `${it.metal} cufflinks`;
+    case 'tieclip':return `${colName(it.primaryColor)} tie clip`;case 'cufflinks':return `${it.metal} cufflinks`;
     default:return `${c} ${TYPE_WORD[it.type]?TYPE_WORD[it.type][0]:it.type}`}}
 function shopDetail(it,L){const p=patOf(it)||'solid',a=it.secondaryColor&&colName(it.secondaryColor);
   if(it.type==='tie')return p==='stripe'?`With ${a} stripes.`:p==='polka-dot'?`With ${a} dots; a small figured pattern (foulard, paisley) does the same job.`:p==='check'?`With ${a} in the check.`
@@ -314,7 +314,7 @@ function smallCandidates(L,B,base,skip){
   // socks for trousers that have no matching pair
   const have=new Set(by('socks').map(pcol)),fams=new Set([...by('suit'),...(B.blazerDays||!wearsJacket()?by('pants'):[])].map(pcol));
   for(const f of fams){if(have.has(f))continue;const c=COLS_BY.socks.p.find(x=>fam(x)===f&&!CUSTOM_COL[x]);if(c)mk([{type:'socks',primaryColor:c}],{forFam:colName(f)})}
-  const clips=by('tieclip');if(wearsTie()&&!clips.some(c=>metalOf(c)===metal)&&metal!=='other')mk([{type:'tieclip',primaryColor:metal==='gold'?'gold':'silver',metal}]);
+  const clips=by('tieclip');if(wearsTie()&&!clips.some(c=>metalOf(c)===metal)&&metal!=='other')mk([{type:'tieclip',primaryColor:metal==='gold'?'gold':'silver'}]);
   if(!by('cufflinks').length&&by('shirt').some(s=>s.cuff==='french'))mk([{type:'cufflinks',primaryColor:metal==='gold'?'gold':'silver',metal}]);
   if(!by('overcoat').length&&(base.kinds['cold with no overcoat']||base.kinds['rain with no raincoat']))mk([{type:'overcoat',primaryColor:'charcoal'}]);
   if(!by('raincoat').length&&(base.kinds['rain with no raincoat']||base.kinds['cold with no overcoat']))mk([{type:'raincoat',primaryColor:'tan'}]);

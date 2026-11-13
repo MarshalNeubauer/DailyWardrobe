@@ -117,7 +117,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // the master was made with this watch and a white shirt (its record says so): neither needs a piece
       await put(asmMasterKey(),'master',asmMasterSig({watch,shirt:asmMasterItem('shirt','white')}));
       out.parts=asmParts(o).map(x=>x.slot).join();out.photoParts=asmPhotoParts(o).map(x=>x.slot).join();out.barDb=(asmParts(o).find(x=>x.slot==='bar')||{}).db;
-      out.metals=[{metal:'other',primaryColor:'silver'},{metal:'gold'},{metal:'other',primaryColor:'black'},{}].map(asmBarMetal).join();out.partsWhite=asmParts({...o,shirt:white}).map(x=>x.slot).join();out.partsGold=asmParts({...o,watch:gold}).map(x=>x.slot).join();
+      out.metals=[{type:'tieclip',primaryColor:'silver',metal:'other'},{type:'tieclip',primaryColor:'rosegold'},{type:'tieclip',primaryColor:'black',metal:'gold'}].map(c=>asmBarRgb(c).join('.')).join(' ');
+      out.metalsWant=[ASM_METAL.silver,ASM_METAL.rosegold,[0x16,0x16,0x1a]].map(c=>c.join('.')).join(' ');out.partsWhite=asmParts({...o,shirt:white}).map(x=>x.slot).join();out.partsGold=asmParts({...o,watch:gold}).map(x=>x.slot).join();
       out.noPieces=await asmPhoto(o);
       await put(asmPieceKey('jacket',jk),'jacket');await put(asmPieceKey('shirt',black),'shirt-black');await put(asmPieceKey('tie',tie),'tie');await put(asmPieceKey('bar',clip),'bar');
       out.noZones=await asmPhoto(o);
@@ -178,7 +179,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.drift.slice(0,3).every(v=>v<.06)&&k.drift[3]>.3&&k.collage===null&&k.bad,`a real piece leaves the rest of the picture alone; one that moved the figure is refused (${k.drift.map(v=>(100*v).toFixed(1)+'%').join(', ')} changed outside the piece)`);
     ok(k.forBefore===null&&k.forAfter&&k.keptOut&&k.overOld==='assembled'&&k.underNew==='gpt'&&k.stale===null,'Today takes the assembled picture (kept on the device) over an older photo of the outfit; a photo made after the master wins, and a piece made again makes the picture stale');
     ok(k.fullLoop.made===0&&k.fullLoop.redraws===0,`an outfit whose own photo wins (after a Regenerate) is not put together and Today is not redrawn for it: that looped and froze swiping and scrolling (${k.fullLoop.made} assembled, ${k.fullLoop.redraws} redraws)`);
-    ok(!/\bbar\b/.test(k.photoParts)&&/^b\d+silver$/.test(k.barDb)&&!/piece:bar/.test(k.needs)&&k.metals==='silver,gold,gunmetal,silver',`a tie bar is drawn, not photographed: the outfit asks for no tie bar photo and the wardrobe needs none (${k.photoParts}; ${k.barDb}); its metal is read with its colour (${k.metals})`);
+    ok(!/\bbar\b/.test(k.photoParts)&&/^b\d+[\d.]+$/.test(k.barDb)&&!/piece:bar/.test(k.needs)&&k.metals===k.metalsWant,`a tie bar is drawn, not photographed: the outfit asks for no tie bar photo and the wardrobe needs none (${k.photoParts}; ${k.barDb}); it is drawn in its colour, the metal field ignored (${k.metals})`);
     ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===1&&k.needs.split('piece:tie').length===1&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt, a plain shirt or a tie (painted on the device) or the master's watch (${k.needs})`);
     const J=k.jobs;
     ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/mid grey suit/.test(J.mj.outfit)&&/green tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit)&&J.mj.size==='2048x2048','the master job is a normal outfit photo of the master\'s clothes (plain mid grey suit, white shirt, green tie), marked as the master, at high quality and 2048 ('+J.mj.size+')');

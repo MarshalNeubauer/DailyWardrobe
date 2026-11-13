@@ -29,7 +29,7 @@ const TYPE_COLORS = {
     ['white','navy','darknavy','blue','lightblue','steelblue','red','burgundy','pink','lavender','purple','grey','lightgrey','charcoal','black','green','mint','brown','gold']],
   tie: [['navy','darknavy','deepblue','blue','steelblue','lightblue','slate','black','charcoal','grey','silver','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust','cream'],
     ['white','cream','silver','lightgrey','grey','charcoal','black','navy','deepblue','blue','lightblue','steelblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust']],
-  tieclip: [['silver','gold','grey','black'], ['black','white','navy','gold','silver']],
+  tieclip: [['silver','gold','rosegold','gunmetal','grey','black','white','red','blue','navy'], ['black','white','silver','gold','navy','red','blue']],
   cufflinks: [['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'], ['silver','gold','black','white','navy','blue','burgundy','red','green']],
   watch: [['black','brown','tan','oxblood','navy','grey','green','silver','gold'], ['black','brown','white','grey','navy']],
   shoes: [[...LEATHER_COLS,'white','cream'], ['black','brown','tan','white','navy','cream','grey']],   // white/cream: sneakers; second colour: a sneaker's sole
@@ -63,7 +63,7 @@ ${TYPE_COLOR_TEXT}
   deeptaupe is a dark taupe, a deep greyish brown, darker and greyer than brown and much darker than taupe (a mink or
     espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown; brown is a clearly warm, coloured brown); rust is a burnt orange-brown;
   ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
-  blue with a violet cast, between lightblue and blue; grey for a tie clip or cufflinks means gunmetal)
+  blue with a violet cast, between lightblue and blue; grey for cufflinks means gunmetal; a tie clip's colour is its finish: silver, gold, rosegold, gunmetal, or an enamel colour)
   Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
 
 secondaryColor — the colour of the stripe, check line, dot or motif, from the type's line colours (after the |). "none" if plain.
@@ -103,7 +103,7 @@ pattern — pick the closest value from the list for the item's type:
 
 Use "solid" for suits, blazers and trousers whose weave is only visible up close and does not match a listed pattern.
 
-metal — for tieclip, watch, cufflinks and belt (the buckle): gold, silver or other (the case and bracelet metal for watches). Otherwise null.
+metal — for watch, cufflinks and belt (the buckle; a tie clip has none: its colour says it): gold, silver or other (the case and bracelet metal for watches). Otherwise null.
 
 trouserKind — trousers (pants) only, otherwise null: dress (pressed wool or cotton dress trousers with a crease), chinos (casual
   cotton twill trousers, no crease, often with patch or slanted pockets), jeans (denim with rivets and five pockets).
@@ -126,7 +126,7 @@ const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* ---- Claude API ---- */
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
-  'brown','tan','khaki','taupe','deeptaupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver',
+  'brown','tan','khaki','taupe','deeptaupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver','rosegold','gunmetal',
   'paleyellow','ivory','beige','lavender','periwinkle','mint','stone','denim'];   // per-type lists: TYPE_COLORS
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
