@@ -58,7 +58,7 @@ async function colAskImgs(it,src){
   let measured;try{const c=await imgOf(it.texture),cv=document.createElement('canvas');cv.width=c.naturalWidth;cv.height=c.naturalHeight;cv.getContext('2d').drawImage(c,0,0);
     const r=wbRead(cv),m={...measureCloth(cv,null,r.ref?{gains:r.gains,refLum:r.refLum}:{}),src:'closeup'};m.near=nearestCols(it.type,m.lab,m.ref);measured=measHint(m)}catch(e){}
   const sharp=src==='e'&&typeof tagImgOf==='function'?await tagImgOf(it.id):null;
-  return {img:sharp||it.tagImg||it.photo||it.texture,closeup:it.texture,measured}}
+  return {img:sharp||it.tagImg||it.photo||it.texture,closeup:typeof sharpCloseOf==='function'?await sharpCloseOf(it):it.texture,measured}}
 async function colAskRun(){const it=colTarget();if(!it||!it.texture)return;if(!isConnected()){tell(NEED_CONN);return}
   const src=colPick.src;colAsk[it.id]={busy:true};renderColPick(true);let ai=null;
   try{const x=await colAskImgs(it,src);ai=await ask(x.img,{closeup:x.closeup,measured:x.measured,skipId:it.id,freeColors:true})}catch(e){console.warn('colour ask failed',e)}
