@@ -76,13 +76,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const su=await p.evaluate(()=>{const W=120,N=W*W,img=f=>{const d=new Uint8ClampedArray(4*N);for(let k=0;k<N;k++)d.set([...f(k%W),255],4*k);return new ImageData(d,W,W)};
       const zj=new Uint8Array(N);for(let k=0;k<N;k++)if(k%W<60)zj[k]=1;
       const base=img(x=>x<60?[128,128,128]:x<62?[120,120,122]:[232,228,222]),cj=img(x=>x<60?[220,30,30]:[232,228,222]),P=asmSuitPrep(base,cj,zj);
-      const brown={id:'b',type:'suit',primaryColor:'brown',pattern:'solid'},pin={id:'p',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe'},tw={id:'t',type:'suit',primaryColor:'black',pattern:'twill'};
+      const brown={id:'b',type:'suit',primaryColor:'brown',pattern:'solid'},pin={id:'p',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe'},tw={id:'t',type:'suit',primaryColor:'black',pattern:'herringbone'};   // a twill is painted since 2026-11-13 (asmtwill.test.js)
       const out=asmSuitPaint(P,colOf(brown)).data,at=x=>[...out.slice(4*(60*W+x),4*(60*W+x)+3)];
       const o={top:brown,shirt:{id:'s',type:'shirt',primaryColor:'white'},tie:{id:'ti',type:'tie',primaryColor:'red',pattern:'solid'},watch:{id:'w',type:'watch',primaryColor:'silver'}};
       items.push(brown,pin,tw);const needs=[...new Set(asmNeeds().filter(q=>q.kind==='piece'&&(q.slot==='jacket'||q.slot==='vest')).map(q=>q.item.id))].join();items.splice(-3,3);
       return {zone:at(30),edge:at(61),wall:at(80),hex:hexRgb(colOf(brown)),paint:[brown,pin,tw].map(asmSuitPaintable).join(),photo:asmPhotoParts(o).map(x=>x.slot).join(),
         sp:!!asmParts(o).find(x=>x.slot==='jacket').sp,vkey:asmParts({...o,vest:true}).find(x=>x.slot==='jacket').key===asmPieceKey('vest',brown),needs}});
-    ok(su.paint==='true,false,false'&&su.sp&&!/jacket/.test(su.photo)&&su.vkey&&su.needs==='p,t',`a solid suit is painted and needs no photo; a pinstripe or twill suit still does (needs: ${su.needs})`);
+    ok(su.paint==='true,false,false'&&su.sp&&!/jacket/.test(su.photo)&&su.vkey&&su.needs==='p,t',`a solid suit is painted and needs no photo; a pinstripe or herringbone suit with no reading still does (needs: ${su.needs})`);
     ok(su.zone.every((v,c)=>Math.abs(v-su.hex[c])<=3)&&su.edge.every((v,c)=>Math.abs(v-su.hex[c])<=20)&&su.wall[0]===232,`the suit is its tagged colour (${su.zone} for ${su.hex}), its soft grey edge too (${su.edge}), and the wall beyond is left alone`);
     // a patterned jacket read in bands (the owner's khaki windowpane) is painted from its reading: Claude's colours, no line under
     // ASM_LINE_PX, the sleeves split into an upper arm and a forearm each along its own axis, a linen texture when the cloth is linen
@@ -90,7 +90,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         along:{bands:[{role:'ground',hex:'#cbb38e',w:.905},{role:'line',hex:'#eeeadf',w:.02},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#8eb2d6',w:.025},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#eeeadf',w:.02}]},description:'a slubby linen-blend ground'};
       const bands=spec.across.bands.map(b=>[b.role==='ground'?'#baa98e':b.hex==='#eeeadf'?'#e0d9c9':'#97b0c5',b.w]),wp={id:'wp',type:'blazer',primaryColor:'khaki',pattern:'windowpane',patternSpec:spec,
         sett:{v:2,a:0,bands,cross:{d:90,bands:bands.map((b,k)=>[k===0||k===2||k===4?null:b[0],b[1]]),r:1.05},cr:3.8,tr:11,src:'claude+pixels'}};
-      const tw={id:'tw',type:'suit',primaryColor:'black',pattern:'twill'},pin={id:'pn',type:'suit',primaryColor:'navy',secondaryColor:'lightblue',pattern:'pinstripe',sett:{v:2,a:0,bands:[['#2b365a',.94],['#a3aecb',.06]],cross:null,cr:7,tr:40,src:'claude+pixels'}},T=await asmSuitTex(wp),px=T.mm*ASM_PX_MM,L=ASM_LIN,lin=h=>hexRgb(h).map(v=>L[v]);
+      const tw={id:'tw',type:'suit',primaryColor:'black',pattern:'herringbone'},pin={id:'pn',type:'suit',primaryColor:'navy',secondaryColor:'lightblue',pattern:'pinstripe',sett:{v:2,a:0,bands:[['#2b365a',.94],['#a3aecb',.06]],cross:null,cr:7,tr:40,src:'claude+pixels'}},T=await asmSuitTex(wp),px=T.mm*ASM_PX_MM,L=ASM_LIN,lin=h=>hexRgb(h).map(v=>L[v]);
       // the drawing's widest run of Claude's blue across a row, in painted pixels at 2048
       const blue=lin('#eeeadf')/* the off-white line */,row=Math.floor(T.TH*.4);let run=0,best=0;for(let x=0;x<T.TW;x++){const j=3*(row*T.TW+x),d=Math.hypot(T.c[j]-blue[0],T.c[j+1]-blue[1],T.c[j+2]-blue[2]);run=d<.05?run+1:0;best=Math.max(best,run)}
       // an L-shaped sleeve: an upright upper arm, a level forearm
@@ -103,7 +103,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {paint:[asmSuitPaintable(wp),asmSuitPaintable(tw),asmSuitPaintable(pin)].join(),linen:T.linen,mm:+T.mm.toFixed(1),linePx:+(best/T.TW*px).toFixed(1),
         parts:sg.segs.length-1,lapel,lparts,body:sg.seg[10*W+300],tube:(()=>{const g=sg.segs[sg.seg[150*W+100]];if(!g||!g.parts||!g.crease)return null;const at=(x,y)=>asmTubeAt(g,x,y).map(v=>Math.round(v*10)/10),part=(x,y)=>g.parts.indexOf(asmTubePart(g,x,y));
         return {up:[at(100,120),at(100,260)],fore:[at(200,340),at(380,340)],parts:[part(100,120),part(100,260),part(130,370),part(200,310),part(380,310)],mid:Math.abs(at(200,344)[0]-at(200,336)[0]),edge:Math.abs(at(200,378)[0]-at(200,370)[0])}})(),mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
-    ok(pj.paint==='true,false,true'&&pj.mm===50,`a windowpane or a pinstripe read in bands is painted (a twill without a reading is still photographed), the windowpane's pane ${pj.mm} mm (550 mm / 11 across)`);
+    ok(pj.paint==='true,false,true'&&pj.mm===50,`a windowpane or a pinstripe read in bands is painted (a herringbone without a reading is still photographed), the windowpane's pane ${pj.mm} mm (550 mm / 11 across)`);
     ok(pj.linePx>=3.6,`its lines are painted in Claude's colours and bold: the 2% off-white line is ${pj.linePx} px at 2048 (it would be ${(.02*pj.mm*3.2).toFixed(1)}; 4 is the least, less a pixel of antialiasing)`);
     {const T2=pj.tube,J=JSON.stringify,lean=a=>Math.abs(a[0][0]-a[1][0])/Math.max(1,Math.abs(a[1][1]-a[0][1]));   // the stripe flow (ASM_SLEEVE_FLOW) leans them a little off the part's line
       ok(pj.parts===1&&T2&&pj.body===0&&lean(T2.up)<=.2&&Math.abs(T2.up[1][1]-T2.up[0][1])>100&&lean(T2.fore)<=.2&&Math.abs(T2.fore[1][1]-T2.fore[0][1])>140,
