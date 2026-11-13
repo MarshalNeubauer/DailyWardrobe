@@ -101,12 +101,31 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const lg=asmSleeveSegs([{m:lp,one:true}],W,N),lapel=(()=>{const g=lg.segs[lg.seg[280*W+Math.round(250+Math.tan(20*Math.PI/180)*180)]];let a=Math.atan2(g.sn,g.cs)*180/Math.PI;while(a>90)a-=180;while(a<-90)a+=180;return Math.round(Math.abs(a))})(),lparts=lg.segs.length-1;
       const lt=asmLinenTile();let mean=0,sd=0;for(const v of lt.r)mean+=v;mean/=lt.r.length;for(const v of lt.r)sd+=(v-mean)**2;sd=Math.sqrt(sd/lt.r.length);
       return {paint:[asmSuitPaintable(wp),asmSuitPaintable(tw),asmSuitPaintable(pin)].join(),linen:T.linen,mm:+T.mm.toFixed(1),linePx:+(best/T.TW*px).toFixed(1),
-        parts:sg.segs.length-1,lapel,lparts,upper:angOf(120*W+100),fore:angOf(340*W+350),body:sg.seg[10*W+300],mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
-    ok(pj.paint==='true,false,false'&&pj.mm===50,`a windowpane read in bands is painted (a twill without a reading, and a pinstripe, are still photographed), its pane ${pj.mm} mm (550 mm / 11 across)`);
+        parts:sg.segs.length-1,lapel,lparts,body:sg.seg[10*W+300],tube:(()=>{const g=sg.segs[sg.seg[150*W+100]];if(!g||!g.parts||!g.crease)return null;const at=(x,y)=>asmTubeAt(g,x,y).map(v=>Math.round(v*10)/10),part=(x,y)=>g.parts.indexOf(asmTubePart(g,x,y));
+        return {up:[at(100,120),at(100,260)],fore:[at(200,340),at(380,340)],parts:[part(100,120),part(100,260),part(130,370),part(200,310),part(380,310)],mid:Math.abs(at(200,344)[0]-at(200,336)[0]),edge:Math.abs(at(200,378)[0]-at(200,370)[0])}})(),mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
+    ok(pj.paint==='true,false,true'&&pj.mm===50,`a windowpane or a pinstripe read in bands is painted (a twill without a reading is still photographed), the windowpane's pane ${pj.mm} mm (550 mm / 11 across)`);
     ok(pj.linePx>=3.6,`its lines are painted in Claude's colours and bold: the 2% off-white line is ${pj.linePx} px at 2048 (it would be ${(.02*pj.mm*3.2).toFixed(1)}; 4 is the least, less a pixel of antialiasing)`);
-    ok(pj.parts===2&&(pj.upper<10||pj.upper>170)&&Math.abs(pj.fore-90)<10&&pj.body===0,`a bent sleeve is split into its upper arm and forearm, the pattern upright on one (${pj.upper}°) and turned along the other (${pj.fore}°)`);
+    {const T2=pj.tube,J=JSON.stringify;ok(pj.parts===1&&T2&&pj.body===0&&Math.abs(T2.up[0][0]-T2.up[1][0])<=2&&Math.abs(T2.up[1][1]-T2.up[0][1])>100&&Math.abs(T2.fore[0][0]-T2.fore[1][0])<=2&&Math.abs(T2.fore[1][1]-T2.fore[0][1])>150,
+      `a bent sleeve's stripes run along the upper arm (${J(T2&&T2.up)}) and along the forearm (${J(T2&&T2.fore)}) [across, along]`);
+      ok(T2&&T2.parts.join()==='0,0,1,1,1',`an elbow bent square has a crease: the forearm lies in front up to the elbow's outer corner and across its whole width, the upper arm's stripes stop at its top edge (parts ${T2&&T2.parts})`);
+      ok(T2&&T2.edge>T2.mid*1.4,`a sleeve is a cylinder: 8 px at its edge hold ${T2&&T2.edge} px of cloth, 8 px at its middle ${T2&&T2.mid}`)}
     ok(pj.lparts===1&&Math.abs(pj.lapel-20)<4,`a lapel is one part, the pattern along its length (${pj.lapel}° from upright, drawn at 20°)`);
     ok(pj.linen&&Math.abs(pj.mean-1)<.01&&Math.abs(pj.sd-.055)<.01,`a linen jacket gets a linen texture in its shading (mean ${pj.mean}, spread ${pj.sd})`);
+    // a navy pinstripe on a herringbone (the owner's): the cloth's weave is laid in, its columns breaking on the stripes, and it shows on
+    // a dark navy (as a share of linear light it was under one level of 255); the stripe is painted 3 px, not 4
+    const hb=await p.evaluate(async()=>{const it={id:'ph',type:'suit',primaryColor:'navy',secondaryColor:'lightblue',pattern:'pinstripe',
+        patternSpec:{across:{bands:[{role:'ground',hex:'#2b3858',w:.92},{role:'line',hex:'#7c89a8',w:.08}]},along:null,description:'Navy worsted with a fine herringbone weave, crossed by thin pinstripes'},
+        sett:{v:2,a:0,bands:[['#2c324b',.92],['#6c7490',.08]],cross:null,cr:6,tr:40,src:'claude+pixels'}};
+      const T=await asmSuitTex(it),W=2048,N=W*W,d=new Uint8ClampedArray(4*N).fill(160),zj=new Uint8Array(N),cj=new Uint8ClampedArray(4*N);
+      for(let y=900;y<1100;y++)for(let x=900;x<1100;x++)zj[y*W+x]=1;for(let k=0;k<N;k++){cj[4*k]=220;cj[4*k+1]=30;cj[4*k+2]=30;cj[4*k+3]=255}
+      const P=asmSuitPrep(new ImageData(d,W,W),new ImageData(cj,W,W),zj),out=asmSuitPaintTex(P,T).data,vals=[];
+      for(let y=950;y<1050;y++)for(let x=926;x<956;x++)vals.push(out[4*(y*W+x)+2]);   // the blue channel, in the navy between stripes
+      const m=vals.reduce((a,b)=>a+b,0)/vals.length,sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)**2,0)/vals.length);
+      const row=[];for(let x=900;x<1100;x++){let v=0;for(let y=950;y<1050;y++)v+=out[4*(y*W+x)+2];row.push(v/100)}row.sort((a,b)=>a-b);   // the stripes' lift over the navy, averaged along them
+      return {cloth:T.cloth,sd:+sd.toFixed(1),mean:Math.round(m),lift:+(row[row.length-3]-row[row.length>>1]).toFixed(1),mix:T.k,gam:T.gam}});
+    ok(hb.cloth&&hb.cloth.kind==='herringbone'&&Math.abs(hb.cloth.cw-22)<.5&&Math.abs(hb.cloth.off-42.24)<.5,`a herringbone cloth is laid in, its columns half a stripe repeat wide (${hb.cloth&&hb.cloth.cw} px) with their breaks on the stripes (${hb.cloth&&hb.cloth.off} px)`);
+    ok(hb.mix<.5&&hb.gam>1&&hb.lift>3&&hb.lift<25,`the stripe reads soft and low on the dark navy, as in a photo, not crisp and white (lifted ${hb.lift} levels over the navy; ${hb.mix} of the way to Claude's line colour; shading steepened, ^${hb.gam})`);
+    ok(hb.sd>=4,`the weave shows on a dark navy: its brightness varies by ${hb.sd} levels around ${hb.mean}`);
     // plain shirts are painted on the device: no photo is asked for, and the picture's shirt is the tagged colour, shaded from the master and the black calibration shirt
     const pt=await p.evaluate(()=>{const W=40,N=W*W,d=new Uint8ClampedArray(4*N),cd=new Uint8ClampedArray(4*N);for(let i=0;i<N;i++){const x=i%W,v=x<20?240:120,c=x<20?20:10;d.set([v,v,v,255],4*i);cd.set([c,c,c,255],4*i)}   // a white shirt, its right half in shadow; the calibration's black shirt
       const m=new ImageData(cd,W,W),navy={id:'n',type:'shirt',primaryColor:'navy',pattern:'solid'},dob={id:'d',type:'shirt',primaryColor:'lightblue',pattern:'dobby'},str={id:'s',type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'stripe'};
