@@ -38,7 +38,7 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
 /* the outfit's kind when its master is on this device (downloaded) */
 const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
-const ASM_CM_PAINTV=8;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT); 8: the same on trousers, and the shirt's buttons drawn (ASM_CM_BTN); 8: the half-hidden button drawn as a button, no purple skin edge (the button smudge)
+const ASM_CM_PAINTV=8;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT); 8: the same on trousers, the shirt's buttons drawn (ASM_CM_BTN), the tie's sheen dialled back (the owner: too glossy); 8: the half-hidden button drawn as a button, no purple skin edge (the button smudge)
 /* the cloth look (the owner's choice, 2026-11-13, after several rounds of mockups against an OpenAI picture of his black suit, which the
    painter drew as a flat black silhouette), for jackets, waistcoats and shirts (not trousers, not tried):
    - a dark cloth (luminance under `dark`: his black twill and chocolate brown, and any dark colour later) takes the full look: kept above
@@ -58,7 +58,7 @@ const ASM_CM_LOOK={ymin:.012,fp:1.7,chroma:.55,wk:4,sk:5,cmax:.8,grain:.05,sheen
    where the full fall-off sank the black suit's right side back to black); lit edges where a sleeve, lapel or the jacket faces the light
    (`rw` px, `rim`); a silk tie's darker edges (`te`) and sheen (`ts` at `tp` across the blade, `tsw` wide); warmth in the shadows and a
    cooler lit window side (`warm`, `cool`, brightness kept); a fine film grain (`grain`) so the cloth matches the photographed hands */
-const ASM_CM_LIGHT={adx:5,ady:8,ar:12,ak:.45,win:.08,wd:.5,rw:3,rim:.022,te:.28,tp:.36,tsw:.17,ts:.05,warm:.08,cool:.05,grain:.035};
+const ASM_CM_LIGHT={adx:5,ady:8,ar:12,ak:.45,win:.08,wd:.5,rw:3,rim:.022,te:.2,tp:.36,tsw:.2,ts:.018,warm:.08,cool:.05,grain:.035};
 /* the shirt's buttons, drawn (the owner, 2026-11-13: the open collar's placket buttons should look like real buttons): painted with the
    cloth they were ghost discs of the shirt's colour with its weave running through them. Each master's visible buttons, measured by eye on
    the 2048 painting ([x, y, radius] px at 2048; under the hand or the tie not listed); a button whose centre isn't shirt is skipped */
