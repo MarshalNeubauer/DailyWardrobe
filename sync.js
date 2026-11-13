@@ -51,6 +51,63 @@ const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and t
 function inviteEnded(token){if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);if(typeof tell==='function')tell(ENDED)}
 /* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day */
 const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
+/* ---- the small sync (worker.js syncLiteGet / syncLitePost). A newer worker answers GET /sync?lite=1&since=<the version last agreed
+   on> with only the records changed since, with photos as references (dwph:<hash>), every tombstone, and what it holds of each record
+   (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,
+   with the photos the backup lacks. A day marked worn is a few hundred bytes each way, where the whole backup (photos and all) was
+   16 MB. An older worker ignores lite and since and answers as before (the whole backup, or same), and then the old way runs. ---- */
+const PH_MIN=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
+const SYNC_LITE=!self.SYNC_OLD;   // (window.SYNC_OLD: sync the whole backup every time, as before; a test plays an older app with it)
+const isPh=s=>typeof s==='string'&&s.length>=PH_MIN&&s.startsWith('data:');
+const phMemo=new Map();
+async function phHash(s){let h=phMemo.get(s);if(h)return h;
+  const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));h=[...d.subarray(0,10)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(phMemo.size>2000)phMemo.clear();phMemo.set(s,h);return h}
+function phStrings(x,test,out=new Set()){if(typeof x==='string'){if(test(x))out.add(x)}else if(Array.isArray(x))for(const v of x)phStrings(v,test,out);else if(x&&typeof x==='object')for(const k in x)phStrings(x[k],test,out);return out}
+function phMap(x,f){if(typeof x==='string')return f(x);if(Array.isArray(x))return x.map(v=>phMap(v,f));if(x&&typeof x==='object'){const o={};for(const k in x)o[k]=phMap(x[k],f);return o}return x}
+/* the references in records from the backup, replaced by the photos: this device's own copy when it has it (the same item's photos are
+   compared), else downloaded, PH_BATCH at a time */
+async function phIn(recs,local,url,token){
+  const refs=[...phStrings(recs,s=>PH_RE.test(s))].map(s=>s.slice(5));if(!refs.length)return recs;
+  const ids=new Set((recs.items||[]).map(i=>i.id)),known=new Map();
+  for(const s of phStrings([local.items.filter(i=>ids.has(i.id)),local.days,local.settings],isPh))known.set(await phHash(s),s);
+  const need=refs.filter(h=>!known.has(h));
+  for(let i=0;i<need.length;i+=PH_BATCH){const r=await fetch(url+'?ph='+need.slice(i,i+PH_BATCH).join(','),{headers:{'x-app-token':localStorage.getItem('app_token')||token},cache:'no-store'}),j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);for(const [h,s] of Object.entries(j.photos||{}))if(isPh(s))known.set(h,s)}
+  if(refs.some(h=>!known.has(h)))throw new Error('a photo is missing from the backup');
+  return phMap(recs,s=>PH_RE.test(s)?known.get(s.slice(5)):s)}
+/* records to send: photos as references, and the photos the backup doesn't have (have: its hashes) */
+async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(),photos={};
+  for(const s of strs){const h=await phHash(s);by.set(s,h);if(!have.has(h))photos[h]=s}
+  return {recs:by.size?phMap(recs,s=>by.has(s)?'dwph:'+by.get(s):s):recs,photos}}
+/* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
+async function syncLite(remote,local,url,token,inline){
+  const got=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token);
+  if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,got);   // a device's first contact with a backup (safety.js): its settings win
+  const now=mergeState(await applyMerged(mergeState(local,got),local),got),ix=remote.idx||{i:{},d:{},s:-1},tomb=remote.tombstones||{};
+  // everything the backup holds must be here now; when not (storage cleared, a marker from another backup), ask for all of it
+  const has=Object.fromEntries(now.items.map(i=>[i.id,stamp(i)])),hasD=Object.fromEntries(now.days.map(d=>[d.date,d.updated||0]));
+  const lacks=Object.entries(ix.i).some(([id,s])=>!(id in has?has[id]>=s:(now.tombstones[id]||0)>=s))||Object.entries(ix.d).some(([d,u])=>!(d in hasD)||hasD[d]<u)||(ix.s>0&&!(now.settings&&(now.settings.updated||0)>=ix.s));
+  if(lacks&&!remote.all)return {again:{all:true}};
+  // what the backup lacks: records newer than its own, tombstones it doesn't have
+  const up={items:now.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:now.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]),
+    tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
+  if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
+  if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoring=false;return true}
+  if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
+  const have=new Set(remote.ph||[]);for(const h of inline)have.delete(h);
+  const {recs,photos}=await phOut(up,have);
+  const p=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,baseSaved:remote.saved||0,day:isoKey(new Date()),...(restoring?{reason:'restore'}:{}),delta:recs,photos})});
+  const pr=await p.json().catch(()=>({})),since=`${remote.rev||0}:${remote.saved||0}`;
+  if(p.status===409)return {again:{since}};                                   // another device saved first: what it saved, then again
+  if(p.status===400&&Array.isArray(pr.missing)){pr.missing.forEach(h=>inline.add(h));return {again:{since}}}
+  if(p.status===422&&pr.error==='legacy')return {again:{legacy:true}};          // a backup the server can't index: the whole of it
+  if(p.status===429&&pr.what==='backup'){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',pr.message||'Today’s backups are used up.');setSyncStatus(pr.message||'Today’s backups are used up.');return false}
+  if(p.status===403&&pr.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
+  if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
+  setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;
+  if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
+  return true}
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Not connected.');return false}
@@ -58,13 +115,19 @@ async function syncOnce(){
   if(localStorage.getItem('invite_ended')===token){setSyncStatus(ENDED);return false}
   syncing=true;setSyncStatus('Syncing…');
   try{
-    for(let attempt=0;attempt<3;attempt++){
+    let lite=SYNC_LITE&&!!(self.crypto&&crypto.subtle),since=null,all=false,full=0;const inline=new Set();
+    for(let attempt=0;attempt<6;attempt++){
       // nothing changed here since the last sync: ask only whether the backup is still that version
-      const mark=attempt?null:syncMark(),local=await localState(),quick=!!mark&&stateSig(mergeState(local,{}))===mark.sig;
-      const r=await fetch(url+(quick?'?v='+encodeURIComponent(mark.v):''),{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
+      const mark=attempt?null:syncMark(),local=await localState(),quick=!!mark&&stateSig(mergeState(local,{}))===mark.sig,last=syncMark();
+      let q=quick?'?v='+encodeURIComponent(mark.v):'';
+      if(lite){const s=all?null:since||(last&&last.v);q='?lite=1'+(s?'&since='+encodeURIComponent(s):'')+(quick?'&v='+encodeURIComponent(mark.v):'')}
+      const r=await fetch(url+q,{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
       if(r.status===403&&remote.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
       if(!r.ok)throw new Error(remote.message||remote.error||'HTTP '+r.status);
       if(quick&&remote.same){synced();return true}
+      if(remote.lite===1){const res=await syncLite(remote,local,url,token,inline);if(!res||res===true)return res;
+        const a=res.again;if(a.all)all=true;if(a.since){since=a.since;all=false}if(a.legacy)lite=false;continue}
+      if(++full>3)break;
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
