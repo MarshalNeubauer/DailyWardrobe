@@ -46,10 +46,10 @@ const asmCmWeaveTag=(z,i)=>{const how=asmCmRoute(i,z).how;
   // the painters added after the routing test (2026-11-13): small woven figures on jackets and trousers, knit and paisley ties
   if(ASM_MICRO[how])return '/m'+how+'-'+JSON.stringify(ASM_MICRO[how]).replace(/\W+/g,'');
   if(how==='knit')return '/knit'+ASM_KNIT_ACROSS;if(how==='paisley')return '/paisley'+ASM_PAISLEY_ACROSS;
-  if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN:''):''}
+  if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE:''):''}
   if((z==='jacket'||z==='waistcoat')&&asmCmRoute(i,z).how==='tweed'&&!asmSuitTweed(i))return '/ttweed';   // an own pattern named tweed
   if((z!=='jacket'&&z!=='waistcoat')||typeof asmSuitWeave!=='function'||!asmSuitTwill(i))return '';
-  const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN:patBase(i.pattern)!=='twill'?'/tw':''};
+  const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE:patBase(i.pattern)!=='twill'?'/tw':''};
 /* which painter paints a garment (2026-11-13, the owner's rule: every pattern Claude can tag is either painted or says why not): the one
    place asmCmJob, the item sheet, Settings' "Painted plain" list, the pre-build's report and tests/asmroute.test.js all ask.
    -> {how, gap, why}: how 'flat' (a plain colour), 'bands' (a jacket's read stripes or checks), 'twill', 'herringbone', 'tweed',
@@ -337,9 +337,14 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
       else{const pitch=(C.pitch||4)*ls,cw=C.cw?C.cw*ls:0,off=C.off?C.off*ls:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
           h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
-        let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0])/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0])/pitch);
-        let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0])/pitch),s0=Math.floor((c[1]-dir*c[0])/(pitch*1.7)),hy=(Math.imul(r0|0,2246822519)^Math.imul(s0|0,3266489917)^Math.imul(col|0,668265263))>>>0;yn=1-C.yarn/2+C.yarn*((hy%1024)/1024)}
-        tw=1+C.amp*ph*yn+(C.fleck!=null?C.fleck:.08)*((h%1024)/512-1);if(C.c2){const m=C.mix*(1+ph)/2;for(let e=0;e<3;e++)cm[e]=cm[e]*(1-m)+4*C.c2[e]*m}}}
+        const bo=C.brk&&(col&1)?C.brk*pitch:0;   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
+        let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0]+bo)/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0]+bo)/pitch);
+        let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),t=(c[1]-dir*c[0])/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((Math.imul(r0|0,2246822519)^Math.imul(s|0,3266489917)^Math.imul(col|0,668265263))>>>0)%1024/1024;
+          yn=1-C.yarn/2+C.yarn*(hv(s0)*(1-fs)+hv(s0+1)*fs)}
+        let mo=0;if(C.mottle){const vn=(u,v)=>{const i0=Math.floor(u),j0=Math.floor(v),fu=u-i0,fv=v-j0,su=fu*fu*(3-2*fu),sv=fv*fv*(3-2*fv),hh=(i,j)=>((Math.imul(i|0,1597334677)^Math.imul(j|0,3812015801))>>>0)%2048/1024-1;
+          return (hh(i0,j0)*(1-su)+hh(i0+1,j0)*su)*(1-sv)+(hh(i0,j0+1)*(1-su)+hh(i0+1,j0+1)*su)*sv},m1=4*ASM_PX_MM*ls,m2=11*ASM_PX_MM*ls;mo=C.mottle*(.55*vn(c[0]/m1,c[1]/m1)+.45*vn(c[0]/m2+17.3,c[1]/m2+5.1))}
+        const pr=C.thin?2*Math.pow((ph+1)/2,2)-.75:ph;
+        tw=1+mo+C.amp*pr*yn+(C.fleck!=null?C.fleck:.08)*((h%1024)/512-1);if(C.c2){const m=C.mix*(1+ph)/2;for(let e=0;e<3;e++)cm[e]=cm[e]*(1-m)+4*C.c2[e]*m}}}
     // a small woven figure (asmMicroTex: houndstooth, sharkskin, birdseye, nailhead): its thread grid along the cloth (uvAt), 4x4 points
     // a pixel (the cloth's direction from the pixel's own and its neighbours' positions: three lookups, not sixteen)
     if(T.wv){const W=T.wv,tp=W.thr*ASM_PX_MM*ls,p0=uvAt(k,x,y),px=uvAt(k,x+1,y),py=uvAt(k,x,y+1),N=W.N;let v=0;
