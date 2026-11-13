@@ -1,7 +1,7 @@
 // A swatch on Today's picture tapped (app.js swTap, the owner's pick 2026-11-13): it opens large at the top left with no name (the owner's
-// ask), the small swatches shrink to 44 px in their column at the bottom left (36 px under 350 px; the open one outlined), the photo zooms
-// so the piece lands on the right, ringed (no label); nothing overlaps; another swatch switches; the same swatch, a tap on the picture or
-// another day close it.
+// ask), the small swatches fill the room below it in their column at the bottom left (sized from the picture's width, never under 36 px;
+// the open one outlined; the Duo unfolded upright gets big ones), the photo zooms so the piece lands on the right, ringed (no label);
+// nothing overlaps; another swatch switches; the same swatch, a tap on the picture or another day close it.
 module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   const browser=await chromium.launch();
   try{
@@ -18,13 +18,14 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
         pressed:sws.map(b=>b.getAttribute('aria-pressed')),slots:sws.map(b=>b.dataset.s),painted:/as painted/i.test(c.textContent),onShadow:(()=>{const b=sws.find(x=>x.classList.contains('on'));return b?getComputedStyle(b).boxShadow:''})(),share:getComputedStyle(c.querySelector('.wshare')||c).opacity}});
     const a=await st();
     ok(!a.open&&a.slots.join()==='top,shirt,tie'&&a.sw.every(s=>Math.round(s.r-s.l)===64),`the stack is three tappable 64 px swatches (${a.slots.join()})`);
+    const swPx=W=>Math.min(64,Math.max(36,.18*W-16.7));   // the small swatches' size while one is open (styles.css: 18cqw - 16.7px, 36 to 64)
     const over=(x,y)=>x&&y&&x.l<y.r&&y.l<x.r&&x.t<y.b&&y.t<x.b;
     for(const s of ['top','shirt','tie']){
       await p.click(`#mannequin-container .ovsw[data-s="${s}"]`);await settle(p,900);
       const b=await st();
       ok(b.open&&/scale\(2\.3\)/.test(b.t)&&b.on.join()===s&&b.pressed.filter(x=>x==='true').length===1,`${s}: the photo zooms and the tapped swatch is outlined (${b.t})`);
       ok(b.lens&&Math.abs(b.lens.l-12)<2&&Math.abs(b.lens.t-12)<2&&Math.abs((b.lens.r-b.lens.l)-.46*b.W)<3&&!b.lab&&!b.labText&&!b.painted,`${s}: the swatch is large at the top left, with no name and no "as painted"`);
-      ok(b.sw.every(x=>Math.round(x.r-x.l)===44)&&b.stack&&Math.abs(b.W-b.stack.b-10)<2,`${s}: the small swatches shrink to 44 px, still a column at the bottom left`);
+      ok(b.sw.every(x=>Math.abs((x.r-x.l)-swPx(b.W))<1.5)&&b.stack&&Math.abs(b.W-b.stack.b-10)<2,`${s}: the small swatches are ${Math.round(b.sw[0].r-b.sw[0].l)} px (the room below the big swatch), still a column at the bottom left`);
       ok(b.ring&&b.ring.l>=-1&&b.ring.r<=b.W+1&&b.ring.t>=-1&&b.ring.b<=b.W+1&&!over(b.ring,b.lens)&&!over(b.ring,b.stack)&&!over(b.lens,b.stack)&&b.scroll===0,
         `${s}: the ring on the piece, the big swatch and the small swatches don't overlap (ring ${Math.round(b.ring.l)}-${Math.round(b.ring.r)} x ${Math.round(b.ring.t)}-${Math.round(b.ring.b)}; big swatch to ${Math.round(b.lens.b)}, small from ${Math.round(b.stack.t)})`);
       ok(+b.share===0,`${s}: share, ✕ and ✓ step out of the way`);
@@ -32,10 +33,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // narrower phones, opened by real taps: a tap focuses the swatch, and that once scrolled the zoomed picture inside its frame, pushing the
     // big swatch and the ring out of place (seen in the owner's preview at 375 px)
     await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,500);   // (the tie, still open from above, closes)
-    for(const [vw,px] of [[375,44],[330,36]]){await p.setViewportSize({width:vw,height:812});await p.evaluate(()=>renderToday());await settle(p,400);
+    for(const [vw,vh] of [[375,812],[330,700],[720,1000]]){await p.setViewportSize({width:vw,height:vh});await p.evaluate(()=>renderToday());await settle(p,400);
+      const shut=await st();
       for(const s of ['top','shirt','tie']){await p.click(`#mannequin-container .ovsw[data-s="${s}"]`);await settle(p,900);const n=await st();
-        ok(n.open&&n.scroll===0&&n.lens&&Math.abs(n.lens.t-12)<2&&n.ring&&n.sw.every(x=>Math.round(x.r-x.l)===px)&&!over(n.lens,n.stack)&&!over(n.ring,n.lens)&&!over(n.ring,n.stack)&&n.ring.t>=-1,
-          `${vw} px, ${s}: ${px} px small swatches, nothing moves out of place or overlaps (frame scrolled ${n.scroll} px; big swatch to ${n.lens&&Math.round(n.lens.b)}, small from ${n.stack&&Math.round(n.stack.t)})`)}
+        if(vw===720)ok(n.sw.every((x,i)=>Math.abs(x.t-shut.sw[i].t)<1&&Math.abs((x.r-x.l)-64)<1),`the Duo upright (${Math.round(n.W)} px picture), ${s}: the small swatches stay where they are at 64 px (top ${n.sw.map(x=>Math.round(x.t)).join('/')} vs ${shut.sw.map(x=>Math.round(x.t)).join('/')})`);
+        ok(n.open&&n.scroll===0&&n.lens&&Math.abs(n.lens.t-12)<2&&n.ring&&n.sw.every(x=>Math.abs((x.r-x.l)-swPx(n.W))<1.5)&&!over(n.lens,n.stack)&&!over(n.ring,n.lens)&&!over(n.ring,n.stack)&&n.ring.t>=-1,
+          `${vw} px, ${s}: ${Math.round(n.sw[0].r-n.sw[0].l)} px small swatches under a ${Math.round(n.W)} px picture, nothing moves out of place or overlaps (frame scrolled ${n.scroll} px; big swatch to ${n.lens&&Math.round(n.lens.b)}, small from ${n.stack&&Math.round(n.stack.t)})`)}
       await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,600)}
     await p.setViewportSize({width:390,height:844});await p.evaluate(()=>renderToday());await settle(p,300);
     // the same swatch closes; a tap on the picture closes; another day closes

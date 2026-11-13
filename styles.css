@@ -940,9 +940,16 @@ body.nocon .conn-only,.connhide{display:none!important}
   transition:width .35s cubic-bezier(.2,.8,.2,1),height .35s cubic-bezier(.2,.8,.2,1),border-radius .35s,box-shadow .2s}
 .fig .swstack .ovsw:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .fig .swstack{transition:opacity .2s,bottom .35s cubic-bezier(.2,.8,.2,1),gap .35s cubic-bezier(.2,.8,.2,1)}
-.fig.swopen .swstack,.fig.swopen .swstack.up{bottom:10px;gap:7px}
-.fig.swopen .swstack .ovsw{width:44px;height:44px;border-radius:10px}   /* 44 px under the big swatch (no name between them: the owner's ask) */
-@media (max-width:349px){.fig.swopen .swstack .ovsw{width:36px;height:36px;border-radius:8px}}   /* a very narrow phone: 36 px so they fit below the big swatch */
+/* while one is open the small swatches stay where they are, at 64 px, when the big swatch leaves room for them; they shrink and move
+   down only as far as they must (the owner, 2026-11-13: on the Duo unfolded they shrank to a fixed 44 px under a picture twice a phone's,
+   then "stay the same size if they don't have to move"). The picture is square: below the big swatch (12 px + 46% of it) and its 10 px gap
+   there is 54% of it less 22 px; three swatches and two 9 px gaps above their offset from the bottom must fit there. So the offset stays
+   (58 px above ✕, else 10) while 54% less 232 px allows it, and the size is 64 px while 18% less 16.7 px allows it, never under 36 px:
+   about 48 px on a 390 px phone, 64 px in place on the Duo (cqw: the picture is a size container, .fig.photo) */
+.fig.photo{container-type:inline-size}
+.fig.swopen .swstack{gap:9px;bottom:10px}
+.fig.swopen .swstack.up{bottom:max(10px,min(58px,calc(54cqw - 232px)))}
+.fig.swopen .swstack .ovsw{width:min(64px,max(36px,calc(18cqw - 16.7px)));height:min(64px,max(36px,calc(18cqw - 16.7px)));border-radius:min(13px,max(8px,calc(4cqw - 4px)))}
 .fig.swopen .swstack .ovsw.on{box-shadow:0 0 0 1.5px rgba(255,255,255,.7),0 2px 7px rgba(0,0,0,.35)}   /* the open one: a thin soft white outline (the owner: 2.5 px solid white was too thick and bright) */
 .fig.swopen .wornbar,.fig.swopen .wornbar>*,.fig.swopen .wshare{opacity:0;pointer-events:none}
 .fig .swlens{position:absolute;top:12px;left:12px;width:46%;aspect-ratio:1;border-radius:16px;overflow:hidden;z-index:4;box-shadow:0 0 0 3px #fff,0 10px 26px rgba(0,0,0,.45);
