@@ -532,9 +532,18 @@ const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i
    (amp: at the stripes' .16 the ribs read as lines at this distance, where a real twill reads as a fine texture), and on a two-colour
    twill (a second colour) the ribs lean toward it (mix at a rib's crest). asmTwillTex is the one-colour tile. */
 const ASM_TWILL={amp:.06,mix:.22,fleck:.025};
-const asmSuitTwill=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&patBase(i.pattern)==='twill'&&!asmSuitBands(i);
+/* (2026-11-13 audit) herringbone jackets with no band reading were flat colour (the owner's charcoal tonal herringbone), and so were his
+   own patterns named twill but based on solid (black fine worsted twill, mid grey melange twill): the weave is read from the pattern's
+   own name or Claude's description too (asmSuitWeave), and a herringbone gets the herringbone cloth, columns ASM_HB_MM wide */
+const ASM_HB_MM=5,ASM_HB_AMP=.14;   // a herringbone's ribs are stronger than a plain twill's (.06): at .06 the charcoal tonal herringbone read flat; its close-up shows columns about 5 mm wide
+const asmSuitWeave=i=>{if(!i)return '';const b=patBase(i.pattern);if(b==='herringbone')return 'herringbone';if(b==='twill')return 'twill';
+  if(b!=='solid'&&!/^own/.test(i.pattern||''))return '';
+  const t=(i.pattern||'')+' '+((i.patternSpec&&i.patternSpec.description)||i.patternText||'');
+  return /herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':''};
+const asmSuitTwill=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&!!asmSuitWeave(i)&&!asmSuitBands(i);
 function asmTwillTex(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
-  return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:asmLinen(i),cloth:{kind:'twill',amp:ASM_TWILL.amp,c2,mix:c2?ASM_TWILL.mix:0,fleck:ASM_TWILL.fleck,ss:true}}}
+  const hb=asmSuitWeave(i)==='herringbone';
+  return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:asmLinen(i),cloth:{kind:hb?'herringbone':'twill',...(hb?{cw:ASM_HB_MM*ASM_PX_MM,off:0}:{}),amp:hb?ASM_HB_AMP:ASM_TWILL.amp,c2,mix:c2?ASM_TWILL.mix:0,fleck:ASM_TWILL.fleck,ss:true}}}
 /* a tweed jacket with no band reading (tagged tweed, or the owner's own pattern drawn like tweed) is painted too (2026-11-13, his slate
    blue-grey tweed blazer): its colour with the tweed texture in the shading (asmTweedTile, like the linen's), its flecks in the second
    colour when it has one (a Donegal). A tweed read as a check (CHECK_PATS) stays with the band painter. */
@@ -543,7 +552,7 @@ function asmTweedTex(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');retu
   return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:false,tweed:true,cloth:null,c2:COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null,fmix:.85}}
 const asmSuitTexFor=async i=>asmSuitBands(i)?await asmSuitTex(i):asmSuitTwill(i)?asmTwillTex(i):asmSuitTweed(i)?asmTweedTex(i):null;
 const asmSuitCut=i=>asmSuitBands(i)||asmSuitTwill(i)||asmSuitTweed(i);   // the cloth runs its own way on the sleeves (their zone pictures)
-const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitTwill(i)?'tw|'+ASM_TWILL.amp+'|'+ASM_TWILL.mix+'|'+ASM_TWILL.fleck+'|'+(COLORS[i.secondaryColor]||'')+'|'+asmLinen(i):'',asmSuitTweed(i)?'td|'+JSON.stringify(ASM_TWEED)+'|'+(COLORS[i.secondaryColor]||''):'',asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
+const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitTwill(i)?'tw|'+ASM_TWILL.amp+'|'+ASM_TWILL.mix+'|'+ASM_TWILL.fleck+'|'+(COLORS[i.secondaryColor]||'')+'|'+asmLinen(i)+(asmSuitWeave(i)==='herringbone'?'|hb'+ASM_HB_MM+'|'+ASM_HB_AMP:''):'',asmSuitTweed(i)?'td|'+JSON.stringify(ASM_TWEED)+'|'+(COLORS[i.secondaryColor]||''):'',asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
 /* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
    too, from the reading: one repeat of the app's own drawing (fabricDef) in the reading's colours, sized by its repeats across the
    jacket (ASM_SHIRT_MM / sett.tr at ASM_PX_MM), upright on the body and along the arm on each sleeve (the sleeve zone pictures, made
