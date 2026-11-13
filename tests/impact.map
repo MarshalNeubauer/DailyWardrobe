@@ -303,6 +303,7 @@ asmweave.test.js	icon-192.png	<loaded>
 asmweave.test.js	icon-512.png	<loaded>
 asmweave.test.js	index.html	<loaded>
 asmweave.test.js	manifest.webmanifest	<loaded>
+asmweave.test.js	remind.js	remindPrefs	remindRefresh
 asmweave.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	<loaded>
 asmweave.test.js	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 asmweave.test.js	tests/fixedplan.js	<any>
