@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	444b3c9815a7de53c629
+# tested	7c6d8352468efcf9dfd1
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -1399,6 +1399,17 @@ queue.test.js	tests/fixedplan.js	<any>
 queue.test.js	ui.js	advClose	askAnswer	askConfirm	askEls	connSummary	needConn	renderConnUI	uiEsc
 queue.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	ROUTES.* /sync	SWAP_PROMPT	WATCH_KEY	dataUrlToBlob	dropFail	failFor	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	hubOf	jobMsg	keepSnapshots	kvMeta	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	refundJob	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
 queue.test.js	wrangler.toml	<any>
+raincoat.test.js	<every page test>	<every page test>
+raincoat.test.js	apple-touch-icon.png	<loaded>
+raincoat.test.js	core.js	accentOf	colOf	hexRgb	lum	mix	patBase	primaryCol	rgbHex	thirdOf
+raincoat.test.js	detect.js	usableSett
+raincoat.test.js	draw.js	coatFabric	coatMarks	fabricDef	figEyes	itemThumb	rainFabric	rainMarks
+raincoat.test.js	icon-192.png	<loaded>
+raincoat.test.js	icon-512.png	<loaded>
+raincoat.test.js	index.html	<loaded>
+raincoat.test.js	manifest.webmanifest	<loaded>
+raincoat.test.js	styles.css	.thumb	.thumb svg	<loaded>
+raincoat.test.js	tests/fixedplan.js	<any>
 refresh.test.js	<every page test>	<every page test>
 refresh.test.js	account.js	acctCall	acctEsc	isTester	loadAccount	rememberRole	renderAccountUI
 refresh.test.js	app.js	@document.addEventListenervisibilitychange	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	addTombstones	adviceFor	atomic	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchRemoteRender	figureStage	fnv64	hasOutfit	idsOf	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthLink	noMotion	onSyncedData	piecesBox	planOn	prefetchRenders	put	putRaw	recordDays	refreshAll	renderFor	renderPending	renderStalled	renderWardrobe	replanFuture	resetCard	saveDay	saveUserSettings	schedulePrefetch	scoreCard	slotLabel	slotPool	slots	stackSVG	toast	vestRow	wardList	wardPic	workerBase	wornMarks
@@ -2047,7 +2058,7 @@ shop.test.js	care.js	careBadge	careCounts	careLimit	careNote	careState
 shop.test.js	colpick.js	@window.addEventListenerkeydown
 shop.test.js	core.js	<any>	LUM	accentOf	arriveN	avgText	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	stamp	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 shop.test.js	detect.js	usableSett
-shop.test.js	draw.js	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
+shop.test.js	draw.js	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 shop.test.js	dress.js	dressNewItem	legacyVest
 shop.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 shop.test.js	icon-192.png	<loaded>
@@ -2756,7 +2767,7 @@ weather.test.js	assemble.js	renderAsmUI
 weather.test.js	care.js	careLimit	careNote	laundryDays	renderCareUI
 weather.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	nm	occLabel	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 weather.test.js	detect.js	texPat	usableSett
-weather.test.js	draw.js	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
+weather.test.js	draw.js	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	rainFabric	rainMarks	swatchSVG
 weather.test.js	dress.js	dressOn	dressSummary	renderDressUI
 weather.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 weather.test.js	icon-192.png	<loaded>
