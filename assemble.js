@@ -1448,6 +1448,9 @@ let asmState={checked:false,missing:[],total:0},asmSyncing=null;
    the look under way and then looks again, asking afresh for photos that were missing before. */
 function asmSync(force){if(!ASM_ON||!workerBase())return Promise.resolve(asmState);if(asmSyncing)return force?asmSyncing.then(()=>asmSync(true)):asmSyncing;
   asmSyncing=(async()=>{
+    // (2026-11-13, the owner's ask) the colour-coded masters paint every look the earlier way could (a jacket and a tie: the suit and
+    // waistcoat masters): its master, waistcoat master, calibration photos and pieces (about 2.8 MB) are then neither downloaded nor listed
+    if(typeof asmCmPref==='function'&&asmCmPref()){await asmListGet();if(asmCmHeld('suit')&&asmCmHeld('vest')){asmState={checked:true,missing:[],total:0,cm:true};asmSyncing=null;if(typeof renderAsmUI==='function')renderAsmUI();return asmState}}
     try{if(force)asmTried.clear();const has=await asmGet(asmMasterKey(),force),kept=await asmZonesKept();if(has&&asmNeeds().some(n=>n.kind==='vestmaster'))await asmGet(asmVestKey());
       // no master on the worker: nothing else is asked for (the pieces are edits of it). Calibration photos are not needed once their zones are kept
       const vkept=await asmVestKept(),needs=asmNeeds().filter(n=>!(n.kind==='calib'&&kept)&&!(n.kind==='vestcalib'&&vkept)),lack=has?needs.filter(n=>!renders[n.key]):[];let i=0;
@@ -1476,6 +1479,7 @@ function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),grp=$('#asm-g
   const money=v=>v<1?Math.round(v*100)+'¢':'$'+v.toFixed(2),queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key)),making=asmNeeds().filter(n=>queued.has(n.key)).length;
   if(!workerBase()){st.textContent='';btn.textContent='Make item photos';needConn(btn);return}needConn(btn);
   if(!asmState.checked){st.textContent='Looking at which photos are already made…';btn.disabled=true;btn.textContent='Make item photos';return}
+  if(asmState.cm){st.textContent='Outfit pictures are painted on the colour-coded masters: no item photos are needed.';btn.disabled=true;btn.textContent='No item photos needed';return}
   const master=m.find(n=>n.kind==='master'),pieces=m.filter(n=>n.kind==='piece').length,have=asmState.total-asmState.missing.filter(n=>n.kind==='piece').length;
   if(master){st.textContent='Outfit pictures can be put together on this device from one photo per item, instead of a new photo for every outfit. It starts with one master photo of the pose (about '+money(ASM_COST.master)+').';btn.disabled=false;btn.textContent='Make the master photo';return}
   if(making&&!m.length){st.textContent=`${making} photo${making===1?' is':'s are'} being made. They appear as they finish; you can close the app.`;btn.disabled=true;btn.textContent='Making…';return}
