@@ -149,7 +149,7 @@ function asmTieMask(z,tie,master){const W=z.W,N=W*W,L=asmLab(tie),Lm=master?asmL
    ends. Shaded as brushed metal lit from the upper left like the master: a bright top bevel, a dark bottom one, a light streak along the
    face, the left end a little lighter, fine brushing along it, a touch of the tie's colour reflected low on the face; and a soft shadow
    on the tie below and right of it. Anti-aliased from its exact outline. -> the bar's mask */
-const ASM_BARV=1,ASM_BAR_AT=.6,ASM_BAR_MM=5.5,ASM_BAR_LEN=.86;
+const ASM_BARV=2,ASM_BAR_AT=.6,ASM_BAR_MM=5.5,ASM_BAR_LEN=.8;   // 2: clipped on from the tie's left edge (the owner: "it's a clip, it doesn't float")
 const ASM_METAL={silver:[200,201,204],gold:[208,168,84],gunmetal:[96,99,106]};
 /* its metal: the tagged metal, read with the colour (the owner's clip is metal 'other' and colour silver, which metalWord calls gunmetal) */
 const asmBarMetal=i=>{const c=String(i&&i.primaryColor||'').toLowerCase(),m=i&&i.metal;return m==='gold'||/gold|brass|bronze/.test(c)?'gold':m==='other'&&!/silver|white|chrome|steel|grey|gray|platinum/.test(c)?'gunmetal':'silver'};
@@ -160,11 +160,14 @@ function asmBarDraw(o,tieM,W,metal,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Arra
   if(y1-y0<40*s)return null;
   const yb=Math.round(y0+ASM_BAR_AT*(y1-y0)),R=Math.round(10*s),D=Math.round(40*s);
   const at=(y,f)=>{const v=[];for(let yy=y-R;yy<=y+R;yy++)if(yy>=0&&yy<W&&xl[yy]>=0)v.push(f(yy));v.sort((p,q)=>p-q);return v.length?v[v.length>>1]:NaN};
-  const ctr=y=>at(y,yy=>(xl[yy]+xr[yy])/2),cx=ctr(yb),wd=at(yb,yy=>xr[yy]-xl[yy]+1);if(!isFinite(cx)||!isFinite(wd))return null;
+  const ctr=y=>at(y,yy=>(xl[yy]+xr[yy])/2),wd=at(yb,yy=>xr[yy]-xl[yy]+1);let cx=ctr(yb);if(!isFinite(cx)||!isFinite(wd))return null;
   let sl=(ctr(Math.min(y1,yb+D))-ctr(Math.max(y0,yb-D)))/(Math.min(y1,yb+D)-Math.max(y0,yb-D));if(!isFinite(sl))sl=0;
   const nn=Math.hypot(1,sl),ux=1/nn,uy=-sl/nn,vx=sl/nn,vy=1/nn;   // u along the bar (square to the tie), v down the tie
-  const Lh=ASM_BAR_LEN*wd/nn/2,Hh=ASM_BAR_MM*ASM_PX_MM*s/2,r=.42*Hh,bev=Math.max(1.2,.3*Hh),base=ASM_METAL[metal]||ASM_METAL.silver,cy=yb;
-  const sdf=(u,v)=>{const qx=Math.abs(u)-(Lh-r),qy=Math.abs(v)-(Hh-r);return Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-r};
+  const Lh=ASM_BAR_LEN*wd/nn/2,Hh=ASM_BAR_MM*ASM_PX_MM*s/2,r=.42*Hh,bev=Math.max(1.2,.3*Hh),base=ASM_METAL[metal]||ASM_METAL.silver;
+  // a clip slides on from the side: its folded end sits on the tie's left edge (a pixel past it, where it turns round the tie)
+  const sh0=-(wd/nn/2)+Lh-1;cx+=sh0*ux;const cy=yb+sh0*uy;
+  const rr=u=>u<0?.12*Hh:r;   // the folded end (left) is nearly square; the free end rounded
+  const sdf=(u,v)=>{const R0=rr(u),qx=Math.abs(u)-(Lh-R0),qy=Math.abs(v)-(Hh-R0);return Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-R0};
   const sx=.45*Hh,sy=.75*Hh,sb=.38*Hh,lx=-.42,ly=-.91;   // the shadow's offset and softness; the light comes from the upper left
   const hash=n=>{n=Math.imul(n^61^(n>>>16),9);n^=n>>>4;n=Math.imul(n,0x27d4eb2d);n^=n>>>15;return (n>>>0)/4294967296};
   const ext=Lh+Hh+sx+3*sb,x0=Math.max(0,Math.floor(cx-ext)),x1=Math.min(W-1,Math.ceil(cx+ext)),ya=Math.max(0,Math.floor(cy-ext)),yz=Math.min(W-1,Math.ceil(cy+ext));
@@ -177,7 +180,8 @@ function asmBarDraw(o,tieM,W,metal,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Arra
     // the face, polished: lighter at the top, a sharp bright streak above the middle, a darker band (the room reflected) below it
     let f=.98-.42*(vn+1)/2+.5*Math.exp(-Math.pow((vn+.42)/.12,2))-.26*Math.exp(-Math.pow((vn-.28)/.2,2));
     f*=1+.08*(-u/Lh)+.16*Math.exp(-Math.pow((u/Lh+.4)/.28,2));   // lit from the left
-    if(e<bev){const qx=Math.abs(u)-(Lh-r),qy=Math.abs(v)-(Hh-r);let nx=Math.max(qx,0)*Math.sign(u),ny=Math.max(qy,0)*Math.sign(v);if(!nx&&!ny){if(qx>qy)nx=Math.sign(u);else ny=Math.sign(v)}
+    const fold=(u+Lh)/(1.6*Hh);if(fold<1)f*=.62+.38*fold*fold*(3-2*fold);   // where it turns round the tie's edge, away from the light
+    if(e<bev){const R0=rr(u),qx=Math.abs(u)-(Lh-R0),qy=Math.abs(v)-(Hh-R0);let nx=Math.max(qx,0)*Math.sign(u),ny=Math.max(qy,0)*Math.sign(v);if(!nx&&!ny){if(qx>qy)nx=Math.sign(u);else ny=Math.sign(v)}
       const nl=Math.hypot(nx,ny)||1,w=1-Math.max(0,e)/bev;f*=1+w*(.9*((nx*lx+ny*ly)/nl)-.1)}   // the bevel: bright facing the light, dark away from it
     f*=1+.035*(hash(Math.floor((v+Hh)*1.6)+977)-.5)+.02*(hash(i)-.5);   // brushed along the bar
     const refl=.1+.18*Math.max(0,vn);   // the tie's colour seen in the face, most low down
