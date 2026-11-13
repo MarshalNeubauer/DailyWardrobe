@@ -26,9 +26,11 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
       return {tie:kind({id:'a',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',...cu}),pin:kind({id:'b',type:'suit',primaryColor:'navy',pattern:'pinstripe',...cu}),
         twill:kind({id:'c',type:'suit',primaryColor:'brown',pattern:'twill',...cu}),dobby:kind({id:'d',type:'shirt',primaryColor:'white',pattern:'dobby',...cu}),
         gingham:kind({id:'e',type:'shirt',primaryColor:'lightblue',pattern:'gingham',...cu}),bare:kind({id:'f',type:'tie',primaryColor:'navy',pattern:'solid'}),photo:kind({id:'g',type:'suit',primaryColor:'navy',pattern:'solid',swatch:ph,swSrc:'photo'})}},PH);
-    ok(pick.tie==='close-up',`a tie shows its close-up (${JSON.stringify(pick)})`);
+    ok(pick.tie==='close-up'&&pick.twill==='close-up',`a tie and a twill suit show their close-up (${JSON.stringify(pick)})`);
     ok(pick.dobby==='drawn',"a shirt is always drawn, even with a close-up (the owner's choice)");
-    ok(pick.twill==='painted'&&pick.photo==='painted',"every suit is its painted cloth, never its close-up (the owner's choice)");
+    ok(pick.photo==='painted',"a suit with no close-up is its painted cloth");
+    const pinCu=await p.evaluate(ph=>ovlPiece({id:'pc',type:'suit',primaryColor:'navy',pattern:'pinstripe',swatch:ph,swSrc:'tex',texture:ph,sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#c8cbd2',.05]],tr:30}}),PH);
+    ok(!pinCu.includes(PH)&&/^<img src="data:image\/png/.test(pinCu),'a read pinstripe suit with a close-up stays painted (its close-up loses the stripes)');
     ok(pick.pin==='drawn'&&pick.gingham==='drawn'&&pick.bare==='drawn','a pinstripe suit with no reading keeps the drawn tile, as does a gingham shirt and a tie with no close-up');
     // the painted suit: read bands as stripes in Claude's colours, a windowpane's crossing line, and the cloth's grain
     const st=await p.evaluate(async()=>{const px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return {w:im.width,d:x.getImageData(0,0,im.width,im.height).data}};

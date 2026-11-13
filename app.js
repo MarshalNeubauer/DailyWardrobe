@@ -1085,7 +1085,9 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
     else g=1+m*(.025*Math.sin(Math.PI*x/2)*Math.sin(Math.PI*y/2)+.035*(hash(x,y)-.5));
     const k=4*(y*S+x);for(let j=0;j<3;j++)D.data[k+j]=Math.max(0,Math.min(255,Math.round(px[j]*g)));D.data[k+3]=255}
   X.putImageData(D,0,0);const url=c.toDataURL('image/png');if(OVL_SUITS.size>12)OVL_SUITS.clear();OVL_SUITS.set(key,url);return url}
-const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer'){const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)}
+// a plain or finely woven jacket with a close-up shows it again (the owner's choice, 2026-11-13, "the mix": at 64 px the painted grain of
+// a twill was a flat square, its close-up real cloth); a striped, checked or figured one stays painted (its close-up lost the stripes)
+const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer'){if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${i.swatch}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)}
   return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i)};
 function swatchStack(o,up){const ps=[o.top,o.shirt,o.tie].filter(Boolean);if(!ps.length)return '';
   return `<div class="swstack${up?' up':''}" role="img" aria-label="${esc(ps.map(i=>slotLabel(i===o.top?'top':i===o.shirt?'shirt':'tie',o)+': '+itemTitle(i)).join('; '))}">${ps.map(i=>`<span class="ovsw">${ovlPiece(i)}</span>`).join('')}</div>`}
