@@ -243,10 +243,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const keep=(k,f,sig='')=>store.set('render:'+k,JSON.stringify({sig,img:fx(f),model:'m',t:1000}));
         keep(K.master,'master',K.sig);['jacket','shirt-black','tie','watch'].forEach((f,i)=>keep(K.calib[i],f));keep(K.shirt,'shirt-pink');   // the jacket's photo is not made yet (the shirt and the tie are painted on the device)
         const s1=await a.evaluate(async()=>{show('today');const st=await asmSync(true);return {missing:st.missing.map(n=>n.kind+':'+n.slot).join(),total:st.total,have:['master','jacket','shirt'].length,btn:(document.querySelector('.render-btn')||{}).textContent||'',photo:!!document.querySelector('.fig.photo img')}});
-        ok(K.can&&s1.missing==='piece:jacket'&&s1.total===1&&!s1.photo&&/Generate realistic photo/.test(s1.btn),`the app brings the master and the item photos home and knows what is still to make (${s1.missing}); an outfit with a piece missing shows its drawing and Generate`);
-        await a.click('.render-btn');await a.waitForFunction(()=>!rendering,null,{timeout:15000});
+        ok(K.can&&s1.missing==='piece:jacket'&&s1.total===1&&!s1.photo&&!s1.btn,`the app brings the master and the item photos home and knows what is still to make (${s1.missing}); an outfit with a piece missing shows its drawing, with no Generate button on Today`);
+        await a.evaluate(()=>generateRender());await a.waitForFunction(()=>!rendering,null,{timeout:15000});
         const job=JSON.parse(store.get('job:'+K.jacket)||'null');
-        ok(sent.length===1&&sent[0].key===K.jacket&&job&&job.swap.what==='jacket'&&job.baseKey===K.master&&!job.image&&!store.has('job:'+K.combo)&&/Making photo/.test(await a.textContent('.render-btn')),'Generate sends only the missing item (the jacket, as an edit of the master), not a whole outfit photo, and says it is being made');
+        ok(sent.length===1&&sent[0].key===K.jacket&&job&&job.swap.what==='jacket'&&job.baseKey===K.master&&!job.image&&!store.has('job:'+K.combo)&&await a.evaluate(()=>!!document.querySelector('#render-msg .spin')),'Generate (Settings) sends only the missing item (the jacket, as an edit of the master), not a whole outfit photo, and says it is being made');
         await drain();ok(made===1&&store.has('render:'+K.jacket),'the worker makes the jacket\'s photo from the kept master');
         await a.evaluate(()=>checkQueue());await a.waitForSelector('.fig.photo img',{timeout:15000});
         const s2=await a.evaluate(()=>{const o=planFor()[key(sel)],r=asmFor(o);return {shown:!!r&&document.querySelector('.fig.photo img').src===r.img,model:r&&r.model,btn:!!document.querySelector('.render-btn'),queued:queuedKeys().length}});

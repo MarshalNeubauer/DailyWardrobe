@@ -92,10 +92,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>closeItem());
     // connected: everything is there again
     await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');closeSettings();show('today')},SRV);
-    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!!b&&!b.disabled,msg:document.querySelector('#render-msg').textContent,
+    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn').disabled,msg:document.querySelector('#render-msg').textContent,
       batch:!!document.querySelector('#batch-btn').offsetParent&&!document.querySelector('#batch-btn').disabled,regen:!!document.querySelector('#regen-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
       closeSettings();openAdd();r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
-    ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/Outfit photos/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons are there and work (${on.conn})`);
+    ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/Outfit photos/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons are there and work, a day's photo from Settings only (${on.conn})`);
     await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
 
     /* ---- the accent as text ---- */

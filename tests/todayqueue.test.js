@@ -1,4 +1,4 @@
-// "Generate realistic photo" on Today (and Settings → Regenerate) goes to the worker's background queue, so the app can be swiped
+// A day's photo (Settings → This day's photo; Today has no Generate button) goes to the worker's background queue, so the app can be swiped
 // to another day, closed or locked while the photo is made; the app picks it up when it next looks. A regenerate replaces the
 // kept photo. A failure says why and offers to try again. The worker pushes a finished photo to the open app through a Durable
 // Object (RenderHub) answering a held GET /render-wait; polling is the backup. Mocked queue, KV, Durable Object and OpenAI; the real worker.js.
@@ -27,13 +27,13 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
     const ck=await p.evaluate(()=>comboKey(planFor()[key(sel)]));
-    await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    const pend=await p.evaluate(()=>{const b=document.querySelector('.render-btn');return {t:b.textContent,dis:b.disabled,spin:!!b.querySelector('.spin'),msg:document.querySelector('#render-msg').textContent,
-      q:queuedKeys(),busy:document.querySelector('#busy').textContent}});
+    await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    const pend=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),spin:!!document.querySelector('#render-msg .spin'),msg:document.querySelector('#render-msg').textContent,
+      q:queuedKeys(),busy:document.querySelector('#busy').textContent}));
     ok(posts.length===1&&posts[0].mode==='queue'&&!posts[0].replace&&calls===0&&pend.q.includes(ck),'Generate sends the outfit to the worker\'s background queue (nothing is made while the app waits)');
-    ok(/Making photo/.test(pend.t)&&pend.dis&&pend.spin&&/close the app/.test(pend.msg)&&/Making 1 photo in the background/.test(pend.busy),`while it is made: a spinning, disabled "Making photo…" and a note that the app can be closed ("${pend.msg}")`);
-    const other=await p.evaluate(()=>{stepDay(1);const b=document.querySelector('.render-btn');return {t:b&&b.textContent,dis:b&&b.disabled,pend:renderPending(planFor()[key(sel)])}});
-    ok(other.t==='Generate realistic photo'&&!other.dis&&!other.pend,'swiping to another day: that day can have its own photo made meanwhile');
+    ok(!pend.btn&&pend.spin&&/close the app/.test(pend.msg)&&/Making 1 photo in the background/.test(pend.busy),`while it is made Today has no button, a spinning note that the app can be closed ("${pend.msg}")`);
+    const other=await p.evaluate(()=>{stepDay(1);return {btn:!!document.querySelector('.render-btn'),pend:renderPending(planFor()[key(sel)])}});
+    ok(!other.btn&&!other.pend,'swiping to another day: it isn\'t waiting on that one, and Today offers no Generate button there either');
     await p.evaluate(()=>stepDay(-1));
     // the worker makes it (the app could be closed); the app picks it up when it looks
     await drain();await p.evaluate(()=>checkQueue());await p.waitForFunction(()=>!!document.querySelector('.fig.photo img'),null,{timeout:10000});
@@ -51,9 +51,9 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // a failure says why and offers to try again
     await p.evaluate(()=>{stepDay(1)});
     reply=()=>[400,{error:{message:'Your organization must be verified to use the model gpt-image-2.'}}];
-    await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering,null,{timeout:15000});await drain();await p.evaluate(()=>checkQueue());await settle(p,200);
-    const f=await p.evaluate(()=>({t:document.querySelector('.render-btn').textContent,dis:document.querySelector('.render-btn').disabled,msg:document.querySelector('#render-msg').textContent}));
-    ok(f.t==='Try again'&&!f.dis&&/couldn’t be made\. .*verif/i.test(f.msg),`a failed photo says why and offers to try again ("${f.msg}")`);
+    await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});await drain();await p.evaluate(()=>checkQueue());await settle(p,200);
+    const f=await p.evaluate(()=>{openSettings('photos');const r={btn:!!document.querySelector('.render-btn'),msg:document.querySelector('#render-msg').textContent,rg:document.querySelector('#regen-btn').textContent,dis:document.querySelector('#regen-btn').disabled};closeSettings();return r});
+    ok(!f.btn&&/couldn’t be made\. .*verif/i.test(f.msg)&&/^Generate photo for/.test(f.rg)&&!f.dis,`a failed photo says why on Today, and Settings can try again ("${f.msg}"; "${f.rg}")`);
     ok(await p.evaluate(()=>noPush),'a worker without the push: the app just polls');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
@@ -127,7 +127,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p2.evaluate(()=>{PUSH_WAIT=4000;let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','charcoal'),I('shirt','lightblue'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
-    await p2.click('text=Generate realistic photo');await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
+    await p2.evaluate(()=>generateRender());await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
     await p2.waitForFunction(()=>pushOn,null,{timeout:5000});
     const t1=Date.now();await drain();await p2.waitForFunction(()=>!!document.querySelector('.fig.photo img')&&!queuedKeys().length,null,{timeout:5000});
     ok(Date.now()-t1<2000&&!gets.includes('/render-queue')&&gets.includes('/render-wait'),`the worker pushes the finished photo to the open app: it shows ${Date.now()-t1} ms after it's made, with no polling`);
@@ -136,11 +136,11 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // (photo not made yet) must not give up on it, or the push that follows is ignored and the photo shows only after a reload.
     KV.lag=true;
     await p2.evaluate(()=>{items.find(i=>i.type==='tie').primaryColor='navy';cache={};renderToday()});
-    await p2.click('text=Generate realistic photo');await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
+    await p2.evaluate(()=>generateRender());await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
     const ck2=await p2.evaluate(()=>comboKey(planFor()[key(sel)]));
     await p2.evaluate(()=>checkQueue());
-    const still=await p2.evaluate(()=>({q:queuedKeys(),btn:(document.querySelector('.render-btn')||{}).textContent}));
-    ok(still.q.includes(ck2)&&/Making photo/.test(still.btn),'a poll that can\'t see the just-sent job yet keeps waiting for it (KV lists lag)');
+    const still=await p2.evaluate(()=>({q:queuedKeys(),spin:!!document.querySelector('#render-msg .spin')}));
+    ok(still.q.includes(ck2)&&still.spin,'a poll that can\'t see the just-sent job yet keeps waiting for it (KV lists lag)');
     await drain();await p2.waitForFunction(()=>!!document.querySelector('.fig.photo img')&&!queuedKeys().length,null,{timeout:5000});
     ok(true,'the push then brings the photo in without a reload');
     // a photo pushed after the app stopped waiting for it is still kept
@@ -149,14 +149,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // one never seen for 45 minutes is given up on
     const gone=await p2.evaluate(async()=>{rqSet({keys:['c00000000000fffff'],failed:[],total:1,at:{c00000000000fffff:Date.now()-46*60000}});await checkQueue();return queuedKeys().length});
     ok(gone===0,'a photo unseen for 45 minutes counts as lost');
-    // a photo waiting over 10 minutes: Try again sends it again
+    // a photo waiting over 10 minutes: Settings sends it again
     const stall=await p2.evaluate(()=>{items.find(i=>i.type==='tie').primaryColor='burgundy';cache={};const ck=comboKey(planFor()[key(sel)]);delete renders[ck];
-      rqSet({keys:[ck],failed:[],total:1,at:{[ck]:Date.now()-11*60000}});renderToday();const b=document.querySelector('.render-btn');return {ck,t:b.textContent,dis:b.disabled,msg:document.querySelector('#render-msg').textContent}});
+      rqSet({keys:[ck],failed:[],total:1,at:{[ck]:Date.now()-11*60000}});renderToday();openSettings('photos');const r={ck,btn:!!document.querySelector('.render-btn'),dis:document.querySelector('#regen-btn').disabled,msg:document.querySelector('#render-msg').textContent};closeSettings();return r});
     ok(await p2.evaluate(()=>!document.querySelector('#busy').classList.contains('on')),'a stalled photo isn\'t counted as being made in the pill');
-    ok(stall.t==='Try again'&&!stall.dis&&/over 10 minutes/.test(stall.msg),`a photo stuck over 10 minutes offers Try again ("${stall.msg}")`);
-    const nPosts=posts.length;await p2.click('text=Try again');await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
+    ok(!stall.btn&&!stall.dis&&/over 10 minutes/.test(stall.msg)&&/Settings/.test(stall.msg),`a photo stuck over 10 minutes says Settings sends it again ("${stall.msg}")`);
+    const nPosts=posts.length;await p2.evaluate(()=>{openSettings('photos');document.querySelector('#regen-btn').click();closeSettings()});await p2.waitForFunction(()=>!rendering,null,{timeout:15000});
     const re=await p2.evaluate(ck=>({pend:renderPending(planFor()[key(sel)]),age:Date.now()-rqGet().at[ck]}),stall.ck);
-    ok(posts.length===nPosts+1&&posts.at(-1).mode==='queue'&&re.pend&&re.age<60000,'Try again sends it to the queue again and waits afresh');
+    ok(posts.length===nPosts+1&&posts.at(-1).mode==='queue'&&re.pend&&re.age<60000,'Settings sends it to the queue again and waits afresh');
     await drain();await p2.waitForFunction(()=>!queuedKeys().length,null,{timeout:5000});
     KV.lag=false;
     ok(errs2.length===0,'no page errors ('+errs2.join('; ')+')');
