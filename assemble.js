@@ -1149,7 +1149,7 @@ async function asmGetPre(o){const k=asmOutKey(o),W=workerBase();if(!W||asmTried.
 /* for the computer: one look's picture made exactly as a phone makes it -> {key, sig, img}, or null when it can't be (a piece missing,
    one that came out wrong). It downloads what the look needs like asmEnsure, but never takes a picture built earlier */
 async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
-  if(!await asmGet(asmMasterKey(),true)||!asmWants(o)||(o.vest&&!await asmGet(asmVestKey())))return null;
+  if(!await asmGet(asmMasterKey(),true)||(o.vest&&!await asmGet(asmVestKey()))||!asmWants(o))return null;   // the vest master first: asmWants needs it here (every look was refused on a waistcoat day)
   if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
   if((await Promise.all(asmPhotoParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
   if(asmParts(o).some(p=>p.tp)&&!await asmGet(asmCalibKey('tie')))return null;
