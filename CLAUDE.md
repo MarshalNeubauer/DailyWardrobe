@@ -588,7 +588,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
   - `itemDesc()`
   - socks are one sock in side profile on the same warm grey as every other item (the worker's `ITEM_BG`; it ignores an old app's `bg:'white'`)
   - product photos kept on a white backdrop are toned down to `PIC_BG` once in the app (`greyBackdrop`/`fixItemBackdrops`, flag `grey` on the render)
-  - a sock's `secondaryColor` is its toe cap colour (`sockToe()` in core.js: the tagger is told so, `drawSock` draws it (the sock outline `SOCK_D` is traced from a catalogue photo, a 60×72 box; details are clipped inside it), `desc` names it, the editor labels it "Toe cap"; the planner ignores it)
+  - a sock's `secondaryColor` is its toe cap colour (`sockToe()` in core.js: the tagger is told so, `drawSock` draws it (the sock outline `SOCK_D.out` is traced from the item picture of the owner's charcoal sock with a burgundy toe, 2026-11-13, a 62×72 box; details are clipped inside it, and the toe's colour also edges the cuff as on his socks), `desc` names it, the editor labels it "Toe cap"; the planner ignores it)
   - made from the item's own photo by image edit when it has one, saved as `render:c<16 hex>` of the description
   - Settings button generates the missing ones
 - batch photo generation
