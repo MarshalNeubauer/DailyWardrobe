@@ -21,6 +21,13 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(r.scaled,'a tie\'s pattern is drawn at half size (more repeats) in the overlay only');
     ok(r.n===3&&r.nNo===2&&r.none===''&&r.label,'one swatch per piece worn: jacket, shirt, tie; none without them');
     ok(r.pastUp&&r.futFlat,'on a day that shows ✕ and ✓ the stack sits above ✕; on a later day it sits in the corner');
+    // the real cloth where it reads: a tie's and a plain or finely woven jacket's or shirt's close-up swatch; a striped jacket stays drawn
+    const pick=await p.evaluate(ph=>{const cu={swatch:ph,swSrc:'tex',texture:ph},kind=i=>/^<img /.test(ovlPiece(i))?'close-up':'drawn';
+      return {tie:kind({id:'a',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',...cu}),pin:kind({id:'b',type:'suit',primaryColor:'navy',pattern:'pinstripe',...cu}),
+        twill:kind({id:'c',type:'suit',primaryColor:'brown',pattern:'twill',...cu}),dobby:kind({id:'d',type:'shirt',primaryColor:'white',pattern:'dobby',...cu}),
+        gingham:kind({id:'e',type:'shirt',primaryColor:'lightblue',pattern:'gingham',...cu}),bare:kind({id:'f',type:'tie',primaryColor:'navy',pattern:'solid'}),photo:kind({id:'g',type:'suit',primaryColor:'navy',pattern:'solid',swatch:ph,swSrc:'photo'})}},PH);
+    ok(pick.tie==='close-up'&&pick.twill==='close-up'&&pick.dobby==='close-up',`a tie, a twill suit and a dobby shirt show their close-up (${JSON.stringify(pick)})`);
+    ok(pick.pin==='drawn'&&pick.gingham==='drawn'&&pick.bare==='drawn'&&pick.photo==='drawn','a pinstripe suit and a gingham shirt stay drawn, as does an item with no close-up or a swatch cut from its photo');
     const css=await p.evaluate(()=>{const d=document.createElement('div');d.className='fig';d.innerHTML=swatchStack({top:items.find(i=>i.type==='suit'),shirt:items.find(i=>i.type==='shirt'),tie:items.find(i=>i.type==='tie')},true);
       document.body.appendChild(d);const s=getComputedStyle(d.querySelector('.swstack')),b=d.querySelector('.ovsw').getBoundingClientRect(),c=getComputedStyle(d.querySelector('.ovsw'));
       const o={pe:s.pointerEvents,bottom:s.bottom,w:Math.round(b.width),border:c.borderTopWidth};d.remove();return o});
