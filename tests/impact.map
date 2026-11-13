@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	14cb0cb00fa43c7e05a7
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -120,6 +119,30 @@ asmahead.test.js	tests/fixtures/asm-master.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-tie.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-watch.jpg	<loaded>
+asmatlas.test.js	<every page test>	<every page test>
+asmatlas.test.js	app.js	fnv64	lookSig	metaPut	nextWorkday	shirtPatterned	shirtTextured	workerBase
+asmatlas.test.js	apple-touch-icon.png	<loaded>
+asmatlas.test.js	asm-worker.js	<any>
+asmatlas.test.js	assemble.js	<any>	asmAreas	asmAtlasBuild	asmAtlasDecode	asmAtlasEncode	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmAtlasSig	asmBig	asmBox	asmCalibKey	asmCan	asmCount	asmDE	asmData	asmDropOld	asmFill	asmImg	asmInfo	asmJob	asmKey	asmLab	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmPaint	asmPaintFull	asmPaintPrep	asmPaintable	asmParts	asmPhoto	asmPieceKey	asmPump	asmPx	asmRun	asmShirtAngles	asmSync	asmTexFor	asmTexReady	asmTexTile	asmVestKey	asmVestTag	asmVestZone	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesFromImgs
+asmatlas.test.js	core.js	accentOf	colOf	hexRgb	lum	mix	patBase	primaryCol	rgbHex	rgbLab	thirdOf
+asmatlas.test.js	detect.js	settSig	texPat	usableSett
+asmatlas.test.js	draw.js	fabricDef
+asmatlas.test.js	icon-192.png	<loaded>
+asmatlas.test.js	icon-512.png	<loaded>
+asmatlas.test.js	index.html	<loaded>
+asmatlas.test.js	manifest.webmanifest	<loaded>
+asmatlas.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	.gotoday	.gotoday::after	.stage .empty	<loaded>
+asmatlas.test.js	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
+asmatlas.test.js	tests/fixedplan.js	<any>
+asmatlas.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-master.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-tie.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-watch.jpg	<loaded>
+asmatlas.test.js	tools/atlas.js	<any>
+asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	fetch	getRender	handleSync	isParted	kvMeta	orNull	putRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	utcDay	whoIs
 asmprebuild.test.js	<every page test>	<every page test>
 asmprebuild.test.js	account.js	isTester
 asmprebuild.test.js	app.js	aAn	adviceFor	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fnv64	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFillSoon	monthLink	piecesBox	piecesLine	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	resetCard	saveDay	schedulePrefetch	scoreCard	shareMark	shirtPatterned	shirtTextured	slotLabel	slots	stackSVG	vestRow	workerBase	wornBar	wornMarks
@@ -142,10 +165,10 @@ asmprebuild.test.js	tests/fixtures/asm-tie.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	fetch	getRender	handleSync	isParted	kvMeta	orNull	putRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	utcDay	whoIs
 asmweave.test.js	<every page test>	<every page test>
-asmweave.test.js	app.js	fnv64	lookSig	metaPut	shirtPatterned	shirtTextured	workerBase
+asmweave.test.js	app.js	fnv64	lookSig	metaPut	nextWorkday	shirtPatterned	shirtTextured	workerBase
 asmweave.test.js	apple-touch-icon.png	<loaded>
 asmweave.test.js	asm-worker.js	<any>
-asmweave.test.js	assemble.js	<any>	asmBox	asmCalibKey	asmCan	asmData	asmDropOld	asmImg	asmInfo	asmJob	asmKey	asmLoad	asmLook	asmMasterItem	asmMasterKey	asmMasterSig	asmNeeds	asmOutKey	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmRepeatPx	asmRun	asmShirtAngles	asmSync	asmTexFor	asmTexMm	asmTexReady	asmTexTile	asmUnpack	asmUnpackZones	asmVestKey	asmVestTag	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey
+asmweave.test.js	assemble.js	<any>	asmAtlasNow	asmAtlasOk	asmBox	asmCalibKey	asmCan	asmData	asmDropOld	asmImg	asmInfo	asmJob	asmKey	asmLoad	asmLook	asmMasterItem	asmMasterKey	asmMasterSig	asmNeeds	asmOutKey	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmRepeatPx	asmRun	asmShirtAngles	asmSync	asmTexFor	asmTexMm	asmTexReady	asmTexTile	asmUnpack	asmUnpackZones	asmVestKey	asmVestTag	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey
 asmweave.test.js	core.js	accentOf	colName	colOf	colorDesc	hasVest	hexRgb	inRotation	lum	mix	nm	patBase	patLabel	primaryCol	rgbHex	rgbLab	thirdOf	typeWord
 asmweave.test.js	detect.js	settSig	texPat	usableSett
 asmweave.test.js	draw.js	fabricDef	texPlainBand
@@ -153,7 +176,7 @@ asmweave.test.js	icon-192.png	<loaded>
 asmweave.test.js	icon-512.png	<loaded>
 asmweave.test.js	index.html	<loaded>
 asmweave.test.js	manifest.webmanifest	<loaded>
-asmweave.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	<loaded>
+asmweave.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	.gotoday	.gotoday::after	.stage .empty	<loaded>
 asmweave.test.js	sync.js	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 asmweave.test.js	tests/fixedplan.js	<any>
 asmweave.test.js	tests/fixtures/asm-jacket.jpg	<loaded>

@@ -430,7 +430,9 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
       if(y>0&&lab[k-W]<0&&A[k-W]>.5){lab[k-W]=id;st.push(k-W)}if(y<H-1&&lab[k+W]<0&&A[k+W]>.5){lab[k+W]=id;st.push(k+W)}}
     const mx=sx/n,my=sy/n;parts.push({n,th:.5*Math.atan2(2*(sxy/n-mx*my),(sxx/n-mx*mx)-(syy/n-my*my))})}
   const front=parts.reduce((b,p,i)=>p.n>(parts[b]?parts[b].n:-1)?i:b,0),big=parts.length?parts[front].n*.02:0;
-  const ang=parts.map((p,i)=>{if(i===front||p.n<big)return 0;let t=p.th;while(t>Math.PI/2)t-=Math.PI;while(t<-Math.PI/2)t+=Math.PI;return t});
+  // (in the atlas's steps, 1/254 of a half turn: a phone decoding the atlas draws the weave exactly where this does; off by a step, a
+  // herringbone moved a few pixels at the far side of the picture, since it turns about the picture's corner)
+  const ang=parts.map((p,i)=>{if(i===front||p.n<big)return 0;let t=p.th;while(t>Math.PI/2)t-=Math.PI;while(t<-Math.PI/2)t+=Math.PI;return Math.round((t+Math.PI/2)/Math.PI*254)/254*Math.PI-Math.PI/2});
   for(let pass=0;pass<6;pass++)for(const k of idx)if(lab[k]<0){const x=k%W;const q=x>0&&lab[k-1]>=0?k-1:x<W-1&&lab[k+1]>=0?k+1:k>=W&&lab[k-W]>=0?k-W:k+W<N&&lab[k+W]>=0?k+W:-1;if(q>=0)lab[k]=lab[q]}
   const out=new Float32Array(idx.length);for(let q=0;q<idx.length;q++){const l=lab[idx[q]];out[q]=l>=0?ang[l]:0}return out}
 /* tex (optional, asmTexReady): the weave, multiplied into each pixel's light, averaged over 3x3 points a pixel so a fine weave
@@ -459,7 +461,8 @@ async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=ren
   const parts=asmParts(o);if(parts.some(p=>!p.paint&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
     parts:await Promise.all(parts.map(async p=>p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
-  if(parts.some(p=>p.paint)){const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}   // a painted shirt takes its shading from the black calibration shirt too
+  if(parts.some(p=>p.paint)){if(asmAtlasOk())job.paintAtlas={t:renders[asmAtlasKey('a')].sig,...Object.fromEntries(ASM_ATLAS.map(p=>[p,renders[asmAtlasKey(p)].img]))};   // measured on a computer: nothing to work out
+    else{const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}}   // a painted shirt takes its shading from the black calibration shirt too
   if(!job.zones){job.zoneImg=asmZoneImgs();   // zones made outside the app, when they're here; else the calibration photos
     if(!job.zoneImg){job.calib={};for(const s of ['jacket','shirt','tie','watch']){const r=renders[asmCalibKey(s)];if(!r)return null;job.calib[s]=r.img}}}
   if(o.vest){const vk=asmVestKey(),r=renders[vk];if(!r)return null;const kv=await metaGet('asm:vest:'+vk);
@@ -467,6 +470,44 @@ async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=ren
     if(!job.vest.kept){const zv=renders[asmZoneKey('vest')];if(zv)job.vest.zoneImg=zv.img;
       else{const c=renders[asmCalibKey('vest')];if(!c)return null;job.vest.img=r.img;job.vest.calib=c.img}}}
   return job}
+/* the shirt beside the tie, painted whole (asmPaintPrep's full) */
+function asmPaintFull(z,W){const nt=asmBox(z.tie,W,asmPx(ASM_HALO+2,W),true);for(let i=0;i<W*W;i++)nt[i]=nt[i]&&z.shirt[i]?1:0;return nt}
+/* ---- the master's atlas, the phone's share (tools/asm-atlas.js measures the master on a computer and keeps this on the worker):
+   what the painter works out for the master (asmPaintPrep: which pixels are shirt and how much, what a soft edge blends toward, the
+   white and the black shirt's shading, the weave's direction), so a phone downloads it instead of working it out, and needs no
+   black calibration photo. Three pictures at the master's size, all opaque (a canvas premultiplies alpha, which would lose values):
+   'a' R the shirt's share of the pixel (1..255, 0 = not painted), G the pixel a soft edge blends toward ((dx+7)*16+(dy+7), 0 = its
+   own), B the weave's direction ((angle+90°)/180° x 254); 'm' and 'c' the master's and the black calibration shirt's shading over
+   their lit cloth, 16 bits (R*256+G over 65535 = 0..ASM_ATLAS_MAX). Signed with the record dates of what it was measured from: the
+   master, the black shirt and the shirt and tie zones (asmAtlasNow); a phone uses it only while those match the photos it holds
+   (the black shirt only if it holds one), else it works the painter out as before. ---- */
+const ASM_ATLAS=['a','m','c'];
+const ASM_ATLAS_MAX=1.6;
+const asmAtlasKey=p=>asmKey('atlas/paint-'+p);
+const asmAtlasNow=()=>{const r=k=>renders[k]&&renders[k].t||0;return {m:r(asmMasterKey()),c:r(asmCalibKey('shirt')),s:r(asmZoneKey('shirt')),t:r(asmZoneKey('tie'))}};
+const asmAtlasSig=()=>{const s=asmAtlasNow();return Object.values(s).every(Boolean)?'asm/atlas/v1 '+JSON.stringify(s):''};
+function asmAtlasOk(){const now=asmAtlasNow();if(!now.m||!now.s||!now.t)return false;const sigs=ASM_ATLAS.map(p=>renders[asmAtlasKey(p)]&&renders[asmAtlasKey(p)].sig);
+  if(!sigs[0]||sigs.some(s=>s!==sigs[0])||!/^asm\/atlas\/v1 /.test(sigs[0]))return false;let j;try{j=JSON.parse(sigs[0].slice(13))}catch{return false}
+  return !!j&&j.m===now.m&&j.s===now.s&&j.t===now.t&&(!now.c||j.c===now.c)}
+/* the atlas onto the device (once a session): true when it is here and matches; one from other photos is asked for again */
+async function asmGetAtlas(){if(asmAtlasOk())return true;for(const p of ASM_ATLAS){const k=asmAtlasKey(p);if(renders[k]&&!asmTried.has(k))delete renders[k]}
+  return (await Promise.all(ASM_ATLAS.map(p=>asmGet(asmAtlasKey(p))))).every(Boolean)&&asmAtlasOk()}
+function asmAtlasEncode(P,W){const N=W*W,mk=()=>{const d=new Uint8ClampedArray(4*N);for(let i=3;i<4*N;i+=4)d[i]=255;return d},a=mk(),m=mk(),c=mk();
+  const q16=(v,d,j)=>{const u=Math.max(0,Math.min(65535,Math.round(v/ASM_ATLAS_MAX*65535)));d[j]=u>>8;d[j+1]=u&255};
+  for(let q=0;q<P.idx.length;q++){const k=P.idx[q],j=4*k,b=P.bg[q],dx=b%W-k%W,dy=((b/W)|0)-((k/W)|0);
+    a[j]=Math.max(1,Math.round(P.A[q]*255));a[j+1]=b===k?0:(dx+7)*16+(dy+7);a[j+2]=Math.round(((P.ang?P.ang[q]:0)+Math.PI/2)/Math.PI*254);q16(P.sm[q],m,j);q16(P.sc[q],c,j)}
+  return {a:new ImageData(a,W,W),m:new ImageData(m,W,W),c:new ImageData(c,W,W)}}
+function asmAtlasDecode(a,m,c){const W=a.width,N=W*W,A=a.data,idx=[];for(let k=0;k<N;k++)if(A[4*k])idx.push(k);const n=idx.length;
+  const P={idx:Int32Array.from(idx),A:new Float32Array(n),sm:new Float32Array(n),sc:new Float32Array(n),bg:new Int32Array(n),ang:new Float32Array(n)};
+  for(let q=0;q<n;q++){const k=idx[q],j=4*k,g=A[j+1];P.A[q]=A[j]/255;P.bg[q]=g?k+((g&15)-7)*W+((g>>4)-7):k;P.ang[q]=A[j+2]/254*Math.PI-Math.PI/2;
+    P.sm[q]=(m.data[j]*256+m.data[j+1])/65535*ASM_ATLAS_MAX;P.sc[q]=(c.data[j]*256+c.data[j+1])/65535*ASM_ATLAS_MAX}
+  return P}
+/* (the computer, tools/asm-atlas.js) the atlas measured from the photos on this device: {sig, W, n, imgs:{a,m,c} as PNG data URLs, P},
+   or null without the master, the black shirt or the zones' pictures */
+async function asmAtlasBuild(){const s=asmAtlasSig(),zi=asmZoneImgs(),m=renders[asmMasterKey()],c=renders[asmCalibKey('shirt')];if(!s||!zi||!m||!c)return null;
+  const master=await asmData(m.img),W=master.width,z=await asmZonesFromImgs(zi,W),P=asmPaintPrep(master,await asmData(c.img,W),asmPaintFull(z,W)),e=asmAtlasEncode(P,W);
+  const png=d=>{const cv=document.createElement('canvas');cv.width=cv.height=W;cv.getContext('2d').putImageData(d,0,0);return cv.toDataURL('image/png')};
+  return {sig:s,W,n:P.idx.length,imgs:Object.fromEntries(ASM_ATLAS.map(p=>[p,png(e[p])])),P}}
 /* the decoded master and its unpacked zones, kept between pictures in whichever thread builds them */
 let asmMem=null;
 /* build one picture from a job -> {url} (a JPEG data URL), or {bad: a piece's key} for a piece that didn't keep the picture, or {};
@@ -488,7 +529,8 @@ async function asmBuild(job){
       const m=asmUpMask(asmVestZone(await asmData(J.img,zw),await asmData(J.calib,zw),zs),zw,W),share=asmCount(m)/(W*W);   // at ASM_BASE too, then enlarged
       if(share<.01||share>.2){M.vbad=J.k+J.t;return out}   // no waistcoat, or half the picture: not believable
       V=m;M.v={k:J.k,t:J.t,m};out.vestZone={v:ASM_ZV,W,t:J.t,m:asmPack(m)}}}
-  if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){const nt=asmBox(z.tie,W,asmPx(ASM_HALO+2,W),true);for(let i=0;i<W*W;i++)nt[i]=nt[i]&&z.shirt[i]?1:0;M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W),nt);M.ppt=job.paintCalib.t;M.paint={}}
+  if(job.paintAtlas&&(!M.pp||M.ppt!==job.paintAtlas.t)){const J=job.paintAtlas;M.pp=asmAtlasDecode(await asmData(J.a,W),await asmData(J.m,W),await asmData(J.c,W));M.ppt=J.t;M.paint={}}
+  if(job.paintCalib&&(!M.pp||M.ppt!==job.paintCalib.t)){M.pp=asmPaintPrep(master,await asmData(job.paintCalib.img,W),asmPaintFull(z,W));M.ppt=job.paintCalib.t;M.paint={}}
   const P={};for(const p of job.parts){if(p.paint){M.paint=M.paint||{};const pk=p.paint+(p.tex&&p.wk?'~'+p.wk:'');   // nothing outside the shirt changes: no drift to check
       P[p.slot]=M.paint[pk]=M.paint[pk]||asmPaint(master,null,p.paint,M.pp,p.tex&&p.wk?asmTexReady(p.tex,p.paint,W):null);continue}
     const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
@@ -560,8 +602,8 @@ async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
   if(!await asmGet(asmMasterKey(),true)||!asmWants(o)||(o.vest&&!await asmGet(asmVestKey())))return null;
   if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
   if((await Promise.all(asmPhotoParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
-  if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return null;
   if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
+  if(asmParts(o).some(p=>p.paint)&&!await asmGetAtlas()&&!await asmGet(asmCalibKey('shirt')))return null;   // the master's atlas, else the black shirt to work it out from
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
 async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll());asmOut={};for(const x of all||[])if(String(x.k).startsWith('asm:out:'))asmOut[x.k.slice(8)]=x.v}catch(e){console.warn(e)}
   await asmDropOld()}
@@ -596,8 +638,8 @@ async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&rende
     if(await asmGetPre(o)){const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow();return}   // built on the computer: no pieces to download, nothing to compute
     if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
     const parts=asmPhotoParts(o),got=await Promise.all(parts.map(p=>asmGet(p.key)));if(got.includes(false))return;
-    if(asmParts(o).some(p=>p.paint)&&!await asmGet(asmCalibKey('shirt')))return;   // the black shirt a painted shirt is shaded from
     if(!await asmZonesKept()&&!await asmGetZones())await Promise.all(['jacket','shirt','tie','watch'].map(s=>asmGet(asmCalibKey(s))));   // the zones' pictures first, the calibration photos only without them
+    if(asmParts(o).some(p=>p.paint)&&!await asmGetAtlas()&&!await asmGet(asmCalibKey('shirt')))return;   // the master's atlas (measured on a computer), else the black shirt a painted shirt is shaded from
     const img=await asmPhoto(o,!ahead);if(!img)return;
     const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();
     const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()}
