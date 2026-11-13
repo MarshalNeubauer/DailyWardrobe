@@ -928,6 +928,12 @@ body.nocon .conn-only,.connhide{display:none!important}
 .fig .wshare{position:absolute;top:10px;right:10px;z-index:3;width:40px;height:40px;margin:0;padding:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);background:rgba(16,24,32,.42);color:#fff;display:grid;place-items:center;cursor:pointer;transition:opacity .2s}
 .fig .wshare:active{transform:scale(.92)}
 #mannequin-container.zoomed .wshare{opacity:0;pointer-events:none}
+/* the cloth over Today's picture (app.js swatchStack): bottom left, 52 px, no rim, a soft shadow; above ✕ on days that show it (.up: ✕ is 40 px at 10 px); no touches; hidden while zoomed */
+.fig .swstack{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;flex-direction:column;gap:7px;pointer-events:none;transition:opacity .2s}
+.fig .swstack.up{bottom:58px}
+.fig .swstack .ovsw{display:block;width:52px;height:52px;border-radius:11px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.45)}
+.fig .swstack .ovsw svg{display:block;width:100%;height:100%}
+#mannequin-container.zoomed .swstack{opacity:0}
 /* Wardrobe's + Add, and What to buy while it waits for a bigger wardrobe */
 #wardrobe .phead .padd{flex:none;min-height:40px;padding:0 14px}
 .shopbtn.locked{cursor:default;border:1px solid var(--line);background:var(--card);color:var(--ink)}.shopbtn.locked small{white-space:normal}
