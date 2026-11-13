@@ -466,11 +466,11 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     f*=1+LI.win*(e.look?LI.wd:1)*(1-2*x/S);
     if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const t=(x-LXP.tl[y])/w;f*=1-LI.te*Math.pow(Math.abs(t-.5)*2,3)}}return f};
   const lxPost=(c,z,k,x,y,s)=>{let h=0;const sl=Math.min(s,1.3);if(z==='jacket'&&LXP.rim)h+=LI.rim*LXP.rim[k]*sl;
-    if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const u=((x-LXP.tl[y])/w-LI.tp)/LI.tsw;h+=LI.ts*asmTieSheenK(TIEY)*Math.exp(-u*u)*sl}}c[0]+=h;c[1]+=h;c[2]+=h;
+    if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const u=((x-LXP.tl[y])/w-LI.tp)/LI.tsw;h+=LI.ts*tieK()*Math.exp(-u*u)*sl}}c[0]+=h;c[1]+=h;c[2]+=h;
     const d=Math.min(1,Math.max(0,1-s/.85)),l=Math.min(1,Math.max(0,(s-.95)/.5))*(1-x/S),y0=lum(c);
     c[0]*=1+LI.warm*d*.9-LI.cool*l*.5;c[1]*=1+LI.warm*d*.15;c[2]*=1-LI.warm*d*.9+LI.cool*l*1.2;const y1=lum(c);if(y1>0){const f=y0/y1;c[0]*=f;c[1]*=f;c[2]*=f}
     const h1=((Math.imul(k,2246822519)^Math.imul(k>>>7,3266489917))>>>0)/4294967296,h2=((Math.imul(k+977,2654435761)^(k>>>3))>>>0)/4294967296,g=1+LI.grain*(h1+h2-1);c[0]*=g;c[1]*=g;c[2]*=g};
-  const TIEY=cl.tie&&cl.tie.flat?lum(cl.tie.flat):1;   // the tie's own brightness (linear): its sheen follows it (asmTieSheenK)
+  let TIEK=null;const tieK=()=>TIEK!=null?TIEK:(TIEK=asmTieSheenK(cl.tie&&cl.tie.flat?lum(cl.tie.flat):1));   // the tie's sheen follows its own brightness (asmTieSheenK)
   const lookOf=f=>{const mx=Math.max(f[0],f[1],f[2]),mn=Math.min(f[0],f[1],f[2]),sat=mx>0?(mx-mn)/mx:0,y=lum(f);
     return {lift:LK.ymin*(1-LK.chroma*Math.min(1,sat/.7)),boost:1+LK.dk*Math.max(0,1-y/LK.dy)}};
   const lookBase=(b,e)=>{lb[0]=b[0];lb[1]=b[1];lb[2]=b[2];const y=lum(lb);if(y<e.look.lift){const d=e.look.lift-y;lb[0]+=d;lb[1]+=d;lb[2]+=d}
