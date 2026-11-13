@@ -333,18 +333,20 @@ if(day.occ==='funeral'&&top&&occ.top(top)<18)notes.push('No black, charcoal or n
 if(day.occ==='wedding'&&top&&pcol(top)==='black')notes.push('Only a black suit was available: black is usually avoided at a daytime wedding.');
 if(noJ&&!bot)notes.push('No separate trousers in your wardrobe for a day without a jacket. Add a pair of trousers.');
 if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
-const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
+// no waistcoat without a tie (the owner, 2026-11-13: "No one should ever wear a vest and no tie"): a day planned without a tie (the dress
+// code, a casual day) has none, whatever the vest setting or the day's own choice
+const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest:vest&&!!tie,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
 return takeOff(o,rec&&rec.off,untake)}
 /* Pieces taken off for the day (the owner's ask, 2026-11-13: Today's "Take off" on the jacket or the tie; rec.off = {top, tie}). The
    outfit is planned as usual (the day's other pieces are pinned by force when it is set) and then the piece comes off:
    - the jacket: on a suit day the suit's trousers stay (o.bot is the suit, o.suitDay false, o.suitBot true) and the waistcoat goes with
      the jacket (no picture has a waistcoat without its jacket); a blazer is not counted as worn
-   - the tie: the tie clip goes with it; neither is counted as worn
+   - the tie: the tie clip and the waistcoat go with it (no waistcoat without a tie, the owner's rule); neither is counted as worn
    o.off says what came off (o.offKind 'suit' or 'blazer'), so Today can put it back; the score asks for neither (needsJacket/needsTie) */
 function takeOff(o,off,untake){if(!off||!(off.top||off.tie))return o;const r={...o,off:{top:!!(off.top&&o.top),tie:!!(off.tie&&o.tie)}};
   if(r.off.top){r.offKind=o.suitDay?'suit':'blazer';if(o.suitDay){r.bot=o.top;r.suitDay=false;r.suitBot=true}else if(untake)untake(o.top);r.top=null;r.vest=false;
     r.notes=r.notes.filter(t=>!/jacket|suit|blazer/i.test(t))}
-  if(r.off.tie){if(untake){untake(o.tie);if(o.clip)untake(o.clip)}r.tie=null;r.clip=null;r.notes=r.notes.filter(t=>!/\btie\b/i.test(t))}
+  if(r.off.tie){if(untake){untake(o.tie);if(o.clip)untake(o.clip)}r.tie=null;r.clip=null;r.vest=false;r.notes=r.notes.filter(t=>!/\btie\b/i.test(t))}
   return r}
 /* ---- outfit score ----
    A readable 0-100 rating of an outfit against the same rules the planner uses.
