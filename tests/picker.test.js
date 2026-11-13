@@ -49,10 +49,10 @@ module.exports=async({ok,chromium,url,settle:settleFor})=>{
         navyDays.push(hit[0]);sel=keyDate(hit[0]);view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await swapSlot('tie')}
       const votes=settings.learn.p[pairKey(navy,fav)],n1=count(navy,fav),stillWorn=days().some(o=>o.tie.id===fav.id);
       // pick a tie by hand for the charcoal suit: that pairing is preferred afterwards
-      const ch=items.find(i=>i.type==='suit'&&i.primaryColor==='charcoal'),gold=items.find(i=>i.type==='tie'&&i.primaryColor==='gold'),g0=count(ch,gold);
+      const ch=items.find(i=>i.type==='suit'&&i.primaryColor==='charcoal'),gold=items.find(i=>i.type==='tie'&&i.primaryColor==='gold'),long=()=>[1,2,3].flatMap(m=>Object.values(planMonth(2027,m))),countL=(t,x)=>long().filter(o=>o.top&&o.top.id===t.id&&o.tie&&o.tie.id===x.id).length,g0=countL(ch,gold);   // Feb-Apr: over one month the mild nudge could be lost in the rotation (3 -> 3 when another planner change shifted November's ties, 2026-11-13)
       const chDay=Object.entries(planMonth(2026,11)).find(([k,o])=>keyDate(k)>todayDate()&&o.top.id===ch.id&&o.tie.id!==gold.id)[0];
       sel=keyDate(chDay);view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await pickItem('tie',gold.id);
-      const g1=count(ch,gold),up=settings.learn.p[pairKey(ch,gold)];
+      const g1=countL(ch,gold),up=settings.learn.p[pairKey(ch,gold)];
       const saved=(await metaGet('settings')).learn;
       return {n0,n1,votes,stillWorn,g0,g1,up,saved:!!saved&&saved.p[pairKey(navy,fav)]===votes,navyDays:navyDays.length,min:Math.min(...days().map(o=>rateOutfit(o).score))}});
     ok(learn.navyDays===2&&learn.votes===-2,`swapping a tie away from a suit votes against that pairing (${learn.votes} after two swaps)`);
