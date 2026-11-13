@@ -38,7 +38,14 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
 /* the outfit's kind when its master is on this device (downloaded) */
 const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
-const ASM_CM_PAINTV=5;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM)
+const ASM_CM_PAINTV=6;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (ASM_CM_LOOK)
+/* the cloth look (the owner's choice, 2026-11-13, after two rounds of mockups against an OpenAI picture of his black suit, which the
+   painter drew as a flat black silhouette): a cloth is kept between real black wool and real white cotton (ymin, a lift that is smaller
+   on a coloured cloth, so a navy stays navy, and `fp` deeper in the folds; cmax); a neutral sheen where the master is lit (s0..s1),
+   the same for every colour, where it used to be a share of the cloth's own brightness and so nothing on black; the weave shows in that
+   sheen and lift (sk, wk), bolder than life on a dark cloth (`boost` up to `dk` below `dy` luminance); a fine grain on plain cloth; and
+   a soft tone curve on the garments (shadows lifted by `toe`, highlights rolled off by `sh`) */
+const ASM_CM_LOOK={ymin:.012,fp:1.7,chroma:.55,wk:4,sk:5,cmax:.8,grain:.05,sheen:.035,s0:.85,s1:1.5,dy:.03,dk:2,toe:.025,sh:.06};
 const ASM_CM_RIM=24;   // px at 2048: how far from the wall a jacket (or shirt-master) pixel outside the SAM sleeve outline still joins the sleeve beside it
 /* a jacket whose weave the 2026-11-13 audit added (a herringbone, or an own pattern based on solid named twill): marked in its look's key,
    so only those looks are painted again (a new ASM_CM_PAINTV would repaint every look) */
@@ -315,12 +322,23 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
   let BG=null;if(job.bg&&P.bgShadow){const bk=job.bgt+'|'+S;if(!asmCmMem.bg||asmCmMem.bg.k!==bk)asmCmMem.bg={k:bk,d:(await asmData(job.bg,S)).data};BG=asmCmMem.bg.d}
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
   const WALL=hexLin('#E6E2DC'),KEEP=new Set(['skin','watch','buckle','dark']),CLEAN=248;
+  // the cloth look (ASM_CM_LOOK; job.look false leaves it out): per garment its lift and how much bolder its weave is drawn
+  const LK=job.look===false?null:ASM_CM_LOOK,GARZ={jacket:1,waistcoat:1,trousers:1,shirt:1},lum=v=>.2126*v[0]+.7152*v[1]+.0722*v[2],lb=[0,0,0];let SUITTW=1;
+  const lookOf=f=>{const mx=Math.max(f[0],f[1],f[2]),mn=Math.min(f[0],f[1],f[2]),sat=mx>0?(mx-mn)/mx:0,y=lum(f);
+    return {lift:LK.ymin*(1-LK.chroma*Math.min(1,sat/.7)),boost:1+LK.dk*Math.max(0,1-y/LK.dy)}};
+  const lookBase=(b,e)=>{lb[0]=b[0];lb[1]=b[1];lb[2]=b[2];const y=lum(lb);if(y<e.look.lift){const d=e.look.lift-y;lb[0]+=d;lb[1]+=d;lb[2]+=d}
+    const m=Math.max(lb[0],lb[1],lb[2]);if(m>LK.cmax){const f=LK.cmax/m;lb[0]*=f;lb[1]*=f;lb[2]*=f}return lb};
+  const lookAfter=(c,s,z,x,y,plain,tw,bo)=>{
+    if(plain&&LK.grain&&z!=='shirt'){const u=x/ls,v=y/ls,h=((Math.imul(Math.floor((u+v)/2)|0,73856093)^Math.imul(Math.floor(v/3)|0,19349663))>>>0)%1024/512-1;
+      tw=1+LK.grain*bo*(.6*Math.cos(2*Math.PI*(u+v)/4)+.5*h);c[0]*=tw;c[1]*=tw;c[2]*=tw}
+    const t=Math.min(1,Math.max(0,(s-LK.s0)/(LK.s1-LK.s0))),sp=LK.sheen*t*t*(3-2*t)*(z==='shirt'?.25:1)*Math.max(0,1+LK.sk*(tw-1));c[0]+=sp;c[1]+=sp;c[2]+=sp;
+    for(let q=0;q<3;q++){let v=c[q]<=0?0:Math.pow(c[q],1/2.2);v=v+LK.toe*Math.pow(1-v,3)-LK.sh*Math.pow(v,4);c[q]=Math.pow(Math.max(0,v),2.2)}};
   // a jacket pixel's [across, along] (px): a sleeve's tube, a lapel's own axis, the body's stripe flow, or upright
   const uvAt=(k,X,Yv)=>{if(!geo)return [X,Yv];const si=geo.seg[k],g=geo.segs[si];if(g&&g.parts)return asmTubeAt(g,X,Yv);
     if(si&&g&&g.cs!=null)return [(X-g.cx)*g.cs+(Yv-g.cy)*g.sn,(Yv-g.cy)*g.cs-(X-g.cx)*g.sn];return geo.flow&&geo.gar==='jacket'?asmFlowAt(geo.flow,X,Yv):[X,Yv]};
   const cl={};for(const [z,c] of Object.entries(job.cloth||{})){const e={flat:hexLin(c.hex)};
     if(c.suit)e.suit=c.suit;else if(c.tie&&tg){e.tie=c.tie;e.rep=(c.tie.motif?2:1)*tg.bw/Math.max(.5,c.tie.across||1.5);e.repv=e.rep*c.tie.TH/c.tie.TW}
-    else if(c.tile){e.tile=c.tile;e.rep=c.tile.mm*P.pxmm;e.repv=e.rep*c.tile.TH/c.tile.TW}cl[z]=e}
+    else if(c.tile){e.tile=c.tile;e.rep=c.tile.mm*P.pxmm;e.repv=e.rep*c.tile.TH/c.tile.TW}if(LK&&GARZ[z])e.look=lookOf(e.flat);cl[z]=e}
   const lin2=Object.values(cl).some(e=>e.suit&&e.suit.linen)?asmLinenTile():null,td2=Object.values(cl).some(e=>e.suit&&e.suit.tweed)?asmTweedTile():null,cm=[0,0,0],tmp=[0,0,0];
   // the app's suit cloth (asmSuitPaintTex) with this picture's coordinates and light
   const suitCol=(T,k,x,y,sh,out)=>{const rep=T.mm*ASM_PX_MM*ls,repv=rep*T.TH/T.TW;cm[0]=cm[1]=cm[2]=0;
@@ -345,7 +363,7 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
       for(let a=0;a<4;a++)for(let e=0;e<4;e++){const fx=(e+.5)/4,fy=(a+.5)/4,u=p0[0]+(px[0]-p0[0])*fx+(py[0]-p0[0])*fy,w=p0[1]+(px[1]-p0[1])*fx+(py[1]-p0[1])*fy;
         const ix=Math.floor(u/tp),iy=Math.floor(w/tp);v+=W.g[(((iy%N)+N)%N)*N+(((ix%N)+N)%N)]}v/=16;
       tw*=1+W.amp*v;if(W.c2){const m=W.mix*(1-v)/2;for(let q=0;q<3;q++)cm[q]=cm[q]*(1-m)+4*W.c2[q]*m}}
-    const f=sh*Math.pow(Math.max(0,tw),2.2);out[0]=cm[0]/4*f;out[1]=cm[1]/4*f;out[2]=cm[2]/4*f};
+    SUITTW=tw;const f=sh*Math.pow(Math.max(0,tw),2.2);out[0]=cm[0]/4*f;out[1]=cm[1]/4*f;out[2]=cm[2]/4*f};
   const rot=(X,Yv,th,e,out)=>{const c=Math.cos(th),s=Math.sin(th);out[0]=out[1]=out[2]=0;asmCmAt(e.tile||e.tie,(X*c+Yv*s)/e.rep,(Yv*c-X*s)/e.repv,out)};
   const c=[0,0,0];
   for(let k=0;k<N;k++){let r=0,g=0,b=0;const x=k%S,y=(k-x)/S,j=4*k;
@@ -358,7 +376,11 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
         if(c[1]>Math.max(c[0],c[2]))c[1]=Math.max(c[0],c[2]);   // the chroma-green wall left in a kept zone's edge (a green line along a fingertip)
         r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
       const s=P.shade[z][k]/40000,e=cl[z];let base;
-      if(e&&e.suit){suitCol(e.suit,k,x,y,s,c);r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
+      if(e&&e.suit){SUITTW=1;suitCol(e.suit,k,x,y,s,c);
+        if(e.look){const L=e.look,tw=1+L.boost*(SUITTW-1);if(L.boost>1){const f=Math.max(0,1+(L.boost-1)*2.2*(SUITTW-1));c[0]*=f;c[1]*=f;c[2]*=f}   // a dark cloth's weave, bolder than life
+          const yy=lum(c),fl=L.lift*Math.pow(Math.min(s,1),LK.fp);if(yy<fl){const d=(fl-yy)*Math.max(0,1+LK.wk*(tw-1));c[0]+=d;c[1]+=d;c[2]+=d}
+          lookAfter(c,s,z,x,y,false,tw,L.boost)}
+        r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
       if(z==='background')base=WALL;else if(!e){base=tmp;tmp[0]=L[M[j]];tmp[1]=L[M[j+1]];tmp[2]=L[M[j+2]]}else if(!e.tile&&!e.tie)base=e.flat;
       else{base=tmp;tmp[0]=tmp[1]=tmp[2]=0;
         if(z==='tie'&&e.tie&&tg){const th=tg.lean+(e.tie.ang||0)+(y<tg.yk?Math.PI/2:0),cs=Math.cos(th),sn=Math.sin(th);
@@ -369,7 +391,9 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
         else if(z==='shirt'&&P.cuff){const ci=P.cuff[k];rot(x+.5,y+.5,ci<255?P.cuffAng[ci]||0:0,e,tmp)}
         else asmCmAt(e.tile,(x+.5)/e.rep,(y+.5)/e.repv,tmp)}
       // above its usual brightness a cloth gains neutral light (a sheen), not more of its own colour
+      const plain=!!e&&base===e.flat;if(e&&e.look)base=lookBase(base,e);
       if(s<=1){c[0]=base[0]*s;c[1]=base[1]*s;c[2]=base[2]*s}else{const yb=.2126*base[0]+.7152*base[1]+.0722*base[2];c[0]=base[0]+(s-1)*yb;c[1]=base[1]+(s-1)*yb;c[2]=base[2]+(s-1)*yb}
+      if(e&&e.look)lookAfter(c,s,z,x,y,plain,1,e.look.boost);
       r+=a*c[0];g+=a*c[1];b+=a*c[2]}
     const m=Math.max(r,g,b);if(m>1){const w=Math.min(1,(m-1)/m);r=r/m+(1-r/m)*w;g=g/m+(1-g/m)*w;b=b/m+(1-b/m)*w}   // past full brightness: toward white, keeping the hue
     o[j]=gam(r);o[j+1]=gam(g);o[j+2]=gam(b);o[j+3]=255}
