@@ -943,7 +943,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .fig.swopen .swstack,.fig.swopen .swstack.up{bottom:10px;gap:7px}
 .fig.swopen .swstack .ovsw{width:44px;height:44px;border-radius:10px}   /* 44 px under the big swatch (no name between them: the owner's ask) */
 @media (max-width:349px){.fig.swopen .swstack .ovsw{width:36px;height:36px;border-radius:8px}}   /* a very narrow phone: 36 px so they fit below the big swatch */
-.fig.swopen .swstack .ovsw.on{box-shadow:0 0 0 2.5px #fff,0 2px 7px rgba(0,0,0,.35)}
+.fig.swopen .swstack .ovsw.on{box-shadow:0 0 0 1.5px rgba(255,255,255,.7),0 2px 7px rgba(0,0,0,.35)}   /* the open one: a thin soft white outline (the owner: 2.5 px solid white was too thick and bright) */
 .fig.swopen .wornbar,.fig.swopen .wornbar>*,.fig.swopen .wshare{opacity:0;pointer-events:none}
 .fig .swlens{position:absolute;top:12px;left:12px;width:46%;aspect-ratio:1;border-radius:16px;overflow:hidden;z-index:4;box-shadow:0 0 0 3px #fff,0 10px 26px rgba(0,0,0,.45);
   pointer-events:none;transform-origin:0 0;animation:swIn .4s cubic-bezier(.2,.8,.2,1)}
