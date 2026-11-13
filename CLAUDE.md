@@ -100,6 +100,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - each jacket remembers its last two outfits so its tie and shirt colour vary (`comboRepeat`)
 - a jacket pinned to one of the next 3 workdays is held back before its day
 - the next fixed day's colour is avoided, and the suit before a blazer day avoids the colour of the blazer that is due (`fixedAhead`)
+- the next workday's tie and shirt, when fixed (forced: picked, or a whole outfit moved there; worn; or locked as shown), are avoided too (`fixedAhead`'s `nx`, a `sumUp`): `tieRepeat`/`shirtRepeat` against it as against the workday before, and its very shirt 40 more, as the laundry rule keeps yesterday's (a staple white shirt's repeat is only 2); found 2026-11-13 when an outfit moved from Nov 23 to Nov 24 and Nov 23, planned afresh, took the same black tie and check shirt; `PLAN_RULES` not bumped (a bump clears swaps on future days, the very picks this protects); `tests/planahead.test.js` (`realPlanner`: the fixed test plan never changes)
 - odd trousers rotate on a long rest (`ptRest`, up to 60 days, since blazer days are weekly) and shoes avoid yesterday's pair when another suits
 - steel blue is a mid-tone shirt, not a `darkShirt` (cutoff 95)
 - what the user's changes taught it (`settings.learn`: votes on item pairings `p` and items `i`, −3…+3; a pairing voted down scores 6 lower per vote, one voted up is preferred among the good outfits; `pairVote`/`itemVote`) is applied in `outfit()`
