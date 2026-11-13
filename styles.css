@@ -130,10 +130,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
   display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 1px 4px rgba(0,0,0,.3);transition:background .15s,border-color .15s,transform .1s}
 .wmark:active{transform:scale(.92)}.wmark.yes.on{background:#2f7a4f;border-color:#2f7a4f}.wmark.no.on{background:#a23b3b;border-color:#a23b3b}
 .fig .lastworn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:600;color:#fff;background:rgba(16,24,32,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:4px 10px;border-radius:99px}
-.render-ctl{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;max-width:390px;margin:8px auto 0}
-.render-btn{margin:0;min-height:44px;padding:0 16px;font-weight:600;background:var(--card);color:var(--ink)}
-.render-btn[disabled]{opacity:.6}
-.render-msg{max-width:390px;margin:4px auto 0;text-align:center;font-size:13px}.render-msg:empty{display:none}
+.render-msg{max-width:390px;margin:8px auto 0;text-align:center;font-size:13px}.render-msg:empty{display:none}.render-msg .spin{margin-right:6px;vertical-align:-2px}
 .multi-opt{display:flex;gap:8px;align-items:flex-start;margin:10px 0 2px;font-size:14px;line-height:1.35}
 .multi-opt input{margin-top:3px;width:18px;height:18px;flex:none}
 #multi-status:empty{display:none}#multi-status{font-size:13px;margin:4px 0}
@@ -368,7 +365,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
    (score badge, piece swatches, the week's stacks), a one-line title, a subtitle of up to two lines and a chevron.
    Everything on Today is spaced by the same --gap: picture, tiles, unfolded photo, cards. */
 :root{--gap:12px}
-.fig{margin-top:0}.below{margin-top:var(--gap)}.bbox{margin-top:0;transition:margin-top .35s cubic-bezier(.2,.8,.2,1)}.bbox.open{margin-top:var(--gap)}.render-ctl{margin-top:var(--gap)}
+.fig{margin-top:0}.below{margin-top:var(--gap)}.bbox{margin-top:0;transition:margin-top .35s cubic-bezier(.2,.8,.2,1)}.bbox.open{margin-top:var(--gap)}
 .side>.score,.side>.mbox{margin:var(--gap) 0 0}.side>.mbox:last-child{margin-bottom:var(--gap)}
 .side>.dayact,.side>p{margin:var(--gap) 0 0}
 @media (min-width:600px) and (orientation:landscape){

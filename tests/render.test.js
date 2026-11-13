@@ -1,4 +1,4 @@
-// "Generate realistic photo": the figure is rasterised and sent with item photos to the worker's /render, which calls
+// Settings → This day's photo, "Regenerate photo" (Today has no Generate button): the figure is rasterised and sent with item photos to the worker's /render, which calls
 // OpenAI's image edit API (mocked); the photo is stored per day on the device and dropped when the outfit changes.
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
@@ -21,8 +21,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white',photo:ph}),I('shirt','lightblue',{photo:ph}),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('watch','black',{metal:'silver'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')},PHOTO);
-    ok(await p.isVisible('text=Generate realistic photo'),'Today has a Generate realistic photo button');
-    await p.click('text=Generate realistic photo');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    ok(!(await p.$('.render-btn'))&&!(await p.isVisible('text=Generate realistic photo')),'Today has no Generate button: a photo costs money, so it is asked for in Settings only');
+    await p.evaluate(()=>{openSettings('photos');document.querySelector('#regen-btn').click();closeSettings()});await p.waitForFunction(()=>!rendering,null,{timeout:15000});
     ok(sent&&sent.auth==='Bearer sk-o'&&sent.model==='gpt-image-2'&&sent.size==='1024x1024'&&sent.quality==='medium'&&sent.fmt==='jpeg','the worker calls the OpenAI image edit API with the key, model, size and quality');
     const exp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {shirtHasPhoto:!!o.shirt.photo,n:1+['top','tie'].filter(s=>o[s]&&o[s].photo).length,top:prettyCols(nm(o.top)),shirt:prettyCols(nm(o.shirt)),tie:prettyCols(nm(o.tie))}});
     ok(exp.shirtHasPhoto&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the suit/tie photos, not the shirt's (${sent.images.length})`);

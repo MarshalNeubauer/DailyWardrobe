@@ -26,7 +26,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const A=await device();await A.p.evaluate(setup);
     const ck=await A.p.evaluate(()=>comboKey(planFor()[key(sel)]));
     ok(/^c[0-9a-f]{16}$/.test(ck),`each outfit combination has a key (${ck})`);
-    await A.p.click('.render-btn');await A.p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    await A.p.evaluate(()=>generateRender());await A.p.waitForFunction(()=>!rendering,null,{timeout:15000});
     {const shown=await photoShown(A.p),why=await A.p.evaluate(()=>(document.querySelector('#render-msg')||{}).textContent||'');ok(calls===1&&shown,`desktop generates the photo (calls ${calls}, shown ${shown}${why?', "'+why+'"':''})`)}
     ok(store.has('render:'+ck)&&puts.some(([k,o])=>k==='render:'+ck&&!o),'the worker keeps it under the combination key (no expiry)');
     ok(await A.p.evaluate(async k=>!!(await metaGet('render:'+k)),ck),'and so does the device');
