@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	444b3c9815a7de53c629
+# tested	7c6d8352468efcf9dfd1
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -2058,7 +2058,7 @@ shop.test.js	care.js	careBadge	careCounts	careLimit	careNote	careState
 shop.test.js	colpick.js	@window.addEventListenerkeydown
 shop.test.js	core.js	<any>	LUM	accentOf	arriveN	avgText	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	stamp	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 shop.test.js	detect.js	usableSett
-shop.test.js	draw.js	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
+shop.test.js	draw.js	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 shop.test.js	dress.js	dressNewItem	legacyVest
 shop.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 shop.test.js	icon-192.png	<loaded>
@@ -2767,7 +2767,7 @@ weather.test.js	assemble.js	renderAsmUI
 weather.test.js	care.js	careLimit	careNote	laundryDays	renderCareUI
 weather.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	nm	occLabel	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 weather.test.js	detect.js	texPat	usableSett
-weather.test.js	draw.js	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
+weather.test.js	draw.js	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figEyes	figFabric	figureSvg	itemThumb	leatherLayers	rainFabric	rainMarks	swatchSVG
 weather.test.js	dress.js	dressOn	dressSummary	renderDressUI
 weather.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 weather.test.js	icon-192.png	<loaded>
