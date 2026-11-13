@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     const css=await p.evaluate(()=>{const d=document.createElement('div');d.className='fig';d.innerHTML=swatchStack({top:items.find(i=>i.type==='suit'),shirt:items.find(i=>i.type==='shirt'),tie:items.find(i=>i.type==='tie')},true);
       document.body.appendChild(d);const s=getComputedStyle(d.querySelector('.swstack')),b=d.querySelector('.ovsw').getBoundingClientRect(),c=getComputedStyle(d.querySelector('.ovsw'));
       const o={pe:s.pointerEvents,bottom:s.bottom,w:Math.round(b.width),border:c.borderTopWidth};d.remove();return o});
-    ok(css.pe==='none'&&css.bottom==='58px'&&css.w===52&&css.border==='0px',`52 px, no rim, takes no touches, above ✕ (${JSON.stringify(css)})`);
+    ok(css.pe==='none'&&css.bottom==='58px'&&css.w===64&&css.border==='0px',`64 px, no rim, takes no touches, above ✕ (${JSON.stringify(css)})`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };
