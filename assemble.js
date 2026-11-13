@@ -419,7 +419,7 @@ const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp);   // the p
    within 22 L* of the master suit's median, not skin) is painted from the master's lightness alone, so no grey outline is left. The
    painted picture is the suit's piece (as a photo of the suit with its waistcoat would be), so asmCompose's jacket edge handling
    applies. Patterned suits (pinstripe, windowpane, twill, herringbone…) are still photographed. */
-const ASM_SUITV=4;   // how suits are painted: in the picture's key
+const ASM_SUITV=5;   // how suits are painted: in the picture's key
 const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i.pattern)==='solid'&&!usableSett(i))||asmSuitBands(i));
 const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
 /* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
@@ -556,6 +556,31 @@ function asmSleeveSegs(masks,W,N){const seg=new Uint8Array(N),segs=[{cs:1,sn:0,c
     const poly=new Float32Array(pts.flat()),cum=new Float32Array(pts.length);for(let q=1;q<pts.length;q++)cum[q]=cum[q-1]+Math.hypot(pts[q][0]-pts[q-1][0],pts[q][1]-pts[q-1][1]);
     segs.push(asmTubeTabs({parts:[{poly,cum}]},mf,W,N))}
   return {seg,segs}}
+/* the stripes' path over the body (the fronts and the waistcoat): a stripe-flow template learned from the owner's target photo of a
+   navy pinstripe three-piece (every stripe traced by ridge tracking, `pinbench/b2/tools`), as the stripes' outward slope dx/dy
+   (positive = a stripe moves away from the body's midline going down) on a grid in body units: |u| = distance from the midline,
+   v = height below the shoulder line, both in half shoulder widths (|u| 0..1 by .1, v -0.2..2.8 by .1, rows by v; past the grid the
+   edge values hold). Read off it: the stripes lean in toward the neck at the shoulders (0.15), straighten by mid chest, close in
+   toward the waist round the darts (-0.13 at v 1.2, |u| .7) while those nearer the front edge open out, and spread out over the hips
+   (0.1-0.17). The same numbers fitted the master's proportions (its waist button at v 1.66, the target's at 1.60) */
+const ASM_FLOW={nu:11,nv:31,v0:-.2,d:.1,s:[2,3,3,5,7,11,15,18,17,13,10,2,2,3,4,7,11,17,20,18,13,8,2,2,2,3,6,11,17,19,17,12,6,2,2,2,2,3,9,14,16,15,11,7,1,1,1,-1,0,5,11,13,12,10,9,1,1,0,-1,-1,4,9,11,10,8,9,1,1,0,-1,2,6,9,10,8,5,5,2,1,0,-1,3,7,9,9,5,2,3,2,2,1,1,4,7,8,6,3,2,3,3,3,2,3,5,7,6,3,1,2,4,4,4,4,5,6,6,3,-1,-2,2,5,5,5,6,7,6,4,-1,-6,-7,-2,3,6,7,8,9,6,1,-6,-11,-12,-8,-3,7,8,9,9,6,-1,-9,-14,-15,-11,-6,7,8,9,8,4,-4,-11,-15,-15,-10,-6,7,7,7,6,2,-5,-12,-15,-14,-9,-5,6,6,6,3,-1,-7,-11,-13,-12,-6,-2,6,6,5,2,-2,-6,-9,-10,-7,-2,2,5,6,5,2,-1,-3,-4,-4,1,5,7,3,4,5,4,3,1,1,3,7,11,13,1,1,2,4,5,5,5,6,10,15,17,-1,-2,0,4,6,6,7,9,13,17,19,0,-1,0,4,6,8,10,13,16,18,19,3,2,3,5,6,8,11,14,16,17,17,7,7,7,7,7,8,10,13,15,16,16,10,10,10,9,8,8,10,12,14,15,16,13,13,12,10,9,9,11,13,14,14,14,14,14,13,11,10,10,11,13,14,14,14,15,15,14,12,10,10,11,12,13,13,13,15,16,15,13,11,10,11,12,12,12,12,15,15,15,13,11,11,11,11,12,12,12]};
+/* the body's frame from the master's own zones: the shoulder points are the tops of the two sleeve zones, the midline half way between
+   them, the unit half the distance, the shoulder line the jacket zone's top at the shoulder points. From the template: D = the slope
+   summed down each column (the stripe's sideways shift, its mean over the body taken out so the stripes keep their spacing on average)
+   and G = the slope summed out along each row (the cross lines of a check or windowpane bend with it, square to the stripes). null
+   without both sleeve zones (the body stays upright) */
+function asmBodyFlow(zj,masks,W,H){const tops=[];for(const mm of masks||[]){if(!mm||mm.one)continue;const m=mm.m||mm;let k=0;const N=W*H;while(k<N&&!m[k])k++;if(k<N)tops.push(k%W)}
+  if(tops.length!==2)return null;tops.sort((a,b)=>a-b);const hw=(tops[1]-tops[0])/2;if(hw<W*.15)return null;
+  let ys=0,n=0;for(const x0 of tops)for(let x=x0-3;x<=x0+3;x++){let y=0;while(y<H&&!zj[y*W+x])y++;if(y<H){ys+=y;n++}}if(!n)return null;
+  const F=ASM_FLOW,NU=F.nu,NV=F.nv,s=F.s.map(v=>v/100),D=new Float32Array(NU*NV),G=new Float32Array(NU*NV);
+  for(let i=0;i<NU;i++){let c=0,m=0,q=0;for(let j=0;j<NV;j++){if(j)c+=.5*(s[j*NU+i]+s[(j-1)*NU+i])*F.d;D[j*NU+i]=c;const v=F.v0+j*F.d;if(v>=0&&v<=2.6){m+=c;q++}}for(let j=0;j<NV;j++)D[j*NU+i]-=m/q}
+  for(let j=0;j<NV;j++){let c=0;for(let i=0;i<NU;i++){if(i)c+=.5*(s[j*NU+i]+s[j*NU+i-1])*F.d;G[j*NU+i]=c}}
+  return {mid:(tops[0]+tops[1])/2,hw,ysh:ys/n,D,G}}
+/* a body pixel's [across, along] (px) in the stripe flow */
+function asmFlowAt(f,X,Y){const F=ASM_FLOW,NU=F.nu,NV=F.nv,u=(X-f.mid)/f.hw,au=u<0?-u:u;let x=au/F.d,y=((Y-f.ysh)/f.hw-F.v0)/F.d;if(x>NU-1)x=NU-1;if(y<0)y=0;if(y>NV-1)y=NV-1;
+  const i=Math.min(NU-2,x|0),j=Math.min(NV-2,y|0),fx=x-i,fy=y-j,k=j*NU+i,w00=(1-fx)*(1-fy),w01=fx*(1-fy),w10=(1-fx)*fy,w11=fx*fy,
+    d=f.D[k]*w00+f.D[k+1]*w01+f.D[k+NU]*w10+f.D[k+NU+1]*w11,g=f.G[k]*w00+f.G[k+1]*w01+f.G[k+NU]*w10+f.G[k+NU+1]*w11;
+  return [X-(u<0?-1:1)*f.hw*d,Y+f.hw*g]}
 const ASM_CREASE_DEG=30;   // a sleeve bent further than this has an elbow crease (below it, one tube bent round a rounded line)
 const ASM_TUBE_K=1.15;   // a sleeve seen as a cylinder: the cloth at its edges turns away, the stripes there closer together; the cylinder's
                          // radius is this times half the sleeve's width (1: the edge exactly side-on, stripes squeezed to nothing)
@@ -597,7 +622,7 @@ function asmTubeAt(g,X,Y){const p=asmTubePart(g,X,Y),r=asmTubeRaw(p,X,Y),t=p.t;i
   return [ax<.95?R*Math.asin(x):Math.sign(x)*R*(1.2532+(ax-.95)*3.2026),r[1]]}
 /* the colour-free part, once per base picture and calibration: the pixels to paint and their shading. base: the master, or the
    waistcoat master on a waistcoat day; zj: the jacket zone; zv, cv (waistcoat days): the waistcoat zone and its calibration photo */
-function asmSuitPrep(base,cj,zj,zv,cv,sleeves){const P=asmSuitPrep0(base,cj,zj,zv,cv);if(sleeves&&sleeves.length){const s=asmSleeveSegs(sleeves,base.width,base.width*base.height);P.seg=s.seg;P.segs=s.segs;
+function asmSuitPrep(base,cj,zj,zv,cv,sleeves){const P=asmSuitPrep0(base,cj,zj,zv,cv);if(sleeves&&sleeves.length){const s=asmSleeveSegs(sleeves,base.width,base.width*base.height);P.seg=s.seg;P.segs=s.segs;P.flow=asmBodyFlow(zj,sleeves,base.width,base.height);
     // the painted ring just outside the jacket's zone takes the part beside it: as the body's, it put short upright dashes along a sleeve's edge
     const W=base.width,sg=s.seg;let todo=[];for(const k of P.idx)if(!zj[k]&&!sg[k])todo.push(k);
     for(let it=0;it<8&&todo.length;it++){const set=[],left=[];for(const k of todo){const x=k%W,v=x>0&&sg[k-1]||x<W-1&&sg[k+1]||k>=W&&sg[k-W]||sg[k+W]||0;if(v)set.push(k,v);else left.push(k)}
@@ -618,7 +643,7 @@ function asmSuitPaintTex(P,T){const W=P.base.width,L=ASM_LIN,d=new Uint8ClampedA
     gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},lin=T.linen?asmLinenTile():null,ls=W/ASM_SIZE;
   const at=(u,v)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0;
     for(let q=0;q<3;q++){const G=(a,b)=>T.c[3*(((b+T.TH)%T.TH)*T.TW+(a+T.TW)%T.TW)+q];cm[q]+=(G(x0,y0)*(1-fx)+G(x0+1,y0)*fx)*(1-fy)+(G(x0,y0+1)*(1-fx)+G(x0+1,y0+1)*fx)*fy}};
-  const body={cs:1,sn:0,cx:0,cy:0},uv=(g,X,Y)=>g.parts?asmTubeAt(g,X,Y):[(X-g.cx)*g.cs+(Y-g.cy)*g.sn,(Y-g.cy)*g.cs-(X-g.cx)*g.sn];   // across, along (px)
+  const body={cs:1,sn:0,cx:0,cy:0},fl=P.flow,b0=P.segs&&P.segs[0],uv=(g,X,Y)=>g.parts?asmTubeAt(g,X,Y):fl&&(g===body||g===b0)?asmFlowAt(fl,X,Y):[(X-g.cx)*g.cs+(Y-g.cy)*g.sn,(Y-g.cy)*g.cs-(X-g.cx)*g.sn];   // across, along (px); the body follows the stripe flow
   const st=T.k!=null,cl=T.cloth,hb=cl&&(cl.kind==='herringbone'||cl.kind==='twill'),pitch=4*ls,cw=cl&&cl.cw?cl.cw*W/ASM_SIZE:0,off=cl&&cl.off?cl.off*W/ASM_SIZE:0;
   for(let q=0;q<P.idx.length;q++){const k=P.idx[q],j=4*k,x=k%W,y=(k-x)/W,g=P.seg?P.segs[P.seg[k]]||body:body;cm[0]=cm[1]=cm[2]=0;
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uv(g,x+(e+.5)/2,y+(a+.5)/2);at(c[0]/rep,c[1]/repv)}
