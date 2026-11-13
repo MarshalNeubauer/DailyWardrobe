@@ -250,8 +250,8 @@ asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_CO
 asmroute.test.js	<every page test>	<every page test>
 asmroute.test.js	app.js	esc	fnv64	workerBase
 asmroute.test.js	apple-touch-icon.png	<loaded>
-asmroute.test.js	asm-color.js	asmCmGaps	asmCmPref	asmCmRoute	asmCmUI	asmGapNote	asmGapUI
-asmroute.test.js	assemble.js	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
+asmroute.test.js	asm-color.js	asmCmGaps	asmCmPref	asmCmRoute	asmCmUI	asmCmWeaveTag	asmGapNote	asmGapUI
+asmroute.test.js	assemble.js	asmCalibKey	asmDropOld	asmKey	asmLoad	asmMicroGrid	asmMicroKind	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
 asmroute.test.js	core.js	colName	colorDesc	desc	dressOut	inRotation	itemName	itemTitle	patBase	patLabel	patName	primaryCol	sentence	titleCls	wearsJacket	wearsTie
 asmroute.test.js	detect.js	texPat	tieWeave	usableSett
 asmroute.test.js	icon-192.png	<loaded>
