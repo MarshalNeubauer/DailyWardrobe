@@ -1,6 +1,7 @@
-// A swatch on Today's picture tapped (app.js swTap, the owner's pick 2026-11-13): it opens large at the top left with the piece's name, the
-// small swatches shrink in their column at the bottom left (the open one outlined), the photo zooms so the piece lands on the right, ringed
-// (no label); nothing overlaps; another swatch switches; the same swatch, a tap on the picture or another day close it.
+// A swatch on Today's picture tapped (app.js swTap, the owner's pick 2026-11-13): it opens large at the top left with no name (the owner's
+// ask), the small swatches shrink to 44 px in their column at the bottom left (36 px under 350 px; the open one outlined), the photo zooms
+// so the piece lands on the right, ringed (no label); nothing overlaps; another swatch switches; the same swatch, a tap on the picture or
+// another day close it.
 module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   const browser=await chromium.launch();
   try{
@@ -13,7 +14,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.waitForSelector('#mannequin-container.photo .swstack .ovsw');
     const st=()=>p.evaluate(()=>{const c=$('#mannequin-container'),R=c.getBoundingClientRect(),rel=e=>{if(!e)return null;const b=e.getBoundingClientRect();return {l:b.left-R.left,t:b.top-R.top,r:b.right-R.left,b:b.bottom-R.top}};
       const sws=[...c.querySelectorAll('.swstack .ovsw')];return {W:R.width,open:c.classList.contains('swopen'),t:zoomTarget().style.transform,lens:rel(c.querySelector('.swlens')),lab:rel(c.querySelector('.swlab')),
-        labText:(c.querySelector('.swlab')||{}).textContent||'',ring:rel(c.querySelector('.swring')),stack:rel(c.querySelector('.swstack')),sw:sws.map(rel),on:sws.filter(b=>b.classList.contains('on')).map(b=>b.dataset.s),
+        labText:(c.querySelector('.swlab')||{}).textContent||'',ring:rel(c.querySelector('.swring')),scroll:c.scrollTop+c.scrollLeft,stack:rel(c.querySelector('.swstack')),sw:sws.map(rel),on:sws.filter(b=>b.classList.contains('on')).map(b=>b.dataset.s),
         pressed:sws.map(b=>b.getAttribute('aria-pressed')),slots:sws.map(b=>b.dataset.s),painted:/as painted/i.test(c.textContent),share:getComputedStyle(c.querySelector('.wshare')||c).opacity}});
     const a=await st();
     ok(!a.open&&a.slots.join()==='top,shirt,tie'&&a.sw.every(s=>Math.round(s.r-s.l)===64),`the stack is three tappable 64 px swatches (${a.slots.join()})`);
@@ -22,12 +23,22 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       await p.click(`#mannequin-container .ovsw[data-s="${s}"]`);await settle(p,900);
       const b=await st();
       ok(b.open&&/scale\(2\.3\)/.test(b.t)&&b.on.join()===s&&b.pressed.filter(x=>x==='true').length===1,`${s}: the photo zooms and the tapped swatch is outlined (${b.t})`);
-      ok(b.lens&&Math.abs(b.lens.l-12)<2&&Math.abs(b.lens.t-12)<2&&Math.abs((b.lens.r-b.lens.l)-.46*b.W)<3&&b.labText.length>3&&!b.painted,`${s}: the swatch is large at the top left with the piece's name, no "as painted" (${b.labText})`);
-      ok(b.sw.every(x=>Math.round(x.r-x.l)===36)&&b.stack&&Math.abs(b.W-b.stack.b-10)<2,`${s}: the small swatches shrink to 36 px, still a column at the bottom left`);
-      ok(b.ring&&b.ring.l>=-1&&b.ring.r<=b.W+1&&b.ring.t>=-1&&b.ring.b<=b.W+1&&!over(b.ring,b.lens)&&!over(b.ring,b.lab)&&!over(b.ring,b.stack)&&!over(b.lens,b.stack)&&!over(b.lab,b.stack),
-        `${s}: the ring on the piece, the big swatch, its name and the small swatches don't overlap (ring ${Math.round(b.ring.l)}-${Math.round(b.ring.r)} x ${Math.round(b.ring.t)}-${Math.round(b.ring.b)})`);
+      ok(b.lens&&Math.abs(b.lens.l-12)<2&&Math.abs(b.lens.t-12)<2&&Math.abs((b.lens.r-b.lens.l)-.46*b.W)<3&&!b.lab&&!b.labText&&!b.painted,`${s}: the swatch is large at the top left, with no name and no "as painted"`);
+      ok(b.sw.every(x=>Math.round(x.r-x.l)===44)&&b.stack&&Math.abs(b.W-b.stack.b-10)<2,`${s}: the small swatches shrink to 44 px, still a column at the bottom left`);
+      ok(b.ring&&b.ring.l>=-1&&b.ring.r<=b.W+1&&b.ring.t>=-1&&b.ring.b<=b.W+1&&!over(b.ring,b.lens)&&!over(b.ring,b.stack)&&!over(b.lens,b.stack)&&b.scroll===0,
+        `${s}: the ring on the piece, the big swatch and the small swatches don't overlap (ring ${Math.round(b.ring.l)}-${Math.round(b.ring.r)} x ${Math.round(b.ring.t)}-${Math.round(b.ring.b)}; big swatch to ${Math.round(b.lens.b)}, small from ${Math.round(b.stack.t)})`);
       ok(+b.share===0,`${s}: share, ✕ and ✓ step out of the way`)}
+    // narrower phones, opened by real taps: a tap focuses the swatch, and that once scrolled the zoomed picture inside its frame, pushing the
+    // big swatch and the ring out of place (seen in the owner's preview at 375 px)
+    await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,500);   // (the tie, still open from above, closes)
+    for(const [vw,px] of [[375,44],[330,36]]){await p.setViewportSize({width:vw,height:812});await p.evaluate(()=>renderToday());await settle(p,400);
+      for(const s of ['top','shirt','tie']){await p.click(`#mannequin-container .ovsw[data-s="${s}"]`);await settle(p,900);const n=await st();
+        ok(n.open&&n.scroll===0&&n.lens&&Math.abs(n.lens.t-12)<2&&n.ring&&n.sw.every(x=>Math.round(x.r-x.l)===px)&&!over(n.lens,n.stack)&&!over(n.ring,n.lens)&&!over(n.ring,n.stack)&&n.ring.t>=-1,
+          `${vw} px, ${s}: ${px} px small swatches, nothing moves out of place or overlaps (frame scrolled ${n.scroll} px; big swatch to ${n.lens&&Math.round(n.lens.b)}, small from ${n.stack&&Math.round(n.stack.t)})`)}
+      await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,600)}
+    await p.setViewportSize({width:390,height:844});await p.evaluate(()=>renderToday());await settle(p,300);
     // the same swatch closes; a tap on the picture closes; another day closes
+    await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,700);
     await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,700);
     const c=await st();ok(!c.open&&!c.lens&&!c.ring&&c.t===''&&c.sw.every(x=>Math.round(x.r-x.l)===64),'tapping the open swatch again closes it and the swatches grow back');
     await p.click('#mannequin-container .ovsw[data-s="shirt"]');await settle(p,600);
