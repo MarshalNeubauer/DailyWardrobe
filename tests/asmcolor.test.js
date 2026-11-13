@@ -100,6 +100,12 @@ module.exports=async({ok,chromium,url})=>{
       const a2=asked.slice(a1.length);
       ok(!r2.ahead&&a2.filter(k=>masterKeys.has(k)).length===masterKeys.size&&r2.screen&&r2.master,`a look nobody built: left to the computer while building ahead (nothing downloaded), painted here for the day on screen (${a2.length} records downloaded then)`);
       ok(listed<=3,`the worker's list is asked for once per refresh, not per look (${listed} times)`);
+      // the earlier way's photos: with the suit and waistcoat masters on the worker, the start-up check downloads none of them
+      const vk=await p.evaluate(()=>asmCmKey('vest','master'));served[vk]=recs.master;const n0=asked.length;
+      const old=await p.evaluate(async()=>{await asmListGet(true);const st=await asmSync(true);openSettings('photos');renderAsmUI();
+        return {cm:!!st.cm,missing:st.missing.length,text:(document.querySelector('#asm-status')||{}).textContent||'',old:[asmMasterKey(),asmVestKey(),...['jacket','shirt','tie','watch','vest'].map(s=>asmCalibKey(s))]}});
+      const a3=asked.slice(n0);
+      ok(old.cm&&old.missing===0&&!a3.some(k=>old.old.includes(k))&&/no item photos are needed/.test(old.text),`with colour-coded masters, the earlier way's master, waistcoat master and calibration photos are not downloaded (asked for ${a3.length}), and Settings says no item photos are needed`);
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')')}
     finally{await browser.close()}}
   // the upload script: the app's keys, from a folder laid out as colormaster.js writes it
