@@ -124,6 +124,6 @@ async function wardUndelete(it,k,days,at){
   it.updated=Math.max(Date.now(),at+1);await putRaw(it);   // newer than the tombstone: the item wins the merge
   items.splice(Math.min(k,items.length),0,it);
   for(const r of days){const cur=dayRecs[r.date];if(!cur||JSON.stringify(cur)!==JSON.stringify(r))await saveDay(r,true)}   // a day re-planned without it meanwhile
-  cache={};if(window.scheduleSync)scheduleSync();if(asmLive()&&ASM_TYPE[it.type])asmAutoSoon();
+  cache={};if(window.scheduleSync)scheduleSync();
   const v=['today','wardrobe','stats'].find(t=>$('#'+t)&&!$('#'+t).hidden);if(v)show(v);
   toast(`${cap1(itemName(it)||nm(it))} is back`)}
