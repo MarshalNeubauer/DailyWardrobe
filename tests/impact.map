@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8ad4dfee59aa00155f26
-# tested	300898cd595727231e13
+# tested	b3199d56d75a703e440b
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
