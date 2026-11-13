@@ -877,7 +877,7 @@ function asmSuitPaint(P,hex){const L=ASM_LIN,h=String(hex).replace('#',''),t=[0,
    each pixel's lightness over its lit cloth (75th percentile), averaged. A tie with no reading is its tagged colour. The painted picture
    is then the tie piece, so asmCompose's tie mask, halo fill and soft edge apply. */
 const ASM_TIEV=1;   // how ties are painted: in the picture's key
-async function asmTieTile(i){const def=fabricDef('asmtie',i,'tie').replace(/ patternTransform="[^"]*"/,'').replace(/<path [^>]*stroke="#fff"[^>]*\/>/g,''),
+async function asmTieTile(i){const def=fabricDef('asmtie',i,'tie',(usableSett(i)||{}).tex?'asmtie':undefined).replace(/ patternTransform="[^"]*"/,'').replace(/<path [^>]*stroke="#fff"[^>]*\/>/g,''),
     num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');if(!w||!h)return null;
   const S=Math.max(1,Math.ceil(256/w)),TW=Math.round(w*S),TH=Math.max(1,Math.round(h*S)),L=ASM_LIN;
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${3*TW}" height="${3*TH}" viewBox="0 0 ${3*w} ${3*h}"><defs>${def}</defs><rect width="${3*w}" height="${3*h}" fill="url(#asmtie)"/></svg>`;
@@ -897,11 +897,12 @@ function asmStripeCount(d){const S=Math.min(1,220/d.width),w=Math.round(d.width*
 /* what the pixel work needs to paint a tie (page side): {hex} for a plain one, or the tile, the angle and the repeats across */
 const asmTieMemo=new Map();
 async function asmTieFor(i){const k=asmTieSig(i);if(asmTieMemo.has(k))return asmTieMemo.get(k);const s=usableSett(i),hex=colOf(i);let r={hex};
-  if(s&&(s.bands||s.motif)){const t=await asmTieTile(i);if(t){let across=+s.tr||1.5;
+  // a woven tie's weave (tex) too: its raised grid, a tile repeated tr times across
+  if(s&&(s.bands||s.motif||s.tex)){const t=await asmTieTile(i);if(t){let across=+s.tr||1.5;
       if(s.bands&&!s.cross&&i.texture&&s.cr>0)try{const n=asmStripeCount(await asmData(i.texture));if(n&&(n/s.cr>1.35||n/s.cr<.74))across*=n/s.cr}catch{}   // the close-up shows another count
       r={hex,c:t.c,TW:t.TW,TH:t.TH,motif:!!s.motif,across,ang:(+s.a||0)*Math.PI/180}}}
   if(asmTieMemo.size>40)asmTieMemo.clear();asmTieMemo.set(k,r);return r}
-const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_TIEV,colOf(i),settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
+const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_TIEV+(s&&s.tex?'k'+TIE_TEX_K:''),colOf(i),settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
 /* the colour-free part, once per master and tie calibration: the tie zone's pixels, their shading, the knot (the rows above the narrowest
    row under it, in the tie's top 30%), the blade's lean (second moments) and its width */
 function asmTiePrep(master,calib,zt){const W=master.width,N=W*W,L=ASM_LIN,Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],idx=[];for(let k=0;k<N;k++)if(zt[k])idx.push(k);if(!idx.length)return null;
