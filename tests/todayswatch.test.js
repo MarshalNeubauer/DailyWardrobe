@@ -22,13 +22,26 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(r.n===3&&r.nNo===2&&r.none===''&&r.label,'one swatch per piece worn: jacket, shirt, tie; none without them');
     ok(r.pastUp&&r.futFlat,'on a day that shows ✕ and ✓ the stack sits above ✕; on a later day it sits in the corner');
     // the real cloth where it reads: a tie's and a plain or finely woven jacket's close-up swatch; a shirt and a striped jacket stay drawn
-    const pick=await p.evaluate(ph=>{const cu={swatch:ph,swSrc:'tex',texture:ph},kind=i=>/^<img /.test(ovlPiece(i))?'close-up':'drawn';
+    const pick=await p.evaluate(ph=>{const cu={swatch:ph,swSrc:'tex',texture:ph},kind=i=>{const v=ovlPiece(i);return v.includes(ph)?'close-up':/^<img src="data:image\/png/.test(v)?'painted':'drawn'};
       return {tie:kind({id:'a',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',...cu}),pin:kind({id:'b',type:'suit',primaryColor:'navy',pattern:'pinstripe',...cu}),
         twill:kind({id:'c',type:'suit',primaryColor:'brown',pattern:'twill',...cu}),dobby:kind({id:'d',type:'shirt',primaryColor:'white',pattern:'dobby',...cu}),
         gingham:kind({id:'e',type:'shirt',primaryColor:'lightblue',pattern:'gingham',...cu}),bare:kind({id:'f',type:'tie',primaryColor:'navy',pattern:'solid'}),photo:kind({id:'g',type:'suit',primaryColor:'navy',pattern:'solid',swatch:ph,swSrc:'photo'})}},PH);
-    ok(pick.tie==='close-up'&&pick.twill==='close-up',`a tie and a twill suit show their close-up (${JSON.stringify(pick)})`);
+    ok(pick.tie==='close-up',`a tie shows its close-up (${JSON.stringify(pick)})`);
     ok(pick.dobby==='drawn',"a shirt is always drawn, even with a close-up (the owner's choice)");
-    ok(pick.pin==='drawn'&&pick.gingham==='drawn'&&pick.bare==='drawn'&&pick.photo==='drawn','a pinstripe suit and a gingham shirt stay drawn, as does an item with no close-up or a swatch cut from its photo');
+    ok(pick.twill==='painted'&&pick.photo==='painted',"every suit is its painted cloth, never its close-up (the owner's choice)");
+    ok(pick.pin==='drawn'&&pick.gingham==='drawn'&&pick.bare==='drawn','a pinstripe suit with no reading keeps the drawn tile, as does a gingham shirt and a tie with no close-up');
+    // the painted suit: read bands as stripes in Claude's colours, a windowpane's crossing line, and the cloth's grain
+    const st=await p.evaluate(async()=>{const px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return {w:im.width,d:x.getImageData(0,0,im.width,im.height).data}};
+      const pin={id:'p1',type:'suit',primaryColor:'navy',pattern:'pinstripe',material:'wool twill',sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#c8cbd2',.05]],tr:30}},plain={id:'p2',type:'suit',primaryColor:'charcoal',pattern:'solid'};
+      const wp={id:'p3',type:'blazer',primaryColor:'khaki',pattern:'windowpane',material:'linen',sett:{v:2,a:0,bands:[['#c8b48c',.9],['#8fb3dc',.1]],cross:{d:90,r:1,bands:[[null,.97],['#e8e8e8',.03]]},tr:8}};
+      const a=await px(ovlSuitPng(pin)),b=await px(ovlSuitPng(plain)),w=await px(ovlSuitPng(wp)),S=a.w;
+      const colL=(im,x)=>{let s=0;for(let y=0;y<S;y++){const k=4*(y*S+x);s+=im.d[k]+im.d[k+1]+im.d[k+2]}return s/S},rowL=(im,y)=>{let s=0;for(let x=0;x<S;x++){const k=4*(y*S+x);s+=im.d[k]+im.d[k+1]+im.d[k+2]}return s/S};
+      let lines=0,prev=false;for(let x=0;x<S;x++){const on=colL(a,x)>250;if(on&&!prev)lines++;prev=on}
+      const ls=new Set();for(let k=0;k<b.d.length;k+=4)ls.add(b.d[k]);let rows=0;for(let y=0;y<S;y++)if(rowL(w,y)>rowL(w,(y+S/4)%S)+30)rows++;
+      return {S,lines,tones:ls.size,rows,cached:ovlSuitPng(pin)===ovlSuitPng(pin)}});
+    ok(st.S===260&&st.lines===2,`a read pinstripe paints its light line twice across (${st.lines})`);
+    ok(st.tones>12,`a plain suit carries the cloth's grain (${st.tones} tones)`);
+    ok(st.rows>0&&st.cached,`a windowpane's crossing line is painted (${st.rows} rows) and pictures are cached`);
     // a shirt's figured weave is drawn at higher fidelity in the overlay only (the owner's choice: smooth shapes with a thread grain)
     const wv=await p.evaluate(async()=>{const grid=['10000001','01000010','00100100','00011000','00011000','00100100','01000010','10000001'];
       const sh={id:'dw',type:'shirt',primaryColor:'lightblue',pattern:'dobby',sett:{v:4,tex:{kind:'diamond',grid,lighter:'raised',contrast:.3,rel:.12}}};
