@@ -648,6 +648,36 @@ function blazerMarks(i,P){const S=BLAZER_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix
     `<path d="${S.hands}" fill="${SK}" stroke="${SKD}" stroke-width=".3"/>`+ln(S.fingers,SKD,.3)+dots(S.nail,.42,'#e8c3b0')+
     ln(S.lapels,e,.4)+ln(S.lapels,hi,.25,.45).replace('<path','<path transform="translate(.3 0)"')+ln(S.notches,mix(c,'#000',.6),.5)+ln(S.fronts,e,.4)+
     ln(S.seams,e,.38,.75)+ln(S.pockets,e,.38)+ln(S.holes,mix(c,'#000',.6),.35)+dots(S.buttons,.7,'#3b2f2a')+dots(S.buttons,.25,'#6b5a50')}
+/* trousers, front view: traced from the product photo of grey office trousers the owner sent (2026-11-13): the outline snapped to
+   the photo's edges (his hands and shoes left out, the legs touching down to just above the hems), the waistband, belt loops, button
+   tab and fly, the slant pockets, the front leg's inner edge, the creases and the knee fold placed on zoomed crops. Box 0..100,
+   waist to hem. The cloth is drawn at PANTS_FAB: the trousers span waist to hem (about 42 in) where the suit drawing spans about
+   34, so the same cloth is 0.22 here against the suit's 0.28. */
+const PANTS_D={out:'M32.3,3.2 C32.3,3.2 39.5,3.2 43,3.1 C46.4,3.1 50,3.1 53,3.1 C56,3.1 61.1,3.1 61.1,3.1 C61.1,3.1 62.5,5.4 63,6.9 C63.6,8.2 64.1,9.8 64.4,11.5 C64.6,13.1 64.6,15 64.8,16.9 C64.8,18.7 64.7,20.5 64.9,22.5 C65,24.6 65.2,26.6 65.5,29.1 C65.8,31.5 66.3,34.5 66.7,37.3 C67.1,40.1 67.5,43.2 67.8,45.8 C68.1,48.4 68.2,50.5 68.1,52.7 C68,54.9 67.7,56.8 67.4,59.1 C67.1,61.5 66.6,64.2 66.1,66.9 C65.6,69.6 65,72.8 64.5,75.5 C63.9,78.3 63.4,80.9 62.9,83.2 C62.5,85.5 62.2,87.4 61.9,89.2 C61.6,91 61.2,94.2 61.2,94.2 C61.2,94.2 57.9,94.5 56.4,94.7 C54.9,94.8 53.4,94.8 52,95 C50.6,95.1 48,95.2 48,95.2 C48,95.2 48.1,92.6 48,90.7 C47.9,88.8 47.3,84.1 47.3,84.1 C47.3,84.1 46.4,87 46.1,88.4 C45.7,89.8 45.5,91.3 45.3,92.7 C45.1,94.1 44.8,97 44.8,97 C44.8,97 41.9,97 40.6,96.9 C39.3,96.9 36.8,96.9 36.8,96.9 C36.8,96.9 36,91.8 35.8,89.1 C35.5,86.4 35.3,83.4 35.1,80.4 C34.9,77.5 34.7,74.5 34.6,71.3 C34.4,68.2 34.4,65.1 34.3,61.7 C34.2,58.3 34.2,54.6 34,50.9 C33.9,47.2 33.7,43.2 33.4,39.6 C33.1,35.9 32.7,32.3 32.5,29.1 C32.2,25.8 31.8,22.8 31.7,20 C31.6,17.1 31.6,14.3 31.6,12 C31.7,9.8 31.9,7.8 32,6.3 C32.1,4.9 32.3,3.2 32.3,3.2 Z',
+  rlegin:'M49.1,27.3 C49.2,29.4 49.5,35.6 49.8,39.9 C50,44.2 50.2,48.8 50.3,53.2 C50.5,57.5 50.6,62.1 50.5,66.2 C50.5,70.3 50.3,74.2 50.1,77.6 C49.9,80.9 49.6,83.8 49.3,86.4 C49,88.9 48.6,91.8 48.4,92.9',
+  band:'M32.3,7.1 C34,7.1 39.4,7 43,7 C46.5,6.9 50.1,6.9 53.5,6.9 C56.8,6.8 61.4,6.7 62.9,6.7',
+  fly:'M51.4,7.5 C51.4,8.7 51.5,12.4 51.5,14.5 C51.5,16.6 51.5,18.7 51.4,20.1 C51.2,21.6 51,22.3 50.7,22.9 C50.5,23.5 49.8,23.7 49.5,23.9',
+  loopl:'M41,3.5 C41,3.5 42.4,3.5 42.4,3.5 C42.4,3.5 42.4,9.6 42.4,9.6 C42.4,9.6 41,9.6 41,9.6 C41,9.6 41,3.5 41,3.5 Z',
+  loopr:'M58.2,3.3 C58.2,3.3 59.4,3.3 59.4,3.3 C59.4,3.3 59.4,8.7 59.4,8.7 C59.4,8.7 58.2,8.7 58.2,8.7 C58.2,8.7 58.2,3.3 58.2,3.3 Z',
+  tab:'M45.2,5.3 C45.2,5.3 49.8,5.2 49.8,5.2 C49.8,5.2 49.8,7.1 49.8,7.1 C49.8,7.1 45.2,7.2 45.2,7.2 C45.2,7.2 45.2,5.3 45.2,5.3 Z',
+  pockl:'M33,4.6 C33.1,5.4 33.7,7.7 34,9.2 C34.3,10.8 34.7,12.6 35.1,14.1 C35.4,15.5 35.8,17.5 35.9,18.2',
+  pockr:'M61.8,7.3 C62,8.1 62.6,10.2 62.9,11.6 C63.3,13 63.6,14.6 63.9,15.7 C64.2,16.9 64.4,18 64.5,18.4',
+  creasel:'M40.7,23.9 C40.7,26.6 40.9,34.6 41,40.2 C41.1,45.8 41.3,51.8 41.4,57.7 C41.5,63.6 41.6,69.8 41.7,75.6 C41.8,81.4 42,90 42.1,92.9',
+  creaser:'M56.9,28.2 C57.1,30.3 57.6,36.9 57.9,40.7 C58.2,44.5 58.5,49.2 58.6,50.9',
+  knee:'M58.6,51.5 C59.2,51.9 61,53.3 62.2,54.1 C63.4,54.9 65.4,56 66,56.4',
+  hemr:'M48,93.1 C49,93.1 52.2,93.1 54.4,93.1 C56.7,93 60.4,92.7 61.6,92.7',
+  button:'47.6,6.2'};
+const PANTS_FAB=.22;
+function pantsFabric(id,i){const p=fabricDef(id,i,'bot'),m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';
+  return (m?p.replace(m[0],''):p).replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="scale(${PANTS_FAB})${tf?' '+tf:''}"`)}
+function pantsMarks(i,P){const S=PANTS_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c,'#fff',.22),k=typeof trouserKind==='function'?trouserKind(i):'dress';
+  const ln=(d,w=.4,o=1,col=e)=>`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
+  // jeans and chinos: their twill over the cloth (trouserMarks' weave, clipped to the trousers; its seams belong to the square)
+  const tw=k==='dress'?'':(()=>{const t=trouserMarks(i,P),m=t.match(/^<defs>[\s\S]*?<\/defs>/);return m?m[0]+`<g clip-path="url(#${P}pc)"><rect x="0" y="0" width="100" height="100" fill="url(#${P}tw)"/></g>`:''})();
+  return tw+ln(S.band,.4)+`<path d="${S.loopl}" fill="${mix(c,'#000',.25)}" stroke="${e}" stroke-width=".3"/><path d="${S.loopr}" fill="${mix(c,'#000',.25)}" stroke="${e}" stroke-width=".3"/><path d="${S.tab}" fill="none" stroke="${e}" stroke-width=".3"/>`+
+    `<circle cx="${S.button.split(',')[0]}" cy="${S.button.split(',')[1]}" r=".6" fill="${mix(c,'#000',.6)}" stroke="${hi}" stroke-width=".12"/>`+
+    ln(S.fly,.45)+ln(S.pockl,.4)+ln(S.pockr,.4)+ln(S.rlegin,.45,.9)+ln(S.creasel,.35,.8,hi)+ln(S.creaser,.3,.6,hi)+ln(S.knee,.3,.5)+ln(S.hemr,.3,.5)+
+    (k==='jeans'?`<path d="${S.pockl}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(.7 0)"/><path d="${S.pockr}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(-.7 0)"/>`+[[35.9,18.2],[64.5,18.4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".75" fill="#b87333" stroke="#6e4220" stroke-width=".2"/>`).join(''):'')}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -658,8 +688,8 @@ function itemThumb(i,full){
   else if(i.type==='blazer')g=blazerMarks(i,P);   /* the traced coat with its model (BLAZER_D) */
   else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
-    const jk=i.type==='suit',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?SUIT_D.out:'M10,10 H90 V90 H10 Z';
-    g=`<defs>${jk?suitFabric(P+'f',i):fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):trouserMarks(i,P));
+    const jk=i.type==='suit',pk=i.type==='pants',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?SUIT_D.out:pk?PANTS_D.out:'M10,10 H90 V90 H10 Z';
+    g=`<defs>${jk?suitFabric(P+'f',i):pk?pantsFabric(P+'f',i):fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:pk?`<clipPath id="${P}pc"><path d="${shape}"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk||pk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):pk?pantsMarks(i,P):trouserMarks(i,P));
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
