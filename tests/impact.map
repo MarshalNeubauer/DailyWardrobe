@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	8ad4dfee59aa00155f26
+# tested	300898cd595727231e13
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -169,7 +170,7 @@ asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLOR
 asmcolor.test.js	<every page test>	<every page test>
 asmcolor.test.js	account.js	acctCall	iosDevice	iosInSafari	loadAccount	rememberRole	renderAccountUI
 asmcolor.test.js	app.js	@addEventListenerpopstate	@tocolnavigator.serviceWorker.registersw.js.catch	aAn	addTombstones	appPush	atomic	backupSummary	cap1	comboKey	comboSig	countryName	esc	fnv64	hasOutfit	isoDate	itemDesc	itemKey	keepRender	keyDate	lockUpcoming	lookSig	metaPut	missingItemPics	monthFillSoon	monthLink	openSettings	planOn	recordDays	renderDaysOffUI	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	resetCard	setCatOpen	settingsSummaries	shirtPatterned	shirtTextured	shortDate	unit	workerBase
-asmcolor.test.js	asm-color.js	<any>	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmEnsure	asmCmGaps	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightPrep	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmRefit	asmCmRoute	asmCmSet	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmGapUI	asmLegsPrep	asmTieSheenK
+asmcolor.test.js	asm-color.js	<any>	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmEnsure	asmCmGaps	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightPrep	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmRefit	asmCmRoute	asmCmSet	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmGapUI	asmHbShirt	asmLegsPrep	asmTieSheenK
 asmcolor.test.js	asm-worker.js	<any>
 asmcolor.test.js	assemble.js	<any>	asmBodyFlow	asmCalibKey	asmCan	asmClothOf	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDropOld	asmEnsure	asmFlowAt	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmInfo	asmJob	asmJpeg	asmKey	asmLinen	asmListGet	asmLoad	asmLook	asmMasterKey	asmMicroKind	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmP2UI	asmPaintable	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPolyAt	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTrim	asmTubeAt	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKept	asmVestKey	asmVestTag	asmWants	asmWants0	asmWorker	asmZonesKept	renderAsmUI
 asmcolor.test.js	care.js	careLimit	laundryDays	renderCareUI
@@ -280,7 +281,7 @@ asmroute.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE
 asmtwill.test.js	<every page test>	<every page test>
 asmtwill.test.js	app.js	@tocolnavigator.serviceWorker.registersw.js.catch	fnv64	lookSig	shirtPatterned	shirtTextured
 asmtwill.test.js	apple-touch-icon.png	<loaded>
-asmtwill.test.js	asm-color.js	asmCmRoute	asmCmWeaveTag
+asmtwill.test.js	asm-color.js	asmCmRoute	asmCmWeaveTag	asmHbShirt
 asmtwill.test.js	assemble.js	asmCalibKey	asmCmUse	asmHbCw	asmInfo	asmKey	asmLinen	asmLook	asmMasterKey	asmMicroKind	asmMotif	asmNeeds	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTieSig	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave	asmWeaveSig
 asmtwill.test.js	core.js	colName	colOf	colorDesc	hasVest	inRotation	nm	patBase	patLabel	patName	primaryCol	typeWord	wearsJacket
 asmtwill.test.js	detect.js	settSig	texPat	tieWeave	usableSett
@@ -800,6 +801,20 @@ foldtap.test.js	stats.js	wornDays
 foldtap.test.js	styles.css	#mannequin-container	#mbox .mhead	#mbox .mswipe	#mbox.mfast .mc:not(.blank)	#mbox.mfast .mpanel,#mbox.mfast .mpanel-in	#mbox.mlift .mc:not(.blank)	#mbox.mshut .chev	#mpanel-in .mc[data-mv]	#pick-backdrop.on	#pick-sheet .btns	#pick-sheet p	#pick-sheet.on	#setup	#setup .su-skip	#setup button	#setup button.pri	#setup.on	#spanel .mpanel-in	#today .row .dot	.bbox	.bbox .rnote	.bbox .rpanel-in	.bbox .rpic	.bbox.open	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.below .tile[aria-expanded="true"]	.btn	.btns	.cap	.carenote	.carenote a	.dot	.dot svg	.fedge	.fedge-on	.fedge>i	.fedge>i::before	.fig	.fig .wornbar	.fig .wornbar>*	.fig .wshare	.fig>svg	.fit.best,.fit.good	.foldbar	.foldbar .fchev	.foldbar:active	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.ibox.open:not(.instant) .list>*	.ibox.open:not(.instant) .list>:nth-child(2)	.ibox.open:not(.instant) .list>:nth-child(3)	.ibox.open:not(.instant) .list>:nth-child(4)	.ibox.open:not(.instant) .list>:nth-child(5)	.ibox.open:not(.instant) .list>:nth-child(n+6)	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.bfast .mpanel,.mbox.bfast .mpanel-in	.mbox.blift .bli	.mbox.bshut .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.pchip	.pchip svg	.pchip.vest	.pick-grid	.pick-head	.pick-head b	.pick-it	.pick-it .fit	.pick-it.cur	.pick-nm	.pick-pic	.pick-pic .ph.thumb	.pick-pic svg	.pick-x	.pstrip	.render-msg	.render-msg:empty	.resetbox .month-link	.resetbox .rsicon	.ritem.bbox.open .rpanel-in	.ritem.instant .rpanel,.ritem.instant .rpanel-in	.ritem.open .rpanel	.ritem.open .rpanel-in	.ritem.pfast,.ritem.pfast .rpanel,.ritem.pfast .rpanel-in	.rnote	.row	.row .mut	.row .mut.none	.row .swap	.row .swap:active	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.rpic	.rpic.draw	.rpic.draw .ph.thumb	.rpic.draw svg	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.open:not(.instant) .num	.score.open:not(.instant) .sbar i	.score.open:not(.instant) li	.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.stack	.stack.rest	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.thumb	.thumb svg	.wmark	<loaded>
 foldtap.test.js	sync.js	scheduleSync	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
 foldtap.test.js	tests/fixedplan.js	<any>
+hbshirt.test.js	<every page test>	<every page test>
+hbshirt.test.js	app.js	fnv64	workerBase
+hbshirt.test.js	apple-touch-icon.png	<loaded>
+hbshirt.test.js	asm-color.js	asmCmTile	asmCmWeaveTag	asmHbShirt	asmHbShirtLook
+hbshirt.test.js	assemble.js	asmCalibKey	asmDropOld	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmTexMm	asmVestKey	asmVestTag	asmWeave
+hbshirt.test.js	core.js	accentOf	colOf	hexRgb	labHex	lum	mix	patBase	primaryCol	rgbHex	rgbLab	thirdOf
+hbshirt.test.js	detect.js	texPat	tieWeave	usableSett
+hbshirt.test.js	draw.js	fabricDef	texPlainBand	texTileUrl	texTones
+hbshirt.test.js	icon-192.png	<loaded>
+hbshirt.test.js	icon-512.png	<loaded>
+hbshirt.test.js	index.html	<loaded>
+hbshirt.test.js	manifest.webmanifest	<loaded>
+hbshirt.test.js	styles.css	<loaded>
+hbshirt.test.js	tests/fixedplan.js	<any>
 herringbone.test.js	<every page test>	<every page test>
 herringbone.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointermove	fnv64	metaPut	replanFuture	saveUserSettings	workerBase
 herringbone.test.js	apple-touch-icon.png	<loaded>
