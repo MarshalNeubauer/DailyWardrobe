@@ -934,6 +934,26 @@ body.nocon .conn-only,.connhide{display:none!important}
 .fig .swstack .ovsw{display:block;width:64px;height:64px;border-radius:13px;overflow:hidden;box-shadow:0 2px 7px rgba(0,0,0,.28)}
 .fig .swstack .ovsw svg,.fig .swstack .ovsw img{display:block;width:100%;height:100%;object-fit:cover}
 #mannequin-container.zoomed .swstack{opacity:0}
+/* a swatch tapped (app.js swTap): the swatches take touches; while one is open they shrink to 36 px in their column at the bottom left,
+   the open one outlined, it shows large at the top left with the piece's name, the photo zooms to the piece (ringed), ✕ ✓ and share hide */
+.fig .swstack .ovsw{margin:0;padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;font:inherit;color:inherit;
+  transition:width .35s cubic-bezier(.2,.8,.2,1),height .35s cubic-bezier(.2,.8,.2,1),border-radius .35s,box-shadow .2s}
+.fig .swstack .ovsw:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.fig .swstack{transition:opacity .2s,bottom .35s cubic-bezier(.2,.8,.2,1),gap .35s cubic-bezier(.2,.8,.2,1)}
+.fig.swopen .swstack,.fig.swopen .swstack.up{bottom:10px;gap:7px}
+.fig.swopen .swstack .ovsw{width:36px;height:36px;border-radius:8px}
+.fig.swopen .swstack .ovsw.on{box-shadow:0 0 0 2.5px #fff,0 2px 7px rgba(0,0,0,.35)}
+.fig.swopen .wornbar,.fig.swopen .wornbar>*,.fig.swopen .wshare{opacity:0;pointer-events:none}
+.fig .swlens{position:absolute;top:12px;left:12px;width:46%;aspect-ratio:1;border-radius:16px;overflow:hidden;z-index:4;box-shadow:0 0 0 3px #fff,0 10px 26px rgba(0,0,0,.45);
+  pointer-events:none;transform-origin:0 0;animation:swIn .4s cubic-bezier(.2,.8,.2,1)}
+.fig .swlens svg,.fig .swlens img{display:block;width:100%;height:100%;object-fit:cover;border-radius:0}
+.fig .swlab{position:absolute;left:12px;top:calc(46% + 22px);width:46%;z-index:4;color:#fff;font-size:13.5px;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;animation:swFade .3s .12s both}
+.fig .swring{position:absolute;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3),inset 0 0 0 1px rgba(0,0,0,.2);z-index:3;transform:translate(-50%,-50%);pointer-events:none;
+  transition:left .45s cubic-bezier(.2,.8,.2,1),top .45s cubic-bezier(.2,.8,.2,1),width .3s,height .3s;animation:swFade .3s .25s both}
+@keyframes swIn{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+@keyframes swFade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.fig .swlens,.fig .swlab,.fig .swring{animation:none}.fig .swstack .ovsw,.fig .swstack,.fig .swring{transition:none}}
 /* Wardrobe's + Add, and What to buy while it waits for a bigger wardrobe */
 #wardrobe .phead .padd{flex:none;min-height:40px;padding:0 14px}
 .shopbtn.locked{cursor:default;border:1px solid var(--line);background:var(--card);color:var(--ink)}.shopbtn.locked small{white-space:normal}
