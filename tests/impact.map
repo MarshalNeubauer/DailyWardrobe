@@ -2327,7 +2327,7 @@ tieweave.test.js	apple-touch-icon.png	<loaded>
 tieweave.test.js	assemble.js	asmImg	asmTieFor	asmTieSig	asmTieTile
 tieweave.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 tieweave.test.js	colpick.js	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
-tieweave.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	desc	hexRgb	itemName	itemTitle	labHex	lum	normPat	patBase	patLabel	patName	primaryCol	rgbLab	sentence	shadeName	thirdOf	titleCls
+tieweave.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	desc	hexRgb	itemName	itemTitle	labHex	lum	mix	normPat	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	shadeName	thirdOf	titleCls
 tieweave.test.js	detect.js	settSig	texPat	tieWeave	usableSett
 tieweave.test.js	draw.js	fabricDef	itemThumb	swatchSVG	texTileUrl	texTones
 tieweave.test.js	icon-192.png	<loaded>

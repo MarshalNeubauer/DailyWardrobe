@@ -895,14 +895,17 @@ function asmStripeCount(d){const S=Math.min(1,220/d.width),w=Math.round(d.width*
   const o=best,n=o.length,m=o.reduce((a,b)=>a+b,0)/n,z=o.map(v=>v-m),ac=k=>{let s=0;for(let t=0;t+k<n;t++)s+=z[t]*z[t+k];return s/(n-k)},a0=ac(0);if(!(a0>0)||n<20)return 0;
   const c=[1];for(let k=1;k<n/2;k++)c.push(ac(k)/a0);for(let k=4;k<c.length-1;k++)if(c[k]>.25&&c[k]>=c[k-1]&&c[k]>=c[k+1])return w/k;return 0}
 /* what the pixel work needs to paint a tie (page side): {hex} for a plain one, or the tile, the angle and the repeats across */
+/* a tie's weave repeats at most this many times across the tie: about 4 px a repeat at 2048 (the tie ~214 px mid-chest); Claude counted 80
+   ribs on the owner's burgundy twill, under 3 px each, and they blurred into flat colour (2026-11-13) */
+const ASM_TIE_TEX_MAX=50;
 const asmTieMemo=new Map();
 async function asmTieFor(i){const k=asmTieSig(i);if(asmTieMemo.has(k))return asmTieMemo.get(k);const s=usableSett(i),hex=colOf(i);let r={hex};
   // a woven tie's weave (tex) too: its raised grid, a tile repeated tr times across
-  if(s&&(s.bands||s.motif||s.tex)){const t=await asmTieTile(i);if(t){let across=+s.tr||1.5;
+  if(s&&(s.bands||s.motif||s.tex)){const t=await asmTieTile(i);if(t){let across=+s.tr||1.5;if(s.tex)across=Math.min(across,ASM_TIE_TEX_MAX);
       if(s.bands&&!s.cross&&i.texture&&s.cr>0)try{const n=asmStripeCount(await asmData(i.texture));if(n&&(n/s.cr>1.35||n/s.cr<.74))across*=n/s.cr}catch{}   // the close-up shows another count
       r={hex,c:t.c,TW:t.TW,TH:t.TH,motif:!!s.motif,across,ang:(+s.a||0)*Math.PI/180}}}
   if(asmTieMemo.size>40)asmTieMemo.clear();asmTieMemo.set(k,r);return r}
-const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_TIEV+(s&&s.tex?'k'+TIE_TEX_K:''),colOf(i),settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
+const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_TIEV+(s&&s.tex?'k'+TIE_TEX_K+'m'+ASM_TIE_TEX_MAX:''),colOf(i),settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
 /* the colour-free part, once per master and tie calibration: the tie zone's pixels, their shading, the knot (the rows above the narrowest
    row under it, in the tie's top 30%), the blade's lean (second moments) and its width */
 function asmTiePrep(master,calib,zt){const W=master.width,N=W*W,L=ASM_LIN,Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],idx=[];for(let k=0;k<N;k++)if(zt[k])idx.push(k);if(!idx.length)return null;
