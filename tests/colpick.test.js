@@ -48,6 +48,26 @@ module.exports=async({ok,chromium,url})=>{
     await p.click('#item-view .colbtn[data-k="secondaryColor"]');
     ok(await p.evaluate(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent)&&colPick.sel==='navy')&&asked.length===1,'the second colour shows the same answer without asking again');
     await p.keyboard.press('Escape');
+    // a colour Claude names that the app lacks: a New chip in Claude's shade; picking it adds it to the owner's colours and uses it
+    await p.unroute('**/fakeworker/**');
+    await p.route('**/fakeworker/**',async r=>{asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'green',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',
+      confidence:{type:'high',primaryColor:'low',pattern:'high'},altColor:'olive',altPattern:'none',newColor:{name:'bottle green',why:'darker and bluer than green'},newPattern:null,
+      ownColors:{primary:{name:'bottle green',hex:'#1f4a3a'},secondary:{name:'navy',hex:'#1b2a4a'},tertiary:null}})}})});
+    await p.evaluate(()=>{delete colAsk.t1});await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cpaskbtn');
+    await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
+    const n=await p.evaluate(()=>({flag:true,said:document.querySelector('#col-sheet .cpask b').textContent,tiles:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c+':'+b.textContent),
+      sw:document.querySelector('#col-sheet .cptile[data-c="+new"] .cpsw').style.background,note:(document.querySelector('#col-sheet .cpnewtx')||{}).textContent||''}));
+    ok(asked.at(-1).freeColors===true,'the picker asks for Claude\'s own colours');
+    ok(/Bottle green and Navy/.test(n.said)&&n.tiles[0].startsWith('+new:Bottle green')&&/New/.test(n.tiles[0])&&/31, 74, 58/.test(n.sw)&&/Closest you have/.test(n.tiles[1]),`Claude's own colour is offered first as a New chip in its shade (${n.said}; ${n.tiles})`);
+    ok(/isn’t one of your colours yet/.test(n.note)&&/behaves like/.test(n.note),'it says it will be added, and what it behaves like');
+    await p.click('#col-sheet .cptile[data-c="+new"]');
+    ok(await p.evaluate(()=>document.querySelector('#col-sheet .cpbar button').textContent==='Add Bottle green to your colours and use it'&&document.querySelector('#col-sheet .cpbig figcaption').textContent==='Bottle green'),'picked, the button says it will be added');
+    await p.click('#col-sheet .cpbar button');await p.waitForTimeout(250);
+    const g=await p.evaluate(()=>({c:items.find(x=>x.id==='t1').primaryColor,cu:(settings.custom.colors||[]).find(x=>x.key==='ownbottlegreen'),hex:COLORS.ownbottlegreen,baseOk:(()=>{const cu=(settings.custom.colors||[]).find(x=>x.key==='ownbottlegreen');return !!(cu&&COLORS[cu.base])})(),btn:document.querySelector('#item-view .colbtn[data-k="primaryColor"]').textContent}));
+    ok(g.c==='ownbottlegreen'&&g.cu&&g.cu.hex==='#1f4a3a'&&g.cu.types.includes('tie')&&!g.cu.accent&&g.baseOk&&g.hex==='#1f4a3a'&&g.btn==='Bottle green',`it is added to your colours (for ties, behaving like ${g.cu&&g.cu.base}) and set on the item`);
+    await p.click('#item-view .colbtn[data-k="primaryColor"]');
+    ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="ownbottlegreen"]')),'once added it is a normal colour in the list, not offered as new again');
+    await p.keyboard.press('Escape');
     await p.evaluate(()=>{items.push({id:'t2',type:'tie',primaryColor:'red',pattern:'solid',photo:'x',added:4});editing='t2';renderWardrobe()});
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     ok(await p.evaluate(()=>/Add a close-up/.test(document.querySelector('#col-sheet .cpask').textContent)&&!document.querySelector('#col-sheet .cpaskbtn')),'without a close-up it says to add one first');

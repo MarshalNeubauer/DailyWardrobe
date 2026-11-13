@@ -973,4 +973,4 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cpaskbtn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
 .cpaskbtn:disabled{opacity:.45;cursor:default}
 .cpask .cpai{margin:10px 0 0}.cpaskbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.cpaskbtns .cpaskbtn{flex:1 1 auto}
-.cpaid{color:var(--acc-ink,var(--acc))}
+.cpaid{color:var(--acc-ink,var(--acc))}.cpnewtx{display:block;margin:8px 0 0;font-size:12.5px;color:var(--mut)}

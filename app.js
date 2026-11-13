@@ -202,6 +202,8 @@ async function ask(c,extra){
   }
 }
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
+const ownColorsOf=o=>{const f=c=>c&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&/[a-z]{2}/i.test(c.name||'')?{name:String(c.name).toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim().slice(0,24),hex:c.hex.toLowerCase()}:null;
+  return o&&typeof o==='object'&&f(o.primary)?{primaryColor:f(o.primary),secondaryColor:f(o.secondary),tertiaryColor:f(o.tertiary)}:null};
 function normTag(parsed,model){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
@@ -219,7 +221,9 @@ function normTag(parsed,model){
       altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
       newColor:parsed.newColor&&parsed.newColor.name?parsed.newColor:null,newPattern:parsed.newPattern&&parsed.newPattern.name?parsed.newPattern:null,
       clothBox:parsed.clothBox&&typeof parsed.clothBox==='object'?parsed.clothBox:null,
-      patternBox:parsed.patternBox&&typeof parsed.patternBox==='object'?parsed.patternBox:null,weave:parsed.weave&&typeof parsed.weave==='object'?parsed.weave:null
+      patternBox:parsed.patternBox&&typeof parsed.patternBox==='object'?parsed.patternBox:null,weave:parsed.weave&&typeof parsed.weave==='object'?parsed.weave:null,
+      // Claude's own colour names and shades, not limited to the list (only when asked with freeColors: colpick.js)
+      ownColors:ownColorsOf(parsed.ownColors)
     };
 }
 

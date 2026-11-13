@@ -58,5 +58,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok((await p.textContent('#queue')).includes('Tagged by Claude (claude-opus-5-5).')&&!(await p.textContent('#queue')).includes('Cloudflare AI'),'each photo card says which model tagged it');
     ok(/read by Claude \(claude-opus-5-5\)/.test(await p.textContent('#note')),`the Add screen says which model tagged the photo ("${await p.textContent('#note')}")`);
     await b.close();
+    // freeColors (the colour picker's Ask Claude): Claude's own colour names and shades, outside the list, tidied
+    const free={...answer,confidence:{type:'high',primaryColor:'low',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null,clothBox:null,patternBox:null,weave:null,
+      ownColors:{primary:{name:'Bottle Green!',hex:'#1F4A3A'},secondary:{name:'x',hex:'#zz0000'},tertiary:null}};
+    reply=()=>[200,{model:'claude-opus-5-5',stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify(free)}]}];
+    const ask2=extra=>worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:IMG,...extra})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
+    let fj=await (await ask2({freeColors:true})).json();
+    const fs=sent.body.output_config.format.schema,ft=sent.body.messages[0].content.at(-1).text;
+    ok(fs.properties.ownColors&&fs.required.includes('ownColors')&&/ownColors — your own reading/.test(ft),'with freeColors the schema and prompt ask for Claude\'s own colours');
+    ok(fj.ownColors&&fj.ownColors.primary.name==='bottle green'&&fj.ownColors.primary.hex==='#1f4a3a'&&fj.ownColors.secondary===null&&fj.ownColors.tertiary===null,`its own colours come back tidied, a bad shade dropped (${JSON.stringify(fj.ownColors)})`);
+    await ask2({});
+    ok(!sent.body.output_config.format.schema.properties.ownColors&&!/ownColors/.test(sent.body.messages[0].content.at(-1).text),'a normal tag doesn\'t ask for them');
   }finally{globalThis.fetch=realFetch}
 };
