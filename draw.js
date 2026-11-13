@@ -706,6 +706,108 @@ function shirtMarks(i,P){const S=SHIRT_D,c=colOf(i),[r,g,b]=hexRgb(c),dark=(.299
     `<path d="${S.inside}" fill="#000" fill-opacity="${dark?.3:.06}"/>`+ln(S.shadow,sh,1.1,dark?.5:.18)+
     ln(S.collar,e,.42)+ln(S.band,e,.3,.8)+ln(S.seams,e,.3,.75)+ln(S.cuff,e,.4)+ln(S.sleeve,e,.32,.8)+ln(S.pocket,e,.36)+ln(S.hole,e,.35)+
     [S.button,...S.fronts.split(' ')].map(q=>{const [bx,by]=q.split(',').map(Number);return `<circle cx="${bx}" cy="${by}" r="1.25" fill="#e7e4dc" stroke="#9a968c" stroke-width=".2"/>`+[[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]].map(([x,y])=>`<circle cx="${(bx+x).toFixed(2)}" cy="${(by+y).toFixed(2)}" r=".16" fill="#8a867c"/>`).join('')}).join('')}
+/* wristwatch, three-quarter view: traced from the owner's item picture of his watch (the realistic product shot made for it, a
+   steel chronograph on an integrated bracelet; 2026-11-13, the owner's ask): the outline from the picture's pixels (the plain ground
+   flooded from the edges; where it ran into the soft shadow at the lower right and the bottom, points placed on 1.3x crops), the
+   bezel, dial and subdials as ellipses fitted to edge points found along rays (ellfit), the bracelet's link gaps measured column by
+   column from the dark lines, the crown, pushers, date window, hands and printed figures placed on 2-3x crops; no maker's name.
+   The case and bracelet take the metal (METAL_TONES), the dial its colour; a leather strap replaces the links; a fluted or smooth
+   bezel, and three hands (with or without the date) instead of the subdials, follow watchOpts. Box: X=(x-510)*.103+50, Y=(y-66)*.103+4
+   in the 1024 px picture. */
+const WATCH_D={out:'M36.03,89.59 C36.04,89.3 36.23,89.35 36.01,88.77 C35.79,88.19 35.04,86.97 34.71,86.09 C34.39,85.22 34.15,84.25 34.03,83.52 C33.92,82.78 34.12,82.18 34.01,81.66 C33.9,81.15 33.63,81.16 33.38,80.43 C33.12,79.69 32.7,78.42 32.47,77.23 C32.24,76.05 32.16,74.11 31.98,73.32 C31.79,72.53 31.64,73.06 31.38,72.49 C31.11,71.93 31.09,71.96 30.39,69.92 C29.69,67.88 28,62.8 27.2,60.24 C26.39,57.68 25.97,56.36 25.57,54.57 C25.17,52.79 24.89,51.24 24.79,49.53 C24.69,47.81 24.85,45.63 24.97,44.27 C25.09,42.92 24.91,43.33 25.53,41.39 C26.15,39.45 27.28,35.91 28.7,32.63 C30.12,29.36 32.95,23.83 34.06,21.72 C35.16,19.6 34.9,20.87 35.31,19.97 C35.72,19.06 36.12,17.27 36.53,16.26 C36.94,15.24 37.44,14.44 37.78,13.89 C38.13,13.34 38.3,13.65 38.61,12.96 C38.91,12.27 39.2,10.75 39.62,9.77 C40.03,8.79 40.68,7.71 41.1,7.09 C41.53,6.47 41.92,6.37 42.17,6.06 C42.43,5.75 42.45,5.47 42.63,5.24 C42.8,5 42.92,4.85 43.2,4.66 C43.49,4.47 43.22,4.24 44.34,4.08 C45.45,3.92 47.84,3.67 49.9,3.69 C51.96,3.71 55.24,4.12 56.7,4.19 C58.15,4.25 57.69,4.05 58.65,4.1 C59.61,4.16 61.33,4.33 62.46,4.51 C63.6,4.7 64.81,4.96 65.45,5.22 C66.09,5.47 65.95,5.27 66.32,6.06 C66.68,6.85 67.26,8.39 67.61,9.97 C67.97,11.55 68.2,13.22 68.44,15.54 C68.68,17.85 68.92,21.17 69.06,23.88 C69.19,26.59 68.93,29.97 69.26,31.81 C69.59,33.65 70.59,34.02 71.01,34.9 C71.44,35.78 71.73,36.58 71.82,37.06 C71.9,37.54 71.71,37.56 71.51,37.78 C71.3,38.01 70.79,38.25 70.6,38.42 C70.41,38.59 70.07,38.1 70.39,38.81 C70.72,39.53 72.15,41.85 72.54,42.73 C72.93,43.6 72.5,43.67 72.74,44.07 C72.98,44.46 73.73,44.79 73.98,45.1 C74.22,45.41 74.17,45.39 74.21,45.92 C74.24,46.45 74.27,47.64 74.21,48.29 C74.14,48.94 74.1,49.39 73.81,49.84 C73.53,50.28 72.74,50.57 72.5,50.97 C72.25,51.36 72.63,51.55 72.33,52.2 C72.03,52.86 70.95,53.85 70.68,54.88 C70.41,55.91 70.78,57.37 70.7,58.38 C70.63,59.4 70.87,60.17 70.25,60.96 C69.63,61.75 67.79,60.15 67,63.12 C66.2,66.09 65.78,75.1 65.45,78.78 C65.12,82.45 65.24,83.17 65.04,85.16 C64.83,87.16 64.54,89.15 64.21,90.73 C63.89,92.31 63.8,93.8 63.08,94.64 C62.36,95.48 62.24,95.57 59.89,95.77 C57.54,95.98 52.51,96 48.97,95.88 C45.43,95.76 40.59,95.34 38.67,95.05 C36.75,94.76 37.88,94.88 37.43,94.13 C36.99,93.37 36.23,91.28 35.99,90.52 C35.76,89.76 36.03,89.88 36.03,89.59 Z',
+  colT:'M48.97,4.62 L48.66,8.53 L48.25,12.65 L47.84,17.8 L47.22,24.19 L52.16,24.19 L53.19,17.8 L54.02,12.65 L54.33,8.53 L54.43,4.41 Z',
+  colB:'M42.48,68.27 L42.79,74.45 L43.31,79.6 L43.82,84.75 L44.34,89.9 L44.64,95.67 L50.31,95.67 L50,89.9 L49.69,84.75 L49.28,79.6 L48.97,74.45 L48.66,68.27 Z',
+  darkT:'M47.32,23.36 L52.16,23.36 L52.16,25.84 L47.32,25.84 Z',
+  darkB:'M42.48,67.35 L48.66,67.35 L48.66,70.74 L42.48,70.74 Z',
+  far:'M64.63,4.93 L66.38,6.78 L67.61,8.64 L68.54,13.68 L68.85,19.45 L68.85,27.07 L66.69,28.1 L65.45,19.86 L64.94,11.62 Z M64.63,65.18 L67,64.56 L66.27,70.85 L65.45,78.78 L65.04,85.16 L64.21,90.73 L63.08,94.64 L61.33,95.05 L62.15,85.78 L62.98,75.48 L63.39,68.27 Z',
+  gaps:'M36.61,6.68 L43.82,5.85 L46.4,5.65 L48.66,5.65 M54.43,5.44 L57.21,5.75 L60.3,6.16 L63.39,6.78 L69.57,7.71 M38.67,12.96 L40.73,12.76 L43.82,12.34 L46.4,12.14 L48.25,12.03 M54.02,12.34 L57.21,12.55 L60.3,13.17 L63.39,13.99 L69.57,15.43 M36.61,19.66 L40.73,19.45 L43.82,19.35 L46.4,19.35 L47.84,19.35 M53.19,19.76 L57.21,19.97 L60.3,20.48 L63.39,21.3 L69.57,22.75 M31.46,73.73 L35.58,73.94 L38.67,74.45 L41.25,74.66 L42.79,74.66 M48.97,75.17 L52.06,75.28 L56.18,75.07 L59.27,74.76 L68.54,74.04 M32.49,81.87 L35.58,82.07 L38.67,82.9 L41.25,83.41 L43.31,83.52 M49.28,84.03 L52.06,84.03 L56.18,83.72 L59.27,83.21 L68.54,82.49 M34.55,89.39 L38.67,89.59 L41.25,90.21 L44.03,90.42 M50,91.14 L52.06,91.14 L56.18,90.73 L59.27,90.31 L68.54,89.7 M48.66,8.22 L54.33,8.22 M48.25,12.34 L54.02,12.34 M47.94,16.26 L53.61,16.26 M47.73,19.86 L53.19,19.86 M43,78.68 L49.38,78.68 M44.03,87.74 L49.9,87.74',
+  lugT:'M31.46,22.95 L38.67,20.07 L46.91,19.35 L55.15,19.86 L64.42,21.51 L68.54,22.95',
+  lugB:'M30.43,68.27 L34.55,73.63 L42.79,74.66 L55.15,75.17 L65.45,74.25',
+  bezelOut:'46.07 46.3 20.34 21.19 34.3',
+  bezelIn:'46.23 46.39 17.75 18.44 12.26',
+  sec:'40.32 40.08 4.52 4.65 22.08',
+  time:'46.5 55.46 8.16 8.44 22.6',
+  minC:'50.62 42.01',
+  minR:'7.93 7.31 5.77 5.36',
+  crown:'68.75 43.76 5.15 6.39',
+  pushU:'M66.69,31.4 L68.54,30.88 L70.81,35.11 L71.22,37.78 L69.57,38.5 L68.13,36.96 Z',
+  slotU:'M68.54,35.52 L70.6,35.11 L71.01,37.37 L69.36,37.78 Z',
+  pushL:'M66.69,59.21 L68.85,57.77 L70.29,59.21 L69.98,63.12 L67.92,64.36 L66.48,63.12 Z',
+  date:'M56.7,54.57 L58.76,54.78 L58.45,56.84 L56.18,56.53 Z',
+  hub:'46.81,44.07',
+  chTip:'47.43,30.16',
+  chTail:'46.6,46.85',
+  secHub:'40.32,40.08',
+  secTip:'36.4,39.33',
+  minHub:'50.72,41.9',
+  minTip:'50.82,35',
+  tHub:'46.91,55.19',
+  tMin:'51.03,51.69',
+  tHour:'48.97,60.03',
+  tSec:'49.18,61.27',
+  txt:'SEC.|40.32|42.63|0.93;MIN.|57.83|49.42|1.24;15|53.81|39.64|1.03;30|54.64|42.73|1.03;45|53.61|45.51|1.03',
+  num:'12|47.12|50.14|1.96;6|47.12|61.68|1.96'};
+function drawWatchTraced(w,P){const S=WATCH_D,o=watchOpts(w),[mL,mM,mD]=METAL_TONES[w&&w.metal]||METAL_TONES.silver,dial=COLORS[o.dial]||'#f6f6f3',
+    ink=lum(dial)<.45?'#e9eaec':'#1d2125',navy='#1d2b4f',strap=o.band==='leather',chrono=o.style==='chronograph',
+    el=(s,a)=>{const [cx,cy,rx,ry,an]=s.split(' ');return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${an} ${cx} ${cy})" ${a}/>`},
+    // a point at screen angle t on an ellipse turned by an, at k of its size
+    ep=(s,k,t)=>{const [cx,cy,rx,ry,an]=s.split(' ').map(Number),a=an*Math.PI/180,u=Math.atan2(rx*Math.sin(t-a),ry*Math.cos(t-a)),x=rx*k*Math.cos(u),y=ry*k*Math.sin(u);return [cx+x*Math.cos(a)-y*Math.sin(a),cy+x*Math.sin(a)+y*Math.cos(a)]},
+    ln=(d,c,w,op)=>`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}"${op?` stroke-opacity="${op}"`:''} stroke-linecap="round" stroke-linejoin="round"/>`,
+    hand=(a,b,w,c)=>{const [x1,y1]=a.split(',').map(Number),[x2,y2]=b.split(',').map(Number),L=Math.hypot(x2-x1,y2-y1),nx=-(y2-y1)/L*w,ny=(x2-x1)/L*w;
+      return `<path d="M${f2(x1+nx)},${f2(y1+ny)} L${f2(x2)},${f2(y2)} L${f2(x1-nx)},${f2(y1-ny)} Z" fill="${c}"/>`},f2=n=>+n.toFixed(2);
+  const [bx,by]=S.bezelIn.split(' ').map(Number);let s=`<defs>
+   <linearGradient id="${P}br" x1="0" x2="1"><stop offset="0" stop-color="${mD}"/><stop offset=".22" stop-color="${mM}"/><stop offset=".42" stop-color="${mL}"/><stop offset=".62" stop-color="${mM}"/><stop offset=".85" stop-color="${mL}"/><stop offset="1" stop-color="${mD}"/></linearGradient>
+   <linearGradient id="${P}po" x1="0" x2="1"><stop offset="0" stop-color="${mD}"/><stop offset=".3" stop-color="#fff"/><stop offset=".55" stop-color="${mM}"/><stop offset=".8" stop-color="${mL}"/><stop offset="1" stop-color="${mD}"/></linearGradient>
+   <radialGradient id="${P}bz" cx=".3" cy=".25" r=".95"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="${mL}"/><stop offset=".85" stop-color="${mM}"/><stop offset="1" stop-color="${mD}"/></radialGradient>
+   <radialGradient id="${P}dl" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="${mix(dial,'#fff',.45)}"/><stop offset="1" stop-color="${mix(dial,'#000',.08)}"/></radialGradient>
+   <clipPath id="${P}c"><path d="${S.out}"/></clipPath><clipPath id="${P}bt"><rect x="0" y="0" width="100" height="${(222-66)*.103+4}"/><rect x="0" y="${(748-66)*.103+4}" width="100" height="40"/></clipPath>
+  </defs>`;
+  s+=`<path d="${S.out}" fill="url(#${P}br)" stroke="${mD}" stroke-width=".3"/><g clip-path="url(#${P}c)">`;
+  if(strap){const sc=w?colOf(w):'#3a2414';
+    s+=`<g clip-path="url(#${P}bt)"><rect width="100" height="100" fill="${sc}"/><rect width="100" height="100" fill="url(#${P}br)" opacity=".18"/></g>`+ln(S.lugT,'#000',.35,.4)+ln(S.lugB,'#000',.35,.4)+
+      `<path d="${S.out}" fill="none" stroke="${mix(sc,'#fff',.4)}" stroke-width=".25" stroke-dasharray=".8 .55" clip-path="url(#${P}bt)" transform="translate(50 50) scale(.93) translate(-50 -50)"/>`}
+  else s+=`<path d="${S.colT}" fill="url(#${P}po)"/><path d="${S.colB}" fill="url(#${P}po)"/><path d="${S.darkT}" fill="#15171a"/><path d="${S.darkB}" fill="#15171a"/>`+ln(S.gaps,'#202327',.4,.7);
+  s+=`<path d="${S.far}" fill="#000" opacity=".16"/></g>`;
+  // crown and pushers on the right
+  const [cx,cy,cw,ch]=S.crown.split(' ').map(Number);
+  s+=`<rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" rx="1.3" fill="url(#${P}po)" stroke="${mD}" stroke-width=".25"/>`+[1,2,3,4,5].map(k=>`<line x1="${f2(cx+.6)}" x2="${f2(cx+cw-.4)}" y1="${f2(cy+ch*k/6)}" y2="${f2(cy+ch*k/6)}" stroke="${mD}" stroke-width=".2" stroke-opacity=".7"/>`).join('');
+  if(chrono)s+=`<path d="${S.pushU}" fill="url(#${P}po)" stroke="${mD}" stroke-width=".25"/><path d="${S.slotU}" fill="#202327"/><path d="${S.pushL}" fill="url(#${P}po)" stroke="${mD}" stroke-width=".25"/>`;
+  // bezel: polished ring, engraved figures or flutes, the dark reflection low on the right
+  s+=el(S.bezelOut,`fill="url(#${P}bz)" stroke="${mD}" stroke-width=".3"`);
+  if(o.bezel==='fluted')for(let i=0;i<120;i++){const t=i/120*2*Math.PI,[x1,y1]=ep(S.bezelIn,1.02,t),[x2,y2]=ep(S.bezelOut,.97,t);s+=`<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${i%2?mD:'#fff'}" stroke-width=".45" stroke-opacity=".7"/>`}
+  {const P1=[],P2=[];for(let i=0;i<=24;i++){const t=(22+78*i/24)*Math.PI/180;P1.push(ep(S.bezelIn,1,t));P2.push(ep(S.bezelIn,1.075,t))}
+    s+=`<path d="M${P1.map(p=>p.map(f2).join(',')).join(' L')} L${P2.reverse().map(p=>p.map(f2).join(',')).join(' L')} Z" fill="#111" opacity=".85"/>`}
+  if(o.bezel==='engraved')for(let i=1;i<=12;i++){const t=(i*30-90)*Math.PI/180,[x,y]=ep(S.bezelIn,1.07,t),dark=i>=4&&i<=6;
+    s+=`<text x="${f2(x)}" y="${f2(y)}" font-size="1.75" text-anchor="middle" dominant-baseline="central" font-family="Helvetica,Arial,sans-serif" font-weight="700" fill="${dark?'#e9eaec':mD}" fill-opacity=".8" transform="rotate(${i*30} ${f2(x)} ${f2(y)})">${i*5}</text>`}
+  // dial, its minute track
+  s+=el(S.bezelIn,`fill="url(#${P}dl)" stroke="${mD}" stroke-width=".35"`);
+  for(let i=0;i<60;i++){const t=(i*6-90)*Math.PI/180,[x1,y1]=ep(S.bezelIn,.965,t),[x2,y2]=ep(S.bezelIn,i%5?.935:.9,t);s+=`<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${ink}" stroke-opacity="${i%5?.45:.8}" stroke-width="${i%5?.12:.22}"/>`}
+  const bar=h=>{const t=(h*30-90)*Math.PI/180,[x1,y1]=ep(S.bezelIn,.87,t),[x2,y2]=ep(S.bezelIn,.79,t);return `<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${ink}" stroke-width=".5" stroke-linecap="round"/>`};
+  const tx=(spec,fill,w)=>spec.split(';').map(q=>{const [t,x,y,sz]=q.split('|');return `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="${w}" fill="${fill}">${t}</text>`}).join('');
+  if(chrono){
+    [1,2,4,5,7,8,10,11].forEach(h=>s+=bar(h));
+    s+=el(S.sec,`fill="${mix(dial,'#000',.05)}" stroke="${mD}" stroke-width=".3"`)+el(S.time,`fill="${mix(dial,'#000',.02)}" stroke="${mD}" stroke-width=".3"`);
+    // small seconds: a fine track at the rim; the time subdial: short bars half way in, none at 12 and 6 (the applied numerals)
+    for(const [ss,n] of [[S.sec,60],[S.time,12]])for(let i=0;i<n;i++){if(n===12&&i%6===0)continue;const t=(i*360/n-90)*Math.PI/180,[x1,y1]=ep(ss,n===12?.8:.95,t),[x2,y2]=ep(ss,n===12?.64:i%5?.88:.8,t);s+=`<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${ink}" stroke-width="${n===12?.42:.12}" stroke-opacity=".85"/>`}
+    const [mx,my]=S.minC.split(' ').map(Number),[r1,r2,r3,r4]=S.minR.split(' ').map(Number),arc=(a0,a1)=>{const p=(rx,ry,a)=>f2(mx+rx*Math.cos(a))+','+f2(my+ry*Math.sin(a)),A0=a0*Math.PI/180,A1=a1*Math.PI/180,big=a1-a0>180?1:0;
+      return `M${p(r1,r2,A0)} A${r1},${r2} 0 ${big} 1 ${p(r1,r2,A1)} L${p(r3,r4,A1)} A${r3},${r4} 0 ${big} 0 ${p(r3,r4,A0)} Z`};
+    s+=`<path d="${arc(-90,62)}" fill="${mix(dial,'#000',.22)}" stroke="${mD}" stroke-width=".2"/><path d="${arc(35,62)}" fill="#1f4fa8"/>`;
+    for(let i=0;i<=30;i++){const a=(-90+152*i/30)*Math.PI/180;s+=`<line x1="${f2(mx+r1*.97*Math.cos(a))}" y1="${f2(my+r2*.97*Math.sin(a))}" x2="${f2(mx+r3*1.05*Math.cos(a))}" y2="${f2(my+r4*1.05*Math.sin(a))}" stroke="${i%5?'#fff':ink}" stroke-width=".12" stroke-opacity=".6"/>`}
+    s+=tx(S.txt,ink,700)+tx(S.num,`url(#${P}po)`,700).replace(/<text /g,`<text stroke="${mD}" stroke-width=".12" `);
+    s+=`<path d="${S.date}" fill="#fff" stroke="${ink}" stroke-opacity=".5" stroke-width=".15"/>`;
+    s+=hand(S.tHub,S.tMin,.35,mM)+hand(S.tHub,S.tHour,.5,mM)+`<line x1="${S.tHub.split(',')[0]}" y1="${S.tHub.split(',')[1]}" x2="${S.tSec.split(',')[0]}" y2="${S.tSec.split(',')[1]}" stroke="#c0392b" stroke-width=".12"/>`+
+      hand(S.secHub,S.secTip,.18,mD)+hand(S.minHub,S.minTip,.5,navy)+hand(S.hub,S.chTip,.32,navy)+hand(S.hub,S.chTail,.55,navy);
+    for(const [h,r] of [[S.hub,.85],[S.minHub,.95],[S.secHub,.45],[S.tHub,.6]]){const [x,y]=h.split(',');s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${h===S.secHub||h===S.tHub?mM:navy}" stroke="${mD}" stroke-width=".12"/>`}
+  }else{
+    // three hands: every hour bar (two at 12), the date at 3 unless it has none, hands from the dial's centre
+    for(let h=0;h<12;h++){if(h===3&&o.style!=='no-date')continue;s+=bar(h)}
+    const [ccx,ccy]=[bx,by],t3=0,[dx,dy]=ep(S.bezelIn,.8,t3);
+    if(o.style!=='no-date')s+=`<rect x="${f2(dx-1.1)}" y="${f2(dy-.9)}" width="2.2" height="1.8" fill="#fff" stroke="${ink}" stroke-opacity=".5" stroke-width=".15"/>`;
+    const tip=(k,deg)=>ep(S.bezelIn,k,(deg-90)*Math.PI/180).map(f2).join(',');
+    s+=hand(ccx+','+ccy,tip(.55,300),.55,ink)+hand(ccx+','+ccy,tip(.8,60),.4,ink)+hand(ccx+','+ccy,tip(.85,170),.1,'#c0392b')+`<circle cx="${ccx}" cy="${ccy}" r=".7" fill="${ink}"/>`}
+  // the crystal's glint
+  s+=el(S.bezelIn,`fill="#fff" fill-opacity=".07"`);
+  return s}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -719,7 +821,7 @@ function itemThumb(i,full){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     const jk=i.type==='suit',pk=i.type==='pants',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?SUIT_D.out:pk?PANTS_D.out:'M10,10 H90 V90 H10 Z';
     g=`<defs>${jk?suitFabric(P+'f',i):pk?pantsFabric(P+'f',i):fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:pk?`<clipPath id="${P}pc"><path d="${shape}"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk||pk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):pk?pantsMarks(i,P):trouserMarks(i,P));
-  }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
+  }else if(i.type==='watch')g=drawWatchTraced(i,P);   /* the traced watch (WATCH_D); drawWatch, the old top view, is kept */
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
   else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;

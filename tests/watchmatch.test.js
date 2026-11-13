@@ -47,11 +47,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid',photo:'data:image/jpeg;base64,AAA'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:{id:'t',type:'tie',primaryColor:'burgundy',pattern:'solid'},watch:w};
       renders[itemKey(w)]={sig:'item',img:'data:image/jpeg;base64,BBB'};const ref=outfitRefs(o);
       return {opts:[WATCH_STYLES,BANDS,BEZELS].map(l=>l.map(x=>x[0]).join()).join(' | '),
-        subdials:(svg.match(/<circle cx=/g)||[]).length,nums:/>12<\/text>/.test(svg)&&/>6<\/text>/.test(svg),bezel:/>30<\/text>/.test(svg),plainHas:/>12<\/text>/.test(plain),
+        // the traced watch (drawWatchTraced) is seen at an angle: its subdials are ellipses, two more than a three-hand watch has
+        subdials:(svg.match(/<ellipse /g)||[]).length-(plain.match(/<ellipse /g)||[]).length,blue:svg.includes('#1f4fa8'),nums:/>12<\/text>/.test(svg)&&/>6<\/text>/.test(svg),bezel:/>30<\/text>/.test(svg),plainHas:/>12<\/text>/.test(plain),
         txt:outfitText(o),desc:itemDesc(w),pic:ITEM_PIC_TYPES.includes('watch'),refs:ref.refs.join(),labels:ref.labels.join('|'),
         key:comboKey(o)!==comboKey({...o,watch:{...w,details:'other'}})&&comboKey(o)!==comboKey({...o,watch:{...w,watchStyle:'date'}})}});
     ok(/chronograph/.test(r.opts)&&/integrated/.test(r.opts)&&/engraved/.test(r.opts),`the wardrobe offers chronograph, integrated bracelet and engraved bezel (${r.opts})`);
-    ok(r.subdials>=6&&r.nums&&r.bezel&&!r.plainHas,'a chronograph is drawn with subdials, 12 and 6 numerals and an engraved bezel');
+    ok(r.subdials>=2&&r.blue&&r.nums&&r.bezel&&!r.plainHas,'a chronograph is drawn with subdials (and the minute counter\'s blue segment), 12 and 6 numerals and an engraved bezel');
     // long descriptions are not cut off
     sent=[];const long='a watch '+'with many details '.repeat(70)+'END';await post({mode:'item',item:long,key:'c4444444444444444',ref:PNG});
     ok(/END/.test(sent[0].body.get('prompt')),'a long, precise item description reaches the image model in full');
