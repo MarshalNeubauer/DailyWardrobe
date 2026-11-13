@@ -544,6 +544,29 @@ const asmSuitTwill=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&!!asmSuitWeave(
 function asmTwillTex(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
   const hb=asmSuitWeave(i)==='herringbone';
   return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:asmLinen(i),cloth:{kind:hb?'herringbone':'twill',...(hb?{cw:ASM_HB_MM*ASM_PX_MM,off:0}:{}),amp:hb?ASM_HB_AMP:ASM_TWILL.amp,c2,mix:c2?ASM_TWILL.mix:0,fleck:ASM_TWILL.fleck,ss:true}}}
+/* small woven figures (2026-11-13, the painters the routing test listed as missing): each is its thread grid, worked out as the cloth is
+   woven where that is how the figure comes about (a houndstooth and a sharkskin are a 2/2 twill with dark and light yarns: 4 and 4 for
+   the houndstooth, 1 and 1 for the sharkskin), drawn for birdseye and nailhead (a dark eye in a light ring; a light pin dot). g is each
+   thread crossing's light, -1 (dark yarn) to +1; with a second colour (or a houndstooth's tonal dark) the dark crossings take it.
+   ASM_MICRO: thread width (mm), shading swing, how far a dark crossing goes to the second colour */
+const ASM_MICRO={houndstooth:{N:8,thr:.75,amp:.03,mix:.9},sharkskin:{N:4,thr:.45,amp:.12,mix:.45},birdseye:{N:4,thr:.5,amp:.14,mix:.45},nailhead:{N:3,thr:.5,amp:.16,mix:.4}};
+const ASM_MICRO_KINDS=Object.keys(ASM_MICRO);
+function asmMicroGrid(kind){const C=ASM_MICRO[kind],N=C.N,g=new Float32Array(N*N);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){let v=0;
+    if(kind==='houndstooth'||kind==='sharkskin'){const h=kind==='houndstooth'?4:1,warpDark=Math.floor(x/h)%2===0,weftDark=Math.floor(y/h)%2===0,top=((x+y)%4)<2;v=(top?warpDark:weftDark)?-1:1}
+    else if(kind==='birdseye'){const td=(a,b)=>{const d=Math.abs(a-b)%N;return Math.min(d,N-d)},dist=Math.min(td(x,1)+td(y,1),td(x,3)+td(y,3));v=dist===0?-1:dist===1?.6:0}   // eyes at (1,1) and (3,3), staggered
+    else v=x===1&&y===1?1:-.25;
+    g[y*N+x]=v}
+  return g}
+/* the weave a jacket or trousers is painted with when it is none of the band, twill or tweed painters': from its pattern, or an own
+   pattern's name (a "micro houndstooth" drawn like solid) */
+const asmMicroKind=i=>{if(!i)return '';const b=patBase(i.pattern);if(ASM_MICRO[b])return b;if(b!=='solid'&&!/^own/.test(i.pattern||''))return '';
+  const t=(i.pattern||'')+' '+((i.patternSpec&&i.patternSpec.description)||i.patternText||'');return ASM_MICRO_KINDS.find(k=>new RegExp(k.replace('eye','[ -]?eye').replace('head','[ -]?head').replace('tooth','[ -]?tooth').replace('skin','[ -]?skin'),'i').test(t))||''};
+function asmMicroTex(i,kind){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},C=ASM_MICRO[kind],c=lin(colOf(i));
+  let c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
+  // a houndstooth with no second colour is tonal: its teeth a darker shade of the cloth (a dark cloth's lighter)
+  if(!c2&&kind==='houndstooth'){const y=.2126*c[0]+.7152*c[1]+.0722*c[2],k=y>.05?.35:2.6;c2=c.map(v=>Math.min(1,v*k))}
+  return {c:new Float32Array(c),TW:1,TH:1,mm:10,linen:false,cloth:null,wv:{kind,N:C.N,thr:C.thr,amp:c2&&kind!=='houndstooth'?C.amp*.5:C.amp,mix:c2?C.mix:0,c2:c2?new Float32Array(c2):null,g:asmMicroGrid(kind)}}}
 /* a tweed jacket with no band reading (tagged tweed, or the owner's own pattern drawn like tweed) is painted too (2026-11-13, his slate
    blue-grey tweed blazer): its colour with the tweed texture in the shading (asmTweedTile, like the linen's), its flecks in the second
    colour when it has one (a Donegal). A tweed read as a check (CHECK_PATS) stays with the band painter. */

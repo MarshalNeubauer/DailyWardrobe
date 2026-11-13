@@ -41,7 +41,11 @@ const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')
 const ASM_CM_PAINTV=4;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points
 /* a jacket whose weave the 2026-11-13 audit added (a herringbone, or an own pattern based on solid named twill): marked in its look's key,
    so only those looks are painted again (a new ASM_CM_PAINTV would repaint every look) */
-const asmCmWeaveTag=(z,i)=>{if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP:''):''}
+const asmCmWeaveTag=(z,i)=>{const how=asmCmRoute(i,z).how;
+  // the painters added after the routing test (2026-11-13): small woven figures on jackets and trousers, knit and paisley ties
+  if(ASM_MICRO[how])return '/m'+how+'-'+JSON.stringify(ASM_MICRO[how]).replace(/\W+/g,'');
+  if(how==='knit')return '/knit'+ASM_KNIT_ACROSS;if(how==='paisley')return '/paisley'+ASM_PAISLEY_ACROSS;
+  if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP:''):''}
   if((z==='jacket'||z==='waistcoat')&&asmCmRoute(i,z).how==='tweed'&&!asmSuitTweed(i))return '/ttweed';   // an own pattern named tweed
   if((z!=='jacket'&&z!=='waistcoat')||typeof asmSuitWeave!=='function'||!asmSuitTwill(i))return '';
   const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP:patBase(i.pattern)!=='twill'?'/tw':''};
@@ -51,7 +55,7 @@ const asmCmWeaveTag=(z,i)=>{if(z==='trousers'){const h=asmCmRoute(i,z).how;retur
    'tile' (a drawing of its reading or pattern: shirts, read trousers), 'tie' (the tie painter's reading) or 'plain' (a pattern painted
    as its colour); gap '' (painted as it is), 'reading' (painted once its pattern is read: "Read pattern from photo") or 'painter' (no
    painter for it yet); why says so in words */
-const ASM_NO_PAINTER={jacket:['birdseye','nailhead','sharkskin','houndstooth','other'],trousers:['birdseye','nailhead','sharkskin','houndstooth','other'],tie:['paisley','knit','other']};
+const ASM_NO_PAINTER={jacket:['other'],trousers:['other'],tie:[]};   // "other" on a jacket or trousers names no cloth to paint (Claude reads only stripes and checks there)
 function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof usableSett==='function'?usableSett(i):null,b=patBase(i.pattern)||'solid',pn=(typeof patName==='function'?patName(i.pattern):b).toLowerCase();
   const w=typeof asmSuitWeave==='function'?asmSuitWeave(i):'',canRead=typeof readable==='function'?readable(i.type,i.pattern,i.weave):false;
   const plain=(gap,why)=>({how:'plain',gap,why}),needs=()=>plain('reading',`its ${pn} is painted once its pattern is read (Read pattern from photo)`);
@@ -61,6 +65,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
     if(z==='trousers'&&s&&s.bands)return {how:'tile',gap:'',why:''};
     if(w&&!(s&&s.bands))return {how:w,gap:'',why:''};
     if(b==='tweed'||(/^own/.test(i.pattern||'')&&/tweed/i.test(i.pattern)))return {how:'tweed',gap:'',why:''};
+    const mk=typeof asmMicroKind==='function'?asmMicroKind(i):'';if(mk&&!(s&&s.bands))return {how:mk,gap:'',why:''};   // houndstooth, sharkskin, birdseye, nailhead
     if(b==='solid')return {how:'flat',gap:'',why:''};
     if([...STRIPE_PATS,...CHECK_PATS].includes(b))return needs();
     return plain('painter',`no painter for ${pn} ${z==='trousers'?'trousers':'jackets'} yet`)}
@@ -68,6 +73,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
     return s?{how:'tile',gap:'',why:''}:{how:'tile',gap:canRead?'reading':'',why:canRead?`its ${pn} is a generic drawing until its pattern is read (Read pattern from photo)`:''}}
   if(z==='tie'){if(s&&(s.bands||s.motif||s.tex))return {how:'tie',gap:'',why:''};if(b==='solid')return {how:'flat',gap:'',why:''};
     if(canRead)return needs();
+    if(b==='knit'||b==='paisley')return {how:b,gap:'',why:''};
     return plain('painter',`no painter for ${pn} ties yet`)}
   return {how:'flat',gap:'',why:''}}
 /* the garments in rotation whose pattern the colour-coded painter paints plain or generic (Settings, the pre-build's report) */
@@ -104,6 +110,29 @@ async function asmCmTile(i,role){const s=usableSett(i),pat=patBase(i.pattern)||'
   let mm=0;if(s&&s.tex)mm=pat==='herringbone'?(s.tr&&s.tr<80?ASM_SHIRT_MM/s.tr:12):3;else if(s&&s.motif)mm=Math.max(ASM_TEX_MIN_MM,2*ASM_CLOSEUP_MM/Math.max(1,+s.cr||20));else if(s&&+s.tr)mm=ASM_SHIRT_MM/s.tr;else mm=w*ASM_SHIRT_MM/200;
   if(fine)mm=wv.hb?wv.mm:await asmTexMm(i);
   return {t,TW,TH,mm,fine}}
+/* ties with no reading that the reader can't read (2026-11-13, the routing test's last gaps): a knit tie's stitches (rows of small V
+   loops, ASM_KNIT_ACROSS columns across the blade) and a paisley (teardrops in the second colour, a third colour inside, on the tie's
+   colour; ASM_PAISLEY_ACROSS repeats across). Each is a tile of the tie's linear colour, as the tie painter takes */
+const ASM_KNIT_ACROSS=14,ASM_PAISLEY_ACROSS=2.6;
+function asmKnitTile(i){const L=ASM_LIN,h=String(colOf(i)).replace('#',''),c=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),TW=24,TH=20,t=new Float32Array(3*TW*TH),b=new Float32Array(TW*TH);let m=0;
+  for(let y=0;y<TH;y++)for(let x=0;x<TW;x++){const u=(x+.5)/TW,v=(y+.5)/TH,hx=u<.5?u/.5:(1-u)/.5,ph=((v+.45*hx)%1+1)%1;   // each half a loop leaning in: a V
+    const val=.55+.6*Math.sin(Math.PI*hx)*Math.pow(Math.sin(Math.PI*ph),.7);b[y*TW+x]=val;m+=val}
+  m/=TW*TH;for(let k=0;k<TW*TH;k++)for(let q=0;q<3;q++)t[3*k+q]=c[q]*b[k]/m;
+  return {c:t,TW,TH,motif:false,across:ASM_KNIT_ACROSS,ang:0}}
+async function asmPaisleyTile(i){const T=128,cv=document.createElement('canvas');cv.width=cv.height=T;const x=cv.getContext('2d',{willReadFrequently:true});
+  const g=colOf(i),rgb=[1,3,5].map(k=>parseInt(String(g).slice(k,k+2),16)||0),lum=.299*rgb[0]+.587*rgb[1]+.114*rgb[2],c2=COLORS[i.secondaryColor]||(lum<110?'#d9cdb4':'#3a2f45');
+  const mixHex=(a,b,t)=>'#'+[1,3,5].map(k=>Math.round(parseInt(a.slice(k,k+2),16)*(1-t)+parseInt(b.slice(k,k+2),16)*t).toString(16).padStart(2,'0')).join(''),c3=COLORS[i.thirdColor]||mixHex(g,c2,.45);
+  x.fillStyle=g;x.fillRect(0,0,T,T);
+  // a teardrop: a round body with its tip curling to one side, a smaller drop of the third colour inside, and an eye
+  const drop=(cx,cy,r,rot)=>{for(const [dx,dy] of [[0,0],[T,0],[-T,0],[0,T],[0,-T]]){x.save();x.translate(cx+dx,cy+dy);x.rotate(rot);
+      const path=(s,oy)=>{const P=(a,b)=>[a*r*s,b*r*s+oy*r];x.beginPath();x.moveTo(...P(.7,-1.9));x.bezierCurveTo(...P(.9,-1),...P(1.1,.2),...P(.2,1));
+        x.bezierCurveTo(...P(-.7,1.6),...P(-1.3,.3),...P(-.8,-.4));x.bezierCurveTo(...P(-.4,-1),...P(.3,-.9),...P(.7,-1.9));x.closePath()};
+      x.fillStyle=c2;path(1,0);x.fill();x.fillStyle=c3;path(.55,.2);x.fill();x.fillStyle=c2;x.beginPath();x.arc(-.05*r,.35*r,.18*r,0,2*Math.PI);x.fill();
+      x.restore()}};
+  drop(.3*T,.32*T,.17*T,.5);drop(.78*T,.8*T,.17*T,.5+Math.PI);
+  x.fillStyle=c2;for(const [px,py] of [[.75*T,.25*T],[.25*T,.78*T]]){x.beginPath();x.arc(px,py,.035*T,0,2*Math.PI);x.fill()}   // small dots between
+  const d=x.getImageData(0,0,T,T).data,t=new Float32Array(3*T*T),L=ASM_LIN;for(let k=0;k<T*T;k++)for(let q=0;q<3;q++)t[3*k+q]=L[d[4*k+q]];
+  return {c:t,TW:T,TH:T,motif:false,across:ASM_PAISLEY_ACROSS,ang:0}}
 /* the job for asmCmBuild, or null when the kind's master or masks are not on the device */
 async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
@@ -115,6 +144,9 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
       else if(how==='bands')c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
       else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
       else if(how==='tweed')c.suit=asmTweedTex(i);
+      else if(ASM_MICRO[how])c.suit=asmMicroTex(i,how);   // houndstooth, sharkskin, birdseye, nailhead
+      else if(how==='knit')c.tie=asmKnitTile(i);
+      else if(how==='paisley')c.tie=await asmPaisleyTile(i);
       // a shirt, or read trousers: one repeat of the app's drawing; anything else is its colour (the swatch's drawing of a fine weave,
       // tiled over a whole jacket, was a field of dots and dashes: the owner's light grey twill)
       else if(how==='tile'){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
@@ -264,6 +296,12 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
         let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0])/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0])/pitch);
         tw=1+C.amp*ph+(C.fleck!=null?C.fleck:.08)*((h%1024)/512-1);if(C.c2){const m=C.mix*(1+ph)/2;for(let e=0;e<3;e++)cm[e]=cm[e]*(1-m)+4*C.c2[e]*m}}}
+    // a small woven figure (asmMicroTex: houndstooth, sharkskin, birdseye, nailhead): its thread grid along the cloth (uvAt), 4x4 points
+    // a pixel (the cloth's direction from the pixel's own and its neighbours' positions: three lookups, not sixteen)
+    if(T.wv){const W=T.wv,tp=W.thr*ASM_PX_MM*ls,p0=uvAt(k,x,y),px=uvAt(k,x+1,y),py=uvAt(k,x,y+1),N=W.N;let v=0;
+      for(let a=0;a<4;a++)for(let e=0;e<4;e++){const fx=(e+.5)/4,fy=(a+.5)/4,u=p0[0]+(px[0]-p0[0])*fx+(py[0]-p0[0])*fy,w=p0[1]+(px[1]-p0[1])*fx+(py[1]-p0[1])*fy;
+        const ix=Math.floor(u/tp),iy=Math.floor(w/tp);v+=W.g[(((iy%N)+N)%N)*N+(((ix%N)+N)%N)]}v/=16;
+      tw*=1+W.amp*v;if(W.c2){const m=W.mix*(1-v)/2;for(let q=0;q<3;q++)cm[q]=cm[q]*(1-m)+4*W.c2[q]*m}}
     const f=sh*Math.pow(Math.max(0,tw),2.2);out[0]=cm[0]/4*f;out[1]=cm[1]/4*f;out[2]=cm[2]/4*f};
   const rot=(X,Yv,th,e,out)=>{const c=Math.cos(th),s=Math.sin(th);out[0]=out[1]=out[2]=0;asmCmAt(e.tile||e.tie,(X*c+Yv*s)/e.rep,(Yv*c-X*s)/e.repv,out)};
   const c=[0,0,0];
