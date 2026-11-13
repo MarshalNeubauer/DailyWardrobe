@@ -552,6 +552,25 @@ function trouserMarks(i,P){const k=typeof trouserKind==='function'?trouserKind(i
     `<path d="M64.2,10 C62.2,40 63.2,66 68.2,90 M66.4,10 C64.4,40 65.4,66 70.4,90" fill="none" stroke="#d9a441" stroke-width=".7" stroke-dasharray="1.6 1"/>`+
     `<path d="M10,26 C24,24 40,25 58,30" fill="none" stroke="#d9a441" stroke-width=".7" stroke-dasharray="1.6 1"/><circle cx="58" cy="30" r="2.3" fill="#b87333" stroke="#6e4220" stroke-width=".6"/><circle cx="57.4" cy="29.4" r=".8" fill="#f1c48a"/>`;
   return twill+`<path d="M58,10 L72,40" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".9"/><path d="M60,10 L74,40" fill="none" stroke="#000" stroke-opacity=".18" stroke-width=".4" stroke-dasharray="1.2 .8"/>`}
+/* suit jacket, front view: traced from Brooks Brothers' product photo of their navy stripe suit jacket (2026-11-13, the
+   owner's pick): the model's straight-arm half (his other hand is in his pocket) placed on gridded crops and snapped to its edges,
+   then mirrored; notch lapels, the shirt showing in the V, two buttons, flap pockets, a breast pocket on the wearer's left only. */
+const JACKET_D={out:'M38,3.8 L33.8,7 L29.4,9.6 L25.2,11.5 L22.1,12.9 L20.2,14.2 L19.1,16.4 L18.1,20.5 L16.9,26.8 L15.9,34.2 L15.3,41.8 L14.5,50.4 L13.9,60.8 L13.8,71.3 L13.9,80.6 L14.1,90.4 L19.5,91 L24.1,90.7 L30.2,93 L37.8,93.6 L43.9,93.5 L47.1,92.7 L48,88.3 L48.5,81.4 L49.2,73.8 L50,69.1 L50.8,73.8 L51.5,81.4 L52,88.3 L52.9,92.7 L56.1,93.5 L62.2,93.6 L69.8,93 L75.9,90.7 L80.5,91 L85.9,90.4 L86.1,80.6 L86.2,71.3 L86.1,60.8 L85.5,50.4 L84.7,41.8 L84.1,34.2 L83.1,26.8 L81.9,20.5 L80.9,16.4 L79.8,14.2 L77.9,12.9 L74.8,11.5 L70.6,9.6 L66.2,7 L62,3.8 Z',
+  vee:'M38.3,4 L39,8.2 L38.3,16.4 L39.5,26.5 L42.1,36 L45.2,43.3 L48.9,49.3 L50,54.1 L51.1,49.3 L54.8,43.3 L57.9,36 L60.5,26.5 L61.7,16.4 L61,8.2 L61.7,4 Z',
+  lapel:'M32.3,10.6 C32.7,11.5 33.6,13.7 34.7,15.8 C35.9,18 37.5,19.2 39.2,23.4 C40.9,27.7 43.1,36.1 44.9,41.2 C46.7,46.3 49.1,52 50,54.1 M67.7,10.6 C67.3,11.5 66.4,13.7 65.3,15.8 C64.1,18 62.5,19.2 60.8,23.4 C59.1,27.7 56.9,36.1 55.1,41.2 C53.3,46.3 50.9,52 50,54.1',
+  gorge:'M32.8,8.7 L32.3,10.6 L37,9.6 M67.2,8.7 L67.7,10.6 L63,9.6',
+  sleeve:'M26.2,41.8 C26.2,43.3 26.2,48.1 26.2,51.3 C26.2,54.5 26.4,56.7 26.2,60.8 C26,65 25.3,71.1 25,76.1 C24.6,81 24.2,88.2 24.1,90.6 M73.8,41.8 C73.8,43.3 73.8,48.1 73.8,51.3 C73.8,54.5 73.6,56.7 73.8,60.8 C74,65 74.7,71.1 75,76.1 C75.4,81 75.8,88.2 75.9,90.6',
+  flaps:'M26.2,62.3 L34.6,63.9 L34.1,70.1 L26.2,68.8 Z M73.8,62.3 L65.4,63.9 L65.9,70.1 L73.8,68.8 Z',
+  breast:'M61.6,27.4 L69.2,28.2 L69.1,29.2 L61.4,28.5 Z',
+  collar:'M38.7,4 L45,12.3 L48.9,10.3 L50,8.7 Z M61.3,4 L55,12.3 L51.1,10.3 L50,8.7 Z',
+  tie:'M48.3,10.3 L51.7,10.3 L51.1,14.4 L48.9,14.4 Z M48.9,14.4 L51.1,14.4 L52.6,50.1 L50,54 L47.4,50.1 Z',
+  buttons:'50,54.1 50,69.1'};
+function jacketMarks(i,P){const S=JACKET_D,c=colOf(i),e=mix(c,'#000',.4),hi=mix(c,'#fff',.18);
+  return `<path d="${S.vee}" fill="#eef0f2" stroke="${e}" stroke-width=".5"/><path d="${S.tie}" fill="${mix(c,'#000',.5)}" stroke="${mix(c,'#000',.7)}" stroke-width=".3"/><path d="${S.collar}" fill="#f6f7f8" stroke="#b9bfc5" stroke-width=".35"/>`+
+    `<path d="${S.lapel}" fill="none" stroke="${e}" stroke-width=".55"/><path d="${S.lapel}" fill="none" stroke="${hi}" stroke-opacity=".5" stroke-width=".3" transform="translate(.5 0)"/>`+
+    `<path d="${S.gorge}" fill="none" stroke="${e}" stroke-width=".5"/><path d="${S.sleeve}" fill="none" stroke="${e}" stroke-opacity=".7" stroke-width=".5"/>`+
+    `<path d="${S.flaps}" fill="none" stroke="${e}" stroke-width=".5"/><path d="${S.breast}" fill="none" stroke="${e}" stroke-width=".45"/>`+
+    S.buttons.split(' ').map(p=>{const [x,y]=p.split(',');return `<circle cx="${x}" cy="${y}" r="1.05" fill="${mix(c,'#000',.55)}" stroke="${hi}" stroke-width=".2"/>`}).join('')}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -561,8 +580,8 @@ function itemThumb(i,full){
     g=`<defs>${fabricDef(P+'f',i,role)}</defs><rect width="100" height="100" fill="url(#${P}f)"/>`}
   else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
-    const shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':'M10,10 H90 V90 H10 Z';
-    g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`+trouserMarks(i,P);
+    const jk=i.type==='suit',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?JACKET_D.out:'M10,10 H90 V90 H10 Z';
+    g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`+(jk?jacketMarks(i,P):trouserMarks(i,P));
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
