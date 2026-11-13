@@ -1,4 +1,4 @@
-// Background month photos: the app sends each outfit's inputs to the worker (POST /render {mode:'queue'}), the worker keeps them
+// Background photos: the app sends each outfit's inputs to the worker (POST /render {mode:'queue'}), the worker keeps them
 // in KV and queues a message; the queue consumer makes the photo with the app closed; GET /render-queue reports progress and the
 // app brings finished photos home. Temporary OpenAI failures retry; permanent ones are reported. Mocked queue, KV and OpenAI.
 const path=require('path'),fs=require('fs'),{pathToFileURL}=require('url');
@@ -71,21 +71,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};
       if(clear)for(const x of Object.keys(renders))delete renders[x];show('today');openSettings('photos')};
     await p.evaluate(setup,true);
-    const n=await p.evaluate(()=>batchCombos().length);
-    await p.click('#batch-btn');dialog=await p.textContent('#ask-sheet');await p.click('#ask-ok');await p.waitForFunction(()=>!batch&&rqGet().keys.length,null,{timeout:30000});   // the app's own question (ui.js)
-    const s1=await p.evaluate(()=>({q:rqGet(),status:$('#batch-status').textContent,left:batchCombos().length}));
-    ok(/close the app/.test(dialog),'the confirmation says the photos are made in the background');
-    ok(calls===0&&sent.length===n&&s1.q.keys.length===n&&s1.left===0,`all ${n} looks are sent to the queue and nothing is generated while the app waits`);
-    ok(/Sent \d+ photos to be made.*close the app/.test(s1.status),`Settings says they are being made in the background (${s1.status})`);
+    // three days' photos asked for from Settings (This day's photo; there is no month batch any more)
+    const keys=await p.evaluate(async()=>{const ks=[];for(const d of [9,10,11,12,15,16,17]){if(ks.length===3)break;sel=new Date(2026,10,d);renderToday();const o=planFor()[key(sel)];if(!o||!o.shirt)continue;const ck=comboKey(o);if(ks.includes(ck))continue;
+      await generateRender();ks.push(ck)}return ks});const n=keys.length;
+    const s1=await p.evaluate(()=>({q:rqGet()}));
+    ok(n===3&&calls===0&&sent.length===n&&s1.q.keys.length===n,`all ${n} looks are sent to the queue and nothing is generated while the app waits`);
     // the app is closed; the worker works through the queue
     await p.close();const done1=sent.slice(0,2);sent=sent.slice(2);for(const b of done1){const m={body:b,attempts:1,ack(){},retry(){}};await worker.queue({messages:[m]},env)}
     const p2=await ctx.newPage();p2.on('pageerror',e=>errs.push(e.message));await p2.goto(url);await p2.waitForFunction(()=>window.appReady);
     await p2.evaluate(setup,false);await p2.waitForFunction(()=>!rqBusy);await p2.evaluate(()=>checkQueue());
-    const s2=await p2.evaluate(()=>({keys:rqGet().keys.length,have:Object.keys(renders).length,status:$('#batch-status').textContent}));
-    ok(s2.have===2&&s2.keys===n-2&&new RegExp(`2 of ${n} done`).test(s2.status),`reopened later, the finished photos come home and progress shows (${s2.status})`);
+    const s2=await p2.evaluate(()=>({keys:rqGet().keys.length,have:Object.keys(renders).length,msg:rqGet().msg||''}));
+    ok(s2.have===2&&s2.keys===n-2&&new RegExp(`2 of ${n} done`).test(s2.msg),`reopened later, the finished photos come home and progress is kept (${s2.msg})`);
     await drain();await p2.waitForFunction(()=>!rqBusy);await p2.evaluate(()=>checkQueue());
-    const s3=await p2.evaluate(()=>({keys:rqGet().keys.length,stored:localStorage.getItem('render_queue'),all:Object.keys(planFor()).filter(k=>keyDate(k).getMonth()===10).every(k=>!planFor()[k].top||!!renders[comboKey(planFor()[k])]),status:$('#batch-status').textContent}));
-    ok(s3.keys===0&&s3.stored===null&&s3.all&&new RegExp(`All ${n} photos ready`).test(s3.status),`when the queue is done every November outfit has its photo (${s3.status})`);
+    const s3=await p2.evaluate(ks=>({keys:rqGet().keys.length,stored:localStorage.getItem('render_queue'),all:ks.every(k=>!!renders[k])}),keys);
+    ok(s3.keys===0&&s3.stored===null&&s3.all,'when the queue is done every photo asked for is home');
     ok(calls===n,`one paid photo per look (${calls})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

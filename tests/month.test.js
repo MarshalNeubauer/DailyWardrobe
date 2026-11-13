@@ -71,20 +71,10 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(cap.unmarked==='2026-11-2',`a day never marked worn isn't "last worn" (${cap.unmarked})`);
     await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};figView='photo';renderToday()});
     ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
-    // Settings: generate the month's missing photos
+    // there is no month batch (the owner, 2026-11-13: no bulk paid pictures): Settings offers only this day's photo
     await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings('photos')});
-    const before=await p.evaluate(()=>({btn:$('#batch-btn').textContent,n:batchCombos().length}));
-    ok(new RegExp(`^Generate ${before.n} photos for November 2026$`).test(before.btn)&&before.n>=3,`Settings offers to generate the month's missing photos (${before.btn})`);
-    // the worker starts empty except for one look another device already made: that one is fetched, not generated
-    store.clear();
-    const pre=await p.evaluate(()=>comboKey(batchCombos()[1]));
-    store.set('render:'+pre,JSON.stringify({sig:'x',img:'data:image/jpeg;base64,'+JPG,model:'gpt-image-2',t:5}));
-    await p.click('#batch-btn');await p.click('#ask-ok');
-    await p.waitForFunction(()=>!batch,null,{timeout:30000});
-    const after=await p.evaluate(()=>({left:batchCombos().length,btn:$('#batch-btn').textContent,status:$('#batch-status').textContent,disabled:$('#batch-btn').disabled}));
-    ok(calls===before.n-1,`one photo per distinct look, generated in a row (${calls} of ${before.n}); the one already on the worker was fetched, not paid for again`);
-    ok(after.left===0&&after.disabled&&/All of November 2026 has photos/.test(after.btn)&&new RegExp(`Done: ${before.n} photos ready`).test(after.status),'afterwards nothing is left to generate');
-    ok(await p.evaluate(()=>Object.keys(planFor()).filter(k=>keyDate(k).getMonth()===10).every(k=>!planFor()[k].top||!!renders[comboKey(planFor()[k])])),'every November outfit now has a photo');
+    const st=await p.evaluate(()=>({batch:!!document.querySelector('#batch-btn'),fn:typeof startBatch,regen:!!document.querySelector('#regen-btn')}));
+    ok(!st.batch&&st.fn==='undefined'&&st.regen&&calls===0,'Settings has no "Generate photos for this month", only this day\'s photo; nothing was made');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

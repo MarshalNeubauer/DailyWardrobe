@@ -252,8 +252,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const s2=await a.evaluate(()=>{const o=planFor()[key(sel)],r=asmFor(o);return {shown:!!r&&document.querySelector('.fig.photo img').src===r.img,model:r&&r.model,btn:!!document.querySelector('.render-btn'),queued:queuedKeys().length}});
         ok(s2.shown&&s2.model==='assembled'&&!s2.btn&&s2.queued===0,'when it arrives, Today shows the outfit put together from the item photos, with no Generate button left');
         // Settings: Item photos
-        const s3=await a.evaluate(async()=>{openSettings('photos');await asmSync(true);return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,dis:document.querySelector('#asm-btn').disabled,auto:!!document.querySelector('#cfg-asm-auto'),batch:batchCombos().length}});
-        ok(/^All 1 item photos? (is|are) here\./.test(s3.st)&&s3.dis&&!s3.auto&&s3.batch===0,`Settings says every item photo is here, and the month batch no longer offers whole photos for outfits that are put together ("${s3.st}")`);
+        const s3=await a.evaluate(async()=>{openSettings('photos');await asmSync(true);return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,dis:document.querySelector('#asm-btn').disabled,auto:!!document.querySelector('#cfg-asm-auto'),batch:typeof batchCombos}});
+        ok(/^All 1 item photos? (is|are) here\./.test(s3.st)&&s3.dis&&!s3.auto&&s3.batch==='undefined',`Settings says every item photo is here, and there is no month batch ("${s3.st}")`);
         // a new or changed item: no photo is ever made by itself (nothing costs money without a tap); it waits for the button
         sent=[];const s5=await a.evaluate(async()=>{const it={id:'suit-new2',type:'suit',primaryColor:'brown',pattern:'pinstripe'};   /* a twill or herringbone is painted: no photo; a pinstripe with no reading is photographed */await put(it);items.push(it);cache={};
           const s=items.find(x=>x.type==='shirt');if(s){s.primaryColor=s.primaryColor==='pink'?'lightblue':'pink';await put(s)}await new Promise(r=>setTimeout(r,4500));

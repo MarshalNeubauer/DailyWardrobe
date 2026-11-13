@@ -171,7 +171,6 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .mli small{font-size:10px;color:var(--mut);line-height:1}.mli .stack{height:30px;flex:none}
 .mltxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.mltxt small{color:var(--mut);font-size:13px}
 .month-link .chev{font-size:24px;color:var(--mut)}
-#batch-btn[disabled]{opacity:.55}
 .stack.none{background:repeating-linear-gradient(-45deg,transparent 0 4px,color-mix(in srgb,var(--mut) 18%,transparent) 4px 5px);border-radius:6px}
 /* a product picture fills its tile edge to edge, zoomed past the photo's empty margin (per item type); the label sits on the
    photo's own backdrop at the bottom */

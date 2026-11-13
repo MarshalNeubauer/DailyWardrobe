@@ -45,7 +45,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
   set('daysoff',[h&&h.country?`${h.country} holidays`:'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
-  set('photos',typeof isConnected==='function'&&!isConnected()?'Needs a connection':'Outfit photos for the month, and item pictures');
+  set('photos',typeof isConnected==='function'&&!isConnected()?'Needs a connection':'This day’s photo, and item pictures');
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
   set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
@@ -1189,7 +1189,7 @@ async function renderCombo(o){
   await keepRender(comboKey(o),rec,false);   // the worker already kept a copy
   return rec;
 }
-/* Generate (Today) or Regenerate (Settings) the shown day's photo. It goes to the worker's background queue, like the month batch,
+/* Generate or Regenerate (Settings → This day's photo; there is no month batch any more) the shown day's photo. It goes to the worker's background queue,
    so the app can be swiped to another day, closed or locked: the worker makes it and the app picks it up when it next looks
    (every 20 s while open, and on opening). Only a worker without the queue makes it while the app waits. */
 const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck))||(asmLive()&&asmPending(o)))};
@@ -1280,45 +1280,6 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
     try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
-/* ---- Settings: generate the month's missing photos in one go ---- */
-let batch=null;
-function batchCombos(){
-  const p=planFor(),seen=new Set(),todo=[];
-  for(const [k,o] of Object.entries(p)){const d=keyDate(k);if(d.getMonth()!==view.m||d.getFullYear()!==view.y||!o.shirt)continue;
-    if(asmLive()&&asmWants(o))continue;   // put together from item photos (Settings: Item photos), not a photo of its own
-    const ck=comboKey(o);if(seen.has(ck))continue;seen.add(ck);if(!renders[ck]&&!queuedKeys().includes(ck))todo.push(o)}
-  return todo;
-}
-const monthName=()=>new Date(view.y,view.m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
-function renderBatchUI(){const el=$('#batch-status'),btn=$('#batch-btn');if(!el||!btn)return;
-  if(batch){el.textContent=batch.msg;btn.textContent='Stop';btn.onclick=()=>{batch.stop=true;batch.msg='Stopping after the current photo…';renderBatchUI()};return}
-  const n=batchCombos().length;btn.textContent=n?`Generate ${n} photo${n===1?'':'s'} for ${monthName()}`:`All of ${monthName()} has photos`;btn.disabled=!n;btn.onclick=startBatch;if(typeof needConn==='function'&&needConn(btn)){el.textContent='';return}
-  const q=rqGet();if(q.keys.length&&!el.dataset.keep){el.textContent=q.msg||`Making ${q.keys.length} photo${q.keys.length===1?'':'s'} in the background.`;return}
-  if(!el.dataset.keep)el.textContent=n?`Outfits in ${monthName()} that don’t have a photo yet.${showCost()?' Each costs about 7¢.':''} Outfits that share a look share a photo. They’re made in the background, so you can close the app once they’re sent.`:''}
-async function startBatch(){
-  if(batch)return;let todo=batchCombos();if(!todo.length){renderBatchUI();return}
-  if(!await askConfirm(`Generate ${todo.length} realistic photo${todo.length===1?'':'s'} for ${monthName()}?\n\n${showCost()?`About $${(todo.length*.07).toFixed(2)} at roughly 7¢ each. `:''}They’re made in the background: once they’re sent you can close the app.`,{ok:'Generate'}))return;
-  batch={done:0,fail:0,n:todo.length,stop:false,msg:'Starting…'};renderBatchUI();
-  let noQueue=false;const queued=[];
-  // a photo another device already made is fetched instead of generated; the rest are queued on the worker (or, on a
-  // worker without the queue, generated here one by one with the app open)
-  for(const o of todo){if(batch.stop)break;const ck=comboKey(o),i=batch.done+batch.fail+queued.length+1;
-    batch.msg=noQueue?`Generating ${i} of ${batch.n}… keep the app open.`:`Sending ${i} of ${batch.n}…`;renderBatchUI();
-    try{
-      if(!renders[ck]){renderTried.delete(ck);await fetchRemoteRender(o,'')}
-      if(renders[ck]){batch.done++;continue}
-      if(!noQueue){const q=await queueCombo(o);if(q==='queued'){queued.push(ck);continue}if(q==='done'){batch.done++;continue}noQueue=true;
-        batch.msg=`Generating ${i} of ${batch.n}… keep the app open until they are done.`;renderBatchUI()}
-      await renderCombo(o);batch.done++}
-    catch(e){batch.fail++;batch.err=e.message;if(/Connect in|server doesn|OPENAI_API_KEY|forbidden|Today’s limit/i.test(e.message)){batch.stop=true}}
-  }
-  const b=batch;batch=null;const el=$('#batch-status');
-  if(queued.length){const q=rqGet();q.keys=[...new Set([...q.keys,...queued])];q.total=(q.total||0)+queued.length;q.sentAt=Date.now();q.at={...(q.at||{}),...Object.fromEntries(queued.map(k=>[k,q.sentAt]))};q.failed=q.failed||[];
-    q.msg=`Sent ${queued.length} photo${queued.length===1?'':'s'} to be made. They’re being made in the background (about a minute each); you can close the app. They appear as they finish.`;rqSet(q);startQueueWatch()}
-  else if(el){el.dataset.keep=1;el.textContent=`Done: ${b.done} photo${b.done===1?'':'s'} ready${b.fail?`, ${b.fail} failed (${b.err})`:''}${b.stop&&b.done+b.fail<b.n?'. Stopped early.':''}`;setTimeout(()=>{delete el.dataset.keep},4000)}
-  if(queued.length&&b.fail&&el){el.dataset.keep=1;el.textContent=rqGet().msg+` ${b.fail} couldn’t be sent (${b.err}).`;setTimeout(()=>{delete el.dataset.keep},6000)}
-  renderBatchUI();if(!$('#today').hidden)refreshToday();
-}
 /* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
 async function queueCombo(o,replace=false){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
@@ -1351,7 +1312,7 @@ async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W
       // (a job just sent can be missing from the worker's list for up to a minute: KV lists are only eventually consistent)
     // applied to the list as it is now: a push may have taken some meanwhile, and new photos may have been sent
     const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));if(Object.keys(fresh).length)q2.at={...(q2.at||{}),...fresh};if(q2.at)for(const k of removed)delete q2.at[k];q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
-    rqSet(q2);renderBatchUI();renderRegenUI();if((shown||removed.size)&&!$('#today').hidden)refreshToday();
+    rqSet(q2);renderRegenUI();if((shown||removed.size)&&!$('#today').hidden)refreshToday();
   }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
 /* Bringing photos home. The worker pushes: while photos are waiting and the app is on screen, a request to GET /render-wait is held
    open, and the worker answers it the moment a queue job finishes, with the photo itself (waitPush). Polling GET /render-queue
@@ -1378,11 +1339,11 @@ async function takeQueued(res){res=(res||[]).filter(m=>m&&m.key);if(!res.length)
   // every finished photo is kept, even one the app had stopped waiting for: it is for an outfit the user asked for
   for(const m of res)if(m.rec&&m.rec.img)await keepRender(m.key,{sig:m.rec.sig||'',img:keptPhoto(m.rec.img),model:m.rec.model||'',t:m.rec.t||Date.now()},false);
   const q=rqGet(),mine=new Set(q.keys);for(const m of res){if(!mine.has(m.key))continue;if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
-  finishQueueMsg(q);rqSet(q);renderBatchUI();renderRegenUI();if(!$('#today').hidden)refreshToday()}
+  finishQueueMsg(q);rqSet(q);renderRegenUI();if(!$('#today').hidden)refreshToday()}
 function finishQueueMsg(q){const done=(q.total||0)-q.keys.length-q.failed.length;
   q.msg=q.keys.length?`Making photos: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
     :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
-  if(!q.keys.length){const el=$('#batch-status');if(el){el.dataset.keep=1;el.textContent=q.msg;setTimeout(()=>{delete el.dataset.keep;renderBatchUI()},8000)}stopQueueWatch()}}
+  if(!q.keys.length)stopQueueWatch()}
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
   if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};cache={};checkArrivals().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
@@ -1910,7 +1871,7 @@ function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn
   const r=o&&renderFor(o),pend=renderPending(o);btn.disabled=!o||!!rendering||pend;btn.textContent=pend?'Making photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
   if(st)st.textContent=o?(r?`Makes a new realistic photo of the day shown on Today${showCost()?' (about 7¢)':''}; it replaces the current one for every day with this look.`:`The day shown on Today has no photo yet${showCost()?' (about 7¢)':''}.`):'Pick a workday on Today first.';if(typeof needConn==='function'&&needConn(btn)&&st)st.textContent=''}
 function renderSettingsExtras(){
-  if(typeof renderDressUI==='function')renderDressUI();renderBatchUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();if(typeof renderConnUI==='function')renderConnUI();
+  if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();renderBenchUI();renderWeaveUI();if(typeof renderConnUI==='function')renderConnUI();
   if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
   if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};

@@ -1450,7 +1450,7 @@ async function asmMakeMissing(){const queued=new Set(queuedKeys()),m=asmState.mi
   if(!await askConfirm(`Make ${list.length} photo${list.length===1?'':'s'}?\n\nAbout $${asmCostOf(list).toFixed(2)}. They are made in the background: once they’re sent you can close the app.`,{ok:'Make'}))return;
   const st=$('#asm-status'),btn=$('#asm-btn');if(btn)btn.disabled=true;if(st)st.textContent='Sending…';
   try{await asmMake(list)}catch(e){if(st){st.textContent='Couldn’t send them: '+(e.message||e);return}}
-  renderAsmUI();renderBatchUI()}
+  renderAsmUI()}
 /* no photo is ever made by itself (the owner, 2026-11-13: nothing that costs money without a tap; the app is moving to the masters
    and painting). A new or changed item's photo waits for the button above, which shows the cost; the automatic maker that ran 4 s
    after every save of a jacket, shirt, tie, clip or watch (asmAutoSoon, "New items: Make their photo when added") is gone. */

@@ -59,7 +59,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
-        inside:['#cfg-url','#cfg-token','#replan-btn','#weave-box','#bench-box','#asm-group'].every(inAdv),out:['#cfg-workdays','#batch-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
+        inside:['#cfg-url','#cfg-token','#replan-btn','#weave-box','#bench-box','#asm-group'].every(inAdv),out:['#cfg-workdays','#regen-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
         label:document.querySelector('#adv-connection .adv-head').innerText.replace(/\s+/g,' ')}});
     ok(adv.ids==='adv-schedule,adv-photos,adv-tagging,adv-connection'&&adv.shut,'Schedule, Realistic photos, Photo tagging and Connection each have an Advanced fold, closed when Settings opens');
     ok(adv.inside&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code, re-plan, shirt weaves, the accuracy check and the item-photo tools are inside them; the everyday controls are not');
@@ -76,7 +76,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
 
     /* ---- what needs a connection: not shown until the app is connected (a switched-off button looked broken) ---- */
     await p.evaluate(()=>{openSettings('photos')});await settle(p,300);
-    const off=await p.evaluate(()=>({vis:['#batch-btn','#regen-btn','#itempic-btn'].map(s=>!!document.querySelector(s).offsetParent),note:document.querySelector('#photos-conn').textContent,noteVis:!!document.querySelector('#photos-conn').offsetParent,
+    const off=await p.evaluate(()=>({vis:['#regen-btn','#itempic-btn'].map(s=>!!document.querySelector(s).offsetParent),note:document.querySelector('#photos-conn').textContent,noteVis:!!document.querySelector('#photos-conn').offsetParent,
       go:!!document.querySelector('#photos-conn button'),backup:(openSettings('backup'),{sync:!!document.querySelector('#sp-backup button[onclick="syncNow()"]').offsetParent,snaps:!!document.querySelector('#snap-list').offsetParent,file:!!document.querySelector('#sp-backup button[onclick="downloadBackup()"]').offsetParent,note:document.querySelector('#backup-conn').textContent})}));
     ok(off.vis.every(v=>!v)&&/^Making outfit photos needs a connection/.test(off.note)&&off.noteVis&&off.go,`not connected: Realistic photos shows one line saying what connecting turns on, with a Connect button, and none of its buttons (“${off.note}”)`);
     ok(!off.backup.sync&&!off.backup.snaps&&off.backup.file&&/^Backing up and syncing needs a connection/.test(off.backup.note),'Backup: no Sync now or daily backups; the backup file still works');
@@ -93,9 +93,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     // connected: everything is there again
     await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');closeSettings();show('today')},SRV);
     const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn').disabled,msg:document.querySelector('#render-msg').textContent,
-      batch:!!document.querySelector('#batch-btn').offsetParent&&!document.querySelector('#batch-btn').disabled,regen:!!document.querySelector('#regen-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
+      batch:!document.querySelector('#batch-btn'),regen:!!document.querySelector('#regen-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
       closeSettings();openAdd();r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
-    ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/Outfit photos/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons are there and work, a day's photo from Settings only (${on.conn})`);
+    ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/This day’s photo/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons are there and work, a day's photo from Settings only (${on.conn})`);
     await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
 
     /* ---- the accent as text ---- */
