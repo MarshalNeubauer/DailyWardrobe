@@ -28,6 +28,11 @@ module.exports=async({ok,chromium,url})=>{
     ok(x.usable.join()==='true,false,true','a tonal-check tie keeps a weave reading; a striped tie does not (a shirt still does)');
     ok(x.spec&&x.tile,'Claude\'s weave answer becomes a tie reading, and the tie painter gets a tile repeated across the tie');
     ok(x.stronger&&x.sig,'on the model the weave is drawn stronger than in the app\'s swatch, and the reading is in the picture\'s key');
+    // a twill (drawn by fabricDef's own twill branch) is strengthened on a tie too, and its ribs are no finer than ASM_TIE_TEX_MAX across
+    const tw=await p.evaluate(async()=>{const s={v:4,tex:{kind:'twill',grid:['0001','0010','0100','1000'],aspect:1,lighter:true,contrast:'low',rel:.35},a:0,cr:60,tr:80,src:'claude+pixels'};
+      const t={id:'bt',type:'tie',primaryColor:'burgundy',pattern:'woven',sett:s},op=d=>+((d.match(/stroke-opacity="([\d.]+)"/)||[])[1]||0);
+      const f=await asmTieFor(t);return {stronger:op(fabricDef('a',t,'tie','asmtie'))>op(fabricDef('b',t,'tie')),across:f.across,max:ASM_TIE_TEX_MAX}});
+    ok(tw.stronger&&tw.across===tw.max&&tw.max<80,`a twill tie's ribs are drawn stronger on the model and capped at ${tw.max} across (Claude counted 80)`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };
