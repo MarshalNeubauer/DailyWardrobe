@@ -16,6 +16,18 @@ module.exports=async({ok,chromium,url})=>{
     const m=await p.evaluate(async()=>{const t=items[0];t.sett={v:3,motif:{grid:'diagonal',ground:'#20222b',figs:[{shape:'square',place:'cell',size:.5,cols:['#898d96']}]},cr:36,tr:40,a:45,src:'claude+pixels'};
       const f=await asmTieFor(t);return {usable:!!usableSett(t),motif:f.motif,tile:!!f.c&&f.TW>0,across:f.across}});
     ok(m.usable&&m.motif&&m.tile&&m.across===40,`with the reading the tie is painted from its motif (${JSON.stringify(m)})`);
+    // the weave itself (a texture reading): kept and painted on a woven or tonal-check tie, a little stronger than on a shirt
+    const x=await p.evaluate(async()=>{const tex={v:4,tex:{kind:'diamond',grid:['00011000','00100100','01000010','10000001','10000001','01000010','00100100','00011000'],aspect:1,lighter:true,contrast:'medium',rel:.35},a:0,cr:40,tr:32,src:'claude+pixels'};
+      const tc={id:'tc',type:'tie',primaryColor:'black',secondaryColor:'charcoal',pattern:'tonal-check',sett:tex},st={id:'st',type:'tie',primaryColor:'navy',pattern:'stripe',sett:tex},
+        sh={id:'sh',type:'shirt',primaryColor:'white',pattern:'dobby',sett:tex};
+      const f=await asmTieFor(tc),spec={layout:'texture',texture:{kind:'diamond',grid:tex.tex.grid,raised:{hex:'#333333'},ground:{hex:'#111111'},contrast:'medium',aspect:1},repeatsInCloseup:40,repeatsAcrossItem:32};
+      const fromSpec=specSett(spec,{type:'tie'}),dTie=fabricDef('a',tc,'tie','asmtie'),dPlain=fabricDef('b',tc,'tie');
+      const tone=d=>(d.match(/fill="(#[0-9a-f]{6})"/)||[])[1];
+      return {usable:[!!usableSett(tc),!!usableSett(st),!!usableSett(sh)],tile:!!f.c&&f.TW>0&&f.across===32,spec:!!(fromSpec&&fromSpec.tex),
+        stronger:tone(dTie)!==tone(dPlain),sig:asmTieSig(tc)!==asmTieSig({...tc,sett:null})}});
+    ok(x.usable.join()==='true,false,true','a tonal-check tie keeps a weave reading; a striped tie does not (a shirt still does)');
+    ok(x.spec&&x.tile,'Claude\'s weave answer becomes a tie reading, and the tie painter gets a tile repeated across the tie');
+    ok(x.stronger&&x.sig,'on the model the weave is drawn stronger than in the app\'s swatch, and the reading is in the picture\'s key');
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };
