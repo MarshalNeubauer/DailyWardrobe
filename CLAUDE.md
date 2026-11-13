@@ -371,7 +371,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - a tie clip is drawn with `asmBarDraw` (not on a waistcoat day)
 - size: a phone paints at 2048 (`ASM_SIZE`); `npm run assemble` sets `ASM_CM_SIZE` 2880 and scales the picture to 2048; about 7 s a picture at 2048 on the owner's PC
 - `asmCmBuild` keeps the masters' colour-free parts (`asmCmMem.list`): one on a phone, all four at 2880 (each took about 10 s to work out again, and the pre-build's looks switched master at nearly every look)
-- `npm run assemble`: a colour-coded look's key and signature are known before painting, so a look current on the worker is skipped unpainted; the looks are sorted by master and shared out in runs over `--jobs` pages (default half the cores, at most 8), each with its own context and Web Worker; 120 days went from 428 s to 50 s on the owner's PC (32 cores)
+- `npm run assemble`: a colour-coded look's key and signature are known before painting, so a look current on the worker is skipped unpainted; the looks are sorted by master and shared out in runs over `--jobs` pages (default half the logical cores, at most 16: the owner's 16-core PC), each with its own context and Web Worker; 120 days went from 428 s to 50 s on the owner's PC (32 cores)
 - Settings → Realistic photos → Item photos: "Colour-coded masters" (`asmCmUI`, `asmCmSet`, `localStorage.asm_cm` '0' = off on this phone)
 - with no jackets in the dress code `asmNeeds` lists nothing (the earlier way needs a jacket for every picture)
 - `tests/asmcolor.test.js` (fixtures `tests/fixtures/cm/<kind>/` at 512: the suit and shirt-and-tie masters)
