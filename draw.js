@@ -552,25 +552,43 @@ function trouserMarks(i,P){const k=typeof trouserKind==='function'?trouserKind(i
     `<path d="M64.2,10 C62.2,40 63.2,66 68.2,90 M66.4,10 C64.4,40 65.4,66 70.4,90" fill="none" stroke="#d9a441" stroke-width=".7" stroke-dasharray="1.6 1"/>`+
     `<path d="M10,26 C24,24 40,25 58,30" fill="none" stroke="#d9a441" stroke-width=".7" stroke-dasharray="1.6 1"/><circle cx="58" cy="30" r="2.3" fill="#b87333" stroke="#6e4220" stroke-width=".6"/><circle cx="57.4" cy="29.4" r=".8" fill="#f1c48a"/>`;
   return twill+`<path d="M58,10 L72,40" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".9"/><path d="M60,10 L74,40" fill="none" stroke="#000" stroke-opacity=".18" stroke-width=".4" stroke-dasharray="1.2 .8"/>`}
-/* suit jacket, front view: traced from Brooks Brothers' product photo of their navy stripe suit jacket (2026-11-13, the
-   owner's pick): the model's straight-arm half (his other hand is in his pocket) placed on gridded crops and snapped to its edges,
-   then mirrored; notch lapels, the shirt showing in the V, two buttons, flap pockets, a breast pocket on the wearer's left only. */
-const JACKET_D={out:'M38,3.8 L33.8,7 L29.4,9.6 L25.2,11.5 L22.1,12.9 L20.2,14.2 L19.1,16.4 L18.1,20.5 L16.9,26.8 L15.9,34.2 L15.3,41.8 L14.5,50.4 L13.9,60.8 L13.8,71.3 L13.9,80.6 L14.1,90.4 L19.5,91 L24.1,90.7 L30.2,93 L37.8,93.6 L43.9,93.5 L47.1,92.7 L48,88.3 L48.5,81.4 L49.2,73.8 L50,69.1 L50.8,73.8 L51.5,81.4 L52,88.3 L52.9,92.7 L56.1,93.5 L62.2,93.6 L69.8,93 L75.9,90.7 L80.5,91 L85.9,90.4 L86.1,80.6 L86.2,71.3 L86.1,60.8 L85.5,50.4 L84.7,41.8 L84.1,34.2 L83.1,26.8 L81.9,20.5 L80.9,16.4 L79.8,14.2 L77.9,12.9 L74.8,11.5 L70.6,9.6 L66.2,7 L62,3.8 Z',
-  vee:'M38.3,4 L39,8.2 L38.3,16.4 L39.5,26.5 L42.1,36 L45.2,43.3 L48.9,49.3 L50,54.1 L51.1,49.3 L54.8,43.3 L57.9,36 L60.5,26.5 L61.7,16.4 L61,8.2 L61.7,4 Z',
-  lapel:'M32.3,10.6 C32.7,11.5 33.6,13.7 34.7,15.8 C35.9,18 37.5,19.2 39.2,23.4 C40.9,27.7 43.1,36.1 44.9,41.2 C46.7,46.3 49.1,52 50,54.1 M67.7,10.6 C67.3,11.5 66.4,13.7 65.3,15.8 C64.1,18 62.5,19.2 60.8,23.4 C59.1,27.7 56.9,36.1 55.1,41.2 C53.3,46.3 50.9,52 50,54.1',
-  gorge:'M32.8,8.7 L32.3,10.6 L37,9.6 M67.2,8.7 L67.7,10.6 L63,9.6',
-  sleeve:'M26.2,41.8 C26.2,43.3 26.2,48.1 26.2,51.3 C26.2,54.5 26.4,56.7 26.2,60.8 C26,65 25.3,71.1 25,76.1 C24.6,81 24.2,88.2 24.1,90.6 M73.8,41.8 C73.8,43.3 73.8,48.1 73.8,51.3 C73.8,54.5 73.6,56.7 73.8,60.8 C74,65 74.7,71.1 75,76.1 C75.4,81 75.8,88.2 75.9,90.6',
-  flaps:'M26.2,62.3 L34.6,63.9 L34.1,70.1 L26.2,68.8 Z M73.8,62.3 L65.4,63.9 L65.9,70.1 L73.8,68.8 Z',
-  breast:'M61.6,27.4 L69.2,28.2 L69.1,29.2 L61.4,28.5 Z',
-  collar:'M38.7,4 L45,12.3 L48.9,10.3 L50,8.7 Z M61.3,4 L55,12.3 L51.1,10.3 L50,8.7 Z',
-  tie:'M48.3,10.3 L51.7,10.3 L51.1,14.4 L48.9,14.4 Z M48.9,14.4 L51.1,14.4 L52.6,50.1 L50,54 L47.4,50.1 Z',
-  buttons:'50,54.1 50,69.1'};
-function jacketMarks(i,P){const S=JACKET_D,c=colOf(i),e=mix(c,'#000',.4),hi=mix(c,'#fff',.18);
-  return `<path d="${S.vee}" fill="#eef0f2" stroke="${e}" stroke-width=".5"/><path d="${S.tie}" fill="${mix(c,'#000',.5)}" stroke="${mix(c,'#000',.7)}" stroke-width=".3"/><path d="${S.collar}" fill="#f6f7f8" stroke="#b9bfc5" stroke-width=".35"/>`+
-    `<path d="${S.lapel}" fill="none" stroke="${e}" stroke-width=".55"/><path d="${S.lapel}" fill="none" stroke="${hi}" stroke-opacity=".5" stroke-width=".3" transform="translate(.5 0)"/>`+
-    `<path d="${S.gorge}" fill="none" stroke="${e}" stroke-width=".5"/><path d="${S.sleeve}" fill="none" stroke="${e}" stroke-opacity=".7" stroke-width=".5"/>`+
-    `<path d="${S.flaps}" fill="none" stroke="${e}" stroke-width=".5"/><path d="${S.breast}" fill="none" stroke="${e}" stroke-width=".45"/>`+
-    S.buttons.split(' ').map(p=>{const [x,y]=p.split(',');return `<circle cx="${x}" cy="${y}" r="1.05" fill="${mix(c,'#000',.55)}" stroke="${hi}" stroke-width=".2"/>`}).join('')}
+/* a suit, as worn in Brooks Brothers' product photo of their navy stripe suit (2026-11-13, the owner's pick and his ask: "trace his arms
+   pose, his legs, everything"): the outline of jacket and trousers from the photo's pixels (the gaps between arms and body left
+   open), his left arm hanging, his right arm bent with the hand in the trouser pocket, the jacket's right front pushed back; the
+   lapels, notches, front edges, hems, sleeve seam, cuff, pockets and buttons placed on zoomed crops and checked on the photo; the
+   shirt, tie and pocket square in the V. His head and hands are left out. Box 0..100, the trousers end where the photo does. */
+const SUIT_D={out:'M28.3,74.9 L28.1,74.6 L27.2,74.5 L26.3,74.6 L25,75 L22.7,75.4 L22.2,75.1 L21.7,75.1 L21.6,75 L21.6,73.4 L21.6,70.8 L21.3,66 L21.2,61 L20.9,57 L20.9,53.5 L21.1,49.3 L20.9,45.4 L21.1,44 L21.5,42.4 L22.3,40 L22.5,37.3 L22.7,35.3 L22.5,32.9 L22.7,30.1 L23.5,25.3 L24.1,20.8 L25.2,16.6 L25.7,13.5 L26,12.6 L26.5,12.1 L27.2,11.9 L28.5,11.2 L31.5,9.9 L37.7,6.8 L38.5,6.3 L40,5.3 L41.9,3 L41.9,3 L42,3.2 L41.5,5.1 L41.8,7 L43.1,11.9 L43.3,13.3 L44.4,18.1 L45.7,22.7 L46.8,26.1 L47.1,25.2 L47,24.3 L47.2,23.7 L47.1,21.8 L47.3,20.2 L47.2,19.8 L47.3,18.5 L47.2,17.9 L47.4,17.5 L47.4,16.4 L47.6,15.8 L47.8,14.1 L48,13.9 L48.1,13.3 L48.8,12.3 L48.9,11.9 L48.7,11.5 L48.1,11.1 L47.9,11.2 L48,12 L47.3,11.9 L47,11.6 L46.9,10.8 L45.3,10.5 L46.8,9.4 L48.5,8.4 L48.9,8.3 L49.4,8.5 L49.8,8.4 L49.9,8.3 L49.9,8.2 L49.2,8.1 L49,7.9 L49.1,7.8 L49.8,7.2 L50.9,7.1 L51.5,6.8 L50.2,8.1 L51,8.2 L51.3,8.3 L51.3,8.5 L52,8.7 L55.1,10.9 L55,11.1 L54.7,11 L54,10.5 L53.2,10.5 L51.8,9.9 L51.2,10.2 L50.6,11.1 L50.5,11.5 L50.6,11.7 L50.5,12 L50.8,12.1 L52,13.8 L52.1,14.5 L52.5,14.9 L52.6,15.3 L52.5,15.7 L52.9,16.3 L53,17.1 L52.6,17 L52.5,17.3 L52.6,17.5 L53,17.4 L53.1,17.6 L53.2,18.8 L53.2,19.3 L53.3,19.9 L53.3,20.7 L53.5,21.4 L53.4,22.2 L53.6,22.7 L53.6,23.8 L53.8,24.5 L53.9,27.6 L54.2,28.7 L54.2,30.1 L54.3,30.4 L54.4,30.3 L54.7,29.1 L55.6,23.7 L55.9,21.5 L55.8,20.3 L56.1,17.1 L56.1,11.6 L56,11.3 L55.6,11.2 L55.8,11 L55.9,10.4 L55.8,9.7 L55.9,5.9 L55.4,3 L55.5,3.1 L56.4,4.1 L57,4.7 L59.2,5.8 L68.6,9.5 L70.2,10.3 L70.9,11.4 L72.4,14.1 L73.7,17.5 L77.4,34.4 L78.3,36.5 L78.5,37.4 L78.5,38.1 L79.1,39.2 L79.1,40 L78.9,40.8 L79,41.8 L78.7,42.8 L78.2,46.1 L77.9,47.6 L77.7,49.8 L77.4,50.7 L77,51.4 L76.8,53 L76.5,54 L75.4,56.5 L74.1,60.6 L73.6,63.6 L73.2,67.5 L71.9,69.6 L70.7,70.9 L69.8,71.7 L69.6,72.1 L69.4,75.9 L69.9,77.7 L69.7,79.3 L70.1,80.6 L70.3,82.7 L70.6,84.1 L71.2,90.5 L71.1,96.6 L71,96.8 L70.9,96.9 L55.5,96.9 L55.5,96 L54.7,93.7 L53.5,90.7 L49.6,81.3 L48.6,77.5 L48.1,76.8 L47.9,76.6 L47.8,76.9 L48.3,78.7 L48.3,79.6 L47.9,80.6 L46.6,83.3 L46.1,85.8 L46,87.4 L45.6,89.3 L45.6,90.3 L45.3,92 L45.3,94.5 L44.9,95.9 L44.7,96.9 L30.8,97 L30.6,90.9 L30.2,83.4 L29.8,76 Z M67.2,32.6 L67.7,33.4 L68.1,35.2 L68.7,36.6 L68.6,38 L68.6,40.6 L69,41.3 L69.6,42.5 L69.3,44.5 L69.1,44.5 L69,44.6 L69,45.1 L69.2,45.5 L69.3,48 L68.8,50.7 L68.4,51.7 L68.2,51.7 L68,51.2 L67.5,51 L66.9,50.5 L65.9,49.2 L65.7,48.8 L65.6,47.7 L65.6,45.1 L65.8,42.6 L66,37.3 L66.6,34.3 L67.1,32.7 Z M53.5,16.3 L55.9,16.2 L56,16.4 L55.7,20.3 L55.8,21.5 L54.9,27.4 L54.8,27.4 L54.8,27.3 L54.7,26.7 L55,26 L55.1,23.7 L55,23.4 L54.8,23.4 L54.6,24.2 L54.3,24.3 L54.1,24.2 L53.8,23.2 L53.8,21.7 L53.9,21.2 L53.7,20.6 L53.9,20.1 L53.6,19.1 L53.4,17.7 L53.5,16.3 Z',
+  shirt:'M41.8,3.1 L43.1,11.7 L45,21.6 L47.3,32 L49.9,38.6 L51.6,43.9 L52.1,43.9 L53.7,35.5 L54.9,27.4 L55.4,16.1 L56,3.6 Z',
+  knot:'M47.4,8.6 C47.4,8.6 52,8.6 52,8.6 C52,8.6 51.5,13.4 51.5,13.4 C51.5,13.4 47.9,13.4 47.9,13.4 C47.9,13.4 47.4,8.6 47.4,8.6 Z',
+  blade:'M47.9,13.1 C47.9,13.1 51.5,13.1 51.5,13.1 C51.5,13.1 53.3,18.4 53.7,21.6 C54.1,24.7 54.2,28.8 54,32 C53.7,35.3 52.5,39.2 52.1,41.1 C51.7,43 51.6,43.5 51.6,43.5 C51.6,43.5 50.5,40.5 49.9,38.6 C49.3,36.7 48.5,34.9 48.1,32 C47.6,29.2 47.2,24.7 47.2,21.6 C47.2,18.4 47.9,13.1 47.9,13.1 Z',
+  square:'M60.8,22.9 L66.2,23.2 L65.9,23.9 L61,23.7 Z',
+  cuff:'M22.9,74.8 L28.3,75 L28.2,76.1 L23.1,76 Z',
+  llap:'M35.4,8.4 C35.8,9.1 36.7,10.8 37.5,12.5 C38.3,14.2 39.4,16.5 40.3,18.7 C41.2,20.9 41.9,23.3 42.8,25.5 C43.8,27.8 45.2,30.2 46.2,32.4 C47.3,34.6 48.2,36.6 49.1,38.6 C50.1,40.6 51.3,43.3 51.7,44.2',
+  lnotch:'M34.6,7.5 C34.7,7.6 35,8.4 35.4,8.4 C35.9,8.5 36.9,7.9 37.2,7.9',
+  rlap:'M65.2,9 C65,9.9 64.5,12.2 64.1,14.3 C63.6,16.5 63.2,19.1 62.6,21.8 C61.9,24.5 61.2,28.1 60.2,30.8 C59.2,33.5 57.9,35.9 56.8,38 C55.6,40.1 53.8,42.7 53.2,43.6',
+  rnotch:'M66.4,8.1 C66.3,8.3 65.9,9.3 65.5,9.3 C65.1,9.4 64.1,8.7 63.8,8.6',
+  frontl:'M52,45.4 C51.8,46.2 51.3,48.7 50.7,50.5 C50.2,52.3 49.2,54.4 48.8,56 C48.3,57.6 48.1,58.4 47.9,60.1 C47.8,61.8 47.7,64.2 47.6,66.2 C47.5,68.3 47.4,70.6 47.3,72.2 C47.2,73.9 47.1,75.6 47,76.3',
+  heml:'M28.1,75 C28.4,75.1 28.7,75.3 29.7,75.5 C30.7,75.6 32.3,75.8 34.2,76 C36.1,76.2 39.3,76.5 40.9,76.7 C42.6,76.9 43.1,77.1 44.1,77.1 C45.1,77 46.5,76.6 47,76.5',
+  frontr:'M52.9,46 C53.1,46.8 53.7,49.4 54.1,50.7 C54.5,52.1 54.9,52.7 55.5,53.9 C56.2,55.1 57.4,56.5 58,57.9 C58.7,59.3 59.3,60.7 59.6,62.3 C59.9,63.8 59.9,65.6 59.9,67.2 C59.9,68.9 59.6,71.1 59.6,71.9',
+  hemr:'M59.6,71.9 C60.4,72 63,72.2 64.6,72.2 C66.2,72.3 68.5,72.1 69.2,72.1',
+  sleevel:'M31.4,34.9 C31.4,36.4 31.1,41.6 31,44.2 C30.8,46.8 31,48.1 30.6,50.4 C30.3,52.8 29.3,55.7 28.9,58.3 C28.5,60.9 28.6,63.3 28.5,66 C28.3,68.7 28.1,73.3 28.1,74.8',
+  cuffl:'M21.9,74.7 C23,74.8 27.1,75 28.1,75',
+  elbow:'M69.2,39.5 C70,39.5 72.4,39.2 73.9,39.2 C75.4,39.3 77.5,39.7 78.3,39.9',
+  vl:'M41.8,3.1 C42,4.6 42.6,8.6 43.1,11.7 C43.6,14.8 44.3,18.2 45,21.6 C45.7,24.9 46.5,29.2 47.3,32 C48.1,34.9 49.2,36.6 49.9,38.6 C50.7,40.6 51.3,43 51.6,43.9',
+  vr:'M56,3.6 C55.9,5.7 55.6,12.1 55.4,16.1 C55.2,20 55.1,24.2 54.9,27.4 C54.6,30.6 54.1,32.7 53.7,35.5 C53.2,38.2 52.4,42.5 52.1,43.9',
+  flapl:'M31.8,51.3 L38.5,52.7 L38,57.5 L29.5,55.8 Z',
+  flapr:'M62.1,51.2 L67.7,52 L67.6,55.7 L61.8,54.9 Z',
+  breast:'M60.3,23.2 L66.6,23.8 L66.4,24.7 L60.2,24 Z',
+  trousers:'M19.7,97.7 L19.7,74.7 L28.1,75 L29.7,75.5 L34.2,76 L40.9,76.7 L44.1,77.1 L47,76.5 L47,76.3 L47.3,72.2 L47.6,66.2 L47.9,60.1 L48.8,56.7 L55.5,53.9 L58,57.9 L59.6,62.3 L59.9,67.2 L59.6,71.9 L64.6,72.2 L69.2,72.1 L79.5,72.1 L79.5,97.7 Z',
+  buttons:'52,45.4 48.8,56.7'};
+function suitMarks(i,P){const S=SUIT_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c,'#fff',.2);
+  const ln=(d,w=.42,o=1)=>`<path d="${d}" fill="none" stroke="${e}" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
+  return `<path d="${S.trousers}" fill="#000" opacity=".12" clip-path="url(#${P}so)"/>`+
+    `<path d="${S.shirt}" fill="#dfe6ee" stroke="${e}" stroke-width=".35"/><path d="${S.blade}" fill="${mix(c,'#000',.5)}"/><path d="${S.knot}" fill="${mix(c,'#000',.45)}"/>`+
+    `<path d="${S.blade}" fill="none" stroke="${mix(c,'#000',.7)}" stroke-width=".25"/><path d="${S.square}" fill="#f7f6f2"/><path d="${S.cuff}" fill="#dfe6ee"/>`+
+    ln(S.llap,.45)+ln(S.rlap,.45)+ln(S.lnotch)+ln(S.rnotch)+ln(S.vl,.35)+ln(S.vr,.35)+ln(S.frontl,.5)+ln(S.frontr,.5)+ln(S.heml,.5)+ln(S.hemr,.5)+ln(S.sleevel,.45,.8)+ln(S.cuffl,.4)+ln(S.elbow,.35,.7)+
+    ln(S.flapl,.4)+ln(S.flapr,.4)+ln(S.breast,.35)+
+    S.buttons.split(' ').map(p=>{const [x,y]=p.split(',');return `<circle cx="${x}" cy="${y}" r=".6" fill="${mix(c,'#000',.6)}" stroke="${hi}" stroke-width=".12"/>`}).join('')}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -580,8 +598,8 @@ function itemThumb(i,full){
     g=`<defs>${fabricDef(P+'f',i,role)}</defs><rect width="100" height="100" fill="url(#${P}f)"/>`}
   else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
-    const jk=i.type==='suit',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?JACKET_D.out:'M10,10 H90 V90 H10 Z';
-    g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><path d="${shape}" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width=".6"/><path d="${shape}" fill="url(#${P}s)"/>`+(jk?jacketMarks(i,P):trouserMarks(i,P));
+    const jk=i.type==='suit',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?SUIT_D.out:'M10,10 H90 V90 H10 Z';
+    g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):trouserMarks(i,P));
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
