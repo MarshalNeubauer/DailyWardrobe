@@ -808,6 +808,27 @@ function drawWatchTraced(w,P){const S=WATCH_D,o=watchOpts(w),[mL,mM,mD]=METAL_TO
   // the crystal's glint
   s+=el(S.bezelIn,`fill="#fff" fill-opacity=".07"`);
   return s}
+/* tie, laid flat with its narrow end rolled up beside the blade: traced from Brooks Brothers' photo of their solid rep tie in blue
+   (MA03183, 2026-11-13, the owner's pick; the blue, not the black, so the roll's folds show): the outline from the photo's pixels
+   (its blueness against the cream ground), the roll's two folds found as dark dips in its columns' mean brightness and snapped to
+   them, the roll's steps at the top and its ends at the bottom in the outline. Box: X=(x-825)*.053+50, Y=(y-133)*.053+4 in the
+   1648x2000 photo. The cloth is the tie's own pattern; the roll's turns are shaded darker going in. */
+const TIE_D={out:'M46.9,4 L61.2,4.1 L61.6,4.2 L61.8,4.5 L61.9,6.1 L62.1,6.4 L65.2,6.6 L65.6,6.9 L65.7,8.4 L65.8,8.6 L68,8.8 L68.3,9 L68.6,10.6 L68.8,19.3 L69.3,26.8 L69.6,39.5 L69.4,43.6 L69.2,45.2 L68.9,46.6 L68.5,46.8 L66.1,46.7 L65.8,47 L65.4,47.7 L65,48.1 L64.2,48.3 L63,48.2 L62.7,48.6 L62.9,60.7 L63.1,70.5 L63.5,76.8 L63.4,78.7 L61.9,80.9 L58.8,84.3 L47.8,95.5 L47.4,95.8 L47,95.7 L46.3,95 L44,92.7 L36.9,85.5 L30.9,79.3 L30.5,78.7 L30.4,78.3 L30.5,56.5 L31.1,22.1 L31.2,6.4 L31.4,4.7 L31.6,4.3 L32.1,4.2 L46.9,4 Z',
+  roll1:'M61.6,6.6 L61.6,10.6 L61.7,15 L61.9,20 L62.3,26.1 L62.7,33 L62.9,39.5 L63,44.5 L63.1,48.2 L69.9,48.9 L69.9,3.3 Z',
+  roll2:'M65.1,8.6 L65.8,11.1 L65.9,15 L66,20 L66.2,26.1 L66.4,33 L66.5,39.6 L66.3,44.1 L65.7,46.5 L69.9,48.9 L69.9,3.3 Z',
+  folds:'M61.6,6.6 C61.6,6.6 61.6,9.2 61.6,10.6 C61.6,12 61.7,13.4 61.7,15 C61.8,16.5 61.8,18.2 62,20 C62,21.9 62.2,24 62.3,26.1 C62.5,28.3 62.6,30.7 62.7,33 C62.8,35.2 62.9,37.6 62.9,39.5 C63,41.5 63,43 63,44.5 C63,45.9 63.1,48.1 63.1,48.1 M65.1,8.6 C65.1,8.6 65.7,10 65.8,11.1 C65.9,12.2 65.9,13.5 65.9,15 C66,16.5 65.9,18.2 66,20 C66,21.9 66.1,23.9 66.2,26.1 C66.3,28.3 66.4,30.7 66.4,33 C66.5,35.2 66.5,37.7 66.5,39.6 C66.4,41.4 66.4,42.9 66.3,44.1 C66.1,45.2 65.7,46.5 65.7,46.5'};
+/* the cloth at a real tie's scale: the blade is about 33 units for 8.5 cm; at 1 a repp stripe repeats about 6 times across it and a
+   polka dot about 6 (at 1.5, a guess from the old diamond's size, it was 4: too large) */
+const TIE_FAB=1;
+function tieFabric(id,i){const p=fabricDef(id,i,'tie'),m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';
+  return (m?p.replace(m[0],''):p).replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="scale(${TIE_FAB})${tf?' '+tf:''}"`)}
+function tieMarks(i,P){const S=TIE_D,c=colOf(i),[r,g,b]=hexRgb(c),dark=(.299*r+.587*g+.114*b)<60,e=dark?mix(c,'#fff',.18):mix(c,'#000',.4);
+  return `<defs>${tieFabric(P+'f',i)}<clipPath id="${P}c"><path d="${S.out}"/></clipPath>
+    <linearGradient id="${P}s" x1="0" y1="0" x2="1" y2=".35"><stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".35" stop-color="#fff" stop-opacity=".12"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
+    <linearGradient id="${P}r" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".3" stop-color="#000" stop-opacity=".05"/><stop offset=".8" stop-color="#000" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient></defs>`+
+    `<path d="${S.out}" fill="url(#${P}f)"/><g clip-path="url(#${P}c)"><path d="${S.out}" fill="url(#${P}s)"/>`+
+    `<path d="${S.roll1}" fill="url(#${P}r)"/><path d="${S.roll2}" fill="url(#${P}r)"/><path d="${S.roll2}" fill="#000" fill-opacity=".08"/></g>`+
+    `<path d="${S.folds}" fill="none" stroke="${e}" stroke-width=".55" stroke-opacity=".8" stroke-linecap="round"/><path d="${S.out}" fill="none" stroke="${e}" stroke-width=".45"/>`}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -816,6 +837,7 @@ function itemThumb(i,full){
   if(full&&FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     g=`<defs>${fabricDef(P+'f',i,role)}</defs><rect width="100" height="100" fill="url(#${P}f)"/>`}
   else if(i.type==='blazer')g=blazerMarks(i,P);
+  else if(i.type==='tie')g=tieMarks(i,P);   /* the traced tie with its rolled end (TIE_D) */
   else if(i.type==='shirt')g=shirtMarks(i,P);   /* the traced folded shirt (SHIRT_D) */   /* the traced coat with its model (BLAZER_D) */
   else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
