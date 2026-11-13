@@ -591,7 +591,8 @@ const planFor=()=>planMonth(view.y,view.m);
 /* views */
 const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
 const canPick=o=>!o.frozen||pastEdit===key(sel);   // a past day only while it is being corrected
-const vestRow=o=>!(o.suitDay&&hasVest(o.top))?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top,true)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${!canPick(o)?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
+// no waistcoat without a tie: the vest row (and its +) goes with the tie
+const vestRow=o=>!(o.suitDay&&hasVest(o.top)&&o.tie)?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top,true)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${!canPick(o)?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
 /* the outfit list: tapping a piece's swatch or name unfolds its photo inside the list (the actual item, so you can see
    exactly which shirt it is); one at a time; items without a photo show their product picture or drawing */
 let openRow=null;
