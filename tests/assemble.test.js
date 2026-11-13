@@ -92,11 +92,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       renders[asmMasterKey()]={sig:asmMasterSig(o),img:'data:image/jpeg;base64,AAAA',model:'',t:5};renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OWN',model:'gpt',t:1};
       asmOut[asmOutKey(o)]={img:'data:image/jpeg;base64,ASM',stamp:asmStamp(o),t:9};
       const calls=[],f0=window.fetch;window.fetch=async(...a)=>{calls.push(String(a[0]));return new Response('{}',{status:404})};   /* (opening Settings asks who is connected, GET /me: account.js; not counted) */localStorage.setItem('worker_url','https://off.test/');localStorage.setItem('app_token','t');
-      const shipped=ASM_ON;ASM_ON=false;const r={shipped,ver:ASM_VER,on:ASM_ON,wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img,pending:asmPending(o)};await asmEnsure(o);await asmSync(true);asmAutoSoon();openSettings('photos');renderAsmUI();
-      r.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.hidden=document.querySelector('#asm-group').hidden&&getComputedStyle(document.querySelector('#asm-group')).display==='none';r.timer=asmAutoTimer;
+      const shipped=ASM_ON;ASM_ON=false;const r={shipped,ver:ASM_VER,on:ASM_ON,wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img,pending:asmPending(o)};await asmEnsure(o);await asmSync(true);openSettings('photos');renderAsmUI();
+      r.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.hidden=document.querySelector('#asm-group').hidden&&getComputedStyle(document.querySelector('#asm-group')).display==='none';
       ASM_ON=true;r.forOn=(asmFor(o)||{}).img;renderAsmUI();r.shownOn=!document.querySelector('#asm-group').hidden;
       window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[asmMasterKey()];delete renders[comboKey(o)];delete asmOut[asmOutKey(o)];closeSettings&&closeSettings();return r});
-    ok(off.on===false&&off.wants===false&&off.for===null&&off.shown==='data:image/jpeg;base64,OWN'&&off.pending===false&&off.calls===0&&off.hidden&&!off.timer,`assembled pictures are switched off: Today shows the outfit's own photo, nothing is asked of the worker or made for a new item, and Settings hides Item photos (${off.calls} requests)`);
+    ok(off.on===false&&off.wants===false&&off.for===null&&off.shown==='data:image/jpeg;base64,OWN'&&off.pending===false&&off.calls===0&&off.hidden,`assembled pictures are switched off: Today shows the outfit's own photo, nothing is asked of the worker or made for a new item, and Settings hides Item photos (${off.calls} requests)`);
     ok(off.forOn==='data:image/jpeg;base64,ASM'&&off.shownOn,'switched on (ASM_ON), the assembled picture is shown again and Settings offers Item photos');
     ok(off.shipped===true&&off.ver===3,'as shipped, assembled pictures are on, with the third masters (ASM_VER 3: 2048, plain mid grey suit, kelly green tie)');
     const k=await p.evaluate(async()=>{const url=async n=>{const d=await asmData('tests/fixtures/asm-'+n+'.jpg'),c=document.createElement('canvas');c.width=c.height=d.width;c.getContext('2d').putImageData(d,0,0);return c.toDataURL('image/jpeg',.9)};
@@ -237,7 +237,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const K=await a.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
           items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('shirt','lightblue')/* a plain shirt: painted on the device, no photo */,I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('watch','black',{metal:'silver'}),
             I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-          settings.workdays=[0,1,2,3,4];settings.vestMode='never';dayRecs={};TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};ASM_AUTO_MS=60;ASM_ON=true;   // today is the day shown: a stray "new day" check changes nothing
+          settings.workdays=[0,1,2,3,4];settings.vestMode='never';dayRecs={};TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};ASM_ON=true;   // today is the day shown: a stray "new day" check changes nothing
           const o=planFor()[key(sel)];return {can:asmCan(o),master:asmMasterKey(),sig:asmMasterSig({watch:o.watch,shirt:asmMasterItem('shirt','white')}),calib:['jacket','shirt','tie','watch'].map(asmCalibKey),
             jacket:asmPieceKey('jacket',o.top),shirt:asmPieceKey('shirt',o.shirt),tie:asmPieceKey('tie',o.tie),combo:comboKey(o)}});
         const keep=(k,f,sig='')=>store.set('render:'+k,JSON.stringify({sig,img:fx(f),model:'m',t:1000}));
@@ -252,17 +252,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const s2=await a.evaluate(()=>{const o=planFor()[key(sel)],r=asmFor(o);return {shown:!!r&&document.querySelector('.fig.photo img').src===r.img,model:r&&r.model,btn:!!document.querySelector('.render-btn'),queued:queuedKeys().length}});
         ok(s2.shown&&s2.model==='assembled'&&!s2.btn&&s2.queued===0,'when it arrives, Today shows the outfit put together from the item photos, with no Generate button left');
         // Settings: Item photos
-        const s3=await a.evaluate(async()=>{openSettings('photos');await asmSync(true);return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,dis:document.querySelector('#asm-btn').disabled,auto:document.querySelector('#cfg-asm-auto').value,batch:batchCombos().length}});
-        ok(/^All 1 item photos? (is|are) here\./.test(s3.st)&&s3.dis&&s3.auto==='on'&&s3.batch===0,`Settings says every item photo is here, and the month batch no longer offers whole photos for outfits that are put together ("${s3.st}")`);
-        // a new item: its photo is made by itself
-        sent=[];const s4=await a.evaluate(async()=>{const it={id:'suit-new',type:'suit',primaryColor:'green',pattern:'pinstripe',secondaryColor:'white'}   /* a solid suit is painted: no photo */;await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));return {key:asmPieceKey('jacket',it),toast:(document.querySelector('.toast')||document.querySelector('#toast')||{}).textContent||''}});
-        ok(sent.length===1&&sent[0].key===s4.key&&/green & white pinstripe suit/.test(s4.toast),`adding an item sends its photo to be made, and says so ("${s4.toast}")`);
-        sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'suit-new2',type:'suit',primaryColor:'brown',pattern:'herringbone'};   /* a twill is painted: no photo */await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
-          await asmSync(true);renderAsmUI();return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,auto:settings.asmAuto}});
-        ok(sent.length===0&&s5.auto===false&&/1 to make, about 14¢/.test(s5.st)&&/brown herringbone suit/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
+        const s3=await a.evaluate(async()=>{openSettings('photos');await asmSync(true);return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,dis:document.querySelector('#asm-btn').disabled,auto:!!document.querySelector('#cfg-asm-auto'),batch:batchCombos().length}});
+        ok(/^All 1 item photos? (is|are) here\./.test(s3.st)&&s3.dis&&!s3.auto&&s3.batch===0,`Settings says every item photo is here, and the month batch no longer offers whole photos for outfits that are put together ("${s3.st}")`);
+        // a new or changed item: no photo is ever made by itself (nothing costs money without a tap); it waits for the button
+        sent=[];const s5=await a.evaluate(async()=>{const it={id:'suit-new2',type:'suit',primaryColor:'brown',pattern:'herringbone'};   /* a twill is painted: no photo */await put(it);items.push(it);cache={};
+          const s=items.find(x=>x.type==='shirt');if(s){s.primaryColor=s.primaryColor==='pink'?'lightblue':'pink';await put(s)}await new Promise(r=>setTimeout(r,4500));
+          await asmSync(true);renderAsmUI();return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,toast:(document.querySelector('#toast')||{}).textContent||''}});
+        ok(sent.length===0&&!/Making/.test(s5.toast)&&/to make, about/.test(s5.st)&&/brown herringbone suit/.test(s5.st)&&/^Make \d photos?$/.test(s5.btn),`adding or changing an item sends nothing to be made, even after 4 s; it waits for the button, which says what it costs ("${s5.st}")`);
         await a.evaluate(()=>{const f=document.querySelector('#adv-photos');if(!f.classList.contains('open'))f.querySelector('.adv-head').click()});await a.click('#asm-btn');await a.click('#ask-ok');await a.waitForFunction(()=>/Making/.test(document.querySelector('#asm-btn').textContent),null,{timeout:15000});
         const st6=await a.textContent('#asm-status');
-        ok(sent.length===1&&/2 photos are being made/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);
+        ok(sent.length>=1&&/photos? (is|are) being made/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);
         ok(errs2.length===0,'no page errors with the worker ('+errs2.join('; ')+')');
       }finally{await ctx.close()}}
   }finally{globalThis.fetch=realFetchAll;await browser.close()}

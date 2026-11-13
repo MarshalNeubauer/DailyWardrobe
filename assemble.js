@@ -1404,7 +1404,7 @@ const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmPhotoParts(o).filter(p=>(!renders[p.key]||asmBad.has(p.key))&&!have.has(p.key)).map(p=>({kind:'piece',slot:p.slot,item:p.item,key:p.key,what:nm(p.item)}));
   if(miss.length)await asmMake(miss);else await asmEnsure(o);return 'asm'}
 /* Settings: Realistic photos, "Item photos" */
-function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON){asmP2UI();if(typeof asmCmUI==='function')asmCmUI()}if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
+function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON){asmP2UI();if(typeof asmCmUI==='function')asmCmUI()}if(!st||!btn||!ASM_ON)return;
   const money=v=>v<1?Math.round(v*100)+'¢':'$'+v.toFixed(2),queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key)),making=asmNeeds().filter(n=>queued.has(n.key)).length;
   if(!workerBase()){st.textContent='';btn.textContent='Make item photos';needConn(btn);return}needConn(btn);
   if(!asmState.checked){st.textContent='Looking at which photos are already made…';btn.disabled=true;btn.textContent='Make item photos';return}
@@ -1419,14 +1419,9 @@ async function asmMakeMissing(){const queued=new Set(queuedKeys()),m=asmState.mi
   const st=$('#asm-status'),btn=$('#asm-btn');if(btn)btn.disabled=true;if(st)st.textContent='Sending…';
   try{await asmMake(list)}catch(e){if(st){st.textContent='Couldn’t send them: '+(e.message||e);return}}
   renderAsmUI();renderBatchUI()}
-function setAsmAuto(v){settings.asmAuto=v!=='off';saveUserSettings()}
-/* a new item (or one put back in rotation): make its photo by itself. At most ASM_AUTO at a time: a restore or a changed wardrobe
-   that suddenly needs many is left to the button in Settings, with its cost shown. */
-let asmAutoTimer=0,ASM_AUTO_MS=4000;const ASM_AUTO=3;
-function asmAutoSoon(){if(!ASM_ON)return;clearTimeout(asmAutoTimer);asmAutoTimer=setTimeout(async()=>{if(settings.asmAuto===false||!workerBase())return;
-  try{const stt=await asmSync(),queued=new Set(queuedKeys()),m=stt.missing.filter(n=>n.kind==='piece'&&!queued.has(n.key));
-    if(!renders[asmMasterKey()]||!m.length||m.length>ASM_AUTO||stt.missing.some(n=>n.kind!=='piece'))return;
-    const n=await asmMake(m);if(n)toast(`Making ${n===1?'a photo of '+m[0].what:n+' item photos'} (about ${Math.round(asmCostOf(m)*100)}¢).`,5000)}catch(e){console.warn('automatic item photo failed',e)}},ASM_AUTO_MS)}
+/* no photo is ever made by itself (the owner, 2026-11-13: nothing that costs money without a tap; the app is moving to the masters
+   and painting). A new or changed item's photo waits for the button above, which shows the cost; the automatic maker that ran 4 s
+   after every save of a jacket, shirt, tie, clip or watch (asmAutoSoon, "New items: Make their photo when added") is gone. */
 /* ---- the worker jobs that make the photos (sent by a later step; each is one POST /render {mode:'queue'}) ---- */
 const ASM_CALIB={jacket:'a jacket of exactly the same cut in a solid, flat, bright pure red cloth with no pattern or texture',shirt:'a plain solid black dress shirt',
   tie:'a plain solid bright magenta tie with no pattern',vest:'a waistcoat of exactly the same cut and buttons in a solid, flat, bright pure orange cloth with no pattern or texture',watch:'a wristwatch of the same size with a bright blue case, a bright blue dial and a bright blue rubber strap'};

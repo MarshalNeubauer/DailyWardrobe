@@ -44,7 +44,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(/Burgundy and Navy/.test(e.txt)&&/Medium confidence/.test(e.txt)&&e.ai.join()==='burgundy,wine'&&e.sel==='burgundy'&&e.big==='Burgundy',`Claude's pick and runner-up are shown, its pick beside the close-up (${e.txt})`);
     ok(e.all&&e.cur==='red','nothing is saved until asked; "Use all" is offered since the second colour differs');
     await p.click('#col-sheet .cpask .cpaskbtn:not(.ghost)');await p.waitForTimeout(200);
-    ok(await p.evaluate(()=>items[0].primaryColor==='burgundy'&&items[0].secondaryColor==='navy'&&!document.querySelector('#col-sheet').classList.contains('on')),'"Use all of Claude’s colours" saves both');
+    ok(await p.evaluate(()=>items[0].primaryColor==='burgundy'&&items[0].secondaryColor==='navy'&&!document.querySelector('#col-sheet').classList.contains('on')),'"Use both colours" saves both');
     await p.click('#item-view .colbtn[data-k="secondaryColor"]');
     ok(await p.evaluate(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent)&&colPick.sel==='navy')&&asked.length===1,'the second colour shows the same answer without asking again');
     await p.keyboard.press('Escape');
@@ -67,6 +67,21 @@ module.exports=async({ok,chromium,url})=>{
     ok(g.c==='ownbottlegreen'&&g.cu&&g.cu.hex==='#1f4a3a'&&g.cu.types.includes('tie')&&!g.cu.accent&&g.baseOk&&g.hex==='#1f4a3a'&&g.btn==='Bottle green',`it is added to your colours (for ties, behaving like ${g.cu&&g.cu.base}) and set on the item`);
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="ownbottlegreen"]')),'once added it is a normal colour in the list, not offered as new again');
+    await p.keyboard.press('Escape');
+    // several colours, two of them new to the app: "Use all" takes every one, adding the new ones to the owner's colours
+    await p.unroute('**/fakeworker/**');
+    await p.route('**/fakeworker/**',async r=>{asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'purple',secondaryColor:'tan',tertiaryColor:'navy',pattern:'solid',
+      confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'none',altPattern:'none',newColor:{name:'smoky plum',why:'greyer than purple'},newPattern:null,
+      ownColors:{primary:{name:'smoky plum',hex:'#5a3f55'},secondary:{name:'mushroom',hex:'#a39383'},tertiary:{name:'navy',hex:'#1b2a4a'}}})}})});
+    await p.evaluate(()=>{delete colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cpaskbtn');
+    await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
+    ok(await p.evaluate(()=>(document.querySelector('#col-sheet .cpall')||{}).textContent==='Use all 3 colours'),'three colours named: "Use all 3 colours" is offered');
+    await p.click('#col-sheet .cpall');await p.waitForTimeout(300);
+    const m=await p.evaluate(()=>{const t=items.find(x=>x.id==='t1');return {c:[t.primaryColor,t.secondaryColor,t.tertiaryColor].join(),own:(settings.custom.colors||[]).map(x=>x.key).join(),open:document.querySelector('#col-sheet').classList.contains('on'),
+      btns:[...document.querySelectorAll('#item-view .colbtn')].slice(0,3).map(b=>b.textContent).join()}});
+    ok(m.c==='ownsmokyplum,ownmushroom,navy'&&/ownsmokyplum/.test(m.own)&&/ownmushroom/.test(m.own)&&!m.open&&m.btns==='Smoky plum,Mushroom,Navy',`"Use all" saves every colour, the new ones added to your colours (${m.c}; ${m.btns})`);
+    await p.click('#item-view .colbtn[data-k="primaryColor"]');
+    ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cpall')),'with all of them in place it is no longer offered');
     await p.keyboard.press('Escape');
     // patterns: the field is a drawn swatch; Ask Claude names the pattern in its own words; a name the app lacks is a New chip
     // drawn like Claude's listed pick; picking it adds it to the owner's patterns (for suits, blazers and trousers) and uses it

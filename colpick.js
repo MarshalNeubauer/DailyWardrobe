@@ -82,11 +82,18 @@ function colNewFor(it,k){const a=it&&colAsk[it.id+'|c'],o=a&&a.own&&a.own[k];if(
 async function colAddNew(it,k,nc){if(!nc)throw new Error('Ask Claude again: its colour was not kept.');const key=ownColKey(nc.name);
   if(!COLORS[key]){await addCustomColor({name:cap1(nc.name),hex:nc.hex,base:colBaseFor(nc.hex),types:groupOf(it.type),accent:k!=='primaryColor'});toast(`${cap1(nc.name)} added to your colours.`)}
   return key}
-/* take Claude's colours for every colour field at once (the ones on the list: a new colour is only added when it is picked) */
-async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!a||!a.primaryColor)return;const {src,ref}=colPick;closeColPick();
-  const ch=COL_FIELDS(it).filter(f=>(a[f]==='none'?null:a[f])!==((f==='primaryColor'?primaryCol(it):it[f])||null));if(!ch.length)return;
-  if(src==='q'){for(const f of ch)setq(ref,f,a[f]);return}
-  for(const f of ch)it[f]=a[f]==='none'?null:a[f];delete it.color;
+/* what "Use all" sets in each colour field: Claude's own colour where the app doesn't have it yet (a New chip; colNewFor), else
+   its listed pick; null = none */
+const colAllOf=(it,a)=>Object.fromEntries(COL_FIELDS(it).map(f=>{const nc=colNewFor(it,f),o=a.own&&a.own[f],had=o&&o.name&&CUSTOM_COL[ownColKey(o.name)]?ownColKey(o.name):null;   // (added already: the owner's own colour of that name)
+  return [f,nc?{nc}:had||(a[f]==='none'||!a[f]?null:a[f])]}));
+const colAllDiff=(it,a)=>{const w=colAllOf(it,a);return COL_FIELDS(it).filter(f=>w[f]&&w[f].nc||w[f]!==((f==='primaryColor'?primaryCol(it):it[f])||null))};
+/* take every colour Claude named at once, its own new ones too (each added to the owner's colours, as when its chip is picked) */
+async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!a||!a.primaryColor)return;const {src,ref}=colPick,w=colAllOf(it,a);
+  try{for(const f of COL_FIELDS(it))if(w[f]&&w[f].nc)w[f]=await colAddNew(it,f,w[f].nc)}catch(e){toast(e.message||'That could not be added.');return}
+  closeColPick();
+  const ch=COL_FIELDS(it).filter(f=>w[f]!==((f==='primaryColor'?primaryCol(it):it[f])||null));if(!ch.length)return;
+  if(src==='q'){for(const f of ch)setq(ref,f,w[f]||'none');return}
+  for(const f of ch)it[f]=w[f];delete it.color;
   if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={};renderWardrobe();toast('Saved Claude’s colours.')}
 function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   if(!it.texture)return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>Add a close-up of the fabric${colPick.src==='e'?' (Edit photos)':''} and Claude can read the colours from it.</small></div></div>`;
@@ -99,11 +106,12 @@ function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   const said=fs.map(f=>a.own&&a.own[f]?a.own[f].name:a[f]&&a[f]!=='none'?colName(a[f]):null).filter(Boolean).map(s=>`<b>${esc(cap1(s))}</b>`);
   const nc=colNewFor(it,k),pick=[a[k]].concat(k==='primaryColor'&&a.altColor&&a.altColor!==a[k]?[a.altColor]:[]).filter(c=>c==='none'||COLORS[c]);
   const tiles=(nc?[tile(NEW_COL,`<small class="cpd cpaid">New · Claude’s exact</small>`)]:[]).concat(pick.map((c,j)=>tile(c,`<small class="cpd cpaid">${j?'Claude’s 2nd':nc?'Closest you have':'Claude’s pick'}</small>`)));
-  const differs=fs.some(f=>f!==k&&(a[f]==='none'?null:a[f])!==((f==='primaryColor'?primaryCol(it):it[f])||null));   // "Use …" below already covers this field
+  // more than one colour named: one tap takes them all (offered while any field would change, the one open included)
+  const all=said.length>1&&colAllDiff(it,a).length>0;
   return `<div class="cpask done"><div class="cpasktx"><b>Claude reads it as ${said.length>1?said.slice(0,-1).join(', ')+' and '+said[said.length-1]:said[0]}</b>${cf&&k==='primaryColor'?`<small>${cap1(cf)} confidence on the main colour.</small>`:''}${a.newColor?`<small>None of the listed colours quite fit: Claude calls it ${esc(a.newColor.name)}${a.newColor.why?`, ${esc(a.newColor.why)}`:''}.</small>`:''}</div>
 ${nc?`<small class="cpnewtx">${esc(cap1(nc.name))} isn’t one of your colours yet: pick it and it is added to the app (it then behaves like ${esc(colName(colBaseFor(nc.hex)))} in your outfits).</small>`:''}
 <div class="cpgrid cpai">${tiles.join('')}</div>
-<div class="cpaskbtns">${differs&&fs.length>1?`<button type="button" class="cpaskbtn" onclick="colAskUseAll()">Use all of Claude’s colours</button>`:''}<button type="button" class="cpaskbtn ghost" onclick="colAskRun()">Ask again</button></div></div>`}
+<div class="cpaskbtns">${all?`<button type="button" class="cpaskbtn cpall" onclick="colAskUseAll()">${said.length===2?'Use both colours':`Use all ${said.length} colours`}</button>`:''}<button type="button" class="cpaskbtn ghost" onclick="colAskRun()">Ask again</button></div></div>`}
 /* ---- the pattern picker (the same sheet, k 'pattern'): the field is a button with a small drawn swatch (patBtn, EP in the editor);
    the sheet puts the close-up beside a large drawing of the item in the pattern looked at (its colours, the pattern's tile), then
    every pattern the type allows, drawn. Ask Claude (the same request and answer as the colours, with freePattern) shows Claude's
