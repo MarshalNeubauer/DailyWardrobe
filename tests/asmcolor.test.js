@@ -48,6 +48,13 @@ module.exports=async({ok,chromium,url})=>{
     // a suit day: painted on the suit master (the jacket's sleeves and lapels from their masks)
     const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o);return {use:asmCmUse(o),img:f&&f.img.length}});
     ok(s.use==='suit'&&s.img>10000,`a suit day is painted on the suit master (${JSON.stringify(s)})`);
+    // a master's setup kept packed (asmCmPack, the phone's disk cache): read back, it paints the very same picture
+    const pk=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},job=await asmCmJob(o);
+      const P=await asmCmPrep(job),pack=await asmCmPack(P),Q=await asmCmUnpack(pack,job);const k0=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size;
+      asmCmMem={list:[{key:k0,P}]};const a=await asmCmBuild({...job,diskCache:false});asmCmMem={list:[{key:k0,P:Q}]};const b=await asmCmBuild({...job,diskCache:false});
+      let raw=0;const walk=x=>{if(ArrayBuffer.isView(x)){raw+=x.byteLength;return}if(x&&typeof x==='object')for(const v of Object.values(x))walk(v)};walk({...P,M:null});
+      return {same:a.url===b.url,gz:pack&&pack.gz.byteLength,raw,M:Q&&Q.M.length===P.M.length}});
+    ok(pk.same&&pk.M&&pk.gz<pk.raw/5,`a master's setup packed (${(pk.raw/1024|0)} KB -> ${(pk.gz/1024|0)} KB gzipped) and read back paints the identical picture`);
     // the switch in Settings: off on this phone, every outfit goes the earlier way
     const sw=await p.evaluate(()=>{openSettings('photos');renderAsmUI();const sel=document.querySelector('#cfg-cm');const r={there:!!sel,val:sel&&sel.value};
       asmCmSet('off');const W=__W;r.off=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});asmCmSet('on');r.on=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});closeSettings&&closeSettings();return r});
@@ -57,6 +64,35 @@ module.exports=async({ok,chromium,url})=>{
     ok(nd.without===0,`with no jackets in the dress code, no jacket pieces or waistcoat master are listed (${JSON.stringify(nd)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
+  // a fresh phone with the worker's list (2026-11-13): a look the computer built is shown from its picture alone, without the master, its
+  // masks or parts; a look nobody built is left to the computer while building ahead, and painted here for the day on screen
+  {const browser=await chromium.launch();
+    try{const ctx=await browser.newContext({viewport:{width:390,height:844}});const asked=[],served={};let listed=0;
+      await ctx.route(HOST+'**',route=>{const u=new URL(route.request().url()),k=u.searchParams.get('key');if(k)asked.push(k);
+        const j=(b,s=200)=>route.fulfill({status:s,contentType:'application/json',body:JSON.stringify(b)});
+        if(u.pathname==='/render'&&u.searchParams.get('list')){listed++;return j({keys:Object.keys(served)})}
+        if(u.pathname==='/render'&&k)return served[k]?j(served[k]):j({error:'not found'},404);
+        if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});
+        if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
+      const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
+      const recs={};const d=path.join(FIX,'suit');for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
+        recs[n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(d,f)).toString('base64'),model:'colormaster',t:1000}}
+      const keys=await p.evaluate(ns=>ns.map(n=>asmCmKey('suit',n)),Object.keys(recs));Object.keys(recs).forEach((n,i)=>served[keys[i]]=recs[n]);const masterKeys=new Set(keys);
+      await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;asmAheadSoon=()=>{};asmAhead=async()=>{};
+        let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
+        window.__W={watch:I('watch','silver',{metal:'silver'}),suit:I('suit','navy'),shirt:I('shirt','pink'),shirt2:I('shirt','lightblue'),tie:I('tie','burgundy')};items=Object.values(__W)},HOST);
+      // the computer's picture of one suit day, under that look's key
+      const built=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};return {k:asmOutKey(o),zv:ASM_ZV,use:asmCmUse(o)}});
+      served[built.k]={sig:`asm/out/z${built.zv}/2000`,img:recs.master.img,model:'',t:2000};
+      const r1=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o);return {use:asmCmUse(o),shown:!!f,master:!!renders[asmCmKey('suit','master')]}});
+      const a1=asked.slice();
+      ok(built.use==='suit'&&r1.shown&&!r1.master&&a1.length===1&&a1[0]===built.k,`a look the computer built: only its picture is downloaded, not the master, its masks or parts (asked for ${a1.length}: ${a1.map(k=>masterKeys.has(k)?'master record':k===built.k?'the picture':k).join(', ')})`);
+      const r2=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt2,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o,true);const a=!!asmFor(o);await asmEnsure(o);return {ahead:a,screen:!!asmFor(o),master:!!renders[asmCmKey('suit','master')]}});
+      const a2=asked.slice(a1.length);
+      ok(!r2.ahead&&a2.filter(k=>masterKeys.has(k)).length===masterKeys.size&&r2.screen&&r2.master,`a look nobody built: left to the computer while building ahead (nothing downloaded), painted here for the day on screen (${a2.length} records downloaded then)`);
+      ok(listed<=3,`the worker's list is asked for once per refresh, not per look (${listed} times)`);
+      ok(errs.length===0,'no page errors ('+errs.join('; ')+')')}
+    finally{await browser.close()}}
   // the upload script: the app's keys, from a folder laid out as colormaster.js writes it
   {const os=require('os'),{spawnSync}=require('child_process'),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'cm-')),d=path.join(tmp,'out-suit');fs.mkdirSync(d);
     const src=path.join(FIX,'suit');fs.copyFileSync(path.join(src,'master.jpg'),path.join(d,'colormaster-2880.png'));

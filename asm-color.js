@@ -269,11 +269,31 @@ function asmCmDb(){return new Promise((ok,no)=>{const q=indexedDB.open('dw-asm-p
 async function asmCmDiskGet(k){try{const db=await asmCmDb();return await new Promise(ok=>{const q=db.transaction('p').objectStore('p').get(k);q.onsuccess=()=>{ok(q.result||null);db.close()};q.onerror=()=>{ok(null);db.close()}})}catch{return null}}
 async function asmCmDiskPut(k,P,prefix){try{const db=await asmCmDb();await new Promise(ok=>{const t=db.transaction('p','readwrite'),st=t.objectStore('p');
     const q=st.getAllKeys();q.onsuccess=()=>{for(const x of q.result||[])if(String(x).startsWith(prefix)&&x!==k)st.delete(x);st.put(P,k)};t.oncomplete=()=>{db.close();ok()};t.onerror=t.onabort=()=>{db.close();ok()}})}catch(e){console.warn('could not save the master',e)}}
+/* a master's colour-free part, packed for keeping: its large arrays (the zones' shares and light, the sleeves' cells…) side by side and
+   gzipped (80 MB -> about 5 MB: mostly zeros and smooth light), the rest as it is; the master's own pixels (M) are left out and decoded
+   again from its photo (about 0.2 s). -> {meta, gz} or null (no CompressionStream: nothing is kept) */
+const ASM_CM_PACKV=1,ASM_CM_BIG=65536;
+async function asmCmPack(P){if(typeof CompressionStream==='undefined')return null;
+  try{const bufs=[];let n=0;
+    const walk=x=>{if(ArrayBuffer.isView(x)){if(x.byteLength<ASM_CM_BIG)return x;const off=n;n+=(x.byteLength+7)&~7;bufs.push([off,x]);return {__b:[x.constructor.name,off,x.length]}}
+      if(Array.isArray(x))return x.map(walk);if(x&&typeof x==='object'&&Object.getPrototypeOf(x)===Object.prototype){const o={};for(const [k,v] of Object.entries(x))o[k]=walk(v);return o}return x};
+    const meta=walk({...P,M:null}),all=new Uint8Array(n);for(const [off,x] of bufs)all.set(new Uint8Array(x.buffer,x.byteOffset,x.byteLength),off);
+    const gz=await new Response(new Blob([all]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();return {meta,gz,n}}
+  catch(e){console.warn('could not pack the master',e);return null}}
+async function asmCmUnpack(rec,job){if(!rec||!rec.meta||!rec.gz||typeof DecompressionStream==='undefined')return null;
+  try{const buf=await new Response(new Blob([rec.gz]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();if(buf.byteLength!==rec.n)return null;
+    const T={Uint8Array,Int8Array,Uint16Array,Int16Array,Uint32Array,Int32Array,Float32Array,Float64Array,Uint8ClampedArray};
+    const back=x=>{if(x&&x.__b){const [t,off,len]=x.__b;return new T[t](buf,off,len)}if(Array.isArray(x))return x.map(back);
+      if(x&&typeof x==='object'&&Object.getPrototypeOf(x)===Object.prototype){const o={};for(const [k,v] of Object.entries(x))o[k]=back(v);return o}return x};
+    const P=back(rec.meta);P.M=(await asmData(job.master,job.size)).data;return P}
+  catch(e){console.warn('could not read the kept master',e);return null}}
 async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size,keep=job.size>ASM_SIZE?4:1;
   if(!asmCmMem||!asmCmMem.list)asmCmMem={list:[]};let hit=asmCmMem.list.find(e=>e.key===key);
-  if(!hit){while(asmCmMem.list.length>=keep)asmCmMem.list.shift();const dk=job.cm+'|v'+ASM_CMV+'|'+asmCmSrcSig()+'|'+key;
-    let P=job.diskCache&&typeof indexedDB!=='undefined'?await asmCmDiskGet(dk):null;
-    if(!P){P=await asmCmPrep(job);if(job.diskCache&&typeof indexedDB!=='undefined')await asmCmDiskPut(dk,P,job.cm+'|')}
+  if(!hit){while(asmCmMem.list.length>=keep)asmCmMem.list.shift();const dk=job.cm+'|v'+ASM_CMV+'|'+asmCmSrcSig()+'|z'+ASM_CM_PACKV+'|'+key;
+    // (2026-11-13) on every device, phones included: kept packed (asmCmPack, about 5 MB a master); a phone used to work it out again at
+    // every start and every change of master (about 23 s at phone speed); read back it is about 0.6 s
+    const disk=job.diskCache!==false&&typeof indexedDB!=='undefined';let P=disk?await asmCmUnpack(await asmCmDiskGet(dk),job):null;
+    if(!P){P=await asmCmPrep(job);if(disk)asmCmPack(P).then(x=>x&&asmCmDiskPut(dk,x,job.cm+'|'))}   // saved while the picture is painted
     hit={key,P};asmCmMem.list.push(hit)}
   const P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
@@ -339,12 +359,20 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
   return {url:await asmJpeg(img)}}
 
 /* ---- Today: the colour-coded way of asmEnsure / asmPrebuildOne ---- */
+/* a look the computer hasn't built: when this phone first saw it missing, and whether that is long enough ago to paint it here */
+const ASM_PC_WAIT=10*60e3,asmCmMissing=new Map();
+const asmCmLate=k=>{if(!asmCmMissing.has(k))asmCmMissing.set(k,Date.now());return Date.now()-asmCmMissing.get(k)>ASM_PC_WAIT};
 async function asmCmEnsure(o,ahead){const kind=asmCmKind(o);if(!kind)return;if(asmFullWins(o)||asmFor(o))return;const bk='cm|'+comboKey(o);if(asmBusy.has(bk))return;asmBusy.add(bk);
-  try{if(!await asmCmGet(kind)||asmFullWins(o))return;
-    if(await asmGetPre(o)){const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow();return}
+  try{const k=asmOutKey(o),L=await asmListGet(),showIf=()=>{const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()};
+    // (2026-11-13) the computer's picture first, before any of the master's photos: it nearly always has it, and the master, its masks
+    // and parts (2.8 MB, about 7 s on 4G) are only needed to paint here. The list says whether it has it; without a list, ask anyway
+    if((!L||L.has(k))&&await asmGetPre(o,!!L)){showIf();return}
+    // not built: while building ahead, left to the computer (it builds changed looks every few minutes) unless it hasn't for
+    // ASM_PC_WAIT (the computer is off); the day on screen is painted here at once
+    if(ahead&&L&&!asmCmLate(k))return;
+    if(!await asmCmGet(kind)||asmFullWins(o))return;
     const img=await asmPhoto(o,!ahead);if(!img)return;
-    const k=asmOutKey(o),rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();
-    const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()}
+    const rec={img,stamp:asmStamp(o),t:Date.now()};asmOut[k]=rec;await metaPut('asm:out:'+k,rec);asmTrim();showIf()}
   catch(e){console.warn('could not paint',e)}finally{asmBusy.delete(bk)}}
 async function asmCmPrebuild(o){const kind=asmCmKind(o);if(!kind||!await asmCmGet(kind))return null;
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
