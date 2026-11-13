@@ -1107,8 +1107,9 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
 // a twill was a flat square, its close-up real cloth); a striped, checked or figured one stays painted (its close-up lost the stripes)
 const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer'){if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${i.swatch}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)}
   return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i)};
-function swatchStack(o,up){const ps=[o.top,o.shirt,o.tie].filter(Boolean);if(!ps.length)return '';
-  return `<div class="swstack${up?' up':''}" role="img" aria-label="${esc(ps.map(i=>slotLabel(i===o.top?'top':i===o.shirt?'shirt':'tie',o)+': '+itemTitle(i)).join('; '))}">${ps.map(i=>`<span class="ovsw">${ovlPiece(i)}</span>`).join('')}</div>`}
+function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
+  // each swatch is a button: it opens that piece up close (swTap)
+  return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" onclick="swTap('${s}')" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
 function wornBar(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),can=+d<=+T,lw=lastWorn(o);
   const pill=lw?`<small class="lastworn">Last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
@@ -1466,7 +1467,7 @@ function renderToday(){
   else{stage=first+figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
-  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);fitNavSoon();
+  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();
   if(items.length){recordDays(p).then(lockUpcoming);
   }
 }
@@ -1475,7 +1476,7 @@ function renderToday(){
    the picture back out: it starts as soon as the drag is known to be sideways, so the boxes fold while the day slides */
 let foldQuiet=false;
 function foldAll(){foldQuiet=true;try{if(openRow)toggleRow(openRow);if(belowOpen)pickPiece(belowOpen);if(scoreOpen)toggleScore();if(listOpen)toggleList();if(monthOpen)toggleMonth()}
-  catch(e){console.warn(e)}finally{foldQuiet=false}scoreOpen=listOpen=monthOpen=false;belowOpen=openRow=null;zoomOut()}
+  catch(e){console.warn(e)}finally{foldQuiet=false}scoreOpen=listOpen=monthOpen=false;belowOpen=openRow=null;zoomOut();if(typeof swClose==='function')swClose()}
 /* ---- double-tap the Today picture (the photo, or the drawing) to zoom in on the tie and shirt, again to zoom back out; while
    zoomed, a drag pans it (and doesn't change the day). 2.5x: the outfit photo is 1024 px square and fills about 390 px on a phone,
    so 2.5x shows it at about its own resolution (any more is only blur), with a collar, tie knot or shirt front filling the frame. ---- */
@@ -1489,9 +1490,39 @@ function clampZoom(){const c=$('#mannequin-container');if(!c||!zoom)return;const
 /* wherever it is tapped, it zooms in on the tie and the shirt: centred across, the top of the picture (the collar and the knot)
    at the top of the frame, as the owner asked; a drag then pans from there */
 function toggleZoom(){const c=$('#mannequin-container'),t=zoomTarget();if(!c||!t)return;
+  if(swOpen){swClose();return}   // a swatch open up close: the double tap closes it
   if(zoom)zoom=null;else{zoom={k:key(sel),x:c.clientWidth*(1-ZOOM)/2,y:0};clampZoom()}
   applyZoom(true)}
 function zoomOut(){if(zoom){zoom=null;applyZoom(true)}}
+/* ---- a swatch tapped (the owner's pick, 2026-11-13, from mockups: "C", revised twice): the swatch opens large at the top left with the
+   piece's name under it, the small swatches shrink in their column at the bottom left, and the photo zooms (SW_Z) and moves so the piece
+   lands at SW_AT on the right, ringed (no label: the owner's ask). Another swatch switches, the same swatch or a tap on the picture
+   closes it, and so do a swipe to another day and the double-tap zoom. Photos only (the drawn figure has no stack). ---- */
+const SW_Z=2.3,SW_AT=[.7,.4];
+// where each piece is on each colour-coded master (fractions of the picture): the point deepest inside it, measured from the masters'
+// masks at 512 (the jacket's body without its sleeves and lapels); r its inscribed radius, which sizes the ring. A picture made another
+// way (an outfit photo, the earlier assembler) takes the suit master's, or the open-collar shirt master's without a jacket
+const SW_SPOT={suit:{top:[.341,.606,.106],shirt:[.419,.12,.043],tie:[.481,.315,.053]},vest:{top:[.341,.604,.106],shirt:[.544,.052,.039],tie:[.483,.247,.049]},
+  'suit-open':{top:[.341,.606,.106],shirt:[.478,.261,.072]},'shirt-tie':{shirt:[.335,.224,.129],tie:[.497,.519,.039]},'shirt-open':{shirt:[.364,.206,.144]}};
+let swOpen=null;
+const swKind=o=>{let k=null;try{k=typeof asmCmUse==='function'&&typeof ASM_ON!=='undefined'&&ASM_ON?asmCmUse(o):null}catch(e){}return SW_SPOT[k]?k:o.top?(o.vest?'vest':'suit'):o.tie?'shirt-tie':'shirt-open'};
+const swSpot=(o,s)=>(SW_SPOT[swKind(o)]||{})[s]||SW_SPOT.suit[s]||SW_SPOT['shirt-tie'][s];
+function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFor()[key(sel)];if(!c)return;
+  const on=!!(swOpen&&swOpen.k===key(sel)&&t&&o&&o[swOpen.s]&&c.classList.contains('photo')&&c.querySelector('.swstack'));if(!on)swOpen=null;
+  c.classList.toggle('swopen',on);c.querySelectorAll('.swstack .ovsw').forEach(b=>{const me=on&&b.dataset.s===swOpen.s;b.classList.toggle('on',me);b.setAttribute('aria-pressed',me)});
+  const motion=anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!on){c.querySelectorAll('.swlens,.swlab,.swring').forEach(e=>e.remove());if(t&&!zoom){t.style.transition=motion?'transform .45s cubic-bezier(.2,.8,.2,1)':'none';t.style.transform=''}return}
+  const W=c.clientWidth,H=c.clientHeight,[fx,fy,r]=swSpot(o,swOpen.s),cl=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  // the piece moved to SW_AT, but never past the picture's edges (no blank space shows)
+  const tx=cl(SW_AT[0]*W-SW_Z*fx*W,W-SW_Z*W,0),ty=cl(SW_AT[1]*H-SW_Z*fy*H,H-SW_Z*H,0);
+  t.style.transformOrigin='0 0';t.style.transition=motion?'transform .45s cubic-bezier(.2,.8,.2,1)':'none';t.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${SW_Z})`;
+  const it=o[swOpen.s],mk=(cls,html)=>{let e=c.querySelector(':scope > .'+cls);if(!e){e=document.createElement('div');e.className=cls;e.setAttribute('aria-hidden','true');c.appendChild(e)}if(html!=null)e.innerHTML=html;return e};
+  mk('swlens',ovlPiece(it));mk('swlab',`<b class="${titleCls(it)}">${esc(itemTitle(it))}</b>`);
+  const ring=mk('swring'),d=cl(2*r*SW_Z,.16,.26)*W;ring.style.width=ring.style.height=d+'px';ring.style.left=(tx+SW_Z*fx*W)+'px';ring.style.top=(ty+SW_Z*fy*H)+'px'}
+function swTap(s){const k=key(sel);if(zoom){zoom=null;applyZoom(false)}swOpen=swOpen&&swOpen.k===k&&swOpen.s===s?null:{k,s};swApply(true)}
+function swClose(){if(swOpen){swOpen=null;swApply(true)}}
+// a tap on the picture (not on a swatch or another button) closes it
+$('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.closest&&e.target.closest('#mannequin-container');if(c&&!e.target.closest('button,a'))swClose()});
 (()=>{const el=$('#today'),inPic=e=>{const c=e.target.closest&&e.target.closest('#mannequin-container');return c&&!e.target.closest('button,a')?c:null};
   el.addEventListener('touchstart',e=>{const c=inPic(e);if(!c||e.touches.length>1){zoomPan=null;return}const t=e.touches[0];
     zoomPan={x0:t.clientX,y0:t.clientY,t:Date.now(),zx:zoom?zoom.x:0,zy:zoom?zoom.y:0,moved:false}},{passive:true});
