@@ -8,7 +8,7 @@
 //   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run assemble -- [--days 120] [--jobs 8] [--dry] [--save <folder>] [--origin <app url>]
 //
 //   --days    how far ahead to plan (default 120)
-//   --jobs    how many looks are built at once, each in a page of its own (default: half the computer's cores, at most 8)
+//   --jobs    how many looks are built at once, each in a page of its own (default: half the computer's logical cores, at most 16)
 //   --dry     build and report, upload nothing
 //   --save    a folder to keep a copy of every picture in, to look at (named <first day>-<key>.jpg)
 //   --origin  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/): the page is served from this
@@ -23,7 +23,7 @@ const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'
 const ROOT=path.join(__dirname,'..');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:process.argv[i+1]};
 const DRY=process.argv.includes('--dry'),DAYS=Math.max(1,Math.min(400,+arg('days',120)||120)),SAVE=arg('save','');
-const JOBS=Math.max(1,Math.min(32,+arg('jobs',Math.min(8,Math.max(1,Math.floor(os.cpus().length/2))))||1));
+const JOBS=Math.max(1,Math.min(32,+arg('jobs',Math.min(16,Math.max(1,Math.floor(os.cpus().length/2))))||1));   // half the logical cores (one a physical core on a hyperthreaded CPU), at most 16; each page about 0.7 GB
 const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrobe/')).replace(/\/?$/,'/');
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 if(process.argv.includes('--help')||!WORKER.startsWith('http')||!TOKEN){
@@ -62,6 +62,9 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
     const synced=await page.evaluate(async()=>{const ok=await syncNow();return {ok,items:items.length,on:typeof ASM_ON!=='undefined'&&ASM_ON}});
     if(!synced.ok||!synced.items){console.error('Could not load the wardrobe from the backup:',await page.evaluate(()=>localStorage.getItem('sync_status')));process.exit(2)}
     if(!synced.on){console.error('Assembled pictures are switched off in this checkout (ASM_ON in assemble.js).');process.exit(2)}
+    // the weather before any planning: a fresh page fetches the forecast and the climate in the background, and plans made before they
+    // arrived differed from page to page (a run listed one outfit and built another) and from the phone's (whose upload it then missed)
+    await page.evaluate(async()=>{try{await loadClimate();await loadWeather()}catch(e){}cache={}});
     // the colour-coded masters (asm-color.js): painted here at their full 2880 and scaled to 2048 (a phone paints at 2048)
     await page.evaluate(async()=>{await asmGet(asmMasterKey(),true);if(typeof ASM_CM_KINDS!=='undefined'){self.ASM_CM_SIZE=2880;for(const k of Object.keys(ASM_CM_KINDS))await asmGet(asmCmKey(k,'master'),true)}});
     return {page,items:synced.items}};
