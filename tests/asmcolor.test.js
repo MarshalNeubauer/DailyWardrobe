@@ -55,6 +55,14 @@ module.exports=async({ok,chromium,url})=>{
       let raw=0;const walk=x=>{if(ArrayBuffer.isView(x)){raw+=x.byteLength;return}if(x&&typeof x==='object')for(const v of Object.values(x))walk(v)};walk({...P,M:null});
       return {same:a.url===b.url,gz:pack&&pack.gz.byteLength,raw,M:Q&&Q.M.length===P.M.length}});
     ok(pk.same&&pk.M&&pk.gz<pk.raw/5,`a master's setup packed (${(pk.raw/1024|0)} KB -> ${(pk.gz/1024|0)} KB gzipped) and read back paints the identical picture`);
+    // the background picture (asmCmBgKey): once the worker has one, the wall is that picture (here a flat green), and every look's key changes
+    const bgKey=await p.evaluate(()=>asmCmBgKey());
+    served[bgKey]={sig:'asm/cm bg',model:'colormaster',t:2000,img:await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#2f7a3a';x.fillRect(0,0,64,64);return c.toDataURL('image/png')})};
+    const bg=await p.evaluate(async k=>{const W=__W,o={shirt:W.shirt2,watch:W.watch,top:W.suit,tie:W.tie};const k0=asmOutKey(o);asmTried.delete(k);
+      await asmCmLook(o);const k1=asmOutKey(o);await asmEnsure(o);const f=asmFor(o);let px=null;
+      if(f){const im=new Image();await new Promise(r=>{im.onload=r;im.src=f.img});const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(3,3,1,1).data].slice(0,3)}
+      return {held:!!renders[k],changed:k0!==k1,px}},bgKey);
+    ok(bg.held&&bg.changed&&bg.px&&bg.px[1]>bg.px[0]+25&&bg.px[1]>bg.px[2]+25,`with a background on the worker, the wall is that picture and the look's key changes (corner ${bg.px})`);
     // the switch in Settings: off on this phone, every outfit goes the earlier way
     const sw=await p.evaluate(()=>{openSettings('photos');renderAsmUI();const sel=document.querySelector('#cfg-cm');const r={there:!!sel,val:sel&&sel.value};
       asmCmSet('off');const W=__W;r.off=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});asmCmSet('on');r.on=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});closeSettings&&closeSettings();return r});
@@ -78,15 +86,16 @@ module.exports=async({ok,chromium,url})=>{
       const recs={};const d=path.join(FIX,'suit');for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
         recs[n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(d,f)).toString('base64'),model:'colormaster',t:1000}}
       const keys=await p.evaluate(ns=>ns.map(n=>asmCmKey('suit',n)),Object.keys(recs));Object.keys(recs).forEach((n,i)=>served[keys[i]]=recs[n]);const masterKeys=new Set(keys);
+      const bgKey=await p.evaluate(()=>asmCmBgKey());served[bgKey]={sig:'asm/cm bg',model:'colormaster',t:2000,img:recs.master.img};   // (the background: in every look's key)
       await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;asmAheadSoon=()=>{};asmAhead=async()=>{};
         let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
         window.__W={watch:I('watch','silver',{metal:'silver'}),suit:I('suit','navy'),shirt:I('shirt','pink'),shirt2:I('shirt','lightblue'),tie:I('tie','burgundy')};items=Object.values(__W)},HOST);
       // the computer's picture of one suit day, under that look's key
-      const built=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};return {k:asmOutKey(o),zv:ASM_ZV,use:asmCmUse(o)}});
+      const built=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};const k0=asmOutKey(o);await asmCmLook(o);return {k0,k:asmOutKey(o),zv:ASM_ZV,use:asmCmUse(o)}});
       served[built.k]={sig:`asm/out/z${built.zv}/2000`,img:recs.master.img,model:'',t:2000};
       const r1=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o);return {use:asmCmUse(o),shown:!!f,master:!!renders[asmCmKey('suit','master')]}});
-      const a1=asked.slice();
-      ok(built.use==='suit'&&r1.shown&&!r1.master&&a1.length===1&&a1[0]===built.k,`a look the computer built: only its picture is downloaded, not the master, its masks or parts (asked for ${a1.length}: ${a1.map(k=>masterKeys.has(k)?'master record':k===built.k?'the picture':k).join(', ')})`);
+      const a1=asked.slice(),name=k=>masterKeys.has(k)?'master record':k===built.k?'the picture':k===bgKey?'the background':k;
+      ok(built.use==='suit'&&built.k0!==built.k&&r1.shown&&!r1.master&&a1.length===2&&a1.includes(built.k)&&a1.includes(bgKey),`a look the computer built: only the background (once, it is in every look's key) and the picture are downloaded, not the master, its masks or parts (asked for ${a1.length}: ${a1.map(name).join(', ')})`);
       const r2=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt2,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o,true);const a=!!asmFor(o);await asmEnsure(o);return {ahead:a,screen:!!asmFor(o),master:!!renders[asmCmKey('suit','master')]}});
       const a2=asked.slice(a1.length);
       ok(!r2.ahead&&a2.filter(k=>masterKeys.has(k)).length===masterKeys.size&&r2.screen&&r2.master,`a look nobody built: left to the computer while building ahead (nothing downloaded), painted here for the day on screen (${a2.length} records downloaded then)`);
@@ -102,6 +111,8 @@ module.exports=async({ok,chromium,url})=>{
     const ver=/const ASM_VER=(\d+)/.exec(fs.readFileSync(path.join(__dirname,'..','assemble.js'),'utf8'))[1],cmv=/const ASM_CMV=(\d+)/.exec(fs.readFileSync(path.join(__dirname,'..','asm-color.js'),'utf8'))[1];
     const want='c'+fnv(`asm/${ver}/cm${cmv}/suit/master`);
     ok(r.status===0&&r.stdout.includes('suit master -> '+want)&&/lapelL/.test(r.stdout),`tools/asm-cm-upload.js puts each record under the app's own key (${(r.stdout.match(/suit master -> \S+/)||[r.stderr])[0]})`);
+    const rb=spawnSync(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),'--bg',path.join(src,'master.jpg'),'--dry'],{encoding:'utf8'});
+    ok(rb.status===0&&rb.stdout.includes('all background -> c'+fnv(`asm/${ver}/cm${cmv}/all/background`)),`--bg puts the background under the app's key (${(rb.stdout.match(/all background -> \S+/)||[rb.stderr])[0]})`);
     fs.rmSync(tmp,{recursive:true,force:true})}
 };
 module.exports.assembled=true;   // tests assembled pictures (assemble.js)

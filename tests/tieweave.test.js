@@ -23,7 +23,7 @@ module.exports=async({ok,chromium,url})=>{
       const f=await asmTieFor(tc),spec={layout:'texture',texture:{kind:'diamond',grid:tex.tex.grid,raised:{hex:'#333333'},ground:{hex:'#111111'},contrast:'medium',aspect:1},repeatsInCloseup:40,repeatsAcrossItem:32};
       const fromSpec=specSett(spec,{type:'tie'}),dTie=fabricDef('a',tc,'tie','asmtie'),dPlain=fabricDef('b',tc,'tie');
       const tone=d=>(d.match(/fill="(#[0-9a-f]{6})"/)||[])[1];
-      return {usable:[!!usableSett(tc),!!usableSett(st),!!usableSett(sh)],tile:!!f.c&&f.TW>0&&f.across===32,spec:!!(fromSpec&&fromSpec.tex),
+      return {usable:[!!usableSett(tc),!!usableSett(st),!!usableSett(sh)],tile:!!f.c&&f.TW>0&&f.across===Math.min(32,ASM_TIE_FIG_MAX),spec:!!(fromSpec&&fromSpec.tex),
         stronger:tone(dTie)!==tone(dPlain),sig:asmTieSig(tc)!==asmTieSig({...tc,sett:null})}});
     ok(x.usable.join()==='true,false,true','a tonal-check tie keeps a weave reading; a striped tie does not (a shirt still does)');
     ok(x.spec&&x.tile,'Claude\'s weave answer becomes a tie reading, and the tie painter gets a tile repeated across the tie');
@@ -33,6 +33,17 @@ module.exports=async({ok,chromium,url})=>{
       const t={id:'bt',type:'tie',primaryColor:'burgundy',pattern:'woven',sett:s},op=d=>+((d.match(/stroke-opacity="([\d.]+)"/)||[])[1]||0);
       const f=await asmTieFor(t);return {stronger:op(fabricDef('a',t,'tie','asmtie'))>op(fabricDef('b',t,'tie')),across:f.across,max:ASM_TIE_TEX_MAX}});
     ok(tw.stronger&&tw.across===tw.max&&tw.max<80,`a twill tie's ribs are drawn stronger on the model and capped at ${tw.max} across (Claude counted 80)`);
+    // on a phone the picture is shrunk ~1.75x: a figured weave repeats at most ASM_TIE_FIG_MAX across (a twill keeps ASM_TIE_TEX_MAX), and a
+    // very dark tie's figured weave is drawn TIE_DARK_X stronger (the owner's black tonal check read flat black, 2026-11-13)
+    const ph=await p.evaluate(async()=>{const dia={kind:'diamond',grid:['00011000','00100100','01000010','10000001','10000001','01000010','00100100','00011000'],aspect:1,lighter:true,contrast:'low',rel:.35};
+      const black={id:'bk',type:'tie',primaryColor:'black',pattern:'tonal-check',sett:{v:4,tex:dia,a:0,cr:40,tr:32,src:'claude+pixels'}},grey={...black,id:'gy',primaryColor:'silver'};
+      const tw={id:'tw',type:'tie',primaryColor:'black',pattern:'woven',sett:{v:4,tex:{...dia,kind:'twill',grid:['0001','0010','0100','1000']},a:0,cr:60,tr:80,src:'claude+pixels'}};
+      const fb=await asmTieFor(black),ft=await asmTieFor(tw),lo=(i,ctx)=>(fabricDef('t',i,'tie',ctx).match(/fill="(#[0-9a-f]{6})"/)||[])[1];
+      // the ground tone drawn on the model against the one each strength gives (the weave's light tone is inside the tile image)
+      const want=(i,k)=>texTones(colOf(i),i.sett.tex,k)[0];
+      return {fig:fb.across,twill:ft.across,max:[ASM_TIE_FIG_MAX,ASM_TIE_TEX_MAX],darkBoost:lo(black,'asmtie')===want(black,TIE_TEX_K*TIE_DARK_X)&&lo(black,'asmtie')!==want(black,TIE_TEX_K),lightPlain:lo(grey,'asmtie')===want(grey,TIE_TEX_K)}});
+    ok(ph.fig===ph.max[0]&&ph.twill===ph.max[1]&&ph.max[0]<32,`a figured weave repeats at most ${ph.max[0]} times across a tie on the model (a twill ${ph.max[1]})`);
+    ok(ph.darkBoost&&ph.lightPlain,"a very dark tie's weave is drawn stronger (TIE_DARK_X); a light tie's keeps the tie strength");
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };

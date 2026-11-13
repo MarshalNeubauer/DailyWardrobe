@@ -418,8 +418,10 @@ const asmCmSeen=k=>{if(!asmCmListed){try{asmCmListed=new Set(JSON.parse(localSto
 const asmCmHeld=k=>{const m=asmCmKey(k,'master');return !!(renders[m]||(asmList?asmList.has(m):asmCmSeen(m)))};
 const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmCmKind(o);return k&&asmCmHeld(k)?k:null};
 /* look for the outfit's colour-coded master on the worker, once a session: in the worker's list (one small request), else by downloading it */
-const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(!k||renders[asmCmKey(k,'master')])return;
-  const L=await asmListGet();if(L&&L.has(asmCmKey(k,'master')))return;if(!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k)};
+const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(!k)return;
+  if(!renders[asmCmKey(k,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(k,'master')))&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k)}
+  // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the computer's pictures
+  if(asmCmHeld(k))await asmCmBgGet()};
 const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(asmCmHeld);
 /* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB), refreshed after ASM_LIST_MS: which looks the
    computer has built (npm run assemble) and which colour-coded masters are there. Asked for once per refresh, by everything that needs
@@ -950,14 +952,17 @@ function asmStripeCount(d){const S=Math.min(1,220/d.width),w=Math.round(d.width*
 /* a tie's weave repeats at most this many times across the tie: about 4 px a repeat at 2048 (the tie ~214 px mid-chest); Claude counted 80
    ribs on the owner's burgundy twill, under 3 px each, and they blurred into flat colour (2026-11-13) */
 const ASM_TIE_TEX_MAX=50;
+/* a figured weave (a dobby's diamonds, not a twill's ribs) at most 22 repeats across: on a phone the picture is shrunk about 1.75 times,
+   and at 32 the owner's black tonal-check tie's diamond grid (about 6 px a repeat) averaged out to flat black (2026-11-13) */
+const ASM_TIE_FIG_MAX=22;
 const asmTieMemo=new Map();
 async function asmTieFor(i){const k=asmTieSig(i);if(asmTieMemo.has(k))return asmTieMemo.get(k);const s=usableSett(i),hex=colOf(i);let r={hex};
   // a woven tie's weave (tex) too: its raised grid, a tile repeated tr times across
-  if(s&&(s.bands||s.motif||s.tex)){const t=await asmTieTile(i);if(t){let across=+s.tr||1.5;if(s.tex)across=Math.min(across,ASM_TIE_TEX_MAX);
+  if(s&&(s.bands||s.motif||s.tex)){const t=await asmTieTile(i);if(t){let across=+s.tr||1.5;if(s.tex)across=Math.min(across,['twill','herringbone'].includes(s.tex.kind)?ASM_TIE_TEX_MAX:ASM_TIE_FIG_MAX);
       if(s.bands&&!s.cross&&i.texture&&s.cr>0)try{const n=asmStripeCount(await asmData(i.texture));if(n&&(n/s.cr>1.35||n/s.cr<.74))across*=n/s.cr}catch{}   // the close-up shows another count
       r={hex,c:t.c,TW:t.TW,TH:t.TH,motif:!!s.motif,across,ang:(+s.a||0)*Math.PI/180}}}
   if(asmTieMemo.size>40)asmTieMemo.clear();asmTieMemo.set(k,r);return r}
-const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_TIEV+(s&&s.tex?'k'+TIE_TEX_K+'m'+ASM_TIE_TEX_MAX:''),colOf(i),settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
+const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_TIEV+(s&&s.tex?'k'+TIE_TEX_K+'m'+ASM_TIE_TEX_MAX+'f'+ASM_TIE_FIG_MAX+'d'+TIE_DARK_L+'x'+TIE_DARK_X:''),colOf(i),settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
 /* the colour-free part, once per master and tie calibration: the tie zone's pixels, their shading, the knot (the rows above the narrowest
    row under it, in the tie's top 30%), the blade's lean (second moments) and its width */
 function asmTiePrep(master,calib,zt){const W=master.width,N=W*W,L=ASM_LIN,Y=(d,j)=>.2126*L[d[j]]+.7152*L[d[j+1]]+.0722*L[d[j+2]],idx=[];for(let k=0;k<N;k++)if(zt[k])idx.push(k);if(!idx.length)return null;

@@ -83,13 +83,21 @@ const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOu
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV];
   for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
+  const bg=renders[asmCmBgKey()];if(bg)s.push('bg:'+bg.t+'/'+ASM_CM_BG_SHADOW);
   return s.join('|')}
 const asmCmItems=(o,k)=>{const z={shirt:o.shirt};if(k==='suit'||k==='vest'){z.jacket=o.top;if(k==='vest')z.waistcoat=o.top}else{z.trousers=o.bot;z.belt=o.belt}if(o.tie&&k!=='shirt-open')z.tie=o.tie;return z};
 const asmCmOutKey=o=>asmKey('out/cm'+ASM_CMV+'/'+fnv64(asmCmSig(o)));
 const asmCmStamp=o=>{const k=asmCmKind(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
-/* bring the kind's master, masks and parts onto the device (true when all are here) */
+/* bring the kind's master, masks and parts onto the device (true when all are here); the background too, when the worker has one */
 async function asmCmGet(kind){const keys=asmCmAssets(kind);if(!keys.length)return false;if(!await asmGet(keys[0],true))return false;
-  return (await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean)}
+  await asmCmBgGet();return (await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean)}
+/* the background behind every master (2026-11-13, the owner's choice: a blurred office the colour of his earlier masters, made with
+   ChatGPT as an empty room and its desk carried further left so its end hides behind the trousers on the shirt masters): one picture on
+   the worker (`npm run cm-upload -- --bg <file>`), shared by the four masters; without it the wall is the flat ASM_CM_WALL as before.
+   It goes in each look's key (its record's date), so a new background paints every look again. */
+const asmCmBgKey=()=>asmCmKey('all','background');
+async function asmCmBgGet(){const k=asmCmBgKey();if(!renders[k])await asmGet(k);return !!renders[k]}
+const ASM_CM_BG_SHADOW=.22;   // the figure's soft shadow on the wall behind (moved down and right, blurred wide), at most this much darker
 
 /* ---- page side: the job (what the picture needs, as plain data the worker can take) ---- */
 const ASM_CM_SOFT={top:.3,bot:.3,shirt:.45};   // a swatch drawing's contrast on full-size cloth (toward its ground): jackets and trousers 30%, shirts 45%
@@ -153,7 +161,8 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
       else if(how==='tile'){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
     }catch(e){console.warn('cloth',z,e)}
     cloth[z]=c}
-  return {cm:kind,size:self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,master:renders[keys[0]].img,masks,parts,cloth,
+  const bg=renders[asmCmBgKey()];
+  return {cm:kind,size:self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,master:renders[keys[0]].img,masks,parts,cloth,bg:bg?bg.img:null,bgt:bg?bg.t:0,
     bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null}}
 
 /* ---- the pixel work (page or worker): the colour-free part once per master (asmCmPrep), then each outfit (asmCmBuild) ---- */
@@ -186,7 +195,13 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
       keep[z]={I,C};continue}   // (the edge pixels in order: looked up by binary search, a map over every pixel was 33 MB a zone at 2880)
     const sh=z==='shirt',ref=pct(a,sh?.9:.75)||1,cap=sh?1.15:1.6,v=new Float32Array(N);for(let k=0;k<N;k++)v[k]=Math.min(cap,Y[k]/ref);
     const o=pushOut(a,v),u=new Uint16Array(N);for(let k=0;k<N;k++)u[k]=Math.round(Math.max(0,o[k])*40000);shade[z]=u}
-  const P={kind:job.cm,S,N,M,A,names,shade,keep,geo:null,tieGeo:null,cuff:null,cuffAng:[0],pxmm:ASM_PX_MM*S/ASM_SIZE*K.pxmm};
+  const P={kind:job.cm,S,N,M,A,names,shade,keep,geo:null,tieGeo:null,cuff:null,cuffAng:[0],pxmm:ASM_PX_MM*S/ASM_SIZE*K.pxmm,bgShadow:null};
+  // the figure's shadow on the wall behind (for a background picture): everything but the wall, moved down and to the right and blurred
+  // wide (three box blurs ~ a gaussian); 0..255
+  if(A.background){const f=S/2048,dx=Math.round(34*f),dy=Math.round(20*f),R=Math.max(2,Math.round(50*f));let g=new Float32Array(N);
+    for(let y=0;y<S;y++)for(let x=0;x<S;x++){const sx=x-dx,sy=y-dy;g[y*S+x]=sx>=0&&sy>=0?1-A.background[sy*S+sx]/255:0}
+    for(let i=0;i<3;i++){const b=asmCmBlur(g,S,R),d=(2*R+1)*(2*R+1);for(let k=0;k<N;k++)g[k]=b[k]/d}
+    const u=new Uint8Array(N);for(let k=0;k<N;k++)u[k]=Math.round(Math.min(1,g[k])*255);P.bgShadow=u}
   // the sleeves and lapels: the jacket's (or on the shirt masters the shirt's; its body stays upright, the body's flow is a jacket's)
   const GAR=A.jacket?'jacket':A.shirt?'shirt':null,sm=[],lm=[];
   for(const s of ['sleeveR','sleeveL'])if(job.parts[s]){const d=(await asmData(job.parts[s],S)).data,m=new Uint8Array(N);for(let k=0;k<N;k++)m[k]=d[4*k]>127?1:0;sm.push(m)}
@@ -296,6 +311,8 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     if(!P){P=await asmCmPrep(job);if(disk)asmCmPack(P).then(x=>x&&asmCmDiskPut(dk,x,job.cm+'|'))}   // saved while the picture is painted
     hit={key,P};asmCmMem.list.push(hit)}
   const P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
+  // the background picture at this size (kept while the same picture and size come back)
+  let BG=null;if(job.bg&&P.bgShadow){const bk=job.bgt+'|'+S;if(!asmCmMem.bg||asmCmMem.bg.k!==bk)asmCmMem.bg={k:bk,d:(await asmData(job.bg,S)).data};BG=asmCmMem.bg.d}
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
   const WALL=hexLin('#E6E2DC'),KEEP=new Set(['skin','watch','buckle','dark']),CLEAN=248;
   // a jacket pixel's [across, along] (px): a sleeve's tube, a lapel's own axis, the body's stripe flow, or upright
@@ -333,6 +350,10 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
   const c=[0,0,0];
   for(let k=0;k<N;k++){let r=0,g=0,b=0;const x=k%S,y=(k-x)/S,j=4*k;
     for(let zi=0;zi<names.length;zi++){const z=names[zi],a8=A[z][k];if(!a8)continue;const a=a8/255;
+      // the background picture, its share of the pixel as it is (not the master's light: the master's wall was a flat colour whose
+      // blotches showed through), darker by the figure's shadow, dithered a fraction of a level (an 8-bit picture enlarged bands)
+      if(z==='background'&&BG){const s=1-ASM_CM_BG_SHADOW*P.bgShadow[k]/255,h=((Math.imul(k,2654435761)>>>0)%1024)/1024;
+        for(let q=0;q<3;q++){const v=BG[j+q],lo=L[v],hi=L[v<255?v+1:255];c[q]=(lo+(hi-lo)*h)*s}r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
       if(KEEP.has(z)){const K=P.keep[z];let i=-1;if(a8<CLEAN){let lo=0,hi=K.I.length-1;while(lo<=hi){const m=(lo+hi)>>1,v=K.I[m];if(v===k){i=m;break}if(v<k)lo=m+1;else hi=m-1}}if(i<0){c[0]=L[M[j]];c[1]=L[M[j+1]];c[2]=L[M[j+2]]}else{c[0]=K.C[3*i];c[1]=K.C[3*i+1];c[2]=K.C[3*i+2]}
         if(c[1]>Math.max(c[0],c[2]))c[1]=Math.max(c[0],c[2]);   // the chroma-green wall left in a kept zone's edge (a green line along a fingertip)
         r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
