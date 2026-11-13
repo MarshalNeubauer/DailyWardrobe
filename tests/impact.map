@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	82ff67da174da92f9186
+# tested	01c93d5e0a5889f9e07f
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -112,7 +113,7 @@ asmahead.test.js	assemble.js	<any>	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	a
 asmahead.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes
 asmahead.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts
 asmahead.test.js	detect.js	settSig	texPat	usableSett
-asmahead.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+asmahead.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmahead.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 asmahead.test.js	icon-192.png	<loaded>
 asmahead.test.js	icon-512.png	<loaded>
@@ -247,7 +248,7 @@ asmprebuild.test.js	assemble.js	<any>	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmCali
 asmprebuild.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes
 asmprebuild.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	hexRgb	inRotation	itemName	itemTitle	lum	mergeState	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	stateSig	thirdOf	titleCls	trouserKind	typeWord	watchOpts
 asmprebuild.test.js	detect.js	settSig	texPat	usableSett
-asmprebuild.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	swatchSVG	trouserMarks
+asmprebuild.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmprebuild.test.js	index.html	<loaded>
 asmprebuild.test.js	remind.js	remindPrefs	remindRefresh	remindSoon
 asmprebuild.test.js	safety.js	adoptBackupSettings
@@ -378,7 +379,7 @@ care.test.js	care.js	careBack	careBackHint	careBackText	careBadge	careCard	careC
 care.test.js	colpick.js	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
 care.test.js	core.js	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	arriveN	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mergeState	mix	needsTie	nm	normPat	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	sockToe	stamp	stateSig	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 care.test.js	detect.js	texPat	tieWeave	usableSett
-care.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
+care.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 care.test.js	dress.js	dressOn	dressSummary	dressSynced	legacyVest	renderDressUI
 care.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 care.test.js	icon-192.png	<loaded>
@@ -405,7 +406,7 @@ casual.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState
 casual.test.js	colpick.js	EC	colBtn	colLabel	patBtn	patTitle	patVar
 casual.test.js	core.js	COLOR_OPTS	LUM	accentOf	colBase	colName	colOf	colorDesc	colsFor	desc	fitCol	hasVest	hexRgb	itemName	itemSeason	itemTitle	labOf	leatherLabel	leatherWord	leathersFor	lum	lumCol	mix	nm	normCol	normColFor	normPat	patBase	patLabel	patName	patOf	planCol	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 casual.test.js	detect.js	texPat	tieWeave	usableSett
-casual.test.js	draw.js	drawOxfordSide	drawShoePair	drawShoeSide	drawSneakerPair	fabricDef	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
+casual.test.js	draw.js	drawOxfordSide	drawShoePair	drawShoeSide	drawSneakerPair	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 casual.test.js	icon-192.png	<loaded>
 casual.test.js	icon-512.png	<loaded>
 casual.test.js	index.html	<loaded>
@@ -719,7 +720,7 @@ dress.test.js	care.js	careBadge	careCard	careCounts	careLimit	careNote	careNoun	
 dress.test.js	colpick.js	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
 dress.test.js	core.js	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	arriveN	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mergeState	mix	needsJacket	needsTie	nm	normPat	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	sockToe	stamp	stateSig	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 dress.test.js	detect.js	detectQueued	texPat	tieWeave	usableSett
-dress.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
+dress.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 dress.test.js	dress.js	dressNewItem	dressOn	dressSummary	dressSynced	dressWhyUnused	legacyVest	renderDressUI	setDress
 dress.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 dress.test.js	icon-192.png	<loaded>
@@ -744,7 +745,7 @@ figure.test.js	apple-touch-icon.png	<loaded>
 figure.test.js	care.js	careNote
 figure.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText
 figure.test.js	detect.js	usableSett
-figure.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+figure.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 figure.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 figure.test.js	icon-192.png	<loaded>
 figure.test.js	icon-512.png	<loaded>
@@ -821,7 +822,7 @@ history.test.js	apple-touch-icon.png	<loaded>
 history.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes
 history.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 history.test.js	detect.js	usableSett
-history.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+history.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 history.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 history.test.js	icon-192.png	<loaded>
 history.test.js	icon-512.png	<loaded>
@@ -1116,7 +1117,7 @@ navfit.test.js	apple-touch-icon.png	<loaded>
 navfit.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes
 navfit.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord
 navfit.test.js	detect.js	usableSett
-navfit.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+navfit.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 navfit.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 navfit.test.js	icon-192.png	<loaded>
 navfit.test.js	icon-512.png	<loaded>
@@ -1137,7 +1138,7 @@ occasions.test.js	assemble.js	renderAsmUI
 occasions.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes	laundryDays	renderCareUI
 occasions.test.js	core.js	LUM	SLOT_TYPE	accentOf	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	occLabel	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 occasions.test.js	detect.js	texPat	usableSett
-occasions.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+occasions.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 occasions.test.js	dress.js	dressOn	dressSummary	renderDressUI
 occasions.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 occasions.test.js	icon-192.png	<loaded>
@@ -1311,7 +1312,7 @@ picker.test.js	apple-touch-icon.png	<loaded>
 picker.test.js	care.js	careCounts	careLimit	careNote
 picker.test.js	core.js	LUM	SLOT_TYPE	accentOf	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	nm	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 picker.test.js	detect.js	usableSett
-picker.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+picker.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 picker.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 picker.test.js	icon-192.png	<loaded>
 picker.test.js	icon-512.png	<loaded>
@@ -1728,7 +1729,7 @@ run.js: swipe edge cases and month crossing	apple-touch-icon.png	<loaded>
 run.js: swipe edge cases and month crossing	care.js	careNote
 run.js: swipe edge cases and month crossing	core.js	accentOf	colName	colOf	colorDesc	desc	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts
 run.js: swipe edge cases and month crossing	detect.js	usableSett
-run.js: swipe edge cases and month crossing	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+run.js: swipe edge cases and month crossing	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 run.js: swipe edge cases and month crossing	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 run.js: swipe edge cases and month crossing	icon-192.png	<loaded>
 run.js: swipe edge cases and month crossing	icon-512.png	<loaded>
@@ -1827,7 +1828,7 @@ scorefix.test.js	apple-touch-icon.png	<loaded>
 scorefix.test.js	care.js	careNote
 scorefix.test.js	core.js	LUM	SLOT_TYPE	accentOf	avgText	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 scorefix.test.js	detect.js	usableSett
-scorefix.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG	trouserMarks
+scorefix.test.js	draw.js	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 scorefix.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 scorefix.test.js	icon-192.png	<loaded>
 scorefix.test.js	icon-512.png	<loaded>
@@ -2045,7 +2046,7 @@ shop.test.js	care.js	careBadge	careCounts	careLimit	careNote	careState
 shop.test.js	colpick.js	@window.addEventListenerkeydown
 shop.test.js	core.js	<any>	LUM	accentOf	arriveN	avgText	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	stamp	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 shop.test.js	detect.js	usableSett
-shop.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
+shop.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 shop.test.js	dress.js	dressNewItem	legacyVest
 shop.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 shop.test.js	icon-192.png	<loaded>
@@ -2294,7 +2295,7 @@ tagswatch.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState	care
 tagswatch.test.js	colpick.js	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colLabel	colNear	colNewFor	colPickSel	colTarget	cpFig	cpSeg	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	renderColPick	renderPatPick	useColPick
 tagswatch.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	desc	hexRgb	itemName	itemTitle	labOf	lum	mix	normPat	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shadeName	thirdOf	titleCls	trouserKind
 tagswatch.test.js	detect.js	texPat	tieWeave	usableSett
-tagswatch.test.js	draw.js	fabricDef	itemThumb	swatchSVG	trouserMarks
+tagswatch.test.js	draw.js	fabricDef	itemThumb	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 tagswatch.test.js	icon-192.png	<loaded>
 tagswatch.test.js	icon-512.png	<loaded>
 tagswatch.test.js	index.html	<loaded>
@@ -2559,7 +2560,7 @@ ui.test.js	care.js	<any>	careBadge	careCard	careCounts	careLimit	careLists	careN
 ui.test.js	colpick.js	<any>	@window.addEventListenerkeydown	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
 ui.test.js	core.js	<any>	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	avgText	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	normPat	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 ui.test.js	detect.js	<any>	texPat	tieWeave	usableSett
-ui.test.js	draw.js	<any>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
+ui.test.js	draw.js	<any>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 ui.test.js	dress.js	<any>	dressOn	dressSummary	renderDressUI
 ui.test.js	figure.js	<any>	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 ui.test.js	icon-192.png	<loaded>
@@ -2590,7 +2591,7 @@ uipages.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState	careWa
 uipages.test.js	colpick.js	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
 uipages.test.js	core.js	COLOR_OPTS	LUM	accentOf	avgText	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	desc	fitCol	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	nm	normCol	normColFor	normPat	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 uipages.test.js	detect.js	texPat	tieWeave	usableSett
-uipages.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
+uipages.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 uipages.test.js	dress.js	dressOn	dressSummary	renderDressUI
 uipages.test.js	icon-192.png	<loaded>
 uipages.test.js	icon-512.png	<loaded>
@@ -2616,7 +2617,7 @@ vest.test.js	care.js	careBadge	careCard	careCounts	careLimit	careNote	careState	
 vest.test.js	colpick.js	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
 vest.test.js	core.js	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	nm	normPat	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 vest.test.js	detect.js	texPat	tieWeave	usableSett
-vest.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
+vest.test.js	draw.js	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 vest.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 vest.test.js	icon-192.png	<loaded>
 vest.test.js	icon-512.png	<loaded>
