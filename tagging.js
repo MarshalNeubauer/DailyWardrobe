@@ -16,7 +16,8 @@ async function keepTagImg(id,url){try{if(!url||!self.caches)return;const c=await
 async function tagImgOf(id){try{if(!self.caches)return null;const c=await caches.open(TAGIMG_CACHE),r=await c.match(new Request('tagimg/'+id));if(!r)return null;
   const b=await r.blob();return await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)})}catch{return null}}
 
-/* the sharp close-up (CLOSE_MAX, on this device only, in the same cache): the synced close-up is 640 px, too small for a fine weave
+/* the sharp close-up (CLOSE_MAX, on this device only, in the same cache): the synced close-up was 640 px until 2026-11-13 (TEX_MAX is now
+   1536, the same), too small for a fine weave
    (the owner's mid grey blazer: a fine broken twill read as a false micro-check at 480x640). Kept with the synced close-up's
    signature, so a close-up replaced, removed or undone never sends the old sharp copy; another device sends the synced one. */
 const texSig=u=>u?u.length+':'+u.slice(-48):'';
@@ -26,6 +27,29 @@ async function sharpCloseOf(it){if(!it||!it.texture)return null;
   try{if(self.caches){const c=await caches.open(TAGIMG_CACHE),r=await c.match(new Request('closeimg/'+it.id));
     if(r&&r.headers.get('x-tex')===texSig(it.texture)){const b=await r.blob();const u=await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)});if(u)return u}}}catch{}
   return it.texture}
+
+/* close-ups saved at 640 px before TEX_MAX was raised (2026-11-13): on the device that took them the sharp copy (CLOSE_MAX) is still kept,
+   so the synced close-up is made again from it, once (localStorage tex_up). The sharp copy is the camera's light, the synced one may have
+   been white-balanced from the item photo, so the new one keeps the old one's colour: each channel's mean (linear, on 64x64 copies) is
+   matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
+const TEX_UP_FLAG='tex_up',TEX_UP_V='1536';
+async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_UP_V||!self.caches||typeof TEX_MAX==='undefined')return 0}catch{return 0}
+  let n=0;const img=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+  const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
+  const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
+    for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
+  for(const it of items){if(!it.texture)continue;
+    try{const sharp=await sharpCloseOf(it);if(!sharp||sharp===it.texture)continue;
+      const [a,b]=await Promise.all([img(it.texture),img(sharp)]);if(Math.max(a.width,a.height)>=TEX_MAX*.9||Math.max(b.width,b.height)<=Math.max(a.width,a.height)*1.2)continue;
+      const s=Math.min(1,TEX_MAX/Math.max(b.width,b.height)),W=Math.round(b.width*s),H=Math.round(b.height*s),c=document.createElement('canvas');c.width=W;c.height=H;
+      const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,W,H);const ma=mean(a),mb=mean(b),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
+      const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
+      for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
+      it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);n++}
+    catch(e){console.warn('close-up not upgraded',it.id,e)}}
+  try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
+  if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  return n}
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */

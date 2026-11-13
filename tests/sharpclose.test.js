@@ -1,5 +1,5 @@
-// A close-up added in the editor keeps a sharp copy (CLOSE_MAX) on the device; "Read pattern from photo" and the colour picker's
-// Ask Claude send it instead of the 640 px synced one (a fine twill aliased into a false check at that size). A replaced, removed or
+﻿// A close-up added in the editor keeps a sharp copy (CLOSE_MAX) on the device; "Read pattern from photo" and the colour picker's
+// Ask Claude send it instead of the synced one (640 px until 2026-11-13) (a fine twill aliased into a false check at that size). A replaced, removed or
 // undone close-up never sends the old sharp copy.
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -16,7 +16,7 @@ module.exports=async({ok,chromium,url})=>{
     await add();
     const size=u=>p.evaluate(async u=>{const im=await imgOf(u);return [im.naturalWidth,im.naturalHeight]},u);
     const it=await p.evaluate(()=>items[0].texture);
-    ok((await size(it)).join()==='480,640','the synced close-up stays 640 px');
+    ok((await size(it)).join()==='1152,1536','the synced close-up is 1536 px (TEX_MAX, 2026-11-13: it was 640)');
     const sharp=await p.evaluate(()=>sharpCloseOf(items[0]));
     ok((await size(sharp)).join()==='1152,1536','a sharp 1536 px copy is kept on the device');
     await p.evaluate(()=>colAskImgs(items[0],'e').then(x=>window._x=x));
@@ -31,6 +31,15 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(async()=>items[0].texture&&(await sharpCloseOf(items[0]))!==null),'undone, the close-up is back');
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=300;c.height=300;c.getContext('2d').fillRect(0,0,300,300);await setTexture('b1',c.toDataURL('image/jpeg',.85),'')});
     ok(await p.evaluate(async()=>(await sharpCloseOf(items[0]))===items[0].texture),'a different close-up (set without a sharp copy) sends itself, not the old sharp copy');
+    // a close-up saved at 640 before, with its sharp copy on this device: made again from the sharp copy once, in the old one's colour
+    const up=await p.evaluate(async()=>{const mk=(w,h,fill)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle=fill;x.fillRect(0,0,w,h);
+        for(let y=0;y<h;y+=Math.max(2,h/160|0)){x.fillStyle='rgba(0,0,0,.25)';x.fillRect(0,y,w,1)}return c.toDataURL('image/jpeg',.9)};
+      const old=mk(480,640,'#6a7f9c'),sharp=mk(1152,1536,'#8aa0c0');items=[{id:'u1',type:'blazer',primaryColor:'steelblue',pattern:'solid',texture:old,added:1},{id:'u2',type:'blazer',primaryColor:'navy',pattern:'solid',texture:old,added:1}];
+      await keepCloseImg('u1',sharp,old);localStorage.removeItem('tex_up');const n=await upgradeCloseups(),it=items[0],im=await imgOf(it.texture),av=async u=>{const i=await imgOf(u),c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(i,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let s=[0,0,0];for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)s[q]+=d[k+q];return s.map(v=>Math.round(v/256))};
+      return {n,w:im.naturalWidth,h:im.naturalHeight,oldAv:await av(old),newAv:await av(it.texture),kept:(await sharpCloseOf(it))===sharp,other:items[1].texture===old,again:await upgradeCloseups(),flag:localStorage.getItem('tex_up')}});
+    ok(up.n===1&&up.w===1152&&up.h===1536&&up.kept&&up.other,`an old 640 px close-up is made again at 1536 px from this device's sharp copy, which is kept for it; one with no sharp copy is left (${up.n}, ${up.w}x${up.h})`);
+    ok(up.oldAv.every((v,q)=>Math.abs(v-up.newAv[q])<=6),`it keeps the old close-up's colour (${up.oldAv} -> ${up.newAv})`);
+    ok(up.again===0&&up.flag==='1536','it runs once');
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };
