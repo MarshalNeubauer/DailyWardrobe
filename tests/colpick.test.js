@@ -24,6 +24,12 @@ module.exports=async({ok,chromium,url})=>{
     ok(d.saved==='deeptaupe'&&!d.open&&d.btn==='Deep taupe','"Use" saves it, closes the sheet and the field shows the new colour');
     await p.click('#item-view .colbtn[data-k="secondaryColor"]');await p.keyboard.press('Escape');
     ok(await p.evaluate(()=>!document.querySelector('#col-sheet').classList.contains('on')&&!!document.querySelector('#item-view.on')),'Escape closes the colour sheet and leaves the item open');
+    // an item without a photo: the drawing beside the chip is redrawn in the colour being looked at, nothing saved until "Use"
+    const lv=await p.evaluate(()=>{items.push({id:'sh1',type:'shoes',primaryColor:'grey',pattern:'solid',leather:'calf',added:9});openColPick('e','sh1','primaryColor');
+      const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),before=draw();document.querySelector('#col-sheet .cptile[data-c="tan"]').click();
+      const after=draw(),r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,grey:before.includes(colOf({primaryColor:'grey'})),tan:after.includes(colOf({primaryColor:'tan'}))&&!after.includes(colOf({primaryColor:'grey'})),saved:items.find(x=>x.id==='sh1').primaryColor};
+      document.querySelector('#col-sheet .cptile[data-c="grey"]').click();r.back=draw()===before;closeColPick();items=items.filter(x=>x.id!=='sh1');return r});
+    ok(lv.cap==='As drawn'&&lv.grey&&lv.tan&&lv.saved==='grey'&&lv.back,'without a photo the drawing follows the colour tapped (grey to tan and back), and nothing is saved until Use');
     // Add card: the second colour offers None
     await p.evaluate(ph=>{editing=null;closeItem&&closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
     await p.click('#queue .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cptile:has-text("None")');await p.click('#col-sheet .cpbar button');
