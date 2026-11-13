@@ -130,6 +130,9 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
     for(const l of old)await one(l,0);   // the earlier way: one at a time, in the page's own worker
     saveMade();lastSig=sig;
     console.log(`Done in ${Math.round((Date.now()-t0)/1000)} s: ${built} built, ${uploaded} uploaded, ${skipped} already current, ${failed} not made.`);
+    // patterned pieces the pictures paint plain or generic (asm-color.js: asmCmRoute), so a gap is seen in the log, not only in a picture
+    const gaps=await page.evaluate(()=>typeof asmCmGaps==='function'?asmCmGaps().map(x=>`${sentence(itemTitle(x.i))}: ${x.r.why}`):[]).catch(()=>[]);
+    if(gaps.length)console.log(`Painted plain (${gaps.length}):\n`+gaps.map(g=>'  - '+g).join('\n'));
     return {failed}};
   await cycle(true);
   if(!WATCH){await ctx.close();if(browser)await browser.close();return}

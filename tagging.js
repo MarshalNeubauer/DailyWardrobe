@@ -155,12 +155,25 @@ async function addCustomColor({name,hex,base,types,accent}){name=String(name||''
   applyCustom(settings.custom);await saveUserSettings();return key}
 async function saveColForm(i){const q=queue[i];try{const key=await addCustomColor(q.colForm);q.colForm=null;q.newColor=null;q.primaryColor=key;q.edited={...q.edited,primaryColor:true};
   if(q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);renderAdd();toast(`${colName(key)} added to your colours.`)}catch(e){const el=$('#colerr-'+i);if(el)el.textContent=e.message}}
-function openPatForm(i){const q=queue[i];q.patForm={name:q.newPattern?q.newPattern.name:'',desc:q.newPattern?q.newPattern.why:'',base:q.pattern&&!CUSTOM_PAT[q.pattern]?q.pattern:'solid',types:[q.type]};renderAdd()}
+/* a new pattern's "drawn like" from the words in its name and description (2026-11-13: the owner's "fine worsted twill" and "melange
+   twill" were left drawn like solid, so the outfit pictures painted them plain): the longest listed pattern named in them, a few
+   other words for one, else what the card was tagged */
+const PAT_WORDS=[[/prince of wales|glen ?plaid/i,'glen-check'],[/plaid|tartan/i,'check'],[/serge|gabardine|cavalry/i,'twill'],[/pin ?stripe/i,'pinstripe'],[/chalk ?stripe/i,'chalk-stripe'],[/dots?\b|spots?\b/i,'polka-dot'],[/neat|micro.?print/i,'foulard']];
+function guessPatBase(name,desc,type,fallback){const t=`${name||''} ${desc||''}`,ok=p=>(PATS_BY[type]||[]).includes(p)&&!CUSTOM_PAT[p];
+  const list=(PATS_BY[type]||[]).filter(p=>p!=='solid'&&p!=='other'&&ok(p)).sort((a,b)=>b.length-a.length);
+  for(const p of list)if(new RegExp('\\b'+p.replace(/-/g,'[- ]?')+'\\b','i').test(t))return p;
+  for(const [re,p] of PAT_WORDS)if(re.test(t)&&ok(p))return p;
+  return fallback}
+function openPatForm(i){const q=queue[i],name=q.newPattern?q.newPattern.name:'',desc=q.newPattern?q.newPattern.why:'';
+  q.patForm={name,desc,base:guessPatBase(name,desc,q.type,q.pattern&&!CUSTOM_PAT[q.pattern]?q.pattern:'solid'),types:[q.type]};renderAdd()}
+/* while the base was not picked by hand, it follows the name and description as they are typed */
+function patFormText(i,field,v){const q=queue[i],f=q.patForm;f[field]=v;if(f.baseSet)return;const b=guessPatBase(f.name,f.desc,q.type,null);
+  if(b&&b!==f.base){f.base=b;const s=document.querySelector(`#patbase-${i}`);if(s)s.value=b}}
 function newPatForm(q,i){const f=q.patForm,bases=(PATS_BY[q.type]||['solid']).filter(p=>!CUSTOM_PAT[p]);
   return `<div class="newform"><b>New pattern</b>
-  <label>Name <input type="text" maxlength="24" value="${esc(f.name)}" oninput="queue[${i}].patForm.name=this.value"></label>
-  <label>How it looks <input type="text" maxlength="150" value="${esc(f.desc)}" oninput="queue[${i}].patForm.desc=this.value"></label>
-  <label>Drawn like <select onchange="queue[${i}].patForm.base=this.value">${bases.map(p=>`<option value="${p}"${p===f.base?' selected':''}>${esc(patLabel(p))}</option>`).join('')}</select></label>
+  <label>Name <input type="text" maxlength="24" value="${esc(f.name)}" oninput="patFormText(${i},'name',this.value)"></label>
+  <label>How it looks <input type="text" maxlength="150" value="${esc(f.desc)}" oninput="patFormText(${i},'desc',this.value)"></label>
+  <label>Drawn like <select id="patbase-${i}" onchange="queue[${i}].patForm.base=this.value;queue[${i}].patForm.baseSet=true">${bases.map(p=>`<option value="${p}"${p===f.base?' selected':''}>${esc(patLabel(p))}</option>`).join('')}</select></label>
   <small class="mut">The drawings and the outfit rules use this pattern for it; your close-up shows the real thing.</small>
   <div class="typechecks">${Object.keys(PATS_BY).map(t=>`<label><input type="checkbox" ${f.types.includes(t)?'checked':''} onchange="patFormType(${i},'${t}',this.checked)"> ${TYPES[t]}</label>`).join('')}</div>
   <p class="mut formerr" id="paterr-${i}"></p>
