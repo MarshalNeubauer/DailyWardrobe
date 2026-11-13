@@ -16,7 +16,8 @@ async function keepTagImg(id,url){try{if(!url||!self.caches)return;const c=await
 async function tagImgOf(id){try{if(!self.caches)return null;const c=await caches.open(TAGIMG_CACHE),r=await c.match(new Request('tagimg/'+id));if(!r)return null;
   const b=await r.blob();return await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)})}catch{return null}}
 
-/* the sharp close-up (CLOSE_MAX, on this device only, in the same cache): the synced close-up is 640 px, too small for a fine weave
+/* the sharp close-up (CLOSE_MAX, on this device only, in the same cache): the synced close-up was 640 px until 2026-11-13 (TEX_MAX is now
+   1536, the same), too small for a fine weave
    (the owner's mid grey blazer: a fine broken twill read as a false micro-check at 480x640). Kept with the synced close-up's
    signature, so a close-up replaced, removed or undone never sends the old sharp copy; another device sends the synced one. */
 const texSig=u=>u?u.length+':'+u.slice(-48):'';
