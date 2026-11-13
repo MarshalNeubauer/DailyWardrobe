@@ -929,9 +929,9 @@ body.nocon .conn-only,.connhide{display:none!important}
 .fig .wshare:active{transform:scale(.92)}
 #mannequin-container.zoomed .wshare{opacity:0;pointer-events:none}
 /* the cloth over Today's picture (app.js swatchStack): bottom left, 52 px, no rim, a soft shadow; above ✕ on days that show it (.up: ✕ is 40 px at 10 px); no touches; hidden while zoomed */
-.fig .swstack{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;flex-direction:column;gap:7px;pointer-events:none;transition:opacity .2s}
-.fig .swstack.up{bottom:58px}
-.fig .swstack .ovsw{display:block;width:52px;height:52px;border-radius:11px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.45)}
+.fig .swstack{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;flex-direction:column;gap:9px;pointer-events:none;transition:opacity .2s}
+.fig .swstack.up{bottom:58px}   /* 64 px, a softer shadow and wider gaps (the owner's choice, 2026-11-13: at larger sizes the shadows merged into dark bars) */
+.fig .swstack .ovsw{display:block;width:64px;height:64px;border-radius:13px;overflow:hidden;box-shadow:0 2px 7px rgba(0,0,0,.28)}
 .fig .swstack .ovsw svg,.fig .swstack .ovsw img{display:block;width:100%;height:100%;object-fit:cover}
 #mannequin-container.zoomed .swstack{opacity:0}
 /* Wardrobe's + Add, and What to buy while it waits for a bigger wardrobe */

@@ -1059,7 +1059,34 @@ const ovlSvg=i=>{const v=ovlWeave(i,swatchSVG(ovlItem(i),true));if(i.type!=='tie
 const ovlCloseup=i=>!!(i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type));
 const ovlDrawn=i=>{if(i.type==='tie')return false;if(i.type==='shirt')return true;   // a shirt is always drawn (the owner, 2026-11-13: as in the mockup he chose)
   const s=usableSett(i);return !!(s&&(s.bands||s.motif))||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')};
-const ovlPiece=i=>ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i);
+/* a suit's or blazer's cloth, painted (the owner's choice, 2026-11-13, "Stronger grain" from a mockup, and every suit drawn, never its
+   close-up): its read bands (in Claude's colours, at least OVL_LINE, as ovlItem) as anti-aliased stripes two repeats across, crossing lines
+   over them, and the cloth's grain (ovlGrain: twill ribs, herringbone columns, linen slubs, else a fine plain weave) at OVL_GRAIN times
+   the mockup's base strength; a suit with a stripe, check or figure but no band reading keeps the drawn tile. A PNG, cached. */
+const OVL_PX=260,OVL_GRAIN=2.2,OVL_CROSS=.06,OVL_CROSS_A=.75,OVL_SUITS=new Map();
+const ovlGrain=i=>{const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||'');
+  return /linen/i.test(t)?'linen':/herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':'plain'};
+function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlItem(i),s=usableSett(o),bands=s&&s.v===2&&s.bands&&s.bands.length>1?s.bands:null;
+  if(!bands&&(s&&s.motif||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')))return null;
+  const kind=ovlGrain(i),cx=bands&&s.cross&&s.cross.bands&&Math.abs(Math.abs(s.cross.d)-90)<=20?s.cross:null,flip=bands&&Math.abs(Math.abs(s.a||0)-90)<20;
+  const key=JSON.stringify([bands,cx,flip,kind,colOf(i)]);if(OVL_SUITS.has(key))return OVL_SUITS.get(key);
+  const S=OVL_PX,P=S/2,Pc=P*(cx&&cx.r||1),Q=8,ground=hexRgb(colOf(i));
+  const cum=b=>{let a=0;return b.map(([h,w])=>{const r=[a,a+w,h];a+=w;return r})},at=(B,u)=>{u=((u%1)+1)%1;for(const b of B)if(u>=b[0]&&u<b[1])return b[2];return null};
+  // along: the stripes' colour in each column, the share of each column point inside a band (anti-aliased by Q points)
+  const vb=bands&&cum(bands),col=[];for(let p=0;p<S;p++){const a=[0,0,0];for(let q=0;q<Q;q++){const c=vb?hexRgb(at(vb,(p+(q+.5)/Q)/P)||'#000'):ground;for(let j=0;j<3;j++)a[j]+=c[j]/Q}col.push(a)}
+  const cb=cx&&cum(cx.bands.map(([h,w])=>[h,h?Math.max(w,OVL_CROSS):w])),row=[];
+  for(let p=0;p<S;p++){const a=[0,0,0];let n=0;if(cb)for(let q=0;q<Q;q++){const h=at(cb,(p+(q+.5)/Q)/Pc);if(h){const c=hexRgb(h);for(let j=0;j<3;j++)a[j]+=c[j];n++}}row.push(n?{c:a.map(v=>v/n),k:n/Q*OVL_CROSS_A}:null)}
+  const hash=(x,y)=>{let h=(x*374761393+y*668265263)|0;h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296},m=OVL_GRAIN;
+  const c=document.createElement('canvas');c.width=c.height=S;const X=c.getContext('2d'),D=X.createImageData(S,S);
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){const u=flip?y:x,v=flip?x:y,b=col[u],r=row[v],px=r?b.map((w,j)=>w+(r.c[j]-w)*r.k):b;let g;
+    if(kind==='twill')g=1+m*(.055*Math.sin(2*Math.PI*(x+y)/7)+.03*(hash(x+y,(y-x)>>2)-.5));
+    else if(kind==='herringbone'){const k=Math.floor(x/26),d=k%2?x+y:x-y;g=1+m*(.07*Math.sin(2*Math.PI*d/7)+.03*(hash(d,k)-.5))}
+    else if(kind==='linen')g=1+m*(.05*(hash(x>>1,7)-.5)+.05*(hash(13,y>>1)-.5)+.03*(hash(x,y)-.5));
+    else g=1+m*(.025*Math.sin(Math.PI*x/2)*Math.sin(Math.PI*y/2)+.035*(hash(x,y)-.5));
+    const k=4*(y*S+x);for(let j=0;j<3;j++)D.data[k+j]=Math.max(0,Math.min(255,Math.round(px[j]*g)));D.data[k+3]=255}
+  X.putImageData(D,0,0);const url=c.toDataURL('image/png');if(OVL_SUITS.size>12)OVL_SUITS.clear();OVL_SUITS.set(key,url);return url}
+const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer'){const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)}
+  return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i)};
 function swatchStack(o,up){const ps=[o.top,o.shirt,o.tie].filter(Boolean);if(!ps.length)return '';
   return `<div class="swstack${up?' up':''}" role="img" aria-label="${esc(ps.map(i=>slotLabel(i===o.top?'top':i===o.shirt?'shirt':'tie',o)+': '+itemTitle(i)).join('; '))}">${ps.map(i=>`<span class="ovsw">${ovlPiece(i)}</span>`).join('')}</div>`}
 function wornBar(o){
