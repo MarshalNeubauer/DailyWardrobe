@@ -966,4 +966,11 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cpnm{font-size:12px;line-height:1.2;min-height:2.4em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cpd{font-size:11px;font-weight:600;color:#2f8a57}
 .cpbar{position:sticky;bottom:0;background:var(--card);padding:10px 0 calc(12px + env(safe-area-inset-bottom));margin-top:14px;border-top:1px solid var(--line)}
-.cpbar button{width:100%;min-height:48px;margin:0;border-radius:12px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.cpbar button{width:100%;min-height:48px;margin:0;border-radius:12px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font:inherit;font-size:15px;font-weight:700;cursor:pointer}.cpask{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0 4px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.cpask.done{display:block}
+.cpasktx{flex:1 1 180px;min-width:0}.cpasktx b{display:block;font-size:14px}.cpasktx small{display:block;margin-top:2px;font-size:12.5px;color:var(--mut)}
+.cpaskbtn{min-height:44px;margin:0;padding:0 14px;border-radius:12px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.cpaskbtn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.cpaskbtn:disabled{opacity:.45;cursor:default}
+.cpask .cpai{margin:10px 0 0}.cpaskbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.cpaskbtns .cpaskbtn{flex:1 1 auto}
+.cpaid{color:var(--acc-ink,var(--acc))}

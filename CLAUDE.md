@@ -734,6 +734,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - under it: "Closest to your close-up/photo" (main colour only, from `item.meas` via `nearestCols`: Very close ≤4 ΔE, Close ≤8, Nearest), then every colour `COLOR_OPTS` allows for the type, grouped by family from Lab (`colFamily`: chroma under 9 neutral, then hue bands) and light to dark; accents start with None
 - a tap on a chip only previews it; the bottom button "Use <colour>" / "Keep <colour>" saves through `setq` (Add card) or `sete` (editor); Escape closes it without leaving the item (window keydown in the capture phase)
 - `tests/colpick.test.js`
+- Ask Claude (`colAskRun`, `colAskHtml`): with a close-up, the sheet offers to have Claude read the colours again (cost from `benchEstimate(1)`); the request is the tagger's (`ask`) with the white-balanced close-up, the sharp photo (`tagImgOf`, else the photo) and the close-up's measurement, like `refineFromCloseup` / `benchTagOne`
+- the answer is kept in memory per item (`colAsk`, not saved or synced), so every colour field of that item shows it without asking again; Claude's pick for the field is selected beside the close-up, its runner-up (`altColor`) shown next to it with the confidence and any `newColor`; nothing is saved until "Use …" or "Use all of Claude's colours" (`colAskUseAll`, shown when another colour field would change too)
+- without a close-up it says to add one first; not connected, the button is off with `NEED_CONN`
 
 ### `dress.js`
 

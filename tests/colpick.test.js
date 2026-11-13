@@ -28,6 +28,29 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(ph=>{editing=null;closeItem&&closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
     await p.click('#queue .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cptile:has-text("None")');await p.click('#col-sheet .cpbar button');
     ok(await p.evaluate(()=>queue[0].secondaryColor===null&&document.querySelector('#queue .colbtn[data-k="secondaryColor"]').textContent==='None'),'on the Add card a second colour can be set back to None');
+    // Ask Claude: the close-up, the photo and the close-up's measurement go to the tagger; its pick is selected, its colours can all be taken
+    const asked=[];
+    await p.route('**/fakeworker/**',async r=>{const b=r.request().postDataJSON();asked.push(b);await new Promise(z=>setTimeout(z,300));
+      await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'burgundy',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'wine',altPattern:'none',newColor:null,newPattern:null})}})});
+    await p.evaluate(()=>{localStorage.setItem('worker_url',location.origin+'/fakeworker/');localStorage.setItem('app_token','t')});
+    await p.evaluate(ph=>{queue.length=0;show('wardrobe');items=[{id:'t1',type:'tie',primaryColor:'red',secondaryColor:null,pattern:'solid',photo:ph,texture:ph,added:3}];editing='t1';renderWardrobe()},PH);
+    await p.click('#item-view .colbtn[data-k="primaryColor"]');
+    ok(await p.evaluate(()=>/About \d+¢/.test(document.querySelector('#col-sheet .cpask').textContent)),'with a close-up the sheet offers to ask Claude, with the cost');
+    await p.click('#col-sheet .cpaskbtn');
+    ok(await p.evaluate(()=>/looking at the close-up/.test(document.querySelector('#col-sheet .cpask').textContent)),'it says Claude is looking while it waits');
+    await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
+    const e=await p.evaluate(()=>({txt:document.querySelector('#col-sheet .cpask').textContent,ai:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c),sel:colPick.sel,big:document.querySelector('#col-sheet .cpbig figcaption').textContent,all:!!document.querySelector('#col-sheet .cpask .cpaskbtn:not(.ghost)'),cur:items[0].primaryColor}));
+    ok(asked.length===1&&!!asked[0].closeup&&!!asked[0].measured&&asked[0].measured.src==='closeup','the request carries the close-up and its measurement');
+    ok(/Burgundy and Navy/.test(e.txt)&&/Medium confidence/.test(e.txt)&&e.ai.join()==='burgundy,wine'&&e.sel==='burgundy'&&e.big==='Burgundy',`Claude's pick and runner-up are shown, its pick beside the close-up (${e.txt})`);
+    ok(e.all&&e.cur==='red','nothing is saved until asked; "Use all" is offered since the second colour differs');
+    await p.click('#col-sheet .cpask .cpaskbtn:not(.ghost)');await p.waitForTimeout(200);
+    ok(await p.evaluate(()=>items[0].primaryColor==='burgundy'&&items[0].secondaryColor==='navy'&&!document.querySelector('#col-sheet').classList.contains('on')),'"Use all of Claude’s colours" saves both');
+    await p.click('#item-view .colbtn[data-k="secondaryColor"]');
+    ok(await p.evaluate(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent)&&colPick.sel==='navy')&&asked.length===1,'the second colour shows the same answer without asking again');
+    await p.keyboard.press('Escape');
+    await p.evaluate(()=>{items.push({id:'t2',type:'tie',primaryColor:'red',pattern:'solid',photo:'x',added:4});editing='t2';renderWardrobe()});
+    await p.click('#item-view .colbtn[data-k="primaryColor"]');
+    ok(await p.evaluate(()=>/Add a close-up/.test(document.querySelector('#col-sheet .cpask').textContent)&&!document.querySelector('#col-sheet .cpaskbtn')),'without a close-up it says to add one first');
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };
