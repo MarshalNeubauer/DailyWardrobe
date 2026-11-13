@@ -53,8 +53,17 @@ module.exports=async({ok,chromium,url,settle})=>{
     const r=await p.evaluate(()=>{const s={...items[0],sett:{v:2,a:0,bands:[['#1b2440',8],['#e8e8e8',1]],cr:4,tr:30}};
       return {how:asmCmRoute(s,'trousers').how,pants:asmCmRoute({...items[3],sett:s.sett},'trousers').how,tag:asmCmTrSc('trousers',s),jtag:asmCmTrSc('jacket',s),
         z:Object.keys(asmCmItems({shirt:items[4],bot:s,belt:items[11],tie:items[6]},'shirt-tie')).sort().join(),zo:Object.keys(asmCmItems({shirt:items[4],top:s,vest:true},'vest-open')).sort().join()}});
-    ok(r.how==='bands'&&r.pants==='tile'&&r.tag==='/sc'&&r.jtag==='',`a suit's trousers are painted with its jacket's cloth (${r.how}; odd trousers keep ${r.pants}), and such looks get a new key`);
+    ok(r.how==='bands'&&r.pants==='tile'&&/^\/sc\/lg\d+$/.test(r.tag)&&r.jtag==='',`a suit's trousers are painted with its jacket's cloth (${r.how}; odd trousers keep ${r.pants}), and such looks get a new key`);
     ok(r.z==='belt,shirt,tie,trousers'&&r.zo==='jacket,shirt,waistcoat',`the masters' garments: ${r.z} / ${r.zo}`);
+    // the trousers' lines follow the legs (asmLegsPrep/asmLegsAt): a synthetic pair, hips above the crotch at row 120, two legs below
+    const lg=await p.evaluate(()=>{const S=256,N=S*S,T=new Uint8Array(N),SH=new Uint16Array(N).fill(30000),sk=new Uint8Array(N);
+      for(let y=40;y<S;y++)for(let x=60;x<196;x++){if(y>=120&&x>=124&&x<132)continue;T[y*S+x]=255}
+      const G=asmLegsPrep({trousers:T,skin:sk},SH,S,N),u=(x,y)=>asmLegsAt(G,x,y,y*S+Math.floor(x))[0],d=(x,y)=>u(x+.5,y)-u(x-.5,y);
+      let mono=true;for(const y of [60,200])for(let x=61;x<195;x++)if(T[y*S+x]&&T[y*S+x-1]&&u(x+.5,y)<u(x-.5,y))mono=false;   // (within the cloth: the gap between the legs isn't painted)
+      return {yc:G.yc,fly:Math.round(G.xf[200]),midHip:d(128,60),edgeHip:d(62,60),legMid:d(94,200),legIn:d(122,200),legOut:d(62,200),mono}});
+    ok(lg.yc>=118&&lg.yc<=122&&lg.fly===128,`the crotch and the fly are found (row ${lg.yc}, x ${lg.fly})`);
+    ok(lg.mono&&Math.abs(lg.midHip-1)<.1&&lg.edgeHip>1.5&&Math.abs(lg.legMid-1)<.15&&lg.legIn>1.5&&lg.legOut>1.5,
+      `the lines close up where the cloth turns away: hips ${lg.midHip.toFixed(2)} at the fly, ${lg.edgeHip.toFixed(2)} at the side; a leg ${lg.legMid.toFixed(2)} at its crease, ${lg.legIn.toFixed(2)} / ${lg.legOut.toFixed(2)} at its edges`);
     // nothing to take off on a past day or a no-jacket-or-tie day
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});
     await p.evaluate(()=>setWorn(true));await settle(p,200);

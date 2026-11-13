@@ -126,7 +126,8 @@ const ASM_CM_ZONE={suit:'jacket',blazer:'jacket',pants:'trousers',shirt:'shirt',
 const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOut(i.type)).map(i=>({i,r:asmCmRoute(i,ASM_CM_ZONE[i.type])})).filter(x=>x.r.gap);
 /* trousers painted with the suit cloth (a suit's own trousers, or a twill, tweed or small woven figure) are drawn at the shirt master's
    own scale since 2026-11-13 (they were at the jacket master's, about 1.5 times too large): marked in only those looks' keys */
-const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc':''};
+const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc/lg'+ASM_LEGV:h==='tile'?'/lg'+ASM_LEGV:''};   // (/lg: the lines follow the legs, asmLegsPrep)
+const ASM_LEGV=1;
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV];
   for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
@@ -267,6 +268,8 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
     const seg=sg.seg;let todo=[];for(let k=0;k<N;k++)if(!seg[k]&&A[GAR][k]&&(!zj[k]||(wall&&wall[k]>0)))todo.push(k);
     for(let it=0;it<Math.max(8,RR+2)&&todo.length;it++){const set=[],left=[];for(const k of todo){const x=k%S,v=(x>0&&seg[k-1])||(x<S-1&&seg[k+1])||(k>=S&&seg[k-S])||seg[k+S]||0;if(v)set.push(k,v);else left.push(k)}for(let q=0;q<set.length;q+=2)seg[set[q]]=set[q+1];todo=left}
     P.geo={seg,segs:sg.segs,flow:GAR==='jacket'?asmBodyFlow(zj,sm,S,S):null,gar:GAR}}
+  // the trousers on the shirt masters: their lines follow the legs (asmLegsPrep), as a jacket's follow its sleeves and body
+  if(A.trousers&&P.shade.trousers)P.legs=asmLegsPrep(A,P.shade.trousers,S,N);
   // the tie (asmTiePrep's rules): the knot, the blade's lean and width
   if(A.tie){const wid=new Int32Array(S);let y0=S,y1=0;for(let k=0;k<N;k++)if(A.tie[k]>127){const y=(k/S)|0;wid[y]++;if(y<y0)y0=y;if(y>y1)y1=y}
     // the knot is searched in the tie's top 30%, but no lower than 1.5 of its widest row below its top: on the shirt-and-tie master the
@@ -316,6 +319,57 @@ function asmCmRefit(sg,sm,S,N){const nrm=v=>{const l=Math.hypot(v[0],v[1])||1;re
     const q=nrm([nU[0]-ld[0],nU[1]-ld[1]]);let mv=[-q[1],q[0]];if(mv[0]*(C0[0]-Kc[0])+mv[1]*(C0[1]-Kc[1])<0)mv=[-mv[0],-mv[1]];
     sg.segs[si]=asmSleeveFlow(asmTubeTabs({crease:{x:Kc[0],y:Kc[1],mx:mv[0],my:mv[1],r0:U.r,r1:Lo.r},parts:[{x:U.x,y:U.y,dx:ud[0],dy:ud[1],nx:nU[0],ny:nU[1]},{x:Lo.x,y:Lo.y,dx:ld[0],dy:ld[1],nx:nL[0],ny:nL[1]}]},mf,S,N))}}
 /* a tile in repeats (u, v; bilinear, wrapping), rotated by ang -> [r,g,b] linear */
+/* The trousers' lines (2026-11-13, the owner: "apply the line tracing we have for the jackets to the pants"; their stripes ran dead straight
+   and even across both legs and read as printed on): the jacket's rules carried over to a pair of trousers on a shirt master.
+   - two panels meeting at the fly; below the crotch each leg is a cylinder about its own middle (the crease), above it the hips are one
+     cylinder about the fly, blended over ASM_LEG_BLEND px either side of the crotch; as on a sleeve (asmTubeAt) a point x from the middle
+     is R·asin(x/R) of cloth from it, R = ASM_LEG_K × half the width, so the lines close up where the cloth turns away at the sides and
+     stay parallel to the crease (a tapering leg loses lines at its edges, as cut cloth does)
+   - an outer edge with the hand right beside it is not the cloth's edge: filled in from the rows above and below; every row's edges, the
+     fly and the crotch are smoothed over ASM_LEG_SMOOTH px
+   - the lines bend with the folds: the cloth's large-scale light (the master's shading on the trousers, blurred) moves each point along its
+     slope, ASM_LEG_FOLD px² per unit of relative slope, at most ASM_LEG_FOLD_MAX px (as the atlas trial bent a jacket's)
+   All sizes are px at 2048. -> {y0,y1,xf,co,R,du,dv} (per row: the fly; per row and side: the cylinder's middle from the fly and radius;
+   per pixel: the fold's shift in 1/16 px) */
+const ASM_LEG_K=1.15,ASM_LEG_BLEND=140,ASM_LEG_SMOOTH=40,ASM_LEG_FOLD=150,ASM_LEG_FOLD_MAX=4,ASM_LEG_HAND=5;
+function asmLegsPrep(A,SH,S,N){const T=A.trousers,ls=S/2048,on=k=>T[k]>127,sk=A.skin,minRun=Math.max(3,Math.round(6*ls));
+  const nan=()=>new Float32Array(S).fill(NaN),OL=nan(),OR=nan(),GA=nan(),GB=nan(),OKL=new Uint8Array(S),OKR=new Uint8Array(S);let y0=-1,y1=-1;
+  for(let y=0;y<S;y++){const runs=[];let a=-1;for(let x=0;x<=S;x++){const v=x<S&&on(y*S+x);if(v&&a<0)a=x;else if(!v&&a>=0){if(x-a>=minRun)runs.push([a,x-1]);a=-1}}
+    if(!runs.length)continue;if(y0<0)y0=y;y1=y;const l=runs[0][0],r=runs[runs.length-1][1];OL[y]=l;OR[y]=r;
+    // the hand beside the outer edge: not the cloth's edge
+    const H=Math.round(ASM_LEG_HAND*ls),skin=x=>x>=0&&x<S&&sk&&sk[y*S+x]>127;let hl=false,hr=false;for(let d=1;d<=H;d++){if(skin(l-d))hl=true;if(skin(r+d))hr=true}
+    OKL[y]=hl?0:1;OKR[y]=hr?0:1;
+    // the gap between the legs: the widest gap between runs whose middle lies in the middle half of the trousers
+    let best=0;for(let i=1;i<runs.length;i++){const ga=runs[i-1][1]+1,gb=runs[i][0]-1,m=(ga+gb)/2;if(m<l+(r-l)*.25||m>l+(r-l)*.75)continue;if(gb-ga+1>best){best=gb-ga+1;GA[y]=ga;GB[y]=gb}}}
+  if(y0<0)return null;
+  // the crotch: the first row from which the legs stay apart for a while
+  const run=Math.round(12*ls);let yc=S;for(let y=y0;y<=y1-run&&yc===S;y++){let all=true;for(let d=0;d<run;d++)if(isNaN(GA[y+d])){all=false;break}if(all)yc=y}
+  // fill what is missing or hidden (linear between the nearest good rows) and smooth over ASM_LEG_SMOOTH rows
+  const fill=(V,ok,a,b)=>{let last=-1;for(let y=a;y<=b;y++){if(!isNaN(V[y])&&(!ok||ok[y])){if(last<0)for(let z=a;z<y;z++)V[z]=V[y];else for(let z=last+1;z<y;z++)V[z]=V[last]+(V[y]-V[last])*(z-last)/(y-last);last=y}}
+      if(last<0)return false;for(let z=last+1;z<=b;z++)V[z]=V[last];return true};
+  const smooth=(V,a,b)=>{const R=Math.max(1,Math.round(ASM_LEG_SMOOTH*ls/2)),o=new Float32Array(V);for(let y=a;y<=b;y++){let s=0,n=0;for(let d=-R;d<=R;d++){const z=Math.min(b,Math.max(a,y+d));s+=V[z];n++}o[y]=s/n}for(let y=a;y<=b;y++)V[y]=o[y]};
+  fill(OL,OKL,y0,y1);fill(OR,OKR,y0,y1);smooth(OL,y0,y1);smooth(OR,y0,y1);
+  const legs=yc<y1;if(legs){fill(GA,null,yc,y1);fill(GB,null,yc,y1);smooth(GA,yc,y1);smooth(GB,yc,y1)}
+  // the fly: the gap's middle below the crotch; above it, that middle moved by half the trousers' own drift sideways
+  const mid=y=>(OL[y]+OR[y])/2,xf=new Float32Array(S),yr=legs?Math.min(y1,yc+Math.round(20*ls)):y1,gc=legs?(GA[yr]+GB[yr])/2:mid(yr);
+  for(let y=y0;y<=y1;y++)xf[y]=legs&&y>=yc?(GA[y]+GB[y])/2:gc+(mid(y)-mid(Math.min(yr,y1)))*.5;smooth(xf,y0,y1);
+  // each row's two cylinders: the hips' (about the fly) blended into each leg's (about its middle) around the crotch
+  const co=new Float32Array(2*S),Rr=new Float32Array(2*S),B=ASM_LEG_BLEND*ls,ss=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
+  for(let y=y0;y<=y1;y++){const w=legs?ss((y-(yc-B))/(2*B)):0,yl=legs?Math.max(yc,y):y;
+    for(let s=0;s<2;s++){const out=s?OR[y]:OL[y],hp=Math.max(4,Math.abs(out-xf[y]));
+      let lc=0,lh=hp;if(legs){const inn=s?GB[yl]:GA[yl],o2=s?OR[yl]:OL[yl],c=(inn+o2)/2;lc=Math.abs(c-xf[y]);lh=Math.max(4,Math.abs(o2-inn)/2)}
+      co[2*y+s]=w*lc;Rr[2*y+s]=ASM_LEG_K*((1-w)*hp+w*lh)}}
+  // the folds: the trousers' light, blurred (only their own pixels), its slope over the mean moves the cloth
+  const F=new Float32Array(N),W=new Float32Array(N);let ms=0,mn=0;for(let k=0;k<N;k++)if(T[k]>200){F[k]=SH[k]/40000;W[k]=1;ms+=F[k];mn++}
+  const r=Math.max(2,Math.round(6*ls));let Fb=asmCmBlur(F,S,r),Wb=asmCmBlur(W,S,r);Fb=asmCmBlur(Fb,S,r);Wb=asmCmBlur(Wb,S,r);
+  const mean=mn?ms/mn:1,K=ASM_LEG_FOLD*ls/Math.max(.05,mean),MX=ASM_LEG_FOLD_MAX*ls,du=new Int16Array(N),dv=new Int16Array(N),at=k=>Wb[k]>1e-6?Fb[k]/Wb[k]:mean;
+  for(let k=0;k<N;k++){if(!T[k])continue;const x=k%S,y=(k-x)/S;if(x<1||x>S-2||y<1||y>S-2)continue;
+    const gx=(at(k+1)-at(k-1))/2,gy=(at(k+S)-at(k-S))/2,cl=v=>v<-MX?-MX:v>MX?MX:v;du[k]=Math.round(16*cl(-K*gx));dv[k]=Math.round(16*cl(-K*gy))}
+  return {y0,y1,yc,xf,co,R:Rr,du,dv}}
+/* a trousers pixel's [across, along]: across is cloth from the fly (left of it negative), along the row, both moved with the folds */
+function asmLegsAt(G,X,Y,k){const y=Math.max(G.y0,Math.min(G.y1,Math.floor(Y))),xf=G.xf[y],s=X<xf?0:1,t=Math.abs(X-xf),co=G.co[2*y+s],R=G.R[2*y+s],Q=.95,q=(t-co)/R;
+  const u=q>Q?co+R*(Math.asin(Q)+(q-Q)/Math.sqrt(1-Q*Q)):q<-Q?co+R*(-Math.asin(Q)+(q+Q)/Math.sqrt(1-Q*Q)):co+R*Math.asin(q);
+  return [(s?u:-u)+(k!=null?G.du[k]/16:0),Y+(k!=null?G.dv[k]/16:0)]}
 function asmCmAt(T,u,v,o){const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0,c=T.t||T.c,TW=T.TW,TH=T.TH;
   const ix0=(x0+TW)%TW,ix1=(x0+1+TW)%TW,iy0=(y0+TH)%TH,iy1=(y0+1+TH)%TH;
   for(let q=0;q<3;q++)o[q]+=(c[3*(iy0*TW+ix0)+q]*(1-fx)+c[3*(iy0*TW+ix1)+q]*fx)*(1-fy)+(c[3*(iy1*TW+ix0)+q]*(1-fx)+c[3*(iy1*TW+ix1)+q]*fx)*fy}
@@ -327,7 +381,7 @@ function asmCmAt(T,u,v,o){const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*
    make it, so a change to how it is worked out never reads an old one; a master's older parts are deleted when a new one is saved. */
 const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(36)};
 let asmCmSrc=null;
-const asmCmSrcSig=()=>asmCmSrc||(asmCmSrc=asmCmHash([asmCmPrep,asmCmRefit,asmSleeveSegs,asmTubeTabs,asmSleeveFlow,asmBodyFlow,asmData].map(String).join('|')));
+const asmCmSrcSig=()=>asmCmSrc||(asmCmSrc=asmCmHash([asmCmPrep,asmLegsPrep,asmCmRefit,asmSleeveSegs,asmTubeTabs,asmSleeveFlow,asmBodyFlow,asmData].map(String).join('|')));
 function asmCmDb(){return new Promise((ok,no)=>{const q=indexedDB.open('dw-asm-prep',1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
 async function asmCmDiskGet(k){try{const db=await asmCmDb();return await new Promise(ok=>{const q=db.transaction('p').objectStore('p').get(k);q.onsuccess=()=>{ok(q.result||null);db.close()};q.onerror=()=>{ok(null);db.close()}})}catch{return null}}
 async function asmCmDiskPut(k,P,prefix){try{const db=await asmCmDb();await new Promise(ok=>{const t=db.transaction('p','readwrite'),st=t.objectStore('p');
@@ -385,7 +439,8 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     const t=Math.min(1,Math.max(0,(s-LK.s0)/(LK.s1-LK.s0))),sp=LK.sheen*t*t*(3-2*t)*(z==='shirt'?.25:1)*Math.max(0,1+LK.sk*(tw-1));c[0]+=sp;c[1]+=sp;c[2]+=sp;
     for(let q=0;q<3;q++){let v=c[q]<=0?0:Math.pow(c[q],1/2.2);v=v+LK.toe*Math.pow(1-v,3)-LK.sh*Math.pow(v,4);c[q]=Math.pow(Math.max(0,v),2.2)}};
   // a jacket pixel's [across, along] (px): a sleeve's tube, a lapel's own axis, the body's stripe flow, or upright
-  const uvAt=(k,X,Yv)=>{if(!geo)return [X,Yv];const si=geo.seg[k],g=geo.segs[si];if(g&&g.parts)return asmTubeAt(g,X,Yv);
+  let ZC='';   // the zone being painted: a trousers pixel follows the legs (asmLegsAt)
+  const uvAt=(k,X,Yv)=>{if(ZC==='trousers'&&P.legs)return asmLegsAt(P.legs,X,Yv,k);if(!geo)return [X,Yv];const si=geo.seg[k],g=geo.segs[si];if(g&&g.parts)return asmTubeAt(g,X,Yv);
     if(si&&g&&g.cs!=null)return [(X-g.cx)*g.cs+(Yv-g.cy)*g.sn,(Yv-g.cy)*g.cs-(X-g.cx)*g.sn];return geo.flow&&geo.gar==='jacket'?asmFlowAt(geo.flow,X,Yv):[X,Yv]};
   const cl={};for(const [z,c] of Object.entries(job.cloth||{})){const e={flat:hexLin(c.hex)};
     if(c.suit)e.suit=c.suit;else if(c.tie&&tg){e.tie=c.tie;e.rep=(c.tie.motif?2:1)*tg.bw/Math.max(.5,c.tie.across||1.5);e.repv=e.rep*c.tie.TH/c.tie.TW}
@@ -436,7 +491,7 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     // the soft edge (alpha 1..96) belongs to the nearest piece within 3 px
     for(let k=0;k<N;k++)if(A.dark[k]&&BL[k]<0){const x=k%S;for(let r=1;r<=3&&BL[k]<0;r++)for(const nb of [k-r,k+r,k-r*S,k+r*S])if(nb>=0&&nb<N&&BL[nb]>=0&&Math.abs(nb%S-x)<=r){BL[k]=BL[nb];break}}}
   for(let k=0;k<N;k++){let r=0,g=0,b=0;const x=k%S,y=(k-x)/S,j=4*k;
-    for(let zi=0;zi<names.length;zi++){const z=names[zi],a8=A[z][k];if(!a8)continue;const a=a8/255;
+    for(let zi=0;zi<names.length;zi++){const z=names[zi],a8=A[z][k];if(!a8)continue;const a=a8/255;ZC=z;
       // the background picture, its share of the pixel as it is (not the master's light: the master's wall was a flat colour whose
       // blotches showed through), darker by the figure's shadow, dithered a fraction of a level (an 8-bit picture enlarged bands)
       if(z==='background'&&BG){const s=1-ASM_CM_BG_SHADOW*P.bgShadow[k]/255,h=((Math.imul(k,2654435761)>>>0)%1024)/1024;
@@ -473,6 +528,7 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
         else if(z==='shirt'&&e.tile.fine){const ci=P.cuff?P.cuff[k]:255,th=ci<255?P.cuffAng[ci]||0:0,cs=Math.cos(th),sn=Math.sin(th);   // a woven shirt: 3x3 points a pixel (a 3 mm weave is ~10 px; one point skipped its steps)
           for(let aa=0;aa<3;aa++)for(let ee=0;ee<3;ee++){const X=x+(ee+.5)/3,Yv=y+(aa+.5)/3;asmCmAt(e.tile,(X*cs+Yv*sn)/e.rep,(Yv*cs-X*sn)/e.repv,tmp)}tmp[0]/=9;tmp[1]/=9;tmp[2]/=9}
         else if(z==='shirt'&&P.cuff){const ci=P.cuff[k];rot(x+.5,y+.5,ci<255?P.cuffAng[ci]||0:0,e,tmp)}
+        else if(z==='trousers'&&P.legs){for(let aa=0;aa<2;aa++)for(let ee=0;ee<2;ee++){const uv=uvAt(k,x+(ee+.5)/2,y+(aa+.5)/2);asmCmAt(e.tile,uv[0]/e.rep,uv[1]/e.repv,tmp)}tmp[0]/=4;tmp[1]/=4;tmp[2]/=4}   // read trousers: along the legs
         else asmCmAt(e.tile,(x+.5)/e.rep,(y+.5)/e.repv,tmp)}
       // above its usual brightness a cloth gains neutral light (a sheen), not more of its own colour
       const plain=!!e&&base===e.flat;if(e&&e.look)base=lookBase(base,e);

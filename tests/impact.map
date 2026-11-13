@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	abd53ec71825d4bb1b84
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -2317,7 +2316,7 @@ takeoff.test.js	<every page test>	<every page test>
 takeoff.test.js	account.js	isTester
 takeoff.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	aAn	adviceFor	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	foldListTap	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	offBtn	offOn	offRow	piecesBox	piecesLine	planOn	planRulesCheck	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	resetDay	saveDay	schedulePrefetch	scoreCard	setOff	setWorn	shareMark	shirtPatterned	shirtTextured	shortRest	shortTop	slotLabel	slotPool	slots	stackSVG	tieWord	vestRow	workerBase	wornBar	wornMarks
 takeoff.test.js	apple-touch-icon.png	<loaded>
-takeoff.test.js	asm-color.js	asmCmAssets	asmCmGet	asmCmItems	asmCmKey	asmCmKind	asmCmPref	asmCmRoute	asmCmTrSc
+takeoff.test.js	asm-color.js	asmCmAssets	asmCmBlur	asmCmGet	asmCmItems	asmCmKey	asmCmKind	asmCmPref	asmCmRoute	asmCmTrSc	asmLegsAt	asmLegsPrep
 takeoff.test.js	assemble.js	asmCalibKey	asmCan	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmDropOld	asmEnsure	asmFor	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLoad	asmMasterKey	asmPending	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag	asmWants	asmWants0
 takeoff.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes
 takeoff.test.js	core.js	LUM	SLOT_TYPE	accentOf	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
