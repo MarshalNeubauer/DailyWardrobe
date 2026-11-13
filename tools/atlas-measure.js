@@ -34,7 +34,9 @@ window.atlasMeasure=async function({img,parts,calib}){
   // skin: what no zone claims, skin-coloured, in regions of at least 0.1% of the picture (the hands, the neck)
   const lab=asmLab(D);
   {const skin=k=>{if(part[k])return false;const L=lab[3*k],a=lab[3*k+1],b=lab[3*k+2];return L>20&&L<88&&a>5&&a<38&&b>8&&b<45&&b>a*.6};
-    for(const pix of regions(skin))if(pix.length>=N*.001)for(const k of pix)part[k]=ATLAS_PID.skin}
+    // and touching the outfit (a hand its cuff, the neck the collar): the wooden desk in the corner is skin-coloured too
+    const touches=pix=>pix.some(k=>{const x=k%W;return (x>0&&part[k-1])||(x<W-1&&part[k+1])||(k>=W&&part[k-W])||(k+W<N&&part[k+W])});
+    for(const pix of regions(skin))if(pix.length>=N*.001&&touches(pix))for(const k of pix)part[k]=ATLAS_PID.skin}
   // cover: the same part around it (5x5)
   const cover=new Uint8Array(N);for(let y=0;y<W;y++)for(let x=0;x<W;x++){const k=y*W+x,p=part[k];let s=0,n=0;
     for(let dy=-2;dy<=2;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-2;dx<=2;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;n++;if(part[yy*W+xx]===p)s++}}cover[k]=Math.round(255*s/n)}

@@ -28,7 +28,8 @@ if(process.argv.includes('--help')||!WORKER.startsWith('http')||!TOKEN){
   console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run atlas -- [--out <folder>] [--parts <folder>] [--dry] [--origin <app url>]');
   process.exit(process.argv.includes('--help')?0:1)}
 const TYPES={js:'text/javascript',css:'text/css',html:'text/html',png:'image/png',json:'application/json',webmanifest:'application/manifest+json'};
-const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token':TOKEN,'content-type':'application/json',...(opt.headers||{})}});
+// (with the app's own origin: the worker refuses a write from any other, ALLOWED_ORIGIN)
+const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token':TOKEN,'content-type':'application/json',origin:new URL(ORIGIN).origin,...(opt.headers||{})}});
 const dataUrl=f=>'data:image/png;base64,'+fs.readFileSync(f).toString('base64');
 const writeUrl=(f,u)=>fs.writeFileSync(f,Buffer.from(u.split(',')[1],'base64'));
 
