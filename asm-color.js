@@ -17,7 +17,7 @@
 
    They are photo records on the worker (asmCmKey, put there by tools/asm-cm-upload.js), downloaded once like the other masters.
    A phone paints at 2048; the computer's pre-build (npm run assemble) sets ASM_CM_SIZE to 2880 and scales the picture to 2048.
-   Settings â†’ Realistic photos â†’ Item photos: "Colour-coded masters" turns this off on a phone (localStorage asm_cm = '0'). */
+   (Settings' switch to turn this off on a phone, localStorage asm_cm = '0', was removed 2026-11-13.) */
 const ASM_CMV=1;   // the colour-coded masters' version: in their keys and every picture's key
 const ASM_CM_KINDS={
   suit:{zones:['jacket','tie','background','skin','shirt','dark','watch'],sleeves:1,lapels:1,pxmm:1},
@@ -34,6 +34,7 @@ const asmCmAssets=kind=>{const K=ASM_CM_KINDS[kind];if(!K)return [];return [asmC
   ...(K.sleeves?['sleeveR','sleeveL'].map(s=>asmCmKey(kind,'part/'+s)):[]),...(K.lapels?['lapelR','lapelL'].map(s=>asmCmKey(kind,'part/'+s)):[])]};
 const ASM_CM='asm_cm';   // localStorage: '0' = this phone puts pictures together the earlier way
 const asmCmPref=()=>{try{return localStorage.getItem(ASM_CM)!=='0'}catch{return true}};
+try{localStorage.removeItem(ASM_CM)}catch{}   // (its Settings switch is gone, 2026-11-13: a phone that had it off paints again; asmCmSet stays for the tests)
 /* which master an outfit is painted on, or null (the earlier assembler, or the outfit's own photo) */
 function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
   if(o.top)return o.tie?(o.vest?'vest':'suit'):(o.vest?'vest-open':'suit-open');
@@ -638,11 +639,29 @@ async function asmCmEnsure(o,ahead){const kind=asmCmKind(o);if(!kind)return;if(a
   catch(e){console.warn('could not paint',e)}finally{asmBusy.delete(bk)}}
 async function asmCmPrebuild(o){const kind=asmCmKind(o);if(!kind||!await asmCmGet(kind))return null;
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img}:null}
-/* Settings â†’ Realistic photos â†’ Item photos: the switch */
+/* Settings → Outfit pictures → Advanced: how far the computer's pre-build (npm run assemble) has got, and "Painted plain".
+   (2026-11-13: the on/off switch for the colour-coded masters is gone, and so is Photo tagging's "Shirt weaves", whose shirts are in
+   "Painted plain" with the other pieces waiting for a reading) */
 function asmCmUI(){const grp=$('#asm-group');if(!grp)return;let b=$('#cm-box');if(!b){b=document.createElement('div');b.id='cm-box';b.className='sgroup';grp.appendChild(b)}
-  b.innerHTML=`<div class="slabel">Colour-coded masters</div><label class="srow">On this phone <select id="cfg-cm" onchange="asmCmSet(this.value)"><option value="on">On: every garment painted</option><option value="off">Off: as before</option></select></label>
-    <div class="snote">Suit, waistcoat, shirt-and-tie and open-collar days are painted on their own master. A jacket worn without a tie keeps its own photo.</div>`;
-  $('#cfg-cm').value=asmCmPref()?'on':'off';asmGapUI()}
+  b.innerHTML=`<div class="slabel">Pictures ahead</div><p class="shelp" id="cm-status" role="status"></p>`;
+  asmGapUI();asmCmStatus()}
+/* the workdays of the next ASM_AHEAD days painted on a colour-coded master: how many looks, how many the computer has built (the
+   worker's list, asmListGet: built pictures are uploaded under their look's key) and how many this phone holds; and when the list
+   was read. The worker's list has no dates, so "checked" is when this phone asked, not when the computer last built */
+let asmCmStatusRun=0;
+async function asmCmStatus(){const el=$('#cm-status');if(!el)return;const run=++asmCmStatusRun;
+  if(!workerBase()){el.textContent='';return}
+  el.textContent='Looking at the coming days…';
+  const L=await asmListGet(),T=todayDate(),seen=new Map();
+  for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;
+    if(i%10===9)await new Promise(r=>setTimeout(r,0));if(run!==asmCmStatusRun)return;
+    const o=planOn(d);if(!o||!asmCmUse(o))continue;const k=asmOutKey(o);if(!seen.has(k))seen.set(k,o)}
+  if(run!==asmCmStatusRun||!$('#cm-status'))return;
+  const n=seen.size,built=L?[...seen.keys()].filter(k=>L.has(k)).length:0,here=[...seen.values()].filter(o=>asmFor(o)).length;
+  const mins=Math.round((Date.now()-asmListAt)/6e4),ago=mins<1?'just now':mins===1?'a minute ago':mins+' minutes ago';
+  el.textContent=!n?`None of the workdays in the next ${ASM_AHEAD} days is painted on a colour-coded master.`:
+    !L?`The next ${ASM_AHEAD} days have ${n} look${n===1?'':'s'} to paint; ${here} on this phone. The server couldn’t list its pictures just now, so how many the computer has built isn’t known.`:
+    `Next ${ASM_AHEAD} days: ${built} of ${n} look${n===1?'':'s'} built on the computer${built<n?` (the other ${n-built} are painted on this phone when needed)`:''}; ${here} on this phone. Checked ${ago}.`}
 /* "Painted plain": every garment in rotation whose pattern the pictures don't show yet, why, and one tap to read the readable ones
    (Claude, one call each: never by itself) */
 let asmGapRun=null;

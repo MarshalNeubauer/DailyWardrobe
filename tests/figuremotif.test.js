@@ -59,8 +59,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(calls.length===1&&calls[0].type==='shirt'&&/read by Claude/.test(await p.textContent('#queue')),'a dobby shirt\'s close-up asks Claude for the pattern on the Add card');
     await p.evaluate(()=>save(0));
     const sv=await p.evaluate(async()=>{const it=items[0],o={suitDay:true,top:{id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:it};const {labels}=await outfitRefsFull(o);
-      return {motif:!!(it.sett&&it.sett.motif),pool:weavePool().length,label:labels.find(l=>/the shirt's measured pattern/.test(l))||''}});
-    ok(sv.motif&&sv.pool===0&&/copy its figures/.test(sv.label),'saved with its reading; Settings → Shirt weaves doesn\'t read it again; the photo generator gets its drawing');
+      return {motif:!!(it.sett&&it.sett.motif),pool:asmCmGaps().filter(x=>x.i.id===it.id).length,label:labels.find(l=>/the shirt's measured pattern/.test(l))||''}});
+    ok(sv.motif&&sv.pool===0&&/copy its figures/.test(sv.label),'saved with its reading; Settings → Painted plain doesn\'t list it to read again; the photo generator gets its drawing');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

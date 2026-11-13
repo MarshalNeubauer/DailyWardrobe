@@ -61,6 +61,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - Today's date is "Thu, November 12" below 360px (`.dlong`/`.dshort`) so the day never wraps alone
 - a Settings row whose dropdown doesn't fit beside its label wraps it onto its own line (Dark shirts was cut off at 390px)
 - About: Send is switched off while not connected
+- Settings audit (2026-11-13, the owner's picks): "Realistic photos" is now "Outfit pictures" (`#sc-photos`); Photo tagging has no Advanced fold any more (`#adv-tagging` is gone): the Accuracy check (benchmark: `renderBenchUI`, `runBench`, `tag_bench`) was removed, and Shirt weaves (`renderWeaveUI`, `readWeaves`, `weavePool`) merged into Outfit pictures → Advanced → "Painted plain" (`asmGapUI`), which already lists a textured shirt with no reading; `benchEstimate` stays (the colour picker's cost)
+- the Atlas painting (trial) switch and its comparison (`asmP2UI`, `asmP2Compare`, `asmP2Show`) and the Colour-coded masters on/off switch (`#cfg-cm`) are gone from Settings; a phone's stored `asm_paint2` / `asm_cm` is cleared at start-up; `asmP2Set` and `asmCmSet` stay for the tests; "Make item photos" stays (it says none are needed while the colour-coded masters are on the worker)
+- Outfit pictures → Advanced → "Pictures ahead" (`asmCmUI`, `asmCmStatus`, `#cm-status`): of the looks of the next `ASM_AHEAD` (60) days' workdays painted on a colour-coded master, how many the computer has built (`asmListGet`'s keys) and how many this phone holds (`asmFor`), and when the list was read; the worker's list has no dates, so it can't say when the computer last built
+- the Suit vest row hides when ties are off too (`renderDressUI`), with a note: no waistcoat is planned without a tie
+- Privacy: outfit pictures are drawn or painted by the app; item photos and the outfit go to OpenAI only on a tap of Generate photo or Generate item pictures
 
 ### `styles.css`
 

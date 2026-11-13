@@ -59,10 +59,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
-        inside:['#cfg-url','#cfg-token','#replan-btn','#weave-box','#bench-box','#asm-group'].every(inAdv),out:['#cfg-workdays','#regen-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
+        inside:['#cfg-url','#cfg-token','#replan-btn','#asm-group'].every(inAdv),gone:!document.querySelector('#weave-box,#bench-box,#adv-tagging'),out:['#cfg-workdays','#regen-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
         label:document.querySelector('#adv-connection .adv-head').innerText.replace(/\s+/g,' ')}});
-    ok(adv.ids==='adv-schedule,adv-photos,adv-tagging,adv-connection'&&adv.shut,'Schedule, Realistic photos, Photo tagging and Connection each have an Advanced fold, closed when Settings opens');
-    ok(adv.inside&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code, re-plan, shirt weaves, the accuracy check and the item-photo tools are inside them; the everyday controls are not');
+    ok(adv.ids==='adv-schedule,adv-photos,adv-connection'&&adv.shut,'Schedule, Outfit pictures and Connection each have an Advanced fold, closed when Settings opens');
+    ok(adv.inside&&adv.gone&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code, re-plan and the item-photo tools are inside them (shirt weaves and the accuracy check are gone); the everyday controls are not');
     await p.evaluate(()=>openSettings('connection'));await settle(p,300);
     ok(!(await p.isVisible('#cfg-url'))&&await p.isVisible('#conn-link'),'Connection shows a field for the invite link; the address and code stay folded away');
     await p.click('#adv-connection .adv-head');
@@ -78,7 +78,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>{openSettings('photos')});await settle(p,300);
     const off=await p.evaluate(()=>({vis:['#regen-btn','#itempic-btn'].map(s=>!!document.querySelector(s).offsetParent),note:document.querySelector('#photos-conn').textContent,noteVis:!!document.querySelector('#photos-conn').offsetParent,
       go:!!document.querySelector('#photos-conn button'),backup:(openSettings('backup'),{sync:!!document.querySelector('#sp-backup button[onclick="syncNow()"]').offsetParent,snaps:!!document.querySelector('#snap-list').offsetParent,file:!!document.querySelector('#sp-backup button[onclick="downloadBackup()"]').offsetParent,note:document.querySelector('#backup-conn').textContent})}));
-    ok(off.vis.every(v=>!v)&&/^Making outfit photos needs a connection/.test(off.note)&&off.noteVis&&off.go,`not connected: Realistic photos shows one line saying what connecting turns on, with a Connect button, and none of its buttons (“${off.note}”)`);
+    ok(off.vis.every(v=>!v)&&/^Making outfit photos needs a connection/.test(off.note)&&off.noteVis&&off.go,`not connected: Outfit pictures shows one line saying what connecting turns on, with a Connect button, and none of its buttons (“${off.note}”)`);
     ok(!off.backup.sync&&!off.backup.snaps&&off.backup.file&&/^Backing up and syncing needs a connection/.test(off.backup.note),'Backup: no Sync now or daily backups; the backup file still works');
     await p.evaluate(()=>{openSettings('photos');document.querySelector('#photos-conn button').click()});await settle(p,600);
     ok(await p.evaluate(()=>document.querySelector('#sc-connection').classList.contains('open')&&document.activeElement===document.querySelector('#conn-link')),'Connect opens Connection with the cursor in the invite-link field');
