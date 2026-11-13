@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	6ee220aee1b0b11fde0e
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -168,7 +169,7 @@ asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLOR
 asmcolor.test.js	<every page test>	<every page test>
 asmcolor.test.js	account.js	acctCall	iosDevice	iosInSafari	loadAccount	rememberRole	renderAccountUI
 asmcolor.test.js	app.js	@addEventListenerpopstate	@tocolnavigator.serviceWorker.registersw.js.catch	aAn	addTombstones	appPush	atomic	backupSummary	cap1	comboKey	comboSig	countryName	esc	fnv64	hasOutfit	isoDate	itemDesc	itemKey	keepRender	keyDate	lockUpcoming	lookSig	metaPut	missingItemPics	monthFillSoon	monthLink	openSettings	planOn	recordDays	renderDaysOffUI	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	resetCard	setCatOpen	settingsSummaries	shirtPatterned	shirtTextured	shortDate	unit	workerBase
-asmcolor.test.js	asm-color.js	<any>	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmButtons	asmCmEnsure	asmCmGaps	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightPrep	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmRefit	asmCmRoute	asmCmSet	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmGapUI	asmLegsPrep	asmTieSheenK
+asmcolor.test.js	asm-color.js	<any>	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmEnsure	asmCmGaps	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightPrep	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmRefit	asmCmRoute	asmCmSet	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmGapUI	asmLegsPrep	asmTieSheenK
 asmcolor.test.js	asm-worker.js	<any>
 asmcolor.test.js	assemble.js	<any>	asmBodyFlow	asmCalibKey	asmCan	asmClothOf	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDropOld	asmEnsure	asmFlowAt	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmInfo	asmJob	asmJpeg	asmKey	asmLinen	asmListGet	asmLoad	asmLook	asmMasterKey	asmMicroKind	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmP2UI	asmPaintable	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPolyAt	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTrim	asmTubeAt	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKept	asmVestKey	asmVestTag	asmWants	asmWants0	asmWorker	asmZonesKept	renderAsmUI
 asmcolor.test.js	care.js	careLimit	laundryDays	renderCareUI

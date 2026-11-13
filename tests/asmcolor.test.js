@@ -80,6 +80,10 @@ module.exports=async({ok,chromium,url})=>{
       // the button's rim, a little up and left of its centre (its holes are in the middle)
       return {before:at(a,-1,-1),after:at(b,-1,-1)}});
     ok(bt.after[0]-bt.after[2]<bt.before[0]-bt.before[2]-8&&bt.after[1]>bt.before[1],`a pink shirt's cuff button is drawn pearl, not pink (${bt.before} -> ${bt.after})`);
+    // every shirt's buttons are white tinted with its colour (the owner, 2026-11-13: on a coloured shirt they were the cloth's own colour)
+    const tb=await p.evaluate(()=>{const lin=h=>[1,3,5].map(i=>ASM_LIN[parseInt(h.slice(i,i+2),16)]),L=v=>.2126*v[0]+.7152*v[1]+.0722*v[2];
+      return ['#1f2a44','#3a6fc4','#f4f4f2'].map(h=>{const s=lin(h),b=asmCmBtnCol(s);return {L:L(b),blue:b[2]-b[0],sb:s[2]-s[0]}})});
+    ok(tb.every(x=>x.L>.6)&&tb[0].blue>.05&&tb[1].blue>.05&&Math.abs(tb[2].blue-(-.06*.85))<.02,`a navy, blue or white shirt's buttons are white, tinted toward the shirt (${tb.map(x=>x.L.toFixed(2)+'/'+x.blue.toFixed(3)).join(', ')})`);
     // the hand's outline follows the master's colour: white shirt pixels the skin mask took go to the shirt, skin the shirt mask took to the skin
     const he=await p.evaluate(()=>{const S=8,N=64,A={skin:new Uint8Array(N),shirt:new Uint8Array(N)},M=new Uint8ClampedArray(4*N);
       for(let k=0;k<N;k++){const x=k%S,sk=x<4;A.skin[k]=sk?255:0;A.shirt[k]=sk?0:255;const white=x<2||x>=6?false:x===2||x===3;M.set(white?[245,244,240,255]:x<2?[200,150,120,255]:[246,245,242,255],4*k)}
