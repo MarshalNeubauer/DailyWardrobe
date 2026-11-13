@@ -392,6 +392,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `tests/asmcolor.test.js` (fixtures `tests/fixtures/cm/<kind>/` at 512: the suit and shirt-and-tie masters)
 - woven shirts (`asmWeave` gives a tile: dobby, basket, diamond, herringbone readings) follow the earlier painter's approved rules here too (2026-11-13, `ASM_CM_PAINTV` 4): no `ASM_CM_SOFT` softening (texTones' 2.5–7 L* as drawn), the repeat from `asmTexMm` (or the herringbone's count) instead of a flat 3 mm, and 3x3 points a pixel on the front and cuffs (`tile.fine`); at 45% and one point a pixel the owner's white woven diamond was a 3 L* swing and looked plain
 - end-on-end and figured (motif) shirts are unchanged in the colour-coded painter
+- `npm run atlas` also measures each colour-coded master on the worker (2026-11-13, `atlasMeasureCm` in tools/atlas-measure.js): at 2048 from the painter's own `asmCmPrep`, written to `--out` as `cm-<kind>/` (11 layers: `cover` is the soft mask's share, `next` the runner-up zone and its share, `shade` the painter's light; no `black`), with each zone's lit level and the painter's geometry (sleeves, tie knot and lean, cuff angles) in atlas.json; nothing of it is uploaded; `--cm-size` for tests; `tests/asmatlas.test.js`
 
 ### `asm-worker.js`
 
