@@ -329,8 +329,8 @@ function cleanTag(t) {
   const ownColors = t.ownColors && typeof t.ownColors === 'object' && own(t.ownColors.primary)
     ? { primary: own(t.ownColors.primary), secondary: own(t.ownColors.secondary), tertiary: own(t.ownColors.tertiary) } : undefined;
   const op = t.ownPattern;
-  const ownPattern = op && typeof op === 'object' && /[a-z]{2}/i.test(txt(op.name, 40))
-    ? { name: txt(op.name, 40).toLowerCase(), description: txt(op.description, 300), fits: op.fits === true } : undefined;
+  const ownPattern = op && typeof op === 'object' && /[a-z]{2}/i.test(txt(op.name, 60))
+    ? { name: txt(op.name, 60).toLowerCase(), description: txt(op.description, 300), fits: op.fits === true } : undefined;
   return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
@@ -1541,7 +1541,8 @@ export default {
     const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
     if (env.ANTHROPIC_API_KEY) {
       const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
-      const free = body.freeColors === true, freePat = body.freePattern === true;
+      // never both: together the answer's schema is more than the API compiles ("compiled grammar is too large", 2026-11-13)
+      const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
       const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
       const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
       if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');

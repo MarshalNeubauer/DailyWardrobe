@@ -225,7 +225,7 @@ function normTag(parsed,model){
       // Claude's own colour names and shades, not limited to the list (only when asked with freeColors: colpick.js)
       ownColors:ownColorsOf(parsed.ownColors),
       // Claude's own name and description of the pattern, and whether the listed one fits it (only with freePattern)
-      ownPattern:parsed.ownPattern&&typeof parsed.ownPattern==='object'&&/[a-z]{2}/i.test(parsed.ownPattern.name||'')?{name:String(parsed.ownPattern.name).toLowerCase().replace(/[^a-z0-9 '&-]/g,'').replace(/\s+/g,' ').trim().slice(0,40),description:String(parsed.ownPattern.description||'').slice(0,300),fits:parsed.ownPattern.fits===true}:null
+      ownPattern:parsed.ownPattern&&typeof parsed.ownPattern==='object'&&/[a-z]{2}/i.test(parsed.ownPattern.name||'')?{name:String(parsed.ownPattern.name).toLowerCase().replace(/[^a-z0-9 '&-]/g,'').replace(/\s+/g,' ').trim().slice(0,60),description:String(parsed.ownPattern.description||'').slice(0,300),fits:parsed.ownPattern.fits===true}:null
     };
 }
 

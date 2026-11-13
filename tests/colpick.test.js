@@ -53,11 +53,11 @@ module.exports=async({ok,chromium,url})=>{
     await p.route('**/fakeworker/**',async r=>{asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'green',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',
       confidence:{type:'high',primaryColor:'low',pattern:'high'},altColor:'olive',altPattern:'none',newColor:{name:'bottle green',why:'darker and bluer than green'},newPattern:null,
       ownColors:{primary:{name:'bottle green',hex:'#1f4a3a'},secondary:{name:'navy',hex:'#1b2a4a'},tertiary:null}})}})});
-    await p.evaluate(()=>{delete colAsk.t1});await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cpaskbtn');
+    await p.evaluate(()=>{delete colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cpaskbtn');
     await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
     const n=await p.evaluate(()=>({flag:true,said:document.querySelector('#col-sheet .cpask b').textContent,tiles:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c+':'+b.textContent),
       sw:document.querySelector('#col-sheet .cptile[data-c="+new"] .cpsw').style.background,note:(document.querySelector('#col-sheet .cpnewtx')||{}).textContent||''}));
-    ok(asked.at(-1).freeColors===true,'the picker asks for Claude\'s own colours');
+    ok(asked.at(-1).freeColors===true&&!asked.at(-1).freePattern,'a colour sheet asks for Claude\'s own colours only');
     ok(/Bottle green and Navy/.test(n.said)&&n.tiles[0].startsWith('+new:Bottle green')&&/New/.test(n.tiles[0])&&/31, 74, 58/.test(n.sw)&&/Closest you have/.test(n.tiles[1]),`Claude's own colour is offered first as a New chip in its shade (${n.said}; ${n.tiles})`);
     ok(/isn’t one of your colours yet/.test(n.note)&&/behaves like/.test(n.note),'it says it will be added, and what it behaves like');
     await p.click('#col-sheet .cptile[data-c="+new"]');
@@ -82,7 +82,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(ps.title==='Choose the pattern'&&ps.big&&ps.tiles>=12&&ps.ask,`the sheet draws each pattern and offers to ask Claude (${ps.tiles} patterns)`);
     await p.click('#col-sheet .cpaskbtn');await p.waitForFunction(()=>/Claude sees/.test(document.querySelector('#col-sheet .cpask').textContent));
     const pa=await p.evaluate(()=>({req:window.__lastReq,txt:document.querySelector('#col-sheet .cpask').textContent,tiles:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c),sel:colPick.sel}));
-    ok(asked.at(-1).freePattern===true&&asked.at(-1).freeColors===true,'Ask Claude asks for its own pattern name (and colours)');
+    ok(asked.at(-1).freePattern===true&&!asked.at(-1).freeColors,'the pattern sheet asks for Claude\'s own pattern name only (both at once is more than the API compiles)');
     ok(/Claude sees broken twill/.test(pa.txt)&&/ribs reverse/.test(pa.txt)&&pa.tiles.join()==='+new,twill,windowpane'&&pa.sel==='twill',`Claude's own name is a New chip, then its listed pick (selected) and second choice (${pa.tiles})`);
     await p.click('#col-sheet .cptile[data-c="+new"]');
     ok(await p.evaluate(()=>document.querySelector('#col-sheet .cpbar button').textContent==='Add Broken twill to your patterns and use it'),'picked, the button says it will be added');
