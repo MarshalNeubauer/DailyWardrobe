@@ -1050,11 +1050,12 @@ function ovlItem(i){const s=usableSett(i),sp=i.patternSpec&&i.patternSpec.across
 const ovlSvg=i=>{const v=swatchSVG(ovlItem(i),true);if(i.type!=='tie')return v;
   return v.replace(/<pattern ([^>]*?)>/,(m,a)=>/patternTransform="/.test(a)?`<pattern ${a.replace(/patternTransform="([^"]*)"/,'patternTransform="$1 scale(.5)"')}>`:`<pattern ${a} patternTransform="scale(.5)">`)};
 /* the real cloth where it reads (the owner's choice, 2026-11-13): an item's precision swatch (the square cut from its close-up, white-balanced
-   and matched to its colour: item.swatch with swSrc 'tex') for a tie, and for a plain or finely woven jacket or shirt; a striped, checked or
-   figured jacket or shirt stays drawn, since a close-up of a patch of cloth barely shows its pattern at this size (his ink aubergine
+   and matched to its colour: item.swatch with swSrc 'tex') for a tie, and for a plain or finely woven jacket; a shirt is always drawn, and a
+   striped, checked or figured jacket stays drawn, since a close-up of a patch of cloth barely shows its pattern at this size (his ink aubergine
    pinstripe's read as plain dark cloth); an item without a close-up stays drawn */
 const ovlCloseup=i=>!!(i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type));
-const ovlDrawn=i=>{if(i.type==='tie')return false;const s=usableSett(i);return !!(s&&(s.bands||s.motif))||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')};
+const ovlDrawn=i=>{if(i.type==='tie')return false;if(i.type==='shirt')return true;   // a shirt is always drawn (the owner, 2026-11-13: as in the mockup he chose)
+  const s=usableSett(i);return !!(s&&(s.bands||s.motif))||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')};
 const ovlPiece=i=>ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i);
 function swatchStack(o,up){const ps=[o.top,o.shirt,o.tie].filter(Boolean);if(!ps.length)return '';
   return `<div class="swstack${up?' up':''}" role="img" aria-label="${esc(ps.map(i=>slotLabel(i===o.top?'top':i===o.shirt?'shirt':'tie',o)+': '+itemTitle(i)).join('; '))}">${ps.map(i=>`<span class="ovsw">${ovlPiece(i)}</span>`).join('')}</div>`}
