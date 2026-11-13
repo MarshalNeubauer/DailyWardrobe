@@ -13,7 +13,7 @@ module.exports=async({ok,chromium,url})=>{
     const b=await p.evaluate(()=>{const s=document.querySelector('#col-sheet');return {on:s.classList.contains('on'),img:!!s.querySelector('.cpph img'),big:s.querySelector('.cpbig figcaption').textContent,
       near:[...s.querySelectorAll('.cpnear .cpnm')].map(e=>e.textContent),heads:[...s.querySelectorAll('.cph')].map(e=>e.textContent),now:s.querySelector('.cpnow')&&s.querySelector('.cpnow').closest('.cptile').textContent,
       seg:s.querySelectorAll('.cpseg button').length,bar:s.querySelector('.cpbar button').textContent}});
-    ok(b.on&&b.img&&b.big==='Black'&&b.seg===2,'the sheet shows the close-up beside the current colour, with a switch to the whole photo');
+    ok(b.on&&b.img&&b.big==='Black'&&b.seg===3,'the sheet shows the close-up beside the current colour, with a switch to the whole photo and (a suit) the drawing');
     ok(b.near[0]==='Deep taupe'&&/Closest to your close-up/.test(b.heads[0])&&b.heads.includes('Blues'),`the measured nearest colours come first, then the families (${b.near}; ${b.heads})`);
     ok(/^Now/.test(b.now)&&b.bar==='Keep Black','the current colour is marked, and the button keeps it');
     await p.click('#col-sheet .cpnear .cptile >> nth=0');
@@ -36,6 +36,25 @@ module.exports=async({ok,chromium,url})=>{
       const r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,shape:before===strip(itemThumb(items.find(x=>x.id==='t8'))),striped:draw()===strip(itemThumb(patVar(items.find(x=>x.id==='t8'),'stripe')))&&draw()!==before,saved:items.find(x=>x.id==='t8').pattern};
       closeColPick();items=items.filter(x=>x.id!=='t8');return r});
     ok(pv.cap==='As drawn'&&pv.shape&&pv.striped&&pv.saved==='solid','without a photo the pattern sheet draws the tie (its shape) in the pattern tapped, and nothing is saved until Use');
+    // suits and blazers are their traced figure (SUIT_D, BLAZER_D) in the colour or pattern tapped: in place of the swatch without a
+    // photo, and as the "Drawing" view beside a photo; redrawn on every tap, nothing saved until Use
+    const fg=await p.evaluate(()=>{const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),strip=s=>{const t=document.createElement('div');t.innerHTML=s;return t.innerHTML.replace(/th\d+-/g,'')},r={};
+      items.push({id:'bz1',type:'blazer',primaryColor:'steelblue',pattern:'solid',added:9},{id:'bz2',type:'blazer',primaryColor:'steelblue',pattern:'solid',photo:'x',added:9});
+      openColPick('e','bz1','primaryColor');r.fig=draw().includes(strip(BLAZER_D.head))&&!!document.querySelector('#col-sheet .cpph.cpfig');
+      document.querySelector('#col-sheet .cptile[data-c="charcoal"]').click();r.col=draw()===strip(itemThumb({...items.find(x=>x.id==='bz1'),primaryColor:'charcoal'}));
+      r.seg0=document.querySelectorAll('#col-sheet .cpseg button').length;closeColPick();
+      openColPick('e','bz1','pattern');document.querySelector('#col-sheet .cptile[data-c="windowpane"]').click();
+      r.pat=draw()===strip(itemThumb(patVar(items.find(x=>x.id==='bz1'),'windowpane')))&&draw().includes(strip(BLAZER_D.coat));closeColPick();
+      openColPick('e','bz2','primaryColor');const segs=[...document.querySelectorAll('#col-sheet .cpseg button')].map(e=>e.textContent);r.photo=!!document.querySelector('#col-sheet .cpph img');
+      colPickView('draw');document.querySelector('#col-sheet .cptile[data-c="tan"]').click();r.drawn=!document.querySelector('#col-sheet .cpph img')&&draw()===strip(itemThumb({...items.find(x=>x.id==='bz2'),primaryColor:'tan'}));
+      r.segs=segs.join('|');r.saved=items.find(x=>x.id==='bz1').primaryColor+'/'+items.find(x=>x.id==='bz1').pattern+'/'+items.find(x=>x.id==='bz2').primaryColor;closeColPick();
+      openColPick('e','s1','pattern');r.suit=[...document.querySelectorAll('#col-sheet .cpseg button')].some(e=>e.textContent==='Drawing');colPickView('draw');r.suitFig=draw().includes(strip(SUIT_D.out).slice(0,60));closeColPick();
+      items=items.filter(x=>!x.id.startsWith('bz'));return r});
+    ok(fg.fig&&fg.col&&fg.seg0===0,'a blazer without a photo is drawn as its traced figure in the colour tapped, with no view switch');
+    ok(fg.pat,'the pattern sheet redraws the figure in the pattern tapped');
+    ok(fg.photo&&fg.segs==='Whole photo|Drawing'&&fg.drawn,'with a photo it starts on the photo; "Drawing" shows the figure in the colour tapped ('+fg.segs+')');
+    ok(fg.suit&&fg.suitFig,'a suit gets the Drawing view too, drawn as its traced suit');
+    ok(fg.saved==='steelblue/solid/steelblue','nothing is saved by looking ('+fg.saved+')');
     // Add card: the second colour offers None
     await p.evaluate(ph=>{editing=null;closeItem&&closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
     await p.click('#queue .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cptile:has-text("None")');await p.click('#col-sheet .cpbar button');
