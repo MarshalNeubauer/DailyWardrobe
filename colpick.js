@@ -60,20 +60,22 @@ async function colAskImgs(it,src){
   const sharp=src==='e'&&typeof tagImgOf==='function'?await tagImgOf(it.id):null;
   return {img:sharp||it.tagImg||it.photo||it.texture,closeup:typeof sharpCloseOf==='function'?await sharpCloseOf(it):it.texture,measured}}
 async function colAskRun(){const it=colTarget();if(!it||!it.texture)return;if(!isConnected()){tell(NEED_CONN);return}
-  const src=colPick.src;colAsk[it.id]={busy:true};renderColPick(true);let ai=null;
-  try{const x=await colAskImgs(it,src);ai=await ask(x.img,{closeup:x.closeup,measured:x.measured,skipId:it.id,freeColors:true,freePattern:true})}catch(e){console.warn('colour ask failed',e)}
-  colAsk[it.id]=ai&&ai.type?{primaryColor:ai.primaryColor,secondaryColor:ai.secondaryColor||'none',tertiaryColor:ai.tertiaryColor||'none',altColor:ai.altColor,conf:ai.conf,newColor:ai.newColor,own:ai.ownColors||null,
+  // one of Claude's own readings per request: asked for both, the answer's schema is more than the API compiles ("compiled grammar
+  // is too large", found on the live worker 2026-11-13), so a colour sheet asks for its colours and the pattern sheet for its pattern
+  const src=colPick.src,pat=colPick.k==='pattern',key=it.id+(pat?'|p':'|c');colAsk[key]={busy:true};renderColPick(true);let ai=null;
+  try{const x=await colAskImgs(it,src);ai=await ask(x.img,{closeup:x.closeup,measured:x.measured,skipId:it.id,freeColors:!pat,freePattern:pat})}catch(e){console.warn('colour ask failed',e)}
+  colAsk[key]=ai&&ai.type?{primaryColor:ai.primaryColor,secondaryColor:ai.secondaryColor||'none',tertiaryColor:ai.tertiaryColor||'none',altColor:ai.altColor,conf:ai.conf,newColor:ai.newColor,own:ai.ownColors||null,
       pattern:normPat(it.type,ai.pattern),altPattern:ai.altPattern?normPat(it.type,ai.altPattern):null,newPattern:ai.newPattern,ownPattern:ai.ownPattern||null}
-    :{err:aiError||'Claude couldn’t read the colours this time.'};
+    :{err:aiError||(pat?'Claude couldn’t read the pattern this time.':'Claude couldn’t read the colours this time.')};
   if(!colPick||colTarget()!==it)return;   // closed meanwhile: the answer shows when it is opened again
-  const v=colAsk[it.id][colPick.k];if(colPick.k==='pattern'?v&&patChoices(it).includes(v):v&&(v==='none'||COLORS[v]))colPick.sel=v;renderColPick(true)}
+  const v=colAsk[key][colPick.k];if(colPick.k==='pattern'?v&&patChoices(it).includes(v):v&&(v==='none'||COLORS[v]))colPick.sel=v;renderColPick(true)}
 /* a colour Claude named that the app doesn't have (ownColors, asked with freeColors): offered as a "New" chip in the shade Claude
    gave; using it adds it to the owner's colours (addCustomColor, synced) for this kind of item, behaving like the nearest built-in
    colour, an accent colour too when it is a second or third colour. Not offered when the name is already a colour (a built-in's
    name, or the owner's own under the same key) or the shade can't be told from the listed pick (ΔE00 under 2). */
 const NEW_COL='+new';
 const colBaseFor=hex=>{const lab=rgbLab(...hexRgb(hex));return Object.keys(COLORS).filter(c=>!CUSTOM_COL[c]&&!SHIRT_ONLY.includes(c)).sort((a,b)=>dE00(lab,labOf(a))-dE00(lab,labOf(b)))[0]};
-function colNewFor(it,k){const a=it&&colAsk[it.id],o=a&&a.own&&a.own[k];if(!o||!o.name||ownColKey(o.name).length<5)return null;
+function colNewFor(it,k){const a=it&&colAsk[it.id+'|c'],o=a&&a.own&&a.own[k];if(!o||!o.name||ownColKey(o.name).length<5)return null;
   if(COLORS[ownColKey(o.name)]||Object.keys(COLORS).some(c=>colName(c).toLowerCase()===o.name||c===o.name.replace(/\s/g,'')))return null;
   if(a[k]&&COLORS[a[k]]&&dE00(rgbLab(...hexRgb(o.hex)),labOf(a[k]))<2)return null;
   return o}
@@ -81,12 +83,12 @@ async function colAddNew(it,k,nc){if(!nc)throw new Error('Ask Claude again: its 
   if(!COLORS[key]){await addCustomColor({name:cap1(nc.name),hex:nc.hex,base:colBaseFor(nc.hex),types:groupOf(it.type),accent:k!=='primaryColor'});toast(`${cap1(nc.name)} added to your colours.`)}
   return key}
 /* take Claude's colours for every colour field at once (the ones on the list: a new colour is only added when it is picked) */
-async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id];if(!a||!a.primaryColor)return;const {src,ref}=colPick;closeColPick();
+async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!a||!a.primaryColor)return;const {src,ref}=colPick;closeColPick();
   const ch=COL_FIELDS(it).filter(f=>(a[f]==='none'?null:a[f])!==((f==='primaryColor'?primaryCol(it):it[f])||null));if(!ch.length)return;
   if(src==='q'){for(const f of ch)setq(ref,f,a[f]);return}
   for(const f of ch)it[f]=a[f]==='none'?null:a[f];delete it.color;
   if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={};renderWardrobe();toast('Saved Claude’s colours.')}
-function colAskHtml(it,k,tile,name){const a=colAsk[it.id];
+function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   if(!it.texture)return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>Add a close-up of the fabric${colPick.src==='e'?' (Edit photos)':''} and Claude can read the colours from it.</small></div></div>`;
   if(!a){const cents=typeof benchEstimate==='function'?Math.max(1,Math.round(benchEstimate(1)*100)):1,on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up again and says which colours it is. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
@@ -118,10 +120,10 @@ const EP=(id,it)=>`<label class="colrow">Pattern ${patBtn('e',id,it)}</label>`;
 const PAT_GROUPS=[[['solid'],'Plain'],[['pinstripe','chalk-stripe','stripe','fine-stripe'],'Stripes'],[['glen-check','windowpane','check','gingham','tattersall','tonal-check','houndstooth'],'Checks'],
   [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit'],'Weaves'],[['polka-dot','paisley','foulard'],'Figures']];
 const patGroupOf=p=>{const b=patBase(p);const g=PAT_GROUPS.findIndex(([l])=>l.includes(b));return g<0?PAT_GROUPS.length:g};
-function patNewFor(it){const a=it&&colAsk[it.id],o=a&&a.ownPattern;if(!o||o.fits||!o.name)return null;const key=ownPatKey(o.name);if(key.length<6)return null;
+function patNewFor(it){const a=it&&colAsk[it.id+'|p'],o=a&&a.ownPattern;if(!o||o.fits||!o.name)return null;const key=ownPatKey(o.name);if(key.length<6)return null;
   if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key))||Object.values(PATS_BY).some(l=>l.some(p=>patName(p).toLowerCase()===o.name)))return null;
   return o}
-const patNewBase=it=>{const a=colAsk[it.id];const b=a&&a.pattern?patBase(a.pattern):'solid';return (PATS_BY[it.type]||[]).includes(b)?b:'solid'};
+const patNewBase=it=>{const a=colAsk[it.id+'|p'];const b=a&&a.pattern?patBase(a.pattern):'solid';return (PATS_BY[it.type]||[]).includes(b)?b:'solid'};
 async function patAddNew(it,o){if(!o)throw new Error('Ask Claude again: its pattern was not kept.');const key=ownPatKey(o.name);
   if(!CUSTOM_PAT[key]){const g=['suit','blazer','pants'].includes(it.type)?['suit','blazer','pants']:[it.type];
     await addCustomPattern({name:cap1(o.name),desc:o.description||'',base:patNewBase(it),types:g});toast(`${cap1(o.name)} added to your patterns.`)}
@@ -140,7 +142,7 @@ ${both?`<div class="cpseg" role="group" aria-label="Compare with"><button type="
 ${patAskHtml(it,tile,name,np)}${groups}
 <div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${sel===NEW_COL?'Add '+esc(name(sel))+' to your patterns and use it':sel===cur?'Keep '+esc(name(sel)):'Use '+esc(name(sel))}</button></div>`;
   if(keep)el.scrollTop=y}
-function patAskHtml(it,tile,name,np){const a=colAsk[it.id];
+function patAskHtml(it,tile,name,np){const a=colAsk[it.id+'|p'];
   if(!it.texture)return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>Add a close-up of the fabric${colPick.src==='e'?' (Edit photos)':''} and Claude can name the pattern from it.</small></div></div>`;
   if(!a){const cents=typeof benchEstimate==='function'?Math.max(1,Math.round(benchEstimate(1)*100)):1,on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up and names the pattern, even one the app doesn’t have yet. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}

@@ -74,6 +74,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     fj=await (await ask2({freePattern:true})).json();
     const ps=sent.body.output_config.format.schema;
     ok(ps.properties.ownPattern&&ps.required.includes('ownPattern')&&!ps.properties.ownColors&&/ownPattern — the pattern or weave in your own precise words/.test(sent.body.messages[0].content.at(-1).text),'with freePattern the schema and prompt ask for Claude\'s own pattern name');
+    await ask2({freePattern:true,freeColors:true});const both=sent.body.output_config.format.schema.properties;
+    ok(both.ownPattern&&!both.ownColors,'asked for both, only the pattern is asked of Claude (both at once is more than the API compiles)');
+    fj=await (await ask2({freePattern:true})).json();
     ok(fj.ownPattern&&fj.ownPattern.name==='broken twill b'&&fj.ownPattern.description==='Ribs reversing every few threads.'&&fj.ownPattern.fits===false,`its pattern comes back tidied, fits only when true (${JSON.stringify(fj.ownPattern)})`);
   }finally{globalThis.fetch=realFetch}
 };
