@@ -677,6 +677,34 @@ function pantsMarks(i,P){const S=PANTS_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c
     `<circle cx="${S.button.split(',')[0]}" cy="${S.button.split(',')[1]}" r=".6" fill="${mix(c,'#000',.6)}" stroke="${hi}" stroke-width=".12"/>`+
     ln(S.fly,.45)+ln(S.pockl,.4)+ln(S.pockr,.4)+ln(S.creasel,.35,.8,hi)+ln(S.creaser,.3,.6,hi)+ln(S.knee,.3,.5)+ln(S.hemr,.3,.5)+
     (k==='jeans'?`<path d="${S.pockl}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(.7 0)"/><path d="${S.pockr}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(-.7 0)"/>`+[[35.9,18.2],[64.5,18.4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".75" fill="#b87333" stroke="#6e4220" stroke-width=".2"/>`).join(''):'')}
+/* shirt, folded: traced from Brooks Brothers' photo of their black pinpoint oxford dress shirt (ME04469, 2026-11-13, the owner's pick):
+   the outline from the photo's pixels (the dark cloth, holes filled; the tie's tip past the hem cut off), the collar's leaves, band,
+   shoulder seams, the cuff with its button, the folded sleeve, the pocket and the side fold placed on zoomed crops and snapped to the
+   picture's edges; the tie and the maker's label left out, the placket drawn on where the tie hid it.
+   Box: X=(x-823.5)*.0632+50, Y=(y-271)*.0632+4 in the 1648x2000 photo. */
+const SHIRT_D={out:'M32.8,93.7 L23.7,93.4 L19.5,93.6 L19.1,93.3 L19,92.8 L19,86 L18.7,85.7 L17.3,85.6 L17,85.1 L17.4,76.3 L17.1,72 L17,63.2 L17.2,58.6 L17.5,58.3 L18.8,57.9 L19.1,57.5 L19.1,35.1 L19.4,16.5 L20.3,15.7 L21.5,15.2 L30.7,12.4 L35.7,11.1 L36.1,10.6 L36.8,7.9 L37.2,7.1 L38.3,6 L39.7,5.2 L41.9,4.6 L44.1,4.3 L54.2,4 L59.3,4.3 L62.2,4.7 L64.3,5.3 L65.7,6 L66.6,7 L67.2,8.4 L68.1,11.8 L81.6,16 L82.5,16.5 L83,17.1 L82.9,38.4 L82.6,58.4 L82.6,69.7 L82.8,71.6 L82.3,82.6 L82.4,93 L82.2,93.7 L81.9,93.9 L78.2,93.8 L69.4,93.9 L67.2,94.1 L65.9,94 Z',
+  inside:'M38.9,12.2 L42.2,19.9 L45.6,26.7 L48.2,30.8 L50.2,32.6 L51.8,33.4 L52.5,33.4 L54.5,32 L56.9,29.2 L59.7,24.4 L62.8,17.9 L65.7,10.9 L65.6,11.1 L58.8,10.9 L52.3,10.7 L45.7,10.7 L38.4,10.9 Z',
+  collar:'M37.3,11.1 C37.1,11.8 36.4,13.9 36.1,15.4 C35.7,16.9 35.3,18.5 35.2,20.2 C35.1,22 35.1,24.1 35.2,26 C35.4,27.9 35.7,29.9 35.9,31.7 C36.2,33.3 36.4,34.9 36.6,36.1 C36.8,37.3 37,39 37,39 M37,39 C37,39 40.5,37.8 42.3,37.1 C44,36.5 46.6,35.4 47.5,35.1 M38.9,12.2 C39.5,13.5 41.1,17.5 42.2,20 C43.3,22.4 44.6,24.9 45.6,26.7 C46.6,28.6 47.5,29.8 48.2,30.9 C49,31.8 49.6,32.2 50.2,32.6 C50.8,33.1 51.8,33.5 51.8,33.5 M65.7,10.9 C65.2,12.1 63.7,15.7 62.8,17.9 C61.8,20.2 60.7,22.5 59.7,24.4 C58.8,26.3 57.8,27.9 56.9,29.2 C56,30.4 55.2,31.3 54.5,32 C53.8,32.7 52.5,33.4 52.5,33.4 M67.5,11.5 C67.6,12.2 67.8,14.2 67.7,16.1 C67.7,18 67.6,20.2 67.4,22.7 C67.2,25.2 67,28.2 66.8,31 C66.5,33.9 65.8,39.6 65.8,39.6 M65.6,39.5 C65.6,39.5 62.2,38.1 60.6,37.4 C58.9,36.7 56.4,35.7 55.6,35.3',
+  band:'M38.4,10.9 C39.6,10.9 43.4,10.7 45.7,10.7 C48,10.6 50.1,10.6 52.3,10.7 C54.5,10.7 56.6,10.8 58.8,10.9 C61,11 64.4,11 65.6,11.1 M42.4,19.8 C43.7,19.8 47.1,19.9 50.3,19.9 C53.6,19.9 60,20 61.9,20.1',
+  seams:'M19.9,24.4 C21.1,24.1 24.7,23.2 27.2,22.7 C29.6,22.1 33.4,21.1 34.6,20.8 M69.6,22 C70.7,22.3 73.9,23.1 76,23.6 C78.1,24.1 81.3,24.9 82.4,25.2 M52.4,19.8 C52.4,22 52.4,31 52.4,33.3 M52.2,33.8 C52.2,38.7 52.2,53.3 52.2,63.4 C52.3,73.5 52.3,89.2 52.3,94.3 M64.8,76.1 C64.8,77.5 64.8,82.2 64.9,84.7 C64.9,87.2 65.1,89.7 65.4,91.2 C65.6,92.7 66.2,93.5 66.4,93.9',
+  cuff:'M20.6,76.2 C20.6,76.2 20.5,70.6 20.6,67.8 C20.6,65 20.6,59.3 20.6,59.3 C20.6,59.3 25.3,59.4 27.5,59.4 C29.8,59.4 34.1,59.4 34.1,59.4 C34.1,59.4 34.1,63.7 34.1,65.7 C34.1,67.6 34.1,69.6 34,71 C33.8,72.5 33.7,73.7 33.2,74.5 C32.7,75.4 32,75.7 31.2,76.1 C30.3,76.4 29.2,76.4 28.1,76.5 C27,76.6 25.7,76.6 24.5,76.6 C23.3,76.6 20.7,76.4 20.7,76.4',
+  sleeve:'M20.4,76.2 C20.4,77.7 20.4,85.3 20.4,85.3 C20.4,85.3 24.8,85.3 27.1,85.3 C29.3,85.2 33.7,85.1 33.7,85.1 C33.7,85.1 33.9,82.4 33.9,81 C34,79.6 34.1,77.3 34.1,76.6 M17.2,58.7 C17.8,58.8 20.1,59.3 20.7,59.4 M18.6,69.5 C19,69.6 20.4,69.6 20.7,69.7',
+  pocket:'M82.8,70.4 C82.8,70.4 76.8,70.5 73.8,70.5 C70.8,70.5 64.9,70.5 64.9,70.5 C64.9,70.5 64.9,72.4 64.9,73.4 C65,74.3 65,76 65,76 C65,76 69.2,77.7 71.3,78.5 C73.4,79.4 77.7,81.1 77.7,81.1 C77.7,81.1 79.3,80.7 80.1,80.5 C81,80.3 82.8,80.1 82.8,80.1',
+  hole:'M25.3,70.4 C25.3,70.6 25.3,71.6 25.3,71.8',
+  button:'25.1,73.3',
+  shadow:'M37,39.3 L42.2,37.4 L47.4,35.2 M65.6,39.9 L60.5,37.7 L55.7,35.5'};
+/* the cloth at a folded shirt's scale: the shirt is about 66 units for ~30 cm of cloth (the blazer's ~51 units for ~60 cm is .26) */
+const SHIRT_FAB=.55;
+function shirtFabric(id,i){const p=fabricDef(id,i,'shirt'),m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';
+  return (m?p.replace(m[0],''):p).replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="scale(${SHIRT_FAB})${tf?' '+tf:''}"`)}
+function shirtMarks(i,P){const S=SHIRT_D,c=colOf(i),[r,g,b]=hexRgb(c),dark=(.299*r+.587*g+.114*b)<70,
+    e=dark?mix(c,'#fff',.22):mix(c,'#000',.32),sh=dark?'#000':mix(c,'#000',.45),
+    ln=(d,col,w,op)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}"${op?` stroke-opacity="${op}"`:''} stroke-linecap="round" stroke-linejoin="round"/>`,[bx,by]=S.button.split(',').map(Number);
+  return `<defs>${shirtFabric(P+'f',i)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".14"/><stop offset=".45" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient></defs>`+
+    `<path d="${S.out}" fill="url(#${P}f)" stroke="${dark?mix(c,'#fff',.15):mix(c,'#000',.4)}" stroke-width=".45"/><path d="${S.out}" fill="url(#${P}s)"/>`+
+    `<path d="${S.inside}" fill="#000" fill-opacity="${dark?.3:.06}"/>`+ln(S.shadow,sh,1.1,dark?.5:.18)+
+    ln(S.collar,e,.42)+ln(S.band,e,.3,.8)+ln(S.seams,e,.3,.75)+ln(S.cuff,e,.4)+ln(S.sleeve,e,.32,.8)+ln(S.pocket,e,.36)+ln(S.hole,e,.35)+
+    `<circle cx="${bx}" cy="${by}" r="1.25" fill="#e7e4dc" stroke="#9a968c" stroke-width=".2"/>`+[[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]].map(([x,y])=>`<circle cx="${(bx+x).toFixed(2)}" cy="${(by+y).toFixed(2)}" r=".16" fill="#8a867c"/>`).join('')}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -684,7 +712,8 @@ function itemThumb(i,full){
   const P='th'+(thumbN++)+'-';let g='';
   if(full&&FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     g=`<defs>${fabricDef(P+'f',i,role)}</defs><rect width="100" height="100" fill="url(#${P}f)"/>`}
-  else if(i.type==='blazer')g=blazerMarks(i,P);   /* the traced coat with its model (BLAZER_D) */
+  else if(i.type==='blazer')g=blazerMarks(i,P);
+  else if(i.type==='shirt')g=shirtMarks(i,P);   /* the traced folded shirt (SHIRT_D) */   /* the traced coat with its model (BLAZER_D) */
   else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     const jk=i.type==='suit',pk=i.type==='pants',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?SUIT_D.out:pk?PANTS_D.out:'M10,10 H90 V90 H10 Z';
