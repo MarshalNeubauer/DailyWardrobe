@@ -257,9 +257,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         // a new item: its photo is made by itself
         sent=[];const s4=await a.evaluate(async()=>{const it={id:'suit-new',type:'suit',primaryColor:'green',pattern:'pinstripe',secondaryColor:'white'}   /* a solid suit is painted: no photo */;await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));return {key:asmPieceKey('jacket',it),toast:(document.querySelector('.toast')||document.querySelector('#toast')||{}).textContent||''}});
         ok(sent.length===1&&sent[0].key===s4.key&&/green & white pinstripe suit/.test(s4.toast),`adding an item sends its photo to be made, and says so ("${s4.toast}")`);
-        sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'suit-new2',type:'suit',primaryColor:'brown',pattern:'twill'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
+        sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'suit-new2',type:'suit',primaryColor:'brown',pattern:'herringbone'};   /* a twill is painted: no photo */await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
           await asmSync(true);renderAsmUI();return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,auto:settings.asmAuto}});
-        ok(sent.length===0&&s5.auto===false&&/1 to make, about 14¢/.test(s5.st)&&/brown twill suit/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
+        ok(sent.length===0&&s5.auto===false&&/1 to make, about 14¢/.test(s5.st)&&/brown herringbone suit/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
         await a.evaluate(()=>{const f=document.querySelector('#adv-photos');if(!f.classList.contains('open'))f.querySelector('.adv-head').click()});await a.click('#asm-btn');await a.click('#ask-ok');await a.waitForFunction(()=>/Making/.test(document.querySelector('#asm-btn').textContent),null,{timeout:15000});
         const st6=await a.textContent('#asm-status');
         ok(sent.length===1&&/2 photos are being made/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);

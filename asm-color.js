@@ -38,7 +38,7 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
 /* the outfit's kind when its master is on this device (downloaded) */
 const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
-const ASM_CM_PAINTV=2;   // 2: jackets and trousers without a stripe or check reading are their colour
+const ASM_CM_PAINTV=3;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex)
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV];
   for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:''))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
@@ -72,8 +72,8 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
   const it=asmCmItems(o,kind),cloth={};
   for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)};
     if(z==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
-    else if((z==='jacket'||z==='waistcoat')&&asmSuitBands(i)){try{const T=await asmSuitTex(i);if(T)c.suit=T}catch(e){console.warn('suit cloth',e)}}
-    // a jacket or trousers with no stripe or check reading (a twill, herringbone, a fine weave) is its colour: the swatch's drawing of
+    else if((z==='jacket'||z==='waistcoat')&&(asmSuitBands(i)||(typeof asmSuitTwill==='function'&&asmSuitTwill(i)))){try{const T=typeof asmSuitTexFor==='function'?await asmSuitTexFor(i):await asmSuitTex(i);if(T)c.suit=T}catch(e){console.warn('suit cloth',e)}}   // a band reading, or a plain twill (its ribs: asmTwillTex)
+    // a jacket or trousers with no stripe or check reading (and not a plain twill jacket: above) is its colour: the swatch's drawing of
     // a fine weave, tiled over a whole jacket, was a field of dots and dashes (the owner's light grey twill)
     else if(z==='shirt'||(z==='trousers'&&(usableSett(i)||{}).bands)){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
     cloth[z]=c}
@@ -198,7 +198,10 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     if(T.linen&&lin2||hb){const c=uvAt(k,x+.5,y+.5);
       if(T.linen&&lin2){const u=Math.floor(c[0]/ls),v=Math.floor(c[1]/ls);sh*=lin2.r[(((v%lin2.T)+lin2.T)%lin2.T)*lin2.T+(((u%lin2.T)+lin2.T)%lin2.T)]}
       else{const pitch=4*ls,cw=C.cw?C.cw*ls:0,off=C.off?C.off*ls:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
-          h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;tw=1+C.amp*Math.cos(2*Math.PI*(c[1]+dir*c[0])/pitch)+.08*((h%1024)/512-1)}}
+          h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;
+        // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
+        let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0])/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0])/pitch);
+        tw=1+C.amp*ph+(C.fleck!=null?C.fleck:.08)*((h%1024)/512-1);if(C.c2){const m=C.mix*(1+ph)/2;for(let e=0;e<3;e++)cm[e]=cm[e]*(1-m)+4*C.c2[e]*m}}}
     const f=sh*Math.pow(Math.max(0,tw),2.2);out[0]=cm[0]/4*f;out[1]=cm[1]/4*f;out[2]=cm[2]/4*f};
   const rot=(X,Yv,th,e,out)=>{const c=Math.cos(th),s=Math.sin(th);out[0]=out[1]=out[2]=0;asmCmAt(e.tile||e.tie,(X*c+Yv*s)/e.rep,(Yv*c-X*s)/e.repv,out)};
   const c=[0,0,0];
