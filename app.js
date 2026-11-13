@@ -1519,6 +1519,7 @@ const swKind=o=>{let k=null;try{k=typeof asmCmUse==='function'&&typeof ASM_ON!==
 const swSpot=(o,s)=>(SW_SPOT[swKind(o)]||{})[s]||SW_SPOT.suit[s]||SW_SPOT['shirt-tie'][s];
 function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFor()[key(sel)];if(!c)return;
   const on=!!(swOpen&&swOpen.k===key(sel)&&t&&o&&o[swOpen.s]&&c.classList.contains('photo')&&c.querySelector('.swstack'));if(!on)swOpen=null;
+  c.scrollTop=0;c.scrollLeft=0;   // (a zoomed photo made the frame scrollable, and the tapped swatch's focus scrolled it: styles.css clips it too)
   c.classList.toggle('swopen',on);c.querySelectorAll('.swstack .ovsw').forEach(b=>{const me=on&&b.dataset.s===swOpen.s;b.classList.toggle('on',me);b.setAttribute('aria-pressed',me)});
   const motion=anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!on){c.querySelectorAll('.swlens,.swlab,.swring').forEach(e=>e.remove());if(t&&!zoom){t.style.transition=motion?'transform .45s cubic-bezier(.2,.8,.2,1)':'none';t.style.transform=''}return}
@@ -1527,7 +1528,7 @@ function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFo
   const tx=cl(SW_AT[0]*W-SW_Z*fx*W,W-SW_Z*W,0),ty=cl(SW_AT[1]*H-SW_Z*fy*H,H-SW_Z*H,0);
   t.style.transformOrigin='0 0';t.style.transition=motion?'transform .45s cubic-bezier(.2,.8,.2,1)':'none';t.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${SW_Z})`;
   const it=o[swOpen.s],mk=(cls,html)=>{let e=c.querySelector(':scope > .'+cls);if(!e){e=document.createElement('div');e.className=cls;e.setAttribute('aria-hidden','true');c.appendChild(e)}if(html!=null)e.innerHTML=html;return e};
-  mk('swlens',ovlPiece(it));mk('swlab',`<b class="${titleCls(it)}">${esc(itemTitle(it))}</b>`);
+  mk('swlens',ovlPiece(it));   // (no name under it: the owner's ask, 2026-11-13, so the small swatches keep more of their size)
   const ring=mk('swring'),d=cl(2*r*SW_Z,.16,.26)*W;ring.style.width=ring.style.height=d+'px';ring.style.left=(tx+SW_Z*fx*W)+'px';ring.style.top=(ty+SW_Z*fy*H)+'px'}
 function swTap(s){const k=key(sel);if(zoom){zoom=null;applyZoom(false)}swOpen=swOpen&&swOpen.k===k&&swOpen.s===s?null:{k,s};swApply(true)}
 function swClose(){if(swOpen){swOpen=null;swApply(true)}}
