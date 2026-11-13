@@ -39,13 +39,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // B: the same with the pink shirt and another watch (smaller, on a strap: it uncovers a little of the cuff)
       const ib={},B=asmCompose(master,z,{jacket:X.jacket,shirt:X.pink,tie:X.tie,bar:X.bar,watch:X.watch},ib),Lb=asmLab(B);
       const b={watch:asmCount(ib.watch),dark:100*stat(Lb,ib.watch,l=>l<25?1:0),darkMaster:100*stat(Lm,ib.watch,l=>l<25?1:0),tinted:ib.tinted,white:100*stat(Lb,ib.watch,(l,x,y)=>l>88&&Math.hypot(x,y)<6?1:0),shirtA:stat(Lb,asmBox(z.shirt,W,2,false),(l,x)=>x)};
+      // the tie bar drawn (no photo): a bright metal bar lying on the tie, square to it, with a soft shadow below on the tie
+      const idr={},DR=asmCompose(master,z,{jacket:X.jacket,shirt:X.black,tie:X.tie,barDraw:'silver'},idr),Ldr=asmLab(DR);let drOff=0,drN=0,drL=0,drY0=W,drY1=0,shN=0,shD=0;
+      for(let i=0;i<N;i++){if(idr.bar&&idr.bar[i]){drN++;drL=Math.max(drL,Ldr[3*i]);if(!idr.tie[i])drOff++;const y=(i/W)|0;drY0=Math.min(drY0,y);drY1=Math.max(drY1,y)}}
+      if(drN){const y=drY1+2;for(let x=0;x<W;x++){const i=y*W+x;if(idr.tie[i]&&ia.tie[i]&&!idr.bar[i]){shN++;shD+=La[3*i]-Ldr[3*i]}}}
+      const dr={n:drN,off:drOff,L:drL,h:drY1-drY0+1,shadow:shN?shD/shN:0};
       // nothing but a tie: everything else stays as the master shows it
       const ic={};asmCompose(master,z,{tie:X.tie},ic);let onlyTie=1;for(let i=0;i<N;i++)if(ic.lab[i]&&ic.lab[i]!==3&&ic.lab[i]!==6)onlyTie=0;   // 6: where the new tie is narrower, filled from beside it
       // a vest day: the suit's piece is an edit of the vest master (the master with a waistcoat); the waistcoat's zone comes from its calibration photo
       const vm=await F('vestmaster'),vc=await F('vestcalib'),vs=await F('vest-suit'),V=asmVestZone(vm,vc,z),iv={},D=asmCompose(master,z,{jacket:vs,shirt:X.black,tie:X.tie,bar:X.bar,vest:V},iv),Ld=asmLab(D),Vin=asmBox(V,W,5,false);
       let vOff=0,tieIn=0,vn=0;for(let i=0;i<N;i++){if(Vin[i]){vn++;if(!iv.seam[i]&&(D.data[4*i]!==vs.data[4*i]||D.data[4*i+1]!==vs.data[4*i+1]||D.data[4*i+2]!==vs.data[4*i+2]))vOff++;if(iv.lab[i]===3)tieIn++}}
       const v={share:100*asmCount(V)/N,vOff,tieIn,vn,tie:asmCount(iv.tie),tieNoVest:asmCount(ia.tie),bar:iv.bar,green:100*stat(Ld,z.tie,(l,x)=>x<-12?1:0),jacketB:stat(Ld,z.jacket,(l,x,b)=>b),drift:asmDrift(master,z,'jacket',vs,V),driftNoV:asmDrift(master,z,'jacket',vs)};
-      return {W,shares:['jacket','shirt','tie','watch'].map(share),overlap,ok:asmZonesOk(z),same,noneOk:asmZonesOk(none),a,b,onlyTie,v}});
+      return {W,shares:['jacket','shirt','tie','watch'].map(share),overlap,ok:asmZonesOk(z),same,noneOk:asmZonesOk(none),a,b,onlyTie,v,dr}});
+    ok(r.dr.n>150&&r.dr.n<1500&&r.dr.off===0&&r.dr.L>85&&r.dr.h>=4&&r.dr.h<25&&r.dr.shadow>2,`the tie bar is drawn on the tie, with no photo: ${r.dr.n} pixels, none off the tie, polished metal (its bright streak at lightness ${r.dr.L.toFixed(0)}), ${r.dr.h} px tall, and a shadow below it (${r.dr.shadow.toFixed(1)} L* darker)`);
     ok(r.v.share>2.5&&r.v.share<8&&r.v.vn>8000&&r.v.vOff<r.v.vn*.03&&r.v.tieIn===0,`the waistcoat's zone is found from its calibration photo (${r.v.share.toFixed(1)}% of the picture) and filled from the suit's vest photo, with no tie over it (${r.v.vOff} of ${r.v.vn} pixels differ: specks of the master's tie filled in)`);
     ok(r.v.tie>2000&&r.v.tie<r.v.tieNoVest*.9&&r.v.bar===null&&r.v.green<2&&r.v.jacketB<-2,`on a vest day only the top of the tie shows (${r.v.tie} pixels, ${r.v.tieNoVest} without a waistcoat), there is no tie bar, none of the master's green tie is left (${r.v.green.toFixed(1)}%) and the suit is the navy one`);
     ok(r.v.drift<.06&&r.v.driftNoV>r.v.drift,`a suit's vest photo is judged with the waistcoat counted as its own (${(100*r.v.drift).toFixed(1)}% changed outside it; ${(100*r.v.driftNoV).toFixed(1)}% if it were not)`);
@@ -110,7 +116,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const put=async(key,f,sig='')=>{renders[key]={sig,img:await url(f),model:'',t:1000}};
       // the master was made with this watch and a white shirt (its record says so): neither needs a piece
       await put(asmMasterKey(),'master',asmMasterSig({watch,shirt:asmMasterItem('shirt','white')}));
-      out.parts=asmParts(o).map(x=>x.slot).join();out.partsWhite=asmParts({...o,shirt:white}).map(x=>x.slot).join();out.partsGold=asmParts({...o,watch:gold}).map(x=>x.slot).join();
+      out.parts=asmParts(o).map(x=>x.slot).join();out.photoParts=asmPhotoParts(o).map(x=>x.slot).join();out.barDb=(asmParts(o).find(x=>x.slot==='bar')||{}).db;
+      out.metals=[{metal:'other',primaryColor:'silver'},{metal:'gold'},{metal:'other',primaryColor:'black'},{}].map(asmBarMetal).join();out.partsWhite=asmParts({...o,shirt:white}).map(x=>x.slot).join();out.partsGold=asmParts({...o,watch:gold}).map(x=>x.slot).join();
       out.noPieces=await asmPhoto(o);
       await put(asmPieceKey('jacket',jk),'jacket');await put(asmPieceKey('shirt',black),'shirt-black');await put(asmPieceKey('tie',tie),'tie');await put(asmPieceKey('bar',clip),'bar');
       out.noZones=await asmPhoto(o);
@@ -171,6 +178,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.drift.slice(0,3).every(v=>v<.06)&&k.drift[3]>.3&&k.collage===null&&k.bad,`a real piece leaves the rest of the picture alone; one that moved the figure is refused (${k.drift.map(v=>(100*v).toFixed(1)+'%').join(', ')} changed outside the piece)`);
     ok(k.forBefore===null&&k.forAfter&&k.keptOut&&k.overOld==='assembled'&&k.underNew==='gpt'&&k.stale===null,'Today takes the assembled picture (kept on the device) over an older photo of the outfit; a photo made after the master wins, and a piece made again makes the picture stale');
     ok(k.fullLoop.made===0&&k.fullLoop.redraws===0,`an outfit whose own photo wins (after a Regenerate) is not put together and Today is not redrawn for it: that looped and froze swiping and scrolling (${k.fullLoop.made} assembled, ${k.fullLoop.redraws} redraws)`);
+    ok(!/\bbar\b/.test(k.photoParts)&&/^b\d+silver$/.test(k.barDb)&&!/piece:bar/.test(k.needs)&&k.metals==='silver,gold,gunmetal,silver',`a tie bar is drawn, not photographed: the outfit asks for no tie bar photo and the wardrobe needs none (${k.photoParts}; ${k.barDb}); its metal is read with its colour (${k.metals})`);
     ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===1&&k.needs.split('piece:tie').length===1&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt, a plain shirt or a tie (painted on the device) or the master's watch (${k.needs})`);
     const J=k.jobs;
     ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/mid grey suit/.test(J.mj.outfit)&&/green tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit)&&J.mj.size==='2048x2048','the master job is a normal outfit photo of the master\'s clothes (plain mid grey suit, white shirt, green tie), marked as the master, at high quality and 2048 ('+J.mj.size+')');
