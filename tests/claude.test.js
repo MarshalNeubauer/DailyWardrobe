@@ -69,5 +69,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(fj.ownColors&&fj.ownColors.primary.name==='bottle green'&&fj.ownColors.primary.hex==='#1f4a3a'&&fj.ownColors.secondary===null&&fj.ownColors.tertiary===null,`its own colours come back tidied, a bad shade dropped (${JSON.stringify(fj.ownColors)})`);
     await ask2({});
     ok(!sent.body.output_config.format.schema.properties.ownColors&&!/ownColors/.test(sent.body.messages[0].content.at(-1).text),'a normal tag doesn\'t ask for them');
+    // freePattern: Claude's own name for the pattern, its description and whether the listed one fits
+    reply=()=>[200,{model:'claude-opus-5-5',stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify({...free,ownPattern:{name:'Broken Twill <b>',description:'Ribs reversing every few threads.',fits:'yes'}})}]}];
+    fj=await (await ask2({freePattern:true})).json();
+    const ps=sent.body.output_config.format.schema;
+    ok(ps.properties.ownPattern&&ps.required.includes('ownPattern')&&!ps.properties.ownColors&&/ownPattern — the pattern or weave in your own precise words/.test(sent.body.messages[0].content.at(-1).text),'with freePattern the schema and prompt ask for Claude\'s own pattern name');
+    ok(fj.ownPattern&&fj.ownPattern.name==='broken twill b'&&fj.ownPattern.description==='Ribs reversing every few threads.'&&fj.ownPattern.fits===false,`its pattern comes back tidied, fits only when true (${JSON.stringify(fj.ownPattern)})`);
   }finally{globalThis.fetch=realFetch}
 };

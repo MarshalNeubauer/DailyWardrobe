@@ -41,9 +41,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok(pl.rate>=6,`a pale yellow shirt scores reasonably (${pl.rate}/10)`);
   // editor: a shirt offers them, switching type to tie falls back
   const ed=await p.evaluate(async()=>{items=[{id:'sh1',type:'shirt',primaryColor:'periwinkle',pattern:'end-on-end'}];editing='sh1';show('wardrobe');
-    const sels=[...document.querySelectorAll('#item-view select')],tex=sels.find(s=>[...s.options].some(o=>o.value==='royal-oxford'));
+    const pb=document.querySelector('#item-view .patbtn');pb.click();const texOk=!!document.querySelector('#col-sheet .cptile[data-c="royal-oxford"]');closeColPick();const tex={value:/end on end/i.test(pb.textContent)?'end-on-end':pb.textContent};
     const btn=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');btn.click();const prim=!!document.querySelector('#col-sheet .cptile[data-c="lavender"]');closeColPick();
-    const a=prim&&!!tex&&/periwinkle/i.test(btn.textContent)&&tex.value==='end-on-end';await sete('sh1','type','tie');const it=items[0];closeItem();return {a,col:it.primaryColor,pat:it.pattern}});
+    const a=prim&&texOk&&/periwinkle/i.test(btn.textContent)&&tex.value==='end-on-end';await sete('sh1','type','tie');const it=items[0];closeItem();return {a,col:it.primaryColor,pat:it.pattern}});
   ok(ed.a,'the shirt editor offers the new colours and textures');
   ok(ed.col==='blue'&&ed.pat==='solid','changing a periwinkle end-on-end shirt into a tie gives a blue solid tie');
   // the figure draws a new-colour shirt

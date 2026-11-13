@@ -7,7 +7,7 @@ const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
 const tagFixes=skipId=>(settings.tagFixes||[]).filter(f=>f.id!==skipId).slice(-20).map(({field,type,from,to})=>({field,type,from,to}));
-const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{})});
+const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{})});
 
 /* ---- tagging copies: the sharp photo sent to the tagger is kept on this device only (Cache Storage, not synced, not loaded
    at start-up), so the benchmark can re-tag an item from the same picture later ---- */
@@ -15,6 +15,17 @@ const TAGIMG_CACHE='dw-keep-tagimg';
 async function keepTagImg(id,url){try{if(!url||!self.caches)return;const c=await caches.open(TAGIMG_CACHE);await c.put(new Request('tagimg/'+id),new Response(await (await fetch(url)).blob()))}catch(e){console.warn('tag copy not kept',e)}}
 async function tagImgOf(id){try{if(!self.caches)return null;const c=await caches.open(TAGIMG_CACHE),r=await c.match(new Request('tagimg/'+id));if(!r)return null;
   const b=await r.blob();return await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)})}catch{return null}}
+
+/* the sharp close-up (CLOSE_MAX, on this device only, in the same cache): the synced close-up is 640 px, too small for a fine weave
+   (the owner's mid grey blazer: a fine broken twill read as a false micro-check at 480x640). Kept with the synced close-up's
+   signature, so a close-up replaced, removed or undone never sends the old sharp copy; another device sends the synced one. */
+const texSig=u=>u?u.length+':'+u.slice(-48):'';
+async function keepCloseImg(id,url,tex){try{if(!url||!tex||!self.caches)return;const c=await caches.open(TAGIMG_CACHE);
+  await c.put(new Request('closeimg/'+id),new Response(await (await fetch(url)).blob(),{headers:{'content-type':'image/jpeg','x-tex':texSig(tex)}}))}catch(e){console.warn('sharp close-up not kept',e)}}
+async function sharpCloseOf(it){if(!it||!it.texture)return null;
+  try{if(self.caches){const c=await caches.open(TAGIMG_CACHE),r=await c.match(new Request('closeimg/'+it.id));
+    if(r&&r.headers.get('x-tex')===texSig(it.texture)){const b=await r.blob();const u=await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)});if(u)return u}}}catch{}
+  return it.texture}
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */
@@ -209,7 +220,7 @@ const benchScoreTxt=r=>['type','primaryColor','family','pattern'].filter(f=>r.sc
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 async function benchTagOne(it){const img=await tagImgOf(it.id)||it.photo;let measured,closeup;
   if(it.texture){const c=await imgOf(it.texture),cv=document.createElement('canvas');cv.width=c.naturalWidth;cv.height=c.naturalHeight;cv.getContext('2d').drawImage(c,0,0);
-    const r=wbRead(cv),m={...measureCloth(cv,null,r.ref?{gains:r.gains,refLum:r.refLum}:{}),src:'closeup'};m.near=nearestCols(it.type,m.lab,m.ref);measured=measHint(m);closeup=it.texture}
+    const r=wbRead(cv),m={...measureCloth(cv,null,r.ref?{gains:r.gains,refLum:r.refLum}:{}),src:'closeup'};m.near=nearestCols(it.type,m.lab,m.ref);measured=measHint(m);closeup=await sharpCloseOf(it)}
   return ask(img,{closeup,measured,skipId:it.id})}
 async function runBench(pct){if(bench)return;const pool=shuffle(benchPool()),list=pool.slice(0,Math.ceil(pool.length*pct/100));if(!list.length)return;
   if(!isConnected()){tell(NEED_CONN);return}
@@ -300,7 +311,7 @@ async function readWeaves(){const list=weavePool();if(!list.length||weaveRun)ret
 async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};
   const full=it.pbox?await toCanvas(await tagImgOf(it.id)):null,tex=await toCanvas(it.texture);
-  let spec=null;const img=await tagImgOf(it.id)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:it.texture||null,type:it.type})}
+  let spec=null;const img=await tagImgOf(it.id)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:await sharpCloseOf(it),type:it.type})}
   const full2=full||(it.photo?await toCanvas(it.photo):null);
   const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(claudeOnly(it.type,it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
   if(spec){it.patternSpec=spec;if(spec.description)it.patternText=spec.description}
