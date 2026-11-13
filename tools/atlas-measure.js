@@ -23,7 +23,8 @@ window.atlasMeasure=async function({img,parts,calib}){
   const Y=new Float32Array(N);for(let k=0;k<N;k++){const j=4*k;Y[k]=.2126*LIN[px[j]]+.7152*LIN[px[j+1]]+.0722*LIN[px[j+2]]}
   // which part: lowest first, each later one over it
   const part=new Uint8Array(N),masks={};for(const [n,u] of Object.entries(parts||{}))if(u)masks[n]=await asmMaskFromImg(u,W);
-  for(const n of ['jacket','sleeveL','sleeveR','lapelL','lapelR','shirt','waistcoat','tie','watch'])if(masks[n]){const m=masks[n],id=ATLAS_PID[n];for(let k=0;k<N;k++)if(m[k])part[k]=id}
+  // (the waistcoat over the tie: on the waistcoat master the tie's tip is under it)
+  for(const n of ['jacket','sleeveL','sleeveR','lapelL','lapelR','shirt','tie','waistcoat','watch'])if(masks[n]){const m=masks[n],id=ATLAS_PID[n];for(let k=0;k<N;k++)if(m[k])part[k]=id}
   // connected regions of one label (4-neighbours): [{n, pix:Int32Array}]
   const regions=(test)=>{const seen=new Uint8Array(N),out=[];for(let s=0;s<N;s++){if(seen[s]||!test(s))continue;const st=[s],pix=[];seen[s]=1;
     while(st.length){const k=st.pop(),x=k%W;pix.push(k);for(const q of [x>0?k-1:-1,x<W-1?k+1:-1,k-W,k+W])if(q>=0&&q<N&&!seen[q]&&test(q)){seen[q]=1;st.push(q)}}out.push(pix)}return out};
