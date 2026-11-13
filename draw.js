@@ -680,7 +680,7 @@ function pantsMarks(i,P){const S=PANTS_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c
 /* shirt, folded: traced from Brooks Brothers' photo of their black pinpoint oxford dress shirt (ME04469, 2026-11-13, the owner's pick):
    the outline from the photo's pixels (the dark cloth, holes filled; the tie's tip past the hem cut off), the collar's leaves, band,
    shoulder seams, the cuff with its button, the folded sleeve, the pocket and the side fold placed on zoomed crops and snapped to the
-   picture's edges; the tie and the maker's label left out, the placket drawn on where the tie hid it.
+   picture's edges; the tie and the maker's label left out, the placket and its buttons drawn on where the tie hid them.
    Box: X=(x-823.5)*.0632+50, Y=(y-271)*.0632+4 in the 1648x2000 photo. */
 const SHIRT_D={out:'M32.8,93.7 L23.7,93.4 L19.5,93.6 L19.1,93.3 L19,92.8 L19,86 L18.7,85.7 L17.3,85.6 L17,85.1 L17.4,76.3 L17.1,72 L17,63.2 L17.2,58.6 L17.5,58.3 L18.8,57.9 L19.1,57.5 L19.1,35.1 L19.4,16.5 L20.3,15.7 L21.5,15.2 L30.7,12.4 L35.7,11.1 L36.1,10.6 L36.8,7.9 L37.2,7.1 L38.3,6 L39.7,5.2 L41.9,4.6 L44.1,4.3 L54.2,4 L59.3,4.3 L62.2,4.7 L64.3,5.3 L65.7,6 L66.6,7 L67.2,8.4 L68.1,11.8 L81.6,16 L82.5,16.5 L83,17.1 L82.9,38.4 L82.6,58.4 L82.6,69.7 L82.8,71.6 L82.3,82.6 L82.4,93 L82.2,93.7 L81.9,93.9 L78.2,93.8 L69.4,93.9 L67.2,94.1 L65.9,94 Z',
   inside:'M38.9,12.2 L42.2,19.9 L45.6,26.7 L48.2,30.8 L50.2,32.6 L51.8,33.4 L52.5,33.4 L54.5,32 L56.9,29.2 L59.7,24.4 L62.8,17.9 L65.7,10.9 L65.6,11.1 L58.8,10.9 L52.3,10.7 L45.7,10.7 L38.4,10.9 Z',
@@ -692,6 +692,7 @@ const SHIRT_D={out:'M32.8,93.7 L23.7,93.4 L19.5,93.6 L19.1,93.3 L19,92.8 L19,86 
   pocket:'M82.8,70.4 C82.8,70.4 76.8,70.5 73.8,70.5 C70.8,70.5 64.9,70.5 64.9,70.5 C64.9,70.5 64.9,72.4 64.9,73.4 C65,74.3 65,76 65,76 C65,76 69.2,77.7 71.3,78.5 C73.4,79.4 77.7,81.1 77.7,81.1 C77.7,81.1 79.3,80.7 80.1,80.5 C81,80.3 82.8,80.1 82.8,80.1',
   hole:'M25.3,70.4 C25.3,70.6 25.3,71.6 25.3,71.8',
   button:'25.1,73.3',
+  fronts:'52.3,50.7 52.3,69 52.3,87.4',
   shadow:'M37,39.3 L42.2,37.4 L47.4,35.2 M65.6,39.9 L60.5,37.7 L55.7,35.5'};
 /* the cloth at a folded shirt's scale: the shirt is about 66 units for ~30 cm of cloth (the blazer's ~51 units for ~60 cm is .26) */
 const SHIRT_FAB=.55;
@@ -699,12 +700,12 @@ function shirtFabric(id,i){const p=fabricDef(id,i,'shirt'),m=p.match(/ patternTr
   return (m?p.replace(m[0],''):p).replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="scale(${SHIRT_FAB})${tf?' '+tf:''}"`)}
 function shirtMarks(i,P){const S=SHIRT_D,c=colOf(i),[r,g,b]=hexRgb(c),dark=(.299*r+.587*g+.114*b)<70,
     e=dark?mix(c,'#fff',.22):mix(c,'#000',.32),sh=dark?'#000':mix(c,'#000',.45),
-    ln=(d,col,w,op)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}"${op?` stroke-opacity="${op}"`:''} stroke-linecap="round" stroke-linejoin="round"/>`,[bx,by]=S.button.split(',').map(Number);
+    ln=(d,col,w,op)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}"${op?` stroke-opacity="${op}"`:''} stroke-linecap="round" stroke-linejoin="round"/>`;
   return `<defs>${shirtFabric(P+'f',i)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".14"/><stop offset=".45" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient></defs>`+
     `<path d="${S.out}" fill="url(#${P}f)" stroke="${dark?mix(c,'#fff',.15):mix(c,'#000',.4)}" stroke-width=".45"/><path d="${S.out}" fill="url(#${P}s)"/>`+
     `<path d="${S.inside}" fill="#000" fill-opacity="${dark?.3:.06}"/>`+ln(S.shadow,sh,1.1,dark?.5:.18)+
     ln(S.collar,e,.42)+ln(S.band,e,.3,.8)+ln(S.seams,e,.3,.75)+ln(S.cuff,e,.4)+ln(S.sleeve,e,.32,.8)+ln(S.pocket,e,.36)+ln(S.hole,e,.35)+
-    `<circle cx="${bx}" cy="${by}" r="1.25" fill="#e7e4dc" stroke="#9a968c" stroke-width=".2"/>`+[[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]].map(([x,y])=>`<circle cx="${(bx+x).toFixed(2)}" cy="${(by+y).toFixed(2)}" r=".16" fill="#8a867c"/>`).join('')}
+    [S.button,...S.fronts.split(' ')].map(q=>{const [bx,by]=q.split(',').map(Number);return `<circle cx="${bx}" cy="${by}" r="1.25" fill="#e7e4dc" stroke="#9a968c" stroke-width=".2"/>`+[[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]].map(([x,y])=>`<circle cx="${(bx+x).toFixed(2)}" cy="${(by+y).toFixed(2)}" r=".16" fill="#8a867c"/>`).join('')}).join('')}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
