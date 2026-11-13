@@ -581,6 +581,13 @@ const SUIT_D={out:'M28.3,74.9 L28.1,74.6 L27.2,74.5 L26.3,74.6 L25,75 L22.7,75.4
   breast:'M60.3,23.2 L66.6,23.8 L66.4,24.7 L60.2,24 Z',
   trousers:'M19.7,97.7 L19.7,74.7 L28.1,75 L29.7,75.5 L34.2,76 L40.9,76.7 L44.1,77.1 L47,76.5 L47,76.3 L47.3,72.2 L47.6,66.2 L47.9,60.1 L48.8,56.7 L55.5,53.9 L58,57.9 L59.6,62.3 L59.9,67.2 L59.6,71.9 L64.6,72.2 L69.2,72.1 L79.5,72.1 L79.5,97.7 Z',
   buttons:'52,45.4 48.8,56.7'};
+/* the suit's cloth at a suit's scale: the figure on Today draws a jacket about 125 pattern units across (200 units at FIG_SCALE 1.6),
+   this drawing's jacket about 55; matched to the photo it was traced from, whose pinstripes are 36 px apart (2.2 units, about 26
+   across the suit; the pinstripe tile is 8 units), the tile is drawn at 0.28 (at the square's own scale a pinstripe was 8 stripes across
+   the whole suit and the weave's diagonals looked like a print: the owner, 2026-11-13) */
+const SUIT_FAB=.28;
+function suitFabric(id,i){const p=fabricDef(id,i,'top'),m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';
+  return (m?p.replace(m[0],''):p).replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="scale(${SUIT_FAB})${tf?' '+tf:''}"`)}
 function suitMarks(i,P){const S=SUIT_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c,'#fff',.2);
   const ln=(d,w=.42,o=1)=>`<path d="${d}" fill="none" stroke="${e}" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
   return `<path d="${S.trousers}" fill="#000" opacity=".12" clip-path="url(#${P}so)"/>`+
@@ -599,7 +606,7 @@ function itemThumb(i,full){
   else if(FABRIC.includes(i.type)){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     const jk=i.type==='suit',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?SUIT_D.out:'M10,10 H90 V90 H10 Z';
-    g=`<defs>${fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):trouserMarks(i,P));
+    g=`<defs>${jk?suitFabric(P+'f',i):fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):trouserMarks(i,P));
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
