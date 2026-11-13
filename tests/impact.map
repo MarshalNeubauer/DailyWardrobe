@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	aff8295d34b075fd1323
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -2310,6 +2309,28 @@ tagswatch.test.js	tagging.js	claudeOnly	confTxt	measuredAlt	motifPat	readSett	re
 tagswatch.test.js	tests/fixedplan.js	<any>
 tagswatch.test.js	ui.js	addGate
 tagswatch.test.js	wardrobe.js	fldRow	ivOn	matRow	moreRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
+takeoff.test.js	<every page test>	<every page test>
+takeoff.test.js	account.js	isTester
+takeoff.test.js	app.js	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	aAn	adviceFor	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fnv64	foldListTap	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	offBtn	offOn	offRow	piecesBox	piecesLine	planOn	planRulesCheck	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	replanFuture	resetCard	resetDay	saveDay	schedulePrefetch	scoreCard	setOff	setWorn	shareMark	shirtPatterned	shirtTextured	shortRest	shortTop	slotLabel	slotPool	slots	stackSVG	tieWord	vestRow	workerBase	wornBar	wornMarks
+takeoff.test.js	apple-touch-icon.png	<loaded>
+takeoff.test.js	asm-color.js	asmCmAssets	asmCmGet	asmCmItems	asmCmKey	asmCmKind	asmCmPref	asmCmRoute	asmCmTrSc
+takeoff.test.js	assemble.js	asmCalibKey	asmCan	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmDropOld	asmEnsure	asmFor	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLoad	asmMasterKey	asmPending	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag	asmWants	asmWants0
+takeoff.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes
+takeoff.test.js	core.js	LUM	SLOT_TYPE	accentOf	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	desc	hasVest	hexRgb	inRotation	itemName	itemSeason	itemTitle	lum	lumCol	mix	needsJacket	needsTie	nm	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
+takeoff.test.js	detect.js	texPat	tieWeave	usableSett
+takeoff.test.js	draw.js	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG
+takeoff.test.js	figure.js	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
+takeoff.test.js	icon-192.png	<loaded>
+takeoff.test.js	icon-512.png	<loaded>
+takeoff.test.js	index.html	<loaded>
+takeoff.test.js	manifest.webmanifest	<loaded>
+takeoff.test.js	planner.js	beltFit	clothesScore	colourRepeat	colsOf	comboRepeat	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit
+takeoff.test.js	remind.js	remindPrefs	remindRefresh	remindSoon
+takeoff.test.js	stats.js	wornDays
+takeoff.test.js	styles.css	#mannequin-container	#mbox .mhead	#mbox .mswipe	#mpanel-in .mc[data-mv]	#spanel .mpanel-in	#today .row .dot	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.cap	.carenote	.carenote a	.dot	.dot svg	.fig	.fig .wornbar	.fig .wornbar>*	.fig .wshare	.fig>svg	.foldbar	.foldbar .fchev	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.pchip	.pchip svg	.pchip.vest	.pstrip	.render-msg	.render-msg:empty	.resetbox .month-link	.resetbox .month-link:active	.resetbox .rsicon	.row	.row .mut	.row .mut.none	.row .swap	.row .swap:active	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.stack	.stack.rest	.thumb	.thumb svg	.wmark	.wmark.yes.on	<loaded>
+takeoff.test.js	sync.js	scheduleSync	setSyncStatus	showSyncStatus	syncNow	syncOnce	syncUrl
+takeoff.test.js	tagging.js	claudeOnly	motifPat	readable	settable
+takeoff.test.js	tests/fixedplan.js	<any>
 testersync.test.js	<every page test>	<every page test>
 testersync.test.js	account.js	isTester	rememberRole
 testersync.test.js	app.js	@document.addEventListenervisibilitychange	addTombstones	atomic	put	putRaw	toast

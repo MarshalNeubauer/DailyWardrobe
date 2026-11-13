@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url})=>{
     const kinds=await p.evaluate(()=>{const W=__W,o={shirt:W.shirt,watch:W.watch};
       return [asmCmKind({...o,top:W.suit,tie:W.tie}),asmCmKind({...o,top:W.suit,tie:W.tie,vest:true}),asmCmKind({...o,top:W.suit}),asmCmKind({...o,bot:W.pants,belt:W.belt,tie:W.tie}),
         asmCmKind({...o,bot:W.pants,belt:W.belt}),asmCmKind({...o,bot:W.pants,tie:W.tie}),asmCmKind({top:W.suit,tie:W.tie})].map(String).join()});
-    ok(kinds==='suit,vest,null,shirt-tie,shirt-open,null,null',`a jacket and tie: the suit master (the waistcoat master on a waistcoat day); no jacket: shirt and tie, or open collar; a jacket without a tie, no belt or no shirt: none (${kinds})`);
+    ok(kinds==='suit,vest,suit-open,shirt-tie,shirt-open,null,null',`a jacket and tie: the suit master (the waistcoat master on a waistcoat day); no jacket: shirt and tie, or open collar; a jacket without a tie: the open-collar jacket master; no belt or no shirt: none (${kinds})`);
     // a no-jacket day, painted: the master and masks come from the worker, the picture is made in the Web Worker and kept
     const a=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,bot:W.pants,belt:W.belt,tie:W.tie,shoes:W.shoes};
       const before={use:asmCmUse(o),can:asmCan(o)};await asmEnsure(o);before.after=asmCmUse(o);const f=asmFor(o),k=asmOutKey(o);

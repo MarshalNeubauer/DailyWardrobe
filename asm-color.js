@@ -12,7 +12,8 @@
      suit        a jacket and a tie                  (the waistcoat master, 'vest', on a waistcoat day)
      shirt-tie   no jacket, a tie                     (framed to the upper thigh: the belt and trousers show)
      shirt-open  no jacket, no tie, an open collar
-   A jacket worn without a tie has no master yet: such a day keeps a photo of its own.
+     suit-open   a jacket and no tie, an open collar  ('vest-open' on a waistcoat day; 2026-11-13: used once their masters are on
+                 the worker, until then such a day keeps the earlier way or its drawing)
 
    They are photo records on the worker (asmCmKey, put there by tools/asm-cm-upload.js), downloaded once like the other masters.
    A phone paints at 2048; the computer's pre-build (npm run assemble) sets ASM_CM_SIZE to 2880 and scales the picture to 2048.
@@ -22,7 +23,10 @@ const ASM_CM_KINDS={
   suit:{zones:['jacket','tie','background','skin','shirt','dark','watch'],sleeves:1,lapels:1,pxmm:1},
   vest:{zones:['jacket','waistcoat','tie','background','skin','shirt','dark','watch'],sleeves:1,lapels:1,pxmm:1},
   'shirt-tie':{zones:['trousers','belt','tie','buckle','background','skin','shirt','dark','watch'],sleeves:1,lapels:0,pxmm:116/174},
-  'shirt-open':{zones:['trousers','belt','buckle','background','skin','shirt','dark','watch'],sleeves:1,lapels:0,pxmm:116/174*1.05}};
+  'shirt-open':{zones:['trousers','belt','buckle','background','skin','shirt','dark','watch'],sleeves:1,lapels:0,pxmm:116/174*1.05},
+  // a jacket with no tie (Today's "Take off" on the tie, 2026-11-13), made like the suit and waistcoat masters
+  'suit-open':{zones:['jacket','background','skin','shirt','dark','watch'],sleeves:1,lapels:1,pxmm:1},
+  'vest-open':{zones:['jacket','waistcoat','background','skin','shirt','dark','watch'],sleeves:1,lapels:1,pxmm:1}};
 // (pxmm: the shirt masters are framed wider; measured: the tie 116 px wide at 2048 against 174 on the suit master, the open collar's
 // shirt about 5% wider again)
 const asmCmKey=(kind,name)=>asmKey('cm'+ASM_CMV+'/'+kind+'/'+name);
@@ -32,7 +36,7 @@ const ASM_CM='asm_cm';   // localStorage: '0' = this phone puts pictures togethe
 const asmCmPref=()=>{try{return localStorage.getItem(ASM_CM)!=='0'}catch{return true}};
 /* which master an outfit is painted on, or null (the earlier assembler, or the outfit's own photo) */
 function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
-  if(o.top)return o.tie?(o.vest?'vest':'suit'):null;
+  if(o.top)return o.tie?(o.vest?'vest':'suit'):(o.vest?'vest-open':'suit-open');
   if(!o.bot||!o.belt)return null;   // the shirt masters show the trousers and the belt
   return o.tie?'shirt-tie':'shirt-open'}
 /* the outfit's kind when its master is on this device (downloaded) */
@@ -63,6 +67,8 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
   if(z==='belt')return {how:'flat',gap:'',why:''};
   if(z==='jacket'||z==='waistcoat'||z==='trousers'){
     if(z!=='trousers'&&asmSuitBands(i))return {how:'bands',gap:'',why:''};
+    // a suit's own trousers (its jacket taken off on Today, 2026-11-13): the jacket's cloth, so a pinstripe or check reads as on the jacket
+    if(z==='trousers'&&i.type==='suit'&&asmSuitBands(i))return {how:'bands',gap:'',why:''};
     if(z==='trousers'&&s&&s.bands)return {how:'tile',gap:'',why:''};
     if(w&&!(s&&s.bands))return {how:w,gap:'',why:''};
     if(b==='tweed'||(/^own/.test(i.pattern||'')&&/tweed/i.test(i.pattern)))return {how:'tweed',gap:'',why:''};
@@ -80,12 +86,16 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
 /* the garments in rotation whose pattern the colour-coded painter paints plain or generic (Settings, the pre-build's report) */
 const ASM_CM_ZONE={suit:'jacket',blazer:'jacket',pants:'trousers',shirt:'shirt',tie:'tie'};
 const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOut(i.type)).map(i=>({i,r:asmCmRoute(i,ASM_CM_ZONE[i.type])})).filter(x=>x.r.gap);
+/* trousers painted with the suit cloth (a suit's own trousers, or a twill, tweed or small woven figure) are drawn at the shirt master's
+   own scale since 2026-11-13 (they were at the jacket master's, about 1.5 times too large): marked in only those looks' keys */
+const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc':''};
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV];
-  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i))}
+  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
   const bg=renders[asmCmBgKey()];if(bg)s.push('bg:'+bg.t+'/'+ASM_CM_BG_SHADOW);
   return s.join('|')}
-const asmCmItems=(o,k)=>{const z={shirt:o.shirt};if(k==='suit'||k==='vest'){z.jacket=o.top;if(k==='vest')z.waistcoat=o.top}else{z.trousers=o.bot;z.belt=o.belt}if(o.tie&&k!=='shirt-open')z.tie=o.tie;return z};
+const ASM_CM_JACKET=new Set(['suit','vest','suit-open','vest-open']);
+const asmCmItems=(o,k)=>{const z={shirt:o.shirt};if(ASM_CM_JACKET.has(k)){z.jacket=o.top;if(k==='vest'||k==='vest-open')z.waistcoat=o.top}else{z.trousers=o.bot;z.belt=o.belt}if(o.tie&&ASM_CM_KINDS[k].zones.includes('tie'))z.tie=o.tie;return z};
 const asmCmOutKey=o=>asmKey('out/cm'+ASM_CMV+'/'+fnv64(asmCmSig(o)));
 const asmCmStamp=o=>{const k=asmCmKind(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
 /* bring the kind's master, masks and parts onto the device (true when all are here); the background too, when the worker has one */
@@ -323,18 +333,20 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     else if(c.tile){e.tile=c.tile;e.rep=c.tile.mm*P.pxmm;e.repv=e.rep*c.tile.TH/c.tile.TW}cl[z]=e}
   const lin2=Object.values(cl).some(e=>e.suit&&e.suit.linen)?asmLinenTile():null,td2=Object.values(cl).some(e=>e.suit&&e.suit.tweed)?asmTweedTile():null,cm=[0,0,0],tmp=[0,0,0];
   // the app's suit cloth (asmSuitPaintTex) with this picture's coordinates and light
-  const suitCol=(T,k,x,y,sh,out)=>{const rep=T.mm*ASM_PX_MM*ls,repv=rep*T.TH/T.TW;cm[0]=cm[1]=cm[2]=0;
+  // (a suit's cloth on a shirt master's trousers, 2026-11-13: that master is framed wider, so its cloth is drawn at the master's own scale)
+  const lsc=ls*(ASM_CM_KINDS[job.cm]?ASM_CM_KINDS[job.cm].pxmm:1);
+  const suitCol=(T,k,x,y,sh,out)=>{const rep=T.mm*ASM_PX_MM*lsc,repv=rep*T.TH/T.TW;cm[0]=cm[1]=cm[2]=0;
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);asmCmAt(T,c[0]/rep,c[1]/repv,cm)}
     let tw=1;const C=T.cloth,hb=C&&(C.kind==='herringbone'||C.kind==='twill');
-    if(T.k!=null){const c=uvAt(k,x+.5,y+.5),si=Math.floor(c[0]/rep-T.loff+.5),tt=c[1]/(T.blen*ls),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),
+    if(T.k!=null){const c=uvAt(k,x+.5,y+.5),si=Math.floor(c[0]/rep-T.loff+.5),tt=c[1]/(T.blen*lsc),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),
         hh=j=>((Math.imul(si|0,374761393)^Math.imul(j|0,668265263))>>>0)%2048/1024-1,nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
       for(let q=0;q<3;q++)cm[q]=4*T.g[q]+(cm[q]-4*T.g[q])*T.k*nz;sh=T.gain*Math.pow(sh,T.gam)}
     if(T.linen&&lin2||T.tweed&&td2||hb){const c=uvAt(k,x+.5,y+.5);
       // a tweed (asmSuitPaintTex's rule): sampled upright in the picture, its flecks in the second colour
-      if(T.tweed&&td2){const u=Math.floor(x/ls),v=Math.floor(y/ls),li=(((v%td2.T)+td2.T)%td2.T)*td2.T+(((u%td2.T)+td2.T)%td2.T);sh*=td2.r[li];
+      if(T.tweed&&td2){const u=Math.floor(x/lsc),v=Math.floor(y/lsc),li=(((v%td2.T)+td2.T)%td2.T)*td2.T+(((u%td2.T)+td2.T)%td2.T);sh*=td2.r[li];
         if(T.c2&&td2.f[li])for(let q=0;q<3;q++)cm[q]=cm[q]*(1-T.fmix)+4*T.c2[q]*T.fmix}
-      else if(T.linen&&lin2){const u=Math.floor(c[0]/ls),v=Math.floor(c[1]/ls);sh*=lin2.r[(((v%lin2.T)+lin2.T)%lin2.T)*lin2.T+(((u%lin2.T)+lin2.T)%lin2.T)]}
-      else{const pitch=(C.pitch||4)*ls,cw=C.cw?C.cw*ls:0,off=C.off?C.off*ls:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
+      else if(T.linen&&lin2){const u=Math.floor(c[0]/lsc),v=Math.floor(c[1]/lsc);sh*=lin2.r[(((v%lin2.T)+lin2.T)%lin2.T)*lin2.T+(((u%lin2.T)+lin2.T)%lin2.T)]}
+      else{const pitch=(C.pitch||4)*lsc,cw=C.cw?C.cw*lsc:0,off=C.off?C.off*lsc:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
           h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
         let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0])/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0])/pitch);
@@ -342,7 +354,7 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
         tw=1+C.amp*ph*yn+(C.fleck!=null?C.fleck:.08)*((h%1024)/512-1);if(C.c2){const m=C.mix*(1+ph)/2;for(let e=0;e<3;e++)cm[e]=cm[e]*(1-m)+4*C.c2[e]*m}}}
     // a small woven figure (asmMicroTex: houndstooth, sharkskin, birdseye, nailhead): its thread grid along the cloth (uvAt), 4x4 points
     // a pixel (the cloth's direction from the pixel's own and its neighbours' positions: three lookups, not sixteen)
-    if(T.wv){const W=T.wv,tp=W.thr*ASM_PX_MM*ls,p0=uvAt(k,x,y),px=uvAt(k,x+1,y),py=uvAt(k,x,y+1),N=W.N;let v=0;
+    if(T.wv){const W=T.wv,tp=W.thr*ASM_PX_MM*lsc,p0=uvAt(k,x,y),px=uvAt(k,x+1,y),py=uvAt(k,x,y+1),N=W.N;let v=0;
       for(let a=0;a<4;a++)for(let e=0;e<4;e++){const fx=(e+.5)/4,fy=(a+.5)/4,u=p0[0]+(px[0]-p0[0])*fx+(py[0]-p0[0])*fy,w=p0[1]+(px[1]-p0[1])*fx+(py[1]-p0[1])*fy;
         const ix=Math.floor(u/tp),iy=Math.floor(w/tp);v+=W.g[(((iy%N)+N)%N)*N+(((ix%N)+N)%N)]}v/=16;
       tw*=1+W.amp*v;if(W.c2){const m=W.mix*(1-v)/2;for(let q=0;q<3;q++)cm[q]=cm[q]*(1-m)+4*W.c2[q]*m}}
