@@ -176,9 +176,12 @@ function asmCmAt(T,u,v,o){const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*
   const ix0=(x0+TW)%TW,ix1=(x0+1+TW)%TW,iy0=(y0+TH)%TH,iy1=(y0+1+TH)%TH;
   for(let q=0;q<3;q++)o[q]+=(c[3*(iy0*TW+ix0)+q]*(1-fx)+c[3*(iy0*TW+ix1)+q]*fx)*(1-fy)+(c[3*(iy1*TW+ix0)+q]*(1-fx)+c[3*(iy1*TW+ix1)+q]*fx)*fy}
 /* the picture: the master with every garment painted, at the job's size, then at 2048 as a JPEG data URL */
-async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size;
-  if(!asmCmMem||asmCmMem.key!==key){asmCmMem=null;asmCmMem={key,P:await asmCmPrep(job)}}
-  const P=asmCmMem.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
+/* the masters' colour-free parts are kept: one on a phone (2048: about 80 MB each), all four on the computer's pre-build (2880),
+   where looks of several masters come one after another and each part took about 10 s to work out again */
+async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size,keep=job.size>ASM_SIZE?4:1;
+  if(!asmCmMem||!asmCmMem.list)asmCmMem={list:[]};let hit=asmCmMem.list.find(e=>e.key===key);
+  if(!hit){while(asmCmMem.list.length>=keep)asmCmMem.list.shift();hit={key,P:await asmCmPrep(job)};asmCmMem.list.push(hit)}
+  const P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
   const WALL=hexLin('#E6E2DC'),KEEP=new Set(['skin','watch','buckle','dark']),CLEAN=248;
   // a jacket pixel's [across, along] (px): a sleeve's tube, a lapel's own axis, the body's stripe flow, or upright
