@@ -72,6 +72,20 @@ module.exports=async({ok,chromium,url})=>{
     ok(lk.blue>12,`a navy suit stays blue under the look (blue over red ${lk.blue.toFixed(1)})`);
     ok(Math.abs(lk.grey1.m-lk.grey0.m)<4&&lk.grey1.sd>lk.grey0.sd,`a grey suit keeps its colour and gains shape (mean ${lk.grey0.m.toFixed(1)} -> ${lk.grey1.m.toFixed(1)}, spread ${lk.grey0.sd.toFixed(1)} -> ${lk.grey1.sd.toFixed(1)})`);
     ok(lk.pin<.5,`a pinstripe jacket is painted exactly as before (mean difference ${lk.pin.toFixed(2)} levels)`);
+    // the shirt's buttons are drawn (ASM_CM_BTN): on a pink shirt a pearl button where the painted cloth was pink
+    const bt=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,bot:W.pants,belt:W.belt,tie:W.tie,shoes:W.shoes},job=await asmCmJob(o);
+      const px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return {w:im.width,d:x.getImageData(0,0,im.width,im.height).data}};
+      const a=await px((await asmCmBuild({...job,look:false,diskCache:false})).url),b=await px((await asmCmBuild({...job,diskCache:false})).url),[bx,by]=ASM_CM_BTN['shirt-tie'][0],f=a.w/2048;
+      const at=(im,dx,dy)=>{const j=4*(Math.round(by*f+dy)*im.w+Math.round(bx*f+dx));return [im.d[j],im.d[j+1],im.d[j+2]]};
+      // the button's rim, a little up and left of its centre (its holes are in the middle)
+      return {before:at(a,-1,-1),after:at(b,-1,-1)}});
+    ok(bt.after[0]-bt.after[2]<bt.before[0]-bt.before[2]-8&&bt.after[1]>bt.before[1],`a pink shirt's cuff button is drawn pearl, not pink (${bt.before} -> ${bt.after})`);
+    // the hand's outline follows the master's colour: white shirt pixels the skin mask took go to the shirt, skin the shirt mask took to the skin
+    const he=await p.evaluate(()=>{const S=8,N=64,A={skin:new Uint8Array(N),shirt:new Uint8Array(N)},M=new Uint8ClampedArray(4*N);
+      for(let k=0;k<N;k++){const x=k%S,sk=x<4;A.skin[k]=sk?255:0;A.shirt[k]=sk?0:255;const white=x<2||x>=6?false:x===2||x===3;M.set(white?[245,244,240,255]:x<2?[200,150,120,255]:[246,245,242,255],4*k)}
+      // columns 0-1 skin-coloured, 2-3 white but in the skin mask, 4-7 white shirt
+      asmCmHandEdge(A,M,S,N);return {wasSkinWhite:A.shirt[2],realSkin:A.skin[0]}});
+    ok(he.wasSkinWhite===255&&he.realSkin===255,`white shirt between the fingers goes to the shirt, the skin stays skin (${JSON.stringify(he)})`);
     // the background picture (asmCmBgKey): once the worker has one, the wall is that picture (here a flat green), and every look's key changes
     const bgKey=await p.evaluate(()=>asmCmBgKey());
     served[bgKey]={sig:'asm/cm bg',model:'colormaster',t:2000,img:await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#2f7a3a';x.fillRect(0,0,64,64);return c.toDataURL('image/png')})};
