@@ -51,6 +51,30 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
   if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
   return n}
 
+/* item photos saved at 720 px before PH_MAX was raised (2026-11-13, the owner: "upgrade the main photo size stored as well"): on the device
+   that read them, the sharp copy (TAG_MAX, kept by keepTagImg) is still there; when it shows the same picture as the photo (cropSource's
+   test: same shape, alike at 24x24, turned to match; a photo cropped or replaced since doesn't match and is left), the photo is made again
+   at PH_MAX from it, in the old photo's colour (the old one was white-balanced on the Add card: each channel's mean matched, as for the
+   close-ups). Once (localStorage photo_up). */
+const PH_UP_FLAG='photo_up',PH_UP_V='1536';
+async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V||typeof PH_MAX==='undefined'||typeof cropSource!=='function')return 0}catch{return 0}
+  let n=0;const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
+  const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
+    for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
+  for(const it of items){if(!it.photo)continue;
+    try{const ph=await imgOf(it.photo);if(Math.max(ph.naturalWidth,ph.naturalHeight)>=PH_MAX*.9)continue;
+      const src=await cropSource(it);if(!src||src===ph||!src.getContext)continue;   // no sharp copy of this very picture on this device
+      const s=Math.min(1,PH_MAX/Math.max(src.width,src.height)),W=Math.round(src.width*s),H=Math.round(src.height*s);if(Math.max(W,H)<=Math.max(ph.naturalWidth,ph.naturalHeight)*1.2)continue;
+      const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0,W,H);
+      const ma=mean(ph),mb=mean(c),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
+      const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
+      for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
+      it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
+    catch(e){console.warn('photo not upgraded',it.id,e)}}
+  try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
+  if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  return n}
+
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */
 function wbRead(c){

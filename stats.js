@@ -79,7 +79,7 @@ function buildStats(){fitMemo=null;
   const planHard=rates.filter(x=>x[2].hard.length).length;
   return {worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned&&!dressOut(r.i.type))}}
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
-const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true)}</span>`;
+const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${typeof phSm==='function'?phSm(i):i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true)}</span>`;
 const GROUP_NAMES={grey:'Grey',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
 const groupName=g=>GROUP_NAMES[g]||colName(g).replace(/^./,c=>c.toUpperCase());
 const groupCol=g=>COLORS[({red:'burgundy',yellow:'paleyellow',beige:'beige',purple:'purple',green:'green'})[g]||g]||'#8b8f96';

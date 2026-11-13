@@ -438,7 +438,7 @@ async function save(i){
   if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
   if(q.type==='shoes'&&q.shoeStyle&&q.shoeStyle!=='oxford')it.shoeStyle=q.shoeStyle;
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
-  if(!it.photo)delete it.photo;
+  if(!it.photo)delete it.photo;else await makeSmall(it);
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src};
   wardSaveFields(q,it);   // name, brand, material, notes (wardrobe.js)
@@ -456,7 +456,17 @@ const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Colour':k==='se
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Undo works until the editor is closed. ---- */
 let phEdit={id:null,undo:[],crop:null};
-const PH_MAX=720;
+const PH_MAX=1536;   // the item photo (2026-11-13, the owner: "upgrade the main photo size stored as well"; it was 720, before that 360)
+/* the photo's small copy for grids and lists (the wardrobe, stats, the piece picker): PH_SM px, kept on the item with the photo's signature
+   (photoSm, phSig) and made again whenever the photo changes (makeSmall); every redraw of the wardrobe would otherwise carry the full photos */
+const PH_SM=480;
+const phSm=i=>i&&i.photo?(i.photoSm&&i.phSig===phSigOf(i.photo)?i.photoSm:i.photo):null;
+const phSigOf=u=>u?u.length+':'+u.slice(-48):'';
+async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.photoSm;delete it.photoSm;delete it.phSig;return had}
+  const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
+  try{const im=await imgOf(it.photo);it.photoSm=Math.max(im.naturalWidth,im.naturalHeight)<=PH_SM?it.photo:shrink(im,PH_SM).toDataURL('image/jpeg',.82);it.phSig=sig;return true}catch{return false}}
+/* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
+async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)){await put(it);n++}if(n)renderWardrobe();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
   return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
     (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
@@ -465,7 +475,7 @@ function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
-  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
+  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
 async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q);
@@ -477,7 +487,7 @@ async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f);aw
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
   c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);await setPhoto(id,c.toDataURL('image/jpeg',.9))}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
-  if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);await put(it);cache={};renderWardrobe()}
+  if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
   phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
@@ -753,7 +763,7 @@ function fitOf(slot,o,c){
     case 'clip':case 'links':return o.watch&&metalOf(c)!==null?(metalOf(c)===metalOf(o.watch)?6:-4):0}
   return 0}
 const fitTag=gap=>gap<=.5?['best','Best match']:gap<=QWIN?['good','Good match']:gap<=18?['ok','Works']:['weak','Weak match'];
-const pickPic=i=>i.photo?`<img src="${i.photo}" alt="">`:itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true);
+const pickPic=i=>i.photo?`<img src="${phSm(i)}" alt="">`:itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true);
 function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=slotPool(slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,o).toLowerCase();
   if(!o.frozen&&pool.length<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
   const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
@@ -1842,7 +1852,7 @@ function show(t){
   pageIn(t,from);
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>smallPhotos()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady also waits for every script to have run (afterDom; afterScripts waits for the load event, pictures too, and held it up 30 s once): on a slow load app.js's start-up finished while about.js
    was still to come, and a test read the page before about.js had shown its note after a restart)
