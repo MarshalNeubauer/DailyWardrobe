@@ -24,7 +24,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(!['silver','gold','pink','purple','red','white','oxblood','paleyellow'].some(c=>r.suit.includes(c))&&['taupe','khaki','navy','charcoal'].every(c=>r.suit.includes(c)),'suits offer suiting colours only (no watch metals, no shirt or tie colours)');
     ok(['mint','periwinkle','lavender','ivory'].every(c=>r.shirt.includes(c))&&!['silver','gold','olive','oxblood','khaki','tan'].some(c=>r.shirt.includes(c)),'shirts offer shirt colours');
     ok(['silver','rust','lavender','gold'].every(c=>r.tie.includes(c))&&!r.tie.includes('white'),'ties include silver, rust and lavender; no white ties');
-    ok(r.shoes.join()==='black,brown,tan,oxblood,burgundy,navy,grey,taupe,white,cream'&&r.clip.join()==='silver,gold,grey,black','shoes are leather colours, plus white and cream for sneakers; tie clips are metal colours');
+    ok(r.shoes.join()==='black,brown,tan,oxblood,burgundy,navy,grey,taupe,white,cream'&&r.clip.join()==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','shoes are leather colours, plus white and cream for sneakers; tie clips are their finishes: the metals (rose gold and gunmetal too) and the enamel colours clips are sold in');
     ok(!r.socks.includes('white')&&r.rain.includes('khaki')&&!r.rain.includes('red'),'no white dress socks; raincoats come in trench colours');
     ok(r.fit==='lightgrey,khaki,cream,burgundy,grey,black,cream,lightgrey'||/^lightgrey,/.test(r.fit),`off-list tags move to the closest allowed colour (${r.fit})`);
     ok(/^(white|cream),/.test(r.acc),`stripe colours have their own list (${r.acc})`);
@@ -40,7 +40,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const add=await p.evaluate(()=>{show('add');addManual();const q=queue[0];setq(0,'type','tieclip');document.querySelector('#queue .colbtn[data-k="primaryColor"]').click();
       const l=[...document.querySelectorAll('#col-sheet .cpgrid:not(.cpnear) .cptile')].map(b=>b.dataset.c);closeColPick();
       return l.length===new Set(l).size&&l.slice().sort().join()===colChoices(queue[0],'primaryColor').slice().sort().join()?colChoices(queue[0],'primaryColor').join():l.join()});
-    ok(add==='silver,gold,grey,black','the Add form shows a tie clip only metal colours');
+    ok(add==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','the Add form shows a tie clip its finishes');
+    const nm=await p.evaluate(()=>{show('add');const q=queue[0];return {metal:document.querySelectorAll('#queue select[onchange*="\'metal\'"]').length,word:clipWord({type:'tieclip',primaryColor:'rosegold'}),
+      m:[{type:'tieclip',primaryColor:'rosegold'},{type:'tieclip',primaryColor:'silver',metal:'gold'},{type:'tieclip',primaryColor:'gunmetal'},{type:'tieclip',primaryColor:'red'}].map(metalOf).join()}});
+    ok(nm.metal===0&&nm.word==='rose gold'&&nm.m==='gold,silver,other,',`a tie clip has no Metal field: its colour says its metal (rose gold reads as gold, a silver clip tagged gold as silver, red enamel as none: ${nm.m})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

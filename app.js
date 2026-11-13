@@ -537,7 +537,7 @@ async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
   it[k]=v==='none'?null:v;
   if(k==='shoeStyle'&&!leathersFor(it).includes(it.leather))it.leather='calf';   // a sneaker can't be cordovan: back to plain leather
-  if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if((v==='watch'||v==='tieclip')&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';if(v==='belt'&&!it.metal)it.metal='silver'}
+  if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if(v==='watch'&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';if(v==='belt'&&!it.metal)it.metal='silver'}
   if(k==='primaryColor')delete it.color;
   if((k==='primaryColor'||k==='type')&&it.swSrc==='tex')await refreshSwatch(it);   // the close-up swatch takes its lightness from the colour
   await put(it);cache={};renderWardrobe();
@@ -727,7 +727,7 @@ function fitOf(slot,o,c){
     case 'belt':{const f=o.shoes?beltFit(o.shoes,c):0;return f===null?-60:f}
     case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie));
     case 'watch':return watchFit(c,o.shoes,o.belt);
-    case 'clip':case 'links':return o.watch?(metalOf(c)===metalOf(o.watch)?6:-4):0}
+    case 'clip':case 'links':return o.watch&&metalOf(c)!==null?(metalOf(c)===metalOf(o.watch)?6:-4):0}
   return 0}
 const fitTag=gap=>gap<=.5?['best','Best match']:gap<=QWIN?['good','Good match']:gap<=18?['ok','Works']:['weak','Weak match'];
 const pickPic=i=>i.photo?`<img src="${i.photo}" alt="">`:itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true);
@@ -1128,6 +1128,8 @@ let prefetchTimer=0;const schedulePrefetch=()=>{clearTimeout(prefetchTimer);pref
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
 /* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
+/* a tie clip is named by its colour (no metal field): "silver", "rose gold", "black" (enamel) */
+const clipWord=i=>colName(primaryCol(i));
 /* a striped or checked shirt shows in the photo (a plain or finely woven one counts by its colour alone) */
 const shirtPatterned=i=>!!i&&([...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern))||!!(usableSett(i)||{}).motif);
 /* a shirt whose weave texture was read (dobby diamonds, herringbone…): it gets its own photo, described and drawn for the generator */
@@ -1135,7 +1137,7 @@ const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(usableSett(i)||{}).tex;
 const shirtTexText=i=>`a ${colName(primaryCol(i))} dress shirt woven with a fine, subtle tone-on-tone ${TEX_WORDS[i.sett.tex.kind]||'woven texture'} (the texture is in the weave itself, one colour, faint but visible up close; not stripes, checks or a print)`;
 function outfitText(o){
   const pt=(i,role)=>{const t=patternPrompt(i,role);return t?` (${t})`:''};   // the pattern measured and described (tagging.js)
-  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top,'top')}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt,'shirt')}`:shirtTextured(o.shirt)?shirtTexText(o.shirt):`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?(o.tie?'':', worn with the collar open and the top button undone, with no tie'):`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot,'bot')} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie,'tie')}`,o.clip&&`a ${metalWord(o.clip)} tie bar`,
+  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top,'top')}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt,'shirt')}`:shirtTextured(o.shirt)?shirtTexText(o.shirt):`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?(o.tie?'':', worn with the collar open and the top button undone, with no tie'):`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot,'bot')} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie,'tie')}`,o.clip&&`a ${clipWord(o.clip)} tie bar`,
     o.watch&&watchText(o.watch,{worn:true}),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }

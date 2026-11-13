@@ -343,6 +343,12 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `ASM_FORE_K` 1.15: a creased sleeve's forearm (nearer the camera) has its stripes and panes 1.15x larger (target: 22-23 px apart on the forearms, 18-21 on the upper arms; shipped 19 on both); a windowpane's cross lines stay square to its stripes (the flow summed across, `G`)
 - `ASM_SUITV` 7: the sleeves' stripe flow
 
+- the tie bar is drawn, not photographed (`asmBarDraw`, the owner's choice 2026-11-13: the photographed bar came out as a dark slab with a rim of the master's green tie): a flat bar `ASM_BAR_AT` (0.6) of the way down the tie that shows, square to the tie's centre line, clipped on from the tie's left edge (a near-square end there, darkened where it turns round the tie; the owner: a clip doesn't float in the middle), `ASM_BAR_LEN` (0.8) of its width, `ASM_BAR_MM` (5.5 mm) tall, rounded ends, shaded as polished metal lit from the upper left with the tie's colour reflected low on its face, and a soft shadow on the tie; drawn after `asmSeams` so its edge stays crisp
+- its colour (`asmBarRgb`): the clip's colour; silver, white, the greys, gold, rose gold and gunmetal have polished-metal tones (`ASM_METAL`), any other colour is an enamel bar in `colOf` with the same shading and a white glint
+- tie clips have no metal field (the owner's choice, 2026-11-13): `METAL_TYPES` is watch, belt, cufflinks; a clip is its colour, offered as silver, gold, rose gold, gunmetal, grey, black, white, red, blue, navy (`COLS_BY.tieclip`, worker `TYPE_COLORS`); `rosegold` and `gunmetal` are colours (`COLORS`; families gold and charcoal in `FAM`)
+- a clip's metal for matching the watch and belt is read from its colour (`clipMetal`, core.js; `metalOf` in planner.js): silver, white and the greys silver; gold and rose gold gold; gunmetal, dark grey and charcoal 'other'; enamel colours null, which goes with any metal (no Metals deduction, no preference); its name in prompts and what to buy is its colour (`clipWord`); a metal field left on older clips is ignored
+- a drawn tie bar is a part with `db` (`asmBarSig`, in the picture's key; `ASM_BARV` versions the look): no photo is asked for (`asmPhotoParts`, `asmJob`) and `asmNeeds` lists none; the photo path (`P.bar`, `asmBarMask`) stays for the tests and the trial painter, which keeps tie-bar days the old way (`asmP2Able`)
+
 ### `asm-worker.js`
 
 - the Web Worker that puts assembled pictures together (see `assemble.js`); in `ASSETS` in sw.js
