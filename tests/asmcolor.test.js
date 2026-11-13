@@ -62,9 +62,16 @@ module.exports=async({ok,chromium,url})=>{
       const b0=await run('black',false),b1=await run('black'),n1=await run('navy');const idx=[];
       for(let k=0;k<b0.length;k+=4)if(b0[k]+b0[k+1]+b0[k+2]<3*40&&Math.abs(b0[k]-b0[k+2])<8)idx.push(k);   // the black jacket's pixels, painted as before
       const st=d=>{let s=0,s2=0;for(const k of idx){const v=(d[k]+d[k+1]+d[k+2])/3;s+=v;s2+=v*v}const m=s/idx.length;return {m,sd:Math.sqrt(s2/idx.length-m*m)}};
-      let nb=0;for(const k of idx)nb+=n1[k+2]-n1[k];return {n:idx.length,before:st(b0),after:st(b1),blue:nb/idx.length}});
+      let nb=0;for(const k of idx)nb+=n1[k+2]-n1[k];
+      // a lighter cloth keeps its colour (only its folds' lighting changes); a pinstripe is painted exactly as before
+      const runI=async(top,look)=>{const o={shirt:W.shirt,watch:W.watch,top,tie:W.tie},job=await asmCmJob(o);return px((await asmCmBuild({...job,look,diskCache:false})).url)};
+      const grey={...W.suit,id:'lk-grey',primaryColor:'grey'},pin={...W.suit,id:'lk-pin',primaryColor:'navy',pattern:'pinstripe',sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#c8cbd2',.05]],tr:30}};
+      const g0=await runI(grey,false),g1=await runI(grey),p0=await runI(pin,false),p1=await runI(pin);let pd=0;for(const k of idx)pd+=Math.abs(p1[k]-p0[k])+Math.abs(p1[k+1]-p0[k+1])+Math.abs(p1[k+2]-p0[k+2]);
+      return {n:idx.length,before:st(b0),after:st(b1),blue:nb/idx.length,grey0:st(g0),grey1:st(g1),pin:pd/idx.length/3}});
     ok(lk.n>1000&&lk.after.m>lk.before.m+4&&lk.after.sd>lk.before.sd*1.3,`a black suit is lifted and shows its folds and sheen (mean ${lk.before.m.toFixed(1)} -> ${lk.after.m.toFixed(1)}, spread ${lk.before.sd.toFixed(1)} -> ${lk.after.sd.toFixed(1)})`);
     ok(lk.blue>12,`a navy suit stays blue under the look (blue over red ${lk.blue.toFixed(1)})`);
+    ok(Math.abs(lk.grey1.m-lk.grey0.m)<4&&lk.grey1.sd>lk.grey0.sd,`a grey suit keeps its colour and gains shape (mean ${lk.grey0.m.toFixed(1)} -> ${lk.grey1.m.toFixed(1)}, spread ${lk.grey0.sd.toFixed(1)} -> ${lk.grey1.sd.toFixed(1)})`);
+    ok(lk.pin<.5,`a pinstripe jacket is painted exactly as before (mean difference ${lk.pin.toFixed(2)} levels)`);
     // the background picture (asmCmBgKey): once the worker has one, the wall is that picture (here a flat green), and every look's key changes
     const bgKey=await p.evaluate(()=>asmCmBgKey());
     served[bgKey]={sig:'asm/cm bg',model:'colormaster',t:2000,img:await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#2f7a3a';x.fillRect(0,0,64,64);return c.toDataURL('image/png')})};
