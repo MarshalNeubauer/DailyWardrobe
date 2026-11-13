@@ -9,13 +9,14 @@
 //
 //   --days    how far ahead to plan (default 120)
 //   --dry     build and report, upload nothing
+//   --save    a folder to keep a copy of every picture in, to look at (named <first day>-<key>.jpg)
 //   --origin  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/): the page is served from this
 //             computer under that address, so a worker that only answers the app's own origin (ALLOWED_ORIGIN) answers it
 // Each upload is one KV write (the free plan allows 1,000 a day for everything); the token is read from the environment only.
 const http=require('http'),fs=require('fs'),path=require('path');
 const ROOT=path.join(__dirname,'..');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:process.argv[i+1]};
-const DRY=process.argv.includes('--dry'),DAYS=Math.max(1,Math.min(400,+arg('days',120)||120));
+const DRY=process.argv.includes('--dry'),DAYS=Math.max(1,Math.min(400,+arg('days',120)||120)),SAVE=arg('save','');
 const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrobe/')).replace(/\/?$/,'/');
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 if(process.argv.includes('--help')||!WORKER.startsWith('http')||!TOKEN){
@@ -64,14 +65,15 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
   let built=0,skipped=0,uploaded=0,failed=0;const t0=Date.now();
   for(const [n,l] of looks.entries()){
     const t1=Date.now();
-    const r=await page.evaluate(async first=>{const d=new Date(first+'T12:00:00'),o=planOn(d);try{return await asmPrebuildOne(o)}catch(e){return {error:String(e&&e.message||e)}}},l.first);
+    const r=await page.evaluate(async first=>{const d=new Date(first+'T12:00:00'),o=planOn(d);try{const r=await asmPrebuildOne(o);return r&&{...r,how:asmCmUse(o)?'(colour-coded '+asmCmUse(o)+')':'(earlier way)'}}catch(e){return {error:String(e&&e.message||e)}}},l.first);
     const tag=`[${n+1}/${looks.length}] ${l.first}`;
     if(!r||r.error){failed++;console.log(`${tag} not made${r&&r.error?': '+r.error:' (a piece or the master is missing)'}`);continue}
     built++;
     // already on the worker as this very picture (same zones, same photos)? then no write
     const cur=await api('render?key='+r.key,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);
     if(cur&&cur.sig===r.sig){skipped++;console.log(`${tag} ${r.key} current, skipped (${Date.now()-t1} ms)`);continue}
-    if(DRY){console.log(`${tag} ${r.key} built (${Math.round(r.img.length/1024)} KB, ${Date.now()-t1} ms)`);continue}
+    if(SAVE){fs.mkdirSync(SAVE,{recursive:true});fs.writeFileSync(path.join(SAVE,`${l.first}-${r.key}.jpg`),Buffer.from(r.img.split(',')[1],'base64'))}   // --save <folder>: a copy of each picture, to look at
+    if(DRY){console.log(`${tag} ${r.key} built (${Math.round(r.img.length/1024)} KB, ${Date.now()-t1} ms)${r.how?' '+r.how:''}`);continue}
     const up=await api('render',{method:'PUT',body:JSON.stringify({key:r.key,rec:{sig:r.sig,img:r.img,model:'assembled',t:Date.now()}})});
     if(up.ok){uploaded++;console.log(`${tag} ${r.key} uploaded (${Math.round(r.img.length/1024)} KB, ${Date.now()-t1} ms)`)}
     else{failed++;console.log(`${tag} upload refused: ${up.status} ${await up.text().catch(()=>'')}`)}}

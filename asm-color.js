@@ -38,7 +38,7 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
 /* the outfit's kind when its master is on this device (downloaded) */
 const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
-const ASM_CM_PAINTV=1;
+const ASM_CM_PAINTV=2;   // 2: jackets and trousers without a stripe or check reading are their colour
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV];
   for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:''))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
@@ -73,7 +73,9 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
   for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)};
     if(z==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
     else if((z==='jacket'||z==='waistcoat')&&asmSuitBands(i)){try{const T=await asmSuitTex(i);if(T)c.suit=T}catch(e){console.warn('suit cloth',e)}}
-    else if(z!=='belt'){const T=await asmCmTile(i,z==='shirt'?'shirt':z==='trousers'?'bot':'top');if(T)c.tile=T}
+    // a jacket or trousers with no stripe or check reading (a twill, herringbone, a fine weave) is its colour: the swatch's drawing of
+    // a fine weave, tiled over a whole jacket, was a field of dots and dashes (the owner's light grey twill)
+    else if(z==='shirt'||(z==='trousers'&&(usableSett(i)||{}).bands)){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
     cloth[z]=c}
   return {cm:kind,size:self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,master:renders[keys[0]].img,masks,parts,cloth,
     bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null}}
