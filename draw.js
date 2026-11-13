@@ -487,8 +487,7 @@ const BELT_D={back:'M5.3,16.3 C5.6,14.9 6,13 6.3,11.4 C6.7,9.7 7,7.6 7.3,6.1 C7.
   keeper:'M60.3,21.2 C60.3,21.2 61.6,20.6 62.6,20.6 C63.7,20.5 65.5,20.5 66.6,20.8 C67.7,20.9 69.3,21.7 69.3,21.7 C69.3,21.7 69.1,42.8 69.1,42.8 C69.1,42.8 67.7,43.5 66.7,43.6 C65.7,43.7 63.9,43.7 62.9,43.6 C61.8,43.5 60.3,42.8 60.3,42.8 C60.3,42.8 60.3,21.2 60.3,21.2 Z',
   kstitch:'M61.6,21.2 C61.6,23.1 61.5,28.7 61.5,32.3 C61.5,35.9 61.6,41 61.6,42.8',
   kstitch2:'M68.1,21.4 C68.1,23.3 68.1,28.8 68.1,32.4 C68.1,35.9 68,41 68,42.8',
-  frame:'M27,21.2 Q27,19.7 28.5,19.7 L53.8,19.7 Q55.2,19.7 55.2,21.2 L55.2,42.3 Q55.2,43.8 53.8,43.8 L28.5,43.8 Q27,43.8 27,42.3 Z M30.7,23.3 Q30.7,22.5 31.6,22.5 L55.2,22.5 L55.2,43 L31.6,43 Q30.7,43 30.7,42.1 Z',
-  bar:'M55.2,20.4 L55.2,43.4',
+  frame:'M55.2,19.7 L28.5,19.7 Q27,19.7 27,21.2 L27,42.3 Q27,43.8 28.5,43.8 L55.2,43.8 L55.2,41.7 L31.8,41.7 Q30.7,41.7 30.7,40.7 L30.7,23.6 Q30.7,22.5 31.8,22.5 L55.2,22.5 Z',
   prong:'M28.4,31.8 L33.9,31.8 Q34.6,32.7 33.9,33.7 L28.4,33.7 Q27.8,32.7 28.4,31.8 Z',
   holes:'2.6,28.8 8.6,30.4 18.3,32.1 45.1,32.4'};
 function drawBelt(item,P){
@@ -500,11 +499,10 @@ function drawBelt(item,P){
     `<clipPath id="${P}sc"><path d="${S.strap}"/></clipPath><linearGradient id="${P}mt" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${mL}"/><stop offset=".55" stop-color="${mM}"/><stop offset="1" stop-color="${mD}"/></linearGradient></defs>`+
     // the coil behind: its outer face, the inner face at the top (darker), its stitching
     back.body+`<path d="${S.inner}" fill="${mix(c,'#000',.4)}" stroke="${edge}" stroke-width=".3"/>`+stitch(S.bstitch)+
-    // the right bar of the buckle lies under the strap's tail; the strap; its stitching and holes; the keeper
-    `<path d="${S.bar}" stroke="url(#${P}mt)" stroke-width="1" stroke-linecap="round"/>`+
+    // the strap; its stitching and holes; the keeper
     lay.body+`<path d="${S.strap}" fill="url(#${P}sv)"/>`+`<g clip-path="url(#${P}sc)">`+stitch(S.tstitch)+stitch(S.lstitch)+'</g>'+holes+
     `<path d="${S.keeper}" fill="${mix(c,'#000',.08)}" stroke="${edge}" stroke-width=".4"/><path d="${S.keeper}" fill="url(#${P}sv)"/>`+stitch(S.kstitch)+stitch(S.kstitch2)+
-    // the buckle's frame (top, bottom and the wide left bar) and its prong over the strap
+    // the buckle's frame (top, bottom and the wide left bar: a U, its right bar hidden under the strap's tail) and its prong over the strap
     `<path d="${S.frame}" fill="url(#${P}mt)" fill-rule="evenodd" stroke="${mD}" stroke-width=".3"/>`+
     `<path d="${S.prong}" fill="url(#${P}mt)" stroke="${mD}" stroke-width=".25"/>`;
 }
