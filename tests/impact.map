@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	867bd86dcc50a3227bef
+# tested	c01b3096d85d01e1598d
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -151,6 +152,18 @@ asmatlas.test.js	tests/fixtures/asm-tie.jpg	<loaded>
 asmatlas.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
 asmatlas.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
 asmatlas.test.js	tests/fixtures/asm-watch.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/master.jpg	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
+asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmatlas.test.js	tools/atlas.js	<any>
 asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	fetch	getRender	handleSync	isParted	kvMeta	orNull	putRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	utcDay	whoIs
 asmcolor.test.js	<every page test>	<every page test>

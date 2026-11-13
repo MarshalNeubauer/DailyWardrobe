@@ -8,6 +8,9 @@
 //   - the full atlas, for work on this computer (tools/atlas-measure.js): every pixel's colour, part, edge, light, detail, surface and
 //     weave direction, for the suit master and the waistcoat master, written to --out as one gzipped typed array per property, with
 //     atlas.json saying what each holds and how it is scaled, and pictures of some of them; tools/atlas.js reads it back.
+//   - the same for each colour-coded master on the worker (asm-color.js: cm-suit, cm-vest, cm-shirt-tie, cm-shirt-open), at 2048 as a
+//     phone paints them, from the painter's own work on it (asmCmPrep: the soft zones, each zone's light, sleeves, tie, cuffs). Nothing of
+//     these is uploaded: the phones work it out themselves.
 //
 //   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run atlas -- [--out <folder>] [--parts <folder>] [--dry] [--origin <app url>]
 //
@@ -21,7 +24,7 @@
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
 const ROOT=path.join(__dirname,'..');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:process.argv[i+1]};
-const DRY=process.argv.includes('--dry'),OUT=path.resolve(arg('out',path.join(process.cwd(),'atlas'))),PARTS=arg('parts','');
+const DRY=process.argv.includes('--dry'),OUT=path.resolve(arg('out',path.join(process.cwd(),'atlas'))),PARTS=arg('parts',''),CM_SIZE=+arg('cm-size',0)||0;   // (--cm-size: the colour-coded masters at another size than a phone's 2048, for the tests)
 const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrobe/')).replace(/\/?$/,'/');
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 if(process.argv.includes('--help')||!WORKER.startsWith('http')||!TOKEN){
@@ -84,6 +87,18 @@ const writeUrl=(f,u)=>fs.writeFileSync(f,Buffer.from(u.split(',')[1],'base64'));
     const pv=await page.evaluate(()=>atlasPreviews());for(const [n,u] of Object.entries(pv))writeUrl(path.join(dir,'preview-'+n+'.png'),u);
     man.masters[m]={W:r.W,layers,parts:r.parts,previews:Object.keys(pv).map(n=>`${m}/preview-${n}.png`)};man.partNames=r.names;
     console.log(`${m==='suit'?'Suit master':'Waistcoat master'}: ${r.W}x${r.W}, ${Object.keys(layers).length} layers, ${r.parts.length} parts (${r.parts.map(p=>p.name).join(', ')}), ${(r.ms/1000).toFixed(1)} s`)}
+  // ---- the colour-coded masters (asm-color.js), each at the size a phone paints it: what the painter works out for it, pixel by pixel
+  man.version=2;
+  for(const kind of await page.evaluate(()=>typeof ASM_CM_KINDS==='undefined'?[]:Object.keys(ASM_CM_KINDS))){
+    const r=await page.evaluate(async([kind,S])=>{if(!await asmCmGet(kind))return null;const r=await atlasMeasureCm(kind,S||ASM_SIZE);
+      return r&&{...r,keys:asmCmAssets(kind),t:renders[asmCmKey(kind,'master')].t}},[kind,CM_SIZE]);
+    if(!r){console.log(`Colour-coded ${kind} master: not on the worker, not measured.`);continue}
+    const name='cm-'+kind,dir=path.join(OUT,name);fs.mkdirSync(dir,{recursive:true});const layers={};
+    for(const [n,[type,ch,scale,meaning]] of Object.entries(r.layers)){const b=Buffer.from(await page.evaluate(n=>atlasLayer(n),n),'base64'),file=`${name}/${n}.${type}.gz`;
+      fs.writeFileSync(path.join(OUT,file),zlib.gzipSync(b,{level:6}));layers[n]={file,type,channels:ch,scale,meaning,bytes:b.length}}
+    const pv=await page.evaluate(()=>atlasPreviews());for(const [n,u] of Object.entries(pv))writeUrl(path.join(dir,'preview-'+n+'.png'),u);
+    man.masters[name]={W:r.W,colourCoded:true,kind,master:{key:r.keys[0],t:r.t},layers,parts:r.parts,zones:r.zones,geometry:r.geo,previews:Object.keys(pv).map(n=>`${name}/preview-${n}.png`)};man.partNames=r.names;
+    console.log(`Colour-coded ${kind} master: ${r.W}x${r.W}, ${Object.keys(layers).length} layers, ${r.parts.length} parts (${r.parts.map(p=>p.name).join(', ')}), ${(r.ms/1000).toFixed(1)} s`)}
   fs.writeFileSync(path.join(OUT,'atlas.json'),JSON.stringify(man,null,1));
   const size=d=>fs.readdirSync(d,{withFileTypes:true}).reduce((s,e)=>s+(e.isDirectory()?size(path.join(d,e.name)):fs.statSync(path.join(d,e.name)).size),0);
   console.log(`Full atlas written to ${OUT} (${(size(OUT)/1048576).toFixed(1)} MB). Look things up with: node tools/atlas.js "${OUT}" pixel suit <x> <y>`);
