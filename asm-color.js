@@ -79,14 +79,15 @@ const ASM_CM_BTN={'shirt-open':[[1029,428,10.5],[1015,835,10.5],[1014,1031,10.5]
   'suit-open':[[919,312,12],[974,508,12],[954,714,12]]};
 // a button: pearl on a light shirt, tonal (a little lighter than the cloth) on a dark one; a raised rim lit from the upper left, a slightly
 // dished middle, four holes with the thread between them, a soft shadow below and to the right; in the cloth's own light
-// the tint is the shirt's hue at the pearl's own brightness (its colour over its luminance, each channel at most 2.2 times), so a navy
-// shirt tints its buttons as much as a light blue one does: mixed in by its own light, a dark colour barely tinted them
-const ASM_CM_BTN_PEARL=[.86,.84,.80],ASM_CM_BTN_TINT=.15,ASM_CM_BTNV=2;
-const asmCmBtnCol=shirt=>{const Y=Math.max(1e-3,.2126*shirt[0]+.7152*shirt[1]+.0722*shirt[2]),P=ASM_CM_BTN_PEARL,Lp=.2126*P[0]+.7152*P[1]+.0722*P[2];
-  return P.map((v,q)=>Math.min(1,v*(1-ASM_CM_BTN_TINT)+Lp*Math.min(2.2,shirt[q]/Y)*ASM_CM_BTN_TINT))};
+// the button is the pearl mixed with the shirt's colour like paint (2026-11-13, the owner's pick from mockups: "sheet 2 at 55 percent"):
+// ASM_CM_BTN_MIX of the shirt in display (sRGB) values, so it is darker as well as coloured and sits with the shirt; a first version kept the
+// pearl's brightness and added 15% of the shirt's hue, which the owner found too light
+const ASM_CM_BTN_PEARL=[.86,.84,.80],ASM_CM_BTN_MIX=.55,ASM_CM_BTNV=3;
+const asmCmBtnCol=shirt=>{const g=v=>v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055,lg=v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);
+  return ASM_CM_BTN_PEARL.map((v,q)=>lg(g(v)*(1-ASM_CM_BTN_MIX)+g(Math.max(0,Math.min(1,shirt[q])))*ASM_CM_BTN_MIX))};
 function asmCmButtons(o,P,shirt,L,gam){const pts=ASM_CM_BTN[P.kind];if(!pts)return;const S=P.S,A=P.A,f=S/2048,lum=v=>.2126*v[0]+.7152*v[1]+.0722*v[2];
-  // (2026-11-13, the owner: "buttons should be white, just tinted the main color"): every shirt's buttons are pearl white with a tint of the
-  // shirt's colour (ASM_CM_BTN_TINT of it, in linear light); on a coloured shirt they were the cloth's own colour, a little lighter
+  // (2026-11-13, the owner: "buttons should be white, just tinted the main color"): every shirt's buttons are pearl white mixed with the
+  // shirt's colour (asmCmBtnCol); on a coloured shirt they were the cloth's own colour, a little lighter
   const btn=asmCmBtnCol(shirt),hole=btn.map(v=>v*.35),thr=btn.map(v=>v*.82);
   for(const [bx,by,br] of pts){const cx=bx*f,cy=by*f,r=br*f,k0=Math.round(cy)*S+Math.round(cx);if(!(A.shirt[k0]>200))continue;
     const sl=Math.min(1.25,Math.max(.45,P.shade.shirt[k0]/40000)),Rr=Math.ceil(r*1.7),H=[[-.27,-.27],[.27,-.27],[-.27,.27],[.27,.27]];
