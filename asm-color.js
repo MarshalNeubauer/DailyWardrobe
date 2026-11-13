@@ -39,8 +39,12 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
 const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
 const ASM_CM_PAINTV=4;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points
+/* a jacket whose weave the 2026-11-13 audit added (a herringbone, or an own pattern based on solid named twill): marked in its look's key,
+   so only those looks are painted again (a new ASM_CM_PAINTV would repaint every look) */
+const asmCmWeaveTag=(z,i)=>{if((z!=='jacket'&&z!=='waistcoat')||typeof asmSuitWeave!=='function'||!asmSuitTwill(i))return '';
+  const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP:patBase(i.pattern)!=='twill'?'/tw':''};
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV];
-  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:''))}
+  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
   return s.join('|')}
 const asmCmItems=(o,k)=>{const z={shirt:o.shirt};if(k==='suit'||k==='vest'){z.jacket=o.top;if(k==='vest')z.waistcoat=o.top}else{z.trousers=o.bot;z.belt=o.belt}if(o.tie&&k!=='shirt-open')z.tie=o.tie;return z};

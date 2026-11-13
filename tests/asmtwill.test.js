@@ -14,9 +14,17 @@ module.exports=async({ok,chromium,url})=>{
         parts:asmParts(o).filter(p=>p.slot==='jacket').map(p=>!!p.sp),photo:asmPhotoParts(o).map(p=>p.slot),
         needs:asmNeeds().filter(n=>n.kind==='piece'&&n.item&&(n.item.id==='s1'||n.item.id==='b1')).length,needHb:asmNeeds().some(n=>n.kind==='piece'&&n.item&&n.item.id==='s2'),
         tile:{TW:t.TW,kind:t.cloth.kind,ss:t.cloth.ss,c2:!!t.cloth.c2,mix:t.cloth.mix,amp:t.cloth.amp,fleck:t.cloth.fleck},tile1:{c2:t1.cloth.c2,mix:t1.cloth.mix},
-        sig:[asmSuitSig(tw)!==asmSuitSig({...tw,secondaryColor:null}),asmSuitSig(tw)!==asmSuitSig({...tw,pattern:'solid'})],cut:asmSuitCut(tw)}});
-    ok(r.tw&&!r.pinTwill&&r.paint.join()==='true,true,false,true','a twill suit and blazer are painted, a herringbone is still photographed, a read pinstripe keeps its band painter');
-    ok(r.parts.join()==='true'&&!r.photo.includes('jacket')&&r.needs===0&&r.needHb,'no item photo is asked for a twill jacket or its waistcoat (the herringbone still needs one)');
+        sig:[asmSuitSig(tw)!==asmSuitSig({...tw,secondaryColor:null}),asmSuitSig(tw)!==asmSuitSig({...tw,pattern:'solid'})],cut:asmSuitCut(tw),
+        hbTile:(c=>({kind:c.kind,cw:c.cw,amp:c.amp}))(asmTwillTex(hb).cloth),hbSig:asmSuitSig(hb)!==asmSuitSig({...hb,pattern:'twill'})}});
+    ok(r.tw&&!r.pinTwill&&r.paint.join()==='true,true,true,true','a twill suit and blazer and a herringbone are painted, a read pinstripe keeps its band painter');
+    ok(r.parts.join()==='true'&&!r.photo.includes('jacket')&&r.needs===0&&!r.needHb,'no item photo is asked for a twill or herringbone jacket or its waistcoat');
+    ok(r.hbTile.kind==='herringbone'&&Math.abs(r.hbTile.cw-5*3.2)<.5&&r.hbTile.amp>.1&&r.hbSig,`a herringbone with no reading has the herringbone cloth, 5 mm columns, stronger than a twill's ribs (${JSON.stringify(r.hbTile)}), and its own key`);
+    // the owner's own patterns: a weave named in the pattern counts though its base is solid; a plain own pattern stays flat; the colour-coded key marks them
+    const own=await p.evaluate(()=>{const mk=(id,pattern)=>({id,type:'suit',primaryColor:'black',pattern});
+      const a=mk('o1','own-fine-worsted-twill'),h=mk('o2','own-fine-tonal-herringbone'),m=mk('o3','own-worsted-melange-plain-weave'),t=mk('o4','twill');
+      return {w:[a,h,m,t].map(asmSuitWeave),tw:[a,h,m,t].map(asmSuitTwill),tag:[a,h,m,t].map(i=>asmCmWeaveTag('jacket',i)),shirt:asmCmWeaveTag('shirt',a)}});
+    ok(own.w.join()==='twill,herringbone,,twill'&&own.tw.join()==='true,true,false,true',`own patterns named twill or herringbone get their weave (${own.w})`);
+    ok(own.tag[0]==='/tw'&&own.tag[1].startsWith('/hb')&&own.tag[2]===''&&own.tag[3]===''&&own.shirt==='',`only the looks the audit changed get a new key (${own.tag})`);
     ok(r.tile.TW===1&&r.tile.kind==='twill'&&r.tile.ss&&r.tile.c2&&r.tile.mix>0&&r.tile.amp<.16&&r.tile.fleck<.08,`the tile is one colour with fine, supersampled twill ribs, fainter than under a stripe (${JSON.stringify(r.tile)})`);
     ok(r.tile1.c2===null&&r.tile1.mix===0,'a one-colour twill has no second colour in its ribs');
     ok(r.sig.every(Boolean)&&r.cut,'the second colour and the pattern are in the painted picture\'s key; the ribs follow the sleeves');

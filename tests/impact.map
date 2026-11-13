@@ -250,7 +250,8 @@ asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_CO
 asmtwill.test.js	<every page test>	<every page test>
 asmtwill.test.js	app.js	fnv64	lookSig	shirtPatterned	shirtTextured
 asmtwill.test.js	apple-touch-icon.png	<loaded>
-asmtwill.test.js	assemble.js	asmCalibKey	asmCmUse	asmInfo	asmKey	asmLinen	asmLook	asmMasterKey	asmMotif	asmNeeds	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTweed	asmSuitTwill	asmTieSig	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave	asmWeaveSig
+asmtwill.test.js	asm-color.js	asmCmWeaveTag
+asmtwill.test.js	assemble.js	asmCalibKey	asmCmUse	asmInfo	asmKey	asmLinen	asmLook	asmMasterKey	asmMotif	asmNeeds	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTieSig	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave	asmWeaveSig
 asmtwill.test.js	core.js	colName	colOf	colorDesc	hasVest	inRotation	nm	patBase	patLabel	primaryCol	typeWord	wearsJacket
 asmtwill.test.js	detect.js	settSig	texPat	tieWeave	usableSett
 asmtwill.test.js	icon-192.png	<loaded>
