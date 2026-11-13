@@ -932,7 +932,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .fig .swstack{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;flex-direction:column;gap:7px;pointer-events:none;transition:opacity .2s}
 .fig .swstack.up{bottom:58px}
 .fig .swstack .ovsw{display:block;width:52px;height:52px;border-radius:11px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.45)}
-.fig .swstack .ovsw svg{display:block;width:100%;height:100%}
+.fig .swstack .ovsw svg,.fig .swstack .ovsw img{display:block;width:100%;height:100%;object-fit:cover}
 #mannequin-container.zoomed .swstack{opacity:0}
 /* Wardrobe's + Add, and What to buy while it waits for a bigger wardrobe */
 #wardrobe .phead .padd{flex:none;min-height:40px;padding:0 14px}

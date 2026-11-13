@@ -1049,8 +1049,15 @@ function ovlItem(i){const s=usableSett(i),sp=i.patternSpec&&i.patternSpec.across
   return {...i,sett:{...s,bands:b}}}
 const ovlSvg=i=>{const v=swatchSVG(ovlItem(i),true);if(i.type!=='tie')return v;
   return v.replace(/<pattern ([^>]*?)>/,(m,a)=>/patternTransform="/.test(a)?`<pattern ${a.replace(/patternTransform="([^"]*)"/,'patternTransform="$1 scale(.5)"')}>`:`<pattern ${a} patternTransform="scale(.5)">`)};
+/* the real cloth where it reads (the owner's choice, 2026-11-13): an item's precision swatch (the square cut from its close-up, white-balanced
+   and matched to its colour: item.swatch with swSrc 'tex') for a tie, and for a plain or finely woven jacket or shirt; a striped, checked or
+   figured jacket or shirt stays drawn, since a close-up of a patch of cloth barely shows its pattern at this size (his ink aubergine
+   pinstripe's read as plain dark cloth); an item without a close-up stays drawn */
+const ovlCloseup=i=>!!(i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type));
+const ovlDrawn=i=>{if(i.type==='tie')return false;const s=usableSett(i);return !!(s&&(s.bands||s.motif))||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')};
+const ovlPiece=i=>ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i);
 function swatchStack(o,up){const ps=[o.top,o.shirt,o.tie].filter(Boolean);if(!ps.length)return '';
-  return `<div class="swstack${up?' up':''}" role="img" aria-label="${esc(ps.map(i=>slotLabel(i===o.top?'top':i===o.shirt?'shirt':'tie',o)+': '+itemTitle(i)).join('; '))}">${ps.map(i=>`<span class="ovsw">${ovlSvg(i)}</span>`).join('')}</div>`}
+  return `<div class="swstack${up?' up':''}" role="img" aria-label="${esc(ps.map(i=>slotLabel(i===o.top?'top':i===o.shirt?'shirt':'tie',o)+': '+itemTitle(i)).join('; '))}">${ps.map(i=>`<span class="ovsw">${ovlPiece(i)}</span>`).join('')}</div>`}
 function wornBar(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),can=+d<=+T,lw=lastWorn(o);
   const pill=lw?`<small class="lastworn">Last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
