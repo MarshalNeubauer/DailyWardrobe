@@ -88,10 +88,10 @@ const asmCmWeaveTag=(z,i)=>{const how=asmCmRoute(i,z).how;
   // the painters added after the routing test (2026-11-13): small woven figures on jackets and trousers, knit and paisley ties
   if(ASM_MICRO[how])return '/m'+how+'-'+JSON.stringify(ASM_MICRO[how]).replace(/\W+/g,'');
   if(how==='knit')return '/knit'+ASM_KNIT_ACROSS;if(how==='paisley')return '/paisley'+ASM_PAISLEY_ACROSS;
-  if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE:''):''}
+  if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE+'f'+ASM_HB_FLOAT+'/'+ASM_HB_FLOATL+'o'+ASM_HB_SOFT+'g'+ASM_HB_GRAIN+'n'+ASM_HB_SNAP+'p'+ASM_HB_PBRK:''):''}
   if((z==='jacket'||z==='waistcoat')&&asmCmRoute(i,z).how==='tweed'&&!asmSuitTweed(i))return '/ttweed';   // an own pattern named tweed
   if((z!=='jacket'&&z!=='waistcoat')||typeof asmSuitWeave!=='function'||!asmSuitTwill(i))return '';
-  const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE:patBase(i.pattern)!=='twill'?'/tw':''};
+  const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE+'f'+ASM_HB_FLOAT+'/'+ASM_HB_FLOATL+'o'+ASM_HB_SOFT+'g'+ASM_HB_GRAIN+'n'+ASM_HB_SNAP+'p'+ASM_HB_PBRK:patBase(i.pattern)!=='twill'?'/tw':''};
 /* which painter paints a garment (2026-11-13, the owner's rule: every pattern Claude can tag is either painted or says why not): the one
    place asmCmJob, the item sheet, Settings' "Painted plain" list, the pre-build's report and tests/asmroute.test.js all ask.
    -> {how, gap, why}: how 'flat' (a plain colour), 'bands' (a jacket's read stripes or checks), 'twill', 'herringbone', 'tweed',
@@ -465,10 +465,14 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
       else{const pitch=(C.pitch||4)*lsc,cw=C.cw?C.cw*lsc:0,off=C.off?C.off*lsc:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
           h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
-        const bo=C.brk&&(col&1)?C.brk*pitch:0;   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
+        const bo=C.brk&&(col&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(col/2):0;   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
         let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0]+bo)/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0]+bo)/pitch);
+        if(C.soft&&cw){const fx=(c[0]-off)/cw-col,de=Math.min(fx,1-fx)*cw,sw=C.soft*ls;if(de<sw){const nb=fx<.5?col-1:col+1,d2=nb&1?-1:1,b2=C.brk&&(nb&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(nb/2):0,w=.5-.5*de/sw;
+          ph=ph*(1-w)+Math.cos(2*Math.PI*(c[1]+d2*c[0]+b2)/pitch)*w}}
         let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),t=(c[1]-dir*c[0])/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((Math.imul(r0|0,2246822519)^Math.imul(s|0,3266489917)^Math.imul(col|0,668265263))>>>0)%1024/1024;
           yn=1-C.yarn/2+C.yarn*(hv(s0)*(1-fs)+hv(s0+1)*fs)}
+        if(C.float){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),hf=((Math.imul(r0|0,374761393)^Math.imul(col|0,668265263))>>>0)%4096/4096,s=(c[1]-dir*c[0])/(pitch*C.floatL)+hf*7,f=s-Math.floor(s),sn=Math.sin(Math.PI*f);yn*=1-C.float+C.float*sn*sn}
+        if(C.grain){const gs=.6*ASM_PX_MM*ls,gi=Math.floor(c[0]/gs),gj=Math.floor(c[1]/gs),gv=((Math.imul(gi|0,2654435761)^Math.imul(gj|0,2246822519))>>>0)%4096/4096;tw*=1;yn*=1-C.grain+2*C.grain*Math.pow(gv,1.6)}
         let mo=0;if(C.mottle){const vn=(u,v)=>{const i0=Math.floor(u),j0=Math.floor(v),fu=u-i0,fv=v-j0,su=fu*fu*(3-2*fu),sv=fv*fv*(3-2*fv),hh=(i,j)=>((Math.imul(i|0,1597334677)^Math.imul(j|0,3812015801))>>>0)%2048/1024-1;
           return (hh(i0,j0)*(1-su)+hh(i0+1,j0)*su)*(1-sv)+(hh(i0,j0+1)*(1-su)+hh(i0+1,j0+1)*su)*sv},m1=4*ASM_PX_MM*ls,m2=11*ASM_PX_MM*ls;mo=C.mottle*(.55*vn(c[0]/m1,c[1]/m1)+.45*vn(c[0]/m2+17.3,c[1]/m2+5.1))}
         const pr=C.thin?2*Math.pow((ph+1)/2,2)-.75:ph;
