@@ -519,7 +519,7 @@ const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp&&!p.db);   /
    painted picture is the suit's piece (as a photo of the suit with its waistcoat would be), so asmCompose's jacket edge handling
    applies. Patterned suits (pinstripe, windowpane, twill, herringbone…) are still photographed. */
 const ASM_SUITV=7;   // how suits are painted: in the picture's key (5: pinstripes follow the body; 6: the edge fixes, so kept pictures are painted again; 7: the sleeves' stripe flow)
-const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i.pattern)==='solid'&&!usableSett(i))||asmSuitBands(i)||asmSuitTwill(i));
+const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i.pattern)==='solid'&&!usableSett(i))||asmSuitBands(i)||asmSuitTwill(i)||asmSuitTweed(i));
 /* a twill jacket with no band reading (a suit or blazer tagged twill, or the owner's own pattern drawn like twill) is painted too
    (2026-11-13, his mid grey & brown and light grey & tan twill suits and his charcoal twill blazer, which had to be photographed): its
    colour with the twill's diagonal ribs in the shading (asmClothOf's twill, through asmSuitPaintTex), fainter than under a stripe
@@ -529,9 +529,15 @@ const ASM_TWILL={amp:.06,mix:.22,fleck:.025};
 const asmSuitTwill=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&patBase(i.pattern)==='twill'&&!asmSuitBands(i);
 function asmTwillTex(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
   return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:asmLinen(i),cloth:{kind:'twill',amp:ASM_TWILL.amp,c2,mix:c2?ASM_TWILL.mix:0,fleck:ASM_TWILL.fleck,ss:true}}}
-const asmSuitTexFor=async i=>asmSuitBands(i)?await asmSuitTex(i):asmSuitTwill(i)?asmTwillTex(i):null;
-const asmSuitCut=i=>asmSuitBands(i)||asmSuitTwill(i);   // the cloth runs its own way on the sleeves (their zone pictures)
-const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitTwill(i)?'tw|'+ASM_TWILL.amp+'|'+ASM_TWILL.mix+'|'+ASM_TWILL.fleck+'|'+(COLORS[i.secondaryColor]||'')+'|'+asmLinen(i):'',asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
+/* a tweed jacket with no band reading (tagged tweed, or the owner's own pattern drawn like tweed) is painted too (2026-11-13, his slate
+   blue-grey tweed blazer): its colour with the tweed texture in the shading (asmTweedTile, like the linen's), its flecks in the second
+   colour when it has one (a Donegal). A tweed read as a check (CHECK_PATS) stays with the band painter. */
+const asmSuitTweed=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&patBase(i.pattern)==='tweed'&&!asmSuitBands(i);
+function asmTweedTex(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
+  return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:false,tweed:true,cloth:null,c2:COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null,fmix:.85}}
+const asmSuitTexFor=async i=>asmSuitBands(i)?await asmSuitTex(i):asmSuitTwill(i)?asmTwillTex(i):asmSuitTweed(i)?asmTweedTex(i):null;
+const asmSuitCut=i=>asmSuitBands(i)||asmSuitTwill(i)||asmSuitTweed(i);   // the cloth runs its own way on the sleeves (their zone pictures)
+const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitTwill(i)?'tw|'+ASM_TWILL.amp+'|'+ASM_TWILL.mix+'|'+ASM_TWILL.fleck+'|'+(COLORS[i.secondaryColor]||'')+'|'+asmLinen(i):'',asmSuitTweed(i)?'td|'+JSON.stringify(ASM_TWEED)+'|'+(COLORS[i.secondaryColor]||''):'',asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
 /* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
    too, from the reading: one repeat of the app's own drawing (fabricDef) in the reading's colours, sized by its repeats across the
    jacket (ASM_SHIRT_MM / sett.tr at ASM_PX_MM), upright on the body and along the arm on each sleeve (the sleeve zone pictures, made
@@ -604,6 +610,25 @@ function asmLinenTile(){if(asmLinenMemo)return asmLinenMemo;const T=256,n=T/2,r=
   for(let y=0;y<T;y++)for(let x=0;x<T;x++){const cx=x>>1,cy=y>>1,up=(cx+cy)%2===0;r[y*T+x]=up?warp[cx]+slubW[cx*T+y]:weft[cy]+slubF[cy*T+x]}
   let m=0,v=0;for(const a of r)m+=a;m/=r.length;for(const a of r)v+=(a-m)*(a-m);const sd=Math.sqrt(v/r.length)||1;for(let k=0;k<r.length;k++)r[k]=1+(r[k]-m)/sd*.055;   // about 5% of the light
   return asmLinenMemo={r,T}}
+/* a tweed texture, 512 px square, the same on every device (2026-11-13, the owner's slate blue-grey tweed blazer: a melange of mid,
+   lighter and darker yarns, nubby, slightly crosshatched): r, each light factor around 1, and f, where a fleck is (0..1) for a second
+   colour. Threads two pixels wide, plain-woven like the linen; along each thread the yarn's shade changes every few pixels (a melange:
+   ASM_TWEED.yarn of the spread), short nubs (lighter or darker, 3-6 px), and rare flecks, light or dark, 2-3 px; spread ASM_TWEED.sd */
+const ASM_TWEED={sd:.13,light:.35,dark:.2,nub:.2,fleck:.018,fleckL:.5};
+let asmTweedMemo=null;
+function asmTweedTile(){if(asmTweedMemo)return asmTweedMemo;const T=512,n=T/2,r=new Float32Array(T*T),f=new Float32Array(T*T),Z=ASM_TWEED;let seed=29;const rnd=()=>{seed=(Math.imul(seed,1103515245)+12345)>>>0;return seed/4294967296};
+  // a melange: each short pick of yarn (1-3 px) is a light yarn (Z.light of them), a dark one (Z.dark) or the ground's; long runs
+  // of one shade read as slubbed silk streaks (the first try, 2-7 px runs and 6 nubs a thread, 2026-11-13)
+  const thread=()=>{const a=new Float32Array(T);let x=0;while(x<T){const len=1+Math.floor(rnd()*3),q=rnd(),v=q<Z.light?1:q<Z.light+Z.dark?-.7:0;for(let s=0;s<len&&x<T;s++)a[x++]=v}
+    for(let k=0;k<3;k++){const at=Math.floor(rnd()*T),len=2+Math.floor(rnd()*3),v=(rnd()<.5?1:-1)*Z.nub;for(let s=0;s<len;s++)a[(at+s)%T]+=v*Math.sin(Math.PI*(s+.5)/len)}   // a few short nubs
+    return a};
+  const warp=[],weft=[];for(let k=0;k<n;k++){warp.push(thread());weft.push(thread())}
+  for(let y=0;y<T;y++)for(let x=0;x<T;x++){const cx=x>>1,cy=y>>1,up=(cx+cy)%2===0;r[y*T+x]=up?warp[cx][y]:weft[cy][x]}
+  let m=0,v=0;for(const a of r)m+=a;m/=r.length;for(const a of r)v+=(a-m)*(a-m);const sd=Math.sqrt(v/r.length)||1;for(let k=0;k<r.length;k++)r[k]=1+(r[k]-m)/sd*Z.sd;
+  // flecks: a few in every hundred 2 px cells, light (most) or dark, 2-3 px across; f marks them for a second colour
+  for(let cy=0;cy<n;cy++)for(let cx=0;cx<n;cx++){if(rnd()>Z.fleck)continue;const light=rnd()<.7,s=rnd()<.5?2:3;
+    for(let a=0;a<s;a++)for(let b=0;b<s;b++){const k=((2*cy+a)%T)*T+(2*cx+b)%T;r[k]=light?1+Z.fleckL:1-Z.fleckL*.6;f[k]=1}}
+  return asmTweedMemo={r,f,T}}
 /* The jacket's parts whose cloth runs its own way -> {seg (0 = the body, upright; per pixel), segs:[…]}: a lapel ({m, one}) is one
    straight part along the whole lapel's long axis ({cs, sn, cx, cy}); a sleeve is one tube of cloth bent at the elbow ({poly, cum}).
    A sleeve's centre line: its two ends are the points of the sleeve furthest apart travelling inside it (the shoulder and the cuff);
@@ -807,7 +832,7 @@ function asmSuitEdge(P,img){const d=img.data,B=P.base.data,L=ASM_LIN,gam=v=>{v=v
 /* the base picture with a patterned jacket painted (an ImageData): T from asmSuitTex; each pixel the drawing's colour (bilinear, 2x2
    points a pixel) in its part's direction, times its shading, and the linen texture's light when the cloth is linen */
 function asmSuitPaintTex(P,T){const W=P.base.width,L=ASM_LIN,d=new Uint8ClampedArray(P.base.data),rep=T.mm*ASM_PX_MM*W/ASM_SIZE,repv=rep*T.TH/T.TW,cm=[0,0,0],
-    gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},lin=T.linen?asmLinenTile():null,ls=W/ASM_SIZE;
+    gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},lin=T.linen?asmLinenTile():T.tweed?asmTweedTile():null,ls=W/ASM_SIZE;
   const at=(u,v)=>{const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0;
     for(let q=0;q<3;q++){const G=(a,b)=>T.c[3*(((b+T.TH)%T.TH)*T.TW+(a+T.TW)%T.TW)+q];cm[q]+=(G(x0,y0)*(1-fx)+G(x0+1,y0)*fx)*(1-fy)+(G(x0,y0+1)*(1-fx)+G(x0+1,y0+1)*fx)*fy}};
   const body={cs:1,sn:0,cx:0,cy:0},fl=P.flow,b0=P.segs&&P.segs[0],uv=(g,X,Y)=>g.parts?asmTubeAt(g,X,Y):fl&&(g===body||g===b0)?asmFlowAt(fl,X,Y):[(X-g.cx)*g.cs+(Y-g.cy)*g.sn,(Y-g.cy)*g.cs-(X-g.cx)*g.sn];   // across, along (px); the body follows the stripe flow
@@ -818,7 +843,9 @@ function asmSuitPaintTex(P,T){const W=P.base.width,L=ASM_LIN,d=new Uint8ClampedA
     if(st){const c=uv(g,x+.5,y+.5),si=Math.floor(c[0]/rep-T.loff+.5),tt=c[1]/(T.blen*ls),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),hh=j=>((Math.imul(si|0,374761393)^Math.imul(j|0,668265263))>>>0)%2048/1024-1,nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
       for(let e=0;e<3;e++)cm[e]=4*T.g[e]+(cm[e]-4*T.g[e])*T.k*nz;sh=T.gain*Math.pow(sh,T.gam)}
     if(lin||hb){const c=uv(g,x+.5,y+.5);
-      if(lin){const u=Math.floor(c[0]/ls),v=Math.floor(c[1]/ls);sh*=lin.r[(((v%lin.T)+lin.T)%lin.T)*lin.T+(((u%lin.T)+lin.T)%lin.T)]}
+      if(lin){const u=Math.floor((T.tweed?x:c[0])/ls),v=Math.floor((T.tweed?y:c[1])/ls),li=(((v%lin.T)+lin.T)%lin.T)*lin.T+(((u%lin.T)+lin.T)%lin.T);sh*=lin.r[li];
+        // a tweed is sampled upright: it has no direction, and along a sleeve's tube it streaked where the cloth gathers at the crease
+        if(T.c2&&lin.f&&lin.f[li])for(let e=0;e<3;e++)cm[e]=cm[e]*(1-T.fmix)+4*T.c2[e]*T.fmix}   // a tweed's fleck in its second colour
       // diagonal twill lines, turning at each herringbone column, as a share of the visible brightness: as a share of linear light, 5%
       // of a dark navy was under one level of 255 and the owner's herringbone did not show
       else{const col=cl.kind==='herringbone'?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;   // a fleck along each thread: lighter fibres, and a stripe slightly broken
