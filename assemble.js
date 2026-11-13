@@ -409,11 +409,32 @@ const asmInfo=()=>{const m=renders[asmMasterKey()];if(!m)return null;try{const j
 const asmCan=o=>!!(o&&o.top&&o.shirt&&o.tie&&o.watch);
 /* the outfit is painted on a colour-coded master (asm-color.js): its kind has one and that master is on this device (asmEnsure and
    asmPrebuildOne look for it first); a worker without them leaves every outfit to the earlier way */
-const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
-/* look for the outfit's colour-coded master on the worker, once a session */
-const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(k&&!renders[asmCmKey(k,'master')]&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k);
-  if(k&&renders[asmCmKey(k,'master')])await asmCmBgGet()};   // the background (asm-color.js), once a session, also on a phone that already holds the masters
-const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(k=>renders[asmCmKey(k,'master')]);
+/* (2026-11-13) or the worker's list says it keeps that master: a phone then needn't download a master (and its masks) just to learn it
+   exists; it downloads them only to paint a look the computer hasn't built (asmCmEnsure) */
+/* (and the masters the last list showed are remembered, localStorage.asm_cm_listed: at start a phone holding no master would otherwise
+   wait for the list before showing a picture it already keeps) */
+let asmCmListed=null;
+const asmCmSeen=k=>{if(!asmCmListed){try{asmCmListed=new Set(JSON.parse(localStorage.getItem('asm_cm_listed')||'[]'))}catch{asmCmListed=new Set()}}return asmCmListed.has(k)};
+const asmCmHeld=k=>{const m=asmCmKey(k,'master');return !!(renders[m]||(asmList?asmList.has(m):asmCmSeen(m)))};
+const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmCmKind(o);return k&&asmCmHeld(k)?k:null};
+/* look for the outfit's colour-coded master on the worker, once a session: in the worker's list (one small request), else by downloading it */
+const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(!k)return;
+  if(!renders[asmCmKey(k,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(k,'master')))&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k)}
+  // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the computer's pictures
+  if(asmCmHeld(k))await asmCmBgGet()};
+const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(asmCmHeld);
+/* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB), refreshed after ASM_LIST_MS: which looks the
+   computer has built (npm run assemble) and which colour-coded masters are there. Asked for once per refresh, by everything that needs
+   it at once; null when the worker can't list (the daily listing allowance): then a look is asked for by itself, as before */
+let asmList=null,asmListAt=0,asmListing=null;const ASM_LIST_MS=5*60e3;
+function asmListGet(force){const W=workerBase();if(!W)return Promise.resolve(null);if(asmListing)return asmListing;
+  if(asmList&&!force&&Date.now()-asmListAt<ASM_LIST_MS)return Promise.resolve(asmList);
+  asmListing=(async()=>{try{const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'}),j=r.ok?await r.json().catch(()=>null):null;
+      if(j&&Array.isArray(j.keys)){asmList=new Set(j.keys);asmListAt=Date.now();
+        if(typeof ASM_CM_KINDS!=='undefined'){asmCmListed=new Set(Object.keys(ASM_CM_KINDS).map(k=>asmCmKey(k,'master')).filter(m=>asmList.has(m)));try{localStorage.setItem('asm_cm_listed',JSON.stringify([...asmCmListed]))}catch{}}}}
+    catch(e){console.warn('no list',e)}
+    finally{asmListing=null}return asmList})();
+  return asmListing}
 /* the piece photos an outfit needs: [{slot, key, item}] */
 function asmParts(o){const inf=asmInfo()||{},out=[];
   for(const slot of ['jacket','shirt','tie','bar','watch']){const i=o[ASM_SLOT[slot]];if(!i||(slot==='bar'&&o.vest))continue;const sig=asmLook(slot,i);
@@ -1285,7 +1306,7 @@ async function asmPhoto(o,front,p2){const job=await asmJob(o,p2);if(!job)return 
 let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
 const asmOutKey=o=>asmCmUse(o)?asmCmOutKey(o):asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')+(p.tp?'='+p.tp:'')+(p.sp?'='+p.sp:'')+(p.db?'='+p.db:'')).join('+')+(asmP2On()&&asmP2Able(o)?'/p2':''));   // (atlas painting: a picture of its own)   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
 const asmStamp=o=>asmCmUse(o)?asmCmStamp(o):[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmPhotoParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
-const asmWants=o=>{const k=asmCmUse(o);return k?!!renders[asmCmKey(k,'master')]:asmWants0(o)};
+const asmWants=o=>{const k=asmCmUse(o);return k?asmCmHeld(k):asmWants0(o)};
 const asmWants0=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
    (Settings: Regenerate) wins: that was the owner's choice. */
@@ -1304,7 +1325,11 @@ const ASM_PRE_RE=/^asm\/out\/z(\d+)\/(\d+)$/;
    holds for the look (the phone may not hold the pieces at all: it never needed them) */
 const asmFresh=(o,a)=>a.stamp===asmStamp(o)||(!!a.pre&&a.stamp>=asmStamp(o));
 function asmTrim(){const old=Object.keys(asmOut).sort((a,b)=>asmOut[b].t-asmOut[a].t).slice(ASM_KEEP);for(const x of old){delete asmOut[x];txs('meta','readwrite',st=>st.delete('asm:out:'+x))}}
-async function asmGetPre(o){const k=asmOutKey(o),W=workerBase();if(!W||asmTried.has('pre:'+k))return false;asmTried.add('pre:'+k);
+/* (listed: the worker's list says it has the picture: asked for even if an earlier ask this session found none, since the computer built
+   it since; one download at a time per look) */
+const asmPreGetting=new Map();
+function asmGetPre(o,listed){const k=asmOutKey(o);if(asmPreGetting.has(k))return asmPreGetting.get(k);const p=asmGetPre1(o,listed).finally(()=>asmPreGetting.delete(k));asmPreGetting.set(k,p);return p}
+async function asmGetPre1(o,listed){const k=asmOutKey(o),W=workerBase();if(!W||(!listed&&asmTried.has('pre:'+k)))return false;asmTried.add('pre:'+k);
   try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'}),j=r.ok?await r.json().catch(()=>null):null;
     const m=j&&j.img&&ASM_PRE_RE.exec(String(j.sig||''));if(!m||+m[1]!==ASM_ZV)return false;
     const rec={img:j.img,stamp:+m[2],t:Date.now(),pre:true};if(!asmFresh(o,rec))return false;
@@ -1380,6 +1405,7 @@ function asmShow(){asmTouchWatch();if(asmTouch){asmLate=true;return}refreshToday
    Today is drawn (asmAheadSoon, from asmEnsure) and starts over when the day on screen or the plan changes; a built look is skipped. */
 const ASM_AHEAD=60;
 const ASM_AHEAD_WAIT=1200;
+const ASM_AHEAD_N=3;   // pictures built on the computer downloaded at once while building ahead (one at a time took about 80 s for 40 on 4G)
 let asmAheadT=0,asmAheadOn=false,asmAheadAgain=false;
 function asmAheadSoon(){clearTimeout(asmAheadT);asmAheadT=setTimeout(asmAhead,ASM_AHEAD_WAIT)}
 /* the workdays from today to ASM_AHEAD days on, with the day on screen and its neighbours first: [[date, outfit]] (planned a day at a
@@ -1390,9 +1416,15 @@ async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),
     const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
   return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
 async function asmAhead(){if(!ASM_ON||!(renders[asmMasterKey()]||asmCmAny())||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
-  try{do{asmAheadAgain=false;const seen=new Set();
-      for(const o of await asmAheadDays()){if(asmAheadAgain||document.hidden||!asmOffPage())break;const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);
-        if(asmFullWins(o)||asmFor(o))continue;await asmEnsure(o,true)}}
+  try{do{asmAheadAgain=false;const seen=new Set(),todo=[];
+      for(const o of await asmAheadDays()){const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);if(!asmFullWins(o)&&!asmFor(o))todo.push(o)}
+      // (2026-11-13) the looks the computer built first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
+      // a time and grouped by master, so a master's setup is read once for all its looks (asmCmBuild keeps one in memory on a phone)
+      const L=await asmListGet(),built=todo.filter(o=>asmCmUse(o)&&L&&L.has(asmOutKey(o))),rest=todo.filter(o=>!built.includes(o));
+      const stop=()=>asmAheadAgain||document.hidden||!asmOffPage();let i=0;
+      await Promise.all(Array.from({length:ASM_AHEAD_N},async()=>{while(i<built.length&&!stop())await asmEnsure(built[i++],true)}));
+      rest.sort((a,b)=>String(asmCmUse(a)||'').localeCompare(String(asmCmUse(b)||'')));   // (a stable sort: nearest first within a master)
+      for(const o of rest){if(stop())break;await asmEnsure(o,true)}}
     while(asmAheadAgain)}
   catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false}}
 /* are any of this outfit's pieces being made right now? */
