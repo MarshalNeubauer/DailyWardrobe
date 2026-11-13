@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	faab605ea81c036ce038
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -157,7 +158,7 @@ asmcolor.test.js	account.js	acctCall	iosDevice	iosInSafari	loadAccount	rememberR
 asmcolor.test.js	app.js	@addEventListenerpopstate	aAn	addTombstones	appPush	atomic	backupSummary	cap1	comboKey	comboSig	countryName	esc	fnv64	hasOutfit	isoDate	itemDesc	itemKey	keepRender	keyDate	lockUpcoming	lookSig	metaPut	missingItemPics	monthFillSoon	monthLink	openSettings	planOn	recordDays	renderDaysOffUI	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	resetCard	setCatOpen	settingsSummaries	shirtPatterned	shirtTextured	shortDate	unit	workerBase
 asmcolor.test.js	asm-color.js	<any>	asmCmAssets	asmCmEnsure	asmCmGaps	asmCmGet	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmOutKey	asmCmPref	asmCmRoute	asmCmSet	asmCmSig	asmCmStamp	asmCmTile	asmCmUI	asmCmWeaveTag	asmGapUI
 asmcolor.test.js	asm-worker.js	<any>
-asmcolor.test.js	assemble.js	<any>	asmCalibKey	asmCan	asmCmLook	asmCmUse	asmDropOld	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmInfo	asmJob	asmKey	asmLoad	asmLook	asmMasterKey	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmP2UI	asmPaintable	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTrim	asmVestKept	asmVestKey	asmVestTag	asmWants	asmWants0	asmWorker	asmZonesKept	renderAsmUI
+asmcolor.test.js	assemble.js	<any>	asmCalibKey	asmCan	asmCmLook	asmCmUse	asmDropOld	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmInfo	asmJob	asmKey	asmLoad	asmLook	asmMasterKey	asmMicroKind	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmP2UI	asmPaintable	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTrim	asmVestKept	asmVestKey	asmVestTag	asmWants	asmWants0	asmWorker	asmZonesKept	renderAsmUI
 asmcolor.test.js	care.js	careLimit	laundryDays	renderCareUI
 asmcolor.test.js	core.js	colName	colOf	colorDesc	dressOut	hasVest	inRotation	mergeState	nm	patBase	patLabel	patName	primaryCol	shoeStyle	stateSig	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 asmcolor.test.js	detect.js	settSig	texPat	tieWeave	usableSett
@@ -200,7 +201,7 @@ asmp2.test.js	app.js	appPush	backupSummary	cap1	countryName	esc	fnv64	hasOutfit	
 asmp2.test.js	apple-touch-icon.png	<loaded>
 asmp2.test.js	asm-color.js	<any>	asmCmGaps	asmCmKey	asmCmKind	asmCmPref	asmCmRoute	asmCmUI	asmGapUI
 asmp2.test.js	asm-worker.js	<any>
-asmp2.test.js	assemble.js	<any>	asmAreas	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBarRgb	asmBarSig	asmBig	asmBox	asmCalibKey	asmCan	asmCmUse	asmCount	asmDE	asmData	asmDropOld	asmFill	asmGet	asmImg	asmInfo	asmJob	asmKey	asmLab	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmNeeds	asmOutKey	asmP2Able	asmP2On	asmP2Set	asmP2Show	asmP2UI	asmPaintable	asmParts	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmPx	asmRun	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexFor	asmTexTile	asmTieFor	asmTieSig	asmVestKept	asmVestKey	asmVestTag	asmVestZone	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesKept	renderAsmUI
+asmp2.test.js	assemble.js	<any>	asmAreas	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBarRgb	asmBarSig	asmBig	asmBox	asmCalibKey	asmCan	asmCmUse	asmCount	asmDE	asmData	asmDropOld	asmFill	asmGet	asmImg	asmInfo	asmJob	asmKey	asmLab	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmMicroKind	asmMotif	asmNeeds	asmOutKey	asmP2Able	asmP2On	asmP2Set	asmP2Show	asmP2UI	asmPaintable	asmParts	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmPx	asmRun	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexFor	asmTexTile	asmTieFor	asmTieSig	asmVestKept	asmVestKey	asmVestTag	asmVestZone	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesKept	renderAsmUI
 asmp2.test.js	care.js	careLimit	laundryDays	renderCareUI
 asmp2.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	thirdOf	titleCls	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 asmp2.test.js	detect.js	settSig	texPat	tieWeave	usableSett
@@ -249,8 +250,8 @@ asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_CO
 asmroute.test.js	<every page test>	<every page test>
 asmroute.test.js	app.js	esc	fnv64	workerBase
 asmroute.test.js	apple-touch-icon.png	<loaded>
-asmroute.test.js	asm-color.js	asmCmGaps	asmCmPref	asmCmRoute	asmCmUI	asmGapNote	asmGapUI
-asmroute.test.js	assemble.js	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
+asmroute.test.js	asm-color.js	asmCmGaps	asmCmPref	asmCmRoute	asmCmUI	asmCmWeaveTag	asmGapNote	asmGapUI
+asmroute.test.js	assemble.js	asmCalibKey	asmDropOld	asmKey	asmLoad	asmMicroGrid	asmMicroKind	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
 asmroute.test.js	core.js	colName	colorDesc	desc	dressOut	inRotation	itemName	itemTitle	patBase	patLabel	patName	primaryCol	sentence	titleCls	wearsJacket	wearsTie
 asmroute.test.js	detect.js	texPat	tieWeave	usableSett
 asmroute.test.js	icon-192.png	<loaded>
@@ -265,7 +266,7 @@ asmtwill.test.js	<every page test>	<every page test>
 asmtwill.test.js	app.js	fnv64	lookSig	shirtPatterned	shirtTextured
 asmtwill.test.js	apple-touch-icon.png	<loaded>
 asmtwill.test.js	asm-color.js	asmCmRoute	asmCmWeaveTag
-asmtwill.test.js	assemble.js	asmCalibKey	asmCmUse	asmInfo	asmKey	asmLinen	asmLook	asmMasterKey	asmMotif	asmNeeds	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTieSig	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave	asmWeaveSig
+asmtwill.test.js	assemble.js	asmCalibKey	asmCmUse	asmInfo	asmKey	asmLinen	asmLook	asmMasterKey	asmMicroKind	asmMotif	asmNeeds	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTieSig	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave	asmWeaveSig
 asmtwill.test.js	core.js	colName	colOf	colorDesc	hasVest	inRotation	nm	patBase	patLabel	patName	primaryCol	typeWord	wearsJacket
 asmtwill.test.js	detect.js	settSig	texPat	tieWeave	usableSett
 asmtwill.test.js	icon-192.png	<loaded>
@@ -303,7 +304,7 @@ assemble.test.js	app.js	@addEventListenerpopstate	@document.addEventListenervisi
 assemble.test.js	apple-touch-icon.png	<loaded>
 assemble.test.js	asm-color.js	<any>	asmCmAssets	asmCmGaps	asmCmGet	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmOutKey	asmCmPref	asmCmRoute	asmCmSig	asmCmStamp	asmCmUI	asmGapUI
 assemble.test.js	asm-worker.js	<any>
-assemble.test.js	assemble.js	<any>	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBarDraw	asmBarMask	asmBarRgb	asmBarSig	asmBig	asmBlurF	asmBox	asmCalibJob	asmCalibKey	asmCan	asmCmLook	asmCmUse	asmCompose	asmCostOf	asmCount	asmDE	asmData	asmDrift	asmDropOld	asmEnsure	asmFill	asmFor	asmFresh	asmFullWins	asmGet	asmGetAtlas	asmGetOnce	asmGetPre	asmGetZones	asmImg	asmInfo	asmJob	asmKey	asmKeyFill	asmLab	asmLinen	asmLoad	asmLook	asmMajor	asmMake	asmMakeMissing	asmMasterItem	asmMasterJob	asmMasterKey	asmMasterOutfit	asmMasterSig	asmMotif	asmNear	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmP2UI	asmPack	asmPackZones	asmPaintable	asmParts	asmPending	asmPhoto	asmPhotoParts	asmPieceJob	asmPieceKey	asmPump	asmPx	asmQueueOutfit	asmRun	asmSeams	asmShirtOwn	asmShirtText	asmShow	asmSleeveImgs	asmStamp	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieMask	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmUnpack	asmUnpackZones	asmVestEdge	asmVestKept	asmVestKey	asmVestMasterJob	asmVestTag	asmVestZone	asmWants	asmWants0	asmWatch	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesKept	asmZonesOk	renderAsmUI
+assemble.test.js	assemble.js	<any>	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBarDraw	asmBarMask	asmBarRgb	asmBarSig	asmBig	asmBlurF	asmBox	asmCalibJob	asmCalibKey	asmCan	asmCmLook	asmCmUse	asmCompose	asmCostOf	asmCount	asmDE	asmData	asmDrift	asmDropOld	asmEnsure	asmFill	asmFor	asmFresh	asmFullWins	asmGet	asmGetAtlas	asmGetOnce	asmGetPre	asmGetZones	asmImg	asmInfo	asmJob	asmKey	asmKeyFill	asmLab	asmLinen	asmLoad	asmLook	asmMajor	asmMake	asmMakeMissing	asmMasterItem	asmMasterJob	asmMasterKey	asmMasterOutfit	asmMasterSig	asmMicroKind	asmMotif	asmNear	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmP2UI	asmPack	asmPackZones	asmPaintable	asmParts	asmPending	asmPhoto	asmPhotoParts	asmPieceJob	asmPieceKey	asmPump	asmPx	asmQueueOutfit	asmRun	asmSeams	asmShirtOwn	asmShirtText	asmShow	asmSleeveImgs	asmStamp	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieMask	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmUnpack	asmUnpackZones	asmVestEdge	asmVestKept	asmVestKey	asmVestMasterJob	asmVestTag	asmVestZone	asmWants	asmWants0	asmWatch	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesKept	asmZonesOk	renderAsmUI
 assemble.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes	laundryDays	renderCareUI
 assemble.test.js	core.js	accentOf	colName	colOf	colorDesc	colourNameRe	desc	dressOut	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	patName	prettyCols	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	titleCls	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 assemble.test.js	detect.js	settSig	texPat	tieWeave	usableSett

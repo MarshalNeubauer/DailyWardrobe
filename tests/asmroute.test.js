@@ -28,13 +28,19 @@ module.exports=async({ok,chromium,url})=>{
     ok(!r.bad.length,`every pattern of every type goes to a painter, waits for a reading it can get, or is on the no-painter list (${r.bad.join('; ')||'all'})`);
     ok(!r.afterRead.length,`once read, every readable pattern is painted (${r.afterRead.join('; ')||'all'})`);
     // the snapshot: the patterns with no painter yet; a change here is a decision, not an accident
-    const NOPAINT='blazer/birdseye,blazer/houndstooth,blazer/nailhead,blazer/other,blazer/sharkskin,pants/birdseye,pants/houndstooth,pants/nailhead,pants/other,pants/sharkskin,suit/birdseye,suit/houndstooth,suit/nailhead,suit/other,suit/sharkskin,tie/knit,tie/paisley';
+    const NOPAINT='blazer/other,pants/other,suit/other';
     ok(r.painter.sort().join()===NOPAINT,`the patterns with no painter yet are the known ones (${r.painter.sort().join(', ')})`);
     // the trousers' weaves are painted with the jacket's cloths; the owner's own pattern named twill and drawn like solid gets the ribs
     const tr=await p.evaluate(()=>['twill','herringbone','tweed','windowpane'].map(pat=>asmCmRoute({id:'t',type:'pants',primaryColor:'grey',pattern:pat},'trousers')).map(x=>x.how+(x.gap?'/'+x.gap:'')));
     ok(tr.join()==='twill,herringbone,tweed,plain/reading',`trousers in twill, herringbone and tweed are painted; a windowpane waits for its reading (${tr})`);
+    // the small woven figures, and the knit and paisley ties, have their own painters; an own pattern named for one gets it
+    const mk=await p.evaluate(()=>[...['houndstooth','sharkskin','birdseye','nailhead'].map(pat=>asmCmRoute({id:'m',type:'suit',primaryColor:'grey',pattern:pat},'jacket').how),
+      asmCmRoute({id:'m',type:'pants',primaryColor:'grey',pattern:'houndstooth'},'trousers').how,asmCmRoute({id:'k',type:'tie',primaryColor:'navy',pattern:'knit'},'tie').how,
+      asmCmRoute({id:'k',type:'tie',primaryColor:'navy',pattern:'paisley'},'tie').how,asmCmRoute({id:'o',type:'suit',primaryColor:'grey',pattern:'own-micro-houndstooth'},'jacket').how,
+      asmMicroGrid('houndstooth').filter(v=>v<0).length,asmCmWeaveTag('jacket',{id:'m',type:'suit',primaryColor:'grey',pattern:'birdseye'}).startsWith('/mbirdseye')]);
+    ok(mk.join()==='houndstooth,sharkskin,birdseye,nailhead,houndstooth,knit,paisley,houndstooth,32,true',`houndstooth, sharkskin, birdseye and nailhead jackets and trousers, knit and paisley ties are painted (${mk})`);
     // the item sheet says so, and Settings lists it with one tap to read
-    const ui=await p.evaluate(()=>{items=[{id:'g1',type:'suit',primaryColor:'navy',pattern:'pinstripe'},{id:'g2',type:'tie',primaryColor:'navy',pattern:'paisley'},{id:'g3',type:'suit',primaryColor:'navy',pattern:'solid'}];
+    const ui=await p.evaluate(()=>{items=[{id:'g1',type:'suit',primaryColor:'navy',pattern:'pinstripe'},{id:'g2',type:'blazer',primaryColor:'navy',pattern:'other'},{id:'g3',type:'suit',primaryColor:'navy',pattern:'solid'}];
       const note=asmGapNote(items[0]),none=asmGapNote(items[2]),gaps=asmCmGaps().map(x=>x.i.id+':'+x.r.gap);
       const host=document.createElement('div');host.id='asm-group';document.body.appendChild(host);asmCmUI();const html=$('#cm-gaps').innerHTML;host.remove();
       return {note,none,gaps,list:/Painted plain \(2\)/.test(html),btn:/Read 1 pattern/.test(html)}});
