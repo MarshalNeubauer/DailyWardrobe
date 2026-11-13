@@ -23,8 +23,11 @@ const ASM_VER=+/const ASM_VER=(\d+)/.exec(src('assemble.js'))[1],ASM_CMV=+/const
 const fnv64=t=>{let h=0xcbf29ce484222325n;for(const c of Buffer.from(t,'utf8')){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}return h.toString(16).padStart(16,'0')};
 const cmKey=(kind,name)=>'c'+fnv64('asm/'+ASM_VER+'/cm'+ASM_CMV+'/'+kind+'/'+name);
 const ZONES={suit:['jacket','tie','background','skin','shirt','dark','watch'],vest:['jacket','waistcoat','tie','background','skin','shirt','dark','watch'],
-  'shirt-tie':['trousers','belt','tie','buckle','background','skin','shirt','dark','watch'],'shirt-open':['trousers','belt','buckle','background','skin','shirt','dark','watch']};
-const KINDS=DIR?String(arg('kinds',Object.keys(ZONES).join(','))).split(','):[];
+  'shirt-tie':['trousers','belt','tie','buckle','background','skin','shirt','dark','watch'],'shirt-open':['trousers','belt','buckle','background','skin','shirt','dark','watch'],
+  // the open-collar jacket masters (2026-11-13: a jacket taken off the tie): uploaded once their out-<kind> folder exists
+  'suit-open':['jacket','background','skin','shirt','dark','watch'],'vest-open':['jacket','waistcoat','background','skin','shirt','dark','watch']};
+const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open']),OPTIONAL=new Set(['suit-open','vest-open']);
+const KINDS=DIR?String(arg('kinds',Object.keys(ZONES).filter(k=>!OPTIONAL.has(k)||fs.existsSync(path.join(DIR,'out-'+k))).join(','))).split(','):[];
 const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token':TOKEN,'content-type':'application/json',origin:new URL(ORIGIN).origin,...(opt.headers||{})}});
 (async()=>{
   const {chromium}=require('playwright');const browser=await chromium.launch(),page=await browser.newPage();
@@ -35,7 +38,7 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
   const groups=KINDS.map(kind=>[kind,path.join(DIR,'out-'+kind)]);if(BG)groups.push(['all',null]);
   for(const [kind,out] of groups){if(out&&!fs.existsSync(out)){console.error('missing '+out);process.exit(2)}
     const files=kind==='all'?[['background',BG,true]]:[['master',path.join(out,'colormaster-2880.png'),true],...ZONES[kind].map(z=>['mask/'+z,path.join(out,'alpha-'+z+'.png')]),
-      ...['sleeveR','sleeveL'].map(s=>['part/'+s,path.join(out,'sleeve-'+s+'.png')]),...(kind==='suit'||kind==='vest'?['lapelR','lapelL'].map(s=>['part/'+s,path.join(out,'lapel-'+s+'.png')]):[])];
+      ...['sleeveR','sleeveL'].map(s=>['part/'+s,path.join(out,'sleeve-'+s+'.png')]),...(ASM_LAPELS.has(kind)?['lapelR','lapelL'].map(s=>['part/'+s,path.join(out,'lapel-'+s+'.png')]):[])];
     for(const [name,f,isJpeg] of files){if(!fs.existsSync(f)){console.error('missing '+f);process.exit(2)}
       const key=cmKey(kind,name),sum=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0,16),sig=`asm/cm ${JSON.stringify({kind,name,v:ASM_CMV,sum})}`;
       if(DRY){console.log(`${kind} ${name} -> ${key} (${Math.round(fs.statSync(f).size/1024)} KB file)`);continue}
