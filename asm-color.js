@@ -42,7 +42,7 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
 /* the outfit's kind when its master is on this device (downloaded) */
 const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
-const ASM_CM_PAINTV=7;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT)
+const ASM_CM_PAINTV=8;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT); 8: the half-hidden button drawn as a button, no purple skin edge (the button smudge)
 /* the cloth look (the owner's choice, 2026-11-13, after several rounds of mockups against an OpenAI picture of his black suit, which the
    painter drew as a flat black silhouette), for jackets, waistcoats and shirts (not trousers, not tried):
    - a dark cloth (luminance under `dark`: his black twill and chocolate brown, and any dark colour later) takes the full look: kept above
@@ -427,6 +427,14 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     SUITTW=tw;const f=sh*Math.pow(Math.max(0,tw),2.2);out[0]=cm[0]/4*f;out[1]=cm[1]/4*f;out[2]=cm[2]/4*f};
   const rot=(X,Yv,th,e,out)=>{const c=Math.cos(th),s=Math.sin(th);out[0]=out[1]=out[2]=0;asmCmAt(e.tile||e.tie,(X*c+Yv*s)/e.rep,(Yv*c-X*s)/e.repv,out)};
   const c=[0,0,0];
+  // each piece of the dark zone small enough to be a button (under 160 px across) is drawn as one: its centre and size from its mask
+  let BL=null,BT=[];if(A.dark){BL=new Int32Array(N).fill(-1);const st=[];
+    for(let s0=0;s0<N;s0++){if(A.dark[s0]<=96||BL[s0]>=0)continue;const id=BT.length;let n=0,sx=0,sy=0,x0=1e9,x1=-1,y0=1e9,y1=-1;st.push(s0);BL[s0]=id;
+      while(st.length){const q=st.pop(),x=q%S,y=(q-x)/S;n++;sx+=x;sy+=y;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+        for(const nb of [q-1,q+1,q-S,q+S])if(nb>=0&&nb<N&&BL[nb]<0&&A.dark[nb]>96&&Math.abs(nb%S-x)<=1){BL[nb]=id;st.push(nb)}}
+      BT.push(n>20&&x1-x0<160&&y1-y0<160?{cx:sx/n,cy:sy/n,R:Math.max(x1-x0,y1-y0)/2+2}:null)}
+    // the soft edge (alpha 1..96) belongs to the nearest piece within 3 px
+    for(let k=0;k<N;k++)if(A.dark[k]&&BL[k]<0){const x=k%S;for(let r=1;r<=3&&BL[k]<0;r++)for(const nb of [k-r,k+r,k-r*S,k+r*S])if(nb>=0&&nb<N&&BL[nb]>=0&&Math.abs(nb%S-x)<=r){BL[k]=BL[nb];break}}}
   for(let k=0;k<N;k++){let r=0,g=0,b=0;const x=k%S,y=(k-x)/S,j=4*k;
     for(let zi=0;zi<names.length;zi++){const z=names[zi],a8=A[z][k];if(!a8)continue;const a=a8/255;
       // the background picture, its share of the pixel as it is (not the master's light: the master's wall was a flat colour whose
@@ -434,7 +442,19 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
       if(z==='background'&&BG){const s=1-ASM_CM_BG_SHADOW*P.bgShadow[k]/255,h=((Math.imul(k,2654435761)>>>0)%1024)/1024;
         for(let q=0;q<3;q++){const v=BG[j+q],lo=L[v],hi=L[v<255?v+1:255];c[q]=(lo+(hi-lo)*h)*s}r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
       if(KEEP.has(z)){const K=P.keep[z];let i=-1;if(a8<CLEAN){let lo=0,hi=K.I.length-1;while(lo<=hi){const m=(lo+hi)>>1,v=K.I[m];if(v===k){i=m;break}if(v<k)lo=m+1;else hi=m-1}}if(i<0){c[0]=L[M[j]];c[1]=L[M[j+1]];c[2]=L[M[j+2]]}else{c[0]=K.C[3*i];c[1]=K.C[3*i+1];c[2]=K.C[3*i+2]}
+        if(z==='skin'&&c[2]>c[0]*.92)c[2]=c[0]*.92;   // skin is never bluer than red: its edge beside the button read purple (the button smudge)
         if(c[1]>Math.max(c[0],c[2]))c[1]=Math.max(c[0],c[2]);   // the chroma-green wall left in a kept zone's edge (a green line along a fingertip)
+        // the dark zone is the jacket's button, half hidden between finger and thumb (2026-11-13: the owner saw a smudge): the master's
+        // flat grey oval with a white dot and a purple rim against the fingertip. Each piece of the dark zone under 160 px across is drawn
+        // as a horn button in the jacket's colour (centre and size from its mask, BL/BT): domed, a raised rim, four holes, the fingers' shadow
+        const bt=z==='dark'&&BL&&BL[k]>=0?BT[BL[k]]:null;
+        if(bt){const BT=bt,J=cl.jacket||cl.trousers,f=J&&J.flat?J.flat:[.02,.02,.02],Lf=Math.max(1e-4,.2126*f[0]+.7152*f[1]+.0722*f[2]);
+          const dx=(x+.5-BT.cx)/BT.R,dy=(y+.5-BT.cy)/BT.R,d=Math.hypot(dx,dy);
+          let L0=.016+.05*Math.pow(Math.max(0,1-Math.hypot(dx+.3,dy+.35)/.75),2);   // a dark horn button, domed: lighter toward the upper left
+          if(d>.74&&d<.96)L0+=.03*(1-Math.abs(d-.85)/.11);                 // its raised rim
+          for(const [hx,hy] of [[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]]){const hd=Math.hypot(dx-hx,dy-hy);if(hd<.12)L0*=.15+.85*hd/.12}   // four thread holes
+          const Lm=.2126*c[0]+.7152*c[1]+.0722*c[2],sh=Math.min(1,Math.max(.35,Lm/.02));   // the fingers' shadow on it, from the master
+          for(let e=0;e<3;e++)c[e]=(f[e]/Lf*.6+.4)*L0*sh}
         r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
       let s=P.shade[z][k]/40000;const e=cl[z],lit=!!(LXP&&e&&!e.keep&&LZ[z]);let base;
       if(e&&e.light&&LXP.sm[z]){const sl=LXP.smb[z][k];if(sl>.01)s=LXP.sm[z]*Math.pow(sl/LXP.sm[z],LK.lgam)*(s/sl)}   // a lighter cloth: its large folds deeper
