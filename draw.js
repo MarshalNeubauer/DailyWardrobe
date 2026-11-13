@@ -267,8 +267,7 @@ const SHOE_OX={bout:'M22.9,10.2 C22.2,9.2 22.4,8.8 22.4,8 C22.4,7.1 22.7,6.1 22.
   bstitch:'M72.9,34.4 L78.3,34.5 L83.9,34.4 L89.6,34 L93.4,33.3'};
 /* the other styles: the same traced pair with only what differs redrawn in the picture's frame (the owner chose this, 2026-11-13, over
    making a picture of each style): the derby's tongue between open facings and the quarter's flap edge, the loafer's lower opening,
-   moccasin apron and penny strap, the chelsea boot's shaft, elastic gusset and pull tab, the sneaker's cupsole (its second colour,
-   else white), padded tongue, side stripe and heel tab. Each entry replaces the oxford's paths of the same name. */
+   moccasin apron and penny strap, the chelsea boot's shaft, elastic gusset and pull tab (the sneaker is a tracing of its own, below). Each entry replaces the oxford's paths of the same name. */
 const SHOE_ST={derby:{fflap:'M46.3,22.7 C46.4,23.2 46.9,24.5 46.9,25.6 C47,26.6 46.9,27.9 46.6,29.1 C46.4,30.4 45.8,31.9 45.4,33.3 C44.8,34.6 44.2,36.1 43.7,37.5 C43.2,38.9 42.8,40.2 42.5,41.5 C42.1,42.7 41.8,44.3 41.7,44.9',
     bflap:'M67.2,15.4 C67.4,15.9 68,17.2 68.3,18.1 C68.6,19.1 68.9,20.1 69.1,21.3 C69.2,22.4 69.3,23.7 69.3,25 C69.3,26.2 69.2,27.6 69.1,29 C69,30.4 68.8,32.4 68.8,33.1',
     ftong:'M32.4,5.6 C32.4,5.6 35.1,5.2 35.1,5.2 C35.1,5.2 46.7,22.3 46.7,22.3 C46.7,22.3 45.3,23.4 45.3,23.4 C45.3,23.4 32.4,5.6 32.4,5.6 Z',
@@ -290,25 +289,13 @@ const SHOE_ST={derby:{fflap:'M46.3,22.7 C46.4,23.2 46.9,24.5 46.9,25.6 C47,26.6 
     bout:'M22.9,9.6 C22.6,8.3 22.7,6.9 22.8,5.3 C22.9,3.8 23.3,2 23.6,0.3 C23.8,-1.3 24,-3.1 24.2,-4.5 C24.4,-6 24.6,-7.2 24.8,-8.3 C25,-9.5 25.2,-11.1 25.2,-11.1 C25.2,-11.1 28.4,-11.8 30,-11.9 C31.7,-12.1 33.5,-12.3 35.2,-12.3 C36.9,-12.4 38.7,-12.3 40.2,-12.2 C41.7,-12.1 43.1,-11.9 44.4,-11.8 C45.7,-11.7 47.8,-11.3 47.8,-11.3 C47.8,-11.3 48.2,-9 48.4,-7.9 C48.7,-6.7 48.9,-5.5 49.3,-4.4 C49.6,-3.3 50.1,-2.3 50.7,-1.3 C51.2,-0.3 52,0.6 52.8,1.5 C53.5,2.4 54.4,3.2 55.2,4.1 C56.1,5 57,5.9 57.9,6.8 C58.8,7.7 59.7,8.6 60.5,9.4 C61.4,10.2 62.3,11.2 63.1,12 C63.9,12.8 64.7,13.5 65.4,14.2 C66.2,14.8 66.8,15.4 67.5,16.1 C68.1,16.7 68.6,17.5 69.4,18.3 C70.2,19 71,19.7 72.2,20.4 C73.3,21.1 74.9,21.7 76.5,22.2 C78,22.8 80,23.3 81.6,23.8 C83.3,24.3 85,24.8 86.5,25.4 C87.9,25.9 89.2,26.5 90.2,27.1 C91.3,27.6 92.2,28.3 92.9,28.8 C93.6,29.4 94,30 94.5,30.5 C94.9,31 95.1,31.5 95.3,32 C95.5,32.4 95.6,32.8 95.7,33.3 C95.8,33.6 95.8,34.1 95.7,34.4 C95.6,34.7 95.5,35.1 95.2,35.4 C94.8,35.6 94.2,35.9 93.5,36.1 C92.7,36.3 91.6,36.4 90.5,36.5 C89.3,36.6 87.9,36.7 86.5,36.8 C85,36.8 83.2,36.8 81.6,36.8 C80.1,36.8 78.4,36.9 76.9,36.7 C75.4,36.5 74.1,36.4 72.7,36 C71.2,35.5 67.9,34.1 67.9,34.1 C67.9,34.1 53.1,27.8 53.1,27.8 C53.1,27.8 36.2,19.3 36.2,19.3 C36.2,19.3 24.6,13 24.6,13 C24.6,13 23.2,10.8 22.9,9.6 Z',
     blin:'M26.8,-11.3 C27.4,-11.5 28.8,-11.8 30.2,-11.9 C31.5,-12 33.5,-12.1 35.2,-12.1 C36.9,-12.1 38.7,-12.1 40.2,-12 C41.7,-11.9 43.4,-11.7 44.3,-11.6 C45.3,-11.5 46,-11.2 46,-11.1 C46,-11 45.3,-10.9 44.3,-10.8 C43.4,-10.7 41.7,-10.8 40.2,-10.8 C38.7,-10.8 36.8,-10.8 35.2,-10.8 C33.5,-10.8 31.6,-10.8 30.3,-10.8 C28.9,-10.8 27.5,-10.8 26.9,-10.8 C26.3,-10.9 26.3,-11.1 26.8,-11.3 Z',
     bgus:'M36,-12.4 C36,-12.4 42.1,-12 42.1,-12 C42.1,-12 41.4,-7.1 40.9,-5 C40.4,-2.8 39.4,0.8 39.4,0.8 C39.4,0.8 38.4,-2.9 37.8,-5 C37.2,-7.2 36,-12.4 36,-12.4 Z',
-    btab:'M25.7,-11.1 C25.7,-11.1 25.6,-15.1 25.6,-15.1 C25.6,-15.1 28.1,-15.3 28.1,-15.3 C28.1,-15.3 28.2,-11.5 28.2,-11.5 C28.2,-11.5 25.7,-11.1 25.7,-11.1 Z'},
-  sneaker:{fout:'M2.9,7.7 C3.4,6.9 4.2,6.3 5.1,6.1 C6.1,5.9 7.4,6.1 8.6,6.3 C9.8,6.5 11,7 12.1,7.4 C13.2,7.7 14.2,8.2 15.1,8.5 C16.1,8.8 17,9.1 18,9.4 C18.9,9.7 19.7,9.9 20.5,10 C21.4,10.1 22.2,10.2 23,10.1 C23.8,10 24.7,9.7 25.6,9.3 C26.4,9 27.4,8.4 28.2,8 C29,7.6 29.9,7 30.7,6.7 C31.4,6.3 31.9,6.1 32.6,6 C33.2,6 33.7,6.1 34.4,6.5 C35.1,6.9 36.1,7.5 36.9,8.2 C37.7,9 38.4,10 39.1,10.8 C39.8,11.7 40.3,12.5 40.9,13.4 C41.5,14.2 42.1,14.8 42.9,15.7 C43.6,16.5 44.5,17.3 45.3,18.2 C46,19 46.8,19.9 47.5,20.8 C48.3,21.6 48.9,22.5 49.6,23.3 C50.4,24 51.1,24.8 51.9,25.5 C52.8,26.1 53.7,26.6 54.7,27 C55.7,27.5 57,27.8 58.1,28.1 C59.1,28.5 60.3,28.7 61.3,29.1 C62.2,29.4 62.9,29.8 63.9,30.3 C64.8,30.8 65.7,31.5 66.7,32.2 C67.7,32.8 68.9,33.6 69.9,34.4 C70.9,35.1 71.9,35.8 72.7,36.5 C73.5,37.1 74.2,37.8 74.8,38.3 C75.3,38.9 75.7,39.5 76,40 C76.4,40.6 76.6,41 76.8,41.5 C77,41.9 77.2,42.3 77.3,42.8 C77.3,43.2 77.3,43.7 77.1,44.1 C77,44.5 76.8,44.9 76.4,45.3 C76,45.7 75.5,46 74.9,46.3 C74.2,46.6 73.4,46.9 72.3,47.2 C71.3,47.4 70,47.6 68.6,47.8 C67.1,47.9 65.4,48.1 63.7,48.2 C62,48.2 60.1,48.3 58.4,48.3 C56.7,48.2 54.9,48.2 53.3,48.1 C51.6,47.9 50,47.8 48.4,47.7 C46.8,47.5 45.3,47.4 43.8,47.2 C42.2,46.9 40.8,46.7 39.4,46.4 C38,46 36.8,45.7 35.4,45.3 C34.1,44.8 32.9,44.3 31.4,43.6 C29.9,42.9 28.1,42 26.3,41.3 C24.5,40.5 22.4,39.6 20.6,39 C18.7,38.4 17,37.9 15.4,37.5 C13.7,37.1 12.3,37 10.9,36.8 C9.5,36.5 8.1,36.4 6.9,36.1 C5.7,35.7 4.4,35.4 3.5,34.9 C2.6,34.3 1.9,33.7 1.4,33 C0.8,32.2 0.6,31.2 0.5,30.2 C0.3,29.2 0.4,28 0.4,26.9 C0.4,25.7 0.4,24.6 0.5,23.3 C0.6,22 0.6,20.6 0.7,19.3 C0.8,17.8 1,16.4 1.1,15 C1.3,13.7 1.5,12.3 1.8,11 C2.1,9.8 2.3,8.5 2.9,7.7 Z',
-    fcup:'M0.3,24.2 C1,24.4 2.7,25.1 4,25.6 C5.3,26.1 6.9,26.6 8.3,27.1 C9.7,27.6 11,27.9 12.3,28.5 C13.5,28.9 14.6,29.4 15.8,30 C17,30.6 18.2,31.3 19.3,32.1 C20.5,32.8 21.7,33.6 22.9,34.5 C24,35.3 25.1,36.1 26.1,36.9 C27.1,37.5 28,38.1 29,38.7 C30,39.2 30.9,39.7 32.3,40 C33.6,40.4 35.2,40.8 37.3,41.1 C39.3,41.3 42.1,41.6 44.7,41.8 C47.2,42 50.1,42.2 52.6,42.2 C55.1,42.3 57.3,42.3 59.5,42.3 C61.6,42.2 63.7,42.2 65.5,42 C67.4,41.9 69.2,41.7 70.5,41.5 C72,41.2 73,40.8 73.9,40.5 C74.8,40.1 75.4,39.7 75.9,39.3 C76.5,38.8 76.9,38.1 77.1,37.9',
-    fouts:'M0.5,31.2 C1.3,31.6 3.4,33 5.1,33.7 C6.9,34.5 8.8,35 10.9,35.6 C12.9,36.2 15.2,36.6 17.5,37.3 C19.7,38 22.2,38.9 24.6,39.7 C27,40.5 29.5,41.5 32,42.2 C34.5,43 37.1,43.8 39.9,44.4 C42.7,45 45.8,45.5 48.9,45.8 C52,46.2 55.4,46.4 58.4,46.4 C61.5,46.5 64.6,46.4 67.1,46.2 C69.6,45.9 71.7,45.4 73.3,44.9 C74.9,44.5 76.2,43.5 76.8,43.2',
-    fstripe:'M16.7,30.1 C16.7,30.1 22.7,27.6 25.6,26.6 C28.4,25.5 31.2,24.6 33.9,23.9 C36.6,23.1 41.7,22 41.7,22 C41.7,22 43.2,24 43.2,24 C43.2,24 37.9,25.3 35.2,26.2 C32.5,27.1 29.7,28.1 26.9,29.2 C24.1,30.3 18.5,32.8 18.5,32.8 C18.5,32.8 16.7,30.1 16.7,30.1 Z',
-    ftong:'M31.6,6.4 C31.6,6.4 31.9,4.4 32.3,3.7 C32.6,3 33.1,2.4 33.6,2.2 C34.1,2 34.7,2.1 35.2,2.3 C35.6,2.6 35.9,3.2 36.1,3.9 C36.2,4.5 36,6.4 36,6.4 C36,6.4 31.6,6.4 31.6,6.4 Z',
-    ftab:'M2,7.9 C2,7.9 1.9,5.7 2.1,5 C2.2,4.3 2.7,3.8 3.1,3.7 C3.4,3.7 4,4.1 4.2,4.6 C4.5,5.1 4.8,6.9 4.8,6.9 C4.8,6.9 2,7.9 2,7.9 Z',
-    bcup:'M72.7,31.8 C73.6,31.8 76.4,31.7 78.3,31.7 C80.2,31.6 82.1,31.7 84,31.6 C85.8,31.5 88,31.4 89.6,31.2 C91.1,31 92.5,30.7 93.5,30.5 C94.4,30.3 95,29.8 95.4,29.7',
-    btong:'M51,2 C51,2 51.4,0 51.7,-0.6 C52,-1.3 52.5,-1.7 53,-1.8 C53.4,-2 54.1,-1.8 54.5,-1.5 C54.9,-1.2 55.1,-0.5 55.2,0.1 C55.3,0.7 55,2.4 55,2.4 C55,2.4 51,2 51,2 Z',
-    btab:'M23.1,2.4 C23.1,2.4 23.1,0.2 23.3,-0.5 C23.6,-1.2 24,-1.5 24.3,-1.6 C24.7,-1.6 25.1,-1.3 25.4,-0.8 C25.7,-0.4 25.9,1 25.9,1 C25.9,1 23.1,2.4 23.1,2.4 Z',
-    fsole:'M0.3,24.2 L4,25.6 L8.3,27.1 L12.3,28.4 L15.8,30 L19.3,32.1 L22.8,34.5 L26.1,36.8 L29,38.7 L32.3,40 L37.3,41.1 L44.7,41.8 L52.6,42.2 L59.5,42.3 L65.5,42 L70.5,41.4 L73.9,40.5 L75.9,39.3 L77.1,37.9 L78.5,40.4 L78.5,51 L-1.8,51 L-1.8,23.6 Z',
-    bsole:'M72.7,31.8 L78.3,31.7 L83.9,31.6 L89.6,31.2 L93.4,30.5 L95.4,29.7 L97.5,28.8 L97.5,40.4 L72.1,40.4 Z'}};
+    btab:'M25.7,-11.1 C25.7,-11.1 25.6,-15.1 25.6,-15.1 C25.6,-15.1 28.1,-15.3 28.1,-15.3 C28.1,-15.3 28.2,-11.5 28.2,-11.5 C28.2,-11.5 25.7,-11.1 25.7,-11.1 Z'}};
 /* a pair of shoes in style st (oxford, derby, loafer, boot, sneaker), toe right; box 0..96 wide, the boot's shaft rising above 0 */
 function drawShoePair(item,P,st){
-  const S={...SHOE_OX,...(SHOE_ST[st]||{})},base=item?colOf(item):'#2b2b2e',L=item&&item.leather||'calf',ox=st==='oxford',sn=st==='sneaker';
+  const S={...SHOE_OX,...(SHOE_ST[st]||{})},base=item?colOf(item):'#2b2b2e',L=item&&item.leather||'calf',ox=st==='oxford';
   const f=leatherLayers(P+'f',item,S.fout,{x:67.9,y:39.4,r:17,rot:-8,g:.5}),b=leatherLayers(P+'b',item,S.bout,{x:88,y:29.9,r:12,rot:-8,g:.5});
-  const lace=item?(sn?(lum(base)>.6?mix(base,'#000',.55):mix(base,'#fff',.82)):mix(base,'#000',.45)):'#111',laceHi=mix(lace,'#fff',lum(base)>.35?.15:.3);
+  const lace=item?mix(base,'#000',.45):'#111',laceHi=mix(lace,'#fff',lum(base)>.35?.15:.3);
   const lin=mix('#a86a3e','#000',.18),linD=mix(lin,'#000',.35),edge=mix(base,'#000',.45);
-  const sc=sn?(item&&item.secondaryColor&&item.secondaryColor!=='none'&&COLORS[item.secondaryColor]?COLORS[item.secondaryColor]:'#f4f2ec'):null,se=sc&&mix(sc,'#000',.28);
   const seam=d=>d?`<path d="${d}" fill="none" stroke="#000" stroke-opacity=".42" stroke-width=".45"/><path d="${d}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".28" stroke-dasharray=".7 .5" transform="translate(.35 .3)"/>`:'';
   const fill=(d,c,w=.4)=>`<path d="${d}" fill="${c}" stroke="${edge}" stroke-width="${w}"/>`;
   const laces=(d,w)=>`<path d="${d}" stroke="${lace}" stroke-width="${w}" stroke-linecap="round"/><path d="${d}" stroke="${laceHi}" stroke-width="${w*.3}" stroke-linecap="round" transform="translate(0 -.25)"/>`;
@@ -316,22 +303,20 @@ function drawShoePair(item,P,st){
   const ribs=d=>{const n=d.match(/-?\d+(?:\.\d+)?/g).map(Number),xs=n.filter((_,i)=>i%2===0),ys=n.filter((_,i)=>i%2);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);let r='';
     for(let k=1;k<6;k++){const x=x0+(x1-x0)*k/6;r+=`M${x.toFixed(1)},${y0.toFixed(1)} L${x.toFixed(1)},${(y0+(y1-y0)*.75).toFixed(1)} `}return r};
   const shine=L==='suede'||L==='canvas'||L==='knit'?0:L==='patent'?.3:.13;
-  const soleF=sn?sc:f.sole,soleB=sn?sc:b.sole;
   // one shoe's parts after its leather, back (k 'b') or front ('f')
   const parts=k=>{const g=n=>S[k+n];let h='';
-    h+=`<g clip-path="url(#${P}${k}c)"><path d="${g('sole')}" fill="${k==='f'?soleF:soleB}"/>`+(sn?'':`<path d="${g('stitch')}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".3" stroke-dasharray=".6 .5"/>`)+(sn&&g('outs')?`<path d="${g('outs')}" fill="none" stroke="${se}" stroke-width=".5"/>`:'')+'</g>';
-    h+=sn?`<path d="${g('cup')}" fill="none" stroke="${se}" stroke-width=".5"/>`:`<path d="${g('welt')}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".42"/>`+(k==='f'?`<path d="${S.fheel}" fill="none" stroke="#000" stroke-opacity=".4" stroke-width=".4"/>`:'');
-    h+=`<path d="${g('lin')}" fill="url(#${P}ln)" stroke="${linD}" stroke-width="${sn?.9:.35}"/>`;
+    h+=`<g clip-path="url(#${P}${k}c)"><path d="${g('sole')}" fill="${(k==='f'?f:b).sole}"/><path d="${g('stitch')}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".3" stroke-dasharray=".6 .5"/></g>`;
+    h+=`<path d="${g('welt')}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".42"/>`+(k==='f'?`<path d="${S.fheel}" fill="none" stroke="#000" stroke-opacity=".4" stroke-width=".4"/>`:'');
+    h+=`<path d="${g('lin')}" fill="url(#${P}ln)" stroke="${linD}" stroke-width=".35"/>`;
     if(st==='boot')h+=fill(g('gus'),mix(base,'#000',.3),.3)+`<path d="${ribs(g('gus'))}" stroke="#000" stroke-opacity=".22" stroke-width=".28"/>`+`<path d="${g('tab')}" fill="none" stroke="${mix(base,'#000',.3)}" stroke-width=".8" stroke-linejoin="round"/>`;   // the elastic gusset with its ribs; the pull tab a loop
     if(k==='f')h+=seam(S.fcnt);
     if(ox)h+=seam(g('fac'))+seam(g('qtr'));
-    if(ox||sn)h+=seam(g('cap'));
+    if(ox)h+=seam(g('cap'));
     if(st==='derby')h+=seam(g('flap'));
     if(st==='loafer')h+=`<path d="${g('apron')}" fill="none" stroke="#000" stroke-opacity=".5" stroke-width=".7"/>`+seam(g('apron'))+fill(g('strap'),mix(base,'#000',.1),.4)+`<path d="${g('slot')}" stroke="#000" stroke-opacity=".7" stroke-width=".75" stroke-linecap="round"/>`;
-    if(sn)h+=(k==='f'?fill(S.fstripe,mix(base,lum(base)>.6?'#000':'#fff',lum(base)>.6?.18:.22),.35):'')+fill(g('tab'),mix(base,'#000',.25),.35);
-    if(st==='derby'||sn)h+=fill(g('tong'),mix(base,'#000',sn?.06:.28),.35);
+    if(st==='derby')h+=fill(g('tong'),mix(base,'#000',.28),.35);
     if(ox&&k==='f')h+=`<path d="${S.fslit}" fill="none" stroke="#000" stroke-opacity=".55" stroke-width=".7"/>`;
-    if(ox||st==='derby'||sn){const d=g('lace');h+=laces(st==='derby'?five(d):d,sn?1.4:k==='f'?1.05:1)}
+    if(ox||st==='derby'){const d=g('lace');h+=laces(st==='derby'?five(d):d,k==='f'?1.05:1)}
     return h};
   return `<g transform="translate(0 ${st==='boot'?8:2})"><defs>${b.defs}${f.defs}<clipPath id="${P}bc"><path d="${S.bout}"/></clipPath><clipPath id="${P}fc"><path d="${S.fout}"/></clipPath>`+
     `<linearGradient id="${P}ln" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lin}"/><stop offset="1" stop-color="${linD}"/></linearGradient>`+
@@ -340,9 +325,50 @@ function drawShoePair(item,P,st){
     b.body+`<path d="${S.bout}" fill="#000" opacity=".14"/>`+parts('b')+`<g clip-path="url(#${P}bc)"><path d="${S.fout}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="2.6"/></g>`+
     f.body+`<path d="${S.fout}" fill="url(#${P}q)"/>`+parts('f')+'</g>';
 }
+/* sneaker: a tracing of its own (2026-11-13, the owner: "a normal pair of Nike sneakers"): Nike's product photo of the Air Force 1 '07
+   in black, the pair seen from the front quarter, mirrored so the toes point right like the other shoes; the outline of the pair
+   from the photo's pixels (the back shoe is the whole silhouette, the front one drawn over it), the rest placed on zoomed crops and
+   snapped to its seam: cupsole and outsole, toe box stitching, heel seam, collars, tongues, laces, lace tags. No Swoosh, no
+   lettering (Nike's marks). The sole takes the second colour, else white. Box 0..96 x 0..43.9. */
+const SHOE_SN={bout:'M53,0 L52.6,0.1 L51.7,0.6 L49.4,1.4 L47.8,2.2 L46.7,2.7 L45.8,3.4 L45.1,4 L44.5,5.1 L44.3,5.5 L44.3,6.5 L44.2,6.9 L43.5,7.6 L43.1,7.8 L42.8,7.6 L41,5.8 L39.6,5 L38.8,4.8 L37.1,4.5 L35.3,4.5 L33.9,4.8 L33.5,5 L33,5.4 L32.8,5.8 L32.9,6.5 L32.7,7.7 L32.6,7.9 L32.5,7.9 L31.8,7.1 L31.2,6.7 L30.6,5.4 L30.1,4.9 L29.6,4.7 L29.1,4.3 L28.4,4.1 L27.8,4.2 L27.2,4.7 L27,4.7 L25.3,2.9 L23.8,1.8 L22.9,1.4 L22.5,1.5 L21,2 L19.4,2.4 L16.3,3.8 L14.9,4.8 L13.9,6 L12.9,6.5 L12.6,6.5 L11.9,6 L10.9,5.6 L9.9,5.4 L7.9,5.1 L6.2,5.1 L4.7,5.3 L3.7,5.6 L3.2,6 L2.9,6.9 L2.8,8.6 L2,13.2 L1.9,14.3 L2,15.2 L2,15.9 L2.1,16.6 L2,18.5 L1.3,24.4 L1.2,25.5 L1.3,26.7 L0.8,27.9 L0.8,28.4 L0.6,29.4 L0.4,31.4 L0.4,32.5 L0.1,33.5 L0.4,35 L0.3,36.1 L0.4,37.1 L0.3,37.3 L0,37.6 L0,38.1 L0.1,38.2 L0.2,38.2 L0.3,37.7 L0.5,37.5 L0.6,37.7 L0.8,38.2 L1,38.4 L3.6,39.2 L12,40.7 L15.9,41.3 L19.8,42 L25.9,42.8 L33.5,43.6 L39.9,43.9 L42.2,43.9 L43.4,43.9 L44.7,43.8 L45.7,43.9 L48.5,43.6 L49.6,43.4 L50.2,43.5 L54.4,42.8 L55.1,42.9 L57.2,42.6 L59.4,42.2 L59.9,42.1 L60.4,41.7 L62.7,40.9 L63.4,40.5 L64.6,40.4 L64.7,40.3 L64.7,39.6 L64.9,39.4 L67.3,39.5 L69.2,39.7 L72.7,39.9 L75.6,39.9 L81.4,39.5 L84.6,39.1 L87,39 L94,38.1 L94.8,37.7 L95.8,36.7 L96,36.1 L95.8,33.7 L95.5,32.9 L95.3,31.6 L95,31.1 L94.9,30.5 L94.8,30.2 L94,29.6 L93.7,28.3 L93.2,26.9 L92.6,25.9 L91.6,24.8 L91.3,24.6 L90.3,24.4 L88.4,23.7 L84.3,22.5 L80.5,20.8 L79.8,20.1 L78.3,19.3 L78,18.7 L77.7,18.3 L77,17.7 L76.2,17.3 L75.8,17 L75.5,16.6 L75.2,15.8 L74.7,15.4 L73.5,14.6 L72.3,14.2 L70.3,13.1 L69.8,12.4 L69.5,12 L67.8,11.3 L66.9,10.6 L65.7,9.9 L64.6,8.7 L63.3,7.9 L62.2,6.5 L61.6,5.4 L61.2,4.9 L60.6,4.6 L60.1,4.1 L59.7,3.9 L59.2,3.8 L58.5,3.9 L56.8,2 L55.8,1.2 L54.6,0.5 L53,0 Z',
+  fout:'M63.6,33.2 C63.5,32.4 63.3,31.8 63,31.1 C62.7,30.5 62.4,30 62,29.4 C61.5,28.9 61,28.3 60.4,27.8 C59.7,27.3 59,26.8 58.2,26.3 C57.4,25.9 56.5,25.4 55.5,25 C54.5,24.5 53.4,24.1 52.3,23.6 C51.2,23.2 50,22.7 49,22.3 C47.9,21.8 46.8,21.4 45.9,20.8 C45,20.3 44.3,19.6 43.5,19 C42.8,18.3 42.2,17.5 41.5,16.8 C40.8,16 40.1,15.2 39.3,14.5 C38.5,13.7 37.6,12.9 36.8,12.1 C36,11.3 35.2,10.6 34.5,9.8 C33.7,9 32.9,8.2 32,7.4 C31.2,6.6 30.1,5.6 29.1,4.9 C28.1,4.1 27,3.4 26,3 C25,2.5 24.1,2.2 23.2,2.2 C22.2,2.2 21.4,2.6 20.4,3 C19.6,3.4 18.6,4 17.7,4.4 C16.8,4.9 15.9,5.4 15,5.7 C14.2,5.9 13.3,6 12.5,6 C11.6,6 10.7,5.7 9.7,5.6 C8.8,5.4 7.6,5.2 6.7,5.3 C5.7,5.3 4.8,5.3 4.2,5.7 C3.6,6.1 3.3,6.4 3,7.6 C2.6,8.8 2.5,10.6 2.3,12.8 C2.1,14.9 1.9,18.2 1.7,20.4 C1.5,22.6 1.4,24.6 1.2,26.1 C1.1,27.6 0.9,28.2 0.8,29.4 C0.7,30.6 0.5,31.9 0.5,33.1 C0.4,34.3 0.4,35.7 0.6,36.7 C0.9,37.5 1.2,38 2,38.5 C2.8,38.9 4,39.1 5.6,39.5 C7.2,39.9 9.4,40.2 11.6,40.6 C13.7,41 16.1,41.3 18.4,41.7 C20.6,42 22.9,42.3 25.2,42.6 C27.4,42.9 29.7,43.1 31.9,43.3 C34.2,43.5 36.5,43.6 38.8,43.6 C41,43.7 43.3,43.6 45.6,43.5 C47.8,43.3 50.1,43.1 52,42.9 C53.9,42.7 55.7,42.5 57.1,42.2 C58.5,42 59.5,41.7 60.4,41.3 C61.2,41 61.7,40.6 62.2,40.1 C62.7,39.6 63.1,39.1 63.3,38.4 C63.6,37.6 63.7,36.7 63.8,35.8 C63.8,35 63.8,33.9 63.6,33.2 Z',
+  fmid:'M63.2,33.7 C62.5,33.6 60.4,33.3 58.8,33.2 C57.2,33.2 55.5,33.4 53.7,33.6 C51.9,33.8 50.1,34.1 48.1,34.3 C46.2,34.5 44.1,34.7 42,34.7 C39.9,34.7 37.6,34.5 35.4,34.2 C33.1,34 30.8,33.6 28.6,33.4 C26.4,33.2 24.2,33.1 22.3,32.9 C20.3,32.7 18.6,32.5 16.9,32.2 C15.1,31.9 13.4,31.5 11.6,31.1 C9.9,30.8 8,30.4 6.3,30 C4.6,29.7 2.2,29.1 1.3,28.9',
+  ftread:'M63.8,36.5 L55.2,36.7 L46.4,36.5 L37.9,36.3 L28.6,36.3 L18.4,36.2 L9,35.9 L1,36.3 L-3.3,35.3 L-3.3,48.9 L67.3,48.9 L67.3,35.3 Z',
+  fmud:'M62.4,28.8 C61.7,28.8 59.9,28.8 58.3,28.9 C56.6,28.9 54.4,29 52.3,29.1 C50.2,29.2 47.8,29.4 45.6,29.4 C43.3,29.5 41,29.4 38.8,29.4 C36.5,29.3 34.3,29.1 32,29 C29.7,28.8 27.5,28.6 25.2,28.4 C22.9,28.2 20.7,28 18.4,28 C16.2,27.9 13.7,27.9 11.6,27.9 C9.5,27.9 7.4,28 5.7,27.9 C4.1,27.8 2.4,27.5 1.7,27.4',
+  fheels:'M12.5,11 C12.3,11.7 11.7,13.7 11.3,15 C10.9,16.4 10.4,17.7 9.9,19 C9.6,20.4 9.2,21.8 9,23.1 C8.7,24.3 8.5,25.6 8.4,26.4 C8.2,27.3 8.2,28.1 8.1,28.4',
+  fcol:'M10.7,7 C10.2,6.4 9.1,5.9 8.2,5.7 C7.3,5.5 6,5.5 5.3,5.6 C4.5,5.7 3.9,6.1 3.5,6.6 C3.1,7.1 3,7.8 3,8.6 C3,9.3 3.2,10.2 3.4,10.9 C3.7,11.5 4.2,12.2 4.8,12.6 C5.3,13 6.1,13.2 6.7,13.3 C7.3,13.3 8,13.1 8.6,12.8 C9.2,12.5 9.7,11.9 10.1,11.3 C10.6,10.7 11,9.8 11.1,9.1 C11.2,8.4 11.2,7.5 10.7,7 Z',
+  ftong:'M25.8,3.9 C25.9,3.3 25.4,2.5 24.8,2.2 C24.3,1.8 23.5,1.7 22.8,1.8 C22.1,1.9 21.4,2.4 20.7,2.9 C20.1,3.4 19.3,4.3 18.9,5 C18.5,5.7 18.2,6.5 18.3,7 C18.4,7.5 18.8,7.8 19.4,7.8 C20,7.9 20.9,7.6 21.8,7.3 C22.6,7 23.8,6.4 24.4,5.9 C25.1,5.3 25.7,4.5 25.8,3.9 Z',
+  bmid:'M94.8,30 C94,30 91.5,30.1 89.8,30.2 C88.2,30.3 86.6,30.3 84.9,30.4 C83.1,30.6 81.3,30.7 79.5,30.8 C77.7,30.9 75.8,31 74,31.2 C72.1,31.3 70.5,31.4 68.6,31.5 C66.7,31.6 64.9,31.7 62.6,31.8 C60.3,31.9 57.6,32.1 54.7,32.2 C51.9,32.4 48.6,32.5 45.4,32.6 C42.2,32.6 37,32.7 35.4,32.7',
+  btread:'M95,31.8 L89.9,31.9 L84.9,32.1 L79.5,32.5 L74,32.8 L68.6,33.2 L62.6,33.5 L54.7,33.9 L45.4,34.3 L35.4,34.5 L32,34.6 L32,48.9 L98.5,48.9 L98.5,31.2 Z',
+  bmud:'M92.7,25.3 C92.1,25.4 90.3,25.5 88.9,25.6 C87.6,25.7 86.3,25.8 84.7,25.9 C83.1,26 81.3,26.2 79.5,26.3 C77.7,26.4 75.8,26.5 74,26.7 C72.1,26.9 70.4,27 68.6,27.2 C66.8,27.3 64.2,27.6 63.3,27.6',
+  bcol:'M40.9,7.6 C40.7,6.9 40.1,6.2 39.4,5.7 C38.8,5.3 37.6,5 36.7,5 C35.8,4.9 34.6,5.1 34,5.6 C33.4,6.1 32.9,7 33.1,7.9 C33.2,8.8 34.2,10.1 35,10.7 C35.9,11.3 37.3,11.6 38.3,11.5 C39.2,11.4 40,10.7 40.5,10 C40.9,9.4 41,8.4 40.9,7.6 Z',
+  btong:'M58.1,3.4 C58.5,3 58,2.4 57.4,2 C56.8,1.7 55.4,1.2 54.4,1.1 C53.4,1.1 52.1,1.3 51.3,1.6 C50.5,1.9 49.8,2.6 49.8,3 C49.8,3.4 50.3,3.8 51.2,4 C52,4.1 53.9,4.1 55.1,4 C56.2,3.9 57.7,3.7 58.1,3.4 Z',
+  fsole:'M63.2,33.7 L58.8,33.2 L53.7,33.6 L48.1,34.3 L42,34.7 L35.4,34.2 L28.6,33.4 L22.3,32.9 L16.9,32.2 L11.6,31.1 L6.3,30 L1.3,28.9 L-3.3,28.5 L-3.3,48.9 L67.3,48.9 L67.3,31.9 Z',
+  bsole:'M94.8,30 L89.8,30.2 L84.9,30.4 L79.5,30.8 L74,31.1 L68.6,31.5 L62.6,31.8 L54.7,32.2 L45.4,32.5 L35.4,32.7 L32,32.6 L32,48.9 L98.5,48.9 L98.5,29.2 Z',
+  flace:'M31.3,7.5 L19.4,6.9 M34.6,10.3 L21.8,9.6 M37.3,13 L23.7,12.4 M39.3,15.9 L25.7,15.3 M41.3,18.9 L28.4,18.5',
+  blace:'M63.2,6.8 L52.7,6.1 M66.6,9.5 L54.7,9 M70,12.4 L56.8,11.9 M72.7,15.3 L58.8,14.8 M74.7,18.2 L61.9,17.8',
+  ftag:'M42.5,17.9 L38.4,17.9 L38.4,19.4 L42.5,19.4 Z',
+  btag:'M76.8,17.1 L72.7,17.1 L72.7,18.3 L76.8,18.3 Z'};
+function drawSneakerPair(item,P){
+  const S=SHOE_SN,base=item?colOf(item):'#eee',lt=lum(base)>.6;
+  const f=leatherLayers(P+'f',item,S.fout,{x:59,y:27,r:14,rot:-6,g:.5}),b=leatherLayers(P+'b',item,S.bout,{x:90,y:26,r:10,rot:-6,g:.5});
+  const sc=item&&item.secondaryColor&&item.secondaryColor!=='none'&&COLORS[item.secondaryColor]?COLORS[item.secondaryColor]:'#f4f2ec',se=mix(sc,'#000',.3),tr=mix(sc,'#000',.12),rib=mix(sc,'#000',.32);
+  const lace=mix(base,lt?'#000':'#fff',lt?.22:.16),laceHi=mix(lace,'#fff',.25),lin=mix(base,'#000',lt?.18:.45),edge=mix(base,'#000',.45);
+  const seam=d=>`<path d="${d}" fill="none" stroke="#000" stroke-opacity=".38" stroke-width=".4"/><path d="${d}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".25" stroke-dasharray=".6 .45" transform="translate(0 -.35)"/>`;
+  const parts=k=>{const g=n=>S[k+n];
+    return `<g clip-path="url(#${P}${k}c)"><path d="${g('sole')}" fill="${sc}"/><path d="${g('tread')}" fill="${tr}"/><path d="${g('tread')}" fill="url(#${P}rb)"/></g>`+
+      `<path d="${g('mid')}" fill="none" stroke="${se}" stroke-width=".45"/><path d="${g('tread')}" fill="none" stroke="${se}" stroke-width=".35" clip-path="url(#${P}${k}c)"/>`+seam(g('mud'))+(k==='f'?seam(S.fheels):'')+
+      `<path d="${g('col')}" fill="${lin}" stroke="${edge}" stroke-width=".9"/><path d="${g('tong')}" fill="${mix(base,'#000',.08)}" stroke="${edge}" stroke-width=".35"/>`+
+      `<path d="${g('lace')}" stroke="${lace}" stroke-width="1.45" stroke-linecap="round"/><path d="${g('lace')}" stroke="${laceHi}" stroke-width=".4" stroke-linecap="round" transform="translate(0 -.3)"/>`+
+      `<path d="${g('tag')}" fill="#c9ccd1" stroke="#6e737a" stroke-width=".25"/>`};
+  return `<g transform="translate(0 4)"><defs>${b.defs}${f.defs}<clipPath id="${P}bc"><path d="${S.bout}"/></clipPath><clipPath id="${P}fc"><path d="${S.fout}"/></clipPath>`+
+    `<pattern id="${P}rb" patternUnits="userSpaceOnUse" width="1.1" height="4"><rect width=".45" height="4" fill="${rib}"/></pattern></defs>`+
+    b.body+`<path d="${S.bout}" fill="#000" opacity=".12"/>`+parts('b')+`<g clip-path="url(#${P}bc)"><path d="${S.fout}" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="2.4"/></g>`+
+    f.body+parts('f')+'</g>';
+}
 const drawOxfordSide=(item,P)=>drawShoePair(item,P,'oxford');
 /* the drawing for a pair of shoes, by its style (shoeStyle in core.js; none = oxford) */
-const drawShoeSide=(item,P)=>drawShoePair(item,P,SHOE_ST[shoeStyle(item)]?shoeStyle(item):'oxford');
+const drawShoeSide=(item,P)=>shoeStyle(item)==='sneaker'?drawSneakerPair(item,P):drawShoePair(item,P,SHOE_ST[shoeStyle(item)]?shoeStyle(item):'oxford');
 
 /* dress sock, side view, traced from a catalogue photo of a fine merino dress sock: slanted cuff with a heathered welt,
    leg leaning back, heel pocket, foot pointing right, flat knitted toe cap (the sock's secondary colour); box ~0..60 x 0..72 */
@@ -447,29 +473,40 @@ function drawWatch(w,P){
   return s;
 }
 
-/* polished buckle metal: diagonal gradient in the buckle's metal (silver, gold or gunmetal) */
-const buckleDefs=(P,metal)=>{const [mL,mM,mD]=METAL_TONES[metal]||METAL_TONES.silver;
-  return `<linearGradient id="${P}bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${mL}"/><stop offset=".35" stop-color="#fff"/><stop offset=".55" stop-color="${mM}"/><stop offset="1" stop-color="${mD}"/></linearGradient>`};
 
 /* a buckled section of belt: buckle in the middle with a little leather either side, centred on 0,0 (about 62 x 20) */
+/* belt: traced from the item picture of the owner's oxblood cordovan belt (2026-11-13, as the shoes were): the coil behind, the darker
+   inner face showing at its top, the front strap with its stitching, holes and pointed tip, the leather keeper, and the buckle's
+   frame and prong in the belt's metal; every edge placed on gridded crops of the picture and snapped. Box 0..96 x 0..44.6. */
+const BELT_D={back:'M5.3,16.3 C5.6,14.9 6,13 6.3,11.4 C6.7,9.7 7,7.6 7.3,6.1 C7.7,4.6 7.7,3.5 8.3,2.6 C9,1.6 9.7,1.1 11.4,0.7 C13.1,0.3 15.8,0.3 18.7,0.3 C21.7,0.2 25.6,0.4 28.8,0.6 C32.2,0.8 35.4,1.1 38.7,1.4 C41.9,1.7 44.7,2.1 48.3,2.7 C51.9,3.3 56,4.1 60,5.1 C64.1,6.2 68.7,7.7 72.4,8.9 C76.1,10.1 79.5,11.5 82.2,12.5 C84.8,13.6 86.8,14.4 88.3,15.3 C89.8,16.1 90.6,16.8 91.1,17.6 C91.7,18.4 92.9,19.2 91.9,20.1 C91,21 89.8,21.9 85.4,22.9 C81.1,23.9 65.8,26.3 65.8,26.3 C65.8,26.3 23.6,26.3 23.6,26.3 C23.6,26.3 4.5,22.1 4.5,22.1 C4.5,22.1 4.6,20.3 4.7,19.4 C4.8,18.4 5,17.6 5.3,16.3 Z',
+  inner:'M11.7,1.4 C12.8,1.1 15.7,1 18.5,1 C21.4,0.9 25.5,1 28.8,1.2 C32.2,1.3 35.4,1.5 38.6,1.8 C41.8,2.2 44.7,2.4 48.3,3.1 C51.8,3.6 56,4.5 60,5.5 C64,6.5 68.7,7.9 72.4,9.1 C76,10.3 79.5,11.7 82.1,12.8 C84.8,13.8 86.7,14.7 88.1,15.6 C89.5,16.4 90.2,17.2 90.8,17.9 C91.4,18.5 91.4,19.2 91.4,19.4 C91.4,19.6 91.1,19.4 90.7,19.1 C90.3,18.8 90,18.2 89.1,17.7 C88.2,17.3 87.4,16.9 85.4,16.5 C83.3,16.1 80.3,15.7 76.6,15.3 C73,14.8 68.1,14.3 63.7,13.9 C59.4,13.4 54.9,13 50.5,12.4 C46,11.8 41.3,11.1 37,10.3 C32.7,9.5 28,8.4 24.6,7.5 C21.2,6.5 18.6,5.4 16.4,4.6 C14.3,3.8 12.5,3.1 11.7,2.5 C10.9,2 10.5,1.7 11.7,1.4 Z',
+  bstitch:'M10.7,4.1 C11.7,4.5 14.5,5.7 16.9,6.5 C19.3,7.3 21.5,8.2 24.9,9.1 C28.3,10 32.7,11 37,11.8 C41.3,12.6 46,13.3 50.5,13.9 C54.9,14.5 59.4,14.9 63.7,15.4 C68.1,15.8 73,16.3 76.6,16.7 C80.3,17.2 83.4,17.5 85.6,18 C87.9,18.4 89.3,19.1 90.1,19.3',
+  strap:'M3.2,22.1 C4.9,20.4 8,20 10.4,19.7 C12.8,19.4 15.3,20.1 17.6,20.2 C20,20.3 21.9,20.3 24.6,20.3 C27.4,20.3 30.7,20.3 34.1,20.3 C37.4,20.3 41.3,20.3 44.7,20.3 C48,20.3 51.2,20.2 54,20.3 C56.8,20.4 58.7,20.6 61.3,20.9 C63.8,21.2 66.3,21.7 69.3,22 C72.4,22.4 76.3,22.7 79.4,22.9 C82.5,23.2 85.8,23.3 88,23.6 C90.2,23.8 91.5,24 92.6,24.6 C93.7,25 94,25.7 94.6,26.5 C95.2,27.4 95.9,29.5 95.9,29.5 C95.9,29.5 94.4,31.7 93.5,32.7 C92.7,33.7 91.7,34.6 90.9,35.5 C90.1,36.3 89.5,37 88.6,37.7 C87.7,38.4 87.1,39.1 85.3,39.6 C83.6,40.1 81.4,40.5 78.1,40.9 C74.9,41.2 70.2,41.6 65.8,41.9 C61.5,42.1 56.3,42.6 51.9,42.7 C47.4,42.9 43.2,42.9 39,42.8 C34.9,42.8 30.8,42.6 26.8,42.3 C22.9,42 18.6,41.8 15.2,41.3 C11.8,40.9 8.6,40.6 6.3,39.8 C4.1,39 2.6,38.3 1.7,36.6 C0.7,34.9 0.2,32 0.4,29.6 C0.7,27.1 1.6,23.8 3.2,22.1 Z',
+  tstitch:'M1.6,21 C3.3,21.1 7.9,21.3 11.9,21.5 C15.9,21.8 20.4,22 25.7,22.2 C30.9,22.3 37.8,22.3 43.3,22.5 C48.8,22.6 54.3,22.6 58.6,22.8 C62.9,23 65.9,23.4 69.4,23.7 C72.8,24 76.3,24.3 79.4,24.7 C82.5,24.9 85.8,25.2 88,25.5 C90.2,25.7 91.9,26.1 92.7,26.3',
+  lstitch:'M1.6,37.3 C3.7,37.7 10.2,39 14.4,39.6 C18.6,40.1 22.7,40.4 26.8,40.7 C30.9,41 34.9,41 39,41.1 C43.2,41.1 47.4,41.1 51.9,40.9 C56.3,40.8 61.5,40.4 65.9,40.2 C70.2,39.9 74.8,39.6 78.1,39.2 C81.4,38.8 83.7,38.3 85.8,37.6 C87.8,36.8 89.1,35.6 90.3,34.7 C91.5,33.7 92.3,32.4 92.9,31.6 C93.6,30.7 93.9,29.8 94.1,29.5',
+  keeper:'M60.3,21.2 C60.3,21.2 61.6,20.6 62.6,20.6 C63.7,20.5 65.5,20.5 66.6,20.8 C67.7,20.9 69.3,21.7 69.3,21.7 C69.3,21.7 69.1,42.8 69.1,42.8 C69.1,42.8 67.7,43.5 66.7,43.6 C65.7,43.7 63.9,43.7 62.9,43.6 C61.8,43.5 60.3,42.8 60.3,42.8 C60.3,42.8 60.3,21.2 60.3,21.2 Z',
+  kstitch:'M61.6,21.2 C61.6,23.1 61.5,28.7 61.5,32.3 C61.5,35.9 61.6,41 61.6,42.8',
+  kstitch2:'M68.1,21.4 C68.1,23.3 68.1,28.8 68.1,32.4 C68.1,35.9 68,41 68,42.8',
+  frame:'M27,21.2 Q27,19.7 28.5,19.7 L53.8,19.7 Q55.2,19.7 55.2,21.2 L55.2,42.3 Q55.2,43.8 53.8,43.8 L28.5,43.8 Q27,43.8 27,42.3 Z M30.7,23.3 Q30.7,22.5 31.6,22.5 L55.2,22.5 L55.2,43 L31.6,43 Q30.7,43 30.7,42.1 Z',
+  bar:'M55.2,20.4 L55.2,43.4',
+  prong:'M28.4,31.8 L33.9,31.8 Q34.6,32.7 33.9,33.7 L28.4,33.7 Q27.8,32.7 28.4,31.8 Z',
+  holes:'2.6,28.8 8.6,30.4 18.3,32.1 45.1,32.4'};
 function drawBelt(item,P){
-  const c=item?colOf(item):'#3a2414',metal=item&&item.metal||'silver',[mL,mM,mD]=METAL_TONES[metal]||METAL_TONES.silver;
-  const edge=mix(c,'#000',.45),st=mix(c,'#fff',.4);
-  const strap='M-31,-4.6 Q0,-6.4 31,-4.6 L31,5.6 Q0,3.8 -31,5.6 Z';
-  return `<defs>${buckleDefs(P,metal)}
-    <linearGradient id="${P}sv" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>
-    <linearGradient id="${P}sh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".3"/><stop offset=".2" stop-color="#000" stop-opacity="0"/><stop offset=".8" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient></defs>`+
-    ``+
-    `<path d="${strap}" fill="${c}" stroke="${edge}" stroke-width=".5"/>`+
-    `<path d="M-30,-2.9 Q0,-4.6 30,-2.9 M-30,3.9 Q0,2.2 30,3.9" fill="none" stroke="${st}" stroke-opacity=".6" stroke-width=".3" stroke-dasharray=".9 .6"/>`+
-    `<ellipse cx="-17" cy=".2" rx=".9" ry="1.15" fill="${edge}"/><ellipse cx="-22" cy=".4" rx=".9" ry="1.15" fill="${edge}"/>`+
-    `<path d="M11.6,-6.2 L15.2,-6.2 L15.2,6.6 L11.6,6.6 Z" fill="${mix(c,'#000',.15)}" stroke="${edge}" stroke-width=".45"/>`+
-    `<path d="${strap}" fill="url(#${P}sv)"/><path d="${strap}" fill="url(#${P}sh)"/>`+
-    // buckle frame, inner highlight and prong
-    `<rect x="-8" y="-8.2" width="16" height="16.4" rx="3" fill="none" stroke="${mD}" stroke-width="3.1"/>`+
-    `<rect x="-8" y="-8.2" width="16" height="16.4" rx="3" fill="none" stroke="url(#${P}bm)" stroke-width="2.4"/>`+
-    `<rect x="-7.1" y="-7.3" width="14.2" height="14.6" rx="2.4" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".35"/>`+
-    `<path d="M-8,.4 L3.2,.4" stroke="${mD}" stroke-width="1.5" stroke-linecap="round"/><path d="M-8,.1 L3,.1" stroke="url(#${P}bm)" stroke-width="1" stroke-linecap="round"/>`;
+  const S=BELT_D,c=item?colOf(item):'#3a2414',metal=item&&item.metal||'silver',[mL,mM,mD]=METAL_TONES[metal]||METAL_TONES.silver;
+  const edge=mix(c,'#000',.45),st=mix(c,'#fff',.35),lay=leatherLayers(P+'s',item||{leather:'calf'},S.strap,{x:38,y:22,r:30,rot:0,g:.25}),back=leatherLayers(P+'k',item||{leather:'calf'},S.back,{x:45,y:8,r:26,rot:0,g:.2});
+  const stitch=d=>`<path d="${d}" fill="none" stroke="${st}" stroke-opacity=".7" stroke-width=".32" stroke-dasharray=".8 .55"/>`;
+  const holes=S.holes.split(' ').map((p,k)=>{const [x,y]=p.split(',');return `<ellipse cx="${x}" cy="${y}" rx="${k===3?.8:.7}" ry="${k===3?1.1:1}" fill="${mix(c,'#000',.75)}" stroke="${mix(c,'#fff',.2)}" stroke-width=".15"/>`}).join('');
+  return `<defs>${back.defs}${lay.defs}<linearGradient id="${P}sv" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>`+
+    `<clipPath id="${P}sc"><path d="${S.strap}"/></clipPath><linearGradient id="${P}mt" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${mL}"/><stop offset=".55" stop-color="${mM}"/><stop offset="1" stop-color="${mD}"/></linearGradient></defs>`+
+    // the coil behind: its outer face, the inner face at the top (darker), its stitching
+    back.body+`<path d="${S.inner}" fill="${mix(c,'#000',.4)}" stroke="${edge}" stroke-width=".3"/>`+stitch(S.bstitch)+
+    // the right bar of the buckle lies under the strap's tail; the strap; its stitching and holes; the keeper
+    `<path d="${S.bar}" stroke="url(#${P}mt)" stroke-width="1" stroke-linecap="round"/>`+
+    lay.body+`<path d="${S.strap}" fill="url(#${P}sv)"/>`+`<g clip-path="url(#${P}sc)">`+stitch(S.tstitch)+stitch(S.lstitch)+'</g>'+holes+
+    `<path d="${S.keeper}" fill="${mix(c,'#000',.08)}" stroke="${edge}" stroke-width=".4"/><path d="${S.keeper}" fill="url(#${P}sv)"/>`+stitch(S.kstitch)+stitch(S.kstitch2)+
+    // the buckle's frame (top, bottom and the wide left bar) and its prong over the strap
+    `<path d="${S.frame}" fill="url(#${P}mt)" fill-rule="evenodd" stroke="${mD}" stroke-width=".3"/>`+
+    `<path d="${S.prong}" fill="url(#${P}mt)" stroke="${mD}" stroke-width=".25"/>`;
 }
 
 /* small colour swatch for the item list: the precision swatch cut from the fabric close-up when the item has one (the cloth as it
@@ -513,7 +550,7 @@ function itemThumb(i,full){
   }else if(i.type==='watch')g=`<g transform="translate(48 50) scale(.95)">${drawWatch(i,P)}</g>`;
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=`<g transform="translate(20 14)">${drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)])}</g>`;
-  else if(i.type==='belt')g=`<g transform="translate(50 50) scale(1.42)">${drawBelt(i,P)}</g>`;
+  else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat'||i.type==='raincoat'){const c=colOf(i),e=mix(c,'#000',.35),rain=i.type==='raincoat';
     g=`<path d="M38,14 L50,20 L62,14 L78,22 L84,90 L16,90 L22,22 Z" fill="${c}" stroke="${e}" stroke-width=".8"/><path d="M38,14 L50,40 L62,14" fill="none" stroke="${e}" stroke-width=".8"/>`+
       `<path d="M50,40 L50,90" stroke="${e}" stroke-width=".8"/>${rain?`<path d="M18,52 L82,52" stroke="${e}" stroke-width="2.4"/><rect x="45" y="49" width="10" height="6" rx="1" fill="none" stroke="${METAL.silver}" stroke-width="1.2"/>`:''}`+
