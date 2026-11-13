@@ -30,6 +30,12 @@ module.exports=async({ok,chromium,url})=>{
       const after=draw(),r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,grey:before.includes(colOf({primaryColor:'grey'})),tan:after.includes(colOf({primaryColor:'tan'}))&&!after.includes(colOf({primaryColor:'grey'})),saved:items.find(x=>x.id==='sh1').primaryColor};
       document.querySelector('#col-sheet .cptile[data-c="grey"]').click();r.back=draw()===before;closeColPick();items=items.filter(x=>x.id!=='sh1');return r});
     ok(lv.cap==='As drawn'&&lv.grey&&lv.tan&&lv.saved==='grey'&&lv.back,'without a photo the drawing follows the colour tapped (grey to tan and back), and nothing is saved until Use');
+    // the pattern sheet too: without a photo the item is drawn (its shape) in the pattern tapped, nothing saved until Use
+    const pv=await p.evaluate(()=>{items.push({id:'t8',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'solid',added:9});openColPick('e','t8','pattern');
+      const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),strip=s=>{const t=document.createElement('div');t.innerHTML=s;return t.innerHTML.replace(/th\d+-/g,'')},before=draw();document.querySelector('#col-sheet .cptile[data-c="stripe"]').click();
+      const r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,shape:before===strip(itemThumb(items.find(x=>x.id==='t8'))),striped:draw()===strip(itemThumb(patVar(items.find(x=>x.id==='t8'),'stripe')))&&draw()!==before,saved:items.find(x=>x.id==='t8').pattern};
+      closeColPick();items=items.filter(x=>x.id!=='t8');return r});
+    ok(pv.cap==='As drawn'&&pv.shape&&pv.striped&&pv.saved==='solid','without a photo the pattern sheet draws the tie (its shape) in the pattern tapped, and nothing is saved until Use');
     // Add card: the second colour offers None
     await p.evaluate(ph=>{editing=null;closeItem&&closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
     await p.click('#queue .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cptile:has-text("None")');await p.click('#col-sheet .cpbar button');

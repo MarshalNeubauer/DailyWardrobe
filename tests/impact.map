@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	cbc1e77110c00b4e5613
+# tested	bee405570d4d39435824
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -544,9 +544,9 @@ colpick.test.js	apple-touch-icon.png	<loaded>
 colpick.test.js	asm-color.js	asmGapNote
 colpick.test.js	care.js	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 colpick.test.js	colpick.js	@window.addEventListenerkeydown	COL_FIELDS	EC	EP	closeColPick	colAddNew	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBaseFor	colBtn	colChoices	colFamily	colLabel	colNear	colNewFor	colPickSel	colTarget	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	renderColPick	renderPatPick	useColPick
-colpick.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	itemName	itemTitle	labHex	labOf	lum	mix	normCol	normColFor	normPat	ownColKey	ownPatKey	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	shadeName	shoeStyle	thirdOf	titleCls
+colpick.test.js	core.js	COLOR_OPTS	accentOf	colName	colOf	colorDesc	colsFor	dE00	desc	fitCol	hasVest	hexRgb	itemName	itemTitle	labHex	labOf	lum	mix	normCol	normColFor	normPat	ownColKey	ownPatKey	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	shadeName	shoeStyle	thirdOf	titleCls	trouserKind
 colpick.test.js	detect.js	texPat	tieWeave	usableSett
-colpick.test.js	draw.js	drawShoePair	drawShoeSide	fabricDef	itemThumb	leatherLayers	swatchSVG
+colpick.test.js	draw.js	drawShoePair	drawShoeSide	fabricDef	itemThumb	leatherLayers	swatchSVG	trouserMarks
 colpick.test.js	icon-192.png	<loaded>
 colpick.test.js	icon-512.png	<loaded>
 colpick.test.js	index.html	<loaded>
