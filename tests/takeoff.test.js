@@ -25,6 +25,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(b.rows.some(t=>/^SuitTaken off: the trousers stay/.test(t))&&b.rows.some(t=>/^Trousers\S/.test(t))&&b.btns.includes('Put the suit jacket back on')&&!b.btns.includes('Change trousers'),`the list says the jacket is off, shows the suit's trousers (not swappable) and offers + (${b.rows.slice(0,3).join(' | ')})`);
     ok(!b.hard.length,`no penalty for the missing jacket (${b.hard.join(', ')})`);
     ok(b.kind==='shirt-tie',`the picture moves to the shirt-and-tie master (${b.kind})`);
+    // only the tie off, on a waistcoat day: the waistcoat goes with it (no one wears a waistcoat without a tie)
+    const v=await p.evaluate(()=>{const k=key(sel),r0=dayRecs[k];dayRecs[k]={...(r0||{date:k}),off:{tie:true}};cache={};const o=planFor()[k];dayRecs[k]=r0;cache={};return {tie:!!o.tie,vest:!!o.vest,top:!!o.top}});
+    ok(v.top&&!v.tie&&!v.vest,`taking off only the tie takes the waistcoat off too (${JSON.stringify(v)})`);
     // the tie off too: the open-collar master, the clip goes with it
     await tap('#ibox button[aria-label="Take off the tie"]');
     const c=await st();
@@ -32,7 +35,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // the jacket back on with no tie: the same suit, the open-collar jacket master
     await tap('#ibox button[aria-label="Put the suit jacket back on"]');
     const d=await st();
-    ok(d.ids.top===a.ids.top&&d.suitDay&&d.vest&&!d.ids.tie&&d.kind==='vest-open',`putting the jacket back brings the same suit and its waistcoat, still with no tie (${d.kind})`);
+    ok(d.ids.top===a.ids.top&&d.suitDay&&!d.vest&&!d.ids.tie&&d.kind==='suit-open'&&!d.rows.some(t=>/^Vest/.test(t)),`putting the jacket back brings the same suit with no tie and so no waistcoat (the owner's rule), and no vest row to add one (${d.kind})`);
     await tap('#ibox button[aria-label="Put the tie back on"]');
     const e=await st();
     ok(JSON.stringify(e.ids)===JSON.stringify(a.ids)&&e.vest&&!e.off&&!e.rec.off,'putting the tie back gives the outfit as first shown');
