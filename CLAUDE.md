@@ -351,9 +351,30 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - a clip's metal for matching the watch and belt is read from its colour (`clipMetal`, core.js; `metalOf` in planner.js): silver, white and the greys silver; gold and rose gold gold; gunmetal, dark grey and charcoal 'other'; enamel colours null, which goes with any metal (no Metals deduction, no preference); its name in prompts and what to buy is its colour (`clipWord`); a metal field left on older clips is ignored
 - a drawn tie bar is a part with `db` (`asmBarSig`, in the picture's key; `ASM_BARV` versions the look): no photo is asked for (`asmPhotoParts`, `asmJob`) and `asmNeeds` lists none; the photo path (`P.bar`, `asmBarMask`) stays for the tests and the trial painter, which keeps tie-bar days the old way (`asmP2Able`)
 
+### `asm-color.js`
+
+- colour-coded masters (2026-11-13, the owner's restart of the assembler): loaded after assemble.js on the page and in asm-worker.js; every garment of an outfit is painted on a master photo in which each garment was one flat strong colour (gpt-image-2, 2880); nothing is photographed per item
+- four masters by the day's dress (`asmCmKind(o)`): a jacket and a tie → `suit` (on a waistcoat day `vest`); no jacket, a tie → `shirt-tie`; no jacket, no tie → `shirt-open`; the shirt masters need trousers and a belt (`o.bot`, `o.belt`); a jacket without a tie has no master (null: the day keeps its own photo)
+- each master is photo records on the worker under `asmCmKey(kind, name)` = `asmKey('cm'+ASM_CMV+'/'+kind+'/'+name)`: `master` (2880 JPEG), `mask/<zone>` (2048 PNGs, soft, adding up to white), `part/sleeveR|sleeveL` (all four) and `part/lapelR|lapelL` (suit, vest); put there by `npm run cm-upload -- --dir C:\code\watch-test\colormaster` (tools/asm-cm-upload.js, `DW_WORKER`/`DW_TOKEN`; a record already there with the same signature is not written)
+- the masters, masks and how they were made are on the owner's PC in `C:\code\watch-test\colormaster` (colormaster.js: zones from colour; paint.js: the prototype; SAM sleeve/lapel masks via `C:\code\sam2\cm_sleeves.py`)
+- assemble.js: `asmCmUse(o)` is the kind when its master is on the device; `asmEnsure` and `asmPrebuildOne` first look for it on the worker (`asmCmLook`, once a session); with it `asmJob`, `asmOutKey` (`out/cm…`, from `asmCmSig`: every garment's colour, reading and pattern spec), `asmStamp`, `asmWants`, `asmFullWins`, `asmPhotoParts` ([]) and `asmPending` take the colour-coded way; a worker without colour-coded masters leaves everything to the earlier way
+- the painting (`asmCmPrep` once per master, `asmCmBuild` per outfit): each pixel the zones' shares (Uint8, adding to 255) of: a garment's cloth × its light (the master's brightness over the zone's lit level, 75th percentile, a white shirt's 90th; at most 1.6, a shirt 1.15; pushed out from each zone's clean pixels over its edge, so no zone's light reaches into another); skin, watch, buckle and dark details (buttons) the master's own pixels (along their edge their clean neighbours', and never greener than red or blue: the chroma wall); the background a light wall `#E6E2DC`
+- against the median (the prototype's first try) every garment came out half again too light (a navy read periwinkle, khaki cream)
+- above its usual brightness a cloth gains neutral light, not more of its own colour, and a pixel past full brightness goes toward white keeping its hue (a light khaki's lit side turned peach)
+- the cloth: a patterned suit or blazer read in bands is the app's own suit cloth (`asmSuitTex`: Claude's colours, soft broken stripes, its herringbone, twill or linen grain); a tie is `asmTieFor`'s; any other patterned shirt or trousers one repeat of `fabricDef` (`asmCmTile`, softened toward its ground: shirts 45%, trousers 30%), sized from the reading (`ASM_SHIRT_MM / tr`, a weave's own rules); solids and belts their colour
+- the jacket's geometry is the app's (`asmSleeveSegs`, `asmTubeAt`, `asmBodyFlow`, lapels as one straight part each); the learned drift along sleeves (`ASM_SLEEVE_FLOW`) is left out (on the new master's hanging arm it folded the stripes); `asmCmRefit` fits a creased sleeve again when its forearm is over 15° from the app's fit (the arm across the chest came out 24° off): k-lines, the cloth's middles, the direction in which the forearm is narrowest
+- on the shirt masters the sleeves carry the shirt's weave (the body upright); on the jacket masters each cuff's weave runs along the arm (`asmShirtAngles`' rule)
+- the tie's knot ends at its neck: the narrowest row from a third of its widest row below its top to the lesser of 30% of its length and 1.5 widest rows (on the shirt-and-tie master the hand grips the tie at 30%, and the knot's turned stripes ran down to it)
+- a tie clip is drawn with `asmBarDraw` (not on a waistcoat day)
+- size: a phone paints at 2048 (`ASM_SIZE`); `npm run assemble` sets `ASM_CM_SIZE` 2880 and scales the picture to 2048; about 7 s a picture at 2048 on the owner's PC
+- Settings → Realistic photos → Item photos: "Colour-coded masters" (`asmCmUI`, `asmCmSet`, `localStorage.asm_cm` '0' = off on this phone)
+- with no jackets in the dress code `asmNeeds` lists nothing (the earlier way needs a jacket for every picture)
+- `tests/asmcolor.test.js` (fixtures `tests/fixtures/cm/<kind>/` at 512: the suit and shirt-and-tie masters)
+
 ### `asm-worker.js`
 
 - the Web Worker that puts assembled pictures together (see `assemble.js`); in `ASSETS` in sw.js
+- it loads `asm-color.js` too
 
 ### `detect.js`
 

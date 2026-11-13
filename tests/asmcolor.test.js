@@ -1,0 +1,71 @@
+// Assembled pictures from colour-coded masters (asm-color.js): which master an outfit is painted on (by the day's dress), the masters and
+// masks downloaded from the worker, the picture painted in the Web Worker, its key following the cloth, the earlier way kept when the
+// worker has no colour-coded master, the switch in Settings, the dress code in asmNeeds, and the upload script's keys.
+// Fixtures: the suit and shirt-and-tie masters and their masks at 512 (tests/fixtures/cm/<kind>/).
+const fs=require('fs'),path=require('path');
+module.exports=async({ok,chromium,url})=>{
+  const HOST='https://w.test/',FIX=path.join(__dirname,'fixtures','cm');
+  const browser=await chromium.launch();
+  try{
+    const ctx=await browser.newContext({viewport:{width:390,height:844}});const asked=[];let served={};
+    await ctx.route(HOST+'**',route=>{const u=new URL(route.request().url()),k=u.searchParams.get('key');if(k)asked.push(k);
+      const j=(b,s=200)=>route.fulfill({status:s,contentType:'application/json',body:JSON.stringify(b)});
+      if(u.pathname==='/render'&&k)return served[k]?j(served[k]):j({error:'not found'},404);
+      if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});
+      if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
+    const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    // the fixtures as worker records, under the keys the app asks for
+    const recs={};for(const kind of ['suit','shirt-tie']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
+      recs[kind+'|'+n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(d,f)).toString('base64'),model:'colormaster',t:1000}}}
+    const keys=await p.evaluate(rs=>{const o={};for(const k of Object.keys(rs)){const [kind,n]=k.split('|');o[k]=asmCmKey(kind,n)}return o},Object.fromEntries(Object.keys(recs).map(k=>[k,1])));
+    for(const [k,r] of Object.entries(recs))served[keys[k]]=r;
+    await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;asmAheadSoon=()=>{};asmAhead=async()=>{};
+      let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
+      const W={watch:I('watch','silver',{metal:'silver'}),suit:I('suit','navy'),shirt:I('shirt','pink'),shirt2:I('shirt','lightblue'),tie:I('tie','burgundy'),pants:I('pants','khaki'),belt:I('belt','brown',{leather:'calf'}),shoes:I('shoes','brown',{leather:'calf'})};
+      items=Object.values(W);window.__W=W},HOST);
+    // which master, by the day's dress
+    const kinds=await p.evaluate(()=>{const W=__W,o={shirt:W.shirt,watch:W.watch};
+      return [asmCmKind({...o,top:W.suit,tie:W.tie}),asmCmKind({...o,top:W.suit,tie:W.tie,vest:true}),asmCmKind({...o,top:W.suit}),asmCmKind({...o,bot:W.pants,belt:W.belt,tie:W.tie}),
+        asmCmKind({...o,bot:W.pants,belt:W.belt}),asmCmKind({...o,bot:W.pants,tie:W.tie}),asmCmKind({top:W.suit,tie:W.tie})].map(String).join()});
+    ok(kinds==='suit,vest,null,shirt-tie,shirt-open,null,null',`a jacket and tie: the suit master (the waistcoat master on a waistcoat day); no jacket: shirt and tie, or open collar; a jacket without a tie, no belt or no shirt: none (${kinds})`);
+    // a no-jacket day, painted: the master and masks come from the worker, the picture is made in the Web Worker and kept
+    const a=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,bot:W.pants,belt:W.belt,tie:W.tie,shoes:W.shoes};
+      const before={use:asmCmUse(o),can:asmCan(o)};await asmEnsure(o);before.after=asmCmUse(o);const f=asmFor(o),k=asmOutKey(o);
+      // a pixel in the middle of the shirt, left of the tie: pink, as the shirt
+      let px=null;if(f){const im=new Image();await new Promise(r=>{im.onload=r;im.src=f.img});const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.36),Math.round(im.width*.34),1,1).data].slice(0,3)}
+      const o2={...o,shirt:W.shirt2};return {before,img:f&&f.img.slice(0,23),w:f&&(await new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=f.img})),px,k,k2:asmOutKey(o2),kept:!!(await metaGet('asm:out:'+k)),
+        offPage:asmOffPage(),pending:asmPending(o),parts:asmPhotoParts(o).length}});
+    ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.before.can===false&&a.img==='data:image/jpeg;base64,'&&a.kept,`a shirt-and-tie day (which the earlier assembler can't make): its master is looked for, then the day is painted on it and kept (${JSON.stringify(a.before)})`);
+    ok(a.w===512&&a.offPage,`painted in the Web Worker at the job's size (${a.w} px)`);
+    ok(a.px&&a.px[0]>a.px[2]+15&&a.px[0]>150,`the shirt comes out pink (${a.px})`);
+    ok(a.k!==a.k2&&a.parts===0&&a.pending===false,'another shirt colour is another picture; nothing is photographed or queued for it');
+    const want=Object.keys(recs).filter(k=>k.startsWith('shirt-tie|')).map(k=>keys[k]);
+    ok(want.every(k=>asked.includes(k))&&!Object.keys(recs).filter(k=>k.startsWith('suit|')).some(k=>asked.includes(keys[k])),`it downloads that master's ${want.length} records, and not another master's`);
+    // a suit day with a waistcoat: no colour-coded waistcoat master on this worker, so the earlier way (no master there either): nothing
+    const v=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie,vest:true};await asmEnsure(o);return {use:asmCmUse(o),for:!!asmFor(o),wants:asmWants(o),earlier:asmWants0(o)}});
+    ok(v.use===null&&!v.for&&!v.wants,`a kind whose master the worker lacks falls back to the earlier way (${JSON.stringify(v)})`);
+    // a suit day: painted on the suit master (the jacket's sleeves and lapels from their masks)
+    const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o);return {use:asmCmUse(o),img:f&&f.img.length}});
+    ok(s.use==='suit'&&s.img>10000,`a suit day is painted on the suit master (${JSON.stringify(s)})`);
+    // the switch in Settings: off on this phone, every outfit goes the earlier way
+    const sw=await p.evaluate(()=>{openSettings('photos');renderAsmUI();const sel=document.querySelector('#cfg-cm');const r={there:!!sel,val:sel&&sel.value};
+      asmCmSet('off');const W=__W;r.off=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});asmCmSet('on');r.on=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});closeSettings&&closeSettings();return r});
+    ok(sw.there&&sw.val==='on'&&sw.off===null&&sw.on==='shirt-tie',`Settings → Item photos has the switch, on by default; off, no outfit is painted on a colour-coded master (${JSON.stringify(sw)})`);
+    // the dress code: no jacket pieces are asked for when jackets aren't worn
+    const nd=await p.evaluate(()=>{const r={};settings.dress={jacket:true,tie:true};r.with=asmNeeds().filter(n=>n.slot==='jacket').length;settings.dress={jacket:false,tie:true};r.without=asmNeeds().filter(n=>n.slot==='jacket'||n.kind==='vestmaster').length;settings.dress={jacket:true,tie:true};return r});
+    ok(nd.without===0,`with no jackets in the dress code, no jacket pieces or waistcoat master are listed (${JSON.stringify(nd)})`);
+    ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
+  }finally{await browser.close()}
+  // the upload script: the app's keys, from a folder laid out as colormaster.js writes it
+  {const os=require('os'),{spawnSync}=require('child_process'),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'cm-')),d=path.join(tmp,'out-suit');fs.mkdirSync(d);
+    const src=path.join(FIX,'suit');fs.copyFileSync(path.join(src,'master.jpg'),path.join(d,'colormaster-2880.png'));
+    for(const f of fs.readdirSync(src)){if(f.startsWith('mask-'))fs.copyFileSync(path.join(src,f),path.join(d,'alpha-'+f.slice(5)));if(f.startsWith('part-'))fs.copyFileSync(path.join(src,f),path.join(d,(f.includes('lapel')?'lapel-':'sleeve-')+f.slice(5)))}
+    const r=spawnSync(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),'--dir',tmp,'--dry','--kinds','suit'],{encoding:'utf8'});
+    const fnv=t=>{let h=0xcbf29ce484222325n;for(const c of Buffer.from(t,'utf8')){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}return h.toString(16).padStart(16,'0')};
+    const ver=/const ASM_VER=(\d+)/.exec(fs.readFileSync(path.join(__dirname,'..','assemble.js'),'utf8'))[1],cmv=/const ASM_CMV=(\d+)/.exec(fs.readFileSync(path.join(__dirname,'..','asm-color.js'),'utf8'))[1];
+    const want='c'+fnv(`asm/${ver}/cm${cmv}/suit/master`);
+    ok(r.status===0&&r.stdout.includes('suit master -> '+want)&&/lapelL/.test(r.stdout),`tools/asm-cm-upload.js puts each record under the app's own key (${(r.stdout.match(/suit master -> \S+/)||[r.stderr])[0]})`);
+    fs.rmSync(tmp,{recursive:true,force:true})}
+};
+module.exports.assembled=true;   // tests assembled pictures (assemble.js)
