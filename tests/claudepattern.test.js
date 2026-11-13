@@ -60,8 +60,35 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const spec={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#2b365a',w:.47},{role:'line',name:'pale blue-grey',hex:'#a3aecb',w:.06},{role:'ground',name:'navy',hex:'#2b365a',w:.47}]},along:null,stripeDirection:'vertical',repeatsInCloseup:7,repeatsAcrossItem:40,paneAspect:1};
       const it={id:'pinsuit',type:'suit',primaryColor:'navy',pattern:'pinstripe',texture:url,patternSpec:spec,sett:{v:2,a:0,bands:[['#63657d',.47],['#b1b6ce',.06],['#63657d',.47]],cross:null,cr:7,tr:40,src:'claude+pixels'}};
       items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts(),again=await recolourSpecSetts();
-      const L=rgbLab(...hexRgb(it.sett.bands[0][0]));items.splice(items.indexOf(it),1);return {n,again,L:L[0],d:dE00(L,rgbLab(...hexRgb('#2b365a')))}});
-    ok(mig.n===1&&mig.again===0&&mig.d<10&&mig.L<35,`a saved lavender pinstripe is recoloured once on start from its saved reading (L* ${mig.L.toFixed(0)}, ΔE00 ${mig.d.toFixed(1)} from navy)`);
+      const L=rgbLab(...hexRgb(it.sett.bands[0][0]));items.splice(items.indexOf(it),1);return {n,again,L:L[0],d:dE00(L,rgbLab(...hexRgb('#2b365a'))),flag:localStorage.getItem('spec_recolour')}});
+    ok(mig.n===1&&mig.again===0&&mig.d<10&&mig.L<35&&mig.flag==='3',`a saved lavender pinstripe is recoloured once on start from its saved reading (L* ${mig.L.toFixed(0)}, ΔE00 ${mig.d.toFixed(1)} from navy)`);
+    // a reading with a pattern box is recoloured too, from the box in the item photo (it was skipped, and kept its dull lines)
+    const bx=await p.evaluate(async SPEC=>{const du=async u=>{const b=await (await fetch(u)).blob();return await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)})};
+      const spec={...SPEC,across:{bands:SPEC.across.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:SPEC.along.bands.map(b=>({...b,w:b.widthPct/100}))}};
+      const it={id:'wpbox',type:'blazer',primaryColor:'khaki',pattern:'windowpane',photo:await du('tests/fixtures/blazer-windowpane.jpg'),texture:await du('tests/fixtures/blazer-windowpane-closeup.jpg'),pbox:{x:220,y:420,w:180,h:280},patternSpec:spec,
+        sett:{v:2,a:0,bands:spec.across.bands.map(b=>['#808080',b.w]),cross:{d:90,bands:spec.along.bands.map(b=>[b.role==='ground'?null:'#808080',b.w]),r:1.1},cr:3.5,tr:9,src:'claude+pixels'}};
+      items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts();items.splice(items.indexOf(it),1);
+      return {n,grey:it.sett.bands.filter(b=>b[0]==='#808080').length}},SPEC);
+    ok(bx.n===1&&bx.grey===0,`a reading with a pattern box is recoloured once too (${bx.n} recoloured, ${bx.grey} bands left grey)`);
+    // a tie of equal navy and blue stripes, and one with thin white edging beside a grey band (the owner's, 2026-11-12): the ground
+    // is measured from the pixels nearest Claude's ground (the whole close-up's median landed between navy and blue), a tie's
+    // stripes get none of the ground mixed in, and a thin line's colour comes from its pixels furthest from the ground
+    const eq=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=300;const g=c.getContext('2d'),L=h=>rgbLab(...hexRgb(h));
+      for(let x=-300;x<600;x+=60){g.fillStyle='#24243e';g.beginPath();g.moveTo(x,0);g.lineTo(x+30,0);g.lineTo(x+330,300);g.lineTo(x+300,300);g.fill();g.fillStyle='#5387c2';g.beginPath();g.moveTo(x+30,0);g.lineTo(x+60,0);g.lineTo(x+360,300);g.lineTo(x+330,300);g.fill()}
+      const spec={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#1e2347',w:.5},{role:'line',name:'blue',hex:'#5b8fd0',w:.5}]},along:null,stripeDirection:'upper-left to lower-right',repeatsInCloseup:5,repeatsAcrossItem:2.5,paneAspect:1};
+      const s=settFromSpec(spec,{tex:c,type:'tie'});
+      const w=document.createElement('canvas');w.width=w.height=300;const h=w.getContext('2d');h.fillStyle='#141e33';h.fillRect(0,0,300,300);h.filter='blur(1px)';
+      for(let x=0;x<300;x+=75){h.fillStyle='#e8e8e6';h.fillRect(x,0,3,300);h.fillStyle='#8b8d93';h.fillRect(x+3,0,17,300);h.fillStyle='#e8e8e6';h.fillRect(x+20,0,3,300)}
+      const spec2={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#1f2d4e',w:.69},{role:'line',name:'white',hex:'#e4e4e2',w:.04},{role:'line',name:'grey',hex:'#9a9ea7',w:.23},{role:'line',name:'white',hex:'#e4e4e2',w:.04}]},along:null,stripeDirection:'vertical',repeatsInCloseup:4,repeatsAcrossItem:2.5,paneAspect:1};
+      const s2=settFromSpec(spec2,{tex:w,type:'tie'});
+      return {navy:dE00(L(s.bands[0][0]),L('#24243e')),blue:dE00(L(s.bands[1][0]),L('#5387c2')),white:L(s2.bands[1][0])[0],grey:L(s2.bands[2][0])[0]}});
+    ok(eq.navy<2&&eq.blue<2,`a half-navy, half-blue tie keeps both colours (ΔE00 ${eq.navy.toFixed(1)} and ${eq.blue.toFixed(1)} from the cloth)`);
+    ok(eq.white>82&&eq.grey>62&&eq.white>eq.grey+12,`a tie's thin white edging stays lighter than the grey band it borders (L* ${eq.white.toFixed(0)} against ${eq.grey.toFixed(0)})`);
+    // a tie's read stripes and figures are drawn without the faint white sheen line: turned with the pattern it showed as light bands
+    const sh=await p.evaluate(()=>{const band={id:'sb',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',sett:{v:2,a:-45,bands:[['#141e33',.69],['#c0c3c1',.04],['#8b8d93',.23],['#c0c3c1',.04]],cross:null,cr:3.5,tr:2.5,src:'claude+pixels'}};
+      const mot={id:'sm',type:'tie',primaryColor:'navy',pattern:'foulard',sett:{v:3,motif:{grid:'diagonal',ground:'#313363',figs:[{shape:'square',place:'cell',size:.9,cols:['#755ea0']}]},a:45,cr:17,tr:20,src:'claude+pixels'}};
+      return [fabricDef('x1',band,'tie'),fabricDef('x2',mot,'tie'),fabricDef('x3',band,'tie','fig')].map(d=>/stroke="#fff"/.test(d))});
+    ok(sh.every(v=>!v),`a tie's stripes and figures have no white sheen line across them (${sh.join(', ')})`);
     // the Add card: after the close-up, Claude reads the pattern
     await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});

@@ -133,7 +133,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const master=await asmData(renders[asmMasterKey()].img),real=await asmData(renders[asmPieceKey('tie',tie)].img),c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');x.fillStyle='#ccc';x.fillRect(0,0,W,W);
       x.drawImage(await asmImg(renders[asmPieceKey('tie',tie)].img),0,0,W,W,-140,0,W*.8,W*.8);const moved=c.toDataURL('image/jpeg',.9);
       out.drift=[asmDrift(master,z,'tie',real),asmDrift(master,z,'jacket',await asmData(renders[asmPieceKey('jacket',jk)].img)),asmDrift(master,z,'shirt',await asmData(renders[asmPieceKey('shirt',black)].img)),asmDrift(master,z,'tie',await asmData(moved))];
-      const keep=renders[asmPieceKey('tie',tie)];renders[asmPieceKey('tie',tie)]={...keep,img:moved};out.collage=await asmPhoto(o);out.bad=asmBad.has(asmPieceKey('tie',tie));renders[asmPieceKey('tie',tie)]=keep;asmBad.clear();
+      // (ties are painted on the device now: the refused piece is the jacket's)
+      const jkey=asmPieceKey('jacket',jk),keep=renders[jkey],c2=document.createElement('canvas');c2.width=c2.height=W;const x2=c2.getContext('2d');x2.fillStyle='#ccc';x2.fillRect(0,0,W,W);
+      x2.drawImage(await asmImg(keep.img),0,0,W,W,-140,0,W*.8,W*.8);renders[jkey]={...keep,img:c2.toDataURL('image/jpeg',.9)};out.collage=await asmPhoto(o);out.bad=asmBad.has(jkey);renders[jkey]=keep;asmBad.clear();
       // on Today: the assembled picture stands in for the outfit's photo, unless a photo was made for this outfit after the master
       out.forBefore=asmFor(o);asmTried.clear();await asmEnsure(o);const a=asmFor(o);out.forAfter=!!a&&a.model==='assembled'&&a.img.length>40000;out.keptOut=!!(await metaGet('asm:out:'+asmOutKey(o)));
       renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OLD',model:'gpt',t:500};out.overOld=renderFor(o).model;
@@ -142,7 +144,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       {let made=0,redraws=0;const p0=asmPhoto,r0=refreshToday;asmPhoto=async x=>{made++;return p0(x)};refreshToday=()=>{redraws++};
         try{asmTried.clear();await asmEnsure(o);await asmEnsure(o)}finally{asmPhoto=p0;refreshToday=r0}out.fullLoop={made,redraws}}
       delete renders[comboKey(o)];
-      renders[asmPieceKey('tie',tie)]={...keep,t:3000};out.stale=asmFor(o);renders[asmPieceKey('tie',tie)]=keep;
+      renders[jkey]={...keep,t:3000};out.stale=asmFor(o);renders[jkey]=keep;
       // the jobs
       const mj=await asmMasterJob(),cj=asmCalibJob('tie'),tj=await asmPieceJob('tie',{...tie,photo:await url('tie')}),bj=await asmPieceJob('bar',clip),sj=await asmPieceJob('shirt',{...black,photo:await url('shirt-black')}),jj=await asmPieceJob('jacket',{...jk,photo:await url('jacket')}),wj=await asmPieceJob('watch',{...gold,photo:await url('watch')});
       out.jobs={mj:{...mj,image:mj.image.slice(0,30)},cj,tj:{...tj,refs:tj.refs.length},bj,sj:{...sj,refs:sj.refs.length},jj:{...jj,refs:jj.refs.length},wj:{...wj,refs:wj.refs.length}};out.masterUrl=await url('master');out.tieJob=tj;
@@ -169,7 +171,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(k.drift.slice(0,3).every(v=>v<.06)&&k.drift[3]>.3&&k.collage===null&&k.bad,`a real piece leaves the rest of the picture alone; one that moved the figure is refused (${k.drift.map(v=>(100*v).toFixed(1)+'%').join(', ')} changed outside the piece)`);
     ok(k.forBefore===null&&k.forAfter&&k.keptOut&&k.overOld==='assembled'&&k.underNew==='gpt'&&k.stale===null,'Today takes the assembled picture (kept on the device) over an older photo of the outfit; a photo made after the master wins, and a piece made again makes the picture stale');
     ok(k.fullLoop.made===0&&k.fullLoop.redraws===0,`an outfit whose own photo wins (after a Regenerate) is not put together and Today is not redrawn for it: that looped and froze swiping and scrolling (${k.fullLoop.made} assembled, ${k.fullLoop.redraws} redraws)`);
-    ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===1&&k.needs.split('piece:tie').length===3&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt, a plain shirt (painted on the device) or the master's watch (${k.needs})`);
+    ok(/^master: calib:jacket calib:shirt calib:tie calib:watch( piece:\w+)+$/.test(k.needs)&&k.needs.split('piece:shirt').length===1&&k.needs.split('piece:tie').length===1&&k.needs.split('piece:watch').length===2,`the wardrobe needs the master, four calibration photos and one piece per look: not the white shirt, a plain shirt or a tie (painted on the device) or the master's watch (${k.needs})`);
     const J=k.jobs;
     ok(J.mj.mode==='queue'&&J.mj.master===true&&J.mj.quality==='high'&&/^data:image\/png/.test(J.mj.image)&&/mid grey suit/.test(J.mj.outfit)&&/green tie/.test(J.mj.outfit)&&/plain white dress shirt/.test(J.mj.outfit)&&J.mj.size==='2048x2048','the master job is a normal outfit photo of the master\'s clothes (plain mid grey suit, white shirt, green tie), marked as the master, at high quality and 2048 ('+J.mj.size+')');
     ok(J.cj.baseKey===J.mj.key&&J.cj.swap.what==='tie'&&/magenta/.test(J.cj.swap.text)&&J.tj.baseKey===J.mj.key&&J.tj.swap.what==='tie'&&/navy & pink stripe tie/.test(J.tj.swap.text)&&J.tj.refs===1,'calibration and piece jobs edit the kept master (by its key) and swap one piece, with the item\'s own photo');
@@ -230,25 +232,25 @@ module.exports=async({ok,chromium,url,ROOT})=>{
           const o=planFor()[key(sel)];return {can:asmCan(o),master:asmMasterKey(),sig:asmMasterSig({watch:o.watch,shirt:asmMasterItem('shirt','white')}),calib:['jacket','shirt','tie','watch'].map(asmCalibKey),
             jacket:asmPieceKey('jacket',o.top),shirt:asmPieceKey('shirt',o.shirt),tie:asmPieceKey('tie',o.tie),combo:comboKey(o)}});
         const keep=(k,f,sig='')=>store.set('render:'+k,JSON.stringify({sig,img:fx(f),model:'m',t:1000}));
-        keep(K.master,'master',K.sig);['jacket','shirt-black','tie','watch'].forEach((f,i)=>keep(K.calib[i],f));keep(K.jacket,'jacket');keep(K.shirt,'shirt-pink');   // the tie's photo is not made yet
+        keep(K.master,'master',K.sig);['jacket','shirt-black','tie','watch'].forEach((f,i)=>keep(K.calib[i],f));keep(K.shirt,'shirt-pink');   // the jacket's photo is not made yet (the shirt and the tie are painted on the device)
         const s1=await a.evaluate(async()=>{show('today');const st=await asmSync(true);return {missing:st.missing.map(n=>n.kind+':'+n.slot).join(),total:st.total,have:['master','jacket','shirt'].length,btn:(document.querySelector('.render-btn')||{}).textContent||'',photo:!!document.querySelector('.fig.photo img')}});
-        ok(K.can&&s1.missing==='piece:tie'&&s1.total===2&&!s1.photo&&/Generate realistic photo/.test(s1.btn),`the app brings the master and the item photos home and knows what is still to make (${s1.missing}); an outfit with a piece missing shows its drawing and Generate`);
+        ok(K.can&&s1.missing==='piece:jacket'&&s1.total===1&&!s1.photo&&/Generate realistic photo/.test(s1.btn),`the app brings the master and the item photos home and knows what is still to make (${s1.missing}); an outfit with a piece missing shows its drawing and Generate`);
         await a.click('.render-btn');await a.waitForFunction(()=>!rendering,null,{timeout:15000});
-        const job=JSON.parse(store.get('job:'+K.tie)||'null');
-        ok(sent.length===1&&sent[0].key===K.tie&&job&&job.swap.what==='tie'&&job.baseKey===K.master&&!job.image&&!store.has('job:'+K.combo)&&/Making photo/.test(await a.textContent('.render-btn')),'Generate sends only the missing item (the tie, as an edit of the master), not a whole outfit photo, and says it is being made');
-        await drain();ok(made===1&&store.has('render:'+K.tie),'the worker makes the tie\'s photo from the kept master');
+        const job=JSON.parse(store.get('job:'+K.jacket)||'null');
+        ok(sent.length===1&&sent[0].key===K.jacket&&job&&job.swap.what==='jacket'&&job.baseKey===K.master&&!job.image&&!store.has('job:'+K.combo)&&/Making photo/.test(await a.textContent('.render-btn')),'Generate sends only the missing item (the jacket, as an edit of the master), not a whole outfit photo, and says it is being made');
+        await drain();ok(made===1&&store.has('render:'+K.jacket),'the worker makes the jacket\'s photo from the kept master');
         await a.evaluate(()=>checkQueue());await a.waitForSelector('.fig.photo img',{timeout:15000});
         const s2=await a.evaluate(()=>{const o=planFor()[key(sel)],r=asmFor(o);return {shown:!!r&&document.querySelector('.fig.photo img').src===r.img,model:r&&r.model,btn:!!document.querySelector('.render-btn'),queued:queuedKeys().length}});
         ok(s2.shown&&s2.model==='assembled'&&!s2.btn&&s2.queued===0,'when it arrives, Today shows the outfit put together from the item photos, with no Generate button left');
         // Settings: Item photos
         const s3=await a.evaluate(async()=>{openSettings('photos');await asmSync(true);return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,dis:document.querySelector('#asm-btn').disabled,auto:document.querySelector('#cfg-asm-auto').value,batch:batchCombos().length}});
-        ok(/^All 2 item photos are here\./.test(s3.st)&&s3.dis&&s3.auto==='on'&&s3.batch===0,`Settings says every item photo is here, and the month batch no longer offers whole photos for outfits that are put together ("${s3.st}")`);
+        ok(/^All 1 item photos? (is|are) here\./.test(s3.st)&&s3.dis&&s3.auto==='on'&&s3.batch===0,`Settings says every item photo is here, and the month batch no longer offers whole photos for outfits that are put together ("${s3.st}")`);
         // a new item: its photo is made by itself
-        sent=[];const s4=await a.evaluate(async()=>{const it={id:'tie-new',type:'tie',primaryColor:'green',pattern:'solid'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));return {key:asmPieceKey('tie',it),toast:(document.querySelector('.toast')||document.querySelector('#toast')||{}).textContent||''}});
-        ok(sent.length===1&&sent[0].key===s4.key&&/green tie/.test(s4.toast),`adding an item sends its photo to be made, and says so ("${s4.toast}")`);
-        sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'tie-new2',type:'tie',primaryColor:'gold',pattern:'solid'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
+        sent=[];const s4=await a.evaluate(async()=>{const it={id:'suit-new',type:'suit',primaryColor:'green',pattern:'pinstripe',secondaryColor:'white'}   /* a solid suit is painted: no photo */;await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));return {key:asmPieceKey('jacket',it),toast:(document.querySelector('.toast')||document.querySelector('#toast')||{}).textContent||''}});
+        ok(sent.length===1&&sent[0].key===s4.key&&/green & white pinstripe suit/.test(s4.toast),`adding an item sends its photo to be made, and says so ("${s4.toast}")`);
+        sent=[];const s5=await a.evaluate(async()=>{setAsmAuto('off');const it={id:'suit-new2',type:'suit',primaryColor:'brown',pattern:'twill'};await put(it);items.push(it);cache={};await new Promise(r=>setTimeout(r,900));
           await asmSync(true);renderAsmUI();return {st:document.querySelector('#asm-status').textContent,btn:document.querySelector('#asm-btn').textContent,auto:settings.asmAuto}});
-        ok(sent.length===0&&s5.auto===false&&/1 to make, about 14¢/.test(s5.st)&&/gold tie/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
+        ok(sent.length===0&&s5.auto===false&&/1 to make, about 14¢/.test(s5.st)&&/brown twill suit/.test(s5.st)&&s5.btn==='Make 1 photo',`with that switched off the item waits for the button, which says what it costs ("${s5.st}")`);
         await a.evaluate(()=>{const f=document.querySelector('#adv-photos');if(!f.classList.contains('open'))f.querySelector('.adv-head').click()});await a.click('#asm-btn');await a.click('#ask-ok');await a.waitForFunction(()=>/Making/.test(document.querySelector('#asm-btn').textContent),null,{timeout:15000});
         const st6=await a.textContent('#asm-status');
         ok(sent.length===1&&/2 photos are being made/.test(st6),`the button sends it after asking, and Settings says the worker is making them ("${st6}", ${sent.length} sent)`);

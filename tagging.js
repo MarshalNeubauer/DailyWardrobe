@@ -277,11 +277,16 @@ function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
   return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the simple pattern</button></p>`:''}
 /* once: Claude-read patterns saved without a pattern box were exposure-matched to the whole item photo (wall and all, a navy
    pinstripe came out lavender): recolour them from the saved reading and the close-up, no new call to Claude */
-async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='1')return 0;let n=0;
-  for(const it of items)if(it.patternSpec&&it.patternSpec.across&&it.sett&&it.sett.src==='claude+pixels'&&!it.pbox&&it.texture)try{
-    const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
-    const s=settFromSpec(it.patternSpec,{tex:c,type:it.type});if(s&&JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
-  localStorage.setItem('spec_recolour','1');if(n)cache={};return n}
+/* (2: again, once, after settFromSpec took the ground from the pixels nearest Claude's ground and stopped dulling tie stripes) */
+/* (3: again, and now readings with a pattern box too, read as a new reading is (rereadSett): the box in the sharp copy kept on this
+   device, else in the item photo. Skipped before, the owner's khaki windowpane blazer kept dull lines (#e0d9c9 for Claude's #eeeadf) */
+async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3')return 0;let n=0;
+  const canvasOf=async src=>{if(!src)return null;const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c};
+  for(const it of items)if(it.patternSpec&&it.patternSpec.across&&it.sett&&it.sett.src==='claude+pixels'&&it.texture)try{
+    const c=await canvasOf(it.texture),full=it.pbox?await canvasOf(await tagImgOf(it.id)||it.photo):null;
+    const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
+    if(s&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
+  localStorage.setItem('spec_recolour','3');if(n)cache={};return n}
 /* Settings: Claude reads the weave of every textured shirt with a close-up that has no reading yet, one at a time */
 const weavePool=()=>items.filter(i=>texPat(i.type,i.pattern)&&i.texture&&!(i.sett&&(i.sett.tex||i.sett.motif)));let weaveRun=null;
 function renderWeaveUI(){const el=$('#weave-box');if(!el)return;const n=weavePool().length;
@@ -402,7 +407,7 @@ function cropCanvas(c,box){const x=box.x/1000*c.width,y=box.y/1000*c.height,w=Ma
 function settFromSpec(spec,{tex,full,box,wb,type}){
   const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
   let src=null;try{src=tex?settCanvas(tex,wbRead(tex).ref?null:wb):full&&box?cropCanvas(settCanvas(full,wb),box):null}catch{}
-  const labs=src?sampleLabs(src):[],ground=labs.length?medLab(labs):null;
+  const labs=src?sampleLabs(src):[],ground=labs.length?medLab(labs):null;   // the whole cloth's median: for the exposure match only (below)
   // the close-up's exposure matched to the item photo's (the median of the patterned area in each); only with the pattern's box:
   // a whole photo's median takes in the wall and the next jackets (it turned a navy pinstripe lavender)
   let delta=[0,0,0];if(tex&&full&&box&&ground)try{const g2=medLab(sampleLabs(cropCanvas(settCanvas(full,wb),box)));delta=g2.map((v,k)=>v-ground[k])}catch{}
@@ -410,15 +415,25 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
   const threads=new Map();for(const d of [spec.across,spec.along])if(d)for(const b of d.bands){const t=threads.get(b.hex)||{share:0,role:b.role};t.share+=b.w/(spec.along?2:1);if(b.role==='ground')t.role='ground';threads.set(b.hex,t)}
   const dist=(x,y)=>Math.hypot((x[0]-y[0])/2,1.4*(x[1]-y[1]),1.4*(x[2]-y[2])),dE76=(x,y)=>Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2]);
   const groundHex=[...threads].filter(([,t])=>t.role==='ground').sort((a,b)=>b[1].share-a[1].share)[0];
-  const colour=new Map();
+  const colour=new Map(),near=(cl,share,from)=>{const top=from.slice().sort((a,b)=>dist(a,cl)-dist(b,cl)).slice(0,Math.max(12,Math.round(from.length*share*.5)));
+    return top.length>=6?[0,1,2].map(j=>top.reduce((s,p)=>s+p[j],0)/top.length):null};
+  // the ground: the pixels nearest Claude's ground colour, like the lines. It was the median of the whole close-up, which is the ground
+  // only when the ground covers most of the cloth: on the owner's half-navy, half-blue repp stripe it landed between the two (#344a71
+  // for Claude's #1e2347), and his navy came out slate
+  // (a ground covering most of the cloth, 70% or more, keeps the median: it is the ground there, and it was tuned on the owner's photos)
+  const gl=groundHex&&labs.length&&groundHex[1].share<.7?near(L(groundHex[0]),groundHex[1].share,labs):null,gref=gl||ground;
   for(const [hex,t] of threads){const cl=L(hex);let m=null;
-    if(labs.length){if(groundHex&&hex===groundHex[0])m=ground;
-      else{const cand=labs.filter(p=>dE76(p,ground)>6).sort((a,b)=>dist(a,cl)-dist(b,cl)),k=Math.max(12,Math.round(labs.length*Math.min(.2,t.share)*.5)),top=cand.slice(0,k);
-        if(top.length>=6)m=[0,1,2].map(j=>top.reduce((s,p)=>s+p[j],0)/top.length)}
+    if(labs.length){if(groundHex&&hex===groundHex[0])m=gref;
+      else{const cand=labs.filter(p=>dE76(p,gref)>6);m=near(cl,Math.min(.2,t.share),cand);
+        // a thin line (10% of the repeat or less, all its stripes together) is a few pixels wide in a close-up and blurred with the ground beside it: of its
+        // pixels, the half furthest from the ground (a tie's thin white edging read #b6b9b8, light grey, beside a grey band)
+        if(m&&t.share<=.1){const top=cand.slice().sort((a,b)=>dist(a,cl)-dist(b,cl)).slice(0,Math.max(12,Math.round(cand.length*t.share*.5))).sort((a,b)=>dE76(b,gref)-dE76(a,gref)),h=top.slice(0,Math.max(6,top.length>>1));
+          m=[0,1,2].map(j=>h.reduce((s,p)=>s+p[j],0)/h.length)}}
       // a coloured thread that reads grey in the pixels keeps the pixels' lightness and takes Claude's hue
       if(m&&t.role!=='ground'&&C(cl)>10&&C(m)<.6*C(cl)){const s=Math.max(C(m),.75*C(cl))/C(cl);m=[m[0],cl[1]*s,cl[2]*s]}
-      // a line's threads cross the ground's (a white line reads cream, not paper white): a quarter of the ground's lightness
-      if(m&&t.role!=='ground')m=[.75*m[0]+.25*ground[0],m[1],m[2]]}
+      // a line's threads cross the ground's (a white line reads cream, not paper white): a quarter of the ground's lightness. Not on a
+      // tie: its stripes are woven floats of their own yarn, and the mix darkened a blue stripe and turned a thin white line grey
+      if(m&&t.role!=='ground'&&type!=='tie')m=[.75*m[0]+.25*gref[0],m[1],m[2]]}
     if(m)colour.set(hex,m)}
   // the measured ground far (ΔE00 over 15) from Claude's: first without the exposure match, else Claude's colours
   const gm=groundHex&&colour.get(groundHex[0]),gc=groundHex&&L(groundHex[0]),far=d=>gm&&dE00(gm.map((v,k)=>v+d[k]),gc)>15;
