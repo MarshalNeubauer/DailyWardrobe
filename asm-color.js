@@ -72,7 +72,7 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
   const it=asmCmItems(o,kind),cloth={};
   for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)};
     if(z==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
-    else if((z==='jacket'||z==='waistcoat')&&(asmSuitBands(i)||(typeof asmSuitTwill==='function'&&asmSuitTwill(i)))){try{const T=typeof asmSuitTexFor==='function'?await asmSuitTexFor(i):await asmSuitTex(i);if(T)c.suit=T}catch(e){console.warn('suit cloth',e)}}   // a band reading, or a plain twill (its ribs: asmTwillTex)
+    else if((z==='jacket'||z==='waistcoat')&&(asmSuitBands(i)||(typeof asmSuitTwill==='function'&&asmSuitTwill(i))||(typeof asmSuitTweed==='function'&&asmSuitTweed(i)))){try{const T=typeof asmSuitTexFor==='function'?await asmSuitTexFor(i):await asmSuitTex(i);if(T)c.suit=T}catch(e){console.warn('suit cloth',e)}}   // a band reading, a plain twill (its ribs: asmTwillTex) or a tweed (asmTweedTex)
     // a jacket or trousers with no stripe or check reading (and not a plain twill jacket: above) is its colour: the swatch's drawing of
     // a fine weave, tiled over a whole jacket, was a field of dots and dashes (the owner's light grey twill)
     else if(z==='shirt'||(z==='trousers'&&(usableSett(i)||{}).bands)){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
@@ -190,7 +190,7 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
   const cl={};for(const [z,c] of Object.entries(job.cloth||{})){const e={flat:hexLin(c.hex)};
     if(c.suit)e.suit=c.suit;else if(c.tie&&tg){e.tie=c.tie;e.rep=(c.tie.motif?2:1)*tg.bw/Math.max(.5,c.tie.across||1.5);e.repv=e.rep*c.tie.TH/c.tie.TW}
     else if(c.tile){e.tile=c.tile;e.rep=c.tile.mm*P.pxmm;e.repv=e.rep*c.tile.TH/c.tile.TW}cl[z]=e}
-  const lin2=Object.values(cl).some(e=>e.suit&&e.suit.linen)?asmLinenTile():null,cm=[0,0,0],tmp=[0,0,0];
+  const lin2=Object.values(cl).some(e=>e.suit&&e.suit.linen)?asmLinenTile():null,td2=Object.values(cl).some(e=>e.suit&&e.suit.tweed)?asmTweedTile():null,cm=[0,0,0],tmp=[0,0,0];
   // the app's suit cloth (asmSuitPaintTex) with this picture's coordinates and light
   const suitCol=(T,k,x,y,sh,out)=>{const rep=T.mm*ASM_PX_MM*ls,repv=rep*T.TH/T.TW;cm[0]=cm[1]=cm[2]=0;
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);asmCmAt(T,c[0]/rep,c[1]/repv,cm)}
@@ -198,8 +198,11 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     if(T.k!=null){const c=uvAt(k,x+.5,y+.5),si=Math.floor(c[0]/rep-T.loff+.5),tt=c[1]/(T.blen*ls),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),
         hh=j=>((Math.imul(si|0,374761393)^Math.imul(j|0,668265263))>>>0)%2048/1024-1,nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
       for(let q=0;q<3;q++)cm[q]=4*T.g[q]+(cm[q]-4*T.g[q])*T.k*nz;sh=T.gain*Math.pow(sh,T.gam)}
-    if(T.linen&&lin2||hb){const c=uvAt(k,x+.5,y+.5);
-      if(T.linen&&lin2){const u=Math.floor(c[0]/ls),v=Math.floor(c[1]/ls);sh*=lin2.r[(((v%lin2.T)+lin2.T)%lin2.T)*lin2.T+(((u%lin2.T)+lin2.T)%lin2.T)]}
+    if(T.linen&&lin2||T.tweed&&td2||hb){const c=uvAt(k,x+.5,y+.5);
+      // a tweed (asmSuitPaintTex's rule): sampled upright in the picture, its flecks in the second colour
+      if(T.tweed&&td2){const u=Math.floor(x/ls),v=Math.floor(y/ls),li=(((v%td2.T)+td2.T)%td2.T)*td2.T+(((u%td2.T)+td2.T)%td2.T);sh*=td2.r[li];
+        if(T.c2&&td2.f[li])for(let q=0;q<3;q++)cm[q]=cm[q]*(1-T.fmix)+4*T.c2[q]*T.fmix}
+      else if(T.linen&&lin2){const u=Math.floor(c[0]/ls),v=Math.floor(c[1]/ls);sh*=lin2.r[(((v%lin2.T)+lin2.T)%lin2.T)*lin2.T+(((u%lin2.T)+lin2.T)%lin2.T)]}
       else{const pitch=4*ls,cw=C.cw?C.cw*ls:0,off=C.off?C.off*ls:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
           h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
