@@ -1047,7 +1047,10 @@ function ovlItem(i){const s=usableSett(i),sp=i.patternSpec&&i.patternSpec.across
   const g=b.reduce((a,x)=>x[1]>a[1]?x:a)[0];let need=0;for(const x of b)if(x[0]&&x[0]!==g&&x[1]<OVL_LINE){need+=OVL_LINE-x[1];x[1]=OVL_LINE}
   const gw=b.filter(x=>!x[0]||x[0]===g).reduce((a,x)=>a+x[1],0);if(gw>need)for(const x of b)if(!x[0]||x[0]===g)x[1]*=1-need/gw;
   return {...i,sett:{...s,bands:b}}}
-const ovlSvg=i=>{const v=swatchSVG(ovlItem(i),true);if(i.type!=='tie')return v;
+// a shirt's figured weave: its soft tile swapped for the higher-fidelity one (texTileSmooth: rounded outlines and a thread grain)
+const ovlWeave=(i,v)=>{const s=usableSett(i),t=s&&s.tex;if(i.type!=='shirt'||!t||!t.grid||t.kind==='herringbone'||t.kind==='twill'||patBase(i.pattern)==='solid')return v;
+  const [lo,hi]=texTones(colOf(i),t,1.7),old=texTileUrl(t.grid,lo,hi),nu=old&&texTileSmooth(t.grid,lo,hi);return old&&nu&&v.includes(old)?v.split(old).join(nu):v};
+const ovlSvg=i=>{const v=ovlWeave(i,swatchSVG(ovlItem(i),true));if(i.type!=='tie')return v;
   return v.replace(/<pattern ([^>]*?)>/,(m,a)=>/patternTransform="/.test(a)?`<pattern ${a.replace(/patternTransform="([^"]*)"/,'patternTransform="$1 scale(.5)"')}>`:`<pattern ${a} patternTransform="scale(.5)">`)};
 /* the real cloth where it reads (the owner's choice, 2026-11-13): an item's precision swatch (the square cut from its close-up, white-balanced
    and matched to its colour: item.swatch with swSrc 'tex') for a tie, and for a plain or finely woven jacket; a shirt is always drawn, and a

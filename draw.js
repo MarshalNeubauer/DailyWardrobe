@@ -27,6 +27,21 @@ function texTileUrl(grid,lo,hi){if(typeof document==='undefined')return null;con
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0,n=0;for(let dy=-r;dy<=r;dy+=1)for(let dx=-r;dx<=r;dx+=1){s+=on(q+dx,y+dy);n++}const w=s/n,i=4*(y*W+q);
     for(let k=0;k<3;k++)D.data[i+k]=Math.round(A[k]+(B[k]-A[k])*w);D.data[i+3]=255}
   x.putImageData(D,0,0);const url=c.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
+/* the same bitmap at higher fidelity, for Today's swatch overlay (the owner's choice, 2026-11-13: "Smooth + thread grain" from four
+   mockups; the soft tile read blurry and a sharp one as pixel steps): 24 px a cell, blurred by a wrapping Gaussian TEX_SMOOTH_SIG of a cell
+   and cut by a narrow smoothstep, so the figures' outlines are rounded and anti-aliased; then a faint diagonal thread grain (±TEX_GRAIN,
+   a third of a cell apart). Cached; null without a DOM. */
+const TEX_SMOOTH_S=24,TEX_SMOOTH_SIG=.32,TEX_GRAIN=.035;
+function texTileSmooth(grid,lo,hi){if(typeof document==='undefined')return null;const key='s'+grid.join('/')+lo+hi;if(TEX_TILES.has(key))return TEX_TILES.get(key);
+  const S=TEX_SMOOTH_S,M=grid[0].length,N=grid.length,W=M*S,H=N*S,f=new Float32Array(W*H),g=new Float32Array(W*H);
+  for(let y=0;y<H;y++)for(let q=0;q<W;q++)f[y*W+q]=grid[Math.floor(y/S)][Math.floor(q/S)]==='1'?1:0;
+  const sg=TEX_SMOOTH_SIG*S,R=Math.ceil(3*sg),k=[];for(let o=-R;o<=R;o++)k.push(Math.exp(-o*o/(2*sg*sg)));const ks=k.reduce((a,b)=>a+b);
+  for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0;for(let o=-R;o<=R;o++)s+=k[o+R]*f[y*W+((q+o)%W+W)%W];g[y*W+q]=s/ks}
+  for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0;for(let o=-R;o<=R;o++)s+=k[o+R]*g[(((y+o)%H+H)%H)*W+q];f[y*W+q]=s/ks}
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi),P=Math.round(S/3);
+  for(let y=0;y<H;y++)for(let q=0;q<W;q++){const t=Math.min(1,Math.max(0,(f[y*W+q]-.42)/.16)),w=t*t*(3-2*t),gr=1+TEX_GRAIN*(((q+y)%P)/P<.5?1:-1),i=4*(y*W+q);
+    for(let j=0;j<3;j++)D.data[i+j]=Math.max(0,Math.min(255,Math.round((A[j]+(B[j]-A[j])*w)*gr)));D.data[i+3]=255}
+  x.putImageData(D,0,0);const url=c.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
 function fabricDef(id,item,role,ctx){
   const b=colOf(item),a=accentOf(item),t3=thirdOf(item),c=t3||a,p=patBase(item.pattern)||'solid',wool=role==='top'||role==='bot';

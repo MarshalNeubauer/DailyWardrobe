@@ -29,6 +29,17 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(pick.tie==='close-up'&&pick.twill==='close-up',`a tie and a twill suit show their close-up (${JSON.stringify(pick)})`);
     ok(pick.dobby==='drawn',"a shirt is always drawn, even with a close-up (the owner's choice)");
     ok(pick.pin==='drawn'&&pick.gingham==='drawn'&&pick.bare==='drawn'&&pick.photo==='drawn','a pinstripe suit and a gingham shirt stay drawn, as does an item with no close-up or a swatch cut from its photo');
+    // a shirt's figured weave is drawn at higher fidelity in the overlay only (the owner's choice: smooth shapes with a thread grain)
+    const wv=await p.evaluate(async()=>{const grid=['10000001','01000010','00100100','00011000','00011000','00100100','01000010','10000001'];
+      const sh={id:'dw',type:'shirt',primaryColor:'lightblue',pattern:'dobby',sett:{v:4,tex:{kind:'diamond',grid,lighter:'raised',contrast:.3,rel:.12}}};
+      const [lo,hi]=texTones(colOf(sh),sh.sett.tex,1.7),soft=texTileUrl(grid,lo,hi),sm=texTileSmooth(grid,lo,hi),ov=ovlSvg(sh),list=swatchSVG(sh,true);
+      const im=new Image();im.src=sm;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);
+      const d=x.getImageData(0,0,c.width,c.height).data,ls=new Set();for(let k=0;k<d.length;k+=4)ls.add(d[k]+','+d[k+1]+','+d[k+2]);
+      const hb={...sh,id:'hb',pattern:'herringbone',sett:{v:4,tex:{kind:'herringbone',grid:['10','01'],rel:.1}}};
+      return {smooth:ov.includes(sm)&&!ov.includes(soft),list:list.includes(soft)&&!list.includes(sm),w:im.width,tones:ls.size,hb:ovlWeave(hb,'unchanged')==='unchanged'}});
+    ok(wv.smooth&&wv.list,'a shirt weave in the overlay is the smooth tile; the pieces list keeps its own');
+    ok(wv.w===8*24&&wv.tones>40,`the smooth tile is 24 px a cell with anti-aliased, grained tones (${wv.w} px, ${wv.tones} tones)`);
+    ok(wv.hb,'a herringbone shirt is drawn as before');
     const css=await p.evaluate(()=>{const d=document.createElement('div');d.className='fig';d.innerHTML=swatchStack({top:items.find(i=>i.type==='suit'),shirt:items.find(i=>i.type==='shirt'),tie:items.find(i=>i.type==='tie')},true);
       document.body.appendChild(d);const s=getComputedStyle(d.querySelector('.swstack')),b=d.querySelector('.ovsw').getBoundingClientRect(),c=getComputedStyle(d.querySelector('.ovsw'));
       const o={pe:s.pointerEvents,bottom:s.bottom,w:Math.round(b.width),border:c.borderTopWidth};d.remove();return o});
