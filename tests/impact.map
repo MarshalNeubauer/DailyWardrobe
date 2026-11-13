@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	1a562125fe143cc4840a
+# tested	44d3e9335ec0afb43cbe
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -164,7 +164,7 @@ asmatlas.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmatlas.test.js	tools/atlas.js	<any>
-asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	fetch	getRender	handleSync	isParted	kvMeta	orNull	putRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	utcDay	whoIs
+asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	fetch	getRender	handleInvites	handleMe	handleSync	isParted	kvMeta	orNull	ownerOnly	putRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	usedOf	utcDay	whoIs
 asmcolor.test.js	<every page test>	<every page test>
 asmcolor.test.js	account.js	acctCall	iosDevice	iosInSafari	loadAccount	rememberRole	renderAccountUI
 asmcolor.test.js	app.js	@addEventListenerpopstate	@tocolnavigator.serviceWorker.registersw.js.catch	aAn	addTombstones	appPush	atomic	backupSummary	cap1	comboKey	comboSig	countryName	esc	fnv64	hasOutfit	isoDate	itemDesc	itemKey	keepRender	keyDate	lockUpcoming	lookSig	metaPut	missingItemPics	monthFillSoon	monthLink	openSettings	planOn	recordDays	renderDaysOffUI	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	resetCard	setCatOpen	settingsSummaries	shirtPatterned	shirtTextured	shortDate	unit	workerBase
@@ -2474,7 +2474,7 @@ todayswatch.test.js	app.js	aAn	belowBox	comboKey	comboSig	esc	fetchItemPic	fetch
 todayswatch.test.js	apple-touch-icon.png	<loaded>
 todayswatch.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	hasVest	hexRgb	inRotation	itemName	itemTitle	lum	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	typeWord
 todayswatch.test.js	detect.js	texPat	tieWeave	usableSett
-todayswatch.test.js	draw.js	buckleDefs	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	swatchSVG
+todayswatch.test.js	draw.js	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	swatchSVG
 todayswatch.test.js	icon-192.png	<loaded>
 todayswatch.test.js	icon-512.png	<loaded>
 todayswatch.test.js	index.html	<loaded>
