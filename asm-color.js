@@ -107,7 +107,7 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
   for(const z of names){const a=A[z];
     if(KEEP.has(z)){const idx=[];for(let k=0;k<N;k++)if(a[k]&&a[k]<CLEAN)idx.push(k);const I=Int32Array.from(idx),C=new Float32Array(3*I.length);
       for(let q=0;q<3;q++){const v=new Float32Array(N);for(let k=0;k<N;k++)v[k]=L[M[4*k+q]];const o=pushOut(a,v);for(let i=0;i<I.length;i++)C[3*i+q]=o[I[i]]}
-      const map=new Int32Array(N).fill(-1);for(let i=0;i<I.length;i++)map[I[i]]=i;keep[z]={map,C};continue}
+      keep[z]={I,C};continue}   // (the edge pixels in order: looked up by binary search, a map over every pixel was 33 MB a zone at 2880)
     const sh=z==='shirt',ref=pct(a,sh?.9:.75)||1,cap=sh?1.15:1.6,v=new Float32Array(N);for(let k=0;k<N;k++)v[k]=Math.min(cap,Y[k]/ref);
     const o=pushOut(a,v),u=new Uint16Array(N);for(let k=0;k<N;k++)u[k]=Math.round(Math.max(0,o[k])*40000);shade[z]=u}
   const P={kind:job.cm,S,N,M,A,names,shade,keep,geo:null,tieGeo:null,cuff:null,cuffAng:[0],pxmm:ASM_PX_MM*S/ASM_SIZE*K.pxmm};
@@ -178,9 +178,22 @@ function asmCmAt(T,u,v,o){const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*
 /* the picture: the master with every garment painted, at the job's size, then at 2048 as a JPEG data URL */
 /* the masters' colour-free parts are kept: one on a phone (2048: about 80 MB each), all four on the computer's pre-build (2880),
    where looks of several masters come one after another and each part took about 10 s to work out again */
+/* (the computer's pre-build, job.diskCache) a master's colour-free part is also saved in this browser's IndexedDB, so a restart reads it
+   back in a few seconds instead of working it out again (about 15 s a master at 2880). Its key carries the source of the functions that
+   make it, so a change to how it is worked out never reads an old one; a master's older parts are deleted when a new one is saved. */
+const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(36)};
+let asmCmSrc=null;
+const asmCmSrcSig=()=>asmCmSrc||(asmCmSrc=asmCmHash([asmCmPrep,asmCmRefit,asmSleeveSegs,asmTubeTabs,asmSleeveFlow,asmBodyFlow,asmData].map(String).join('|')));
+function asmCmDb(){return new Promise((ok,no)=>{const q=indexedDB.open('dw-asm-prep',1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
+async function asmCmDiskGet(k){try{const db=await asmCmDb();return await new Promise(ok=>{const q=db.transaction('p').objectStore('p').get(k);q.onsuccess=()=>{ok(q.result||null);db.close()};q.onerror=()=>{ok(null);db.close()}})}catch{return null}}
+async function asmCmDiskPut(k,P,prefix){try{const db=await asmCmDb();await new Promise(ok=>{const t=db.transaction('p','readwrite'),st=t.objectStore('p');
+    const q=st.getAllKeys();q.onsuccess=()=>{for(const x of q.result||[])if(String(x).startsWith(prefix)&&x!==k)st.delete(x);st.put(P,k)};t.oncomplete=()=>{db.close();ok()};t.onerror=t.onabort=()=>{db.close();ok()}})}catch(e){console.warn('could not save the master',e)}}
 async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size,keep=job.size>ASM_SIZE?4:1;
   if(!asmCmMem||!asmCmMem.list)asmCmMem={list:[]};let hit=asmCmMem.list.find(e=>e.key===key);
-  if(!hit){while(asmCmMem.list.length>=keep)asmCmMem.list.shift();hit={key,P:await asmCmPrep(job)};asmCmMem.list.push(hit)}
+  if(!hit){while(asmCmMem.list.length>=keep)asmCmMem.list.shift();const dk=job.cm+'|v'+ASM_CMV+'|'+asmCmSrcSig()+'|'+key;
+    let P=job.diskCache&&typeof indexedDB!=='undefined'?await asmCmDiskGet(dk):null;
+    if(!P){P=await asmCmPrep(job);if(job.diskCache&&typeof indexedDB!=='undefined')await asmCmDiskPut(dk,P,job.cm+'|')}
+    hit={key,P};asmCmMem.list.push(hit)}
   const P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
   const WALL=hexLin('#E6E2DC'),KEEP=new Set(['skin','watch','buckle','dark']),CLEAN=248;
@@ -213,7 +226,7 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
   const c=[0,0,0];
   for(let k=0;k<N;k++){let r=0,g=0,b=0;const x=k%S,y=(k-x)/S,j=4*k;
     for(let zi=0;zi<names.length;zi++){const z=names[zi],a8=A[z][k];if(!a8)continue;const a=a8/255;
-      if(KEEP.has(z)){const K=P.keep[z],i=K.map[k];if(i<0){c[0]=L[M[j]];c[1]=L[M[j+1]];c[2]=L[M[j+2]]}else{c[0]=K.C[3*i];c[1]=K.C[3*i+1];c[2]=K.C[3*i+2]}
+      if(KEEP.has(z)){const K=P.keep[z];let i=-1;if(a8<CLEAN){let lo=0,hi=K.I.length-1;while(lo<=hi){const m=(lo+hi)>>1,v=K.I[m];if(v===k){i=m;break}if(v<k)lo=m+1;else hi=m-1}}if(i<0){c[0]=L[M[j]];c[1]=L[M[j+1]];c[2]=L[M[j+2]]}else{c[0]=K.C[3*i];c[1]=K.C[3*i+1];c[2]=K.C[3*i+2]}
         if(c[1]>Math.max(c[0],c[2]))c[1]=Math.max(c[0],c[2]);   // the chroma-green wall left in a kept zone's edge (a green line along a fingertip)
         r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
       const s=P.shade[z][k]/40000,e=cl[z];let base;
