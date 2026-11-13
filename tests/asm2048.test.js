@@ -105,8 +105,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         return {up:[at(100,120),at(100,260)],fore:[at(200,340),at(380,340)],parts:[part(100,120),part(100,260),part(130,370),part(200,310),part(380,310)],mid:Math.abs(at(200,344)[0]-at(200,336)[0]),edge:Math.abs(at(200,378)[0]-at(200,370)[0])}})(),mean:+mean.toFixed(3),sd:+sd.toFixed(3)}});
     ok(pj.paint==='true,false,true'&&pj.mm===50,`a windowpane or a pinstripe read in bands is painted (a twill without a reading is still photographed), the windowpane's pane ${pj.mm} mm (550 mm / 11 across)`);
     ok(pj.linePx>=3.6,`its lines are painted in Claude's colours and bold: the 2% off-white line is ${pj.linePx} px at 2048 (it would be ${(.02*pj.mm*3.2).toFixed(1)}; 4 is the least, less a pixel of antialiasing)`);
-    {const T2=pj.tube,J=JSON.stringify;ok(pj.parts===1&&T2&&pj.body===0&&Math.abs(T2.up[0][0]-T2.up[1][0])<=2&&Math.abs(T2.up[1][1]-T2.up[0][1])>100&&Math.abs(T2.fore[0][0]-T2.fore[1][0])<=2&&Math.abs(T2.fore[1][1]-T2.fore[0][1])>150,
-      `a bent sleeve's stripes run along the upper arm (${J(T2&&T2.up)}) and along the forearm (${J(T2&&T2.fore)}) [across, along]`);
+    {const T2=pj.tube,J=JSON.stringify,lean=a=>Math.abs(a[0][0]-a[1][0])/Math.max(1,Math.abs(a[1][1]-a[0][1]));   // the stripe flow (ASM_SLEEVE_FLOW) leans them a little off the part's line
+      ok(pj.parts===1&&T2&&pj.body===0&&lean(T2.up)<=.2&&Math.abs(T2.up[1][1]-T2.up[0][1])>100&&lean(T2.fore)<=.2&&Math.abs(T2.fore[1][1]-T2.fore[0][1])>140,
+      `a bent sleeve's stripes run along the upper arm (${J(T2&&T2.up)}) and along the forearm (${J(T2&&T2.fore)}) [across, along], leaning at most 0.2 with the learned flow`);
       ok(T2&&T2.parts.join()==='0,0,1,1,1',`an elbow bent square has a crease: the forearm lies in front up to the elbow's outer corner and across its whole width, the upper arm's stripes stop at its top edge (parts ${T2&&T2.parts})`);
       ok(T2&&T2.edge>T2.mid*1.4,`a sleeve is a cylinder: 8 px at its edge hold ${T2&&T2.edge} px of cloth, 8 px at its middle ${T2&&T2.mid}`)}
     ok(pj.lparts===1&&Math.abs(pj.lapel-20)<4,`a lapel is one part, the pattern along its length (${pj.lapel}° from upright, drawn at 20°)`);

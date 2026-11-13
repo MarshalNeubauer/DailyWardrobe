@@ -469,7 +469,7 @@ const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp);   // the p
    within 22 L* of the master suit's median, not skin) is painted from the master's lightness alone, so no grey outline is left. The
    painted picture is the suit's piece (as a photo of the suit with its waistcoat would be), so asmCompose's jacket edge handling
    applies. Patterned suits (pinstripe, windowpane, twill, herringbone…) are still photographed. */
-const ASM_SUITV=6;   // how suits are painted: in the picture's key (5: pinstripes follow the body; 6: the edge fixes, so kept pictures are painted again)
+const ASM_SUITV=7;   // how suits are painted: in the picture's key (5: pinstripes follow the body; 6: the edge fixes, so kept pictures are painted again; 7: the sleeves' stripe flow)
 const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i.pattern)==='solid'&&!usableSett(i))||asmSuitBands(i));
 const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
 /* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
@@ -595,7 +595,7 @@ function asmSleeveSegs(masks,W,N){const seg=new Uint8Array(N),segs=[{cs:1,sn:0,c
           for(let i=Math.floor(t.n*.15);i<Math.ceil(t.n*.85);i++){const a=t.a0+(i+.5)*t.bs,c=t.c[i];n++;sa+=a;sc2+=c;saa+=a*a;sac+=a*c}
           const sl=n>2?(n*sac-sa*sc2)/Math.max(1e-6,n*saa-sa*sa):0,c0=n?(sc2-sl*sa)/n:0,d=nrm([p.dx+sl*p.nx,p.dy+sl*p.ny]);return [[p.x+c0*p.nx,p.y+c0*p.ny],d,med]};
         for(let it=0;it<2;it++){const a=re(g.parts[0]),b=re(g.parts[1]);g=mk(a[0],a[1],a[2]||Up.r*f,b[0],b[1],b[2]||Lo.r*f)}
-        segs.push(g);continue}}
+        segs.push(asmSleeveFlow(g));continue}}
     if(bent){const U=best.u,Lw=best.l,den=U.dx*Lw.dy-U.dy*Lw.dx,t=((Lw.x-U.x)*Lw.dy-(Lw.y-U.y)*Lw.dx)/den,E=[U.x+U.dx*t,U.y+U.dy*t],P0=onto(U,cell(A)),P2=onto(Lw,cell(B));
       const r=Math.min(.35*Math.hypot(P0[0]-E[0],P0[1]-E[1]),.35*Math.hypot(P2[0]-E[0],P2[1]-E[1]),30),tw=(P,d)=>{const l=Math.hypot(P[0]-E[0],P[1]-E[1])||1;return [E[0]+(P[0]-E[0])/l*d,E[1]+(P[1]-E[1])/l*d]},Q1=tw(P0,r),Q2=tw(P2,r);
       pts=[P0,Q1];for(let s2=1;s2<16;s2++){const u=s2/16,v=1-u;pts.push([v*v*Q1[0]+2*v*u*E[0]+u*u*Q2[0],v*v*Q1[1]+2*v*u*E[1]+u*u*Q2[1]])}pts.push(Q2,P2)}
@@ -663,13 +663,37 @@ function asmTubeTabs(g,mf,W,N){const bs=Math.max(2,Math.round(W/256)),sm=Math.ma
     for(let i=0;i<n;i++)c[i]=Math.max(-.35*med,Math.min(.35*med,c[i]));box(c,3*sm);box(R,sm);
     p.t={a0:t.a0,bs,n,c,R}});
   return g}
+/* the stripes' path along a bent sleeve (2026-11-13): learned from the owner's target photo as ASM_FLOW was for the body (every stripe
+   on both sleeves traced by ridge tracking along each arm part, `pinbench/s1/tools`), less what the cylinders already give, as the
+   stripes' outward drift per length along the part (dx/dy, + = toward the outer side, away from the other part, going from the
+   shoulder to the elbow on the upper arm and from the elbow to the cuff on the forearm), x100, on s = 0..1 along (rows, by .1) and
+   t = -1..1 across (the inside edge to the outside edge, by .5, in half widths). X: an arm bent over 60° (the forearm across the body),
+   H: one bent less (the arm hanging). Read off it: on the arm across the body the forearm's stripes leave the elbow curving and lean
+   out about 0.1 toward the cuff, the upper arm's outer stripes fan out under the shoulder and close in toward the elbow; on the
+   hanging arm the forearm's stripes come out of the bend still turned toward the upper arm (0.25-0.3, the bend taken gently rather
+   than at the crease) and the upper arm's lean out toward the elbow (0.1-0.2) */
+const ASM_SLEEVE_FLOW={ns:11,nt:5,X:{u:[-3,-4,0,10,17,-3,-4,-1,9,16,0,-4,-2,8,15,2,-3,-1,7,13,-1,-3,1,7,10,-8,-4,2,6,6,-12,-6,1,2,2,-12,-7,-3,-3,-3,-7,-5,-4,-5,-5,0,2,4,1,-3,4,8,13,10,1],f:[-12,-12,1,7,4,-12,-12,4,9,3,-12,-12,8,9,3,-4,4,11,9,4,14,14,11,8,6,20,14,9,8,9,17,10,6,8,10,10,7,7,9,11,6,7,8,12,14,6,7,9,14,18,6,7,9,14,20]},H:{u:[20,17,15,17,21,18,13,9,14,20,11,5,2,9,18,-3,-5,-4,5,15,-12,-12,-8,0,10,-12,-12,-8,-3,4,-12,-9,-2,-1,4,-4,6,9,7,9,12,18,18,14,14,18,23,22,17,17,19,23,23,17,17],f:[-6,9,30,30,30,-6,9,30,30,30,-6,9,27,30,28,-8,6,20,20,14,-12,0,10,8,4,-12,-4,8,7,5,-12,2,15,17,14,3,12,23,25,23,12,18,24,26,26,14,18,22,25,28,14,17,20,23,28]}};
+const ASM_FORE_K=1.15;   // the forearm lies nearer the camera than the upper arm: its stripes (and panes) this much larger (target: 22-23 px apart on the forearms, 18-20 on the upper arms)
+/* a creased sleeve's parts get the flow (their drift summed along: D, in part lengths; and across: G, in half widths, so a windowpane's
+   cross lines stay square to its stripes) and the forearm its scale */
+function asmSleeveFlow(g){if(!g.crease||g.parts.length<2)return g;const U=g.parts[0],L=g.parts[1],F=ASM_SLEEVE_FLOW,NS=F.ns,NT=F.nt,ds=1/(NS-1),dt=2/(NT-1);
+  const T=F[U.dx*L.dx+U.dy*L.dy<.5?'X':'H'];
+  [[U,T.u,1],[L,T.f,ASM_FORE_K]].forEach(([p,tab,k])=>{const s=tab.map(v=>v/100),D=new Float32Array(NS*NT),G=new Float32Array(NS*NT),m=(NT-1)/2;
+    for(let j=0;j<NT;j++){let c=0;for(let i=0;i<NS;i++){if(i)c+=.5*(s[i*NT+j]+s[(i-1)*NT+j])*ds;D[i*NT+j]=c}}
+    for(let i=0;i<NS;i++){let c=0;for(let j=m+1;j<NT;j++){c+=.5*(s[i*NT+j]+s[i*NT+j-1])*dt;G[i*NT+j]=c}c=0;for(let j=m-1;j>=0;j--){c-=.5*(s[i*NT+j]+s[i*NT+j+1])*dt;G[i*NT+j]=c}}
+    p.fd={D,G,k}});
+  return g}
 /* a point's place on a sleeve -> [across (px of cloth, from the middle; the cylinder turned flat), along (px)]: its part (the upper arm
-   or, past the crease, the forearm), its place across and along that part, and across, the cloth turned flat (a point at x of a
-   cylinder of radius R from its middle is R·asin(x/R) of cloth from it) */
+   or, past the crease, the forearm), its place across and along that part, moved by the part's stripe flow (asmSleeveFlow), and
+   across, the cloth turned flat (a point at x of a cylinder of radius R from its middle is R·asin(x/R) of cloth from it) */
 function asmTubeAt(g,X,Y){const p=asmTubePart(g,X,Y),r=asmTubeRaw(p,X,Y),t=p.t;if(!t)return r;
-  let f=(r[1]-t.a0)/t.bs-.5;f=f<0?0:f>t.n-1?t.n-1:f;const i=Math.floor(f),j=Math.min(t.n-1,i+1),w=f-i,c=t.c[i]*(1-w)+t.c[j]*w,R=(t.R[i]*(1-w)+t.R[j]*w)*ASM_TUBE_K;
-  const x=(r[0]-c)/R,ax=Math.abs(x);   // past 0.95 of the radius (a bulge wider than the sleeve's usual width) the cloth carries on at the slope there
-  return [ax<.95?R*Math.asin(x):Math.sign(x)*R*(1.2532+(ax-.95)*3.2026),r[1]]}
+  let f=(r[1]-t.a0)/t.bs-.5;f=f<0?0:f>t.n-1?t.n-1:f;const i=Math.floor(f),j=Math.min(t.n-1,i+1),w=f-i,c=t.c[i]*(1-w)+t.c[j]*w,Rh=t.R[i]*(1-w)+t.R[j]*w,R=Rh*ASM_TUBE_K;
+  let dx=r[0]-c,al=r[1],k=1;const fd=p.fd;
+  if(fd){const F=ASM_SLEEVE_FLOW,NS=F.ns,NT=F.nt,Ln=t.n*t.bs;let a=(r[1]-t.a0)/Ln*(NS-1),b=(dx/Rh+1)*(NT-1)/2;a=a<0?0:a>NS-1?NS-1:a;b=b<0?0:b>NT-1?NT-1:b;
+    const i0=Math.min(NS-2,a|0),j0=Math.min(NT-2,b|0),fa=a-i0,fb=b-j0,q=i0*NT+j0,lk=T=>(T[q]*(1-fb)+T[q+1]*fb)*(1-fa)+(T[q+NT]*(1-fb)+T[q+NT+1]*fb)*fa;
+    dx-=Ln*lk(fd.D);al+=Rh*lk(fd.G);k=fd.k}
+  const x=dx/R,ax=Math.abs(x);   // past 0.95 of the radius (a bulge wider than the sleeve's usual width) the cloth carries on at the slope there
+  return [(ax<.95?R*Math.asin(x):Math.sign(x)*R*(1.2532+(ax-.95)*3.2026))/k,al/k]}
 /* the colour-free part, once per base picture and calibration: the pixels to paint and their shading. base: the master, or the
    waistcoat master on a waistcoat day; zj: the jacket zone; zv, cv (waistcoat days): the waistcoat zone and its calibration photo */
 function asmSuitPrep(base,cj,zj,zv,cv,sleeves){const P=asmSuitPrep0(base,cj,zj,zv,cv);if(sleeves&&sleeves.length){const s=asmSleeveSegs(sleeves,base.width,base.width*base.height);P.seg=s.seg;P.segs=s.segs;P.flow=asmBodyFlow(zj,sleeves,base.width,base.height);
