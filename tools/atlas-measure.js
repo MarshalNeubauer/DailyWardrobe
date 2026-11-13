@@ -108,6 +108,12 @@ window.atlasMeasureCm=async function(kind,S){const K=ASM_CM_KINDS[kind],R=n=>ren
   const GAR=A.jacket?'jacket':A.shirt?'shirt':null;
   if(GAR)for(const s of ['sleeveR','sleeveL','lapelR','lapelL']){if(!fine[s]||(s.startsWith('lapel')&&GAR!=='jacket'))continue;const d=(await asmData(fine[s],S)).data;
     for(let k=0;k<N;k++)if(part[k]===ATLAS_PID[GAR]&&d[4*k]>127)part[k]=ATLAS_PID[s]}
+  // as the painter does (asmCmPrep, ASM_CM_RIM): the garment's rim against the wall joins the sleeve or lapel beside it (the SAM outlines
+  // stop short of the zone's outer edge), grown out a pixel at a time
+  if(GAR&&A.background&&typeof ASM_CM_RIM!=='undefined'){const RR=Math.max(2,Math.round(ASM_CM_RIM*S/2048)),w=new Float32Array(N);for(let k=0;k<N;k++)w[k]=A.background[k]>127?1:0;
+    const wall=asmCmBlur(w,S,RR),g=ATLAS_PID[GAR],fine=new Set(['sleeveR','sleeveL','lapelR','lapelL'].map(n=>ATLAS_PID[n]));let todo=[];for(let k=0;k<N;k++)if(part[k]===g&&wall[k]>0)todo.push(k);
+    for(let it=0;it<RR+2&&todo.length;it++){const set=[],left=[];for(const k of todo){const x=k%S,f=q=>fine.has(part[q])?part[q]:0,v=(x>0&&f(k-1))||(x<S-1&&f(k+1))||(k>=S&&f(k-S))||(k+S<N&&f(k+S))||0;if(v)set.push(k,v);else left.push(k)}
+      for(let q=0;q<set.length;q+=2)part[set[q]]=set[q+1];todo=left}}
   if(P.cuff){const sx=new Float64Array(P.cuffAng.length),n=new Float64Array(P.cuffAng.length);for(let k=0;k<N;k++){const c=P.cuff[k];if(c<255&&part[k]===ATLAS_PID.shirt){sx[c]+=k%W;n[c]++}}
     for(let k=0;k<N;k++){const c=P.cuff[k];if(c<255&&P.cuffAng[c]&&part[k]===ATLAS_PID.shirt)part[k]=sx[c]/n[c]<W/2?ATLAS_PID.cuffL:ATLAS_PID.cuffR}}
   const lab=asmLab({data:px,width:W,height:W}),C=atlasCommon(W,Y,lab,part,cover,.9);

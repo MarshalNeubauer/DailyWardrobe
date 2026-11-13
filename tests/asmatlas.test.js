@@ -89,6 +89,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     {const pl=A.layer('cm-suit','part'),cv=A.layer('cm-suit','cover'),W2=A.W('cm-suit');let k1=-1,k2=-1;for(let k=0;k<pl.length;k++){if(k1<0&&pl[k]===9&&cv[k]===255)k1=k;if(k2<0&&cv[k]>60&&cv[k]<190)k2=k}
       const a=A.pixel('cm-suit',k1%W2,Math.floor(k1/W2)),b=A.pixel('cm-suit',k2%W2,Math.floor(k2/W2));
       ok(a.partName==='tie'&&a.cover===1&&a.next[1]===0&&a.shade>0&&a.shade<=1.6&&b.next[1]>0&&b.nextName&&b.nextName!==b.partName,`a pixel inside the tie and one on a zone's soft edge read back (${a.partName} ${a.shade}; edge ${b.partName} ${b.cover} next ${b.nextName} ${b.next[1]})`)}
+    // as the painter (ASM_CM_RIM): no body pixel is left between a sleeve and the wall
+    {const pl=A.layer('cm-suit','part'),W2=A.W('cm-suit'),sl=new Set([4,5]);let left=0,sleeveEdge=0;
+      for(let k=W2;k<pl.length-W2;k++){const x=k%W2;if(x<1||x>W2-2)continue;const nb=[pl[k-1],pl[k+1],pl[k-W2],pl[k+W2]];
+        if(pl[k]===1&&nb.includes(0)&&nb.some(v=>sl.has(v)))left++;if(sl.has(pl[k])&&nb.includes(0))sleeveEdge++}
+      // (without it: 255 and 5 on the 512 fixture; a few stay where the body, a sleeve and the wall meet at the shoulder)
+      ok(left<20&&sleeveEdge>500,`the sleeves reach the wall, as the painter paints them (${left} body pixels between a sleeve and the wall; ${sleeveEdge} sleeve pixels on the wall)`)}
     const cli=spawnSync(process.execPath,[path.join(ROOT,'tools','atlas.js'),OUT,'pixel','suit','10','10'],{encoding:'utf8'});
     ok(cli.status===0&&/"partName"/.test(cli.stdout),'node tools/atlas.js <folder> pixel suit x y prints a pixel');
   }finally{srv.close();fs.rmSync(OUT,{recursive:true,force:true})}
