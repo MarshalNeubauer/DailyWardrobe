@@ -407,6 +407,12 @@ const asmMasterSig=o=>'asm/master '+JSON.stringify({watch:o.watch?asmLook('watch
 const asmInfo=()=>{const m=renders[asmMasterKey()];if(!m)return null;try{const j=JSON.parse(String(m.sig||'').replace(/^asm\/master /,''));return j&&typeof j==='object'?j:{}}catch{return {}}};
 /* an outfit this can put together: a jacket (with or without its waistcoat), a shirt, a tie and a watch */
 const asmCan=o=>!!(o&&o.top&&o.shirt&&o.tie&&o.watch);
+/* the outfit is painted on a colour-coded master (asm-color.js): its kind has one and that master is on this device (asmEnsure and
+   asmPrebuildOne look for it first); a worker without them leaves every outfit to the earlier way */
+const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
+/* look for the outfit's colour-coded master on the worker, once a session */
+const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(k&&!renders[asmCmKey(k,'master')]&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k)};
+const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(k=>renders[asmCmKey(k,'master')]);
 /* the piece photos an outfit needs: [{slot, key, item}] */
 function asmParts(o){const inf=asmInfo()||{},out=[];
   for(const slot of ['jacket','shirt','tie','bar','watch']){const i=o[ASM_SLOT[slot]];if(!i||(slot==='bar'&&o.vest))continue;const sig=asmLook(slot,i);
@@ -509,7 +515,7 @@ function asmTexReady(T,hex,W){if(!T)return null;let r,TW,TH,rx,ry;
   const Yl=L=>{const g=(L+16)/116;return g>6/29?g*g*g:3*(6/29)**2*(g-4/29)},want=(Yl(Math.min(100,L0+T.dL/2))-Yl(Math.max(0,L0-T.dL/2)))/Math.max(1e-4,Yl(L0));
   const srt=Float32Array.from(r).sort(),sp=srt[Math.floor(srt.length*.95)]-srt[Math.floor(srt.length*.05)];let m=0;for(const v of r)m+=v;m/=r.length;
   const g=sp>0?want/sp:0;for(let k=0;k<r.length;k++)r[k]=1+(r[k]-m)*g;return {r,TW,TH,rx,ry}}
-const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp&&!p.db);   // the parts that need a photo from the worker
+const asmPhotoParts=o=>asmCmUse(o)?[]:asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp&&!p.db);   // the parts that need a photo from the worker
 /* ---- solid suits and blazers are painted on the master too (the owner's choice, 2026-11-12, from a prototype of his brown and very
    dark navy suits, with and without the waistcoat): the master's jacket zone (on a waistcoat day: the waistcoat master's, and the
    waistcoat zone with it) in the suit's tagged colour (colOf), shaded by the master's plain grey suit and the red jacket calibration
@@ -990,7 +996,7 @@ function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the pixel work needs, as plain data (photos as data URLs, kept zones packed), or null when something is missing */
-async function asmJob(o,p2){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;   // p2: atlas painting (undefined: as this phone is set)
+async function asmJob(o,p2){if(asmCmUse(o))return asmCmJob(o);if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;   // p2: atlas painting (undefined: as this phone is set)
   const parts=asmParts(o);if(parts.some(p=>!p.paint&&!p.tp&&!p.sp&&!p.db&&(!renders[p.key]||asmBad.has(p.key))))return null;
   const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,p2:(p2===undefined?asmP2On():!!p2)&&asmP2Able(o),
     parts:await Promise.all(parts.map(async p=>p.sp?{slot:p.slot,vest:!!p.vest,key:p.key,sp:p.sp,hex:colOf(p.item),tex:await asmSuitTexFor(p.item)}:p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.db?{slot:p.slot,key:p.key,db:p.db,rgb:asmBarRgb(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
@@ -1168,6 +1174,7 @@ let asmMem=null;
 /* build one picture from a job -> {url} (a JPEG data URL), or {bad: a piece's key} for a piece that didn't keep the picture, or {};
    with zones worked out here, {zones} / {vestZone} to keep (packed) */
 async function asmBuild(job){
+  if(job.cm)return asmCmBuild(job);   // a colour-coded master (asm-color.js)
   if(!asmMem||asmMem.k!==job.mk||asmMem.t!==job.mt)asmMem={k:job.mk,t:job.mt,d:await asmData(job.master)};
   const M=asmMem,master=M.d,W=master.width,out={};
   if(!M.z){if(job.zones&&job.zones.W===W)M.z=asmUnpackZones(job.zones);
@@ -1236,13 +1243,14 @@ async function asmPhoto(o,front,p2){const job=await asmJob(o,p2);if(!job)return 
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP), each with the newest date among the photos
    it was made from: a piece made again makes it stale */
 let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
-const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')+(p.tp?'='+p.tp:'')+(p.sp?'='+p.sp:'')+(p.db?'='+p.db:'')).join('+')+(asmP2On()&&asmP2Able(o)?'/p2':''));   // (atlas painting: a picture of its own)   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
-const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmPhotoParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
-const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
+const asmOutKey=o=>asmCmUse(o)?asmCmOutKey(o):asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')+(p.tp?'='+p.tp:'')+(p.sp?'='+p.sp:'')+(p.db?'='+p.db:'')).join('+')+(asmP2On()&&asmP2Able(o)?'/p2':''));   // (atlas painting: a picture of its own)   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
+const asmStamp=o=>asmCmUse(o)?asmCmStamp(o):[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmPhotoParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
+const asmWants=o=>{const k=asmCmUse(o);return k?!!renders[asmCmKey(k,'master')]:asmWants0(o)};
+const asmWants0=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
    (Settings: Regenerate) wins: that was the owner's choice. */
 /* a photo made for this outfit after the master (Settings: Regenerate): it is shown, and nothing is put together for the outfit */
-const asmFullWins=o=>{const full=renders[comboKey(o)],m=renders[asmMasterKey()];return !!(full&&m&&full.t>m.t)};
+const asmFullWins=o=>{const k=asmCmUse(o),full=renders[comboKey(o)],m=renders[k?asmCmKey(k,'master'):asmMasterKey()];return !!(full&&m&&full.t>m.t)};
 function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
   const a=asmOut[asmOutKey(o)];return a&&asmFresh(o,a)?{img:a.img,model:'assembled',t:a.t,sig:comboSig(o)}:null}
 /* ---- pictures built ahead on a computer (tools/asm-prebuild.js, npm run assemble) ----
@@ -1264,7 +1272,8 @@ async function asmGetPre(o){const k=asmOutKey(o),W=workerBase();if(!W||asmTried.
   catch(e){console.warn('no built picture',e);return false}}
 /* for the computer: one look's picture made exactly as a phone makes it -> {key, sig, img}, or null when it can't be (a piece missing,
    one that came out wrong). It downloads what the look needs like asmEnsure, but never takes a picture built earlier */
-async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
+async function asmPrebuildOne(o){await asmCmLook(o);if(asmCmUse(o))return asmCmPrebuild(o);   // (its master not on the worker: the earlier way)
+  if(!ASM_ON||!asmCan(o))return null;
   if(!await asmGet(asmMasterKey(),true)||(o.vest&&!await asmGet(asmVestKey()))||!asmWants(o))return null;   // the vest master first: asmWants needs it here (every look was refused on a waistcoat day)
   if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
   if((await Promise.all(asmPhotoParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
@@ -1302,7 +1311,8 @@ const asmZonesKept=async()=>{const k=await metaGet('asm:zones:'+asmMasterKey());
 /* bring what this outfit needs onto the device, put its picture together, keep it and show it */
 /* not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet" put the picture
    together and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
-async function asmEnsure(o,ahead){if(!ASM_ON||!asmCan(o))return;if(!ahead&&renders[asmMasterKey()])asmAheadSoon();if(asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
+async function asmEnsure(o,ahead){await asmCmLook(o);if(asmCmUse(o)){if(!ahead)asmAheadSoon();return asmCmEnsure(o,ahead)}   // (its master not on the worker: the earlier way)
+  if(!ASM_ON||!asmCan(o))return;if(!ahead&&renders[asmMasterKey()])asmAheadSoon();if(asmFullWins(o)||asmFor(o))return;const mk=asmMasterKey();if(asmBusy.has(mk+comboKey(o)))return;asmBusy.add(mk+comboKey(o));
   try{if(!await asmGet(mk)||asmFullWins(o)||(o.vest&&!await asmGet(asmVestKey())))return;
     if(await asmGetPre(o)){const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow();return}   // built on the computer: no pieces to download, nothing to compute
     if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
@@ -1339,23 +1349,24 @@ async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),
     if(i&&i%10===0)await new Promise(r=>setTimeout(r,0));if(asmAheadAgain)return [];
     const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
   return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
-async function asmAhead(){if(!ASM_ON||!renders[asmMasterKey()]||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
+async function asmAhead(){if(!ASM_ON||!(renders[asmMasterKey()]||asmCmAny())||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
   try{do{asmAheadAgain=false;const seen=new Set();
       for(const o of await asmAheadDays()){if(asmAheadAgain||document.hidden||!asmOffPage())break;const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);
         if(asmFullWins(o)||asmFor(o))continue;await asmEnsure(o,true)}}
     while(asmAheadAgain)}
   catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false}}
 /* are any of this outfit's pieces being made right now? */
-const asmPending=o=>asmWants(o)&&asmPhotoParts(o).some(p=>queuedKeys().includes(p.key)&&!renderStalled(p.key));
+const asmPending=o=>!asmCmUse(o)&&asmWants(o)&&asmPhotoParts(o).some(p=>queuedKeys().includes(p.key)&&!renderStalled(p.key));
 /* ---- every photo the wardrobe needs, and making the missing ones ---- */
 const ASM_TYPE={suit:'jacket',blazer:'jacket',shirt:'shirt',tie:'tie',tieclip:'bar',watch:'watch'},ASM_COST={master:.46,calib:.13,vestmaster:.44,vestcalib:.13,piece:.14};   // at 2048 (measured 2026-11-12: master and waistcoat master at high 44-46¢, a medium edit about 12-14¢)
 function asmNeeds(){const out=[],seen=new Set(),add=(kind,slot,item,k,what)=>{if(!seen.has(k)){seen.add(k);out.push({kind,slot,item,key:k,what})}},inf=asmInfo()||{};
+  if(typeof wearsJacket==='function'&&!wearsJacket())return out;   // no jackets in the dress code: this way makes no picture (it needs a jacket); colour-coded masters need nothing made
   add('master',null,null,asmMasterKey(),'the master pose');
   for(const sl of ['jacket','shirt','tie','watch'])add('calib',sl,null,asmCalibKey(sl),'finding the '+sl);
   // waistcoats: the vest master, and a second piece for every suit that has one (unless vests are never worn)
-  const vests=settings.vestMode==='never'?[]:items.filter(i=>hasVest(i)&&inRotation(i));
+  const vests=settings.vestMode==='never'||(typeof wearsJacket==='function'&&!wearsJacket())?[]:items.filter(i=>hasVest(i)&&inRotation(i));
   if(vests.length){add('vestmaster',null,null,asmVestKey(),'the pose with a waistcoat');add('vestcalib','vest',null,asmCalibKey('vest'),'finding the waistcoat')}
-  for(const i of items){const slot=ASM_TYPE[i.type];if(!slot||!inRotation(i))continue;const sig=asmLook(slot,i);
+  for(const i of items){const slot=ASM_TYPE[i.type];if(!slot||!inRotation(i)||(slot==='jacket'&&typeof wearsJacket==='function'&&!wearsJacket()))continue;const sig=asmLook(slot,i);   // (the dress code leaves jackets out: no jacket pieces)
     if((slot==='watch'&&sig===inf.watch)||(slot==='shirt'&&sig===inf.shirt)||(slot==='shirt'&&asmPaintable(i))||slot==='tie'||slot==='bar'||(slot==='jacket'&&asmSuitPaintable(i)))continue;add('piece',slot,i,asmPieceKey(slot,i),nm(i));   // a plain or woven shirt is painted: nothing to make
     if(vests.includes(i))add('piece','vest',i,asmPieceKey('vest',i),nm(i)+' with its waistcoat')}
   return out}
@@ -1389,7 +1400,7 @@ const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmPhotoParts(o).filter(p=>(!renders[p.key]||asmBad.has(p.key))&&!have.has(p.key)).map(p=>({kind:'piece',slot:p.slot,item:p.item,key:p.key,what:nm(p.item)}));
   if(miss.length)await asmMake(miss);else await asmEnsure(o);return 'asm'}
 /* Settings: Realistic photos, "Item photos" */
-function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON)asmP2UI();if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
+function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON){asmP2UI();if(typeof asmCmUI==='function')asmCmUI()}if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
   const money=v=>v<1?Math.round(v*100)+'¢':'$'+v.toFixed(2),queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key)),making=asmNeeds().filter(n=>queued.has(n.key)).length;
   if(!workerBase()){st.textContent='';btn.textContent='Make item photos';needConn(btn);return}needConn(btn);
   if(!asmState.checked){st.textContent='Looking at which photos are already made…';btn.disabled=true;btn.textContent='Make item photos';return}
