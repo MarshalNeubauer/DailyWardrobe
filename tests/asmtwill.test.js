@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url})=>{
         hbTile:(c=>({kind:c.kind,cw:c.cw,amp:c.amp}))(asmTwillTex(hb).cloth),hbSig:asmSuitSig(hb)!==asmSuitSig({...hb,pattern:'twill'})}});
     ok(r.tw&&!r.pinTwill&&r.paint.join()==='true,true,true,true','a twill suit and blazer and a herringbone are painted, a read pinstripe keeps its band painter');
     ok(r.parts.join()==='true'&&!r.photo.includes('jacket')&&r.needs===0&&!r.needHb,'no item photo is asked for a twill or herringbone jacket or its waistcoat');
-    ok(r.hbTile.kind==='herringbone'&&Math.abs(r.hbTile.cw-4.4*3.2)<.5&&r.hbTile.amp>.25&&r.hbSig,`a herringbone with no reading has the herringbone cloth, columns 4.4 mm, thin ribs 1.7 mm apart and a woollen mottle (matched to the owner's reference picture), much stronger than a twill's ribs (${JSON.stringify(r.hbTile)}), and its own key`);
+    ok(r.hbTile.kind==='herringbone'&&Math.abs(r.hbTile.cw-5.4*3.2)<.5&&r.hbTile.amp>.25&&r.hbSig,`a herringbone with no reading has the herringbone cloth, columns 5.4 mm (three half-ribs of 3.6 mm, so the ribs meet in clean V's), matched to the owner's reference picture, much stronger than a twill's ribs (${JSON.stringify(r.hbTile)}), and its own key`);
     // the owner's own patterns: a weave named in the pattern counts though its base is solid; a plain own pattern stays flat; the colour-coded key marks them
     const own=await p.evaluate(()=>{const mk=(id,pattern)=>({id,type:'suit',primaryColor:'black',pattern});
       const a=mk('o1','own-fine-worsted-twill'),h=mk('o2','own-fine-tonal-herringbone'),m=mk('o3','own-worsted-melange-plain-weave'),t=mk('o4','twill');
