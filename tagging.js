@@ -272,7 +272,10 @@ function settFrom({full,box,tex,weave,wb,type}){let s=null,c=null;
   return s}
 const motifPat=p=>MOTIF_PATS.includes(patBase(p)||'');
 /* patterns only Claude's reading can draw (the band reader would turn them into stripes) */
-const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p);
+/* a tie tagged woven or tonal check (2026-11-13): never read before, so painted plain; the owner's charcoal & grey woven tie is a grid of
+   tiny light dots, which Claude reads as a motif (the tie painter draws motifs and bands; a pure weave, layout texture, stays plain) */
+const TIE_WEAVES=['woven','tonal-check'],tieWeave=(t,p)=>t==='tie'&&TIE_WEAVES.includes(patBase(p)||'');
+const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p);
 /* a card's pattern can be read: a band pattern, a weave Claude described, or a pattern only Claude can read (a motif, a shirt's weave) */
 const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
