@@ -899,9 +899,9 @@ function asmDrift(master,z,slot,piece,vest){const W=z.W,N=W*W,L0=asmLab(master),
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the pixel work needs, as plain data (photos as data URLs, kept zones packed), or null when something is missing */
-async function asmJob(o){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;
+async function asmJob(o,p2){if(!asmCan(o))return null;const mk=asmMasterKey(),m=renders[mk];if(!m)return null;   // p2: atlas painting (undefined: as this phone is set)
   const parts=asmParts(o);if(parts.some(p=>!p.paint&&!p.tp&&!p.sp&&(!renders[p.key]||asmBad.has(p.key))))return null;
-  const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,
+  const kz=await metaGet('asm:zones:'+mk),job={mk,mt:m.t,master:m.img,zones:kz&&kz.v===ASM_ZV?kz:null,calib:null,vest:null,p2:(p2===undefined?asmP2On():!!p2)&&asmP2Able(o),
     parts:await Promise.all(parts.map(async p=>p.sp?{slot:p.slot,vest:!!p.vest,key:p.key,sp:p.sp,hex:colOf(p.item),tex:asmSuitBands(p.item)?await asmSuitTex(p.item):null}:p.tp?{slot:p.slot,key:p.key,tp:p.tp,tie:await asmTieFor(p.item)}:p.paint?{slot:p.slot,key:p.key,paint:p.paint,wk:p.wk,tex:p.wk?await asmTexFor(p.item,p.paint,p.wk):null}:{slot:p.slot,vest:!!p.vest,key:p.key,img:renders[p.key].img}))};   // a woven shirt's weave is drawn here (the tile needs the page)
   if(parts.some(p=>p.paint)){if(asmAtlasOk())job.paintAtlas={t:renders[asmAtlasKey('a')].sig,...Object.fromEntries(ASM_ATLAS.map(p=>[p,renders[asmAtlasKey(p)].img]))};   // measured on a computer: nothing to work out
     else{const c=renders[asmCalibKey('shirt')];if(!c)return null;job.paintCalib={t:c.t,img:c.img}}}   // a painted shirt takes its shading from the black calibration shirt too
@@ -954,6 +954,124 @@ async function asmAtlasBuild(){const s=asmAtlasSig(),zi=asmZoneImgs(),m=renders[
   const master=await asmData(m.img),W=master.width,z=await asmZonesFromImgs(zi,W),P=asmPaintPrep(master,await asmData(c.img,W),asmPaintFull(z,W)),e=asmAtlasEncode(P,W);
   const png=d=>{const cv=document.createElement('canvas');cv.width=cv.height=W;cv.getContext('2d').putImageData(d,0,0);return cv.toDataURL('image/png')};
   return {sig:s,W,n:P.idx.length,imgs:Object.fromEntries(ASM_ATLAS.map(p=>[p,png(e[p])])),P}}
+/* ---- atlas painting (a trial, the owner's, 2026-11-13; off unless switched on, per phone: Settings → Realistic photos → Advanced).
+   A second way to put the picture together when the suit, the shirt and the tie are all painted, from prototypes compared with the
+   owner on four of his outfits at 2048 (the khaki windowpane blazer among them):
+   1. edges: every boundary between pieces is blended by how much of each edge pixel is which piece, unmixed from the base picture's
+      own colours on either side, instead of asmCompose's per-piece halo / edge-ring / skin-rim rules (it left no smears of the
+      master's tie by the fist, and a crisp tie edge)
+   2. a pattern bends with the folds: its light (patterned over plain) is read from a point moved along the slope of the base's
+      large-scale shading, up to about 4 px at 2048 (the windowpane bends round the elbow and the chest)
+   3. on a cloth with a new weave or pattern the base's fine grain is smoothed out of the shading first (a box of 7, twice); a plain
+      cloth keeps it (without it a plain brown suit looked plastic)
+   The pieces come from the zones (jacket and waistcoat, shirt and cuffs, tie, watch) and skin found by colour; near every boundary
+   each pixel goes to the piece its colour matches best; the waistcoat's light rim along the V is given to the shirt and tie (its
+   inner 3 px, as asmCompose does) and drawn crisp. ---- */
+const ASM_P2='asm_paint2';   // localStorage: '1' = atlas painting on this phone
+const asmP2On=()=>{try{return localStorage.getItem(ASM_P2)==='1'}catch{return false}};
+/* an outfit it can paint: the suit, the shirt and the tie all painted, nothing photographed (another watch, a tie bar) */
+const asmP2Able=o=>{if(!asmCan(o))return false;const ps=asmParts(o);return ps.some(p=>p.sp)&&ps.some(p=>p.paint)&&ps.some(p=>p.tp)&&!asmPhotoParts(o).length};
+/* distance to the nearest pixel of another label (chamfer 3-4: 3 a pixel) */
+function asmChamfer(G,W){const N=W*W,d=new Float32Array(N).fill(1e9);for(let k=0;k<N;k++){const x=k%W,p=G[k];if((x>0&&G[k-1]!==p)||(x<W-1&&G[k+1]!==p)||(k>=W&&G[k-W]!==p)||(k+W<N&&G[k+W]!==p))d[k]=0}
+  for(let y=0;y<W;y++)for(let x=0;x<W;x++){const k=y*W+x;let v=d[k];if(x>0)v=Math.min(v,d[k-1]+3);if(y>0){v=Math.min(v,d[k-W]+3);if(x>0)v=Math.min(v,d[k-W-1]+4);if(x<W-1)v=Math.min(v,d[k-W+1]+4)}d[k]=v}
+  for(let y=W-1;y>=0;y--)for(let x=W-1;x>=0;x--){const k=y*W+x;let v=d[k];if(x<W-1)v=Math.min(v,d[k+1]+3);if(y<W-1){v=Math.min(v,d[k+W]+3);if(x<W-1)v=Math.min(v,d[k+W+1]+4);if(x>0)v=Math.min(v,d[k+W-1]+4)}d[k]=v}return d}
+/* the mean of src over a box of 2r+1 (twice) taken only over the pixels of mask (-> the full picture; 0 where none is near) */
+function asmBoxMean(src,mask,r,W){const N=W*W,F=new Float32Array(N),C=new Float32Array(N);for(let k=0;k<N;k++)if(mask[k]){F[k]=src[k];C[k]=1}
+  const box=(s0,rr)=>{const t=new Float32Array(N),o=new Float32Array(N),cl=v=>v<0?0:v>W-1?W-1:v,n=2*rr+1;
+    for(let y=0;y<W;y++){let s=0;for(let x=-rr;x<=rr;x++)s+=s0[y*W+cl(x)];for(let x=0;x<W;x++){t[y*W+x]=s/n;s+=s0[y*W+cl(x+rr+1)]-s0[y*W+cl(x-rr)]}}
+    for(let x=0;x<W;x++){let s=0;for(let y=-rr;y<=rr;y++)s+=t[cl(y)*W+x];for(let y=0;y<W;y++){o[y*W+x]=s/n;s+=t[cl(y+rr+1)*W+x]-t[cl(y-rr)*W+x]}}return o};
+  let f=F,c=C;for(let it=0;it<2;it++){f=box(f,r);c=box(c,r)}const o=new Float32Array(N);for(let k=0;k<N;k++)o[k]=c[k]>0?f[k]/c[k]:0;return o}
+/* a painter's per-pixel values (idx order) smoothed within its own pixels */
+function asmSmoothIdx(idx,vals,W,r){const N=W*W,m=new Uint8Array(N),s=new Float32Array(N);for(let q=0;q<idx.length;q++){m[idx[q]]=1;s[idx[q]]=vals[q]}
+  const b=asmBoxMean(s,m,r,W),o=new Float32Array(idx.length);for(let q=0;q<idx.length;q++)o[q]=b[idx[q]]||vals[q];return o}
+/* each pixel's piece: 1 suit (jacket, waistcoat), 2 shirt (front, cuffs), 3 tie, 4 watch, 5 skin, 0 background; waistcoat pixels in wv */
+function asmP2Pieces(base,z,V,W){const N=W*W,G=new Uint8Array(N),wv=new Uint8Array(N);
+  for(let k=0;k<N;k++){if(z.jacket[k])G[k]=1;if(z.shirt[k])G[k]=2;if(z.tie[k])G[k]=3;if(V&&V[k]){G[k]=1;wv[k]=1}if(z.watch[k])G[k]=4}
+  // skin: what no zone claims, skin-coloured, in regions of at least 0.1% of the picture that touch the outfit (the desk is skin-coloured too)
+  const L=asmLab(base),sk=k=>{if(G[k])return false;const l=L[3*k],a=L[3*k+1],b=L[3*k+2];return l>20&&l<88&&a>5&&a<38&&b>8&&b<45&&b>a*.6},seen=new Uint8Array(N);
+  for(let s=0;s<N;s++){if(seen[s]||!sk(s))continue;const st=[s],pix=[];seen[s]=1;let touch=false;
+    while(st.length){const k=st.pop(),x=k%W;pix.push(k);for(const q of [x>0?k-1:-1,x<W-1?k+1:-1,k-W,k+W]){if(q<0||q>=N)continue;if(G[q])touch=true;else if(!seen[q]&&sk(q)){seen[q]=1;st.push(q)}}}
+    if(touch&&pix.length>=N*.001)for(const k of pix)G[k]=5}
+  return {G,wv}}
+/* the picture, the trial's way (an ImageData); M: asmMem with the painters' preparations (spp/sppv, pp, tpp) */
+function asmComposeP2(M,job,z,V,master){const W=master.width,N=W*W,LIN=ASM_LIN,px=n=>Math.max(1,Math.round(n*W/ASM_SIZE));
+  const gam=v=>{v=v<0?0:v>1?1:v;return Math.round(255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055))};
+  const ps=job.parts.find(p=>p.sp),pt=job.parts.find(p=>p.tp),pp=job.parts.find(p=>p.paint),prS=ps.vest?M.sppv:M.spp,prT=M.tpp,prP=M.pp,base=prS.base,Lb=asmLab(base);
+  const {G,wv}=asmP2Pieces(base,z,ps.vest?V:null,W);
+  // 3. the grain out of the shading where a new weave or pattern is drawn; the shirt painted whole wherever its painter reaches (the
+  //    edges are mixed below; a part-painted pixel is half the master's grey, and in a cuff's deep shadow the painter only part-paints)
+  const RT=pp.tex&&pp.wk?asmTexReady(pp.tex,pp.paint,W):null,R3=px(3);
+  const prS2=ps.tex?{...prS,sh:asmSmoothIdx(prS.idx,prS.sh,W,R3)}:prS,prT2=pt.tie.c?{...prT,sh:asmSmoothIdx(prT.idx,prT.sh,W,R3)}:prT;
+  const prP2={...prP,A:new Float32Array(prP.idx.length).fill(1),...(RT?{sm:asmSmoothIdx(prP.idx,prP.sm,W,R3),sc:asmSmoothIdx(prP.idx,prP.sc,W,R3)}:{})};
+  // cracks: unclaimed pixels showing the base's grey suit (between a cuff and its sleeve) are suit
+  {const js=[];for(let k=0;k<N;k+=9)if(G[k]===1)js.push(k);const med=c=>{const v=js.map(k=>Lb[3*k+c]).sort((a,b)=>a-b);return v[v.length>>1]},mL=med(0),ma=med(1),mb=med(2);
+    const nearSuit=asmBox(G.map(g=>g===1?1:0),W,px(4),true);for(let k=0;k<N;k++)if((G[k]===0||G[k]===5)&&nearSuit[k]&&Math.hypot(Lb[3*k]-mL,Lb[3*k+1]-ma,Lb[3*k+2]-mb)<14)G[k]=1}
+  // the waistcoat's rim: the shirt and tie take its inner 3 px where they meet it (not beside the hand), and that edge is drawn crisp
+  const hard=new Uint8Array(N);
+  if(ps.vest&&V){const open=new Uint8Array(N);for(let k=0;k<N;k++)if((G[k]===2||G[k]===3)&&!wv[k])open[k]=1;const nearO=asmBox(open,W,px(3),true);
+    const src=new Int32Array(N).fill(-1);for(let k=0;k<N;k++)if(open[k])src[k]=k;
+    for(let it=0;it<px(3)+1;it++){const nx=new Int32Array(src);for(let k=0;k<N;k++)if(src[k]<0&&nearO[k]){const x=k%W,q=x>0&&src[k-1]>=0?k-1:x<W-1&&src[k+1]>=0?k+1:k>=W&&src[k-W]>=0?k-W:k+W<N&&src[k+W]>=0?k+W:-1;if(q>=0)nx[k]=src[q]}src.set(nx)}
+    const nearSkin=asmBox(G.map(g=>g===5?1:0),W,px(6),true);for(let k=0;k<N;k++)if(wv[k]&&nearO[k]&&src[k]>=0&&!nearSkin[k])G[k]=G[src[k]];
+    const both=new Uint8Array(N);for(let k=0;k<N;k++)if(wv[k]||open[k])both[k]=1;const nb=asmBox(both,W,px(5),true);
+    for(let k=0;k<N;k++)if(nb[k]&&(wv[k]||G[k]===2||G[k]===3)){const x=k%W;let t=wv[k]===1;for(const q of [k-1,k+1,k-W,k+W])if(q>=0&&q<N&&Math.abs(q%W-x)<=1&&((G[q]===1)!==(G[k]===1)))t=true;if(t)hard[k]=1}
+    hard.set(asmBox(hard,W,px(4),true))}
+  // the pieces tightened to the base's colours: within 4 px of a boundary each pixel goes to the piece whose clean pixels nearby (over
+  // 4 px from a boundary, within 8 px) it looks most like (not the watch: its metal is too varied to judge by)
+  {const dd=asmChamfer(G,W),G2=new Uint8Array(G),R=px(8),st=Math.max(1,Math.round(R/4));
+    for(let k=0;k<N;k++){if(dd[k]>12||G[k]===4||hard[k])continue;const x=k%W,y=(k-x)/W,s=new Float64Array(18),n=new Uint32Array(6);
+      for(let dy=-R;dy<=R;dy+=st){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-R;dx<=R;dx+=st){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx;if(dd[q]<12)continue;const g=G[q];if(g===4)continue;n[g]++;s[3*g]+=Lb[3*q];s[3*g+1]+=Lb[3*q+1];s[3*g+2]+=Lb[3*q+2]}}
+      let best=G[k],bd=Infinity;for(let g=0;g<6;g++){if(n[g]<4)continue;const e=Math.hypot(Lb[3*k]-s[3*g]/n[g],Lb[3*k+1]-s[3*g+1]/n[g],Lb[3*k+2]-s[3*g+2]/n[g]);if(e<bd){bd=e;best=g}}
+      G2[k]=best}
+    G.set(G2)}
+  const lay={1:{plain:asmSuitPaint(prS2,ps.hex),tex:ps.tex?asmSuitPaintTex(prS2,ps.tex):null},2:{plain:asmPaint(master,null,pp.paint,prP2),tex:RT?asmPaint(master,null,pp.paint,prP2,RT):null},
+    3:{plain:asmTiePaint(master,prT2,{hex:pt.tie.hex}),tex:pt.tie.c?asmTiePaint(master,prT2,pt.tie):null}};
+  // 2. a pattern bent by the folds (bicubic, so the weave stays sharp; near the piece's edge the pixel's own)
+  const Yb=new Float32Array(N);for(let k=0;k<N;k++){const j=4*k;Yb[k]=.2126*LIN[base.data[j]]+.7152*LIN[base.data[j+1]]+.0722*LIN[base.data[j+2]]}
+  const bent={},cr=t=>{const a=Math.abs(t);return a<1?1.5*a*a*a-2.5*a*a+1:a<2?-.5*a*a*a+2.5*a*a-4*a+2:0};
+  for(const g of [1,2,3]){const Lp=lay[g].plain.data,Lt=lay[g].tex&&lay[g].tex.data;if(!Lt){bent[g]=Lp;continue}
+    const mask=new Uint8Array(N);for(let k=0;k<N;k++)mask[k]=G[k]===g?1:0;const S=asmBoxMean(Yb,mask,px(14),W),H=new Float32Array(N);for(let k=0;k<N;k++)H[k]=mask[k]?Math.log(S[k]+.003):0;
+    const gx=new Float32Array(N),gy=new Float32Array(N),mags=[];for(let y=1;y<W-1;y++)for(let x=1;x<W-1;x++){const k=y*W+x;if(!mask[k]||!mask[k-1]||!mask[k+1]||!mask[k-W]||!mask[k+W])continue;gx[k]=(H[k+1]-H[k-1])/2;gy[k]=(H[k+W]-H[k-W])/2;if((k&15)===0)mags.push(Math.hypot(gx[k],gy[k]))}
+    mags.sort((a,b)=>a-b);const s=4*W/ASM_SIZE/(mags[Math.floor(mags.length*.95)]||1),out=new Uint8ClampedArray(Lp),rat=(c,k)=>{const p=LIN[Lp[4*k+c]];return p>1e-4?LIN[Lt[4*k+c]]/p:1};
+    for(let k=0;k<N;k++){if(!mask[k])continue;const x=k%W,y=(k-x)/W,X=x+Math.max(-6,Math.min(6,s*gx[k])),Y=y+Math.max(-6,Math.min(6,s*gy[k])),x0=Math.floor(X),y0=Math.floor(Y),fx=X-x0,fy=Y-y0;
+      const wx=[-1,0,1,2].map(i=>cr(fx-i)),wy=[-1,0,1,2].map(i=>cr(fy-i));let ok=x0>=1&&y0>=1&&x0<W-2&&y0<W-2;if(ok)for(let j=-1;j<=2&&ok;j++)for(let i=-1;i<=2;i++)if(!mask[(y0+j)*W+x0+i]){ok=false;break}
+      for(let c=0;c<3;c++){let r=0;if(ok){for(let j=0;j<4;j++)for(let i=0;i<4;i++)r+=wx[i]*wy[j]*rat(c,(y0+j-1)*W+x0+i-1);r=Math.max(0,r)}else r=rat(c,k);out[4*k+c]=gam(LIN[Lp[4*k+c]]*r)}}
+    bent[g]=out}
+  // where each painter painted the new cloth whole; a piece's pixel its painter didn't reach takes its nearest painted one
+  const near={};for(const [g,pr] of [[1,prS],[2,prP],[3,prT]]){const src=new Int32Array(N).fill(-1);for(const k of pr.idx)src[k]=k;
+    for(let it=0;it<10;it++){const nx=new Int32Array(src);for(let k=0;k<N;k++)if(src[k]<0&&G[k]===g){const x=k%W,q=x>0&&src[k-1]>=0?k-1:x<W-1&&src[k+1]>=0?k+1:k>=W&&src[k-W]>=0?k-W:k+W<N&&src[k+W]>=0?k+W:-1;if(q>=0)nx[k]=src[q]}src.set(nx)}near[g]=src}
+  const at=(g,k,c)=>{if(g>=1&&g<=3){const s=near[g][k]>=0?near[g][k]:k;return bent[g][4*s+c]}return base.data[4*k+c]};
+  // 1. the edges: within 3 px of another piece a pixel is unmixed from the base's colours either side (the means of their clean pixels
+  //    within 7 px) and made that share of each piece's new colour (from its nearest clean pixel); nearly all one piece is that piece
+  const d=asmChamfer(G,W),BAND=9,CLEAN=12,RR=px(7),o=new Uint8ClampedArray(base.data);
+  for(let k=0;k<N;k++){const j=4*k,p=G[k];if(d[k]>BAND){for(let c=0;c<3;c++)o[j+c]=at(p,k,c);continue}
+    const x=k%W,y=(k-x)/W;let q=-1,bq=1e9;for(let dy=-4;dy<=4;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-4;dx<=4;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const kk=yy*W+xx,e=dx*dx+dy*dy;if(G[kk]!==p&&e<bq){bq=e;q=G[kk]}}}
+    if(q<0){for(let c=0;c<3;c++)o[j+c]=at(p,k,c);continue}
+    const Cp=[0,0,0],Cq=[0,0,0];let np=0,nq=0,kp=-1,kq=-1,bp=1e9,bb=1e9;
+    for(let dy=-RR;dy<=RR;dy++){const yy=y+dy;if(yy<0||yy>=W)continue;for(let dx=-RR;dx<=RR;dx++){const xx=x+dx;if(xx<0||xx>=W)continue;const kk=yy*W+xx;if(d[kk]<CLEAN)continue;const g=G[kk],e=dx*dx+dy*dy;
+      if(g===p){np++;for(let c=0;c<3;c++)Cp[c]+=LIN[base.data[4*kk+c]];if(e<bp){bp=e;kp=kk}}else if(g===q){nq++;for(let c=0;c<3;c++)Cq[c]+=LIN[base.data[4*kk+c]];if(e<bb){bb=e;kq=kk}}}}
+    if(!np||!nq){for(let c=0;c<3;c++)o[j+c]=at(p,k,c);continue}
+    for(let c=0;c<3;c++){Cp[c]/=np;Cq[c]/=nq}const dv=[Cp[0]-Cq[0],Cp[1]-Cq[1],Cp[2]-Cq[2]],dd2=dv[0]*dv[0]+dv[1]*dv[1]+dv[2]*dv[2];let a;
+    if(dd2<.0009||p===4||q===4||(hard[k]&&(p===1||q===1))){let s=0,n=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=W||xx<0||xx>=W)continue;n++;if(G[yy*W+xx]===p)s++}a=s/n}   // alike colours, the watch, the waistcoat's rim: by count
+    else{const m=[0,1,2].map(c=>LIN[base.data[j+c]]-Cq[c]);a=(m[0]*dv[0]+m[1]*dv[1]+m[2]*dv[2])/dd2;a=(a-.15)/.7;a=a<0?0:a>1?1:a;a=a*a*(3-2*a)}
+    for(let c=0;c<3;c++)o[j+c]=gam(a*LIN[at(p,kp,c)]+(1-a)*LIN[at(q,kq,c)])}
+  return new ImageData(o,W,W)}
+/* Settings → Realistic photos → Advanced: the switch and the comparison (drawn into the Item photos group by renderAsmUI) */
+function asmP2UI(){const grp=$('#asm-group');if(!grp)return;let b=$('#p2-box');if(!b){b=document.createElement('div');b.id='p2-box';b.className='sgroup';grp.appendChild(b)}
+  b.innerHTML=`<div class="slabel">Atlas painting (trial)</div><label class="srow">On this phone <select id="cfg-p2" onchange="asmP2Set(this.value)"><option value="off">Off: as now</option><option value="on">On: edges, folds and grain from the atlas</option></select></label>
+    <div class="btns"><button type="button" id="p2-cmp-btn" onclick="asmP2Compare()">Compare on the day shown</button></div><div class="snote">Only outfits whose suit, shirt and tie are all painted; the others are put together as now.</div>`;
+  $('#cfg-p2').value=asmP2On()?'on':'off'}
+function asmP2Set(v){try{if(v==='on')localStorage.setItem(ASM_P2,'1');else localStorage.removeItem(ASM_P2)}catch{}asmOut={};asmTried.clear();refreshToday()}
+/* the day shown, both ways, in one full-screen view: a tap switches between them */
+async function asmP2Compare(){const o=planFor()[key(sel)],btn=$('#p2-cmp-btn');if(!o||!asmP2Able(o)){tell('The day shown can’t be painted this way: its suit, shirt and tie must all be painted (no other watch or tie bar).');return}
+  if(btn){btn.disabled=true;btn.textContent='Putting it together both ways…'}
+  try{if(o.vest)await asmGet(asmVestKey());   // (asmPrebuildOne wants the waistcoat master on the phone already)
+    if(!await asmPrebuildOne(o)&&!await asmPhoto(o,true,false)){tell('Its photos aren’t all on this phone yet.');return}
+    const a=await asmPhoto(o,true,false),b=await asmPhoto(o,true,true);if(!a||!b){tell('It couldn’t be put together.');return}asmP2Show(a,b)}
+  finally{if(btn){btn.disabled=false;btn.textContent='Compare on the day shown'}}}
+function asmP2Show(a,b){let v=$('#p2-view');if(!v){v=document.createElement('div');v.id='p2-view';document.body.appendChild(v)}let on=0;
+  v.style.cssText='position:fixed;inset:0;z-index:2100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:pinch-zoom';
+  const draw=()=>{v.innerHTML=`<div style="color:#fff;font:600 16px system-ui;padding:12px;text-align:center">${on?'Atlas painting':'As now'} · tap the picture to switch</div><img alt="${on?'Atlas painting':'As now'}" src="${on?b:a}" style="max-width:100%;max-height:calc(100% - 110px);object-fit:contain"><button type="button" style="margin:12px;min-height:44px;padding:0 20px">Close</button>`;
+    v.querySelector('img').onclick=()=>{on^=1;draw()};v.querySelector('button').onclick=()=>v.remove()};draw()}
 /* the decoded master and its unpacked zones, kept between pictures in whichever thread builds them */
 let asmMem=null;
 /* build one picture from a job -> {url} (a JPEG data URL), or {bad: a piece's key} for a piece that didn't keep the picture, or {};
@@ -990,6 +1108,7 @@ async function asmBuild(job){
       P[p.slot]=M.paint[pk]=M.paint[pk]||asmPaint(master,null,p.paint,M.pp,p.tex&&p.wk?asmTexReady(p.tex,p.paint,W):null);continue}
     const d=await asmData(p.img,W);if(asmDrift(master,z,p.slot,d,p.vest?V:null)>ASM_DRIFT){out.bad=p.key;return out}P[p.slot]=d}
   if(V)P.vest=V;
+  if(job.p2&&P.jacket&&P.shirt&&P.tie&&M.pp&&M.tpp){out.url=await asmJpeg(asmComposeP2(M,job,z,V,master));return out}   // the trial's way (atlas painting)
   out.url=await asmJpeg(asmCompose(master,z,P));return out}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
 async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)}
@@ -1016,7 +1135,7 @@ function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);
 /* the outfit's assembled picture as a JPEG data URL, or null when it can't be made (yet): no master, a piece missing or one that
    came out wrong (asmBad), an outfit of another kind. Zones worked out on the way are kept (meta) */
 const asmBad=new Set();
-async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;const r=await asmRun(job,front);
+async function asmPhoto(o,front,p2){const job=await asmJob(o,p2);if(!job)return null;const r=await asmRun(job,front);
   if(r.zones)await metaPut('asm:zones:'+job.mk,r.zones);
   if(r.vestZone)await metaPut('asm:vest:'+job.vest.k,r.vestZone);
   if(r.bad){asmBad.add(r.bad);return null}
@@ -1025,7 +1144,7 @@ async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;c
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP), each with the newest date among the photos
    it was made from: a piece made again makes it stale */
 let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
-const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')+(p.tp?'='+p.tp:'')+(p.sp?'='+p.sp:'')).join('+'));   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
+const asmOutKey=o=>asmKey('out/z'+ASM_ZV+'/'+asmParts(o).map(p=>p.key+(p.paint?'='+p.paint+(p.wk?'~'+p.wk:''):'')+(p.tp?'='+p.tp:'')+(p.sp?'='+p.sp:'')).join('+')+(asmP2On()&&asmP2Able(o)?'/p2':''));   // (atlas painting: a picture of its own)   // a painted shirt's colour (and weave) is in the key: a new shade is a new picture
 const asmStamp=o=>[renders[asmMasterKey()],o.vest&&renders[asmVestKey()],...asmPhotoParts(o).map(p=>renders[p.key])].reduce((t,r)=>Math.max(t,r&&r.t||0),0);
 const asmWants=o=>ASM_ON&&asmCan(o)&&!!renders[asmMasterKey()]&&(!o.vest||!!renders[asmVestKey()]);   // a vest day needs the vest master too
 /* the picture to show for an outfit, like a kept photo's record, or null. A photo made for this very outfit after the master
@@ -1054,7 +1173,7 @@ async function asmGetPre(o){const k=asmOutKey(o),W=workerBase();if(!W||asmTried.
 /* for the computer: one look's picture made exactly as a phone makes it -> {key, sig, img}, or null when it can't be (a piece missing,
    one that came out wrong). It downloads what the look needs like asmEnsure, but never takes a picture built earlier */
 async function asmPrebuildOne(o){if(!ASM_ON||!asmCan(o))return null;
-  if(!await asmGet(asmMasterKey(),true)||!asmWants(o)||(o.vest&&!await asmGet(asmVestKey())))return null;
+  if(!await asmGet(asmMasterKey(),true)||(o.vest&&!await asmGet(asmVestKey()))||!asmWants(o))return null;   // the vest master first: asmWants needs it here (every look was refused on a waistcoat day)
   if(o.vest&&!await asmVestKept()&&!await asmGet(asmZoneKey('vest')))await asmGet(asmCalibKey('vest'));
   if((await Promise.all(asmPhotoParts(o).map(p=>asmGet(p.key)))).includes(false))return null;
   if(asmParts(o).some(p=>p.tp)&&!await asmGet(asmCalibKey('tie')))return null;
@@ -1178,7 +1297,7 @@ const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmPhotoParts(o).filter(p=>(!renders[p.key]||asmBad.has(p.key))&&!have.has(p.key)).map(p=>({kind:'piece',slot:p.slot,item:p.item,key:p.key,what:nm(p.item)}));
   if(miss.length)await asmMake(miss);else await asmEnsure(o);return 'asm'}
 /* Settings: Realistic photos, "Item photos" */
-function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
+function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),auto=$('#cfg-asm-auto'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON)asmP2UI();if(!st||!btn||!ASM_ON)return;if(auto)auto.value=settings.asmAuto===false?'off':'on';
   const money=v=>v<1?Math.round(v*100)+'¢':'$'+v.toFixed(2),queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key)),making=asmNeeds().filter(n=>queued.has(n.key)).length;
   if(!workerBase()){st.textContent='';btn.textContent='Make item photos';needConn(btn);return}needConn(btn);
   if(!asmState.checked){st.textContent='Looking at which photos are already made…';btn.disabled=true;btn.textContent='Make item photos';return}
