@@ -55,6 +55,16 @@ module.exports=async({ok,chromium,url})=>{
       let raw=0;const walk=x=>{if(ArrayBuffer.isView(x)){raw+=x.byteLength;return}if(x&&typeof x==='object')for(const v of Object.values(x))walk(v)};walk({...P,M:null});
       return {same:a.url===b.url,gz:pack&&pack.gz.byteLength,raw,M:Q&&Q.M.length===P.M.length}});
     ok(pk.same&&pk.M&&pk.gz<pk.raw/5,`a master's setup packed (${(pk.raw/1024|0)} KB -> ${(pk.gz/1024|0)} KB gzipped) and read back paints the identical picture`);
+    // the cloth look (ASM_CM_LOOK): a black suit is no longer a flat silhouette (lifted, with more variation: folds, sheen, weave); a navy
+    // keeps its blue; job.look false paints as before
+    const lk=await p.evaluate(async()=>{const W=__W,px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return x.getImageData(0,0,c.width,c.height).data};
+      const run=async(col,look)=>{const o={shirt:W.shirt,watch:W.watch,top:{...W.suit,id:'lk-'+col,primaryColor:col},tie:W.tie},job=await asmCmJob(o);return px((await asmCmBuild({...job,look,diskCache:false})).url)};
+      const b0=await run('black',false),b1=await run('black'),n1=await run('navy');const idx=[];
+      for(let k=0;k<b0.length;k+=4)if(b0[k]+b0[k+1]+b0[k+2]<3*40&&Math.abs(b0[k]-b0[k+2])<8)idx.push(k);   // the black jacket's pixels, painted as before
+      const st=d=>{let s=0,s2=0;for(const k of idx){const v=(d[k]+d[k+1]+d[k+2])/3;s+=v;s2+=v*v}const m=s/idx.length;return {m,sd:Math.sqrt(s2/idx.length-m*m)}};
+      let nb=0;for(const k of idx)nb+=n1[k+2]-n1[k];return {n:idx.length,before:st(b0),after:st(b1),blue:nb/idx.length}});
+    ok(lk.n>1000&&lk.after.m>lk.before.m+4&&lk.after.sd>lk.before.sd*1.3,`a black suit is lifted and shows its folds and sheen (mean ${lk.before.m.toFixed(1)} -> ${lk.after.m.toFixed(1)}, spread ${lk.before.sd.toFixed(1)} -> ${lk.after.sd.toFixed(1)})`);
+    ok(lk.blue>12,`a navy suit stays blue under the look (blue over red ${lk.blue.toFixed(1)})`);
     // the background picture (asmCmBgKey): once the worker has one, the wall is that picture (here a flat green), and every look's key changes
     const bgKey=await p.evaluate(()=>asmCmBgKey());
     served[bgKey]={sig:'asm/cm bg',model:'colormaster',t:2000,img:await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#2f7a3a';x.fillRect(0,0,64,64);return c.toDataURL('image/png')})};
