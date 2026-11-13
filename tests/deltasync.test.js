@@ -37,13 +37,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const itemOf=(d,id)=>d.p.evaluate(id=>items.find(i=>i.id===id)||null,id);
   const edit=(d,id,f)=>d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f]);
   const stored=()=>JSON.parse(store.get('wardrobe:v1'));
+  // the backup whole, photos inline, as an older app downloads it (since 2026-11-13 the stored value keeps its photos by reference)
+  const full=async()=>JSON.parse(await (await W.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
   try{
     const A=await device(),B=await device();
     // a first sync brings the whole wardrobe, photos and all
     await sync(A);await sync(B);
     const a0=await itemOf(A,'it7'),b0=await itemOf(B,'it7');
     ok(a0&&b0&&a0.photo===seed.items[7].photo&&b0.texture===seed.items[7].texture&&b0.swatch===seed.items[7].swatch&&(await A.p.evaluate(()=>items.length))===40,`two devices with this app take the whole wardrobe from a backup an older worker stored (${MB.toFixed(1)} MB), every photo intact`);
-    ok(!!meta.get('wardrobe:v1').ll&&stored().data.items[7].photo===seed.items[7].photo&&stored().index&&!JSON.stringify(stored().index).includes('base64'),'the next save stores the backup as before plus its index (no photos in it)');
+    ok(!!meta.get('wardrobe:v1').pv&&!store.get('wardrobe:v1').includes('base64')&&(await full()).data.items[7].photo===seed.items[7].photo&&[...store.keys()].some(k=>/^ph:[0-9a-f]{20}$/.test(k)),'the next save stores the backup with its photos by reference (no photos in it), each photo once under ph:<hash>');
     await sync(A);await sync(B);   // (both settled)
 
     // a day marked worn on A: under 100 KB each way, on A and on B
@@ -58,7 +60,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // a new photo goes up once and comes down once, alone
     const np=pic(150e3);await edit(A,'it9',{photo:np});
     const up3=await measured(A),down3=await measured(B);
-    ok(up3.ok&&up3.up>150e3&&up3.up<300e3&&stored().data.items.find(i=>i.id==='it9').photo===np,`a replaced photo is sent once (${kb(up3)})`);
+    ok(up3.ok&&up3.up>150e3&&up3.up<300e3&&(await full()).data.items.find(i=>i.id==='it9').photo===np,`a replaced photo is sent once (${kb(up3)})`);
     ok(down3.ok&&down3.down>150e3&&down3.down<300e3&&down3.t.some(x=>x.q.startsWith('?ph='))&&(await itemOf(B,'it9')).photo===np,`and downloaded alone by the other device (${kb(down3)})`);
     // a deletion (tombstone)
     await A.p.evaluate(async()=>{const t=Date.now();await del('it3');await metaPut('tombstones',{...(await metaGet('tombstones')||{}),it3:t});items=items.filter(i=>i.id!=='it3')});
@@ -84,7 +86,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const cs=await measured(C);
     ok(cs.ok&&cs.t[0].q===''&&(await itemOf(C,'it9')).photo===np&&(await C.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length)),`an older app still downloads the whole backup and reads it (${kb(cs)})`);
     await edit(C,'it13',{primaryColor:'black'});const cu=await measured(C);
-    ok(cu.ok&&cu.t.some(x=>x.m==='PUT'&&x.up>1e6)&&stored().data.items.find(i=>i.id==='it13').primaryColor==='black'&&meta.get('wardrobe:v1').ll,`and still saves the whole backup, which the worker stores with its index (${kb(cu)})`);
+    ok(cu.ok&&cu.t.some(x=>x.m==='PUT'&&x.up>1e6)&&stored().data.items.find(i=>i.id==='it13').primaryColor==='black'&&meta.get('wardrobe:v1').pv,`and still saves the whole backup, which the worker stores by reference (${kb(cu)})`);
     const fromOld=await measured(A);
     ok(fromOld.ok&&fromOld.up+fromOld.down<100e3&&(await itemOf(A,'it13')).primaryColor==='black'&&(await itemOf(A,'it13')).photo===seed.items[13].photo,`a change from the older app reaches this app without the backup (${kb(fromOld)})`);
     {const v=`${meta.get('wardrobe:v1').rev}:${meta.get('wardrobe:v1').saved}`,r=await (await W.fetch(new Request(HOST+'sync?v='+v,{headers:{'x-app-token':'secret'}}),env)).json();
