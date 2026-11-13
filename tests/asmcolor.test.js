@@ -99,10 +99,13 @@ module.exports=async({ok,chromium,url})=>{
       if(f){const im=new Image();await new Promise(r=>{im.onload=r;im.src=f.img});const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(3,3,1,1).data].slice(0,3)}
       return {held:!!renders[k],changed:k0!==k1,px}},bgKey);
     ok(bg.held&&bg.changed&&bg.px&&bg.px[1]>bg.px[0]+25&&bg.px[1]>bg.px[2]+25,`with a background on the worker, the wall is that picture and the look's key changes (corner ${bg.px})`);
-    // the switch in Settings: off on this phone, every outfit goes the earlier way
-    const sw=await p.evaluate(()=>{openSettings('photos');renderAsmUI();const sel=document.querySelector('#cfg-cm');const r={there:!!sel,val:sel&&sel.value};
-      asmCmSet('off');const W=__W;r.off=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});asmCmSet('on');r.on=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});closeSettings&&closeSettings();return r});
-    ok(sw.there&&sw.val==='on'&&sw.off===null&&sw.on==='shirt-tie',`Settings → Item photos has the switch, on by default; off, no outfit is painted on a colour-coded master (${JSON.stringify(sw)})`);
+    // Settings has no on/off switch any more (2026-11-13; asmCmSet stays for tests), and says how far the computer has built ahead
+    const sw=await p.evaluate(async()=>{document.body.classList.add('owner');openSettings('photos');renderAsmUI();const r={there:!!document.querySelector('#cfg-cm'),stored:localStorage.getItem('asm_cm')};
+      asmCmSet('off');const W=__W;r.off=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});asmCmSet('on');r.on=asmCmKind({shirt:W.shirt,bot:W.pants,belt:W.belt,tie:W.tie});
+      for(let i=0;i<100&&/^Looking|^$/.test(($('#cm-status')||{}).textContent||'');i++)await new Promise(res=>setTimeout(res,100));
+      r.status=($('#cm-status')||{}).textContent||'';r.head=($('#cm-box .slabel')||{}).textContent;closeSettings&&closeSettings();return r});
+    ok(!sw.there&&sw.stored===null&&sw.off===null&&sw.on==='shirt-tie',`Settings has no colour-coded masters switch; one left off on a phone is cleared at start-up (${JSON.stringify(sw)})`);
+    ok(sw.head==='Pictures ahead'&&/^(Next 60 days: \d+ of \d+ looks? built on the computer.*\d+ on this phone\. Checked (just now|a minute ago|\d+ minutes ago)\.|None of the workdays|The next 60 days have)/.test(sw.status),`Settings says how many of the next 60 days' looks the computer has built ("${sw.status}")`);
     // the dress code: no jacket pieces are asked for when jackets aren't worn
     const nd=await p.evaluate(()=>{const r={};settings.dress={jacket:true,tie:true};r.with=asmNeeds().filter(n=>n.slot==='jacket').length;settings.dress={jacket:false,tie:true};r.without=asmNeeds().filter(n=>n.slot==='jacket'||n.kind==='vestmaster').length;settings.dress={jacket:true,tie:true};return r});
     ok(nd.without===0,`with no jackets in the dress code, no jacket pieces or waistcoat master are listed (${JSON.stringify(nd)})`);

@@ -68,14 +68,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.waitForFunction(()=>queue[0]&&!queue[0].patternReading&&queue[0].specFailed,null,{timeout:20000});
     ok(await p.evaluate(()=>!queue[0].sett),'when Claude can\'t read the weave, the shirt keeps its generic drawing (the band reader is not used on a weave)');
     await p.evaluate(()=>{queue=[];renderAdd()});
-    // Settings: read the weaves of textured shirts that have a close-up but no reading
+    // Settings → Outfit pictures → Painted plain (one list since 2026-11-13, with the former "Shirt weaves"): a textured shirt with no reading is listed and read
     patternReply=()=>[200,{...TEX,model:'m'}];
     await p.evaluate(async()=>{const it=items.find(i=>i.type==='shirt');delete it.sett;delete it.patternSpec;await put(it);show('settings')});
-    const ui=await p.evaluate(()=>{renderWeaveUI();return document.querySelector('#weave-box').textContent});
-    ok(/1 textured shirt/.test(ui),'Settings offers to read the one textured shirt without a weave reading');
-    const before=calls.length;await p.evaluate(()=>readWeaves());
-    const after=await p.evaluate(()=>({tex:!!items.find(i=>i.type==='shirt').sett.tex,ui:document.querySelector('#weave-box').textContent}));
-    ok(calls.length===before+1&&after.tex&&/has its weave read/.test(after.ui),'"Read shirt weaves" reads it and the list empties');
+    const ui=await p.evaluate(()=>{asmCmUI();return document.querySelector('#cm-gaps').textContent});
+    ok(/Painted plain \(1\)/.test(ui)&&/Read 1 pattern/.test(ui),'Painted plain lists the one textured shirt without a weave reading, with a button to read it: '+ui.slice(0,120));
+    const before=calls.length;await p.evaluate(()=>asmReadGaps());
+    const after=await p.evaluate(()=>({tex:!!items.find(i=>i.type==='shirt').sett.tex,ui:document.querySelector('#cm-gaps').textContent}));
+    ok(calls.length===before+1&&after.tex&&/Every patterned piece/.test(after.ui),'"Read 1 pattern" reads it and the list empties');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

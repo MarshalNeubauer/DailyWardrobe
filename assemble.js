@@ -1115,7 +1115,7 @@ async function asmAtlasBuild(){const s=asmAtlasSig(),zi=asmZoneImgs(),m=renders[
   const master=await asmData(m.img),W=master.width,z=await asmZonesFromImgs(zi,W),P=asmPaintPrep(master,await asmData(c.img,W),asmPaintFull(z,W)),e=asmAtlasEncode(P,W);
   const png=d=>{const cv=document.createElement('canvas');cv.width=cv.height=W;cv.getContext('2d').putImageData(d,0,0);return cv.toDataURL('image/png')};
   return {sig:s,W,n:P.idx.length,imgs:Object.fromEntries(ASM_ATLAS.map(p=>[p,png(e[p])])),P}}
-/* ---- atlas painting (a trial, the owner's, 2026-11-13; off unless switched on, per phone: Settings → Realistic photos → Advanced).
+/* ---- atlas painting (a trial, the owner's, 2026-11-13; off; its Settings switch was removed the same day).
    A second way to put the picture together when the suit, the shirt and the tie are all painted, from prototypes compared with the
    owner on four of his outfits at 2048 (the khaki windowpane blazer among them):
    1. edges: every boundary between pieces is blended by how much of each edge pixel is which piece, unmixed from the base picture's
@@ -1129,6 +1129,7 @@ async function asmAtlasBuild(){const s=asmAtlasSig(),zi=asmZoneImgs(),m=renders[
    each pixel goes to the piece its colour matches best; the waistcoat's light rim along the V is given to the shirt and tie (its
    inner 3 px, as asmCompose does) and drawn crisp. ---- */
 const ASM_P2='asm_paint2';   // localStorage: '1' = atlas painting on this phone
+try{localStorage.removeItem(ASM_P2)}catch{}   // (its Settings switch is gone, 2026-11-13: a phone that had it on is back to the usual way)
 const asmP2On=()=>{try{return localStorage.getItem(ASM_P2)==='1'}catch{return false}};
 /* an outfit it can paint: the suit, the shirt and the tie all painted, nothing photographed (another watch, a tie bar) */
 const asmP2Able=o=>{if(!asmCan(o))return false;const ps=asmParts(o);return ps.some(p=>p.sp)&&ps.some(p=>p.paint)&&ps.some(p=>p.tp)&&!ps.some(p=>p.db)&&!asmPhotoParts(o).length};   // (a tie bar keeps today's way)
@@ -1216,23 +1217,9 @@ function asmComposeP2(M,job,z,V,master){const W=master.width,N=W*W,LIN=ASM_LIN,p
     else{const m=[0,1,2].map(c=>LIN[base.data[j+c]]-Cq[c]);a=(m[0]*dv[0]+m[1]*dv[1]+m[2]*dv[2])/dd2;a=(a-.15)/.7;a=a<0?0:a>1?1:a;a=a*a*(3-2*a)}
     for(let c=0;c<3;c++)o[j+c]=gam(a*LIN[at(p,kp,c)]+(1-a)*LIN[at(q,kq,c)])}
   return new ImageData(o,W,W)}
-/* Settings → Realistic photos → Advanced: the switch and the comparison (drawn into the Item photos group by renderAsmUI) */
-function asmP2UI(){const grp=$('#asm-group');if(!grp)return;let b=$('#p2-box');if(!b){b=document.createElement('div');b.id='p2-box';b.className='sgroup';grp.appendChild(b)}
-  b.innerHTML=`<div class="slabel">Atlas painting (trial)</div><label class="srow">On this phone <select id="cfg-p2" onchange="asmP2Set(this.value)"><option value="off">Off: as now</option><option value="on">On: edges, folds and grain from the atlas</option></select></label>
-    <div class="btns"><button type="button" id="p2-cmp-btn" onclick="asmP2Compare()">Compare on the day shown</button></div><div class="snote">Only outfits whose suit, shirt and tie are all painted; the others are put together as now.</div>`;
-  $('#cfg-p2').value=asmP2On()?'on':'off'}
+/* (the Settings switch and its "Compare on the day shown" were removed 2026-11-13: the colour-coded masters are used before this way
+   on every kind of day, so the trial changed nothing; asmP2Set stays for the tests) */
 function asmP2Set(v){try{if(v==='on')localStorage.setItem(ASM_P2,'1');else localStorage.removeItem(ASM_P2)}catch{}asmOut={};asmTried.clear();refreshToday()}
-/* the day shown, both ways, in one full-screen view: a tap switches between them */
-async function asmP2Compare(){const o=planFor()[key(sel)],btn=$('#p2-cmp-btn');if(!o||!asmP2Able(o)){tell('The day shown can’t be painted this way: its suit, shirt and tie must all be painted (no other watch or tie bar).');return}
-  if(btn){btn.disabled=true;btn.textContent='Putting it together both ways…'}
-  try{if(o.vest)await asmGet(asmVestKey());   // (asmPrebuildOne wants the waistcoat master on the phone already)
-    if(!await asmPrebuildOne(o)&&!await asmPhoto(o,true,false)){tell('Its photos aren’t all on this phone yet.');return}
-    const a=await asmPhoto(o,true,false),b=await asmPhoto(o,true,true);if(!a||!b){tell('It couldn’t be put together.');return}asmP2Show(a,b)}
-  finally{if(btn){btn.disabled=false;btn.textContent='Compare on the day shown'}}}
-function asmP2Show(a,b){let v=$('#p2-view');if(!v){v=document.createElement('div');v.id='p2-view';document.body.appendChild(v)}let on=0;
-  v.style.cssText='position:fixed;inset:0;z-index:2100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:pinch-zoom';
-  const draw=()=>{v.innerHTML=`<div style="color:#fff;font:600 16px system-ui;padding:12px;text-align:center">${on?'Atlas painting':'As now'} · tap the picture to switch</div><img alt="${on?'Atlas painting':'As now'}" src="${on?b:a}" style="max-width:100%;max-height:calc(100% - 110px);object-fit:contain"><button type="button" style="margin:12px;min-height:44px;padding:0 20px">Close</button>`;
-    v.querySelector('img').onclick=()=>{on^=1;draw()};v.querySelector('button').onclick=()=>v.remove()};draw()}
 /* the decoded master and its unpacked zones, kept between pictures in whichever thread builds them */
 let asmMem=null;
 /* build one picture from a job -> {url} (a JPEG data URL), or {bad: a piece's key} for a piece that didn't keep the picture, or {};
@@ -1478,7 +1465,7 @@ const asmCostOf=list=>list.reduce((t,n)=>t+ASM_COST[n.kind],0);
 async function asmQueueOutfit(o){const have=new Set(queuedKeys()),miss=asmPhotoParts(o).filter(p=>(!renders[p.key]||asmBad.has(p.key))&&!have.has(p.key)).map(p=>({kind:'piece',slot:p.slot,item:p.item,key:p.key,what:nm(p.item)}));
   if(miss.length)await asmMake(miss);else await asmEnsure(o);return 'asm'}
 /* Settings: Realistic photos, "Item photos" */
-function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON){asmP2UI();if(typeof asmCmUI==='function')asmCmUI()}if(!st||!btn||!ASM_ON)return;
+function renderAsmUI(){const st=$('#asm-status'),btn=$('#asm-btn'),grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON&&typeof asmCmUI==='function')asmCmUI();if(!st||!btn||!ASM_ON)return;
   const money=v=>v<1?Math.round(v*100)+'¢':'$'+v.toFixed(2),queued=new Set(queuedKeys()),m=asmState.missing.filter(n=>!queued.has(n.key)),making=asmNeeds().filter(n=>queued.has(n.key)).length;
   if(!workerBase()){st.textContent='';btn.textContent='Make item photos';needConn(btn);return}needConn(btn);
   if(!asmState.checked){st.textContent='Looking at which photos are already made…';btn.disabled=true;btn.textContent='Make item photos';return}

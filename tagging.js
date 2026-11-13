@@ -250,53 +250,20 @@ async function recordTagResult(q,it){if(!q.ai||!q.aiTag)return;const st={n:0,wro
     if(from!==to){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
   settings.tagStats=st;settings.tagFixes=fixes.slice(-60);await saveUserSettings()}
 function tagStatsCard(){const st=settings.tagStats||{n:0,wrong:{}},fx=(settings.tagFixes||[]).slice(-8).reverse();
-  const pct=f=>st.n?Math.round(100*(1-(st.wrong[f]||0)/st.n)):null,runs=benchRuns();
+  const pct=f=>st.n?Math.round(100*(1-(st.wrong[f]||0)/st.n)):null;
   return `<section class="card st-card" id="st-tagging"><h3>Photo tagging</h3>
   ${st.n?`<p class="mut"><small>Of the ${st.n} item${st.n===1?'':'s'} tagged by AI and saved since this was added, how often you kept each tag as it was.</small></p>
     ${['type','primaryColor','pattern','secondaryColor'].map(f=>`<div class="st-miss"><b>${fieldLabel[f][0].toUpperCase()+fieldLabel[f].slice(1)}</b><span class="mut">${pct(f)}% right</span><span class="st-bar"><i style="width:${Math.max(2,pct(f))}%"></i></span></div>`).join('')}`
     :'<p class="mut"><small>No AI-tagged items saved yet since this was added.</small></p>'}
   ${fx.length?`<p class="mut" style="margin-top:8px"><small>Your latest corrections (the tagger is shown them):</small></p><ul class="fixlist">${fx.map(f=>`<li><small>${esc(TYPES[f.type]||f.type)} ${fieldLabel[f.field]}: ${esc(valName(f.field,f.from==='none'?null:f.from))} → <b>${esc(valName(f.field,f.to==='none'?null:f.to))}</b></small></li>`).join('')}</ul>`:''}
-  ${runs.length?`<p class="mut" style="margin-top:8px"><small>Last accuracy check (${new Date(runs[0].t).toLocaleDateString()}, ${runs[0].n} item${runs[0].n===1?'':'s'}): ${benchScoreTxt(runs[0])}.</small></p>`:''}</section>`}
+  </section>`}
 
-/* ---- the benchmark: re-tag a share of the wardrobe (its items with photos, picked at random) and compare with the tags you
-   confirmed. Each item goes with its kept sharp copy when there is one (newer items), else its saved photo, plus its close-up
-   and measurement, exactly as a new item would. Runs only when started; results are kept on this device (the last ten). ---- */
-let bench=null;
-const benchRuns=()=>{try{return JSON.parse(localStorage.getItem('tag_bench')||'[]')}catch{return []}};
-const benchPool=()=>items.filter(i=>i.photo&&TYPES[i.type]);
+/* ---- what one tagging call costs (the colour picker's "Ask Claude" shows it): Claude Opus 5.5 prices, visual tokens of the photo and
+   its close-up, and a usual answer. (The accuracy check that used it, Settings → Photo tagging → Advanced, was removed 2026-11-13.) ---- */
 const PRICE_IN=4,PRICE_OUT=20;   // Claude Opus 5.5, $ per million tokens (the worker's default model)
 /* visual tokens of a picture (28-pixel patches, capped like the API) */
 const visTok=(w,h)=>{const s=Math.min(1,2576/Math.max(w,h));w*=s;h*=s;const t=Math.ceil(w/28)*Math.ceil(h/28);return Math.min(4784,t)};
 function benchEstimate(n){const per=(visTok(1024,1024)+visTok(640,640)*.5+4000)*PRICE_IN/1e6+2500*PRICE_OUT/1e6;return n*per}
-function renderBenchUI(){const el=$('#bench-box');if(!el)return;const pool=benchPool().length,runs=benchRuns();
-  if(bench){el.innerHTML=`<p class="mut"><small>Tagging ${bench.done} of ${bench.n}…</small></p><div class="btns"><button type="button" onclick="bench.stop=true">Stop</button></div>`;return}
-  const pick=+(localStorage.getItem('bench_pct')||25),n=Math.ceil(pool*pick/100);
-  el.innerHTML=!pool?'<p class="mut"><small>No items with photos yet.</small></p>':`<p class="mut"><small>Reads part of your wardrobe again and compares with the tags you confirmed, so a change to the photo reading can be judged by numbers.</small></p>
-  <div class="days bench-pct">${[25,50,75,100].map(p=>`<button type="button" class="dtog ${p===pick?'on':''}" onclick="localStorage.setItem('bench_pct',${p});renderBenchUI()">${p}%</button>`).join('')}</div>
-  <p class="mut"><small>${n} of ${pool} item${pool===1?'':'s'} with photos · about $${benchEstimate(n).toFixed(2)} (Claude Opus 5.5 prices; the thinking varies)</small></p>
-  <div class="btns"><button type="button" id="bench-btn" onclick="runBench(${pick})"${isConnected()?'':` disabled class="needconn" title="${NEED_CONN}"`}>Run the check</button></div>${connNote()}
-  ${runs.length?`<div class="benchruns">${runs.map(r=>`<p><small><b>${new Date(r.t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</b> · ${r.pct}% (${r.n} item${r.n===1?'':'s'}${r.fail?`, ${r.fail} failed`:''}): ${benchScoreTxt(r)}</small></p>`).join('')}</div>`:''}
-  ${runs[0]&&runs[0].misses&&runs[0].misses.length?`<details class="benchmiss"><summary><small>Where the last run disagreed (${runs[0].misses.length})</small></summary>${runs[0].misses.map(m=>`<p><small>${esc(m.what)}: ${m.diffs.map(d=>`${fieldLabel[d.f]} yours <b>${esc(valName(d.f,d.mine))}</b>, tagger ${esc(valName(d.f,d.ai))}`).join('; ')}</small></p>`).join('')}</details>`:''}`}
-const benchScoreTxt=r=>['type','primaryColor','family','pattern'].filter(f=>r.score[f]!=null).map(f=>`${f==='family'?'colour family':fieldLabel[f]} ${r.score[f]}%`).join(', ');
-function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-async function benchTagOne(it){const img=await tagImgOf(it.id)||it.photo;let measured,closeup;
-  if(it.texture){const c=await imgOf(it.texture),cv=document.createElement('canvas');cv.width=c.naturalWidth;cv.height=c.naturalHeight;cv.getContext('2d').drawImage(c,0,0);
-    const r=wbRead(cv),m={...measureCloth(cv,null,r.ref?{gains:r.gains,refLum:r.refLum}:{}),src:'closeup'};m.near=nearestCols(it.type,m.lab,m.ref);measured=measHint(m);closeup=await sharpCloseOf(it)}
-  return ask(img,{closeup,measured,skipId:it.id})}
-async function runBench(pct){if(bench)return;const pool=shuffle(benchPool()),list=pool.slice(0,Math.ceil(pool.length*pct/100));if(!list.length)return;
-  if(!isConnected()){tell(NEED_CONN);return}
-  if(!await askConfirm(`Read ${list.length} item${list.length===1?'':'s'} again?\n\nAbout $${benchEstimate(list.length).toFixed(2)} on your Claude account.`,{ok:'Run'}))return;
-  bench={n:list.length,done:0,stop:false};renderBenchUI();const res=[];let fail=0,next=0;
-  const work=async()=>{while(!bench.stop&&next<list.length){const it=list[next++];let ai=null;try{ai=await benchTagOne(it)}catch{}bench.done++;renderBenchUI();
-    if(!ai||!ai.type){fail++;continue}const f=aiFields(ai);res.push({it,f})}};
-  await Promise.all([work(),work(),work()]);
-  const pc=(k,eq)=>{const r=res.filter(x=>k!=='pattern'||FABRIC.includes(x.it.type));return r.length?Math.round(100*r.filter(eq).length/r.length):null};
-  const score={type:pc('type',x=>x.f.type===x.it.type),primaryColor:pc('primaryColor',x=>x.f.primaryColor===primaryCol(x.it)),
-    family:pc('family',x=>fam(colBase(x.f.primaryColor))===fam(colBase(primaryCol(x.it)))),pattern:pc('pattern',x=>x.f.pattern===(x.it.pattern||'solid'))};
-  const misses=res.map(({it,f})=>({what:`${TYPES[it.type]}: ${desc(it)||nm(it)}`,diffs:['type','primaryColor','pattern'].filter(k=>k!=='pattern'||FABRIC.includes(it.type)).map(k=>({f:k,mine:k==='primaryColor'?primaryCol(it):k==='pattern'?(it.pattern||'solid'):it[k],ai:f[k]})).filter(d=>d.mine!==d.ai)})).filter(m=>m.diffs.length);
-  const run={t:Date.now(),pct,n:res.length,fail,score,misses:misses.slice(0,40)};
-  try{localStorage.setItem('tag_bench',JSON.stringify([run,...benchRuns()].slice(0,10)))}catch{}
-  bench=null;renderBenchUI();toast(res.length?`Accuracy check done: ${benchScoreTxt(run)}.`:'The accuracy check could not read any item.')}
 
 /* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
@@ -361,15 +328,6 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
     const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
     if(s&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
   localStorage.setItem('spec_recolour','3');if(n)cache={};return n}
-/* Settings: Claude reads the weave of every textured shirt with a close-up that has no reading yet, one at a time */
-const weavePool=()=>items.filter(i=>texPat(i.type,i.pattern)&&i.texture&&!(i.sett&&(i.sett.tex||i.sett.motif)));let weaveRun=null;
-function renderWeaveUI(){const el=$('#weave-box');if(!el)return;const n=weavePool().length;
-  el.innerHTML=weaveRun?`<p class="mut"><small>Reading ${weaveRun.done+1} of ${weaveRun.n}…</small></p>`:!n&&!isConnected()?connNote():
-    !n?'<p class="mut"><small>Every textured shirt with a fabric close-up has its weave read. A new one is read when you add its close-up.</small></p>':
-    `<p class="mut"><small>${n} textured shirt${n===1?'':'s'} (dobby, oxford, twill…) with a close-up but no weave reading. Claude reads each weave (one call per shirt) so the app can draw it.</small></p><div class="btns"><button type="button" id="weave-btn" onclick="readWeaves()"${isConnected()?'':` disabled class="needconn" title="${NEED_CONN}"`}>Read shirt weaves</button></div>${connNote()}`}
-async function readWeaves(){const list=weavePool();if(!list.length||weaveRun)return;weaveRun={n:list.length,done:0};renderWeaveUI();
-  for(const it of list){await rereadSett(it.id);weaveRun.done++;renderWeaveUI()}
-  weaveRun=null;renderWeaveUI();toast(`Read ${list.length} shirt weave${list.length===1?'':'s'}.`)}
 /* Wardrobe editor: read it again from the kept sharp copy (or the close-up) */
 async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};

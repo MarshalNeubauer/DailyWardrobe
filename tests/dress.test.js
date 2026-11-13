@@ -135,16 +135,18 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       blazer:document.querySelector('#blazer-group').offsetHeight>0,vest:document.querySelector('#vest-row').offsetHeight>0,sum:document.querySelector('#sum-schedule').textContent,wide:document.documentElement.scrollWidth<=innerWidth}));
     ok(s0.sw==='switch:true:44,switch:true:44,switch:false:44'&&s0.labels==='Jackets (suits and blazers)|Ties|Jeans with a blazer'&&s0.help&&s0.blazer&&s0.vest&&/vest/.test(s0.sum)&&s0.wide,`Settings → Schedule has the dress-code switches: jackets and ties on, jeans with a blazer off, each with its help (${s0.labels}; ${s0.sum})`);
     await p.click('#dress-tie');await p.waitForFunction(()=>settings.dress&&settings.dress.tie===false&&document.querySelector('#dress-tie').getAttribute('aria-checked')==='false');
-    const s1=await p.evaluate(async()=>({dress:JSON.stringify(settings.dress),locks:Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length,stored:JSON.stringify((await metaGet('settings')).dress),sum:document.querySelector('#sum-schedule').textContent,stamped:settings.updated>0}));
+    const s1=await p.evaluate(async()=>({dress:JSON.stringify(settings.dress),locks:Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length,stored:JSON.stringify((await metaGet('settings')).dress),sum:document.querySelector('#sum-schedule').textContent,stamped:settings.updated>0,
+      vest:document.querySelector('#vest-row').offsetHeight,blazer:document.querySelector('#blazer-group').offsetHeight>0,note:(document.querySelector('.dress-note')||{}).textContent||''}));
     ok(s1.dress==='{"jacket":true,"tie":false}'&&s1.stored===s1.dress&&s1.locks===0&&/no ties/.test(s1.sum)&&s1.stamped,`switching ties off is saved and releases the locked week (${s1.sum})`);
-    await p.click('#dress-jacket');await p.waitForFunction(()=>settings.dress.jacket===false&&document.querySelector('.dress-note'));
+    ok(s1.vest===0&&s1.blazer&&/only worn with a tie/.test(s1.note),`with ties off the suit vest setting is hidden (no waistcoat without a tie), blazer days stay (${s1.note})`);
+    await p.click('#dress-jacket');await p.waitForFunction(()=>settings.dress.jacket===false&&/Blazer days/.test((document.querySelector('.dress-note')||{}).textContent||''));
     const s2=await p.evaluate(()=>({blazer:document.querySelector('#blazer-group').offsetHeight,vest:document.querySelector('#vest-row').offsetHeight,note:document.querySelector('.dress-note').textContent,sum:document.querySelector('#sum-schedule').textContent}));
     ok(s2.blazer===0&&s2.vest===0&&/Blazer days and the suit vest/.test(s2.note)&&/no jackets or ties/.test(s2.sum)&&!/vest|blazers/.test(s2.sum),`with jackets off the blazer days and the vest setting are hidden, with a note (${s2.sum})`);
     await p.evaluate(()=>saveSettings());await p.waitForFunction(()=>!settingsOpen()&&!document.querySelector('.fig svg [href$="lapL"]')&&!!document.querySelector('.fig .fig-open'));
     ok(await p.evaluate(()=>{const o=planFor()[key(sel)];return !o.top&&!o.tie&&!!o.bot&&!/Incomplete/.test(document.querySelector('#today').textContent)}),'Today is planned again without a jacket or tie once Settings closes');
-    await p.evaluate(()=>openSettings('schedule'));await settle(p,300);await p.click('#dress-jacket');await p.waitForFunction(()=>settings.dress.jacket===true);await p.click('#dress-tie');await p.waitForFunction(()=>settings.dress.tie===true);
-    const s3=await p.evaluate(()=>({blazer:document.querySelector('#blazer-group').offsetHeight>0,note:!!document.querySelector('.dress-note'),j:wearsJacket(),t:wearsTie()}));
-    ok(s3.blazer&&!s3.note&&s3.j&&s3.t,'switching both back on brings the blazer days and the vest setting back');
+    await p.evaluate(()=>openSettings('schedule'));await settle(p,300);await p.click('#dress-jacket');await p.waitForFunction(()=>settings.dress.jacket===true);await p.click('#dress-tie');await p.waitForFunction(()=>settings.dress.tie===true&&!document.querySelector('.dress-note'),null,{timeout:5000}).catch(()=>{});
+    const s3=await p.evaluate(()=>({blazer:document.querySelector('#blazer-group').offsetHeight>0,vest:document.querySelector('#vest-row').offsetHeight>0,note:!!document.querySelector('.dress-note'),j:wearsJacket(),t:wearsTie()}));
+    ok(s3.blazer&&s3.vest&&!s3.note&&s3.j&&s3.t,'switching both back on brings the blazer days and the vest setting back');
     await p.evaluate(()=>{closeSettings();delete settings.dress});
     // both themes, phone and the unfolded Duo
     for(const [w,theme] of [[390,'dark'],[626,'light']]){await p.setViewportSize({width:w,height:900});

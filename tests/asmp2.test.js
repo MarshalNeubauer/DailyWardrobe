@@ -1,7 +1,6 @@
 // Atlas painting (assemble.js asmComposeP2, a trial switched on per phone): when the suit, shirt and tie are all painted, the picture
 // is put together with edges unmixed from the base picture's colours, patterns bent by the folds and the grain smoothed out of a
-// newly woven cloth. Off by default; its pictures have keys of their own; Settings → Realistic photos → Advanced has the switch and a
-// comparison of the day shown.
+// newly woven cloth. Off by default (its Settings switch was removed 2026-11-13); its pictures have keys of their own.
 module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
@@ -31,14 +30,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(r.worker&&r.plain.made&&r.vest.made&&r.plain.differ,`both ways are put together in the Web Worker, with and without the waistcoat (${JSON.stringify({plain:r.plain.made,vest:r.vest.made})})`);
     ok(Math.abs(r.plain.shirt)<2&&Math.abs(r.plain.jacket)<2&&Math.abs(r.vest.shirt)<2.5&&Math.abs(r.vest.jacket)<2.5&&r.plain.all<4&&r.vest.all<4,
       `the pieces keep their colours and only edges, grain and folds change (shirt ${r.plain.shirt.toFixed(2)}/${r.vest.shirt.toFixed(2)}, jacket ${r.plain.jacket.toFixed(2)}/${r.vest.jacket.toFixed(2)}, whole picture ${r.plain.all.toFixed(2)}/${r.vest.all.toFixed(2)} levels apart)`);
-    // Settings: the switch and the comparison, in the owner's Advanced fold of Realistic photos
-    await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','owner-code');localStorage.setItem('acct_role',JSON.stringify({tok:'owner-code',role:'owner'}));
-      if(typeof applyRole==='function')applyRole();document.body.classList.add('owner');document.body.classList.remove('nocon');openSettings('photos');const h=document.querySelector('#adv-photos .adv-head');if(h)h.click();renderAsmUI()});await settle(p,600);
-    const u=await p.evaluate(async()=>{const sel=document.querySelector('#cfg-p2'),btn=document.querySelector('#p2-cmp-btn');const v0=sel&&sel.value;if(sel){sel.value='on';sel.dispatchEvent(new Event('change'))}const on=asmP2On();if(sel){sel.value='off';sel.dispatchEvent(new Event('change'))}
-      asmP2Show('data:image/gif;base64,R0lGODlhAQABAAAAACw=','data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACw=');const v=document.querySelector('#p2-view'),t0=v.textContent;v.querySelector('img').click();const t1=v.textContent;v.querySelector('button').click();
-      return {sel:!!sel,btn:!!btn&&btn.getBoundingClientRect().height>=44,v0,on,off:!asmP2On(),t0:/As now/.test(t0),t1:/Atlas painting/.test(t1),closed:!document.querySelector('#p2-view')}});
-    ok(u.sel&&u.btn&&u.v0==='off'&&u.on&&u.off,'Settings has the switch (off, then on and off again for this phone) and a 44px "Compare on the day shown" button');
-    ok(u.t0&&u.t1&&u.closed,'the comparison shows today\'s picture, a tap switches to the atlas painting, and Close closes it');
+    // Settings no longer has the switch (2026-11-13: the colour-coded masters come first on every day, so it changed nothing)
+    await p.evaluate(()=>{document.body.classList.add('owner');openSettings('photos');const h=document.querySelector('#adv-photos .adv-head');if(h)h.click();renderAsmUI()});await settle(p,300);
+    ok(await p.evaluate(()=>!document.querySelector('#cfg-p2,#p2-cmp-btn')&&typeof asmP2UI==='undefined'),'Settings has no atlas-painting switch or comparison any more');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

@@ -110,24 +110,16 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       const c=calibLab('navy','blazer'),n=nearestCols('suit',[21,2,-19],true);items=items.filter(i=>!['a','b'].includes(i.id));return {c,n}});
     ok(cal.c&&cal.c[0]===20||cal.c[0]===22,'two measured navy items set what navy looks like in this wardrobe');
     ok(cal.n[0].c==='navy'&&cal.n[0].d<3,`a new measurement close to them matches navy (ΔE ${cal.n[0].d})`);
-    // ---- the benchmark
-    await p.evaluate(()=>{for(let k=0;k<3;k++){const it={id:'bk'+k,type:'tie',primaryColor:'burgundy',pattern:'solid',photo:items[0].photo,added:1};items.push(it)}renderBenchUI()});
-    const bu=await p.evaluate(()=>({btns:[...document.querySelectorAll('#bench-box .bench-pct button')].map(b=>b.textContent),txt:document.querySelector('#bench-box').textContent}));
-    ok(bu.btns.join()==='25%,50%,75%,100%'&&/1 of 4 items with photos · about \$/.test(bu.txt),`the benchmark offers 25/50/75/100% with the count and an estimate (${bu.txt.match(/\d+ of \d+[^)]*\)/)})`);
-    await p.click('#adv-tagging .adv-head');await p.click('#bench-box .bench-pct button:has-text("50%")');
-    ok(/2 of 4 items/.test(await p.textContent('#bench-box')),'choosing 50% picks half the items with photos');
+    // ---- an item is never shown its own corrections (the colour picker's Ask Claude passes skipId; the accuracy check that did too was removed 2026-11-13)
     reply=()=>({...base,...extra,type:'tie',primaryColor:'burgundy',pattern:'solid'});
-    const before=bodies.length;await p.evaluate(()=>{const id=items[0].id;settings.tagFixes=[...settings.tagFixes,{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk0'},{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk1'},{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk2'},{field:'pattern',type:'suit',from:'solid',to:'twill',id}]});
-    await p.evaluate(()=>{const r=runBench(50);document.querySelector('#ask-ok').click();return r});
-    const bb=bodies.slice(before),run=await p.evaluate(()=>benchRuns()[0]);
-    ok(bb.length===2&&run.n===2&&run.pct===50,'Run benchmark re-tags that share');
-    const nfix=await p.evaluate(()=>settings.tagFixes.length);const ownN=await p.evaluate(()=>{const n={};for(const f of settings.tagFixes)n[f.id]=(n[f.id]||0)+1;return n}),allowed=new Set(Object.values(ownN).map(k=>nfix-k));
-    ok(bb.every(x=>allowed.has(x.corrections.length)),`an item is never shown its own corrections (${bb.map(x=>x.corrections.length)} of ${nfix})`);
-    ok(run.score.type!=null&&run.score.primaryColor!=null&&/Tagging benchmark|colour family/.test(await p.textContent('#bench-box')+'colour family'),`the scores are kept and listed (${JSON.stringify(run.score)})`);
+    const before=bodies.length,fx=await p.evaluate(async()=>{const keep=settings.tagFixes;settings.tagFixes=[{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk0'},{field:'pattern',type:'tie',from:'solid',to:'woven',id:'bk1'},{field:'pattern',type:'suit',from:'solid',to:'twill',id:'bk2'}];
+      await ask(items[0].photo,{skipId:'bk0'});await ask(items[0].photo,{skipId:'none'});settings.tagFixes=keep;return true});
+    const bb=bodies.slice(before).map(x=>(x.corrections||[]).length);
+    ok(fx&&bb.join()==='2,3',`an item is never shown its own corrections (${bb} of 3)`);
     // stats page
     await p.evaluate(()=>{closeSettings();show('stats')});
     const st=await p.textContent('#st-tagging');
-    ok(/Photo tagging/.test(st)&&/Colour\d+%right/.test(st.replace(/\s/g,''))&&/Last accuracy check/.test(st),'the stats page shows how often each tag was right, and the last benchmark: '+st.replace(/\s+/g,' ').slice(0,160));
+    ok(/Photo tagging/.test(st)&&/Colour\d+%right/.test(st.replace(/\s/g,''))&&!/accuracy check/.test(st),'the stats page shows how often each tag was right (no accuracy check line: it was removed): '+st.replace(/\s+/g,' ').slice(0,160));
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await browser.close();
   }finally{globalThis.fetch=realFetch}
