@@ -246,6 +246,21 @@ asmprebuild.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-tie.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	fetch	getRender	handleSync	isParted	kvMeta	orNull	putRender	renderId	renderTtl	sameText	sha256Hex	spend	storedResponse	storedVersion	syncVersion	utcDay	whoIs
+asmroute.test.js	<every page test>	<every page test>
+asmroute.test.js	app.js	esc	fnv64	workerBase
+asmroute.test.js	apple-touch-icon.png	<loaded>
+asmroute.test.js	asm-color.js	asmCmGaps	asmCmPref	asmCmRoute	asmCmUI	asmGapNote	asmGapUI
+asmroute.test.js	assemble.js	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
+asmroute.test.js	core.js	colName	colorDesc	desc	dressOut	inRotation	itemName	itemTitle	patBase	patLabel	patName	primaryCol	sentence	titleCls	wearsJacket	wearsTie
+asmroute.test.js	detect.js	texPat	tieWeave	usableSett
+asmroute.test.js	icon-192.png	<loaded>
+asmroute.test.js	icon-512.png	<loaded>
+asmroute.test.js	index.html	<loaded>
+asmroute.test.js	manifest.webmanifest	<loaded>
+asmroute.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	<loaded>
+asmroute.test.js	tagging.js	claudeOnly	guessPatBase	motifPat	readable	settable
+asmroute.test.js	tests/fixedplan.js	<any>
+asmroute.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
 asmtwill.test.js	<every page test>	<every page test>
 asmtwill.test.js	app.js	fnv64	lookSig	shirtPatterned	shirtTextured
 asmtwill.test.js	apple-touch-icon.png	<loaded>

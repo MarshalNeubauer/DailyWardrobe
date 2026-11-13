@@ -41,8 +41,38 @@ const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')
 const ASM_CM_PAINTV=4;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points
 /* a jacket whose weave the 2026-11-13 audit added (a herringbone, or an own pattern based on solid named twill): marked in its look's key,
    so only those looks are painted again (a new ASM_CM_PAINTV would repaint every look) */
-const asmCmWeaveTag=(z,i)=>{if((z!=='jacket'&&z!=='waistcoat')||typeof asmSuitWeave!=='function'||!asmSuitTwill(i))return '';
+const asmCmWeaveTag=(z,i)=>{if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP:''):''}
+  if((z==='jacket'||z==='waistcoat')&&asmCmRoute(i,z).how==='tweed'&&!asmSuitTweed(i))return '/ttweed';   // an own pattern named tweed
+  if((z!=='jacket'&&z!=='waistcoat')||typeof asmSuitWeave!=='function'||!asmSuitTwill(i))return '';
   const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP:patBase(i.pattern)!=='twill'?'/tw':''};
+/* which painter paints a garment (2026-11-13, the owner's rule: every pattern Claude can tag is either painted or says why not): the one
+   place asmCmJob, the item sheet, Settings' "Painted plain" list, the pre-build's report and tests/asmroute.test.js all ask.
+   -> {how, gap, why}: how 'flat' (a plain colour), 'bands' (a jacket's read stripes or checks), 'twill', 'herringbone', 'tweed',
+   'tile' (a drawing of its reading or pattern: shirts, read trousers), 'tie' (the tie painter's reading) or 'plain' (a pattern painted
+   as its colour); gap '' (painted as it is), 'reading' (painted once its pattern is read: "Read pattern from photo") or 'painter' (no
+   painter for it yet); why says so in words */
+const ASM_NO_PAINTER={jacket:['birdseye','nailhead','sharkskin','houndstooth','other'],trousers:['birdseye','nailhead','sharkskin','houndstooth','other'],tie:['paisley','knit','other']};
+function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof usableSett==='function'?usableSett(i):null,b=patBase(i.pattern)||'solid',pn=(typeof patName==='function'?patName(i.pattern):b).toLowerCase();
+  const w=typeof asmSuitWeave==='function'?asmSuitWeave(i):'',canRead=typeof readable==='function'?readable(i.type,i.pattern,i.weave):false;
+  const plain=(gap,why)=>({how:'plain',gap,why}),needs=()=>plain('reading',`its ${pn} is painted once its pattern is read (Read pattern from photo)`);
+  if(z==='belt')return {how:'flat',gap:'',why:''};
+  if(z==='jacket'||z==='waistcoat'||z==='trousers'){
+    if(z!=='trousers'&&asmSuitBands(i))return {how:'bands',gap:'',why:''};
+    if(z==='trousers'&&s&&s.bands)return {how:'tile',gap:'',why:''};
+    if(w&&!(s&&s.bands))return {how:w,gap:'',why:''};
+    if(b==='tweed'||(/^own/.test(i.pattern||'')&&/tweed/i.test(i.pattern)))return {how:'tweed',gap:'',why:''};
+    if(b==='solid')return {how:'flat',gap:'',why:''};
+    if([...STRIPE_PATS,...CHECK_PATS].includes(b))return needs();
+    return plain('painter',`no painter for ${pn} ${z==='trousers'?'trousers':'jackets'} yet`)}
+  if(z==='shirt'){if(b==='solid'&&!s)return {how:'flat',gap:'',why:''};
+    return s?{how:'tile',gap:'',why:''}:{how:'tile',gap:canRead?'reading':'',why:canRead?`its ${pn} is a generic drawing until its pattern is read (Read pattern from photo)`:''}}
+  if(z==='tie'){if(s&&(s.bands||s.motif||s.tex))return {how:'tie',gap:'',why:''};if(b==='solid')return {how:'flat',gap:'',why:''};
+    if(canRead)return needs();
+    return plain('painter',`no painter for ${pn} ties yet`)}
+  return {how:'flat',gap:'',why:''}}
+/* the garments in rotation whose pattern the colour-coded painter paints plain or generic (Settings, the pre-build's report) */
+const ASM_CM_ZONE={suit:'jacket',blazer:'jacket',pants:'trousers',shirt:'shirt',tie:'tie'};
+const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOut(i.type)).map(i=>({i,r:asmCmRoute(i,ASM_CM_ZONE[i.type])})).filter(x=>x.r.gap);
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV];
   for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
@@ -79,12 +109,16 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
   const parts={};for(const s of ['sleeveR','sleeveL','lapelR','lapelL']){const r=renders[asmCmKey(kind,'part/'+s)];if(r)parts[s]=r.img}
   const it=asmCmItems(o,kind),cloth={};
-  for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)};
-    if(z==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
-    else if((z==='jacket'||z==='waistcoat')&&(asmSuitBands(i)||(typeof asmSuitTwill==='function'&&asmSuitTwill(i))||(typeof asmSuitTweed==='function'&&asmSuitTweed(i)))){try{const T=typeof asmSuitTexFor==='function'?await asmSuitTexFor(i):await asmSuitTex(i);if(T)c.suit=T}catch(e){console.warn('suit cloth',e)}}   // a band reading, a plain twill (its ribs: asmTwillTex) or a tweed (asmTweedTex)
-    // a jacket or trousers with no stripe or check reading (and not a plain twill jacket: above) is its colour: the swatch's drawing of
-    // a fine weave, tiled over a whole jacket, was a field of dots and dashes (the owner's light grey twill)
-    else if(z==='shirt'||(z==='trousers'&&(usableSett(i)||{}).bands)){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
+  for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)},how=asmCmRoute(i,z).how;
+    try{
+      if(how==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
+      else if(how==='bands')c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
+      else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
+      else if(how==='tweed')c.suit=asmTweedTex(i);
+      // a shirt, or read trousers: one repeat of the app's drawing; anything else is its colour (the swatch's drawing of a fine weave,
+      // tiled over a whole jacket, was a field of dots and dashes: the owner's light grey twill)
+      else if(how==='tile'){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
+    }catch(e){console.warn('cloth',z,e)}
     cloth[z]=c}
   return {cm:kind,size:self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,master:renders[keys[0]].img,masks,parts,cloth,
     bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null}}
@@ -274,5 +308,19 @@ async function asmCmPrebuild(o){const kind=asmCmKind(o);if(!kind||!await asmCmGe
 function asmCmUI(){const grp=$('#asm-group');if(!grp)return;let b=$('#cm-box');if(!b){b=document.createElement('div');b.id='cm-box';b.className='sgroup';grp.appendChild(b)}
   b.innerHTML=`<div class="slabel">Colour-coded masters</div><label class="srow">On this phone <select id="cfg-cm" onchange="asmCmSet(this.value)"><option value="on">On: every garment painted</option><option value="off">Off: as before</option></select></label>
     <div class="snote">Suit, waistcoat, shirt-and-tie and open-collar days are painted on their own master. A jacket worn without a tie keeps its own photo.</div>`;
-  $('#cfg-cm').value=asmCmPref()?'on':'off'}
+  $('#cfg-cm').value=asmCmPref()?'on':'off';asmGapUI()}
+/* "Painted plain": every garment in rotation whose pattern the pictures don't show yet, why, and one tap to read the readable ones
+   (Claude, one call each: never by itself) */
+let asmGapRun=null;
+function asmGapUI(){const b=$('#cm-box');if(!b)return;let g=$('#cm-gaps');if(!g){g=document.createElement('div');g.id='cm-gaps';b.appendChild(g)}
+  const gaps=asmCmGaps(),rd=gaps.filter(x=>x.r.gap==='reading');
+  g.innerHTML=!gaps.length?'<div class="snote">Every patterned piece in rotation is painted with its pattern.</div>':
+    `<div class="slabel">Painted plain (${gaps.length})</div><ul class="cmgaps">${gaps.map(x=>`<li><span class="${titleCls(x.i)}">${esc(sentence(itemTitle(x.i)))}</span>: <small class="mut">${esc(x.r.why)}</small></li>`).join('')}</ul>`+
+    (asmGapRun?`<p class="mut"><small>Reading ${asmGapRun.done+1} of ${asmGapRun.n}…</small></p>`:rd.length?`<div class="btns"><button type="button" id="cm-readall" onclick="asmReadGaps()"${isConnected()?'':` disabled class="needconn" title="${NEED_CONN}"`}>Read ${rd.length} pattern${rd.length===1?'':'s'}</button></div><div class="snote">Claude reads each one from its photo and close-up (one call each).</div>`:'')}
+async function asmReadGaps(){const list=asmCmGaps().filter(x=>x.r.gap==='reading').map(x=>x.i);if(!list.length||asmGapRun)return;asmGapRun={n:list.length,done:0};asmGapUI();
+  try{for(const it of list){await rereadSett(it.id);asmGapRun.done++;asmGapUI()}}finally{asmGapRun=null;asmGapUI()}
+  asmOut={};asmTried.clear();refreshToday()}
+/* the item sheet's line when the pictures paint this piece plain or generic */
+function asmGapNote(i){if(typeof ASM_ON!=='undefined'&&!ASM_ON)return '';const z=ASM_CM_ZONE[i.type];if(!z)return '';const r=asmCmRoute(i,z);
+  return r.gap?`<p class="shelp asmgap">Outfit pictures: ${esc(r.why)}.</p>`:''}
 function asmCmSet(v){try{if(v==='off')localStorage.setItem(ASM_CM,'0');else localStorage.removeItem(ASM_CM)}catch{}asmOut={};asmTried.clear();refreshToday()}
