@@ -1037,6 +1037,20 @@ async function shareOutfit(){const o=planFor()[key(sel)];if(!o)return;const text
   if(navigator.share){try{await navigator.share(data)}catch(e){if(e&&e.name!=='AbortError')tell('Couldn’t share it.')}return}
   try{await navigator.clipboard.writeText(text);tell('The outfit is copied.')}catch{tell(text)}}
 function wornMarks(o){return shareMark(o)+wornBar(o)}
+/* the cloth over Today's picture (the owner's choice, 2026-11-13): bottom left, the jacket's, the shirt's and the tie's swatches top to
+   bottom, 52 px, no rim, no names, above ✕ on days that show it; the app's drawn swatches, with a jacket's or shirt's stripes in Claude's
+   own colours as the painter draws them (measured from the photo a thin stripe blurs into the ground and nearly vanishes) and at least
+   OVL_LINE of a repeat, and a tie's pattern at half size (more repeats). Pictures only; it takes no touches and fades while zoomed. */
+const OVL_LINE=.1;
+function ovlItem(i){const s=usableSett(i),sp=i.patternSpec&&i.patternSpec.across;if(!s||!s.bands||i.type==='tie')return i;
+  let b=s.bands.map(x=>[x[0],x[1]]);if(sp&&sp.bands&&sp.bands.length===b.length)b=b.map((x,k)=>[sp.bands[k].hex||x[0],x[1]]);
+  const g=b.reduce((a,x)=>x[1]>a[1]?x:a)[0];let need=0;for(const x of b)if(x[0]&&x[0]!==g&&x[1]<OVL_LINE){need+=OVL_LINE-x[1];x[1]=OVL_LINE}
+  const gw=b.filter(x=>!x[0]||x[0]===g).reduce((a,x)=>a+x[1],0);if(gw>need)for(const x of b)if(!x[0]||x[0]===g)x[1]*=1-need/gw;
+  return {...i,sett:{...s,bands:b}}}
+const ovlSvg=i=>{const v=swatchSVG(ovlItem(i),true);if(i.type!=='tie')return v;
+  return v.replace(/<pattern ([^>]*?)>/,(m,a)=>/patternTransform="/.test(a)?`<pattern ${a.replace(/patternTransform="([^"]*)"/,'patternTransform="$1 scale(.5)"')}>`:`<pattern ${a} patternTransform="scale(.5)">`)};
+function swatchStack(o,up){const ps=[o.top,o.shirt,o.tie].filter(Boolean);if(!ps.length)return '';
+  return `<div class="swstack${up?' up':''}" role="img" aria-label="${esc(ps.map(i=>slotLabel(i===o.top?'top':i===o.shirt?'shirt':'tie',o)+': '+itemTitle(i)).join('; '))}">${ps.map(i=>`<span class="ovsw">${ovlSvg(i)}</span>`).join('')}</div>`}
 function wornBar(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),can=+d<=+T,lw=lastWorn(o);
   const pill=lw?`<small class="lastworn">Last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
@@ -1054,7 +1068,8 @@ function figureStage(o){
   const ck=comboKey(o),pend=renderPending(o),fail=renderFail[ck],stalled=!pend&&renderStalled(ck);
   const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it…':'It is being made (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made. ${/[.!?]$/.test(fail)?fail:fail+'.'}`:stalled?'This photo has been in the making for over 10 minutes, far longer than one takes. Regenerate photo in ⚙ Settings sends it again.':'';
   const ctl=`<p class="mut render-msg" id="render-msg">${pend?'<span class="spin" aria-hidden="true"></span>':''}${esc(msg)}</p>`;
-  return (photo?`<div class="fig photo" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${wornMarks(o)}</div>`
+  const T0=todayDate(),marks=+new Date(sel.getFullYear(),sel.getMonth(),sel.getDate())<=+T0;   // ✕ and ✓ show on today and past days
+  return (photo?`<div class="fig photo" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o,marks)}${wornMarks(o)}</div>`
     :`<div class="fig" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}</div>`)+ctl+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }
