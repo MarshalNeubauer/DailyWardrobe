@@ -974,3 +974,6 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cpaskbtn:disabled{opacity:.45;cursor:default}
 .cpask .cpai{margin:10px 0 0}.cpaskbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.cpaskbtns .cpaskbtn{flex:1 1 auto}
 .cpaid{color:var(--acc-ink,var(--acc))}.cpnewtx{display:block;margin:8px 0 0;font-size:12.5px;color:var(--mut)}
+.patchip,.cppat{overflow:hidden;background:var(--card)}.patchip svg,.cppat svg{width:100%;height:100%;display:block}
+.cppatbig .cpdraw{position:absolute;inset:0}.cppatbig .cpdraw svg{width:100%;height:100%;display:block}
+.cppat .cpnow{z-index:1}

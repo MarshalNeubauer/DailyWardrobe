@@ -19,14 +19,14 @@ module.exports=async({ok,chromium,url})=>{
     const b=await p.evaluate(()=>{const f=document.querySelector('#tagsw-p1');return {cap:f.textContent,html:f.innerHTML.toLowerCase()}});
     ok(/khaki nailhead/i.test(b.cap)&&b.html.includes(hex[1])&&!b.html.includes(hex[0]),'picking khaki redraws the swatch in khaki nailhead');
     const before=await p.evaluate(()=>document.querySelector('#tagsw-p1 svg').innerHTML);
-    await p.selectOption('#item-view select[onchange*="\'pattern\'"]','glen-check');await p.waitForTimeout(150);
+    await p.click('#item-view .patbtn');await p.click('#col-sheet .cptile[data-c="glen-check"]');await p.click('#col-sheet .cpbar button');await p.waitForTimeout(150);
     ok(await p.evaluate(b=>{const f=document.querySelector('#tagsw-p1');return /glen check/i.test(f.textContent)&&f.querySelector('svg').innerHTML!==b},before),'changing the pattern changes the texture');
     ok(await p.evaluate(()=>{editing='p2';renderWardrobe();return !document.querySelector('#item-view .pair')&&!!document.querySelector('#item-view .ivdraw .thumb')}),'an item without a photo keeps its single drawing');
     // Add card with a photo
     await p.evaluate(ph=>{queue.length=0;queue.push({id:'q1',type:'pants',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',photo:ph});show('add')},PH);
     ok(await p.evaluate(()=>!!document.querySelector('#queue .pair img.ph')&&/As tagged\s*grey/i.test(document.querySelector('#tagsw-q0').textContent)),'an Add card shows the photo and the tagged swatch');
     await p.click('#queue .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile:has-text("Khaki")');await p.click('#col-sheet .cpbar button');
-    await p.evaluate(()=>{const sel=[...document.querySelectorAll('#queue select')].find(s=>s.getAttribute('onchange').includes("'pattern'"));sel.value='nailhead';sel.dispatchEvent(new Event('change'))});
+    await p.click('#queue .patbtn');await p.click('#col-sheet .cptile[data-c="nailhead"]');await p.click('#col-sheet .cpbar button');
     ok(await p.evaluate(h=>{const f=document.querySelector('#tagsw-q0');return /khaki nailhead/i.test(f.textContent)&&f.innerHTML.toLowerCase().includes(h)},hex[1]),'and it follows the colour and pattern picked on the card');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

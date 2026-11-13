@@ -68,6 +68,30 @@ module.exports=async({ok,chromium,url})=>{
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="ownbottlegreen"]')),'once added it is a normal colour in the list, not offered as new again');
     await p.keyboard.press('Escape');
+    // patterns: the field is a drawn swatch; Ask Claude names the pattern in its own words; a name the app lacks is a New chip
+    // drawn like Claude's listed pick; picking it adds it to the owner's patterns (for suits, blazers and trousers) and uses it
+    await p.unroute('**/fakeworker/**');
+    await p.route('**/fakeworker/**',async r=>{asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'blazer',primaryColor:'midgrey',secondaryColor:'none',tertiaryColor:'none',pattern:'twill',
+      confidence:{type:'high',primaryColor:'high',pattern:'medium'},altColor:'none',altPattern:'windowpane',newColor:null,newPattern:null,ownColors:null,
+      ownPattern:{name:'broken twill',description:'A fine twill whose ribs reverse every few threads.',fits:false}})}})});
+    await p.evaluate(ph=>{items.push({id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'other',photo:ph,texture:ph,added:5});editing='b1';renderWardrobe()},PH);
+    const pb=await p.evaluate(()=>{const b=document.querySelector('#item-view .patbtn');return {txt:b&&b.textContent,svg:!!(b&&b.querySelector('svg')),sel:!!document.querySelector('#item-view select[onchange*="\'pattern\'"]')}});
+    ok(pb.txt==='Other'&&pb.svg&&!pb.sel,'the pattern field is a drawn swatch and a name, not a dropdown');
+    await p.click('#item-view .patbtn');
+    const ps=await p.evaluate(()=>({title:document.querySelector('#col-title').textContent,big:!!document.querySelector('#col-sheet .cppatbig svg'),tiles:document.querySelectorAll('#col-sheet .cpgrid .cptile').length,ask:/names the pattern/.test(document.querySelector('#col-sheet .cpask').textContent)}));
+    ok(ps.title==='Choose the pattern'&&ps.big&&ps.tiles>=12&&ps.ask,`the sheet draws each pattern and offers to ask Claude (${ps.tiles} patterns)`);
+    await p.click('#col-sheet .cpaskbtn');await p.waitForFunction(()=>/Claude sees/.test(document.querySelector('#col-sheet .cpask').textContent));
+    const pa=await p.evaluate(()=>({req:window.__lastReq,txt:document.querySelector('#col-sheet .cpask').textContent,tiles:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c),sel:colPick.sel}));
+    ok(asked.at(-1).freePattern===true&&asked.at(-1).freeColors===true,'Ask Claude asks for its own pattern name (and colours)');
+    ok(/Claude sees broken twill/.test(pa.txt)&&/ribs reverse/.test(pa.txt)&&pa.tiles.join()==='+new,twill,windowpane'&&pa.sel==='twill',`Claude's own name is a New chip, then its listed pick (selected) and second choice (${pa.tiles})`);
+    await p.click('#col-sheet .cptile[data-c="+new"]');
+    ok(await p.evaluate(()=>document.querySelector('#col-sheet .cpbar button').textContent==='Add Broken twill to your patterns and use it'),'picked, the button says it will be added');
+    await p.click('#col-sheet .cpbar button');await p.waitForTimeout(250);
+    const pd=await p.evaluate(()=>{const cu=(settings.custom.patterns||[]).find(x=>x.key==='own-broken-twill');return {pat:items.find(x=>x.id==='b1').pattern,cu,base:cu&&patBase('own-broken-twill'),suit:PATS_BY.suit.includes('own-broken-twill'),tie:PATS_BY.tie.includes('own-broken-twill'),btn:document.querySelector('#item-view .patbtn').textContent}});
+    ok(pd.pat==='own-broken-twill'&&pd.cu&&pd.base==='twill'&&/ribs reverse/.test(pd.cu.desc)&&pd.suit&&!pd.tie&&pd.btn==='Broken twill',`it is added to your patterns (drawn like ${pd.base}, for suits too, not ties) and set on the blazer`);
+    await p.click('#item-view .patbtn');
+    ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="own-broken-twill"]')),'once added it is a normal pattern in the list');
+    await p.keyboard.press('Escape');
     await p.evaluate(()=>{items.push({id:'t2',type:'tie',primaryColor:'red',pattern:'solid',photo:'x',added:4});editing='t2';renderWardrobe()});
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     ok(await p.evaluate(()=>/Add a close-up/.test(document.querySelector('#col-sheet .cpask').textContent)&&!document.querySelector('#col-sheet .cpaskbtn')),'without a close-up it says to add one first');

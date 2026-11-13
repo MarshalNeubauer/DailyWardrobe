@@ -193,7 +193,16 @@ ownColors — your own reading of each colour as you actually see it, NOT limite
   tertiary (the same roles as primaryColor, secondaryColor, tertiaryColor; null where those are "none"), a short colour name a
   tailor would use (e.g. "mushroom", "bottle green", "ink navy"; plain lower-case words) and its sRGB hex as the cloth looks in
   even daylight, judged mainly from the close-up. If a listed colour is truly right, you may give its name.`;
-function tagSchema(custom, single, free) {
+/* freePattern (the app's pattern picker, "Ask Claude"): Claude's own name for the pattern or weave, not limited to the list */
+const OWN_PATTERN = { type: 'object', additionalProperties: false, required: ['name', 'description', 'fits'],
+  properties: { name: { type: 'string' }, description: { type: 'string' }, fits: { type: 'boolean' } } };
+const FREE_PAT_EXTRA = `
+ownPattern — the pattern or weave in your own precise words, NOT limited to the list above, judged mainly from the close-up:
+  name: what a tailor or cloth merchant would call it, short and lower-case (e.g. "broken twill", "shepherd's check",
+  "prince of wales check with overcheck", "basketweave", "micro houndstooth", "twill with a faint windowpane");
+  description: one sentence on how it looks (structure, scale, colours, how strong), for drawing it and for a photo generator;
+  fits: true only when the listed pattern you put in "pattern" already names it fully, false when your name says more.`;
+function tagSchema(custom, single, free, freePat) {
   const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...PATTERN_LIST, ...custom.patterns.map(p => p.key)];
   const props = { ...TAG_SCHEMA.properties,
     primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
@@ -206,7 +215,8 @@ function tagSchema(custom, single, free) {
     patternBox: { anyOf: [BOX, { type: 'null' }] }, weave: { anyOf: [WEAVE, { type: 'null' }] },
   });
   if (free) props.ownColors = OWN_COLORS;
-  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : [])] };
+  if (freePat) props.ownPattern = OWN_PATTERN;
+  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : [])] };
 }
 function customText(custom) {
   let t = '';
@@ -318,7 +328,10 @@ function cleanTag(t) {
   const own = c => c && typeof c === 'object' && HEX_RE.test(c.hex || '') && /[a-z]{2}/i.test(txt(c.name, 30)) ? { name: txt(c.name, 30).toLowerCase(), hex: c.hex.toLowerCase() } : null;
   const ownColors = t.ownColors && typeof t.ownColors === 'object' && own(t.ownColors.primary)
     ? { primary: own(t.ownColors.primary), secondary: own(t.ownColors.secondary), tertiary: own(t.ownColors.tertiary) } : undefined;
-  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors };
+  const op = t.ownPattern;
+  const ownPattern = op && typeof op === 'object' && /[a-z]{2}/i.test(txt(op.name, 40))
+    ? { name: txt(op.name, 40).toLowerCase(), description: txt(op.description, 300), fits: op.fits === true } : undefined;
+  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,
@@ -1528,9 +1541,9 @@ export default {
     const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
     if (env.ANTHROPIC_API_KEY) {
       const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
-      const free = body.freeColors === true;
-      const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
-      const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
+      const free = body.freeColors === true, freePat = body.freePattern === true;
+      const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
+      const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
       if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
       return json(c.body, c.status);
     }
