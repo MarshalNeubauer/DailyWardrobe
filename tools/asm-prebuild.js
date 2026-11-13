@@ -55,8 +55,10 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
   // every look of the coming workdays, once
   const looks=await page.evaluate(async days=>{const T=todayDate(),seen=new Map();
     await asmGet(asmMasterKey(),true);
+    // the colour-coded masters (asm-color.js): painted here at their full 2880 and scaled to 2048 (a phone paints at 2048)
+    if(typeof ASM_CM_KINDS!=='undefined'){self.ASM_CM_SIZE=2880;for(const k of Object.keys(ASM_CM_KINDS))await asmGet(asmCmKey(k,'master'),true)}
     for(let i=0;i<days;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;
-      const o=planOn(d);if(!o||!asmCan(o))continue;const k=asmOutKey(o);if(!seen.has(k))seen.set(k,isoKey(d))}
+      const o=planOn(d);if(!o||!(asmCan(o)||asmCmUse(o)))continue;const k=asmOutKey(o);if(!seen.has(k))seen.set(k,isoKey(d))}
     return [...seen].map(([key,first])=>({key,first}))},DAYS);
   console.log(`${synced.items} items; ${looks.length} looks to put together in the next ${DAYS} days${DRY?' (dry run: nothing is uploaded)':''}`);
   let built=0,skipped=0,uploaded=0,failed=0;const t0=Date.now();
