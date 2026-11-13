@@ -327,6 +327,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - on a waistcoat day a pixel of the master tie's zone below the V that the suit's piece shows as neither the master's tie (hue) nor skin takes the piece (`under` in `asmCompose`): the waistcoat zone stops short of the knuckles, and filling those pixels from beside them copied one or two pixels over whole patches (grey-green while the edge ring, `lab` 7, could be a source: it took the master's green-fringed hand rim); the edge ring is no longer a source for the halo fill
 - `asmShirtOwn`: shirt-zone pixels the shirt's piece left exactly as the master (a painted shirt paints only the master's shirt) are not shirt when the piece changed most of the shirt: the SAM zone reaches over the lapel by the collar, and there the master's grey jacket was laid in as shirt
 - `asmNear` (nearest pixel of a mask, two raster passes, optionally only in a band) and `asmBlurF` (float box blur) serve these; the bench (brown suit, 2048, a computer) went from about 4.4 s to 4.7 s a picture (the painted suit's preparation, kept per session, takes most of it)
+- `ASM_SUITV` 5: the painted suit's edge fixes (outline matte, waistcoat over the tie); kept painted-suit pictures are painted again, and pictures pre-built with `npm run assemble` need building again
+
 ### `asm-worker.js`
 
 - the Web Worker that puts assembled pictures together (see `assemble.js`); in `ASSETS` in sw.js

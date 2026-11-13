@@ -469,7 +469,7 @@ const asmPhotoParts=o=>asmParts(o).filter(p=>!p.paint&&!p.tp&&!p.sp);   // the p
    within 22 L* of the master suit's median, not skin) is painted from the master's lightness alone, so no grey outline is left. The
    painted picture is the suit's piece (as a photo of the suit with its waistcoat would be), so asmCompose's jacket edge handling
    applies. Patterned suits (pinstripe, windowpane, twill, herringbone…) are still photographed. */
-const ASM_SUITV=4;   // how suits are painted: in the picture's key
+const ASM_SUITV=5;   // how suits are painted: in the picture's key (5: the edge fixes, so kept pictures are painted again)
 const asmSuitPaintable=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&((patBase(i.pattern)==='solid'&&!usableSett(i))||asmSuitBands(i));
 const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
 /* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
