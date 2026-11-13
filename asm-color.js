@@ -74,7 +74,9 @@ const ASM_CM_LIGHT={adx:5,ady:8,ar:12,ak:.45,win:.08,wd:.5,rw:3,rim:.022,te:.2,t
 /* the shirt's buttons, drawn (the owner, 2026-11-13: the open collar's placket buttons should look like real buttons): painted with the
    cloth they were ghost discs of the shirt's colour with its weave running through them. Each master's visible buttons, measured by eye on
    the 2048 painting ([x, y, radius] px at 2048; under the hand or the tie not listed); a button whose centre isn't shirt is skipped */
-const ASM_CM_BTN={'shirt-open':[[1029,428,10.5],[1015,835,10.5],[1014,1031,10.5],[1013,1224,10.5]],'shirt-tie':[[1299,870,10],[1440,955,9]]};
+const ASM_CM_BTN={'shirt-open':[[1029,428,10.5],[1015,835,10.5],[1014,1031,10.5],[1013,1224,10.5]],'shirt-tie':[[1299,870,10],[1440,955,9]],
+  // the jacket over an open collar (suit-open, built from the suit and open-collar masters, no image generator): the placket's three in the V
+  'suit-open':[[919,312,12],[974,508,12],[954,714,12]]};
 // a button: pearl on a light shirt, tonal (a little lighter than the cloth) on a dark one; a raised rim lit from the upper left, a slightly
 // dished middle, four holes with the thread between them, a soft shadow below and to the right; in the cloth's own light
 function asmCmButtons(o,P,shirt,L,gam){const pts=ASM_CM_BTN[P.kind];if(!pts)return;const S=P.S,A=P.A,f=S/2048,lum=v=>.2126*v[0]+.7152*v[1]+.0722*v[2];
