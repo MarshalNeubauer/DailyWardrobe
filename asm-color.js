@@ -38,7 +38,8 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
 /* the outfit's kind when its master is on this device (downloaded) */
 const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
-const ASM_CM_PAINTV=4;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points
+const ASM_CM_PAINTV=5;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM)
+const ASM_CM_RIM=24;   // px at 2048: how far from the wall a jacket (or shirt-master) pixel outside the SAM sleeve outline still joins the sleeve beside it
 /* a jacket whose weave the 2026-11-13 audit added (a herringbone, or an own pattern based on solid named twill): marked in its look's key,
    so only those looks are painted again (a new ASM_CM_PAINTV would repaint every look) */
 const asmCmWeaveTag=(z,i)=>{const how=asmCmRoute(i,z).how;
@@ -195,8 +196,13 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
     // the learned drift along sleeves (ASM_SLEEVE_FLOW) was fitted to the earlier master's arms: here it folds a hanging arm's stripes
     // back on themselves, so it is left out; tubes, the crease, cylinders and the forearm's scale stay
     for(const g of sg.segs)if(g.parts)for(const pp of g.parts)if(pp.fd){const n=pp.fd.D.length;pp.fd={D:new Float32Array(n),G:new Float32Array(n),k:pp.fd.k}}
-    const seg=sg.seg;let todo=[];for(let k=0;k<N;k++)if(!seg[k]&&A[GAR][k]&&!zj[k])todo.push(k);   // the soft edge outside a part takes the part beside it
-    for(let it=0;it<8&&todo.length;it++){const set=[],left=[];for(const k of todo){const x=k%S,v=(x>0&&seg[k-1])||(x<S-1&&seg[k+1])||(k>=S&&seg[k-S])||seg[k+S]||0;if(v)set.push(k,v);else left.push(k)}for(let q=0;q<set.length;q+=2)seg[set[q]]=set[q+1];todo=left}
+    // the soft edge outside a part takes the part beside it, and so does the garment's rim against the wall (within ASM_CM_RIM): the SAM
+    // sleeve outlines stop up to ~20 px short of the jacket zone's outer edge, and that stepped strip was painted as body cloth (the
+    // body's stripes running upright along each sleeve's outer edge)
+    const RR=Math.max(2,Math.round(ASM_CM_RIM*S/2048));let wall=null;
+    if(A.background){const w=new Float32Array(N);for(let k=0;k<N;k++)w[k]=A.background[k]>127?1:0;wall=asmCmBlur(w,S,RR)}
+    const seg=sg.seg;let todo=[];for(let k=0;k<N;k++)if(!seg[k]&&A[GAR][k]&&(!zj[k]||(wall&&wall[k]>0)))todo.push(k);
+    for(let it=0;it<Math.max(8,RR+2)&&todo.length;it++){const set=[],left=[];for(const k of todo){const x=k%S,v=(x>0&&seg[k-1])||(x<S-1&&seg[k+1])||(k>=S&&seg[k-S])||seg[k+S]||0;if(v)set.push(k,v);else left.push(k)}for(let q=0;q<set.length;q+=2)seg[set[q]]=set[q+1];todo=left}
     P.geo={seg,segs:sg.segs,flow:GAR==='jacket'?asmBodyFlow(zj,sm,S,S):null,gar:GAR}}
   // the tie (asmTiePrep's rules): the knot, the blade's lean and width
   if(A.tie){const wid=new Int32Array(S);let y0=S,y1=0;for(let k=0;k<N;k++)if(A.tie[k]>127){const y=(k/S)|0;wid[y]++;if(y<y0)y0=y;if(y>y1)y1=y}
