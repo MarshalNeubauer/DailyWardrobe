@@ -230,26 +230,60 @@ function leatherLayers(P,item,d,toe){
   // sneakers' textiles: canvas a fine plain weave, knit rows of small Vs; neither shines
   if(L==='canvas'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="1.4" height="1.4"><path d="M0,.35 H1.4 M0,1.05 H1.4" stroke="#000" stroke-opacity=".16" stroke-width=".3"/><path d="M.35,0 V1.4 M1.05,0 V1.4" stroke="#fff" stroke-opacity=".1" stroke-width=".3"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
   if(L==='knit'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="2" height="1.6"><path d="M0,.2 L1,1.2 L2,.2" fill="none" stroke="#000" stroke-opacity=".22" stroke-width=".35"/><path d="M0,.7 L1,1.7 L2,.7" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width=".3"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
-  if(L==='patent')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.18}" rx="${toe.r*.55}" ry="${toe.r*.09}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".75"/>`;
-  if(L==='cordovan')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.15}" rx="${toe.r*.4}" ry="${toe.r*.12}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".3"/>`;
+  const gl=toe.g??1;   // the glint's size (the traced oxford pair takes a smaller one)
+  if(L==='patent')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.18}" rx="${toe.r*.55*gl}" ry="${toe.r*.09*gl}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".75"/>`;
+  if(L==='cordovan')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.15}" rx="${toe.r*.4*gl}" ry="${toe.r*.12*gl}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity="${gl<1?.18:.3}"/>`;
   // (the last outline: a faint light edge on the dark theme, --shoe-edge, so a black shoe doesn't vanish into the dark card)
   return {defs,body:`<path d="${d}" fill="${col}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/>${tex}<path d="${d}" fill="url(#${P}hl)"/>${extra}<path d="${d}" fill="none" style="stroke:var(--shoe-edge,transparent)" stroke-width=".6"/>`,sole:mix(base,'#000',.6)};
 }
 
-/* cap-toe oxford in side profile (toe left), for wardrobe thumbnails; box 0..100 x 0..50 */
+/* cap-toe oxford: the pair as the realistic item pictures show it (the owner wanted the drawing traced from them, as the sock was):
+   traced on 2026-11-13 from the item picture of his black calf oxfords, each line placed on 3x crops of the picture and snapped to
+   its edge or seam (back shoe, front shoe, soles, linings, the quarter and facing seams, cap toes, laces); toe right, heel left,
+   the back shoe a little darker. Box 0..96 x 0..48.6, in the picture's own proportions (1 unit = 9.47 px of the 1024 px picture). */
+const SHOE_OX={bout:'M22.9,10.2 C22.2,9.2 22.4,8.8 22.4,8 C22.4,7.1 22.7,6.1 22.9,5.1 C23,4.1 23.2,2.9 23.6,2.1 C24,1.3 24.5,0.8 25.3,0.6 C26.1,0.4 27.3,0.6 28.4,0.8 C29.5,1.1 30.8,1.7 32,2.2 C33.2,2.6 34.3,3.1 35.4,3.6 C36.4,4.1 37.5,4.6 38.4,5.1 C39.3,5.5 40.2,6 41,6.1 C41.8,6.3 42.6,6.1 43.4,5.8 C44.1,5.4 45,4.7 45.7,4.1 C46.5,3.6 47.2,2.9 47.9,2.4 C48.6,1.9 49.3,1.5 50.1,1.3 C50.8,1.2 51.6,1.2 52.5,1.4 C53.3,1.6 54.2,2.2 55,2.7 C55.8,3.3 56.6,4.1 57.3,4.9 C58,5.7 58.8,6.5 59.5,7.3 C60.3,8.1 61,8.9 61.7,9.7 C62.4,10.5 63,11.3 63.7,12 C64.4,12.8 65.1,13.4 65.7,14 C66.4,14.7 67.1,15.2 67.7,15.8 C68.3,16.5 68.8,17.4 69.5,18.1 C70.3,18.9 71.1,19.7 72.2,20.4 C73.4,21.1 74.9,21.5 76.5,22.1 C78.1,22.6 80.1,23 81.7,23.5 C83.4,24 85.1,24.6 86.6,25.1 C88,25.6 89.3,26.2 90.4,26.8 C91.5,27.4 92.4,28 93.1,28.6 C93.8,29.2 94.3,29.8 94.7,30.4 C95,30.9 95.3,31.4 95.4,31.9 C95.6,32.4 95.8,32.8 95.9,33.2 C96,33.6 96,34.1 95.9,34.4 C95.8,34.8 95.6,35.2 95.3,35.5 C94.8,35.7 94.3,36 93.5,36.2 C92.7,36.4 91.6,36.5 90.5,36.6 C89.3,36.7 87.9,36.8 86.5,36.8 C85,36.9 83.2,36.9 81.6,36.9 C80.1,36.9 78.4,36.9 76.9,36.8 C75.4,36.6 74.6,36.5 72.7,35.9 C70.8,35.3 68.9,34.5 65.5,33.1 C62.2,31.6 57.2,29.5 52.6,27.2 C47.9,25 41.8,22.1 37.5,19.9 C33.3,17.6 29.4,15.4 26.9,13.8 C24.5,12.1 23.7,11.2 22.9,10.2 Z',
+  blin:'M25.8,0.8 C26.3,0.7 27.4,0.9 28.5,1.2 C29.5,1.5 30.8,2 32,2.5 C33.2,3 34.3,3.5 35.3,4.1 C36.4,4.5 37.5,5 38.2,5.4 C39,5.8 39.7,6.2 39.8,6.5 C39.8,6.8 39.3,7.1 38.6,7.2 C37.9,7.2 36.6,7.2 35.5,6.9 C34.4,6.7 33.2,6.2 32,5.8 C30.8,5.3 29.6,4.7 28.7,4.2 C27.7,3.6 26.8,3 26.2,2.6 C25.6,2.1 25.1,1.7 25.1,1.4 C25,1.1 25.2,0.8 25.8,0.8 Z',
+  bwelt:'M72.9,33.8 C73.8,33.8 76.5,33.8 78.3,33.8 C80.2,33.8 82.1,33.8 84,33.7 C85.8,33.7 88,33.5 89.6,33.4 C91.1,33.2 92.5,33 93.5,32.7 C94.4,32.4 95,32.1 95.4,31.9',
+  bfac:'M46.8,3.2 C46.9,3.4 47.4,4 47.9,4.5 C48.3,5 49,5.7 49.5,6.4 C50.1,7.1 50.7,8 51.3,8.8 C51.8,9.6 52.3,10.3 52.6,11.1 C53,11.9 53.3,12.6 53.4,13.3 C53.5,14 53.4,14.7 53.4,15.3 C53.4,15.8 53.2,16.6 53.1,16.9',
+  bqtr:'M42.6,14.9 C43,14.9 44.5,14.8 45.4,14.9 C46.3,15 47.1,15.2 48,15.5 C48.9,15.7 49.7,16.2 50.6,16.6 C51.6,17 52.8,17.5 53.9,17.8 C54.9,18.2 56.1,18.5 57.2,18.6 C58.2,18.7 59.2,18.6 60.1,18.4 C61,18.3 61.8,17.8 62.6,17.5 C63.4,17.2 64.2,16.8 65,16.5 C65.7,16.1 66.8,15.6 67.2,15.4',
+  bcap:'M77.4,20.7 C76.9,20.9 75.5,21.4 74.7,21.9 C73.8,22.3 73,22.8 72.2,23.4 C71.5,24 70.8,24.7 70.2,25.5 C69.7,26.1 69.3,26.9 68.9,27.7 C68.5,28.5 68.4,29.2 68.2,29.9 C67.9,30.7 67.7,31.8 67.6,32.2',
+  fout:'M2.7,7.6 C3.3,6.8 4.1,6.2 5.1,6 C6.1,5.7 7.4,5.9 8.6,6.1 C9.8,6.3 11.1,6.8 12.2,7.1 C13.3,7.4 14.3,7.9 15.2,8.2 C16.2,8.6 17.1,8.8 18,9.1 C18.9,9.3 19.7,9.7 20.6,9.8 C21.4,10 22.2,10.2 23,10.1 C23.9,10.1 24.7,9.8 25.6,9.5 C26.5,9.1 27.4,8.6 28.3,8.1 C29.1,7.6 29.9,7 30.7,6.6 C31.4,6.2 31.9,5.9 32.5,5.9 C33.1,5.8 33.6,6 34.4,6.4 C35.1,6.9 36.1,7.6 36.8,8.3 C37.6,9 38.3,10 39,10.9 C39.7,11.7 40.2,12.6 40.8,13.4 C41.5,14.2 42.1,14.9 42.9,15.7 C43.6,16.4 44.5,17.3 45.3,18.1 C46.2,18.9 47,19.7 47.7,20.6 C48.5,21.4 49.1,22.3 49.8,23.1 C50.6,23.9 51.2,24.7 52,25.3 C52.9,26 53.7,26.6 54.7,27.1 C55.7,27.7 56.9,28.1 58,28.4 C59,28.8 60.2,28.9 61.2,29.3 C62.2,29.5 63,29.8 63.9,30.3 C64.8,30.8 65.7,31.5 66.7,32.2 C67.7,32.8 68.9,33.6 70,34.3 C71,35 72,35.6 72.9,36.2 C73.7,36.9 74.4,37.5 75,38.1 C75.5,38.8 75.9,39.3 76.3,39.9 C76.6,40.4 76.8,40.9 76.9,41.4 C77.1,41.9 77.4,42.3 77.4,42.8 C77.5,43.2 77.5,43.7 77.3,44.1 C77.1,44.5 76.8,44.9 76.4,45.3 C76,45.6 75.5,45.9 74.8,46.3 C74.1,46.6 73.4,46.8 72.3,47.1 C71.3,47.4 70,47.7 68.5,47.9 C67.1,48.1 65.4,48.2 63.7,48.3 C62,48.4 60.1,48.4 58.4,48.4 C56.7,48.4 54.9,48.4 53.2,48.3 C51.5,48.2 50,48.1 48.4,47.9 C46.8,47.7 45.3,47.5 43.7,47.3 C42.2,47 40.8,46.7 39.4,46.4 C38,46 36.8,45.7 35.4,45.3 C34.1,44.8 32.9,44.3 31.4,43.7 C29.8,43 28.1,42.1 26.1,41.2 C24.2,40.3 21.8,39.1 19.7,38.1 C17.7,37.1 15.6,36 14.2,35.2 C12.7,34.4 10.8,33.2 10.8,33.2 C10.8,33.2 10.7,37.8 10.7,37.8 C10.7,37.8 8.2,37 7,36.5 C5.8,36.1 4.6,35.6 3.4,35 C2.3,34.4 0.2,33 0.2,33 C0.2,33 0.1,31.6 0.1,30.6 C0,29.5 0,26.7 0,26.7 C0,26.7 0.1,24.5 0.2,23.3 C0.3,22 0.3,20.6 0.4,19.2 C0.5,17.8 0.6,16.4 0.8,15 C1,13.6 1.2,12.2 1.5,11 C1.8,9.8 2.2,8.4 2.7,7.6 Z',
+  flin:'M4.1,7.2 C4.1,6.7 4.5,6.4 5.3,6.3 C6.1,6.2 7.4,6.5 8.6,6.8 C9.7,7 11,7.4 12.1,7.8 C13.2,8.1 14.2,8.5 15.1,8.9 C16.1,9.2 17,9.5 18,9.7 C18.9,10 19.8,10.1 20.5,10.3 C21.2,10.5 22,10.6 22.2,10.8 C22.5,11 22.5,11.2 22.2,11.6 C21.9,12 21.1,12.5 20.4,12.9 C19.6,13.4 18.7,13.8 17.8,14.2 C17,14.5 16,14.7 15.1,14.7 C14.2,14.8 13.3,14.8 12.4,14.6 C11.5,14.5 10.7,14.2 9.8,13.8 C9,13.4 8.1,12.7 7.4,12 C6.6,11.3 5.7,10.3 5.1,9.5 C4.6,8.7 4,7.8 4.1,7.2 Z',
+  fwelt:'M0.3,26.7 C1,27 2.7,27.7 4,28.3 C5.3,28.8 6.9,29.3 8.3,29.8 C9.7,30.3 11,30.7 12.3,31.3 C13.5,31.8 14.6,32.4 15.8,33.1 C17,33.7 18.2,34.4 19.3,35.2 C20.5,36 21.7,36.8 22.9,37.6 C24,38.4 25.1,39.2 26.1,39.9 C27.1,40.6 28,41.2 29,41.8 C30,42.2 30.9,42.7 32.3,43.1 C33.6,43.5 35.2,43.8 37.3,44 C39.3,44.3 42.1,44.6 44.7,44.8 C47.2,45 50.1,45.1 52.6,45.2 C55.1,45.3 57.3,45.3 59.5,45.3 C61.6,45.2 63.7,45.1 65.5,45 C67.4,44.8 69.2,44.7 70.5,44.4 C72,44.1 73,43.8 73.9,43.5 C74.8,43.1 75.4,42.7 75.9,42.3 C76.4,41.9 76.7,41.4 76.9,41.2',
+  fheel:'M0.3,30.9 C1,31.1 3.2,31.7 4.5,32 C5.9,32.3 7.2,32.6 8.2,32.9 C9.2,33.1 10.2,33.3 10.7,33.4',
+  fcnt:'M1.4,15.4 C1.8,15.7 3,16.6 3.9,17.2 C4.6,17.8 5.5,18.4 6.2,19.1 C7,19.7 7.7,20.4 8.3,21.1 C9,21.8 9.6,22.4 10,23.2 C10.5,23.9 11,24.7 11.2,25.5 C11.5,26.2 11.6,27 11.6,27.8 C11.6,28.6 11.2,29.9 11.2,30.3',
+  fqtr:'M11.9,25.9 C12.3,25.6 13.3,24.6 14,24.1 C14.6,23.6 15.2,23.1 15.9,22.8 C16.6,22.4 17.4,22.2 18.2,22 C19.1,21.9 20.1,21.8 21.1,21.9 C22.1,21.9 23.2,22 24.2,22.3 C25.2,22.5 26.1,22.9 27.1,23.3 C28,23.8 28.9,24.5 29.9,25.1 C30.8,25.6 31.9,26.3 32.9,26.7 C34,27.1 35.1,27.5 36.1,27.6 C37.1,27.6 38.1,27.5 39,27.2 C39.9,26.9 40.7,26.4 41.5,25.9 C42.3,25.5 43.1,24.8 43.8,24.3 C44.6,23.7 45.6,22.8 45.9,22.5',
+  ffac:'M25.7,9.7 C25.9,10 26.7,10.9 27.2,11.6 C27.8,12.3 28.3,13 28.8,13.8 C29.4,14.5 29.9,15.4 30.4,16.3 C30.8,17.1 31.2,18.1 31.5,18.9 C31.8,19.8 31.9,20.6 32,21.5 C32,22.3 31.8,23.1 31.7,23.9 C31.5,24.6 31,25.6 30.9,25.9',
+  fcap:'M46,45.1 C46.1,44.6 46.3,43.2 46.5,42.3 C46.6,41.3 46.8,40.3 47,39.4 C47.4,38.5 47.7,37.5 48.2,36.6 C48.6,35.8 49.2,35 49.8,34.2 C50.4,33.4 51.1,32.7 51.9,32 C52.7,31.3 53.7,30.7 54.5,30.2 C55.4,29.7 56.3,29.4 57.1,29.2 C57.9,29 58.9,28.9 59.2,28.8',
+  fslit:'M33.3,6.2 C34.3,7.6 37.3,11.8 39.4,14.6 C41.4,17.4 44.4,21.6 45.4,23',
+  flace:'M30.2,10 L35.7,7.8 M32.7,12.7 L38,10.3 M34.9,15.3 L40.3,12.9 M37,18 L42.6,15.4 M39.1,20.7 L44.7,18.3 M41.2,23.3 L46.8,20.9',
+  blace:'M51.3,3.7 L55.2,2.6 M53.4,5.8 L57.1,4.8 M55.6,8 L59.2,7 M57.7,10.6 L61.4,9.3 M59.8,12.8 L63.7,11.6 M61.9,15.3 L66.1,14',
+  fsole:'M0.3,26.7 L4,28.3 L8.3,29.8 L12.3,31.3 L15.8,33 L19.3,35.2 L22.8,37.6 L26.1,39.9 L29,41.7 L32.3,43.1 L37.3,44 L44.7,44.8 L52.6,45.2 L59.5,45.3 L65.5,45 L70.5,44.4 L73.9,43.5 L75.9,42.3 L76.9,41.2 L78.5,40.4 L78.5,51 L-1.8,51 L-1.8,25.7 Z',
+  bsole:'M72.9,33.8 L78.3,33.8 L83.9,33.7 L89.6,33.3 L93.4,32.7 L95.4,31.9 L97.5,29.9 L97.5,40.4 L72.1,40.4 Z',
+  fstitch:'M4,29 L8.3,30.5 L12.3,32 L15.8,33.8 L19.3,35.9 L22.8,38.3 L26.1,40.7 L29,42.5 L32.3,43.8 L37.3,44.8 L44.7,45.5 L52.6,45.9 L59.5,46 L65.5,45.7 L70.5,45.1 L73.9,44.2 L75.9,43.1',
+  bstitch:'M72.9,34.4 L78.3,34.5 L83.9,34.4 L89.6,34 L93.4,33.3'};
 function drawOxfordSide(item,P){
-  const U='M5,39 C2,34 4,30 12,28.5 C24,26.5 34,23 41,18 C45,15 48,13 52,12.5 L83,11 C90,10.8 94.5,14 95,21 L95,39 Z';
-  const lay=leatherLayers(P,item,U,{x:16,y:31,r:16,rot:-12}),lace=item?mix(colOf(item),'#000',.45):'#111';
-  let eyelets='';for(let k=0;k<5;k++){const x=53+k*2.6,y=13.4-k*.12;eyelets+=`<circle cx="${x}" cy="${y+1.4}" r=".55" fill="#000" opacity=".55"/>`}
-  return `<defs>${lay.defs}</defs>`+
-    `<path d="M4,39 C4,43.5 6.5,45.5 12,45.5 L58,45.5 C64,43 70,43 74,45.5 L94,45.5 L95.5,39 Z" fill="${lay.sole}"/>${lay.body}`+
-    `<path d="M6,39.6 L94,39.6" stroke="#fff" stroke-opacity=".22" stroke-width=".35" stroke-dasharray=".8 .6"/>`+
-    `<path d="M21,27.3 C19,31 19,36 21,39" fill="none" stroke="#000" stroke-opacity=".4" stroke-width=".6"/>`+
-    `<path d="M22.6,27 C20.6,31 20.6,36 22.6,39" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".35" stroke-dasharray=".7 .5"/>`+
-    `<path d="M47,15.4 C50,24 56,32 62,39" fill="none" stroke="#000" stroke-opacity=".38" stroke-width=".6"/>`+
-    `<path d="M84,11 C82,22 83,32 86,39" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".5"/>`+
-    `<path d="M52,12.6 L83,11.1" stroke="#000" stroke-opacity=".5" stroke-width=".7"/>`+eyelets+
-    `<path d="M53.5,14.2 L56,15.6 M56,14.1 L58.6,15.5 M58.6,14 L61.2,15.4 M61.2,13.8 L63.8,15.2" stroke="${lace}" stroke-width=".55"/>`;
+  const S=SHOE_OX,base=item?colOf(item):'#2b2b2e',L=item&&item.leather||'calf';
+  const f=leatherLayers(P+'f',item,S.fout,{x:67.9,y:39.4,r:17,rot:-8,g:.5}),b=leatherLayers(P+'b',item,S.bout,{x:88,y:29.9,r:12,rot:-8,g:.5});
+  const lace=item?mix(base,'#000',.45):'#111',laceHi=mix(lace,'#fff',lum(base)>.35?.15:.3),lin=mix('#a86a3e','#000',.18),linD=mix(lin,'#000',.35);
+  const seam=d=>`<path d="${d}" fill="none" stroke="#000" stroke-opacity=".42" stroke-width=".45"/><path d="${d}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".28" stroke-dasharray=".7 .5" transform="translate(.35 .3)"/>`;
+  const shine=L==='suede'||L==='canvas'||L==='knit'?0:L==='patent'?.3:.13;
+  return `<g transform="translate(0 2)"><defs>${b.defs}${f.defs}<clipPath id="${P}bc"><path d="${S.bout}"/></clipPath><clipPath id="${P}fc"><path d="${S.fout}"/></clipPath>`+
+    `<linearGradient id="${P}ln" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lin}"/><stop offset="1" stop-color="${linD}"/></linearGradient><radialGradient id="${P}q" gradientUnits="userSpaceOnUse" cx="34" cy="22.5" r="12"><stop offset="0" stop-color="#fff" stop-opacity="${shine}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>`+
+    // the back shoe: leather, a little darker, its sole, lining, seams and laces, and the shadow the front shoe casts on it
+    b.body+`<path d="${S.bout}" fill="#000" opacity=".14"/>`+
+    `<g clip-path="url(#${P}bc)"><path d="${S.bsole}" fill="${b.sole}"/><path d="${S.bstitch}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".3" stroke-dasharray=".6 .5"/></g>`+
+    `<path d="${S.bwelt}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".4"/>`+
+    `<path d="${S.blin}" fill="url(#${P}ln)" stroke="${linD}" stroke-width=".35"/>`+seam(S.bfac)+seam(S.bqtr)+seam(S.bcap)+
+    `<path d="${S.blace}" stroke="${lace}" stroke-width="1" stroke-linecap="round"/><path d="${S.blace}" stroke="${laceHi}" stroke-width=".3" stroke-linecap="round" transform="translate(0 -.25)"/>`+
+    `<g clip-path="url(#${P}bc)"><path d="${S.fout}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="2.6"/></g>`+
+    // the front shoe
+    f.body+`<path d="${S.fout}" fill="url(#${P}q)"/>`+
+    `<g clip-path="url(#${P}fc)"><path d="${S.fsole}" fill="${f.sole}"/><path d="${S.fstitch}" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width=".3" stroke-dasharray=".7 .5"/></g>`+
+    `<path d="${S.fwelt}" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".45"/><path d="${S.fheel}" fill="none" stroke="#000" stroke-opacity=".4" stroke-width=".4"/>`+
+    `<path d="${S.flin}" fill="url(#${P}ln)" stroke="${linD}" stroke-width=".35"/>`+seam(S.fcnt)+seam(S.fqtr)+seam(S.ffac)+seam(S.fcap)+
+    `<path d="${S.fslit}" fill="none" stroke="#000" stroke-opacity=".55" stroke-width=".7"/>`+
+    `<path d="${S.flace}" stroke="${lace}" stroke-width="1.05" stroke-linecap="round"/><path d="${S.flace}" stroke="${laceHi}" stroke-width=".32" stroke-linecap="round" transform="translate(0 -.27)"/></g>`;
 }
 
 /* the other shoe styles, in the same side profile and box as the oxford (toe left, sole on y≈39–45): each must read as what it is */
