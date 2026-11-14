@@ -8,6 +8,10 @@
        size or smaller (job.size <= ASM_SIZE: the computer's 2880 pre-build stays on the CPU)
      - the jacket a solid colour, or a plain one- or two-colour twill (asmTwillTex: not herringbone, linen or tweed); dark cloths take the
        full look (ASM_CM_LOOK), lighter ones the folds' lighting, as on the CPU
+     - (stage 2) a jacket read in bands (asmSuitTex: pinstripes, chalk stripes, windowpanes, checks in one or two colours): its tile uploaded
+       as a texture and read at four points a pixel as asmCmAt does; a stripe's breakup (T.k, faded between stripes like asmCellV), its
+       softness and minimum widths (already in the tile), its steeper shading on a dark ground, and no look or lighting (kept as it was);
+       the twill or herringbone grain under it (asmClothOf, the herringbone's columns faded at their edges). Not linen (stage 3)
      - the shirt and tie solid colours; skin, watch and the dark zone (the half-hidden button drawn as a horn button) as on the CPU
      - the background picture darkened by the figure's shadow and dithered; the lighting (ASM_CM_LIGHT)
      - the jacket's cloth positions as on the CPU (uvAt): the master's solved positions (job.geoU/geoV, asmGeoPrep: the body's through the
@@ -19,7 +23,8 @@
    CPU (asmGlPack) and uploaded as textures (asmGlUpload); each look sets a few uniforms, draws one full-screen triangle and reads the
    picture back. A lost context (webglcontextlost) paints on the CPU and tries the graphics chip again after ASM_GL_RETRY_MS. */
 const ASM_GL_SEGS=7;   // body + two sleeves + two lapels (and room)
-const ASM_GL_RETRY_MS=60e3;   // after a lost context, the CPU paints this long before the graphics chip is tried again
+const ASM_GL_TILE=4096;   // a band tile larger than this either way stays on the CPU (asmSuitTex's are about 256 across)
+const ASM_GL_RETRY_MS=60e3;  // after a lost context, the CPU paints this long before the graphics chip is tried again
 const ASM_GL='asm_gl';   // localStorage: '0' = this phone paints every picture on the processor (Settings → Outfit pictures → Advanced)
 const asmGlPref=()=>{try{return localStorage.getItem(ASM_GL)!=='0'}catch{return true}};
 let asmGlState=null,asmGlNone=false,asmGlEver=false,asmGlRetry=0,asmGlPageOk=null,asmGlLast=null;
@@ -30,9 +35,16 @@ function asmGlWhy(job,P){if(!job||job.cm!=='suit')return 'master '+(job&&job.cm)
   const cl=job.cloth||{};for(const z of ['jacket','tie','shirt'])if(!cl[z])return 'no '+z;
   if(cl.tie.tie||cl.tie.tile||cl.tie.suit)return 'patterned tie';if(cl.shirt.tile||cl.shirt.suit||cl.shirt.tie)return 'patterned shirt';
   const j=cl.jacket;if(j.tile||j.tie)return 'jacket drawn from a tile';
-  if(j.suit){const T=j.suit,C=T.cloth;
-    if(!C||C.kind!=='twill'||T.linen||T.tweed||T.k!=null||T.wv||T.TW!==1||T.TH!==1||!C.ss||C.yarn||C.float||C.grain||C.mottle||C.thin||C.soft||C.brk||C.pbrk)
-      return 'jacket cloth '+(T.k!=null?'bands':C&&C.kind||'other')}
+  if(j.suit){const T=j.suit,C=T.cloth,t=T.t||T.c;
+    // (stage 2) a band tile (asmSuitTex: stripes, checks, windowpanes, one or two colours) with or without the stripe breakup (T.k), on
+    // no grain, the linen texture (asmLinenTile: a linen windowpane), or a plain twill or herringbone grain (asmClothOf: no yarn, floats,
+    // grain cells, mottle or breaks: those are stage 3's)
+    if(T.tweed||T.wv)return 'jacket cloth '+(T.tweed?'tweed':'small figure');
+    if(!t||!(T.TW>=1&&T.TH>=1)||t.length<3*T.TW*T.TH)return 'jacket cloth without its tile';
+    if(T.TW>ASM_GL_TILE||T.TH>ASM_GL_TILE)return 'jacket tile too large';
+    if(C&&!T.linen&&((C.kind!=='twill'&&C.kind!=='herringbone')||C.yarn||C.float||C.grain||C.mottle||C.thin||C.soft||C.brk||C.pbrk))return 'jacket cloth '+(C.kind||'other');
+    if(T.k!=null&&!(T.g&&T.blen>0&&T.mm>0))return 'jacket stripe without its ground';
+    if((T.TW>1||T.TH>1)&&!(T.mm>0))return 'jacket tile without its size'}
   if(!P)return '';
   if(!P.bgShadow)return 'no background shadow';if(!P.lx)return 'no lighting';
   const g=P.geo;if(!g||g.gar!=='jacket')return 'no jacket geometry';if(g.segs.length>ASM_GL_SEGS)return 'too many parts';
@@ -92,16 +104,20 @@ function asmGlPack(P){const S=P.S,N=P.N,A=P.A,L=ASM_LIN,M=P.M,LX=P.lx,geo=P.geo,
         const Lm=.2126*c[0]+.7152*c[1]+.0722*c[2],shd=Math.min(1,Math.max(.35,Lm/.02));keep[j+3]+=al*L0*shd;continue}   // the colour (the jacket's) is the look's: weight here
       keep[j]+=al*c[0];keep[j+1]+=al*c[1];keep[j+2]+=al*c[2]}}
   // the geometry: per part a row of (middle, half width) along it; the body's flow table
-  const G=new Float32Array(4*ASM_GL_SEGS*9),rows=[];let tw=1;
+  // (Q: the crease's choice of part in whole numbers, asmTubePartQ's: the crease point and direction, the two thresholds, each part's
+  // point and normal)
+  const G=new Float32Array(4*ASM_GL_SEGS*9),Q=new Int32Array(4*ASM_GL_SEGS*4),rows=[];let tw=1;
   if(geo)geo.segs.forEach((g,si)=>{const b=4*si*9;
-    if(g.parts){G[b]=1;G[b+1]=g.parts.length;const k=g.crease;if(k){G[b+2]=1;G.set([k.x,k.y,k.mx,k.my],b+4);G.set([k.r0,k.r1,0,0],b+8)}
+    if(g.parts){G[b]=1;G[b+1]=g.parts.length;const k=g.crease;if(k){G[b+2]=1;G.set([k.x,k.y,k.mx,k.my],b+4);G.set([k.r0,k.r1,0,0],b+8);
+      const U=g.parts[0],L=g.parts[1]||U;Q.set([asmTq(k.x),asmTq(k.y),asmTqn(k.mx),asmTqn(k.my),asmTqr(k.r0),asmTqr(k.r1),0,0,
+        asmTq(U.x),asmTq(U.y),asmTqn(U.nx),asmTqn(U.ny),asmTq(L.x),asmTq(L.y),asmTqn(L.nx),asmTqn(L.ny)],16*si)}
       g.parts.forEach((p,pi)=>{const o=b+12+12*pi;G.set([p.x,p.y,p.dx,p.dy],o);G.set([p.nx,p.ny,p.fd?p.fd.k:1,p.t?1:0],o+4);
         if(p.t){G.set([p.t.a0,p.t.bs,p.t.n,rows.length],o+8);rows.push(p.t);tw=Math.max(tw,p.t.n)}})}
     else if(si&&g.cs!=null){G[b]=2;G.set([g.cs,g.sn,g.cx,g.cy],b+4)}});
   const tube=new Float32Array(2*tw*Math.max(1,rows.length));rows.forEach((t,r)=>{for(let i=0;i<t.n;i++){tube[2*(r*tw+i)]=t.c[i];tube[2*(r*tw+i)+1]=t.R[i]}});
   const F=ASM_FLOW,fl=geo&&geo.flow,flow=new Float32Array(2*F.nu*F.nv);if(fl)for(let i=0;i<F.nu*F.nv;i++){flow[2*i]=fl.D[i];flow[2*i+1]=fl.G[i]}
   const row=new Int32Array(2*S).fill(-1);if(LX.tl)for(let y=0;y<S;y++){row[2*y]=LX.tl[y];row[2*y+1]=LX.tr[y]}
-  return {S,a,s4,l1,l2,keep,G,tube,tw,th:Math.max(1,rows.length),flow,fl:fl?[fl.mid,fl.hw,fl.ysh,1]:[0,1,0,0],row,sm:[LX.sm.jacket||0,LX.sm.shirt||0]}}
+  return {S,a,s4,l1,l2,keep,G,Q,tube,tw,th:Math.max(1,rows.length),flow,fl:fl?[fl.mid,fl.hw,fl.ysh,1]:[0,1,0,0],row,sm:[LX.sm.jacket||0,LX.sm.shirt||0]}}
 /* ---- the shaders */
 const asmGlF=v=>{const s=String(+v);return /[.e]/.test(s)?s:s+'.0'};
 /* asmH32 and asmCellV (asm-color.js) in GLSL: the same bits from the same cells; a later stage's cloth uses these too */
@@ -117,9 +133,11 @@ float fdiv3(float v){float r=floor(v+.5);return abs(v-r)<1e-3&&r>=0.?float(int(r
 function asmGlFrag(){const LK=ASM_CM_LOOK,LI=ASM_CM_LIGHT,F=ASM_FLOW,f=asmGlF;
   return `#version 300 es
 precision highp float;precision highp int;precision highp usampler2D;precision highp isampler2D;
-uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR;uniform sampler2D uKeep,uLin,uTube,uFlow,uGeo;uniform isampler2D uRow;
-uniform int uS,uHasGeo;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform vec4 uFl;uniform vec2 uSm;
-uniform vec3 uJ,uJ2,uSt,uTi,uBtn;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uTieK,uLs,uAA;
+uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR,uGeoI;uniform sampler2D uKeep,uLin,uTube,uFlow,uGeo,uTile;uniform isampler2D uRow;
+uniform int uS,uHasGeo,uGeo16;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform ivec4 uQ[${ASM_GL_SEGS*4}];uniform vec4 uFl;uniform vec2 uSm;
+uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uTieK,uLs,uAA;
+uniform ivec4 uTT;uniform vec4 uRep,uSk,uCl;   // the band tile (TW, TH, has a tile, has the stripe breakup); its repeat, the breakup, the grain
+uniform sampler2D uLinT;uniform int uLinen,uLinN;uniform float uLsc;   // the linen texture (asmLinenTile, uLinN square), on a linen cloth
 out vec4 oC;
 const float PI=3.14159265358979;
 float lum(vec3 c){return .2126*c.r+.7152*c.g+.0722*c.b;}
@@ -127,9 +145,10 @@ float lin(uint v){return texelFetch(uLin,ivec2(int(v),0),0).r;}
 ${asmGlHashGlsl()}
 // --- uvAt (asmTubePart, asmTubeRaw, asmTubeAt, asmFlowAt, asmUvAt)
 vec2 tubeRaw(int o,vec2 P){vec4 a=uG[o],n=uG[o+1];vec2 d=P-a.xy;return vec2(dot(d,n.xy),dot(d,a.zw));}
-int tubePart(int b,vec2 P){int U=b+3,L=b+6;if(uG[b].z<.5)return U;vec4 k=uG[b+1];vec2 r=uG[b+2].xy;
-  if(dot(P-k.xy,k.zw)>0.)return dot(P-uG[L].xy,uG[L+1].xy)< -1.3*r.y?U:L;return dot(P-uG[U].xy,uG[U+1].xy)< -1.3*r.x?L:U;}
-vec2 tubeAt(int b,vec2 P){int o=tubePart(b,P);vec2 r=tubeRaw(o,P);vec4 q=uG[o+1];if(q.w<.5)return r;vec4 t=uG[o+2];float n=t.z;
+// which part (asmTubePartQ): in whole numbers, the point in 1/16 px, so the choice is the CPU's exactly
+int tubePart(int si,int b,vec2 P){int U=b+3,L=b+6;if(uG[b].z<.5)return U;int q=4*si;ivec2 I=ivec2(floor(P*16.+.5));ivec4 k=uQ[q],pu=uQ[q+2],pl=uQ[q+3];ivec2 th=uQ[q+1].xy;
+  ivec2 d=I-k.xy;if(d.x*k.z+d.y*k.w>0){ivec2 e=I-pl.xy;return e.x*pl.z+e.y*pl.w<th.y?U:L;}ivec2 e=I-pu.xy;return e.x*pu.z+e.y*pu.w<th.x?L:U;}
+vec2 tubeAt(int si,int b,vec2 P){int o=tubePart(si,b,P);vec2 r=tubeRaw(o,P);vec4 q=uG[o+1];if(q.w<.5)return r;vec4 t=uG[o+2];float n=t.z;
   float f=clamp((r.y-t.x)/t.y-.5,0.,n-1.);float i=floor(f),j=min(n-1.,i+1.),w=f-i;int row=int(t.w);
   vec2 ci=texelFetch(uTube,ivec2(int(i),row),0).xy,cj=texelFetch(uTube,ivec2(int(j),row),0).xy;float c=ci.x*(1.-w)+cj.x*w,Rh=ci.y*(1.-w)+cj.y*w,R=Rh*${f(ASM_TUBE_K)};
   float x=(r.x-c)/R,ax=abs(x);float u=ax<.95?R*asin(x):sign(x)*R*(1.2532+(ax-.95)*3.2026);return vec2(u,r.y)/q.z;}
@@ -138,15 +157,17 @@ vec2 flowAt(vec2 P){float u=(P.x-uFl.x)/uFl.y,au=abs(u);float x=au/${f(F.d)},y=(
   vec2 a=texelFetch(uFlow,ivec2(i,j),0).xy,b=texelFetch(uFlow,ivec2(i+1,j),0).xy,c=texelFetch(uFlow,ivec2(i,j+1),0).xy,d=texelFetch(uFlow,ivec2(i+1,j+1),0).xy;
   vec2 v=a*(1.-fx)*(1.-fy)+b*fx*(1.-fy)+c*(1.-fx)*fy+d*fx*fy;return vec2(P.x-(u<0.?-1.:1.)*uFl.y*v.x,P.y+uFl.y*v.y);}
 // the solved cloth position (asmUvAt): from the four pixel centres around P that belong to the same piece r as the pixel p
+// (the positions as the maps hold them, 16-bit (value+1024)*16, at a phone's 2048; floats at another size)
+vec2 geoV(ivec2 c){return uGeo16==1?vec2(texelFetch(uGeoI,c,0).xy)/16.-1024.:texelFetch(uGeo,c,0).xy;}
 vec2 geoAt(ivec2 p,uint r,vec2 P){vec2 q=P-.5,f0=floor(q),fq=q-f0;ivec2 b=ivec2(f0);vec2 s=vec2(0.);float sw=0.;
   for(int j=0;j<2;j++)for(int i=0;i<2;i++){ivec2 c=b+ivec2(i,j);if(c.x<0||c.y<0||c.x>=uS||c.y>=uS)continue;if(texelFetch(uGR,c,0).r!=r)continue;
-    float w=(i==1?fq.x:1.-fq.x)*(j==1?fq.y:1.-fq.y);s+=w*texelFetch(uGeo,c,0).xy;sw+=w;}
-  return sw>1e-6?s/sw:texelFetch(uGeo,p,0).xy;}
+    float w=(i==1?fq.x:1.-fq.x)*(j==1?fq.y:1.-fq.y);s+=w*geoV(c);sw+=w;}
+  return sw>1e-6?s/sw:geoV(p);}
 vec2 uvAt(int si,vec2 P,ivec2 p){
   if(uHasGeo==1){uint r=texelFetch(uGR,p,0).r;
     if(r==1u&&uFl.w>.5&&si==0)return flowAt(geoAt(p,r,P));   // the body: solved, then through the stripe flow
     if(r>=10u&&r<60u)return geoAt(p,r,P);}                     // sleeve parts and lapels, solved in the painter's own frames
-  int b=si*9;float ty=uG[b].x;if(ty>.5&&ty<1.5)return tubeAt(b,P);
+  int b=si*9;float ty=uG[b].x;if(ty>.5&&ty<1.5)return tubeAt(si,b,P);
   if(ty>1.5){vec4 g=uG[b+1];return vec2((P.x-g.z)*g.x+(P.y-g.w)*g.y,(P.y-g.w)*g.x-(P.x-g.z)*g.y);}return uFl.w>.5?flowAt(P):P;}
 // --- the look and the lighting (lookBase, lookAfter, lxF, lxPost)
 vec3 tone(vec3 c){vec3 v=pow(max(c,0.),vec3(1./2.2)),w=1.-v,v2=v*v;v=v+${f(LK.toe)}*w*w*w-${f(LK.sh)}*v2*v2;return pow(max(v,0.),vec3(2.2));}   // (cubes written out: GLSL's pow is undefined below 0)
@@ -163,29 +184,58 @@ vec3 post(vec3 c,int z,uint k,int x,ivec2 tr,float s,float rim){float h=0.,sl=mi
 // a garment's flat colour (lookBase if dark), times its light (above 1: neutral light), then the look's after-part
 vec3 flatC(vec3 base,float s,bool look,float lift,float bo,bool shirt,int x,int y){if(look)base=lookBase(base,lift);vec3 c;
   if(s<=1.)c=base*s;else c=base+(s-1.)*lum(base);if(look)c=lookAfter(c,s,shirt,x,y,true,1.,bo);return c;}
-// the plain twill (suitCol with asmTwillTex: a 1x1 tile, ribs averaged over four points a pixel, its fleck (asmCellV), a second colour)
-vec3 twill(int si,int x,int y,ivec2 p,float sh,out float tw){vec3 cm=4.*uJ;float pitch=uTw.x;vec2 c=uvAt(si,vec2(float(x)+.5,float(y)+.5),p);
-  float fk=cellV((c.x+c.y)/2.,c.y/3.,73856093u,19349663u,1024u);float ph=0.;
-  for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(float(x)+(float(e)+.5)/2.,float(y)+(float(a)+.5)/2.),p);ph+=cos(2.*PI*fract((s.y+s.x)/pitch))/4.;}
-  // ribs squeezed finer than the picture can show, softened (ASM_CM_AA, #360): a Gaussian pixel's response at the rib's cycles per pixel
-  // against its response where the cloth faces the camera; a step into another piece (g2 >= 2.25) is left alone
-  if(uAA>0.){float X=float(x),Y=float(y);vec2 a1=uvAt(si,vec2(X+1.,Y+.5),p),a0=uvAt(si,vec2(X,Y+.5),p),b1=uvAt(si,vec2(X+.5,Y+1.),p),b0=uvAt(si,vec2(X+.5,Y),p);
-    float gx=((a1.y-a0.y)+(a1.x-a0.x))/pitch,gy=((b1.y-b0.y)+(b1.x-b0.x))/pitch,g2=gx*gx+gy*gy,g0=1./pitch;
-    if(g2<2.25&&g2>g0*g0)ph*=exp(-2.*uAA*uAA*(g2-g0*g0));}
-  tw=1.+uTw.y*ph+uTw.z*(fk/512.-1.);if(uTw.w>0.){float m=uTw.w*(1.+ph)/2.;cm=cm*(1.-m)+4.*uJ2*m;}
+// the app's suit cloth (suitCol): a band tile read at four points a pixel (asmCmAt: bilinear, wrapping), or a 1x1 tile's colour
+vec3 tileAt(float u,float v){int TW=uTT.x,TH=uTT.y;float x=(u-floor(u))*float(TW)-.5,y=(v-floor(v))*float(TH)-.5,x0=floor(x),y0=floor(y),fx=x-x0,fy=y-y0;
+  int i0=(int(x0)+TW)%TW,i1=(int(x0)+1+TW)%TW,j0=(int(y0)+TH)%TH,j1=(int(y0)+1+TH)%TH;
+  return (texelFetch(uTile,ivec2(i0,j0),0).rgb*(1.-fx)+texelFetch(uTile,ivec2(i1,j0),0).rgb*fx)*(1.-fy)+(texelFetch(uTile,ivec2(i0,j1),0).rgb*(1.-fx)+texelFetch(uTile,ivec2(i1,j1),0).rgb*fx)*fy;}
+// the linen's light at (u, v) texels, faded at each texel's edge (asmCellT)
+float linAt(int a,int b){int T=uLinN;return texelFetch(uLinT,ivec2(((a%T)+T)%T,((b%T)+T)%T),0).r;}
+float cellT(float u,float v){float fi=floor(u),fj=floor(v),fu=u-fi,fv=v-fj,F=${f(ASM_CELL_FADE)};int i=int(fi),j=int(fj);
+  int di=fu<F?-1:(fu>1.-F?1:0),dj=fv<F?-1:(fv>1.-F?1:0);float h00=linAt(i,j);if(di==0&&dj==0)return h00;
+  float wu=di<0?(F-fu)/(2.*F):(di>0?(fu-1.+F)/(2.*F):0.),wv=dj<0?(F-fv)/(2.*F):(dj>0?(fv-1.+F)/(2.*F):0.);
+  return (h00*(1.-wu)+linAt(i+di,j)*wu)*(1.-wv)+(linAt(i,j+dj)*(1.-wu)+linAt(i+di,j+dj)*wu)*wv;}
+// the stripe breakup's value for stripe i, cell j
+float hS(int i,int j){return float(h32(i,j,374761393u,668265263u)%2048u)/1024.-1.;}
+// a rib of the grain for column cc (a herringbone's odd columns run the other way): four points a pixel (C.ss) or the pixel's middle
+float ribAt(int si,float X,float Y,ivec2 p,vec2 c,int cc){float d=(cc&1)!=0?-1.:1.,pitch=uTw.x,ph=0.;
+  if(uCl.y>.5){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);ph+=cos(2.*PI*fract((s.y+d*s.x)/pitch))/4.;}}
+  else ph=cos(2.*PI*fract((c.y+d*c.x)/pitch));return ph;}
+// ribs squeezed finer than the picture can show, softened (ASM_CM_AA, #360; asmAaK): a Gaussian pixel's response at the rib's cycles per
+// pixel against its response where the cloth faces the camera; a step into another piece (past ASM_CM_AA_CUT) is left alone, faded
+float aaOf(vec2 da,vec2 db,int cc){if(uAA<=0.)return 1.;float d=(cc&1)!=0?-1.:1.,pitch=uTw.x,gx=(da.y+d*da.x)/pitch,gy=(db.y+d*db.x)/pitch,g2=gx*gx+gy*gy,g0=1./pitch;
+  float f=g2>g0*g0?exp(-2.*uAA*uAA*(g2-g0*g0)):1.,t=(g2-${f(ASM_CM_AA_CUT)}+${f(ASM_CM_AA_FADE)})/${f(2*ASM_CM_AA_FADE)};return t<=0.?f:(t>=1.?1.:f+(1.-f)*t);}
+vec3 suit(int si,int x,int y,ivec2 p,float sh,out float tw){float X=float(x),Y=float(y),FD=${f(ASM_CELL_FADE)};vec3 cm=vec3(0.);
+  if(uTT.z==1){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);cm+=tileAt(s.x/uRep.x,s.y/uRep.y);}}else cm=4.*uJ;
+  tw=1.;vec2 c=uvAt(si,vec2(X+.5,Y+.5),p);
+  // a stripe's breakup (T.k): each stripe its own strength along its length, faded between stripes (asmCellV's rule) and smoothly along
+  if(uTT.w==1){float su=c.x/uRep.x-uRep.z+.5,fi=floor(su),fu=su-fi;int i=int(fi),di=fu<FD?-1:(fu>1.-FD?1:0);float wu=di<0?(FD-fu)/(2.*FD):(di>0?(fu-1.+FD)/(2.*FD):0.);
+    float tt=c.y/uRep.w,jf=floor(tt),f0=tt-jf,fs=f0*f0*(3.-2.*f0);int j=int(jf);float n0=hS(i,j),n1=hS(i,j+1);
+    if(di!=0){n0=n0*(1.-wu)+hS(i+di,j)*wu;n1=n1*(1.-wu)+hS(i+di,j+1)*wu;}
+    float nz=max(0.,1.+uSk.y*(n0*(1.-fs)+n1*fs));cm=4.*uSg+(cm-4.*uSg)*uSk.x*nz;sh=uSk.z*pow(max(sh,0.),uSk.w);}
+  // a linen cloth: its threads' light (before any grain, as on the CPU); else the grain under it (asmClothOf / asmTwillTex): a twill's
+  // ribs, or a herringbone's in columns, their fleck (asmCellV), a second colour
+  if(uLinen==1)sh*=cellT(c.x/uLsc,c.y/uLsc);
+  else if(uCl.x>.5){float cw=uCl.z,off=uCl.w;int col=uCl.x>1.5&&cw>0.?int(floor((c.x-off)/cw)):0;float d=(col&1)!=0?-1.:1.;vec2 da=vec2(0.),db=vec2(0.);
+    if(uAA>0.){da=uvAt(si,vec2(X+1.,Y+.5),p)-uvAt(si,vec2(X,Y+.5),p);db=uvAt(si,vec2(X+.5,Y+1.),p)-uvAt(si,vec2(X+.5,Y),p);}
+    float ph=ribAt(si,X,Y,p,c,col)*aaOf(da,db,col),fk=cellV((c.x+d*c.y)/2.,c.y/3.,73856093u,19349663u,1024u);
+    // a herringbone's column faded into the next within ASM_CELL_FADE of its edge (as on the CPU)
+    if(cw>0.){float fx=(c.x-off)/cw-float(col);if(fx<FD||fx>1.-FD){int nb=fx<FD?col-1:col+1;float w=fx<FD?(FD-fx)/(2.*FD):(fx-1.+FD)/(2.*FD),d2=(nb&1)!=0?-1.:1.;
+      ph=ph*(1.-w)+ribAt(si,X,Y,p,c,nb)*aaOf(da,db,nb)*w;fk=fk*(1.-w)+cellV((c.x+d2*c.y)/2.,c.y/3.,73856093u,19349663u,1024u)*w;}}
+    tw=1.+uTw.y*ph+uTw.z*(fk/512.-1.);if(uTw.w>0.){float m=uTw.w*(1.+ph)/2.;cm=cm*(1.-m)+4.*uJ2*m;}}
   return cm/4.*sh*pow(max(0.,tw),2.2);}
 void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);uint k=uint(y*uS+x);
   uvec4 A=texelFetch(uA,p,0),SH=texelFetch(uSh,p,0),L1=texelFetch(uL1,p,0),L2=texelFetch(uL2,p,0);vec4 K=texelFetch(uKeep,p,0);
   vec3 sum=vec3(0);float S=float(uS);ivec2 tr=texelFetch(uRow,ivec2(y,0),0).xy;int si=int(L2.w);
   // the jacket (z 0)
-  if(A.x>0u){float s=float(SH.x)/40000.;bool look=uJm.x>.5;
+  // (uJm: the full look, the folds' lighting, the suit cloth, lit; a striped jacket (T.k) is kept as it was: neither look nor lighting)
+  if(A.x>0u){float s=float(SH.x)/40000.;bool look=uJm.x>.5,lit=uJm.w>.5;
     if(uJm.y>.5&&uSm.x>0.){float sl=float(L1.x)/40000.;if(sl>.01)s=uSm.x*pow(sl/uSm.x,${f(LK.lgam)})*(s/sl);}
-    float v=float(L1.z);if(si==0)v=max(v,float(L2.y));s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/S);
-    vec3 c;if(uJm.z>.5){float tw;c=twill(si,x,y,p,s,tw);
+    if(lit){float v=float(L1.z);if(si==0)v=max(v,float(L2.y));s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/S);}
+    vec3 c;if(uJm.z>.5){float tw;c=suit(si,x,y,p,s,tw);
       if(look){float bo=uJl.y,t2=1.+bo*(tw-1.);if(bo>1.)c*=max(0.,1.+(bo-1.)*2.2*(tw-1.));float yy=lum(c),fl=uJl.x*pow(min(s,1.),${f(LK.fp)});
         if(yy<fl)c+=(fl-yy)*max(0.,1.+${f(LK.wk)}*(t2-1.));c=lookAfter(c,s,false,x,y,false,t2,bo);}}
     else c=flatC(uJ,s,look,uJl.x,uJl.y,false,x,y);
-    sum+=float(A.x)/255.*post(c,0,k,x,tr,s,float(L2.z)/${f(ASM_CM_U16)});}
+    if(lit)c=post(c,0,k,x,tr,s,float(L2.z)/${f(ASM_CM_U16)});sum+=float(A.x)/255.*c;}
   // the tie (z 1): its flat colour, its edges darker
   if(A.y>0u){float s=float(SH.y)/40000.;s*=1.-${f(LI.ak)}*float(L2.x)/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(1.-2.*float(x)/S);
     if(tr.x>=0){float w=float(tr.y-tr.x);if(w>4.){float t=float(x-tr.x)/w;s*=1.-${f(LI.te)}*pow(abs(t-.5)*2.,3.);}}
@@ -213,25 +263,33 @@ function asmGlTex(gl,unit,w,h,ifmt,fmt,type,data){const t=gl.createTexture();gl.
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);gl.texStorage2D(gl.TEXTURE_2D,1,ifmt,w,h);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,w,h,fmt,type,data);return t}
-/* the master's textures (once per master): about 16+32+32+32+64 MB at 2048 */
+/* the master's textures (once per master): 16+32+32+32+32 MB at 2048 (the kept zones' colours half floats since stage 2: 64 -> 32 MB,
+   within a tenth of a level), plus the background and the output, 16 MB each */
 function asmGlUpload(G,pk){const gl=G.gl,S=pk.S,u=n=>gl.getUniformLocation(G.prog,n);gl.useProgram(G.prog);
   for(const t of G.tex||[])gl.deleteTexture(t);
   G.tex=[asmGlTex(gl,0,S,S,gl.RGBA8UI,gl.RGBA_INTEGER,gl.UNSIGNED_BYTE,pk.a),asmGlTex(gl,1,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.s4),
     asmGlTex(gl,2,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l1),asmGlTex(gl,3,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l2),
-    asmGlTex(gl,5,S,S,gl.RGBA32F,gl.RGBA,gl.FLOAT,pk.keep),
+    asmGlTex(gl,5,S,S,gl.RGBA16F,gl.RGBA,gl.FLOAT,pk.keep),
     asmGlTex(gl,6,256,1,gl.R32F,gl.RED,gl.FLOAT,ASM_LIN),asmGlTex(gl,7,pk.tw,pk.th,gl.RG32F,gl.RG,gl.FLOAT,pk.tube),
     asmGlTex(gl,8,ASM_FLOW.nu,ASM_FLOW.nv,gl.RG32F,gl.RG,gl.FLOAT,pk.flow),asmGlTex(gl,9,S,1,gl.RG32I,gl.RG_INTEGER,gl.INT,pk.row)];
-  [['uA',0],['uSh',1],['uL1',2],['uL2',3],['uBG',4],['uKeep',5],['uLin',6],['uTube',7],['uFlow',8],['uRow',9],['uGeo',10],['uGR',11]].forEach(([n,i])=>gl.uniform1i(u(n),i));
-  gl.uniform1i(u('uS'),S);gl.uniform4fv(u('uG'),pk.G);gl.uniform4fv(u('uFl'),pk.fl);gl.uniform2fv(u('uSm'),pk.sm);
+  [['uA',0],['uSh',1],['uL1',2],['uL2',3],['uBG',4],['uKeep',5],['uLin',6],['uTube',7],['uFlow',8],['uRow',9],['uGeo',10],['uGR',11],['uTile',12],['uGeoI',13],['uLinT',14]].forEach(([n,i])=>gl.uniform1i(u(n),i));
+  gl.uniform1i(u('uS'),S);gl.uniform4fv(u('uG'),pk.G);gl.uniform4iv(u('uQ'),pk.Q);gl.uniform4fv(u('uFl'),pk.fl);gl.uniform2fv(u('uSm'),pk.sm);
   if(!G.fbo){G.out=gl.createTexture();gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_2D,G.out);gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,S,S);
     G.fbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,G.out,0)}
   G.bgk=null;gl.finish()}
 /* the master's solved cloth positions (asmGeoPrep's {U, V, R} at the painting's size), or none (1x1 stand-ins, uHasGeo 0) */
+/* (stage 2) at the maps' own size (a phone's 2048) every position is a whole number of 1/16 px from -1024: kept as the maps' 16-bit values
+   (RG16UI, 16 MB at 2048 against 32 MB of floats), read back exactly; at any other size (resampled) as floats */
 function asmGlUploadGeo(G,uv){const gl=G.gl,S=G.S;gl.useProgram(G.prog);for(const t of G.gtex||[])gl.deleteTexture(t);
-  if(uv&&uv.U.length===S*S){const N=S*S,f=new Float32Array(2*N);for(let k=0;k<N;k++){f[2*k]=uv.U[k];f[2*k+1]=uv.V[k]}
-    G.gtex=[asmGlTex(gl,10,S,S,gl.RG32F,gl.RG,gl.FLOAT,f),asmGlTex(gl,11,S,S,gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,uv.R)]}
-  else G.gtex=[asmGlTex(gl,10,1,1,gl.RG32F,gl.RG,gl.FLOAT,new Float32Array(2)),asmGlTex(gl,11,1,1,gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,new Uint8Array(1))];
-  gl.uniform1i(gl.getUniformLocation(G.prog,'uHasGeo'),uv&&uv.U.length===S*S?1:0)}
+  const z32=()=>asmGlTex(gl,10,1,1,gl.RG32F,gl.RG,gl.FLOAT,new Float32Array(2)),z16=()=>asmGlTex(gl,13,1,1,gl.RG16UI,gl.RG_INTEGER,gl.UNSIGNED_SHORT,new Uint16Array(2));let g16=0;
+  if(uv&&uv.U.length===S*S){const N=S*S,h=new Uint16Array(2*N);let ok=true;
+    for(let k=0;k<N&&ok;k++){const a=uv.U[k]*16+16384,b=uv.V[k]*16+16384;if(a!==Math.round(a)||b!==Math.round(b)||a<0||b<0||a>65535||b>65535)ok=false;else{h[2*k]=a;h[2*k+1]=b}}
+    if(ok){g16=1;G.gtex=[z32(),asmGlTex(gl,13,S,S,gl.RG16UI,gl.RG_INTEGER,gl.UNSIGNED_SHORT,h)]}
+    else{const f=new Float32Array(2*N);for(let k=0;k<N;k++){f[2*k]=uv.U[k];f[2*k+1]=uv.V[k]}G.gtex=[asmGlTex(gl,10,S,S,gl.RG32F,gl.RG,gl.FLOAT,f),z16()]}
+    G.gtex.push(asmGlTex(gl,11,S,S,gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,uv.R))}
+  else G.gtex=[z32(),z16(),asmGlTex(gl,11,1,1,gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,new Uint8Array(1))];
+  G.geoBytes=uv&&uv.U.length===S*S?S*S*(g16?4:8)+S*S:0;
+  gl.uniform1i(gl.getUniformLocation(G.prog,'uHasGeo'),uv&&uv.U.length===S*S?1:0);gl.uniform1i(gl.getUniformLocation(G.prog,'uGeo16'),g16)}
 /* ---- one look */
 /* its pixels on the GPU -> Uint8ClampedArray (RGBA, rows top-down, as asmCmBuild's before its buttons, clip and JPEG) */
 async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocation(G.prog,n),L=ASM_LIN,LK=ASM_CM_LOOK;gl.useProgram(G.prog);
@@ -239,9 +297,25 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   // the background picture (kept while the same one comes back)
   const bk=job.bgt+'|'+S;if(G.bgk!==bk){const d=(await asmData(job.bg,S)).data;if(G.bgt)gl.deleteTexture(G.bgt);G.bgt=asmGlTex(gl,4,S,S,gl.RGBA8UI,gl.RGBA_INTEGER,gl.UNSIGNED_BYTE,new Uint8Array(d.buffer,d.byteOffset,d.byteLength));G.bgk=bk}
   const cl=job.cloth,lookOf=f=>{const mx=Math.max(...f),mn=Math.min(...f),sat=mx>0?(mx-mn)/mx:0,y=lum(f);return {lift:LK.ymin*(1-LK.chroma*Math.min(1,sat/.7)),boost:1+LK.dk*Math.max(0,1-y/LK.dy)}};
-  const J=hexLin(cl.jacket.hex),jl=lum(J)<LK.dark?lookOf(J):null,T=cl.jacket.suit;
-  gl.uniform3fv(u('uJ'),T?Array.from(T.c):J);gl.uniform4f(u('uJm'),jl?1:0,jl?0:1,T?1:0,0);gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);
-  if(T){const C=T.cloth,lsc=S/ASM_SIZE*ASM_CM_KINDS[job.cm].pxmm;gl.uniform4f(u('uTw'),(C.pitch||4)*lsc,C.amp,C.fleck!=null?C.fleck:.08,C.c2?C.mix:0);gl.uniform3fv(u('uJ2'),C.c2||[0,0,0])}
+  // the jacket: a striped one (T.k) is kept as it was (no look, no lighting: asmCmBuild's e.keep), a dark cloth takes the full look, a lighter
+  // one its folds' lighting
+  const J=hexLin(cl.jacket.hex),T=cl.jacket.suit,keep=!!(T&&T.k!=null),jl=!keep&&lum(J)<LK.dark?lookOf(J):null;
+  const tc=T?(T.t||T.c):null,tile=!!(T&&(T.TW>1||T.TH>1));
+  gl.uniform3fv(u('uJ'),T?[tc[0],tc[1],tc[2]]:J);gl.uniform4f(u('uJm'),jl?1:0,jl||keep?0:1,T?1:0,keep?0:1);gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);
+  if(G.ttex){gl.deleteTexture(G.ttex);G.ttex=null}
+  if(T){const C=T.cloth,lsc=S/ASM_SIZE*ASM_CM_KINDS[job.cm].pxmm,rep=(T.mm||1)*ASM_PX_MM*lsc,TW=T.TW,TH=T.TH;
+    // the band tile (asmSuitTex: about 256 px a repeat, linear floats), 4 channels; a 1x1 tile's colour is uJ
+    if(tile){const f=new Float32Array(4*TW*TH);for(let q=0;q<TW*TH;q++){f[4*q]=tc[3*q];f[4*q+1]=tc[3*q+1];f[4*q+2]=tc[3*q+2]}G.ttex=asmGlTex(gl,12,TW,TH,gl.RGBA32F,gl.RGBA,gl.FLOAT,f);G.tileBytes=16*TW*TH}
+    else G.ttex=asmGlTex(gl,12,1,1,gl.RGBA32F,gl.RGBA,gl.FLOAT,new Float32Array(4));
+    gl.uniform4i(u('uTT'),tile?TW:1,tile?TH:1,tile?1:0,keep?1:0);gl.uniform4f(u('uRep'),rep,rep*TH/TW,T.loff||0,(T.blen||1)*lsc);
+    gl.uniform4f(u('uSk'),keep?T.k:0,keep?T.brk:0,keep?T.gain:1,keep?T.gam:1);gl.uniform3fv(u('uSg'),keep?T.g:[0,0,0]);
+    gl.uniform4f(u('uCl'),C&&C.kind==='herringbone'?2:C&&C.kind==='twill'?1:0,C&&C.ss?1:0,C&&C.cw?C.cw*lsc:0,C&&C.off?C.off*lsc:0);
+    // a linen cloth: the linen texture (256 x 256 light factors, the same on every device), uploaded once
+    if(T.linen&&!G.linN){if(G.lint)gl.deleteTexture(G.lint);const ln=asmLinenTile();G.lint=asmGlTex(gl,14,ln.T,ln.T,gl.R32F,gl.RED,gl.FLOAT,ln.r);G.linN=ln.T}
+    gl.uniform1i(u('uLinen'),T.linen?1:0);gl.uniform1i(u('uLinN'),G.linN||1);gl.uniform1f(u('uLsc'),lsc);
+    gl.uniform4f(u('uTw'),C?(C.pitch||4)*lsc:4,C?C.amp:0,C&&C.fleck!=null?C.fleck:.08,C&&C.c2?C.mix:0);gl.uniform3fv(u('uJ2'),C&&C.c2||[0,0,0])}
+  else{G.ttex=asmGlTex(gl,12,1,1,gl.RGBA32F,gl.RGBA,gl.FLOAT,new Float32Array(4));gl.uniform4i(u('uTT'),1,1,0,0);gl.uniform1i(u('uLinen'),0)}
+  if(!G.lint){G.lint=asmGlTex(gl,14,1,1,gl.R32F,gl.RED,gl.FLOAT,new Float32Array([1]));G.linN=0}   // (a stand-in until a linen cloth comes)
   gl.uniform1f(u('uAA'),ASM_CM_AA&&job.aa!==false?Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA):0);   // (asmCmBuild's rule: job.aa false = off, a number = the bench's strength)
   const St=hexLin(cl.shirt.hex),sl=lum(St)<LK.dark?lookOf(St):null;gl.uniform3fv(u('uSt'),St);gl.uniform4f(u('uSl'),sl?1:0,sl?0:1,sl?sl.lift:0,sl?sl.boost:1);
   const Ti=hexLin(cl.tie.hex);gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti)));gl.uniform1f(u('uLs'),S/ASM_SIZE);
@@ -269,7 +343,7 @@ function asmGlUI(b){if(!b)return;let g=document.getElementById('gl-box');if(!g){
   document.getElementById('cfg-gl').value=asmGlPref()?'on':'off';asmGlStatus()}
 function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)return;
   const last=asmGlLast?` Last picture painted on this phone: ${asmGlLast.gl?'graphics chip':'processor'}${asmGlLast.ms!=null?`, ${asmGlLast.ms} ms`:''}.`:'';
-  el.textContent=(asmGlPref()?'On: pictures this phone paints of a plain or twill jacket with a plain shirt and tie are painted on the graphics chip (about ten times faster, the same picture within 2 levels); every other look on the processor.'
+  el.textContent=(asmGlPref()?'On: pictures this phone paints of a plain, twill, striped or checked jacket with a plain shirt and tie are painted on the graphics chip (about ten times faster, the same picture within 2 levels); every other look on the processor.'
     :'Off on this phone: every picture painted here uses the processor, as before.')+last}
 function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else localStorage.removeItem(ASM_GL)}catch{}asmGlStatus()}
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */

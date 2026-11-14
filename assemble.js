@@ -793,6 +793,12 @@ function asmPolyAt(g,X,Y){const p=g.poly,n=p.length/2;let best=Infinity,u=0,v=0;
    upper arm's inside below the crook forearm) */
 const asmTubePart=(g,X,Y)=>{const k=g.crease;if(!k)return g.parts[0];const U=g.parts[0],L=g.parts[1];
   return (X-k.x)*k.mx+(Y-k.y)*k.my>0?((X-L.x)*L.nx+(Y-L.y)*L.ny<-1.3*k.r1?U:L):((X-U.x)*U.nx+(Y-U.y)*U.ny<-1.3*k.r0?L:U)};
+/* the same choice while painting (asmTubeAt), in whole numbers (2026-11-14, WebGL stage 2): the point in 1/16 px, the lines' points in 1/16
+   px and their directions in 1/1024, the products summed in integers, which the graphics chip (asm-gl.js) reproduces exactly; in floats a
+   point a hair from the line went to one part here and the other there. (asmTubeTabs keeps the float rule: the setup's key is unchanged) */
+const asmTq=v=>Math.round(v*16),asmTqn=v=>Math.round(v*1024),asmTqr=r=>Math.round(-1.3*r*16384);
+const asmTubePartQ=(g,X,Y)=>{const k=g.crease;if(!k)return g.parts[0];const U=g.parts[0],L=g.parts[1],x=asmTq(X),y=asmTq(Y),d=(px,py,nx,ny)=>(x-asmTq(px))*asmTqn(nx)+(y-asmTq(py))*asmTqn(ny);
+  return d(k.x,k.y,k.mx,k.my)>0?(d(L.x,L.y,L.nx,L.ny)<asmTqr(k.r1)?U:L):(d(U.x,U.y,U.nx,U.ny)<asmTqr(k.r0)?L:U)};
 const asmTubeRaw=(p,X,Y)=>{if(p.poly)return asmPolyAt(p,X,Y);const dx=X-p.x,dy=Y-p.y;return [dx*p.nx+dy*p.ny,dx*p.dx+dy*p.dy]};
 /* each part's width along its length, from the sleeve's own outline: every 8 px (at 2048) along it, the middle of the cloth across (c)
    and half its width (R), kept within 0.7–1.2 of the part's usual half width (a seam, a hand or the crease cuts the outline short) and
@@ -835,7 +841,7 @@ function asmSleeveFlow(g){if(!g.crease||g.parts.length<2)return g;const U=g.part
 /* a point's place on a sleeve -> [across (px of cloth, from the middle; the cylinder turned flat), along (px)]: its part (the upper arm
    or, past the crease, the forearm), its place across and along that part, moved by the part's stripe flow (asmSleeveFlow), and
    across, the cloth turned flat (a point at x of a cylinder of radius R from its middle is R·asin(x/R) of cloth from it) */
-function asmTubeAt(g,X,Y){const p=asmTubePart(g,X,Y),r=asmTubeRaw(p,X,Y),t=p.t;if(!t)return r;
+function asmTubeAt(g,X,Y){const p=asmTubePartQ(g,X,Y),r=asmTubeRaw(p,X,Y),t=p.t;if(!t)return r;
   let f=(r[1]-t.a0)/t.bs-.5;f=f<0?0:f>t.n-1?t.n-1:f;const i=Math.floor(f),j=Math.min(t.n-1,i+1),w=f-i,c=t.c[i]*(1-w)+t.c[j]*w,Rh=t.R[i]*(1-w)+t.R[j]*w,R=Rh*ASM_TUBE_K;
   let dx=r[0]-c,al=r[1],k=1;const fd=p.fd;
   if(fd){const F=ASM_SLEEVE_FLOW,NS=F.ns,NT=F.nt,Ln=t.n*t.bs;let a=(r[1]-t.a0)/Ln*(NS-1),b=(dx/Rh+1)*(NT-1)/2;a=a<0?0:a>NS-1?NS-1:a;b=b<0?0:b>NT-1?NT-1:b;
