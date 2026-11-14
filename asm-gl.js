@@ -221,7 +221,7 @@ uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR,uGeoI,uW;uniform sampler2D uKeep,uTube
 // (geo.gar 'shirt'); the legs' first and last row; the waistcoat's mean light; the belt's colour; a read trousers' tile (has one, repeat)
 const int uOut=${V[0]|0},uWc=${V[1]|0},uGarS=${V[2]|0},uLegs=${V[3]|0},uPoly=${V[4]|0};uniform ivec2 uLy;uniform float uSmW;uniform vec3 uBelt;uniform vec4 uOT;
 uniform int uS,uHasGeo,uGeo16;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform ivec4 uQ[${ASM_GL_SEGS*4}];uniform vec4 uFl;uniform vec2 uSm;
-uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uTieK,uLs,uAA;
+uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uWin,uTieK,uLs,uAA;
 uniform ivec4 uTT;uniform vec4 uRep,uSk,uCl;   // the band tile (TW, TH, has a tile, has the stripe breakup); its repeat, the breakup, the grain
 uniform sampler2D uLinT;uniform int uLinen,uLinN;uniform float uLsc;   // the linen texture (asmLinenTile, uLinN square), on a linen cloth
 // (stage 3) the herringbone's extras: yarn, float, float length, grain; mottle, thin, break, pair break. A tweed (uLinT holds asmTweedTile's
@@ -407,9 +407,10 @@ vec3 trTile(int si,int x,int y,ivec2 p){float X=float(x),Y=float(y);vec3 b=vec3(
 // (uJm: the full look, the folds' lighting, the suit cloth, lit; a striped jacket (T.k) is kept as it was: neither look nor lighting)
 vec3 outer(int x,int y,uint k,ivec2 tr,float s,float sl,float sm,float ao,float aob,float rim,vec3 cb,float tw,float shm){bool look=uJm.x>.5,lit=uJm.w>.5;
   if(uJm.y>.5&&sm>0.){if(sl>.01)s=sm*pow(sl/sm,${f(LK.lgam)})*(s/sl);}
-  if(lit){float v=max(ao,aob);s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/float(uS));}
+  if(lit){float v=max(ao,aob);s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+uWin*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/float(uS));}
   // (a stripe's dark ground: its steeper shading, T.gain and T.gam)
-  vec3 c;if(uJm.z>.5){c=cb*((uTT.w==1?uSk.z*pow(max(s,0.),uSk.w):s)*shm);
+  vec3 c;if(uJm.z>.5){c=cb*((uTT.w==1?uSk.z*pow(max(s,0.),uSk.w):s)*shm);if(tw!=1.&&tw>0.)c*=pow((1.+clamp(${f(ASM_CM_WLIGHT[0])}+${f(ASM_CM_WLIGHT[1])}*s,${f(ASM_CM_WLIGHT[0])},${f(ASM_CM_WLIGHT[2])})*(tw-1.))/tw,2.2);   // the weave by the light (ASM_CM_WLIGHT)
+    
     if(look){float bo=uJl.y,t2=1.+bo*(tw-1.);if(bo>1.)c*=max(0.,1.+(bo-1.)*2.2*(tw-1.));float yy=lum(c),fl=uJl.x*pow(min(s,1.),${f(LK.fp)});
       if(yy<fl)c+=(fl-yy)*max(0.,1.+${f(LK.wk)}*(t2-1.));c=lookAfter(c,s,false,x,y,false,t2,bo);}}
   else if(uOut==1&&uOT.x>.5)c=flatC(cb,s,false,0.,1.,false,x,y);
@@ -427,7 +428,7 @@ void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);u
   // (stage 5) the belt (shirt masters): flat, neither look nor lighting
   if(uOut==1){uint bs=L2.w>>8u;if(bs>0u)sum+=float(bs)/255.*flatC(uBelt,float(L2.y)/40000.,false,0.,1.,false,x,y);}
   // the tie (z 1): its flat colour or (stage 4) its tile, its edges darker
-  if(A.y>0u){float s=float(SH.y)/40000.;s*=1.-${f(LI.ak)}*float(L2.x)/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(1.-2.*float(x)/S);
+  if(A.y>0u){float s=float(SH.y)/40000.;s*=1.-${f(LI.ak)}*float(L2.x)/${f(ASM_CM_U16)};s*=1.+uWin*(1.-2.*float(x)/S);
     if(tr.x>=0){float w=float(tr.y-tr.x);if(w>4.){float t=float(x-tr.x)/w;s*=1.-${f(LI.te)}*pow(abs(t-.5)*2.,3.);}}
     sum+=float(A.y)/255.*post(flatC(uTie.x==1?tieBase(x,y,p):uTi,s,false,0.,1.,false,x,y),1,k,x,tr,s,0.);}
   // the background picture (z 2): as it is, darker by the figure's shadow, dithered
@@ -436,7 +437,7 @@ void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);u
   // the shirt (z 3)
   if(A.w>0u){float s=float(SH.z)/40000.;bool look=uSl.x>.5;
     if(uSl.y>.5&&uSm.y>0.){float sl=float(L1.y)/40000.;if(sl>.01)s=uSm.y*pow(sl/uSm.y,${f(LK.lgam)})*(s/sl);}
-    s*=1.-${f(LI.ak)}*float(L1.w)/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/S);
+    s*=1.-${f(LI.ak)}*float(L1.w)/${f(ASM_CM_U16)};s*=1.+uWin*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/S);
     sum+=float(A.w)/255.*post(flatC(uShT==1?shirtBase(x,y,p,si,cu):uSt,s,look,uSl.z,uSl.w,true,x,y),3,k,x,tr,s,0.);}   // (stage 4: or its tile)
   // skin, watch, dark (packed once per master), the button in the jacket's colour
   sum+=K.rgb+K.a*uBtn;
@@ -517,7 +518,7 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   // (stage 5) a read trousers' tile (asmCmTile), its repeat in mm at the master's px per mm
   if(TT){const rep=TT.mm*P.pxmm;gl.uniform4f(u('uOT'),1,rep,rep*TT.TH/TT.TW,0)}else gl.uniform4f(u('uOT'),0,1,1,0);
   gl.uniform3fv(u('uBelt'),cl.belt?hexLin(cl.belt.hex):[0,0,0]);
-  gl.uniform3fv(u('uJ'),T?[tc[0],tc[1],tc[2]]:J);gl.uniform4f(u('uJm'),jl?1:0,jl||keep?0:1,T?1:0,keep?0:1);gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);
+  gl.uniform3fv(u('uJ'),T?[tc[0],tc[1],tc[2]]:J);gl.uniform4f(u('uJm'),jl?1:0,jl||keep?0:1,T?1:0,1);gl.uniform1f(u('uWin'),ASM_CM_LIGHT.win*(job.light?ASM_CM_WINK:1));gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);
   if(G.ttex){gl.deleteTexture(G.ttex);G.ttex=null}
   if(T){const C=T.cloth,lsc=S/ASM_SIZE*ASM_CM_KINDS[job.cm].pxmm,rep=(T.mm||1)*ASM_PX_MM*lsc,TW=T.TW,TH=T.TH;
     // the band tile (asmSuitTex: about 256 px a repeat, linear floats), 4 channels; a 1x1 tile's colour is uJ
@@ -568,6 +569,7 @@ async function asmGlTry(job,hit){const P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;cons
     const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hx=String(job.cloth.shirt.hex).replace('#','');
     if(P.A.shirt)asmCmButtons(o,P,[0,2,4].map(k=>L[parseInt(hx.slice(k,k+2),16)||0]),L,gam);   // the shirt's buttons, drawn (ASM_CM_BTN), as on the CPU
     if(job.bar&&P.A.tie){const tm=new Uint8Array(N);for(let k=0;k<N;k++)tm[k]=P.A.tie[k]>127?1:0;asmBarDraw(o,tm,S,job.bar,null)}
+    asmCmFinish(o,hit);   // the figure seated in the room (asm-color.js ASM_CM_FIN), as on the CPU
     // (stage 6) over a phone's size (the PC's 2880) scaled to 2048 exactly as asmCmBuild scales the CPU's picture
     let img=new ImageData(o,S,S);if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
       x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(big,0,0,ASM_SIZE,ASM_SIZE);img=x.getImageData(0,0,ASM_SIZE,ASM_SIZE)}

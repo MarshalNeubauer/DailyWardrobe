@@ -621,7 +621,7 @@ const ASM_STRIPE_PX=3;   // a stripe's: a pinstripe is about a millimetre (3 px)
    the herringbone showed as a pattern of its own). A dark cloth (ground under 6% light) is also less saturated (chroma) and its
    shading steeper (gain * shading^gam): a dark navy worsted's folds go nearly black and its lit parts are greyish, not royal blue;
    the master's grey suit's shading is flatter. Before: crisp, bright, high-contrast lines on a bright royal blue. */
-const ASM_STRIPE={mix:.18,soft:2,weave:.08,brk:.3,blen:8,chroma:.4,gam:1.4,gain:.9};
+const ASM_STRIPE={mix:.18,soft:2,weave:.08,brk:.3,blen:8,chroma:.4,gam:1,gain:1};   // (gam 1.4, gain .9 until 2026-11-14: a dark stripe's folds went to black; the folds' depth now comes from real photographs, asm-color.js ASM_CM_FOLD)
 /* the cloth's own weave laid in the shading, from its material or Claude's description: linen (asmLinenTile), herringbone or twill
    (diagonal lines 4 px apart at 2048, 20% (twill 16%) of the visible brightness, with an 8% fleck along each thread; a herringbone's columns turn at each break, half a stripe repeat wide with its
    breaks on the stripes for a stripe, as on the owner's pinstripe, else 8 mm) -> {kind, cw, off, amp} in px at 2048, or null */

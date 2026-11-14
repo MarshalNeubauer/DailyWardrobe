@@ -40,7 +40,7 @@ function decls(src){const out=new Map(),n=src.length,isId=c=>/[\w$]/.test(c);let
 const SKIP=new Set(['asmMmMemo','asmSuitTexMemo','asmTieMemo','asmTweedMemo','asmLinenMemo','asmCmMem','asmCmSrc','asmCmCodeH','asmCmDiskPut','asmCmDb','asmCmPack',
   'ASM_CM_BIG','asmCmDiskGet','asmCmUnpack','ASM_CM_PACKV','asmCmSrcSig','asmCmHash','asmCmKey','asmKey','ASM_CMV','ASM_VER','asmCmBgKey','asmCmCode','asmCmPrepCode',
   'asmCmCodeSig','asmCmCodeText','asmCmPref','ASM_CM',
-  'asmCmGeoKeys',
+  'asmCmGeoKeys','asmCmLightKeys',
   'asmData']);   // (the image decoder: the Web Worker swaps in its own, the same pixels, so it is left out of the setup's key; asm-color.js before asmCmCodeText)   // (which records a master has, from the manifest, whose dates are in every look's key: asmCmRev)
 function reach(D,roots){const seen=new Set(),q=[...roots];
   while(q.length){const n=q.pop();if(seen.has(n)||!D.has(n)||SKIP.has(n))continue;seen.add(n);
