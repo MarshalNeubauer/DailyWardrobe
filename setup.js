@@ -42,7 +42,7 @@ function setupClose(){
 function setupFinish(toAdd){
   if(setup.first&&!setup.vestSet)settings.vestMode='never';
   const first=setup.first;settings.setupDone=Date.now();setupClose();saveUserSettings().then(()=>{if(first)setupHolidays()});
-  if(toAdd&&!items.length){show('wardrobe');openAdd()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
+  if(toAdd&&!items.length){const go=()=>{show('wardrobe');openAdd()};if(first&&typeof tourOpen==='function'&&!tourSeen())tourOpen(go,'Add my first item');else go()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
 }
 /* the public holidays of the country the phone's time zone is in, chosen for a new person (audit 2026-11-13: the work week was set,
    the holidays were not); Settings → Days off changes it. Without a list yet (Nager.Date lacks the Gulf states, whose list comes from
@@ -99,7 +99,7 @@ ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
   const wear=[d.jacket?'jackets':'no jackets',d.tie?'ties':'no ties'].join(', ');
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
 <ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li><li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':'not connected'}</b></li></ul>
-${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus trousers if you wear a blazer rather than a suit':''}.</p>`}`;
+${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus trousers if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow():''}`}`;
 }
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
   setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false)">Skip</button>`}</div>
@@ -148,11 +148,11 @@ function setupToday(){
   const rows=setupNeeds(),left=rows.filter(r=>!r.ok).length;if(!left)return '';
   return `<div class="firstrun" id="firstrun"><h3>Get your first outfit</h3><p class="fr-sub">${left===rows.length?'Add these and Today picks an outfit for every workday.':`${rows.length-left} of ${rows.length} added. Add the rest and Today picks an outfit for every workday.`}</p>
 <ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':r.sub?'If no suit':'Needed'}</small></li>`).join('')}</ul>
-<button type="button" class="fr-add pri" id="fr-add" onclick="openAdd()">Add an item</button></div>`;
+<button type="button" class="fr-add pri" id="fr-add" onclick="openAdd()">Add an item</button>${typeof kitStartRow==='function'?kitStartRow():''}</div>`;
 }
 /* the Wardrobe tab with nothing in it */
 function setupWardEmpty(){
   return `<div class="card wempty" id="wempty"><svg class="wempty-pic" viewBox="0 0 120 84" aria-hidden="true"><path class="we-rail" d="M8 12h104"/><path class="we-hook" d="M60 12v6a5 5 0 1 0 5 5"/><path class="we-hang" d="M60 30 24 52a4 4 0 0 0 2 7h68a4 4 0 0 0 2-7z"/><path class="we-ghost" d="M26 12v10M94 12v10M20 30l6-8 6 8M88 30l6-8 6 8"/></svg>
 <b class="wempty-t">Your wardrobe is empty</b><p class="wempty-s">Add what you wear to work: a photo of each piece, or pick its type and colours by hand.</p>
-<button type="button" class="pri" id="wempty-add" onclick="openAdd()">Add your first item</button></div>`;
+<button type="button" class="pri" id="wempty-add" onclick="openAdd()">Add your first item</button><div class="kit-start"><button type="button" class="linkbtn" onclick="kitImportOpen()">Import from a spreadsheet</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" onclick="kitSampleLoad()">Try a sample wardrobe</button></div></div>`;
 }
