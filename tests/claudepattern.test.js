@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- worker
     reply=()=>({...SPEC,across:{bands:[...dir.bands,{role:'line',name:'bad',hex:'blue',widthPct:5}]}});
     let r=await call({image:IMG,closeup:IMG,type:'blazer'}),j=await r.json();
-    const t=sent.messages[0].content.find(c=>c.type==='text').text,sch=sent.output_config.format.schema;
+    const t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),sch=sent.output_config.format.schema;
     ok(r.status===200&&sent.messages[0].content.filter(c=>c.type==='image').length===2&&sent.output_config.effort==='high','POST /pattern sends the photo and the close-up to Claude at high effort');
     ok(/as it was WOVEN, stripping away everything that is not the/.test(t)&&/seams and the pattern shift across them/.test(t)&&/The item is a blazer/.test(t)&&sch.required.includes('across')&&sch.required.includes('paneAspect'),'the prompt asks for the woven pattern without the noise, band by band each way');
     ok(j.across.bands.length===6&&Math.abs(j.across.bands.reduce((a,b)=>a+b.w,0)-1)<1e-3&&j.across.bands[0].w>.9&&j.repeatsInCloseup===3.5,'bands are tidied (a bad colour dropped) and their widths made shares of the repeat');

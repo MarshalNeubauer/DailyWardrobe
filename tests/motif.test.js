@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     reply=()=>({...SPEC,across:{bands:[{role:'ground',name:'x',hex:'#000000',widthPct:50},{role:'line',name:'y',hex:'#ffffff',widthPct:50}]},
       motif:{...MOTIF,figures:[...MOTIF.figures,{shape:'blob',placement:'nowhere',colours:[{name:'bad',hex:'red'}],centre:null,sizePct:20}]}});
     let r=await call({image:IMG,closeup:IMG,type:'tie'}),j=await r.json();
-    const t=sent.messages[0].content.find(c=>c.type==='text').text,sch=sent.output_config.format.schema;
+    const t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),sch=sent.output_config.format.schema;
     ok(r.status===200&&sch.properties.layout.enum.includes('motif')&&sch.required.includes('motif')&&/motif — for a motif only/.test(t)&&/square-with-dot/.test(t),'POST /pattern offers a motif reading: grid, ground and each figure');
     ok(j.layout==='motif'&&j.across===null&&j.motif.grid==='diagonal'&&j.motif.figures.length===2&&j.motif.figures[0].size===.74&&j.motif.figures[1].centre.hex==='#22254a',
       'the motif is tidied: bands dropped for a motif, a figure with no valid colour dropped, sizes as fractions');

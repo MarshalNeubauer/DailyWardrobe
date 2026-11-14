@@ -143,6 +143,44 @@ module.exports=async({ok,ROOT})=>{
       await call(env2,'POST','push',{endpoint:EP,time:'05:00',tz:'UTC',dates:[]},A.h);
       ok(/owner@07:00/.test(owners()),`nor change it (${owners()})`);
     }finally{Date.now=realNow}}
+    // ---- Claude calls: the fixed text cached in system, the owner's next, the photos and per-call text last; wb wording; retries
+    {const TAG={type:'suit',primaryColor:'navy',secondaryColor:'none',tertiaryColor:'none',pattern:'pinstripe',metal:null,leather:null,dial:null,band:null,bezel:null,trouserKind:null,shoeStyle:null,
+        confidence:{type:'high',primaryColor:'high',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null,clothBox:null,patternBox:null,
+        weave:{layout:'stripes',direction:'vertical',repeatsAcross:34,colours:[{name:'navy',hex:'#1f2a44',width:'wide'},{name:'white',hex:'#ffffff',width:'hairline'}],crossing:'',description:'x'}};
+      let bodies=[],replies=[],logs=[];const log0=console.log;
+      globalThis.fetch=async(u,i)=>{if(String(u)!=='https://api.anthropic.com/v1/messages')return new Response('',{status:599});bodies.push(JSON.parse(i.body));const f=replies.length>1?replies.shift():replies[0];return f()};
+      const ok200=b=>()=>new Response(JSON.stringify({model:'claude-opus-5-5',stop_reason:'end_turn',usage:{input_tokens:900,cache_read_input_tokens:4200,cache_creation_input_tokens:0,output_tokens:310},content:[{type:'text',text:JSON.stringify(b)}]}),{status:200});
+      const err=(s,m)=>()=>new Response(JSON.stringify({type:'error',error:{message:m}}),{status:s});
+      const env={APP_TOKEN:'t',ANTHROPIC_API_KEY:'k',CLAUDE_RETRY_MS:0},T={'x-app-token':'t'};
+      const custom={colors:[{key:'ownink',name:'ink',hex:'#1a1f33',types:['suit']}],patterns:[]},corrections=[{field:'pattern',type:'suit',from:'stripe',to:'pinstripe'}];
+      const tag=x=>call(env,'POST','',{image:PNG,closeup:PNG,custom,corrections,measured:{lab:[20,1,-8],ref:true,src:'closeup'},...x},T);
+      replies=[ok200(TAG)];console.log=(...a)=>logs.push(a.join(' '));let r;
+      try{r=await J(await tag({}))}finally{console.log=log0}
+      const b=bodies.at(-1),sys=b.system||[],msg=b.messages[0].content,mt=msg.filter(c=>c.type==='text').map(c=>c.text).join('\n');
+      ok(Array.isArray(sys)&&sys.length===2&&sys.every(s=>s.cache_control&&s.cache_control.type==='ephemeral'),'the system prompt has two cache points: the fixed instructions, then the owner\'s colours and corrections');
+      ok(/type — one of/.test(sys[0].text)&&/clothBox —/.test(sys[0].text)&&!/no code fences|Reply with one JSON object/.test(sys[0].text)&&!/ownink|steelblue ->/.test(sys[0].text),'the first holds the fixed rules, without the stale JSON template or "no code fences" line (structured output answers)');
+      ok(/ownink = ink/.test(sys[1].text)&&/suit pattern: stripe -> pinstripe/.test(sys[1].text),'the second holds the owner\'s own colours and corrections');
+      ok(msg[0].type==='image'&&msg[1].type==='image'&&msg.at(-1).type==='text'&&/CIELAB L\*20/.test(mt)&&!/type — one of/.test(mt),'the photos and the per-call text (close-up note, light, measurement) come after');
+      ok(r.s===200&&r.weave&&r.weave.repeatsAcross===34,`a pinstripe's count across is kept up to 80 (was capped at 12: ${r.weave&&r.weave.repeatsAcross})`);
+      ok(logs.some(l=>/cache read 4200/.test(l)&&/out 310/.test(l)),'the log line has the cache reads and output tokens');
+      await tag({wb:true});const wT=bodies.at(-1).messages[0].content.at(-1).text;await tag({wb:false});const wF=bodies.at(-1).messages[0].content.at(-1).text;await tag({});const wN=bodies.at(-1).messages[0].content.at(-1).text;
+      ok(/white-balanced these photos from a white reference/.test(wT)&&!/neutral daylight/.test(wT),'wb:true: take the colours as shown');
+      ok(/as the camera took them/.test(wF)&&/warm indoor light makes white look ivory/.test(wF),'wb:false: judge them as in daylight, allowing for the light');
+      ok(/may or may not have been white-balanced/.test(wN)&&!/from a white reference in the frame/.test(wN),'no wb (an older app): the safe wording');
+      ok(!/white-balanced|Judge shirt colours as in daylight/.test(bodies.at(-1).system.map(s=>s.text).join('')),'nothing about the light is fixed in the system prompt any more');
+      replies=[ok200({items:[]})];await call(env,'POST','tag-many',{image:PNG,custom},T);
+      ok(!/JSON only/.test(bodies.at(-1).system[0].text)&&bodies.at(-1).system.length===2,'the group prompt has no "JSON only" line and caches the same way');
+      replies=[ok200({layout:'none'})];await call(env,'POST','pattern',{image:PNG,closeup:PNG,type:'tie'},T);
+      ok(/reading the woven pattern/.test(bodies.at(-1).system[0].text)&&bodies.at(-1).system[0].cache_control&&/The item is a tie/.test(bodies.at(-1).messages[0].content.at(-1).text),'the pattern prompt is cached in system; the item\'s type goes after the photos');
+      // retries: once on 429/529/5xx, never on a 4xx; a time limit on every attempt
+      bodies=[];replies=[err(529,'Overloaded'),ok200(TAG)];r=await J(await tag({}));
+      ok(r.s===200&&bodies.length===2,`an overloaded API (529) is tried once more and the tag comes back (${bodies.length} calls)`);
+      bodies=[];replies=[err(500,'boom'),err(503,'still')];r=await J(await tag({}));
+      ok(r.s===502&&bodies.length===2&&/still/.test(r.detail),'two failures in a row: one retry, then the error');
+      bodies=[];replies=[err(400,'bad request')];r=await J(await tag({}));
+      ok(r.s===502&&bodies.length===1,'a 400 is not retried');
+      let sig=null;globalThis.fetch=async(u,i)=>{sig=i.signal;const e=new Error('timed out');e.name='TimeoutError';throw e};r=await J(await tag({}));
+      ok(sig&&typeof sig.aborted==='boolean'&&r.s===504&&/minutes/.test(r.detail),'each call to Claude has a time limit, and running out says so');}
     // ---- the deploy workflow reads the repository only, and says loudly when worker.js changed but can't be deployed
     {const wf=require('fs').readFileSync(path.join(ROOT,'.github/workflows/deploy-worker.yml'),'utf8');
       ok(/^permissions:\n  contents: read$/m.test(wf),'the deploy workflow has permissions: contents: read');
