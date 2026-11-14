@@ -31,7 +31,13 @@ const ASM_CM_KINDS={
 // shirt about 5% wider again)
 const asmCmKey=(kind,name)=>asmKey('cm'+ASM_CMV+'/'+kind+'/'+name);
 const asmCmAssets=kind=>{const K=ASM_CM_KINDS[kind];if(!K)return [];return [asmCmKey(kind,'master'),...K.zones.map(z=>asmCmKey(kind,'mask/'+z)),
-  ...(K.sleeves?['sleeveR','sleeveL'].map(s=>asmCmKey(kind,'part/'+s)):[]),...(K.lapels?['lapelR','lapelL'].map(s=>asmCmKey(kind,'part/'+s)):[]),...asmCmGeoKeys(kind)]};
+  ...(K.sleeves?['sleeveR','sleeveL'].map(s=>asmCmKey(kind,'part/'+s)):[]),...(K.lapels?['lapelR','lapelL'].map(s=>asmCmKey(kind,'part/'+s)):[]),...asmCmGeoKeys(kind),...asmCmLightKeys(kind)]};
+/* (2026-11-14) the master's light map, part of it once the manifest lists it (a master without one is lit as before): one picture at the
+   maps' size made on the computer from the master's surface normals. R: the form light (a window from the left on the body's own shape;
+   128 = unchanged, (R-128)/255 added to 1), G: the glow where the cloth turns away from the camera, B: the collar leaves' shadow on the
+   shirt and tie under them. asmCmPrep lays R into every cloth's light; asmCmLightPrep takes G into the jacket's lit edges and B into the
+   shirt's and tie's contact shadows, so both painters (this one and asm-gl.js) take all three from the setup they already share */
+const asmCmLightKeys=kind=>{const l=asmCmKey(kind,'light'),M=asmCmMfNow().keys;return M[l]?[l]:[]};
 /* the master's solved cloth positions (asmGeoPrep), part of it once the manifest lists them (a master without them paints as before) */
 const asmCmGeoKeys=kind=>{const u=asmCmKey(kind,'geo/u'),v=asmCmKey(kind,'geo/v'),M=asmCmMfNow().keys;return M[u]&&M[v]?[u,v]:[]};
 const ASM_CM='asm_cm';   // localStorage: '0' = this phone puts pictures together the earlier way
@@ -58,7 +64,7 @@ const ASM_CM_PAINTV=9;   // 2: jackets and trousers without a stripe or check re
      master's blotchy grain, which smudged the weave)
    - a jacket painted with stripes (a band tile with stripe breakup, T.k: his two pinstripes) is left exactly as before (the bolder weave
      broke the pinstripes' lines; the owner: leave them out) */
-const ASM_CM_LOOK={ymin:.012,fp:1.7,chroma:.55,wk:4,sk:5,cmax:.8,grain:.05,sheen:.035,s0:.85,s1:1.5,dy:.03,dk:2,toe:.025,sh:.06,dark:.035,lgam:1.3,lr:12};
+const ASM_CM_LOOK={ymin:.012,fp:1.7,chroma:.55,wk:4,sk:5,cmax:.8,grain:.05,sheen:.024,s0:.45,s1:1.5,dy:.03,dk:2,toe:.025,sh:.06,dark:.035,lgam:1.3,lr:12};
 /* the lighting (same choice, on top of the look): contact shadows where a layer lies on another (the shirt under the tie, waistcoat,
    jacket and hands; the jacket's body under its sleeves and lapels; each layer's outline moved adx,ady px at 2048 down and to the right,
    away from the window, blurred `ar` px, `ak` deep); a window light from the left (`win` across the picture, `wd` of it on a dark cloth,
@@ -108,7 +114,7 @@ function asmCmButtons(o,P,shirt,L,gam){const pts=ASM_CM_BTN[P.kind];if(!pts)retu
    the nail tips (painted the shirt's colour). Within ASM_CM_HAND_R px (at 2048) of where the two meet, a pixel's share between them follows
    its colour: warm (red well above blue, as skin) goes to the skin, near-neutral and light (the master's white shirt) to the shirt. Only
    shares between skin and shirt move, so a coloured jacket beside a hand is never taken for skin. */
-const ASM_CM_HAND_R=6;
+const ASM_CM_HAND_R=6,ASM_CM_CUFF_PX=70,ASM_CM_CUFF_STEP=7;
 /* (2026-11-14, the owner's "looks terrible": a pinkish band down the tie's right edge and under the collar on the shirt-and-tie master)
    the skin mask has stray shares of 1-9 levels along the tie and the collar, where the master's white shirt picks up the pink tie's
    fringe; any skin share at all used to count as a hand within ASM_CM_HAND_R, so those warm shirt pixels went partly or wholly to skin, which
@@ -129,6 +135,16 @@ function asmCmHandEdge(A,M,S,N){if(!A.skin||!A.shirt)return;const R=Math.max(2,M
       pz=zs.filter(z=>!own.has(z)),oz=zs.filter(z=>own.has(z));   // (a painted zone first: a kept one would show the master's own colour again)
     for(let k=0;k<N;k++){const a=A.skin[k];if(!a||far[k]>0)continue;let best=null;for(const z of pz)if(A[z][k]&&(!best||A[z][k]>A[best][k]))best=z;
       if(!best)for(const z of oz)if(A[z][k]&&(!best||A[z][k]>A[best][k]))best=z;if(best){A[best][k]+=a;A.skin[k]=0}}}
+  // (2026-11-14, the lighting branch) the tie's own deep shadow against a hand (the master's dark magenta, far from any skin's hue) is tie,
+  // not skin: kept as skin it showed as a dark red speck between the thumb and the jacket
+  if(ntie)for(let k=0;k<N;k++){const a=A.skin[k];if(!a||!(ntie[k]>0))continue;const j=4*k,r=M[j],g=M[j+1],bl=M[j+2];if(g<.42*r&&bl>g*1.25&&r>40){A.tie[k]=Math.min(255,A.tie[k]+a);A.skin[k]=0}}
+  // the inside of the cuff beside the watch: the watch zone is a hull round the watch and took in the cuff's shaded inner face, which then
+  // stayed the master's white under any coloured cuff. From the shirt's edge, watch pixels are shirt as far as the master stays smooth and
+  // near-neutral (no step of ASM_CM_CUFF_STEP levels: the bracelet's and case's edges stop it), at most ASM_CM_CUFF_PX away
+  if(A.watch){const lv=k=>(M[4*k]+M[4*k+1]+M[4*k+2])/3,neu=k=>Math.max(M[4*k],M[4*k+1],M[4*k+2])-Math.min(M[4*k],M[4*k+1],M[4*k+2])<28,D=new Int16Array(N).fill(-1),mx=Math.round(ASM_CM_CUFF_PX*S/2048);let q=[];
+    for(let k=S;k<N-S;k++)if(A.watch[k]>127&&neu(k)&&(A.shirt[k-1]>127||A.shirt[k+1]>127||A.shirt[k-S]>127||A.shirt[k+S]>127)){D[k]=0;q.push(k)}
+    for(let d=0;d<mx&&q.length;d++){const nx=[];for(const k of q){const x=k%S,l=lv(k);for(const n of [k-1,k+1,k-S,k+S])if(n>=0&&n<N&&D[n]<0&&A.watch[n]>127&&Math.abs(n%S-x)<=1&&neu(n)&&Math.abs(lv(n)-l)<ASM_CM_CUFF_STEP){D[n]=d+1;nx.push(n)}}q=nx}
+    for(let k=0;k<N;k++)if(D[k]>=0){A.shirt[k]=Math.min(255,A.shirt[k]+A.watch[k]);A.watch[k]=0}}
   for(let k=0;k<N;k++){const a=A.skin[k],b=A.shirt[k];if(!(nsk[k]>0&&nsh[k]>0)||a+b<200)continue;   // only where both are near, and they make up the pixel
     const j=4*k,r=M[j],g=M[j+1],bl=M[j+2],warm=r-bl,lt=(r+g+bl)/3;let t;   // t: the share that is skin
     // (a pixel half skin, half white shirt is warm but paler: it gets a share of each, and its skin colour comes from the clean skin beside it)
@@ -140,6 +156,41 @@ function asmCmHandEdge(A,M,S,N){if(!A.skin||!A.shirt)return;const R=Math.max(2,M
    floats at 2048 -> 56 MB, and it is saved with the packed setup (P.lx) so a phone no longer works it out at every change of master
    (about 1.3 s on a computer, about 5 s on a phone); measured: the picture within one level of the float version */
 const ASM_CM_U16=65535;
+/* (2026-11-14) the folds' depth, fitted to real photographs (the owner's references: a navy pinstripe suit in a studio, a white shirt
+   and tie outdoors): per zone [the median light over the lit level, the least and the greatest power]. Measured on the references: jacket
+   p10 .43, median .74, p90 1.33; shirt p10 .67, median .91, p90 1.12. The bench is C:\code\watch-test\light (stats.js) */
+const ASM_CM_FOLD={jacket:[.82,.44,.3],waistcoat:[.82,.44,.3],trousers:[.82,.44,.35]};   // (shirts and ties keep their folds: opened, a burgundy shirt lost its sleeves' shadows)   // [median, 10th percentile, least power] (set a little over the references': the contact shadows and the window's light come after)
+/* with a light map the window's light is on the body's shape, and the old ramp across the whole picture keeps ASM_CM_WINK of its strength */
+const ASM_CM_WINK=.8;
+/* a weave shows by the light: its ribs' relief is strongest where the cloth is lit and fades in the folds' shade. A jacket's, waistcoat's
+   or trousers' woven ribs (suitCol's SUITTW) are drawn at [least, per unit of light, most] of their strength */
+const ASM_CM_WLIGHT=[.5,.6,1.15];
+const asmCmWk=s=>{const W=ASM_CM_WLIGHT,k=W[0]+W[1]*s;return k<W[0]?W[0]:k>W[2]?W[2]:k};
+const ASM_CM_FOLD_KEEP=.8;
+/* how much of a zone's fold power and scale (P.fold) a cloth takes, by its own lightness (linear luminance): all of it at or below
+   ASM_CM_FOLD_Y[0] (black, dark navy, a dark pinstripe's ground), none at or above ASM_CM_FOLD_Y[1] (charcoal, a slate tweed, a mid grey and anything lighter);
+   asmCmMp: a garment's light = [the power below the lit level, the strength above it, a scale] from that and its material (asmCmMat) */
+const ASM_CM_FOLD_Y=[.02,.05];
+const ASM_CM_FOLD_MAX=.55;   // at most this much of the power and scale (in full, a navy pinstripe lost its darker far side)
+const asmCmFoldW=y=>{const Y=ASM_CM_FOLD_Y,w=(Y[1]-y)/(Y[1]-Y[0]);return ASM_CM_FOLD_MAX*(w<0?0:w>1?1:w)};
+function asmCmMp(P,z,c,lin){const f=P.fold&&P.fold[z==='waistcoat'?'jacket':z],m=Array.isArray(c.mat)?c.mat:[1,1],g=c.suit&&c.suit.g?c.suit.g:lin,w=f&&!(c.suit&&c.suit.k!=null)?asmCmFoldW(.2126*g[0]+.7152*g[1]+.0722*g[2]):0;   // (a striped jacket takes none: the owner, 2026-11-14, "no shadowing on the right side": its far side's shadow is its own steeper shading, ASM_STRIPE gam and gain, which stay)
+  return [m[0]*(f?1+(f[0]-1)*w:1),m[1],f?Math.pow(f[1],w):1]}
+/* (2026-11-14) the material's own light, [the power on a cloth's light below its lit level (over 1: crisper, deeper folds; under 1: softer),
+   the strength of its light above the lit level (its highlights and sheen)]: linen creases sharply and is matt; tweed, flannel and
+   melange are soft and matt; a worsted has a little sheen; chinos and denim are crisp and matt; an oxford or twill shirt is softer than
+   poplin, a sateen shinier; a silk tie is crisp and shiny, a knitted, wool, grenadine or linen one soft and matt. Read from the item's
+   material, pattern and description (few items have a material set, so the pattern's name counts) */
+const ASM_CM_MAT={linen:[1.15,.8],soft:[.96,.6],worsted:[1,1.15],chino:[1.05,.7],oxford:[.95,.8],sateen:[1,1.3],poplin:[1,1],silk:[1.1,1.3],knit:[.9,.4]};
+function asmCmMat(i,z){if(!i)return [1,1];const M=ASM_CM_MAT,t=((i.material||'')+' '+(typeof patName==='function'?patName(i.pattern):i.pattern||'')+' '+(i.patternText||'')).toLowerCase();
+  if(z==='tie')return /knit|wool|grenadine|linen|cashmere/.test(t)?M.knit:M.silk;
+  if(z==='shirt')return /linen/.test(t)?M.linen:/sateen|satin/.test(t)?M.sateen:/oxford|flannel|twill|chambray/.test(t)?M.oxford:M.poplin;
+  if(/linen/.test(t))return M.linen;if(/tweed|flannel|melange|donegal|cashmere/.test(t))return M.soft;
+  if(z==='trousers'&&(i.trouserKind||/cotton|chino|denim/.test(t)))return M.chino;return M.worsted}
+/* a tie's sheen lies where the tie itself is lit (its knot's dimple and its folds shape it): none below ASM_TIE_LIT[0] of its lit level,
+   full ASM_TIE_LIT[1] above that, at most ASM_TIE_LIT[2] (it was one even band down the blade) */
+const ASM_TIE_LIT=[.7,.35,1.25];
+const asmTieLit=s=>{const T=ASM_TIE_LIT,v=(s-T[0])/T[1];return v<0?0:v>T[2]?T[2]:v};
+const ASM_CM_GLOW=.9,ASM_CM_COLLAR=1;   // the light map's glow (of the jacket's lit edge) and collar shadow (of a contact shadow), at full
 function asmCmLightPrep(P){const {S,N,A,geo}=P,LI=ASM_CM_LIGHT,LK=ASM_CM_LOOK,sc=S/2048,X={sm:{},smb:{},ao:{},aob:null,rim:null,tl:null,tr:null};
   const q16=(f,s)=>{const u=new Uint16Array(N);for(let k=0;k<N;k++){const v=Math.round(f[k]*s);u[k]=v<0?0:v>65535?65535:v}return u};
   const dvn=(m,R)=>{let g=m;for(let i=0;i<2;i++){const b=asmCmBlur(g,S,R),d=(2*R+1)*(2*R+1),o=new Float32Array(N);for(let k=0;k<N;k++)o[k]=b[k]/d;g=o}return q16(g,ASM_CM_U16)};
@@ -156,6 +207,10 @@ function asmCmLightPrep(P){const {S,N,A,geo}=P,LI=ASM_CM_LIGHT,LK=ASM_CM_LOOK,sc
   if(A.jacket){const o=Math.max(2,Math.round(LI.rw*sc)),off=o*S+o,m=new Float32Array(N);
     for(let k=off;k<N;k++){if(A.jacket[k]<200)continue;const q=k-off,sg=geo?geo.seg[k]:0;if(A.jacket[q]<128||(geo&&sg&&geo.seg[q]!==sg&&A.jacket[q]>127))m[k]=1}
     X.rim=dvn(m,Math.max(1,Math.round(1.5*sc)))}
+  // the light map (asmCmLightKeys): the glow where the jacket's cloth turns away (wool's soft lit edge) joins its lit edges, and the
+  // collar leaves' shadow joins the shirt's and the tie's contact shadows
+  const LM=P.lm;if(LM){if(X.rim&&A.jacket)for(let k=0;k<N;k++){if(A.jacket[k]<128)continue;const v=Math.round(ASM_CM_GLOW*LM[4*k+1]*257);if(v>X.rim[k])X.rim[k]=v}
+    for(const z of ['shirt','tie'])if(X.ao[z]&&A[z])for(let k=0;k<N;k++){if(!A[z][k])continue;const v=Math.round(ASM_CM_COLLAR*LM[4*k+2]*257);if(v>X.ao[z][k])X.ao[z][k]=v>65535?65535:v}}
   if(A.tie){X.tl=new Int32Array(S).fill(-1);X.tr=new Int32Array(S).fill(-1);for(let y=0;y<S;y++)for(let x=0;x<S;x++)if(A.tie[y*S+x]>127){if(X.tl[y]<0)X.tl[y]=x;X.tr[y]=x}}
   return X}
 const ASM_CM_RIM=24;   // px at 2048: how far from the wall a jacket (or shirt-master) pixel outside the SAM sleeve outline still joins the sleeve beside it
@@ -330,8 +385,9 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
       // tiled over a whole jacket, was a field of dots and dashes: the owner's light grey twill)
       else if(how==='tile'){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
     }catch(e){console.warn('cloth',z,e)}
+    c.mat=asmCmMat(i,z);
     cloth[z]=c}
-  const bg=renders[asmCmBgKey()];
+  const bg=renders[asmCmBgKey()],lks=asmCmLightKeys(kind);if(lks.length)geo.light=renders[lks[0]].img;
   return {cm:kind,size:self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,rev:asmCmHash(keys.filter(k=>!gks.includes(k)).map(k=>renders[k].t||0).join(',')),master:renders[keys[0]].img,masks,parts,cloth,...geo,bg:bg?bg.img:null,bgt:bg?bg.t:0,
     bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null,gl:typeof asmGlPref==='function'?asmGlPref():false}}   // (gl: this phone's graphics-chip switch, asm-gl.js; the worker has no localStorage)
 
@@ -359,14 +415,32 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
   // a garment's colour is its colour where the cloth is lit: light = the pixel's brightness over the zone's lit level (75th
   // percentile, a white shirt's 90th), at most 1.6 (a shirt 1.15); against the median half of every garment came out too light
   const pct=(a,p)=>{const v=[];for(let k=0;k<N;k+=7)if(a[k]>=CLEAN)v.push(Y[k]);v.sort((x,y)=>x-y);return v.length?v[Math.min(v.length-1,Math.floor(v.length*p))]:1};
-  const shade={},keep={};
+  const shade={},keep={},fold={},LM=job.light?(await asmData(job.light,S)).data:null;
   for(const z of names){const a=A[z];
     if(KEEP.has(z)){const idx=[];for(let k=0;k<N;k++)if(a[k]&&a[k]<CLEAN)idx.push(k);const I=Int32Array.from(idx),C=new Float32Array(3*I.length);
       for(let q=0;q<3;q++){const v=new Float32Array(N);for(let k=0;k<N;k++)v[k]=L[M[4*k+q]];const o=pushOut(a,v);for(let i=0;i<I.length;i++)C[3*i+q]=o[I[i]]}
       keep[z]={I,C};continue}   // (the edge pixels in order: looked up by binary search, a map over every pixel was 33 MB a zone at 2880)
-    const sh=z==='shirt',ref=pct(a,sh?.9:.75)||1,cap=sh?1.15:1.6,v=new Float32Array(N);for(let k=0;k<N;k++)v[k]=Math.min(cap,Y[k]/ref);
+    const sh=z==='shirt',ref=pct(a,sh?.9:.75)||1,cap=sh?1.15:1.6,v=new Float32Array(N);
+    // (2026-11-14: reading the light along the cloth's own colour was tried for its lower noise and dropped: in the masters' shadows the
+    // strong channel falls less than the others, so shadows read about 30% lighter and a navy pinstripe lost its darker far side)
+    for(let k=0;k<N;k++)v[k]=Math.min(cap,Y[k]/ref);
+    // the form light from the master's light map (the body's own shape toward the window), where there is one
+    if(LM)for(let k=0;k<N;k++)if(a[k])v[k]=Math.min(1.63,v[k]*(1+(LM[4*k]-128)/255));   // (1.63: the light is kept in 16 bits over 40000)
+    // the folds' depth as in real photographs (ASM_CM_FOLD): below its lit level a cloth's light is raised to the power that puts the
+    // zone's median where the reference photos have it (the masters' shadows are far deeper: a jacket's median .55 of its lit level
+    // against .74 on a photographed navy suit, and darker still once painted); above the lit level nothing changes
+    const tg=ASM_CM_FOLD[z];let gm=1;if(tg){const s=[];for(let k=0;k<N;k+=7)if(a[k]>=CLEAN)s.push(v[k]);s.sort((x,y)=>x-y);const md=s.length?s[s.length>>1]:1;
+      const lo=s.length?s[Math.floor(s.length*.1)]:1;   // (the shadows' depth too: the power that lifts the 10th percentile to the references', when that is the smaller)
+      if(md>.02&&md<.98)gm=Math.min(1,Math.log(tg[0])/Math.log(md));if(lo>.02&&lo<tg[1])gm=Math.min(gm,Math.log(tg[1])/Math.log(lo));gm=Math.max(tg[2],gm);
+      // (the owner, 2026-11-14: "everything looks more washed out") lifting the shadows alone made every garment lighter overall; the
+      // zone's mean light is brought back ASM_CM_FOLD_KEEP of the way to what it was, so the cloth keeps its tone and only the folds' shape changes
+      if(gm!==1){let m0=0,m1=0,n=0;for(let k=0;k<N;k+=7)if(a[k]>=CLEAN){const x=v[k];m0+=x;m1+=x<1?Math.pow(x,gm):x;n++}
+        // (the owner again, on the mid grey suit: "you don't think the lighting totally washes it out here?") the power and the scale are
+        // only kept here (P.fold): each look takes as much of them as its cloth is dark (asmCmFoldW), so only dark cloth, whose shadows
+        // really went to black, has them opened, and a mid or light cloth keeps the folds it had
+        fold[z]=[gm,n&&m1>0?Math.pow(m0/m1,ASM_CM_FOLD_KEEP):1]}}
     const o=pushOut(a,v),u=new Uint16Array(N);for(let k=0;k<N;k++)u[k]=Math.round(Math.max(0,o[k])*40000);shade[z]=u}
-  const P={kind:job.cm,S,N,M,A,names,shade,keep,geo:null,tieGeo:null,cuff:null,cuffAng:[0],pxmm:ASM_PX_MM*S/ASM_SIZE*K.pxmm,bgShadow:null};
+  const P={kind:job.cm,S,N,M,A,names,shade,keep,geo:null,tieGeo:null,cuff:null,cuffAng:[0],pxmm:ASM_PX_MM*S/ASM_SIZE*K.pxmm,bgShadow:null,lm:LM,fold};
   // the figure's shadow on the wall behind (for a background picture): everything but the wall, moved down and to the right and blurred
   // wide (three box blurs ~ a gaussian); 0..255
   if(A.background){const f=S/2048,dx=Math.round(34*f),dy=Math.round(20*f),R=Math.max(2,Math.round(50*f));let g=new Float32Array(N);
@@ -524,6 +598,25 @@ function asmUvAt(uv,S,k,X,Y){const x=X-.5,y=Y-.5,x0=Math.floor(x),y0=Math.floor(
 function asmLegsAt(G,X,Y,k){const y=Math.max(G.y0,Math.min(G.y1,Math.floor(Y))),xf=G.xf[y],s=X<xf?0:1,t=Math.abs(X-xf),co=G.co[2*y+s],R=G.R[2*y+s],Q=.95,q=(t-co)/R;
   const u=q>Q?co+R*(Math.asin(Q)+(q-Q)/Math.sqrt(1-Q*Q)):q<-Q?co+R*(-Math.asin(Q)+(q+Q)/Math.sqrt(1-Q*Q)):co+R*Math.asin(q);
   return [(s?u:-u)+(k!=null?G.du[k]/16:0),Y+(k!=null?G.dv[k]/16:0)]}
+/* (2026-11-14) filtered tile reads. A tile is about 256 texels a repeat and a repeat is often 10 px of the picture, so the points a pixel
+   is read at (2x2 or 3x3) lie many texels apart and each took one bilinear texel: fine figures shimmered and squeezed cloth aliased.
+   asmCmMips: the tile halved ASM_CM_MIPS times (box averages; kept per tile). asmCmRead: the n x n points of one pixel (U, V in repeats, row
+   by row) -> their mean colour in o, each point read from the level whose texels are as far apart as the points are (the larger of the
+   steps across and down, in texels; no level below ASM_CM_LOD0 texels a step, where the reads are exactly as before; blended between two
+   levels, so the level never jumps). asm-gl.js reads the same levels (asmGlAtlas, tileRead) */
+const ASM_CM_MIPS=4,ASM_CM_LOD0=2,asmCmMipM=new WeakMap(),ASM_CM_T3=[0,0,0];
+function asmCmMips(T){const c0=T.t||T.c;let m=asmCmMipM.get(c0);if(m)return m;m=[{c:c0,TW:T.TW,TH:T.TH}];
+  for(let L=1;L<=ASM_CM_MIPS;L++){const p=m[L-1],tw=Math.max(1,p.TW>>1),th=Math.max(1,p.TH>>1),d=new Float32Array(3*tw*th),fx=p.TW/tw,fy=p.TH/th;
+    for(let y=0;y<th;y++)for(let x=0;x<tw;x++){const x0=Math.floor(x*fx),x1=Math.max(x0+1,Math.floor((x+1)*fx)),y0=Math.floor(y*fy),y1=Math.max(y0+1,Math.floor((y+1)*fy));let r=0,g=0,b=0,n=0;
+      for(let yy=y0;yy<y1;yy++)for(let xx=x0;xx<x1;xx++){const s=3*(yy*p.TW+xx);r+=p.c[s];g+=p.c[s+1];b+=p.c[s+2];n++}const q=3*(y*tw+x);d[q]=r/n;d[q+1]=g/n;d[q+2]=b/n}
+    m.push({c:d,TW:tw,TH:th})}
+  asmCmMipM.set(c0,m);return m}
+function asmCmRead(T,U,V,n,o){const N=n*n,m=n-1,ax=Math.abs(U[m]-U[0]),ay=Math.abs(U[n*m]-U[0]),bx=Math.abs(V[m]-V[0]),by=Math.abs(V[n*m]-V[0]);
+  const fp=Math.max((ax>ay?ax:ay)*T.TW,(bx>by?bx:by)*T.TH)/m;let lod=fp>ASM_CM_LOD0?Math.log2(fp/ASM_CM_LOD0):0;o[0]=o[1]=o[2]=0;
+  if(!(lod>0)){for(let i=0;i<N;i++)asmCmAt(T,U[i],V[i],o)}
+  else{if(lod>ASM_CM_MIPS)lod=ASM_CM_MIPS;const M=asmCmMips(T),l0=Math.floor(lod),f=lod-l0,A=M[l0],B=M[l0<ASM_CM_MIPS?l0+1:l0],t=ASM_CM_T3;t[0]=t[1]=t[2]=0;
+    for(let i=0;i<N;i++){asmCmAt(A,U[i],V[i],o);asmCmAt(B,U[i],V[i],t)}o[0]=o[0]*(1-f)+t[0]*f;o[1]=o[1]*(1-f)+t[1]*f;o[2]=o[2]*(1-f)+t[2]*f}
+  o[0]/=N;o[1]/=N;o[2]/=N}
 function asmCmAt(T,u,v,o){const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*T.TH-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0,c=T.t||T.c,TW=T.TW,TH=T.TH;
   const ix0=(x0+TW)%TW,ix1=(x0+1+TW)%TW,iy0=(y0+TH)%TH,iy1=(y0+1+TH)%TH;
   for(let q=0;q<3;q++)o[q]+=(c[3*(iy0*TW+ix0)+q]*(1-fx)+c[3*(iy0*TW+ix1)+q]*fx)*(1-fy)+(c[3*(iy1*TW+ix0)+q]*(1-fx)+c[3*(iy1*TW+ix1)+q]*fx)*fy}
@@ -559,7 +652,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
@@ -569,7 +662,7 @@ const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_A
   asmImg,asmJpeg,asmKnitTile,asmLegsAt,asmLegsPrep,asmLinen,asmLinenTile,asmMicroGrid,asmMicroKind,asmMicroTex,asmMotif,asmPaisleyTile,asmPolyAt,asmRepeatPx,
   asmSleeveFlow,asmSleeveSegs,asmStripeCount,asmSuitBands,asmSuitSig,asmSuitTex,asmSuitTweed,asmSuitTwill,asmSuitWeave,asmTexMm,asmTieFor,asmTieSheenK,asmTieSig,
   asmTieTile,asmTubeAt,asmTubePart,asmTubeRaw,asmTubeTabs,asmTweedTex,asmTweedTile,asmTwillTex,asmWeave];
-const asmCmPrepCode=()=>[ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_U16,ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,
+const asmCmPrepCode=()=>[ASM_CM_FOLD_KEEP,ASM_CM_CUFF_PX,ASM_CM_CUFF_STEP,ASM_CM_FOLD,ASM_CM_GLOW,ASM_CM_COLLAR,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_U16,ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,
   ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_SLEEVE_FLOW,asmBodyFlow,asmCmBlur,asmCmHandEdge,asmCmLightPrep,asmCmPrep,asmCmRefit,
   asmImg,asmLegsPrep,asmPolyAt,asmSleeveFlow,asmSleeveSegs,asmTubePart,asmTubeRaw,asmTubeTabs];
 /* (2026-11-14) asmData, the image decoder, is not in asmCmPrepCode: the Web Worker swaps in its own (asm-worker.js: createImageBitmap on an
@@ -602,6 +695,25 @@ async function asmCmUnpack(rec,job){if(!rec||!rec.meta||!rec.gz||typeof Decompre
       if(x&&typeof x==='object'&&Object.getPrototypeOf(x)===Object.prototype){const o={};for(const [k,v] of Object.entries(x))o[k]=back(v);return o}return x};
     const P=back(rec.meta);P.M=(await asmData(job.master,job.size)).data;return P}
   catch(e){console.warn('could not read the kept master',e);return null}}
+/* (2026-11-14) seating the figure in the room, on the finished picture (8-bit, either painter's): the figure's outline was a hard,
+   stepped cut against a blurred room. Within ASM_CM_FIN.band px of the outline each pixel is softened over its 3x3 neighbours (soft) and
+   a figure pixel takes a little of the room's colour from just beyond the outline (wrap: light from behind bends round an edge); and the
+   room, a smooth blurred plate beside grainy cloth and photographed hands, gets the same fine grain (grain, levels). The outline's
+   pixels and where each looks for the room are worked out once per master in a session (hit.fin) */
+const ASM_CM_FIN={band:3,soft:.55,wrap:.12,reach:9,grain:1.1};
+function asmCmFinPrep(P){const {S,N,A}=P;if(!A.background)return null;const F=ASM_CM_FIN,sc=S/2048,R=Math.max(1,Math.round(F.band*sc)),bg=new Float32Array(N);for(let k=0;k<N;k++)bg[k]=A.background[k]/255;
+  const d=(2*R+1)*(2*R+1),b1=asmCmBlur(bg,S,R),R2=Math.max(2,Math.round(F.reach*sc)),d2=(2*R2+1)*(2*R2+1),b2=asmCmBlur(bg,S,R2),I=[],T=[],W=[];
+  for(let y=1;y<S-1;y++)for(let x=1;x<S-1;x++){const k=y*S+x,v=b1[k]/d;if(v<.02||v>.98)continue;
+    // toward the room: up the slope of the wide blur, ASM_CM_FIN.reach px away (kept inside the picture)
+    let gx=b2[k+1]-b2[k-1],gy=b2[k+S]-b2[k-S];const gl=Math.hypot(gx,gy);let t=k;if(gl>0){const tx=Math.min(S-1,Math.max(0,Math.round(x+gx/gl*R2))),ty=Math.min(S-1,Math.max(0,Math.round(y+gy/gl*R2)));t=ty*S+tx}
+    I.push(k);T.push(bg[t]>.9?t:k);W.push((1-bg[k])*Math.min(1,b2[k]/d2*2))}
+  return {I:Int32Array.from(I),T:Int32Array.from(T),W:Float32Array.from(W)}}
+function asmCmFinish(o,hit){const P=hit.P,S=P.S,N=P.N,F=ASM_CM_FIN;if(!P.A.background)return;const fin=hit.fin||(hit.fin=asmCmFinPrep(P));if(!fin)return;
+  const I=fin.I,n=I.length,out=new Uint8ClampedArray(3*n);
+  for(let i=0;i<n;i++){const k=I[i],j=4*k,t=4*fin.T[i],w=F.wrap*fin.W[i];
+    for(let q=0;q<3;q++){let s=0;for(let dy=-S;dy<=S;dy+=S)for(let dx=-1;dx<=1;dx++)s+=o[j+4*(dy+dx)+q];let v=o[j+q]+F.soft*(s/9-o[j+q]);if(w>0&&fin.T[i]!==k)v+=w*(o[t+q]-v);out[3*i+q]=v}}
+  for(let i=0;i<n;i++){const j=4*I[i];o[j]=out[3*i];o[j+1]=out[3*i+1];o[j+2]=out[3*i+2]}
+  if(F.grain){const B=P.A.background;for(let k=0;k<N;k++){const a=B[k];if(!a)continue;const g=F.grain*a/255*((asmH32(k,k>>>9,2246822519,3266489917)+asmH32(k+31,k>>>5,2654435761,7))/4294967296-1)*2,j=4*k;o[j]+=g;o[j+1]+=g;o[j+2]+=g}}}
 /* the master's colour-free part for a job, kept in memory (asmCmMem) and on disk, with its solved cloth positions: {key, P, lx, uv, gk};
    shared by the CPU painter below and the graphics chip's (asm-gl.js) */
 async function asmCmSetup(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+(job.rev||'')+'|'+job.size,   // (rev: every record's date: a mask uploaded again is a new setup)
@@ -613,7 +725,7 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
     // every start and every change of master (about 23 s at phone speed); read back it is about 0.6 s
     const disk=job.diskCache!==false&&typeof indexedDB!=='undefined';let P=disk?await asmCmUnpack(await asmCmDiskGet(dk),job):null;
     // (2026-11-14) the lighting's master-only part (asmCmLightPrep) is worked out with the setup and kept in it (P.lx), packed with it
-    if(!P){P=await asmCmPrep(job);if(job.look!==false)P.lx=asmCmLightPrep(P);if(disk)asmCmPack(P).then(x=>x&&asmCmDiskPut(dk,x,job.cm+'|'))}   // saved while the picture is painted
+    if(!P){P=await asmCmPrep(job);if(job.look!==false||P.lm)P.lx=asmCmLightPrep(P);P.lm=null;if(disk)asmCmPack(P).then(x=>x&&asmCmDiskPut(dk,x,job.cm+'|'))}   // saved while the picture is painted
     hit={key,P,lx:P.lx||null};asmCmMem.list.push(hit)}
   // the master's solved cloth positions (asmGeoPrep), decoded once per master and maps (kept beside the setup, not packed with it: about
   // 36 MB of floats that don't compress, and the maps decode in well under a second)
@@ -627,20 +739,21 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
   // the background picture at this size (kept while the same picture and size come back)
   let BG=null;if(job.bg&&P.bgShadow){const bk=job.bgt+'|'+S;if(!asmCmMem.bg||asmCmMem.bg.k!==bk)asmCmMem.bg={k:bk,d:(await asmData(job.bg,S)).data};BG=asmCmMem.bg.d}
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
+  const SU=new Float64Array(9),SV=new Float64Array(9);   // one pixel's read points (asmCmRead)
   const WALL=hexLin('#E6E2DC'),KEEP=new Set(['skin','watch','buckle','dark']),CLEAN=248;
   // the cloth look (ASM_CM_LOOK; job.look false leaves it out): per garment its lift and how much bolder its weave is drawn
   const LK=job.look===false?null:ASM_CM_LOOK,GARZ={jacket:1,waistcoat:1,shirt:1,trousers:1},lum=v=>.2126*v[0]+.7152*v[1]+.0722*v[2],lb=[0,0,0];let SUITTW=1;
   // the lighting (ASM_CM_LIGHT) on the jacket, waistcoat, shirt and tie; its master-only part kept with the master's setup
-  const LI=ASM_CM_LIGHT,LZ={jacket:1,waistcoat:1,shirt:1,tie:1,trousers:1},LXP=LK?(hit.lx||(hit.lx=P.lx=asmCmLightPrep(P))):null;
+  const LI=ASM_CM_LIGHT,WIN=LI.win*(job.light?ASM_CM_WINK:1),LZ={jacket:1,waistcoat:1,shirt:1,tie:1,trousers:1},LXP=LK?(hit.lx||(hit.lx=P.lx=asmCmLightPrep(P))):null;
   const lxF=(z,k,x,y,e)=>{let f=1;const a=LXP.ao[z];if(a){let v=a[k];if(z==='jacket'&&LXP.aob&&geo&&!geo.seg[k])v=Math.max(v,LXP.aob[k]);f*=1-LI.ak*v/ASM_CM_U16}
-    f*=1+LI.win*(e.look?LI.wd:1)*(1-2*x/S);
+    f*=1+WIN*(e.look?LI.wd:1)*(1-2*x/S);
     if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const t=(x-LXP.tl[y])/w;f*=1-LI.te*Math.pow(Math.abs(t-.5)*2,3)}}return f};
   const lxPost=(c,z,k,x,y,s)=>{let h=0;const sl=Math.min(s,1.3);if(z==='jacket'&&LXP.rim)h+=LI.rim*LXP.rim[k]/ASM_CM_U16*sl;
-    if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const u=((x-LXP.tl[y])/w-LI.tp)/LI.tsw;h+=LI.ts*tieK()*Math.exp(-u*u)*sl}}c[0]+=h;c[1]+=h;c[2]+=h;
+    if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const u=((x-LXP.tl[y])/w-LI.tp)/LI.tsw;h+=LI.ts*tieK()*Math.exp(-u*u)*sl*asmTieLit(s)}}c[0]+=h;c[1]+=h;c[2]+=h;
     const d=Math.min(1,Math.max(0,1-s/.85)),l=Math.min(1,Math.max(0,(s-.95)/.5))*(1-x/S),y0=lum(c);
     c[0]*=1+LI.warm*d*.9-LI.cool*l*.5;c[1]*=1+LI.warm*d*.15;c[2]*=1-LI.warm*d*.9+LI.cool*l*1.2;const y1=lum(c);if(y1>0){const f=y0/y1;c[0]*=f;c[1]*=f;c[2]*=f}
     const h1=asmH32(k,k>>>7,2246822519,3266489917)/4294967296,h2=asmH32(k+977,k>>>3,2654435761,1)/4294967296,g=1+LI.grain*(h1+h2-1);c[0]*=g;c[1]*=g;c[2]*=g};
-  let TIEK=null;const tieK=()=>TIEK!=null?TIEK:(TIEK=asmTieSheenK(cl.tie&&cl.tie.flat?lum(cl.tie.flat):1));   // the tie's sheen follows its own brightness (asmTieSheenK)
+  let TIEK=null;const tieK=()=>TIEK!=null?TIEK:(TIEK=asmTieSheenK(cl.tie&&cl.tie.flat?lum(cl.tie.flat):1)*(cl.tie&&cl.tie.mp?cl.tie.mp[1]:1));   // the tie's sheen follows its own brightness (asmTieSheenK)
   const lookOf=f=>{const mx=Math.max(f[0],f[1],f[2]),mn=Math.min(f[0],f[1],f[2]),sat=mx>0?(mx-mn)/mx:0,y=lum(f);
     return {lift:LK.ymin*(1-LK.chroma*Math.min(1,sat/.7)),boost:1+LK.dk*Math.max(0,1-y/LK.dy)}};
   const lookBase=(b,e)=>{lb[0]=b[0];lb[1]=b[1];lb[2]=b[2];const y=lum(lb);if(y<e.look.lift){const d=e.look.lift-y;lb[0]+=d;lb[1]+=d;lb[2]+=d}
@@ -672,6 +785,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
     if(c.suit)e.suit=c.suit;else if(c.tie&&tg){e.tie=c.tie;e.rep=(c.tie.motif?2:1)*tg.bw/Math.max(.5,c.tie.across||1.5);e.repv=e.rep*c.tie.TH/c.tie.TW}
     else if(c.tile){e.tile=c.tile;e.rep=c.tile.mm*P.pxmm;e.repv=e.rep*c.tile.TH/c.tile.TW}
     // a striped jacket is left as it was; a dark cloth takes the full look; a lighter one its folds' lighting only
+    if(LK&&LZ[z]){const mp=asmCmMp(P,z,c,e.flat);if(mp[0]!==1||mp[1]!==1||mp[2]!==1)e.mp=mp}   // the folds' depth by the cloth's darkness, the material's folds and highlights (asmCmMp)
     if(LK&&GARZ[z]){if(c.suit&&c.suit.k!=null)e.keep=1;else if(lum(e.flat)<LK.dark)e.look=lookOf(e.flat);else e.light=1}
     // trousers fill a large, evenly lit area on the shirt masters: the full look's bolder weave read as diagonal lines down each leg and
     // its sheen turned the window-side leg a blotchy grey beside a black one, so trousers of any colour take the folds' lighting only
@@ -681,7 +795,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
   // (a suit's cloth on a shirt master's trousers, 2026-11-13: that master is framed wider, so its cloth is drawn at the master's own scale)
   const lsc=ls*(ASM_CM_KINDS[job.cm]?ASM_CM_KINDS[job.cm].pxmm:1);
   const suitCol=(T,k,x,y,sh,out)=>{const rep=T.mm*ASM_PX_MM*lsc,repv=rep*T.TH/T.TW;cm[0]=cm[1]=cm[2]=0;
-    for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);asmCmAt(T,c[0]/rep,c[1]/repv,cm)}
+    for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uvAt(k,x+(e+.5)/2,y+(a+.5)/2),q=2*a+e;SU[q]=c[0]/rep;SV[q]=c[1]/repv}asmCmRead(T,SU,SV,2,cm);cm[0]*=4;cm[1]*=4;cm[2]*=4;
     let tw=1;const C=T.cloth,hb=C&&(C.kind==='herringbone'||C.kind==='twill');
     // the stripe's breakup: each stripe (si, counted across) its own strength along its length (smoothly between cells blen long); the
     // stripe's index faded into its neighbour's within ASM_CELL_FADE of a repeat's edge (half way between two stripes, on the ground), so a
@@ -770,10 +884,14 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
           const Lm=.2126*c[0]+.7152*c[1]+.0722*c[2],sh=Math.min(1,Math.max(.35,Lm/.02));   // the fingers' shadow on it, from the master
           for(let e=0;e<3;e++)c[e]=(f[e]/Lf*.6+.4)*L0*sh}
         r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
-      let s=P.shade[z][k]/40000;const e=cl[z],lit=!!(LXP&&e&&!e.keep&&LZ[z]);let base;
+      // (2026-11-14) a striped jacket takes the lighting too (contact shadows, the window, lit edges, grain): only the cloth look's bolder
+      // weave broke its lines, and without any lighting it was a flat dark shape beside every other jacket
+      let s=P.shade[z][k]/40000;const e=cl[z],lit=!!(LXP&&e&&LZ[z]);let base;
+      if(e&&e.mp)s=(s<1?Math.pow(s,e.mp[0]):1+(s-1)*e.mp[1])*e.mp[2];   // the material: its folds' depth below the lit level, its highlights above (asmCmMat)
       if(e&&e.light&&LXP.sm[z]){const sl=LXP.smb[z][k]/40000;if(sl>.01)s=LXP.sm[z]*Math.pow(sl/LXP.sm[z],LK.lgam)*(s/sl)}   // a lighter cloth: its large folds deeper
       if(lit)s*=lxF(z,k,x,y,e);
       if(e&&e.suit){SUITTW=1;suitCol(e.suit,k,x,y,s,c);
+        if(SUITTW!==1&&SUITTW>0){const f=Math.pow((1+asmCmWk(s)*(SUITTW-1))/SUITTW,2.2);c[0]*=f;c[1]*=f;c[2]*=f}   // the weave by the light (ASM_CM_WLIGHT)
         if(e.look){const L=e.look,tw=1+L.boost*(SUITTW-1);if(L.boost>1){const f=Math.max(0,1+(L.boost-1)*2.2*(SUITTW-1));c[0]*=f;c[1]*=f;c[2]*=f}   // a dark cloth's weave, bolder than life
           const yy=lum(c),fl=L.lift*Math.pow(Math.min(s,1),LK.fp);if(yy<fl){const d=(fl-yy)*Math.max(0,1+LK.wk*(tw-1));c[0]+=d;c[1]+=d;c[2]+=d}
           lookAfter(c,s,z,x,y,false,tw,L.boost)}
@@ -785,12 +903,12 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
           // solved: the knot's (80) and the blade's (81) positions are in the painter's frames (the blade's lean, a quarter turn more in
           // the knot) and scaled so the count across the blade is the reading's; the pattern's own angle turns them
           const th=tr?(e.tie.ang||0):tg.lean+(e.tie.ang||0)+(y<tg.yk?Math.PI/2:0),cs=Math.cos(th),sn=Math.sin(th);
-          for(let aa=0;aa<2;aa++)for(let ee=0;ee<2;ee++){let X=x+(ee+.5)/2,Yv=y+(aa+.5)/2;if(tr){const c=asmUvAt(UV,S,k,X,Yv);X=c[0];Yv=c[1]}asmCmAt(e.tie,(X*cs+Yv*sn)/e.rep,(Yv*cs-X*sn)/e.repv,tmp)}tmp[0]/=4;tmp[1]/=4;tmp[2]/=4}
-        else if(z==='jacket'||z==='waistcoat'||(z==='shirt'&&geo&&geo.gar==='shirt')||(z==='shirt'&&UV&&(UV.R[k]===2||(UV.R[k]>=60&&UV.R[k]<80)))){const n=e.tile.fine?3:2;for(let aa=0;aa<n;aa++)for(let ee=0;ee<n;ee++){const uv=uvAt(k,x+(ee+.5)/n,y+(aa+.5)/n);asmCmAt(e.tile,uv[0]/e.rep,uv[1]/e.repv,tmp)}tmp[0]/=n*n;tmp[1]/=n*n;tmp[2]/=n*n}
+          for(let aa=0;aa<2;aa++)for(let ee=0;ee<2;ee++){let X=x+(ee+.5)/2,Yv=y+(aa+.5)/2;if(tr){const c=asmUvAt(UV,S,k,X,Yv);X=c[0];Yv=c[1]}const q=2*aa+ee;SU[q]=(X*cs+Yv*sn)/e.rep;SV[q]=(Yv*cs-X*sn)/e.repv}asmCmRead(e.tie,SU,SV,2,tmp)}
+        else if(z==='jacket'||z==='waistcoat'||(z==='shirt'&&geo&&geo.gar==='shirt')||(z==='shirt'&&UV&&(UV.R[k]===2||(UV.R[k]>=60&&UV.R[k]<80)))){const n=e.tile.fine?3:2;for(let aa=0;aa<n;aa++)for(let ee=0;ee<n;ee++){const uv=uvAt(k,x+(ee+.5)/n,y+(aa+.5)/n),q=n*aa+ee;SU[q]=uv[0]/e.rep;SV[q]=uv[1]/e.repv}asmCmRead(e.tile,SU,SV,n,tmp)}
         else if(z==='shirt'&&e.tile.fine){const ci=P.cuff?P.cuff[k]:255,th=ci<255?P.cuffAng[ci]||0:0,cs=Math.cos(th),sn=Math.sin(th);   // a woven shirt: 3x3 points a pixel (a 3 mm weave is ~10 px; one point skipped its steps)
-          for(let aa=0;aa<3;aa++)for(let ee=0;ee<3;ee++){const X=x+(ee+.5)/3,Yv=y+(aa+.5)/3;asmCmAt(e.tile,(X*cs+Yv*sn)/e.rep,(Yv*cs-X*sn)/e.repv,tmp)}tmp[0]/=9;tmp[1]/=9;tmp[2]/=9}
+          for(let aa=0;aa<3;aa++)for(let ee=0;ee<3;ee++){const X=x+(ee+.5)/3,Yv=y+(aa+.5)/3,q=3*aa+ee;SU[q]=(X*cs+Yv*sn)/e.rep;SV[q]=(Yv*cs-X*sn)/e.repv}asmCmRead(e.tile,SU,SV,3,tmp)}
         else if(z==='shirt'&&P.cuff){const ci=P.cuff[k];rot(x+.5,y+.5,ci<255?P.cuffAng[ci]||0:0,e,tmp)}
-        else if(z==='trousers'&&P.legs){for(let aa=0;aa<2;aa++)for(let ee=0;ee<2;ee++){const uv=uvAt(k,x+(ee+.5)/2,y+(aa+.5)/2);asmCmAt(e.tile,uv[0]/e.rep,uv[1]/e.repv,tmp)}tmp[0]/=4;tmp[1]/=4;tmp[2]/=4}   // read trousers: along the legs
+        else if(z==='trousers'&&P.legs){for(let aa=0;aa<2;aa++)for(let ee=0;ee<2;ee++){const uv=uvAt(k,x+(ee+.5)/2,y+(aa+.5)/2),q=2*aa+ee;SU[q]=uv[0]/e.rep;SV[q]=uv[1]/e.repv}asmCmRead(e.tile,SU,SV,2,tmp)}   // read trousers: along the legs
         else asmCmAt(e.tile,(x+.5)/e.rep,(y+.5)/e.repv,tmp)}
       // above its usual brightness a cloth gains neutral light (a sheen), not more of its own colour
       const plain=!!e&&base===e.flat;if(e&&e.look)base=lookBase(base,e);
@@ -802,6 +920,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
     o[j]=gam(r);o[j+1]=gam(g);o[j+2]=gam(b);o[j+3]=255}
   if(LK&&cl.shirt&&A.shirt)asmCmButtons(o,P,cl.shirt.flat,L,gam);   // the shirt's buttons, drawn (ASM_CM_BTN)
   if(job.bar&&A.tie){const tm=new Uint8Array(N);for(let k=0;k<N;k++)tm[k]=A.tie[k]>127?1:0;asmBarDraw(o,tm,S,job.bar,null)}   // a tie clip, drawn as the earlier assembler draws it
+  if(LK&&BG)asmCmFinish(o,hit);   // the figure seated in the room (ASM_CM_FIN)
   let img=new ImageData(o,S,S);
   if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
     x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(big,0,0,ASM_SIZE,ASM_SIZE);img=x.getImageData(0,0,ASM_SIZE,ASM_SIZE)}

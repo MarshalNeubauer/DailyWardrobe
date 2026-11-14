@@ -2,7 +2,7 @@
    (put together by the page from ../assemble.js, ../asm-color.js, asm-gl.js and this file) or on the page thread: the suit master's
    setup once, then every look painted on the CPU (asmCmBuild with job.gl false) and on the GPU (asm-gl.js), timed, and the two pictures
    compared pixel by pixel. Nothing is sent anywhere: the results go back to the page only. Adapted from tools/asm-gl-bench.js (PR #355). */
-/* global asmCmPrep, asmCmLightPrep, asmCmBuild, asmCmCanvas, asmGlContext, asmGlProgram, asmGlRenderer, asmGlPack, asmGlUpload, asmGlUploadGeo, asmGlPaint, asmGlWhy, asmJpeg:writable, asmData:writable, asmCmMem:writable, asmGlState:writable, FileReaderSync */
+/* global asmCmFinish, asmCmPrep, asmCmLightPrep, asmCmBuild, asmCmCanvas, asmGlContext, asmGlProgram, asmGlRenderer, asmGlPack, asmGlUpload, asmGlUploadGeo, asmGlPaint, asmGlWhy, asmJpeg:writable, asmData:writable, asmCmMem:writable, asmGlState:writable, FileReaderSync */
 const GLB_IN_WORKER=typeof document==='undefined';
 /* WebGL2 for the bench: the app prototype's own (an OffscreenCanvas), else a page canvas (iOS below 17 has no WebGL in OffscreenCanvas) */
 function glbContext(S){let gl=null,kind='OffscreenCanvas';try{gl=asmGlContext(S)}catch{gl=null}
@@ -24,7 +24,7 @@ async function glbRun(o,prog){
   const out={where:GLB_IN_WORKER?'worker':'page',size:S,runs,cpuRuns,half:!!o.half,looks:[],errors:[]},thumbs={};
   let done=0,total=2+jobs.length*(cpuRuns+runs)+4;const step=async msg=>{done++;prog({msg,done,total});await glbYield()};
   // asmCmBuild's own JPEG, timed apart and kept out of the CPU time (as the PC bench); its picture is the CPU's pixels
-  const jpeg0=asmJpeg;let cap=null,jt=0;asmJpeg=async img=>{cap=img;const t=T(),r=await jpeg0(img);jt=T()-t;return r};
+  const jpeg0=asmJpeg;let FIN=null;let cap=null,jt=0;asmJpeg=async img=>{cap=img;const t=T(),r=await jpeg0(img);jt=T()-t;return r};
   let G=null,lost=null;
   try{
     const j0=jobs[0],key=j0.cm+'|'+j0.mk+'|'+j0.mt+'|'+(j0.rev||'')+'|'+j0.size;
@@ -59,6 +59,9 @@ async function glbRun(o,prog){
             for(let i=0;i<runs;i++){t=T();px=await asmGlPaint(G,job,P);gl.push(T()-t);const ge=glbGlErr(G.gl);if(ge)throw new Error('GL paint: '+ge);if(lost||G.gl.isContextLost())throw new Error(lost||'WebGL context lost');
               await step(job.name+': GL run '+(i+1)+'/'+runs+' '+gl[i].toFixed(1)+' ms')}
             r.gl=med(gl);r.glAll=gl.map(r1);
+            // (2026-11-14) the finishing pass both painters share (asm-color.js asmCmFinish: the outline softened into the room, the room's
+            // grain), as asmGlTry runs it after the chip's pixels are read back; outside the timings above
+            if(px&&typeof asmCmFinish==='function'&&job.look!==false&&job.bg){FIN=FIN&&FIN.P===P?FIN:{P};asmCmFinish(px,FIN)}
             if(TH)thumbs[job.name+'|gl']=await glbThumb(px,S,TH);
             if(cpx){const N=S*S,hist=[0,0,0,0,0,0];let sum=0,mx=0,over=0,mxAt=-1;
               for(let k=0;k<N;k++){const j=4*k;let m=0;for(let q=0;q<3;q++){const d=Math.abs(cpx[j+q]-px[j+q]);sum+=d;if(d>m)m=d}

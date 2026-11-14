@@ -77,7 +77,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(lk.n>1000&&lk.after.m>lk.before.m+4&&lk.after.sd>lk.before.sd*1.3,`a black suit is lifted and shows its folds and sheen (mean ${lk.before.m.toFixed(1)} -> ${lk.after.m.toFixed(1)}, spread ${lk.before.sd.toFixed(1)} -> ${lk.after.sd.toFixed(1)})`);
     ok(lk.blue>12,`a navy suit stays blue under the look (blue over red ${lk.blue.toFixed(1)})`);
     ok(Math.abs(lk.grey1.m-lk.grey0.m)<4&&lk.grey1.sd>lk.grey0.sd,`a grey suit keeps its colour and gains shape (mean ${lk.grey0.m.toFixed(1)} -> ${lk.grey1.m.toFixed(1)}, spread ${lk.grey0.sd.toFixed(1)} -> ${lk.grey1.sd.toFixed(1)})`);
-    ok(lk.pin<.5,`a pinstripe jacket is painted exactly as before (mean difference ${lk.pin.toFixed(2)} levels)`);
+    // (2026-11-14) a striped jacket takes the lighting (contact shadows, the window, lit edges, grain) but still not the cloth look's bolder weave
+    ok(lk.pin>.3&&lk.pin<4,`a pinstripe jacket takes the lighting, not the cloth look (mean difference from the unlit picture ${lk.pin.toFixed(2)} levels)`);
     // the shirt's buttons are drawn (ASM_CM_BTN): on a pink shirt a pearl button where the painted cloth was pink
     const bt=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,bot:W.pants,belt:W.belt,tie:W.tie,shoes:W.shoes},job=await asmCmJob(o);
       const px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return {w:im.width,d:x.getImageData(0,0,im.width,im.height).data}};
