@@ -23,8 +23,10 @@ const packDate=d=>d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',
 const packRead=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 const packWrite=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 
-/* the next working week: the workdays of the week that starts on the next Monday */
-function packDefault(){const T=todayDate(),m=new Date(T);do m.setDate(m.getDate()+1);while(m.getDay()!==1);
+/* the next working week: the workdays of the week that starts on the user's next first workday (the day after the weekend: Sunday for a
+   Sunday-Thursday week, Monday for Monday-Friday; Monday when every day is a workday or none is) */
+const packWeekStart=()=>{const W=settings.workdays||[];const f=[0,1,2,3,4,5,6].filter(d=>W.includes(d)&&!W.includes((d+6)%7));return f.length?(f.includes(1)?1:f[0]):1};
+function packDefault(){const T=todayDate(),m=new Date(T),s=packWeekStart();do m.setDate(m.getDate()+1);while(m.getDay()!==s);
   let a=null,b=null;for(let g=0;g<7;g++){const d=new Date(m.getFullYear(),m.getMonth(),m.getDate()+g);if(isWorkday(d)){a=a||d;b=d}}
   if(!a){a=m;b=new Date(m.getFullYear(),m.getMonth(),m.getDate()+4)}
   return {a:isoKey(a),b:isoKey(b),j:0,s:0}}

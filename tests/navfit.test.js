@@ -20,9 +20,9 @@ module.exports=async({ok,chromium,url,settle})=>{
       m.keep=keep;
       await ctx.close();return {...m,errs}};
     const a=await run(390,844);
-    ok(a.navx>0&&a.navx<=64&&(Math.abs(a.gap-12)<=1||a.navx===64),`on a phone the tab bar grows to one 12px gap below the tiles (gap ${a.gap}px, ${a.navx}px taller, buttons ${a.btn}px)`);
+    ok(a.navx>0&&a.navx<=58&&(Math.abs(a.gap-12)<=1||a.navx===58),`on a phone the tab bar grows to one 12px gap below the tiles (gap ${a.gap}px, ${a.navx}px taller, buttons ${a.btn}px)`);
     const d=await run(466,710);   // like the user's screenshot: about 35px between the tiles and the bar, the score card peeking out
-    ok(d.navx>15&&d.navx<40&&Math.abs(d.gap-12)<=1,`with ~35px to spare (466×710) the bar's top lands 12px below the tiles (gap ${d.gap}px, ${d.navx}px taller)`);
+    ok(d.navx>9&&d.navx<34&&Math.abs(d.gap-12)<=1,`with ~35px to spare (466×710) the bar's top lands 12px below the tiles (gap ${d.gap}px, ${d.navx}px taller)`);
     ok(d.keep.drawing===d.navx&&d.keep.weekend===d.navx,`the bar keeps that size on a day with only the drawing (${d.keep.drawing}px) and on a weekend (${d.keep.weekend}px)`);
     // the user's bug: measured before the photo loaded (it has no height yet), the bar jumped to 64px and was kept there
     {const ctx=await browser.newContext({viewport:{width:466,height:710},isMobile:true,hasTouch:true});
@@ -37,7 +37,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       await p.waitForTimeout(400);const early=await nx();
       await p.waitForFunction(()=>{const i=document.querySelector('#mannequin-container img');return i&&i.complete&&i.naturalHeight>0},null,{timeout:8000});await p.waitForTimeout(400);
       const late=await nx(),gap=await p.evaluate(()=>Math.round(document.querySelector('body>nav').getBoundingClientRect().top-document.querySelector('.below').getBoundingClientRect().bottom));
-      ok(early===0&&late>15&&late<40&&Math.abs(gap-12)<=1&&await p.evaluate(()=>localStorage.getItem('nav_fit:466x710')===null),`the bar isn't sized before the photo loads (${early}px then; ${late}px after, gap ${gap}px), and the old inflated 64px is dropped`);
+      ok(early===0&&late>9&&late<34&&Math.abs(gap-12)<=1&&await p.evaluate(()=>localStorage.getItem('nav_fit:466x710')===null),`the bar isn't sized before the photo loads (${early}px then; ${late}px after, gap ${gap}px), and the old inflated 64px is dropped`);
       await ctx.close()}
     // a blazer day (trousers too: four tiles, each narrower) keeps the three-tile day's size
     {const ctx=await browser.newContext({viewport:{width:466,height:710},isMobile:true,hasTouch:true});const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
@@ -54,9 +54,9 @@ module.exports=async({ok,chromium,url,settle})=>{
       ok(three.n===3&&four.n===4&&four.pics===4&&four.h<three.h-10&&Math.abs(four.x-three.x)<=1,`a day with four picture tiles (a shorter row: ${four.h}px against ${three.h}px) gets the same bar as a day with three (${four.x}px and ${three.x}px)`);
       await ctx.close()}
     const s=await run(390,600);
-    ok(s.navx===0&&s.btn===38,`on a short screen, where the tiles already reach it, the bar keeps its 38px buttons (grown ${s.navx}px)`);
+    ok(s.navx===0&&s.btn===44,`on a short screen, where the tiles already reach it, the bar keeps its 44px buttons (a tap target's size) (grown ${s.navx}px)`);
     const t=await run(430,1100);
-    ok(t.navx===64,`on a tall screen it grows at most 64px (${t.navx}px)`);
+    ok(t.navx===58,`on a tall screen it grows at most 58px (to 102px, as before) (${t.navx}px)`);
     ok(!d.errs.length&&!a.errs.length&&!s.errs.length&&!t.errs.length,'no page errors');
   }finally{await browser.close()}
 };

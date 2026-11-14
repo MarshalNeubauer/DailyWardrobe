@@ -110,5 +110,80 @@ module.exports=async({ok,ROOT})=>{
       {const {store,sent,env}=mk(),K='c00000000000000a5';delete env.OPENAI_API_KEY;
         store.store.set('job:'+K,JSON.stringify({key:K,image:PNG,t:Date.now()}));const m=msg({key:K});await worker.queue({messages:[m]},env);
         ok(m.acked&&store.store.has('jobfail:'+K)&&!store.store.has('job:'+K)&&!store.store.has('jobrun:'+K),'a job given up (no OpenAI key) keeps its reason and leaves no job or jobrun record')}}
+    // ---- every KV write a tester causes is counted against a daily cap; lists too; everyone together stays well under 1,000
+    {const realNow=Date.now;try{
+      const store=kv(),env={APP_TOKEN:'own',WARDROBE:store,RENDER_HUB:HUB,TESTER_DAILY_TOTAL:JSON.stringify({write:40})};hubs.clear();
+      const O={'x-app-token':'own'},mkT=async name=>{const r=await J(await call(env,'POST','invites',{name},O));const k='invite:'+crypto.createHash('sha256').update(r.code).digest('hex'),rec=JSON.parse(store.store.get(k));rec.created-=8*86400000;store.store.set(k,JSON.stringify(rec));return {id:r.id,ns:`u:${r.id}:`,h:{'x-app-token':r.code}}};
+      const A=await mkT('Tess'),B=await mkT('Bo');
+      // deletes: each one counted (1,200 went through before)
+      let n=0,st=200;for(;n<60&&st===200;n++)st=(await call(env,'DELETE','render?key=c'+n.toString(16).padStart(16,'0'),undefined,A.h)).status;
+      ok(st===429&&n===41,`a tester's DELETE /render is counted as a write and refused past everyone's daily total (refused at ${n})`);
+      env.TESTER_DAILY_TOTAL=JSON.stringify({write:450});let d=0;st=200;for(;d<260&&st===200;d++)st=(await call(env,'DELETE','render?key=c'+d.toString(16).padStart(16,'0'),undefined,B.h)).status;
+      ok(st===429&&d===201,`and past the tester's own 200 writes a day (refused at ${d})`);
+      // a first backup larger than what is left today: what fits is stored, the save waits for tomorrow, and finishes then
+      Date.now=()=>realNow()+86400000;env.TESTER_DAILY_TOTAL=JSON.stringify({write:30});
+      const photos={},items=[];for(let i=0;i<50;i++){const ph='data:image/jpeg;base64,'+crypto.randomBytes(300).toString('base64');const h=crypto.createHash('sha256').update(ph).digest('hex').slice(0,20);photos[h]=ph;items.push({id:'i'+i,added:1,photo:'dwph:'+h})}
+      const save=async()=>J(await call(env,'POST','sync',{baseRev:0,day:'2026-11-20',delta:{items,days:[],tombstones:{}},photos},A.h));
+      let r=await save();const stored=()=>[...store.store.keys()].filter(k=>k.startsWith(A.ns+'ph:')&&k!==A.ns+'ph:gc').length;
+      ok(r.s===429&&r.what==='backup'&&/30 of 50 new photos/.test(r.message)&&stored()===30&&!store.store.has(A.ns+'wardrobe:v1'),`a backup past the day's writes stores what fits and is refused in the backup's words, so the app tries tomorrow (${r.s}, ${stored()} photos stored: ${r.message})`);
+      Date.now=()=>realNow()+2*86400000;r=await save();
+      ok(r.s===200&&stored()===50&&store.store.has(A.ns+'wardrobe:v1'),`the next day it stores the other 20 and the backup (${r.s}, ${stored()})`);
+      // lists: 30 a day
+      let l=0;st=200;for(;l<40&&st===200;l++)st=(await call(env,'GET','render?list=1',undefined,B.h)).status;
+      ok(st===429&&l===31,`a tester's photo list (a KV list) is capped too (refused at ${l})`);
+      // the owner is never counted
+      let ow=0;for(let i=0;i<50;i++)if((await call(env,'DELETE','render?key=c'+i.toString(16).padStart(16,'0'),undefined,O)).status===200)ow++;
+      ok(ow===50,'the owner\'s writes are never counted');
+      // reminders: a tester who knows the owner's push address can neither switch it off nor take it over
+      const env2={...env,VAPID_PUBLIC_KEY:'x',VAPID_PRIVATE_KEY:'y'},EP='https://fcm.googleapis.com/fcm/send/owner-device';
+      await call(env2,'POST','push',{endpoint:EP,time:'07:00',tz:'UTC',dates:[]},O);
+      await call(env2,'POST','push',{endpoint:EP,off:true},A.h);
+      const owners=()=>JSON.parse(store.store.get('push:subs')).list.filter(x=>x.endpoint===EP).map(x=>(x.ns||'owner')+'@'+x.time).sort().join();
+      ok(owners()==='owner@07:00','a tester can\'t switch off the owner\'s reminder by its push address');
+      await call(env2,'POST','push',{endpoint:EP,time:'05:00',tz:'UTC',dates:[]},A.h);
+      ok(/owner@07:00/.test(owners()),`nor change it (${owners()})`);
+    }finally{Date.now=realNow}}
+    // ---- Claude calls: the fixed text cached in system, the owner's next, the photos and per-call text last; wb wording; retries
+    {const TAG={type:'suit',primaryColor:'navy',secondaryColor:'none',tertiaryColor:'none',pattern:'pinstripe',metal:null,leather:null,dial:null,band:null,bezel:null,trouserKind:null,shoeStyle:null,
+        confidence:{type:'high',primaryColor:'high',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null,clothBox:null,patternBox:null,
+        weave:{layout:'stripes',direction:'vertical',repeatsAcross:34,colours:[{name:'navy',hex:'#1f2a44',width:'wide'},{name:'white',hex:'#ffffff',width:'hairline'}],crossing:'',description:'x'}};
+      let bodies=[],replies=[],logs=[];const log0=console.log;
+      globalThis.fetch=async(u,i)=>{if(String(u)!=='https://api.anthropic.com/v1/messages')return new Response('',{status:599});bodies.push(JSON.parse(i.body));const f=replies.length>1?replies.shift():replies[0];return f()};
+      const ok200=b=>()=>new Response(JSON.stringify({model:'claude-opus-5-5',stop_reason:'end_turn',usage:{input_tokens:900,cache_read_input_tokens:4200,cache_creation_input_tokens:0,output_tokens:310},content:[{type:'text',text:JSON.stringify(b)}]}),{status:200});
+      const err=(s,m)=>()=>new Response(JSON.stringify({type:'error',error:{message:m}}),{status:s});
+      const env={APP_TOKEN:'t',ANTHROPIC_API_KEY:'k',CLAUDE_RETRY_MS:0},T={'x-app-token':'t'};
+      const custom={colors:[{key:'ownink',name:'ink',hex:'#1a1f33',types:['suit']}],patterns:[]},corrections=[{field:'pattern',type:'suit',from:'stripe',to:'pinstripe'}];
+      const tag=x=>call(env,'POST','',{image:PNG,closeup:PNG,custom,corrections,measured:{lab:[20,1,-8],ref:true,src:'closeup'},...x},T);
+      replies=[ok200(TAG)];console.log=(...a)=>logs.push(a.join(' '));let r;
+      try{r=await J(await tag({}))}finally{console.log=log0}
+      const b=bodies.at(-1),sys=b.system||[],msg=b.messages[0].content,mt=msg.filter(c=>c.type==='text').map(c=>c.text).join('\n');
+      ok(Array.isArray(sys)&&sys.length===2&&sys.every(s=>s.cache_control&&s.cache_control.type==='ephemeral'),'the system prompt has two cache points: the fixed instructions, then the owner\'s colours and corrections');
+      ok(/type — one of/.test(sys[0].text)&&/clothBox —/.test(sys[0].text)&&!/no code fences|Reply with one JSON object/.test(sys[0].text)&&!/ownink|steelblue ->/.test(sys[0].text),'the first holds the fixed rules, without the stale JSON template or "no code fences" line (structured output answers)');
+      ok(/ownink = ink/.test(sys[1].text)&&/suit pattern: stripe -> pinstripe/.test(sys[1].text),'the second holds the owner\'s own colours and corrections');
+      ok(msg[0].type==='image'&&msg[1].type==='image'&&msg.at(-1).type==='text'&&/CIELAB L\*20/.test(mt)&&!/type — one of/.test(mt),'the photos and the per-call text (close-up note, light, measurement) come after');
+      ok(r.s===200&&r.weave&&r.weave.repeatsAcross===34,`a pinstripe's count across is kept up to 80 (was capped at 12: ${r.weave&&r.weave.repeatsAcross})`);
+      ok(logs.some(l=>/cache read 4200/.test(l)&&/out 310/.test(l)),'the log line has the cache reads and output tokens');
+      await tag({wb:true});const wT=bodies.at(-1).messages[0].content.at(-1).text;await tag({wb:false});const wF=bodies.at(-1).messages[0].content.at(-1).text;await tag({});const wN=bodies.at(-1).messages[0].content.at(-1).text;
+      ok(/white-balanced these photos from a white reference/.test(wT)&&!/neutral daylight/.test(wT),'wb:true: take the colours as shown');
+      ok(/as the camera took them/.test(wF)&&/warm indoor light makes white look ivory/.test(wF),'wb:false: judge them as in daylight, allowing for the light');
+      ok(/may or may not have been white-balanced/.test(wN)&&!/from a white reference in the frame/.test(wN),'no wb (an older app): the safe wording');
+      ok(!/white-balanced|Judge shirt colours as in daylight/.test(bodies.at(-1).system.map(s=>s.text).join('')),'nothing about the light is fixed in the system prompt any more');
+      replies=[ok200({items:[]})];await call(env,'POST','tag-many',{image:PNG,custom},T);
+      ok(!/JSON only/.test(bodies.at(-1).system[0].text)&&bodies.at(-1).system.length===2,'the group prompt has no "JSON only" line and caches the same way');
+      replies=[ok200({layout:'none'})];await call(env,'POST','pattern',{image:PNG,closeup:PNG,type:'tie'},T);
+      ok(/reading the woven pattern/.test(bodies.at(-1).system[0].text)&&bodies.at(-1).system[0].cache_control&&/The item is a tie/.test(bodies.at(-1).messages[0].content.at(-1).text),'the pattern prompt is cached in system; the item\'s type goes after the photos');
+      // retries: once on 429/529/5xx, never on a 4xx; a time limit on every attempt
+      bodies=[];replies=[err(529,'Overloaded'),ok200(TAG)];r=await J(await tag({}));
+      ok(r.s===200&&bodies.length===2,`an overloaded API (529) is tried once more and the tag comes back (${bodies.length} calls)`);
+      bodies=[];replies=[err(500,'boom'),err(503,'still')];r=await J(await tag({}));
+      ok(r.s===502&&bodies.length===2&&/still/.test(r.detail),'two failures in a row: one retry, then the error');
+      bodies=[];replies=[err(400,'bad request')];r=await J(await tag({}));
+      ok(r.s===502&&bodies.length===1,'a 400 is not retried');
+      let sig=null;globalThis.fetch=async(u,i)=>{sig=i.signal;const e=new Error('timed out');e.name='TimeoutError';throw e};r=await J(await tag({}));
+      ok(sig&&typeof sig.aborted==='boolean'&&r.s===504&&/minutes/.test(r.detail),'each call to Claude has a time limit, and running out says so');}
+    // ---- the deploy workflow reads the repository only, and says loudly when worker.js changed but can't be deployed
+    {const wf=require('fs').readFileSync(path.join(ROOT,'.github/workflows/deploy-worker.yml'),'utf8');
+      ok(/^permissions:\n  contents: read$/m.test(wf),'the deploy workflow has permissions: contents: read');
+      ok(/::warning::worker\.js changed on main but was NOT deployed/.test(wf)&&!/::notice::Automatic worker deploys/.test(wf),'missing Cloudflare settings give a warning, not a quiet notice')}
   }finally{globalThis.fetch=realFetch}
 };

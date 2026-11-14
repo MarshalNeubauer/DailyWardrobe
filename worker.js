@@ -64,7 +64,6 @@ ${TYPE_COLOR_TEXT}
     espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown; brown is a clearly warm, coloured brown); rust is a burnt orange-brown;
   ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
   blue with a violet cast, between lightblue and blue; grey for cufflinks means gunmetal; a tie clip's colour is its finish: silver, gold, rosegold, gunmetal, or an enamel colour)
-  Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
 
 secondaryColor — the colour of the stripe, check line, dot or motif, from the type's line colours (after the |). "none" if plain.
   Socks: the colour of a contrasting toe cap (the knitted tip over the toes, often a light heather grey on a dark sock), or "none"
@@ -122,6 +121,19 @@ dial, band, bezel — watches only, otherwise null:
   bezel: fluted (finely ridged ring around the crystal) or smooth.`;
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
+/* the field rules alone (from "type —"): Claude answers through structured output, so it gets no JSON template or "no code
+   fences" line (those are for Workers AI, which reads PROMPT whole) */
+const TAG_RULES = PROMPT.slice(PROMPT.indexOf('type —'));
+const TAG_INTRO = 'Identify the single clothing item in the first photo.\n\n';
+/* how to read the photos' colours, by the app's wb flag: true = it white-balanced them from a white reference, false = sent as the
+   camera took them, absent (an older app) = not known. "Photos are white-balanced" in the system prompt and "judge as in daylight"
+   in the rules said both at once (2026-11-13 audit) */
+function lightText(wb) {
+  if (wb === true) return 'The app white-balanced these photos from a white reference in the frame: take their colours as shown and do not shift them for warm or cool light; only allow for shadows, sheen and folds.';
+  if (wb === false) return 'These photos are as the camera took them (the app found no white reference, so it did not correct them): judge the colours as they would look in neutral daylight, allowing for the light\'s cast (warm indoor light makes white look ivory and grey look beige) as well as for shadows, sheen and folds.';
+  return 'These photos may or may not have been white-balanced. Judge the colours as they would look in neutral daylight: allow for a warm or cool cast only where the photo clearly has one (whites and greys look tinted), and for shadows, sheen and folds.';
+}
+const wbOf = body => (body && typeof body.wb === 'boolean' ? body.wb : undefined);
 
 /* ---- Claude API ---- */
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
@@ -275,38 +287,64 @@ function correctionsText(list) {
     + l.map(f => `  ${f.type} ${f.field}: ${f.from} -> ${f.to}`).join('\n') : '';
 }
 
+const CLAUDE_SYSTEM = 'You are a menswear expert who labels clothing photos for a wardrobe app.';
+/* each call to Claude: at most 3 minutes an attempt; one retry after 2 s, or the API's retry-after up to 20 s */
+const CLAUDE_MS = 180000, CLAUDE_RETRY_MS = 2000, CLAUDE_RETRY_MAX = 20000;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function tagWithClaude(env, image, opts = {}) {
   const m = image.match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   if (!m) return { status: 400, body: { error: 'no image' } };
   const model = env.CLAUDE_MODEL || CLAUDE_DEFAULT;
   const headers = { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
+  /* The order is the cache's: the system prompt holds the fixed instructions (opts.prompt, the same for every call of a kind) with
+     the first cache point, then the owner's colours, patterns and corrections (opts.owner, the same from call to call) with the
+     second; the photos and what changes with each call (opts.text: the close-up note, the light, the measurement) come last.
+     The fixed text used to follow the photos, so nothing could be cached. A prefix under the model's minimum is simply not cached */
+  const cached = t => ({ type: 'text', text: t, cache_control: { type: 'ephemeral' } });
   const body = {
     model,
     max_tokens: opts.maxTokens || 4000,    // thinking counts toward this; a single item's JSON is ~100 tokens
     output_config: { effort: opts.effort || 'low', format: { type: 'json_schema', schema: opts.schema || TAG_SCHEMA } },
-    system: 'You are a menswear expert who labels clothing photos for a wardrobe app. The app has already white-balanced the photos, '
-      + 'so take their colours as shown and do not shift them for warm or cool light; only allow for shadows, sheen and folds.',
+    system: [cached(CLAUDE_SYSTEM + '\n\n' + (opts.prompt || TAG_INTRO + TAG_RULES)), ...(opts.owner ? [cached(opts.owner.trim())] : [])],
     messages: [{ role: 'user', content: [
       { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
       ...(opts.closeup ? [{ type: 'image', source: { type: 'base64', media_type: opts.closeup[1], data: opts.closeup[2] } }] : []),
-      { type: 'text', text: (opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.\n\n' : '') + (opts.prompt || PROMPT) },
+      { type: 'text', text: [opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.' : '', lightText(opts.wb), (opts.text || '').trim()].filter(Boolean).join('\n\n') },
     ] }],
   };
   // If a safety classifier declines (very unlikely for clothing photos), let the API retry on its recommended model.
   if (/opus|fable|sonnet-5-5/.test(model)) { body.fallbacks = 'default'; headers['anthropic-beta'] = 'server-side-fallback-2026-07-01'; }
-  let r;
-  try { r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) }); }
-  catch (e) { return { status: 502, body: { error: 'ai', detail: 'Could not reach the Claude API: ' + String(e && e.message) } }; }
-  const out = await r.json().catch(() => null);
+  const sent = JSON.stringify(body), pause = env.CLAUDE_RETRY_MS != null ? +env.CLAUDE_RETRY_MS || 0 : CLAUDE_RETRY_MS;   // (tests set it to 0)
+  let r, out;
+  // one automatic retry on an overloaded or failing API (429, 529, 5xx, a dropped connection), after its retry-after or a short
+  // pause; every attempt has a time limit (CLAUDE_MS)
+  for (let attempt = 1; ; attempt++) {
+    try { r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: sent, signal: AbortSignal.timeout(CLAUDE_MS) }); }
+    catch (e) {
+      if (e && e.name === 'TimeoutError') return { status: 504, body: { error: 'ai', detail: `Claude took over ${CLAUDE_MS / 60000} minutes to answer. Try again.` } };
+      if (attempt < 2) { await sleep(pause); continue; }
+      return { status: 502, body: { error: 'ai', detail: 'Could not reach the Claude API: ' + String(e && e.message) } };
+    }
+    if (attempt < 2 && (r.status === 429 || r.status >= 500)) {
+      const after = Math.min(CLAUDE_RETRY_MAX, Math.max(pause, (+r.headers.get('retry-after') || 0) * 1000));
+      console.log(`Claude API ${r.status}; trying again in ${after} ms`);
+      try { await r.body?.cancel(); } catch { }
+      await sleep(after); continue;
+    }
+    out = await r.json().catch(() => null);
+    break;
+  }
   if (!r.ok) {
     const msg = out && out.error && out.error.message || `HTTP ${r.status}`;
-    const hint = r.status === 401 ? ' (check the ANTHROPIC_API_KEY secret)' : /credit|billing/i.test(msg) ? ' (add credits in the Claude Console: Billing)' : r.status === 429 ? ' (rate limited; try again shortly)' : '';
+    const hint = r.status === 401 ? ' (check the ANTHROPIC_API_KEY secret)' : /credit|billing/i.test(msg) ? ' (add credits in the Claude Console: Billing)' : r.status === 429 ? ' (rate limited; try again shortly)' : r.status === 529 ? ' (overloaded; try again shortly)' : '';
     return { status: 502, body: { error: 'ai', detail: `Claude API: ${msg}${hint}` } };
   }
+  if (!out) return { status: 502, body: { error: 'ai', detail: 'Claude API: an answer that was not JSON' } };
   if (out.stop_reason === 'refusal') return { status: 502, body: { error: 'ai', detail: 'Claude declined to label this photo.' } };
   if (out.stop_reason === 'max_tokens') return { status: 502, body: { error: 'ai', detail: 'Claude ran out of tokens before answering.' } };
   const text = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  console.log(`tagged by Claude (${out.model}); tokens in ${out.usage && out.usage.input_tokens}, out ${out.usage && out.usage.output_tokens}`);
+  const u = out.usage || {};
+  console.log(`tagged by Claude (${out.model}); tokens in ${u.input_tokens}, cache read ${u.cache_read_input_tokens || 0}, cache written ${u.cache_creation_input_tokens || 0}, out ${u.output_tokens}`);
   try { return { status: 200, body: { ...JSON.parse(text), model: out.model } }; }
   catch { return { status: 502, body: { error: 'unparseable model output', detail: text.slice(0, 300) } }; }
 }
@@ -322,7 +360,8 @@ function cleanTag(t) {
     return { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) }; };
   let weave = null;
   if (t.weave && typeof t.weave === 'object') { const w = t.weave;
-    weave = { layout: w.layout, direction: w.direction, repeatsAcross: Math.max(.2, Math.min(12, +w.repeatsAcross || 1)),
+    // up to 80: a pinstripe jacket has 20-40 stripes across its front (the prompt says so); capped at 12 it was drawn 2.5x too wide
+    weave = { layout: w.layout, direction: w.direction, repeatsAcross: Math.max(.2, Math.min(80, +w.repeatsAcross || 1)),
       colours: (Array.isArray(w.colours) ? w.colours : []).slice(0, 24).filter(c => c && HEX_RE.test(c.hex || '')).map(c => ({ name: txt(c.name, 30), hex: c.hex.toLowerCase(), width: ['hairline', 'narrow', 'medium', 'wide'].includes(c.width) ? c.width : 'medium' })),
       crossing: txt(w.crossing, 300), description: txt(w.description, 600) }; }
   const own = c => c && typeof c === 'object' && HEX_RE.test(c.hex || '') && /[a-z]{2}/i.test(txt(c.name, 30)) ? { name: txt(c.name, 30).toLowerCase(), hex: c.hex.toLowerCase() } : null;
@@ -350,7 +389,7 @@ const MULTI_SCHEMA = {
   } } },
 };
 const MULTI_PROMPT = `This photo shows several clothing items, for example dress shirts hanging on a closet rail, suits or blazers on
-hangers, or trousers hanging or folded. List every distinct item you can see, from left to right. Reply with JSON only.
+hangers, or trousers hanging or folded. List every distinct item you can see, from left to right.
 
 Rules:
 - Each physical item is listed once. Count sleeves, collars and hangers to separate neighbouring items; items that overlap
@@ -375,7 +414,7 @@ async function handleTagMany(req, env, json, who) {
   const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
     properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT + customText(custom) + correctionsText(body.corrections), maxTokens: 16000, effort: 'medium' });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium' });
   if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
@@ -517,7 +556,7 @@ async function handlePattern(req, env, json, who) {
   const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
   const over = await spend(env, who, 'pattern'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: kind + PATTERN_PROMPT, closeup: cm, effort: 'high', maxTokens: 16000 });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000 });
   if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
   const out = cleanPattern(c.body);
   if (!out.across && !out.motif && !out.texture) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
@@ -654,9 +693,9 @@ async function handleRender(req, env, json, who) {
   if (who.role !== 'owner') { delete body.model; delete body.quality; delete body.complexity; delete body.size; }
   if (body.mode === 'item') return renderItem(body, env, json, who);
   if (body.mode === 'queue') return queueRender(body, env, json, who);
-  const what = photoCap(body), over = await spend(env, who, what); if (over) return json(over.body, over.status);
+  const what = photoCap(body), over = await spendEach(env, who, [[what, 1], ['write', 1]]); if (over) return json(over.body, over.status);
   const r = await outfitPhoto(body, env, who.ns);
-  if (!r.ok) { await unspend(env, who, what); return json({ error: r.error }, r.status); }
+  if (!r.ok) { await unspend(env, who, what); await unspend(env, who, 'write'); return json({ error: r.error }, r.status); }
   // keep a copy per outfit combination so it is reused on any day and shown on every device (GET /render?key=...)
   const id = renderId(body);
   if (env.WARDROBE && id) await env.WARDROBE.put(`${who.ns}render:${id}`, JSON.stringify(r.rec), renderTtl(id));
@@ -731,7 +770,7 @@ async function queueRender(body, env, json, who) {
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   if (!dataUrlToBlob(body.image) && !COMBO_RE.test(String(body.baseKey || ''))) return json({ error: 'no illustration' }, 400);
   if (!body.replace && await env.WARDROBE.get(`${ns}render:${key}`)) return json({ queued: false, exists: true });   // replace: a regenerate from the app
-  const what = photoCap(body), day = utcDay(), over = await spend(env, who, what, day); if (over) return json(over.body, over.status);
+  const what = photoCap(body), day = utcDay(), over = await spendEach(env, who, [[what, 1], ['write', JOB_WRITES]], day); if (over) return json(over.body, over.status);
   const job = { key, image: body.image, refs: (Array.isArray(body.refs) ? body.refs : []).slice(0, 8), labels: (Array.isArray(body.labels) ? body.labels : []).slice(0, 8), outfit: String(body.outfit || '').slice(0, 2500), sig: String(body.sig || ''), quality: QUALITIES.includes(body.quality) ? body.quality : undefined, nojacket: !!body.nojacket || undefined,
     model: IMG_MODEL_RE.test(String(body.model || '')) ? body.model : undefined, complexity: COMPLEXITIES.includes(body.complexity) ? body.complexity : undefined, size: IMG_SIZES.includes(body.size) ? body.size : undefined, replace: body.replace ? true : undefined, t: Date.now(),
     ...(body.swap ? { swap: body.swap, mask: body.mask, markup: body.markup } : {}),   // a one-piece edit of a kept photo
@@ -991,15 +1030,15 @@ async function renderItem(body, env, json, who) {
     const key = String(body.key || '');
     if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
     if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
-    const day = utcDay(), over = await spend(env, who, 'item', day); if (over) return json(over.body, over.status);
+    const day = utcDay(), over = await spendEach(env, who, [['item', 1], ['write', JOB_WRITES]], day); if (over) return json(over.body, over.status);
     await env.WARDROBE.put(`${ns}job:${key}`, JSON.stringify({ kind: 'item', key, item, ref: body.ref || null, t: Date.now(), ...(who.caps ? { cap: 'item', capDay: day } : {}) }), JOB_TTL);
     await dropFail(env, ns, key);
     await env.RENDER_QUEUE.send(jobMsg(key, ns));
     return json({ queued: true });
   }
-  const over = await spend(env, who, 'item'); if (over) return json(over.body, over.status);
+  const over = await spendEach(env, who, [['item', 1], ['write', 1]]); if (over) return json(over.body, over.status);
   const r = await itemPhoto({ item, ref: body.ref }, env);
-  if (!r.ok) { await unspend(env, who, 'item'); return json({ error: r.error }, r.status); }
+  if (!r.ok) { await unspend(env, who, 'item'); await unspend(env, who, 'write'); return json({ error: r.error }, r.status); }
   const id = renderId(body);
   if (env.WARDROBE && id) await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify(r.rec), renderTtl(id));
   return json({ image: r.rec.img, model: r.rec.model });
@@ -1046,7 +1085,7 @@ async function putRender(req, env, json, who) {
   if (!id || !rec || !/^data:image\/(jpeg|png|webp);base64,/.test(String(rec.img || ''))) return json({ error: 'bad photo' }, 400);
   const cur = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
   if (cur && (cur.t || 0) >= (rec.t || 0)) return json({ ok: true, kept: 'newer' });
-  const over = await spend(env, who, 'upload'); if (over) return json(over.body, over.status);   // every upload is a KV write
+  const over = await spendEach(env, who, [['upload', 1], ['write', 1]]); if (over) return json(over.body, over.status);   // every upload is a KV write
   await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), renderTtl(id));
   return json({ ok: true });
 }
@@ -1055,6 +1094,8 @@ async function delRender(req, env, json, who) {
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
   const k = new URL(req.url).searchParams.get('key') || '';
   if (!COMBO_RE.test(k)) return json({ error: 'bad key' }, 400);
+  // a delete is one of the day's KV writes even when there is nothing to delete: a tester's count (1,200 went through unrefused)
+  const over = await spend(env, who, 'write'); if (over) return json(over.body, over.status);
   await env.WARDROBE.delete(`${who.ns}render:${k}`);
   return json({ ok: true });
 }
@@ -1066,6 +1107,7 @@ async function getRender(req, env, json, who) {
   // GET /render?list=1 -> {keys}: every outfit or item photo kept here, so a device can download the ones it lacks in one go
   if (q.get('list')) {
     if (typeof env.WARDROBE.list !== 'function') return json({ error: 'listing not available' }, 501);
+    const over = await spend(env, who, 'list'); if (over) return json(over.body, over.status);   // KV lists are rationed too (1,000 a day)
     const keys = []; let cursor;
     try { do { const page = await env.WARDROBE.list({ prefix: `${ns}render:c`, cursor }); for (const k of page.keys) keys.push(k.name.slice(ns.length + 7)); cursor = page.list_complete ? null : page.cursor; } while (cursor && keys.length < 20000); }
     catch (e) { return json({ error: 'listing not available right now', detail: String(e && e.message) }, 503); }   // the daily list allowance: the app then asks per photo
@@ -1205,15 +1247,17 @@ async function keepSnapshots(env, m, body, ns = '', oldPv = null) {
   else try { have = new Set(((await env.WARDROBE.list({ prefix: `${ns}snap:` })).keys || []).map(k => k.name)); } catch { }
   const todo = want.filter(([k]) => !have.has(k));
   if (body.reason === 'restore') todo.push([`${ns}snap:before-restore`, SNAP_DAYS]);
-  if (!todo.length) return;
-  if (oldPv && m && m.saved) { for (const [k, days] of todo) await env.WARDROBE.put(k, oldPv, { expirationTtl: days * 86400, metadata: pvMeta(m.rev, m.saved) }); return; }
-  if (isParted(m)) { if (m.saved) for (const [k, days] of todo) await copyStored(env, ns + SYNC_KEY, k, m, { expirationTtl: days * 86400 }); return; }
+  // -> how many KV writes it made (a tester's are counted, countWrites)
+  if (!todo.length) return 0;
+  if (oldPv && m && m.saved) { for (const [k, days] of todo) await env.WARDROBE.put(k, oldPv, { expirationTtl: days * 86400, metadata: pvMeta(m.rev, m.saved) }); return todo.length; }
+  if (isParted(m)) { if (!m.saved) return 0; for (const [k, days] of todo) await copyStored(env, ns + SYNC_KEY, k, m, { expirationTtl: days * 86400 }); return todo.length * (+m.parts || 1); }
   const cur = await env.WARDROBE.get(ns + SYNC_KEY);
-  if (!cur || cur === SYNC_NONE) return;                       // nothing stored yet
+  if (!cur || cur === SYNC_NONE) return 0;                       // nothing stored yet
   let meta = m;
-  if (!meta) { try { const o = JSON.parse(cur); meta = { rev: o.rev, saved: o.saved }; } catch { return; } }
-  if (!meta.saved) return;
+  if (!meta) { try { const o = JSON.parse(cur); meta = { rev: o.rev, saved: o.saved }; } catch { return 0; } }
+  if (!meta.saved) return 0;
   for (const [k, days] of todo) await env.WARDROBE.put(k, cur, { expirationTtl: days * 86400, metadata: { rev: meta.rev, saved: meta.saved, ...(isPv(m) ? { pv: PV } : {}) } });
+  return todo.length;
 }
 async function listSnapshots(env, ns = '') {
   const l = await env.WARDROBE.list({ prefix: `${ns}snap:` });
@@ -1233,7 +1277,7 @@ async function putParted(env, json, cors, who, all) {
   // its photos cut out unparsed and stored by hash: what is left is small, and saved like any other backup
   const sc = await scanPhotos(all);
   if (sc) { let b = null; try { b = JSON.parse(sc.text); } catch { } if (b) return putWhole(env, json, cors, who, b, sc.pre); }
-  await keepSnapshots(env, m, body, ns);
+  const snaps = await keepSnapshots(env, m, body, ns);
   const saved = Date.now(), lead = new TextEncoder().encode(`{"rev":${rev + 1},"saved":${saved},"data":`);
   const rest = all.subarray(new TextEncoder().encode(h[0]).length), total = lead.length + rest.length, parts = Math.ceil(total / PART_MAX);
   // part i holds bytes [i*PART_MAX, (i+1)*PART_MAX) of lead+rest; the later parts first, the key (part 0) last
@@ -1241,6 +1285,7 @@ async function putParted(env, json, cors, who, all) {
   const first = new Uint8Array(Math.min(PART_MAX, total)); first.set(lead); first.set(rest.subarray(0, first.length - lead.length), lead.length);
   await env.WARDROBE.put(KEY, first.buffer, { metadata: { rev: rev + 1, saved, parts } });
   await dropParts(env, KEY, m);
+  await countWrites(env, who, snaps + parts);   // (an old app's backup kept in parts: counted, never cut off half way)
   return json({ rev: rev + 1, saved });
 }
 /* ---- the small sync (sync.js syncLite). The stored backup keeps its form ({"rev","saved","data"}: older apps, the daily copies and
@@ -1422,11 +1467,31 @@ async function syncLitePost(req, env, json, cors, who) {
     else missing.push(h);
   }
   if (missing.length) return give(json({ error: 'missing photos', missing }, 400));
-  const oldPv = await storePhotos(env, ns, m, src, want);
-  await keepSnapshots(env, m, body, ns, oldPv);
+  const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow);
+  if (w.short) { const x = await w.refuse(); return give(json(x.body, x.status)); }
+  await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv));
   const saved = Date.now();
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src.lite, next, rev + 1), next), meta: pvMeta(rev + 1, saved) }, m);
   return json({ rev: rev + 1, saved });
+}
+/* a save's KV writes against a tester's daily cap: putPhotos asks (allow) for its new photos and the backup itself, and stores as many
+   photos as are granted; short: not all fitted, the save is refused (refuse() gives back what wasn't used, and says so in the backup
+   limit's words, so the app tries again tomorrow; the photos stored are not sent again) */
+function writeBudget(env, who) {
+  const w = { short: null, got: 0, used: 0 };
+  w.allow = async need => {
+    const r = await spendUpTo(env, who, 'write', need + 1);
+    w.got = r.got; w.need = need;
+    if (r.got >= need + 1) { w.used = need + 1; return need; }
+    w.short = r.over || limitBody('write', 0, 0); w.used = Math.min(need, r.got); return w.used;
+  };
+  w.refuse = async () => {
+    await unspend(env, who, 'write', utcDay(), w.got - w.used);
+    if (w.short.status !== 429) return w.short;
+    const message = `Today’s room on the server for your backups is used up (${w.used} of ${w.need} new photos are saved). Your changes are kept on this phone and backed up tomorrow.`;
+    return { status: 429, body: { error: 'limit', what: 'backup', write: true, ...(w.short.body.all ? { all: true } : {}), message, detail: message } };
+  };
+  return w;
 }
 /* ---- photos stored once (2026-11-13). The backup's photos (99% of it) are kept apart, each once, under <ns>ph:<hash> (hash = phHash,
    the value the photo's JSON string, metadata {t: when written}), and the backup itself is {"rev","saved","pv":1,"revs","data"} with
@@ -1468,13 +1533,17 @@ async function phThere(env, ns, h) {
 /* each photo of want (hash -> its JSON string, or a function of the hash giving it) stored: written only when it is not there yet,
    or when the clean-up has it in view (unreferenced at its last run, or deleted in the last days: KV elsewhere may still show it).
    -> the hashes that could not be stored (no text for them) */
-async function putPhotos(env, ns, want) {
-  const failed = new Set();
-  if (!want.size) return failed;
-  let gc = {}; try { gc = (await env.WARDROBE.get(gcKey(ns), 'json')) || {}; } catch { }
-  const risky = h => !!((gc.cand && gc.cand[h]) || (gc.gone && gc.gone[h]));
-  for (const [h, lit] of want) {
-    if (!risky(h) && await phThere(env, ns, h)) continue;
+async function putPhotos(env, ns, want, allow) {
+  const failed = new Set(), todo = [];
+  if (want.size) {
+    let gc = {}; try { gc = (await env.WARDROBE.get(gcKey(ns), 'json')) || {}; } catch { }
+    const risky = h => !!((gc.cand && gc.cand[h]) || (gc.gone && gc.gone[h]));
+    for (const [h, lit] of want) if (risky(h) || !(await phThere(env, ns, h))) todo.push([h, lit]);
+  }
+  // allow(n) -> how many of the n photos to write may be written (a tester's daily writes, writeBudget); the rest are not stored
+  const ok = allow ? await allow(todo.length) : todo.length;
+  todo.forEach(([h], i) => { if (i >= ok) failed.add(h); });
+  for (const [h, lit] of todo.slice(0, ok)) {
     const l = typeof lit === 'function' ? lit(h) : lit;
     if (l == null) { failed.add(h); continue; }
     await env.WARDROBE.put(phKey(ns, h), l, { metadata: { t: Date.now(), n: l.length } });
@@ -1483,10 +1552,10 @@ async function putPhotos(env, ns, want) {
 }
 /* a save's photos stored before anything refers to them; a backup stored inline has all of its own stored too, and -> the
    by-reference text of that version (for its daily copy), or null when it is already by reference or a photo could not be had */
-async function storePhotos(env, ns, m, src, want) {
+async function storePhotos(env, ns, m, src, want, allow) {
   const conv = !!(m && src && !src.pv);
   if (conv) for (const h of Object.keys(src.lite.ph || {})) if (!want.has(h)) want.set(h, src.lit);
-  const failed = await putPhotos(env, ns, want);
+  const failed = await putPhotos(env, ns, want, allow);
   if (!conv || failed.size) return null;
   const t = pvText(m.rev, m.saved, src.lite.revs, src.lite.data);
   return t.length <= PART_MAX ? t : null;
@@ -1644,7 +1713,7 @@ async function handleSync(req, env, json, cors, who) {
     const q = new URL(req.url).searchParams, v = q.get('v');
     if (q.has('ph')) return syncPhotos(env, json, cors, ns, q);
     if (q.has('lite')) return syncLiteGet(env, json, cors, ns, q);
-    if (q.has('snaps')) return json({ snaps: await listSnapshots(env, ns) });
+    if (q.has('snaps')) { const over = await spend(env, who, 'list'); if (over) return json(over.body, over.status); return json({ snaps: await listSnapshots(env, ns) }); }
     if (q.has('snap')) {
       const id = q.get('snap');
       if (!/^(\d{4}-\d{2}(-\d{2})?|before-restore)$/.test(id)) return json({ error: 'bad snapshot id' }, 400);
@@ -1689,8 +1758,9 @@ async function putWhole(env, json, cors, who, body, pre = new Map()) {
     else if (photos.has(h)) want.set(h, JSON.stringify(photos.get(h)));
     // (else a "dwph:" string that came as text: kept as it came)
   }
-  const oldPv = await storePhotos(env, ns, m, src, want);
-  await keepSnapshots(env, m, body, ns, oldPv);
+  const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow);
+  if (w.short) { await unspend(env, who, 'backup'); const x = await w.refuse(); const r = json(x.body, x.status); r.refunded = true; return r; }
+  await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv));
   const saved = Date.now();
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src && src.lite, refs, rev + 1), refs), meta: pvMeta(rev + 1, saved) }, m);
   return json({ rev: rev + 1, saved });
@@ -1720,7 +1790,7 @@ async function whoIs(env, token) {
   const rec = await env.WARDROBE.get(`invite:${h}`, 'json');
   if (!rec || !UID_RE.test(String(rec.id || ''))) return no;
   const first = firstWeek(rec), caps = { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) };
-  if (first) for (const k of Object.keys(DEFAULT_CAPS)) caps[k] = caps[k] * FIRST_WEEK_X;   // a tester's first week: twice the daily limits
+  if (first) for (const k of [...Object.keys(DEFAULT_CAPS), 'write', 'list']) caps[k] = (caps[k] ?? EXTRA_CAPS[k]) * FIRST_WEEK_X;   // a tester's first week: twice the daily limits
   const who = { id: rec.id, name: String(rec.name || ''), role: 'tester', ns: `u:${rec.id}:`, caps, hash: h, ...(first ? { firstUntil: rec.created + FIRST_WEEK_MS } : {}) };
   // switched off: refused everywhere, except that the tester may still delete what they stored (DELETE /account, the router)
   if (rec.off) return { status: 403, error: 'invite off', message: INVITE_OFF, offWho: { ...who, off: true } };
@@ -1760,12 +1830,18 @@ const failFor = (ns, error) => { if (ns && TECH_RE.test(String(error || ''))) { 
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
 const DEFAULT_CAPS = { tag: 40, pattern: 10, photo: 12, item: 20 };
-const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20 };
+const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30 };
+/* write: every KV write a tester causes (each new photo a backup stores, the backup itself and its daily copies, uploads, deletes,
+   feedback, reminders, about 5 per queued photo), so no one tester can use up the free plan's 1,000 writes a day; a backup whose
+   new photos pass it stores what fits and is refused (429, what 'backup': the app tries again tomorrow and the stored photos are not
+   sent twice). list: KV lists (GET /render?list=1, /sync?snaps=1), also 1,000 a day for everyone. Twice in the first week, like
+   the AI caps */
+const JOB_WRITES = 5;   // a queued photo: the job, the consumer's jobrun, the photo, and the job's two records deleted
 /* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes' };
-const USE_RE = /^(tag|pattern|photo|item|upload|feedback|backup|push)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
+const USE_RE = /^(tag|pattern|photo|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
@@ -1795,7 +1871,9 @@ async function useCount(env, id, what, n, cap, day) {
    invitations (each tester's own caps still apply first). Counted like one more tester, under the id 'all' (a tester's id is
    8–24 characters, so it can't be one); the owner is never counted. The worker's TESTER_DAILY_TOTAL variable (JSON, e.g.
    {"photo":20}) changes any of them. About $15 a day at most with these numbers. */
-const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100, backup: 300, push: 200 }, ALL_ID = 'all';
+/* write: 450 of the free plan's 1,000 KV writes a day for every tester together, so the owner (backups, the PC's picture uploads,
+   the reminders, the clean-up) always has more than half; list: 150 of its 1,000 lists */
+const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };
@@ -1803,23 +1881,60 @@ function allCaps(env) {
   return out;
 }
 /* before a capped call: null when it may go ahead (and is now counted), else {status, body} to answer with */
-async function spend(env, who, what, day = utcDay()) {
-  if (!who.caps) return null;
-  const cap = who.caps[what] ?? EXTRA_CAPS[what], r = await useCount(env, who.id, what, 1, cap, day);
-  if (r.off) return { status: 403, body: { error: 'invite off', message: INVITE_OFF } };
-  if (r.fail) return { status: 503, body: { error: 'busy', message: 'Couldn’t check today’s limit. Try again in a moment.' } };
-  if (!r.ok) {
-    const message = what === 'backup' ? `Today’s ${cap} backups are used up. Your changes are kept on this phone and backed up tomorrow.` : `Today’s limit of ${cap} ${CAP_WORDS[what]} is used up. It starts again at midnight UTC.`;
-    return { status: 429, body: { error: 'limit', what, cap, used: r.used, message, detail: message } };
-  }
-  const all = await useCount(env, ALL_ID, what, 1, allCaps(env)[what], day);
-  if (all.ok) return null;
-  try { await useCount(env, who.id, what, -1, 0, day); } catch { }   // not made: the tester's own count goes back
-  const message = all.fail ? 'Couldn’t check today’s limit. Try again in a moment.' : `Today’s ${CAP_WORDS[what]} for everyone testing the app are used up. They start again at midnight UTC.`;
-  return { status: all.fail ? 503 : 429, body: { error: all.fail ? 'busy' : 'limit', what, all: true, message, detail: message } };
+const capOf = (who, what) => who.caps[what] ?? EXTRA_CAPS[what];
+const busyBody = () => ({ status: 503, body: { error: 'busy', message: 'Couldn’t check today’s limit. Try again in a moment.' } });
+function limitBody(what, cap, used, all) {
+  const message = all ? `Today’s ${CAP_WORDS[what]} for everyone testing the app are used up. They start again at midnight UTC.`
+    : what === 'backup' ? `Today’s ${cap} backups are used up. Your changes are kept on this phone and backed up tomorrow.` : `Today’s limit of ${cap} ${CAP_WORDS[what]} is used up. It starts again at midnight UTC.`;
+  return { status: 429, body: { error: 'limit', what, ...(all ? { all: true } : { cap, used }), message, detail: message } };
 }
-async function unspend(env, who, what, day = utcDay()) {
-  if (who.caps) { try { await useCount(env, who.id, what, -1, 0, day); } catch { } try { await useCount(env, ALL_ID, what, -1, 0, day); } catch { } }
+/* before a capped call: null when it may go ahead (and n are now counted), else {status, body} to answer with */
+async function spend(env, who, what, day = utcDay(), n = 1) {
+  if (!who.caps || n <= 0) return null;
+  const cap = capOf(who, what), r = await useCount(env, who.id, what, n, cap, day);
+  if (r.off) return { status: 403, body: { error: 'invite off', message: INVITE_OFF } };
+  if (r.fail) return busyBody();
+  if (!r.ok) return limitBody(what, cap, r.used);
+  const all = await useCount(env, ALL_ID, what, n, allCaps(env)[what], day);
+  if (all.ok) return null;
+  try { await useCount(env, who.id, what, -n, 0, day); } catch { }   // not made: the tester's own count goes back
+  return all.fail ? busyBody() : limitBody(what, 0, 0, true);
+}
+/* several counts for one call (a capped call and the KV writes it makes): all of them, or none and the refusal */
+async function spendEach(env, who, list, day = utcDay()) {
+  const done = [];
+  for (const [what, n] of list) {
+    const over = await spend(env, who, what, day, n);
+    if (over) { for (const [w, k] of done) await unspend(env, who, w, day, k); return over; }
+    done.push([what, n]);
+  }
+  return null;
+}
+/* up to n of `what`, as many as the tester's own cap and everyone's allow -> {got, over}: over, the refusal, when got < n */
+async function spendUpTo(env, who, what, n, day = utcDay()) {
+  if (!who.caps || n <= 0) return { got: n, over: null };
+  const take = async (id, cap) => {   // -> how many of n were counted for id
+    let r = await useCount(env, id, what, n, cap, day);
+    if (r.ok) return { got: n };
+    if (r.off || r.fail) return { got: 0, r };
+    const left = Math.max(0, cap - (+r.used || 0));
+    if (left) { r = await useCount(env, id, what, left, cap, day); if (r.ok) return { got: left }; }
+    return { got: 0, r };
+  };
+  const cap = capOf(who, what), mine = await take(who.id, cap);
+  if (mine.r && mine.r.off) return { got: 0, over: { status: 403, body: { error: 'invite off', message: INVITE_OFF } } };
+  if (!mine.got) return { got: 0, over: mine.r && mine.r.fail ? busyBody() : limitBody(what, cap, mine.r && mine.r.used) };
+  const nn = n; n = mine.got;
+  const all = await take(ALL_ID, allCaps(env)[what]);
+  if (all.got < mine.got) try { await useCount(env, who.id, what, all.got - mine.got, 0, day); } catch { }   // the tester's surplus goes back
+  return { got: all.got, over: all.got >= nn ? null : all.got < mine.got ? (all.r && all.r.fail ? busyBody() : limitBody(what, 0, 0, true)) : limitBody(what, cap, cap) };
+}
+async function unspend(env, who, what, day = utcDay(), n = 1) {
+  if (who.caps && n > 0) { try { await useCount(env, who.id, what, -n, 0, day); } catch { } try { await useCount(env, ALL_ID, what, -n, 0, day); } catch { } }
+}
+/* KV writes that happen whatever the cap says (a backup's daily copies, made with the save they belong to): counted, never refused */
+async function countWrites(env, who, n, day = utcDay()) {
+  if (who.caps && n > 0) { try { await useCount(env, who.id, 'write', n, 1e9, day); } catch { } try { await useCount(env, ALL_ID, 'write', n, 1e9, day); } catch { } }
 }
 /* a queued photo that could not be made gives its count back (the job says what it counted as, and on which day) */
 async function refundJob(env, ns, job) {
@@ -1908,7 +2023,7 @@ async function handleFeedback(req, env, json, who) {
   const b = await smallBody(req, 40000), text = String(b && b.text || '').trim();
   if (!text) return json({ error: 'empty', message: 'Write a few words first.' }, 400);
   if (text.length > 4000) return json({ error: 'too long', message: 'That is over 4,000 characters. Shorten it a little.' }, 400);
-  const over = await spend(env, who, 'feedback'); if (over) return json(over.body, over.status);
+  const over = await spendEach(env, who, [['feedback', 1], ['write', 1]]); if (over) return json(over.body, over.status);
   items.push({ t: now, id: who.id, name: who.name, text, version: String(b.version ?? '').slice(0, 40), where: String(b.where ?? '').slice(0, 80) });
   await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: items.slice(-FEEDBACK_MAX) }), { expirationTtl: FEEDBACK_MS / 1000 });
   return json({ ok: true });
@@ -2038,8 +2153,11 @@ async function serve(req, env, cors, allowed, origin) {
     const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
     // never both: together the answer's schema is more than the API compiles ("compiled grammar is too large", 2026-11-13)
     const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
-    const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
-    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
+    // fixed (cached): the rules and the single-item extras; the owner's own (cached next): colours, patterns, corrections; per call:
+    // the picker's extras and the measurement
+    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA,
+      owner: customText(custom) + correctionsText(body.corrections), text: (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured),
+      closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 12000 });
     if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
     return json(c.body, c.status);
   }
@@ -2211,14 +2329,15 @@ async function handlePush(req, env, json, who) {
   const b = await smallBody(req, 20000), ep = String(b && b.endpoint || '');
   let host; try { host = new URL(ep); } catch { }
   if (!host || host.protocol !== 'https:' || !publicHost(host.hostname)) return json({ error: 'bad endpoint' }, 400);
-  const over = await spend(env, who, 'push'); if (over) return json(over.body, over.status);
+  const over = await spendEach(env, who, [['push', 1], ['write', 1]]); if (over) return json(over.body, over.status);
   const doc = (await env.WARDROBE.get(PUSH_KEY, 'json')) || { list: [] }, list = Array.isArray(doc.list) ? doc.list : [], id = await subId(ep);
-  const rest = list.filter(x => x.id !== id);
-  if (b.off) { if (rest.length !== list.length) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list: rest })); return json({ ok: true, on: false }); }
+  // only the caller's own subscription is changed or switched off: knowing another account's push address is not enough
+  const mine = x => x.id === id && (x.ns || '') === who.ns, rest = list.filter(x => !mine(x));
+  if (b.off) { if (rest.length !== list.length) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list: rest })); else await unspend(env, who, 'write'); return json({ ok: true, on: false }); }
   const time = TIME_RE.test(String(b.time || '')) ? b.time : '07:00', tz = String(b.tz || 'UTC').slice(0, 64);
   if (!localNow(new Date(), tz)) return json({ error: 'bad time zone' }, 400);
   const dates = (Array.isArray(b.dates) ? b.dates : []).filter(d => DATE_RE.test(String(d))).slice(0, 31);
-  const old = list.find(x => x.id === id);
+  const old = list.find(mine);
   if (!old && rest.length >= PUSH_MAX) return json({ error: 'full', message: 'Too many phones have reminders on.' }, 400);
   rest.push({ id, ns: who.ns, endpoint: ep, time, tz, dates, last: old && old.time === time ? old.last : null });
   await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list: rest }));

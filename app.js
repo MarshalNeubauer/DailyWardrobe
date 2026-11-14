@@ -60,13 +60,16 @@ function openSettings(section){
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
   if(typeof advClose==='function')advClose();   // the Advanced folds start closed every time
   if(cat)setTimeout(()=>{const el=$('#sc-'+cat),m=$('#settings-modal');if(el&&m)m.scrollTop=el.offsetTop-m.querySelector('.shead').offsetHeight-8},0);else if($('#settings-modal'))$('#settings-modal').scrollTop=0;
-  if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
-  if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
-  if(window.showSyncStatus)showSyncStatus();
-  renderSettingsExtras();settingsSummaries();if(queuedKeys().length)checkQueue();
+  // storage that is blocked (localStorage throws) or broken must not keep Settings shut: it opens with what could be drawn (audit 2026-11-13)
+  try{if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
+    if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||''}catch(e){console.warn('connection not read',e)}
+  try{if(window.showSyncStatus)showSyncStatus()}catch(e){console.warn('backup line not drawn',e)}
+  try{renderSettingsExtras()}catch(e){console.warn('Settings drawn in part',e)}
+  try{settingsSummaries();if(queuedKeys().length)checkQueue()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
   setLock(true);appPush('set');   // the phone's Back closes it (appPush, by show())
+  if(typeof layerOpen==='function')layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
    to Today underneath, and Settings stood still under the finger until that scroll ended; also notes the last touch for toggleCat */
@@ -78,19 +81,22 @@ const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.displa
 /* a redraw from work done in the background (photos arriving, the weather, the plan rules check at start-up): while Settings is open
    it waits for Settings to close (todayStale), since drawing Today closes Settings, which snapped shut when opened right after launch */
 function refreshToday(){if(settingsOpen()){todayStale=true;return}renderToday()}
-function closeSettings(){
+function closeSettings(){const was=settingsOpen();
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
   setLock(false);appDrop('set');   // closed by Done or anything else: its Back entry goes
+  if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;renderToday()}
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
-  if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
-  if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim());
+  // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
+  try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
+    if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
+  catch(e){console.warn('connection not saved',e);setTimeout(()=>toast('Couldn’t save the server address: this browser’s storage is full or blocked.',5000),0)}
   closeSettings();
-  renderAdd();
-  if(window.syncNow)syncNow();
+  try{renderAdd()}catch(e){console.warn('Add page not drawn',e)}
+  if(window.syncNow)syncNow().catch(e=>console.warn('sync not started',e));
 }
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
@@ -152,7 +158,7 @@ function renderBusy(){let el=document.getElementById('busy');if(!el){if(!documen
 /* the tab bar grows upward until its top is one design gap (--gap, 12px) below Today's below-the-waist tiles, so nothing peeks out
    between them (the score card's top used to); at most 64px, and never shorter than its 38px buttons. Measured with the page at the
    top, from where the tiles end and where the bar's natural top is; kept while on other pages and on days whose tiles sit lower. */
-const NAV_MAX=64;
+const NAV_MAX=58;   // (the bar is 44px at least since 2026-11-14, a tap target's size; it was 38 and grew up to 64, so the tallest is the same 102)
 function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),nav=document.querySelector('body>nav');if(!nav)return;
   // the fit is measured only on a day whose photo has loaded: before it loads the photo has no height, the tiles sit right under the
   // date, and the bar grew to its 64px cap (and was kept there). That measurement is kept per screen size and used everywhere else
@@ -161,7 +167,7 @@ function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),
   const img=document.querySelector('#today:not([hidden]) #mannequin-container > img'),ready=!!(b&&img&&img.complete&&img.naturalHeight>0&&img.getBoundingClientRect().height>60);
   let x=kept;
   if(ready){const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12;
-    const cs=getComputedStyle(nav),natural=innerHeight-38-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
+    const cs=getComputedStyle(nav),natural=innerHeight-44-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
     // always as if the row had three tiles (belt, shoes, socks): with four (trousers on a blazer day, a coat) each is narrower, and a
     // tile with a product picture (its picture's height follows its width, its label doesn't) is shorter, which made the bar taller on those days; a drawn
     // tile keeps its height whatever the count
@@ -278,7 +284,7 @@ async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
 function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw){delete q.raw.tex;delete q.raw.texFull}q.refineNote='';measureCard(q);renderAdd()}
 /* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
-  const inp=`<input type="file" accept="image/*" hidden onchange="addTexture(${i},this.files[0]);this.value=''">`;
+  const inp=`<input type="file" accept="image/*" class="vfile" onchange="addTexture(${i},this.files[0]);this.value=''">`;
   return q.texture?`<div class="texslot done"><small class="mut">Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.</small><div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
     :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the realistic photos match better. Optional.</small><label class="btn pri">Add close-up${inp}</label></div>`}
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`:'';
@@ -479,8 +485,8 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
 async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)renderWardrobe();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
-  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
-    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
+  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
+    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" class="vfile" onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
     (tex&&i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
@@ -788,8 +794,11 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
     <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`Every ${label} you own, the best match for the rest of the outfit first.`}</small></p>
     ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another ↻</button>`}</div>`:''}
     <div class="pick-grid">${scored.map(card).join('')}</div>`;
-  picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0}
-function closePicker(){picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on')}
+  picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
+  if(typeof layerOpen==='function')layerOpen($('#pick-sheet'))}
+function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
+  if(was&&typeof layerClose==='function')layerClose(s);
+  if(typeof syncLaterRun==='function')syncLaterRun('today')}   // a sync's redraw that waited for the picker (sync.js)
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
 async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
   const it=id?items.find(i=>i.id===id)||null:null;
@@ -815,17 +824,21 @@ const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
-/* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay */
-async function replanFuture(){const T=todayDate();let n=0;
+/* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay.
+   rules (new PLAN_RULES): only what the app chose goes, the week's locks (rec.lock) and pieces it recorded by itself (rec.auto);
+   the owner's own picks (force, skip, the vest, a moved outfit's kind, a piece taken off) stay. Returns the days changed
+   (rules: the days whose lock or recorded pieces went; else the days whose own picks were cleared) */
+async function replanFuture(rules){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<=T||r.worn===true)continue;
+    if(rules){if(!r.lock&&!r.auto)continue;const keep={...r};delete keep.lock;if(keep.auto){delete keep.auto;delete keep.ids;delete keep.suitDay;delete keep.vestOn}await saveDay(keep,true);n++;continue}
     const mine=r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto;if(!mine&&!r.lock)continue;
     const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
 async function checkPlanRules(){if(!window.TEST_PLAN)return planRulesCheck()}   // (PLAN_RULES is read in planRulesCheck only: a bump selects only the tests that plan for real)
-async function planRulesCheck(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
+async function planRulesCheck(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture(true);
   settings.planRules=PLAN_RULES;await metaPut('settings',settings);   // kept without a new stamp: noting the rules is not a change to the settings, and a stamp made defaults win over the backup's settings
-  if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
+  if(n)setTimeout(()=>toast('The planner was updated: upcoming days were planned again. Your own picks were kept.',4500),400)}
 async function replanButton(){const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
   const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true);
@@ -1160,7 +1173,7 @@ function figureStage(o){
    Photos are saved per outfit combination, not per day: any day that wears the same pieces reuses the photo.
    The worker keeps a copy (KV) so every device can show it. ---- */
 let renders={},rendering=false,renderMsg={k:'',t:''},renderFail={};   // rendering: an outfit being sent (or, on a worker without a queue, made) now; renderMsg: a note for one day; renderFail: why a queued photo failed, per combination
-const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* the combination a photo shows: which pieces, and everything about them that changes how they look */
 /* Which look a photo shows. The shirt counts only by its base colour (any white shirt shares the photo made with another
@@ -1229,7 +1242,7 @@ async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetchin
     }while(prefetchAgain)
   }catch(e){console.warn('photo prefetch failed',e)}finally{prefetching=false}}
 let prefetchTimer=0;const schedulePrefetch=()=>{clearTimeout(prefetchTimer);prefetchTimer=setTimeout(prefetchRenders,250)};
-async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
+async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll(IDBKeyRange.bound('render:','render;',false,true)));renders={};for(const x of all||[])renders[String(x.k).slice(7)]=x.v}catch(e){console.warn(e)}}   // (only the photos' key range: the kept assembled pictures are read by asmLoad)
 /* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
 /* a tie clip is named by its colour (no metal field): "silver", "rose gold", "black" (enamel) */
@@ -1569,7 +1582,7 @@ function stepDay(n,from){
   let g=0;do d.setDate(d.getDate()+n);while(!isWorkday(d)&&++g<7);
   foldAll();sel=d;view={y:d.getFullYear(),m:d.getMonth()};renderToday();
   const sl=$('#slide');if(!sl)return;
-  const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x)return;
+  const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x||noMotion())return;   // reduced motion: the new day just shows
   sl.style.transition='none';sl.style.transform=`translateX(${x}px)`;sl.style.opacity='0';
   void sl.offsetWidth;
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';
@@ -1597,6 +1610,7 @@ function stepDay(n,from){
     const fast=Math.abs(dx)/Math.max(1,Date.now()-t)>.5;
     if(Math.abs(dx)>70||(fast&&Math.abs(dx)>30)){
       const n=dx<0?1:-1,w=sl.offsetWidth||innerWidth;
+      if(noMotion()){stepDay(n,0);return}   // reduced motion: no fly-out and slide-in
       sl.style.transition='transform .16s ease-in,opacity .16s';sl.style.transform=`translateX(${dx<0?-w:w}px)`;sl.style.opacity='0';
       setTimeout(()=>stepDay(n,(dx<0?1:-1)*w*.6),160);
     }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}
@@ -1696,9 +1710,10 @@ addEventListener('popstate',()=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
   if(itemHist){itemHist=false;if(editing)closeItem(true)}});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
-function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;
+function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
-  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on}
+  if(typeof layerInert==='function')layerInert();else for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;   // (ui.js: counts Settings and the sheets too)
+  if(was&&!on&&typeof syncLaterRun==='function')setTimeout(()=>syncLaterRun('wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
 /* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
 function renderItem(){
   const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
@@ -1738,11 +1753,12 @@ let ivDrag=false;
 (()=>{const v=$('#item-view'),b=$('#ivbody'),bd=$('#item-backdrop');if(!v||!b)return;let st=null;
   const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
   v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.ivhead');
-    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:Date.now(),vy:0}},{passive:true});
+    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:e.timeStamp,vy:0}},{passive:true});
   v.addEventListener('touchmove',e=>{
     if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
     if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return}}   // downward: ours; anything else is a scroll or a sideways swipe
-    e.preventDefault();const now=Date.now();if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
+    // the speed from when each touch happened (e.timeStamp), not when it was handled, as in shop.js: on a busy phone a flick handled late read as a slow pull
+    e.preventDefault();const now=e.timeStamp;if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
     st.d=Math.max(0,dy);put(st.d)},{passive:false});
   const end=()=>{
     if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;ivDrag=false;v.style.transition='';
@@ -2028,7 +2044,7 @@ function useMyLocation(){if(!navigator.geolocation){tell('Location is not availa
 async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();if(!q)return;
   try{const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=5&language=en&name='+encodeURIComponent(q));const j=await r.json();
     const res=(j.results||[]).map(c=>({lat:c.latitude,lon:c.longitude,name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', ')}));
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${c.name}</button>`).join(''):'<small class="mut">No matches.</small>'}
+    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}</button>`).join(''):'<small class="mut">No matches.</small>'}
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */

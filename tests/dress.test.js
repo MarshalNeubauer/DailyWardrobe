@@ -26,7 +26,8 @@ const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],bl
     lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>c.label[0]+c.pts).join('')+' '+o.notes.length)}}
   let h=0x811c9dc5;for(const c of lines.join('\\n'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return {n:lines.length,h:h.toString(16),first:lines[0]}}`;
 /* recorded from the app before the dress code (commit 671db36), with the same two strings */
-const GOLD={full:'a8483609',small:'f91f12be'};   // both recorded again after the same-tie-within-three-workdays rule (planner.js TIE_GAP, 2026-11-13; were 33c35d9d and 27343082)
+const GOLD={full:'2e6c164',small:'b2a7db53'};   // both recorded again after the planner audit's fixes (2026-11-14: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' white shirt; were a8483609 and f91f12be)
+//   // (before that: recorded again after the same-tie-within-three-workdays rule, planner.js TIE_GAP, 2026-11-13; were 33c35d9d and 27343082)
 //   // small: recorded again after the shirt rule (care.js: a worn shirt waits a day), which changes a wardrobe this small; full: recorded again after the next fixed day's tie and shirt rule (planner.js fixedAhead nx, 2026-11-13): this plan forces a tie on Nov 16, so Nov 15 now avoids it (was fb07c45e, the pre-dress-code recording)
 const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
 

@@ -25,7 +25,17 @@ Without an invite the app still runs on its own: outfits are planned and drawn, 
 
 ## Privacy
 
-The wardrobe is kept on the device and in the person's own backup on the server. Item photos are sent to Anthropic to be read and to OpenAI to make the outfit pictures. Nothing else is shared.
+The wardrobe is kept on the device and in the person's own backup on the server (a Cloudflare Worker and its storage). What leaves the device, and where it goes:
+
+- **Anthropic (Claude)**: item photos and close-ups, to read their type, colour and pattern.
+- **Cloudflare Workers AI**: the same photos, only on a server with no Anthropic key (a fallback reader, `@cf/meta/llama-3.2-11b-vision-instruct` unless `MODEL` says otherwise).
+- **OpenAI**: item photos and the outfit, only when the person taps Generate photo or Generate item pictures.
+- **Open-Meteo**: the place set for the weather (the name typed in its search, then its coordinates), for the forecast and the usual weather by month. Sent from the device, with no account.
+- **Nager.Date**: the country chosen for public holidays, sent from the device; for countries it doesn't cover the server asks **Google**'s public holiday calendar for that country instead.
+- **Apple or Google push services**: with the morning reminder on, the phone's push address goes to the server, which sends an empty push through the phone maker's service (Apple's for an iPhone, Google's for Chrome on Android); the outfit lines stay on the phone.
+- **Cloudflare**: as the server's host, it sees each request to the server (address, time, size) in its usual logs.
+
+Nothing else is shared.
 
 ## Hosting
 
@@ -42,6 +52,10 @@ Two parts, no build step.
 | `OPENAI_API_KEY` | secret | making outfit and item pictures |
 | `ALLOWED_ORIGIN` | variable | the app's address, e.g. `https://NAME.github.io` (no path) |
 | `CLAUDE_MODEL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_QUALITY` | variables, optional | which models to use |
+| `MODEL` | variable, optional | the Workers AI model that reads photos when there is no Anthropic key |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | secrets, optional | sign the morning reminder's pushes: the public key is the base64url P-256 public point, the private one the base64url 32-byte private scalar; without them the reminder can't be switched on |
+| `VAPID_SUBJECT` | variable, optional | the contact sent with each push (the app's https address or a `mailto:`) |
+| `TESTER_DAILY_TOTAL` | variable, optional | JSON, e.g. `{"photo":20}`: changes the daily ceilings for all testers together (`tag`, `pattern`, `photo`, `item`, `upload`, `feedback`, `backup`, `push`), on top of each tester's own |
 | `WARDROBE` | KV namespace | backups, kept pictures, feedback |
 | `RENDER_QUEUE` | Queue `wardrobe-renders` | pictures made in the background |
 | `RENDER_HUB` | Durable Object | tells an open app its picture is ready |
@@ -68,6 +82,11 @@ Options go after `--`, e.g. `npm run assemble -- --dry --days 60`:
 | Option | What it does |
 | --- | --- |
 | `--days N` | how far ahead to plan (default 120) |
+| `--jobs N` | how many pictures are painted at once (default half the computer's logical cores, at most 16) |
+| `--profile FOLDER` | keep the browser's data there between runs (wardrobe, masters, each master's worked-out part, the record of uploads), so the next run starts warm |
+| `--watch M` | keep running: every M minutes (default 5) rebuild only what changed; ends with code 10 when `main` moves on GitHub |
+| `--save FOLDER` | keep a copy of every picture there |
+| `--worker URL` | the server's address, instead of `DW_WORKER` |
 | `--dry` | build and report, upload nothing |
 | `--origin URL` | the app's address, if it isn't `https://marshalneubauer.github.io/DailyWardrobe/` |
 
@@ -85,6 +104,13 @@ Options go after `--`, e.g. `npm run assemble -- --dry --days 60`:
 - Each upload is one write on the server's storage. The free plan allows 1,000 a day for everything, so run it once after making pieces, not in a loop.
 - The code (`DW_TOKEN`) is only read from the environment: never put it in a file in the repository.
 
+## The colour-coded masters and the master atlas
+
+Two more scripts for the computer, with `DW_WORKER` and `DW_TOKEN` set as for `npm run assemble`:
+
+- `npm run cm-upload -- --dir <folder>` puts the colour-coded masters (each kind's master, zone masks, sleeve and lapel masks, from the folder `colormaster.js` writes) on the server under the keys the app asks for. `--kinds suit,vest` limits it to some kinds, `--bg <file>` uploads the background behind every master (alone, or with the masters), `--dry` says what would go up. A record already there with the same signature is not written again.
+- `npm run atlas` measures every pixel of the masters once: it uploads the phones' share (three pictures, none when the server already has them) and writes the full atlas for work on the computer to `--out` (default `./atlas`, which git ignores). `--parts <folder>` adds finer SAM part pictures, `--dry` uploads nothing, `--origin` as above. Run it again after a master, the black calibration shirt or a zone picture is made again. `node tools/atlas.js <folder> list` reads it back.
+
 ## Running the tests
 
 ```
@@ -92,7 +118,12 @@ npm install
 npx playwright install chromium
 npm test            # only the checks the current change can affect
 npm run test:all    # every check
+npm run test:webkit # every check on WebKit (Safari's engine; needs `npx playwright install webkit`)
 node tests/run.js about   # the test files whose name contains "about"
+npm run lint        # ESLint over every script (the push check runs it on the changed ones)
+npm run gaps        # the functions and CSS rules no test reaches, from tests/impact.map
 ```
 
-The tests serve the repository locally, drive the app in headless Chromium at phone sizes, and run `worker.js` with mocked bindings: nothing touches a real server. `npm test` compares the branch with `origin/main` and uses `tests/impact.map` (what each test uses) to pick the tests; commit the map with the change. `CLAUDE.md` describes every file and the working rules in detail.
+On Windows, in PowerShell, `npm` may be blocked by the script policy (`npm.ps1 cannot be loaded`): type `npm.cmd` instead (`npm.cmd test`, `npm.cmd run assemble`), or run the scripts with `node` directly (`node tests/run.js --changed`).
+
+The tests serve the repository locally, drive the app in headless Chromium at phone sizes, and run `worker.js` with mocked bindings: nothing touches a real server. `npm test` compares the branch with `origin/main` and uses `tests/impact.map` (what each test uses) to pick the tests; commit the map with the change. Before a push, `.githooks/pre-push` (switched on by the first test run) refuses it while the map has uncommitted changes, while the branch changed app files without a `CACHE` in `sw.js` above `main`'s, or while ESLint finds a name that doesn't exist in a changed script. `CLAUDE.md` describes every file and the working rules in detail.

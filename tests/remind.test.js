@@ -23,7 +23,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok((await call('POST','push',{endpoint:'http://localhost/x',time:'07:00',tz:'Asia/Kuwait',dates:[]})).status===400&&(await call('POST','push',{endpoint:'https://web.push.apple.com/abc',time:'07:00',tz:'Mars/Olympus',dates:[]})).status===400,'an endpoint that isn\'t a public https address, or an unknown time zone, is refused');
     r=await J(await call('POST','push',{endpoint:'https://web.push.apple.com/abc',time:'07:00',tz:'Asia/Kuwait',dates:['2026-11-15','2026-11-16']}));
     ok(r.ok&&r.on&&JSON.parse(store.get('push:subs')).list.length===1&&(await J(await call('GET','push?endpoint=https://web.push.apple.com/abc'))).on,'POST /push switches it on');
-    const at=iso=>worker.scheduled({scheduledTime:Date.parse(iso)},env,{waitUntil:p=>p}),run=async iso=>{pushes=[];await worker.scheduled({scheduledTime:Date.parse(iso)},env,{waitUntil:async p=>{await p}});await new Promise(x=>setTimeout(x,20));return pushes.length};
+    // the cron's work is handed to waitUntil: wait for all of it (not a fixed pause, which a busy machine outran)
+    const run=async iso=>{pushes=[];const work=[];await worker.scheduled({scheduledTime:Date.parse(iso)},env,{waitUntil:p=>{work.push(p)}});await Promise.all(work);return pushes.length};
     // Kuwait is UTC+3: 07:00 there is 04:00 UTC
     ok(await run('2026-11-15T03:50:00Z')===0,'before its time: nothing');
     ok(await run('2026-11-15T04:05:00Z')===1,'in its quarter of an hour: one push');

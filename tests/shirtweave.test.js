@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- worker
     reply=()=>({...TEX,across:{bands:[{role:'ground',name:'x',hex:'#ffffff',widthPct:50},{role:'line',name:'y',hex:'#000000',widthPct:50}]},texture:{...TEX.texture,grid:['#..#','.##.','x--x','bad!!1']}});
     let r=await call({image:IMG,closeup:IMG,type:'shirt'}),j=await r.json();
-    const t=sent.messages[0].content.find(c=>c.type==='text').text,sch=sent.output_config.format.schema;
+    const t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),sch=sent.output_config.format.schema;
     ok(r.status===200&&sch.required.includes('texture')&&sch.properties.layout.enum.includes('texture')&&/ONE repeat of the texture as a small bitmap/.test(t)&&/dobby diamonds/.test(t),'POST /pattern asks Claude for a weave texture as a one-repeat bitmap');
     ok(j.layout==='texture'&&j.across===null&&j.texture&&j.texture.kind==='diamond'&&j.texture.grid.join(',')==='1001,0110,1001,1'+'000'&&j.texture.ground.hex==='#f4f4f2'&&j.texture.aspect===1.5,`the bitmap is tidied: #/. and x/- become 1/0, rows padded to one length, no stray bands (${j.texture&&j.texture.grid.join(',')})`);
     reply=()=>({...TEX,texture:{...TEX.texture,grid:['1111','1111']}});
