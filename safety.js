@@ -12,6 +12,7 @@ const storeFull=e=>{const x=storeErr(e);return x.name==='QuotaExceededError'||/q
 // the sentence a person reads
 function storeFailText(e){const x=storeErr(e),why=String(x.message||'').trim().replace(/\.$/,'');
   if(storeFull(e))return 'Couldn’t save: your phone’s storage is full. Free some space, then try again.';
+  if(typeof dbGone==='function'&&dbGone(x))return 'Couldn’t save: your phone closed the app’s storage. Close the app fully and open it again.';
   if(e&&e.dwStore==='read')return `Couldn’t read your wardrobe${why?': '+why:''}. Close the app and open it again.`;
   return `Couldn’t save: ${why||'the browser stopped it'}. Try again.`}
 let storeToldAt=0;
