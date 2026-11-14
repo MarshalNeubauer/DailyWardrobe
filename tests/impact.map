@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	07ace78da7e4aa8f86af
+# tested	c0621259fb3b84543ba9
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -2394,6 +2394,38 @@ picker.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	scheduleSync	setSyn
 picker.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
 picker.test.js	ui.js	<loaded>	isConnected	layerClose	layerInert	layerOpen	layerUp
 picker.test.js	wardrobe.js	<loaded>
+piecesname.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+piecesname.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
+piecesname.test.js	analysis.js	<loaded>
+piecesname.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	esc	fitNav	fitNavSoon	fixItemBackdrops	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	offBtn	offOn	pageIn	piecesBox	piecesLine	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	slotLabel	slots	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	wxPreload	zoomTarget
+piecesname.test.js	apple-touch-icon.png	<loaded>
+piecesname.test.js	asm-color.js	<loaded>
+piecesname.test.js	asm-gl.js	<loaded>
+piecesname.test.js	assemble.js	<loaded>	@
+piecesname.test.js	care.js	<loaded>	careShow
+piecesname.test.js	colpick.js	<loaded>
+piecesname.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	lum	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	sentence	thirdOf	titleCls	todayDate
+piecesname.test.js	detect.js	<loaded>	@	usableSett
+piecesname.test.js	draw.js	<loaded>	fabricDef	swatchSVG
+piecesname.test.js	dress.js	<loaded>	migrateVests
+piecesname.test.js	figure.js	<loaded>	@{}
+piecesname.test.js	icon-192.png	<loaded>
+piecesname.test.js	icon-512.png	<loaded>
+piecesname.test.js	index.html	<loaded>
+piecesname.test.js	manifest.webmanifest	<loaded>
+piecesname.test.js	pack.js	<loaded>	packShow
+piecesname.test.js	planner.js	<loaded>
+piecesname.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
+piecesname.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+piecesname.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+piecesname.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+piecesname.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+piecesname.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+piecesname.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	syncNeedsPull	syncUrl
+piecesname.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+piecesname.test.js	tests/fixedplan.js	<any>
+piecesname.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+piecesname.test.js	wardrobe.js	<loaded>
 planahead.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 planahead.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 planahead.test.js	analysis.js	<loaded>
@@ -2663,7 +2695,7 @@ remind.test.js	asm-gl.js	<loaded>
 remind.test.js	assemble.js	<loaded>	@	renderAsmUI
 remind.test.js	care.js	<loaded>	careLimit	careShow	laundryDays	renderCareUI
 remind.test.js	colpick.js	<loaded>
-remind.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colName	dayClimate	di	hasVest	inRotation	isWorkday	isoKey	key	mergeState	occOf	offDays	offName	patBase	patLabel	primaryCol	sentence	shoeStyle	stateSig	todayDate	wearsJacket	wearsTie
+remind.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colName	dayClimate	di	hasVest	inRotation	isWorkday	isoKey	itemName	key	mergeState	occOf	offDays	offName	patBase	patLabel	primaryCol	sentence	shoeStyle	stateSig	todayDate	wearsJacket	wearsTie
 remind.test.js	detect.js	<loaded>	@	texPat	usableSett
 remind.test.js	draw.js	<loaded>
 remind.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
