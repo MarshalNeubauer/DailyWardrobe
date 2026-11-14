@@ -33,8 +33,10 @@ module.exports=async({ok,chromium,url})=>{
     const phone=async(setup)=>p.evaluate(async([h,setup])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');
       renders={...__keep};asmOut={};asmTried.clear();const o=planFor()[key(sel)];for(const pk of asmParts(o).map(x=>x.key))if(setup.noPieces)delete renders[pk];
       if(setup.newer)renders[asmParts(o)[0].key]={...renders[asmParts(o)[0].key],t:2000};
-      let built=0;const real=asmPhoto;asmPhoto=async(...a)=>{built++;return real(...a)};
-      try{await asmEnsure(o)}finally{asmPhoto=real}
+      // (Today's own drawing may start the same look's asmEnsure while this one waits for the worker: whichever starts first builds it,
+      // so the count runs until both are done)
+      let built=0;const real=asmPhoto,idle=async()=>{for(let i=0;i<200&&(asmBusy.size||asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50))};asmPhoto=async(...a)=>{built++;return real(...a)};
+      try{await asmEnsure(o);await idle()}finally{asmPhoto=real}
       const a=asmFor(o);return {img:a&&a.img.slice(0,40),built}},[HOST,setup]);
     got.length=0;const a=await phone({noPieces:true});
     const pieces=await p.evaluate(()=>asmParts(planFor()[key(sel)]).map(x=>x.key));
