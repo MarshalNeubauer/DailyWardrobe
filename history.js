@@ -76,7 +76,7 @@ function learnFrom(slot,o,oldIt,newIt,picked){
   if(oldIt&&(!newIt||oldIt.id!==newIt.id)){if(partners.length){for(const p of partners)learnVote('p',pairKey(oldIt,p),-1);down=true}else if(!picked){learnVote('i',oldIt.id,-1);down=true}}
   if(picked&&newIt){if(partners.length)for(const p of partners)learnVote('p',pairKey(newIt,p),1);else learnVote('i',newIt.id,1);up=true}
   if(!down&&!up)return '';
-  settings.updated=Date.now();metaPut('settings',settings);cache={};
+  stampSettings(settings);metaPut('settings',settings);cache={};
   return up?'Noted: the planner will reach for this choice more often.':'Noted: the planner will suggest that pairing less often.'}
 /* ---- choosing a piece by hand: a sheet with every item for the slot, best match for the rest of the outfit first ---- */
 let picker=null,pastEdit=null;
