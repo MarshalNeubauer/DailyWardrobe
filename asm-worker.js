@@ -16,10 +16,17 @@ let asmChain=Promise.resolve();
    says why the chip didn't paint it (glWhy) */
 const asmProbe=()=>{try{const gl=new OffscreenCanvas(1,1).getContext('webgl2');if(!gl)return {renderer:null,max:0};const r={renderer:asmGlRenderer(gl),max:gl.getParameter(gl.MAX_TEXTURE_SIZE)};
   const x=gl.getExtension('WEBGL_lose_context');if(x)x.loseContext();return r}catch(e){return {renderer:null,max:0,error:String(e&&e.message||e)}}};
-onmessage=e=>{const {id,job,setup,probe}=e.data||{};
+/* (2026-11-14, the PC pre-build) {encode:{px,S}}: finished pixels from the GPU worker -> the JPEG (asmGlEncode), on a CPU pool worker;
+   a job with job.hk (the master's key) and no master is the look alone: the worker fills in the master's files it kept from the last
+   whole job with that key (a job is 13-40 MB with them), or says it needs the whole job; a picture returned as pixels (job.raw) is
+   handed over, not copied */
+let asmHeavy=null;const ASM_HEAVY=['master','masks','parts','geoU','geoV','light'];
+onmessage=e=>{const {id,job,setup,probe,encode}=e.data||{};
   asmChain=asmChain.then(async()=>{try{
     if(probe){postMessage({id,res:ASM_NOGL?{renderer:null,max:0}:asmProbe()});return}
     if(setup){await asmCmSetup(setup);postMessage({id,res:{ok:true}});return}
-    const j=ASM_NOGL&&job?{...job,gl:false}:job,res=await asmBuild(j);if(res&&res.gl===false&&j&&j.gl!==false&&asmGlNot)res.glWhy=asmGlNot;
-    postMessage({id,res})}catch(err){postMessage({id,error:String(err&&err.message||err)})}})};
+    if(encode){postMessage({id,res:{url:await asmGlEncode(encode.px,encode.S)}});return}
+    let j0=job;if(j0&&j0.hk){if(j0.master)asmHeavy={k:j0.hk,f:Object.fromEntries(ASM_HEAVY.map(n=>[n,j0[n]]))};else if(asmHeavy&&asmHeavy.k===j0.hk)j0={...j0,...asmHeavy.f};else throw new Error('needs the full job')}
+    const j=ASM_NOGL&&j0?{...j0,gl:false}:j0,res=await asmBuild(j);if(res&&res.gl===false&&j&&j.gl!==false&&asmGlNot)res.glWhy=asmGlNot;
+    postMessage({id,res},res&&res.px?[res.px.buffer]:[])}catch(err){postMessage({id,error:String(err&&err.message||err)})}})};
 postMessage({ready:ASM_CAN,gl:ASM_CAN&&!ASM_NOGL&&asmGlProbe()});   // gl: WebGL2 here (without it the page paints the covered looks on its own, asmGlOnPage)
