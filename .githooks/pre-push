@@ -1,4 +1,9 @@
 #!/bin/sh
-# Refuses a push while tests/impact.map has changes that aren't committed, and says so when the commit's files were not
-# passed by `npm test` (see tests/impact.js). tests/run.js switches this folder on (git config core.hooksPath .githooks).
-exec node tests/impact.js pre-push
+# Before a push (tests/run.js switches this folder on: git config core.hooksPath .githooks):
+#  - tests/impact.js pre-push: refuses it while tests/impact.map has changes that aren't committed, or while the branch changed
+#    app files without a CACHE in sw.js above origin/main's (fetched first, for a few seconds); says so when the commit's files
+#    were not passed by `npm test`;
+#  - tests/lint.js --changed: ESLint over the scripts the branch changed (about a second); a name that doesn't exist or is
+#    declared twice refuses it. Skipped, with a note, where ESLint isn't installed yet (`npm install`).
+node tests/impact.js pre-push || exit 1
+exec node tests/lint.js --changed
