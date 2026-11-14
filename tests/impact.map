@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8ca914268aa48f02f97f
+# tested	48e07a91882c5beac8b3
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -470,7 +470,7 @@ asmgl.test.js	add.js	<loaded>	checkArrivals
 asmgl.test.js	analysis.js	<loaded>
 asmgl.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCanvas	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSrcSig	asmCmTile	asmCmWk	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKnitTile	asmLegsAt	asmLegsPrep	asmPaisleyTile	asmTieLit	asmTieSheenK	asmUvAt
-asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlBytes	asmGlContext	asmGlCovers	asmGlCuffs	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSame	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlUse	asmGlVar	asmGlWhy
+asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlBytes	asmGlContext	asmGlCovers	asmGlCuffs	asmGlEncode	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSame	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlUse	asmGlVar	asmGlWhy
 asmgl.test.js	asm-worker.js	<any>
 asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
 asmgl.test.js	care.js	<loaded>	careShow

@@ -572,6 +572,12 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   const o=new Uint8Array(4*S*S);gl.readPixels(0,0,S,S,gl.RGBA,gl.UNSIGNED_BYTE,o);return new Uint8ClampedArray(o.buffer)}
 /* asmCmBuild's first step: the look on the graphics chip -> {url, gl:true, ms}, or null (not covered, no WebGL2, a lost context: the CPU
    paints it). hit is asmCmSetup's (the master's setup and solved positions) */
+/* the finished pixels (S x S, RGBA) -> the picture's JPEG: over a phone's size (the PC's 2880) scaled to 2048 exactly as asmCmBuild scales
+   the CPU's picture */
+async function asmGlEncode(o,S){let img=new ImageData(o,S,S);
+  if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
+    x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(big,0,0,ASM_SIZE,ASM_SIZE);img=x.getImageData(0,0,ASM_SIZE,ASM_SIZE)}
+  return asmJpeg(img)}
 async function asmGlTry(job,hit){const P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;const why=asmGlWhy(job,P);asmGlNot=why;if(why)return null;
   const G=asmGlInit(P.S);if(!G){asmGlNot='no WebGL2 context at '+P.S;return null}
   try{const t0=performance.now();
@@ -584,9 +590,10 @@ async function asmGlTry(job,hit){const P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;cons
     if(job.bar&&P.A.tie){const tm=new Uint8Array(N);for(let k=0;k<N;k++)tm[k]=P.A.tie[k]>127?1:0;asmBarDraw(o,tm,S,job.bar,null)}
     asmCmFinish(o,hit);   // the figure seated in the room (asm-color.js ASM_CM_FIN), as on the CPU
     // (stage 6) over a phone's size (the PC's 2880) scaled to 2048 exactly as asmCmBuild scales the CPU's picture
-    let img=new ImageData(o,S,S);if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
-      x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(big,0,0,ASM_SIZE,ASM_SIZE);img=x.getImageData(0,0,ASM_SIZE,ASM_SIZE)}
-    return {url:await asmJpeg(img),gl:true,ms,renderer:G.renderer}}
+    // (2026-11-14, the PC pre-build) job.raw: the finished pixels as they are, for another worker to shrink and encode (asmGlEncode) while
+    // the chip paints the next look
+    if(job.raw)return {px:o,S,gl:true,ms,renderer:G.renderer};
+    return {url:await asmGlEncode(o,S),gl:true,ms,renderer:G.renderer}}
   catch(e){console.warn('asm-gl: painting on the processor instead',e);asmGlNot='graphics error: '+String(e&&e.message||e).slice(0,200);asmGlLost(G.gl);return null}}
 /* ---- Settings → Outfit pictures → Advanced (owner only): "Graphics-chip painting", this phone's switch, and how the last picture
    painted here was made */

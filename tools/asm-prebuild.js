@@ -129,11 +129,16 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
         w.w.onmessageerror=()=>drop(i,w,'the Web Worker sent something unreadable')});
       return w};
     // (stage 6) a message to worker i: {job} paints a look, {setup} works its master out only, {probe} names the WebGL2 renderer
-    window.__poolMsg=(i,msg)=>{const w=pool[i]||(pool[i]=make(i));
+    window.__poolMsg=(i,msg,transfer)=>{const w=pool[i]||(pool[i]=make(i));
       return w.ready.then(ok=>{if(!ok)throw new Error('no Web Worker');return new Promise((ok2,no)=>{const id=++w.seq;
         const t=setTimeout(()=>drop(i,w,`no picture after ${Math.round(lookMs/1000)} s: the Web Worker was replaced`),lookMs);
-        w.wait.set(id,{ok:v=>{clearTimeout(t);ok2(v)},no:e=>{clearTimeout(t);no(e)}});w.w.postMessage({id,...msg})})})};
+        w.wait.set(id,{ok:v=>{clearTimeout(t);ok2(v)},no:e=>{clearTimeout(t);no(e)}});w.w.postMessage({id,...msg},transfer||[])})})};
     window.__poolRun=(i,job)=>__poolMsg(i,{job});
+    // (2026-11-14) the GPU worker's finished pixels are shrunk and encoded on the CPU pool (asm-worker.js {encode}), up to six workers in turn,
+    // while the chip paints the next look; __encTake(id) gives that look's picture when it is ready ({url} or {error})
+    window.__enc={};window.__encSeq=0;window.__encAt=0;window.__encN=Math.max(1,Math.min(n,6));
+    window.__encPut=(px,S)=>{const id=++__encSeq,i=(__encAt++)%__encN;__enc[id]=__poolMsg(i,{encode:{px,S}},[px.buffer]).then(x=>({url:x&&x.url||''}),e=>({error:String(e&&e.message||e)}));return id};
+    window.__encTake=id=>{const p=__enc[id];delete __enc[id];return p||{error:'no picture'}};
     window.__poolN=n},[JOBS,LOOK_MS,GI]);
   // main on GitHub when the run began: the commit the watcher checked out (--head; read here after the browser started, main might
   // already have moved and this run would never notice), else asked now (not this checkout's own commit: a branch would always differ)
@@ -186,18 +191,42 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
     const paint=(l,wi,gpu)=>page.evaluate(async([first,wi,gpu])=>{const o=planOn(new Date(first+'T12:00:00'));await asmCmLook(o);const kind=asmCmUse(o);
       if(!kind)return {error:'no colour-coded master for it'};
       if(!await asmCmGet(kind))return {error:'its master is missing on the worker'};const job=await asmJob(o);if(!job)return {error:'no job'};job.diskCache=true;job.gl=!!gpu;
-      try{const res=await __poolRun(wi,job);return res&&res.url?{key:asmOutKey(o),sig:asmPreSig(o),img:res.url,how:`(colour-coded ${kind})`,gl:!!res.gl,ms:res.ms,renderer:res.renderer||'',glWhy:res.glWhy||''}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi,!!gpu]);
+      try{let res;
+        // on the GPU worker: the pixels come back raw (encoded on the CPU pool), and once the worker holds a master's files the look's job goes
+        // without them (job.hk names the master; a replaced worker asks for the whole job again)
+        if(gpu){job.raw=true;job.hk=[job.cm,job.mk,job.mt,job.rev||'',job.gt||'',job.size].join('|');
+          const slim=window.__hk===job.hk?{...job,master:null,masks:null,parts:null,geoU:null,geoV:null,light:null}:null;
+          try{res=await __poolRun(wi,slim||job)}catch(e){if(slim&&/needs the full job/.test(String(e&&e.message||e)))res=await __poolRun(wi,job);else throw e}
+          window.__hk=job.hk}
+        else res=await __poolRun(wi,job);
+        const out={key:asmOutKey(o),sig:asmPreSig(o),how:`(colour-coded ${kind})`,gl:!!(res&&res.gl),ms:res&&res.ms,renderer:res&&res.renderer||'',glWhy:res&&res.glWhy||''};
+        if(res&&res.px)return {...out,enc:__encPut(res.px,res.S)};
+        return res&&res.url?{...out,img:res.url}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi,!!gpu])
+      .then(r=>{if(r&&r.enc){r.imgP=page.evaluate(id=>__encTake(id),r.enc).catch(e=>({error:String(e&&e.message||e)}))}return r});
     const way=r=>r.gl?`GPU ${r.ms} ms`:`CPU${r.glWhy?': '+r.glWhy:''}`;
-    const finish=async(l,r,t1)=>{if(r.gl)onGpu++;else onCpu++;if(r.how)r.how=r.how.replace(/\)$/,', '+way(r)+')');built++;const kb=Math.round(r.img.length/1024),how=r.how?' '+r.how:'';
-      if(SAVE){fs.mkdirSync(SAVE,{recursive:true});fs.writeFileSync(path.join(SAVE,`${l.first}-${r.key}.jpg`),Buffer.from(r.img.split(',')[1],'base64'))}
-      if(DRY){report(l,`${r.key} built (${kb} KB)${how} (${Date.now()-t1} ms)`);return}
-      if(!budget.take(1)){failed++;pauseUploads(LIMIT_WHY);report(l,'painted, not uploaded: this computer\'s daily upload limit is used up');return}
-      pending.push({l,r});report(l,`${r.key} painted (${kb} KB)${how} (${Date.now()-t1} ms)`)};
-    const uploadAll=async()=>{if(!pending.length)return;const tu=Date.now(),n=pending.length;let i=0;console.log(`${now()} uploading ${n} picture(s), ${Math.min(UPLOADS,n)} at a time`);
+    const finish=async(l,r,t1)=>{if(r.gl)onGpu++;else onCpu++;if(r.how)r.how=r.how.replace(/\)$/,', '+way(r)+')');built++;const how=r.how?' '+r.how:'';
+      if(!DRY&&!budget.take(1)){failed++;pauseUploads(LIMIT_WHY);report(l,'painted, not uploaded: this computer\'s daily upload limit is used up');return}
+      pending.push({l,r});report(l,`${r.key} painted${how} (${Date.now()-t1} ms)`)};
+    const uploadAll=async()=>{if(!pending.length)return;const tu=Date.now(),n=pending.length;let i=0;console.log(DRY?`${now()} ${n} picture(s) built (dry run: nothing is uploaded)`:`${now()} uploading ${n} picture(s), ${Math.min(UPLOADS,n)} at a time`);
       await Promise.all(Array.from({length:Math.min(UPLOADS,n)},async()=>{for(;;){const p=pending[i++];if(!p)return;
+        // a picture painted on the chip is still being encoded on the CPU pool, or ready: wait for it
+        if(p.r.imgP){const e=await p.r.imgP;if(!e||!e.url){failed++;built--;if(!DRY)budget.give(1);console.log(`  ${p.l.first} not made: ${e&&e.error||'no picture'}`);continue}p.r.img=e.url}
+        if(SAVE){fs.mkdirSync(SAVE,{recursive:true});fs.writeFileSync(path.join(SAVE,`${p.l.first}-${p.r.key}.jpg`),Buffer.from(p.r.img.split(',')[1],'base64'))}
+        if(DRY){p.r.img='';continue}
         if(paused()){failed++;budget.give(1);p.r.img='';continue}   // the worker refused a write: the rest wait for its reset (their places given back)
         const msg=await upload(p.l,p.r).catch(e=>{failed++;return 'upload failed: '+String(e&&e.message||e)});p.r.img='';if(!/ uploaded /.test(msg))console.log(`  ${p.l.first} ${msg}`)}}));
-      pending.length=0;console.log(`${now()} uploads done in ${((Date.now()-tu)/1000).toFixed(1)} s: ${uploaded} uploaded`)};
+      pending.length=0;if(!DRY)console.log(`${now()} uploads done in ${((Date.now()-tu)/1000).toFixed(1)} s: ${uploaded} uploaded`)};
+    // (2026-11-14) the masters the chip's looks need are set up at the same time, each on its own CPU pool worker, before the GPU worker is
+    // asked: a setup not yet kept on disk (after a change of code or master files, about 19 s each at 2880) used to be worked out one master
+    // after another in the GPU worker. A pool worker works it out and keeps it (job.diskCache); the GPU worker then reads it back
+    const presetup=async firsts=>{if(firsts.length<2)return;const t=Date.now();
+      const n=await page.evaluate(async([firsts,jobs])=>{
+        const has=k=>new Promise(ok=>{const q=indexedDB.open('dw-asm-prep',1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onerror=()=>ok(false);
+          q.onsuccess=()=>{const db=q.result;try{const c=db.transaction('p').objectStore('p').count(k);c.onsuccess=()=>{ok(c.result>0);db.close()};c.onerror=()=>{ok(false);db.close()}}catch(e){ok(false);db.close()}}});
+        let made=0;await Promise.all(firsts.map(async(f,i)=>{try{const o=planOn(new Date(f+'T12:00:00'));await asmCmLook(o);const kind=asmCmUse(o);if(!kind||!await asmCmGet(kind))return;
+          const job=await asmJob(o);if(!job)return;job.diskCache=true;job.gl=false;const k=asmCmDiskKey(job);if(await has(k))return;
+          await __poolMsg(i%jobs,{setup:job});made++;for(let w=0;w<240&&!await has(k);w++)await new Promise(r=>setTimeout(r,250))}catch(e){}}));return made},[firsts,JOBS]).catch(()=>0);
+      if(n)console.log(`${now()} ${n} master(s) set up at the same time in ${((Date.now()-t)/1000).toFixed(1)} s`)};
     const one=async(l,wi)=>{if(paused()){failed++;report(l,'not made: uploads paused until the worker\'s daily reset');return}
       const t1=Date.now(),r=await paint(l,wi,false);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
       await finish(l,r,t1)};
@@ -224,6 +253,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       // a master's setup (processor work, kept in the GPU worker): the first before any look, each next one while the master before it paints
       const setup=l=>page.evaluate(async([first,GI])=>{const o=planOn(new Date(first+'T12:00:00'));await asmCmLook(o);const job=await asmJob(o);if(!job)return {error:'no job'};job.diskCache=true;
         try{return await __poolMsg(GI,{setup:job})}catch(e){return {error:String(e&&e.message||e)}}},[l.first,GI]).catch(e=>({error:String(e&&e.message||e)}));
+      await presetup(kinds.map(k=>per[k][0].first));
       let warm=setup(per[kinds[0]][0]);const ready=async k=>{const w=await warm;warm=null;if(w&&w.error)console.log(`${now()} GPU: the ${k} master's setup failed (${w.error}); the GPU worker works it out with its first look`)};
       try{await ready(kinds[0]);
         // the renderer, once a run, before any look is painted on it: WebGL2 must be the graphics card (WEBGL_debug_renderer_info), its textures 2880 or more
