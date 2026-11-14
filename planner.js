@@ -167,6 +167,10 @@ const metalOf=i=>i&&i.type==='tieclip'?clipMetal(i):i&&i.metal||'silver';   // a
    colour, by family) ENAMEL_ACCENT (11, above a clip matching the watch and the buckle, 9); the tie's own colour or its close relative
    (red with burgundy, blue with navy) ENAMEL_TONE (8, just under: it comes round when silver has been worn); anything else ENAMEL_CLASH
    (-5). Gold and gunmetal clips still lose to a silver watch and buckle (metalPref) */
+/* a gold, rose gold or gunmetal clip is planned only when the watch and the belt's buckle are that metal too (the owner, 2026-11-14:
+   "keep gold off", also on a day with his gold watch: his buckles are silver); one picked by hand stays */
+const CLIP_OFF=['gold','other'];
+const clipAllowed=(c,watch,belt)=>{const m=metalOf(c);return !CLIP_OFF.includes(m)||(!!watch&&metalOf(watch)===m&&!!belt&&metalOf(belt)===m)};
 const ENAMEL_ACCENT=11,ENAMEL_TONE=8,ENAMEL_CLASH=-5,ENAMEL_NEAR={red:['burgundy'],burgundy:['red'],blue:['navy'],navy:['blue']};
 const enamelPref=(c,tie)=>{if(!tie)return 0;const f=fam(colBase(planCol(c))),t=colsOf(tie);if(!t.length)return 0;
   if(t.slice(1).includes(f))return ENAMEL_ACCENT;if(t[0]===f||(ENAMEL_NEAR[f]||[]).includes(t[0]))return ENAMEL_TONE;return ENAMEL_CLASH};
@@ -361,7 +365,8 @@ for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.len
 const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
 const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s,sockEcho(shirt,tie))+2*itemVote(s));
 const metalPref=c=>metalOf(c)===null?enamelPref(c,tie):(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0);
-const clip=vest||!tie?null:best(pool('tieclip','clip'),metalPref);   // the vest holds the tie: no clip
+const clipPool=pool('tieclip','clip').filter(c=>force.clip===c.id||clipAllowed(c,watch,belt));
+const clip=vest||!tie?null:best(clipPool,metalPref);   // the vest holds the tie: no clip
 // cufflinks only (and always) with French cuffs
 const french=shirt&&shirt.cuff==='french',links=french?best(pool('cufflinks','links'),metalPref):null;
 // coat when the forecast (or the season) calls for one: raincoat for rain unless it's very cold, otherwise an overcoat

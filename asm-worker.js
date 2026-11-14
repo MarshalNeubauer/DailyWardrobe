@@ -2,7 +2,7 @@
    its own decoder and encoder, since a worker has no <img> or <canvas>: photos are decoded with createImageBitmap and drawn on an
    OffscreenCanvas. One picture at a time, in the order they come. Without OffscreenCanvas it says so ({ready:false}) and the page
    builds the pictures itself. */
-importScripts('assemble.js','asm-color.js','asm-gl.js');   // (asm-gl.js: the looks the graphics chip covers are painted there, WebGL2 on an OffscreenCanvas)
+importScripts('assemble.js','asm-color.js','asm-gl.js','asm-watch.js');   // (asm-gl.js: the looks the graphics chip covers are painted there, WebGL2 on an OffscreenCanvas)
 const ASM_CAN=typeof OffscreenCanvas!=='undefined'&&typeof createImageBitmap!=='undefined'&&typeof FileReaderSync!=='undefined';
 // (stage 6) asm-worker.js?nogl=1: a worker that never touches the graphics chip (the PC pre-build's CPU pool; its one GPU worker has no flag)
 const ASM_NOGL=/[?&]nogl=1/.test(self.location&&self.location.search||'');
