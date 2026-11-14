@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	68032f738ac0a3491f85
+# tested	ba922c3c4f6bf1d85061
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -787,6 +787,38 @@ auditfix.test.js	tagging.js	<loaded>	outfitRefsFull	patternPrompt	readPatternWit
 auditfix.test.js	tests/fixedplan.js	<any>
 auditfix.test.js	ui.js	<loaded>	addGate	advClose	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	ownerHere	plainErr	renderConnUI	uiEsc
 auditfix.test.js	wardrobe.js	<loaded>	matRow	moreRow
+beltswap.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+beltswap.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+beltswap.test.js	analysis.js	<loaded>
+beltswap.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	belowBox	beltless	busyLabelFor	canPick	checkArrivals	checkPlanRules	closePicker	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keepOff	keyDate	lastWorn	learnFrom	learnVote	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFillSoon	monthLink	nextWorkday	offBtn	offOn	pageIn	pickItem	piecesBox	piecesLine	planFor	planMonth	planOn	planRulesCheck	planSnapSoon	planSnapUse	planStartDay	planTrim	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	renderFor	renderItem	renderPending	renderStalled	renderToday	replanFuture	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	show	slotLabel	slotPool	slots	smallPhotos	stackSVG	swApply	swapSlot	texSwatches	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
+beltswap.test.js	apple-touch-icon.png	<loaded>
+beltswap.test.js	asm-color.js	<loaded>
+beltswap.test.js	asm-gl.js	<loaded>
+beltswap.test.js	assemble.js	<loaded>	@
+beltswap.test.js	care.js	<loaded>	careCounts	careLimit	careNote	careNoun	careShow	careTimes
+beltswap.test.js	colpick.js	<loaded>
+beltswap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM	SLOT_TYPE	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	lum	lumCol	mix	nm	occOf	offDays	offName	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
+beltswap.test.js	detect.js	<loaded>	@	usableSett
+beltswap.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
+beltswap.test.js	dress.js	<loaded>	migrateVests
+beltswap.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
+beltswap.test.js	icon-192.png	<loaded>
+beltswap.test.js	icon-512.png	<loaded>
+beltswap.test.js	index.html	<loaded>
+beltswap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
+beltswap.test.js	manifest.webmanifest	<loaded>
+beltswap.test.js	pack.js	<loaded>	packShow
+beltswap.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkShirt	darkUnderLight	fam	finish	frozenOutfit	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	outfit	outfitScore	pairDown	pairKey	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
+beltswap.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+beltswap.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+beltswap.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+beltswap.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+beltswap.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
+beltswap.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#shop-backdrop	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#today	#today .row .dot	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.cap	.carenote	.carenote a	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.dot	.dot svg	.fig	.fig .wornbar	.fig .wornbar>*	.fig .wshare	.fig>svg	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-start	.linkbtn	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pri	.pstrip	.render-msg	.render-msg:empty	.resetbox .month-link	.resetbox .rsicon	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.slide	.stack	.stage	.stage .empty	.stage .firstrun	.thumb	.thumb svg	.warn	.wmark	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+beltswap.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
+beltswap.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+beltswap.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+beltswap.test.js	wardrobe.js	<loaded>
 boxfold.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 boxfold.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 boxfold.test.js	analysis.js	<loaded>
