@@ -21,7 +21,7 @@
 //   --origin  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/), as for npm run assemble
 // Run it again whenever a master, the black calibration shirt or a zone picture is made again. The token is read from the
 // environment only.
-const fs=require('fs'),path=require('path'),zlib=require('zlib');
+const fs=require('fs'),path=require('path'),zlib=require('zlib'),budget=require('./upload-budget.js');
 const ROOT=path.join(__dirname,'..');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:process.argv[i+1]};
 const DRY=process.argv.includes('--dry'),OUT=path.resolve(arg('out',path.join(process.cwd(),'atlas'))),PARTS=arg('parts',''),CM_SIZE=+arg('cm-size',0)||0;   // (--cm-size: the colour-coded masters at another size than a phone's 2048, for the tests)
@@ -65,9 +65,13 @@ const writeUrl=(f,u)=>fs.writeFileSync(f,Buffer.from(u.split(',')[1],'base64'));
   const ph=await page.evaluate(async()=>{const r=await asmAtlasBuild();return r&&{sig:r.sig,W:r.W,n:r.n,imgs:r.imgs,keys:Object.fromEntries(ASM_ATLAS.map(p=>[p,asmAtlasKey(p)]))}});
   if(!ph){console.error('Could not measure the master for the phones.');process.exit(2)}
   fs.mkdirSync(path.join(OUT,'phone'),{recursive:true});let up=0,cur=0;
+  const todo=[];
   for(const [p,k] of Object.entries(ph.keys)){writeUrl(path.join(OUT,'phone','paint-'+p+'.png'),ph.imgs[p]);
     const now=await api('render?key='+k,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);
-    if(now&&now.sig===ph.sig){cur++;continue}if(DRY)continue;
+    if(now&&now.sig===ph.sig){cur++;continue}if(!DRY)todo.push([p,k])}
+  // this computer's daily cap (tools/upload-budget.js): the pictures still needed are reserved together, all or none
+  if(todo.length&&!budget.take(todo.length)){console.error(`The phones' atlas needs ${todo.length} uploads, but ${budget.why()}: nothing uploaded.`);process.exit(4)}
+  for(const [p,k] of todo){
     const r=await api('render',{method:'PUT',body:JSON.stringify({key:k,rec:{sig:ph.sig,img:ph.imgs[p],model:'atlas',t:Date.now()}})});
     if(!r.ok){console.error(`Upload of the phones' atlas (${p}) refused: ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}up++}
   console.log(`Phones: the painter's ${ph.n.toLocaleString()} shirt pixels at ${ph.W}px, ${DRY?'not uploaded (dry run)':up?up+' of 3 pictures uploaded':''}${cur?(up?', ':'')+cur+' already current':''}.`);

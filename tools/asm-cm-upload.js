@@ -12,7 +12,9 @@
 //   --bg <file>  the background behind every master (asm-color.js asmCmBgKey: an empty, out-of-focus room, square), as a JPEG; with --bg alone
 //                only the background goes up
 // The token is read from the environment only.
-const fs=require('fs'),path=require('path'),crypto=require('crypto');
+// The records to write and the manifest are reserved from this computer's daily cap first (tools/upload-budget.js, 300 a day for every
+// tool together): too few left and nothing is uploaded (exit code 4), so a master is never left half new.
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),budget=require('./upload-budget.js');
 const ROOT=path.join(__dirname,'..');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:process.argv[i+1]};
 const DRY=process.argv.includes('--dry'),DIR=arg('dir',''),BG=arg('bg','');
@@ -38,7 +40,7 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
   const jpeg=async f=>page.evaluate(async u=>{const i=new Image();await new Promise((r,j)=>{i.onload=r;i.onerror=j;i.src=u});const c=new OffscreenCanvas(i.width,i.height);c.getContext('2d').drawImage(i,0,0);
     const b=await c.convertToBlob({type:'image/jpeg',quality:.93});return await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(b)})},'data:image/'+(/\.jpe?g$/i.test(f)?'jpeg':/\.webp$/i.test(f)?'webp':'png')+';base64,'+fs.readFileSync(f).toString('base64'));
   const png=f=>'data:image/png;base64,'+fs.readFileSync(f).toString('base64');
-  let up=0,same=0,bytes=0;const dates={};   // key -> the record's date on the worker, for the manifest
+  let up=0,same=0,bytes=0;const dates={},todo=[];   // key -> the record's date on the worker, for the manifest
   const groups=KINDS.map(kind=>[kind,path.join(DIR,'out-'+kind)]);if(BG)groups.push(['all',null]);
   for(const [kind,out] of groups){if(out&&!fs.existsSync(out)){console.error('missing '+out);process.exit(2)}
     const files=kind==='all'?[['background',BG,true]]:[['master',path.join(out,'colormaster-2880.png'),true],...ZONES[kind].map(z=>['mask/'+z,path.join(out,'alpha-'+z+'.png')]),
@@ -50,12 +52,18 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
       if(DRY){console.log(`${kind} ${name} -> ${key} (${Math.round(fs.statSync(f).size/1024)} KB file)`);continue}
       const cur=await api('render?key='+key,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);
       if(cur&&cur.sig===sig){same++;dates[key]=+cur.t||0;continue}
-      const img=isJpeg?await jpeg(f):png(f);bytes+=img.length;const t=Date.now();
-      const r=await api('render',{method:'PUT',body:JSON.stringify({key,rec:{sig,img,model:'colormaster',t}})});
-      if(!r.ok){console.error(`${kind} ${name}: upload refused ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}
-      dates[key]=t;up++;console.log(`${kind} ${name} uploaded (${Math.round(img.length/1024)} KB)`)}}
+      todo.push({kind,name,key,f,isJpeg,sig})}}
+  if(DRY){await browser.close();console.log('Dry run: nothing uploaded.');return}
+  // this computer's daily cap (tools/upload-budget.js): the whole batch and the manifest are reserved first, all or none, so a master is
+  // never left half new (a new uv-u beside an old uv-v paints wrongly)
+  const need=todo.length+1;
+  if(todo.length&&!budget.take(need)){await browser.close();console.error(`${todo.length} records need uploading, but ${budget.why()} (${budget.left()} left today): nothing uploaded.`);process.exit(4)}
+  for(const {kind,name,key,f,isJpeg,sig} of todo){
+    const img=isJpeg?await jpeg(f):png(f);bytes+=img.length;const t=Date.now();
+    const r=await api('render',{method:'PUT',body:JSON.stringify({key,rec:{sig,img,model:'colormaster',t}})});
+    if(!r.ok){console.error(`${kind} ${name}: upload refused ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}
+    dates[key]=t;up++;console.log(`${kind} ${name} uploaded (${Math.round(img.length/1024)} KB)`)}
   await browser.close();
-  if(DRY){console.log('Dry run: nothing uploaded.');return}
   // the manifest (asm-color.js asmCmMfKey): every colour-coded record's date, merged with the one already there (a run with --kinds or
   // --bg alone keeps the other kinds' dates). Phones and the computer's pre-build read it and download again what they hold older copies
   // of; it is written only when a date changed (one KV write)
@@ -63,6 +71,8 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
   const curMf=await api('render?key='+mfKey,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);let old={};
   try{const m=curMf&&RE.exec(String(curMf.sig||''));if(m)old=JSON.parse(m[1]).keys||{}}catch{}
   const keys={...old,...dates},changed=Object.keys(keys).some(k=>old[k]!==keys[k]);
+  if(changed&&!todo.length&&!budget.take(1)){console.error(`The manifest needs writing, but ${budget.why()}.`);process.exit(4)}
+  if(!changed&&todo.length)budget.give(1);   // the manifest's reserved write was not needed
   if(changed){const r=await api('render',{method:'PUT',body:JSON.stringify({key:mfKey,rec:{sig:'asm/cm-manifest '+JSON.stringify({keys}),img:MF_IMG,model:'manifest',t:Date.now()}})});
     if(!r.ok){console.error(`manifest: upload refused ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}console.log(`manifest written (${Object.keys(keys).length} records)`)}
   console.log(`${up} uploaded (${Math.round(bytes/1048576)} MB), ${same} already current.`);

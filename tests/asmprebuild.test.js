@@ -70,7 +70,7 @@ module.exports=async({ok,chromium,url})=>{
       const res=await worker.fetch(new Request('http://w'+q.url,{method:q.method,headers:q.headers,body:['GET','HEAD','OPTIONS'].includes(q.method)?undefined:b}),env);
       r.writeHead(res.status,Object.fromEntries(res.headers));r.end(Buffer.from(await res.arrayBuffer()))});
     await new Promise(x=>srv.listen(0,'127.0.0.1',x));const W=`http://127.0.0.1:${srv.address().port}/`;
-    const run=()=>new Promise(res=>{const c=require('child_process').spawn(process.execPath,[s,'--days','14','--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'owner-code'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
+    const run=()=>new Promise(res=>{const c=require('child_process').spawn(process.execPath,[s,'--days','14','--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'owner-code',DW_UPLOAD_LEDGER:require('path').join(require('os').tmpdir(),'dw-ledger-test-'+process.pid+'.json')}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
     const r1=await run(),outs=[...store.keys()].filter(k=>k.startsWith('render:')&&/^asm\/out\/z\d+\/1000$/.test(JSON.parse(store.get(k)).sig||''));
     const p1=puts,r2=await run();srv.close();
     ok(r1.code===0&&outs.length>=1&&p1===outs.length&&!store.get('wardrobe:v1').includes('"rev":2'),`npm run assemble builds every coming look and uploads it, and leaves the backup alone (${outs.length} uploaded: ${(r1.out.match(/Done.*/)||[''])[0]})`);
@@ -81,9 +81,19 @@ module.exports=async({ok,chromium,url})=>{
     const put0=KV.put;KV.put=async(k,v,o)=>{if(k.startsWith('render:'))throw new Error('KV put() limit exceeded for the day.');return put0(k,v,o)};
     const prof=require('fs').mkdtempSync(path.join(require('os').tmpdir(),'dw-pause-'));puts=0;
     srv.listen(0,'127.0.0.1');await new Promise(x=>srv.once('listening',x));const W2=`http://127.0.0.1:${srv.address().port}/`;
-    const runQ=()=>new Promise(res=>{const c=require('child_process').spawn(process.execPath,[s,'--days','14','--profile',prof,'--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W2,DW_TOKEN:'owner-code'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
+    const runQ=()=>new Promise(res=>{const c=require('child_process').spawn(process.execPath,[s,'--days','14','--profile',prof,'--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W2,DW_TOKEN:'owner-code',DW_UPLOAD_LEDGER:require('path').join(require('os').tmpdir(),'dw-ledger-test-'+process.pid+'.json')}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
     const q1=await runQ(),pq1=puts,pf=require('fs').existsSync(path.join(prof,'upload-pause.json')),q2=await runQ();srv.close();KV.put=put0;
     ok(pq1===1&&/uploads paused until/.test(q1.out)&&pf,`when the worker's writes for the day are used up, the script stops at the first refused upload and keeps the pause (${pq1} upload tried)`);
-    ok(puts===pq1&&/Uploads are paused until/.test(q2.out),'a run before the daily reset uploads nothing');}
+    ok(puts===pq1&&/Uploads are paused until/.test(q2.out),'a run before the daily reset uploads nothing');
+    // this computer's own daily cap (tools/upload-budget.js; the fixture has one coming look): with the day's one write taken by another
+    // tool, the script uploads nothing, pauses the same way and paints nothing; a later run that day uploads nothing
+    const fs_=require('fs'),os_=require('os'),led=path.join(os_.tmpdir(),'dw-ledger-cap-'+process.pid+'.json');fs_.rmSync(led,{force:true});
+    fs_.writeFileSync(led,JSON.stringify({day:new Date().toISOString().slice(0,10),used:1}));
+    const prof2=fs_.mkdtempSync(path.join(os_.tmpdir(),'dw-cap-'));puts=0;
+    srv.listen(0,'127.0.0.1');await new Promise(x=>srv.once('listening',x));const W3=`http://127.0.0.1:${srv.address().port}/`;
+    const runC=()=>new Promise(res=>{const c=require('child_process').spawn(process.execPath,[s,'--days','14','--profile',prof2,'--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W3,DW_TOKEN:'owner-code',DW_UPLOAD_LEDGER:led,DW_UPLOAD_LIMIT:'1'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
+    const c1=await runC(),pc1=puts,c2=await runC();srv.close();const usedC=JSON.parse(fs_.readFileSync(led,'utf8')).used;fs_.rmSync(led,{force:true});
+    ok(pc1===0&&usedC===1&&/daily upload limit \(1\) is used up: uploads paused until/.test(c1.out)&&!/\[1\/1\]/.test(c1.out),`with this computer's daily cap reached, the script uploads and paints nothing and pauses until the reset (${pc1} uploads)`);
+    ok(puts===pc1&&/Uploads are paused until/.test(c2.out),'a run later that day uploads nothing');}
 };
 module.exports.assembled=true;   // tests assembled pictures (assemble.js)
