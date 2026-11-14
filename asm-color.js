@@ -375,7 +375,7 @@ async function asmPaisleyTile(i){const T=128,cv=document.createElement('canvas')
    like any read cloth (c.suit, a tile). null when there is no close-up, no clean patch, or nothing in it to show: the item is then
    painted as before. ASM_CU: tile texels a side, the patch's sides tried (of the close-up's shorter side), how even a patch must be, how
    much stronger the detail is drawn, the least detail worth drawing */
-const ASM_CU={T:256,sides:[.5,.4,.32,.25],even:.16,edge:8,show:.12,kmax:3.5,min:.02,zoom:3,sharp:.6,v:4};   // (measured on the owner's three brown close-ups: a window with a seam has a line 10-24 times the cloth's usual, a clean one 4-7 times)
+const ASM_CU={T:256,sides:[.5,.4,.32,.25],even:.16,edge:8,show:.12,kmax:3.5,min:.02,zoom:3,sharp:.6,flat:18,dark:.012,v:5};   // (measured on the owner's three brown close-ups: a window with a seam has a line 10-24 times the cloth's usual, a clean one 4-7 times)
 /* (at its real size a fine twill's ribs are under one pixel of the picture and average to a flat colour, exactly what the close-up was
    meant to cure) the cloth is drawn ASM_CU.zoom times its real size, as shirt weaves and ties are drawn larger than life so they show on
    a phone; and a patch must be in focus: its fine detail at least ASM_CU.sharp of the cloth's sharpest tenth (the first build took the
@@ -384,7 +384,12 @@ const ASM_CU={T:256,sides:[.5,.4,.32,.25],even:.16,edge:8,show:.12,kmax:3.5,min:
    detail is drawn as strong as it takes to show in the picture: its swing (5th to 95th percentile) measured as the picture shows it
    (the tile averaged over a picture pixel, ASM_PX_MM) is brought up to ASM_CU.show, at most ASM_CU.kmax times, never weaker than life.
    A patch is clean when its light is even within ASM_CU.even and its strongest line is under ASM_CU.edge times the cloth's usual */
-const asmCuWants=(i,how)=>!!(i&&i.texture&&(how==='flat'||how==='twill'||how==='plain'));
+/* (the owner, 2026-11-14: "Leave the current painter for black solid color suits") cloth darker than ASM_CU.dark (linear light) is not
+   taken from the close-up. (His Medium Grey came out a patchwork: the close-up's soft blotches and crease shadows, a quarter of the
+   square across, survived a flattening at a seventh of the square and repeated with the tile) the square's light is flattened at
+   1/ASM_CU.flat of its side, so only the weave and its grain stay */
+const asmCuDark=i=>{const h=String(colOf(i)).replace('#',''),c=[0,2,4].map(k=>ASM_LIN[parseInt(h.slice(k,k+2),16)||0]);return .2126*c[0]+.7152*c[1]+.0722*c[2]<ASM_CU.dark};
+const asmCuWants=(i,how)=>!!(i&&i.texture&&(how==='flat'||how==='twill'||how==='plain')&&!asmCuDark(i));
 const asmCuTag=(z,i)=>(z==='jacket'||z==='waistcoat'||z==='trousers')&&asmCuWants(i,asmCmRoute(i,z).how)?'/cu'+ASM_CU.v+'.'+i.texture.length+i.texture.slice(-12).replace(/[^A-Za-z0-9]/g,''):'';
 /* the cleanest square of cloth: on a 420 px copy, cloth is what is not the white paper; a window is scored by how uneven its light is
    (the spread of its 8 px blocks' means: a fold, a shadow) and by its strongest line (a seam or crease: the light at 3 px against the
@@ -426,7 +431,7 @@ async function asmCuTile1(i){const L=ASM_LIN,h=String(colOf(i)).replace('#',''),
   const pd=pg.getImageData(0,0,T,T).data,n=T*T,cl=v=>v<0?0:v>T-1?T-1:v;
   const blur=(a,R)=>{const t=new Float32Array(n),o=new Float32Array(n);for(let y=0;y<T;y++)for(let x=0;x<T;x++){let s=0;for(let k=-R;k<=R;k++)s+=a[y*T+cl(x+k)];t[y*T+x]=s/(2*R+1)}
     for(let y=0;y<T;y++)for(let x=0;x<T;x++){let s=0;for(let k=-R;k<=R;k++)s+=t[cl(y+k)*T+x];o[y*T+x]=s/(2*R+1)}return o};
-  const R=Math.round(T/7),rel=[0,1,2].map(q=>{const a=new Float32Array(n);for(let k=0;k<n;k++)a[k]=L[pd[4*k+q]];let b=a;for(let j=0;j<3;j++)b=blur(b,R);const o=new Float32Array(n);for(let k=0;k<n;k++)o[k]=b[k]>1e-5?a[k]/b[k]:1;return asmCuWrap(o,T)});
+  const R=Math.round(T/ASM_CU.flat),rel=[0,1,2].map(q=>{const a=new Float32Array(n);for(let k=0;k<n;k++)a[k]=L[pd[4*k+q]];let b=a;for(let j=0;j<3;j++)b=blur(b,R);const o=new Float32Array(n);for(let k=0;k<n;k++)o[k]=b[k]>1e-5?a[k]/b[k]:1;return asmCuWrap(o,T)});
   const v=Array.from(rel[1]).sort((a,b)=>a-b),swing=v[Math.floor(n*.95)]-v[Math.floor(n*.05)];if(!(swing>=ASM_CU.min))return null;
   // as the picture shows it: the tile averaged over one picture pixel (wrapping)
   const mm=p.P/W*ASM_CLOSEUP_MM*ASM_CU.zoom,fb=Math.max(1,Math.round(T/(mm*ASM_PX_MM))),lo=[];for(let y=0;y<T;y+=fb)for(let x=0;x<T;x+=fb){let s=0;for(let dy=0;dy<fb;dy++)for(let dx=0;dx<fb;dx++)s+=rel[1][((y+dy)%T)*T+(x+dx)%T];lo.push(s/(fb*fb))}
@@ -721,7 +726,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_CU,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CU,asmCuDark,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
