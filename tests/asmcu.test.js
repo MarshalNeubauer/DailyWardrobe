@@ -20,13 +20,15 @@ module.exports=async({ok,chromium,url})=>{
       for(let k=0;k<W*W;k++){const v=150+90*rnd();im.data[4*k]=im.data[4*k+1]=im.data[4*k+2]=v}g.putImageData(im,0,0);const B=await asmCuTile1({...mk('grey','twill'),id:'cubright',texture:c.toDataURL('image/png')});
       // and with a strip of white paper along one edge the patch keeps off it
       g.fillStyle='#fbfbfb';g.fillRect(0,0,W,150);const Pp=await asmCuTile1({...mk('grey','twill'),id:'cupaper',texture:c.toDataURL('image/png')});
-      return {bright:!!B,offPaper:!!Pp&&Pp.cu.y*2>=150,wantsGrey:asmCuWants(grey,'twill'),wantsBlack:asmCuWants(black,'twill'),wantsBands:asmCuWants(grey,'bands'),noTex:asmCuWants({...grey,texture:''},'twill'),
+      const hbI={...mk('grey','herringbone'),id:'cuhb',texture:tex},HB=await asmCuTile1(hbI);
+      return {hb:asmCuWants(hbI,asmCmRoute(hbI,'jacket').how)&&HB.cu.gain===ASM_CU.hb&&ASM_CU.hb===3&&Math.abs(HB.slv-2/3)<1e-6&&T.slv===undefined,bright:!!B,offPaper:!!Pp&&Pp.cu.y*2>=150,wantsGrey:asmCuWants(grey,'twill'),wantsBlack:asmCuWants(black,'twill'),wantsBands:asmCuWants(grey,'bands'),noTex:asmCuWants({...grey,texture:''},'twill'),
         mean:m/T.c[1],broad:(hi-lo)/m,gain:T.cu.gain,shown:T.cu.shown,fgain:F.cu.gain,isFine:asmCuFine(fine)&&!asmCuFine(grey),tagDiff:asmCuTag('jacket',grey)!==''&&asmCuTag('jacket',black)===''}});
     ok(r.wantsGrey&&!r.wantsBands&&!r.noTex,'a plain or twill cloth with a close-up takes its cloth from it; a jacket read in bands, or one without a close-up, does not');
     ok(!r.wantsBlack&&r.tagDiff,'near-black cloth stays on the current painter, and its key carries no close-up tag');
     ok(Math.abs(r.mean-1)<.03,`the tile's mean is the item's colour (${r.mean.toFixed(3)} of it)`);
     ok(r.broad<.04,`a soft blotch of the photo is flattened out of the tile (its 32-texel blocks within ${(100*r.broad).toFixed(1)}% of each other)`);
     ok(r.shown>ASM_CU_FINE_T&&r.gain>=1&&r.isFine&&Math.abs(r.fgain*r.shown-ASM_CU_FINE_T)<.02,`a fine or worsted cloth's grain is capped (${r.fgain} of its strength, ${r.shown} seen in the close-up), another cloth's is not (${r.gain})`);
+    ok(r.hb,'a herringbone suit with a close-up takes its cloth from it, at three times its strength, its sleeves at twice (the tile carries 2/3 for them; another cloth carries none)');
     ok(r.bright,'a bright neutral cloth with no paper in the close-up still gives a tile (its light threads are not paper)');
     ok(r.offPaper,'a strip of white paper along an edge is kept out of the patch');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

@@ -221,7 +221,7 @@ uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR,uGeoI,uW;uniform sampler2D uKeep,uTube
 // (geo.gar 'shirt'); the legs' first and last row; the waistcoat's mean light; the belt's colour; a read trousers' tile (has one, repeat)
 const int uOut=${V[0]|0},uWc=${V[1]|0},uGarS=${V[2]|0},uLegs=${V[3]|0},uPoly=${V[4]|0};uniform ivec2 uLy;uniform float uSmW;uniform vec3 uBelt;uniform vec4 uOT;
 uniform int uS,uHasGeo,uGeo16;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform ivec4 uQ[${ASM_GL_SEGS*4}];uniform vec4 uFl;uniform vec2 uSm;
-uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform vec3 uMatO,uMatS,uMatT;uniform float uWin,uTieK,uLs,uAA;
+uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uSlv;uniform vec4 uTw;uniform vec4 uSl;uniform vec3 uMatO,uMatS,uMatT;uniform float uWin,uTieK,uLs,uAA;
 uniform ivec4 uTT;uniform vec4 uRep,uSk,uCl;   // the band tile (TW, TH, has a tile, has the stripe breakup); its repeat, the breakup, the grain
 uniform sampler2D uLinT;uniform int uLinen,uLinN;uniform float uLsc;   // the linen texture (asmLinenTile, uLinN square), on a linen cloth
 // (stage 3) the herringbone's extras: yarn, float, float length, grain; mottle, thin, break, pair break. A tweed (uLinT holds asmTweedTile's
@@ -374,7 +374,7 @@ float aaOf(vec2 da,vec2 db,int cc){if(uAA<=0.)return 1.;float d=(cc&1)!=0?-1.:1.
 // (stage 5) the cloth alone, without the garment's light: its colour (times its weave's lift) and the factor its light takes (sh: a tweed's
 // or linen's threads), so the jacket and the waistcoat share one reading of it; outer() applies each one's light (and a stripe's ground curve)
 vec3 suit(int si,int x,int y,ivec2 p,out float tw,out float sh){float X=float(x),Y=float(y),FD=${f(ASM_CELL_FADE)};vec3 cm=vec3(0.);sh=1.;
-  if(uTT.z==1){vec2 Q[9];for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);Q[a*2+e]=vec2(s.x/uRep.x,s.y/uRep.y);}cm=4.*tileRead(0,Q,2);}else cm=4.*uJ;
+  if(uTT.z==1){vec2 Q[9];for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);Q[a*2+e]=vec2(s.x/uRep.x,s.y/uRep.y);}cm=4.*tileRead(0,Q,2);if(uSlv.w!=1.&&(si==1||si==2))cm=4.*uSlv.xyz+(cm-4.*uSlv.xyz)*uSlv.w;}else cm=4.*uJ;
   tw=1.;vec2 c=uvC(si,vec2(X+.5,Y+.5),p);
   // a stripe's breakup (T.k): each stripe its own strength along its length, faded between stripes (asmCellV's rule) and smoothly along
   if(uTT.w==1){float su=c.x/uRep.x-uRep.z+.5,fi=floor(su),fu=su-fi;int i=int(fi),di=fu<FD?-1:(fu>1.-FD?1:0);float wu=di<0?(FD-fu)/(2.*FD):(di>0?(fu-1.+FD)/(2.*FD):0.);
@@ -531,7 +531,7 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   // (stage 5) a read trousers' tile (asmCmTile), its repeat in mm at the master's px per mm
   if(TT){const rep=TT.mm*P.pxmm;gl.uniform4f(u('uOT'),1,rep,rep*TT.TH/TT.TW,0)}else gl.uniform4f(u('uOT'),0,1,1,0);
   gl.uniform3fv(u('uBelt'),cl.belt?hexLin(cl.belt.hex):[0,0,0]);
-  gl.uniform3fv(u('uJ'),T?[tc[0],tc[1],tc[2]]:J);gl.uniform4f(u('uJm'),jl?1:0,jl||keep?0:1,T?1:0,1);gl.uniform1f(u('uWin'),ASM_CM_LIGHT.win*(job.light?ASM_CM_WINK:1));gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);
+  gl.uniform3fv(u('uJ'),T?[tc[0],tc[1],tc[2]]:J);gl.uniform4f(u('uJm'),jl?1:0,jl||keep?0:1,T?1:0,1);gl.uniform1f(u('uWin'),ASM_CM_LIGHT.win*(job.light?ASM_CM_WINK:1));gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);{const sv=jk&&T&&T.slv!=null&&T.c?T.slv:1;gl.uniform4f(u('uSlv'),sv!==1?T.c[0]:0,sv!==1?T.c[1]:0,sv!==1?T.c[2]:0,sv)}
   if(G.ttex){gl.deleteTexture(G.ttex);G.ttex=null}
   if(T){const C=T.cloth,lsc=S/ASM_SIZE*ASM_CM_KINDS[job.cm].pxmm,rep=(T.mm||1)*ASM_PX_MM*lsc,TW=T.TW,TH=T.TH;
     // the band tile (asmSuitTex: about 256 px a repeat, linear floats), 4 channels; a 1x1 tile's colour is uJ

@@ -377,7 +377,7 @@ async function asmPaisleyTile(i){const T=128,cv=document.createElement('canvas')
    like any read cloth (c.suit, a tile). null when there is no close-up, no clean patch, or nothing in it to show: the item is then
    painted as before. ASM_CU: tile texels a side, the patch's sides tried (of the close-up's shorter side), how even a patch must be, how
    much stronger the detail is drawn, the least detail worth drawing */
-const ASM_CU={T:256,sides:[.5,.4,.32,.25],even:.16,edge:8,show:.12,kmax:3.5,min:.02,zoom:3,sharp:.6,flat:18,dark:.012,fine:.5,paper:1.3,solid:.6,v:7};   // (measured on the owner's three brown close-ups: a window with a seam has a line 10-24 times the cloth's usual, a clean one 4-7 times)
+const ASM_CU={T:256,sides:[.5,.4,.32,.25],even:.16,edge:8,show:.12,kmax:3.5,min:.02,zoom:3,sharp:.6,flat:18,dark:.012,fine:.5,paper:1.3,solid:.6,hb:3,hbs:2,v:9};   // (measured on the owner's three brown close-ups: a window with a seam has a line 10-24 times the cloth's usual, a clean one 4-7 times)
 /* (at its real size a fine twill's ribs are under one pixel of the picture and average to a flat colour, exactly what the close-up was
    meant to cure) the cloth is drawn ASM_CU.zoom times its real size, as shirt weaves and ties are drawn larger than life so they show on
    a phone; and a patch must be in focus: its fine detail at least ASM_CU.sharp of the cloth's sharpest tenth (the first build took the
@@ -394,7 +394,13 @@ const asmCuDark=i=>{const h=String(colOf(i)).replace('#',''),c=[0,2,4].map(k=>AS
 /* (the owner, 2026-11-14: "Half strength for medium grey": its close-up's grain, swing 1.02, painted a fine worsted as a flannel) a cloth
    whose pattern or description says fine or worsted shows its detail no stronger than ASM_CU.fine (his Light Grey, .41, is under it) */
 const asmCuFine=i=>/\bfine\b|worsted/i.test(String(i.pattern||'').replace(/[-_]/g,' ')+' '+((i.patternSpec&&i.patternSpec.description)||i.patternText||''));
-const asmCuWants=(i,how)=>!!(i&&i.texture&&(how==='flat'||how==='twill'||how==='plain')&&!asmCuDark(i));
+/* (the owner, 2026-11-14, from sheets of his Grey Herringbone at full, double and triple: "put the herringbone on triple") a herringbone
+   jacket, waistcoat or trousers with a close-up takes its cloth from it too, its detail ASM_CU.hb times life (its fine tonal chevrons are
+   lost at life strength; the fine-cloth cap does not apply); one read in bands (a pinstripe on a herringbone ground) keeps its painter.
+   (the same day, from mocks at triple with single, double and triple sleeves: "triple on the body, double on the sleeves": triple read
+   rough and streaky on the sleeves) a jacket's sleeves show the detail at ASM_CU.hbs times life: the tile carries slv = hbs/hb, and both
+   painters pull a sleeve pixel's tile colour that far toward the tile's colour (suitCol; the shader's uSlv) */
+const asmCuWants=(i,how)=>!!(i&&i.texture&&(how==='flat'||how==='twill'||how==='plain'||how==='herringbone')&&!asmCuDark(i));
 const asmCuTag=(z,i)=>(z==='jacket'||z==='waistcoat'||z==='trousers')&&asmCuWants(i,asmCmRoute(i,z).how)?'/cu'+ASM_CU.v+'.'+i.texture.length+i.texture.slice(-12).replace(/[^A-Za-z0-9]/g,''):'';
 /* the cleanest square of cloth: on a 420 px copy, cloth is what is not the white paper; a window is scored by how uneven its light is
    (the spread of its 8 px blocks' means: a fold, a shadow) and by its strongest line (a seam or crease: the light at 3 px against the
@@ -447,9 +453,9 @@ async function asmCuTile1(i){const L=ASM_LIN,h=String(colOf(i)).replace('#',''),
   const v=Array.from(rel[1]).sort((a,b)=>a-b),swing=v[Math.floor(n*.95)]-v[Math.floor(n*.05)];if(!(swing>=ASM_CU.min))return null;
   // as the picture shows it: the tile averaged over one picture pixel (wrapping)
   const mm=p.P/W*ASM_CLOSEUP_MM*ASM_CU.zoom,fb=Math.max(1,Math.round(T/(mm*ASM_PX_MM))),lo=[];for(let y=0;y<T;y+=fb)for(let x=0;x<T;x+=fb){let s=0;for(let dy=0;dy<fb;dy++)for(let dx=0;dx<fb;dx++)s+=rel[1][((y+dy)%T)*T+(x+dx)%T];lo.push(s/(fb*fb))}
-  lo.sort((a,b)=>a-b);const shown=lo[Math.floor(lo.length*.95)]-lo[Math.floor(lo.length*.05)],gain=asmCuFine(i)&&shown>ASM_CU.fine?ASM_CU.fine/shown:Math.max(1,Math.min(ASM_CU.kmax,ASM_CU.show/Math.max(1e-4,shown)));
+  lo.sort((a,b)=>a-b);const shown=lo[Math.floor(lo.length*.95)]-lo[Math.floor(lo.length*.05)],gain=asmSuitWeave(i)==='herringbone'?ASM_CU.hb:asmCuFine(i)&&shown>ASM_CU.fine?ASM_CU.fine/shown:Math.max(1,Math.min(ASM_CU.kmax,ASM_CU.show/Math.max(1e-4,shown)));
   const t=new Float32Array(3*n);for(let k=0;k<n;k++)for(let q=0;q<3;q++)t[3*k+q]=Math.max(0,base[q]*(1+gain*(rel[q][k]-1)));
-  return {t,c:new Float32Array(base),TW:T,TH:T,mm,linen:false,cloth:null,cu:{x:p.x0,y:p.y0,side:p.P,of:W,even:+p.sd.toFixed(3),line:+p.e.toFixed(3),usual:+p.med.toFixed(3),sharp:+(p.sharp/(p.f90||1)).toFixed(2),swing:+swing.toFixed(3),shown:+shown.toFixed(3),gain:+gain.toFixed(2)}}}
+  return {t,c:new Float32Array(base),TW:T,TH:T,mm,linen:false,cloth:null,...(asmSuitWeave(i)==='herringbone'?{slv:ASM_CU.hbs/ASM_CU.hb}:{}),cu:{x:p.x0,y:p.y0,side:p.P,of:W,even:+p.sd.toFixed(3),line:+p.e.toFixed(3),usual:+p.med.toFixed(3),sharp:+(p.sharp/(p.f90||1)).toFixed(2),swing:+swing.toFixed(3),shown:+shown.toFixed(3),gain:+gain.toFixed(2)}}}
 /* the job for asmCmBuild, or null when the kind's master or masks are not on the device */
 async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
@@ -882,6 +888,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
   const lsc=ls*(ASM_CM_KINDS[job.cm]?ASM_CM_KINDS[job.cm].pxmm:1);
   const suitCol=(T,k,x,y,sh,out)=>{const rep=T.mm*ASM_PX_MM*lsc,repv=rep*T.TH/T.TW;cm[0]=cm[1]=cm[2]=0;
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uvAt(k,x+(e+.5)/2,y+(a+.5)/2),q=2*a+e;SU[q]=c[0]/rep;SV[q]=c[1]/repv}asmCmRead(T,SU,SV,2,cm);cm[0]*=4;cm[1]*=4;cm[2]*=4;
+    if(T.slv!=null&&geo&&geo.gar==='jacket'&&(geo.seg[k]===1||geo.seg[k]===2))for(let q=0;q<3;q++)cm[q]=4*T.c[q]+(cm[q]-4*T.c[q])*T.slv;   // a sleeve's calmer detail (ASM_CU.hbs)
     let tw=1;const C=T.cloth,hb=C&&(C.kind==='herringbone'||C.kind==='twill');
     // the stripe's breakup: each stripe (si, counted across) its own strength along its length (smoothly between cells blen long); the
     // stripe's index faded into its neighbour's within ASM_CELL_FADE of a repeat's edge (half way between two stripes, on the ground), so a
