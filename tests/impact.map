@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	895135efe62e865dd51a
+# tested	2b56147168a0cef9343e
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -156,7 +156,7 @@ asmatlas.test.js	app.js	@tocolnavigator.serviceWorker.registersw.js.catch	fnv64	
 asmatlas.test.js	apple-touch-icon.png	<loaded>
 asmatlas.test.js	asm-color.js	<any>	asmCmKey	asmCmKind	asmCmPref
 asmatlas.test.js	asm-worker.js	<any>
-asmatlas.test.js	assemble.js	<any>	ASM_OUT_RANGE	asmAreas	asmAtlasBuild	asmAtlasDecode	asmAtlasEncode	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmAtlasSig	asmBig	asmBox	asmCalibKey	asmCan	asmCmHeld	asmCmSeen	asmCmUse	asmCount	asmDE	asmData	asmDropOld	asmFill	asmImg	asmInfo	asmJob	asmKey	asmLab	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmP2On	asmPaint	asmPaintFull	asmPaintPrep	asmPaintable	asmParts	asmPhoto	asmPieceKey	asmPump	asmPx	asmRun	asmShirtAngles	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexFor	asmTexReady	asmTexTile	asmTieFor	asmTieSig	asmVestKey	asmVestTag	asmVestZone	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesFromImgs
+asmatlas.test.js	assemble.js	<any>	ASM_OUT_RANGE	asmAreas	asmAtlasBuild	asmAtlasDecode	asmAtlasEncode	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmAtlasSig	asmBig	asmBlobUp	asmBox	asmCalibKey	asmCan	asmCmHeld	asmCmSeen	asmCmUse	asmCount	asmDE	asmData	asmDropOld	asmFill	asmImg	asmInfo	asmJob	asmKey	asmLab	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmP2On	asmPaint	asmPaintFull	asmPaintPrep	asmPaintable	asmParts	asmPhoto	asmPieceKey	asmPump	asmPx	asmRun	asmShirtAngles	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexFor	asmTexReady	asmTexTile	asmTieFor	asmTieSig	asmVestKey	asmVestTag	asmVestZone	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesFromImgs
 asmatlas.test.js	core.js	accentOf	colOf	hexRgb	lum	mix	patBase	primaryCol	rgbHex	rgbLab	thirdOf
 asmatlas.test.js	detect.js	settSig	texPat	usableSett
 asmatlas.test.js	draw.js	fabricDef
@@ -298,7 +298,7 @@ asmprebuild.test.js	account.js	isTester
 asmprebuild.test.js	app.js	@tocolnavigator.serviceWorker.registersw.js.catch	aAn	addTombstones	adviceFor	atomic	belowBox	canPick	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fnv64	hasOutfit	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	offBtn	offOn	ovlCloseup	ovlItem	ovlPiece	ovlSuitPng	ovlSvg	ovlWeave	piecesBox	piecesLine	planOn	prefetchRenders	recordDays	renderFor	renderPending	renderStalled	resetCard	saveDay	schedulePrefetch	scoreCard	shareMark	shirtPatterned	shirtTextured	shortRest	shortTop	slotLabel	slots	stackSVG	swatchStack	tieWord	vestRow	workerBase	wornBar	wornMarks
 asmprebuild.test.js	asm-color.js	<any>	asmCmAssets	asmCmGet	asmCmItems	asmCmKey	asmCmKind	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmOutKey	asmCmPrebuild	asmCmPref	asmCmSig
 asmprebuild.test.js	asm-worker.js	<any>
-asmprebuild.test.js	assemble.js	<any>	ASM_OUT_RANGE	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmCalibKey	asmCan	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDropOld	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetAtlas	asmGetOnce	asmGetPre	asmGetPre1	asmGetZones	asmImg	asmImgOf	asmInfo	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmLook	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmOutKey	asmP2On	asmPaintable	asmParts	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPreSig	asmPreSigOk	asmPrebuildOne	asmPump	asmRun	asmShow	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmVestKey	asmVestTag	asmWants	asmWants0	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZonesKept
+asmprebuild.test.js	assemble.js	<any>	ASM_OUT_RANGE	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBlobUp	asmCalibKey	asmCan	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDropOld	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetAtlas	asmGetOnce	asmGetPre	asmGetPre1	asmGetZones	asmImg	asmImgOf	asmInfo	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmLook	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmOutKey	asmP2On	asmPaintable	asmParts	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPreSig	asmPreSigOk	asmPrebuildOne	asmPump	asmRun	asmShow	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmVestKey	asmVestTag	asmWants	asmWants0	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZonesKept
 asmprebuild.test.js	care.js	careCounts	careLimit	careNote	careNoun	careTimes
 asmprebuild.test.js	core.js	accentOf	colName	colOf	colorDesc	desc	hexRgb	inRotation	itemName	itemTitle	lum	mergeState	mix	nm	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	stateSig	thirdOf	titleCls	trouserKind	typeWord	watchOpts
 asmprebuild.test.js	detect.js	settSig	texPat	usableSett
@@ -339,6 +339,18 @@ asmroute.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	<loaded
 asmroute.test.js	tagging.js	claudeOnly	guessPatBase	motifPat	readable	settable
 asmroute.test.js	tests/fixedplan.js	<any>
 asmroute.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
+asmstuck.test.js	<every page test>	<every page test>
+asmstuck.test.js	app.js	fnv64	workerBase
+asmstuck.test.js	apple-touch-icon.png	<loaded>
+asmstuck.test.js	asm-color.js	<any>
+asmstuck.test.js	asm-worker.js	<any>
+asmstuck.test.js	assemble.js	<any>	ASM_OUT_RANGE	asmCalibKey	asmDropOld	asmKey	asmLoad	asmPump	asmRun	asmStuck	asmSync	asmVestKey	asmVestTag	asmWorker
+asmstuck.test.js	icon-192.png	<loaded>
+asmstuck.test.js	icon-512.png	<loaded>
+asmstuck.test.js	index.html	<loaded>
+asmstuck.test.js	manifest.webmanifest	<loaded>
+asmstuck.test.js	styles.css	#add	.daygrid	.daygrid .side	.daygrid .stage	<loaded>
+asmstuck.test.js	tests/fixedplan.js	<any>
 asmtwill.test.js	<every page test>	<every page test>
 asmtwill.test.js	app.js	@tocolnavigator.serviceWorker.registersw.js.catch	fnv64	lookSig	shirtPatterned	shirtTextured
 asmtwill.test.js	apple-touch-icon.png	<loaded>
