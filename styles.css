@@ -514,7 +514,9 @@ html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* 
 #wardrobe .grid{gap:10px}
 #wardrobe .gi{padding:8px;display:flex;flex-direction:column}
 #stats .st-wait{display:flex;align-items:center;gap:8px;margin:16px 4px}
-.gi{content-visibility:auto;contain-intrinsic-size:auto 230px}   /* boxes off screen are not laid out or painted until scrolled to (opening the Wardrobe: audit measured −42%) */
+.gi{content-visibility:auto;contain-intrinsic-block-size:auto 230px;min-width:0}   /* boxes off screen are not laid out or painted until scrolled to (opening the Wardrobe: audit measured −42%) */
+/* (only the height is held for a box not yet drawn: `contain-intrinsic-size:auto 230px` held its width too, so two boxes were at least 230 px
+   wide each and the grid ran off a phone's screen, which read as the Wardrobe zoomed in; 2026-11-14) */
 #wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb{border-radius:10px}
 .gimeta{display:flex;flex-direction:column;gap:1px;padding:8px 4px 2px;min-width:0}
 .gimeta .gtype{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
