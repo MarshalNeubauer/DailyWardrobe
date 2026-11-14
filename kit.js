@@ -180,3 +180,30 @@ function kitSampleBanner(){if(!kitHasSample())return '';const own=items.filter(i
 <div class="btns"><button type="button" onclick="openAdd()">Add my own</button><button type="button" onclick="kitSampleRemove()">Remove the sample</button></div></div>`}
 /* the setup's last step, Today's checklist and the empty Wardrobe: the ways in for a new user */
 const kitStartRow=()=>`<div class="kit-start"><button type="button" class="linkbtn" id="kit-tour-link" onclick="tourOpen()">Take the 1-minute tour</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" id="kit-sample-link" onclick="kitSampleLoad()">Try a sample wardrobe</button></div>`;
+
+/* ---- Add to Home Screen (2026-11-14, the owner: show a new person on an iPhone how to add it as a web app) ----
+   iPhone and iPad only, in a browser tab (homeNeeded): the setup's Home Screen step (setup.js) and Settings → About (#home-again). The app
+   on the Home Screen opens full screen, and it is the only way iOS lets a web app show notifications (the morning reminder). It keeps its
+   own storage apart from Safari's, so the step comes before anything is set up. window.DW_STANDALONE / DW_IOS: tests */
+const homeIOS=()=>window.DW_IOS===true||/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const homeStandalone=()=>window.DW_STANDALONE===true||navigator.standalone===true||(typeof matchMedia==='function'&&matchMedia('(display-mode: standalone)').matches);
+const homeNeeded=()=>homeIOS()&&!homeStandalone();
+const homeIPad=()=>/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const HOME_SHARE='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10H5v11h14V10h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+const HOME_ADD='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+/* the picture: the phone's screen with the app's own icon (icon-192.png) on it */
+const homePic=()=>'<svg viewBox="0 0 120 160" class="home-pic" aria-hidden="true"><rect x="22" y="6" width="76" height="148" rx="14" class="hp-phone"/><rect x="28" y="20" width="64" height="120" rx="4" class="hp-screen"/>'+
+  [[34,30],[52,30],[70,30],[34,50],[52,50],[70,50],[34,70]].map(([x,y],i)=>i===6?'<clipPath id="hp-clip"><rect x="'+x+'" y="'+y+'" width="14" height="14" rx="3.5"/></clipPath><image href="icon-192.png" x="'+x+'" y="'+y+'" width="14" height="14" clip-path="url(#hp-clip)"/>':'<rect x="'+x+'" y="'+y+'" width="14" height="14" rx="3.5" class="hp-icon"/>').join('')+
+  '<text x="41" y="94" class="hp-label">Wardrobe</text></svg>';
+function homeSteps(inSetup){const where=homeIPad()?'at the top of Safari':'at the bottom of Safari';
+  return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Put Daily Wardrobe on your Home Screen: it opens full screen like an app, and it is the only way your '+(homeIPad()?'iPad':'iPhone')+' lets it send the morning reminder.</p>'+
+    '<ol class="home-steps"><li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' '+where+'.<small>If you see ⋯ there instead, tap ⋯, then Share.</small></span></li>'+
+    '<li><span class="home-n">2</span><span>Scroll down and tap <b>Add to Home Screen</b> '+HOME_ADD+'.</span></li>'+
+    '<li><span class="home-n">3</span><span>Tap <b>Add</b>, then open Daily Wardrobe from its new icon.</span></li></ol>'+
+    (inSetup?'<p class="su-note home-note"><b>Do this before you set anything up.</b> The Home Screen app keeps its own copy, so what you set up here in Safari stays in Safari. With an invite link, your wardrobe comes across by itself once you connect.</p><p class="su-help">Or tap Next to carry on here.</p>'
+      :'<p class="kit-tip">The Home Screen app keeps its own copy of the app\'s data. If you are connected with an invite link, connect there too and your wardrobe comes across.</p>')+'</div>'}
+const HOME_CARD={key:'home',title:'Add to Home Screen',pic:()=>'',last:'Got it',get body(){return homeSteps(false)}};
+function homeOpen(){kitOpen([HOME_CARD])}
+/* Settings → About: the button only where it helps */
+function homeAbout(){const b=$('#home-again');if(b)b.hidden=!homeNeeded()}
+homeAbout();   // (once at start: the device doesn't change; Settings can open straight on About, where renderAbout doesn't run)
