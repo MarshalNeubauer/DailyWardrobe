@@ -1179,6 +1179,16 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a `${...}` or a `//` comment pasted into asm-gl.js through a script needs care: the shader is one template string per line of many statements (see the bullet below)
 - a comment inside a line of asm-gl.js cuts off the rest of that line (the file's lines hold many statements): it dropped `uJl` and every dark jacket differed from the CPU; `tests/asmgl.test.js` caught it
 
+#### Cloth from the close-up (2026-11-14; the owner: his brown suits "just look bland", approved from before/after sheets of every item it changes)
+- a jacket, waistcoat or trousers routed `flat`, `twill` or `plain` whose item has a close-up (`asmCuWants`) is painted with a tile cut from that close-up (`asmCuTile` → `cloth[z].suit`, in `asmCmJob`; `asmCuTag` in `asmCmSig`); striped, checked, herringbone, tweed and linen cloths keep their own painters, and an item with no close-up is painted as before
+- `asmCuPatch`: the largest clean square of cloth on a 420 px copy (all cloth, light even within `ASM_CU.even`, no line over `ASM_CU.edge` times the cloth's usual: seams measured 10-24 times, clean cloth 4-7), the sharpest such window; none clean: no tile
+- `asmCuTile1`: the square at 256 texels, its light flattened at 1/`ASM_CU.flat` of its side, made to tile without mirroring (`asmCuWrap`), its detail laid on the item's tagged colour (the tile's mean is that colour; the close-up gives texture only), drawn `ASM_CU.zoom` (3) times life size, since a fine weave at life size is under a picture pixel
+- (the owner: "what happened to medium gray, it looks like a disaster") flattening at a seventh of the square left the close-up's soft blotches and crease shadows in the tile, which repeated as a patchwork; hence `ASM_CU.flat` 18
+- (the owner: "Half strength for medium grey") a cloth whose pattern or description says fine or worsted (`asmCuFine`) shows its grain no stronger than `ASM_CU.fine` (.5 swing); other cloths show theirs as in the close-up, brought up to `ASM_CU.show` when fainter
+- (the owner: "Leave the current painter for black solid color suits") cloth darker than `ASM_CU.dark` is not taken from the close-up (`asmCuDark`): his black suit lost its ribs and went plain
+- a new close-up or a retagged colour repaints the item's looks by itself (the tag holds the close-up's length and tail, the key the colour); a change to `ASM_CU` or the functions repaints all (they are in `asmCmCode`); tests/asmcu.test.js
+- the bench's sheets for this are in `C:\code\watch-test\light\brown3\show`, `cu\show` and `cu\r2`
+
 #### Phones
 - faster masters on a phone (the owner's ask; first use was 15.5 s on a simulated phone, 2.6 s with the setup kept): `asmCmWarm` (end of `asmAhead`) warms coming masters in the background as setup-only jobs (`job.setupOnly`, assemble.js `asmBuild`), once a session, not on save-data or 2G; `tests/masterspeed.test.js`
 - `npm run assemble` shares each master's setup (`asmCmSetupBlob`, `asmCmBlobOf`/`asmCmBlobRead`, PUT /blob); a phone fetches it into IndexedDB in `asmCmGet` (`asmCmSetupFetch`, key `asmCmDiskKey`)
