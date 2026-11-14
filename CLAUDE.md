@@ -152,6 +152,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - the Sync now button is `syncTap()` (sync.js): a tap clears a backup pause (`sync_pause`, the day's saves used up) and tries; if the server still refuses, the pause comes back; while paused, `showSyncStatus` shows the pause's message and the last backup's time, not only "Backed up …" (2026-11-14: the owner's Sync now did nothing silently after Cloudflare's plan was upgraded); `tests/kvlimit.test.js`
 
+- the connection is kept in the database too (`connKeep`/`connRestored` in app.js; 2026-11-14: on the owner's iPhone the Home Screen app's localStorage lost the server address and code after a forced close during an update, while the database kept the wardrobe and Safari kept both): `worker_url`, `app_token` and `remind` are copied to meta `conn` (after the start-up restore, when Settings closes, on connecting, whenever the app goes to the background) and put back at start-up where localStorage lost them; start.js and sync.js wait for `connRestored`; cleared on purpose in Settings, the copy is cleared too; `tests/connkeep.test.js`
+
 ### `planner.js`
 
 - outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM)

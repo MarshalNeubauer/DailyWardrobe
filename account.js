@@ -42,7 +42,7 @@ async function connectFromLink(text){const p=inviteParts(text);
       location.reload();return true}
     for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k);   // what the old account's syncs left
   }
-  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');
+  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');if(typeof connKeep==='function')connKeep();
   acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
