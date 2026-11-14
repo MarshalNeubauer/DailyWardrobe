@@ -129,6 +129,15 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     fs.writeFileSync(path.join(repo,'app.js'),fs.readFileSync(path.join(repo,'app.js'),'utf8')+'\nconst EXTRA=1;\n');commit('app change, no bump');pp=I.prePush(repo);
     ok(!pp.ok&&/CACHE in sw\.js is still dw-v1/.test(pp.msg)&&/app\.js/.test(pp.msg),'a push that changes an app file with main\'s CACHE name is refused');
     fs.writeFileSync(path.join(repo,'sw.js'),"const CACHE='dw-v2';\nconst ASSETS=['./','app.js'];\n");commit('bump');ok(I.prePush(repo).ok,'with a new CACHE name it goes through');main();
+    // the number must be above main's: main moved to dw-v5 while this branch bumped to dw-v3
+    {const h0=sh(repo,'rev-parse','HEAD').trim();fs.writeFileSync(path.join(repo,'sw.js'),"const CACHE='dw-v5';\nconst ASSETS=['./','app.js'];\n");commit('main bumps');main();
+      sh(repo,'reset','-q','--hard',h0);ok(I.prePush(repo).ok,'a branch behind main that changed no app file goes through (main\'s own changes are under main\'s CACHE)');
+      fs.writeFileSync(path.join(repo,'app.js'),fs.readFileSync(path.join(repo,'app.js'),'utf8')+'\nconst MORE=1;\n');fs.writeFileSync(path.join(repo,'sw.js'),"const CACHE='dw-v3';\nconst ASSETS=['./','app.js'];\n");commit('app change, bump below main');
+      pp=I.prePush(repo);ok(!pp.ok&&/dw-v3, not above main's dw-v5/.test(pp.msg),'a new CACHE name that is not above main\'s is refused ('+pp.msg.split('\n')[0]+')');
+      fs.writeFileSync(path.join(repo,'sw.js'),"const CACHE='dw-v6';\nconst ASSETS=['./','app.js'];\n");commit('bump above main');ok(I.prePush(repo).ok,'one above main\'s goes through');
+      sh(repo,'reset','-q','--hard','refs/remotes/origin/main')}
+    // a test can say a constant's name in its source is only data of its own (this file's CACHE lines): a change to it doesn't select it
+    ok(I.namedBy('x(CACHE)','CACHE')&&!I.namedBy("module.exports.ignoreNames=['CACHE'];x(CACHE)",'CACHE')&&I.namedBy("module.exports.ignoreNames=['CACHE'];x(ASSETS)",'ASSETS')&&!I.namedBy('x(CACHED)','CACHE'),'module.exports.ignoreNames leaves a name out of the name matching');
     fs.writeFileSync(path.join(repo,'app.js'),A);commit('code without the map');main();ok((await I.select(repo,['a.test.js','c.test.js'])).all,'a code change merged without its map is noticed: everything runs');
     fs.mkdirSync(path.join(repo,'.githooks'));fs.writeFileSync(path.join(repo,'.githooks','pre-push'),'#!/bin/sh\n');I.installHook(repo);
     ok(sh(repo,'config','--get','core.hooksPath').trim()==='.githooks','a test run switches the push check on in the clone');
@@ -174,6 +183,8 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
       await p.evaluate(()=>openStats());await p.waitForSelector('#stats:not([hidden])');await p.reload();await p.waitForFunction(()=>window.appReady);
       await p.evaluate(()=>show('wardrobe'));await p.keyboard.press('ArrowRight');
       fs.readFileSync(path.join(ROOT,'wrangler.toml'));
+      // a Node child process: the script it is given (a tool) and the repo files it reads itself
+      const {spawnSync}=require('child_process'),kid=spawnSync(process.execPath,['-e',"require('fs').readFileSync(require('path').join(process.argv[1],'tests','fixtures','tie-plaid.jpg'))",ROOT,path.join(ROOT,'tools','atlas.js')],{encoding:'utf8'});
       const {m,odd}=await impactRec.peek(),has=(f,k)=>!!(m.get(f)&&m.get(f).has(k));
       ok(has('stats.js','openStats')&&has('app.js',I.LOADED),'functions a page ran are recorded, also those from before a reload');
       const blocks=[...m.get('app.js')].filter(k=>k.includes('>')),keyed=k=>/^@\{constel\$wardrobe\}>@document\.addEventListenerkeydown$/.test(k);
@@ -181,6 +192,9 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
       ok(odd===0,'Chromium and Node agree on where every function starts, so a page\'s functions go by the names a diff is read with ('+odd+' did not)');
       ok([...(m.get('styles.css')||[])].some(k=>k.includes('#stats')),'CSS rules that applied are recorded');
       ok(has('index.html',I.LOADED)&&has('wrangler.toml',I.ANY)&&!m.has('worker.js'),'so are the files served to the page and the files the test read');
+      ok(kid.status===0&&has('tools/atlas.js',I.ANY)&&has('tests/fixtures/tie-plaid.jpg',I.ANY),'and a script a child process ran (a tool) and the files that process read ('+(kid.stderr||'').trim().slice(0,200)+')');
       await b.close()}
   }finally{fs.rmSync(dir,{recursive:true,force:true})}
 };
+// this file's CACHE is a made-up sw.js in a throwaway repo: the app's CACHE bump (every app change has one) doesn't select it
+module.exports.ignoreNames=['CACHE'];
