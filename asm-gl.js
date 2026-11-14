@@ -40,7 +40,7 @@ const ASM_GL_CUFFS=15;   // (stage 4) turned shirt parts (P.cuffAng not 0) the s
    short table of the turned ones (0 = upright: the front, a small part, no part) and the table's cos and sin, worked out here in float64 */
 function asmGlCuffs(P){const ix=new Uint8Array(256),cs=[1,0];let n=0;if(P.cuff)P.cuffAng.forEach((a,i)=>{if(a&&i<255){n++;if(n<=ASM_GL_CUFFS){ix[i]=n;cs.push(Math.cos(a),Math.sin(a))}}});return {ix,cs,n}}
 /* (stage 6) the largest picture painted on the chip: the PC's pre-build paints at 2880 (ASM_CM_SIZE, scaled to 2048 after, as on the CPU)
-   on the graphics card, one context, inside tools/gpu-guard.js; about 440 MB of textures there (twice 2048's, the solved positions as
+   on the graphics card, one context; about 440 MB of textures there (twice 2048's, the solved positions as
    floats); a chip whose MAX_TEXTURE_SIZE is under the size has no context (asmGlContext) and the CPU paints */
 const ASM_GL_MAX=2880;
 let asmGlNot='';   // (stage 6) why the last asmGlTry returned null ('' after a picture): the worker adds it to a CPU picture (glWhy) for the builder's log
