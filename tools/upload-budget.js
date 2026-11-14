@@ -7,6 +7,9 @@
 // worktree): a JSON file outside the repo, written under a lock file so two processes can't both take the last write.
 //   DW_UPLOAD_LIMIT   writes a day (default 300)
 //   DW_UPLOAD_LEDGER  the ledger file (default <home>\.dw-upload-budget.json)
+// A limit for one day only (the owner, 2026-11-14: "lift the upload cap for today"): `node tools/upload-budget.js --today <n>` writes
+// today's limit into the ledger (`--today off` takes it out); every tool reads it while the ledger's day is today, and the next day the
+// usual limit is back by itself. `node tools/upload-budget.js` prints today's count and limit.
 // The day is the UTC date: the worker's allowance resets at 00:00 UTC (03:00 in Kuwait). A write is counted when it is asked for,
 // whether or not the worker takes it (a refused write may still have cost one).
 const fs=require('fs'),path=require('path'),os=require('os');
@@ -23,14 +26,21 @@ function locked(fn){
       nap(25);continue}
     try{return fn()}finally{fs.closeSync(fd);try{fs.unlinkSync(LOCK)}catch{}}}
   throw new Error('upload budget: the ledger stayed locked ('+LOCK+')')}
-function read(){const d=day();try{const j=JSON.parse(fs.readFileSync(FILE,'utf8'));if(j&&j.day===d&&Number.isFinite(+j.used))return {day:d,used:+j.used}}catch{}return {day:d,used:0}}
+function read(){const d=day();try{const j=JSON.parse(fs.readFileSync(FILE,'utf8'));if(j&&j.day===d&&Number.isFinite(+j.used)){const o={day:d,used:+j.used};if(Number.isFinite(+j.limit)&&j.limit!=null)o.limit=Math.max(0,Math.floor(+j.limit));return o}}catch{}return {day:d,used:0}}
+const limitOf=j=>j.limit!=null?j.limit:LIMIT;   // today's own limit when the ledger has one
 function write(j){const tmp=FILE+'.'+process.pid+'.tmp';fs.writeFileSync(tmp,JSON.stringify({...j,at:new Date().toISOString()}));fs.renameSync(tmp,FILE)}
 // take n writes from today's budget: all of them or none (true / false)
-function take(n=1){n=Math.max(0,Math.floor(n));return locked(()=>{const j=read();if(j.used+n>LIMIT)return false;j.used+=n;write(j);return true})}
+function take(n=1){n=Math.max(0,Math.floor(n));return locked(()=>{const j=read();if(j.used+n>limitOf(j))return false;j.used+=n;write(j);return true})}
 // give back writes taken but not made (a reserved batch that turned out smaller)
 function give(n=1){n=Math.max(0,Math.floor(n));if(!n)return;locked(()=>{const j=read();j.used=Math.max(0,j.used-n);write(j)})}
 const used=()=>read().used;
-const left=()=>Math.max(0,LIMIT-read().used);
+const left=()=>{const j=read();return Math.max(0,limitOf(j)-j.used)};
+const limitNow=()=>limitOf(read());
+// today's own limit (n), or back to the usual one (null)
+function today(n){return locked(()=>{const j=read();if(n==null)delete j.limit;else j.limit=Math.max(0,Math.floor(+n));write(j);return limitOf(j)})}
 const resetAt=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
-const why=()=>`this computer's daily upload limit (${LIMIT}) is used up: uploads wait until ${new Date(resetAt()).toLocaleString()} (00:00 UTC)`;
-module.exports={take,give,used,left,resetAt,why,LIMIT,FILE,day};
+const why=()=>`this computer's daily upload limit (${limitNow()}) is used up: uploads wait until ${new Date(resetAt()).toLocaleString()} (00:00 UTC)`;
+module.exports={take,give,used,left,resetAt,why,LIMIT,FILE,day,today,limitNow};
+if(require.main===module){const i=process.argv.indexOf('--today');
+  if(i>0){const v=process.argv[i+1];if(v!=='off'&&!(Number.isFinite(+v)&&+v>=0)){console.log('Usage: node tools/upload-budget.js [--today <uploads allowed today> | --today off]');process.exit(1)}today(v==='off'?null:+v)}
+  console.log(`uploads today (${day()} UTC): ${used()} of ${limitNow()}${limitNow()!==LIMIT?' (today only; usually '+LIMIT+')':''}`)}

@@ -146,20 +146,8 @@ const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen
   return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" onclick="pickPiece(belowOpen)">${i?rowPanel(i):''}</div></div></div>`};
 /* did you wear it: ✗ and ✓ over the picture's bottom corners (today and past days); tapping the chosen one again clears it.
    Between them, a small pill says when this look was last worn (nothing when it never was). */
-/* share the day's outfit: a round button at the picture's top right, like ✕ and ✓ (the owner chose this place). The phone's own
-   share sheet gets the picture (the photo, or the drawing as a PNG) and a line naming the pieces; without a share sheet the line is
-   copied. */
-const SHARE_ICON='<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
-const shareMark=o=>o&&(o.top||o.shirt)?`<button type="button" class="wshare" onclick="shareOutfit()" aria-label="Share this outfit" title="Share this outfit">${SHARE_ICON}</button>`:'';
-function shareText(o){const d=sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
-  return `${d}: ${sentence(piecesLine(o))}`}
-async function shareOutfit(){const o=planFor()[key(sel)];if(!o)return;const text=shareText(o);let file=null;
-  try{const r=renderFor(o),url=r&&r.img?r.img:await figurePng(o,780),blob=await (await fetch(url)).blob();
-    file=new File([blob],`outfit-${key(sel)}.${/png/.test(blob.type)?'png':'jpg'}`,{type:blob.type})}catch(e){console.warn('share picture',e)}
-  const data={title:'My outfit',text};if(file&&navigator.canShare&&navigator.canShare({files:[file]}))data.files=[file];
-  if(navigator.share){try{await navigator.share(data)}catch(e){if(e&&e.name!=='AbortError')tell('Couldn’t share it.')}return}
-  try{await navigator.clipboard.writeText(text);tell('The outfit is copied.')}catch{tell(text)}}
-function wornMarks(o){return shareMark(o)+wornBar(o)}
+/* (no share button on the picture: the owner, 2026-11-14, "the user can just send a screenshot") */
+function wornMarks(o){return wornBar(o)}
 /* the cloth over Today's picture (the owner's choice, 2026-11-13): bottom left, the jacket's, the shirt's and the tie's swatches top to
    bottom, 52 px, no rim, no names, above ✕ on days that show it; the app's drawn swatches, with a jacket's or shirt's stripes in Claude's
    own colours as the painter draws them (measured from the photo a thin stripe blurs into the ground and nearly vanishes) and at least

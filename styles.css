@@ -929,9 +929,6 @@ body.nocon .conn-only,.connhide{display:none!important}
 .day h2 .dshort{display:none}
 @media (max-width:359px){.day h2 .dlong{display:none}.day h2 .dshort{display:inline}}
 /* share: a round button at the picture's top right, like ✕ and ✓ */
-.fig .wshare{position:absolute;top:10px;right:10px;z-index:3;width:40px;height:40px;margin:0;padding:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);background:rgba(16,24,32,.42);color:#fff;display:grid;place-items:center;cursor:pointer;transition:opacity .2s}
-.fig .wshare:active{transform:scale(.92)}
-#mannequin-container.zoomed .wshare{opacity:0;pointer-events:none}
 /* the cloth over Today's picture (app.js swatchStack): bottom left, 52 px, no rim, a soft shadow; above ✕ on days that show it (.up: ✕ is 40 px at 10 px); no touches; hidden while zoomed */
 .fig .swstack{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;flex-direction:column;gap:9px;pointer-events:none;transition:opacity .2s}
 .fig .swstack.up{bottom:58px}   /* 64 px, a softer shadow and wider gaps (the owner's choice, 2026-11-13: at larger sizes the shadows merged into dark bars) */
@@ -955,7 +952,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .fig.swopen .swstack.up{bottom:max(10px,min(58px,calc(54cqw - 232px)))}
 .fig.swopen .swstack .ovsw{width:min(64px,max(36px,calc(18cqw - 16.7px)));height:min(64px,max(36px,calc(18cqw - 16.7px)));border-radius:min(13px,max(8px,calc(4cqw - 4px)))}
 .fig.swopen .swstack .ovsw.on{box-shadow:0 0 0 1.5px rgba(255,255,255,.7),0 2px 7px rgba(0,0,0,.35)}   /* the open one: a thin soft white outline (the owner: 2.5 px solid white was too thick and bright) */
-.fig.swopen .wornbar,.fig.swopen .wornbar>*,.fig.swopen .wshare{opacity:0;pointer-events:none}
+.fig.swopen .wornbar,.fig.swopen .wornbar>*{opacity:0;pointer-events:none}
 .fig .swlens{position:absolute;top:12px;left:12px;width:46%;aspect-ratio:1;border-radius:16px;overflow:hidden;z-index:4;box-shadow:0 0 0 3px #fff,0 10px 26px rgba(0,0,0,.45);
   pointer-events:none;transform-origin:0 0;animation:swIn .4s cubic-bezier(.2,.8,.2,1)}
 .fig .swlens svg,.fig .swlens img{display:block;width:100%;height:100%;object-fit:cover;border-radius:0}
