@@ -40,7 +40,8 @@ function syncRedraw(v){if(!v||v==='add')return;
   return show(v)}
 function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
   if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)renderWardrobe()}
-function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
+// a tester reads a server set-up error in plain words (plainErr, ui.js); the owner, or a connection whose role isn't known yet, the server's sentence
+function setSyncStatus(t){if(typeof isTester==='function'&&isTester()&&typeof plainErr==='function'){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);showSyncStatus()}
 /* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
    "Not backed up yet." under a summary saying "Backed up today" (audit 2026-11-13) */
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'';

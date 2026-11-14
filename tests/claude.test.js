@@ -49,7 +49,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     reply=()=>[401,{type:'error',error:{type:'authentication_error',message:'invalid x-api-key'}}];
     const p=await ctx.newPage();await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(async src=>{show('add');const blob=await (await fetch(src)).blob();await addFiles([new File([blob],'x.png',{type:'image/png'})])},IMG);
-    ok(/Photo tagging failed: .*ANTHROPIC_API_KEY/.test(await p.textContent('#note')),'the Add screen shows why tagging failed');
+    ok(/Photo tagging failed: Reading photos isn’t available on this server yet/.test(await p.textContent('#note')),'the Add screen shows why tagging failed, in plain words (a connection whose role is not known yet: ui.js plainErr)');
+    ok(await p.evaluate(()=>{rememberRole({role:'owner'});return /ANTHROPIC_API_KEY/.test(tagFailText(500,{},'invalid x-api-key: add an ANTHROPIC_API_KEY secret'))}),'the owner reads the technical reason');
     reply=()=>[200,{model:'claude-opus-5-5',stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1},content:[{type:'text',text:JSON.stringify(answer)}]}];
     await ctx.unroute('https://w.test/**');
     await ctx.route('https://w.test/**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.postData()}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});

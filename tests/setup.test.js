@@ -200,7 +200,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       const v=await open({viewport:{width,height:700},colorScheme:scheme});const bad=[];
       if(!await noSide(v))bad.push('welcome');
       for(const k of['week','wear','weather','connect','done']){await next(v,k);
-        if(k==='weather'){await v.fill('#su-city','Testv');await v.click('#su-find');await v.waitForFunction(()=>document.querySelectorAll('#su-cities button').length===1)}
+        if(k==='weather'){await v.fill('#su-city','Testv');await v.click('#su-find');await v.waitForFunction(()=>document.querySelectorAll('#su-cities button').length===1);if(!await noSide(v))bad.push('weather results');await v.click('#su-cities button')}   // (picked: Next on results not picked says so first, setupCityOpen)
         if(k==='connect'){await v.fill('#su-link','nothing');await v.click('#su-connect');await v.waitForFunction(()=>!!document.querySelector('#setup .su-err'))}
         if(!await noSide(v))bad.push(k)}
       const look=await v.evaluate(()=>{const e=document.querySelector('#setup'),cs=getComputedStyle(e),m=cs.backgroundColor.match(/\d+/g).map(Number),b=document.querySelector('#su-next').getBoundingClientRect(),r=e.getBoundingClientRect();

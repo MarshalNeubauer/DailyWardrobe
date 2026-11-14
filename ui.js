@@ -57,6 +57,16 @@ window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
   const at=f.indexOf(document.activeElement);
   if(e.shiftKey?(at<=0):(at===f.length-1||at<0&&!top.contains(document.activeElement))){e.preventDefault();(e.shiftKey?f[f.length-1]:f[0]).focus()}},true);
 
+/* ---- the server's set-up errors in plain words: "Add an OPENAI_API_KEY secret to the worker…" reached a new user's Today (audit
+   2026-11-13). Only the owner (acctRole 'owner', account.js) sees the technical sentence, which says what to set up. ---- */
+const TECH_RE=/\bAPI key\b|\bsecret\b|\bbinding\b|\bworker\b|Workers AI|Cloudflare|\btoken\b/i,TECH_NAMES=/[A-Z]+_API_KEY|\bKV\b|\bWARDROBE\b|APP_TOKEN|RENDER_QUEUE|RENDER_HUB|VAPID/;   // (the names case-sensitive: "your wardrobe" is plain English)
+const ownerHere=()=>typeof acctRole==='function'&&acctRole()==='owner';
+function plainErr(m){m=String(m==null?'':m);if(!(TECH_RE.test(m)||TECH_NAMES.test(m))||ownerHere())return m;
+  if(/ANTHROPIC|Claude|Several items|pattern|\bAI\b|tagg/i.test(m))return 'Reading photos isn’t available on this server yet.';
+  if(/OPENAI|photo|render|image|picture/i.test(m))return 'Outfit pictures aren’t available on this server yet.';
+  if(/KV|WARDROBE|backup|sync/i.test(m))return 'Backups aren’t available on this server yet.';
+  return 'The server isn’t set up for this yet.'}
+
 /* ---- connection ---- */
 const NEED_CONN='Needs a connection (Settings → Connection).';
 const isConnected=()=>!!((localStorage.getItem('worker_url')||'').trim()&&(localStorage.getItem('app_token')||'').trim());
@@ -88,7 +98,10 @@ function goConnect(){if(typeof toggleCat!=='function')return;const c=document.qu
 /* the Add tab: "Several items" finds the items in one photo on the server, so it is switched off (with the reason) while not connected */
 const ADD_GROUP_SUB='One photo of a rail, a pile or a few on hangers';
 function addGate(){const l=document.querySelector('#add-group'),s=document.querySelector('#add-group-sub'),inp=l&&l.querySelector('input');if(!l||!s||!inp)return;const off=!isConnected();
-  l.classList.toggle('connhide',off);l.classList.remove('needconn');l.removeAttribute('aria-disabled');inp.disabled=off;s.textContent=ADD_GROUP_SUB}   // not connected: the card is not shown
+  l.classList.toggle('connhide',off);l.classList.remove('needconn');l.removeAttribute('aria-disabled');inp.disabled=off;s.textContent=ADD_GROUP_SUB;   // not connected: the card is not shown
+  // ...and a line says why, before any photo is picked (audit 2026-11-13: a new user found out only after picking one)
+  let n=document.querySelector('#add-group-off');if(!n&&off){n=document.createElement('p');n.id='add-group-off';n.className='mut addoff';l.parentElement.after(n)}
+  if(n){n.hidden=!off;n.innerHTML=off?'Several items in one photo are found by the server, so that needs a connection. <button type="button" class="linkbtn" onclick="openSettings(\'connection\');goConnect()">Connect</button>':''}}
 async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp&&inp.value||'').trim();if(!t||connBusy)return;
   connBusy=true;connMsg='';renderConnUI();let ok=false;
   try{ok=typeof connectFromLink==='function'&&!!(await connectFromLink(t))}catch(e){ok=false}
