@@ -129,7 +129,7 @@ function setupToday(){
   if(items.length)setupYield();
   const rows=setupNeeds(),left=rows.filter(r=>!r.ok).length;if(!left)return '';
   return `<div class="firstrun" id="firstrun"><h3>Get your first outfit</h3><p class="fr-sub">${left===rows.length?'Add these and Today picks an outfit for every workday.':`${rows.length-left} of ${rows.length} added. Add the rest and Today picks an outfit for every workday.`}</p>
-<ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':'Needed'}</small></li>`).join('')}</ul>
+<ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':r.sub?'If no suit':'Needed'}</small></li>`).join('')}</ul>
 <button type="button" class="fr-add pri" id="fr-add" onclick="openAdd()">Add an item</button></div>`;
 }
 /* the Wardrobe tab with nothing in it */

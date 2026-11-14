@@ -670,8 +670,9 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
   const a=type==='tie'?(DIR_ANG[spec.stripeDirection]??-45):spec.stripeDirection==='horizontal'?90:0;
   return {v:2,a,bands,cross:along&&along.some(b=>b[0])?{d:90,bands:along,r:+spec.paneAspect.toFixed(2)}:null,cr:+(+spec.repeatsInCloseup).toFixed(2),tr:+(+spec.repeatsAcrossItem).toFixed(2),src:'claude+pixels'}}
 /* ask Claude for a card's pattern once it has a close-up (the noise it strips is what the pixel reader can't) */
-async function readPatternWithClaude(q){if(!q||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;
-  q.patternReading=1;renderAdd();const spec=await claudePattern({image:q.tagImg,closeup:await closeTagImg(q),type:q.type});q.patternReading=0;
+async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
+  q.patternReading=1;renderAdd();const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
+  const spec=await claudePattern({image:q.tagImg,closeup,type:q.type});q.patternReading=0;
   if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
   readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q))renderAdd()}
 

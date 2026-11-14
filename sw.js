@@ -39,7 +39,7 @@ self.addEventListener('fetch',e=>{
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 async function reminderNote(){let line='';
   try{const c=await caches.open('dw-keep-remind'),r=await c.match('remind.json');if(r)line=(await r.json())[dayKey(new Date())]||''}catch{}
-  return self.registration.showNotification('Todayâ€™s outfit',{body:line||'Open the app to see what to wear today.',icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
+  return self.registration.showNotification('Today’s outfit',{body:line||'Open the app to see what to wear today.',icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
 self.addEventListener('push',e=>{e.waitUntil(reminderNote())});
 self.addEventListener('notificationclick',e=>{e.notification.close();
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{const c=cs.find(x=>'focus' in x);return c?c.focus():self.clients.openWindow('./')}))});

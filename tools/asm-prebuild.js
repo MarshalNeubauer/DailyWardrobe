@@ -85,17 +85,20 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
     if(!synced.ok||!synced.items){console.error(`${now()} Could not load the wardrobe from the backup:`,await page.evaluate(()=>localStorage.getItem('sync_status')));if(first)process.exit(2);return}
     if(!synced.on){console.error('Assembled pictures are switched off in this checkout (ASM_ON in assemble.js).');process.exit(2)}
     // every look of the coming workdays, once: its key and, painted on a colour-coded master, its signature (known before painting)
-    const looks=await page.evaluate(async days=>{await asmGet(asmMasterKey(),true);
+    const looks=await page.evaluate(async days=>{if(typeof asmCmMfGet==='function')await asmCmMfGet(true);   // the masters' manifest, every cycle (one small read): a master uploaded again is downloaded afresh and its looks painted again
+      await asmGet(asmMasterKey(),true);
       if(typeof ASM_CM_KINDS!=='undefined'){self.ASM_CM_SIZE=2880;for(const k of Object.keys(ASM_CM_KINDS))await asmCmGet(k)}   // painted here at 2880, scaled to 2048; every mask too, since a look's signature is its newest record's date
       const T=todayDate(),seen=new Map();
       for(let i=0;i<days;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;
         const o=planOn(d);if(!o)continue;await asmCmLook(o);const kind=asmCmUse(o);if(!kind&&!asmCan(o))continue;const k=asmOutKey(o);
-        if(!seen.has(k))seen.set(k,{first:isoKey(d),kind:kind||'',sig:kind?`asm/out/z${ASM_ZV}/${asmStamp(o)}`:''})}
+        if(!seen.has(k))seen.set(k,{first:isoKey(d),kind:kind||'',sig:kind?asmPreSig(o):''})}
       return [...seen].map(([key,v])=>({key,...v}))},DAYS);
     const sig=JSON.stringify(looks.map(l=>[l.key,l.sig]));
     if(!first&&sig===lastSig){return {quiet:true}}   // nothing changed since the last cycle
     // which looks are missing or out of date: one listing of the worker, then the record of earlier uploads (or, without one, a look each)
     let listed=null;try{const r=await api('render?list=1',{cache:'no-store'});if(r.ok)listed=new Set((await r.json()).keys||[])}catch{}
+    if(first&&listed&&looks.some(l=>l.kind)){const mf=await page.evaluate(()=>typeof asmCmMfKey==='function'?asmCmMfKey():'');
+      if(mf&&!listed.has(mf))console.log('No masters\' manifest on the worker yet: run npm run cm-upload -- --dir C:\\code\\watch-test\\colormaster once, so a master, mask or background uploaded again reaches phones that hold the old one.')}
     if(process.env.DW_DEBUG)fs.writeFileSync(process.env.DW_DEBUG,JSON.stringify({looks,listed:listed&&[...listed]}));
     const need=[],cur=[];
     await Promise.all(looks.map(async l=>{
@@ -122,7 +125,7 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
     const paint=(l,wi)=>page.evaluate(async([first,wi])=>{const o=planOn(new Date(first+'T12:00:00'));await asmCmLook(o);const kind=asmCmUse(o);
       if(!kind){const r=await asmPrebuildOne(o);return r&&{...r,how:'(earlier way)'}}
       if(!await asmCmGet(kind))return {error:'its master is missing on the worker'};const job=await asmJob(o);if(!job)return {error:'no job'};job.diskCache=true;
-      try{const res=await __poolRun(wi,job);return res&&res.url?{key:asmOutKey(o),sig:`asm/out/z${ASM_ZV}/${asmStamp(o)}`,img:res.url,how:`(colour-coded ${kind})`}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi]);
+      try{const res=await __poolRun(wi,job);return res&&res.url?{key:asmOutKey(o),sig:asmPreSig(o),img:res.url,how:`(colour-coded ${kind})`}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi]);
     const one=async(l,wi)=>{const t1=Date.now(),r=await paint(l,wi);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
       report(l,`${await upload(l,r)} (${Date.now()-t1} ms)`)};
     // a master's first look on one worker first (it works the master out, or reads it back, and saves it), then that master's other workers

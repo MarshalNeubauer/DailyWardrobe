@@ -50,13 +50,13 @@ async function askPersist(){
     localStorage.setItem('persist_ok',kept?'1':'0');return kept}
   catch(e){console.warn('storage not made persistent',e);return null}}
 
-/* ---- the sharp tagging copies (tagging.js keeps one per tagged photo in Cache Storage) of items that no longer exist are
+/* ---- the sharp tagging copies and sharp close-ups (tagging.js keeps them in Cache Storage as tagimg/<id>, closeimg/<id>) of items that no longer exist are
    removed at start-up, not when an item is deleted: a deletion can be undone for a few seconds. Never with an empty
    wardrobe (one that was lost comes back from the backup). ---- */
 async function pruneTagImgs(){
   try{if(!self.caches||!items.length||!(await caches.has(TAGIMG_CACHE)))return 0;
     const c=await caches.open(TAGIMG_CACHE),have=new Set(items.map(i=>String(i.id)));let n=0;
-    for(const r of await c.keys()){const m=/\/tagimg\/([^?#]+)/.exec(r.url);if(!m)continue;let id=m[1];try{id=decodeURIComponent(id)}catch{}
+    for(const r of await c.keys()){const m=/\/(?:tagimg|closeimg)\/([^?#]+)/.exec(r.url);if(!m)continue;let id=m[1];try{id=decodeURIComponent(id)}catch{}
       if(!have.has(id)&&!queue.some(q=>q.id===id)&&await c.delete(r))n++}
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
