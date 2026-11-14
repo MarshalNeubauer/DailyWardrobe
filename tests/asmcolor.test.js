@@ -48,6 +48,13 @@ module.exports=async({ok,chromium,url})=>{
     // a suit day: painted on the suit master (the jacket's sleeves and lapels from their masks)
     const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o),r=asmOut[asmOutKey(o)];return {use:asmCmUse(o),img:f&&r&&r.blob&&r.blob.size}});
     ok(s.use==='suit'&&s.img>10000,`a suit day is painted on the suit master (${JSON.stringify(s)})`);
+    // (2026-11-14) a painter change gives the look a new key: until it is painted again, Today shows the same outfit's last picture, not
+    // the drawing; another outfit (a different shirt) doesn't take it
+    const st=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},k=asmOutKey(o),a=asmOut[k];
+      const lid=a&&a.lid;delete asmOut[k];asmOut['cm-old-painter']=a;
+      const exact=!!asmFor(o),shown=renderFor(o),other=asmShown({...o,shirt:W.shirt2});asmOut[k]=a;delete asmOut['cm-old-painter'];
+      return {lid:lid===asmLookId(o),exact,stale:!!shown&&shown.stale===true&&shown.model==='assembled',other:!other||!other.stale}});
+    ok(st.lid&&!st.exact&&st.stale&&st.other,`after a painter change the outfit's last picture stands in until the new one is made (${JSON.stringify(st)})`);
     // (2026-11-14 audit) a picture kept as base64 before still shows, and becomes a Blob; start-up reads only the kept pictures' key range
     const bu=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=16;const img=c.toDataURL('image/jpeg');
       await metaPut('asm:out:cold000000000test',{img,stamp:1,t:Date.now()});await asmLoad();const r={old:asmImgOf('cold000000000test',asmOut.cold000000000test).slice(0,5),only:Object.keys(asmOut).every(k=>/^c/.test(k))};

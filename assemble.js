@@ -553,7 +553,19 @@ const asmWants=o=>!!asmCmUse(o);
    painted for the outfit */
 const asmFullWins=o=>{const k=asmCmUse(o),full=renders[comboKey(o)],m=k&&renders[asmCmKey(k,'master')];return !!(full&&m&&full.t>m.t)};
 function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
-  const k=asmOutKey(o),a=asmOut[k];return a&&asmFresh(o,a)?{img:asmImgOf(k,a),model:'assembled',t:a.t,sig:comboSig(o)}:null}
+  const k=asmOutKey(o),a=asmOut[k];if(a&&!a.lid&&asmCmUse(o)){a.lid=asmLookId(o);metaPut('asm:out:'+k,a).catch(()=>{})}   // (a picture kept before it carried its outfit: marked as it is met, so it can stand in after the next change)
+  return a&&asmFresh(o,a)?{img:asmImgOf(k,a),model:'assembled',t:a.t,sig:comboSig(o)}:null}
+/* the same outfit's last picture while its current one isn't here yet (2026-11-14, the owner: "I'm seeing it swap every time I swipe"):
+   a change to the painter, a master or the lighting gives every look a new key, and until the computer or the phone has painted it again
+   Today showed the drawing and then swapped in the picture. A kept picture carries its outfit (lid: the master and the outfit's own
+   combination key, comboKey, which changes with any garment, colour or reading but not with the painter), so the newest picture of this
+   very outfit and master is shown meanwhile, and the new one replaces it quietly when it is ready. Only for showing: building ahead and
+   "is it painted" still ask asmFor */
+const asmLookId=o=>{const k=asmCmUse(o);return k?k+'|'+comboKey(o):''};
+function asmStale(o){if(!asmWants(o)||asmFullWins(o))return null;const id=asmLookId(o);if(!id)return null;let best=null,bk=null;
+  for(const [k,a] of Object.entries(asmOut))if(a&&a.lid===id&&(!best||(a.t||0)>(best.t||0))){best=a;bk=k}
+  return best?{img:asmImgOf(bk,best),model:'assembled',t:best.t,sig:comboSig(o),stale:true}:null}
+const asmShown=o=>asmFor(o)||asmStale(o);
 /* ---- pictures built ahead on a computer (tools/asm-prebuild.js, npm run assemble) ----
    The computer runs this very code on the owner's wardrobe and uploads each look's picture to the worker as an ordinary photo record
    under its look key (render:<asmOutKey>), signed 'asm/out/cm<ASM_CMV>/<stamp>' (asmPreSig: the colour-coded masters' version and the
@@ -580,7 +592,7 @@ async function asmGetPre1(o,listed){const k=asmOutKey(o),W=workerBase();if(!W||(
     asmTried.add('pre:'+k);const j=r.ok?await r.json().catch(()=>null):null;
     const m=j&&j.img&&ASM_PRE_RE.exec(String(j.sig||''));if(!asmPreSigOk(o,m)){if(listed)asmPreNo.set(k,asmListAt);return false}
     const rec={img:j.img,stamp:+m[3],t:Date.now(),pre:true};if(!asmFresh(o,rec)){if(listed)asmPreNo.set(k,asmListAt);return false}
-    await asmKeepOut(k,j.img,{stamp:rec.stamp,t:rec.t,pre:true});return true}
+    await asmKeepOut(k,j.img,{stamp:rec.stamp,t:rec.t,pre:true,lid:asmLookId(o)});return true}
   catch(e){console.warn('no built picture',e);asmRetryAt.set('pre:'+k,Date.now()+ASM_RETRY_MS);return false}}
 /* for the computer: one look's picture painted exactly as a phone paints it -> {key, sig, img}, or null (no colour-coded master for it).
    It downloads what the look needs like asmEnsure, but never takes a picture built earlier */
