@@ -1,6 +1,6 @@
 // Assembled pictures from colour-coded masters (asm-color.js): which master an outfit is painted on (by the day's dress), the masters and
 // masks downloaded from the worker, the picture painted in the Web Worker, its key following the cloth, the earlier way kept when the
-// worker has no colour-coded master, the switch in Settings, the dress code in asmNeeds, and the upload script's keys.
+// worker has no colour-coded master (no picture: its own photo or the drawing), Settings, and the upload script's keys.
 // Fixtures: the suit and shirt-and-tie masters and their masks at 512 (tests/fixtures/cm/<kind>/).
 const fs=require('fs'),path=require('path');
 module.exports=async({ok,chromium,url})=>{
@@ -31,20 +31,20 @@ module.exports=async({ok,chromium,url})=>{
     ok(kinds==='suit,vest,suit-open,shirt-tie,shirt-open,null,null',`a jacket and tie: the suit master (the waistcoat master on a waistcoat day); no jacket: shirt and tie, or open collar; a jacket without a tie: the open-collar jacket master; no belt or no shirt: none (${kinds})`);
     // a no-jacket day, painted: the master and masks come from the worker, the picture is made in the Web Worker and kept
     const a=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,bot:W.pants,belt:W.belt,tie:W.tie,shoes:W.shoes};
-      const before={use:asmCmUse(o),can:asmCan(o)};await asmEnsure(o);before.after=asmCmUse(o);const f=asmFor(o),k=asmOutKey(o);
+      const before={use:asmCmUse(o)};await asmEnsure(o);before.after=asmCmUse(o);const f=asmFor(o),k=asmOutKey(o);
       // a pixel in the middle of the shirt, left of the tie: pink, as the shirt
       let px=null;if(f){const im=new Image();await new Promise(r=>{im.onload=r;im.src=f.img});const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.36),Math.round(im.width*.34),1,1).data].slice(0,3)}
       const o2={...o,shirt:W.shirt2},rec=await metaGet('asm:out:'+k);return {before,img:f&&f.img.slice(0,5),blob:rec&&rec.blob&&rec.blob.type,b64:!!(rec&&rec.img),w:f&&(await new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=f.img})),px,k,k2:asmOutKey(o2),kept:!!(await metaGet('asm:out:'+k)),
-        offPage:asmOffPage(),pending:asmPending(o),parts:asmPhotoParts(o).length}});
-    ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.before.can===false&&a.img==='blob:'&&a.blob==='image/jpeg'&&!a.b64&&a.kept,`a shirt-and-tie day (which the earlier assembler can't make): its master is looked for, then the day is painted on it and kept as a Blob, shown by an object URL (${JSON.stringify(a.before)})`);
+        offPage:asmOffPage(),pending:renderPending(o)}});
+    ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.img==='blob:'&&a.blob==='image/jpeg'&&!a.b64&&a.kept,`a shirt-and-tie day: its master is looked for, then the day is painted on it and kept as a Blob, shown by an object URL (${JSON.stringify(a.before)})`);
     ok(a.w===512&&a.offPage,`painted in the Web Worker at the job's size (${a.w} px)`);
     ok(a.px&&a.px[0]>a.px[2]+15&&a.px[0]>150,`the shirt comes out pink (${a.px})`);
-    ok(a.k!==a.k2&&a.parts===0&&a.pending===false,'another shirt colour is another picture; nothing is photographed or queued for it');
+    ok(a.k!==a.k2&&a.pending===false,'another shirt colour is another picture; nothing is photographed or queued for it');
     const want=Object.keys(recs).filter(k=>k.startsWith('shirt-tie|')).map(k=>keys[k]);
     ok(want.every(k=>asked.includes(k))&&!Object.keys(recs).filter(k=>k.startsWith('suit|')).some(k=>asked.includes(keys[k])),`it downloads that master's ${want.length} records, and not another master's`);
-    // a suit day with a waistcoat: no colour-coded waistcoat master on this worker, so the earlier way (no master there either): nothing
-    const v=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie,vest:true};await asmEnsure(o);return {use:asmCmUse(o),for:!!asmFor(o),wants:asmWants(o),earlier:asmWants0(o)}});
-    ok(v.use===null&&!v.for&&!v.wants,`a kind whose master the worker lacks falls back to the earlier way (${JSON.stringify(v)})`);
+    // a suit day with a waistcoat: no colour-coded waistcoat master on this worker: no picture (the day shows its own photo or the drawing)
+    const v=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie,vest:true};await asmEnsure(o);return {use:asmCmUse(o),for:!!asmFor(o),wants:asmWants(o),job:await asmJob(o)}});
+    ok(v.use===null&&!v.for&&!v.wants&&v.job===null,`a kind whose master the worker lacks gets no picture and no job (${JSON.stringify(v)})`);
     // a suit day: painted on the suit master (the jacket's sleeves and lapels from their masks)
     const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o),r=asmOut[asmOutKey(o)];return {use:asmCmUse(o),img:f&&r&&r.blob&&r.blob.size}});
     ok(s.use==='suit'&&s.img>10000,`a suit day is painted on the suit master (${JSON.stringify(s)})`);
@@ -112,9 +112,6 @@ module.exports=async({ok,chromium,url})=>{
       r.status=($('#cm-status')||{}).textContent||'';r.head=($('#cm-box .slabel')||{}).textContent;closeSettings&&closeSettings();return r});
     ok(!sw.there&&sw.stored===null&&sw.off===null&&sw.on==='shirt-tie',`Settings has no colour-coded masters switch; one left off on a phone is cleared at start-up (${JSON.stringify(sw)})`);
     ok(sw.head==='Pictures ahead'&&/^(Next 60 days: \d+ of \d+ looks? built on the computer.*\d+ on this phone\. Checked (just now|a minute ago|\d+ minutes ago)\.|None of the workdays|The next 60 days have)/.test(sw.status),`Settings says how many of the next 60 days' looks the computer has built ("${sw.status}")`);
-    // the dress code: no jacket pieces are asked for when jackets aren't worn
-    const nd=await p.evaluate(()=>{const r={};settings.dress={jacket:true,tie:true};r.with=asmNeeds().filter(n=>n.slot==='jacket').length;settings.dress={jacket:false,tie:true};r.without=asmNeeds().filter(n=>n.slot==='jacket'||n.kind==='vestmaster').length;settings.dress={jacket:true,tie:true};return r});
-    ok(nd.without===0,`with no jackets in the dress code, no jacket pieces or waistcoat master are listed (${JSON.stringify(nd)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
   // a fresh phone with the worker's list (2026-11-13): a look the computer built is shown from its picture alone, without the master, its
@@ -146,15 +143,15 @@ module.exports=async({ok,chromium,url})=>{
       const a2=asked.slice(a1.length);
       ok(!r2.ahead&&a2.filter(k=>masterKeys.has(k)).length===masterKeys.size&&r2.screen&&r2.master,`a look nobody built: left to the computer while building ahead (nothing downloaded), painted here for the day on screen (${a2.length} records downloaded then)`);
       ok(listed<=3,`the worker's list is asked for once per refresh, not per look (${listed} times)`);
-      // the earlier way's photos: with the suit and waistcoat masters on the worker, the start-up check downloads none of them
+      // the earlier assembler's photos (still on the worker) are never downloaded, and Settings has only the colour-coded rows
       const vk=await p.evaluate(()=>asmCmKey('vest','master'));served[vk]=recs.master;const n0=asked.length;
       const old=await p.evaluate(async()=>{await asmListGet(true);const st=await asmSync(true);openSettings('photos');renderAsmUI();
         const g=document.querySelector('#asm-group'),seen=s=>{const e=g.querySelector(s);return !!e&&getComputedStyle(e).display!=='none'};
-        return {cm:!!st.cm,missing:st.missing.length,text:(document.querySelector('#asm-status')||{}).textContent||'',hidden:!seen('.sactions')&&!seen('#asm-status')&&!seen(':scope>.slabel'),ahead:seen('#cm-box'),
+        return {cm:!!st.cm,gone:!g.querySelector('#asm-status')&&!g.querySelector('#asm-btn')&&!g.querySelector(':scope>.slabel')&&typeof asmMakeMissing==='undefined'&&typeof asmNeeds==='undefined',ahead:seen('#cm-box'),
           old:[asmMasterKey(),asmVestKey(),...['jacket','shirt','tie','watch','vest'].map(s=>asmCalibKey(s))]}});
       const a3=asked.slice(n0);
-      ok(old.cm&&old.missing===0&&!a3.some(k=>old.old.includes(k))&&/no item photos are needed/.test(old.text),`with colour-coded masters, the earlier way's master, waistcoat master and calibration photos are not downloaded (asked for ${a3.length}), and Settings says no item photos are needed`);
-      ok(old.hidden&&old.ahead,`with colour-coded masters, Settings hides the earlier way's Item photos (label, status, button) and keeps Pictures ahead (${JSON.stringify({hidden:old.hidden,ahead:old.ahead})})`);
+      ok(old.cm&&!a3.some(k=>old.old.includes(k)),`the earlier assembler's master, waistcoat master and calibration photos are not downloaded (asked for ${a3.length})`);
+      ok(old.gone&&old.ahead,`Settings has no Item photos (label, status, button: the earlier assembler is gone) and keeps Pictures ahead (${JSON.stringify({gone:old.gone,ahead:old.ahead})})`);
       // (2026-11-14 audit) a failed download is asked again (it used to count as missing until a restart), and a forced sync clears what
       // was tried also when the colour-coded masters answer it
       const pk=await p.evaluate(()=>asmCmKey('suit','part/sleeveR'));fail.add(pk);

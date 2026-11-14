@@ -189,10 +189,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       await q.evaluate(()=>{queue=[{id:'n2',type:'suit',primaryColor:'tan',pattern:'solid',manual:true,vest:'yes'}];return save(0)});await q.waitForFunction(()=>items.some(i=>i.id==='n2'));
       await q.evaluate(()=>{show('wardrobe');openItem('n1')});await q.waitForFunction(()=>!!document.querySelector('#item-view select'));
       const ed=await q.evaluate(()=>{const pick=()=>{const s=[...document.querySelectorAll('#item-view select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));return s?s.selectedOptions[0].textContent:''};
-        const a=pick();openItem('s1');const b=pick();closeItem();return {a,b,n2:hasVest(items.find(i=>i.id==='n2')),need:typeof asmNeeds==='function'?(()=>{const sv=items.filter(i=>i.type==='suit').map(i=>[i,i.pattern]);sv.forEach(([i])=>i.pattern='pinstripe');const n=asmNeeds().filter(x=>x.kind==='piece'&&x.slot==='vest').length;sv.forEach(([i,p])=>i.pattern=p);return n})():-1,   /* as pinstripes: a solid suit is painted and needs no photo */
-          never:(()=>{settings.vestMode='never';const n=asmNeeds().filter(x=>/vest/.test(x.kind)||x.slot==='vest').length;settings.vestMode='auto';return n})()}});
+        const a=pick();openItem('s1');const b=pick();closeItem();return {a,b,n2:hasVest(items.find(i=>i.id==='n2'))}});
       ok(ed.a==='No vest'&&ed.b==='Matching vest'&&ed.n2,`the editor shows each suit's own answer (${ed.a} / ${ed.b}); "Matching vest" on the Add card is kept`);
-      ok(ed.need===3&&ed.never===0,`assembled pictures ask for a waistcoat photo only for the suits that have one (${ed.need}, the suits taken as pinstripes: solid ones are painted), none when vests are never worn`);
       const pl=await q.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[];weather={};climate=null;dayRecs={};TODAY_OVERRIDE='2026-11-08T12:00:00';for(const i of items)if(i.type==='suit')delete i.paused;cache={};
         const P=buildPlan(2026,10),o=Object.entries(P).filter(([k,o])=>k.startsWith('2026-11-')&&o.suitDay&&!o.frozen).map(x=>x[1]);return {yes:o.filter(x=>['s1','s3','n2'].includes(x.top.id)).every(x=>x.vest),no:o.filter(x=>['s2','n1'].includes(x.top.id)).every(x=>!x.vest),n:o.length,
           both:o.some(x=>x.vest)&&o.some(x=>!x.vest)}});

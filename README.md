@@ -67,9 +67,9 @@ The owner connects their own device under Settings → Connection with the serve
 
 ## Pre-building the assembled outfit pictures
 
-An assembled outfit picture is put together from the master photo and one photo per piece. A phone can do that itself, but it takes a few seconds a look, and longer with large masters. A computer can build every look ahead of time and upload it, so phones only download the finished picture.
+An assembled outfit picture is painted on a colour-coded master photo (one per kind of dress), from each garment's colour and pattern. A phone can do that itself, but it takes a few seconds a look. A computer can paint every look ahead of time and upload it, so phones only download the finished picture.
 
-**When:** after the masters, the calibration photos and the item pieces are made, and again whenever a piece is made again, or after a release that changes how pictures are assembled (`ASM_ZV` in `assemble.js`). Pictures built before such a change are ignored by phones until it is run again.
+**When:** after the masters are uploaded (`npm run cm-upload`, below), and again after a release that changes how pictures are painted: a look's key carries the painter's code, so changed looks get new keys. The owner's computer runs it in a loop (`--watch`), which does this by itself.
 
 **How**, in PowerShell from the repository folder (after `npm install` and `npx playwright install chromium`, as for the tests):
 
@@ -94,14 +94,14 @@ Options go after `--`, e.g. `npm run assemble -- --dry --days 60`:
 1. It runs the app in a headless browser, connected as the owner.
 2. It loads the wardrobe from the backup. The backup is never written.
 3. It builds the picture of every look in the coming workdays with the same code a phone runs, from the same photos.
-4. It uploads each picture to the server, tagged with the photos it was built from. A look whose picture on the server is already current is skipped, so a second run uploads nothing.
+4. It uploads each picture to the server under its look's key. A look whose picture on the server is already current is skipped, so a second run uploads nothing.
 
 **On a phone:**
-- It asks for a look's picture before downloading its pieces, and uses it if it is at least as new as every photo the phone holds.
-- If a piece was made again since the upload, or nothing was uploaded for the look (a swap, a new look), the phone builds it itself, as before.
+- It asks for a look's picture before downloading a master, and uses it.
+- If nothing was uploaded for the look (a swap, a new look), the phone paints it itself.
 
 **Costs:**
-- Each upload is one write on the server's storage. The free plan allows 1,000 a day for everything, so run it once after making pieces, not in a loop.
+- Each upload is one write on the server's storage. The free plan allows 1,000 a day for everything, and this computer uploads at most 300 a day (`tools/upload-budget.js`).
 - The code (`DW_TOKEN`) is only read from the environment: never put it in a file in the repository.
 
 ## The colour-coded masters and the master atlas
@@ -109,7 +109,7 @@ Options go after `--`, e.g. `npm run assemble -- --dry --days 60`:
 Two more scripts for the computer, with `DW_WORKER` and `DW_TOKEN` set as for `npm run assemble`:
 
 - `npm run cm-upload -- --dir <folder>` puts the colour-coded masters (each kind's master, zone masks, sleeve and lapel masks, from the folder `colormaster.js` writes) on the server under the keys the app asks for. `--kinds suit,vest` limits it to some kinds, `--bg <file>` uploads the background behind every master (alone, or with the masters), `--dry` says what would go up. A record already there with the same signature is not written again.
-- `npm run atlas` measures every pixel of the masters once: it uploads the phones' share (three pictures, none when the server already has them) and writes the full atlas for work on the computer to `--out` (default `./atlas`, which git ignores). `--parts <folder>` adds finer SAM part pictures, `--dry` uploads nothing, `--origin` as above. Run it again after a master, the black calibration shirt or a zone picture is made again. `node tools/atlas.js <folder> list` reads it back.
+- `npm run atlas` measures every pixel of the masters once and writes the full atlas for work on the computer to `--out` (default `./atlas`, which git ignores); it uploads nothing. `--parts <folder>` adds finer SAM part pictures, `--origin` as above. Run it again after a master or a mask is made again. `node tools/atlas.js <folder> list` reads it back.
 
 ## Running the tests
 
