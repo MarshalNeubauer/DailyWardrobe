@@ -186,14 +186,14 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=12;   // 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+const PLAN_RULES=13;   // 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
    before that counts less. Rest still decides when every choice repeats a colour. */
-const JKT_GROUP={lightgrey:'grey',midgrey:'grey',grey:'grey',silver:'grey',charcoal:'grey',darkgrey:'grey',slate:'charcoal',black:'black',
+const JKT_GROUP={lightgrey:'grey',midgrey:'grey',grey:'grey',silver:'grey',charcoal:'grey',darkgrey:'grey',gunmetal:'grey',slate:'charcoal',black:'black',
   navy:'navy',darknavy:'navy',deepblue:'navy',blue:'blue',steelblue:'blue',lightblue:'blue',brown:'brown',taupe:'brown',deeptaupe:'brown',rust:'brown',tan:'tan',khaki:'tan',cream:'tan',
   olive:'green',green:'green',burgundy:'red',wine:'red',oxblood:'red'};
 const JKT_NEAR=[['grey','charcoal'],['charcoal','black'],['navy','blue'],['navy','charcoal'],['brown','tan']];
@@ -202,11 +202,19 @@ const groupsNear=(a,b)=>JKT_NEAR.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));
 // prev: the previous workdays' groups (latest first); next: the next workday's group when that day is already fixed
 // (worn, or a jacket the user picked), so a pinned day is not crowded either
 const DARK_JKT=['black','charcoal','darkgrey'];
-// a and b: {g: group, c: colour}. Black next to charcoal or dark grey also reads as "dark again"
-const nearCost=(a,b)=>DARK_JKT.includes(a.c)&&DARK_JKT.includes(b.c)?26:groupsNear(a.g,b.g)?6:0;
+/* a and b: {g: group, c: colour}. Black next to charcoal or dark grey also reads as "dark again", and so do any two very dark jackets
+   (brightness under JKT_VDARK of 255: black 22, dark navy 31; navy 37 and charcoal 62 are not), whatever their groups (2026-11-14: the
+   owner's ink aubergine pinstripe, based on dark navy, then his black suit; and his "mid grey worsted", based on gunmetal, sat in the
+   charcoal group, only near the greige melange's grey, so the two greys ran back to back: gunmetal is grey now) */
+/* the same group as the workday before (or the next fixed one) costs JKT_SAME (60, was 40: on the owner's wardrobe a well-rested grey suit
+   followed a grey blazer, 19 then 22 Nov; measured over his next 124 workdays: 40 gave 1 jacket-group repeat and 1 tie-colour repeat, 60
+   and 80 none, scores and the 12 jackets worn unchanged; 80 broke the test wardrobe's tie colours (3 repeats in six months), 60 doesn't) */
+const JKT_SAME=60;
+const JKT_VDARK=34,darkJkt=c=>DARK_JKT.includes(c)||lumCol(c)<JKT_VDARK;
+const nearCost=(a,b)=>a.g!==b.g&&darkJkt(a.c)&&darkJkt(b.c)?26:groupsNear(a.g,b.g)?6:0;
 const colourRepeat=(i,prev,next)=>{const me={g:jacketGroup(i),c:planCol(i)};let v=0;
-  (prev||[]).slice(0,2).forEach((p,n)=>{if(!p||!p.g)return;v+=p.g===me.g?(n?12:40):n?Math.round(nearCost(p,me)/3):nearCost(p,me)});
-  if(next&&next.g)v+=next.g===me.g?40:nearCost(next,me);return v};
+  (prev||[]).slice(0,2).forEach((p,n)=>{if(!p||!p.g)return;v+=p.g===me.g?(n?12:JKT_SAME):n?Math.round(nearCost(p,me)/3):nearCost(p,me)});
+  if(next&&next.g)v+=next.g===me.g?JKT_SAME:nearCost(next,me);return v};
 /* shirts and ties get the same treatment, with their own groups. White and light blue are the staples: a repeat of those costs
    little. These penalties only choose among outfits that already score within QWIN of the best one. */
 const SHIRT_GROUP={white:'white',ivory:'white',cream:'white',lightblue:'lightblue',periwinkle:'blue',blue:'blue',steelblue:'blue',lavender:'purple',pink:'pink',

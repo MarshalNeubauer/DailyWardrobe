@@ -134,6 +134,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM)
 - Jackets rotate by rest and avoid the previous workdays' colour group (`jacketGroup`, `colourRepeat`)
+- (2026-11-14, the owner: a dark pinstripe then black, and light then mid grey, on consecutive days) gunmetal jackets are in the grey group (`JKT_GROUP`; his "mid grey worsted" is based on gunmetal and sat in charcoal, only near grey); any two very dark jackets running are "dark again" (`darkJkt`: `DARK_JKT` or brightness under `JKT_VDARK` 34 of 255: black 22, dark navy 31; navy 37 and charcoal 62 are not); the same group as the workday before costs `JKT_SAME` 60 (was 40); measured on his wardrobe over 124 workdays: jacket-group repeats 1 → 0, tie-colour repeats 1 → 0, scores and the 12 jackets worn unchanged; the nine-tie test wardrobe meets 3 tie-colour squeezes in six months (held at 3 in `tests/jacketcolour.test.js`); `PLAN_RULES` 13, so the week's locks are released once (picks kept)
 - Shirts and ties do the same (`shirtRepeat`, `tieRepeat`; white and light blue shirts only mildly; dark shirts count as one look and black/charcoal/grey/silver ties as one, `shirtLook`/`tieLook`)
 - the same jacket colour group with the same shirt look and tie look as either of the last two workdays is a whole-look repeat (`lookRepeat`)
 - each jacket remembers its last two outfits so its tie and shirt colour vary (`comboRepeat`)
