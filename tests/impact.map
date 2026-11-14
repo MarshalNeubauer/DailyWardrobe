@@ -1789,7 +1789,7 @@ dress.test.js	ui.js	<loaded>	addGate	advClose	connNote	connSummary	isConnected	l
 dress.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	moreRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 dress.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	ROUTES.* /sync	WATCH_KEY	arrOf	corsFor	countWrites	dataUrlToBlob	dropParts	fetch	getRender	handleRender	handleSync	hasWatch	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	outfitPhoto	phCollect	photoCap	putPhotos	putStored	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendEach	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	utcDay	whoIs	writeBudget
 dress.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	mergeLite	mergeSettingsLite	nextRevs	phCollect	putStored	readText	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
-dress.test.js	worker/people.js	<loaded>	countWrites	photoCap	sameText	sha256Hex	spend	spendEach	spendUpTo	utcDay	whoIs
+dress.test.js	worker/people.js	<loaded>	countWrites	photoCap	sameText	sha256Hex	spend	spendEach	spendUpTo	unspend	utcDay	whoIs
 dress.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 dress.test.js	worker/records.js	<loaded>	renderId
 dress.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	WATCH_KEY	dataUrlToBlob	handleRender	hasWatch	outfitPhoto
@@ -5279,7 +5279,7 @@ socktoe.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 socktoe.test.js	icon-192.png	<loaded>
 socktoe.test.js	icon-512.png	<loaded>
 socktoe.test.js	index.html	<loaded>
-socktoe.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	itemBody	itemShown	noMotion	photoTools	renderItem	wardPic
+socktoe.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	itemBody	itemShown	noMotion	photoTools	renderItem	smallPhotos	wardPic
 socktoe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 socktoe.test.js	manifest.webmanifest	<loaded>
 socktoe.test.js	month.js	<loaded>	nextWorkday
@@ -5587,7 +5587,7 @@ sync.test.js	index.html	<loaded>
 sync.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
 sync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sync.test.js	manifest.webmanifest	<loaded>
-sync.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+sync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
 sync.test.js	pack.js	<loaded>	packShow
 sync.test.js	photos.js	<loaded>	aAn	asmLive	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	missingItemPics	queuedKeys	remoteList	renderItemPicUI	renderPending	rqGet	workerBase
 sync.test.js	planner.js	<loaded>
@@ -5602,7 +5602,7 @@ sync.test.js	styles.css	#about-update[hidden]	#add	#adv-photos:has(#asm-group[hi
 sync.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	isPh	localState	phIn	phOut	phStrings	pullDone	pulledYet	restoreBackup	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncUrl	synced
 sync.test.js	tagging.js	<loaded>	recolourSpecSetts	renderCustomUI	upgradeCloseups	upgradePhotos
 sync.test.js	tests/fixedplan.js	<any>
-sync.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	swApply	todayBtn	wxPreload	zoomTarget
+sync.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	mvSig	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	swApply	todayBtn	wxPreload	zoomTarget
 sync.test.js	ui.js	<loaded>	advClose	connNote	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	tell	uiEsc
 sync.test.js	wardrobe.js	<loaded>	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 sync.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerOnly	phCollect	putPhotos	putStored	putWhole	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	usedOf	utcDay	whoIs	writeBudget
