@@ -146,6 +146,8 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 - swapping the belt brings shoes that match it, as swapping the shoes brings a belt (`FOLLOW.belt`: shoes and socks; 2026-11-14, the owner: with one belt per pair of shoes a belt swap took the belt off and said "None of your belts match"); when the other belts' shoes don't suit the outfit (a black suit wants black shoes), the swap or pick changes nothing and Today says why (`beltless`: the day planned with the record in memory only); `tests/beltswap.test.js`
 
+- the cleaning frame on Today's picture (`careFrame`/`careDayState`/`careBandFit` in care.js; the owner's design 2026-11-14, "B" from mockups, tweaked): a suit or blazer one wear short of its limit has a yellow frame and a banner along the picture's bottom (wear dots left, "**1 wear left** · Suit – wear 4 of 5" right, no icon), its last wear red ("**Last wear** · Suit – to the cleaner today"), past it red ("**Overdue** · Suit – worn 6 of 5", the dots +1); on today and coming days, the wears planned between today and the day counted (so yellow today is red the next time it is planned); both inside the picture (frame inset 5 px, banner 40 px over its bottom); the banner is cut round the tie swatch when the swatches reach into it, measured each time (ResizeObserver and every frame through `swApply`'s transition), so the cut follows the swatches when a tap shrinks them; on today and past days the ✕/✓ row and the swatches sit above the banner (`.fig.cb`); words 13 px, down to 11, then the bold words on their own line; trousers keep the grey line under the outfit (`careNote`); `tests/care.test.js`
+
 ### `planner.js`
 
 - outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM)
