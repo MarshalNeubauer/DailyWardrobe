@@ -818,17 +818,21 @@ const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
-/* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay */
-async function replanFuture(){const T=todayDate();let n=0;
+/* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay.
+   rules (new PLAN_RULES): only what the app chose goes, the week's locks (rec.lock) and pieces it recorded by itself (rec.auto);
+   the owner's own picks (force, skip, the vest, a moved outfit's kind, a piece taken off) stay. Returns the days changed
+   (rules: the days whose lock or recorded pieces went; else the days whose own picks were cleared) */
+async function replanFuture(rules){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<=T||r.worn===true)continue;
+    if(rules){if(!r.lock&&!r.auto)continue;const keep={...r};delete keep.lock;if(keep.auto){delete keep.auto;delete keep.ids;delete keep.suitDay;delete keep.vestOn}await saveDay(keep,true);n++;continue}
     const mine=r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto;if(!mine&&!r.lock)continue;
     const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
 async function checkPlanRules(){if(!window.TEST_PLAN)return planRulesCheck()}   // (PLAN_RULES is read in planRulesCheck only: a bump selects only the tests that plan for real)
-async function planRulesCheck(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
+async function planRulesCheck(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture(true);
   settings.planRules=PLAN_RULES;await metaPut('settings',settings);   // kept without a new stamp: noting the rules is not a change to the settings, and a stamp made defaults win over the backup's settings
-  if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
+  if(n)setTimeout(()=>toast('The planner was updated: upcoming days were planned again. Your own picks were kept.',4500),400)}
 async function replanButton(){const T=todayDate();
   const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
   const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true);

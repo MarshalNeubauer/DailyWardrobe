@@ -6,7 +6,9 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};
-      const seq=[];for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=planMonth(y,m);for(const k of Object.keys(P).sort((a,b)=>keyDate(a)-keyDate(b)))if(keyDate(k)>=todayDate()&&P[k].tie)seq.push({k,o:P[k]})}
+      // (each key once: planMonth gives the shared simulation's whole plan, so a later month holds the earlier months' days too, and
+      // without the check the sequence ran Nov 30, then Nov 11 again, and compared those)
+      const seq=[],seen=new Set();for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=planMonth(y,m);for(const k of Object.keys(P).sort((a,b)=>keyDate(a)-keyDate(b)))if(!seen.has(k)&&keyDate(k)>=todayDate()&&P[k].tie){seen.add(k);seq.push({k,o:P[k]})}}
       const near=[];for(let a=0;a<seq.length;a++)for(let g=1;g<=3&&a+g<seq.length;g++)if(seq[a].o.tie.id===seq[a+g].o.tie.id)near.push(seq[a].k+'+'+g);
       const ties=new Set(seq.map(x=>x.o.tie.id)).size;
       // the score: a tie worn three workdays back

@@ -182,6 +182,20 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - measured on the test wardrobe (9 jackets, 5 trousers, 8 shirts, 9 ties): each of the four combinations plans complete outfits scoring 96 or more with no hard check; without jackets 7 shirts and all 5 trousers rotate and no shirt is worn two workdays running
 - taking a piece off for the day (2026-11-13, the owner's ask): `rec.off = {top, tie}`; `outfit()` plans the day as usual and `takeOff(o, off, untake)` removes the piece at the end: the jacket takes its waistcoat with it, a suit's trousers stay (`o.bot` = the suit, `o.suitDay` false, `o.suitBot` true), a blazer, tie or clip taken off is not counted as worn (`untake` restores `last`); `o.off`, `o.offKind`; `frozenOutfit` sets them from `rec.off`; `needsJacket`/`needsTie` (core.js) ask for neither, so no 'Complete outfit' penalty; `scoreAdvice` never offers to swap a suit's trousers
 - no waistcoat without a tie (2026-11-13, the owner: "No one should ever wear a vest and no tie"): `outfit()` sets `vest` only with a tie (a day planned without one, by the dress code or a casual day, has none, whatever `vestMode` or `rec.vest`), `takeOff` drops the waistcoat with the tie, and Today's vest row (`vestRow`) is hidden on a day with no tie, so its + can't add one; a jacket worn without a tie is therefore always the `suit-open` master, never `vest-open`; past days keep what was recorded; `tests/takeoff.test.js`
+- the planner audit's fixes (2026-11-14, `tests/planaudit.test.js`; `PLAN_RULES` 12 for them and for the 2026-11-13 changes that skipped a bump):
+- (replaces `fixedAhead`'s `nx` above) `fixedAhead` returns the tie and shirt fixed on each of the next 3 workdays (`fx`: sumUps with `w` 0-2 workdays ahead and the day number `n`; picked, moved there, worn or locked; a day marked "Not worn" left out)
+- each fixed tie costs as the last three workdays' do (`aheadTie`): the next workday's as the day before's (`tieRepeat`), two ahead as two back (same tie `TIE_GAP`, colour 2), three ahead as three back (same tie `TIE_GAP`)
+- each fixed shirt (`aheadShirt`): `shirtRepeat` as the day before for the next workday, as two back for the one after; its very shirt `NEXT_SHIRT` (40) more on the next workday and on any later one within `settings.laundryDays` calendar days
+- measured on the audit's wardrobes: a tie swapped today with the week locked took a tie locked 2-3 workdays later 35 of 88 times, now 1; a tie pinned 2 or 3 workdays ahead was planned the day before 20 of 20, now 0; a shirt pinned 2 days ahead with laundry 3, 12 of 12, now 0
+- (replaces "ties keep the capped rest (no creep)" above) a tie's rest creeps too, capped: `+Math.min(TIE_CREEP_MAX, over(x,30)*TIE_CREEP)` (9, 0.03 a day after 30 days), well under `TIE_GAP`, so a tie still never repeats within three workdays
+- on the audit's 149-item wardrobe (40 ties) over 12 months: 9 ties never planned before, 0 now; repeats within three workdays 0 before and after; average score 99.57 before and after; `tests/jacketcolour.test.js` still passes
+- `tieRepeat`'s same tie the day before is `TIE_GAP` too (it was a literal 18 in both branches: the same number)
+- a formal day takes the white shirt: `formalShirt(s, k)` counts the colour and pattern `FORMAL_SHIRT_K` (3) times in `clothesScore` and in the shirt shortlist (French cuffs once), and a formal day or a funeral picks among outfits within `FORMAL_QWIN` (3) of the best, not `QWIN` (8); a French-cuff light blue shirt under a dark navy suit outscored white before, and the score then marked it down ("white is the formal shirt"): 3 of 20 formal days on the big wardrobe, now 0
+- a past day marked "Not worn" is not the previous workday for repeats (`prev`/`prev3` in `planSim` skip it, as `last` already did)
+- a past day whose piece was deleted since is rated without it (`frozenOutfit` sets `o.gone[slot]`; 'Complete outfit' doesn't ask for a gone piece), not "Incomplete" capped at 69: deleting an item no longer fills Insights' trend with real mistakes
+- learned votes are read as numbers (`pairVote`/`itemVote`: `+v`): a vote stored as text ("2") was added as text
+- speed: `withColRun` keeps each item's colour family (`pcol`) and colours (`colsOf`) for one run (`planSim`'s `upTo`, `runAnalysis`) in WeakMaps (`colRun`; only while the run lasts, so an edited item is read afresh next time); in `outfit()` each trousers', shirt's and tie's own terms are worked out once (`P1`/`S1`/`X1`) and the rotation part only for outfits inside the window, summed in the same order, so plans are identical
+- measured (Node, desktop): the audit's 149-item wardrobe planned 8 months 423 -> about 225 ms; six wardrobes with locks, picks, formal days and laundry 3, 2137 -> 1122 ms, plan hash identical with and without the speed-ups (6d6a5e89)
 
 ### `tagging.js`
 
@@ -565,6 +579,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the sheet and its backdrop slide and fade away on closing (`visibility` switches off after the transition; not `.on` = no pointer events); the handler only sets an inline transform and lets the CSS transition finish from there
 - `renderShop` during a swipe (`shopDrag`) is put off until the finger lifts (`shopStale`): a redraw removes the element the touch started on and its moves stop coming
 - the result is kept on the device (`meta` key `shop`: `{sig, at, res}`) and shown without checking again while the wardrobe is unchanged (`shopSig`) and it is under a week old; sections appear as the worker finishes them (`{cat}` messages)
+- `shopSig` also holds every setting the planner reads (the planner audit, 2026-11-14): laundry days, dark shirts (`darkMode()`), jeans with a blazer, holidays, days off, what it learned (`settings.learn`) and the occasions marked from today on; before, a change to one of them left the check up to a week stale; `|nojacket` / `|notie` stay last
 
 ### `app.js`
 
@@ -622,6 +637,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
   - the coming week stays as shown: after each render `lockUpcoming()` gives every workday from today to `LOCK_DAYS`−1 (7) days on `rec.lock` = `lockIds(o)` (the plan's pieces, no coat), rewritten when the plan for that day differs; a different tie today, a new item or a day marked not worn then re-plans only the days after the lock
   - a change made by hand on a day drops its lock (`swapSlot`, `pickItem`, `setOccasion`, `resetDay`, `moveRecs`): the day is planned again around the change and locked as it then shows; the vest toggle and worn / not worn keep it
   - `clearLocks()` releases the locks after today: from `setDarkShirts`, `toggleDay` (workdays, blazer days) and `setOccasion` (the days around an occasion are planned around it); `replanFuture()` (Re-plan upcoming days, new `PLAN_RULES`) releases them too without counting them as days reset; `tests/weeklock.test.js`
+  - a new `PLAN_RULES` calls `replanFuture(true)` (the planner audit, 2026-11-14): only what the app chose goes, the week's locks (`rec.lock`) and pieces it recorded by itself (`rec.auto`); the owner's own picks (force, skip, the vest, `kind`, `off`) stay; the toast says "Your own picks were kept"; Settings' Re-plan (`replanFuture()`) still clears the picks too; `tests/replan.test.js`
   - a past day whose record has no pieces (`ids`) is recorded by `recordDays` with what the record already has: a day the app was not opened on kept only its week lock, so it never became history (no wear counts in `wornDays`, an outfit that could still change); it used to record only days with no record at all; `tests/weeklock.test.js`
   - double-tap the picture (photo or drawing) to zoom 2.5x on the tapped spot, again to zoom out (`toggleZoom`/`applyZoom`, `zoom` state, kept across redraws of the same day); a drag pans while zoomed and doesn't change the day; `#mannequin-container` has `touch-action:manipulation` and clips the zoomed picture
   - a sideways swipe folds every open box (score, list and rows, below-the-waist photo, month) as soon as the drag locks sideways, and zooms out (`foldAll`, also from `stepDay`)
@@ -738,6 +754,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - what the planner learned (`forgetLearned`)
 - `whyUnused`: a piece that is away says "It's at the cleaner's" / "It's in the laundry", with the date it joins the outfits again
 - pieces the dress code leaves out are not counted as never worn (`buildStats().unused`), and `whyUnused` says so for one ("Your dress code leaves out ties…")
+- `whyUnused` no longer says a tie, shirt or pair of trousers that suits "comes up later than six months" (the planner audit, 2026-11-14: it can't know that); it says the others suit a little better or have rested longer, so it isn't in the next six months' plan
 
 ### `sync.js`
 
@@ -824,6 +841,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `clearLocks()` (a planner setting, an occasion, Re-plan) releases a trip's lock like any other; the page then says Not locked
 - `packText(t, days, list)` is the plain-text list (title, count line, groups, travel wear, the outfits per day); `packCopy` uses `navigator.clipboard`, falling back to a hidden textarea; Share (`packShare`) only where `navigator.share` exists
 - `tests/pack.test.js`; `PACK_SHOTS=<folder>` saves pictures of the page at 320/390/626px in both themes
+- (replaces "the week starting next Monday" above) the default trip is the workdays of the week starting on the user's next first workday (`packWeekStart`: a workday whose day before is not one; Sunday for the Sunday-Thursday week, Monday for Monday-Friday, Monday when there is no such day); the planner audit, 2026-11-14
 
 ### `safety.js`
 
@@ -1119,6 +1137,8 @@ Cloudflare Worker. Every endpoint needs the owner's `APP_TOKEN` or a tester's in
 - reminders (`dueDay`): a run covers the local clock from the run 15 minutes before to now, so a reminder at 23:46–23:59 fires at the 23:45–00:00 run (for the day before; the old window `[at, at+15)` ran past midnight and never fired), one in the hour the clocks skip fires at the run that jumps over it, and the repeated hour sends it once (`last`); `tests/workerfix.test.js`
 
 **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js. On the next start the app clears swaps and vest choices on every day after today (`checkPlanRules()` / `replanFuture()` in app.js; formal days, today and past days stay), so the new rules apply to the whole future. Settings has "Re-plan upcoming days" for the same on demand.
+
+- (replaces "clears swaps and vest choices" above, 2026-11-14) a bump releases only the week's locks and the app's own recorded pieces on days after today (`replanFuture(true)`); the owner's swaps, skips and vest choices stay, so there is no reason left to skip a bump; Settings' Re-plan still clears them
 
 Colours always come from the item's tagged colours, matched by brightness rank, never from the photo, except an item's `sett`: it is read from the white-balanced sharp photo or close-up at the user's request, so its bands keep their measured colours. Pattern lists in `PATS_BY` (core.js) must stay in sync with the prompt in `worker.js`, and so must the per-type colour lists (`COLS_BY` / `DIAL_COLS` in core.js = `TYPE_COLORS` / `DIAL_COLS` in worker.js; `tests/colouraudit.test.js` checks it). Each item type offers only colours it really comes in; an off-list tag moves to the closest allowed colour (`fitCol`), and a colour an existing item already has stays selectable for it.
 
