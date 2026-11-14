@@ -27,6 +27,7 @@
 //   --gpu-angle B the browser's ANGLE backend for --gpu (default d3d11; the tests use swiftshader, never the real card)
 //   --cm-size N   the painting size (default 2880, ASM_CM_SIZE; the tests paint smaller)
 // Each upload is one KV write (the free plan allows 1,000 a day for everything); the token is read from the environment only.
+// This computer uploads at most 300 records a day across every tool (tools/upload-budget.js, DW_UPLOAD_LIMIT); past it uploads pause until 00:00 UTC.
 //
 // How it stays quick: one page (the app opens and loads the wardrobe once) drives a pool of Web Workers, each painting at the
 // same time; looks are given to workers by master, so each worker works a master out once, and on the computer that worked-out part
@@ -68,8 +69,11 @@ const PAUSE=PROFILE?path.join(PROFILE,'upload-pause.json'):'';
 let pauseUntil=0;try{if(PAUSE&&fs.existsSync(PAUSE))pauseUntil=+JSON.parse(fs.readFileSync(PAUSE,'utf8')).until||0}catch{pauseUntil=0}
 const paused=()=>Date.now()<pauseUntil;
 const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)+2*60e3};   // (two minutes past the reset)
-const pauseUploads=()=>{if(paused())return;pauseUntil=nextUtcDay();if(PAUSE)try{fs.writeFileSync(PAUSE,JSON.stringify({until:pauseUntil}))}catch{}
-  console.log(`${now()} The worker's writes for today are used up: uploads paused until ${new Date(pauseUntil).toLocaleString()} (its daily reset).`)};
+const pauseUploads=(why)=>{if(paused())return;pauseUntil=nextUtcDay();if(PAUSE)try{fs.writeFileSync(PAUSE,JSON.stringify({until:pauseUntil}))}catch{}
+  console.log(`${now()} ${why||'The worker\'s writes for today are used up'}: uploads paused until ${new Date(pauseUntil).toLocaleString()} (its daily reset).`)};
+// this computer's own daily cap (tools/upload-budget.js, 300 a day for every PC tool together): reached, uploads pause the same way
+const budget=require('./upload-budget.js');
+const LIMIT_WHY=`This computer's daily upload limit (${budget.LIMIT}) is used up`;
 // the app's commit, for --watch to notice that main moved
 const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origin','refs/heads/main'],{encoding:'utf8',timeout:30000}).split(/\s/)[0]}catch{return ''}};
 // (stage 6) the graphics card's state for this run: off (with why) for the rest of the run once it is lost or isn't the card; the
@@ -140,6 +144,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
   let lastSig='';
   let wasPaused=paused();if(wasPaused)console.log(`${now()} Uploads are paused until ${new Date(pauseUntil).toLocaleString()} (the worker's writes for the day are used up).`);
   const cycle=async first=>{const t0=Date.now();
+    if(!DRY&&!paused()&&budget.left()<=0)pauseUploads(LIMIT_WHY);
     if(paused()&&!DRY){wasPaused=true;return {quiet:true}}   // nothing can be uploaded until the reset: nothing is painted either
     if(wasPaused){wasPaused=false;lastSig='';console.log(`${now()} The worker's daily reset has passed: uploading again.`)}
     const synced=await page.evaluate(async()=>{const ok=await syncNow();try{await loadClimate();await loadWeather()}catch(e){}cache={};return {ok,items:items.length,on:typeof ASM_ON!=='undefined'&&ASM_ON}});
@@ -175,6 +180,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       if(!l.sig){const c=await api('render?key='+r.key,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);if(c&&c.sig===r.sig){skipped++;return `${r.key} current, skipped`}}
       if(SAVE){fs.mkdirSync(SAVE,{recursive:true});fs.writeFileSync(path.join(SAVE,`${l.first}-${r.key}.jpg`),Buffer.from(r.img.split(',')[1],'base64'))}
       if(DRY)return `${r.key} built (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`;
+      if(!budget.take(1)){failed++;pauseUploads(LIMIT_WHY);return 'not uploaded: this computer\'s daily upload limit is used up'}
       const up=await api('render',{method:'PUT',body:JSON.stringify({key:r.key,rec:{sig:r.sig,img:r.img,model:'assembled',t:Date.now()}})});
       if(up.ok){uploaded++;made[r.key]=r.sig;return `${r.key} uploaded (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`}
       const body=await up.text().catch(()=>'');failed++;

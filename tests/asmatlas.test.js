@@ -66,7 +66,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const o=await worker.fetch(new Request('http://w'+q.url,{method:q.method,headers:q.headers,body:['GET','HEAD','OPTIONS'].includes(q.method)?undefined:b}),env);
     res.writeHead(o.status,Object.fromEntries(o.headers));res.end(Buffer.from(await o.arrayBuffer()))});
   await new Promise(x=>srv.listen(0,'127.0.0.1',x));const W=`http://127.0.0.1:${srv.address().port}/`,OUT=fs.mkdtempSync(path.join(os.tmpdir(),'dw-atlas-'));
-  const run=()=>new Promise(res=>{const c=spawn(process.execPath,[s,'--out',OUT,'--origin','http://127.0.0.1:9/dw/','--cm-size','512'],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'owner-code'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
+  const run=()=>new Promise(res=>{const c=spawn(process.execPath,[s,'--out',OUT,'--origin','http://127.0.0.1:9/dw/','--cm-size','512'],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'owner-code',DW_UPLOAD_LEDGER:require('path').join(require('os').tmpdir(),'dw-ledger-test-'+process.pid+'.json')}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
   try{const r1=await run(),p1=puts,r2=await run();
     const recs=seed.atlasKeys.map(k=>store.has('render:'+k)?JSON.parse(store.get('render:'+k)):null);
     ok(r1.code===0&&p1===3&&recs.every(x=>x&&x.sig===seed.sig&&/^data:image\/png;base64,/.test(x.img)),`npm run atlas measures the master and uploads the phones' three pictures, signed with the photos it measured (${p1} uploads${r1.code?': '+r1.out.slice(-400):''})`);
