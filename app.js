@@ -186,7 +186,9 @@ function normTag(parsed,model){
 
 /* the picture of a file; its object URL is let go once it has loaded (each one held the file's bytes until the page closed) */
 const loadImg=f=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=e=>{URL.revokeObjectURL(u);no(e)};i.src=u});
-function shrink(img,max){const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c}
+// on white: a transparent picture (a product cut-out) is saved as a JPEG, which has no transparency, and its clear parts turned black
+// (2026-11-14, the owner's socks); white is what such a cut-out is meant to sit on, and reads as the white reference it is
+function shrink(img,max){const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);return c}
 
 async function fill(q,ai){
   q.zoom=1; q.cx=0.5; q.cy=0.5;
