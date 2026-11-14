@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
   // worker prompt and schema
-  const src=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
+  const src=require('./workersrc.js')();
   ok(NEW.every(c=>new RegExp(`shirt: \\[\\[[^\\]]*'${c}'`).test(src)),'the worker lists the shirt colours under shirts');
   ok(TEX.filter(t=>t!=='houndstooth').every(t=>src.includes(`'${t}'`)&&new RegExp(t+'\\s*\\(').test(src)),'the worker schema and prompt include every shirt texture');
 };

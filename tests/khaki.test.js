@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};view={y:2026,m:10};
       const o=planFor()['2026-11-12'];return o&&o.bot&&o.bot.primaryColor});
     ok(bot==='khaki','a navy blazer is paired with the khaki trousers ('+bot+')');
-    const w=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
+    const w=require('./workersrc.js')();
     ok(/pants: \[\[\.\.\.SUITING/.test(w)&&/'tan','khaki'/.test(w)&&/khaki is the light sandy beige/.test(w),'the tagging prompt lists and explains khaki');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
