@@ -94,7 +94,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   // ---- end to end: the app as a tester paints a colour-coded look from the owner's masters
   const browser=await chromium.launch();
   try{const ctx=await browser.newContext({viewport:{width:390,height:844}}),seen=[];
-    await ctx.addInitScript(([h,tok])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',tok);self.ASM_CM_SIZE=512},[HOST,code]);
+    await ctx.addInitScript(([h,tok])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',tok);self.ASM_CM_SIZE=512;self.WDEBUG=1},[HOST,code]);   // (WDEBUG: a gold-watch look that isn't painted says why, page and worker)
     await ctx.route(HOST+'**',async route=>{const q=route.request(),u=new URL(q.url());
       if(u.pathname==='/sync')return route.fulfill({status:503,contentType:'application/json',body:'{"error":"busy"}'});   // (no start-up sync: the test sets items)
       const r=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'||q.method()==='HEAD'?undefined:q.postDataBuffer()||undefined}),env);
@@ -109,12 +109,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await asmEnsure(o);for(let i=0;i<200&&(asmBusy.size||asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
       const f=asmFor(o),r=asmOut[asmOutKey(o)];let px=null;
       if(f){const im=new Image();im.src=f.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.5),Math.round(im.width*.62),1,1).data].slice(0,3)}
-      return {before,after:asmCmUse(o),listed,size:r&&r.blob&&r.blob.size,mf:Object.keys(asmCmMfNow().keys).length,px}});
+      // (2026-11-14, a tester's gold watch) the same look with a gold watch on leather: painted on the tester's phone too, its dial dark
+      const gw=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'});items.push(gw);const o2={...o,watch:gw};let g2=null,gerr=null;
+      try{await asmEnsure(o2);for(let i=0;i<200&&(asmBusy.size||asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
+        const f2=asmFor(o2);if(f2){const im=new Image();im.src=f2.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);
+          const g=ASM_WATCH_GEO.suit,k=im.width/2048;g2={w:im.width,dial:[...x.getImageData(Math.round(g.cx*k),Math.round(g.cy*k),1,1).data].slice(0,3)}}
+        else if(window.WDEBUG){const j=await asmJob(o2);let pg=null,wk=null;try{const r=await asmBuild(j);pg=r&&r.url?'ok '+r.url.length:'no url '+JSON.stringify(Object.keys(r||{}))}catch(e){pg='page error: '+(e&&e.message||e)}
+          try{const r=await asmRun(j,true);wk=r&&r.url?'ok':'no url'}catch(e){wk='worker error: '+(e&&e.message||e)}gerr='job '+!!j+' watch '+!!(j&&j.watch)+' | page '+pg+' | worker '+wk}}catch(e){gerr=String(e&&e.message||e)}
+      return {before,after:asmCmUse(o),listed,size:r&&r.blob&&r.blob.size,mf:Object.keys(asmCmMfNow().keys).length,px,gold:{use:asmCmUse(o2),key:asmOutKey(o2)!==asmOutKey(o),job:!!asmWatchJob(o2,asmCmUse(o2)),pic:g2,err:gerr}}});
     const masterGets=seen.filter(x=>x[1]==='/render'&&x[3]===ck('suit','master'));
     ok(seen.length&&seen.every(x=>x[0]===code),`the page is connected as the tester (${seen.length} requests)`);
     ok(res.listed&&res.mf>0,`the tester's list names the owner's master and manifest, and the manifest is read (${res.mf} records in it)`);
     ok(masterGets.length&&masterGets.every(x=>x[2]===200),'the master record is downloaded from the owner\'s records');
     ok(res.after==='suit'&&res.size>10000,`a tester's phone paints the suit look itself on the owner's colour-coded master (nobody built it) (${JSON.stringify(res)})`);
+    ok(res.gold.pic&&(res.gold.pic.dial[0]+res.gold.pic.dial[1]+res.gold.pic.dial[2])/3<110,`the same look with a gold watch is painted on the tester's phone, its dial dark (${JSON.stringify(res.gold)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')')}
   finally{await browser.close()}
 };
