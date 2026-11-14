@@ -102,10 +102,53 @@ function careShow(t){const el=$('#care');if(!el)return;el.hidden=t!=='care';if(t
 /* Today: one quiet line when today's suit, blazer or odd trousers reaches its limit with this wear (or is past it) */
 function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return '';
   const r=dayRecs[key(sel)],counted=!!(r&&r.worn===true),w=careCounts(),out=[];
-  for(const p of o.bot&&o.top&&o.bot.id===o.top.id?[o.top]:[o.top,o.bot]){if(!p||!['suit','blazer','pants'].includes(p.type))continue;const limit=careLimit(p.type);if(limit<2)continue;
+  for(const p of o.bot&&o.top&&o.bot.id===o.top.id?[o.top]:[o.top,o.bot]){if(!p||p.type!=='pants')continue;const limit=careLimit(p.type);if(limit<2)continue;   // (suits and blazers: the frame on the picture, careFrame)
     const n=(w[p.id]||0)+(counted?0:1);if(n<limit)continue;
     out.push(n===limit?`This is the ${careNoun(p)}'s ${n+(n===2?'nd':n===3?'rd':'th')} wear since cleaning: ${p.type==='pants'?'they are':'it is'} due for the cleaner after today.`:`${p.type==='pants'?'These trousers are':'This '+careNoun(p)+' is'} due for the cleaner: worn ${careTimes(n-(counted?0:1))} since cleaning, due after ${limit}.`)}
   return out.length?`<p class="carenote" id="carenote">${out.join(' ')} <a href="#" onclick="openCare();return false">See what is due</a></p>`:''}
+/* ---- the cleaning frame on Today's picture (the owner's design, 2026-11-14) ----
+   A suit or blazer one wear short of its cleaning limit has a yellow frame round the picture and a banner along its bottom ("1 wear left ·
+   Suit – wear 4 of 5", wear dots on the left), on its last wear a red one ("Last wear · Suit – to the cleaner today"), and worn past it
+   red "Overdue · Suit – worn 6 of 5". On today and coming days: the wears planned between today and the day are counted too, so a suit
+   that is yellow today is red the next time it is planned. Both stay inside the picture: the frame is drawn inside its edge and the
+   banner over its bottom, cut out round the tie swatch when the swatches reach down into it; careBandFit measures the swatch, so the cut
+   follows it when the swatches shrink (a swatch tapped). On today and past days the ✕/✓ row and the swatches sit above the banner. */
+const CARE_FRAME=['suit','blazer'],CARE_BH=40;
+function careDayState(o,d){const p=o&&o.top;if(!p||!CARE_FRAME.includes(p.type)||o.frozen||p.away||!d)return null;
+  const limit=careLimit(p.type);if(limit<2)return null;
+  const T=todayDate(),day=new Date(d.getFullYear(),d.getMonth(),d.getDate());if(+day<+T)return null;
+  let n=careCounts()[p.id]||0;   // the days really worn since cleaning (today only once marked worn)
+  for(const x=new Date(T);+x<=+day;x.setDate(x.getDate()+1)){const k=key(x),r=dayRecs[k];
+    if(r&&(r.worn===false||(+x===+T&&r.worn===true)))continue;   // marked not worn; today marked worn is counted already
+    const q=+x===+day?o:planMonth(x.getFullYear(),x.getMonth())[k];if(q&&q.top&&q.top.id===p.id)n++}
+  if(n<limit-1)return null;const what=p.type==='suit'?'Suit':'Blazer';
+  return n===limit-1?{k:'near',n,limit,bold:'1 wear left',rest:`${what} – wear ${n} of ${limit}`}
+    :n===limit?{k:'last',n,limit,bold:'Last wear',rest:`${what} – to the cleaner today`}:{k:'over',n,limit,bold:'Overdue',rest:`${what} – worn ${n} of ${limit}`}}
+/* what figureStage (today.js) puts in the picture's frame: {cls, html}, or null */
+function careFrame(o){const s=typeof sel!=='undefined'&&careDayState(o,sel);if(!s)return null;
+  const dots=Array.from({length:s.limit},(_,i)=>`<i${i<s.n?' class="on"':''}></i>`).join('')+(s.n>s.limit?`<em>+${s.n-s.limit}</em>`:'');
+  return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="note"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
+/* lay the banner out: its shape (the cut round the tie swatch when the swatch reaches into it) and its words (13 px, smaller down to 11,
+   then the bold words on a line of their own) */
+let careRO=null,careObs=[];
+function careBandFit(){const fig=document.getElementById('mannequin-container'),band=fig&&fig.querySelector('.cband');if(!band)return;
+  const W=fig.clientWidth,H=fig.clientHeight;if(!W||!H)return;const BH=CARE_BH,M=5,F=9,R=14,t=v=>Math.round(v*10)/10;
+  const st=fig.querySelector('.swstack'),sws=fig.querySelectorAll('.swstack .ovsw'),sw=sws.length?sws[sws.length-1]:null;let cut=null;
+  if(sw&&st&&getComputedStyle(st).opacity!=='0'){const fr=fig.getBoundingClientRect(),r=sw.getBoundingClientRect(),sy=r.top-fr.top;
+    if(sy+r.height+M>H-BH)cut={nx:r.left-fr.left+r.width+M,ny:sy-M-(H-BH),cr:(parseFloat(getComputedStyle(sw).borderTopLeftRadius)||13)+M}}
+  const d=!cut?`M0 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${R}A${R} ${R} 0 0 1 0 ${BH-R}Z`
+    :cut.ny<=0?`M${t(cut.nx+F)} 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${t(cut.nx)}V${F}A${F} ${F} 0 0 1 ${t(cut.nx+F)} 0Z`
+    :`M0 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${t(cut.nx)}V${t(cut.ny+cut.cr)}A${cut.cr} ${cut.cr} 0 0 0 ${t(cut.nx-cut.cr)} ${t(cut.ny)}H0Z`;
+  const svg=band.querySelector('svg');svg.setAttribute('width',W);svg.setAttribute('height',BH);svg.setAttribute('viewBox',`0 0 ${W} ${BH}`);svg.querySelector('path').setAttribute('d',d);
+  const row=band.querySelector('.crow'),txt=row.querySelector('.ctxt');row.style.left=(cut?t(cut.nx+12):14)+'px';
+  if(txt.dataset.two){txt.innerHTML=txt.dataset.one;delete txt.dataset.two}row.style.fontSize='';txt.style.lineHeight='';
+  for(let fs=13;fs>=11&&row.scrollWidth>row.clientWidth+1;fs-=.5)row.style.fontSize=fs+'px';
+  if(row.scrollWidth>row.clientWidth+1){txt.dataset.one=txt.innerHTML;txt.dataset.two='1';txt.innerHTML=txt.innerHTML.replace(' · ','<br>');row.style.fontSize='12.5px';txt.style.lineHeight='1.2'}
+  // follow the picture and the tie swatch as they change size (a swatch tapped shrinks the stack; the photo loading sets the height)
+  if(typeof ResizeObserver==='function'){if(!careRO)careRO=new ResizeObserver(()=>requestAnimationFrame(careBandFit));
+    if(careObs[0]!==fig||careObs[1]!==sw){careRO.disconnect();careRO.observe(fig);if(sw)careRO.observe(sw);careObs=[fig,sw]}}}
+/* through a transition (the swatches moving and shrinking, about 0.45 s): laid out again every frame */
+function careBandSoon(){if(!document.getElementById('cband'))return;const end=performance.now()+700;const step=()=>{careBandFit();if(performance.now()<end)requestAnimationFrame(step)};requestAnimationFrame(step)}
 /* Settings → Care */
 function renderCareUI(){const el=$('#care-limits');
   if(el)el.innerHTML=CARE_TYPES.map(t=>{const v=careLimit(t);return `<label class="srow">${CARE_PLURAL[t]} <select id="care-lim-${t}" onchange="setCareLimit('${t}',this.value)"><option value="0"${v===0?' selected':''}>Never</option><option value="1"${v===1?' selected':''}>After every wear</option>${Array.from({length:CARE_MAX-1},(_,k)=>k+2).map(n=>`<option value="${n}"${v===n?' selected':''}>After ${n} wears</option>`).join('')}</select></label>`}).join('');

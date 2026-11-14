@@ -1072,3 +1072,21 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 .kp-card{fill:var(--card);stroke:var(--line)}.kp-good{fill:#2f8a57}.kp-num{fill:#fff;font:700 22px system-ui,sans-serif;text-anchor:middle}
 .kp-t{fill:var(--ink);font:700 15px system-ui,sans-serif}.kp-t2{fill:var(--ink);font:600 12.5px system-ui,sans-serif}.kp-s{fill:var(--mut);font:12px system-ui,sans-serif}
 .kp-sel{stroke:var(--acc);stroke-width:3}
+
+/* ---- the cleaning frame and banner on Today's picture (care.js careFrame / careBandFit; the owner's design, 2026-11-14) ---- */
+.fig.cb{--cc:#F2B300;--ci:#1b1300;--cr:rgba(27,19,0,.45)}
+.fig.cb.care-last,.fig.cb.care-over{--cc:#D7362B;--ci:#fff;--cr:rgba(255,255,255,.7)}
+.fig .cframe{position:absolute;inset:0;border-radius:14px;box-shadow:inset 0 0 0 5px var(--cc);pointer-events:none;z-index:4}
+.fig .cband{position:absolute;left:0;right:0;bottom:0;height:40px;z-index:2;pointer-events:none;color:var(--ci)}
+.fig .cband svg{position:absolute;left:0;top:0;display:block;overflow:visible}.fig .cband path{fill:var(--cc)}
+.fig .cband .crow{position:absolute;left:14px;right:14px;top:0;bottom:0;display:flex;align-items:center;gap:10px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:13px;font-weight:500;line-height:1;white-space:nowrap}
+.fig .cband .ctxt{flex:1;min-width:0;text-align:right}.fig .cband .ctxt b{font-weight:800}
+.fig .cband .cdots{display:inline-flex;flex:none;gap:4px;align-items:center}
+.fig .cband .cdots i{display:block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--cr);box-sizing:border-box}
+.fig .cband .cdots i.on{background:var(--ci);border-color:var(--ci)}
+.fig .cband .cdots em{font-style:normal;font-weight:800;font-size:11px;margin-left:2px}
+/* on today and past days the ✕/✓ row and the swatches above it sit above the banner (a swatch tapped: the row hides and the stack may
+   come down into the banner, which then cuts round it) */
+.fig.cb .wornbar{bottom:48px}
+.fig.cb .swstack.up{bottom:96px}
+.fig.cb.swopen .swstack.up{bottom:max(10px,min(96px,calc(54cqw - 232px)))}   /* (stays where it was, above the banner, when the big swatch leaves room) */
