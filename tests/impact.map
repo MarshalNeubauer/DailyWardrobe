@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	cbb6341bd3bd075db80d
+# tested	f574662a46f3ffa2d546
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -1828,6 +1828,47 @@ dress.test.js	worker/people.js	<loaded>	countWrites	photoCap	sameText	sha256Hex	
 dress.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 dress.test.js	worker/records.js	<loaded>	renderId
 dress.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	WATCH_KEY	dataUrlToBlob	handleRender	hasWatch	outfitPhoto
+enamelclip.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+enamelclip.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+enamelclip.test.js	add.js	<loaded>	checkArrivals
+enamelclip.test.js	analysis.js	<loaded>
+enamelclip.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+enamelclip.test.js	apple-touch-icon.png	<loaded>
+enamelclip.test.js	asm-color.js	<loaded>
+enamelclip.test.js	asm-gl.js	<loaded>
+enamelclip.test.js	assemble.js	<loaded>	@
+enamelclip.test.js	care.js	<loaded>	careShow
+enamelclip.test.js	colpick.js	<loaded>
+enamelclip.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM	applyCustom	clipMetal	colBase	colourNameRe	dayClimate	di	inRotation	isWorkday	isoKey	itemSeason	key	keySettings	lumCol	occOf	offDays	offName	patBase	patOf	planCol	prettyCols	primaryCol	pw	seasonFit	setHash	setKeys	shoeStyle	todayDate	trouserKind	watchOpts	wearsJacket	wearsTie
+enamelclip.test.js	detect.js	<loaded>	@
+enamelclip.test.js	draw.js	<loaded>
+enamelclip.test.js	dress.js	<loaded>	migrateVests
+enamelclip.test.js	figure.js	<loaded>	@{}
+enamelclip.test.js	history.js	<loaded>	checkPlanRules	keyDate	planRulesCheck	replanFuture	whenPulled
+enamelclip.test.js	icon-192.png	<loaded>
+enamelclip.test.js	icon-512.png	<loaded>
+enamelclip.test.js	index.html	<loaded>
+enamelclip.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
+enamelclip.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
+enamelclip.test.js	manifest.webmanifest	<loaded>
+enamelclip.test.js	month.js	<loaded>	nextWorkday
+enamelclip.test.js	pack.js	<loaded>	packShow
+enamelclip.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders	queuedKeys	rqGet
+enamelclip.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	enamelPref	fam	finish	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	topGw	watchFit	withColRun
+enamelclip.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
+enamelclip.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+enamelclip.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
+enamelclip.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+enamelclip.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+enamelclip.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	pageIn	show
+enamelclip.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+enamelclip.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.kit-start	.linkbtn	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+enamelclip.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncNeedsPull	syncUrl
+enamelclip.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+enamelclip.test.js	tests/fixedplan.js	<any>
+enamelclip.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	homeDay	planFor	planMonth	planSnapUse	planStartDay	planTrim	renderToday	swApply	wornPill	wxPreload	zoomTarget
+enamelclip.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+enamelclip.test.js	wardrobe.js	<loaded>
 figure.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 figure.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 figure.test.js	add.js	<loaded>	checkArrivals
