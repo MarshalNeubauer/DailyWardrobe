@@ -8,7 +8,7 @@ import { PUSH_KEY } from './remind.js';
    One function, whoIs, says who is calling from the x-app-token header. The owner's token is the APP_TOKEN secret; a tester's is
    the code of an invitation the owner made (POST /invites), of which only the SHA-256 is kept, as invite:<hash>.
    Each person's data lives under their own key prefix (ns): '' for the owner, so every key the owner already has keeps its exact
-   name (wardrobe:v1, snap:…, render:…, job:…, jobfail:…, jobrun:…), and 'u:<id>:' for a tester (u:<id>:wardrobe:v1, …).
+   name (wardrobe:v1, snap:…, render:…), and 'u:<id>:' for a tester (u:<id>:wardrobe:v1, …).
    Without APP_TOKEN nothing runs: every route refuses. */
 const OWNER = { id: 'owner', name: 'Owner', role: 'owner', ns: '', caps: null };
 const CODE_RE = /^[A-Za-z0-9_-]{24,80}$/, UID_RE = /^[a-z0-9]{8,24}$/, NS_RE = /^u:[a-z0-9]{8,24}:$/;
@@ -39,7 +39,7 @@ const INVITE_OFF = 'This invitation has been switched off.';
 /* ---- a tester's errors in plain words. What the owner needs to fix the server (the API's own message, which secret or binding is
    missing, what to do in which dashboard) means nothing to a tester: their answers carry a plain sentence instead, chosen by the
    route, and the original goes to the worker's log. A sentence already written for people (a daily limit, a photo too large) is
-   left as it is. Also used for a tester's failed queued photos (jobfail). ---- */
+   left as it is. ---- */
 const TECH_RE = /\b(API|api|OpenAI|Claude|Anthropic|secret|binding|KV|worker|Worker|Cloudflare|token|quota|billing|Billing|dashboard|Console|HTTP|status \d|RENDER_|OPENAI_|ANTHROPIC_|APP_TOKEN)\b|ECONN|fetch failed|TypeError|undefined/;
 const PLAIN = {
   photo: 'The photo service had a problem. Try again later.',
@@ -48,45 +48,39 @@ const PLAIN = {
   sync: 'The backup couldn’t be reached just now. Your wardrobe is safe on this phone; it will try again.',
   other: 'Something went wrong on the server. Try again later.',
 };
-const plainKind = p => (/^\/(render|render-queue|render-wait)$/.test(p) ? 'photo' : p === '/pattern' ? 'pattern' : p === '' || p === '/tag-many' ? 'tag' : p === '/sync' ? 'sync' : 'other');
-function plainText(s, p) { return typeof s === 'string' && TECH_RE.test(s) ? PLAIN[plainKind(p)] : s; }
+const plainKind = p => (p === '/render' ? 'photo' : p === '/pattern' ? 'pattern' : p === '' || p === '/tag-many' ? 'tag' : p === '/sync' ? 'sync' : 'other');
 function plainFor(body, p) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return body;
   let changed = false; const out = { ...body };
   for (const k of ['error', 'detail', 'message']) if (typeof out[k] === 'string' && TECH_RE.test(out[k])) { out[k] = k === 'error' ? 'server' : PLAIN[plainKind(p)]; changed = true; }
   if (changed) { if (!out.message) out.message = PLAIN[plainKind(p)]; if (!out.detail && (body.detail || plainKind(p) === 'tag')) out.detail = out.message; console.log('tester error', p, JSON.stringify(body).slice(0, 500)); }
-  if (Array.isArray(out.failed)) out.failed = out.failed.map(f => f && typeof f.error === 'string' ? { ...f, error: plainText(f.error, '/render') } : f);
   return out;
 }
-/* a failed queued photo's reason as it is kept: plain for a tester (ns), the original for the owner */
-const failFor = (ns, error) => { if (ns && TECH_RE.test(String(error || ''))) { console.log('tester photo failed', ns, String(error).slice(0, 300)); return PLAIN.photo; } return error; };
 
 /* ---- daily caps, testers only (the owner has none and is not counted). Per UTC day: tag = POST / and /tag-many, pattern =
-   /pattern, photo = outfit photos (direct, queued, replaced), item = item pictures and one-piece edits. An invitation may carry
-   its own numbers. Two more that the app doesn't show keep a tester from using up the KV's 1,000 writes a day: photo uploads
+   /pattern, item = item pictures (POST /render {mode:'item'}). (photo, outfit photos, went with them on 2026-11-14.) An invitation
+   may carry its own numbers. More that the app doesn't show keep a tester from using up the KV's 1,000 writes a day: photo uploads
    (PUT /render) and feedback messages.
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
-const DEFAULT_CAPS = { tag: 40, pattern: 10, photo: 12, item: 20 };
+const DEFAULT_CAPS = { tag: 40, pattern: 10, item: 20 };
 const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30 };
 /* write: every KV write a tester causes (each new photo a backup stores, the backup itself and its daily copies, uploads, deletes,
-   feedback, reminders, about 5 per queued photo), so no one tester can use up the free plan's 1,000 writes a day; a backup whose
+   feedback, reminders, item pictures), so no one tester can use up the free plan's 1,000 writes a day; a backup whose
    new photos pass it stores what fits and is refused (429, what 'backup': the app tries again tomorrow and the stored photos are not
    sent twice). list: KV lists (GET /render?list=1, /sync?snaps=1), also 1,000 a day for everyone. Twice in the first week, like
    the AI caps */
-const JOB_WRITES = 5;   // a queued photo: the job, the consumer's jobrun, the photo, and the job's two records deleted
 /* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', photo: 'outfit photos', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
-const USE_RE = /^(tag|pattern|photo|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
+const USE_RE = /^(tag|pattern|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
   if (c && typeof c === 'object') for (const k of Object.keys(DEFAULT_CAPS)) if (c[k] != null && Number.isFinite(+c[k]) && +c[k] >= 0) out[k] = Math.min(100000, Math.round(+c[k]));
   return out;
 }
-const photoCap = body => (body && body.swap ? 'item' : 'photo');
 /* count n of `what` for tester `id` on `day`, unless that passes `cap` -> {ok, used} | {ok:false, used} | {ok:false, off} | {ok:false, fail} */
 async function useCount(env, id, what, n, cap, day) {
   const hub = hubOf(env, `u:${id}:`);
@@ -108,10 +102,10 @@ async function useCount(env, id, what, n, cap, day) {
 /* every tester together, per UTC day: a ceiling on what the owner's API keys can be made to pay for, whatever the number of
    invitations (each tester's own caps still apply first). Counted like one more tester, under the id 'all' (a tester's id is
    8–24 characters, so it can't be one); the owner is never counted. The worker's TESTER_DAILY_TOTAL variable (JSON, e.g.
-   {"photo":20}) changes any of them. About $15 a day at most with these numbers. */
+   {"item":20}) changes any of them. */
 /* write: 450 of the free plan's 1,000 KV writes a day for every tester together, so the owner (backups, the PC's picture uploads,
    the reminders, the clean-up) always has more than half; list: 150 of its 1,000 lists */
-const ALL_CAPS = { tag: 150, pattern: 40, photo: 40, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150 }, ALL_ID = 'all';
+const ALL_CAPS = { tag: 150, pattern: 40, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };
@@ -174,15 +168,6 @@ async function unspend(env, who, what, day = utcDay(), n = 1) {
 async function countWrites(env, who, n, day = utcDay()) {
   if (who.caps && n > 0) { try { await useCount(env, who.id, 'write', n, 1e9, day); } catch { } try { await useCount(env, ALL_ID, 'write', n, 1e9, day); } catch { } }
 }
-/* a queued photo that could not be made gives its count back (the job says what it counted as, and on which day) */
-async function refundJob(env, ns, job) {
-  if (ns && job && USE_RE.test(String(job.cap || '')) && DAY_KEY.test(String(job.capDay || ''))) {
-    try { await useCount(env, ns.slice(2, -1), job.cap, -1, 0, job.capDay); } catch { }
-    try { await useCount(env, ALL_ID, job.cap, -1, 0, job.capDay); } catch { }
-  }
-}
-/* whose a queue message is: '' the owner's (no ns, as every message was before), 'u:<id>:' a tester's, null when it is neither */
-const msgNs = msg => { const n = msg.body && msg.body.ns; return n == null || n === '' ? '' : NS_RE.test(String(n)) ? String(n) : null; };
 async function usedOf(env, id, day) {
   let n = {};
   const hub = id !== 'owner' && hubOf(env, `u:${id}:`);
@@ -269,8 +254,8 @@ async function handleFeedback(req, env, json, who) {
 
 /* ---- DELETE /account {confirm:'delete'} -> {ok:true}: everything kept for the caller is deleted, and nothing of anyone else's.
    A tester: every key under u:<id>:, the day's count, the invitation (the code stops working at once) and their feedback.
-   The owner: the owner's own key families only (the backup, snap:, render:, job:, jobfail:, jobrun:), never u:…, invite:… or
-   the invitation list. A Worker may make only so many KV calls per request, so a first part goes now and the queue finishes
+   The owner: the owner's own key families only (the backup, snap:, render:, ph:, and job:, jobfail:, jobrun: left by the retired
+   outfit-photo queue until they expire), never u:…, invite:… or the invitation list. A Worker may make only so many KV calls per request, so a first part goes now and the queue finishes
    the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the next part. ---- */
 const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:', 'ph:'];
 async function wipeSome(env, ns, budget) {   // -> true once nothing is left
@@ -322,4 +307,4 @@ async function runWipe(msg, env) {
 }
 
 
-export { DAY_KEY, INVITE_INDEX, JOB_WRITES, UID_RE, USE_RE, countWrites, failFor, handleAccount, handleFeedback, handleInvites, handleMe, limitBody, msgNs, ownerOnly, photoCap, plainFor, refundJob, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };
+export { DAY_KEY, INVITE_INDEX, UID_RE, USE_RE, countWrites, handleAccount, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };

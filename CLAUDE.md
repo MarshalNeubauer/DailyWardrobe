@@ -48,7 +48,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the page links (Packing list, Laundry & cleaning) are one card (`.slinks`) under a "Your wardrobe" heading, each with a short line
 - wording: nothing a tester reads says worker, Cloudflare, KV, token or benchmark ("the server", "Connect in ⚙ Settings first.", "it needs an update"); `tests/ui.test.js` reads all of Settings for those words
 - error texts the code tests by pattern: `/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/` in `startItemPics`
-- Privacy: outfit pictures are drawn or painted by the app; item photos and the outfit go to OpenAI only on a tap of Generate photo or Generate item pictures
+- Privacy: outfit pictures are drawn or painted by the app and never go to OpenAI (the server can no longer make one, 2026-11-14); an item's photo and description go to OpenAI only on a tap of Generate item pictures
 - the user's phone may run the Dark Reader extension; the page opts out via the `darkreader-lock` meta tag; keep it
 
 #### Settings
@@ -133,7 +133,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - one title style: `.cap` doesn't capitalise every word; `sentence(t)` capitalises a generated description's first letter (`itemTitle`, the item sheet, the piece picker, Today's pieces line, Laundry, Stats, What to buy); a name the user typed is shown exactly as typed
 - `itemName(i)` / `itemTitle(i)` / `titleCls(i)`: an item's own name (`item.name`), what it is called on screen (the name, else `desc(i)`), and the class for it (`named`: shown as typed; `cap`: a description, capitalised)
 - they are in core.js, not wardrobe.js, because Today is drawn at start-up, which can be before the later scripts have loaded: in wardrobe.js the start-up render threw now and then and the app came up with an empty wardrobe
-- the planner's texts (`desc`, `nm`, `rateOutfit` notes, `outfitText`) never use the name
+- the planner's texts (`desc`, `nm`, `rateOutfit` notes) never use the name
 - `avgText(v)`: an average score with one decimal, rounded down ("99.9"), "100" only when every day scored 100; Stats' "What costs you points" is "Small deductions" and What to buy says "days with a deduction"
 - the dress code: `settings.dress = {jacket, tie}` (synced; a missing object or key means yes); `wearsJacket()` / `wearsTie()` read it
 - `needsJacket(o)` / `needsTie(o)`: is an outfit without that piece short of one (not on a `casual` day, not when the dress code leaves it out); the score and Today's pieces list use them
@@ -141,7 +141,6 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - trousers have a kind (`item.trouserKind`: chinos or jeans; none = dress trousers) and shoes a style (`item.shoeStyle`: derby, loafer, boot, sneaker; none = oxford): `trouserKind(i)`, `shoeStyle(i)`, `TROUSER_KINDS`, `SHOE_STYLES`; `typeWord(i)` names them in `nm()` ("denim jeans", "brown loafers")
 - items from before have neither kind nor style and plan exactly as before (`tests/dress.test.js` GOLD unchanged)
 - `hasVest(i)`: a suit has a waistcoat only with `vest:'yes'`; while the wardrobe has no `settings.vestDef` (it is from before that rule) a suit with no value still has one, so nothing changes until its suits were given their value (dress.js)
-- the photo request mentions a watch only when the outfit text has one ("wristwatch", `hasWatch` in worker/render.js): otherwise the pose has no watch and "He wears no wristwatch: both wrists are bare" (`NO_WATCH`); `tests/watchmatch.test.js`
 - swapping the belt brings shoes that match it, as swapping the shoes brings a belt (`FOLLOW.belt` in history.js: shoes and socks; the owner: with one belt per pair of shoes a belt swap took the belt off and said "None of your belts match")
 - when the other belts' shoes don't suit the outfit (a black suit wants black shoes), the swap or pick changes nothing and Today says why (`beltless` in history.js: the day planned with the record in memory only); `tests/beltswap.test.js`
 - the type `pants` is "Trousers" on screen (`TYPES`, packing list, Care); photo prompts still say "dress trousers"
@@ -295,7 +294,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `detect.js`
 
 - stripe/check detection from photos (canvas)
-- `usableSett(i)`: the item's `sett`, unless it is a band reading of a `MOTIF_PATS` pattern (an older reading); a weave pattern (`texPat`) takes a texture or a figure (motif) reading; drawing, `settText`, photo diagrams and `patSummary` use it
+- `usableSett(i)`: the item's `sett`, unless it is a band reading of a `MOTIF_PATS` pattern (an older reading); a weave pattern (`texPat`) takes a texture or a figure (motif) reading; drawing and `patSummary` use it
 - `settSig(s)`: a reading's signature for photo keys (`comboSig`): band colours, or the motif's grid, ground, figures and colours
 - the full sett (`analyzeSett`/`settFromCanvas`): every band of one repeat in its own colour (per-step medians in Lab, merged until neighbours differ by ΔE 5; a 1–2 step band lying between its neighbours is their blurred edge), the direction, the lines crossing the other way (the residual after the main bands, projected; thread colour = 2 × pixel − band), and the scale (`cr`); stored as `item.sett` `{v:2,a,bands:[[hex,w]],cross:{d,bands:[[hex|null,w]],r},cr,tr,src}`
 - `analyzeSett` stays on the page (it needs the canvas); `settFrom`'s cache (tagging.js `settMemo`) keeps it from running again for the same pictures
@@ -345,7 +344,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `draw.js`
 
 - procedural fabric patterns (`fabricDef`), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails (`itemThumb`)
-- `outfitText()` (photos.js) adds an item's `patternText` (Claude's description) for the photo generator, and `comboSig` (photos.js) includes the sett and description, so such an item gets its own photo
+- `comboSig` (photos.js) includes an item's sett and `patternText` (Claude's description), so such an item gets its own photo key
 
 #### Fabrics
 
@@ -484,11 +483,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `TIE_TEX_K`, `ASM_TIE_TEX_MAX`, `ASM_TIE_FIG_MAX`, `TIE_DARK_L` and `TIE_DARK_X` are all in `asmTieSig`
 - on a tie no ground lightness is mixed into a line (the quarter mix is for a line whose threads cross the ground's): it darkened the repp tie's blue stripe and turned a thin white edging grey
 
-#### Patterns for the photo generator
-- a striped or checked shirt, or one with a motif reading (`shirtPatterned` in photos.js), is described to the photo generator ("a white stripe dress shirt (…)", `motifText` for a motif, its drawing as a reference) and gets its own photo key; plain and finely woven shirts share one photo per colour
-- the realistic photo gets a read pattern three ways (`patternPrompt`, `outfitRefsFull`): a description from the measurements (`settText`: direction as the viewer sees it from `sett.a`, each colour's share named with Claude's `weave.colours` names (hue-weighted match), pinlines, crossing lines), Claude's `patternText` with any direction phrase removed (`dropDir`: Claude once had a plaid tie's stripes rising the wrong way and the generator copied it), and a drawing of the pattern (`patternDiagram`: a tie's blade tip down, else a square of cloth) inserted after the item's photo
-- `motifText()` describes a motif (grid, figures, colours, ground, repeats across); `outfitRefsFull` labels its diagram as figures
-- tested against the user's real worker: the same outfit made the old way and the new way, the new one had the right stripe direction, colour balance and crossing lines
+#### Patterns and photo keys
+- a striped or checked shirt, or one with a motif reading (`shirtPatterned` in photos.js), gets its own photo key; plain and finely woven shirts share one photo per colour
+- the words and drawings that described a read pattern to the retired outfit-photo generator (`patternPrompt`, `settText`, `motifText`, `patternDiagram`, `outfitRefsFull`, `trimRefs`, the watch's turned references) were removed on 2026-11-14 (the owner: "remove the leftovers too")
 
 ### `app.js`
 
@@ -497,6 +494,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - nothing a script runs at load may reach a name declared in a later script (function declarations are hoisted only within their own file); the split was checked mechanically for that (only `applyTheme` → `renderToday`, guarded by `window.appReady`, crosses)
 - IndexedDB storage: items, day history, settings; generated photos in `meta` as `render:<combination key>`
 - `txs` and `atomic` reject on `onabort` too (`txFail`): a transaction aborted by a full disk used to settle neither way, so the Add card just stayed; the rejection is the browser's error marked `dwStore`
+- a lost database connection is opened again (2026-11-14, a tester's iPhone 17 Pro: the sample wardrobe, Confirm on Add and every save did nothing, silently, and each tap of the sample left a navy suit card on Add): iOS Safari can close a page's IndexedDB connection after the app was in the background, and every `transaction()` then throws `InvalidStateError` at once, which `storeFailure` didn't count; `txs` and `atomic` run through `dbRetry` (`dbLive`/`dbOpen`, `dbConn`, `dbDrop` on the connection's `close`/`versionchange`; `dbGone`: InvalidStateError, UnknownError, "connection/closing/closed"): opened again and retried once, else rejected marked `dwStore` ("your phone closed the app's storage. Close the app fully and open it again.", `storeFailText`); `db` stays the first opening; `save()` (add.js) wraps `saveCard()` and says any failure (the card stays) instead of rejecting; `kitSaveCards` takes a card that didn't save off Add and stops; `tests/dblost.test.js` (also on WebKit)
 - `loadImg` revokes its object URL once the picture has loaded
 - working on it: every POST to the worker's AI endpoints (`/` tagging, `/tag-many`, `/pattern`, `/render` and item pictures, not `mode:'queue'`) is caught by a `fetch` hook (`busyLabelFor`) that shows `#busy`, a spinning pill above the tab bar, with what is running (`busyStart`/`renderBusy`); photos waiting in the background queue show there too
 - `.spin` is the ring, also in "Generating photo…", the Add card's busy state and "Claude is reading the pattern…"
@@ -675,7 +673,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `photos.js`
 
-- a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`), a prompt line (`shirtTexText`) and a drawing of its texture with 2.5× contrast (`fabricDef(…,'dia')`) after its close-up
+- a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`)
 - "Last worn" (`lastWorn`) counts only days marked ✓; the stats still count unmarked past days as worn
 
 #### Outfit photos
@@ -683,27 +681,13 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - outfit photos are kept on the device as the worker made them (`keptPhoto`): shrunk to 900px and re-encoded at JPEG .85 (`shrinkUrl(…,900)`) they were softer than the 1024 original on a 3x phone and when zoomed; photos kept before stay 900px until made again
 - background download of the worker's photos for the month on screen and the next, nearest day first (`prefetchRenders`, after one `GET /render?list=1`)
 - a day the worker has no photo for is not asked about (`fetchRemoteRender`, `fetchItemPic`): the worker's list (`remoteList`, `GET ?list=1`, once, shared with `prefetchRenders`; `remoteListed` false when the worker gives none, then each day is asked as before) says which it keeps; each ask was a 404 logged in the console for every day shown
-- outfit photos are no longer made (2026-11-14): `outfitText`, `outfitRefs` and `outfitRefsFull` (what that photo was asked with) stay as tested helpers, unused by the app; kept photos still show and sync
-- a no-jacket day's photo key includes the trousers and its request sends `nojacket`
-- `outfitText` describes a jacket without a tie as "worn with the collar open and the top button undone, with no tie"; `comboSig` has `-` in the tie's place, so a tieless outfit has its own photo key
-- `outfitRefs()` sends each close-up after its item's photo, labelled "a close-up of the … fabric (match its exact colour and weave)" (suit/blazer, shirt, tie; trousers on no-jacket days); the planner worker never gets `texture`
-- the worker takes 8 references; `trimRefs` (tagging.js) drops the least needed first (`refRank`: the shirt's close-up, then its texture drawing (the user's choice: the drawing is in the tagged colour, a dim close-up reads grey), other drawings, close-ups), never an item's photo: cutting at 8 once dropped the watch and the generator drew a generic one
-- a tie with a close-up is sent without its photo (`outfitRefs`), the shirt's close-up going in its place; a tie without a close-up keeps its photo (the owner's choice after an A/B on the real worker, 2026-11-11: no difference to see that one run to the next doesn't also make, about 391 tokens saved a 270×360 photo)
-- a tie sent without its photo has its pattern drawing right before its close-up (`outfitRefsFull`, tagging.js)
-- an outfit photo at `gpt-image-2` medium with 8 references costs about 11¢ (1,756 output tokens, 5.3¢ of it), not the 7¢ the app's texts say; high is 7,024 output tokens (21.1¢)
-- `gpt-image-2` accepts any size divisible by 16 up to 3840 on the long edge; 2048x2048 at medium is about 15 to 16¢ a photo, visibly sharper in the watch, tie and shirt weave (2026-11-12); the worker still asks for 1024x1024
+- outfit photos are no longer made (2026-11-14): the prompt builders (`outfitText`, `outfitRefs`, `outfitRefsFull`) were removed; kept photos still show on their days (`renderFor`) and still sync (`GET`/`PUT /render`)
+- a no-jacket day's photo key includes the trousers; `comboSig` has `-` in the tie's place, so a tieless outfit has its own photo key
+- `POST /render` is sent only for item pictures (`renderItemPic`, `{mode:'item'}`); the busy pill (app.js `busyLabelFor`) shows "Making the item picture…" for that and nothing for any other `/render` POST
 
 #### The watch
 
-- the watch and its dial's enlargement go FIRST, right after the illustration, as two references (`WATCH_WORN`, `WATCH_DIAL`): at the end of the list the generator drew a stock chronograph
-- the dial's enlargement is `dialCrop` (tagging.js, `DIAL_PART` .48 of the photo's middle): the watch is about 80px in the picture and with its photo alone the dial came back generic
-- the enlargement is never trimmed (`refRank` 9): in a full outfit (9 candidates) the shirt's close-up goes first; the enlargement going first is why the owner's watch came back generic from 2026-11-11
-- both go turned half a turn (`turnBy(…, WATCH_TURN)`, 180°): on the left wrist, arm across the chest, a watch is seen with its crown toward the hand and 12 o'clock at the bottom; from upright photos it was drawn upright, crown toward the elbow, which the owner called backwards; the prompt says the same and the figure's watch has its crown toward the hand (`.fig-crown`)
-- the watch reference is the owner's own photo (`o.watch.photo`), its product picture (`itemPic`) only when there is none: the product picture is a redrawing whose dial details are already lost
-- (retired 2026-11-14) the drawing was the generator's pose with the watch's own dial in its case (`figurePng`, `figureSvg` `photo:true`); neither exists now
-- `watchText(w, {worn})` (core.js): with the owner's Details the style's stock layout is left out ("chronograph", not "chronograph (three subdials and a date window)"); `worn` (outfit photos, `outfitText`) says the details describe the watch upright and every position turns with it
-- `WATCH_KEY(outfit)` (worker/render.js): with a wristwatch in the outfit, a short sentence before "He is wearing" says the watch is a key detail and its face in the illustration is its real photo, to keep as it is
-- on the owner's Seiko Arctura (2026-11-12) words, references and high quality alone gave a stock chronograph; the real dial on the drawing gave a closer but not faithful dial (the watch is about 90px across); the owner declined a second paid edit per photo and a larger framing for now
+- `watchText(w)` (core.js): with the owner's Details the style's stock layout is left out ("chronograph", not "chronograph (three subdials and a date window)"); used by the item picture's description (`itemDesc`)
 
 #### Item pictures
 
@@ -817,7 +801,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - invite link `<app url>#invite=<code>&w=<server>`; `connectFromLink` stores `worker_url`/`app_token` only when `/me` accepts; `acctStart()` runs it for `#invite=` at start-up
 - a refused link changes nothing; `#invite` is dropped from the address unless the server was unreachable
 - a link on a phone connected with another code: with a local wardrobe (`acctHasLocal`) it asks, wipes (`wipeDevice`) and reloads; else it switches and drops `sync_mark`, `last_sync`, `sync_status` (a sync once merged the owner's wardrobe into a tester's)
-- Connection's `#acct-box`: `renderAccountUI`, `loadAccount` (at most once in 3 s); testers see use against caps (`ACCT_CAPS`, `acctUse`), the owner invites (`createInvite`, `copyInvite`, `revokeInvite`, `purgeInvite`)
+- Connection's `#acct-box`: `renderAccountUI`, `loadAccount` (at most once in 3 s); testers see use against caps (`ACCT_CAPS`: item pictures, photo readings, pattern readings; `acctUse`), the owner invites (`createInvite`, `copyInvite`, `revokeInvite`, `purgeInvite`)
 - `acctStart()` wraps `renderSettingsExtras` (settings.js); an old server (404/405 on `/me`) leaves the box empty
 - the role is remembered per code (`rememberRole`, `acct_role`, `acctRole()`, `isTester()`)
 - iPhone: a Home Screen app has its own storage; a tester connecting in Safari (`iosInSafari`) gets `homeScreenGuide()` and "Copy my invitation link" (`copyInviteLink`, `myInviteLink`; testers only)
@@ -869,6 +853,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - words are matched to the app's lists (`KIT_TYPE_WORDS`; `kitColour`: colour names as shown, the owner's own colours by name; `kitPattern` with synonyms)
 - a preview row per line says what was left out and why; nothing is saved until "Add N items"; each row is saved through `save` as a hand-added card (`kitSaveCards`), with one Undo for them all; "Download a template" (`KIT_TEMPLATE`)
 - the sample wardrobe (`kitSampleLoad`, `KIT_SAMPLE`: 24 pieces, three suits, two blazers, two trousers, five shirts, five ties, shoes, belts, socks, a watch): saved with `item.sample` (`save` copies `q.sample`), asks first when the wardrobe already has pieces, jumps to the next workday (`goToday`); offered on the setup's last step, Today's checklist and the empty Wardrobe
+- Add to Home Screen (2026-11-14, the owner: show a new iPhone user how to add it as a web app): on an iPhone or iPad in a browser tab (`homeNeeded` in kit.js: `homeIOS` and not `homeStandalone`; `window.DW_IOS` / `DW_STANDALONE` for tests) the setup's steps are worked out when it opens (`SETUP_STEPS = setupStepsNow()`, from `SETUP_BASE`) with a Home Screen step right after Welcome (`homeSteps(true)`): the reason (full screen, the only way iOS lets it send the morning reminder), three taps with the Share and Add icons (Share at the bottom of Safari, at the top on an iPad), and "do this before you set anything up": the Home Screen app keeps its own storage, apart from Safari's; Next carries on in Safari; Settings → About's "Add to Home Screen" (`#home-again`, `homeOpen`, the same instructions as a kit sheet) shows only there (`homeAbout`, set once at start; `#home-again[hidden]{display:none}`: the Settings buttons' display rule outranked the attribute); elsewhere the setup is as before (6 steps); `tests/homescreen.test.js`
+- Android install (2026-11-14, the owner: "the same thing for android with an install button"): on Android in a browser tab (`homeAndroid`, `window.DW_ANDROID` for tests) the setup's step after Welcome is "Install the app" (`homeStepsAndroid`; `SETUP_TITLES.home` is a getter): the browser's own offer is held (`beforeinstallprompt` → `homeEvt`, its banner prevented) and an Install button (`.home-install`, `homeInstall`: `prompt()` once, then the offer is gone) shows in place of the menu steps (`.home-manual`: ⋮ → Install app / Add to Home screen) only while there is an offer, updated in place (`homeSync`; the offer can come after the step is drawn); `appinstalled` toasts; no "set up first" warning (the installed app shares the browser's storage); About's button reads "Install the app" (`homeLabel`); `[hidden]` on them needs `display:none!important` (the setup's button rule outranks it); `tests/homescreen.test.js` fakes the offer
 - Today shows "You're trying a sample wardrobe" (`kitSampleBanner`, `#kit-sample`) with Add my own and Remove the sample (`kitSampleRemove`: asks, deletes every sample piece, releases locks)
 
 ### `remind.js`
@@ -1339,7 +1325,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `worker.js`
 
-- worker.js is the entry (the route table `ROUTES`, `serve`, `corsFor`, the handlers fetch/queue/scheduled, `export { RenderHub }`); the routes live in ES modules in `worker/` (2026-11-14): `tag.js` (POST /, /tag-many, the prompt and schema, the Workers AI fallback), `pattern.js`, `links.js` (GET /fetch), `render.js` (POST /render, the queue jobs, `RenderHub`), `items.js` (item pictures), `records.js` (GET/PUT/DELETE /render, /blob), `holidays.js`, `backup.js` (the backup's versions, parts, snapshots, syncLite), `photostore.js` (photos stored once, their clean-up, /sync), `people.js` (`whoIs`, plain errors, caps, invitations, feedback, account deletion), `remind.js` (Web Push)
+- worker.js is the entry (the route table `ROUTES`, `serve`, `corsFor`, the handlers fetch/queue/scheduled, `export { RenderHub }`); the routes live in ES modules in `worker/` (2026-11-14): `tag.js` (POST /, /tag-many, the prompt and schema, the Workers AI fallback), `pattern.js`, `links.js` (GET /fetch), `render.js` (POST /render, `RenderHub`), `items.js` (item pictures), `records.js` (GET/PUT/DELETE /render, /blob), `holidays.js`, `backup.js` (the backup's versions, parts, snapshots, syncLite), `photostore.js` (photos stored once, their clean-up, /sync), `people.js` (`whoIs`, plain errors, caps, invitations, feedback, account deletion), `remind.js` (Web Push)
 - each module imports what it uses from the others by name; the modules import each other in cycles (only functions cross at load), and none imports worker.js: a constant read at load time by another module would hit the cycle's TDZ, so keep load-time tables inside their own module
 - Wrangler bundles the modules on deploy (`main = "worker.js"`; checked with `npx wrangler@4.158.0 deploy --dry-run --outdir <dir>`), and the deploy workflow also runs on `worker/**`
 - tests that read the worker's text (prompts, lists) take `require('./workersrc.js')()`: worker.js and every worker/ module; tests/impact.js records worker/ modules function by function like worker.js (`workerFile`, `workerFiles`) and follows a changed constant across the worker's files
@@ -1352,7 +1338,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `ALLOWED_ORIGIN` may be several origins separated by commas: the matching one is echoed in `Access-Control-Allow-Origin` (with `Vary: Origin`), any other origin gets 403
 - CORS answers carry `Access-Control-Max-Age: 7200` (`corsFor`): a phone keeps a preflight's answer 2 hours instead of asking before nearly every call
 - `scheduled()` (cron `*/15 * * * *` in wrangler.toml) runs `sendReminders` (worker/remind.js) and the daily photo clean-up (`photoGc`, worker/photostore.js)
-- the `queue()` consumer makes queued photos and finishes account wipes (worker/render.js, worker/people.js); its catch acks a message in `PAID`
+- the `queue()` consumer (queue `wardrobe-renders`, binding `RENDER_QUEUE`; names kept from the outfit photos so the bindings need no change) only finishes account wipes (`{wipe}`, `runWipe` in worker/people.js; an error retries after a minute); any other message, such as an outfit-photo job left from before 2026-11-14, is acked and dropped
 - a Worker may make about 50 KV calls a request on the free plan; the free plan allows 1,000 KV writes and 1,000 lists a day for everyone together, which shapes the caps and the list-free reads below
 
 #### Deploy
@@ -1392,34 +1378,15 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 #### worker/render.js
 
-- `/render` POST: a realistic outfit photo via OpenAI's image edit API (`nojacket:true` uses a shirt-sleeves pose prompt); secret `OPENAI_API_KEY`, optional `OPENAI_IMAGE_MODEL` (default `gpt-image-2`) and `OPENAI_IMAGE_QUALITY`
-- an outfit request or queued job may set its own `quality`, `model` (a `gpt-image-*` id) and `complexity`, to try another model under a test key, and its own `size` (`IMG_SIZES`: 1024x1024, 1536x1536, 2048x2048; anything else or nothing is 1024x1024; a queued job keeps it)
-- a tester cannot choose `model`, `quality`, `complexity` or `size`: `handleRender` deletes them from the body before anything reads it, so a queued job keeps none either
-- a direct outfit request (not a queued job) answers with OpenAI's token counts (`usage`); a photo's record keeps them too, so `GET /render?key=` shows what it cost
+- `POST /render` (`handleRender`) makes item pictures only (`{mode:'item'}`, worker/items.js); anything else answers 410 "Outfit photos are no longer made", before the OpenAI key is checked; without `OPENAI_API_KEY` an item request answers 501
+- the OpenAI outfit photo was removed on 2026-11-14 (the owner: "remove the leftovers too"): the prompts (`RENDER_PROMPT`, `BACKDROP`, `WATCH_KEY`, `NO_WATCH`, the swap prompts, `MASTER_NOTE`), `outfitPhoto`, the queued jobs (`queueRender`, `job:`/`jobrun:`/`jobfail:`, `runRenderJob`, `jobClaim`, `failJob`, `keepMade`), `GET /render-queue` and `GET /render-wait` (`queueStatus`, `waitForRenders`, `tellHub`); outfit photos kept from before are still read and written with `GET`/`PUT /render` (records.js)
 - OpenAI calls have a 5-minute limit (`OPENAI_MS`)
-- `RENDER_PROMPT` (jacket pose) asks for "a silk tie if one is listed (if none is listed he wears no tie: the shirt collar is open, the top button undone)"; the shirt-sleeves prompt says "no tie unless one is listed"
-- the room behind him is spelled out in `BACKDROP` (daylight from the left; far out of focus, a plain light office wall, off-white and pale grey, light but not glowing; the blurred corner of a wooden desk with a laptop at lower right; a brighter strip of daylight at the far left; nothing else: the room of the photo the owner chose as the model); a furnished office with rows of desks was too busy and too sharp, and "softly blurred bright office background" came back as blown-out windows, different every time
-- `master:true` adds `MASTER_NOTE` (plain cloth, no tie bar or pocket square): the master of assembled photos
-- it still accepts edit-a-kept-photo jobs from the deleted earlier assembler (`swap {what, text}` with `SWAP_PROMPT`, `swap.add` with `SWAP_ADD_PROMPT`, `SWAP_KEEP`, `mask`/`markup`, `baseKey` = a photo kept in KV); nothing sends them
-- POST `{mode:'queue'}` keeps an outfit's inputs as `job:<key>` in KV and sends `{key}` (`{key, ns}` for a tester, `jobMsg`) to the Cloudflare Queue `wardrobe-renders` (binding `RENDER_QUEUE`); `queueRender` writes `jobrun:` with attempts 0
-- the consumer makes the photo in the background, retrying temporary OpenAI errors and recording others as `jobfail:<key>`; a job that keeps throwing is recorded as `jobfail:` after 4 tries; `jobrun:<key>` {attempts, at} is reported as `running` by `/render-queue`
-- the consumer reads the ns with `msgNs` (worker/people.js): a message without one is the owner's; one that is not `u:<id>:` is dropped untouched
-- the consumer retries a message whose `job:` it can't see yet (20 s, up to 6 tries): KV can take a minute to show the job written just before the message, and acking it lost the photo, which sat "pending" for days
-- `GET /render-queue` (`queueStatus`) sends nothing again and writes nothing (2026-11-13 audit: a re-send after 3 minutes made a second paid photo, and giving up after 3 re-sends deleted a job still waiting behind others); the queue delivers every message and redelivers a run that was cut off; a job no message has touched for `LOST_JOB_MS` (6 h) is reported in `failed` without deleting anything
-- `/render-queue` never lists KV: the app sends `?keys=` and the worker reads each key (`jobfail:`, `jobrun:`, `job:`); polling with lists used up the free plan's 1,000 a day and every list threw (error 1101); without keys a failed list answers 503 instead of crashing, and a tester's `/render-queue` without `?keys=` answers empty
-- one run per job (`jobClaim` → the person's RenderHub, `job-claim`/`job-done`/`job-release`/`job-state`, serialised by `jobQ`): a message claims its job (keyed by the photo key, with the job's `t`) before calling OpenAI; a second copy while it runs is retried after the claim's time left (`CLAIM_MS`, OpenAI's 5 minutes + 2), one for a job made or given up after it was queued is acked (`DONE_MS` 3 days); a regenerate queued after the photo was made is a new job and runs; without the hub binding (or the hub unreachable) a run goes ahead
-- the consumer writes `jobrun:` only after it holds the claim (a duplicate writes nothing)
-- never retried after OpenAI answered: a message whose photo was made is in `PAID`, so `queue()`'s catch acks it; `keepMade` catches a failed save (KV over its writes), still hands the photo to an open app through the hub, records `jobfail:` ("made but the server couldn't keep it") and acks; `tests/workerfix.test.js` checks one OpenAI call for a failed save, two copies at once, and a Try again while it runs
-- one helper gives up a job, `failJob`: refund, `jobfail:`, delete `job:` and `jobrun:`, tell the hub, each step in its own try (four separate copies used to differ)
-- a queued photo's earlier `jobfail:` is deleted only when it is there (`dropFail`: a delete of nothing still counts as a write)
-- the push: the consumer hands each finished photo (or failure) to the Durable Object `RenderHub` (binding `RENDER_HUB`, `tellHub(env, ns, m)`), which answers the app's held `GET /render-wait?keys=…&ms=` (`waitForRenders`) with the photo itself (KV can lag a minute); no binding → 501 and the app only polls
-- RenderHub's `recent` keeps `{key, ok}` or `{key, error}` for 10 minutes, never the photo (2048 photos for 10 minutes could near the object's 128 MB); a waiting app still gets the photo in the push, and `waitForRenders` reads a remembered one from KV (left out while KV doesn't show it yet)
-- `RenderHub` is one instance per person (`hubOf(env, ns)`: `renders` for the owner, `renders:u:<id>:` for a tester), so a held `/render-wait` can only be answered with the caller's own photos
-- the app no longer sends outfit photos (2026-11-14, the owner retired the photo made from the drawn figure): nothing calls POST `/render` for an outfit, `{mode:'queue'}`, `/render-queue` or `/render-wait`; the endpoints, the queue consumer and `RenderHub` are left in place, unused (not redeployed for it); item pictures still use `/render` (`mode:'item'`)
+- `RenderHub` (binding `RENDER_HUB`, class kept, so no Wrangler migration) is one Durable Object per person (`hubOf(env, ns)`: `renders` for the owner, `renders:u:<id>:` for a tester); it holds a tester's daily counts (`/use`, `/used`) and the "switched off" mark (`/off`, `/wipe`); its photo-wait and job-claim parts went with the outfit photo
+- job records a hub kept for the retired queue stay in its storage until that person's `/wipe`; they are a few bytes each and nothing reads them
 
 #### worker/items.js
 
-- `/render` POST with `mode:'item'`: a product picture of one item from a text description via OpenAI image generation, stored under the given key (`itemPhoto`), with the same 5-minute limit as outfit photos (`OPENAI_MS`)
+- `/render` POST with `mode:'item'`: a product picture of one item from a text description via OpenAI image generation, or an edit of the item's own photo (`ref`), stored under the given key (`itemPhoto`), with a 5-minute limit (`OPENAI_MS`); made at once (an old app's `queue:true` is ignored)
 
 #### worker/records.js
 - `GET`/`PUT /blob` (`handleBlob`): raw bytes as `blob:<key>`, owner-only writes up to 20 MB, the same `sig` not rewritten
@@ -1469,29 +1436,28 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 #### worker/people.js
 
 - `whoIs(env, token)` is the one place that says who is calling, from the `x-app-token` header: the owner when the token's SHA-256 equals `APP_TOKEN`'s (`sha256Hex`, `sameText`; never `!==`) → `{id:'owner', role:'owner', ns:'', caps:null}`; a tester when KV has `invite:<sha256 hex of the code>` = `{id, name, caps, created, off}` → `{id, name, role:'tester', ns:'u:<id>:', caps, hash}`; `off` → 403 `{error:'invite off', message}`
-- storage per person: every KV key of a person's data starts with `who.ns`: the backup (`<ns>wardrobe:v1`), `<ns>snap:*`, `<ns>render:*`, `<ns>job:*`, `<ns>jobfail:*`, `<ns>jobrun:*`, `<ns>ph:*`; the owner's ns is the empty string, so the owner's key names are byte for byte what they were (`tests/accounts.test.js` asserts the exact names)
+- storage per person: every KV key of a person's data starts with `who.ns`: the backup (`<ns>wardrobe:v1`), `<ns>snap:*`, `<ns>render:*`, `<ns>ph:*` (and, until they expire, `<ns>job:*`, `<ns>jobfail:*`, `<ns>jobrun:*` left by the retired outfit-photo queue); the owner's ns is the empty string, so the owner's key names are byte for byte what they were (`tests/accounts.test.js` asserts the exact names)
 - keys that belong to nobody's namespace: `invite:<hash>`, `invites:index` (the list of invitations, so `GET /invites` reads one document instead of listing KV), `feedback:log`, and `use:<id>:<day>` (the count, only without the Durable Object)
-- `GET /render?list=1`, `/render-queue`, `/render-wait`, `/sync?snaps=1`, `?snap=` and roll back see only the caller's keys
+- `GET /render?list=1`, `/sync?snaps=1`, `?snap=` and roll back see only the caller's keys
 - the one exception: the owner's colour-coded master records listed in `cm:shared`, which a tester reads and lists as their own (worker/records.js)
-- daily caps, testers only (`DEFAULT_CAPS` `{tag:40, pattern:10, photo:12, item:20}` per UTC day, `utcDay`; an invitation's own `caps` override them, `cleanCaps`): tag = `POST /` and `/tag-many`, pattern = `/pattern`, photo = outfit photos (direct, queued, `replace`), item = item pictures and one-piece edits (`photoCap`: a body with `swap`)
+- daily caps, testers only (`DEFAULT_CAPS` `{tag:40, pattern:10, item:20}` per UTC day, `utcDay`; an invitation's own `caps` override them, `cleanCaps`): tag = `POST /` and `/tag-many`, pattern = `/pattern`, item = item pictures; the outfit-photo cap (`photo`) went with the outfit photo on 2026-11-14, and a `photo` number in an older invitation is ignored
 - a tester's first 7 days after the invitation was made (`FIRST_WEEK_MS`): every daily limit twice (`FIRST_WEEK_X`, in `whoIs`); `/me` gives `firstUntil`, and Connection says until when
 - more caps the app does not show protect KV's daily writes (`EXTRA_CAPS`): 60 photo uploads (`PUT /render`), 20 feedback messages, 30 backups, 20 reminder changes (`push`) a day per tester
-- every KV write a tester causes is counted (`write` in `EXTRA_CAPS`: 200 a day, 400 in the first week; `ALL_CAPS.write` 450 for all testers together, so the owner always has over half of the free plan's 1,000): each new `ph:` photo a backup stores and the backup itself (`writeBudget` → `putPhotos`' `allow`), its daily copies (`keepSnapshots` returns its writes, `countWrites`, never refused), `PUT /render`, `DELETE /render`, feedback, reminder changes, a direct photo (1) and a queued one (`JOB_WRITES` 5); `spendEach` takes several counts for one call or none, `spendUpTo` as many as are left
+- every KV write a tester causes is counted (`write` in `EXTRA_CAPS`: 200 a day, 400 in the first week; `ALL_CAPS.write` 450 for all testers together, so the owner always has over half of the free plan's 1,000): each new `ph:` photo a backup stores and the backup itself (`writeBudget` → `putPhotos`' `allow`), its daily copies (`keepSnapshots` returns its writes, `countWrites`, never refused), `PUT /render`, `DELETE /render`, feedback, reminder changes, an item picture (1); `spendEach` takes several counts for one call or none, `spendUpTo` as many as are left
 - KV lists are counted too (`list`: 30 a day per tester, 60 the first week, 150 for all testers): `GET /render?list=1` and `/sync?snaps=1`
-- all testers together have a daily total (`ALL_CAPS`: tag 150, pattern 40, photo 40, item 60, upload 300, feedback 100; the `TESTER_DAILY_TOTAL` variable, JSON, changes any), counted like one more tester under the id `all` (hub `renders:u:all:`, or KV `use:all:<day>`) after the tester's own cap; over it the call is refused in plain words (`all:true`) and the tester's own count goes back; the owner is never counted; set budget limits on the OpenAI and Anthropic accounts as well: this only bounds what testers can spend
-- over a cap: 429 `{error:'limit', what, cap, used, message, detail}`, the message a plain sentence ("Today’s limit of 12 outfit photos is used up. It starts again at midnight UTC.", `CAP_WORDS`); `detail` repeats it because the app's tagging errors show `detail`
-- `spend(env, who, what)` counts before the AI call and answers null or `{status, body}`; `unspend` gives the count back when the call fails; a queued job remembers `cap` and `capDay` and `refundJob` gives it back when the consumer gives up or the photo was already there; `unspend` and `refundJob` give back both the tester's and the `all` count
+- all testers together have a daily total (`ALL_CAPS`: tag 150, pattern 40, item 60, upload 300, feedback 100; the `TESTER_DAILY_TOTAL` variable, JSON, changes any), counted like one more tester under the id `all` (hub `renders:u:all:`, or KV `use:all:<day>`) after the tester's own cap; over it the call is refused in plain words (`all:true`) and the tester's own count goes back; the owner is never counted; set budget limits on the OpenAI and Anthropic accounts as well: this only bounds what testers can spend
+- over a cap: 429 `{error:'limit', what, cap, used, message, detail}`, the message a plain sentence ("Today’s limit of 20 item pictures is used up. It starts again at midnight UTC.", `CAP_WORDS`); `detail` repeats it because the app's tagging errors show `detail`
+- `spend(env, who, what)` counts before the AI call and answers null or `{status, body}`; `unspend` gives the count back when the call fails, both the tester's and the `all` count
 - the counting is in the tester's `RenderHub` (`POST /use {what, n, cap, day}` → `{ok, used}`, kept in the object's storage as `use` = `{day, n:{…}}`; `GET /used?day=`): no KV write per AI call; without the `RENDER_HUB` binding `useCount` falls back to KV `use:<id>:<day>` with a 3-day TTL
-- a tester's answers are in plain words (`plainFor` in the router's `json`, `viewer` = who asked): an `error`, `detail` or `message` that names an API, a provider, a secret, a binding, the worker, KV, billing or a dashboard (`TECH_RE`) becomes a plain sentence chosen by the route (`PLAIN`: photo, tag, pattern, sync, other; `error` becomes `server`), and the original goes to the worker's log; sentences already written for people (limits, sizes) are left alone; a tester's failed queued photo is pushed in plain words too (`failFor`); the owner sees everything
+- a tester's answers are in plain words (`plainFor` in the router's `json`, `viewer` = who asked): an `error`, `detail` or `message` that names an API, a provider, a secret, a binding, the worker, KV, billing or a dashboard (`TECH_RE`) becomes a plain sentence chosen by the route (`PLAIN`: photo, tag, pattern, sync, other; `error` becomes `server`), and the original goes to the worker's log; sentences already written for people (limits, sizes) are left alone; the owner sees everything
 - invitations, owner only (`handleInvites`): `POST /invites {name, caps?}` → `{id, code, name}`, the code 32 URL-safe characters from 24 random bytes, shown once, only its hash stored; `GET /invites` → `{invites:[{id, name, caps, created, off, used}], day}`; `DELETE /invites?id=` switches one off (`MAX_INVITES` 30 active)
 - switching off: the tester's hub is told first (`POST /off`), so capped calls stop at once (`spend` answers 403); the `invite:` record is rewritten with `off:true`, which every other route sees as soon as KV shows it (up to a minute in another location)
 - `DELETE /invites?id=&purge=1` (owner): switches the invitation off, deletes everything under `u:<id>:` (the queue finishes a large one), their feedback and today's count, and takes them off the list; the code stays refused ("switched off")
 - `GET /me` → `{id, name, role, caps, used, day}` (`handleMe`, `usedOf`; the owner: `caps` null and `used` all 0)
 - `POST /feedback {text, version, where}` → `{ok:true}` (text 1–4,000 characters); `GET /feedback` (owner) → `{items:[{t, name, text, version, where}]}` newest first; one document `feedback:log`, messages older than 180 days dropped on every write and read, 500 at most, the key itself expiring 180 days after the last message
-- `DELETE /account {confirm:'delete'}` → `{ok:true}` deletes only the caller's: a tester's `u:<id>:*` keys (their `ph:` photos included), their `invite:` record and line in `invites:index` (the code stops working), their feedback, their hub's storage and their push subscriptions (`dropPush`); the owner's own families only (`OWNER_FAMILIES`: the backup, `snap:`, `render:`, `job:`, `jobfail:`, `jobrun:`, `ph:`), never `u:*`, `invite:*`, `invites:index` or `feedback:log`
+- `DELETE /account {confirm:'delete'}` → `{ok:true}` deletes only the caller's: a tester's `u:<id>:*` keys (their `ph:` photos included), their `invite:` record and line in `invites:index` (the code stops working), their feedback, their hub's storage and their push subscriptions (`dropPush`); the owner's own families only (`OWNER_FAMILIES`: the backup, `snap:`, `render:`, `ph:`, and the retired queue's `job:`, `jobfail:`, `jobrun:` while any are left), never `u:*`, `invite:*`, `invites:index` or `feedback:log`
 - `wipeSome(env, ns, budget)` deletes a part (30 KV calls in the request) and the queue finishes the rest a part per message (`{wipe:'owner'|'u:<id>:', n}`, `runWipe`); without the queue the answer carries `more:true` and the same call deletes the next part
-- KV budget with testers, for the record: a queued photo is about 6 KV writes (job, jobrun twice, the photo, two deletes); moving the job records into the Durable Object would be the next step
-- `tests/accounts.test.js`: the owner and two testers against one mocked KV, queue and a Durable Object per name: isolation of sync, snapshots, photos, lists, queue and push; the owner's exact key names; caps (429, clear the next day by moving `Date.now`, refunds, KV fallback); invitations, revoking, `/me`, feedback, account deletion; the hardening; and the app (invitation link, Connection page, limit messages)
+- `tests/accounts.test.js`: the owner and two testers against one mocked KV, queue and a Durable Object per name: isolation of sync, snapshots, photos and lists; the outfit photo's 410 and the gone queue routes; the owner's exact key names; caps on item pictures, readings and patterns (429, clear the next day by moving `Date.now`, refunds, KV fallback); invitations, revoking, `/me`, feedback, account deletion; the hardening; and the app (invitation link, Connection page, limit messages)
 - the owner's path is covered by the existing suites `sync`, `snapshots`, `render`, `render-sync`, `prefetch`, `paste`, `tagging`, `multi`
 
 #### worker/remind.js

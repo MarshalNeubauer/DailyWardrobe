@@ -63,12 +63,12 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p.click('#queue .chipbtn:has-text("Use the simple pattern")');
     ok(await p.evaluate(()=>!queue[0].sett&&/Drawn with the simple stripe pattern/.test(document.querySelector('#queue').textContent)),'"Use the simple pattern" goes back to the drawn stripe');
     await p.click('#queue .chipbtn:has-text("Use the pattern from the photo")');
-    // save; the photo prompt; the photo key; the editor
+    // save; the photo key; the editor
     const sv=await p.evaluate(async()=>{await save(0);const it=items[0],plain={...it};delete plain.sett;delete plain.patternText;
       const o={top:{id:'s',type:'suit',primaryColor:'charcoal',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:it,suitDay:true};
-      return {sett:!!it.sett,pbox:it.pbox,text:it.patternText,prompt:outfitText(o),key:comboKey(o)!==comboKey({...o,tie:plain})}});
+      return {sett:!!it.sett,pbox:it.pbox,text:it.patternText,key:comboKey(o)!==comboKey({...o,tie:plain})}});
     ok(sv.sett&&sv.pbox&&sv.pbox.w===339&&sv.text===DESC,'the item keeps its pattern, the box it was read from and the description');
-    ok(/\(measured: diagonal stripes running from the upper left down to the lower right, as the viewer sees them; the bands are about/.test(sv.prompt)&&sv.prompt.includes('wide taupe-brown bands with dark brown pinlines')&&sv.key,'the photo generator is told the pattern, and the photo is made for it (its own key)');
+    ok(sv.key,'a read pattern gives the look its own photo key');
     await p.evaluate(()=>{show('wardrobe');openItem(items[0].id)});await p.waitForSelector('#item-view');await settle(p,500);
     const ed=await p.textContent('#item-view');
     ok(/Pattern layout: \d+ colour bands with lines crossing the other way, read from the photo/.test(ed),'the Wardrobe editor shows it');
@@ -114,12 +114,11 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(Math.abs(fig.w-200/30)<.1&&!fig.rot&&fig.ws===14,`on the figure a 30-across pinstripe repeats every ${fig.w.toFixed(1)} units, upright (a jacket's stripes snap straight); the swatch shows several`);
     const tp=await p.evaluate(()=>({suit:settable('suit','pinstripe'),chalk:settable('blazer','chalk-stripe'),ging:settable('shirt','gingham'),herr:settable('suit','herringbone'),solid:settable('shirt','solid')}));
     ok(tp.suit&&tp.chalk&&tp.ging&&!tp.herr&&!tp.solid,'suits, blazers and trousers read their stripes and checks; fine weaves and solids keep the drawn tile');
-    // a patterned shirt is described and gets its own photo; plain shirts still share theirs by colour
+    // a patterned shirt gets its own photo key; plain shirts still share theirs by colour
     const sh=await p.evaluate(()=>{const top={id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},tie={id:'t',type:'tie',primaryColor:'burgundy',pattern:'solid'};
       const st={id:'a',type:'shirt',primaryColor:'white',pattern:'stripe',sett:{v:2,a:0,bands:[['#ffffff',.5],['#3f6fb5',.5]],cr:20},patternText:'Bold blue bengal stripes on white'},
         p1={id:'b',type:'shirt',primaryColor:'white',pattern:'solid'},p2={id:'c',type:'shirt',primaryColor:'white',pattern:'oxford'},o=sh=>({top,tie,shirt:sh,suitDay:true});
-      return {txt:outfitText(o(st)),plain:outfitText(o(p1)),own:comboKey(o(st))!==comboKey(o(p1)),share:comboKey(o(p1))===comboKey(o(p2))}});
-    ok(/a white stripe dress shirt \(measured: vertical stripes; the bands are about [^)]*\. Bold blue bengal stripes on white\)/.test(sh.txt)&&/a plain white dress shirt/.test(sh.plain),'the photo generator is told a striped shirt\'s pattern; a plain one is still "a plain white dress shirt"');
+      return {own:comboKey(o(st))!==comboKey(o(p1)),share:comboKey(o(p1))===comboKey(o(p2))}});
     ok(sh.own&&sh.share,'a striped shirt gets its own photo; plain and finely woven white shirts still share one');
     // a linen windowpane blazer (khaki, slubby, thin light-blue lines with a white one beside, both ways, light falling off): the
     // lines barely differ in lightness, only in colour; read from a close-up and from the whole jacket, then combined

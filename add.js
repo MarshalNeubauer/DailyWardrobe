@@ -195,7 +195,10 @@ async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.pa
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){cache={};toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
-async function save(i){
+/* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
+async function save(i){try{return await saveCard(i)}catch(e){console.warn('save failed',e);
+  if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}}
+async function saveCard(i){
   if(cardReading(queue[i]))return;
   const q=queue[i],f=FABRIC.includes(q.type);
   generateSwatch(q);

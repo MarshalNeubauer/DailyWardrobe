@@ -40,8 +40,8 @@ module.exports=async({ok,chromium,url})=>{
   // past days keep what was worn
   const fz=await p.evaluate(()=>{const o=frozenOutfit({date:'2026-11-10',ids:{top:'suit0',shirt:'shirt5',tie:'tie7'},suitDay:true,vestOn:true},0,{});return o.vest});
   ok(fz,'a past day remembers that the vest was worn');
-  // render prompt mentions it
-  ok(await p.evaluate(()=>{const o=planFor()[key(sel)];return /waistcoat \(vest\)/.test(outfitText(o))&&figSig(o).startsWith('vest|')}),'the realistic photo prompt includes the vest');
+  // the photo key counts it
+  ok(await p.evaluate(()=>{const o=planFor()[key(sel)];return comboSig(o).startsWith('vest|')}),'the outfit photo key includes the vest');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
 };

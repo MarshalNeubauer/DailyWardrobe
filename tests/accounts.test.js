@@ -36,14 +36,14 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // ---- nothing runs without APP_TOKEN
     {const bare={...env,APP_TOKEN:undefined},res=[];
       for(const [m,p,b] of [['POST','',{image:PNG}],['POST','tag-many',{image:PNG}],['POST','pattern',{image:PNG}],['GET','me'],['GET','sync'],['PUT','sync',{baseRev:0,data:{}}],['GET','render?key=c0123456789abcdef'],['GET','render?list=1'],
-        ['POST','render',{image:PNG}],['PUT','render',{}],['DELETE','render?key=c0123456789abcdef'],['GET','render-queue'],['GET','render-wait?keys=c0123456789abcdef'],['GET','fetch?url=https://a.test/x.png'],['GET','holidays?country=nl'],
+        ['POST','render',{image:PNG}],['PUT','render',{}],['DELETE','render?key=c0123456789abcdef'],['GET','fetch?url=https://a.test/x.png'],['GET','holidays?country=nl'],
         ['GET','invites'],['POST','invites',{name:'x'}],['POST','feedback',{text:'hi'}],['GET','feedback'],['DELETE','account',{confirm:'delete'}]])res.push((await call(m,p,'anything',b,bare)).status);
       const body=await J(await call('POST','','',{image:PNG,appToken:''},bare));
       ok(res.every(s=>s===403)&&claude===0&&openai.length===0,`with APP_TOKEN unset every route refuses, the three tagging routes included (${res.join()})`);
       ok(body.s===403&&/APP_TOKEN/.test(body.error),'and says that the secret is missing')}
     // ---- the owner
     let me=await J(await call('GET','me',O));
-    ok(me.s===200&&me.id==='owner'&&me.role==='owner'&&me.caps===null&&me.used&&me.used.photo===0&&/^\d{4}-\d\d-\d\d$/.test(me.day),'GET /me: the owner, with no caps');
+    ok(me.s===200&&me.id==='owner'&&me.role==='owner'&&me.caps===null&&me.used&&me.used.item===0&&!('photo' in me.used)&&/^\d{4}-\d\d-\d\d$/.test(me.day),'GET /me: the owner, with no caps');
     ok((await call('GET','me','owner-secreT')).status===403&&(await call('GET','me','')).status===403&&(await call('GET','me','x'.repeat(40))).status===403,'a wrong token, no token and an unknown code are refused');
     {const a=await J(await call('POST','',null,{image:PNG,appToken:O})),b=await J(await call('POST','',O,{image:PNG}));
       ok(a.s===403&&b.s===200&&b.type==='tie','POST / takes the token from the header only: a body token alone is refused before the body is read')}
@@ -51,16 +51,16 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     let r=await J(await call('POST','invites',O,{name:'Tess'}));const A={id:r.id,code:r.code,ns:`u:${r.id}:`};
     ok(r.s===200&&/^[A-Za-z0-9_-]{24,}$/.test(r.code)&&/^[a-z0-9]{8,}$/.test(r.id)&&r.name==='Tess','POST /invites makes a tester: an id and a code of 24+ URL-safe characters');
     ok(store.has('invite:'+sha(r.code))&&![...store.values()].some(v=>String(v).includes(r.code)),'only the SHA-256 of the code is kept (invite:<hash>); the code itself is nowhere in the store');
-    r=await J(await call('POST','invites',O,{name:'Bo',caps:{photo:3,item:2,tag:2,pattern:1}}));const B={id:r.id,code:r.code,ns:`u:${r.id}:`};
+    r=await J(await call('POST','invites',O,{name:'Bo',caps:{photo:5,item:3,tag:2,pattern:1}}));const B={id:r.id,code:r.code,ns:`u:${r.id}:`};
     ok((await call('POST','invites',A.code,{name:'x'})).status===403&&(await call('GET','invites',A.code)).status===403&&(await call('DELETE','invites?id='+B.id,A.code)).status===403&&(await call('POST','invites',O,{name:''})).status===400,'invitations are the owner\'s: a tester can\'t make, list or revoke them; a name is needed');
     // a new invitation's first week has twice the limits; the testers below are made a week older so the usual limits apply
     {me=await J(await call('GET','me',A.code));
-      ok(JSON.stringify(me.caps)===JSON.stringify({tag:80,pattern:20,photo:24,item:40})&&me.firstUntil>Date.now()+6.9*86400000,`a tester's first week: twice every daily limit, and /me says until when (${JSON.stringify(me.caps)})`);
+      ok(JSON.stringify(me.caps)===JSON.stringify({tag:80,pattern:20,item:40})&&me.firstUntil>Date.now()+6.9*86400000,`a tester's first week: twice every daily limit, and /me says until when (${JSON.stringify(me.caps)})`);
       for(const x of [A,B]){const k='invite:'+sha(x.code),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec))}}
     me=await J(await call('GET','me',B.code));
-    ok(!me.firstUntil&&me.id===B.id&&me.name==='Bo'&&me.role==='tester'&&me.caps.photo===3&&me.caps.item===2&&me.caps.tag===2&&me.caps.pattern===1,'GET /me: a tester with the caps of their invitation');
+    ok(!me.firstUntil&&me.id===B.id&&me.name==='Bo'&&me.role==='tester'&&me.caps.item===3&&me.caps.tag===2&&me.caps.pattern===1&&!('photo' in me.caps),'GET /me: a tester with the caps of their invitation (an old outfit-photo cap in it is ignored)');
     me=await J(await call('GET','me',A.code));
-    ok(JSON.stringify(me.caps)===JSON.stringify({tag:40,pattern:10,photo:12,item:20}),'an invitation without caps gets the defaults: 40 readings, 10 patterns, 12 photos, 20 item pictures');
+    ok(JSON.stringify(me.caps)===JSON.stringify({tag:40,pattern:10,item:20}),'an invitation without caps gets the defaults: 40 readings, 10 patterns, 20 item pictures');
     // ---- sync and snapshots, each to their own
     const put=(tok,data,day)=>call('PUT','sync',tok,{baseRev:0,data,day});
     ok((await put(O,{who:'owner'},'2026-03-01')).status===200&&(await put(A.code,{who:'tess'},'2026-03-01')).status===200&&(await put(B.code,{who:'bo'},'2026-03-01')).status===200,'three people save a backup, each from revision 0');
@@ -83,75 +83,54 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok((await list(O))===K&&(await list(A.code))===K&&(await list(B.code))===K2&&(await J(await call('GET','render?key='+K,O))).sig==='owner','GET /render?list=1 lists only the caller\'s photos');
     await call('DELETE','render?key='+K,A.code);
     ok(store.has('render:'+K)&&!store.has(A.ns+'render:'+K)&&store.has(B.ns+'render:'+K2),'deleting a photo deletes the caller\'s, kept as render:<key> for the owner and u:<id>:render:<key> for a tester');
-    // ---- the queue
-    const QK='c2222222222222222';
-    await call('POST','render',A.code,{mode:'queue',key:QK,image:PNG,sig:'tess'});await call('POST','render',O,{mode:'queue',key:QK,image:PNG,sig:'owner'});
-    ok(JSON.stringify(sent)===JSON.stringify([{key:QK,ns:A.ns},{key:QK}]),`a tester\'s queue message carries their prefix; the owner\'s is {key} alone, as it always was (${JSON.stringify(sent)})`);
-    ok(store.has('job:'+QK)&&store.has('jobrun:'+QK)&&store.has(A.ns+'job:'+QK)&&store.has(A.ns+'jobrun:'+QK),'the owner\'s job is job:<key> and jobrun:<key>; the tester\'s the same under u:<id>:');
-    const st=async(tok,k=QK)=>J(await call('GET','render-queue?keys='+k,tok));
-    ok((await st(B.code)).pending.length===0&&(await st(A.code)).pending.join()===QK&&(await st(O)).pending.join()===QK&&(await st(B.code,'')).pending.length===0,'GET /render-queue reports only the caller\'s photos');
-    // the push: B waits for the same key and must not get A's photo
-    const wait=(tok,ms)=>call('GET',`render-wait?keys=${QK}&ms=${ms}`,tok).then(x=>x.json());
-    const wB=wait(B.code,1500),wA=wait(A.code,8000),wO=wait(O,8000);await new Promise(x=>setTimeout(x,50));
-    const lists0=n.list;await drain();const [gA,gO,gB]=[await wA,await wO,await wB];
-    ok(gA.length===1&&gA[0].rec.sig==='tess'&&gO.length===1&&gO[0].rec.sig==='owner'&&gB.length===0,'GET /render-wait hands each person their own finished photo; someone else waiting for the same key gets nothing');
-    ok(JSON.parse(store.get('render:'+QK)).sig==='owner'&&JSON.parse(store.get(A.ns+'render:'+QK)).sig==='tess'&&!store.has('job:'+QK)&&!store.has(A.ns+'job:'+QK)&&n.list===lists0,'the consumer writes each photo under its person and clears the job, without a KV list');
-    ok([...hubs.keys()].sort().join()===['renders','renders:'+A.ns,'renders:'+B.ns,'renders:u:all:'].sort().join(),'one hub per person: the owner\'s is still the one named "renders"; one more counts all the testers together');
-    imgReply=()=>[400,{error:{message:'not allowed'}}];
-    await call('POST','render',O,{mode:'queue',key:K2,image:PNG});await drain();
-    ok(store.has('jobfail:'+K2)&&!store.has('job:'+K2)&&!store.has('jobrun:'+K2),'a failed photo of the owner\'s is recorded as jobfail:<key>');
-    imgReply=()=>[200,{data:[{b64_json:JPG}]}];
+    // ---- the retired outfit photo (2026-11-14): its queue and waiting routes are gone, and POST /render makes item pictures only
+    {const QK='c2222222222222222',s0=sent.length,o0=openai.length;
+      const q=await J(await call('POST','render',A.code,{mode:'queue',key:QK,image:PNG})),d=await J(await call('POST','render',O,{image:PNG,outfit:'a navy suit',key:QK}));
+      ok(q.s===410&&d.s===410&&sent.length===s0&&openai.length===o0&&!keysOf('').some(k=>/(^|:)job(run|fail)?:/.test(k)),'an outfit photo, direct or queued, answers 410: nothing is queued, stored or asked of OpenAI');
+      ok((await call('GET','render-queue?keys='+QK,O)).status===404&&(await call('GET','render-wait?keys='+QK,O)).status===404,'GET /render-queue and /render-wait are gone');
+      ok(!hubs.has('renders')&&hubs.has('renders:'+A.ns),'a hub per tester counts their day; the owner, never counted, has none in use');}
     // every key the owner has: the names are byte for byte what they were before there were testers
-    ok(keysOf('').filter(k=>!/^(u:|invite:|invites:index$)/.test(k)).join()===['jobfail:'+K2,'render:'+K,'render:'+QK,'snap:2026-03','snap:2026-03-02','wardrobe:v1'].join(),`the owner\'s keys, all of them: ${keysOf('').filter(k=>!/^(u:|invite)/.test(k)).join(' ')}`);
-    // ---- caps (Bo: 3 photos, 2 item pictures, 2 readings, 1 pattern)
-    const photo=(tok,x={})=>call('POST','render',tok,{image:PNG,outfit:'a navy suit',...x});
-    const puts0=n.put;openai=[];
-    ok((await photo(B.code,{model:'gpt-image-9',quality:'high',complexity:'high'})).status===200&&openai[0].model==='gpt-image-2'&&openai[0].quality==='medium'&&!openai[0].complexity,'a tester\'s model, quality and complexity are ignored: the server\'s own are used');
-    await photo(O,{model:'gpt-image-9',quality:'high'});
-    ok(openai[1].model==='gpt-image-9'&&openai[1].quality==='high','the owner can still choose them');
-    ok((await call('POST','render',B.code,{mode:'queue',key:'c3333333333333333',image:PNG,model:'gpt-image-9',quality:'high'})).status===200&&!JSON.parse(store.get(B.ns+'job:c3333333333333333')).model&&!JSON.parse(store.get(B.ns+'job:c3333333333333333')).quality,'a queued photo of a tester\'s keeps no model or quality either');
-    ok((await J(await call('POST','render',B.code,{mode:'queue',key:'c3333333333333333',image:PNG,replace:true}))).queued,'a third photo, queued with replace, still fits');
-    r=await J(await photo(B.code));
-    ok(r.s===429&&r.error==='limit'&&r.what==='photo'&&r.cap===3&&r.used===3&&r.message==='Today’s limit of 3 outfit photos is used up. It starts again at midnight UTC.',`the fourth answers 429 with a plain sentence (${r.message})`);
-    ok((await call('POST','render',B.code,{mode:'queue',key:'c4444444444444444',image:PNG})).status===429&&!store.has(B.ns+'job:c4444444444444444'),'a queued photo over the cap is refused too, and nothing is stored for it');
-    ok((await photo(A.code)).status===200&&(await photo(O)).status===200,'the other tester and the owner are not affected');
-    ok((await call('POST','render',B.code,{mode:'item',item:'a black belt',key:'c5555555555555555'})).status===200&&(await photo(B.code,{swap:{what:'tie',text:'a red tie'}})).status===200,'item pictures and one-piece edits count as item pictures, not outfit photos');
-    r=await J(await call('POST','render',B.code,{mode:'item',item:'black shoes'}));
-    ok(r.s===429&&r.what==='item'&&r.cap===2&&/2 item pictures/.test(r.message),'the item cap answers 429 in its own words');
+    ok(keysOf('').filter(k=>!/^(u:|invite:|invites:index$)/.test(k)).join()===['render:'+K,'snap:2026-03','snap:2026-03-02','wardrobe:v1'].join(),`the owner\'s keys, all of them: ${keysOf('').filter(k=>!/^(u:|invite)/.test(k)).join(' ')}`);
+    // ---- caps (Bo: 3 item pictures, 2 readings, 1 pattern)
+    const pic=(tok,x={},e=env)=>call('POST','render',tok,{mode:'item',item:'a black belt',key:'c5555555555555555',...x},e);
+    openai=[];
+    {const s=[];for(let i=0;i<3;i++)s.push((await pic(B.code)).status);
+      ok(s.join()==='200,200,200'&&openai.length===3,'three item pictures fit Bo\'s cap of 3');}
+    r=await J(await pic(B.code));
+    ok(r.s===429&&r.error==='limit'&&r.what==='item'&&r.cap===3&&r.used===3&&r.message==='Today’s limit of 3 item pictures is used up. It starts again at midnight UTC.',`the fourth answers 429 with a plain sentence (${r.message})`);
+    ok((await pic(A.code)).status===200&&(await pic(O)).status===200,'the other tester and the owner are not affected');
+    ok((await call('POST','render',B.code,{image:PNG,outfit:'a navy suit'})).status===410,'a request for an outfit photo is not counted against anything: 410');
     ok((await call('POST','',B.code,{image:PNG})).status===200&&(await call('POST','tag-many',B.code,{image:PNG})).status===200,'two readings: one photo and a photo of several items');
     r=await J(await call('POST','',B.code,{image:PNG}));const r2=await J(await call('POST','tag-many',B.code,{image:PNG}));
     ok(r.s===429&&r.what==='tag'&&r.detail===r.message&&r2.s===429&&/2 photo readings/.test(r2.message),'POST / and /tag-many share the reading cap');
     await call('POST','pattern',B.code,{image:PNG,type:'tie'});r=await J(await call('POST','pattern',B.code,{image:PNG,type:'tie'}));
     ok(r.s===429&&r.what==='pattern'&&r.cap===1,'/pattern has its own cap');
     me=await J(await call('GET','me',B.code));
-    ok(JSON.stringify(me.used)===JSON.stringify({tag:2,pattern:1,photo:3,item:2}),`GET /me shows today's use (${JSON.stringify(me.used)})`);
+    ok(JSON.stringify(me.used)===JSON.stringify({tag:2,pattern:1,item:3}),`GET /me shows today's use (${JSON.stringify(me.used)})`);
     r=await J(await call('GET','invites',O));const iB=r.invites.find(v=>v.id===B.id),iA=r.invites.find(v=>v.id===A.id);
-    ok(r.invites.length===2&&iB.name==='Bo'&&iB.used.photo===3&&iB.caps.photo===3&&iA.used.photo===2&&iA.caps.photo===12&&!JSON.stringify(r).includes(sha(B.code)),'GET /invites lists the testers with today\'s use, and no hashes');
-    ok(!keysOf('use:').length&&[...store.keys()].every(k=>!/use:/.test(k))&&hubOf('renders:'+B.ns).st.get('use').n.photo===3&&!hubs.get('renders').st.has('use'),'the counting is in the tester\'s Durable Object: no KV key is written for it, and the owner is not counted');
-    // a call that fails gives its count back; so does a queued photo that can't be made
+    ok(r.invites.length===2&&iB.name==='Bo'&&iB.used.item===3&&iB.caps.item===3&&iA.used.item===1&&iA.caps.item===20&&!JSON.stringify(r).includes(sha(B.code)),'GET /invites lists the testers with today\'s use, and no hashes');
+    ok(!keysOf('use:').length&&[...store.keys()].every(k=>!/use:/.test(k))&&hubOf('renders:'+B.ns).st.get('use').n.item===3&&!hubs.has('renders'),'the counting is in the tester\'s Durable Object: no KV key is written for it, and the owner is not counted');
+    // a call that fails gives its count back
     imgReply=()=>[400,{error:{message:'not allowed'}}];
-    const used=async t=>(await J(await call('GET','me',t))).used;const a0=(await used(A.code)).photo;
-    await photo(A.code);await call('POST','render',A.code,{mode:'queue',key:'c6666666666666666',image:PNG});const mid=(await used(A.code)).photo;await drain();
-    ok(mid===a0+1&&(await used(A.code)).photo===a0&&store.has(A.ns+'jobfail:c6666666666666666'),'a photo that fails is not counted: a direct one at once, a queued one when the consumer gives up');
+    const used=async t=>(await J(await call('GET','me',t))).used;const a0=(await used(A.code)).item;
+    await pic(A.code);
+    ok((await used(A.code)).item===a0,'an item picture that fails is not counted');
     imgReply=()=>[200,{data:[{b64_json:JPG}]}];
     // the next UTC day
     Date.now=()=>realNow()+86400000;
-    r=await J(await photo(B.code));me=await J(await call('GET','me',B.code));
-    ok(r.s===200&&me.used.photo===1&&me.used.tag===0,'the next day the caps are clear');
+    r=await J(await pic(B.code));me=await J(await call('GET','me',B.code));
+    ok(r.s===200&&me.used.item===1&&me.used.tag===0,'the next day the caps are clear');
     Date.now=realNow;
     // without the Durable Object: counted in KV, kept three days
     {const e2={...env,RENDER_HUB:undefined},day=new Date().toISOString().slice(0,10),k=`use:${B.id}:${day}`;
-      const s=[];for(let i=0;i<4;i++)s.push((await call('POST','render',B.code,{image:PNG},e2)).status);
-      ok(s.join()==='200,200,200,429'&&JSON.parse(store.get(k)).photo===3&&ttl.get(k)===3*86400,'without the RENDER_HUB binding the count is kept in KV as use:<id>:<day> for three days');
+      const s=[];for(let i=0;i<4;i++)s.push((await pic(B.code,{},e2)).status);
+      ok(s.join()==='200,200,200,429'&&JSON.parse(store.get(k)).item===3&&ttl.get(k)===3*86400,'without the RENDER_HUB binding the count is kept in KV as use:<id>:<day> for three days');
       store.delete(k)}
     // ---- a tester's errors are in plain words; the owner's keep the detail
     {imgReply=()=>[400,{error:{message:'Your organization must be verified to use the model gpt-image-2'}}];
-      const rt=await J(await photo(A.code)),ro=await J(await photo(O));
-      ok(!/OpenAI|verif|organization|model/i.test(JSON.stringify(rt))&&rt.error==='server'&&/photo service had a problem/.test(rt.message),`a tester's failed photo says so plainly (${rt.message})`);
+      const rt=await J(await pic(A.code)),ro=await J(await pic(O));
+      ok(!/OpenAI|verif|organization|model/i.test(JSON.stringify(rt))&&rt.error==='server'&&/photo service had a problem/.test(rt.message),`a tester's failed picture says so plainly (${rt.message})`);
       ok(/OpenAI/.test(ro.error)&&/verif/.test(ro.error),'the owner still sees what to fix');
-      await call('POST','render',A.code,{mode:'queue',key:'c7777777777777777',image:PNG});await drain();
-      const jf=JSON.parse(store.get(A.ns+'jobfail:c7777777777777777')||'{}'),qs=await J(await call('GET','render-queue?keys=c7777777777777777',A.code));
-      ok(/photo service had a problem/.test(jf.error)&&!JSON.stringify(qs).includes('OpenAI'),'a tester\'s queued photo that failed is kept and reported in plain words too');
       imgReply=()=>[200,{data:[{b64_json:JPG}]}];}
     // ---- a tester's backups: 30 a day; a conflict doesn't count
     {r=await J(await call('POST','invites',O,{name:'Kit'}));const K={id:r.id,code:r.code};{const k='invite:'+sha(K.code),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec))}
@@ -166,16 +145,16 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     r=await J(await call('GET','feedback',O));
     ok((await call('GET','feedback',A.code)).status===403&&r.items.length===2&&r.items.some(m=>m.name==='Tess'&&m.text==='The tie looks purple.'&&m.version==='144'&&m.t>0)&&ttl.get('feedback:log')===180*86400,'GET /feedback is the owner\'s: who wrote what, with the app version; kept 180 days');
     // ---- revoking
-    ok((await J(await call('DELETE','invites?id='+B.id,O))).ok&&(await call('GET','me',B.code)).status===403&&(await call('GET','sync',B.code)).status===403&&(await photo(B.code)).status===403&&(await call('GET','me',A.code)).status===200,'a revoked code gets 403 everywhere, at once; the other tester carries on');
+    ok((await J(await call('DELETE','invites?id='+B.id,O))).ok&&(await call('GET','me',B.code)).status===403&&(await call('GET','sync',B.code)).status===403&&(await pic(B.code)).status===403&&(await call('GET','me',A.code)).status===200,'a revoked code gets 403 everywhere, at once; the other tester carries on');
     ok((await J(await call('GET','invites',O))).invites.find(v=>v.id===B.id).off===true&&(await call('DELETE','invites?id=nobody',O)).status===404,'the list shows it as switched off');
     // all testers together have a ceiling a day (TESTER_DAILY_TOTAL changes it); the owner never counts towards it
-    {const allUsed=()=>{const u=hubs.get('renders:u:all:').hub&&hubs.get('renders:u:all:').st.get('use');return u?+u.n.photo||0:0},u0=allUsed();
+    {const allUsed=()=>{const u=hubs.get('renders:u:all:').hub&&hubs.get('renders:u:all:').st.get('use');return u?+u.n.item||0:0},u0=allUsed();
       r=await J(await call('POST','invites',O,{name:'Fi'}));const F={id:r.id,code:r.code};
-      const e3={...env,TESTER_DAILY_TOTAL:JSON.stringify({photo:u0+1})};
-      const s1=(await call('POST','render',F.code,{image:PNG,outfit:'a navy suit'},e3)).status,r2=await J(await call('POST','render',F.code,{image:PNG,outfit:'a navy suit'},e3));
-      const own=(await J(await call('GET','me',F.code))).used.photo,o3=(await call('POST','render',O,{image:PNG,outfit:'a navy suit'},e3)).status;
+      const e3={...env,TESTER_DAILY_TOTAL:JSON.stringify({item:u0+1})};
+      const s1=(await pic(F.code,{},e3)).status,r2=await J(await pic(F.code,{},e3));
+      const own=(await J(await call('GET','me',F.code))).used.item,o3=(await pic(O,{},e3)).status;
       ok(s1===200&&r2.s===429&&r2.all===true&&/everyone testing the app/.test(r2.message)&&own===1&&allUsed()===u0+1&&o3===200,`over the total for all testers a call is refused in plain words and the tester's own count is given back; the owner carries on (${r2.message})`);
-      ok(allUsed()===u0+1&&(await call('POST','render',A.code,{image:PNG,outfit:'x'},e3)).status===429&&(await call('POST','render',A.code,{image:PNG,outfit:'x'})).status===200,'it holds for every tester; the default total is higher');}
+      ok(allUsed()===u0+1&&(await pic(A.code,{},e3)).status===429&&(await pic(A.code)).status===200,'it holds for every tester; the default total is higher');}
     // a switched-off tester can still delete what they stored; the owner can delete it for them
     {r=await J(await call('POST','invites',O,{name:'Gus'}));const G={id:r.id,code:r.code,ns:`u:${r.id}:`};
       await put(G.code,{who:'gus'},'2026-03-01');await call('POST','feedback',G.code,{text:'from gus'});await call('DELETE','invites?id='+G.id,O);
@@ -252,7 +231,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await p.evaluate(async t=>typeof connectFromLink==='function'&&(await connectFromLink('#invite='+t+'&w='+encodeURIComponent(localStorage.getItem('worker_url'))))===true&&(await connectFromLink('nonsense'))===false,T),'connectFromLink(text) answers true for a good link and false for anything else');
       await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>/Connected as Tess/.test(document.querySelector('#acct-box').textContent));
       let box=await p.evaluate(()=>({t:document.querySelector('#acct-box').innerText.replace(/\s+/g,' '),w:document.querySelector('#settings-modal').scrollWidth<=document.querySelector('#settings-modal').clientWidth,inv:!!document.querySelector('#acct-create')}));
-      ok(/Outfit photos today: [01] of 1/.test(box.t)&&/Item pictures today: 0 of 0/.test(box.t)&&/Photo readings today: [01] of 1/.test(box.t)&&/Pattern readings today: 0 of 0/.test(box.t)&&box.w&&!box.inv&&!/worker|token|KV|endpoint/i.test(box.t),`Settings → Connection shows who is connected and today\'s use against each cap (${box.t})`);
+      ok(!/Outfit photos/.test(box.t)&&/Item pictures today: 0 of 0/.test(box.t)&&/Photo readings today: [01] of 1/.test(box.t)&&/Pattern readings today: 0 of 0/.test(box.t)&&box.w&&!box.inv&&!/worker|token|KV|endpoint/i.test(box.t),`Settings → Connection shows who is connected and today\'s use against each cap (${box.t})`);
       await p.evaluate(()=>closeSettings());
       if(vp.width===390){
         // a limit reaches the user: Add card, pattern reading, item picture (the app makes no outfit photo since 2026-11-14)
@@ -276,7 +255,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await p.evaluate(()=>{closeSettings();localStorage.setItem('app_token','owner-secret')});await p.evaluate(()=>openSettings('connection'));
       await p.waitForFunction(()=>document.querySelector('#acct-create')&&document.querySelector('#acct-list .acct-inv'));
       box=await p.evaluate(()=>document.querySelector('#acct-box').innerText.replace(/\s+/g,' '));
-      ok(/Connected as the owner/.test(box)&&/Invite testers/.test(box)&&/Tess/.test(box)&&/Outfit photos today: \d of 1/.test(box),`the owner sees "Invite testers" and each tester\'s use today (${vp.width}px)`);
+      ok(/Connected as the owner/.test(box)&&/Invite testers/.test(box)&&/Tess/.test(box)&&/Photo readings today: \d of 1/.test(box),`the owner sees "Invite testers" and each tester\'s use today (${vp.width}px)`);
       await p.fill('#acct-name','Sam');await p.click('#acct-create');await p.waitForFunction(()=>document.querySelector('#acct-link-url'));
       const link=await p.evaluate(()=>({u:document.querySelector('#acct-link-url').value,n:document.querySelectorAll('#acct-list .acct-inv').length,
         h:[...document.querySelectorAll('#acct-box button,#acct-box input')].map(e=>Math.round(e.getBoundingClientRect().height)),w:document.querySelector('#settings-modal').scrollWidth<=document.querySelector('#settings-modal').clientWidth}));

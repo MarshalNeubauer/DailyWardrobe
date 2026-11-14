@@ -20,7 +20,6 @@ const comboKey=o=>'c'+fnv64(comboSig(o));
 /* the key photos were saved under before shirts counted by colour only; moved over on first use */
 const comboSigV1=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,...LOOK_FIELDS.map(f=>i[f]??''),i.cuff??'',i.stripes?JSON.stringify(i.stripes):''].join('/'):'-'}).join('|');
 const comboKeyV1=o=>'c'+fnv64(comboSigV1(o));
-const figSig=comboSig;
 /* photos saved before combinations were used were keyed by date with this signature; they are moved over on first use */
 const legacySig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,i.primaryColor,i.secondaryColor,i.tertiaryColor,i.pattern,i.metal,i.updated||0].join('/'):'-'}).join('|');
 async function keepRender(ck,rec,share){renders[ck]=rec;await metaPut('render:'+ck,rec);if(share)shareRender(ck,rec)}
@@ -81,41 +80,18 @@ async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetchin
   }catch(e){console.warn('photo prefetch failed',e)}finally{prefetching=false}}
 let prefetchTimer=0;const schedulePrefetch=()=>{clearTimeout(prefetchTimer);prefetchTimer=setTimeout(prefetchRenders,250)};
 async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll(IDBKeyRange.bound('render:','render;',false,true)));renders={};for(const x of all||[])renders[String(x.k).slice(7)]=x.v}catch(e){console.warn(e)}}   // (only the photos' key range: the kept assembled pictures are read by asmLoad)
-/* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
-const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
-/* a tie clip is named by its colour (no metal field): "silver", "rose gold", "black" (enamel) */
-const clipWord=i=>colName(primaryCol(i));
-/* a striped or checked shirt shows in the photo (a plain or finely woven one counts by its colour alone) */
+/* a striped or checked shirt has its own photo key (a plain or finely woven one counts by its colour alone) */
 const shirtPatterned=i=>!!i&&([...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern))||!!(usableSett(i)||{}).motif);
-/* a shirt whose weave texture was read (dobby diamonds, herringbone…): it gets its own photo, described and drawn for the generator */
+/* a shirt whose weave texture was read (dobby diamonds, herringbone…): it has its own photo key too */
 const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(usableSett(i)||{}).tex;
-const shirtTexText=i=>`a ${colName(primaryCol(i))} dress shirt woven with a fine, subtle tone-on-tone ${TEX_WORDS[i.sett.tex.kind]||'woven texture'} (the texture is in the weave itself, one colour, faint but visible up close; not stripes, checks or a print)`;
-function outfitText(o){
-  const pt=(i,role)=>{const t=patternPrompt(i,role);return t?` (${t})`:''};   // the pattern measured and described (tagging.js)
-  const parts=[o.top&&`a ${nm(o.top)}${pt(o.top,'top')}`,o.shirt&&(shirtPatterned(o.shirt)?`a ${colName(primaryCol(o.shirt))} ${patName(o.shirt.pattern)} dress shirt${pt(o.shirt,'shirt')}`:shirtTextured(o.shirt)?shirtTexText(o.shirt):`a plain ${colName(primaryCol(o.shirt))} dress shirt`)+(o.top?(o.tie?'':', worn with the collar open and the top button undone, with no tie'):`, tucked in, ${o.tie?'':'the collar open with no tie, '}no jacket`),!o.top&&o.bot&&`${nm(o.bot)}${pt(o.bot,'bot')} with a leather belt`,o.vest&&`a matching five-button waistcoat (vest) in the same fabric as the suit, buttoned, its V opening visible above the jacket button`,o.tie&&`a ${nm(o.tie)}${pt(o.tie,'tie')}`,o.clip&&`a ${clipWord(o.clip)} tie bar`,
-    o.watch&&watchText(o.watch,{worn:true}),o.links&&`${metalWord(o.links)} cufflinks`];
-  return prettyCols(parts.filter(Boolean).join('; '));
-}
 /* an outfit photo is kept on the device as the worker made it: shrunk to 900px (JPEG .85) it was softer than the 1024 original, and
    Today shows it up to 390 points wide on a 3x screen (1170 pixels) and zooms 2.5x. Assembled pictures keep their 900px (assemble.js):
    their kept zones were measured at that size */
 const keptPhoto=u=>u;
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
-/* reference photos for an outfit photo, each labelled: the jacket and tie photos, and the watch's own photo or its product
-   picture (no shirt photo: an outfit photo is shared by every shirt of that colour). A tie with a close-up goes without its
-   photo (the owner's choice after a trial: the close-up and the pattern drawing carry the tie, and its place goes to the
-   shirt's close-up); a tie without one keeps its photo, its only picture */
-function outfitRefs(o){const refs=[],labels=[];const add=(img,l)=>{if(img){refs.push(img);labels.push(l)}};
-  const tex=(i,what)=>add(i&&i.texture,`a close-up of the ${what} fabric (match its exact colour and weave)`);   // a fabric close-up, when the item has one
-  const top=o.suitDay?'suit':'blazer';add(o.top&&o.top.photo,'the '+top);tex(o.top,top);
-  if(!o.top){add(o.bot&&o.bot.photo,'the trousers');tex(o.bot,'trouser')}tex(o.shirt,'shirt');if(!(o.tie&&o.tie.texture))add(o.tie&&o.tie.photo,'the tie');tex(o.tie,'tie');
-  // the owner's own photo of the watch first: a product picture is the generator's redrawing, and its dial's details are already lost
-  if(o.watch)add(o.watch.photo||(itemPic(o.watch)||{}).img,'the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)');
-  return {refs,labels}}
-/* (2026-11-14, the owner) the outfit photo made by OpenAI from the drawn figure (Settings → This day's photo, Regenerate; the figure as
-   the pose, the worker's background queue) is retired: the colour-coded masters paint every look on the device, nothing paid. Photos
-   already kept still show on their days (renderFor), and the worker's /render endpoint is left unused. outfitText and outfitRefs
-   (above) and outfitRefsFull (tagging.js) are what that photo was asked with; nothing in the app sends them now. */
+/* (2026-11-14, the owner) the outfit photo made by OpenAI from the drawn figure is retired: the colour-coded masters paint every
+   look on the device, nothing paid. Photos already kept still show on their days (renderFor) and still sync (GET/PUT /render); the
+   prompt builders it was asked with are gone, and the worker's POST /render makes item pictures only. */
 try{localStorage.removeItem('render_queue')}catch{}   // a queue of photos the app will never look for again
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day.
    A day counts unless marked "Didn't" (2026-11-14, the owner: a day is worn by default; it used to take a ✓) */

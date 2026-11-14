@@ -93,7 +93,7 @@
 <p class="sgh">Photos &amp; tagging</p>
 <section class="mbox scat" id="sc-photos"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Outfit pictures</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-photos"><div class="mpanel-in">
-<p class="shelp conn-off-note" id="photos-conn" data-what="Making outfit photos"></p>
+<p class="shelp conn-off-note" id="photos-conn" data-what="Making item pictures"></p>
 <div class="sgroup conn-only"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product photos of your shoes, belts, socks, trousers, coats and watches. Where a piece has one, Today shows it under the picture instead of its drawing.</p><div class="sactions"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div></div>
 <div class="adv" id="adv-photos"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-photos" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-photos"><div class="sgroup" id="asm-group" hidden></div></div></div>
 </div></div></section>
@@ -137,12 +137,12 @@
 <div class="sgroup"><details class="about-fold" id="about-privacy"><summary>Privacy</summary>
 <p>Your wardrobe lives on this device and, once you are connected, in your own backup on the server.</p>
 <p>The server is run by the person who invited you. They can see everything kept there: your backup, your photos and the feedback you send, with your name. It runs on Cloudflare, and the app itself is served by GitHub Pages; both keep the usual short logs of visits.</p>
-<p>The photos of your items are sent to Anthropic to be read (type, colour, pattern). Outfit pictures are drawn or painted by the app itself; only when you tap Generate photo (or Generate item pictures) are the outfit and your item photos sent to OpenAI to make one.</p>
+<p>The photos of your items are sent to Anthropic to be read (type, colour, pattern). Outfit pictures are drawn or painted by the app itself and never go to OpenAI; only when you tap Generate item pictures are an item's photo and description sent to OpenAI to make its product picture.</p>
 <p>Your weather location (the city you search for, or your phone’s position if you use it) is sent to Open-Meteo for the forecast. Public holidays come from Nager.Date, or Google’s holiday calendars for some countries; only the country is sent.</p>
 <p>Nothing else leaves your phone. Delete my data, above, removes it from the server too.</p></details></div>
 </div></div></section>
 
-<div class="sactions setup-again"><button type="button" id="setup-again" onclick="setupOpen(true)">Run setup again</button><button type="button" id="tour-again" onclick="closeSettings();tourOpen()">Take the tour</button></div>
+<div class="sactions setup-again"><button type="button" id="setup-again" onclick="setupOpen(true)">Run setup again</button><button type="button" id="tour-again" onclick="closeSettings();tourOpen()">Take the tour</button><button type="button" id="home-again" hidden onclick="closeSettings();homeOpen()">Add to Home Screen</button></div>
 <p class="sfoot">Daily Wardrobe</p>
 </div>
 </div>

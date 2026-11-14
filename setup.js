@@ -1,7 +1,12 @@
 /* Daily Wardrobe: first-run setup (a full-screen flow in the style of Settings) and the empty states of Today and the Wardrobe.
    Loaded after app.js and sync.js; everything it stores goes through the existing settings functions. */
-const SETUP_STEPS=['welcome','week','wear','weather','connect','done'];
-const SETUP_TITLES={welcome:'Welcome',week:'Your week',wear:'What you wear',weather:'Weather',connect:'Connection',done:'All set'};
+/* (2026-11-14, the owner) on an iPhone or iPad in a browser tab, a "Home Screen" step right after Welcome: the Home Screen app keeps its
+   own storage, apart from Safari's, so what is set up in Safari stays there; it is shown before anything is set up. Not in the app opened
+   from the Home Screen, not on other devices (the steps are then as before). SETUP_STEPS is worked out when the setup opens. */
+const SETUP_BASE=['welcome','week','wear','weather','connect','done'];
+let SETUP_STEPS=SETUP_BASE.slice();
+const setupStepsNow=()=>typeof homeNeeded==='function'&&homeNeeded()?['welcome','home',...SETUP_BASE.slice(1)]:SETUP_BASE.slice();
+const SETUP_TITLES={welcome:'Welcome',get home(){return typeof homeAndroid==='function'&&homeAndroid()?'Install the app':'Home Screen'},week:'Your week',wear:'What you wear',weather:'Weather',connect:'Connection',done:'All set'};
 /* the flow's state: at = the step shown (-1 = closed); first = it opened by itself on a new install (not "Run setup again") */
 let setup={at:-1,first:false,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};
 let setupNo=false;   // the app was already driven somewhere before start-up looked: the setup doesn't open by itself
@@ -30,7 +35,7 @@ function setupInert(on){if(!on&&typeof layerInert==='function')return layerInert
   for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
 function setupOpen(again){
   closeSettings();
-  setup={at:0,first:!again,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};
+  setup={at:0,first:!again,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};SETUP_STEPS=setupStepsNow();
   setupInert(true);setupEl().classList.add('on');setupDraw();setupEl().focus({preventScroll:true});
 }
 function setupClose(){
@@ -76,6 +81,7 @@ const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-
 const setupDays=(kind,list,shown)=>`<div class="su-days" id="su-${kind}">${DAY_NAMES.map((n,i)=>shown.includes(i)?`<button type="button" class="su-day${list.includes(i)?' on':''}" aria-pressed="${list.includes(i)}" onclick="setupDay('${kind}',${i})">${n.slice(0,3)}</button>`:'').join('')}</div>`;
 function setupStep(k){const d=setupDress();
   if(k==='welcome')return `<p class="su-lead">Daily Wardrobe picks what you wear each workday from the clothes you own.</p><p class="su-lead">It rotates your pieces so nothing is worn out or forgotten, and keeps the colours and patterns working together.</p><p class="su-help">A few short questions first. You can change every answer later in Settings.</p>`;
+  if(k==='home')return typeof homeSteps==='function'?homeSteps(true):'';
   if(k==='week')return `<div class="su-group"><div class="su-label">Workdays</div><p class="su-help">You get an outfit on these days.</p>${setupDays('workdays',settings.workdays,[0,1,2,3,4,5,6])}</div>`+
     (d.jacket?`<div class="su-group"><div class="su-label">Blazer days</div><p class="su-help">Business-casual days get a blazer and trousers; other workdays get a suit. Leave them all off for a suit every day.</p>${setupDays('blazer',settings.blazerDays,settings.workdays)}</div>`:'');
   if(k==='wear'){const v=setup.first&&!setup.vestSet?'never':(settings.vestMode||'auto');
@@ -87,11 +93,11 @@ function setupStep(k){const d=setupDress();
 <div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" oninput="setup.q=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();setupSearch()}"><button type="button" id="su-find" onclick="setupSearch()">Search</button></div>
 <div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
 <div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
-  if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, outfit photos can be made, and your wardrobe is backed up.</p>`
-    :`<p class="su-help">If you were given an invite link, paste it here. It turns on automatic reading of your photos, realistic outfit photos and a backup.</p>
+  if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`
+    :`<p class="su-help">If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup.</p>
 <div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
 ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
-<p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colours yourself: no automatic photo reading and no outfit photos. You can connect later in Settings.</p>`;
+<p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colours yourself: no automatic photo reading and no item pictures. You can connect later in Settings.</p>`;
   /* in the Week step's order (Sunday first, as Settings shows them) */
   const days=l=>l.length?[...l].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '):'none';
   /* trousers are needed only without a suit (the Today checklist says "not needed with a suit"): said as a condition, not as a must */

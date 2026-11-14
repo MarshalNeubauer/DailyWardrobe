@@ -1105,3 +1105,17 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 #add .qtyb{width:var(--ctl-h,44px);height:var(--ctl-h,44px);min-height:0;margin:0;padding:0;border:0;border-radius:0;background:var(--card);color:var(--ink);font-size:20px;font-weight:600}
 #add .qtyb:disabled{opacity:.35}
 #add .qty output{min-width:40px;text-align:center;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:var(--ctl-h,44px)}
+
+/* ---- Add to Home Screen (kit.js homeSteps, 2026-11-14): the setup's Home Screen step and the About sheet ---- */
+#home-again[hidden]{display:none}   /* (the Settings buttons' display rule outranked the hidden attribute: it showed on every device) */
+.home-wrap{text-align:left}.home-pic{display:block;width:96px;height:auto;margin:0 auto 10px}
+.hp-phone{fill:var(--card);stroke:var(--line);stroke-width:2}.hp-screen{fill:var(--bg)}.hp-icon{fill:var(--line)}.hp-app{fill:var(--acc)}.hp-hanger{fill:var(--bg)}.hp-label{font:600 7px system-ui,sans-serif;fill:var(--mut)}
+.home-lead{margin:0 0 12px}
+.home-steps{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.home-steps li{display:flex;gap:12px;align-items:flex-start;line-height:1.4}
+.home-steps li small{display:block;color:var(--mut);font-size:13px;margin-top:2px}
+.home-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center}
+.home-ico{width:20px;height:20px;vertical-align:-4px;color:var(--acc-ink,var(--acc))}
+.home-note{margin-top:4px}
+.home-cta{margin:4px 0 14px}.home-install{width:100%;min-height:48px;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px}.home-install .home-ico{color:inherit}
+.home-install[hidden],.home-manual[hidden]{display:none!important}   /* (the setup's and the sheet's button rules outrank the attribute) */

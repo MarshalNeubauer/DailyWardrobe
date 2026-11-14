@@ -9,10 +9,10 @@
 //   ALLOWED_ORIGIN  e.g. https://YOURNAME.github.io          (optional; omit to allow any origin; several: separate with commas)
 //   MODEL           optional Workers AI model, defaults to @cf/meta/llama-3.2-11b-vision-instruct
 //   (GET /fetch?url=… also uses APP_TOKEN: it downloads photo links for the app; so does GET /holidays?country=XX)
-//   OPENAI_API_KEY  secret; enables POST /render (the "realistic photo" button). Requires APP_TOKEN.
+//   OPENAI_API_KEY  secret; enables POST /render {mode:'item'} (Settings → Generate item pictures). Requires APP_TOKEN.
+//                   (The OpenAI outfit photo, its queue jobs and GET /render-queue and /render-wait were removed on 2026-11-14.)
 //   OPENAI_IMAGE_MODEL    optional, defaults to gpt-image-2
-//   OPENAI_IMAGE_QUALITY  optional: low, medium (default) or high; an outfit request may ask for its own with body.quality
-//                         (and its own body.model, e.g. gpt-image-2.6-sunburst, and body.complexity for GPT Image 2.6)
+//   OPENAI_IMAGE_QUALITY  optional: low, medium or high (item pictures: medium from a description, high from the item's photo)
 //   WARDROBE        KV namespace binding, variable name "WARDROBE": backup and sync of the wardrobe (optional;
 //                   backups also require APP_TOKEN, so your wardrobe is never readable without the token)
 //
@@ -22,25 +22,23 @@
 import { FREE_EXTRA, FREE_PAT_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, wbOf } from './worker/tag.js';
 import { handlePattern } from './worker/pattern.js';
 import { handleFetchImage, readCapped } from './worker/links.js';
-import { CLAIMED, PAID, failJob, handleRender, jobClaim, queueStatus, runRenderJob, waitForRenders } from './worker/render.js';
-import { COMBO_RE, delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
+import { handleRender } from './worker/render.js';
+import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
-import { handleAccount, handleFeedback, handleInvites, handleMe, msgNs, plainFor, spend, unspend, whoIs } from './worker/people.js';
+import { handleAccount, handleFeedback, handleInvites, handleMe, plainFor, runWipe, spend, unspend, whoIs } from './worker/people.js';
 import { handlePush, sendReminders } from './worker/remind.js';
-export { RenderHub } from './worker/render.js';   // the Durable Object class must be exported by the entry
+export { RenderHub } from './worker/render.js';   // the Durable Object class must be exported by the entry (it counts testers' days)
 
 /* every route but the root (POST / tags one photo, below): [handler(req, env, json, who, cors), what to say when APP_TOKEN is not set] */
 const TAG_LIMIT = 15e6, UNSET = 'Set an APP_TOKEN secret on the worker: nothing runs without it.';
 const ROUTES = {
   '* /sync': [(req, env, json, who, cors) => handleSync(req, env, json, cors, who), 'Set an APP_TOKEN secret on the worker to enable backups.'],
-  'GET /render-queue': [queueStatus],
-  'GET /render-wait': [waitForRenders],
   'GET /fetch': [(req, env, json, who, cors) => handleFetchImage(req, env, json, cors), 'Set an APP_TOKEN secret on the worker to fetch photo links.'],
   'GET /holidays': [handleHolidays, 'Set an APP_TOKEN secret on the worker to load holiday lists.'],
   'POST /tag-many': [handleTagMany, UNSET],
   'POST /pattern': [handlePattern, UNSET],
-  'POST /render': [handleRender, 'Set an APP_TOKEN secret on the worker to generate photos.'],
+  'POST /render': [handleRender, 'Set an APP_TOKEN secret on the worker to generate item pictures.'],
   'GET /render': [getRender],
   'PUT /render': [putRender],
   'DELETE /render': [delRender],
@@ -149,23 +147,13 @@ export default {
       return new Response(JSON.stringify({ error: 'server', message: SERVER_DOWN, detail: SERVER_DOWN }), { status: 503, headers: { ...cors, 'content-type': 'application/json' } });
     }
   },
-  // Cloudflare Queue consumer (queue "wardrobe-renders", see wrangler.toml): background outfit photos
+  // Cloudflare Queue consumer (queue "wardrobe-renders", see wrangler.toml): the rest of a deleted account ({wipe}, people.js runWipe),
+  // a part per message. (It made outfit photos until 2026-11-14; a message left from then is dropped: nothing is made or paid for.)
   async queue(batch, env) {
     for (const msg of batch.messages) {
-      try { await runRenderJob(msg, env); }
-      catch (e) {
-        console.log('photo job error', e && e.message);
-        // a job that keeps crashing is recorded as failed (the queue would otherwise drop it silently and leave it "pending")
-        // after OpenAI made the photo nothing is retried (a retry pays again); before it, a crash is tried again after a minute
-        if (PAID.has(msg)) { msg.ack(); continue; }
-        const key = String(msg.body && msg.body.key || ''), ns = msgNs(msg);
-        if (CLAIMED.has(msg)) await jobClaim(env, ns, key, 'release', CLAIMED.get(msg));   // its run is over: a retry may claim it again
-        if ((msg.attempts || 1) < 4 || !COMBO_RE.test(key) || ns === null) { msg.retry({ delaySeconds: 60 }); continue; }
-        let job = null; try { job = await env.WARDROBE.get(`${ns}job:${key}`, 'json'); } catch { }
-        await failJob(env, ns, key, job, 'The worker failed making it: ' + String(e && e.message || e));
-        await jobClaim(env, ns, key, 'done', job && +job.t || 0);
-        msg.ack();
-      }
+      if (!(msg.body && msg.body.wipe)) { msg.ack(); continue; }
+      try { await runWipe(msg, env); }
+      catch (e) { console.log('account wipe error', e && e.message); msg.retry({ delaySeconds: 60 }); }
     }
   },
   // Cron trigger (wrangler.toml [triggers], every 15 minutes): the morning reminders due now

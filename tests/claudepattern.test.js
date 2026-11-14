@@ -96,8 +96,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const card=await p.evaluate(()=>({txt:document.querySelector('#queue').textContent}));
     ok(calls.length===1&&calls[0].closeup&&calls[0].type==='blazer'&&/read by Claude with the colours from the photo/.test(card.txt),'adding the close-up asks Claude for the pattern, and the card says so');
     await p.evaluate(()=>save(0));
-    const sv=await p.evaluate(()=>({spec:!!items[0].patternSpec,text:items[0].patternText,prompt:patternPrompt(items[0],'top')}));
-    ok(sv.spec&&/Large windowpane on sand khaki linen/.test(sv.text)&&/light blue/.test(sv.prompt),'the item keeps Claude\'s reading, its description and its thread names for the photo prompt');
+    const sv=await p.evaluate(()=>({spec:!!items[0].patternSpec,text:items[0].patternText}));
+    ok(sv.spec&&/Large windowpane on sand khaki linen/.test(sv.text),'the item keeps Claude\'s reading and its description');
     // Claude unavailable: the pixel reader
     patternReply=()=>[502,{error:'ai'}];
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})]);

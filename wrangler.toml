@@ -17,7 +17,8 @@ binding = "AI"
 binding = "WARDROBE"
 id = "WARDROBE_KV_ID"
 
-# background outfit photos: the app queues jobs, the consumer below makes one photo per message (created by the deploy workflow)
+# finishing a deleted account a part per message (worker.js queue, people.js runWipe; created by the deploy workflow). The name is from
+# when it made outfit photos (removed 2026-11-14); kept so the binding and the queue need no change
 [[queues.producers]]
 queue = "wardrobe-renders"
 binding = "RENDER_QUEUE"
@@ -28,7 +29,8 @@ max_batch_size = 1
 max_retries = 5
 max_concurrency = 2
 
-# the push to an open app: queue jobs hand finished photos to this Durable Object, which answers the app's waiting GET /render-wait
+# each tester's daily counts and "switched off" mark (people.js useCount; one object per person). It also pushed finished outfit
+# photos to an open app until 2026-11-14; the class stays, so no migration is needed
 [[durable_objects.bindings]]
 name = "RENDER_HUB"
 class_name = "RenderHub"
