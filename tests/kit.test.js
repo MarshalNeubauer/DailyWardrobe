@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('main').inert&&tourSeen()),'Escape closes it, the page usable again, and it is marked seen');
     /* ---- the close-up guide, from the Add card's close-up step ---- */
     await p.evaluate(()=>{openAdd();addManual()});
-    ok(await p.evaluate(()=>!!document.querySelector('#queue .texguide')),'the close-up step has "Tips for a good close-up"');
+    ok(await p.evaluate(()=>!!document.querySelector('#queue .texguide')&&/white paper along one edge and tap it on the screen to set the exposure/.test(document.querySelector('#queue .texslot').textContent)),'the close-up step says to lay white paper along one edge and tap it, and has "Tips for a good close-up"');
     await p.click('#queue .texguide');
     const g=await p.evaluate(()=>({title:document.querySelector('#kit-title').textContent,txt:document.querySelector('.kit-body').textContent,prog:!!document.querySelector('.kit-prog')}));
     ok(g.title==='A good close-up'&&/white paper along one edge/i.test(g.txt)&&/middle/.test(g.txt)&&/no flash/i.test(g.txt)&&/tap the paper on the camera screen/i.test(g.txt)&&/exposure/.test(g.txt)&&!g.prog,'it opens the guide: paper along one edge, out of the middle, no flash, tap the paper to set the exposure');
