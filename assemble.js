@@ -1232,6 +1232,7 @@ let asmMem=null;
 /* build one picture from a job -> {url} (a JPEG data URL), or {bad: a piece's key} for a piece that didn't keep the picture, or {};
    with zones worked out here, {zones} / {vestZone} to keep (packed) */
 async function asmBuild(job){
+  if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
   if(job.cm)return asmCmBuild(job);   // a colour-coded master (asm-color.js)
   if(!asmMem||asmMem.k!==job.mk||asmMem.t!==job.mt)asmMem={k:job.mk,t:job.mt,d:await asmData(job.master)};
   const M=asmMem,master=M.d,W=master.width,out={};
@@ -1461,7 +1462,8 @@ async function asmAhead(){if(!ASM_ON||!(renders[asmMasterKey()]||asmCmAny())||!a
       const stop=()=>asmAheadAgain||document.hidden||!asmOffPage();let i=0;
       await Promise.all(Array.from({length:ASM_AHEAD_N},async()=>{while(i<built.length&&!stop())await asmEnsure(built[i++],true)}));
       rest.sort((a,b)=>String(asmCmUse(a)||'').localeCompare(String(asmCmUse(b)||'')));   // (a stable sort: nearest first within a master)
-      for(const o of rest){if(stop())break;await asmEnsure(o,true)}}
+      for(const o of rest){if(stop())break;await asmEnsure(o,true)}
+      if(!stop()&&typeof asmCmWarm==='function')await asmCmWarm(rest)}   // (2026-11-14) then the masters of the coming looks nobody built, set up ahead
     while(asmAheadAgain)}
   catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false}}
 /* are any of this outfit's pieces being made right now? */

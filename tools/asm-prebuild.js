@@ -263,7 +263,24 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
     // patterned pieces the pictures paint plain or generic (asm-color.js: asmCmRoute), so a gap is seen in the log, not only in a picture
     const gaps=await page.evaluate(()=>typeof asmCmGaps==='function'?asmCmGaps().map(x=>`${sentence(itemTitle(x.i))}: ${x.r.why}`):[]).catch(()=>[]);
     if(gaps.length)console.log(`Painted plain (${gaps.length}):\n`+gaps.map(g=>'  - '+g).join('\n'));
+    if(!DRY&&!paused())await shareMasters();
     return {failed}};
+  /* (2026-11-14) for phones: each colour-coded master's 2048 copy (PUT /render) and its setup at the phone's size (PUT /blob), so a phone
+     downloads about half the master and no longer works the setup out (asm-color.js asmCmMasterCopy, asmCmSetupFetch). What was shared is
+     kept with the profile (shared-masters.json): a setup is worked out (about 10 s) and sent only when its master, masks or code changed */
+  const SHARED=PROFILE?path.join(PROFILE,'shared-masters.json'):'';let shared={};try{if(SHARED&&fs.existsSync(SHARED))shared=JSON.parse(fs.readFileSync(SHARED,'utf8'))}catch{shared={}}
+  const shareMasters=async()=>{const want=await page.evaluate(()=>typeof asmCmSetupBlob!=='function'?[]:Object.keys(ASM_CM_KINDS).filter(k=>renders[asmCmKey(k,'master')]).map(k=>{const j=asmCmBaseJob(k,ASM_SIZE);
+        return j&&{kind:k,copyKey:asmCmCopyKey(k),copySig:asmCmCopySig(renders[asmCmKey(k,'master')].t),dk:asmCmDiskKey(j)}}).filter(Boolean)).catch(()=>[]);
+    for(const w of want){if(paused())return;
+      if(shared[w.copyKey]!==w.copySig){const c=await page.evaluate(k=>asmCmMasterCopyRec(k),w.kind);
+        if(c){const up=await api('render',{method:'PUT',body:JSON.stringify({key:c.key,rec:c.rec})});const body=await up.text().catch(()=>'');
+          if(up.ok){shared[w.copyKey]=w.copySig;console.log(`${now()} ${w.kind}: the master's 2048 copy for phones uploaded (${Math.round(c.rec.img.length*3/4/1024)} KB)`)}
+          else if(up.status===429&&/"kv-limit"/.test(body)){pauseUploads();return}else console.warn(`${now()} ${w.kind}: master copy refused: ${up.status} ${body.slice(0,120)}`)}}
+      const bk='setup:'+w.kind;if(shared[bk]!==w.dk){const b=await page.evaluate(async k=>{const x=await asmCmSetupBlob(k,ASM_SIZE);return x&&{key:x.key,dk:x.dk,b64:asmB64(x.bytes)}},w.kind).catch(e=>{console.warn(`${now()} ${w.kind}: setup not made: ${e.message}`);return null});
+        if(b&&b.dk===w.dk){const bytes=Buffer.from(b.b64,'base64'),up=await fetch(new URL('blob?key='+b.key+'&sig='+encodeURIComponent(b.dk),WORKER).href,{method:'PUT',headers:{'x-app-token':TOKEN,'content-type':'application/octet-stream',origin:new URL(ORIGIN).origin},body:bytes});
+          const body=await up.text().catch(()=>'');if(up.ok){shared[bk]=w.dk;console.log(`${now()} ${w.kind}: its setup for phones uploaded (${Math.round(bytes.length/1024)} KB)`)}
+          else if(up.status===429&&/"kv-limit"/.test(body)){pauseUploads();return}else console.warn(`${now()} ${w.kind}: setup refused: ${up.status} ${body.slice(0,120)}`)}}
+      if(SHARED)try{fs.writeFileSync(SHARED,JSON.stringify(shared))}catch{}}};
   // (2026-11-14 audit) a cycle that hangs (the page, a request) ends the script after --cycle-timeout, so the watcher starts it again
   const guarded=async first=>{const g=setTimeout(()=>{console.error(`${now()} a cycle ran over ${Math.round(CYCLE_MS/60e3)} min: ending so the watcher starts again`);process.exit(4)},CYCLE_MS);
     try{return await cycle(first)}finally{clearTimeout(g)}};

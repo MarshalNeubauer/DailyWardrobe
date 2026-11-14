@@ -1100,6 +1100,30 @@ async function delRender(req, env, json, who) {
   return json({ ok: true });
 }
 /* GET /render?key=c... (or the older ?day=) -> the stored photo, or 404 */
+/* GET /blob?key=<c + 16 hex>: the stored bytes (application/octet-stream), 404 when none. PUT /blob?key=…&sig=…, the bytes as the body
+   (owner only, at most BLOB_MAX): a colour-coded master's setup packed by the computer for phones (asm-color.js asmCmSetupBlob, 2026-11-14),
+   about 5 MB. Raw bytes, nothing parsed: a JSON body of that size is more than a request's CPU on the free plan. The same signature
+   already stored is not written again (one KV write a master each time its setup changes) */
+const BLOB_MAX = 20e6;
+async function handleBlob(req, env, json, who, cors) {
+  if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
+  const q = new URL(req.url).searchParams, key = q.get('key') || '';
+  if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
+  const kk = `${who.ns}blob:${key}`;
+  if (req.method === 'GET') {
+    const v = await env.WARDROBE.get(kk, 'arrayBuffer');
+    return v ? new Response(v, { headers: { ...cors, 'content-type': 'application/octet-stream', 'cache-control': 'no-store' } }) : json({ error: 'none' }, 404);
+  }
+  const no = ownerOnly(who, json); if (no) return no;
+  const sig = String(q.get('sig') || '').slice(0, 300), body = await req.arrayBuffer();
+  if (!body.byteLength) return json({ error: 'empty' }, 400);
+  if (body.byteLength > BLOB_MAX) return json({ error: 'too large' }, 413);
+  const cur = typeof env.WARDROBE.getWithMetadata === 'function' ? await env.WARDROBE.getWithMetadata(kk, 'stream').catch(() => null) : null;
+  if (cur && cur.value && cur.value.cancel) cur.value.cancel().catch(() => { });
+  if (cur && cur.metadata && cur.metadata.sig === sig && sig) return json({ ok: true, kept: 'same' });
+  await env.WARDROBE.put(kk, body, { metadata: { sig, t: Date.now(), size: body.byteLength } });
+  return json({ ok: true, size: body.byteLength });
+}
 async function getRender(req, env, json, who) {
   const ns = who.ns;
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 404);
@@ -2097,6 +2121,8 @@ const ROUTES = {
   'GET /render': [getRender],
   'PUT /render': [putRender],
   'DELETE /render': [delRender],
+  'GET /blob': [handleBlob],
+  'PUT /blob': [handleBlob],
   'GET /me': [handleMe, UNSET],
   'GET /invites': [handleInvites, UNSET],
   'POST /invites': [handleInvites, UNSET],

@@ -198,8 +198,8 @@ const asmCmItems=(o,k)=>{const z={shirt:o.shirt};if(ASM_CM_JACKET.has(k)){z.jack
 const asmCmOutKey=o=>asmKey('out/cm'+ASM_CMV+'/'+fnv64(asmCmSig(o)));
 const asmCmStamp=o=>{const k=asmCmKind(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
 /* bring the kind's master, masks and parts onto the device (true when all are here); the background too, when the worker has one */
-async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
-  await asmCmBgGet();return (await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean)}
+async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!renders[keys[0]])await asmCmMasterCopy(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
+  await asmCmBgGet();const all=(await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean);if(all)await asmCmSetupFetch(asmCmBaseJob(kind));return all}
 /* the background behind every master (2026-11-13, the owner's choice: a blurred office the colour of his earlier masters, made with
    ChatGPT as an empty room and its desk carried further left so its end hides behind the trousers on the shirt masters): one picture on
    the worker (`npm run cm-upload -- --bg <file>`), shared by the four masters; without it the wall is the flat ASM_CM_WALL as before.
@@ -551,8 +551,12 @@ const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_A
   asmSleeveFlow,asmSleeveSegs,asmStripeCount,asmSuitBands,asmSuitSig,asmSuitTex,asmSuitTweed,asmSuitTwill,asmSuitWeave,asmTexMm,asmTieFor,asmTieSheenK,asmTieSig,
   asmTieTile,asmTubeAt,asmTubePart,asmTubeRaw,asmTubeTabs,asmTweedTex,asmTweedTile,asmTwillTex,asmWeave];
 const asmCmPrepCode=()=>[ASM_CM_HAND_R,ASM_CM_U16,ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,
-  ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_SLEEVE_FLOW,asmBodyFlow,asmCmBlur,asmCmHandEdge,asmCmLightPrep,asmCmPrep,asmCmRefit,asmData,
+  ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_SLEEVE_FLOW,asmBodyFlow,asmCmBlur,asmCmHandEdge,asmCmLightPrep,asmCmPrep,asmCmRefit,
   asmImg,asmLegsPrep,asmPolyAt,asmSleeveFlow,asmSleeveSegs,asmTubePart,asmTubeRaw,asmTubeTabs];
+/* (2026-11-14) asmData, the image decoder, is not in asmCmPrepCode: the Web Worker swaps in its own (asm-worker.js: createImageBitmap on an
+   OffscreenCanvas, the same pixels), so the page and the worker computed different setup keys, and a setup kept or downloaded on the page
+   (the computer's shared setups, asmCmSetupFetch) was never found by the worker that paints. It stays in asmCmCode (pictures' keys are
+   made on the page only) */
 const asmCmCodeText=list=>list.map(v=>typeof v==='function'?String(v):JSON.stringify(v,(k,x)=>typeof x==='function'?String(x):x instanceof Set||x instanceof Map?[...x]:ArrayBuffer.isView(x)?Array.from(x):x)).join('|');
 let asmCmSrc=null,asmCmCodeH=null;
 const asmCmSrcSig=()=>asmCmSrc||(asmCmSrc=asmCmHash(asmCmCodeText(asmCmPrepCode())));
@@ -783,6 +787,74 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
   if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
     x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(big,0,0,ASM_SIZE,ASM_SIZE);img=x.getImageData(0,0,ASM_SIZE,ASM_SIZE)}
   const ms=Math.round(performance.now()-t0);return {url:await asmJpeg(img),gl:false,ms}}   // (gl, ms: which painter and how long, for Settings' line, asmGlNote)
+
+/* ---- faster masters on a phone (2026-11-14, the owner's ask: loading a master was the slow part; measured on a simulated phone, CPU 4x
+   slower and 4G: a master's first use took about 15.5 s, 6.1 s downloading its 16 files, 7.5 s working out its setup, 1.9 s painting;
+   with the setup kept, 2.6 s). Three things, none of which touches the functions in the pictures' code fingerprints:
+   1. warming: once Today's look is shown and the days ahead are fetched (asmAhead), the masters the coming looks use are downloaded and
+      set up in the background, one at a time (asmCmWarm), so a day nobody built paints in about 2.6 s even the first time
+   2. the computer shares each master's setup at the phone's size (npm run assemble: asmCmSetupBlob, uploaded with PUT /blob); a phone
+      that lacks it downloads it (asmCmSetupFetch, in asmCmGet) instead of working it out
+   3. a 2048 copy of each master (the masters are 2880, the computer's size): a phone downloads it instead (asmCmMasterCopy, about half
+      the bytes), kept under the master's own key with the master's date, so keys and setups are the same as from the 2880 master ---- */
+/* the master part of a job (asmCmJob's, without the outfit's cloth): enough to work out or read back the master's setup */
+function asmCmBaseJob(kind,size){const K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
+  const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
+  const parts={};for(const s of ['sleeveR','sleeveL','lapelR','lapelL']){const r=renders[asmCmKey(kind,'part/'+s)];if(r)parts[s]=r.img}
+  const gks=asmCmGeoKeys(kind),geo=gks.length?{geoU:renders[gks[0]].img,geoV:renders[gks[1]].img,gt:renders[gks[0]].t+'.'+renders[gks[1]].t}:{};
+  return {cm:kind,size:size||self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,rev:asmCmHash(keys.filter(k=>!gks.includes(k)).map(k=>renders[k].t||0).join(',')),master:renders[keys[0]].img,masks,parts,...geo}}
+/* the kept setup's IndexedDB key, as asmCmSetup writes it (tests/masterspeed.test.js checks the two agree) */
+const asmCmDiskKey=job=>job.cm+'|v'+ASM_CMV+'|'+asmCmSrcSig()+'|z'+ASM_CM_PACKV+'|'+job.cm+'|'+job.mk+'|'+job.mt+'|'+(job.rev||'')+'|'+job.size;
+const asmCmSetupKey=dk=>asmKey('cmsetup/'+asmCmHash(dk));
+/* a packed setup as bytes: "DWS1", the length of the JSON part, the JSON part (the disk key it is for, its unpacked size, and the packed
+   description, small typed arrays written out), then the gzipped arrays */
+const asmB64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+const asmUnB64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+const ASM_TA={Uint8Array,Int8Array,Uint16Array,Int16Array,Uint32Array,Int32Array,Float32Array,Float64Array,Uint8ClampedArray};
+function asmCmBlobOf(dk,rec){const enc=x=>{if(ArrayBuffer.isView(x))return {__ta:[x.constructor.name,asmB64(new Uint8Array(x.buffer,x.byteOffset,x.byteLength))]};
+    if(x instanceof Map)return {__map:[...x].map(([k,v])=>[enc(k),enc(v)])};if(x instanceof Set)return {__set:[...x].map(enc)};
+    if(typeof x==='number'&&!Number.isFinite(x))return {__num:String(x)};if(Array.isArray(x))return x.map(enc);
+    if(x&&typeof x==='object'){const o={};for(const [k,v] of Object.entries(x))if(v!==undefined)o[k]=enc(v);return o}return x};
+  const head=new TextEncoder().encode(JSON.stringify({dk,n:rec.n,meta:enc(rec.meta)})),gz=new Uint8Array(rec.gz),out=new Uint8Array(8+head.length+gz.length);
+  out.set([68,87,83,49]);new DataView(out.buffer).setUint32(4,head.length);out.set(head,8);out.set(gz,8+head.length);return out}
+function asmCmBlobRead(buf,dk){try{const u=new Uint8Array(buf);if(u.length<8||u[0]!==68||u[1]!==87||u[2]!==83||u[3]!==49)return null;const len=new DataView(u.buffer,u.byteOffset).getUint32(4);
+    const h=JSON.parse(new TextDecoder().decode(u.subarray(8,8+len)));if(h.dk!==dk)return null;
+    const dec=x=>{if(Array.isArray(x))return x.map(dec);if(x&&typeof x==='object'){if(x.__ta){const b=asmUnB64(x.__ta[1]),T=ASM_TA[x.__ta[0]];return T?new T(b.buffer,0,b.byteLength/T.BYTES_PER_ELEMENT):null}
+        if(x.__map)return new Map(x.__map.map(([k,v])=>[dec(k),dec(v)]));if(x.__set)return new Set(x.__set.map(dec));if(x.__num)return Number(x.__num);
+        const o={};for(const [k,v] of Object.entries(x))o[k]=dec(v);return o}return x};
+    return {meta:dec(h.meta),n:h.n,gz:u.slice(8+len).buffer}}catch(e){console.warn('could not read the shared setup',e);return null}}
+/* (the computer) the kind's setup at the phone's size, packed: {key, bytes} or null */
+async function asmCmSetupBlob(kind,size){const job=asmCmBaseJob(kind,size||ASM_SIZE);if(!job)return null;const dk=asmCmDiskKey(job);
+  const hit=await asmCmSetup({...job,diskCache:false});const rec=await asmCmPack(hit.P);return rec?{key:asmCmSetupKey(dk),dk,bytes:asmCmBlobOf(dk,rec)}:null}
+/* (a phone) the shared setup for a job this device hasn't set up: downloaded and kept where asmCmSetup reads it. Not on the computer
+   (it paints at 2880 and works out its own); asked once a session per setup */
+const asmCmSetupTried=new Set();
+async function asmCmSetupFetch(job){if(!job||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined'||typeof workerBase!=='function')return false;
+  const dk=asmCmDiskKey(job);if(await asmCmDiskGet(dk))return true;const k=asmCmSetupKey(dk);if(asmCmSetupTried.has(k))return false;asmCmSetupTried.add(k);
+  const W=workerBase();if(!W)return false;
+  try{const r=await fetch(new URL('blob?key='+k,W.url).href,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return false;
+    const rec=asmCmBlobRead(await r.arrayBuffer(),dk);if(!rec)return false;await asmCmDiskPut(dk,rec,job.cm+'|');return true}
+  catch(e){console.warn('no shared setup',e);return false}}
+/* (a phone) the 2048 copy of a master in place of the 2880 one, when the copy is of the master the manifest lists */
+const asmCmCopyKey=kind=>asmCmKey(kind,'master2048'),asmCmCopySig=t=>'asm/cm-copy '+t;
+async function asmCmMasterCopy(kind){const mk=asmCmKey(kind,'master');if(renders[mk]||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof workerBase!=='function')return false;
+  const t=asmCmMfNow().keys[mk],W=workerBase();if(!t||!W)return false;
+  try{const r=await fetch(W.url+'?key='+asmCmCopyKey(kind),{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return false;const c=await r.json();
+    if(!c||c.sig!==asmCmCopySig(t)||!/^data:image\//.test(c.img||''))return false;
+    await keepRender(mk,{sig:c.sig,img:c.img,model:c.model||'copy',t},false);return true}catch(e){return false}}
+/* (the computer) a master's 2048 copy for phones: {key, rec} */
+async function asmCmMasterCopyRec(kind){const mk=asmCmKey(kind,'master'),m=renders[mk];if(!m)return null;const d=await asmData(m.img,ASM_SIZE);
+  const c=document.createElement('canvas');c.width=d.width;c.height=d.height;c.getContext('2d').putImageData(d,0,0);
+  return {key:asmCmCopyKey(kind),rec:{sig:asmCmCopySig(m.t),img:c.toDataURL('image/jpeg',.92),model:'copy',t:m.t}}}
+/* (a phone) warming: the masters the coming looks use, downloaded and set up in the background, one at a time; not on a connection that
+   asks to save data or a slow one; once a session per master */
+const asmCmWarmed=new Set();let asmCmWarming=false;
+async function asmCmWarm(looks){if(asmCmWarming||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined')return 0;
+  const cn=navigator.connection;if(cn&&(cn.saveData||/(^|-)2g$/.test(cn.effectiveType||'')))return 0;
+  const kinds=[...new Set((looks||[]).map(o=>asmCmKind(o)).filter(k=>k&&!asmCmWarmed.has(k)))];if(!kinds.length)return 0;asmCmWarming=true;let n=0;
+  try{for(const kind of kinds){if(document.hidden)break;asmCmWarmed.add(kind);if(!await asmCmGet(kind))continue;const job=asmCmBaseJob(kind);if(!job)continue;
+      if(await asmCmDiskGet(asmCmDiskKey(job)))continue;await asmRun({...job,setupOnly:true},false);n++}}
+  catch(e){console.warn('warming stopped',e)}finally{asmCmWarming=false}return n}
 
 /* ---- Today: the colour-coded way of asmEnsure / asmPrebuildOne ---- */
 /* a look the computer hasn't built: when this phone first saw it missing, and whether that is long enough ago to paint it here */
