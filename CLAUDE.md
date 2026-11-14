@@ -145,6 +145,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `PATS_BY` must stay in sync with the worker's prompt (worker/tag.js), and so must the per-type colour lists (`COLS_BY` / `DIAL_COLS` here = `TYPE_COLORS` / `DIAL_COLS` in worker/tag.js; `tests/colouraudit.test.js` checks it)
 - each item type offers only colours it really comes in; an off-list tag moves to the closest allowed colour (`fitCol`), and a colour an existing item already has stays selectable for it
 
+- settings merge setting by setting (2026-11-14, the audit's "settings sync as one block": phone A's workdays and phone B's city, the later save dropped the other): each setting has its own stamp `settings.ks[k]` and the fingerprint of the value it was stamped with `settings.kh[k]`; `keySettings` runs where settings are read (start.js start-up and `onSyncedData`, settings.js, safety.js) and gives a copy from before every setting its one stamp, and a setting only the defaults filled in stamp 0; `stampSettings` (in `saveUserSettings` and the learn votes, history.js) stamps only settings whose value changed; `mergeSettings` (in `mergeState`) takes each setting from the newer stamp, ties to the newer copy, and makes the result's `updated` one above both when it took anything from the older copy, so the phone holding it uploads it (sync.js sends settings newer than the server's); two copies without `ks` merge whole as before; a roll-back stamps every setting (`stampAllSettings` in sync.js `rollBackState`) and marks ones the snapshot lacks removed; worker/backup.js `mergeSettingsLite` is the same rule in `mergeLite`; `tests/settingsmerge.test.js`
+
 ### `planner.js`
 
 - outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM)

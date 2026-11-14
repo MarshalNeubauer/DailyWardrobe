@@ -81,7 +81,7 @@ const unit=()=>settings.units||(/^en-(US|LR|MM)/.test(navigator.language||'')?'F
 const temp=c=>Math.round(unit()==='F'?c*9/5+32:c);
 const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
-async function saveUserSettings(){settings.updated=Date.now();cache={};   // the settings have changed already: the cached plan is stale now, not only once they are stored
+async function saveUserSettings(){stampSettings(settings);cache={};   // only the settings whose value changed get the new stamp (core.js)   // the settings have changed already: the cached plan is stale now, not only once they are stored
   await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
 /* ---- Settings: days off. A country's public holidays (each can be unticked if you work that day) and your own days
    off (a single day or a range, e.g. a holiday trip). They are planned like weekends: no outfit, nothing counted as worn. ---- */
@@ -117,7 +117,7 @@ async function refreshHolidays(){const due=()=>{const h=settings.holidays;return
   if(!due())return;
   if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
     if(!await syncNow())return;
-    const st=await metaGet('settings');if(st)settings={...settings,...st};if(!due())return}
+    const st=await metaGet('settings');if(st){settings={...settings,...st};keySettings(settings)}if(!due())return}
   return setHolidayCountry(settings.holidays.country,true)}
 /* testers have daily limits instead of costs: no "about 7¢" for them (account.js knows who is connected) */
 const showCost=()=>!(typeof isTester==='function'&&isTester());
@@ -211,7 +211,7 @@ async function refreshAll(){
     if(window.syncNow&&localStorage.getItem('worker_url')&&localStorage.getItem('app_token')){
       const ok=await syncNow();if(!ok)msg=localStorage.getItem('sync_status')||'Sync failed.'}
     const [r,d,st]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')]);
-    items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};cache={};
+    items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st){settings={...settings,...st};keySettings(settings)}cache={};
     await loadWeather(true);
     if(typeof renderTried!=='undefined')renderTried.clear();remoteKeys=null;
     const v=['today','wardrobe','add','stats','pack','care'].find(t=>$('#'+t)&&!$('#'+t).hidden)||'today';show(v);

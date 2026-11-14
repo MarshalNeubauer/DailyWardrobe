@@ -219,7 +219,9 @@ function rollBackState(local,snap,now=Date.now()){
   const items=(snap.items||[]).map(i=>({...i,updated:now})),keep=new Set(items.map(i=>i.id)),tombstones={...(snap.tombstones||{})};
   for(const id of Object.keys(tombstones))if(keep.has(id))delete tombstones[id];
   for(const i of local.items||[])if(!keep.has(i.id))tombstones[i.id]=now;
-  return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:now})),settings:snap.settings?{...snap.settings,updated:now}:null}}
+  // settings: every one stamped now (core.js stampAllSettings), and one the snapshot lacks marked removed now, so it goes on every device too
+  let settings=null;if(snap.settings){settings=stampAllSettings({...snap.settings},now);for(const k of setKeys(local.settings))if(!(k in settings)){settings.ks[k]=now;settings.kh[k]='-'}}
+  return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:now})),settings}}
 async function rollBack(){const id=$('#snap-list')&&$('#snap-list').value,st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!id){st.textContent='Choose a day first.';return}
   if(!await askConfirm(`Roll back to ${$('#snap-list').selectedOptions[0].textContent}?\n\nThe wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`,{ok:'Roll back',danger:true}))return;
