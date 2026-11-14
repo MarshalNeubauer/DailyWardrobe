@@ -81,8 +81,14 @@ module.exports=async({ok,chromium,url,settle})=>{
       return {days:li.querySelector('b').textContent,want:[...settings.workdays].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '),jacket:d.jacket,help:document.querySelector('#su-step .su-help').textContent}});
     ok(sum.days===sum.want,'the summary lists the workdays in the Week step\'s order, Sunday first: '+sum.days);
     ok(sum.jacket?/a suit or blazer, .* and shoes, plus trousers if you wear a blazer rather than a suit\.$/.test(sum.help):/trousers/.test(sum.help)&&!/plus trousers/.test(sum.help),'the last step asks for trousers only as needed (not with a suit): '+sum.help);
+    ok(await p.evaluate(()=>!!document.querySelector('#su-step #kit-tour-link')&&!!document.querySelector('#su-step #kit-sample-link')),'the last step offers the tour and a sample wardrobe (kit.js)');
     await p.click('#su-next');
-    await p.waitForFunction(()=>!document.querySelector('#setup.on')&&!document.querySelector('#add').hidden);
+    /* a first-time person going on to Add gets the quick tour first (kit.js), its last button going on to Add */
+    await p.waitForFunction(()=>!document.querySelector('#setup.on')&&!!document.querySelector('#kitsheet.on'));
+    for(let k=0;k<3;k++)await p.click('#kit-next');
+    ok(/Add my first item/.test(await p.textContent('#kit-next')),'the tour comes between the setup and Add, its last button "Add my first item"');
+    await p.click('#kit-next');
+    await p.waitForFunction(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('#add').hidden);
     ok(await stored(p,`s=>s.setupDone>0&&s.vestMode==='always'`),'Done stores setupDone (and keeps the vest that was chosen)');
     ok(await p.evaluate(()=>['header','main','nav'].every(s=>!document.querySelector(s).inert)&&!document.querySelector('#add').hidden&&!!document.querySelector('#add .pback')),'and goes to the Add page (from the Wardrobe), the page usable again');
     await p.reload();await p.waitForFunction(()=>window.appReady);
@@ -207,7 +213,9 @@ module.exports=async({ok,chromium,url,settle})=>{
         return {dark:m[0]+m[1]+m[2]<200,h:b.height,inside:b.bottom<=innerHeight+0.5&&r.left>=0&&r.right<=innerWidth+0.5,w:r.width}});
       ok(!bad.length,`${width}px ${scheme}: no step of the setup scrolls sideways${bad.length?' (but: '+bad.join(', ')+')':''}`);
       ok(look.dark===(scheme==='dark')&&look.h>=44&&look.inside&&(width<600?look.w===width:look.w<width),`${width}px ${scheme}: the setup takes the theme, its buttons are 44px and on screen${width<600?'':' (a centred panel)'}`);
-      await v.click('#su-next');await v.waitForFunction(()=>!document.querySelector('#setup.on')&&!document.querySelector('#add').hidden);
+      await v.click('#su-next');await v.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));   // the quick tour first (kit.js)
+      ok(await v.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&[...document.querySelectorAll('#kitsheet button')].every(b=>{const r=b.getBoundingClientRect();return r.left>=-0.5&&r.right<=innerWidth+0.5})),`${width}px ${scheme}: the tour fits`);
+      await v.keyboard.press('Escape');await v.waitForFunction(()=>!document.querySelector('#setup.on')&&!document.querySelector('#add').hidden);
       await v.evaluate(()=>show('today'));await settle(v,200);const t=await noSide(v)&&await v.evaluate(()=>!!document.querySelector('#firstrun'));
       await v.evaluate(()=>show('wardrobe'));await settle(v,200);const wd=await noSide(v)&&await v.evaluate(()=>!!document.querySelector('#wempty'));
       ok(t&&wd,`${width}px ${scheme}: the checklist on Today and the empty Wardrobe card fit the width`);

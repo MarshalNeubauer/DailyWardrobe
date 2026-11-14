@@ -22,7 +22,7 @@
 <div class="card addmore"><div class="slabel">Other ways to add</div>
 <div class="paste-box"><input type="url" id="photo-url" aria-label="Photo or link to a photo" inputmode="url" autocomplete="off" placeholder="Paste a photo or a link to one" onkeydown="if(event.key==='Enter'){event.preventDefault();addLink()}"><button class="btn" onclick="pasteFromClipboard()">Paste</button><button class="btn pri" onclick="addLink()">Add</button></div>
 <p id="paste-status" class="mut"></p><p class="mut drop-hint">On a computer you can also drag photos here, or press Ctrl+V / ⌘V anywhere.</p>
-<button class="addrow" onclick="addManual()"><span>Add without photo</span><small>Pick the type and colours yourself</small><span class="chev" aria-hidden="true">›</span></button></div>
+<button class="addrow" onclick="addManual()"><span>Add without photo</span><small>Pick the type and colours yourself</small><span class="chev" aria-hidden="true">›</span></button><button class="addrow" id="add-import" onclick="kitImportOpen()"><span>Import from a spreadsheet</span><small>A CSV file, or rows pasted from Excel or Google Sheets</small><span class="chev" aria-hidden="true">›</span></button></div>
 <p id="multi-status" class="mut"></p><div id="save-all"></div>
 <div id="queue"></div></section>
 </main>
@@ -144,7 +144,7 @@
 <p>Nothing else leaves your phone. Delete my data, above, removes it from the server too.</p></details></div>
 </div></div></section>
 
-<div class="sactions setup-again"><button type="button" id="setup-again" onclick="setupOpen(true)">Run setup again</button></div>
+<div class="sactions setup-again"><button type="button" id="setup-again" onclick="setupOpen(true)">Run setup again</button><button type="button" id="tour-again" onclick="closeSettings();tourOpen()">Take the tour</button></div>
 <p class="sfoot">Daily Wardrobe</p>
 </div>
 </div>
@@ -171,6 +171,7 @@
 <script src="sync.js"></script>
 <script src="account.js"></script>
 <script src="setup.js"></script>
+<script src="kit.js"></script>
 <script src="remind.js"></script>
 <script src="about.js"></script>
 </body></html>
