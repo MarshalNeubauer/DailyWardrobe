@@ -42,9 +42,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     {const f13=await band([2026,10,13]),f20=await band([2026,10,20]),f27=await band([2026,10,27]);
       ok(!f13.text&&/care-near/.test(f20.cls)&&f20.text==='1 wear left · Blazer – wear 5 of 6'&&f20.dots===6&&f20.on===5&&/care-last/.test(f27.cls)&&f27.text==='Last wear · Blazer – to the cleaner today',
         `coming days count the wears planned before them: Friday 13th nothing (4 of 6), the 20th yellow ("${f20.text}"), the 27th red ("${f27.text}")`)}
-    // the banner's cut round the tie swatch: none on today (the ✕/✓ row and the swatches sit above the banner), one on a coming day, and
-    // it follows the swatch when a tap shrinks the stack
-    {const lay=async(d,tap)=>{await band(d);if(tap){await p.evaluate(s=>swTap(s),tap);await settle(p,900)}else await settle(p,300);
+    // the banner's cut round the tie swatch, on today as on a coming day (the swatches no longer step up for the ✕/✓ circles, gone
+    // 2026-11-14), and it follows the swatch when a tap shrinks the stack
+    {const lay=async(d,tap)=>{await band(d);if(tap){await p.evaluate(s=>{const row=document.querySelector('#cband .crow'),seen=window.__bandSeen=new Set(),end=performance.now()+900;   // every frame of the tap's transition
+          const look=()=>{seen.add(getComputedStyle(row).fontSize+'|'+row.querySelector('.ctxt').innerHTML);if(performance.now()<end)requestAnimationFrame(look)};look();swTap(s)},tap);await settle(p,1000)}else await settle(p,300);
         return p.evaluate(()=>{const f=document.querySelector('#mannequin-container'),b=f.querySelector('#cband'),sw=[...f.querySelectorAll('.swstack .ovsw')].pop(),wb=f.querySelector('.wornbar'),fr=f.getBoundingClientRect();
           const path=b.querySelector('path').getAttribute('d'),m=/^M([\d.]+) 0/.exec(path),bt=b.getBoundingClientRect().top;
           return {photo:f.classList.contains('photo'),cut:m?+m[1]:null,sw:sw?sw.getBoundingClientRect().width:0,swRight:sw?sw.getBoundingClientRect().right-fr.left:0,swBottom:sw?sw.getBoundingClientRect().bottom:0,bandTop:bt,wbBottom:wb?wb.getBoundingClientRect().bottom:null}})};
@@ -52,14 +53,34 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       await p.evaluate(()=>{const ph='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><rect width="900" height="900" fill="#556"/></svg>');
         for(const d of [new Date(2026,10,11),new Date(2026,10,20)]){sel=d;cache={};const o=planFor()[key(d)];renders[comboKey(o)]={img:ph,sig:comboSig(o)}}});   // a picture for both days
       const t0=await lay([2026,10,11]),t1=await lay([2026,10,11],'shirt');
-      ok(t0.photo&&t0.cut===0&&t0.wbBottom<=t0.bandTop+1&&t0.swBottom<=t0.bandTop,`today: the banner runs the full width, the ✕/✓ row and the swatches above it (row ${Math.round(t0.wbBottom)} ≤ banner ${Math.round(t0.bandTop)})`);
+      ok(t0.photo&&t0.cut>0&&Math.abs(t0.cut-(t0.swRight+5+9))<1.5,`today: the banner cuts round the tie swatch (cut at ${t0.cut}, swatch edge ${Math.round(t0.swRight)})`);
       ok(t1.cut>0&&Math.abs(t1.cut-(t1.swRight+5+9))<1.5,`a swatch tapped on today: the stack comes down and the banner cuts round the tie swatch (cut at ${t1.cut}, swatch edge ${Math.round(t1.swRight)})`);
       await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null});
       const f0=await lay([2026,10,20]),f1=await lay([2026,10,20],'top');
       ok(f0.cut>0&&Math.abs(f0.cut-(f0.swRight+5+9))<1.5&&f0.sw>60,`a coming day: the cut follows the ${Math.round(f0.sw)} px tie swatch (at ${f0.cut})`);
+      {const seen=await p.evaluate(()=>[...window.__bandSeen]);ok(seen.length===1,`while the swatches shrink, the banner's words keep one size and one layout (${seen.length} seen: ${seen.map(x=>x.split('|')[0]).join(', ')})`)}
       ok(f1.cut>0&&f1.sw<f0.sw-4&&Math.abs(f1.cut-(f1.swRight+5+9))<1.5,`a swatch tapped: the swatches shrink to ${Math.round(f1.sw)} px and the cut moves with them (at ${f1.cut})`)}
     await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null;renders={};sel=new Date(2026,10,11);cache={}});
-    // ---- the Wardrobe grid: a quiet tag on due pieces only
+    // ---- cleaning reminders for the phone (careReminders, sent by the morning reminder's push): the last wear and a wear past it on
+    // the morning planned; a piece due, once, the next morning to come, and not again until it is cleaned
+    {const rem=await p.evaluate(()=>{localStorage.removeItem('care_told');cache={};const r=careReminders(14,'07:00'),told=JSON.parse(localStorage.getItem('care_told')||'{}');
+        const plan=Object.entries(planMonth(2026,10)).filter(([k,o])=>o&&o.top).map(([k,o])=>[isoKey(keyDate(k)),o.top.id]).filter(([k])=>k>='2026-11-11').sort();
+        return {r,told,plan}});
+      const all=Object.entries(rem.r).sort(),has=(re)=>all.filter(([,t])=>re.test(t)).map(([k])=>k),firstOf=id=>(rem.plan.find(([,x])=>x===id)||[])[0];
+      const navyOver=has(/The navy suit is overdue for cleaning: today is wear 6 of 5/),navyDue=has(/The navy suit is due for the cleaner/);
+      const navyAnyOver=has(/The navy suit is overdue/);
+      ok(navyOver.length===1&&navyOver[0]===firstOf('navy')&&navyAnyOver.length===1&&!navyDue.length&&rem.told.navy&&rem.told.navy.o===navyOver[0],`a suit already due and planned today: that morning says it is overdue (${navyOver.join()}), and only that morning (${navyAnyOver.length} overdue reminder in two weeks; the planner chooses it again on ${rem.plan.filter(([,x])=>x==='navy').length-1} more days), no separate "due" reminder`);
+      const charLast=has(/Last wear for the charcoal suit before cleaning: it goes to the cleaner after today/),charDue=has(/The charcoal suit is due for the cleaner\./);
+      const nextWd=d=>{const x=new Date(d+'T12:00');do x.setDate(x.getDate()+1);while(x.getDay()===0||x.getDay()===6);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+      ok(charLast.length===1&&charLast[0]===firstOf('char')&&charDue.length===1&&charDue[0]===nextWd(charLast[0])&&rem.told.char&&rem.told.char.d===charDue[0],
+        `the charcoal suit: its last wear on the morning it is planned (${charLast.join()}), then one "due" reminder the next workday (${charDue.join()})`);
+      const again=await p.evaluate(d=>{TODAY_OVERRIDE=d+'T12:00:00';cache={};const r=careReminders(14,'07:00');TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};return Object.values(r).filter(t=>/The charcoal suit is due/.test(t)).length},nextWd(charDue[0]||'2026-11-13'));
+      ok(again===0,'told once: not again the days after, while it is still not cleaned');
+      const overAgain=await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-12T12:00:00';cache={};const r=careReminders(14,'07:00');TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};return Object.values(r).filter(t=>/The navy suit is overdue/.test(t)).length});
+      ok(overAgain===0,'the overdue reminder told on its first morning: not again on the later mornings it is planned')
+      const fresh=await p.evaluate(()=>{const n=items.find(i=>i.id==='char');n.cleaned='2026-11-11';cache={};localStorage.removeItem('care_told');const r=careReminders(14,'07:00');delete n.cleaned;cache={};localStorage.removeItem('care_told');
+        return Object.values(r).some(t=>/The charcoal suit (is due|is overdue)|Last wear for the charcoal/.test(t))});
+      ok(!fresh,'cleaned: nothing to remind')}    // ---- the Wardrobe grid: a quiet tag on due pieces only
     await p.evaluate(()=>{flt='all';editing=null;show('wardrobe')});
     const g=await p.evaluate(()=>({navy:(document.querySelector('#gi-navy .caretag')||{}).textContent||'',n:document.querySelectorAll('#wardrobe .caretag').length}));
     ok(g.navy==='Due for cleaning'&&g.n===1,'the grid marks the one due piece "Due for cleaning" (shirts, washed after every wear, are not marked)');

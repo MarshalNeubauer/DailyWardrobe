@@ -108,7 +108,7 @@
 <div class="mpanel" id="sp-backup"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Sync</div><p class="shelp" id="sync-status"></p>
 <p class="shelp conn-off-note" id="backup-conn" data-what="Backing up and syncing"></p>
-<div class="sactions"><button type="button" class="conn-only" onclick="syncNow()">Sync now</button><button type="button" onclick="downloadBackup()">Download backup</button><label class="btn">Restore file<input type="file" accept="application/json,.json" class="vfile" onchange="restoreBackup(this.files[0]);this.value=''"></label></div></div>
+<div class="sactions"><button type="button" class="conn-only" onclick="syncTap()">Sync now</button><button type="button" onclick="downloadBackup()">Download backup</button><label class="btn">Restore file<input type="file" accept="application/json,.json" class="vfile" onchange="restoreBackup(this.files[0]);this.value=''"></label></div></div>
 <div class="sgroup conn-only"><div class="slabel">Daily backups</div><p class="shelp">The server keeps the wardrobe as it was at the start of each day for 30 days, and the first of each month for a year. Rolling back replaces the wardrobe, history and settings on every device with that copy.</p>
 <div class="sform"><select id="snap-list" onfocus="loadSnapshots()" aria-label="Daily backup"><option value="">Choose a day…</option></select><button id="snap-btn" type="button" onclick="rollBack()">Roll back</button></div>
 <p class="shelp" id="snap-status"></p></div>
