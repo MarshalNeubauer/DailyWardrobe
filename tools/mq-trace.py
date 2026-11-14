@@ -175,8 +175,29 @@ if JACKET:
         if m.sum() < 500: continue
         rot = pca_rot(m) if 40 <= pid < 60 else stripe_rot(piece == pid)   # lapels and collar leaves: their long axis
         parts.append({'id': NAMES.get(int(pid), 'p%d' % pid), 'rot': rot, 'd': to_path(dil(m, 1))})
+else:   # the shirt masters: the shirt's sleeves (14 the hanging arm, 18/19 the raised one) are the turned parts, in the shirt's cloth
+    shz = B['shirt']
+    for pid in (14, 15, 18, 19):
+        m = binm(piece == pid, 0.8) & dil(shz, 2)
+        if m.sum() < 500: continue
+        parts.append({'id': NAMES[pid], 'rot': stripe_rot(piece == pid), 'd': to_path(dil(m, 1))})
 data['parts'] = parts
-data['bodyRot'] = stripe_rot(piece == 1) if JACKET else 0
+data['bodyRot'] = stripe_rot(piece == 1) if JACKET else stripe_rot(piece == 2)
+
+# ---- trousers, belt and buckle (the shirt masters): each leg its own part, turned as the solved positions run down it (the painter's
+# leg flow, asm-color.js asmLegsAt: the stripes follow each leg), split at the fly (the middle of the trousers on each row) ----
+if B['trousers'].sum() > 1000:
+    tr = B['trousers']; legs = []
+    xs = np.arange(N)[None, :].repeat(N, 0)
+    rows = tr.any(1); xl = np.where(rows, tr.argmax(1), 0); xr = np.where(rows, N - 1 - tr[:, ::-1].argmax(1), 0)
+    xf = ndi.gaussian_filter1d(((xl + xr) / 2).astype(np.float64), 20)
+    left = xs < xf[:, None]
+    for nm, m in (('legL', tr & left), ('legR', tr & ~left)):
+        if m.sum() < 500: continue
+        rot = stripe_rot((piece == 3) & m)
+        legs.append({'id': nm, 'rot': rot, 'd': to_path(dil(m, 1))})
+    data['legs'] = legs
+    data['belt'] = to_path(dil(B['belt'], 1)) if B['belt'].sum() > 300 else ''
 
 # ---- the other garments ----
 if B['waistcoat'].sum() > 1000:
@@ -331,9 +352,10 @@ def bands2(zm, nb, sig=1.2, eps=1.3):
 
 
 data['skin'] = bands2(B['skin'], 9, eps=1.35)
-if JACKET:
-    data['sleeveEdge'] = ''.join(to_path(dil(binm(np.isin(piece, ids), 0.8) & dil(jac, 2), 1)) for ids in ([14, 15], [18, 19]))
+data['sleeveEdge'] = ''.join(to_path(dil(binm(np.isin(piece, ids), 0.8) & dil(jac if JACKET else B['shirt'], 2), 1)) for ids in ([14, 15], [18, 19]))
 data['watch'] = bands(B['watch'] | binm(Z['watch'], 1.0, 0.35), 7, sig=0.9, eps=1.0)
+if B['buckle'].sum() > 100:   # the belt buckle: the master's own metal, in tone bands like the watch
+    data['buckle'] = bands(B['buckle'] | binm(Z['buckle'], 1.0, 0.35), 5, sig=0.9, eps=1.0)
 data['dark'] = to_path(dil(B['dark'], 1), eps=0.8, min_area=20)
 sk = B['skin'] | B['watch']
 cast = ndi.shift(ndi.gaussian_filter(sk.astype(np.float32), 6), (10, 8), order=1) > 0.35

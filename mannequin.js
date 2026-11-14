@@ -35,7 +35,7 @@ const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .
   + `<circle cx="${x}" cy="${y}" r="${(r * .8).toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="${(r * .18).toFixed(2)}"/>`
   + [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => `<circle cx="${(x + a * r * .27).toFixed(2)}" cy="${(y + b * r * .27).toFixed(2)}" r="${(r * .12).toFixed(2)}" fill="#000" fill-opacity=".35"/>`).join('');
 
-function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, vest = true, clip = null, shirtColor = '#EEEEEE', bg = '#F5F2EC', idPrefix = 'mq-',
+function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, bot = null, beltColor = null, vest = true, clip = null, shirtColor = '#EEEEEE', bg = '#F5F2EC', idPrefix = 'mq-',
   ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 } } = {}) {
   const G = mqData(kind); if (!G) return '';
   const P = String(idPrefix).replace(/[^A-Za-z0-9_-]/g, '');
@@ -46,6 +46,7 @@ function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, vest = true, clip
   G.parts.forEach((p, i) => defs.push(pattern(P + pid(p, i), suit, p.rot, fab.suit)));
   G.cuffs.forEach((c, i) => defs.push(pattern(`${P}cuff${i}`, shirt, c.rot, fab.shirt)));
   if (tie) G.tie.forEach((t, i) => defs.push(pattern(`${P}tie${i}`, tie, t.rot, fab.tie)));
+  if (G.legs) { defs.push(pattern(`${P}pants`, bot, 0, fab.bot || 1)); G.legs.forEach((l, i) => defs.push(pattern(`${P}leg${i}`, bot, l.rot, fab.bot || 1))); }
   const tieFill = i => tie ? u('tie' + i) : u('shirt');
   const blade = G.tie.findIndex(t => t.id === 'blade');
   const lapels = G.parts.map((p, i) => [p, i]).filter(([p]) => /^lap|^collar/.test(p.id));
@@ -68,6 +69,8 @@ ${vest && G.waistcoat ? `<g class="fig-vest"><path d="${G.waistcoat}" fill="${u(
 <path d="${G.shirt}" fill="${u('shirt')}"/>
 ${G.cuffs.map((x, i) => `<path d="${x.d}" fill="${u('cuff' + i)}"/>`).join('')}
 ${G.tie.map((t, i) => i === blade ? `<use href="#${P}bladeP" fill="${tieFill(i)}"/>` : `<path class="fig-tie-${t.id}" d="${t.d}" fill="${tieFill(i)}"/>`).join('')}
+${(G.legs || []).map((l, i) => `<path class="fig-${l.id}" d="${l.d}" fill="${u('leg' + i)}"/>`).join('')}
+${G.belt ? `<path class="fig-belt" d="${G.belt}" fill="${hex(beltColor, '#3A2A22')}"/>` : ''}
 <image class="fig-shade" href="${G.shade}" width="${VB}" height="${VB}" preserveAspectRatio="none"/>
 <path d="${G.collarShadow}" fill="#000" fill-opacity=".32"/>
 <path d="${G.glow}" fill="#fff" fill-opacity=".05"/><path d="${G.glow2}" fill="#fff" fill-opacity=".05"/><path d="${G.rim}" fill="#fff" fill-opacity=".04"/>
@@ -78,6 +81,7 @@ ${c ? `<g class="fig-clip" transform="translate(${c.x} ${c.y}) rotate(${c.a})"><
 <path d="${G.cast}" fill="#000" fill-opacity=".12"/>
 <g class="fig-skin${/-open$/.test(kind) ? ' fig-open' : ''}"><path d="${G.skin[0].d}" fill="${G.skin[0].c}"/><g clip-path="url(#${P}clipSkin)"><g filter="url(#${P}fSkin)">${G.skin.slice(1).map(b => `<path d="${b.d}" fill="${b.c}"/>`).join('')}</g></g></g>
 <g class="fig-watch">${G.watch.map(b => `<path d="${b.d}" fill="${b.c}"/>`).join('')}</g>
+${G.buckle ? `<g class="fig-buckle">${G.buckle.map(b => `<path d="${b.d}" fill="${b.c}"/>`).join('')}</g>` : ''}
 <g class="fig-buttons"><path d="${G.dark}" fill="${u('suitB')}"/><path d="${G.dark}" fill="#000" fill-opacity=".45"/></g>
 ${(G.btn || []).length ? `<g class="fig-shirtbtn">${G.btn.map(([x, y, r]) => shirtButton(x, y, r, btnCol(shirtColor))).join('')}</g>` : ''}
 </g>
