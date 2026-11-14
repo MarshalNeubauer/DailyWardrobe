@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	da8347471c9c37c0e557
-# tested	e916e6f12314cdb27869
+# tested	63325a871e991e84dcc5
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -351,7 +350,6 @@ assemble.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
 assemble.test.js	tests/fixtures/asm-watch.jpg	<any>	<loaded>
 assemble.test.js	ui.js	advClose	advToggle	askAnswer	askConfirm	askEls	connSummary	needConn	renderConnUI	uiEsc
 assemble.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	WATCH_KEY	corsFor	dataUrlToBlob	delRender	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	hubOf	jobMsg	keepSnapshots	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	renderId	renderTtl	runRenderJob	sameText	serve	sha256Hex	spend	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
-assemble.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	WATCH_KEY	dataUrlToBlob	delRender	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	hubOf	jobMsg	keepSnapshots	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	renderId	renderTtl	runRenderJob	sameText	sha256Hex	spend	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
 auditfix.test.js	<every page test>	<every page test>
 auditfix.test.js	account.js	acctCall	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 auditfix.test.js	app.js	@addEventListenerpopstate	S	aAn	addDayOff	addManual	adviceFor	appPush	applyWb	backupSummary	belowBox	canPick	cap1	cardPics	cardReading	comboKey	comboKeyV1	comboSig	comboSigV1	countryName	cropSwatch	dayActions	esc	fetchItemPic	fetchRemoteRender	figurePng	figureStage	fnv64	generateRender	generateSwatch	hasOutfit	idsOf	isoDate	isoToDate	itemDesc	itemKey	itemPic	itemPicHtml	keyDate	lastWorn	lockIds	lockUpcoming	lookSig	metaPut	missingItemPics	monthFillSoon	monthLink	noMotion	offBtn	offOn	openSettings	orderRow	outfitRefs	outfitText	piecesBox	piecesLine	planOn	queueCombo	recordDays	renderAdd	renderDaysOffUI	renderFor	renderFormalUI	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	resetCard	save	saveAll	saveDay	saveUserSettings	schedulePrefetch	scoreCard	setCatOpen	settingsSummaries	shadeRow	shareMark	shirtPatterned	shirtTextured	shortDate	showCost	shrink	slotLabel	slots	stackSVG	texSlot	unit	vestRow	wbNote	workerBase	wornBar	wornMarks
