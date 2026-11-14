@@ -15,7 +15,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const st=()=>p.evaluate(()=>{const c=$('#mannequin-container'),R=c.getBoundingClientRect(),rel=e=>{if(!e)return null;const b=e.getBoundingClientRect();return {l:b.left-R.left,t:b.top-R.top,r:b.right-R.left,b:b.bottom-R.top}};
       const sws=[...c.querySelectorAll('.swstack .ovsw')];return {W:R.width,open:c.classList.contains('swopen'),t:zoomTarget().style.transform,lens:rel(c.querySelector('.swlens')),lab:rel(c.querySelector('.swlab')),
         labText:(c.querySelector('.swlab')||{}).textContent||'',ring:rel(c.querySelector('.swring')),scroll:c.scrollTop+c.scrollLeft,stack:rel(c.querySelector('.swstack')),sw:sws.map(rel),on:sws.filter(b=>b.classList.contains('on')).map(b=>b.dataset.s),
-        pressed:sws.map(b=>b.getAttribute('aria-pressed')),slots:sws.map(b=>b.dataset.s),painted:/as painted/i.test(c.textContent),onShadow:(()=>{const b=sws.find(x=>x.classList.contains('on'));return b?getComputedStyle(b).boxShadow:''})(),share:getComputedStyle(c.querySelector('.wshare')||c).opacity}});
+        pressed:sws.map(b=>b.getAttribute('aria-pressed')),slots:sws.map(b=>b.dataset.s),painted:/as painted/i.test(c.textContent),onShadow:(()=>{const b=sws.find(x=>x.classList.contains('on'));return b?getComputedStyle(b).boxShadow:''})(),share:c.querySelector('.wshare')?'1':'0'}});
     const a=await st();
     ok(!a.open&&a.slots.join()==='top,shirt,tie'&&a.sw.every(s=>Math.round(s.r-s.l)===64),`the stack is three tappable 64 px swatches (${a.slots.join()})`);
     const swPx=W=>Math.min(64,Math.max(36,.18*W-16.7));   // the small swatches' size while one is open (styles.css: 18cqw - 16.7px, 36 to 64)
@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       ok(b.sw.every(x=>Math.abs((x.r-x.l)-swPx(b.W))<1.5)&&b.stack&&Math.abs(b.W-b.stack.b-10)<2,`${s}: the small swatches are ${Math.round(b.sw[0].r-b.sw[0].l)} px (the room below the big swatch), still a column at the bottom left`);
       ok(b.ring&&b.ring.l>=-1&&b.ring.r<=b.W+1&&b.ring.t>=-1&&b.ring.b<=b.W+1&&!over(b.ring,b.lens)&&!over(b.ring,b.stack)&&!over(b.lens,b.stack)&&b.scroll===0,
         `${s}: the ring on the piece, the big swatch and the small swatches don't overlap (ring ${Math.round(b.ring.l)}-${Math.round(b.ring.r)} x ${Math.round(b.ring.t)}-${Math.round(b.ring.b)}; big swatch to ${Math.round(b.lens.b)}, small from ${Math.round(b.stack.t)})`);
-      ok(+b.share===0,`${s}: share, ✕ and ✓ step out of the way`);
+      ok(+b.share===0,`${s}: no share button (the owner, 2026-11-14), and ✕ and ✓ step out of the way`);
       ok(/rgba\(255, 255, 255, 0\.7\) 0px 0px 0px 1\.5px/.test(b.onShadow),`${s}: the open small swatch has a thin, soft white outline (${b.onShadow})`)}
     // narrower phones, opened by real taps: a tap focuses the swatch, and that once scrolled the zoomed picture inside its frame, pushing the
     // big swatch and the ring out of place (seen in the owner's preview at 375 px)
