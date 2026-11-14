@@ -298,7 +298,7 @@ const installHook=root=>{try{if(fs.existsSync(path.join(root,'.githooks','pre-pu
 // older) drops out the next time it runs; without that the old entries would select it for every planner change for good
 const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Map(),alive=new Map();
   const names=async f=>{if(!alive.has(f)){let t=null,k=null;try{t=realRead(path.join(root,f),'utf8')}catch(e){}
-      if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)){const u=await scan(t);if(u)k=new Set(flat(u).map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
+      if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)||workerFile(f)){const u=await scan(t);if(u)k=new Set(flat(u).map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
       alive.set(f,k)}return alive.get(f)};
   for(const [k,r] of results){if(r.bad){out.set(k,new Map([[ANY,new Set([ANY])]]));continue}
     const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();{const r=fixedOf&&fixedOf(k);for(const f of r===true?['planner.js']:r||[])e.delete(f)}for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
@@ -312,6 +312,9 @@ const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Ma
 /* ---------- choosing ---------- */
 const FULL=/^(?:tests\/run\.js|tests\/impact\.js|tests\/fixedplan\.js|tests\/childrec\.js|package(?:-lock)?\.json)$/;   // (fixedplan.js is put into the pages of most tests, not served: nothing records it; childrec.js records what child processes read)
 const servedFile=f=>!f.includes('/')&&/\.(?:js|html|css|webmanifest|png|svg|ico)$/.test(f)&&f!=='worker.js';
+/* the worker: worker.js (the entry) and its ES modules in worker/ (2026-11-14): one world of its own, run in Node, recorded function by function */
+const workerFile=f=>f==='worker.js'||/^worker\/[^/]+\.js$/.test(f);
+const workerFiles=root=>['worker.js',...(()=>{try{return fs.readdirSync(path.join(root,'worker')).filter(f=>/\.js$/.test(f)).sort().map(f=>'worker/'+f)}catch(e){return []}})()];
 /* changes: [{file, kind:'test'|'js'|'css'|'other', units:Set, top}] → {all, why} or {tests:Map(test → reason)} */
 const pick=(map,all,changes)=>{const out=new Map(),add=(t,why)=>{if(all.includes(t)&&!out.has(t))out.set(t,why)};
   const users=(f,ok)=>[...map].filter(([,e])=>e.has(f)&&[...e.get(f)].some(ok)).map(([t])=>t);
@@ -340,7 +343,7 @@ const impactOf=async(root,base,all,map)=>{
   const oldOf=f=>git(root,'show',base+':'+f),newOf=f=>{try{return realRead(path.join(root,f),'utf8')}catch(e){return null}};
   let corpus=null;const isNew=name=>{if(corpus==null)corpus=(git(root,'ls-tree','--name-only',base)||'').split('\n').filter(f=>/\.(?:js|html|css)$/.test(f)).map(f=>oldOf(f)||'').join('\n');
     return !new RegExp('(?<![\\w-])'+name.replace(/[^\w-]/g,'\\$&')+'(?![\\w-])').test(corpus)};
-  const changes=[],said=[],scripts=fs.readdirSync(root).filter(f=>/\.js$/.test(f)).sort();
+  const changes=[],said=[],scripts=[...fs.readdirSync(root).filter(f=>/\.js$/.test(f)).sort(),...workerFiles(root).slice(1)];
   for(const f of files){if(f===MAP)continue;
     if(/^tests\/[^/]+\.test\.js$/.test(f)){changes.push({file:f,kind:'test'});said.push(f);continue}
     const js=/\.js$/.test(f)&&!f.startsWith('tests/'),css=/\.css$/.test(f);
@@ -350,9 +353,9 @@ const impactOf=async(root,base,all,map)=>{
     changes.push({file:f,kind:js?'js':'css',...im});
     const what=[...im.units].map(u=>js&&!u.includes('@')?u+'()':u);if(im.syms)what.push(...im.syms);if(im.top)what.push(js?'top-level code':'the stylesheet as a whole');
     said.push(f+' ('+(what.join(', ')||(js?'comments or spacing only':'only comments, spacing or rules for new classes'))+')')}
-  // a changed constant: the functions that name it (worker.js and sw.js are worlds of their own, the other scripts share one), and the tests that do
-  for(const c of [...changes]){if(!c.syms||!c.syms.size)continue;const alone=c.file==='worker.js'||c.file==='sw.js',sources=new Map();
-    for(const g of scripts)if(alone?g===c.file:g!=='worker.js'&&g!=='sw.js'){const t=newOf(g);if(t!=null)sources.set(g,await analyse(t))}
+  // a changed constant: the functions that name it (the worker, worker.js with its worker/ modules, and sw.js are worlds of their own, the other scripts share one), and the tests that do
+  for(const c of [...changes]){if(!c.syms||!c.syms.size)continue;const world=g=>workerFile(g)?'worker':g==='sw.js'?'sw':'page',sources=new Map();
+    for(const g of scripts)if(world(g)===world(c.file)){const t=newOf(g);if(t!=null)sources.set(g,await analyse(t))}
     const fl=follow(c.file,c.syms,sources);
     for(const [g,x] of fl.files){let e=changes.find(e=>e.file===g&&e.kind==='js');if(!e){e={file:g,kind:'js',units:new Set(),top:false};changes.push(e)}for(const u of x.units)e.units.add(u);if(x.top)e.top=true}
     for(const n of fl.names){const tests=all.filter(t=>namedBy(newOf('tests/'+(t.startsWith('run.js: ')?'run.js':t)),n));
@@ -401,7 +404,7 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
   // files the test itself reads (fixtures, sources checked as text)
   // (a root script that Node itself loads as a module is followed by its functions instead)
   const note=p=>{if(!cur)return;try{const r=relOf(p);if(!r||r===cur.self)return;
-    if(/^[^/]+\.js$/.test(r)&&/node:internal\/modules/.test(new Error().stack))return;cur.add(r,ANY)}catch(e){}};
+    if((/^[^/]+\.js$/.test(r)||workerFile(r))&&/node:internal\/modules/.test(new Error().stack))return;cur.add(r,ANY)}catch(e){}};
   for(const k of ['readFileSync','readFile','createReadStream']){const o=fs[k];fs[k]=function(p,...a){note(p);return o.call(this,p,...a)}}
   const pr=fs.promises.readFile;fs.promises.readFile=function(p,...a){note(p);return pr.call(this,p,...a)};
   /* a child process the test starts (`node tools/asm-atlas.js`): a repo file named in its command line is noted, and a Node child
@@ -421,7 +424,7 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
   const kids=c=>{for(const l of childReads()){const r=relOf(path.join(root,l));if(r&&r!==c.self&&r.includes('/'))c.add(r,ANY)}};
   // a function goes by the name scan() gives it (the name a diff is read with), found by where it starts; Chromium's own
   // name is only used where the two disagree (c.odd counts those)
-  const addJs=(c,result,node)=>{for(const e of result){const f=urlRel(e.url);if(!f||!/\.js$/.test(f)||(node&&f.includes('/')))continue;const C=canon.get(f);
+  const addJs=(c,result,node)=>{for(const e of result){const f=urlRel(e.url);if(!f||!/\.js$/.test(f)||(node&&f.includes('/')&&!workerFile(f)))continue;const C=canon.get(f);
     if(e.functions.some(x=>x.ranges[0].count))c.add(f,LOADED);for(const u of flat(units(e.functions,srcOf(f))))if(u.c){if(C&&C.has(u.a))c.add(f,C.get(u.a));else{c.odd++;c.add(f,u.n)}}}};
   const addCss=(c,L,usage)=>{for(const u of usage||[]){if(!u.used)continue;const f=urlRel(L.sheets.get(u.styleSheetId)||'');if(!f||!/\.css$/.test(f))continue;
     if(!scans.has(f))scans.set(f,cssScan(srcOf(f)));const S=scans.get(f);if(!S)continue;const r=S.rules.find(r=>r.a<=u.startOffset&&u.startOffset<r.b);if(r&&r.key)c.add(f,r.key)}};
@@ -447,13 +450,13 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
       ctx.newPage=async(...a)=>{const p=await np(...a);await start(ctx,p);return p};ctx.on('page',p=>{start(ctx,p)});
       ctx.close=async(...a)=>{for(const p of [...live.keys()])if(p.context()===ctx)await take(p,true);return cc(...a)};return ctx},
     /* before the first test: the functions of every script, by where they start */
-    async prepare(){for(const f of fs.readdirSync(root).filter(f=>/\.js$/.test(f))){const u=await scan(srcOf(f));if(u)canon.set(f,new Map(flat(u).map(x=>[x.a,x.n])))}
+    async prepare(){for(const f of [...fs.readdirSync(root).filter(f=>/\.js$/.test(f)),...workerFiles(root).slice(1)]){const u=await scan(srcOf(f));if(u)canon.set(f,new Map(flat(u).map(x=>[x.a,x.n])))}
       // Node loads a module once per process, so what runs while worker.js loads (its tables) would be noted for the first test
       // that imports it and for no other: a different test in every worker process. It is loaded here instead, before any
       // test, and what ran then goes to every test that runs any of it (end)
       const warn=process.emitWarning;process.emitWarning=()=>{};   // (Node's note that worker.js is an ES module without a package type: once per process is noise)
       for(const f of ['worker.js'])if(srcOf(f)!=null)try{await nodeCov();await post('Profiler.takePreciseCoverage');await import(pathToFileURL(path.join(root,f)).href);
-        const c=mk('load');addJs(c,(await post('Profiler.takePreciseCoverage')).result,true);if(c.m.has(f))atLoad.set(f,c.m.get(f))}catch(e){}
+        const c=mk('load');addJs(c,(await post('Profiler.takePreciseCoverage')).result,true);for(const [g,S] of c.m)if(workerFile(g))atLoad.set(g,S)}catch(e){}   // (worker.js and its worker/ modules)
       process.emitWarning=warn},
     served(f){if(cur&&f&&!/\.js$/.test(f))cur.add(f,LOADED)},
     /* what the running test has used so far (for tests/impact.test.js) */

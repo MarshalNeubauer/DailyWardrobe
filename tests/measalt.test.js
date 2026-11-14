@@ -3,7 +3,7 @@
 // and the card only printed the measurement. The tagger is also told to weigh the measurement and give it as altColor.
 const path=require('path'),fs=require('fs');
 module.exports=async({ok,chromium,url,ROOT})=>{
-  const src=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
+  const src=require('./workersrc.js')();
   ok(/mink or\s+espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown/.test(src),'the tagger is told how a muted, almost grey brown differs from brown');
   const worker=(await import(require('url').pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const realFetch=globalThis.fetch;let sent=null;

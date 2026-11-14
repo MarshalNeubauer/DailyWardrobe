@@ -35,6 +35,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(d.score>=6,`the outfit scores reasonably (${d.score})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
-  const src=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
+  const src=require('./workersrc.js')();
   ok(/COLOR_LIST = \[[^\]]*'deeptaupe'/.test(src)&&/deeptaupe is a/.test(src),'the tagger may answer deeptaupe and is told what it looks like');
 };

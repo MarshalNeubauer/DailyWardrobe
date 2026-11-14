@@ -4,7 +4,7 @@
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
-  const src=require('fs').readFileSync(path.join(ROOT,'worker.js'),'utf8');
+  const src=require('./workersrc.js')();
   ok(/Socks: the colour of a contrasting toe cap/.test(src),'the tagging prompt puts a sock\'s toe cap colour in secondaryColor');
   const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
   const realFetch=globalThis.fetch;const gens=[],sent=[];
