@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>renderToday());await locked();
     await p.evaluate(()=>{openSettings('schedule')});await settle(p,400);
     const txt=await p.textContent('#replan-status');
-    ok(/coming week stays as shown/.test(txt),`Settings says the coming week is kept (${txt})`);
+    ok(/throwing out the week's locks/.test(txt),`Settings says starting over throws out the week's locks (${txt})`);
     await p.selectOption('#cfg-dark','often');await p.waitForFunction(()=>settings.darkShirts==='often'&&!Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>todayDate()),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>settings.darkShirts==='often'&&!Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>todayDate())&&!!dayRecs['2026-11-11'].lock),'Settings → Dark shirts saves the choice and releases the coming days (today stays)');
     await p.evaluate(()=>saveSettings());await locked();

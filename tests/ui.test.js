@@ -59,10 +59,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
-        inside:['#cfg-url','#cfg-token','#replan-btn','#asm-group'].every(inAdv),gone:!document.querySelector('#weave-box,#bench-box,#adv-tagging'),out:['#cfg-workdays','#regen-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
+        inside:['#cfg-url','#cfg-token','#asm-group'].every(inAdv),gone:!document.querySelector('#weave-box,#bench-box,#adv-tagging'),out:['#cfg-workdays','#replan-btn','#regen-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
         label:document.querySelector('#adv-connection .adv-head').innerText.replace(/\s+/g,' ')}});
-    ok(adv.ids==='adv-schedule,adv-photos,adv-connection'&&adv.shut,'Schedule, Outfit pictures and Connection each have an Advanced fold, closed when Settings opens');
-    ok(adv.inside&&adv.gone&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code, re-plan and the item-photo tools are inside them (shirt weaves and the accuracy check are gone); the everyday controls are not');
+    ok(adv.ids==='adv-photos,adv-connection'&&adv.shut,'Outfit pictures and Connection each have an Advanced fold, closed when Settings opens (Schedule\'s held only Re-plan, now Start the plan over, for everyone)');
+    ok(adv.inside&&adv.gone&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code and the item-photo tools are inside them (shirt weaves and the accuracy check are gone); the everyday controls, Start the plan over among them, are not');
     await p.evaluate(()=>openSettings('connection'));await settle(p,300);
     ok(!(await p.isVisible('#cfg-url'))&&await p.isVisible('#conn-link'),'Connection shows a field for the invite link; the address and code stay folded away');
     await p.click('#adv-connection .adv-head');
