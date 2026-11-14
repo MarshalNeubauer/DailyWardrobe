@@ -70,6 +70,7 @@ function saveSettings(){
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
     if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
   catch(e){console.warn('connection not saved',e);setTimeout(()=>toast('Couldn’t save the server address: this browser’s storage is full or blocked.',5000),0)}
+  if(typeof connKeep==='function')connKeep();   // the database's copy of the connection follows (app.js)
   closeSettings();
   try{renderAdd()}catch(e){console.warn('Add page not drawn',e)}
   if(window.syncNow)syncNow().catch(e=>console.warn('sync not started',e));

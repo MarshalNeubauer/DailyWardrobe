@@ -15,6 +15,19 @@ const txFail=(t,no,m)=>ev=>{let e=t.error||(ev&&ev.target&&ev.target.error)||new
 const txs=async(store,m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,m);t.onerror=t.onabort=txFail(t,no,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result)})};
 const tx=(m,f)=>txs('items',m,f);
 const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=(k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
+/* ---- the connection kept in the database too (2026-11-14: on the owner's iPhone the Home Screen app's localStorage lost the server
+   address and the code after the app was force-closed during an update; the database, with the wardrobe, was untouched; Safari kept
+   both). A copy of these keys is kept in meta 'conn' and put back at start-up where localStorage lost them, before anything reads them
+   (start.js and sync.js wait for connRestored). The copy follows localStorage: written after the restore, when Settings closes, when a
+   connection is made and whenever the app goes to the background (an address cleared on purpose is copied as cleared); Delete my data
+   deletes the database and the copy with it. ---- */
+const CONN_KEEP=['worker_url','app_token','remind'];
+let connReady=false;
+async function connKeep(){if(!connReady)return;try{const v={};for(const k of CONN_KEEP){const x=localStorage.getItem(k);if(x!=null)v[k]=x}await metaPut('conn',v)}catch(e){console.warn('connection copy not kept',e)}}
+const connRestored=db.then(async()=>{let n=0;
+  try{const v=await metaGet('conn');if(v)for(const k of CONN_KEEP)if(v[k]&&!localStorage.getItem(k)){localStorage.setItem(k,v[k]);n++}}catch(e){console.warn('connection copy not read',e)}
+  connReady=true;await connKeep();if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep()});
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
 const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
   const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)})};

@@ -239,4 +239,4 @@ async function rollBack(){const id=$('#snap-list')&&$('#snap-list').value,st=$('
     restoring=true;const ok=await syncNow();delete $('#snap-list').dataset.loaded;
     st.textContent=ok?`Rolled back. The wardrobe has ${items.length} item${items.length===1?'':'s'}.`:`Rolled back on this device (${items.length} item${items.length===1?'':'s'}), but the backup could not be updated yet: ${localStorage.getItem('sync_status')||''}`}
   catch(e){st.textContent='Roll back failed: '+(e.message||e)}}
-db.then(()=>setTimeout(syncNow,300));
+connRestored.then(()=>setTimeout(syncNow,300));   // (after the connection is put back where storage lost it: app.js)

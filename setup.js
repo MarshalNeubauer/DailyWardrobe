@@ -127,7 +127,7 @@ function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation
 /* an invite link is <app url>#invite=<code>&w=<the server's address, URL-encoded> */
 function setupParseLink(t){const c=/[#&?]invite=([^&#\s]+)/.exec(t),w=/[#&?]w=([^&#\s]+)/.exec(t);if(!c||!w)return false;
   try{const url=decodeURIComponent(w[1]),code=decodeURIComponent(c[1]);if(!/^https?:$/.test(new URL(url).protocol)||!code)return false;
-    localStorage.setItem('worker_url',url);localStorage.setItem('app_token',code);return true}catch{return false}}
+    localStorage.setItem('worker_url',url);localStorage.setItem('app_token',code);if(typeof connKeep==='function')connKeep();return true}catch{return false}}
 async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim();if(!t||setup.busy)return;
   setup.busy=true;setup.msg='';setupDraw();if($('#su-link'))$('#su-link').value=t;let ok=false;
   try{ok=typeof connectFromLink==='function'?!!(await connectFromLink(t)):setupParseLink(t)}catch(e){ok=false}
