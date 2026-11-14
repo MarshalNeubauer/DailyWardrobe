@@ -22,7 +22,7 @@ a11yfix.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLin
 a11yfix.test.js	pack.js	<loaded>	packShow
 a11yfix.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 a11yfix.test.js	planner.js	<loaded>	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	outfitScore	patInfo	patternScore	pcol	shirtScore	tieScore
-a11yfix.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+a11yfix.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 a11yfix.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 a11yfix.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	findCity	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit
 a11yfix.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -66,7 +66,7 @@ about.test.js	month.js	<any>	<loaded>	nextWorkday
 about.test.js	pack.js	<any>	<loaded>	packShow
 about.test.js	photos.js	<any>	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 about.test.js	planner.js	<any>	<loaded>
-about.test.js	remind.js	<any>	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+about.test.js	remind.js	<any>	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 about.test.js	safety.js	<any>	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 about.test.js	settings.js	<any>	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit
 about.test.js	setup.js	<any>	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -108,7 +108,7 @@ accounts.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLin
 accounts.test.js	pack.js	<loaded>	packShow
 accounts.test.js	photos.js	<loaded>	aAn	asmLive	checkQueue	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figurePng	finishQueueMsg	fixItemBackdrops	fnv64	generateRender	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	outfitRefs	outfitText	prefetchRenders	queueCombo	queueDelay	queuedKeys	remoteList	renderFor	renderItemPic	renderItemPicUI	renderPending	renderStalled	rqGet	rqSet	schedulePrefetch	scheduleQueueCheck	sentAt	shirtPatterned	shirtTextured	startQueueWatch	waitPush	workerBase
 accounts.test.js	planner.js	<loaded>
-accounts.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+accounts.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 accounts.test.js	safety.js	<loaded>	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote	tagFailText	tagFailed
 accounts.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit
 accounts.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -202,7 +202,7 @@ asmahead.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLi
 asmahead.test.js	pack.js	<loaded>	packShow
 asmahead.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 asmahead.test.js	planner.js	<loaded>
-asmahead.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+asmahead.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 asmahead.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 asmahead.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 asmahead.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -423,7 +423,7 @@ asmcolor.test.js	node_modules/playwright/index.js	<any>
 asmcolor.test.js	pack.js	<loaded>	packShow
 asmcolor.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fixItemBackdrops	fnv64	itemDesc	itemKey	keepRender	loadRenders	lookSig	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet	shirtPatterned	shirtTextured	workerBase
 asmcolor.test.js	planner.js	<loaded>
-asmcolor.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+asmcolor.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 asmcolor.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 asmcolor.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit
 asmcolor.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -487,7 +487,7 @@ asmgl.test.js	month.js	<loaded>	nextWorkday
 asmgl.test.js	pack.js	<loaded>	packShow
 asmgl.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	fnv64	keepRender	loadRenders	queuedKeys	rqGet	workerBase
 asmgl.test.js	planner.js	<loaded>
-asmgl.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+asmgl.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 asmgl.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 asmgl.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 asmgl.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -621,7 +621,7 @@ asmprebuild.test.js	node_modules/playwright/index.js	<any>
 asmprebuild.test.js	pack.js	<loaded>	packShow
 asmprebuild.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	lastWorn	loadRenders	lookSig	queuedKeys	remoteList	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 asmprebuild.test.js	planner.js	<loaded>
-asmprebuild.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+asmprebuild.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 asmprebuild.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 asmprebuild.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 asmprebuild.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -869,7 +869,7 @@ assemble.test.js	month.js	<loaded>	nextWorkday	planOn
 assemble.test.js	pack.js	<loaded>	packShow
 assemble.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fixItemBackdrops	fnv64	loadRenders	lookSig	missingItemPics	queuedKeys	renderFor	renderItemPicUI	renderPending	rqGet	shirtPatterned	shirtTextured	workerBase
 assemble.test.js	planner.js	<loaded>
-assemble.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+assemble.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 assemble.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 assemble.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit
 assemble.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -923,7 +923,7 @@ auditfix.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLin
 auditfix.test.js	pack.js	<loaded>	packShow
 auditfix.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figurePng	fixItemBackdrops	fnv64	generateRender	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	outfitRefs	outfitText	prefetchRenders	queueCombo	queuedKeys	remoteList	renderFor	renderItemPicUI	renderPending	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 auditfix.test.js	planner.js	<loaded>
-auditfix.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+auditfix.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 auditfix.test.js	safety.js	<loaded>	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 auditfix.test.js	settings.js	<loaded>	addDayOff	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 auditfix.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -965,7 +965,7 @@ beltswap.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLin
 beltswap.test.js	pack.js	<loaded>	packShow
 beltswap.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 beltswap.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkShirt	darkUnderLight	fam	finish	frozenOutfit	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	outfit	outfitScore	pairDown	pairKey	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-beltswap.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+beltswap.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 beltswap.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 beltswap.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 beltswap.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1005,7 +1005,7 @@ boxfold.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHt
 boxfold.test.js	pack.js	<loaded>	packShow
 boxfold.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 boxfold.test.js	planner.js	<loaded>
-boxfold.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+boxfold.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 boxfold.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 boxfold.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 boxfold.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1181,7 +1181,7 @@ claudepattern.test.js	month.js	<loaded>	nextWorkday
 claudepattern.test.js	pack.js	<loaded>	packShow
 claudepattern.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 claudepattern.test.js	planner.js	<loaded>
-claudepattern.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+claudepattern.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 claudepattern.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 claudepattern.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	toast
 claudepattern.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1230,7 +1230,7 @@ climate.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine
 climate.test.js	pack.js	<loaded>	packShow
 climate.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 climate.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkMode	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	withColRun
-climate.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+climate.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 climate.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 climate.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadClimate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setLocation	setLock	settingsOpen	settingsSummaries	shortDate	showCost	temp	unit	wxChip	wxIcon
 climate.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1409,7 +1409,7 @@ colpick.test.js	month.js	<loaded>	nextWorkday
 colpick.test.js	pack.js	<loaded>	packShow
 colpick.test.js	photos.js	<loaded>	asmLive	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	queuedKeys	rqGet	workerBase
 colpick.test.js	planner.js	<loaded>
-colpick.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+colpick.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 colpick.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart	tagFailNote
 colpick.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	toast
 colpick.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1450,7 +1450,7 @@ compare.test.js	month.js	<loaded>	nextWorkday
 compare.test.js	pack.js	<loaded>	packShow
 compare.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 compare.test.js	planner.js	<loaded>
-compare.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+compare.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 compare.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 compare.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 compare.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1532,7 +1532,7 @@ daypieces.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGrid
 daypieces.test.js	pack.js	<loaded>	packShow
 daypieces.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 daypieces.test.js	planner.js	<loaded>	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	outfitScore	pairKey	patInfo	patternScore	pcol	shirtScore	tieScore
-daypieces.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+daypieces.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 daypieces.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 daypieces.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 daypieces.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -1573,7 +1573,7 @@ daysoff.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	m
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	remoteList	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 daysoff.test.js	planner.js	<loaded>
-daysoff.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	addDayOff	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	isoDate	isoToDate	loadWeather	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toggleHoliday	unit
 daysoff.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -1669,7 +1669,7 @@ deltasync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthL
 deltasync.test.js	pack.js	<loaded>	packShow
 deltasync.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	fnv64	itemDesc	itemKey	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 deltasync.test.js	planner.js	<loaded>
-deltasync.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+deltasync.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 deltasync.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 deltasync.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit
 deltasync.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1733,7 +1733,7 @@ display.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkday
 display.test.js	pack.js	<loaded>	packShow
 display.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 display.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	shirt	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tie	tieGroup	tieLook	tieRepeat	tieScore	top	watchFit	withColRun
-display.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+display.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 display.test.js	safety.js	<loaded>	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 display.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 display.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -1774,7 +1774,7 @@ dress.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	mon
 dress.test.js	pack.js	<loaded>	packShow
 dress.test.js	photos.js	<loaded>	aAn	asmLive	clipWord	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	outfitText	prefetchRenders	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 dress.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkMode	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lightTop	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirt	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tie	tieGroup	tieLook	tieLum	tieRepeat	tieScore	top	watchFit	withColRun
-dress.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+dress.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 dress.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	pruneTagImgs	safetyStart	tagFailNote
 dress.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveSettings	saveUserSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit
 dress.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -1820,7 +1820,7 @@ figure.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink
 figure.test.js	pack.js	<loaded>	packShow
 figure.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figurePng	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 figure.test.js	planner.js	<loaded>
-figure.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+figure.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 figure.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 figure.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 figure.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -1907,7 +1907,7 @@ foldtap.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthFold	m
 foldtap.test.js	pack.js	<loaded>	packShow
 foldtap.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 foldtap.test.js	planner.js	<loaded>	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	outfitScore	patInfo	patternScore	pcol	shirtScore	tieScore
-foldtap.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+foldtap.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 foldtap.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 foldtap.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 foldtap.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -2127,7 +2127,7 @@ history.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLin
 history.test.js	pack.js	<loaded>	packShow
 history.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 history.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairKey	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-history.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+history.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 history.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 history.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 history.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -2214,7 +2214,7 @@ invitelink.test.js	month.js	<loaded>	nextWorkday
 invitelink.test.js	pack.js	<loaded>	packShow
 invitelink.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 invitelink.test.js	planner.js	<loaded>
-invitelink.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+invitelink.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 invitelink.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 invitelink.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit
 invitelink.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -2255,7 +2255,7 @@ itempics.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLi
 itempics.test.js	pack.js	<loaded>	packShow
 itempics.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	greyBackdrop	itemDesc	itemImg	itemKey	itemPic	itemPicHtml	keepRender	lastWorn	loadRenders	lookSig	missingItemPics	picBg	prefetchRenders	queuedKeys	readPicBg	remoteList	renderFor	renderItemPic	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	shrinkUrl	startItemPics	workerBase
 itempics.test.js	planner.js	<loaded>	pairKey
-itempics.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+itempics.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 itempics.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 itempics.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 itempics.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -2396,7 +2396,7 @@ kit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	pla
 kit.test.js	pack.js	<loaded>	packShow
 kit.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 kit.test.js	planner.js	<loaded>
-kit.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+kit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 kit.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 kit.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 kit.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupWardEmpty	setupYield
@@ -2433,7 +2433,7 @@ kvlimit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
 kvlimit.test.js	pack.js	<loaded>	packShow
 kvlimit.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 kvlimit.test.js	planner.js	<loaded>
-kvlimit.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+kvlimit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 kvlimit.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 kvlimit.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 kvlimit.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -2492,7 +2492,7 @@ listphoto.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthL
 listphoto.test.js	pack.js	<loaded>	packShow
 listphoto.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 listphoto.test.js	planner.js	<loaded>	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	outfitScore	pairKey	patInfo	patternScore	pcol	shirtScore	tieScore
-listphoto.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+listphoto.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 listphoto.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 listphoto.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 listphoto.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -2689,7 +2689,7 @@ month.test.js	month.js	<loaded>	monthBelow	monthDrag	monthDrop	monthFill	monthFi
 month.test.js	pack.js	<loaded>	packShow
 month.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	remoteList	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 month.test.js	planner.js	<loaded>
-month.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+month.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 month.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 month.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 month.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -2735,7 +2735,7 @@ monthswipe.test.js	month.js	<loaded>	monthBelow	monthDrag	monthDrop	monthFill	mo
 monthswipe.test.js	pack.js	<loaded>	packShow
 monthswipe.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 monthswipe.test.js	planner.js	<loaded>
-monthswipe.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+monthswipe.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 monthswipe.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 monthswipe.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 monthswipe.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -2776,7 +2776,7 @@ monthunfold.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSo
 monthunfold.test.js	pack.js	<loaded>	packShow
 monthunfold.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 monthunfold.test.js	planner.js	<loaded>
-monthunfold.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+monthunfold.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 monthunfold.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 monthunfold.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 monthunfold.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -2817,7 +2817,7 @@ motif.test.js	month.js	<loaded>	nextWorkday
 motif.test.js	pack.js	<loaded>	packShow
 motif.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fixItemBackdrops	fnv64	loadRenders	lookSig	outfitRefs	queuedKeys	rqGet	shirtPatterned	shirtTextured
 motif.test.js	planner.js	<loaded>
-motif.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+motif.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 motif.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 motif.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	toast
 motif.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -2873,7 +2873,7 @@ moveoutfit.test.js	month.js	<loaded>	monthFillSoon	monthGridHtml	monthLink	nextW
 moveoutfit.test.js	pack.js	<loaded>	packShow
 moveoutfit.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 moveoutfit.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	shirt	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tie	tieGroup	tieLook	tieRepeat	tieScore	top	watchFit	withColRun
-moveoutfit.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+moveoutfit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 moveoutfit.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 moveoutfit.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 moveoutfit.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -2959,7 +2959,7 @@ navbar.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	
 navbar.test.js	pack.js	<loaded>	packShow
 navbar.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 navbar.test.js	planner.js	<loaded>
-navbar.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+navbar.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 navbar.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 navbar.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 navbar.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -3000,7 +3000,7 @@ navfit.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink
 navfit.test.js	pack.js	<loaded>	packShow
 navfit.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	picBg	prefetchRenders	queuedKeys	readPicBg	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 navfit.test.js	planner.js	<loaded>
-navfit.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+navfit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 navfit.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 navfit.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 navfit.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -3042,7 +3042,7 @@ newuser.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine
 newuser.test.js	pack.js	<loaded>	packShow
 newuser.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	remoteList	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 newuser.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkShirt	darkUnderLight	fam	finish	frozenOutfit	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	outfit	outfitScore	pairDown	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	withColRun
-newuser.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+newuser.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 newuser.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart	tagFailText
 newuser.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	findCity	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 newuser.test.js	setup.js	<loaded>	setupAuto	setupCityOpen	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupHolidays	setupInert	setupNeeds	setupOpen	setupSearch	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
@@ -3082,7 +3082,7 @@ occasions.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon
 occasions.test.js	pack.js	<loaded>	packShow
 occasions.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	figurePng	fixItemBackdrops	fnv64	generateRender	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	keptPhoto	lastWorn	loadRenders	lookSig	missingItemPics	outfitRefs	outfitText	prefetchRenders	queueCombo	queuedKeys	remoteList	renderCombo	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 occasions.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkMode	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lightTop	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairKey	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirt	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tie	tieGroup	tieLook	tieLum	tieRepeat	tieScore	top	watchFit	withColRun
-occasions.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+occasions.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 occasions.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 occasions.test.js	settings.js	<loaded>	addFormalDay	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 occasions.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -3168,7 +3168,7 @@ pack.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	mont
 pack.test.js	pack.js	<loaded>	openPack	packAvg	packComplete	packCopy	packCount	packDate	packDays	packDaysTxt	packDefault	packLight	packLightRecs	packList	packLive	packLock	packLockDays	packLockState	packMark	packMarkKey	packN	packName	packNoCap	packPlanOf	packProgress	packRate	packRead	packRelease	packSaved	packSetCap	packSetDate	packSetMark	packSets	packShare	packShow	packTally	packText	packTick	packTrip	packUses	packWear	packWearDay	packWeekStart	packWornIds	packWrite	renderPack
 pack.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 pack.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-pack.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+pack.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 pack.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 pack.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit
 pack.test.js	setup.js	<loaded>	setupAuto	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -3208,7 +3208,7 @@ pagescroll.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoo
 pagescroll.test.js	pack.js	<loaded>	packShow
 pagescroll.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 pagescroll.test.js	planner.js	<loaded>
-pagescroll.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+pagescroll.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 pagescroll.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 pagescroll.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 pagescroll.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -3249,7 +3249,7 @@ paste.test.js	month.js	<loaded>	nextWorkday
 paste.test.js	pack.js	<loaded>	packShow
 paste.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 paste.test.js	planner.js	<loaded>
-paste.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+paste.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 paste.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote	tagFailText	tagFailed
 paste.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit
 paste.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -3388,7 +3388,7 @@ picfold.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHt
 picfold.test.js	pack.js	<loaded>	packShow
 picfold.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 picfold.test.js	planner.js	<loaded>
-picfold.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+picfold.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 picfold.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 picfold.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 picfold.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -3429,7 +3429,7 @@ picker.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink
 picker.test.js	pack.js	<loaded>	packShow
 picker.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 picker.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairKey	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-picker.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+picker.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 picker.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 picker.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	shortDate
 picker.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -3551,7 +3551,7 @@ planaudit.test.js	month.js	<loaded>	nextWorkday
 planaudit.test.js	pack.js	<loaded>	packShow
 planaudit.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 planaudit.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkMode	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lightTop	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieLum	tieRepeat	tieScore	watchFit	withColRun
-planaudit.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+planaudit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 planaudit.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 planaudit.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 planaudit.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -3677,7 +3677,7 @@ queue.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	p
 queue.test.js	pack.js	<loaded>	packShow
 queue.test.js	photos.js	<loaded>	aAn	asmLive	checkQueue	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	figurePng	finishQueueMsg	fixItemBackdrops	fnv64	generateRender	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	keptPhoto	lastWorn	loadRenders	lookSig	missingItemPics	outfitRefs	outfitText	queueCombo	queueDelay	queuedKeys	remoteList	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	rqSet	schedulePrefetch	scheduleQueueCheck	sentAt	shirtPatterned	shirtTextured	startQueueWatch	stopQueueWatch	waitPush	workerBase
 queue.test.js	planner.js	<loaded>
-queue.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+queue.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 queue.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 queue.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 queue.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -3927,7 +3927,7 @@ render.test.js	detect.js	<loaded>	@	texPat	usableSett
 render.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 render.test.js	dress.js	<loaded>	dressOn	dressSummary	legacyVest	migrateVests	renderDressUI
 render.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
-render.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+render.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 render.test.js	icon-192.png	<loaded>
 render.test.js	icon-512.png	<loaded>
 render.test.js	index.html	<loaded>
@@ -3938,7 +3938,7 @@ render.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	
 render.test.js	pack.js	<loaded>	packShow
 render.test.js	photos.js	<any>	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	figurePng	fixItemBackdrops	fnv64	generateRender	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	keptPhoto	lastWorn	loadRenders	lookSig	missingItemPics	outfitRefs	outfitText	queueCombo	queuedKeys	remoteList	renderCombo	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shareRender	shirtPatterned	shirtTextured	workerBase
 render.test.js	planner.js	<loaded>
-render.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+render.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 render.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	pruneTagImgs	safetyStart
 render.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 render.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -3984,7 +3984,7 @@ replan.test.js	month.js	<loaded>	nextWorkday
 replan.test.js	pack.js	<loaded>	packShow
 replan.test.js	photos.js	<loaded>	aAn	asmLive	esc	fixItemBackdrops	fnv64	itemDesc	itemKey	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 replan.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	nearCost	outfit	outfitScore	pairDown	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	withColRun
-replan.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+replan.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 replan.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 replan.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit
 replan.test.js	setup.js	<loaded>	setupAuto	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -4024,7 +4024,7 @@ reveal.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	mo
 reveal.test.js	pack.js	<loaded>	packShow
 reveal.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 reveal.test.js	planner.js	<loaded>
-reveal.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+reveal.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 reveal.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 reveal.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 reveal.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -4065,7 +4065,7 @@ reviewfixes.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	pieces
 reviewfixes.test.js	pack.js	<loaded>	packShow
 reviewfixes.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 reviewfixes.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkMode	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	withColRun
-reviewfixes.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+reviewfixes.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 reviewfixes.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	pruneTagImgs	safetyStart
 reviewfixes.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 reviewfixes.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4105,7 +4105,7 @@ rotation-pause.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	pie
 rotation-pause.test.js	pack.js	<loaded>	packShow
 rotation-pause.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 rotation-pause.test.js	planner.js	<loaded>	darkShirt	darkUnderLight	fam	finish	patInfo	pcol	rateOutfit	shirtGroup	shoeCtx	shoeScore	sockEcho	sockScore	tieGroup
-rotation-pause.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+rotation-pause.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 rotation-pause.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 rotation-pause.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 rotation-pause.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4231,7 +4231,7 @@ run.js: add an item without a photo; it persists	month.js	<loaded>	monthFillSoon
 run.js: add an item without a photo; it persists	pack.js	<loaded>	packShow
 run.js: add an item without a photo; it persists	photos.js	<loaded>	aAn	asmLive	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	queuedKeys	rqGet	workerBase
 run.js: add an item without a photo; it persists	planner.js	<loaded>
-run.js: add an item without a photo; it persists	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+run.js: add an item without a photo; it persists	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 run.js: add an item without a photo; it persists	safety.js	<loaded>	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 run.js: add an item without a photo; it persists	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 run.js: add an item without a photo; it persists	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupWardEmpty	setupYield
@@ -4475,7 +4475,7 @@ run.js: renders the outfit without errors	month.js	<loaded>	monthFillSoon	monthL
 run.js: renders the outfit without errors	pack.js	<loaded>	packShow
 run.js: renders the outfit without errors	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 run.js: renders the outfit without errors	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-run.js: renders the outfit without errors	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+run.js: renders the outfit without errors	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 run.js: renders the outfit without errors	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 run.js: renders the outfit without errors	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 run.js: renders the outfit without errors	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4515,7 +4515,7 @@ run.js: swipe edge cases and month crossing	month.js	<loaded>	monthFillSoon	mont
 run.js: swipe edge cases and month crossing	pack.js	<loaded>	packShow
 run.js: swipe edge cases and month crossing	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 run.js: swipe edge cases and month crossing	planner.js	<loaded>
-run.js: swipe edge cases and month crossing	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+run.js: swipe edge cases and month crossing	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 run.js: swipe edge cases and month crossing	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 run.js: swipe edge cases and month crossing	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 run.js: swipe edge cases and month crossing	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -4556,7 +4556,7 @@ run.js: swipe moves only the outfit, across viewports	month.js	<loaded>	monthFil
 run.js: swipe moves only the outfit, across viewports	pack.js	<loaded>	packShow
 run.js: swipe moves only the outfit, across viewports	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 run.js: swipe moves only the outfit, across viewports	planner.js	<loaded>
-run.js: swipe moves only the outfit, across viewports	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+run.js: swipe moves only the outfit, across viewports	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 run.js: swipe moves only the outfit, across viewports	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 run.js: swipe moves only the outfit, across viewports	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 run.js: swipe moves only the outfit, across viewports	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4597,7 +4597,7 @@ safety.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	
 safety.test.js	pack.js	<loaded>	packShow
 safety.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 safety.test.js	planner.js	<loaded>
-safety.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+safety.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 safety.test.js	safety.js	<loaded>	@	@addEventListenerunhandledrejection	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	retryTag	safetyStart	saveFailed	storageDown	storeErr	storeFailText	storeFailure	storeFull	tagFailNote	tagFailText	tagFailed
 safety.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 safety.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4682,7 +4682,7 @@ scoreanim.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGrid
 scoreanim.test.js	pack.js	<loaded>	packShow
 scoreanim.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 scoreanim.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	withColRun
-scoreanim.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+scoreanim.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 scoreanim.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 scoreanim.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 scoreanim.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -4722,7 +4722,7 @@ scorefix.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridH
 scorefix.test.js	pack.js	<loaded>	packShow
 scorefix.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 scorefix.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkMode	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lightTop	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairKey	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieLum	tieRepeat	tieScore	watchFit	withColRun
-scorefix.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+scorefix.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 scorefix.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 scorefix.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 scorefix.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -4762,7 +4762,7 @@ sett.test.js	month.js	<loaded>	nextWorkday
 sett.test.js	pack.js	<loaded>	packShow
 sett.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fixItemBackdrops	fnv64	loadRenders	lookSig	outfitText	queuedKeys	rqGet	shirtPatterned	shirtTextured
 sett.test.js	planner.js	<loaded>
-sett.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+sett.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 sett.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 sett.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	toast
 sett.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4810,7 +4810,7 @@ settingslock.test.js	month.js	<loaded>	nextWorkday
 settingslock.test.js	pack.js	<loaded>	packShow
 settingslock.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 settingslock.test.js	planner.js	<loaded>
-settingslock.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+settingslock.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 settingslock.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 settingslock.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toggleCat	unit
 settingslock.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4892,7 +4892,7 @@ settingsstay.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piece
 settingsstay.test.js	pack.js	<loaded>	packShow
 settingsstay.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 settingsstay.test.js	planner.js	<loaded>
-settingsstay.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+settingsstay.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 settingsstay.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 settingsstay.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 settingsstay.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -4933,7 +4933,7 @@ setup.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	p
 setup.test.js	pack.js	<loaded>	packShow
 setup.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 setup.test.js	planner.js	<loaded>
-setup.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+setup.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 setup.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	pruneTagImgs	safetyStart
 setup.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	findCity	isoDate	loadClimate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setHolidayCountry	setLocation	setLock	setUnits	setVestMode	settingsOpen	settingsSummaries	shortDate	toggleDay	unit	useMyLocation	wxChip
 setup.test.js	setup.js	<loaded>	setupAuto	setupCityOpen	setupClose	setupConnect	setupConnected	setupDay	setupDays	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupHolidays	setupInert	setupLocate	setupNeeds	setupOpen	setupParseLink	setupPick	setupSearch	setupSetDress	setupShown	setupStart	setupStep	setupSwitch	setupToday	setupUnits	setupVest	setupWardEmpty	setupYield	tzCountry
@@ -5159,7 +5159,7 @@ shop.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackS
 shop.test.js	pack.js	<loaded>	packShow
 shop.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	lookSig	queuedKeys	rqGet	shirtPatterned	shirtTextured	workerBase
 shop.test.js	planner.js	<any>	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkMode	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	shirt	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tie	tieGroup	tieLook	tieRepeat	tieScore	top	watchFit	withColRun
-shop.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+shop.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 shop.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 shop.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen
 shop.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5200,7 +5200,7 @@ shopswipe.test.js	month.js	<loaded>	nextWorkday
 shopswipe.test.js	pack.js	<loaded>	packShow
 shopswipe.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fixItemBackdrops	fnv64	itemPic	loadRenders	lookSig	queuedKeys	rqGet	shirtPatterned	shirtTextured
 shopswipe.test.js	planner.js	<loaded>	darkMode	darkShirt	darkUnderLight	fam	finish	jacketGroup	patInfo	pcol	rateOutfit	shirtGroup	shoeCtx	shoeScore	tieGroup
-shopswipe.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+shopswipe.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 shopswipe.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 shopswipe.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 shopswipe.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5241,7 +5241,7 @@ snapshots.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
 snapshots.test.js	pack.js	<loaded>	packShow
 snapshots.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 snapshots.test.js	planner.js	<loaded>
-snapshots.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+snapshots.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 snapshots.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 snapshots.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit
 snapshots.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -5340,7 +5340,7 @@ speed.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	
 speed.test.js	pack.js	<loaded>	packShow
 speed.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 speed.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	withColRun
-speed.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+speed.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 speed.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	pruneTagImgs	safetyStart
 speed.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadClimate	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	temp	unit	wxChip	wxIcon
 speed.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5380,7 +5380,7 @@ staledevice.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	mont
 staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 staledevice.test.js	planner.js	<loaded>
-staledevice.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	pruneTagImgs	safetyStart
 staledevice.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 staledevice.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5425,7 +5425,7 @@ stats.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	
 stats.test.js	pack.js	<loaded>	packShow
 stats.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 stats.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairKey	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-stats.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+stats.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 stats.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 stats.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit
 stats.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -5465,7 +5465,7 @@ subback.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLin
 subback.test.js	pack.js	<loaded>	openPack	packCount	packDate	packDays	packDaysTxt	packDefault	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	renderPack
 subback.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 subback.test.js	planner.js	<loaded>	beltFit	darkShirt	darkUnderLight	fam	finish	jacketGroup	leatherGroup	metalOf	patInfo	pcol	rateOutfit	shirtGroup	shoeCtx	shoeScore	sockEcho	sockScore	tieGroup
-subback.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+subback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 subback.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 subback.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 subback.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5508,7 +5508,7 @@ sw.test.js	month.js	<any>	<loaded>	nextWorkday
 sw.test.js	pack.js	<any>	<loaded>	packShow
 sw.test.js	photos.js	<any>	<loaded>	asmLive	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 sw.test.js	planner.js	<any>	<loaded>
-sw.test.js	remind.js	<any>	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+sw.test.js	remind.js	<any>	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 sw.test.js	safety.js	<any>	<loaded>	@addEventListenerunhandledrejection	db.then.dbDown	pruneTagImgs	safetyStart	storeFailure
 sw.test.js	settings.js	<any>	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 sw.test.js	setup.js	<any>	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5550,7 +5550,7 @@ swatchzoom.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	month
 swatchzoom.test.js	pack.js	<loaded>	packShow
 swatchzoom.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 swatchzoom.test.js	planner.js	<loaded>
-swatchzoom.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+swatchzoom.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 swatchzoom.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 swatchzoom.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 swatchzoom.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5591,7 +5591,7 @@ sync.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackS
 sync.test.js	pack.js	<loaded>	packShow
 sync.test.js	photos.js	<loaded>	aAn	asmLive	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	missingItemPics	queuedKeys	remoteList	renderItemPicUI	renderPending	rqGet	workerBase
 sync.test.js	planner.js	<loaded>
-sync.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+sync.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 sync.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	pruneTagImgs	safetyStart
 sync.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit
 sync.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5678,7 +5678,7 @@ tagging.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	sta
 tagging.test.js	pack.js	<loaded>	packShow
 tagging.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fixItemBackdrops	fnv64	loadRenders	lookSig	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 tagging.test.js	planner.js	<loaded>	fam	jacketGroup	patInfo	pcol	rateOutfit
-tagging.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+tagging.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 tagging.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 tagging.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit
 tagging.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -5765,7 +5765,7 @@ takeoff.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine
 takeoff.test.js	pack.js	<loaded>	packShow
 takeoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 takeoff.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-takeoff.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+takeoff.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 takeoff.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 takeoff.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 takeoff.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5802,7 +5802,7 @@ testersync.test.js	month.js	<loaded>	nextWorkday
 testersync.test.js	pack.js	<loaded>	packShow
 testersync.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 testersync.test.js	planner.js	<loaded>
-testersync.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+testersync.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 testersync.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 testersync.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 testersync.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5843,7 +5843,7 @@ testerview.test.js	month.js	<loaded>	nextWorkday
 testerview.test.js	pack.js	<loaded>	packShow
 testerview.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fixItemBackdrops	fnv64	loadRenders	missingItemPics	queuedKeys	renderFor	renderItemPicUI	renderPending	rqGet
 testerview.test.js	planner.js	<loaded>
-testerview.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+testerview.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 testerview.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 testerview.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 testerview.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -5884,7 +5884,7 @@ texswatch.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkd
 texswatch.test.js	pack.js	<loaded>	packShow
 texswatch.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 texswatch.test.js	planner.js	<loaded>
-texswatch.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+texswatch.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 texswatch.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote	tagFailed
 texswatch.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 texswatch.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6149,7 +6149,7 @@ todaycards.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGri
 todaycards.test.js	pack.js	<loaded>	packShow
 todaycards.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 todaycards.test.js	planner.js	<loaded>
-todaycards.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+todaycards.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 todaycards.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 todaycards.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 todaycards.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -6190,7 +6190,7 @@ todayqueue.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesL
 todayqueue.test.js	pack.js	<loaded>	packShow
 todayqueue.test.js	photos.js	<loaded>	aAn	asmLive	checkQueue	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	figurePng	finishQueueMsg	fixItemBackdrops	fnv64	generateRender	itemDesc	itemKey	itemPic	itemPicHtml	keepRender	keptPhoto	lastWorn	loadRenders	lookSig	missingItemPics	outfitRefs	outfitText	queueCombo	queueDelay	queuedKeys	remoteList	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	rqSet	schedulePrefetch	scheduleQueueCheck	sentAt	shirtPatterned	shirtTextured	startQueueWatch	stopQueueWatch	takeQueued	waitPush	workerBase
 todayqueue.test.js	planner.js	<loaded>
-todayqueue.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+todayqueue.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 todayqueue.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 todayqueue.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	unit
 todayqueue.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6276,7 +6276,7 @@ todaytight.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesL
 todaytight.test.js	pack.js	<loaded>	packShow
 todaytight.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 todaytight.test.js	planner.js	<loaded>
-todaytight.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+todaytight.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 todaytight.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 todaytight.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 todaytight.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6317,7 +6317,7 @@ todayzoom.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon
 todayzoom.test.js	pack.js	<loaded>	packShow
 todayzoom.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	outfitRefs	outfitText	prefetchRenders	queuedKeys	remoteList	renderFor	renderPending	renderStalled	rqGet	rqSet	schedulePrefetch	sentAt	shareRender	shirtPatterned	shirtTexText	shirtTextured	workerBase
 todayzoom.test.js	planner.js	<loaded>
-todayzoom.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+todayzoom.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 todayzoom.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart	tagFailText
 todayzoom.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 todayzoom.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6360,7 +6360,7 @@ ui.test.js	month.js	<any>	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	
 ui.test.js	pack.js	<any>	<loaded>	packCount	packDate	packDays	packDaysTxt	packDefault	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	renderPack
 ui.test.js	photos.js	<any>	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	remoteList	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 ui.test.js	planner.js	<any>	<loaded>	beltFit	darkShirt	darkUnderLight	fam	finish	jacketGroup	leatherGroup	metalOf	patInfo	pcol	rateOutfit	shirtGroup	shoeCtx	shoeScore	sockEcho	sockScore	tieGroup
-ui.test.js	remind.js	<any>	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+ui.test.js	remind.js	<any>	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 ui.test.js	safety.js	<any>	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 ui.test.js	settings.js	<any>	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshAll	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleCat	unit
 ui.test.js	setup.js	<any>	<loaded>	setupAuto	setupCityOpen	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupGo	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupSwitch	setupToday	setupWardEmpty	setupYield
@@ -6402,7 +6402,7 @@ uipages.test.js	month.js	<loaded>	nextWorkday
 uipages.test.js	pack.js	<loaded>	packShow
 uipages.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	lookSig	missingItemPics	queuedKeys	renderFor	renderItemPicUI	renderPending	rqGet	shirtPatterned	shirtTextured	workerBase
 uipages.test.js	planner.js	<loaded>	beltFit	darkShirt	darkUnderLight	fam	finish	jacketGroup	leatherGroup	metalOf	patInfo	pcol	rateOutfit	shirtGroup	shoeCtx	shoeScore	sockEcho	sockScore	tieGroup
-uipages.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+uipages.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 uipages.test.js	safety.js	<loaded>	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 uipages.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveSettings	saveUserSettings	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toggleCat	toggleDay	unit
 uipages.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6444,7 +6444,7 @@ vest.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	pl
 vest.test.js	pack.js	<loaded>	packShow
 vest.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	outfitText	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 vest.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-vest.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+vest.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 vest.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 vest.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 vest.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6567,7 +6567,7 @@ wardrobe.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLi
 wardrobe.test.js	pack.js	<loaded>	packShow
 wardrobe.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	outfitText	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 wardrobe.test.js	planner.js	<loaded>	beltFit	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	finish	leatherGroup	metalOf	outfitScore	patInfo	patternScore	pcol	rateOutfit	shirtGroup	shirtScore	shoeCtx	shoeScore	sockEcho	sockScore	tieGroup	tieScore
-wardrobe.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+wardrobe.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 wardrobe.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 wardrobe.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	toast
 wardrobe.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupWardEmpty	setupYield
@@ -6612,7 +6612,7 @@ wardrobetap.test.js	month.js	<loaded>	nextWorkday
 wardrobetap.test.js	pack.js	<loaded>	packShow
 wardrobetap.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	queuedKeys	rqGet
 wardrobetap.test.js	planner.js	<loaded>
-wardrobetap.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
+wardrobetap.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 wardrobetap.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 wardrobetap.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
 wardrobetap.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6653,7 +6653,7 @@ wardswipe.test.js	month.js	<loaded>	nextWorkday
 wardswipe.test.js	pack.js	<loaded>	packShow
 wardswipe.test.js	photos.js	<loaded>	asmLive	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	queuedKeys	rqGet	workerBase
 wardswipe.test.js	planner.js	<loaded>
-wardswipe.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+wardswipe.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 wardswipe.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 wardswipe.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 wardswipe.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -6740,7 +6740,7 @@ weather.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine
 weather.test.js	pack.js	<loaded>	packShow
 weather.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	prefetchRenders	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 weather.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-weather.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+weather.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 weather.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 weather.test.js	settings.js	<loaded>	addFormalDay	applyTheme	backupSummary	closeSettings	countryName	findCity	isoDate	loadClimate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveUserSettings	setCatOpen	setLocation	setLock	setUnits	settingsOpen	settingsSummaries	shortDate	showCost	temp	unit	wxChip	wxIcon
 weather.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
@@ -6780,7 +6780,7 @@ weeklock.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLin
 weeklock.test.js	pack.js	<loaded>	packShow
 weeklock.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	queuedKeys	renderFor	renderItemPicUI	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 weeklock.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairKey	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
-weeklock.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
+weeklock.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 weeklock.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
 weeklock.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	saveSettings	saveUserSettings	setCatOpen	setDarkShirts	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toggleDay	unit
 weeklock.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
