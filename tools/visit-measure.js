@@ -65,10 +65,12 @@ async function open(ctx,label){
   return {label,first,swipes,built,trace,worker:{asks,mb:+(bytes/1048576).toFixed(1)},errs:errs.slice(0,5)}}
 (async()=>{
   const dir=arg('profile','')||fs.mkdtempSync(path.join(os.tmpdir(),'dw-visit-'));
-  const mk=async()=>{const ctx=await chromium.launchPersistentContext(dir,{serviceWorkers:'block',viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true,
+  // (src: a checkout to serve the app from for this open, or 'pages' for GitHub Pages; --then opens later ones from other checkouts)
+  const mk=async(src=PAGES?'pages':ROOT)=>{const ctx=await chromium.launchPersistentContext(dir,{serviceWorkers:'block',viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true,
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'});
-    if(!PAGES)await ctx.route(ORIGIN+'**',route=>{const u=new URL(route.request().url());let f=path.join(ROOT,decodeURIComponent(u.pathname.slice(new URL(ORIGIN).pathname.length))||'index.html');
-      if(!f.startsWith(ROOT)||!fs.existsSync(f)||fs.statSync(f).isDirectory())f=path.join(ROOT,'index.html');route.fulfill({status:200,contentType:TYPES[f.split('.').pop()]||'application/octet-stream',body:fs.readFileSync(f)})});
+    const R=src==='pages'?null:path.resolve(src);
+    if(R)await ctx.route(ORIGIN+'**',route=>{const u=new URL(route.request().url());let f=path.join(R,decodeURIComponent(u.pathname.slice(new URL(ORIGIN).pathname.length))||'index.html');
+      if(!f.startsWith(R)||!fs.existsSync(f)||fs.statSync(f).isDirectory())f=path.join(R,'index.html');route.fulfill({status:200,contentType:TYPES[f.split('.').pop()]||'application/octet-stream',body:fs.readFileSync(f)})});
     const CORS={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PUT,DELETE,OPTIONS'};
     await ctx.route(WORKER+'**',async route=>{const q=route.request();
       if(q.method()==='OPTIONS')return route.fulfill({status:204,headers:CORS});
@@ -83,7 +85,10 @@ async function open(ctx,label){
   if(a){ctx=await mk();const pg=ctx.pages()[0]||await ctx.newPage();await pg.goto('about:blank');await ctx.close()}
   if(has('firstonly')){console.log('profile '+dir);process.exit(0)}
   ctx=await mk();const b=await open(ctx,'second open (the app reopened)');await ctx.close();
-  const runs=[a,b].filter(Boolean),res={net:NET,cpu:CPU,source:PAGES?'GitHub Pages':ROOT,when:new Date().toISOString(),profile:dir,runs};
+  // --then "label=checkout;label=checkout": more reopens, each served from a checkout (a changed painter or master gives every look a new key:
+  // what does the phone show for the days whose picture it holds under the old key, and how long until the new one?)
+  const more=[];for(const part of String(arg('then','')).split(';').filter(Boolean)){const [lab,src]=part.split('=');ctx=await mk(src);more.push(await open(ctx,lab));await ctx.close()}
+  const runs=[a,b,...more].filter(Boolean),res={net:NET,cpu:CPU,source:PAGES?'GitHub Pages':ROOT,when:new Date().toISOString(),profile:dir,runs};
   fs.writeFileSync(path.join(OUT,`visit-${NET}${has('reopen')?'-reopen':''}.json`),JSON.stringify(res,null,1));
   for(const r of runs){const f=r.first.log.filter(x=>x.d===r.first.day),firstPic=f.find(x=>x.s==='photo'),drew=f.find(x=>x.s==='drawing');
     console.log(`\n== ${r.label} (${NET}, CPU ${CPU}x), ${r.first.day}: app ready ${r.first.ready} ms; drawing shown ${drew?'at '+drew.t+' ms':'never'}; picture shown ${firstPic?'at '+firstPic.t+' ms ('+firstPic.m+')':'NOT within 180 s'} [server: ${r.built[r.first.day]}]; worker ${r.worker.asks} asks, ${r.worker.mb} MB`);
