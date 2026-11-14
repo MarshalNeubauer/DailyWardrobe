@@ -71,6 +71,8 @@ function tagFailText(status,j,e){
     tagWhy=off?'You’re offline.':net?'The tagging service couldn’t be reached. Check your connection.':`Something went wrong${e&&e.message?': '+e.message:''}.`;
     return `Photo tagging failed: ${off?'you’re offline':net?'the tagging service couldn’t be reached':e&&e.message||'something went wrong'}. Fill in the details below.`}
   if(j&&j.error==='limit'&&j.message){tagWhy=String(j.message);return tagWhy}
+  const pe=e&&typeof plainErr==='function'?plainErr(e):e;   // a set-up error ("add an ANTHROPIC_API_KEY secret to the worker") in plain words for a tester (ui.js)
+  if(pe&&pe!==e){tagWhy=pe;return `Photo tagging failed: ${pe} Fill in the details below.`}
   tagWhy=`The tagging service answered: ${e||'error '+status}.`;
   return `Photo tagging failed: ${e||'HTTP '+status}. Fill in the details below.`}
 function tagFailed(q){if(localStorage.getItem('worker_url'))q.tagErr=tagWhy||'The tagging service gave no answer.'}

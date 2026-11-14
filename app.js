@@ -393,7 +393,7 @@ async function addMulti(f){
       body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes(),wb:!!wb})});
     const j=await r.json().catch(()=>({}));
     queue.splice(queue.indexOf(holder),1);
-    if(!r.ok){multiMsg(r.status===404||r.status===405?'The server doesn’t support several items yet: it needs an update.':`Couldn’t find the items: ${j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
+    if(!r.ok){multiMsg(r.status===404||r.status===405?'The server doesn’t support several items yet: it needs an update.':`Couldn’t find the items: ${typeof plainErr==='function'?plainErr(j.detail||j.error||'HTTP '+r.status):j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
     const list=j.items||[];
     if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
     list.forEach((it,n)=>{
@@ -623,10 +623,17 @@ async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast 
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
 let cache={};
 const planRuns=[];   // the months worked out (not from the cache) since start-up (tests/speed.test.js)
-function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];if(planRuns.length<200)planRuns.push(k);  if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
+function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];if(planRuns.length<200)planRuns.push(k);
+  if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
   const start=planStart(y,m),T=todayDate();
-  if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=buildPlan(y,m);
-  return cache[k]=(cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0))}
+  if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=planTrim(buildPlan(y,m));
+  return cache[k]=planTrim((cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0)))}
+/* no outfit is shown for a day before the wardrobe existed (the day the first item was added; items from before `added` existed set no
+   start): a new user saw two weeks of planned past days with ✕ and ✓ and "22 outfits" in the month (audit 2026-11-13). The planner
+   still plans them (rest and variety carry on from them); they are only left out of the month's plan, and a day with a record stays */
+function planStartDay(){let s=Infinity;for(const i of items){if(!i.added)return null;if(i.added<s)s=i.added}if(!isFinite(s))return null;const d=new Date(s);d.setHours(0,0,0,0);return d}
+function planTrim(plan){const s=planStartDay();if(!s)return plan;const T=todayDate();
+  for(const k of Object.keys(plan)){const d=keyDate(k);if(d<s&&d<T&&!(dayRecs[k]&&dayRecs[k].ids))delete plan[k]}return plan}
 const planFor=()=>planMonth(view.y,view.m);
 /* ---- Today's month as last planned, kept in IndexedDB (meta PLAN_SNAP), so start-up draws Today without waiting for the planner
    (200-390 ms frozen at phone speed, audit 2026-11-13). Used only when nothing it depends on changed (planSig: the day, the items' and
@@ -1259,6 +1266,9 @@ async function fetchRemoteRender(o,day){
   try{
     const get=async q=>{const r=await fetch(W.url+'?'+q,{headers:{'x-app-token':W.tok},cache:'no-store'});return r.ok?r.json():null};
     const cur=renders[ck];if(cur&&remoteKeys&&remoteKeys.has(ck))return;   // here and on the worker already: nothing to do
+    // with the worker's list in hand, a day it has no photo for is not asked about: each ask was a 404, logged as an error in the
+    // console for every day shown (audit 2026-11-13: 31 in one session); "none" is the normal answer
+    await remoteList(W);if(remoteListed&&!remoteKeys.has(ck)&&!remoteKeys.has(comboKeyV1(o))){if(cur)shareRender(ck,cur);return}
     let j=await get('key='+ck);
     if(!j){if(cur){shareRender(ck,cur);return}
       // a photo the worker kept under the earlier combination key, or for this date before combinations were used
@@ -1272,11 +1282,16 @@ async function fetchRemoteRender(o,day){
 }
 /* photos the worker keeps that this device lacks (a new install, or made on another device): download the ones the plan needs
    for the month on screen and the next, nearest the selected day first, so swiping between days shows them at once */
-let prefetching=false,prefetchAgain=false,remoteKeys=null;
+let prefetching=false,prefetchAgain=false,remoteKeys=null,remoteListed=false,remoteListP=null;
 const planOf=planMonth;
+/* the worker's list of kept photos (GET ?list=1), read once and shared (remoteKeys is reset to read it again); remoteListed is false
+   when the worker gave no list (an older one, or its daily list allowance used up): then each day is asked about as before */
+function remoteList(W){if(remoteKeys)return Promise.resolve(remoteKeys);
+  return remoteListP||(remoteListP=fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'}).then(r=>r.ok?r.json().catch(()=>null):null).catch(()=>null)
+    .then(j=>{remoteListP=null;remoteListed=!!(j&&Array.isArray(j.keys));remoteKeys=new Set(remoteListed?j.keys:[]);return remoteKeys}))}
 async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetching){prefetchAgain=true;return}prefetching=true;
   try{
-    if(!remoteKeys){const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;if(!j||!Array.isArray(j.keys)){remoteKeys=new Set();return}remoteKeys=new Set(j.keys)}   // no list: fetch per day as before
+    await remoteList(W);if(!remoteListed)return;   // no list: fetch per day as before
     do{prefetchAgain=false;const c=+sel,near=new Map();   // each combination ranked by its day closest to the one on screen
       for(const [y,m] of [[view.y,view.m],[view.m===11?view.y+1:view.y,(view.m+1)%12]])for(const [k,o] of Object.entries(planOf(y,m))){if(!hasOutfit(o))continue;
         const ck=comboKey(o);if(renders[ck]||!remoteKeys.has(ck)||renderTried.has(ck))continue;const d=Math.abs(+keyDate(k)-c),cur=near.get(ck);if(!cur||d<cur[0])near.set(ck,[d,ck,o])}
@@ -1361,7 +1376,8 @@ async function generateRender(){
   try{const q=!replace&&asmLive()&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
     if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open until it is done.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
-  catch(e){renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(e.message)?e.message:'Couldn’t send the photo: '+(e.message||e)}}
+  catch(e){const raw=String(e.message||e),pm=typeof plainErr==='function'?plainErr(raw):raw;   // (the server's set-up errors in plain words for a tester, ui.js)
+    renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(raw)?raw:pm!==raw?pm:'Couldn’t send the photo: '+raw}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)refreshToday();renderRegenUI()}
 }
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day.
@@ -1421,7 +1437,8 @@ function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
   readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
 const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="" data-k="${itemKey(i)}" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
-  try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
+  try{await remoteList(W);if(remoteListed&&!remoteKeys.has(k))return;   // not on the worker: no 404 to ask for
+    const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
     await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)refreshToday();else if(!$('#wardrobe').hidden&&!phEdit.crop)renderWardrobe()}catch(e){console.warn('item picture unavailable',e)}}
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
@@ -1438,7 +1455,7 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='';
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
     try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
-  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
+  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${typeof plainErr==='function'?plainErr(err):err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
 /* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
 async function queueCombo(o,replace=false){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
@@ -1446,7 +1463,7 @@ async function queueCombo(o,replace=false){
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o),...(o.top?{}:{nojacket:true}),...(replace?{replace:true}:{})})});
   const j=await r.json().catch(()=>({}));
   if(r.ok&&j.queued)return 'queued';
-  if(r.ok&&j.exists){renderTried.delete(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
+  if(r.ok&&j.exists){renderTried.delete(ck);if(remoteKeys)remoteKeys.add(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
   if(r.ok&&j.image){await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.image),model:j.model||'',t:Date.now()},false);return 'done'}   // an older worker made it right away
   // only a worker without the queue (noQueue) is asked again directly: a 501 for a missing image service is the answer, not a
   // reason to ask twice (one Generate tap sent two POST /render, audit 2026-11-13)
@@ -2039,6 +2056,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   const tk=isoKey(todayDate()),skip=new Set(h&&h.skip||[]),up=(h&&h.list||[]).filter(x=>x.d>=tk);
   list.innerHTML=!cc?'':up.length?up.map(x=>{const d=isoToDate(x.d),wk=!settings.workdays.includes(d.getDay());
     return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} onchange="toggleHoliday('${x.d}',this.checked)"><span class="hd">${shortDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
+    :h&&!h.fetched?`<small class="mut">The public holidays of ${esc(countryName(cc))} are loaded once the app is connected (chosen from this phone’s time zone).</small>`   // (setup.js setupHolidays)
     :'<small class="mut">No public holidays in the next year.</small>';
   const own=(settings.daysOff||[]).filter(x=>x.d>=tk),ol=$('#off-list');
   // consecutive days with one name are shown as one range
