@@ -78,12 +78,38 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       `an outfit with no colour-coded master is drawn on the nearest mannequin (${JSON.stringify(nm0)}); the earlier drawing is gone`);
     // quick to draw: decoded and drawn on a 1170-pixel canvas (390 css px at 3x), median of 5, against the earlier figure's 25 ms here
     // (measured 2026-11-14 on this machine: the mannequin 24 ms; on a 4x-throttled phone 95-101 ms against the earlier figure's 107-124 ms)
+    // (the office is in the pose's data, so the SVG drawn as an image has it: its decode is part of the time)
     const sp=await p.evaluate(async()=>{const o=planFor()[key(sel)],neu=figureSvg(o,'s-');
       const t=async s=>{const c=document.createElement('canvas');c.width=1170;c.height=1200;const g=c.getContext('2d');const r=[];
         for(let i=0;i<5;i++){const x=s.replace('width="100%"','width="1170"').replace(/(id="|url\(#|href="#)([a-z]+-)/g,(m,a,b)=>a+'r'+i+b),t0=performance.now(),im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(x);await im.decode();g.drawImage(im,0,0);g.getImageData(0,0,1,1);r.push(performance.now()-t0)}
         return r.sort((a,b)=>a-b)[2]};
       const b0=performance.now(),built=figureSvg(o,'z-'),bms=performance.now()-b0;return {neu:await t(neu),bms}});
     ok(sp.neu<150&&sp.bms<20,`it draws within its budget (${sp.neu.toFixed(0)} ms, 150 allowed; its SVG built in ${sp.bms.toFixed(1)} ms)`);
+    // the office behind the figure, as in the painted pictures (the owner, 2026-11-14): a small copy of the painter's background with the
+    // pose's own soft wall shadow baked in, and nothing of the mannequin's own on the wall (its shading used to tint it); both themes
+    const bg=await p.evaluate(async kinds=>{const out={},px={};
+      const load=src=>new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src});
+      const pixels=im=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);return g.getImageData(0,0,c.width,c.height).data};
+      for(const kind of kinds){const G=mqData(kind),svg=outfitMannequinSvg({kind,suit:{color:'#808080'},shirt:{color:'#c0c0c0'},tie:{color:'#404040'},bot:{color:'#606060'},idPrefix:'w'+kind.replace(/-/g,'')+'-'});
+        const d=new DOMParser().parseFromString(svg,'image/svg+xml').documentElement,top=[...d.children].filter(e=>e.tagName!=='defs');
+        const off=await load(G.office);if(off)px[kind]=pixels(off);
+        // the wall only: the figure without the office, drawn on a canvas: its corners (wall) stay clear
+        const bare=svg.replace(/<image class="fig-office"[^>]*\/>/,'').replace('width="100%"','width="390" height="390"');
+        const im=await load('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(bare));const c=document.createElement('canvas');c.width=c.height=390;const g=c.getContext('2d');g.drawImage(im,0,0);
+        const wall=[[4,4],[385,4],[4,200],[385,200]].map(([x,y])=>g.getImageData(x,y,1,1).data[3]);
+        out[kind]={first:!!off&&off.naturalWidth===200&&G.office.length<6000&&top[0]&&top[0].getAttribute('class')==='fig-office'&&top[0].getAttribute('href')===G.office,
+          noWall:!top.some(e=>e.tagName==='rect')&&wall.every(a=>a===0),wall:wall.join(',')}}
+      // the shadow follows the pose: two poses' offices match far from both figures (top left) and differ where one throws its shadow
+      const a=px.vest,b=px['shirt-tie'];let corner=0,most=0;
+      for(let y=0;y<200;y++)for(let x=0;x<200;x++){const i=4*(y*200+x),dd=Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2]);if(x<12&&y<12)corner=Math.max(corner,dd);most=Math.max(most,dd)}
+      out.shadow={corner,most,depth:kinds.map(k=>mqData(k).wallShadow)};return out},KINDS);
+    for(const kind of KINDS){ok(bg[kind].first,`${kind}: the office is behind the figure, a 200-pixel picture in the pose's data (no fetch: offline with the pose)`);
+      ok(bg[kind].noWall,`${kind}: the mannequin itself has no opaque wall layer: outside the figure it is clear (corner alpha ${bg[kind].wall})`)}
+    ok(bg.shadow.corner<=12&&bg.shadow.most>=30&&bg.shadow.depth.every(v=>v>.18&&v<=.22),`each pose's soft wall shadow is in its office (22% deep as the painter's: ${bg.shadow.depth}; poses differ by up to ${bg.shadow.most}, top left ${bg.shadow.corner})`);
+    const dk=await p.evaluate(async()=>{const was=document.documentElement.dataset.theme;document.documentElement.dataset.theme='dark';figBgMemo=null;renderToday();
+      const c=document.querySelector('#mannequin-container'),im=c&&c.querySelector(':scope > svg image.fig-office'),dark=getComputedStyle(document.body).backgroundColor;
+      document.documentElement.dataset.theme=was||'';figBgMemo=null;renderToday();return {office:!!im&&/^data:image\/jpeg/.test(im.getAttribute('href')),dark}});
+    ok(dk.office,`the dark theme shows the office too, as the painted pictures do (page ${dk.dark})`);
     // shipped with the app: in the cache list and the page, nothing fetched for it
     const sw=fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'),html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
     ok(['mannequin.js',...KINDS.map(k=>`mq/${k}.js`)].every(f=>sw.includes(`'${f}'`)&&html.includes(`src="${f}"`)),'the renderer and every shipped pose are app files (sw.js ASSETS, index.html)');

@@ -17,8 +17,15 @@ import numpy as np, cv2
 from PIL import Image
 from scipy import ndimage as ndi
 
-KIND = sys.argv[1] if len(sys.argv) > 1 else 'vest'
-OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'mq', KIND + '.js')
+ARGS = [a for a in sys.argv[1:] if not a.startswith('--')]
+FLAGS = dict((a[2:].split('=') + [''])[:2] for a in sys.argv[1:] if a.startswith('--'))
+KIND = ARGS[0] if ARGS else 'vest'
+OUT = ARGS[1] if len(ARGS) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'mq', KIND + '.js')
+# the office behind the mannequin: a tiny copy of the painted pictures' background (the colour-coded painter's asmCmBgKey; on the PC
+# BG_PLATE, or --bg=<file>), BG_PX square, with this pose's wall shadow baked in (one picture to draw, not two); re-run every pose
+# whenever that background changes
+BG_PLATE = FLAGS.get('bg') or r'C:\code\watch-test\colormaster\bg\office-plate-desk-extended.png'
+BG_PX, BG_Q = 200, 82
 D = rf'C:\code\watch-test\colormaster\out-{KIND}'
 G3 = rf'C:\code\watch-test\geo3d\sapiens-2b\{KIND}-cc'
 N = 2048; VB = 390; K = VB / N
@@ -302,6 +309,8 @@ ad = ndi.gaussian_filter(ad * cm, SIG) / wb
 al = ndi.gaussian_filter(al * cm, SIG) / wb
 near = ndi.binary_dilation(cm > 0, iterations=24)
 ad[~near] = 0; al[~near] = 0
+cov = 1 - Z['background']   # the figure's share of each pixel: the shading never reaches the wall (the office shows there, untinted)
+ad *= cov; al *= cov
 def down(a):
     return np.asarray(Image.fromarray(a.astype(np.float32), 'F').resize((SHADE_PX, SHADE_PX), Image.BOX))
 ad_s, al_s = down(ad), down(al)
@@ -311,6 +320,22 @@ A8 = np.round(np.clip(alpha * 255, 0, 255) / 3) * 3   # steps of 1.2% opacity (a
 img = np.stack([grey, grey, grey, A8], -1).astype(np.uint8)
 buf = io.BytesIO(); Image.fromarray(img, 'RGBA').save(buf, 'WEBP', lossless=True, quality=100, method=6)
 data['shade'] = 'data:image/webp;base64,' + base64.b64encode(buf.getvalue()).decode()
+
+# ---- the office, with the figure's soft shadow on the wall as the painter makes it (asm-color.js asmCmPrep bgShadow): everything but
+# the wall, moved 34/20 px down-right at 2048, three box blurs of radius 50, the background multiplied by s = 1 - ASM_CM_BG_SHADOW (.22)
+# x shadow in linear light. Only the wall shows it (the figure is drawn over it). One small JPEG, scaled up smoothly by the browser ----
+BG_SHADOW = 0.22
+wsh = np.zeros((N, N), np.float32)
+wsh[20:, 34:] = 1 - Z['background'][:-20, :-34]
+for _ in range(3):
+    wsh = ndi.uniform_filter(wsh, size=101, mode='constant')
+s_lin = np.asarray(Image.fromarray((1 - BG_SHADOW * np.clip(wsh, 0, 1)).astype(np.float32), 'F').resize((BG_PX, BG_PX), Image.BOX))
+plate = np.asarray(Image.open(BG_PLATE).convert('RGB').resize((BG_PX, BG_PX), Image.LANCZOS)).astype(np.float32) / 255
+lin = np.where(plate <= 0.04045, plate / 12.92, ((plate + 0.055) / 1.055) ** 2.4) * s_lin[..., None]
+srgb = np.where(lin <= 0.0031308, lin * 12.92, 1.055 * np.power(np.maximum(lin, 0), 1 / 2.4) - 0.055)
+obuf = io.BytesIO(); Image.fromarray(np.round(np.clip(srgb, 0, 1) * 255).astype(np.uint8)).save(obuf, 'JPEG', quality=BG_Q, optimize=True)
+data['office'] = 'data:image/jpeg;base64,' + base64.b64encode(obuf.getvalue()).decode()
+data['wallShadow'] = round(float(1 - s_lin.min()), 3)   # (the deepest darkening the shadow gives, for the tests: about .22)
 
 # ---- edge glow (G) where cloth turns away from the camera; collar shadow (B); the rim from the normals ----
 cloth = B['jacket'] | B['waistcoat'] if JACKET else B['shirt'] & ~dil(B['tie'], 2)

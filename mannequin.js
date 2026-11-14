@@ -7,7 +7,10 @@
    .fig-clip, .fig-watch, .fig-vest and .fig-open are the names other code and the tests look for; on the shirt masters suitB is the
    shirt and the trousers' legs are leg<i> (base pants). Skin and the watch are the master's own tones in bands (the watch is always the master's steel
    watch, as in the painted picture). The form shading is one small picture scaled up (no blur filter: it cost a fifth of the drawing
-   time on a phone). WebKit-safe: no <use> inside <clipPath>. */
+   time on a phone). Behind the figure is the painted pictures' office (G.office: a 200-pixel copy of the painter's background with the
+   pose's soft wall shadow baked in, scaled up smoothly), in the light and dark themes alike, so the switch to the painted picture is
+   seamless; nothing of the mannequin's own covers the wall (office:false draws the plain bg colour instead). WebKit-safe: no <use>
+   inside <clipPath>. */
 (function(){
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const hex = (c, fallback) => (/^#[0-9a-fA-F]{3,8}$/.test(String(c)) ? c : fallback);
@@ -37,7 +40,7 @@ const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .
   + [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => `<circle cx="${(x + a * r * .27).toFixed(2)}" cy="${(y + b * r * .27).toFixed(2)}" r="${(r * .12).toFixed(2)}" fill="#000" fill-opacity=".35"/>`).join('');
 
 function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, bot = null, beltColor = null, vest = true, clip = null, shirtColor = '#EEEEEE', bg = '#F5F2EC', idPrefix = 'mq-',
-  ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 } } = {}) {
+  ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 }, office = true } = {}) {
   const G = mqData(kind); if (!G) return '';
   const P = String(idPrefix).replace(/[^A-Za-z0-9_-]/g, '');
   const u = id => `url(#${P}${id})`;
@@ -63,7 +66,7 @@ ${blade >= 0 ? `<path id="${P}bladeP" d="${G.tie[blade].d}"/>` : ''}
 <clipPath id="${P}clipSil"><path d="${G.sil}"/></clipPath>
 <clipPath id="${P}clipSkin"><path d="${G.skin[0].d}"/></clipPath><filter id="${P}fSkin" x="-2%" y="-2%" width="104%" height="104%"><feGaussianBlur stdDeviation="${SKIN_SOFT}"/></filter>
 </defs>
-<rect width="${VB}" height="${VB}" fill="${hex(bg, '#F5F2EC')}"/>
+${office && G.office ? `<image class="fig-office" href="${G.office}" width="${VB}" height="${VB}" preserveAspectRatio="none"/>` : `<rect width="${VB}" height="${VB}" fill="${hex(bg, '#F5F2EC')}"/>`}
 <g clip-path="url(#${P}clipSil)">
 <rect width="${VB}" height="${VB}" fill="${u('suitB')}"/>
 ${G.parts.map((p, i) => `<use href="#${partId(p, i)}" fill="${u(pid(p, i))}"/>`).join('')}
