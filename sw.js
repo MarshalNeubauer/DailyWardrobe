@@ -20,6 +20,10 @@ self.addEventListener('message',e=>{const d=e.data||{};
 self.addEventListener('fetch',e=>{
   const req=e.request,url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==location.origin||req.cache==='no-store')return;   // let the browser handle it
+  // a Web Worker asked for with a query (asm-worker.js?nogl=1): answered from the cache it would be the cached file's address without the
+  // query, and a worker reads its flags from its own address (self.location), so the CPU-only worker turned WebGL on (found 2026-11-14 by
+  // the nightly run on Linux; the PC builder blocks this service worker, so it was never affected)
+  if(req.destination==='worker'&&url.search)return;
   e.respondWith((async()=>{
     const cache=await caches.open(CACHE);
     const hit=await cache.match(req,{ignoreSearch:true});

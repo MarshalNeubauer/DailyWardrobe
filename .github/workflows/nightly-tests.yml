@@ -1,0 +1,42 @@
+name: Nightly full test run
+# Every check, every night (the audit of 2026-11-13: a merge is a deploy, and each branch runs only the tests its change can
+# affect, so this is the safety net for what a selection missed). It runs on main as it is; nothing is deployed or changed.
+# A failed run makes GitHub email the repository's owner; the log and the failing checks are on the run's page.
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 01:00 UTC = 04:00 in Kuwait, after the day's merges and before the morning
+  workflow_dispatch:   # run it now: GitHub > Actions > Nightly full test run > Run workflow, or `gh workflow run nightly-tests.yml`
+permissions:
+  contents: read
+concurrency: nightly-tests
+jobs:
+  all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      # no package-lock.json in the repo (see deploy-worker.yml)
+      - run: npm install --no-package-lock
+      - name: Install Chromium
+        run: |
+          # system packages through apt for at most two minutes (the runner image already has Chromium's libraries), then the browser, three tries
+          timeout -k 10 120 npx playwright install-deps chromium || echo "::warning::Chromium's system packages could not be installed (apt); the tests run with what the runner image has."
+          for i in 1 2 3; do npx playwright install chromium && exit 0; sleep $((i * 15)); done
+          exit 1
+      - name: Every test
+        run: npm run test:all 2>&1 | tee "$RUNNER_TEMP/tests.log"; exit ${PIPESTATUS[0]}
+      - name: Failures in the summary
+        if: failure()
+        run: |
+          { echo '### Failed checks'; echo '```'; grep -E '✗|^• |failed' "$RUNNER_TEMP/tests.log" | tail -n 80; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-log
+          path: ${{ runner.temp }}/tests.log
+          retention-days: 14
