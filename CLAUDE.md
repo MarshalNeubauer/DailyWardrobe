@@ -539,6 +539,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - start-up reads only the key ranges it needs: `asmLoad` the `asm:out:` range, `loadRenders` (app.js) the `render:` range (`IDBKeyRange.bound(p, p with ':'→';', false, true)`); both used to read the whole meta store
 - (2026-11-14, WebGL stage 2) the stripe breakup's stripe index fades into its neighbour's within `ASM_CELL_FADE` of a repeat's edge (half way between stripes, on the ground), so float64 and float32 positions agree; invisible, but the code hash repaints striped looks
 - (WebGL stage 2) a herringbone's column (`cw`) fades its rib and fleck into the next column's within `ASM_CELL_FADE` of the edge (yarn, floats and grain cells still take the hard column: stage 3)
+- (WebGL stage 3) yarn, floats and grain cells are faded too (rib index, column, grain cell), and so is a small woven figure's thread grid (`asmCellT`); see `### asm-gl.js`
 - (WebGL stage 2) #360's cut-off for a jump into another piece (`g2 < 2.25`) fades over `ASM_CM_AA_FADE` (.05) either side of `ASM_CM_AA_CUT` (`asmAaK`); the factor there is about e^-21, so only a hair-thin band moves
 - (WebGL stage 2) the linen's threads are read through `asmCellT` (the texel faded into its neighbour within `ASM_CELL_FADE` of its edge, as `asmCellV`) instead of a hard floor
 - (WebGL stage 2) `asmTubeAt` chooses upper arm or forearm with `asmTubePartQ` (whole numbers: points in 1/16 px, directions in 1/1024, thresholds `round(-1.3 r 16384)`); `asmTubeTabs` keeps the float `asmTubePart`, so the kept setup's key (`asmCmSrcSig`) is unchanged
@@ -574,6 +575,16 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - stage 2 numbers (SwiftShader): every row max 1 level, mean 0.0001-0.0005 at 512 and at 2048 (fixtures enlarged); at 2048 a band look paints in about 0.6-1.2 s on SwiftShader (software) against 1.4-2.5 s on the CPU; a real phone chip is the bench's ~90 ms
 - `tests/asmgl.test.js` rows carry `has` (the cloth a row must have: `tile`, `k`, `twill`, `herringbone-cols`, `linen`) so a row can't quietly turn plain; `ASMGL_SIZE=2048` paints the table at a phone's size and `ASMGL_ONLY=<regexp>` picks rows (the spot check)
 - not covered yet (CPU): the vest, suit-open and shirt masters (so a suit's own trousers, painted only on the shirt masters), standalone herringbone, tweed, small figures, patterned shirts and ties
+- stage 3 (2026-11-14): every jacket cloth on the suit master is covered: the standalone herringbone (`asmTwillTex` with yarn, floats, grain cells, mottle and the column break), tweed (`asmTweedTex`, with a Donegal's fleck) and the small woven figures (`asmMicroTex`: houndstooth, sharkskin, birdseye, nailhead)
+- (stage 3, CPU) a herringbone's yarn breakup and floats fade their rib index into the neighbour rib's within `ASM_CELL_FADE` of its edge (at the rib's trough) and into the next column's at a column edge (`ynOf` in `suitCol`); the grain cells are read through `asmCellV`
+- (stage 3, CPU) a small woven figure's thread crossing is read through `asmCellT` (faded at its edges) instead of a hard floor; these CPU fades changed `asmCmBuild`, so the code hash repaints every look once
+- (stage 3) the tweed tile (`asmTweedTile`, r and f) is one RG32F texture (2 MB) on unit 14, shared with the linen texture (one at a time, re-uploaded when the cloth kind changes: `G.clothK`); WebGL2 guarantees only 16 sampler units and 0..14 were taken
+- (stage 3) the tweed is read at `floor(x/lsc)` in the shader: exact on the suit master (`lsc` a power of two); on the shirt masters (`pxmm` 116/174) float32 could pick the next cell, so stage 5 needs an index table there
+- (stage 3) a small woven figure's grid (at most 8x8) is a uniform array (`uWg`, vec4[16]), not a texture
+- `asmGlWhy` reasons since stage 3: 'jacket small figure grid too large' (a grid over 8x8) and 'jacket cloth herringbone with soft column edges' (`ASM_HB_SOFT`, 0 today); 'jacket cloth tweed' / 'small figure' are gone; on the suit master no jacket cloth goes to the CPU any more (only the vest and suit-open masters, patterned shirts and ties)
+- stage 3 numbers (SwiftShader): the 13 new rows max 1 level, mean 0.0001-0.0008 at 512 and 0.0001-0.0011 at 2048; at 2048 GL 0.9-1.7 s against CPU 1.3-3.2 s (herringbone 1.2 s against 2.8 s, tweed 0.9 against 1.3, small figures 1.0-1.7 against 2.3-3.2)
+- texture memory since stage 3: about 197 MB at 2048 as before, about 199 MB while a tweed is painted (its 2 MB tile replaces the 0.25 MB linen)
+- `tests/asmgl.test.js` `has` tags since stage 3: `hbx` (yarn, floats, grain, mottle or breaks), `tweed`, `wv-<kind>`, `c2` (a second colour)
 
 ### `asm-worker.js`
 

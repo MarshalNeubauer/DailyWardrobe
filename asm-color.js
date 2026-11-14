@@ -674,7 +674,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
       else if(T.linen&&lin2)sh*=asmCellT(lin2.r,lin2.T,c[0]/lsc,c[1]/lsc);   // its threads' light, faded at each texel's edge (asmCellT)
       else{const pitch=(C.pitch||4)*lsc,cw=C.cw?C.cw*lsc:0,off=C.off?C.off*lsc:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1;
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
-        const boOf=cc=>C.brk&&(cc&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(cc/2):0,bo=boOf(col);   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
+        const boOf=cc=>C.brk&&(cc&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(cc/2):0;   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
         const ribAt=cc=>{const d=cc&1?-1:1,b=boOf(cc);let p=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);p+=Math.cos(2*Math.PI*(s[1]+d*s[0]+b)/pitch)/4}}else p=Math.cos(2*Math.PI*(c[1]+d*c[0]+b)/pitch);return p};
         // (2026-11-14) ribs squeezed finer than the picture can show are softened (ASM_CM_AA): where the solved cloth positions turn a
         // twill's 4 px ribs to 2 px or less they beat into moire, here and again when a phone shrinks the picture. The rib's cycles per
@@ -688,14 +688,23 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
         if(C.soft&&cw){const fx=(c[0]-off)/cw-col,de=Math.min(fx,1-fx)*cw,sw=C.soft*ls;if(de<sw){const nb=fx<.5?col-1:col+1,d2=nb&1?-1:1,b2=boOf(nb),w=.5-.5*de/sw;
           ph=ph*(1-w)+Math.cos(2*Math.PI*(c[1]+d2*c[0]+b2)/pitch)*w}}
         ph*=aaOf(col);
+        // the yarn breakup and raised floats of column cc: each rib (r, counted across the slant) its own strength along its length; the rib's
+        // index faded into its neighbour's within ASM_CELL_FADE of its edge (half way between two ribs, at the rib's trough), as asmCellV
+        // does, so float64 here and float32 on the graphics chip give the same pixel (2026-11-14, WebGL stage 3)
+        const ynOf=cc=>{const d=cc&1?-1:1,q=(c[1]+d*c[0]+boOf(cc))/pitch+.5,r=Math.floor(q),fq=q-r,F=ASM_CELL_FADE,di=fq<F?-1:fq>1-F?1:0,wq=di<0?(F-fq)/(2*F):di>0?(fq-1+F)/(2*F):0,al=c[1]-d*c[0];
+          const one=r0=>{let y=1;if(C.yarn){const t=al/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((asmH32(r0,s,2246822519,3266489917)^asmH32(cc,0,668265263,0))>>>0)%1024/1024;
+              y=1-C.yarn/2+C.yarn*(hv(s0)*(1-fs)+hv(s0+1)*fs)}
+            if(C.float){const hf=asmH32(r0,cc,374761393,668265263)%4096/4096,s=al/(pitch*C.floatL)+hf*7,f=s-Math.floor(s),sn=Math.sin(Math.PI*f);y*=1-C.float+C.float*sn*sn}return y};
+          return di?one(r)*(1-wq)+one(r+di)*wq:one(r)};
+        let yn=C.yarn||C.float?ynOf(col):1;
         // a herringbone's column (2026-11-14, WebGL stage 2): within ASM_CELL_FADE of a column's edge its rib and fleck fade into the next
         // column's (half each at the edge), so float64 here and float32 on the graphics chip landing either side of it give the same pixel
+        // (stage 3: the yarn breakup and floats too)
         if(cw){const fx=(c[0]-off)/cw-col,F=ASM_CELL_FADE,nb=fx<F?col-1:fx>1-F?col+1:col;
-          if(nb!==col){const w=fx<F?(F-fx)/(2*F):(fx-1+F)/(2*F),d2=nb&1?-1:1;ph=ph*(1-w)+ribAt(nb)*aaOf(nb)*w;fk=fk*(1-w)+asmCellV((c[0]+d2*c[1])/2,c[1]/3,73856093,19349663,1024)*w}}
-        let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),t=(c[1]-dir*c[0])/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((asmH32(r0,s,2246822519,3266489917)^asmH32(col,0,668265263,0))>>>0)%1024/1024;
-          yn=1-C.yarn/2+C.yarn*(hv(s0)*(1-fs)+hv(s0+1)*fs)}
-        if(C.float){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),hf=asmH32(r0,col,374761393,668265263)%4096/4096,s=(c[1]-dir*c[0])/(pitch*C.floatL)+hf*7,f=s-Math.floor(s),sn=Math.sin(Math.PI*f);yn*=1-C.float+C.float*sn*sn}
-        if(C.grain){const gs=.6*ASM_PX_MM*ls,gi=Math.floor(c[0]/gs),gj=Math.floor(c[1]/gs),gv=asmH32(gi,gj,2654435761,2246822519)%4096/4096;tw*=1;yn*=1-C.grain+2*C.grain*Math.pow(gv,1.6)}
+          if(nb!==col){const w=fx<F?(F-fx)/(2*F):(fx-1+F)/(2*F),d2=nb&1?-1:1;ph=ph*(1-w)+ribAt(nb)*aaOf(nb)*w;fk=fk*(1-w)+asmCellV((c[0]+d2*c[1])/2,c[1]/3,73856093,19349663,1024)*w;
+            if(C.yarn||C.float)yn=yn*(1-w)+ynOf(nb)*w}}
+        // the fine yarn grain: cells 0.6 mm square, faded at their edges (asmCellV)
+        if(C.grain){const gs=.6*ASM_PX_MM*ls,gv=asmCellV(c[0]/gs,c[1]/gs,2654435761,2246822519,4096)/4096;yn*=1-C.grain+2*C.grain*Math.pow(gv,1.6)}
         let mo=0;if(C.mottle){const vn=(u,v)=>{const i0=Math.floor(u),j0=Math.floor(v),fu=u-i0,fv=v-j0,su=fu*fu*(3-2*fu),sv=fv*fv*(3-2*fv),hh=(i,j)=>asmH32(i,j,1597334677,3812015801)%2048/1024-1;
           return (hh(i0,j0)*(1-su)+hh(i0+1,j0)*su)*(1-sv)+(hh(i0,j0+1)*(1-su)+hh(i0+1,j0+1)*su)*sv},m1=4*ASM_PX_MM*ls,m2=11*ASM_PX_MM*ls;mo=C.mottle*(.55*vn(c[0]/m1,c[1]/m1)+.45*vn(c[0]/m2+17.3,c[1]/m2+5.1))}
         const pr=C.thin?2*Math.pow((ph+1)/2,2)-.75:ph;
@@ -704,7 +713,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
     // a pixel (the cloth's direction from the pixel's own and its neighbours' positions: three lookups, not sixteen)
     if(T.wv){const W=T.wv,tp=W.thr*ASM_PX_MM*lsc,p0=uvAt(k,x,y),px=uvAt(k,x+1,y),py=uvAt(k,x,y+1),N=W.N;let v=0;
       for(let a=0;a<4;a++)for(let e=0;e<4;e++){const fx=(e+.5)/4,fy=(a+.5)/4,u=p0[0]+(px[0]-p0[0])*fx+(py[0]-p0[0])*fy,w=p0[1]+(px[1]-p0[1])*fx+(py[1]-p0[1])*fy;
-        const ix=Math.floor(u/tp),iy=Math.floor(w/tp);v+=W.g[(((iy%N)+N)%N)*N+(((ix%N)+N)%N)]}v/=16;
+        v+=asmCellT(W.g,N,u/tp,w/tp)}v/=16;   // (the thread crossing faded into its neighbour within ASM_CELL_FADE of its edge: WebGL stage 3)
       tw*=1+W.amp*v;if(W.c2){const m=W.mix*(1-v)/2;for(let q=0;q<3;q++)cm[q]=cm[q]*(1-m)+4*W.c2[q]*m}}
     SUITTW=tw;const f=sh*Math.pow(Math.max(0,tw),2.2);out[0]=cm[0]/4*f;out[1]=cm[1]/4*f;out[2]=cm[2]/4*f};
   const rot=(X,Yv,th,e,out)=>{const c=Math.cos(th),s=Math.sin(th);out[0]=out[1]=out[2]=0;asmCmAt(e.tile||e.tie,(X*c+Yv*s)/e.rep,(Yv*c-X*s)/e.repv,out)};

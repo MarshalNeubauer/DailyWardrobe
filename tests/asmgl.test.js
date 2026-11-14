@@ -34,8 +34,21 @@ const LOOKS=[
   {name:'two-colour check (dark: the full look)',top:['blazer','navy',{pattern:'check',sett:{v:2,a:0,bands:[['#1b2333',.5],['#3a4a63',.5]],cross:{d:90,bands:[['#1b2333',.5],['#3a4a63',.5]],r:1},cr:3,tr:14,src:'claude+pixels'}}],shirt:'white',tie:'burgundy',gl:true,has:'tile'},
   {name:'charcoal pinstripe on herringbone',top:['suit','charcoal',{pattern:'pinstripe',patternText:'pinstripe on a herringbone',sett:HBP}],shirt:'pink',tie:'navy',gl:true,has:'tile,k,herringbone-cols'},
   {name:'charcoal pinstripe on herringbone, solved positions',top:['suit','charcoal',{pattern:'pinstripe',patternText:'pinstripe on a herringbone',sett:HBP}],shirt:'white',tie:'burgundy',geo:true,gl:true,has:'tile,k,herringbone-cols'},
-  // not covered yet: the CPU paints them (stage 3 onwards moves rows up)
-  {name:'herringbone',top:['suit','midgrey',{pattern:'herringbone'}],shirt:'white',tie:'burgundy',gl:false,why:/herringbone/},
+  // stage 3: the standalone herringbone (asmTwillTex: yarn, floats, grain cells, mottle, the column break: hbx), tweed (asmTweedTile; a
+  // Donegal's fleck in its second colour), the small woven figures (asmMicroTex's thread grid: wv-<kind>); c2: a second colour
+  {name:'charcoal tonal herringbone',top:['suit','charcoal',{pattern:'herringbone'}],shirt:'white',tie:'burgundy',gl:true,has:'herringbone-cols,hbx'},
+  {name:'charcoal tonal herringbone, solved positions',top:['suit','charcoal',{pattern:'herringbone'}],shirt:'lightblue',tie:'navy',geo:true,gl:true,has:'herringbone-cols,hbx'},
+  {name:'dark grey herringbone',top:['suit','darkgrey',{pattern:'herringbone'}],shirt:'pink',tie:'navy',gl:true,has:'herringbone-cols,hbx'},
+  {name:'grey and navy herringbone',top:['blazer','grey',{pattern:'herringbone',secondaryColor:'navy'}],shirt:'white',tie:'burgundy',gl:true,has:'herringbone-cols,hbx,c2'},
+  {name:'slate tweed',top:['blazer','slate',{pattern:'tweed'}],shirt:'white',tie:'wine',gl:true,has:'tweed'},
+  {name:'Donegal tweed with fleck',top:['blazer','grey',{pattern:'tweed',secondaryColor:'rust'}],shirt:'lightblue',tie:'navy',gl:true,has:'tweed,c2'},
+  {name:'tonal houndstooth',top:['blazer','brown',{pattern:'houndstooth'}],shirt:'white',tie:'navy',gl:true,has:'wv-houndstooth,c2'},
+  {name:'black and white houndstooth',top:['blazer','black',{pattern:'houndstooth',secondaryColor:'white'}],shirt:'white',tie:'burgundy',gl:true,has:'wv-houndstooth,c2'},
+  {name:'sharkskin',top:['suit','grey',{pattern:'sharkskin'}],shirt:'white',tie:'navy',gl:true,has:'wv-sharkskin'},
+  {name:'sharkskin, solved positions',top:['suit','grey',{pattern:'sharkskin'}],shirt:'pink',tie:'navy',geo:true,gl:true,has:'wv-sharkskin'},
+  {name:'birdseye',top:['suit','navy',{pattern:'birdseye'}],shirt:'white',tie:'burgundy',gl:true,has:'wv-birdseye'},
+  {name:'nailhead',top:['suit','charcoal',{pattern:'nailhead'}],shirt:'lightblue',tie:'wine',gl:true,has:'wv-nailhead'},
+  // not covered yet: the CPU paints them (stages 4 and 5 move rows up)
   {name:'gingham shirt',top:['suit','navy'],shirt:['lightblue',{pattern:'gingham'}],tie:'burgundy',gl:false,why:/patterned shirt/},
 ].filter(L=>!process.env.ASMGL_ONLY||new RegExp(process.env.ASMGL_ONLY).test(L.name));
 // (ASMGL_SIZE=2048 paints the looks at a phone's size, the fixtures enlarged: the spot check; ASMGL_ONLY=<regexp> picks rows by name)
@@ -90,7 +103,8 @@ module.exports=async({ok,chromium,url})=>{
     for(let i=0;i<LOOKS.length;i++){const L=LOOKS[i];
       const r=await p.evaluate(async i=>{const c=await __paint(i,false),why=asmGlWhy(__jobs[i],(await asmCmSetup(__jobs[i])).P),g=await __paint(i,true);
         const a=c.px,b=g.px,N=a.length/4;let mx=0,sum=0,over=0;for(let k=0;k<N;k++){let m=0;for(let q=0;q<3;q++){const d=Math.abs(a[4*k+q]-b[4*k+q]);sum+=d;if(d>m)m=d}if(m>mx)mx=m;if(m>2)over++}
-        const T=__jobs[i].cloth.jacket.suit,C=T&&T.cloth,has=!T?'':[T.TW>1||T.TH>1?'tile':'',T.k!=null?'k':'',C?C.kind+(C.cw?'-cols':''):''].filter(Boolean).join(',');
+        const T=__jobs[i].cloth.jacket.suit,C=T&&T.cloth,W=T&&T.wv,has=!T?'':[T.TW>1||T.TH>1?'tile':'',T.k!=null?'k':'',C?C.kind+(C.cw?'-cols':''):'',C&&(C.yarn||C.float||C.grain||C.mottle||C.pbrk)?'hbx':'',
+          T.tweed?'tweed':'',W?'wv-'+W.kind:'',(C&&C.c2)||(T.tweed&&T.c2)||(W&&W.c2)?'c2':''].filter(Boolean).join(',');
         return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms,has}},i);
       if(L.has)ok(r.has===L.has,`${L.name}: the cloth is what the row means (${r.has}, wanted ${L.has})`);
       if(L.gl){ok(r.cpu===false&&r.gl===true,`${L.name}: the graphics chip paints it (switch on), the CPU with the switch off (${r.why||'covered'})`);
