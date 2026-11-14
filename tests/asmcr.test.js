@@ -1,6 +1,6 @@
 // A figured shirt's cloth as one whole repeat cut from its close-up (asm-color.js asmCr*, 2026-11-14): the repeat is found in a
 // close-up shot at a slight angle, the tile is one cell that tiles with no seam, its ground the tagged colour and its figure the
-// figure's own colour; a cloth with no sure repeat gives no tile (the strict confidence test), and printed, herringbone and end-on-end
+// figure's own colour; a cloth with no sure repeat gives no tile (the strict confidence test), and herringbone, twill and end-on-end
 // shirts are left to their own painters.
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
@@ -23,13 +23,13 @@ module.exports=async({ok,chromium,url})=>{
       const sc=480/W;
       return {found:!!T,across:T&&T.cr.across/sc,down:T&&T.cr.down/sc,per:T&&T.cr.per,ground:T&&mx/base[1],figure:T&&mn/mx,seam,inner,mm:T&&T.mm,fine:T&&T.fine,none:N===null,weak:!NA||NA.cr.per<ASM_CR.per||NA.cr.sd<ASM_CR.sd,
         wants:asmCrWants(A),tag:asmCrTag('shirt',A)!==''&&asmCrTag('jacket',A)==='',
-        not:['herringbone','end-on-end','own-micro-print-neat','twill'].map(pt=>asmCrWants(shirt(pt,fig,'x'+pt))),noClose:asmCrWants(shirt('dobby','','crZ')),solid:asmCrWants(shirt('solid',fig,'crS'))}});
+        print:asmCrWants(shirt('own-micro-print-neat',fig,'crP')),not:['herringbone','end-on-end','twill'].map(pt=>asmCrWants(shirt(pt,fig,'x'+pt))),noClose:asmCrWants(shirt('dobby','','crZ')),solid:asmCrWants(shirt('solid',fig,'crS'))}});
     ok(r.found&&Math.abs(r.across-30)<.6&&Math.abs(r.down-24)<.6&&r.per>.8,`the repeat of a figured cloth shot at a slight angle and lit unevenly is found (${r.across&&r.across.toFixed(1)} x ${r.down&&r.down.toFixed(1)} px, 30 x 24 drawn; ${r.per} of its contrast explained)`);
     ok(r.ground>.93&&r.ground<1.05&&r.figure>.1&&r.figure<.35,`the tile's ground is the tagged colour and the figure keeps its own grey against it (ground ${r.ground&&r.ground.toFixed(2)} of the tag, figure ${r.figure&&r.figure.toFixed(2)} of the ground; drawn .17)`);
     ok(r.seam<=r.inner*1.05,`the tile is one whole cell: no step at its edges larger than inside it (${r.seam.toFixed(3)} against ${r.inner.toFixed(3)})`);
     ok(r.fine&&Math.abs(r.mm-30/600*80)<.2,`it is an ordinary fine shirt tile at life size (${r.mm&&r.mm.toFixed(2)} mm a repeat, 4 drawn)`);
     ok(r.none&&r.weak,'a cloth with no sure repeat gives no tile (the strict confidence test): the shirt is drawn as before');
-    ok(r.wants&&r.tag&&!r.noClose&&!r.solid&&r.not.every(v=>!v),'a figured shirt with a close-up takes it (and its key says so); herringbone, twill, end-on-end and printed shirts, a plain one and one without a close-up do not');
+    ok(r.wants&&r.print&&r.tag&&!r.noClose&&!r.solid&&r.not.every(v=>!v),'a figured or printed shirt with a close-up takes it (and its key says so); herringbone, twill and end-on-end shirts, a plain one and one without a close-up do not');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
