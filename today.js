@@ -38,11 +38,14 @@ function planSnapUse(s){try{if(!s||!s.plan||s.sig!==planSig()||window.TEST_PLAN)
     cache[s.k]=snapIn(s.plan,byId);cache.snap=s.k;planSnapUsed=s.k;return true}catch(e){console.warn('kept plan not used',e);return false}}
 let planSnapUsed=null;   // the month start-up drew from the kept plan (read by tests/speed.test.js)
 const outSig=o=>o&&JSON.stringify([idsOf(o),!!o.vest,!!o.suitDay,o.notes||[]]);
+/* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
+   run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */
+let recordRun=Promise.resolve();
 // once the phone is idle: plan the month for real; Today is redrawn only if it differs, and the day records and locks are written then
 function planSnapCheck(){const k=cache.snap;if(!k)return;const shown=cache[k];delete cache[k];cache.snap=null;const [y,m]=k.split('-').map(Number);
   const real=planMonth(y,m),same=Object.keys(real).length===Object.keys(shown).length&&Object.keys(real).every(d=>outSig(real[d])===outSig(shown[d]));
   if($('#today').hidden)return;if(!same||(typeof pulledYet==='function'&&!pulledYet()))return refreshToday();   // (before the first sync is merged, renderToday waits for it to record)
-  if(items.length)recordDays(real).then(lockUpcoming).then(planSnapSoon)}
+  if(items.length)recordRun=recordDays(real).then(lockUpcoming).then(planSnapSoon)}
 let planSnapT=0;
 function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const T=todayDate(),k=T.getFullYear()+'-'+T.getMonth(),p=cache[k];if(!p||cache.snap||window.TEST_PLAN||!items.length)return;
   try{metaPut(PLAN_SNAP,{k,sig:planSig(),plan:snapOut(p,new Map(items.map(i=>[i.id,i]))),t:Date.now()}).catch(e=>console.warn('plan not kept',e))}catch(e){console.warn('plan not kept',e)}},1500)}
@@ -316,7 +319,7 @@ function renderToday(){
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();
   if(cache.snap&&p===cache[cache.snap]){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
-  else if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
+  else if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
     else if(!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (drawn again once the backup is merged, and recorded then)
   }
 }

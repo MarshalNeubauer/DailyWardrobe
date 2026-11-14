@@ -22,7 +22,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const sync=p=>p.evaluate(()=>syncNow());
   // a sync whose requests are counted: the backup an edit schedules (scheduleSync, 2.5 s after it) is called off first, since on
   // a busy machine it came due in the middle of the count and added a request
-  const syncQ=p=>p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()});
+  // and the device is quiet first: a sync that brought changes redraws Today, which records the day and locks the week in the background
+  // (today.js recordRun) and schedules another backup; landing in the middle of the count, those writes added a request or an upload
+  // (the flaky failures of 2026-11-14: "nothing new is one small request", "a change on the other device is picked up", "quick again")
+  // quiet = no recording or sync running, and the stored wardrobe (stateSig) the same over three checks 120 ms apart (any background
+  // writer, not only recordRun: arrivals, migrations, a redraw the sync scheduled), for at most 6 s
+  const quiet=p=>p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
+    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!syncing&&sig===last?same+1:0;last=sig;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
+  const syncQ=async p=>{await quiet(p);return p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()})};
+  // before a counted sync the OTHER device must be still too: a late lock it writes after its own sync goes up with its scheduled backup,
+  // and landing during the count that changed the server under the counted device (the last flaky failure: 2.9 KB down, then an upload).
+  // settle: sync both until they hold the same wardrobe (stateSig), both quiet, both scheduled backups called off
+  const sig=p=>p.evaluate(async()=>stateSig(await localState()));
+  const hush=async p=>{await quiet(p);await p.evaluate(()=>clearTimeout(syncTimer))};
+  const settle=async(...ps)=>{for(let n=0;n<6;n++){for(const p of ps)await syncQ(p);for(const p of ps)await quiet(p);const s=await Promise.all(ps.map(sig));if(s.every(x=>x===s[0]))break}for(const p of ps)await hush(p)};
   const add=(p,fields)=>p.evaluate(async f=>{const it={id:crypto.randomUUID(),type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),...f};await put(it);items.push(it);return it.id},fields);
   const names=p=>p.evaluate(()=>items.map(i=>i.type+':'+i.primaryColor).sort().join(','));
 
@@ -64,13 +77,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const race=await Promise.all([names(A.p),names(B.p)]);
   ok(!race[0].includes('tie:gold')&&race[0].includes('tie:pink')&&race[1]===race[0],'a delete and an edit made during a sync survive it, on both devices');
   // nothing changed since the last sync: one tiny request, no backup downloaded or uploaded
-  await syncQ(A.p);await syncQ(B.p);traffic.length=0;const okQuick=await syncQ(A.p),t1=[...traffic];
+  await settle(A.p,B.p);traffic.length=0;const okQuick=await syncQ(A.p),t1=[...traffic];
   ok(okQuick&&t1.length===1&&t1[0].m==='GET'&&/[?&]v=\d+%3A\d+$/.test(t1[0].q)&&t1[0].down<200,`a sync with nothing new is one small request, with no backup sent either way (${JSON.stringify(t1)})`);
   // a change on the other device is still found (the version no longer matches, so the backup comes down)
-  await add(B.p,{type:'socks',primaryColor:'navy'});await syncQ(B.p);traffic.length=0;await syncQ(A.p);
+  await add(B.p,{type:'socks',primaryColor:'navy'});await settle(B.p);await hush(A.p);traffic.length=0;await syncQ(A.p);
   ok((await names(A.p)).includes('socks:navy')&&traffic[0].down>200,'a change made on the other device is still picked up');
   // a change here goes up as before, and the next sync is quick again
-  await add(A.p,{type:'socks',primaryColor:'brown'});traffic.length=0;await syncQ(A.p);const t2=[...traffic];traffic.length=0;await syncQ(A.p);
+  await settle(A.p,B.p);await add(A.p,{type:'socks',primaryColor:'brown'});traffic.length=0;await syncQ(A.p);const t2=[...traffic];await hush(A.p);await hush(B.p);traffic.length=0;await syncQ(A.p);
   ok(t2.some(t=>t.m==='POST')&&JSON.parse(store.get('wardrobe:v1')).data.items.some(i=>i.primaryColor==='brown')&&traffic.length===1&&traffic[0].down<200,'a local change is uploaded; the sync after it is quick again');
   // the wardrobe is lost on the device (storage cleared) but the marker survives: the backup must come back, not be emptied
   await A.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));items=[]});await sync(A.p);
