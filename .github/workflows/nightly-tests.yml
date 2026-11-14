@@ -5,9 +5,7 @@ name: Nightly full test run
 on:
   schedule:
     - cron: '0 1 * * *'   # 01:00 UTC = 04:00 in Kuwait, after the day's merges and before the morning
-  workflow_dispatch:
-  push:
-    branches: [claude/nightly-tests]   # TEMPORARY: to try the workflow before it is merged; removed before merging
+  workflow_dispatch:   # run it now: GitHub > Actions > Nightly full test run > Run workflow, or `gh workflow run nightly-tests.yml`
 permissions:
   contents: read
 concurrency: nightly-tests
