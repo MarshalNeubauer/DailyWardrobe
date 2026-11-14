@@ -198,9 +198,13 @@ module.exports=async({ok,chromium,url})=>{
       if(q.method==='PUT'){const o=JSON.parse(b);kv[o.key]=o.rec;puts.push(o.key);return res.end('{"ok":true}')}
       if(k&&kv[k])return res.end(JSON.stringify(kv[k]));res.statusCode=404;res.end('{"error":"none"}')})});
     await new Promise(r=>srv.listen(0,'127.0.0.1',r));const W=`http://127.0.0.1:${srv.address().port}/`;
-    const run=args=>new Promise(r=>{const c=require('child_process').spawn(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),...args],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'t'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>r({code,out}))});
+    const run=(args,more={})=>new Promise(r=>{const c=require('child_process').spawn(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),...args],{env:{...process.env,...more,DW_WORKER:W,DW_TOKEN:'t',DW_UPLOAD_LEDGER:more.DW_UPLOAD_LEDGER||require('path').join(require('os').tmpdir(),'dw-ledger-test-'+process.pid+'.json')}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>r({code,out}))});
     try{const mfKey='c'+fnv(`asm/${ver}/cm${cmv}/all/manifest`),mk='c'+fnv(`asm/${ver}/cm${cmv}/suit/master`),bgK='c'+fnv(`asm/${ver}/cm${cmv}/all/background`);
       const mfOf=()=>JSON.parse(/^asm\/cm-manifest (\{.*\})$/.exec(kv[mfKey].sig)[1]).keys;
+      // this computer's daily cap (tools/upload-budget.js): too little left for the whole batch, nothing goes up
+      const lim=path.join(require('os').tmpdir(),'dw-ledger-cap-'+process.pid+'.json');fs.rmSync(lim,{force:true});
+      const r0=await run(['--dir',tmp,'--kinds','suit'],{DW_UPLOAD_LIMIT:'3',DW_UPLOAD_LEDGER:lim});fs.rmSync(lim,{force:true});
+      ok(r0.code===4&&puts.length===0&&/daily upload limit \(3\)/.test(r0.out),`cm-upload with too little of the day's upload budget left uploads nothing and says why (code ${r0.code}, ${puts.length} writes)`);
       const r1=await run(['--dir',tmp,'--kinds','suit']),n1=puts.length,m1=kv[mfKey]&&mfOf();
       const r2=await run(['--dir',tmp,'--kinds','suit']),n2=puts.length-n1;
       const r3=await run(['--bg',path.join(src,'master.jpg')]),m3=kv[mfKey]&&mfOf();
