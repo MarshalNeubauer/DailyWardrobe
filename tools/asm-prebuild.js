@@ -25,6 +25,8 @@
 //                 painted on the CPU pool as before. A picture painted on another renderer (the card lost): no GPU again until this script restarts
 //   --gpu-angle B the browser's ANGLE backend for --gpu (default d3d11; the tests use swiftshader, never the real card)
 //   --cm-size N   the painting size (default 2880, ASM_CM_SIZE; the tests paint smaller)
+//   --uploads N   how many pictures are uploaded at once (default 8, 1 to 16). Every look is painted first; the uploads all follow, together
+//                 (the owner's ask, 2026-11-14: a picture's upload took about a second and each look waited for its own before the next was painted)
 // Each upload is one KV write (the free plan allows 1,000 a day for everything); the token is read from the environment only.
 // This computer uploads at most 300 records a day across every tool (tools/upload-budget.js, DW_UPLOAD_LIMIT); past it uploads pause until 00:00 UTC.
 //
@@ -47,6 +49,7 @@ const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrob
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 // (stage 6) the graphics card
 const GPU=has('gpu'),GPU_ANGLE=String(arg('gpu-angle','d3d11')).replace(/[^a-z0-9-]/gi,''),GPU_MATCH=new RegExp(arg('gpu-match','NVIDIA'),'i');
+const UPLOADS=Math.max(1,Math.min(16,+arg('uploads',8)||8));
 const CM_SIZE=Math.max(256,Math.min(2880,+arg('cm-size',2880)||2880));
 if(has('help')||!WORKER.startsWith('http')||!TOKEN){
   console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 14] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>] [--gpu [--gpu-angle d3d11]]');
@@ -170,10 +173,10 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
     let built=0,skipped=cur.length,uploaded=0,failed=0,done=0,onGpu=0,onCpu=0;
     const cm=need;
     const report=(l,msg)=>{done++;console.log(`[${done}/${need.length}] ${l.first} ${msg}`)};
-    const upload=async(l,r)=>{built++;
-      if(SAVE){fs.mkdirSync(SAVE,{recursive:true});fs.writeFileSync(path.join(SAVE,`${l.first}-${r.key}.jpg`),Buffer.from(r.img.split(',')[1],'base64'))}
-      if(DRY)return `${r.key} built (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`;
-      if(!budget.take(1)){failed++;pauseUploads(LIMIT_WHY);return 'not uploaded: this computer\'s daily upload limit is used up'}
+    // (2026-11-14) painted first, uploaded after: finish() keeps each painted picture (its place in today's upload budget taken then, so
+    // no more are painted than can be sent), and once every look is painted uploadAll() sends them UPLOADS at a time
+    const pending=[];
+    const upload=async(l,r)=>{
       const up=await api('render',{method:'PUT',body:JSON.stringify({key:r.key,rec:{sig:r.sig,img:r.img,model:'assembled',t:Date.now()}})});
       if(up.ok){uploaded++;made[r.key]=r.sig;return `${r.key} uploaded (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`}
       const body=await up.text().catch(()=>'');failed++;
@@ -185,7 +188,16 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       if(!await asmCmGet(kind))return {error:'its master is missing on the worker'};const job=await asmJob(o);if(!job)return {error:'no job'};job.diskCache=true;job.gl=!!gpu;
       try{const res=await __poolRun(wi,job);return res&&res.url?{key:asmOutKey(o),sig:asmPreSig(o),img:res.url,how:`(colour-coded ${kind})`,gl:!!res.gl,ms:res.ms,renderer:res.renderer||'',glWhy:res.glWhy||''}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi,!!gpu]);
     const way=r=>r.gl?`GPU ${r.ms} ms`:`CPU${r.glWhy?': '+r.glWhy:''}`;
-    const finish=async(l,r,t1)=>{if(r.gl)onGpu++;else onCpu++;if(r.how)r.how=r.how.replace(/\)$/,', '+way(r)+')');report(l,`${await upload(l,r)} (${Date.now()-t1} ms)`)};
+    const finish=async(l,r,t1)=>{if(r.gl)onGpu++;else onCpu++;if(r.how)r.how=r.how.replace(/\)$/,', '+way(r)+')');built++;const kb=Math.round(r.img.length/1024),how=r.how?' '+r.how:'';
+      if(SAVE){fs.mkdirSync(SAVE,{recursive:true});fs.writeFileSync(path.join(SAVE,`${l.first}-${r.key}.jpg`),Buffer.from(r.img.split(',')[1],'base64'))}
+      if(DRY){report(l,`${r.key} built (${kb} KB)${how} (${Date.now()-t1} ms)`);return}
+      if(!budget.take(1)){failed++;pauseUploads(LIMIT_WHY);report(l,'painted, not uploaded: this computer\'s daily upload limit is used up');return}
+      pending.push({l,r});report(l,`${r.key} painted (${kb} KB)${how} (${Date.now()-t1} ms)`)};
+    const uploadAll=async()=>{if(!pending.length)return;const tu=Date.now(),n=pending.length;let i=0;console.log(`${now()} uploading ${n} picture(s), ${Math.min(UPLOADS,n)} at a time`);
+      await Promise.all(Array.from({length:Math.min(UPLOADS,n)},async()=>{for(;;){const p=pending[i++];if(!p)return;
+        if(paused()){failed++;budget.give(1);p.r.img='';continue}   // the worker refused a write: the rest wait for its reset (their places given back)
+        const msg=await upload(p.l,p.r).catch(e=>{failed++;return 'upload failed: '+String(e&&e.message||e)});p.r.img='';if(!/ uploaded /.test(msg))console.log(`  ${p.l.first} ${msg}`)}}));
+      pending.length=0;console.log(`${now()} uploads done in ${((Date.now()-tu)/1000).toFixed(1)} s: ${uploaded} uploaded`)};
     const one=async(l,wi)=>{if(paused()){failed++;report(l,'not made: uploads paused until the worker\'s daily reset');return}
       const t1=Date.now(),r=await paint(l,wi,false);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
       await finish(l,r,t1)};
@@ -232,6 +244,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       finally{if(warm)await warm}};
     const [,back]=await Promise.all([cpuPass(cpuLooks),gpuPass(gpuLooks)]);
     if(back.length){console.log(`${now()} ${back.length} look(s) handed back by the GPU side: painting them on the CPU pool`);await cpuPass(back)}
+    await uploadAll();
     saveMade();lastSig=failed?'':sig;   // (a look not made is tried again next cycle, not only when something changes)
     console.log(`Done in ${Math.round((Date.now()-t0)/1000)} s: ${built} built, ${uploaded} uploaded, ${skipped} already current, ${failed} not made.`+
       (GPU?` Painted on the GPU: ${onGpu}, on the CPU: ${onCpu}`+(gpuOff?` (GPU off: ${gpuOff})`:'')+'.':''));
