@@ -23,9 +23,29 @@ function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const 
 let dbDown=null,dbErr=null;
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
-addEventListener('unhandledrejection',ev=>{const e=ev.reason;
+addEventListener('unhandledrejection',ev=>{const e=ev.reason;errNote(e);
   if(dbDown){if(e===dbErr||storeFailure(e))ev.preventDefault();return}   // the full-page message already says it
-  if(storeFailure(e)){ev.preventDefault();saveFailed(e)}});
+  if(storeFailure(e)){ev.preventDefault();saveFailed(e)}else errTell(e)});
+addEventListener('error',ev=>{const e=ev.error||ev.message;if(ev.target&&ev.target!==window)return;errNote(e);errTell(e)});   // (a picture that didn't load is not an error here)
+
+/* ---- nothing fails silently (2026-11-14, after a tester's buttons did nothing on an iPhone): an error nobody caught within ERR_TAP_MS of a
+   tap says so, and every one is noted on the phone (localStorage err_log, the last ERR_MAX) and sent with the person's next feedback
+   (about.js sendFeedback), so the owner sees what broke on a phone he can't look at ---- */
+const ERR_KEY='err_log',ERR_MAX=20,ERR_TAP_MS=3000;
+let errTapAt=0,errToldAt=0;
+for(const k of ['pointerup','click'])addEventListener(k,()=>{errTapAt=Date.now()},true);
+addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')errTapAt=Date.now()},true);
+const errMsg=e=>{const x=e&&e.error||e;return String(x&&x.message||x||'').trim().slice(0,200)};
+// noise that isn't a failure: the layout observer's loop warning, a stopped request, scripts of other sites
+const errNoise=e=>{const m=errMsg(e),n=e&&e.name;return !m||n==='AbortError'||/^ResizeObserver loop|^Script error\.?$/.test(m)};
+const errList=()=>{try{const L=JSON.parse(localStorage.getItem(ERR_KEY)||'[]');return Array.isArray(L)?L:[]}catch{return []}};
+function errNote(e){try{if(errNoise(e))return;const x=e&&e.error||e,at=String(x&&x.stack||'').split('\n').find(l=>/\.js/.test(l))||'';
+  const L=errList();L.push({t:Date.now(),m:errMsg(e),at:at.trim().slice(0,160),v:typeof appVersion==='function'?String(appVersion()):''});
+  localStorage.setItem(ERR_KEY,JSON.stringify(L.slice(-ERR_MAX)))}catch{}}
+function errTell(e){if(errNoise(e))return;const now=Date.now();if(now-errTapAt>ERR_TAP_MS||now-errToldAt<5000)return;errToldAt=now;
+  if(typeof toast==='function')toast('Something went wrong: '+errMsg(e).replace(/\.$/,'')+'. Try again; if it keeps happening, tell us in Settings → About → Feedback.',8000)}
+// the last week's problems as lines for the feedback (at most 8)
+const errReport=()=>errList().filter(x=>x&&x.t>Date.now()-7*86400000).slice(-8).map(x=>new Date(x.t).toISOString().slice(0,16).replace('T',' ')+' v'+(x.v||'?')+' '+x.m+(x.at?' @ '+x.at:'')).join('\n');
 
 /* storage can't be opened (a private window in some browsers, storage switched off for websites): a page that says so,
    over everything. Called from the start-up chain's catch, which also catches other errors: those show nothing here. */
