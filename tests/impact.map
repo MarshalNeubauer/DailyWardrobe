@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8ecbf41e52cf10a98eb1
+# tested	7e70307297f6637f294a
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -1877,7 +1877,7 @@ masterspeed.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then
 masterspeed.test.js	asm-color.js	<any>	<loaded>	asmB64	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobOf	asmCmBlobRead	asmCmBlur	asmCmCodeText	asmCmCopyKey	asmCmCopySig	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmDiskPut	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmKey	asmCmKind	asmCmLightPrep	asmCmMasterCopy	asmCmMasterCopyRec	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmSetup	asmCmSetupBlob	asmCmSetupFetch	asmCmSetupKey	asmCmSrcSig	asmCmStatus	asmCmUI	asmCmUnpack	asmCmWarm	asmGapUI	asmUnB64
 masterspeed.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
 masterspeed.test.js	asm-worker.js	<any>
-masterspeed.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBodyFlow	asmCalibKey	asmCmAny	asmCmHeld	asmCmUse	asmData	asmDropOld	asmGet	asmGetOnce	asmImg	asmInfo	asmKey	asmListGet	asmLoad	asmMasterKey	asmNeeds	asmOffPage	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKept	asmVestKey	asmVestTag	asmWorker	asmZonesKept	renderAsmUI
+masterspeed.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBodyFlow	asmCalibKey	asmCmAny	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmDropOld	asmGet	asmGetOnce	asmImg	asmInfo	asmKey	asmListGet	asmLoad	asmMasterKey	asmNeeds	asmOffPage	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKept	asmVestKey	asmVestTag	asmWorker	asmZonesKept	renderAsmUI
 masterspeed.test.js	care.js	<loaded>	careShow
 masterspeed.test.js	colpick.js	<loaded>
 masterspeed.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	mergeState	occOf	offDays	offName	stateSig	todayDate	wearsJacket
