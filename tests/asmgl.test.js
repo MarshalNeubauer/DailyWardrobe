@@ -1,8 +1,9 @@
 // The graphics chip's painter (asm-gl.js, 2026-11-14): every look it covers is painted both ways in this Chromium (WebGL2 on SwiftShader)
 // and the two pictures must agree, largest difference at most 2 levels a channel and mean under 0.1; the looks it doesn't cover, a page
 // with no WebGL2 and a lost context are painted on the CPU; the real worker paints a covered look on its graphics chip; the switch and
-// the page's routing. Fixtures: the suit master at 512 (tests/fixtures/cm/suit), a stand-in background, and for some looks stand-in
-// solved cloth positions (asmGeoPrep's maps, made here from the master's own parts).
+// the page's routing. Fixtures: the suit and shirt-and-tie masters at 512 (tests/fixtures/cm/<kind>), the vest, vest-open, suit-open and
+// shirt-open masters derived from them here (stage 5), a stand-in background, and for some looks stand-in solved cloth positions
+// (asmGeoPrep's maps, made here from each master's own parts).
 // LOOKS is the table later stages add rows to: a look's jacket, shirt and tie, whether it has solved positions, and whether the graphics
 // chip paints it (gl) or must leave it to the CPU (why: the reason asmGlWhy gives).
 const fs=require('fs'),path=require('path');
@@ -73,13 +74,50 @@ const LOOKS=[
   {name:'blue stripe shirt, solved positions',top:['suit','navy'],shirt:['white',{pattern:'stripe',secondaryColor:'blue'}],tie:'burgundy',geo:true,gl:true,has:'shirt-tile'},
   {name:'end-on-end fleck shirt',top:['suit','navy'],shirt:['lightblue',{pattern:'end-on-end'}],tie:'navy',gl:true,has:'shirt-tile'},
   {name:'navy stripe shirt (dark: the full look), paisley tie',top:['suit','grey'],shirt:['navy',{pattern:'stripe',secondaryColor:'white'}],tie:['burgundy',{pattern:'paisley',secondaryColor:'navy'}],gl:true,has:'tie-paisley,shirt-tile'},
-  // not covered: the CPU paints it (the cloth look off; on the suit master no other look is left to the CPU)
+  // stage 5: every other master. The waistcoat (vest; the jacket's own cloth), a jacket without a tie (suit-open, vest-open), the shirt
+  // masters (shirt-tie, shirt-open: the trousers along the legs, a read trousers' tile, the belt, the buckle, the shirt's sleeves) and a
+  // suit's own trousers with its jacket taken off (suitBot). has: m-<master>, wc (a waistcoat zone), gs (the shirt's sleeves), legs (the
+  // legs' table), belt, buckle, tr-tile (a read trousers' tile), suitbot; the trousers' suit cloth takes the jacket's tags
+  {name:'vest: plain navy suit',top:['suit','navy'],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'m-vest,wc'},
+  {name:'vest: plain mid grey suit, pink shirt, navy tie',top:['suit','midgrey'],vest:true,shirt:'pink',tie:'navy',gl:true,has:'m-vest,wc'},
+  {name:'vest: plain black suit, solved positions',top:['suit','black'],vest:true,shirt:'lightblue',tie:'wine',geo:true,gl:true,has:'m-vest,wc'},
+  {name:'vest: twill charcoal suit',top:['suit','charcoal',{pattern:'twill'}],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'twill,m-vest,wc'},
+  {name:'vest: twill tan and brown suit, solved positions',top:['suit','tan',{pattern:'twill',secondaryColor:'brown'}],vest:true,shirt:'pink',tie:'navy',geo:true,gl:true,has:'twill,c2,m-vest,wc'},
+  {name:'vest: navy pinstripe suit',top:['suit','navy',{pattern:'pinstripe',sett:PIN}],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'tile,k,m-vest,wc'},
+  {name:'vest: navy pinstripe suit, solved positions, stripe tie',top:['suit','navy',{pattern:'pinstripe',sett:PIN}],vest:true,shirt:'lightblue',tie:['navy',{pattern:'stripe',secondaryColor:'pink',sett:STT}],geo:true,gl:true,has:'tile,k,tie-bands,m-vest,wc'},
+  {name:'vest-open: plain grey suit',top:['suit','grey'],vest:true,shirt:'white',tie:null,gl:true,has:'m-vest-open,wc'},
+  {name:'suit-open: plain navy',top:['suit','navy'],shirt:'white',tie:null,gl:true,has:'m-suit-open'},
+  {name:'suit-open: plain light grey blazer, solved positions, blue stripe shirt',top:['blazer','lightgrey'],shirt:['white',{pattern:'stripe',secondaryColor:'blue'}],tie:null,geo:true,gl:true,has:'shirt-tile,m-suit-open'},
+  {name:'suit-open: khaki windowpane',top:['blazer','khaki',{pattern:'windowpane',sett:WP}],shirt:'lightblue',tie:null,gl:true,has:'tile,m-suit-open'},
+  {name:'suit-open: navy pinstripe, solved positions',top:['suit','navy',{pattern:'pinstripe',sett:PIN}],shirt:'pink',tie:null,geo:true,gl:true,has:'tile,k,m-suit-open'},
+  {name:'shirt-tie: plain grey trousers',bot:['pants','grey'],belt:'black',shirt:'white',tie:'burgundy',gl:true,has:'m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: plain trousers, solved positions',bot:['pants','charcoal'],belt:'brown',shirt:'lightblue',tie:'navy',geo:true,gl:true,has:'m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: khaki chinos twill',bot:['pants','khaki',{trouserKind:'chinos',pattern:'twill'}],belt:'brown',shirt:'white',tie:'navy',gl:true,has:'twill,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: chinos twill, solved positions',bot:['pants','khaki',{trouserKind:'chinos',pattern:'twill'}],belt:'tan',shirt:'pink',tie:'navy',geo:true,gl:true,has:'twill,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: jeans',bot:['pants','navy',{trouserKind:'jeans',pattern:'twill',material:'denim'}],belt:'brown',shirt:'white',tie:'burgundy',gl:true,has:'twill,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: suit trousers in pinstripe (jacket taken off)',bot:['suit','navy',{pattern:'pinstripe',sett:PIN}],suitBot:true,belt:'black',shirt:'white',tie:'burgundy',gl:true,has:'tile,k,m-shirt-tie,gs,legs,belt,buckle,suitbot'},
+  {name:'shirt-tie: suit trousers in pinstripe, solved positions',bot:['suit','navy',{pattern:'pinstripe',sett:PIN}],suitBot:true,belt:'black',shirt:'lightblue',tie:'wine',geo:true,gl:true,has:'tile,k,m-shirt-tie,gs,legs,belt,buckle,suitbot'},
+  {name:'shirt-tie: Donegal tweed trousers',bot:['pants','grey',{pattern:'tweed',secondaryColor:'rust'}],belt:'brown',shirt:'white',tie:'navy',gl:true,has:'tweed,c2,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: tweed trousers, solved positions',bot:['pants','slate',{pattern:'tweed'}],belt:'brown',shirt:'lightblue',tie:'wine',geo:true,gl:true,has:'tweed,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: charcoal herringbone trousers',bot:['pants','charcoal',{pattern:'herringbone'}],belt:'black',shirt:'white',tie:'burgundy',gl:true,has:'herringbone-cols,hbx,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: houndstooth trousers',bot:['pants','brown',{pattern:'houndstooth'}],belt:'brown',shirt:'white',tie:'navy',gl:true,has:'wv-houndstooth,c2,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: read check trousers',bot:['pants','grey',{pattern:'check',sett:{v:2,a:0,bands:[['#55585e',.6],['#8a8c90',.4]],cross:{d:90,bands:[['#55585e',.6],['#8a8c90',.4]],r:1},cr:3,tr:14,src:'claude+pixels'}}],belt:'black',shirt:'white',tie:'navy',gl:true,has:'m-shirt-tie,gs,legs,belt,buckle,tr-tile'},
+  {name:'shirt-tie: read check trousers, solved positions',bot:['pants','grey',{pattern:'check',sett:{v:2,a:0,bands:[['#55585e',.6],['#8a8c90',.4]],cross:{d:90,bands:[['#55585e',.6],['#8a8c90',.4]],r:1},cr:3,tr:14,src:'claude+pixels'}}],belt:'black',shirt:'pink',tie:'navy',geo:true,gl:true,has:'m-shirt-tie,gs,legs,belt,buckle,tr-tile'},
+  {name:'shirt-tie: pink herringbone shirt on the sleeves',bot:['pants','grey'],belt:'black',shirt:['pink',{pattern:'herringbone',sett:HBS}],tie:'navy',gl:true,has:'shirt-tile,fine,hbs,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: pink herringbone shirt, solved positions',bot:['pants','navy'],belt:'brown',shirt:['pink',{pattern:'herringbone',sett:HBS}],tie:'navy',geo:true,gl:true,has:'shirt-tile,fine,hbs,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: navy & pink stripe tie',bot:['pants','grey'],belt:'black',shirt:'white',tie:['navy',{pattern:'stripe',secondaryColor:'pink',sett:STT}],gl:true,has:'tie-bands,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-tie: paisley tie, solved positions, with a clip',bot:['pants','khaki'],belt:'brown',shirt:'lightblue',tie:['burgundy',{pattern:'paisley',secondaryColor:'navy'}],clip:'silver',geo:true,gl:true,has:'tie-paisley,clip,m-shirt-tie,gs,legs,belt,buckle'},
+  {name:'shirt-open: plain white shirt',bot:['pants','grey'],belt:'black',shirt:'white',tie:null,gl:true,has:'m-shirt-open,gs,legs,belt,buckle'},
+  {name:'shirt-open: blue stripe shirt, solved positions',bot:['pants','navy'],belt:'brown',shirt:['white',{pattern:'stripe',secondaryColor:'blue'}],tie:null,geo:true,gl:true,has:'shirt-tile,m-shirt-open,gs,legs,belt,buckle'},
+  {name:'shirt-open: gingham shirt, tan belt',bot:['pants','khaki',{trouserKind:'chinos',pattern:'twill'}],belt:'tan',shirt:['lightblue',{pattern:'gingham'}],tie:null,gl:true,has:'twill,shirt-tile,m-shirt-open,gs,legs,belt,buckle'},
+  {name:'shirt-open: jacket and tie taken off, suit trousers in pinstripe',bot:['suit','navy',{pattern:'pinstripe',sett:PIN}],suitBot:true,belt:'black',shirt:'white',tie:null,gl:true,has:'tile,k,m-shirt-open,gs,legs,belt,buckle,suitbot'},
+  // not covered: the CPU paints it (the cloth look off; since stage 5 no other look a phone paints is left to the CPU on any master)
   {name:'cloth look off',top:['suit','navy'],shirt:['lightblue',{pattern:'gingham'}],tie:'burgundy',jx:{look:false},gl:false,why:/cloth look off/},
 ].filter(L=>!process.env.ASMGL_ONLY||new RegExp(process.env.ASMGL_ONLY).test(L.name));
 // (ASMGL_SIZE=2048 paints the looks at a phone's size, the fixtures enlarged: the spot check; ASMGL_ONLY=<regexp> picks rows by name)
 const SIZE=+process.env.ASMGL_SIZE||512;
 module.exports=async({ok,chromium,url})=>{
-  const HOST='https://w.test/',FIX=path.join(__dirname,'fixtures','cm','suit');
+  const HOST='https://w.test/';
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});const served={};
@@ -88,34 +126,67 @@ module.exports=async({ok,chromium,url})=>{
       if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});
       if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+    // (stage 5) a program that won't build or a painting that fails says why (asmGlInit, asmGlTry warn 'asm-gl …')
+    p.on('console',m=>{const t=m.text();if(/^asm-gl/.test(t)&&!/context lost/.test(t))console.log('    [console] '+t.slice(0,600))});
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const recs={};for(const f of fs.readdirSync(FIX)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
-      recs[n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64'),model:'colormaster',t:1000}}
-    const keys=await p.evaluate(ns=>Object.fromEntries(ns.map(n=>[n,asmCmKey('suit',n)])),Object.keys(recs));
-    for(const [n,r] of Object.entries(recs))served[keys[n]]=r;
-    // the master, a stand-in background (a cream wall, a window, a desk and laptop, fixed noise, blurred), the jobs and the stand-in maps
+    // the two masters with fixtures (tests/fixtures/cm/<kind> at 512): the suit and the shirt-and-tie masters
+    for(const kind of ['suit','shirt-tie']){const FIX=path.join(__dirname,'fixtures','cm',kind),recs={};
+      for(const f of fs.readdirSync(FIX)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
+        recs[n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64'),model:'colormaster',t:1000}}
+      const keys=await p.evaluate(([kind,ns])=>Object.fromEntries(ns.map(n=>[n,asmCmKey(kind,n)])),[kind,Object.keys(recs)]);
+      for(const [n,r] of Object.entries(recs))served[keys[n]]=r}
+    // the masters, a stand-in background (a cream wall, a window, a desk and laptop, fixed noise, blurred), the jobs and the stand-in maps
     const setup=await p.evaluate(async([h,LOOKS,SIZE])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=SIZE;asmAheadSoon=()=>{};asmAhead=async()=>{};
-      if(!await asmCmGet('suit'))return {err:'no master'};
+      if(!await asmCmGet('suit')||!await asmCmGet('shirt-tie'))return {err:'no master'};
+      // (stage 5) stand-in masters derived from the two (no real masters downloaded): suit-open = the suit master with its tie's share given
+      // to the shirt; vest = the suit master with the lower part of the shirt's front in the V as the waistcoat; vest-open = the vest master
+      // with its tie given to the waistcoat below the waistcoat's top and to the shirt above; shirt-open = the shirt-and-tie master with its
+      // tie given to the shirt
+      const S0=512,N0=S0*S0,rd=async(kind,z)=>{const d=(await asmData(renders[asmCmKey(kind,'mask/'+z)].img,S0)).data,a=new Uint8Array(N0);for(let k=0;k<N0;k++)a[k]=d[4*k];return a};
+      const png=a=>{const c=document.createElement('canvas');c.width=c.height=S0;const x=c.getContext('2d'),d=x.createImageData(S0,S0);for(let k=0;k<N0;k++){d.data[4*k]=d.data[4*k+1]=d.data[4*k+2]=a[k];d.data[4*k+3]=255}x.putImageData(d,0,0);return c.toDataURL('image/png')};
+      const put=(kind,n,img)=>{renders[asmCmKey(kind,n)]={img,t:1000,sig:'asm/cm test',model:'colormaster'}};
+      const copy=(from,to)=>{for(const n of ['master','part/sleeveR','part/sleeveL','part/lapelR','part/lapelL'])if(renders[asmCmKey(from,n)])put(to,n,renders[asmCmKey(from,n)].img)};
+      const add=(a,b,m)=>a.map((v,k)=>Math.min(255,v+(!m||m[k]?b[k]:0)));
+      const sm={},st={};for(const z of ASM_CM_KINDS.suit.zones)sm[z]=await rd('suit',z);for(const z of ASM_CM_KINDS['shirt-tie'].zones)st[z]=await rd('shirt-tie',z);
+      copy('suit','suit-open');for(const z of ASM_CM_KINDS['suit-open'].zones)put('suit-open','mask/'+z,png(z==='shirt'?add(sm.shirt,sm.tie):sm[z]));
+      copy('shirt-tie','shirt-open');for(const z of ASM_CM_KINDS['shirt-open'].zones)put('shirt-open','mask/'+z,png(z==='shirt'?add(st.shirt,st.tie):st[z]));
+      // the shirt's front: its largest piece; the waistcoat from 35% of the way down it
+      const lab=new Int32Array(N0).fill(-1);let best=null;
+      for(let s0=0;s0<N0;s0++){if(lab[s0]>=0||sm.shirt[s0]<=127)continue;const q=[s0];lab[s0]=s0;let n=0,x0=S0,x1=0,y0=S0,y1=0;
+        while(q.length){const k=q.pop(),x=k%S0,y=(k-x)/S0;n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;for(const nb of [k-1,k+1,k-S0,k+S0])if(nb>=0&&nb<N0&&lab[nb]<0&&sm.shirt[nb]>127&&Math.abs(nb%S0-x)<=1){lab[nb]=s0;q.push(nb)}}
+        if(!best||n>best.n)best={n,x0,x1,y0,y1}}
+      const yT=Math.round(best.y0+.35*(best.y1-best.y0)),inW=k=>{const x=k%S0,y=(k-x)/S0;return x>=best.x0&&x<=best.x1&&y>=yT&&y<=best.y1};
+      const wc=new Uint8Array(N0),sv=Uint8Array.from(sm.shirt);for(let k=0;k<N0;k++)if(sm.shirt[k]&&inW(k)){wc[k]=sm.shirt[k];sv[k]=0}
+      copy('suit','vest');for(const z of ASM_CM_KINDS.vest.zones)put('vest','mask/'+z,png(z==='waistcoat'?wc:z==='shirt'?sv:sm[z]));
+      const below=Uint8Array.from({length:N0},(_,k)=>(k/S0|0)>=yT?1:0),above=below.map(v=>1-v);
+      copy('suit','vest-open');for(const z of ASM_CM_KINDS['vest-open'].zones)put('vest-open','mask/'+z,png(z==='waistcoat'?add(wc,sm.tie,below):z==='shirt'?add(sv,sm.tie,above):sm[z]));
       const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');let g=x.createLinearGradient(0,0,512,0);g.addColorStop(0,'#efe9df');g.addColorStop(1,'#d9d1c4');x.fillStyle=g;x.fillRect(0,0,512,512);
       x.fillStyle='#fbf8f2';x.fillRect(20,45,125,280);x.fillStyle='#7a5c40';x.fillRect(300,380,212,20);x.fillStyle='#2b2d31';x.fillRect(380,320,95,60);
       const id=x.getImageData(0,0,512,512);let s=7;for(let k=0;k<id.data.length;k+=4){s=(Math.imul(s,1103515245)+12345)>>>0;const v=(s/4294967296-.5)*6;id.data[k]+=v;id.data[k+1]+=v;id.data[k+2]+=v}x.putImageData(id,0,0);
       const b=document.createElement('canvas');b.width=b.height=512;const bx=b.getContext('2d');bx.filter='blur(3px)';bx.drawImage(c,0,0);
       renders[asmCmBgKey()]={img:b.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
       let n=0;const I=(type,c,x={})=>({id:type+(n++),type,primaryColor:c,pattern:'solid',...x}),watch=I('watch','silver',{metal:'silver'});items=[watch];
-      window.__jobs=[];window.__its=[];for(const L of LOOKS){const top=I(L.top[0],L.top[1],L.top[2]||{}),sh=Array.isArray(L.shirt)?I('shirt',L.shirt[0],L.shirt[1]):I('shirt',L.shirt),tie=Array.isArray(L.tie)?I('tie',L.tie[0],L.tie[1]):I('tie',L.tie);items.push(top,sh,tie);
-        const clip=L.clip?I('tieclip',L.clip,{metal:L.clip}):null;
-        const j=await asmCmJob({top,shirt:sh,tie,watch,...(clip?{clip}:{})});Object.assign(j,L.jx||{});j.diskCache=false;__jobs.push(j);__its.push({sh,tie})}
+      window.__jobs=[];window.__its=[];for(const L of LOOKS){const it=([t,c,x])=>I(t,c,x||{}),top=L.top?it(L.top):null,bot=L.bot?it(L.bot):null,belt=L.belt?I('belt',L.belt):null;
+        const sh=Array.isArray(L.shirt)?I('shirt',L.shirt[0],L.shirt[1]):I('shirt',L.shirt),tie=L.tie==null?null:Array.isArray(L.tie)?I('tie',L.tie[0],L.tie[1]):I('tie',L.tie);
+        items.push(...[top,bot,belt,sh,tie].filter(Boolean));const clip=L.clip?I('tieclip',L.clip,{metal:L.clip}):null;
+        const o={shirt:sh,watch,...(top?{top}:{}),...(bot?{bot}:{}),...(belt?{belt}:{}),...(tie?{tie}:{}),...(L.vest?{vest:true}:{}),...(L.suitBot?{suitBot:true}:{}),...(clip?{clip}:{})};
+        const j=await asmCmJob(o);if(!j)return {err:'no job for '+L.name+' ('+asmCmKind(o)+')'};Object.assign(j,L.jx||{});j.diskCache=false;__jobs.push(j);__its.push({sh,tie,bot})}
       // stand-in solved positions at the maps' 2048: the body piece 1, sleeve parts 10+, lapels 40+ (from the master's own parts at 512), each
-      // position a smooth bend of the picture's, encoded as asmGeoPrep reads them
-      const hit=await asmCmSetup(__jobs[0]),P=hit.P,G=ASM_GEO_PX,f=G/P.S,pc={tie:0,cuff:0,front:0,other:0};
-      const enc=fn=>{const cv=document.createElement('canvas');cv.width=cv.height=G;const cx=cv.getContext('2d'),d=cx.createImageData(G,G);
-        for(let Y=0;Y<G;Y++)for(let X=0;X<G;X++){const k=Math.floor(Y/f)*P.S+Math.floor(X/f),j=4*(Y*G+X),si=P.geo.seg[k],gs=P.geo.segs[si];
-          // (stage 4) where there is no jacket: the tie's knot 80 above its neck and blade 81, the shirt's turned cuffs 60.., its front 2
-          const cu=P.cuff?P.cuff[k]:255,r=P.A.jacket[k]?(!si?1:gs&&gs.parts?10+2*si:40+si):P.A.tie[k]?(Math.floor(k/P.S)<P.tieGeo.yk?80:81):
-            P.A.shirt[k]?(cu<255&&P.cuffAng[cu]?60+Math.min(19,cu%20):2):0,v=r?Math.round((fn(X,Y,r)+1024)*16):0;pc[r>=80?'tie':r>=60?'cuff':r===2?'front':'other']++;d.data[j]=v>>8;d.data[j+1]=v&255;d.data[j+2]=r;d.data[j+3]=255}
-        cx.putImageData(d,0,0);return cv.toDataURL('image/png')};
-      const geo={geoU:enc((X,Y,r)=>X*1.03+8*Math.sin(Y/150)+r),geoV:enc((X,Y,r)=>Y*.97+5*Math.sin(X/210)-r),gt:'77.78'};
-      LOOKS.forEach((L,i)=>{if(L.geo)Object.assign(__jobs[i],geo)});
+      // position a smooth bend of the picture's, encoded as asmGeoPrep reads them; one set per master
+      const G=ASM_GEO_PX,pcs={};
+      for(const kind of [...new Set(__jobs.map(j=>j.cm))]){const ix=LOOKS.map((L,i)=>i).filter(i=>__jobs[i].cm===kind);if(!ix.some(i=>LOOKS[i].geo))continue;
+        const hit=await asmCmSetup(__jobs[ix[0]]),P=hit.P,A=P.A,f=G/P.S,pc=pcs[kind]={tie:0,cuff:0,front:0,sleeve:0,legs:0,other:0},on=(z,k)=>!!(A[z]&&A[z][k]);
+        const enc=fn=>{const cv=document.createElement('canvas');cv.width=cv.height=G;const cx=cv.getContext('2d'),d=cx.createImageData(G,G);
+          for(let Y=0;Y<G;Y++)for(let X=0;X<G;X++){const k=Math.floor(Y/f)*P.S+Math.floor(X/f),j=4*(Y*G+X),si=P.geo?P.geo.seg[k]:0,gs=P.geo?P.geo.segs[si]:null;
+            // (stage 4) where there is no jacket: the tie's knot 80 above its neck and blade 81, the shirt's turned cuffs 60.., its front 2
+            // (stage 5) the waistcoat as the body (1); on the shirt masters the trousers 3 and the shirt's sleeve parts 10+
+            const cu=P.cuff?P.cuff[k]:255,r=on('jacket',k)?(!si?1:gs&&gs.parts?10+2*si:40+si):on('waistcoat',k)?1:on('trousers',k)?3:on('tie',k)?(Math.floor(k/P.S)<P.tieGeo.yk?80:81):
+              on('shirt',k)?(cu<255&&P.cuffAng[cu]?60+Math.min(19,cu%20):!A.jacket&&si&&gs&&gs.parts?10+2*si:2):0,v=r?Math.round((fn(X,Y,r)+1024)*16):0;
+            pc[r>=80?'tie':r>=60?'cuff':r===2?'front':r===3?'legs':r>=10&&r<40&&!A.jacket?'sleeve':'other']++;d.data[j]=v>>8;d.data[j+1]=v&255;d.data[j+2]=r;d.data[j+3]=255}
+          cx.putImageData(d,0,0);return cv.toDataURL('image/png')};
+        const geo={geoU:enc((X,Y,r)=>X*1.03+8*Math.sin(Y/150)+r),geoV:enc((X,Y,r)=>Y*.97+5*Math.sin(X/210)-r),gt:'77.78'};
+        for(const i of ix)if(LOOKS[i].geo)Object.assign(__jobs[i],geo)}
+      const hit=await asmCmSetup(__jobs[0]),P=hit.P,pc=pcs.suit;
       // the picture as asmCmBuild hands it to its JPEG encoder (raw pixels, not the JPEG)
       // (stage 6) over a phone's size (ASMGL_SIZE=2880, the PC's) the picture before its scaling to 2048 (both painters scale it the same way)
       const pid=OffscreenCanvasRenderingContext2D.prototype.putImageData;OffscreenCanvasRenderingContext2D.prototype.putImageData=function(img,...a){if(SIZE>ASM_SIZE&&img.width===SIZE)window.__big=new Uint8ClampedArray(img.data);return pid.call(this,img,...a)};
@@ -125,25 +196,31 @@ module.exports=async({ok,chromium,url})=>{
       // quarter-pixel points the float rule (asmTubePart) would put in the other part
       const cr=P.geo.segs.filter(g=>g&&g.crease);let pts=0,moved=0;
       for(const g of cr)for(let k=0;k<P.N;k+=7){if(!P.A.jacket[k]||P.geo.segs[P.geo.seg[k]]!==g)continue;const X=k%P.S+.25,Y=(k-k%P.S)/P.S+.75;pts++;if(asmTubePartQ(g,X,Y)!==asmTubePart(g,X,Y))moved++}
-      return {renderer:(()=>{const G2=asmGlInit(SIZE);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg,crease:cr.length,pts,moved,pc,cuffs:asmGlCuffs(P).n}},[HOST,LOOKS,SIZE]);
-    ok(!setup.err&&setup.bg,`the suit master, its masks and a background are on the page (${setup.err||'ok'})`);
+      return {renderer:(()=>{const G2=asmGlInit(SIZE);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg,crease:cr.length,pts,moved,pcs,cuffs:asmGlCuffs(P).n,kinds:[...new Set(__jobs.map(j=>j.cm))].join()}},[HOST,LOOKS,SIZE]);
+    ok(!setup.err&&setup.bg,`the masters (${setup.kinds}), their masks and a background are on the page (${setup.err||'ok'})`);
     ok(!!setup.renderer,`WebGL2 here: ${setup.renderer}`);
     ok(setup.crease>=1&&setup.pts>100&&setup.moved<=setup.pts/1000,`the master has a creased sleeve (${setup.crease}), whose part the whole-number rule chooses as the float rule did (${setup.moved} of ${setup.pts} points moved)`);
-    ok(setup.cuffs>=1&&setup.pc.tie>0&&setup.pc.cuff>0&&setup.pc.front>0,`the master has turned shirt cuffs (${setup.cuffs}), and the stand-in maps solve the tie, the cuffs and the shirt's front (${JSON.stringify(setup.pc)} map pixels)`);
+    const pc=setup.pcs&&setup.pcs.suit;if(pc)ok(setup.cuffs>=1&&pc.tie>0&&pc.cuff>0&&pc.front>0,`the master has turned shirt cuffs (${setup.cuffs}), and the stand-in maps solve the tie, the cuffs and the shirt's front (${JSON.stringify(pc)} map pixels)`);
+    const ps=setup.pcs&&setup.pcs['shirt-tie'];if(ps)ok(ps.legs>0&&ps.sleeve>0&&ps.tie>0&&ps.front>0,`(stage 5) the shirt-and-tie master's stand-in maps solve the trousers (3), the shirt's sleeves (10+), its front and the tie (${JSON.stringify(ps)} map pixels)`);
     // every look, both ways
     for(let i=0;i<LOOKS.length;i++){const L=LOOKS[i];
       const r=await p.evaluate(async i=>{const c=await __paint(i,false),why=asmGlWhy(__jobs[i],(await asmCmSetup(__jobs[i])).P),g=await __paint(i,true);
         const a=c.px,b=g.px,N=a.length/4;let mx=0,sum=0,over=0;for(let k=0;k<N;k++){let m=0;for(let q=0;q<3;q++){const d=Math.abs(a[4*k+q]-b[4*k+q]);sum+=d;if(d>m)m=d}if(m>mx)mx=m;if(m>2)over++}
-        const T=__jobs[i].cloth.jacket.suit,C=T&&T.cloth,W=T&&T.wv,has=!T?'':[T.TW>1||T.TH>1?'tile':'',T.k!=null?'k':'',C?C.kind+(C.cw?'-cols':''):'',C&&(C.yarn||C.float||C.grain||C.mottle||C.pbrk)?'hbx':'',
+        const J0=__jobs[i].cloth.jacket||__jobs[i].cloth.trousers,T=J0.suit,C=T&&T.cloth,W=T&&T.wv,has=!T?'':[T.TW>1||T.TH>1?'tile':'',T.k!=null?'k':'',C?C.kind+(C.cw?'-cols':''):'',C&&(C.yarn||C.float||C.grain||C.mottle||C.pbrk)?'hbx':'',
           T.tweed?'tweed':'',W?'wv-'+W.kind:'',(C&&C.c2)||(T.tweed&&T.c2)||(W&&W.c2)?'c2':''].filter(Boolean).join(',');
         // (stage 4) the tie's and shirt's tiles
-        const it=__its[i],cl=__jobs[i].cloth,ts=usableSett(it.tie),ss=usableSett(it.sh),how=asmCmRoute(it.tie,'tie').how,TI=cl.tie.tie,SH=cl.shirt.tile;
+        const it=__its[i],cl=__jobs[i].cloth,ts=it.tie?usableSett(it.tie):null,ss=usableSett(it.sh),how=it.tie?asmCmRoute(it.tie,'tie').how:'',TI=cl.tie&&cl.tie.tie,SH=cl.shirt.tile;
+        // (stage 5) the master and what it has
+        const cm=__jobs[i].cm,P=(await asmCmSetup(__jobs[i])).P;
         const has2=[has,TI?(how==='tie'?(ts.bands?'tie-bands':ts.motif?'tie-motif':'tie-tex-'+ts.tex.kind):'tie-'+how):'',TI&&TI.across===ASM_TIE_TEX_MAX?'texmax':'',__jobs[i].bar?'clip':'',
-          SH?'shirt-tile':'',SH&&SH.fine?'fine':'',SH&&asmHbShirt(it.sh)?'hbs':'',SH&&ss&&ss.motif?'shirt-motif':''].filter(Boolean).join(',');
-        return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms,has:has2,tkb:asmGlState&&asmGlState.tileBytes?Math.round(asmGlState.tileBytes/1024):0}},i);
+          SH?'shirt-tile':'',SH&&SH.fine?'fine':'',SH&&asmHbShirt(it.sh)?'hbs':'',SH&&ss&&ss.motif?'shirt-motif':'',
+          cm!=='suit'?'m-'+cm:'',P.A.waistcoat&&P.A.waistcoat.some(v=>v>127)?'wc':'',P.geo&&P.geo.gar==='shirt'?'gs':'',P.legs?'legs':'',P.A.belt?'belt':'',P.A.buckle?'buckle':'',
+          cl.trousers&&cl.trousers.tile?'tr-tile':'',it.bot&&it.bot.type==='suit'?'suitbot':''].filter(Boolean).join(',');
+        const B=asmGlBytes(asmGlState);
+        return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms,has:has2,tkb:B&&B.tiles?Math.round(B.tiles/1024):0,mb:B?(B.all/1048576).toFixed(1):'?',cm}},i);
       if(L.has)ok(r.has===L.has,`${L.name}: the cloth is what the row means (${r.has}, wanted ${L.has})`);
       if(L.gl){ok(r.cpu===false&&r.gl===true,`${L.name}: the graphics chip paints it (switch on), the CPU with the switch off (${r.why||'covered'})`);
-        ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at ${SIZE}; tiles ${r.tkb} KB)`)}
+        ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at ${SIZE}; tiles ${r.tkb} KB; textures ${r.mb} MB, ${r.cm})`)}
       else ok(r.gl===false&&L.why.test(r.why)&&r.max===0,`${L.name}: not covered (${r.why}): painted on the CPU either way, the same picture`)}
     // fallbacks: no WebGL2 at all, then a lost context, then the retry
     const fb=await p.evaluate(async()=>{const i=0,out={};

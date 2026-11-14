@@ -20,6 +20,9 @@
        checks, motifs, woven and herringbone shirts): the tie at four points a pixel turned by its lean (a quarter turn more in the knot) or
        on its solved pieces 80/81; the shirt at its solved front (2) and cuffs (60..79), else upright or turned in a cuff (P.cuffAng), 3x3
        points a pixel when woven (tile.fine); the tiles stacked in one texture (asmGlAtlas); the clip and buttons drawn after read-back
+     - (stage 5) every master: the waistcoat on the vest masters (the jacket's cloth, its own light, folds and contact shadow), suit-open
+       and vest-open (no tie), the shirt masters (the trousers in the jacket's place, every cloth along the legs, asmLegsAt; a read
+       trousers' tile; the belt flat, the buckle kept; the shirt's sleeves on their solved parts); the tweed's cell from a float64 table
      - the shirt and tie solid colours; skin, watch and the dark zone (the half-hidden button drawn as a horn button) as on the CPU
      - the background picture darkened by the figure's shadow and dithered; the lighting (ASM_CM_LIGHT)
      - the jacket's cloth positions as on the CPU (uvAt): the master's solved positions (job.geoU/geoV, asmGeoPrep: the body's through the
@@ -47,18 +50,37 @@ const asmGlPref=()=>{try{return localStorage.getItem(ASM_GL)!=='0'}catch{return 
 let asmGlState=null,asmGlNone=false,asmGlEver=false,asmGlRetry=0,asmGlPageOk=null,asmGlLast=null;
 /* ---- coverage: the one rule for which looks the graphics chip paints ('' = covered, else why not). Without P only the job is looked at
    (the page's routing, before any setup); with the master's setup P its geometry and lighting too */
-function asmGlWhy(job,P){if(!job||job.cm!=='suit')return 'master '+(job&&job.cm);if(job.look===false)return 'cloth look off';
+/* (stage 5) every master: the jacket masters (suit, vest; suit-open and vest-open have no tie) paint the jacket in the outer garment's
+   place, the shirt masters (shirt-tie, shirt-open) the trousers there (their lines along the legs, asmLegsAt); a waistcoat is the jacket's
+   own cloth (asmCmItems: the same item), a belt flat, a buckle a kept zone */
+const ASM_GL_KINDS=new Set(['suit','vest','suit-open','vest-open','shirt-tie','shirt-open']);
+/* (stage 5) two garments' cloth is the same (the waistcoat's is worked out from the jacket's item: the same values, maybe not the same
+   object, and after a worker's structured clone never) */
+function asmGlSame(a,b){if(a===b)return true;if(ArrayBuffer.isView(a)&&ArrayBuffer.isView(b)){if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i]&&!(a[i]!==a[i]&&b[i]!==b[i]))return false;return true}
+  if(Array.isArray(a)&&Array.isArray(b))return a.length===b.length&&a.every((v,i)=>asmGlSame(v,b[i]));
+  if(a&&b&&typeof a==='object'&&typeof b==='object'){const ka=Object.keys(a),kb=Object.keys(b);return ka.length===kb.length&&ka.every(k=>asmGlSame(a[k],b[k]))}return a!==a&&b!==b}
+/* (stage 5) the trousers' fold shifts (asmLegsPrep's du, dv: 1/16 px, at most ASM_LEG_FOLD_MAX px) fit a byte each: packed two to a
+   16-bit channel (asmGlPack); checked once per setup */
+const asmGlLegsM=new WeakMap();
+function asmGlLegsOk(P){const L=P.legs;if(!L)return true;let v=asmGlLegsM.get(L);if(v==null){v=true;for(let k=0;k<L.du.length&&v;k++)if(L.du[k]<-128||L.du[k]>127||L.dv[k]<-128||L.dv[k]>127)v=false;asmGlLegsM.set(L,v)}return v}
+function asmGlWhy(job,P){if(!job||!ASM_GL_KINDS.has(job.cm))return 'master '+(job&&job.cm);if(job.look===false)return 'cloth look off';
   if(!(job.size<=ASM_GL_MAX))return 'larger than the graphics chip paints';if(!job.bg)return 'no background picture';
-  const cl=job.cloth||{};for(const z of ['jacket','tie','shirt'])if(!cl[z])return 'no '+z;
+  const Z=ASM_CM_KINDS[job.cm].zones,jk=Z.includes('jacket'),oz=jk?'jacket':'trousers',cl=job.cloth||{};
+  for(const z of [oz,'shirt',...['tie','waistcoat','belt'].filter(z=>Z.includes(z))])if(!cl[z])return 'no '+z;
   // (stage 4) a tie read from a tile (asmTieFor: bands, motifs, weaves; knit, paisley) and a shirt drawn from one (asmCmTile: stripes,
   // checks, motifs, woven and herringbone shirts) are covered; a tie or shirt painted any other way (no route gives one today) is not
-  const ti=cl.tie,sh=cl.shirt;if(ti.tile||ti.suit)return 'patterned tie';if(sh.suit||sh.tie)return 'patterned shirt';
+  const ti=cl.tie||{},sh=cl.shirt;if(ti.tile||ti.suit)return 'patterned tie';if(sh.suit||sh.tie)return 'patterned shirt';
   const tileOk=(t,c)=>!!(t&&c&&t.TW>=1&&t.TH>=1&&c.length>=3*t.TW*t.TH&&t.TW<=ASM_GL_TILE&&t.TH<=ASM_GL_TILE);
   if(ti.tie&&!tileOk(ti.tie,ti.tie.c))return 'tie tile missing or too large';
   if(sh.tile&&(!tileOk(sh.tile,sh.tile.t||sh.tile.c)||!(sh.tile.mm>0)))return 'shirt tile missing, too large or without its size';
-  const j=cl.jacket;if(j.tile||j.tie)return 'jacket drawn from a tile';
-  // the jacket's, tie's and shirt's tiles share one texture, stacked (asmGlAtlas)
-  if((j.suit&&(j.suit.TH||0)>1?j.suit.TH:0)+(ti.tie?ti.tie.TH:0)+(sh.tile?sh.tile.TH:0)>ASM_GL_TILE)return 'tiles too large together';
+  // (stage 5) the outer garment: the jacket, or on the shirt masters the trousers (a read trousers' tile, asmCmTile, as well as the suit
+  // cloths); a belt is flat (asmCmRoute), a waistcoat the jacket's cloth
+  const j=cl[oz];if(j.tie||(jk&&j.tile))return oz+' drawn from a tile';
+  if(j.tile&&(!tileOk(j.tile,j.tile.t||j.tile.c)||!(j.tile.mm>0)||j.suit))return 'trousers tile missing, too large or without its size';
+  if(cl.belt&&(cl.belt.suit||cl.belt.tile||cl.belt.tie))return 'patterned belt';
+  if(cl.waistcoat&&!(cl.waistcoat.hex===j.hex&&asmGlSame(cl.waistcoat.suit,j.suit)&&!cl.waistcoat.tile&&!cl.waistcoat.tie))return 'waistcoat cloth not the jacket\'s';
+  // the outer garment's, tie's and shirt's tiles share one texture, stacked (asmGlAtlas)
+  if((j.suit&&(j.suit.TH||0)>1?j.suit.TH:j.tile?j.tile.TH:0)+(ti.tie?ti.tie.TH:0)+(sh.tile?sh.tile.TH:0)>ASM_GL_TILE)return 'tiles too large together';
   if(j.suit){const T=j.suit,C=T.cloth,t=T.t||T.c;
     // (stage 2) a band tile (asmSuitTex: stripes, checks, windowpanes, one or two colours) with or without the stripe breakup (T.k), on
     // no grain, the linen texture (asmLinenTile: a linen windowpane), or a plain twill or herringbone grain (asmClothOf: no yarn, floats,
@@ -66,17 +88,21 @@ function asmGlWhy(job,P){if(!job||job.cm!=='suit')return 'master '+(job&&job.cm)
     // (stage 3) the standalone herringbone (asmTwillTex: yarn, floats, grain cells, mottle, the column break), tweed (asmTweedTile, its
     // Donegal fleck) and the small woven figures (asmMicroTex: houndstooth, sharkskin, birdseye, nailhead, a thread grid of at most 8x8)
     // are covered; a herringbone's soft column edge (ASM_HB_SOFT, 0 today) is not
-    if(T.wv&&!(T.wv.N>=1&&T.wv.N<=8&&T.wv.g&&T.wv.g.length>=T.wv.N*T.wv.N))return 'jacket small figure grid too large';
-    if(!t||!(T.TW>=1&&T.TH>=1)||t.length<3*T.TW*T.TH)return 'jacket cloth without its tile';
-    if(T.TW>ASM_GL_TILE||T.TH>ASM_GL_TILE)return 'jacket tile too large';
-    if(C&&!T.linen&&((C.kind!=='twill'&&C.kind!=='herringbone')||C.soft))return 'jacket cloth '+(C.soft?'herringbone with soft column edges':C.kind||'other');
-    if(T.k!=null&&!(T.g&&T.blen>0&&T.mm>0))return 'jacket stripe without its ground';
-    if((T.TW>1||T.TH>1)&&!(T.mm>0))return 'jacket tile without its size'}
+    if(T.wv&&!(T.wv.N>=1&&T.wv.N<=8&&T.wv.g&&T.wv.g.length>=T.wv.N*T.wv.N))return oz+' small figure grid too large';
+    if(!t||!(T.TW>=1&&T.TH>=1)||t.length<3*T.TW*T.TH)return oz+' cloth without its tile';
+    if(T.TW>ASM_GL_TILE||T.TH>ASM_GL_TILE)return oz+' tile too large';
+    if(C&&!T.linen&&((C.kind!=='twill'&&C.kind!=='herringbone')||C.soft))return oz+' cloth '+(C.soft?'herringbone with soft column edges':C.kind||'other');
+    if(T.k!=null&&!(T.g&&T.blen>0&&T.mm>0))return oz+' stripe without its ground';
+    if((T.TW>1||T.TH>1)&&!(T.mm>0))return oz+' tile without its size'}
   if(!P)return '';
   if(!P.bgShadow)return 'no background shadow';if(!P.lx)return 'no lighting';
   if(P.cuff&&asmGlCuffs(P).n>ASM_GL_CUFFS)return 'too many turned cuffs';
-  const g=P.geo;if(!g||g.gar!=='jacket')return 'no jacket geometry';if(g.segs.length>ASM_GL_SEGS)return 'too many parts';
-  for(const s of g.segs)if(s.parts)for(const p of s.parts){if(p.poly)return 'polyline part';if(p.fd&&(p.fd.D.some(v=>v)||p.fd.G.some(v=>v)))return 'sleeve flow'}
+  // the jacket masters need the jacket's geometry; the shirt masters' is the shirt's sleeves (or none: the CPU paints them upright too)
+  const g=P.geo;if(jk?!g||g.gar!=='jacket':g&&g.gar!=='shirt')return 'no '+(jk?'jacket':'shirt')+' geometry';
+  if(g){if(g.segs.length>ASM_GL_SEGS)return 'too many parts';
+    // (stage 5) a polyline sleeve (one part, its points in the tables' rows, at most 256) is covered
+    for(const s of g.segs)if(s.parts)for(const p of s.parts){if(p.poly&&(s.parts.length>1||p.poly.length/2>256||!p.cum))return 'polyline part';if(p.fd&&(p.fd.D.some(v=>v)||p.fd.G.some(v=>v)))return 'sleeve flow'}}
+  if(!jk&&P.legs&&!asmGlLegsOk(P))return 'trousers folds too large';
   return ''}
 const asmGlCovers=(job,P)=>!asmGlWhy(job,P);
 /* ---- the context */
@@ -110,12 +136,31 @@ function asmGlRenderer(gl){const x=gl.getExtension('WEBGL_debug_renderer_info');
 function asmGlPack(P){const S=P.S,N=P.N,A=P.A,L=ASM_LIN,M=P.M,LX=P.lx,geo=P.geo,CLEAN=248,z8=new Uint8Array(N),z16=new Uint16Array(N);
   const sh=P.shade,a=new Uint8Array(4*N),s4=new Uint16Array(4*N),l1=new Uint16Array(4*N),l2=new Uint16Array(4*N);
   const ch=(dst,i,src)=>{if(!src)return;for(let k=0;k<N;k++)dst[4*k+i]=src[k]};
-  ch(a,0,A.jacket||z8);ch(a,1,A.tie||z8);ch(a,2,A.background||z8);ch(a,3,A.shirt||z8);
-  ch(s4,0,sh.jacket||z16);ch(s4,1,sh.tie||z16);ch(s4,2,sh.shirt||z16);ch(s4,3,P.bgShadow||z8);
-  ch(l1,0,LX.smb.jacket||z16);ch(l1,1,LX.smb.shirt||z16);ch(l1,2,LX.ao.jacket||z16);ch(l1,3,LX.ao.shirt||z16);
-  ch(l2,0,LX.ao.tie||z16);ch(l2,1,LX.aob||z16);ch(l2,2,LX.rim||z16);ch(l2,3,geo?geo.seg:z8);
-  // (stage 4) the shirt part's turn (asmGlCuffs) in the part channel's high byte, beside the jacket part (under ASM_GL_SEGS) in its low one
-  const cu=asmGlCuffs(P);if(P.cuff)for(let k=0;k<N;k++){const c=P.cuff[k];if(c<255&&cu.ix[c])l2[4*k+3]|=cu.ix[c]<<8}
+  // (stage 5) the outer garment (z0): the jacket on the jacket masters, the trousers on the shirt masters
+  const jk=ASM_CM_KINDS[P.kind].zones.includes('jacket'),z0=jk?'jacket':'trousers';
+  ch(a,0,A[z0]||z8);ch(a,1,A.tie||z8);ch(a,2,A.background||z8);ch(a,3,A.shirt||z8);
+  ch(s4,0,sh[z0]||z16);ch(s4,1,sh.tie||z16);ch(s4,2,sh.shirt||z16);ch(s4,3,P.bgShadow||z8);
+  ch(l1,0,LX.smb[z0]||z16);ch(l1,1,LX.smb.shirt||z16);ch(l1,2,LX.ao[z0]||z16);ch(l1,3,LX.ao.shirt||z16);
+  ch(l2,0,LX.ao.tie||z16);ch(l2,3,geo?geo.seg:z8);
+  // the jacket masters: the jacket body's shadow under its sleeves and lapels, its lit rim; (stage 4) the shirt part's turn (asmGlCuffs)
+  // in the part channel's high byte, beside the jacket part (under ASM_GL_SEGS) in its low one
+  const cu=asmGlCuffs(P);
+  if(jk){ch(l2,1,LX.aob||z16);ch(l2,2,LX.rim||z16);if(P.cuff)for(let k=0;k<N;k++){const c=P.cuff[k];if(c<255&&cu.ix[c])l2[4*k+3]|=cu.ix[c]<<8}}
+  // (stage 5) the shirt masters have neither (no jacket, no cuffs in a jacket's sleeve): the belt's light, the trousers' fold shifts (two
+  // bytes, +128) and the belt's share in the part channel's high byte take their places
+  else{ch(l2,1,sh.belt||z16);const L=P.legs;for(let k=0;k<N;k++){l2[4*k+2]=L?(L.du[k]+128)|((L.dv[k]+128)<<8):128|128<<8;if(A.belt)l2[4*k+3]|=A.belt[k]<<8}}
+  // (stage 5) the waistcoat (vest masters): its share, light, large folds and contact shadow, one more texture
+  let W=null;if(A.waistcoat){W=new Uint16Array(4*N);ch(W,0,A.waistcoat);ch(W,1,sh.waistcoat||z16);ch(W,2,LX.smb.waistcoat||z16);ch(W,3,LX.ao.waistcoat||z16)}
+  // (stage 5) small tables (RGBA32F, max(S, 256) wide): row 0 the legs' fly and cylinder middles per row and floor(i / lsc) (the tweed's
+  // cell: lsc = 116/174 on the shirt masters is no power of two, and float32 could land in the next cell), row 1 the cylinders' radii,
+  // row 2 the sRGB-to-linear table (ASM_LIN)
+  // (stage 5) rows 3.. a polyline sleeve's points (asmPolyAt: an arm bent less than ASM_CREASE_DEG, the shirt masters' hanging arms):
+  // x, y and the length along it to there
+  const polys=geo?geo.segs.filter(g=>g.parts&&g.parts[0].poly).map(g=>g.parts[0]):[];
+  const TWb=Math.max(S,256),tab=new Float32Array(4*TWb*(3+polys.length)),lsc=(S/ASM_SIZE)*ASM_CM_KINDS[P.kind].pxmm,LG=P.legs&&!jk?P.legs:null;
+  for(let i=0;i<TWb;i++){tab[4*i+3]=Math.floor(i/lsc);if(LG&&i<S){tab[4*i]=LG.xf[i];tab[4*i+1]=LG.co[2*i];tab[4*i+2]=LG.co[2*i+1];tab[4*(TWb+i)]=LG.R[2*i];tab[4*(TWb+i)+1]=LG.R[2*i+1]}}
+  for(let i=0;i<256;i++)tab[4*(2*TWb+i)]=L[i];
+  polys.forEach((p,r)=>{for(let q=0;q<p.poly.length/2;q++)tab.set([p.poly[2*q],p.poly[2*q+1],p.cum[q],0],4*((3+r)*TWb+q))});
   // the button pieces of the dark zone (asmCmBuild's BL/BT, as it is)
   let BL=null;const BT=[];if(A.dark){BL=new Int32Array(N).fill(-1);const st=[];
     for(let s0=0;s0<N;s0++){if(A.dark[s0]<=96||BL[s0]>=0)continue;const id=BT.length;let n=0,sx=0,sy=0,x0=1e9,x1=-1,y0=1e9,y1=-1;st.push(s0);BL[s0]=id;
@@ -138,7 +183,9 @@ function asmGlPack(P){const S=P.S,N=P.N,A=P.A,L=ASM_LIN,M=P.M,LX=P.lx,geo=P.geo,
   // point and normal)
   const G=new Float32Array(4*ASM_GL_SEGS*9),Q=new Int32Array(4*ASM_GL_SEGS*4),rows=[];let tw=1;
   if(geo)geo.segs.forEach((g,si)=>{const b=4*si*9;
-    if(g.parts){G[b]=1;G[b+1]=g.parts.length;const k=g.crease;if(k){G[b+2]=1;G.set([k.x,k.y,k.mx,k.my],b+4);G.set([k.r0,k.r1,0,0],b+8);
+    if(g.parts){G[b]=1;G[b+1]=g.parts.length;const k=g.crease;
+      if(g.parts[0].poly){G[b+3]=g.parts[0].poly.length/2;G[b+4]=3+polys.indexOf(g.parts[0])}   // (stage 5) a polyline: its points, its row
+      if(k){G[b+2]=1;G.set([k.x,k.y,k.mx,k.my],b+4);G.set([k.r0,k.r1,0,0],b+8);
       const U=g.parts[0],L=g.parts[1]||U;Q.set([asmTq(k.x),asmTq(k.y),asmTqn(k.mx),asmTqn(k.my),asmTqr(k.r0),asmTqr(k.r1),0,0,
         asmTq(U.x),asmTq(U.y),asmTqn(U.nx),asmTqn(U.ny),asmTq(L.x),asmTq(L.y),asmTqn(L.nx),asmTqn(L.ny)],16*si)}
       g.parts.forEach((p,pi)=>{const o=b+12+12*pi;G.set([p.x,p.y,p.dx,p.dy],o);G.set([p.nx,p.ny,p.fd?p.fd.k:1,p.t?1:0],o+4);
@@ -148,7 +195,8 @@ function asmGlPack(P){const S=P.S,N=P.N,A=P.A,L=ASM_LIN,M=P.M,LX=P.lx,geo=P.geo,
   const F=ASM_FLOW,fl=geo&&geo.flow,flow=new Float32Array(2*F.nu*F.nv);if(fl)for(let i=0;i<F.nu*F.nv;i++){flow[2*i]=fl.D[i];flow[2*i+1]=fl.G[i]}
   const row=new Int32Array(2*S).fill(-1);if(LX.tl)for(let y=0;y<S;y++){row[2*y]=LX.tl[y];row[2*y+1]=LX.tr[y]}
   const cuCs=new Float32Array(4*8);cuCs.set(cu.cs.slice(0,32));
-  return {S,a,s4,l1,l2,keep,G,Q,tube,tw,th:Math.max(1,rows.length),flow,fl:fl?[fl.mid,fl.hw,fl.ysh,1]:[0,1,0,0],row,sm:[LX.sm.jacket||0,LX.sm.shirt||0],cuCs,cuff:P.cuff?1:0}}
+  return {S,a,s4,l1,l2,keep,G,Q,tube,tw,th:Math.max(1,rows.length),flow,fl:fl?[fl.mid,fl.hw,fl.ysh,1]:[0,1,0,0],row,sm:[LX.sm[z0]||0,LX.sm.shirt||0],cuCs,cuff:P.cuff?1:0,
+    W,smW:LX.sm.waistcoat||0,tab,TWb,THb:3+polys.length,out:jk?0:1,legs:LG?1:0,ly:LG?[LG.y0,LG.y1]:[0,0],garS:geo&&geo.gar==='shirt'?1:0}}
 /* ---- the shaders */
 const asmGlF=v=>{const s=String(+v);return /[.e]/.test(s)?s:s+'.0'};
 /* asmH32 and asmCellV (asm-color.js) in GLSL: the same bits from the same cells; a later stage's cloth uses these too */
@@ -161,10 +209,17 @@ float cellV(float u,float v,uint a,uint b,uint m){float fi=floor(u),fj=floor(v),
 // floor(v/3) for a whole v exactly (a shader's division may land a hair under a whole number)
 float fdiv3(float v){float r=floor(v+.5);return abs(v-r)<1e-3&&r>=0.?float(int(r)/3):floor(v/3.);}`}
 /* the fragment shader: asmCmBuild's per-pixel loop for the covered zones (constants written in from the app's) */
-function asmGlFrag(){const LK=ASM_CM_LOOK,LI=ASM_CM_LIGHT,F=ASM_FLOW,f=asmGlF;
+/* (stage 5) one program per kind of master (asmGlVar: the outer garment, a waistcoat, the shirt's sleeves, the legs' table, polyline
+   sleeves), those switches written in as constants: SwiftShader runs every branch of a program, so the trousers', waistcoat's and
+   polylines' code in every program made a suit-master look twice as slow (1.0-1.7 s -> 2.4-2.7 s at 2048); a phone's chip skips them
+   either way but keeps fewer registers busy */
+function asmGlFrag(v='00000'){const LK=ASM_CM_LOOK,LI=ASM_CM_LIGHT,F=ASM_FLOW,f=asmGlF,V=String(v).split('').map(Number);
   return `#version 300 es
 precision highp float;precision highp int;precision highp usampler2D;precision highp isampler2D;
-uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR,uGeoI;uniform sampler2D uKeep,uLin,uTube,uFlow,uGeo,uTile;uniform isampler2D uRow;
+uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR,uGeoI,uW;uniform sampler2D uKeep,uTube,uFlow,uGeo,uTile,uTab;uniform isampler2D uRow;
+// (stage 5) the master: the outer garment (0 the jacket, 1 the trousers), the legs' table there, a waistcoat (uW), the shirt's sleeves
+// (geo.gar 'shirt'); the legs' first and last row; the waistcoat's mean light; the belt's colour; a read trousers' tile (has one, repeat)
+const int uOut=${V[0]|0},uWc=${V[1]|0},uGarS=${V[2]|0},uLegs=${V[3]|0},uPoly=${V[4]|0};uniform ivec2 uLy;uniform float uSmW;uniform vec3 uBelt;uniform vec4 uOT;
 uniform int uS,uHasGeo,uGeo16;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform ivec4 uQ[${ASM_GL_SEGS*4}];uniform vec4 uFl;uniform vec2 uSm;
 uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uTieK,uLs,uAA;
 uniform ivec4 uTT;uniform vec4 uRep,uSk,uCl;   // the band tile (TW, TH, has a tile, has the stripe breakup); its repeat, the breakup, the grain
@@ -179,14 +234,21 @@ uniform ivec4 uTO[3];uniform ivec2 uTie;uniform vec2 uTr,uTs;uniform vec4 uTa;un
 out vec4 oC;
 const float PI=3.14159265358979;
 float lum(vec3 c){return .2126*c.r+.7152*c.g+.0722*c.b;}
-float lin(uint v){return texelFetch(uLin,ivec2(int(v),0),0).r;}
+float lin(uint v){return texelFetch(uTab,ivec2(int(v),2),0).r;}   // (stage 5: ASM_LIN in the tables' row 2)
 ${asmGlHashGlsl()}
 // --- uvAt (asmTubePart, asmTubeRaw, asmTubeAt, asmFlowAt, asmUvAt)
 vec2 tubeRaw(int o,vec2 P){vec4 a=uG[o],n=uG[o+1];vec2 d=P-a.xy;return vec2(dot(d,n.xy),dot(d,a.zw));}
 // which part (asmTubePartQ): in whole numbers, the point in 1/16 px, so the choice is the CPU's exactly
 int tubePart(int si,int b,vec2 P){int U=b+3,L=b+6;if(uG[b].z<.5)return U;int q=4*si;ivec2 I=ivec2(floor(P*16.+.5));ivec4 k=uQ[q],pu=uQ[q+2],pl=uQ[q+3];ivec2 th=uQ[q+1].xy;
   ivec2 d=I-k.xy;if(d.x*k.z+d.y*k.w>0){ivec2 e=I-pl.xy;return e.x*pl.z+e.y*pl.w<th.y?U:L;}ivec2 e=I-pu.xy;return e.x*pu.z+e.y*pu.w<th.x?L:U;}
-vec2 tubeAt(int si,int b,vec2 P){int o=tubePart(si,b,P);vec2 r=tubeRaw(o,P);vec4 q=uG[o+1];if(q.w<.5)return r;vec4 t=uG[o+2];float n=t.z;
+// (stage 5) a polyline part (asmPolyAt): the nearest point's [across (signed), along]; a segment's end taken as the next one's start exactly,
+// so a point in the fan beyond a bend ties exactly as on the CPU and the first segment wins on both
+vec2 polyAt(int row,int n,vec2 P){float best=1e30;vec2 r=vec2(0.);
+  for(int q=0;q<n-1;q++){vec4 A=texelFetch(uTab,ivec2(q,row),0),B=texelFetch(uTab,ivec2(q+1,row),0);vec2 a=A.xy,d=B.xy-a;float l2=dot(d,d);if(l2==0.)l2=1.;
+    float t=clamp(dot(P-a,d)/l2,0.,1.);vec2 pp=t<=0.?a:(t>=1.?B.xy:a+d*t),e=P-pp;float d2=dot(e,e);
+    if(d2<best){best=d2;float l=sqrt(l2);r=vec2(((P.x-a.x)*d.y-(P.y-a.y)*d.x)/l,A.z+t*l);}}
+  return r;}
+vec2 tubeAt(int si,int b,vec2 P){int o=tubePart(si,b,P);vec2 r=uPoly==1&&uG[b].w>.5?polyAt(int(uG[b+1].x),int(uG[b].w),P):tubeRaw(o,P);vec4 q=uG[o+1];if(q.w<.5)return r;vec4 t=uG[o+2];float n=t.z;
   float f=clamp((r.y-t.x)/t.y-.5,0.,n-1.);float i=floor(f),j=min(n-1.,i+1.),w=f-i;int row=int(t.w);
   vec2 ci=texelFetch(uTube,ivec2(int(i),row),0).xy,cj=texelFetch(uTube,ivec2(int(j),row),0).xy;float c=ci.x*(1.-w)+cj.x*w,Rh=ci.y*(1.-w)+cj.y*w,R=Rh*${f(ASM_TUBE_K)};
   float x=(r.x-c)/R,ax=abs(x);float u=ax<.95?R*asin(x):sign(x)*R*(1.2532+(ax-.95)*3.2026);return vec2(u,r.y)/q.z;}
@@ -204,13 +266,27 @@ vec2 geoAt(ivec2 p,uint r,vec2 P){vec2 q=P-.5,f0=floor(q),fq=q-f0;ivec2 b=ivec2(
 // without a solved position: the sleeves' tubes, the lapels' axes, the body's flow
 vec2 uvFall(int si,vec2 P){int b=si*9;float ty=uG[b].x;if(ty>.5&&ty<1.5)return tubeAt(si,b,P);
   if(ty>1.5){vec4 g=uG[b+1];return vec2((P.x-g.z)*g.x+(P.y-g.w)*g.y,(P.y-g.w)*g.x-(P.x-g.z)*g.y);}return uFl.w>.5?flowAt(P):P;}
-vec2 uvAt(int si,vec2 P,ivec2 p){
-  if(uHasGeo==1){uint r=texelFetch(uGR,p,0).r;
-    if(r==1u&&uFl.w>.5&&si==0)return flowAt(geoAt(p,r,P));   // the body: solved, then through the stripe flow
-    if(r>=10u&&r<60u)return geoAt(p,r,P);}                     // sleeve parts and lapels, solved in the painter's own frames
-  return uvFall(si,P);}
+// (the jacket's: the body solved, then through the stripe flow; sleeve parts 10..39 and lapels 40..59 solved in the painter's own frames;
+// else uvFall: since stage 5 written into uvC below)
 // (stage 4) a shirt pixel on piece r: the front in the V (2, off the jacket's parts) and the cuffs (60..79) solved, else as the jacket's
-vec2 uvShirt(int si,vec2 P,ivec2 p,uint r){if((r==2u&&si==0)||(r>=60u&&r<80u))return geoAt(p,r,P);return uvFall(si,P);}
+// (stage 5) on the shirt masters its sleeve parts (10..39) too
+vec2 uvShirt(int si,vec2 P,ivec2 p,uint r){if((r==2u&&si==0)||(r>=60u&&r<80u)||(uGarS==1&&r>=10u&&r<40u))return geoAt(p,r,P);return uvFall(si,P);}
+// (stage 5) the trousers (asmLegsAt): across = cloth from the fly on the hips' and legs' cylinders, along = the row, both moved by the
+// pixel's fold shift (two bytes in the lighting texture's z, +128, in 1/16 px); or their solved positions (piece 3) with the same shift
+vec2 legsD(ivec2 p){uint v=texelFetch(uL2,p,0).z;return vec2(float(int(v&255u)-128),float(int(v>>8u)-128))/16.;}
+vec2 legsAt(vec2 P,ivec2 p){int y=clamp(int(floor(P.y)),uLy.x,uLy.y);vec4 a=texelFetch(uTab,ivec2(y,0),0),b=texelFetch(uTab,ivec2(y,1),0);
+  bool s=!(P.x<a.x);float t=abs(P.x-a.x),co=s?a.z:a.y,R=s?b.y:b.x,q=(t-co)/R;
+  float u=q>.95?co+R*(${f(Math.asin(.95))}+(q-.95)*${f(1/Math.sqrt(1-.95*.95))}):(q<-.95?co+R*(${f(-Math.asin(.95))}+(q+.95)*${f(1/Math.sqrt(1-.95*.95))}):co+R*asin(q));
+  return vec2(s?u:-u,P.y)+legsD(p);}
+// the outer garment's cloth position: the jacket's (and the waistcoat's, uvAt) or the trousers'; written once with each step appearing
+// once (a shader's functions are inlined at every call: two whole paths per call made the program too large for SwiftShader)
+vec2 uvC(int si,vec2 P,ivec2 p){uint r=uHasGeo==1?texelFetch(uGR,p,0).r:0u;bool tr=uOut==1;
+  bool sv=tr?r==3u:((r==1u&&uFl.w>.5&&si==0)||(r>=10u&&r<60u));vec2 c=sv?geoAt(p,r,P):P;
+  if(tr&&uLegs==1)return sv?c+legsD(p):legsAt(P,p);
+  if(sv&&(tr||r!=1u))return c;
+  int b=si*9;float ty=uG[b].x;if(!sv&&ty>.5&&ty<1.5)return tubeAt(si,b,P);
+  if(!sv&&ty>1.5){vec4 g=uG[b+1];return vec2((P.x-g.z)*g.x+(P.y-g.w)*g.y,(P.y-g.w)*g.x-(P.x-g.z)*g.y);}
+  return uFl.w>.5?flowAt(c):c;}
 // --- the look and the lighting (lookBase, lookAfter, lxF, lxPost)
 vec3 tone(vec3 c){vec3 v=pow(max(c,0.),vec3(1./2.2)),w=1.-v,v2=v*v;v=v+${f(LK.toe)}*w*w*w-${f(LK.sh)}*v2*v2;return pow(max(v,0.),vec3(2.2));}   // (cubes written out: GLSL's pow is undefined below 0)
 vec3 lookAfter(vec3 c,float s,bool shirt,int x,int y,bool plain,float tw,float bo){
@@ -241,7 +317,7 @@ vec3 tieBase(int x,int y,ivec2 p){float X=float(x),Y=float(y);uint r=uHasGeo==1?
 // positions; else a woven shirt 3x3 points, turned in a cuff; else one point, turned in a cuff; the turn's cos/sin from uCu
 vec2 cuCs(int c){vec4 v=uCu[c>>1];return (c&1)!=0?v.zw:v.xy;}
 vec3 shirtBase(int x,int y,ivec2 p,int si,int cu){float X=float(x),Y=float(y),rp=uShR.x,rv=uShR.y;vec3 b=vec3(0.);uint r=uHasGeo==1?texelFetch(uGR,p,0).r:0u;
-  if(r==2u||(r>=60u&&r<80u)){int n=uShR.z>.5?3:2;float fn=float(n);
+  if(uGarS==1||r==2u||(r>=60u&&r<80u)){int n=uShR.z>.5?3:2;float fn=float(n);   // (stage 5: every shirt pixel on the shirt masters, as on the CPU)
     for(int a=0;a<3;a++)for(int e=0;e<3;e++){if(a<n&&e<n){vec2 c=uvShirt(si,vec2(X+(float(e)+.5)/fn,Y+(float(a)+.5)/fn),p,r);b+=tileAt(2,c.x/rp,c.y/rv);}}return b/(fn*fn);}
   vec2 cs=cuCs(cu);
   if(uShR.z>.5){for(int a=0;a<3;a++)for(int e=0;e<3;e++){float Xs=X+(float(e)+.5)/3.,Ys=Y+(float(a)+.5)/3.;b+=tileAt(2,(Xs*cs.x+Ys*cs.y)/rp,(Ys*cs.x-Xs*cs.y)/rv);}return b/9.;}
@@ -261,7 +337,7 @@ int imod(int i,int n){return i>=0?i%n:(n-1)-((-i-1)%n);}
 float boOf(int cc){return uHb2.z!=0.&&(cc&1)!=0?uHb2.z*uTw.x:(uHb2.w!=0.?uHb2.w*uTw.x*floor(float(cc)*.5):0.);}
 // a rib of the grain for column cc (a herringbone's odd columns run the other way): four points a pixel (C.ss) or the pixel's middle
 float ribAt(int si,float X,float Y,ivec2 p,vec2 c,int cc){float d=(cc&1)!=0?-1.:1.,pitch=uTw.x,ph=0.,b=boOf(cc);
-  if(uCl.y>.5){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);ph+=cos(2.*PI*fract((s.y+d*s.x+b)/pitch))/4.;}}
+  if(uCl.y>.5){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);ph+=cos(2.*PI*fract((s.y+d*s.x+b)/pitch))/4.;}}
   else ph=cos(2.*PI*fract((c.y+d*c.x+b)/pitch));return ph;}
 // the yarn breakup and raised floats of rib r0 in column cc (al: the position along the rib)
 float hYarn(int r0,int s,int cc){return float((h32(r0,s,2246822519u,3266489917u)^h32(cc,0,668265263u,0u))%1024u)/1024.;}
@@ -285,23 +361,26 @@ float cellG(float u,float v){float fi=floor(u),fj=floor(v),fu=u-fi,fv=v-fj,F=${f
 // pixel against its response where the cloth faces the camera; a step into another piece (past ASM_CM_AA_CUT) is left alone, faded
 float aaOf(vec2 da,vec2 db,int cc){if(uAA<=0.)return 1.;float d=(cc&1)!=0?-1.:1.,pitch=uTw.x,gx=(da.y+d*da.x)/pitch,gy=(db.y+d*db.x)/pitch,g2=gx*gx+gy*gy,g0=1./pitch;
   float f=g2>g0*g0?exp(-2.*uAA*uAA*(g2-g0*g0)):1.,t=(g2-${f(ASM_CM_AA_CUT)}+${f(ASM_CM_AA_FADE)})/${f(2*ASM_CM_AA_FADE)};return t<=0.?f:(t>=1.?1.:f+(1.-f)*t);}
-vec3 suit(int si,int x,int y,ivec2 p,float sh,out float tw){float X=float(x),Y=float(y),FD=${f(ASM_CELL_FADE)};vec3 cm=vec3(0.);
-  if(uTT.z==1){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);cm+=tileAt(0,s.x/uRep.x,s.y/uRep.y);}}else cm=4.*uJ;
-  tw=1.;vec2 c=uvAt(si,vec2(X+.5,Y+.5),p);
+// (stage 5) the cloth alone, without the garment's light: its colour (times its weave's lift) and the factor its light takes (sh: a tweed's
+// or linen's threads), so the jacket and the waistcoat share one reading of it; outer() applies each one's light (and a stripe's ground curve)
+vec3 suit(int si,int x,int y,ivec2 p,out float tw,out float sh){float X=float(x),Y=float(y),FD=${f(ASM_CELL_FADE)};vec3 cm=vec3(0.);sh=1.;
+  if(uTT.z==1){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);cm+=tileAt(0,s.x/uRep.x,s.y/uRep.y);}}else cm=4.*uJ;
+  tw=1.;vec2 c=uvC(si,vec2(X+.5,Y+.5),p);
   // a stripe's breakup (T.k): each stripe its own strength along its length, faded between stripes (asmCellV's rule) and smoothly along
   if(uTT.w==1){float su=c.x/uRep.x-uRep.z+.5,fi=floor(su),fu=su-fi;int i=int(fi),di=fu<FD?-1:(fu>1.-FD?1:0);float wu=di<0?(FD-fu)/(2.*FD):(di>0?(fu-1.+FD)/(2.*FD):0.);
     float tt=c.y/uRep.w,jf=floor(tt),f0=tt-jf,fs=f0*f0*(3.-2.*f0);int j=int(jf);float n0=hS(i,j),n1=hS(i,j+1);
     if(di!=0){n0=n0*(1.-wu)+hS(i+di,j)*wu;n1=n1*(1.-wu)+hS(i+di,j+1)*wu;}
-    float nz=max(0.,1.+uSk.y*(n0*(1.-fs)+n1*fs));cm=4.*uSg+(cm-4.*uSg)*uSk.x*nz;sh=uSk.z*pow(max(sh,0.),uSk.w);}
+    float nz=max(0.,1.+uSk.y*(n0*(1.-fs)+n1*fs));cm=4.*uSg+(cm-4.*uSg)*uSk.x*nz;}
   // a linen cloth: its threads' light (before any grain, as on the CPU); else the grain under it (asmClothOf / asmTwillTex): a twill's
   // ribs, or a herringbone's in columns, their fleck (asmCellV), a second colour
   // (stage 3) a tweed: sampled upright in the picture at whole picture pixels over the cloth's scale (a power of two on the suit master,
   // so the same cell as the CPU's), its flecks in the second colour
-  if(uTweed==1){int T=uLinN,u=int(floor(X/uLsc)),v=int(floor(Y/uLsc));vec2 rf=texelFetch(uLinT,ivec2(imod(u,T),imod(v,T)),0).rg;sh*=rf.x;
+  // (stage 5) the cell from the tables' row 0 (floor(i / lsc) worked out in float64, as on the CPU)
+  if(uTweed==1){int T=uLinN,u=int(texelFetch(uTab,ivec2(x,0),0).w),v=int(texelFetch(uTab,ivec2(y,0),0).w);vec2 rf=texelFetch(uLinT,ivec2(imod(u,T),imod(v,T)),0).rg;sh*=rf.x;
     if(uTd.x>.5&&rf.y!=0.)cm=cm*(1.-uTd.y)+4.*uTc2*uTd.y;}
   else if(uLinen==1)sh*=cellT(c.x/uLsc,c.y/uLsc);
   else if(uCl.x>.5){float cw=uCl.z,off=uCl.w;int col=uCl.x>1.5&&cw>0.?int(floor((c.x-off)/cw)):0;float d=(col&1)!=0?-1.:1.;vec2 da=vec2(0.),db=vec2(0.);
-    if(uAA>0.){da=uvAt(si,vec2(X+1.,Y+.5),p)-uvAt(si,vec2(X,Y+.5),p);db=uvAt(si,vec2(X+.5,Y+1.),p)-uvAt(si,vec2(X+.5,Y),p);}
+    if(uAA>0.){da=uvC(si,vec2(X+1.,Y+.5),p)-uvC(si,vec2(X,Y+.5),p);db=uvC(si,vec2(X+.5,Y+1.),p)-uvC(si,vec2(X+.5,Y),p);}
     float ph=ribAt(si,X,Y,p,c,col)*aaOf(da,db,col),fk=cellV((c.x+d*c.y)/2.,c.y/3.,73856093u,19349663u,1024u);
     // a herringbone's column faded into the next within ASM_CELL_FADE of its edge (as on the CPU)
     if(cw>0.){float fx=(c.x-off)/cw-float(col);if(fx<FD||fx>1.-FD){int nb=fx<FD?col-1:col+1;float w=fx<FD?(FD-fx)/(2.*FD):(fx-1.+FD)/(2.*FD),d2=(nb&1)!=0?-1.:1.;
@@ -314,23 +393,39 @@ vec3 suit(int si,int x,int y,ivec2 p,float sh,out float tw){float X=float(x),Y=f
     float pr=uHb2.y!=0.?2.*((ph+1.)/2.)*((ph+1.)/2.)-.75:ph;
     tw=1.+mo+uTw.y*pr*yn+uTw.z*(fk/512.-1.);if(uTw.w>0.){float m=uTw.w*(1.+ph)/2.;cm=cm*(1.-m)+4.*uJ2*m;}}
   // (stage 3) a small woven figure (asmMicroTex): its thread grid along the cloth, 4x4 points a pixel from three positions
-  if(uWv.x>0.){float tp=uWv.y,v=0.;vec2 p0=uvAt(si,vec2(X,Y),p),px=uvAt(si,vec2(X+1.,Y),p),py=uvAt(si,vec2(X,Y+1.),p);
+  if(uWv.x>0.){float tp=uWv.y,v=0.;vec2 p0=uvC(si,vec2(X,Y),p),px=uvC(si,vec2(X+1.,Y),p),py=uvC(si,vec2(X,Y+1.),p);
     for(int a=0;a<4;a++)for(int e=0;e<4;e++){float fx=(float(e)+.5)/4.,fy=(float(a)+.5)/4.,u=p0.x+(px.x-p0.x)*fx+(py.x-p0.x)*fy,w=p0.y+(px.y-p0.y)*fx+(py.y-p0.y)*fy;v+=cellG(u/tp,w/tp);}
     v/=16.;tw*=1.+uWv.z*v;if(uWv.w>0.){float m=uWv.w*(1.-v)/2.;cm=cm*(1.-m)+4.*uWc2*m;}}
-  return cm/4.*sh*pow(max(0.,tw),2.2);}
+  return cm/4.*pow(max(0.,tw),2.2);}
+// (stage 5) a read trousers' tile (asmCmTile): along the legs at 2x2 points a pixel, else upright at the pixel's middle
+vec3 trTile(int si,int x,int y,ivec2 p){float X=float(x),Y=float(y);vec3 b=vec3(0.);
+  if(uLegs==1){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 c=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);b+=tileAt(0,c.x/uOT.y,c.y/uOT.z);}return b/4.;}
+  return tileAt(0,(X+.5)/uOT.y,(Y+.5)/uOT.z);}
+// the outer garment (z 0: the jacket or the trousers) and (stage 5) the waistcoat, in the same cloth: its light s, large folds sl and their
+// zone mean sm, contact shadow ao (and the jacket body's under its sleeves, aob), lit rim; the cloth read once for both (cb: suit()'s colour
+// or a read trousers' tile, tw its weave, shm its light's factor)
+// (uJm: the full look, the folds' lighting, the suit cloth, lit; a striped jacket (T.k) is kept as it was: neither look nor lighting)
+vec3 outer(int x,int y,uint k,ivec2 tr,float s,float sl,float sm,float ao,float aob,float rim,vec3 cb,float tw,float shm){bool look=uJm.x>.5,lit=uJm.w>.5;
+  if(uJm.y>.5&&sm>0.){if(sl>.01)s=sm*pow(sl/sm,${f(LK.lgam)})*(s/sl);}
+  if(lit){float v=max(ao,aob);s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/float(uS));}
+  // (a stripe's dark ground: its steeper shading, T.gain and T.gam)
+  vec3 c;if(uJm.z>.5){c=cb*((uTT.w==1?uSk.z*pow(max(s,0.),uSk.w):s)*shm);
+    if(look){float bo=uJl.y,t2=1.+bo*(tw-1.);if(bo>1.)c*=max(0.,1.+(bo-1.)*2.2*(tw-1.));float yy=lum(c),fl=uJl.x*pow(min(s,1.),${f(LK.fp)});
+      if(yy<fl)c+=(fl-yy)*max(0.,1.+${f(LK.wk)}*(t2-1.));c=lookAfter(c,s,false,x,y,false,t2,bo);}}
+  else if(uOut==1&&uOT.x>.5)c=flatC(cb,s,false,0.,1.,false,x,y);
+  else c=flatC(uJ,s,look,uJl.x,uJl.y,false,x,y);
+  if(lit)c=post(c,0,k,x,tr,s,rim);return c;}
 void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);uint k=uint(y*uS+x);
   uvec4 A=texelFetch(uA,p,0),SH=texelFetch(uSh,p,0),L1=texelFetch(uL1,p,0),L2=texelFetch(uL2,p,0);vec4 K=texelFetch(uKeep,p,0);
-  vec3 sum=vec3(0);float S=float(uS);ivec2 tr=texelFetch(uRow,ivec2(y,0),0).xy;int si=int(L2.w&255u),cu=int(L2.w>>8u);
-  // the jacket (z 0)
-  // (uJm: the full look, the folds' lighting, the suit cloth, lit; a striped jacket (T.k) is kept as it was: neither look nor lighting)
-  if(A.x>0u){float s=float(SH.x)/40000.;bool look=uJm.x>.5,lit=uJm.w>.5;
-    if(uJm.y>.5&&uSm.x>0.){float sl=float(L1.x)/40000.;if(sl>.01)s=uSm.x*pow(sl/uSm.x,${f(LK.lgam)})*(s/sl);}
-    if(lit){float v=float(L1.z);if(si==0)v=max(v,float(L2.y));s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/S);}
-    vec3 c;if(uJm.z>.5){float tw;c=suit(si,x,y,p,s,tw);
-      if(look){float bo=uJl.y,t2=1.+bo*(tw-1.);if(bo>1.)c*=max(0.,1.+(bo-1.)*2.2*(tw-1.));float yy=lum(c),fl=uJl.x*pow(min(s,1.),${f(LK.fp)});
-        if(yy<fl)c+=(fl-yy)*max(0.,1.+${f(LK.wk)}*(t2-1.));c=lookAfter(c,s,false,x,y,false,t2,bo);}}
-    else c=flatC(uJ,s,look,uJl.x,uJl.y,false,x,y);
-    if(lit)c=post(c,0,k,x,tr,s,float(L2.z)/${f(ASM_CM_U16)});sum+=float(A.x)/255.*c;}
+  vec3 sum=vec3(0);float S=float(uS);ivec2 tr=texelFetch(uRow,ivec2(y,0),0).xy;int si=int(L2.w&255u),cu=uOut==1?0:int(L2.w>>8u);
+  // the jacket (z 0; the jacket body's shadow under its sleeves and its rim) or (stage 5) the trousers
+  // (stage 5) and the waistcoat (the jacket's cloth; no body shadow, no rim), only in the vest masters' program (uWc a constant)
+  uvec4 W=uWc==1?texelFetch(uW,p,0):uvec4(0u);vec3 cb=vec3(0.);float ctw=1.,shm=1.;
+  if(A.x>0u||W.x>0u){if(uJm.z>.5)cb=suit(si,x,y,p,ctw,shm);else if(uOut==1&&uOT.x>.5)cb=trTile(si,x,y,p);}
+  if(A.x>0u)sum+=float(A.x)/255.*outer(x,y,k,tr,float(SH.x)/40000.,float(L1.x)/40000.,uSm.x,float(L1.z),uOut==0&&si==0?float(L2.y):0.,uOut==0?float(L2.z)/${f(ASM_CM_U16)}:0.,cb,ctw,shm);
+  if(W.x>0u)sum+=float(W.x)/255.*outer(x,y,k,tr,float(W.y)/40000.,float(W.z)/40000.,uSmW,float(W.w),0.,0.,cb,ctw,shm);
+  // (stage 5) the belt (shirt masters): flat, neither look nor lighting
+  if(uOut==1){uint bs=L2.w>>8u;if(bs>0u)sum+=float(bs)/255.*flatC(uBelt,float(L2.y)/40000.,false,0.,1.,false,x,y);}
   // the tie (z 1): its flat colour or (stage 4) its tile, its edges darker
   if(A.y>0u){float s=float(SH.y)/40000.;s*=1.-${f(LI.ak)}*float(L2.x)/${f(ASM_CM_U16)};s*=1.+${f(LI.win)}*(1.-2.*float(x)/S);
     if(tr.x>=0){float w=float(tr.y-tr.x);if(w>4.){float t=float(x-tr.x)/w;s*=1.-${f(LI.te)}*pow(abs(t-.5)*2.,3.);}}
@@ -349,8 +444,11 @@ void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);u
   vec3 v=clamp(sum,0.,1.);v=mix(12.92*v,1.055*pow(v,vec3(1./2.4))-.055,step(vec3(.0031308),v));oC=vec4(v,1.);}`}
 const ASM_GL_VERT=`#version 300 es
 void main(){vec2 p=vec2(gl_VertexID==1?3.:-1.,gl_VertexID==2?3.:-1.);gl_Position=vec4(p,0.,1.);}`;
-function asmGlProgram(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error('shader: '+gl.getShaderInfoLog(o));return o};
-  const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,ASM_GL_VERT));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,asmGlFrag()));gl.linkProgram(p);
+/* (stage 5) the program's variant for a packed master, and the program for it (built once per context and variant) */
+const asmGlVar=pk=>[pk.out,pk.W?1:0,pk.garS,pk.legs,pk.THb>3?1:0].join('');
+function asmGlUse(G,v){if(!G.progs){G.progs={};if(G.prog)G.progs[G.pv||'00000']=G.prog}let p=G.progs[v];if(!p)p=G.progs[v]=asmGlProgram(G.gl,v);G.prog=p;G.pv=v;return p}
+function asmGlProgram(gl,v){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error('shader: '+gl.getShaderInfoLog(o));return o};
+  const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,ASM_GL_VERT));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,asmGlFrag(v)));gl.linkProgram(p);
   if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error('link: '+gl.getProgramInfoLog(p));return p}
 /* ---- textures */
 /* one texture, nearest, from a typed array */
@@ -360,19 +458,28 @@ function asmGlTex(gl,unit,w,h,ifmt,fmt,type,data){const t=gl.createTexture();gl.
   gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);gl.texStorage2D(gl.TEXTURE_2D,1,ifmt,w,h);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,w,h,fmt,type,data);return t}
 /* the master's textures (once per master): 16+32+32+32+32 MB at 2048 (the kept zones' colours half floats since stage 2: 64 -> 32 MB,
    within a tenth of a level), plus the background and the output, 16 MB each */
-function asmGlUpload(G,pk){const gl=G.gl,S=pk.S,u=n=>gl.getUniformLocation(G.prog,n);gl.useProgram(G.prog);
+function asmGlUpload(G,pk){asmGlUse(G,asmGlVar(pk));const gl=G.gl,S=pk.S,u=n=>gl.getUniformLocation(G.prog,n);gl.useProgram(G.prog);
   for(const t of G.tex||[])gl.deleteTexture(t);
+  // (stage 5) the output is only attached to the framebuffer (bound to no sampler unit), so unit 15 is free for the tables
+  if(!G.fbo){G.out=gl.createTexture();gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_2D,G.out);gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,S,S);
+    G.fbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,G.out,0);gl.bindTexture(gl.TEXTURE_2D,null)}
   G.tex=[asmGlTex(gl,0,S,S,gl.RGBA8UI,gl.RGBA_INTEGER,gl.UNSIGNED_BYTE,pk.a),asmGlTex(gl,1,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.s4),
     asmGlTex(gl,2,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l1),asmGlTex(gl,3,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l2),
     asmGlTex(gl,5,S,S,gl.RGBA16F,gl.RGBA,gl.FLOAT,pk.keep),
-    asmGlTex(gl,6,256,1,gl.R32F,gl.RED,gl.FLOAT,ASM_LIN),asmGlTex(gl,7,pk.tw,pk.th,gl.RG32F,gl.RG,gl.FLOAT,pk.tube),
-    asmGlTex(gl,8,ASM_FLOW.nu,ASM_FLOW.nv,gl.RG32F,gl.RG,gl.FLOAT,pk.flow),asmGlTex(gl,9,S,1,gl.RG32I,gl.RG_INTEGER,gl.INT,pk.row)];
-  [['uA',0],['uSh',1],['uL1',2],['uL2',3],['uBG',4],['uKeep',5],['uLin',6],['uTube',7],['uFlow',8],['uRow',9],['uGeo',10],['uGR',11],['uTile',12],['uGeoI',13],['uLinT',14]].forEach(([n,i])=>gl.uniform1i(u(n),i));
+    // (stage 5) the waistcoat on unit 6 (a 1x1 stand-in without one; ASM_LIN moved into the tables), the tables on unit 15
+    pk.W?asmGlTex(gl,6,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.W):asmGlTex(gl,6,1,1,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,new Uint16Array(4)),
+    asmGlTex(gl,7,pk.tw,pk.th,gl.RG32F,gl.RG,gl.FLOAT,pk.tube),
+    asmGlTex(gl,8,ASM_FLOW.nu,ASM_FLOW.nv,gl.RG32F,gl.RG,gl.FLOAT,pk.flow),asmGlTex(gl,9,S,1,gl.RG32I,gl.RG_INTEGER,gl.INT,pk.row),
+    asmGlTex(gl,15,pk.TWb,pk.THb,gl.RGBA32F,gl.RGBA,gl.FLOAT,pk.tab)];
+  [['uA',0],['uSh',1],['uL1',2],['uL2',3],['uBG',4],['uKeep',5],['uW',6],['uTube',7],['uFlow',8],['uRow',9],['uGeo',10],['uGR',11],['uTile',12],['uGeoI',13],['uLinT',14],['uTab',15]].forEach(([n,i])=>gl.uniform1i(u(n),i));
   gl.uniform1i(u('uS'),S);gl.uniform4fv(u('uG'),pk.G);gl.uniform4iv(u('uQ'),pk.Q);gl.uniform4fv(u('uFl'),pk.fl);gl.uniform2fv(u('uSm'),pk.sm);
   gl.uniform4fv(u('uCu'),pk.cuCs);G.cuff=pk.cuff;   // (stage 4) the turned shirt parts' cos/sin; whether the master has its shirt's parts
-  if(!G.fbo){G.out=gl.createTexture();gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_2D,G.out);gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,S,S);
-    G.fbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,G.out,0)}
+  gl.uniform2iv(u('uLy'),pk.ly);gl.uniform1f(u('uSmW'),pk.smW);   // (stage 5: the outer garment, waistcoat, shirt sleeves, legs and polylines are the program's constants, asmGlVar)
+  // the master's texture memory (bytes), for the tests' report: these, the background and the output
+  G.masterBytes=S*S*(4+8+8+8+8+(pk.W?8:0)+4+4)+8*pk.tw*pk.th+8*ASM_FLOW.nu*ASM_FLOW.nv+8*S+16*pk.TWb*pk.THb;
   G.bgk=null;gl.finish()}
+/* (tests, the report) the textures held now, in bytes: the master's, its solved positions, the look's tiles and cloth texture */
+const asmGlBytes=G=>G?{master:G.masterBytes||0,geo:G.geoBytes||0,tiles:G.tileBytes||0,cloth:G.clothBytes||0,all:(G.masterBytes||0)+(G.geoBytes||0)+(G.tileBytes||0)+(G.clothBytes||0)}:null;
 /* the master's solved cloth positions (asmGeoPrep's {U, V, R} at the painting's size), or none (1x1 stand-ins, uHasGeo 0) */
 /* (stage 2) at the maps' own size (a phone's 2048) every position is a whole number of 1/16 px from -1024: kept as the maps' 16-bit values
    (RG16UI, 16 MB at 2048 against 32 MB of floats), read back exactly; at any other size (resampled) as floats */
@@ -403,8 +510,13 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   const cl=job.cloth,lookOf=f=>{const mx=Math.max(...f),mn=Math.min(...f),sat=mx>0?(mx-mn)/mx:0,y=lum(f);return {lift:LK.ymin*(1-LK.chroma*Math.min(1,sat/.7)),boost:1+LK.dk*Math.max(0,1-y/LK.dy)}};
   // the jacket: a striped one (T.k) is kept as it was (no look, no lighting: asmCmBuild's e.keep), a dark cloth takes the full look, a lighter
   // one its folds' lighting
-  const J=hexLin(cl.jacket.hex),T=cl.jacket.suit,keep=!!(T&&T.k!=null),jl=!keep&&lum(J)<LK.dark?lookOf(J):null;
-  const tc=T?(T.t||T.c):null,tile=!!(T&&(T.TW>1||T.TH>1));
+  // (stage 5) on the shirt masters the trousers take the jacket's place: their folds' lighting only, whatever their colour (asmCmBuild)
+  const jk=ASM_CM_KINDS[job.cm].zones.includes('jacket'),OZ=cl[jk?'jacket':'trousers'];
+  const J=hexLin(OZ.hex),T=OZ.suit,keep=!!(T&&T.k!=null),jl=jk&&!keep&&lum(J)<LK.dark?lookOf(J):null;
+  const tc=T?(T.t||T.c):null,tile=!!(T&&(T.TW>1||T.TH>1)),TT=!jk&&!T&&OZ.tile?OZ.tile:null;
+  // (stage 5) a read trousers' tile (asmCmTile), its repeat in mm at the master's px per mm
+  if(TT){const rep=TT.mm*P.pxmm;gl.uniform4f(u('uOT'),1,rep,rep*TT.TH/TT.TW,0)}else gl.uniform4f(u('uOT'),0,1,1,0);
+  gl.uniform3fv(u('uBelt'),cl.belt?hexLin(cl.belt.hex):[0,0,0]);
   gl.uniform3fv(u('uJ'),T?[tc[0],tc[1],tc[2]]:J);gl.uniform4f(u('uJm'),jl?1:0,jl||keep?0:1,T?1:0,keep?0:1);gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);
   if(G.ttex){gl.deleteTexture(G.ttex);G.ttex=null}
   if(T){const C=T.cloth,lsc=S/ASM_SIZE*ASM_CM_KINDS[job.cm].pxmm,rep=(T.mm||1)*ASM_PX_MM*lsc,TW=T.TW,TH=T.TH;
@@ -431,17 +543,17 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   if(!G.lint){G.lint=asmGlTex(gl,14,1,1,gl.R32F,gl.RED,gl.FLOAT,new Float32Array([1]));G.linN=0;G.clothK=null;G.clothBytes=0}   // (a stand-in until a linen or tweed cloth comes)
   gl.uniform1f(u('uAA'),ASM_CM_AA&&job.aa!==false?Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA):0);   // (asmCmBuild's rule: job.aa false = off, a number = the bench's strength)
   const St=hexLin(cl.shirt.hex),sl=lum(St)<LK.dark?lookOf(St):null;gl.uniform3fv(u('uSt'),St);gl.uniform4f(u('uSl'),sl?1:0,sl?0:1,sl?sl.lift:0,sl?sl.boost:1);
-  const Ti=hexLin(cl.tie.hex);gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti)));gl.uniform1f(u('uLs'),S/ASM_SIZE);
+  const Ti=cl.tie?hexLin(cl.tie.hex):[0,0,0];gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti)));gl.uniform1f(u('uLs'),S/ASM_SIZE);
   const Lf=Math.max(1e-4,lum(J));gl.uniform3fv(u('uBtn'),J.map(v=>v/Lf*.6+.4));
   // (stage 4) the tie read from its tile (asmCmBuild's e.tie: only with the master's tie geometry, else its colour): its repeat (the count
   // across the blade, twice the size for a motif), the turns' cos and sin worked out here in float64 (blade, knot; the pattern's own on the
   // solved pieces 80/81); the shirt read from its tile (asmCmTile, its repeat in mm at the master's px per mm)
-  const tg=P.tieGeo,TI=tg&&cl.tie.tie?cl.tie.tie:null,SH=cl.shirt.tile||null;
+  const tg=P.tieGeo,TI=tg&&cl.tie&&cl.tie.tie?cl.tie.tie:null,SH=cl.shirt.tile||null;
   if(TI){const rep=(TI.motif?2:1)*tg.bw/Math.max(.5,TI.across||1.5),a=TI.ang||0,tb=tg.lean+a,tk=tb+Math.PI/2;gl.uniform2i(u('uTie'),1,tg.yk);
     gl.uniform2f(u('uTr'),rep,rep*TI.TH/TI.TW);gl.uniform4f(u('uTa'),Math.cos(tb),Math.sin(tb),Math.cos(tk),Math.sin(tk));gl.uniform2f(u('uTs'),Math.cos(a),Math.sin(a))}
   else gl.uniform2i(u('uTie'),0,0);
   if(SH){const rep=SH.mm*P.pxmm;gl.uniform1i(u('uShT'),1);gl.uniform4f(u('uShR'),rep,rep*SH.TH/SH.TW,SH.fine?1:0,G.cuff?1:0)}else gl.uniform1i(u('uShT'),0);
-  asmGlAtlas(G,[tile?{c:tc,TW:T.TW,TH:T.TH}:null,TI?{c:TI.c,TW:TI.TW,TH:TI.TH}:null,SH?{c:SH.t||SH.c,TW:SH.TW,TH:SH.TH}:null]);
+  asmGlAtlas(G,[tile?{c:tc,TW:T.TW,TH:T.TH}:TT?{c:TT.t||TT.c,TW:TT.TW,TH:TT.TH}:null,TI?{c:TI.c,TW:TI.TW,TH:TI.TH}:null,SH?{c:SH.t||SH.c,TW:SH.TW,TH:SH.TH}:null]);
   gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.viewport(0,0,S,S);gl.drawArrays(gl.TRIANGLES,0,3);
   const o=new Uint8Array(4*S*S);gl.readPixels(0,0,S,S,gl.RGBA,gl.UNSIGNED_BYTE,o);return new Uint8ClampedArray(o.buffer)}
 /* asmCmBuild's first step: the look on the graphics chip -> {url, gl:true, ms}, or null (not covered, no WebGL2, a lost context: the CPU
@@ -468,7 +580,7 @@ function asmGlUI(b){if(!b)return;let g=document.getElementById('gl-box');if(!g){
   document.getElementById('cfg-gl').value=asmGlPref()?'on':'off';asmGlStatus()}
 function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)return;
   const last=asmGlLast?` Last picture painted on this phone: ${asmGlLast.gl?'graphics chip':'processor'}${asmGlLast.ms!=null?`, ${asmGlLast.ms} ms`:''}.`:'';
-  el.textContent=(asmGlPref()?'On: pictures this phone paints of a jacket, shirt and tie of any cloth (no waistcoat) are painted on the graphics chip (about ten times faster, the same picture within 2 levels); every other look on the processor.'
+  el.textContent=(asmGlPref()?'On: every outfit picture this phone paints is painted on the graphics chip (about ten times faster, the same picture within 2 levels); the processor paints only where the graphics chip is unavailable.'
     :'Off on this phone: every picture painted here uses the processor, as before.')+last}
 function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else localStorage.removeItem(ASM_GL)}catch{}asmGlStatus()}
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */
