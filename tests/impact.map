@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	e9bbe96b48e960241cb0
+# tested	1635edee5d78281be19f
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -2432,7 +2432,7 @@ kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitClose	kitCloseupGuide	ki
 kit.test.js	manifest.webmanifest	<loaded>
 kit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
 kit.test.js	pack.js	<loaded>	packShow
-kit.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
+kit.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	prefetchRenders	queuedKeys	renderFor	renderPending	renderStalled	rqGet	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 kit.test.js	planner.js	<loaded>
 kit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 kit.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
@@ -2545,7 +2545,7 @@ listphoto.test.js	today.js	<loaded>	@$today.addEventListenerclick	@{constel$toda
 listphoto.test.js	ui.js	<loaded>	isConnected	layerClose	layerInert	layerOpen	layerUp
 listphoto.test.js	wardrobe.js	<loaded>
 masterspeed.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-masterspeed.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+masterspeed.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	isTester	loadAccount	rememberRole	renderAccountUI
 masterspeed.test.js	add.js	<loaded>	checkArrivals
 masterspeed.test.js	analysis.js	<loaded>
 masterspeed.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	@document.addEventListenervisibilitychange	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
@@ -2568,7 +2568,7 @@ masterspeed.test.js	month.js	<loaded>	nextWorkday	planOn
 masterspeed.test.js	pack.js	<loaded>	packShow
 masterspeed.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	fnv64	keepRender	loadRenders	queuedKeys	rqGet	workerBase
 masterspeed.test.js	planner.js	<loaded>
-masterspeed.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+masterspeed.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 masterspeed.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 masterspeed.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 masterspeed.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
@@ -2596,7 +2596,7 @@ masterspeed.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp	needConn
 masterspeed.test.js	wardrobe.js	<loaded>
 masterspeed.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleBlob	handleSync	isParted	isPv	kvMeta	loadAny	loadSync	orNull	ownerOnly	readText	renderId	sameText	serve	sha256Hex	spend	storedVersion	syncLiteGet	syncVersion	utcDay	whoIs
 masterspeed.test.js	worker/backup.js	<loaded>	arrOf	isParted	kvMeta	loadSync	readText	storedVersion	syncLiteGet	syncVersion
-masterspeed.test.js	worker/people.js	<loaded>	ownerOnly	sameText	sha256Hex	spend	utcDay	whoIs
+masterspeed.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	usedOf	utcDay	whoIs
 masterspeed.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny
 masterspeed.test.js	worker/records.js	<loaded>	getRender	handleBlob	renderId
 measalt.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
