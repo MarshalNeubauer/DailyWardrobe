@@ -53,6 +53,8 @@ function read(smi=process.env.DW_GPU_SMI||'nvidia-smi'){
     res(r)})})}
 /* whether a process lives (gpu_guard._alive: tasklist; when tasklist can't tell, alive) */
 function alive(pid){if(pid===process.pid)return true;
+  // not Windows (the nightly run on Linux; the guard itself runs on the owner's Windows PC): signal 0 tells, EPERM = alive but not ours
+  if(process.platform!=='win32'){try{process.kill(pid,0);return true}catch(e){return e.code==='EPERM'}}
   try{const out=execFileSync('tasklist',['/FI',`PID eq ${pid}`,'/NH'],{encoding:'utf8',timeout:10000,windowsHide:true});return new RegExp('\\b'+pid+'\\b').test(out)}catch{return true}}
 /* the lock as gpu_guard.py writes it: json.dump of {pid, name, since} (", " and ": " between, no newline) */
 const lockText=(pid,name,since)=>`{"pid": ${pid}, "name": ${JSON.stringify(String(name)).replace(/[\u0080-\uffff]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0'))}, "since": "${since}"}`;
