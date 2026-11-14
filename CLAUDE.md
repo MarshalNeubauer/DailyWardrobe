@@ -68,7 +68,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - Today's date is "Thu, November 12" below 360px (`.dlong`/`.dshort`) so the day never wraps alone
 - the folded pieces box (`piecesLine`, `piecesBox`): a jacket, trousers, shirt or tie the owner named is called by its name exactly as typed (`itemName`; "Medium Grey suit", not "mid grey worsted suit"), the others by colour; the line is escaped (`esc`); `tests/piecesname.test.js`
-- the picture has a round share button at its top right (`shareMark`/`shareOutfit`, `.wshare`, like ✕ and ✓, hidden while zoomed): the share sheet gets the photo or the drawing (`figurePng`) and "<day>: <pieces>" (`shareText`); without a share sheet the line is copied
+- the picture has no share button (2026-11-14, the owner: "the user can just send a screenshot"; it was `shareMark`/`shareOutfit`, `.wshare`, at its top right)
 
 #### Today's cloth swatches (today.js)
 
