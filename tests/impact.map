@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	5f140e21b2a63d41e2ee
+# tested	7e70307297f6637f294a
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -992,6 +993,50 @@ climate.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.ad
 climate.test.js	tagging.js	<loaded>	recolourSpecSetts	renderCustomUI	upgradeCloseups	upgradePhotos
 climate.test.js	ui.js	<loaded>	advClose	connNote	connSummary	isConnected	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 climate.test.js	wardrobe.js	<loaded>
+cmhandedge.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+cmhandedge.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+cmhandedge.test.js	analysis.js	<loaded>
+cmhandedge.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
+cmhandedge.test.js	apple-touch-icon.png	<loaded>
+cmhandedge.test.js	asm-color.js	<loaded>	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCodeText	asmCmHandEdge	asmCmHash	asmCmLightPrep	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmSetup	asmCmSrcSig	asmH32	asmLegsPrep	asmTieSheenK
+cmhandedge.test.js	asm-gl.js	<loaded>
+cmhandedge.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmData	asmDropOld	asmImg	asmJpeg	asmKey	asmLoad	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag
+cmhandedge.test.js	care.js	<loaded>	careShow
+cmhandedge.test.js	colpick.js	<loaded>
+cmhandedge.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	occOf	offDays	offName	todayDate
+cmhandedge.test.js	detect.js	<loaded>	@
+cmhandedge.test.js	draw.js	<loaded>
+cmhandedge.test.js	dress.js	<loaded>	migrateVests
+cmhandedge.test.js	figure.js	<loaded>	@{}
+cmhandedge.test.js	icon-192.png	<loaded>
+cmhandedge.test.js	icon-512.png	<loaded>
+cmhandedge.test.js	index.html	<loaded>
+cmhandedge.test.js	manifest.webmanifest	<loaded>
+cmhandedge.test.js	pack.js	<loaded>	packShow
+cmhandedge.test.js	planner.js	<loaded>
+cmhandedge.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
+cmhandedge.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+cmhandedge.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+cmhandedge.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+cmhandedge.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+cmhandedge.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+cmhandedge.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
+cmhandedge.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+cmhandedge.test.js	tests/fixedplan.js	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-dark.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-shirt.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-skin.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-tie.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-trousers.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
+cmhandedge.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
+cmhandedge.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+cmhandedge.test.js	wardrobe.js	<loaded>
 colouraudit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 colouraudit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 colouraudit.test.js	analysis.js	<loaded>
