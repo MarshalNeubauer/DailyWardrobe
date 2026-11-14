@@ -43,7 +43,7 @@ const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal
 const TYPE_COLOR_TEXT = Object.entries(TYPE_COLORS).map(([t, [p, a]]) => `  ${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n')
   + `\n  watch dial: ${DIAL_COLS.join(', ')}`;
 const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
-{"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
+{"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","trouserKind":"...","shoeStyle":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
 
 type — one of:
   suit (suit jacket, or a jacket and trousers of the same cloth), blazer (odd jacket / sport coat), pants (dress trousers),
@@ -566,6 +566,11 @@ async function handleFetchImage(req, env, json, cors) {
     }
     return new Response('', { status: 508 });
   };
+  try { return await fetchLinked(u, get, json, cors); }
+  catch (e) { console.log('link fetch failed', u.hostname, e && e.message); return json({ error: 'That link could not be reached. Check it, or save the photo and add it from the phone.' }, 502); }   // a dead domain, a refused connection, a reset
+}
+async function fetchLinked(u, get, json, cors) {
+  const NOT_PUBLIC = 'That link is not on the public web.';
   let r = await get(u.href);
   if (!r) return json({ error: NOT_PUBLIC }, 400);
   if (!r.ok) return json({ error: `The link returned an error (${r.status}).` }, 502);
@@ -931,12 +936,12 @@ async function itemPhoto({ item, ref: refUrl }, env) {
       form.append('model', model); form.append('prompt', ITEM_REF_PROMPT(item)); form.append('image[]', ref, `item.${ref.type.split('/')[1]}`);
       form.append('size', '1024x1024'); form.append('quality', env.OPENAI_IMAGE_QUALITY || 'high'); form.append('output_format', 'jpeg'); form.append('n', '1');
       if (/^gpt-image-1/.test(model)) form.append('input_fidelity', 'high');
-      r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form });
+      r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form, signal: AbortSignal.timeout(OPENAI_MS) });
     } else {
       r = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }) });
+        body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }), signal: AbortSignal.timeout(OPENAI_MS) });
     }
-  } catch (e) { return { ok: false, status: 502, retry: true, error: 'Could not reach the OpenAI API: ' + String(e && e.message) }; }
+  } catch (e) { return { ok: false, status: 502, retry: true, error: (e && e.name === 'TimeoutError' ? 'OpenAI took over 5 minutes' : 'Could not reach the OpenAI API: ' + String(e && e.message)) }; }
   const out = await r.json().catch(() => null);
   if (!r.ok) { const msg = out && out.error && out.error.message || `HTTP ${r.status}`; return { ok: false, status: 502, retry: r.status === 429 && !/quota|billing/i.test(msg) || r.status >= 500, error: `OpenAI: ${msg}` }; }
   const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
@@ -1906,100 +1911,118 @@ const ROUTES = {
   'DELETE /account': [handleAccount, UNSET],
 };
 
+/* one request, routed (fetch() catches what it throws) */
+async function serve(req, env, cors, allowed, origin) {
+  let viewer = null, where = '';   // who is asking (set once known) and the route: a tester's answers are put in plain words
+  const json = (body, status = 200) =>
+    new Response(JSON.stringify(viewer && viewer.role === 'tester' ? plainFor(body, where) : body), { status, headers: { ...cors, 'content-type': 'application/json' } });
+
+  if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+  if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
+  const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
+  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
+  const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
+  if (route) {
+    const a = await whoIs(env, req.headers.get('x-app-token') || '');
+    viewer = a.who || a.offWho || null;
+    if (!a.who && a.offWho && req.method === 'DELETE' && path === '/account') return route[0](req, env, json, a.offWho, cors);
+    return a.who ? route[0](req, env, json, a.who, cors) : deny(a, route[1]);
+  }
+  // only POST / tags a photo: any other address is unknown (a POST to /holidayz used to be read as a photo and spent a Claude call),
+  // and a known address asked with another method says so
+  if (path !== '') return json({ error: 'not found' }, Object.keys(ROUTES).some(k => k.endsWith(' ' + path)) ? 405 : 404);
+  if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
+
+  // POST / : tag one photo. The token comes as the x-app-token header and is checked before the body (up to 15 MB) is read; the
+  // body's appToken (sent by apps before 2026-11-12, beside the header) is no longer read
+  const a = await whoIs(env, req.headers.get('x-app-token') || '');
+  if (!a.who) return deny(a, UNSET);
+  const who = a.who; viewer = who;
+  if (+(req.headers.get('content-length') || 0) > TAG_LIMIT) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
+  const inBody = await readCapped(req.body, TAG_LIMIT);
+  if (inBody.over) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
+  let body;
+  try { body = JSON.parse(new TextDecoder().decode(inBody.bytes)); } catch { return json({ error: 'bad json' }, 400); }
+  if (!body || typeof body !== 'object') return json({ error: 'bad json' }, 400);
+
+  // The model wants the image as a data URI inside the user message.
+  let image = String(body.image || '');
+  if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
+  if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
+
+  if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
+  const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
+  if (env.ANTHROPIC_API_KEY) {
+    const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
+    // never both: together the answer's schema is more than the API compiles ("compiled grammar is too large", 2026-11-13)
+    const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
+    const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
+    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
+    if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
+    return json(c.body, c.status);
+  }
+  // Workers AI: any answer that is not a tag gives the tester's count back
+  const r = await tagWithWorkersAi(env, image);
+  if (r.status !== 200) await unspend(env, who, 'tag');
+  return json(r.body, r.status);
+}
+/* the fallback tagger (no ANTHROPIC_API_KEY): Llama 3.2 Vision on Workers AI, told the JSON shape in the prompt -> {status, body} */
+async function tagWithWorkersAi(env, image) {
+  const model = env.MODEL || DEFAULT_MODEL;
+  const input = {
+    max_tokens: 300,
+    temperature: 0.1,
+    messages: [
+      { role: 'system', content: 'You are a menswear expert who labels clothing photos. You answer with JSON only.' },
+      { role: 'user', content: [
+        { type: 'text', text: PROMPT },
+        { type: 'image_url', image_url: { url: image } },
+      ] },
+    ],
+  };
+  const fail = e => ({ status: 502, body: { error: 'ai', detail: String(e && e.message || e) } });
+  let out;
+  try {
+    out = await env.AI.run(model, input);
+  } catch (e) {
+    if (!/5016|agree/i.test(String(e && e.message))) return fail(e);
+    // Llama 3.2 Vision is gated: the account must accept Meta's licence once (error 5016). Do that and retry.
+    try { await env.AI.run(model, { prompt: 'agree' }); out = await env.AI.run(model, input); }
+    catch (e2) { return fail(e2); }
+  }
+  const raw = out && out.response;
+  console.log(`tagged by Workers AI (${model})`);
+  if (raw && typeof raw === 'object') return { status: 200, body: { ...raw, model } };
+  const text = String(raw || '');
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) return { status: 502, body: { error: 'no json in model output', detail: text.slice(0, 300) } };
+  try { return { status: 200, body: { ...JSON.parse(m[0]), model } }; }
+  catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
+}
+/* the CORS headers for a request's Origin. ALLOWED_ORIGIN may list several origins, separated by commas; the one that matches is
+   echoed. Max-Age: the browser keeps a preflight's answer 2 hours, so most calls skip the extra round trip (100-300 ms from Kuwait) */
+function corsFor(req, env) {
+  const origin = req.headers.get('Origin') || '';
+  const allowed = String(env.ALLOWED_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
+  return { allowed, origin, cors: {
+    'Access-Control-Allow-Origin': !allowed.length ? '*' : allowed.includes(origin) ? origin : allowed[0],
+    'Access-Control-Allow-Headers': 'content-type,x-app-token',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+    'Access-Control-Max-Age': '7200',
+    ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
+  } };
+}
+/* what any uncaught error answers (a KV write over the day's allowance, a Durable Object restarting): a JSON 503 with the CORS
+   headers, so the app reads a reason instead of "Failed to fetch" (Cloudflare's own error 1101 page carries no CORS headers) */
+const SERVER_DOWN = 'The server had a problem just now. Try again in a moment.';
 export default {
   async fetch(req, env) {
-    const origin = req.headers.get('Origin') || '';
-    // ALLOWED_ORIGIN may list several origins, separated by commas; the one that matches is the one echoed
-    const allowed = String(env.ALLOWED_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
-    const cors = {
-      'Access-Control-Allow-Origin': !allowed.length ? '*' : allowed.includes(origin) ? origin : allowed[0],
-      'Access-Control-Allow-Headers': 'content-type,x-app-token',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
-    };
-    let viewer = null, where = '';   // who is asking (set once known) and the route: a tester's answers are put in plain words
-    const json = (body, status = 200) =>
-      new Response(JSON.stringify(viewer && viewer.role === 'tester' ? plainFor(body, where) : body), { status, headers: { ...cors, 'content-type': 'application/json' } });
-
-    if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
-    const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
-    const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
-    const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
-    if (route) {
-      const a = await whoIs(env, req.headers.get('x-app-token') || '');
-      viewer = a.who || a.offWho || null;
-      if (!a.who && a.offWho && req.method === 'DELETE' && path === '/account') return route[0](req, env, json, a.offWho, cors);
-      return a.who ? route[0](req, env, json, a.who, cors) : deny(a, route[1]);
+    const { cors, allowed, origin } = corsFor(req, env);
+    try { return await serve(req, env, cors, allowed, origin); }
+    catch (e) {
+      console.log('uncaught error', req.method, new URL(req.url).pathname, e && (e.stack || e.message));
+      return new Response(JSON.stringify({ error: 'server', message: SERVER_DOWN, detail: SERVER_DOWN }), { status: 503, headers: { ...cors, 'content-type': 'application/json' } });
     }
-    if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
-
-    // POST / : tag one photo. The app sends the token as a header; an older cached app only in the body, so without the header
-    // the body is read first (15 MB at most, and no further).
-    const header = req.headers.get('x-app-token') || '';
-    let a = header || !env.APP_TOKEN ? await whoIs(env, header) : null;
-    if (a && !a.who) return deny(a, UNSET);
-    if (+(req.headers.get('content-length') || 0) > TAG_LIMIT) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
-    const inBody = await readCapped(req.body, TAG_LIMIT);
-    if (inBody.over) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
-    let body;
-    try { body = JSON.parse(new TextDecoder().decode(inBody.bytes)); } catch { return json({ error: 'bad json' }, 400); }
-    if (!body || typeof body !== 'object') return json({ error: 'bad json' }, 400);
-    if (!a) { a = await whoIs(env, body.appToken || ''); if (!a.who) return deny(a, UNSET); }
-    const who = a.who; viewer = who;
-
-    // The model wants the image as a data URI inside the user message.
-    let image = String(body.image || '');
-    if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
-    if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
-
-    if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
-    const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
-    if (env.ANTHROPIC_API_KEY) {
-      const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
-      // never both: together the answer's schema is more than the API compiles ("compiled grammar is too large", 2026-11-13)
-      const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
-      const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
-      const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
-      if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
-      return json(c.body, c.status);
-    }
-
-    const model = env.MODEL || DEFAULT_MODEL;
-    const input = {
-      max_tokens: 300,
-      temperature: 0.1,
-      messages: [
-        { role: 'system', content: 'You are a menswear expert who labels clothing photos. You answer with JSON only.' },
-        { role: 'user', content: [
-          { type: 'text', text: PROMPT },
-          { type: 'image_url', image_url: { url: image } },
-        ] },
-      ],
-    };
-
-    let out;
-    try {
-      out = await env.AI.run(model, input);
-    } catch (e) {
-      // Llama 3.2 Vision is gated: the account must accept Meta's licence once (error 5016). Do that and retry.
-      if (/5016|agree/i.test(String(e && e.message))) {
-        await env.AI.run(model, { prompt: 'agree' });
-        try { out = await env.AI.run(model, input); }
-        catch (e2) { return json({ error: 'ai', detail: String(e2 && e2.message) }, 502); }
-      } else {
-        return json({ error: 'ai', detail: String(e && e.message) }, 502);
-      }
-    }
-
-    const raw = out && out.response;
-    console.log(`tagged by Workers AI (${model})`);
-    if (raw && typeof raw === 'object') return json({ ...raw, model });
-    const text = String(raw || '');
-    const m = text.match(/\{[\s\S]*\}/);
-    if (!m) return json({ error: 'no json in model output', detail: text.slice(0, 300) }, 502);
-    try { return json({ ...JSON.parse(m[0]), model }); }
-    catch { return json({ error: 'unparseable model output', detail: m[0].slice(0, 300) }, 502); }
   },
   // Cloudflare Queue consumer (queue "wardrobe-renders", see wrangler.toml): background outfit photos
   async queue(batch, env) {
@@ -2062,18 +2085,30 @@ function localNow(now, tz) {
     return { date: `${p.year}-${p.month}-${p.day}`, min: +p.hour * 60 + +p.minute };
   } catch { return null; }
 }
+/* the run covers the local clock from the run before (prev, 15 minutes earlier) to now (cur): a reminder at `at` (minutes) is due
+   when its time lies in (prev, cur]. -> the local date it is due for, or null. Across midnight a 23:50 reminder belongs to the
+   day before (the 23:45-00:00 run; the old window [at, at+15) ran past 23:59 and never fired); where the clocks go forward the
+   skipped hour lies in one run's span (01:45 -> 03:00), so a 02:30 reminder still fires; where they go back the repeated hour is
+   covered twice and `last` keeps it to one */
+function dueDay(prev, cur, at) {
+  if (!prev || !cur) return null;
+  if (prev.date === cur.date) return prev.min < at && at <= cur.min ? cur.date : null;
+  return at > prev.min ? prev.date : at <= cur.min ? cur.date : null;
+}
 async function sendReminders(env, now = new Date()) {
   if (!pushReady(env)) return { sent: 0 };
   const doc = (await env.WARDROBE.get(PUSH_KEY, 'json')) || { list: [] }, list = Array.isArray(doc.list) ? doc.list : [];
   let changed = false, sent = 0;
+  const before = new Date(now.getTime() - PUSH_STEP * 60000), l0 = tz => localNow(before, tz);
   for (const s of [...list]) {
     const l = localNow(now, s.tz), [h, m] = String(s.time || '').split(':').map(Number);
-    if (!l || s.last === l.date || !(s.dates || []).includes(l.date)) continue;
+    if (!l || !Number.isFinite(h) || !Number.isFinite(m)) continue;
     const at = h * 60 + m;
-    if (l.min < at || l.min >= at + PUSH_STEP) continue;   // its quarter of an hour (the cron runs every 15 minutes)
+    const day = dueDay(l0(s.tz), l, at);   // the local date whose reminder falls since the last run, if any
+    if (!day || s.last === day || !(s.dates || []).includes(day)) continue;
     const st = await pushTo(env, s.endpoint);
     if (st === 404 || st === 410) { list.splice(list.indexOf(s), 1); changed = true; continue; }
-    if (st >= 200 && st < 300) { s.last = l.date; sent++; changed = true; }
+    if (st >= 200 && st < 300) { s.last = day; sent++; changed = true; }
   }
   if (changed) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list }));
   return { sent };

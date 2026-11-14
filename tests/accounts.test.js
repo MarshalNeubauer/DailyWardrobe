@@ -45,8 +45,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     let me=await J(await call('GET','me',O));
     ok(me.s===200&&me.id==='owner'&&me.role==='owner'&&me.caps===null&&me.used&&me.used.photo===0&&/^\d{4}-\d\d-\d\d$/.test(me.day),'GET /me: the owner, with no caps');
     ok((await call('GET','me','owner-secreT')).status===403&&(await call('GET','me','')).status===403&&(await call('GET','me','x'.repeat(40))).status===403,'a wrong token, no token and an unknown code are refused');
-    {const a=await J(await call('POST','',null,{image:PNG,appToken:O})),b=await call('POST','',null,{image:PNG,appToken:'nope'});
-      ok(a.s===200&&a.type==='tie'&&b.status===403,'POST / still takes the token from the body (an older cached app)')}
+    {const a=await J(await call('POST','',null,{image:PNG,appToken:O})),b=await J(await call('POST','',O,{image:PNG}));
+      ok(a.s===403&&b.s===200&&b.type==='tie','POST / takes the token from the header only: a body token alone is refused before the body is read')}
     // ---- invitations
     let r=await J(await call('POST','invites',O,{name:'Tess'}));const A={id:r.id,code:r.code,ns:`u:${r.id}:`};
     ok(r.s===200&&/^[A-Za-z0-9_-]{24,}$/.test(r.code)&&/^[a-z0-9]{8,}$/.test(r.id)&&r.name==='Tess','POST /invites makes a tester: an id and a code of 24+ URL-safe characters');
