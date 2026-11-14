@@ -3,7 +3,7 @@
 // watch; a striped jacket's lines get the painter's lift; no tie clip on a waistcoat day; WebKit-safe; about as quick to draw as the
 // earlier figure; shipped in the app's cache (sw.js ASSETS), nothing fetched.
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
-const KINDS=['vest','suit'];   // the poses whose mannequin has shipped
+const KINDS=['vest','suit','suit-open'];   // the poses whose mannequin has shipped
 module.exports=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
@@ -31,6 +31,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
           watch:watchFill.length>3&&watchFill.every(c=>G.watch.some(b=>b.c===c))&&!s.innerHTML.includes(METAL_TONES.gold[1]),
           vest:!!s.querySelector('.fig-vest')===!!o.vest,clip:!!s.querySelector('.fig-clip')===!!(o.clip&&o.tie&&!o.vest&&G.clip),
           useInClip:!!s.querySelector('clipPath use'),fade:!!s.querySelector('[id$="gFade"]'),shade:!!s.querySelector('image.fig-shade'),
+          open:!/-open$/.test(kind)||(!!s.querySelector('.fig-open')&&G.btn.length>0&&s.querySelectorAll('.fig-shirtbtn circle').length===G.btn.length*7),
           label:s.getAttribute('aria-label'),h:Math.round(s.getBoundingClientRect().height)};
         d.remove();return out},[o,kind]);
       ok(r.kind===kind&&r.vb==='0 0 390 390'&&r.h===390&&r.skin&&!r.handsOld&&r.shade&&!r.fade,`${kind}: the day's master is drawn as its traced mannequin, square like the painted picture (390x390, traced skin, no bottom fade)`);
@@ -38,6 +39,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(r.lapel,`${kind}: the lapel's cloth is turned along the traced lapel`);
       ok(r.watch,`${kind}: the watch is the master's steel watch, whatever the item's metal (the painted picture's rule)`);
       ok(r.vest&&r.clip,`${kind}: the waistcoat shows on a waistcoat day, and the tie clip only off one (the painter's rule)`);
+      ok(r.open,`${kind}: an open collar is the master's own (.fig-open), its placket buttons drawn where the painter draws them`);
       ok(!r.useInClip,`${kind}: no <use> inside <clipPath> (WebKit-safe)`);
       ok(/^Torso wearing /.test(r.label),`${kind}: labelled with the outfit (${r.label})`);
       const gz=zlib.gzipSync(fs.readFileSync(path.join(ROOT,'mq',kind+'.js'))).length;

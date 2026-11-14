@@ -27,7 +27,15 @@ function pattern(id, spec, rot, k = 1) {
   return `<pattern id="${id}" width="8" height="8" patternUnits="userSpaceOnUse"${tf}><rect width="8" height="8" fill="${hex(s.color, '#555B66')}"/></pattern>`;
 }
 
-function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, vest = true, clip = null, bg = '#F5F2EC', idPrefix = 'mq-',
+/* a shirt button where the painter draws one (asm-color.js ASM_CM_BTN): pearl mixed 55% with the shirt's colour in display values
+   (ASM_CM_BTN_MIX, the owner's pick), a lit rim, four holes and a soft shadow down and to the right */
+const btnCol = (c) => { const s = /^#[0-9a-fA-F]{6}$/.test(String(c)) ? [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)) : [235, 235, 235];
+  return '#' + [219, 214, 204].map((v, i) => Math.round(v * .45 + s[i] * .55).toString(16).padStart(2, '0')).join(''); };
+const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .35}" r="${r * 1.05}" fill="#000" fill-opacity=".18"/><circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`
+  + `<circle cx="${x}" cy="${y}" r="${(r * .8).toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="${(r * .18).toFixed(2)}"/>`
+  + [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => `<circle cx="${(x + a * r * .27).toFixed(2)}" cy="${(y + b * r * .27).toFixed(2)}" r="${(r * .12).toFixed(2)}" fill="#000" fill-opacity=".35"/>`).join('');
+
+function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, vest = true, clip = null, shirtColor = '#EEEEEE', bg = '#F5F2EC', idPrefix = 'mq-',
   ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 } } = {}) {
   const G = mqData(kind); if (!G) return '';
   const P = String(idPrefix).replace(/[^A-Za-z0-9_-]/g, '');
@@ -68,9 +76,10 @@ ${G.tie.map((t, i) => i === blade ? `<use href="#${P}bladeP" fill="${tieFill(i)}
 ${c ? `<g class="fig-clip" transform="translate(${c.x} ${c.y}) rotate(${c.a})"><rect x="${-c.w / 2 + .4}" y="${-c.h / 2 + .9}" width="${c.w}" height="${c.h}" rx="${c.h / 2}" fill="#000" fill-opacity=".3"/>
 <rect x="${-c.w / 2}" y="${-c.h / 2}" width="${c.w}" height="${c.h}" rx="${c.h / 2}" fill="${cc}"/><rect x="${-c.w / 2}" y="${-c.h / 2}" width="${c.w}" height="${(c.h * .38).toFixed(2)}" rx="${(c.h * .19).toFixed(2)}" fill="#FFFFFF" fill-opacity=".6"/></g>` : ''}
 <path d="${G.cast}" fill="#000" fill-opacity=".12"/>
-<g class="fig-skin"><path d="${G.skin[0].d}" fill="${G.skin[0].c}"/><g clip-path="url(#${P}clipSkin)"><g filter="url(#${P}fSkin)">${G.skin.slice(1).map(b => `<path d="${b.d}" fill="${b.c}"/>`).join('')}</g></g></g>
+<g class="fig-skin${/-open$/.test(kind) ? ' fig-open' : ''}"><path d="${G.skin[0].d}" fill="${G.skin[0].c}"/><g clip-path="url(#${P}clipSkin)"><g filter="url(#${P}fSkin)">${G.skin.slice(1).map(b => `<path d="${b.d}" fill="${b.c}"/>`).join('')}</g></g></g>
 <g class="fig-watch">${G.watch.map(b => `<path d="${b.d}" fill="${b.c}"/>`).join('')}</g>
 <g class="fig-buttons"><path d="${G.dark}" fill="${u('suitB')}"/><path d="${G.dark}" fill="#000" fill-opacity=".45"/></g>
+${(G.btn || []).length ? `<g class="fig-shirtbtn">${G.btn.map(([x, y, r]) => shirtButton(x, y, r, btnCol(shirtColor))).join('')}</g>` : ''}
 </g>
 </svg>`;
 }

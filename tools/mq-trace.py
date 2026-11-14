@@ -184,7 +184,7 @@ if B['waistcoat'].sum() > 1000:
 shirt = B['shirt']
 data['shirt'] = to_path(dil(shirt, 1))
 cuffs = []
-for pid in range(60, 80):
+for pid in range(60, 80 if TIE else 90):   # (a master without a tie numbers a cuff 81 too: suit-open's are 72 and 81)
     pm = binm(piece == pid, 0.8) & dil(shirt, 2)
     if pm.sum() > 300:
         cuffs.append({'rot': stripe_rot(piece == pid), 'd': to_path(dil(pm, 1))})
@@ -231,6 +231,11 @@ def clip_place(tm):
 
 if TIE:
     data['clip'] = clip_place(B['tie'])
+
+# ---- the shirt's visible buttons, as the painter draws them (asm-color.js ASM_CM_BTN, [x, y, radius] px at 2048), those on the shirt ----
+BTN = {'shirt-open': [[1029, 428, 10.5], [1015, 835, 10.5], [1014, 1031, 10.5], [1013, 1224, 10.5]], 'shirt-tie': [[1299, 870, 10], [1440, 955, 9]],
+       'suit-open': [[919, 312, 12], [974, 508, 12], [954, 714, 12]]}.get(KIND, [])
+data['btn'] = [[round(x * K, 1), round(y * K, 1), round(r * K, 2)] for x, y, r in BTN if Z['shirt'][int(round(y)), int(round(x))] > 200 / 255]
 
 # ---- form shading: the painter's light = the master's brightness over the zone's lit level x the form light (R/128),
 # as dark (black) and lit (white) shares, one picture ----

@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	1d3aefce0c8b41eb9db2
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -2341,8 +2340,9 @@ dress.test.js	index.html	<loaded>
 dress.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
 dress.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 dress.test.js	manifest.webmanifest	<loaded>
-dress.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+dress.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 dress.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+dress.test.js	mq/suit-open.js	<loaded>
 dress.test.js	mq/suit.js	<loaded>
 dress.test.js	mq/vest.js	<loaded>
 dress.test.js	pack.js	<loaded>	packShow
@@ -2446,8 +2446,9 @@ figure.test.js	index.html	<loaded>
 figure.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	smallPhotos
 figure.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 figure.test.js	manifest.webmanifest	<loaded>
-figure.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+figure.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 figure.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+figure.test.js	mq/suit-open.js	<loaded>
 figure.test.js	mq/suit.js	<loaded>
 figure.test.js	mq/vest.js	<loaded>
 figure.test.js	pack.js	<loaded>	packShow
@@ -2498,6 +2499,7 @@ figuremotif.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitSta
 figuremotif.test.js	manifest.webmanifest	<loaded>
 figuremotif.test.js	mannequin.js	<loaded>	@{}
 figuremotif.test.js	month.js	<loaded>	nextWorkday
+figuremotif.test.js	mq/suit-open.js	<loaded>
 figuremotif.test.js	mq/suit.js	<loaded>
 figuremotif.test.js	mq/vest.js	<loaded>
 figuremotif.test.js	pack.js	<loaded>	packShow
@@ -3328,8 +3330,9 @@ mannequin.test.js	index.html	<any>	<loaded>
 mannequin.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 mannequin.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 mannequin.test.js	manifest.webmanifest	<loaded>
-mannequin.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+mannequin.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 mannequin.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+mannequin.test.js	mq/suit-open.js	<any>	<loaded>
 mannequin.test.js	mq/suit.js	<any>	<loaded>
 mannequin.test.js	mq/vest.js	<any>	<loaded>
 mannequin.test.js	pack.js	<loaded>	packShow
@@ -4017,6 +4020,7 @@ occasions.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 occasions.test.js	manifest.webmanifest	<loaded>
 occasions.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 occasions.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+occasions.test.js	mq/suit-open.js	<loaded>
 occasions.test.js	mq/suit.js	<loaded>
 occasions.test.js	mq/vest.js	<loaded>
 occasions.test.js	pack.js	<loaded>	packShow
