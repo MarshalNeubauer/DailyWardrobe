@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	44879a7d982a10a643f3
-# tested	d7c47c7773174f9b05ea
+# tested	526038fb891290e427b0
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -1903,7 +1902,7 @@ colours.test.js	mq/vest.js	<loaded>
 colours.test.js	pack.js	<loaded>	packShow
 colours.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
 colours.test.js	planner.js	<loaded>	colsOf	colsOf0	darkMode	darkShirt	darkUnderLight	fam	leatherGroup	lightTop	pcol	shirtScore	tieScore
-colours.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+colours.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 colours.test.js	safety.js	<loaded>	db.then.dbDown	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 colours.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
 colours.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
