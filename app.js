@@ -290,7 +290,7 @@ function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
   const inp=`<input type="file" accept="image/*" class="vfile" onchange="addTexture(${i},this.files[0]);this.value=''">`;
   return q.texture?`<div class="texslot done"><small class="mut">Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.</small><div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
-    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the realistic photos match better. Optional.</small><label class="btn pri">Add close-up${inp}</label></div>`}
+    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the realistic photos match better. Optional.</small><button type="button" class="linkbtn texguide" onclick="kitCloseupGuide()">Tips for a good close-up</button><label class="btn pri">Add close-up${inp}</label></div>`}
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`:'';
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
@@ -471,7 +471,9 @@ async function save(i){
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (tagging.js)
   // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
   if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
+  if(q.sample)it.sample=true;   // the sample wardrobe (kit.js kitSampleLoad)
   await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
+  if(typeof kitSaved==='function')kitSaved(it,q,i);   // Saved, with Undo (kit.js)
   if(q.tagImg)keepTagImg(it.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>keepCloseImg(it.id,u,it.texture)).catch(()=>{});   // the sharp close-up for later readings (tagging.js)
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
@@ -578,7 +580,7 @@ function itemBody(i){
   const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
   const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
   ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
-  return `<div class="ivin">${hero}${photos}${tags}${rot}<div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
+  return `<div class="ivin">${hero}${photos}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="kitDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -1594,7 +1596,7 @@ function renderToday(){
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span><small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
-  let stage='',side='';const first=typeof setupToday==='function'?setupToday():'';   // what is still needed for a first outfit (setup.js)
+  let stage='',side='';const first=(typeof setupToday==='function'?setupToday():'')+(typeof kitSampleBanner==='function'?kitSampleBanner():'');   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
     :`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`);   // the checklist comes first on every day, above the figure or the day's note
   else if(!items.length||(first&&!hasOutfit(o)))stage=first||'<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
