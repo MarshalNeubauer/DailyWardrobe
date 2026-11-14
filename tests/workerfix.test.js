@@ -8,7 +8,7 @@ module.exports=async({ok,ROOT})=>{
   const realFetch=globalThis.fetch;
   const kv=(o={})=>{const store=new Map(),meta=new Map();return {store,
     get:async(k,t)=>store.has(k)?((t==='json'||(t&&t.type==='json'))?JSON.parse(store.get(k)):store.get(k)):null,
-    put:async(k,v,x)=>{if(o.failPut&&o.failPut(k))throw new Error('KV put() limit exceeded for the day.');store.set(k,typeof v==='string'?v:new TextDecoder().decode(v));if(x&&x.metadata)meta.set(k,x.metadata)},
+    put:async(k,v,x)=>{if(o.failPut&&o.failPut(k))throw new Error(o.failErr||'KV put() limit exceeded for the day.');store.set(k,typeof v==='string'?v:new TextDecoder().decode(v));if(x&&x.metadata)meta.set(k,x.metadata)},
     delete:async k=>{store.delete(k)},list:async({prefix=''}={})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true})}};
   const hubs=new Map(),HUB={idFromName:x=>x,get:name=>({fetch:(u,init)=>{if(!hubs.has(name)){const st=new Map();hubs.set(name,new mod.RenderHub({storage:{get:async k=>st.get(k),put:async(k,v)=>{st.set(k,v)},deleteAll:async()=>st.clear()}},{}))}return hubs.get(name).fetch(new Request(u,init))}})};
   const HOST='https://w.test/';
@@ -18,7 +18,11 @@ module.exports=async({ok,ROOT})=>{
     // ---- an uncaught error (KV over its daily writes) answers a readable 503 with the CORS headers, not Cloudflare's error 1101
     {const env={APP_TOKEN:'t',WARDROBE:kv({failPut:()=>true}),ALLOWED_ORIGIN:'https://a.github.io'};
       let r,threw=null;try{r=await J(await call(env,'PUT','render',{key:'c0123456789abcdef',rec:{img:'data:image/jpeg;base64,AAAA',t:1}},{'x-app-token':'t',Origin:'https://a.github.io'}))}catch(e){threw=e}
-      ok(!threw&&r.s===503&&r.h.get('access-control-allow-origin')==='https://a.github.io'&&/Try again/.test(r.message)&&r.h.get('content-type')==='application/json','a storage failure inside a route answers JSON 503 with CORS headers (the app shows a reason, not "Failed to fetch")');
+      // (2026-11-14) the day's writes used up is said as such: 429 kv-limit (the app pauses its backups until the reset, the PC's builder stops)
+      ok(!threw&&r.s===429&&r.error==='kv-limit'&&r.h.get('access-control-allow-origin')==='https://a.github.io'&&/used up/.test(r.message)&&r.h.get('content-type')==='application/json','KV over its daily writes answers JSON 429 kv-limit with CORS headers, saying the saves are used up');
+      const env2={APP_TOKEN:'t',WARDROBE:kv({failPut:()=>true,failErr:'KV storage is restarting'}),ALLOWED_ORIGIN:'https://a.github.io'};let r2,threw2=null;
+      try{r2=await J(await call(env2,'PUT','render',{key:'c0123456789abcdef',rec:{img:'data:image/jpeg;base64,AAAA',t:1}},{'x-app-token':'t',Origin:'https://a.github.io'}))}catch(e){threw2=e}
+      ok(!threw2&&r2.s===503&&r2.h.get('access-control-allow-origin')==='https://a.github.io'&&/Try again/.test(r2.message)&&r2.h.get('content-type')==='application/json','any other storage failure inside a route answers JSON 503 with CORS headers (the app shows a reason, not "Failed to fetch")');
       const o=await worker.fetch(new Request(HOST+'sync',{method:'OPTIONS',headers:{Origin:'https://a.github.io'}}),env);
       ok(o.headers.get('access-control-max-age')==='7200','preflight answers are cached for 2 hours (Access-Control-Max-Age: 7200)');}
     // ---- only POST / tags; any other unknown address is 404

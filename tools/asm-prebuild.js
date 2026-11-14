@@ -5,7 +5,7 @@
 //
 //   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run assemble -- [options]
 //
-//   --days N      how far ahead to plan (default 120)
+//   --days N      how far ahead to plan (default 14: each upload is one of the worker's writes, 1,000 a day on Cloudflare's free plan)
 //   --jobs N      how many pictures are painted at once (default: half the computer's logical cores, at most 16)
 //   --profile D   keep the browser's data in folder D between runs: the wardrobe, the masters and each master's worked-out part
 //                 stay there, and so does a record of what was uploaded (made-pictures.json), so a run starts warm
@@ -38,7 +38,7 @@ const ROOT=path.join(__dirname,'..');
 const {Guard,GpuLost,LockBusy,read:readCard,K}=require('./gpu-guard.js');   // (stage 6) the owner's GPU rules (gpu_guard.py), for --gpu
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:(process.argv[i+1]&&!process.argv[i+1].startsWith('--')?process.argv[i+1]:d)};
 const has=n=>process.argv.includes('--'+n);
-const DRY=has('dry'),DAYS=Math.max(1,Math.min(400,+arg('days',120)||120)),SAVE=arg('save',''),PROFILE=arg('profile','');
+const DRY=has('dry'),DAYS=Math.max(1,Math.min(400,+arg('days',14)||14)),SAVE=arg('save',''),PROFILE=arg('profile','');
 const JOBS=Math.max(1,Math.min(32,+arg('jobs',Math.min(16,Math.max(1,Math.floor(os.cpus().length/2))))||1));   // half the logical cores (one a physical core on a hyperthreaded CPU), at most 16
 const WATCH=has('watch')?Math.max(1,+arg('watch',5)||5):0;
 const HEAD=/^[0-9a-f]{7,40}$/i.test(arg('head',''))?arg('head',''):'';   // the commit of main the watcher checked out (C:\code\assemble-watch.ps1)
@@ -52,7 +52,7 @@ const BURST_MS=Math.max(1,Math.min(30,+arg('burst',10)||10))*1000,CM_SIZE=Math.m
 // (the tests' simulated card, DW_GPU_SMI a .js file, may shorten the rests; the real card always has gpu_guard.py's)
 const GPU_REST=/\.js$/i.test(process.env.DW_GPU_SMI||'')&&process.env.DW_GPU_TEST_REST?Math.max(0,+process.env.DW_GPU_TEST_REST||0):null;
 if(has('help')||!WORKER.startsWith('http')||!TOKEN){
-  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 120] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>] [--gpu [--burst 10] [--gpu-angle d3d11]]');
+  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 14] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>] [--gpu [--burst 10] [--gpu-angle d3d11]]');
   process.exit(has('help')?0:1)}
 const TYPES={js:'text/javascript',css:'text/css',html:'text/html',png:'image/png',json:'application/json',webmanifest:'application/manifest+json'};
 // (with the app's own origin: the worker refuses a write from any other, ALLOWED_ORIGIN)
@@ -62,6 +62,14 @@ const now=()=>new Date().toLocaleTimeString();
 const MADE=PROFILE?path.join(PROFILE,'made-pictures.json'):'';
 let made={};try{if(MADE&&fs.existsSync(MADE))made=JSON.parse(fs.readFileSync(MADE,'utf8'))}catch{made={}}
 const saveMade=()=>{if(MADE&&!DRY)try{fs.writeFileSync(MADE,JSON.stringify(made))}catch(e){console.warn('could not save made-pictures.json',e.message)}};
+/* the worker's writes for the day used up (2026-11-14: 429 kv-limit; it reset at 00:00 UTC): no more uploads until then, and in --watch no
+   cycles either (it rebuilt and retried every picture every 5 minutes, 76 refused each time). Kept with the profile, so a restart keeps it */
+const PAUSE=PROFILE?path.join(PROFILE,'upload-pause.json'):'';
+let pauseUntil=0;try{if(PAUSE&&fs.existsSync(PAUSE))pauseUntil=+JSON.parse(fs.readFileSync(PAUSE,'utf8')).until||0}catch{pauseUntil=0}
+const paused=()=>Date.now()<pauseUntil;
+const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)+2*60e3};   // (two minutes past the reset)
+const pauseUploads=()=>{if(paused())return;pauseUntil=nextUtcDay();if(PAUSE)try{fs.writeFileSync(PAUSE,JSON.stringify({until:pauseUntil}))}catch{}
+  console.log(`${now()} The worker's writes for today are used up: uploads paused until ${new Date(pauseUntil).toLocaleString()} (its daily reset).`)};
 // the app's commit, for --watch to notice that main moved
 const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origin','refs/heads/main'],{encoding:'utf8',timeout:30000}).split(/\s/)[0]}catch{return ''}};
 // (stage 6) the graphics card's state for this run: off (with why) for the rest of the run once it is lost or isn't the card; the
@@ -130,7 +138,10 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
   page.on('crash',()=>{console.error(`${now()} the page crashed: ending so the watcher starts again`);process.exit(3)});
   // one cycle: bring the wardrobe and the weather up to date, list every coming look, paint the missing or changed ones
   let lastSig='';
+  let wasPaused=paused();if(wasPaused)console.log(`${now()} Uploads are paused until ${new Date(pauseUntil).toLocaleString()} (the worker's writes for the day are used up).`);
   const cycle=async first=>{const t0=Date.now();
+    if(paused()&&!DRY){wasPaused=true;return {quiet:true}}   // nothing can be uploaded until the reset: nothing is painted either
+    if(wasPaused){wasPaused=false;lastSig='';console.log(`${now()} The worker's daily reset has passed: uploading again.`)}
     const synced=await page.evaluate(async()=>{const ok=await syncNow();try{await loadClimate();await loadWeather()}catch(e){}cache={};return {ok,items:items.length,on:typeof ASM_ON!=='undefined'&&ASM_ON}});
     if(!synced.ok||!synced.items){console.error(`${now()} Could not load the wardrobe from the backup:`,await page.evaluate(()=>localStorage.getItem('sync_status')));if(first)process.exit(2);return}
     if(!synced.on){console.error('Assembled pictures are switched off in this checkout (ASM_ON in assemble.js).');process.exit(2)}
@@ -166,7 +177,9 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       if(DRY)return `${r.key} built (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`;
       const up=await api('render',{method:'PUT',body:JSON.stringify({key:r.key,rec:{sig:r.sig,img:r.img,model:'assembled',t:Date.now()}})});
       if(up.ok){uploaded++;made[r.key]=r.sig;return `${r.key} uploaded (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`}
-      failed++;return `upload refused: ${up.status} ${await up.text().catch(()=>'')}`};
+      const body=await up.text().catch(()=>'');failed++;
+      if(up.status===429&&/"kv-limit"/.test(body)){pauseUploads();return 'upload refused: the worker\'s writes for today are used up'}
+      return `upload refused: ${up.status} ${body}`};
     // (stage 6) gpu: the job may be painted on the graphics chip (the GPU worker only); every pool job says gl:false
     const paint=(l,wi,gpu)=>page.evaluate(async([first,wi,gpu])=>{const o=planOn(new Date(first+'T12:00:00'));await asmCmLook(o);const kind=asmCmUse(o);
       if(!kind){const r=await asmPrebuildOne(o);return r&&{...r,how:'(earlier way)'}}
@@ -174,7 +187,8 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       try{const res=await __poolRun(wi,job);return res&&res.url?{key:asmOutKey(o),sig:asmPreSig(o),img:res.url,how:`(colour-coded ${kind})`,gl:!!res.gl,ms:res.ms,renderer:res.renderer||'',glWhy:res.glWhy||''}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi,!!gpu]);
     const way=r=>r.gl?`GPU ${r.ms} ms`:`CPU${r.glWhy?': '+r.glWhy:''}`;
     const finish=async(l,r,t1)=>{if(r.gl)onGpu++;else onCpu++;if(r.how&&r.how!=='(earlier way)')r.how=r.how.replace(/\)$/,', '+way(r)+')');report(l,`${await upload(l,r)} (${Date.now()-t1} ms)`)};
-    const one=async(l,wi)=>{const t1=Date.now(),r=await paint(l,wi,false);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
+    const one=async(l,wi)=>{if(paused()){failed++;report(l,'not made: uploads paused until the worker\'s daily reset');return}
+      const t1=Date.now(),r=await paint(l,wi,false);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
       await finish(l,r,t1)};
     // the colour-coded looks shared out by master on the CPU pool: each master gets workers in proportion to its looks, at least one; each worker a run
     const cpuPass=async ls0=>{if(!ls0.length)return;const kinds=[...new Set(ls0.map(l=>l.kind))],n=Math.min(JOBS,Math.max(1,ls0.length));
@@ -211,7 +225,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       const check=async why=>{try{await readCard()}catch(e){gpuStop(`${why}; ${e.message}`,true);return}console.log(`${now()} GPU: ${why}: the rest of this cycle on the CPU`)};
       let err=null;
       try{for(let ki=0;ki<kinds.length;ki++){const k=kinds[ki],L=per[k];if(ki)await ready(k);
-          while(L.length){
+          while(L.length&&!paused()){
             if(!await g.before({wait:false})){console.log(`${now()} GPU: the card is hot or near its power cap (${JSON.stringify(g.last)}): the rest of this cycle on the CPU`);return rest()}
             // the renderer, once a run, inside the first burst: WebGL2 must be the graphics card (WEBGL_debug_renderer_info), its textures 2880 or more
             if(!gpuRenderer){const p=await page.evaluate(GI=>__poolMsg(GI,{probe:1}),GI).catch(e=>({error:String(e&&e.message||e)}));
@@ -219,14 +233,14 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
                 gpuStop(`WebGL2 here is ${p&&p.renderer||'missing'}${p&&p.error?' ('+p.error+')':''}, largest texture ${p&&p.max||0}: not the graphics card (${GPU_MATCH.source}) at ${CM_SIZE}`,false);return rest()}
               gpuRenderer=p.renderer;console.log(`${now()} GPU: ${p.renderer}, largest texture ${p.max}`)}
             const tb=Date.now();let n=0;
-            while(L.length&&(n===0||Date.now()-tb<BURST_MS)){const l=L[0],t1=Date.now(),r=await paint(l,GI,true);n++;
+            while(L.length&&(n===0||Date.now()-tb<BURST_MS)&&!paused()){const l=L[0],t1=Date.now(),r=await paint(l,GI,true);n++;
               if(!r||r.error){await g.after(`${k}: ${n} look(s), the last failed`);await check(`a look failed in the GPU worker (${r&&r.error||'no answer'})`);return rest()}
               L.shift();await finish(l,r,t1);
               if(r.gl&&!GPU_MATCH.test(r.renderer||'')){await g.after(`${k}: ${n} look(s)`);gpuStop(`a picture was painted on ${r.renderer||'an unknown renderer'}, not the card: Chromium may have lost the GPU`,true);return rest()}
               if(!r.gl&&/graphics error|no WebGL2 context/.test(r.glWhy)){await g.after(`${k}: ${n} look(s), the chip failed`);await check(`the chip failed (${r.glWhy})`);return rest()}}
             if(!L.length&&ki+1<kinds.length)warm=setup(per[kinds[ki+1]][0]);   // (the next master's setup while the guard rests)
             await g.after(`${k}: ${n} look(s) in ${((Date.now()-tb)/1000).toFixed(1)} s`)}}
-        return []}
+        return rest()}   // (empty, unless uploads were paused: those looks are then reported as not made by the CPU side)
       catch(e){err=e;if(e instanceof GpuLost){if(e.kind==='lost')gpuStop(e.message,true);else console.log(`${now()} GPU stopped this cycle: ${e.message}`)}else console.warn(`${now()} GPU side failed:`,e&&e.message||e);return rest()}
       finally{if(warm)await warm;await g.exit(err);gpuRests+=g.rested;gpuBursts+=g.bursts;gpuPeak=g.peak}};
     const [,back]=await Promise.all([cpuPass(cpuLooks),gpuPass(gpuLooks)]);

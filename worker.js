@@ -2215,12 +2215,18 @@ function corsFor(req, env) {
 /* what any uncaught error answers (a KV write over the day's allowance, a Durable Object restarting): a JSON 503 with the CORS
    headers, so the app reads a reason instead of "Failed to fetch" (Cloudflare's own error 1101 page carries no CORS headers) */
 const SERVER_DOWN = 'The server had a problem just now. Try again in a moment.';
+/* the day's allowance of KV writes used up (Cloudflare's free plan: 1,000 a day, reset at 00:00 UTC; 2026-11-14 the PC's picture uploads used
+   it up and every backup answered SERVER_DOWN): a 429 that says so. what 'backup' for a save of the wardrobe, so the app pauses its
+   uploads until the next UTC day and says why (sync.js), as for a tester's own backup limit; tools/asm-prebuild.js stops uploading too */
+const KV_FULL = 'Today’s saves on the server are used up. Your changes are kept on this device and are saved after the daily reset (00:00 UTC).';
+const kvFull = e => /limit exceeded/i.test(String(e && e.message || e));
 export default {
   async fetch(req, env) {
     const { cors, allowed, origin } = corsFor(req, env);
     try { return await serve(req, env, cors, allowed, origin); }
     catch (e) {
       console.log('uncaught error', req.method, new URL(req.url).pathname, e && (e.stack || e.message));
+      if (kvFull(e)) return new Response(JSON.stringify({ error: 'kv-limit', what: new URL(req.url).pathname.endsWith('/sync') ? 'backup' : 'write', message: KV_FULL }), { status: 429, headers: { ...cors, 'content-type': 'application/json' } });
       return new Response(JSON.stringify({ error: 'server', message: SERVER_DOWN, detail: SERVER_DOWN }), { status: 503, headers: { ...cors, 'content-type': 'application/json' } });
     }
   },
