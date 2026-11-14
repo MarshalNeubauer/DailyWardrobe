@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	c10c77d904231dc8befc
-# tested	331179180b18b1f8f3ae
+# tested	7eda42218a9624c99c9f
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
