@@ -242,6 +242,23 @@ function sharpness(c){if(!c||!c.width)return null;if(sharpMemo.has(c))return sha
     const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0,w,h);const d=x.getImageData(0,0,w,h).data,g=new Float32Array(w*h);for(let j=0;j<w*h;j++)g[j]=.299*d[4*j]+.587*d[4*j+1]+.114*d[4*j+2];return {g,w,h}};
   const lap=({g,w,h})=>{let s=0,n=0;for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const j=y*w+x;s+=Math.abs(4*g[j]-g[j-1]-g[j+1]-g[j-w]-g[j+w]);n++}return n?s/n:0};
   const fine=lap(grey(400)),coarse=lap(grey(100)),v=Math.round(100*fine/(fine+coarse+1e-6))/100;sharpMemo.set(c,v);return v}
+/* ---- what else is wrong with a close-up for reading the cloth (2026-11-14, the cloth reading: 8 of the owner's 15 jacket and trouser
+   close-ups were 480x640, one was half out of focus, three were a quarter to half paper): too small (CLOSE_SMALL px on its long side),
+   too much paper (over CLOSE_PAPER of it bright and neutral), or sharp in one part and soft in another (of a 3x3 grid's cloth tiles, the
+   softest under CLOSE_FOCUS of the sharpest). -> sentences for the Add card (.closenote). ---- */
+const CLOSE_SMALL=900,CLOSE_PAPER=.35,CLOSE_FOCUS=.45,closeIssueMemo=new WeakMap();
+function closeIssues(c){if(!c||!c.width)return [];if(closeIssueMemo.has(c))return closeIssueMemo.get(c);const out=[];
+  try{const k=Math.min(1,600/Math.max(c.width,c.height)),w=Math.max(24,Math.round(c.width*k)),h=Math.max(24,Math.round(c.height*k)),t=document.createElement('canvas');t.width=w;t.height=h;
+    const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0,w,h);const d=x.getImageData(0,0,w,h).data,g=new Float32Array(w*h),pa=new Uint8Array(w*h),lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};let paper=0;
+    for(let j=0;j<w*h;j++){const r=lin(d[4*j]),gg=lin(d[4*j+1]),b=lin(d[4*j+2]),mx=Math.max(r,gg,b),mn=Math.min(r,gg,b),Y=.2126*r+.7152*gg+.0722*b;g[j]=Y;if(Y>.42&&(mx-mn)/mx<.16){pa[j]=1;paper++}}
+    const ps=paper/(w*h);
+    if(Math.max(c.width,c.height)<CLOSE_SMALL)out.push(`This close-up is small (${c.width} × ${c.height}): the weave may not show. Take it with the phone’s camera rather than from a cropped picture.`);
+    if(ps>CLOSE_PAPER)out.push(`The paper covers about ${Math.round(ps*100)}% of the close-up: move in so the cloth fills more of it.`);
+    const f=[];for(let ty=0;ty<3;ty++)for(let tx=0;tx<3;tx++){const x0=Math.floor(tx*w/3)+1,x1=Math.floor((tx+1)*w/3)-1,y0=Math.floor(ty*h/3)+1,y1=Math.floor((ty+1)*h/3)-1;let s2=0,m=0,n=0,p=0;
+      for(let y=y0;y<y1;y++)for(let xx=x0;xx<x1;xx++){const j=y*w+xx;if(pa[j]){p++;continue}s2+=Math.abs(4*g[j]-g[j-1]-g[j+1]-g[j-w]-g[j+w]);m+=g[j];n++}
+      if(n&&p<.3*(n+p)&&m>0)f.push(s2/m)}
+    if(f.length>=4){const mx=Math.max(...f),mn=Math.min(...f);if(mn<CLOSE_FOCUS*mx)out.push('Part of the close-up is out of focus: hold the phone flat over the cloth and tap it to focus.')}}catch(e){}
+  closeIssueMemo.set(c,out);return out}
 
 /* ---- the verdict on each colour: does the measurement agree with the tag, and how sure is it (2026-11-14, the owner's design: colour
    recognition runs on every item and, when confident, overrules the tag; when unsure it only asks). The confidence (0-1) comes from:
@@ -354,6 +371,7 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colo
   const mp=q.missed&&q.raw&&q.missed.c===q.raw.tex?q.missed.p:null;   // (missedPattern, worked out when the card was measured)
   if(mp&&(patBase(q.pattern)||'solid')==='solid'&&!(q.edited&&q.edited.pattern))out.push(`<div class="offer measpat"><small>The close-up shows ${/check|pane/.test(mp)?'a check':'stripes'}: <b>${esc(patName(mp))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'pattern','${mp}')">Use ${esc(patName(mp))}</button></div>`);
   if(m&&m.src==='closeup'&&m.sharp!=null&&m.sharp<BLUR_SHARP&&TEXTURE_TYPES.includes(q.type))out.push(`<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>`);
+  if(q.raw&&q.raw.tex&&TEXTURE_TYPES.includes(q.type))for(const t of closeIssues(q.raw.tex))out.push(`<p class="tagnote closenote"><small>${esc(t)}</small></p>`);
   if(FABRIC.includes(q.type)||COLS_BY[q.type]){const pv=(q.measV||[]).find(v=>v.f==='primaryColor'),far=m&&m.src==='closeup'&&!(m.sharp!=null&&m.sharp<BLUR_SHARP)&&pv&&pv.d>FAR_DE;   // (a blurry or photo-only measurement is no reason to add a colour)
     if(q.colForm)out.push(newColForm(q,i));
     else if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colours quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured colour is far from every colour for this item.'}</small><button type="button" class="chipbtn" onclick="openColForm(${i})">Add as a new colour</button></div>`)}
@@ -647,6 +665,20 @@ async function claudePattern({image,closeup,type,wb}){const w=localStorage.getIt
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})})});   // wb: both pictures white-balanced (worker.js)
     const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
     return r.ok&&(j.across||j.motif||j.texture)&&j.layout!=='none'?j:null}catch{return null}}
+/* ---- the cloth of a plain or finely woven suit, blazer or trousers, read by Claude on a tap (the item sheet's "Read cloth with Claude",
+   2026-11-14): the weave, the yarn colours and shares, how mottled and slubbed, the sheen (worker/pattern.js CLOTH_PROMPT); kept as
+   item.clothSpec and used by the painter with what it measures in the close-up (asm-color.js asmFabTex). ---- */
+async function claudeCloth({image,closeup,type}){const w=localStorage.getItem('worker_url');if(!w||!image)return null;
+  try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},body:JSON.stringify({cloth:true,image,...(closeup?{closeup}:{}),type})});
+    const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);
+    return r.ok&&j.cloth&&Array.isArray(j.cloth.yarns)&&j.cloth.yarns.length?j.cloth:null}catch{return null}}
+const clothSummary=i=>{const c=i&&i.clothSpec;if(!c)return 'measured from the close-up when a picture is painted';
+  return [c.weave==='other'?'':c.weave,c.yarns.map(y=>y.name).filter(Boolean).join(' and '),c.melange==='none'?'even colour':c.melange+' melange',c.slub==='none'?'':c.slub==='some'?'some slubs':'slubby',c.sheen+' sheen'].filter(Boolean).join(', ')};
+async function readCloth(id){const it=items.find(x=>x.id===id);if(!it||!it.texture)return;
+  const sharp=typeof sharpCloseOf==='function'?await sharpCloseOf(it).catch(()=>null):null,full=typeof tagImgOf==='function'?await tagImgOf(it.id,it).catch(()=>null):null;
+  toast('Claude is reading the cloth…');const c=await claudeCloth({image:full||it.photo||it.texture,closeup:sharp||it.texture,type:it.type});
+  if(!c){toast('The cloth could not be read. Try again in a moment.');return}
+  it.clothSpec=c;await put(it);cache={};renderWardrobe();toast(`Cloth read: ${clothSummary(it)}.`)}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];
   for(let i=0;i<d.length;i+=4*st)out.push(rgbLab(d[i],d[i+1],d[i+2]));return out}
 const medLab=ls=>[0,1,2].map(k=>{const v=ls.map(l=>l[k]).sort((a,b)=>a-b);return v[v.length>>1]});
