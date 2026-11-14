@@ -37,5 +37,27 @@ module.exports=async({ok,chromium,url})=>{
     const n=await open({ua:IPHONE,w:320});await n.click('#su-next');await n.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='home');
     ok(await n.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&[...document.querySelectorAll('#su-step .home-steps li')].every(l=>l.getBoundingClientRect().right<=innerWidth+.5)),'the step fits a 320 px phone');
     ok(!n.errs.length,'no page errors at 320 px: '+n.errs.join(' | '));await n.context().close();
+    // Android: the step with an Install button when the browser offers the install, the menu steps when it doesn't
+    const ANDROID='Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
+    const g=await open({ua:ANDROID,w:320});
+    ok(await g.evaluate(()=>SETUP_STEPS.join(',')==='welcome,home,week,wear,weather,connect,done'),'on Android in the browser the setup has the install step after Welcome');
+    await g.click('#su-next');await g.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='home');
+    const vis=sel=>g.evaluate(s=>{const e=document.querySelector(s);return !!e&&e.getBoundingClientRect().height>0},sel);
+    const g0=await g.evaluate(()=>({title:document.querySelector('#su-title').textContent,t:document.querySelector('#su-step').textContent}));
+    ok(g0.title==='Install the app'&&!/Safari|before you set anything up/.test(g0.t)&&/comes with it/.test(g0.t),'it is titled Install the app, says nothing of Safari or setting up first ('+g0.title+')');
+    ok(!(await vis('#su-step .home-install'))&&await vis('#su-step .home-manual')&&/Install app/.test(g0.t),'with no offer from the browser: the menu steps, no button');
+    await g.evaluate(()=>{const e=new Event('beforeinstallprompt',{cancelable:true});e.prompt=()=>{window._prompted=(window._prompted||0)+1;return Promise.resolve()};e.userChoice=Promise.resolve({outcome:'accepted'});dispatchEvent(e);window._dp=e.defaultPrevented});
+    ok(await vis('#su-step .home-install')&&!(await vis('#su-step .home-manual'))&&await g.evaluate(()=>window._dp),'when the browser offers it: the Install button shows in place of the steps (the browser\'s own banner held back)');
+    ok(await g.evaluate(()=>{const b=document.querySelector('#su-step .home-install');return b.getBoundingClientRect().right<=innerWidth+.5&&b.getBoundingClientRect().height>=44}),'the button fits 320 px and is a full tap target');
+    await g.click('#su-step .home-install');await g.waitForFunction(()=>window._prompted===1);
+    ok(await g.waitForFunction(()=>/Installing/.test((document.querySelector('#toast')||{}).textContent||'')).then(()=>true,()=>false),'Install opens the browser\'s install dialog and says it is installing');
+    ok(!(await vis('#su-step .home-install'))&&await vis('#su-step .home-manual'),'the offer is used once: the menu steps come back');
+    await g.evaluate(()=>{setupClose();openSettings('about')});await g.waitForTimeout(300);
+    ok(await g.evaluate(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&b.textContent==='Install the app'}),'Settings → About offers "Install the app" on Android');
+    await g.evaluate(()=>{document.querySelector('#home-again').scrollIntoView()});await g.click('#home-again');await g.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));
+    ok(await g.evaluate(()=>document.querySelector('#kit-title').textContent==='Install the app'&&!!document.querySelector('.kit-body .home-manual')),'and opens the same instructions');
+    ok(!g.errs.length,'no page errors on Android: '+g.errs.join(' | '));await g.context().close();
+    const ga=await open({ua:ANDROID,standalone:true});
+    ok(await ga.evaluate(()=>SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'the installed app on Android: no install step');await ga.context().close();
   }finally{await browser.close()}
 };

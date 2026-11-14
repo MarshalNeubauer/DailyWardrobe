@@ -6,7 +6,7 @@
 const SETUP_BASE=['welcome','week','wear','weather','connect','done'];
 let SETUP_STEPS=SETUP_BASE.slice();
 const setupStepsNow=()=>typeof homeNeeded==='function'&&homeNeeded()?['welcome','home',...SETUP_BASE.slice(1)]:SETUP_BASE.slice();
-const SETUP_TITLES={welcome:'Welcome',home:'Home Screen',week:'Your week',wear:'What you wear',weather:'Weather',connect:'Connection',done:'All set'};
+const SETUP_TITLES={welcome:'Welcome',get home(){return typeof homeAndroid==='function'&&homeAndroid()?'Install the app':'Home Screen'},week:'Your week',wear:'What you wear',weather:'Weather',connect:'Connection',done:'All set'};
 /* the flow's state: at = the step shown (-1 = closed); first = it opened by itself on a new install (not "Run setup again") */
 let setup={at:-1,first:false,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};
 let setupNo=false;   // the app was already driven somewhere before start-up looked: the setup doesn't open by itself
