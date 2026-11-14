@@ -110,5 +110,42 @@ module.exports=async({ok,ROOT})=>{
       {const {store,sent,env}=mk(),K='c00000000000000a5';delete env.OPENAI_API_KEY;
         store.store.set('job:'+K,JSON.stringify({key:K,image:PNG,t:Date.now()}));const m=msg({key:K});await worker.queue({messages:[m]},env);
         ok(m.acked&&store.store.has('jobfail:'+K)&&!store.store.has('job:'+K)&&!store.store.has('jobrun:'+K),'a job given up (no OpenAI key) keeps its reason and leaves no job or jobrun record')}}
+    // ---- every KV write a tester causes is counted against a daily cap; lists too; everyone together stays well under 1,000
+    {const realNow=Date.now;try{
+      const store=kv(),env={APP_TOKEN:'own',WARDROBE:store,RENDER_HUB:HUB,TESTER_DAILY_TOTAL:JSON.stringify({write:40})};hubs.clear();
+      const O={'x-app-token':'own'},mkT=async name=>{const r=await J(await call(env,'POST','invites',{name},O));const k='invite:'+crypto.createHash('sha256').update(r.code).digest('hex'),rec=JSON.parse(store.store.get(k));rec.created-=8*86400000;store.store.set(k,JSON.stringify(rec));return {id:r.id,ns:`u:${r.id}:`,h:{'x-app-token':r.code}}};
+      const A=await mkT('Tess'),B=await mkT('Bo');
+      // deletes: each one counted (1,200 went through before)
+      let n=0,st=200;for(;n<60&&st===200;n++)st=(await call(env,'DELETE','render?key=c'+n.toString(16).padStart(16,'0'),undefined,A.h)).status;
+      ok(st===429&&n===41,`a tester's DELETE /render is counted as a write and refused past everyone's daily total (refused at ${n})`);
+      env.TESTER_DAILY_TOTAL=JSON.stringify({write:450});let d=0;st=200;for(;d<260&&st===200;d++)st=(await call(env,'DELETE','render?key=c'+d.toString(16).padStart(16,'0'),undefined,B.h)).status;
+      ok(st===429&&d===201,`and past the tester's own 200 writes a day (refused at ${d})`);
+      // a first backup larger than what is left today: what fits is stored, the save waits for tomorrow, and finishes then
+      Date.now=()=>realNow()+86400000;env.TESTER_DAILY_TOTAL=JSON.stringify({write:30});
+      const photos={},items=[];for(let i=0;i<50;i++){const ph='data:image/jpeg;base64,'+crypto.randomBytes(300).toString('base64');const h=crypto.createHash('sha256').update(ph).digest('hex').slice(0,20);photos[h]=ph;items.push({id:'i'+i,added:1,photo:'dwph:'+h})}
+      const save=async()=>J(await call(env,'POST','sync',{baseRev:0,day:'2026-11-20',delta:{items,days:[],tombstones:{}},photos},A.h));
+      let r=await save();const stored=()=>[...store.store.keys()].filter(k=>k.startsWith(A.ns+'ph:')&&k!==A.ns+'ph:gc').length;
+      ok(r.s===429&&r.what==='backup'&&/30 of 50 new photos/.test(r.message)&&stored()===30&&!store.store.has(A.ns+'wardrobe:v1'),`a backup past the day's writes stores what fits and is refused in the backup's words, so the app tries tomorrow (${r.s}, ${stored()} photos stored: ${r.message})`);
+      Date.now=()=>realNow()+2*86400000;r=await save();
+      ok(r.s===200&&stored()===50&&store.store.has(A.ns+'wardrobe:v1'),`the next day it stores the other 20 and the backup (${r.s}, ${stored()})`);
+      // lists: 30 a day
+      let l=0;st=200;for(;l<40&&st===200;l++)st=(await call(env,'GET','render?list=1',undefined,B.h)).status;
+      ok(st===429&&l===31,`a tester's photo list (a KV list) is capped too (refused at ${l})`);
+      // the owner is never counted
+      let ow=0;for(let i=0;i<50;i++)if((await call(env,'DELETE','render?key=c'+i.toString(16).padStart(16,'0'),undefined,O)).status===200)ow++;
+      ok(ow===50,'the owner\'s writes are never counted');
+      // reminders: a tester who knows the owner's push address can neither switch it off nor take it over
+      const env2={...env,VAPID_PUBLIC_KEY:'x',VAPID_PRIVATE_KEY:'y'},EP='https://fcm.googleapis.com/fcm/send/owner-device';
+      await call(env2,'POST','push',{endpoint:EP,time:'07:00',tz:'UTC',dates:[]},O);
+      await call(env2,'POST','push',{endpoint:EP,off:true},A.h);
+      const owners=()=>JSON.parse(store.store.get('push:subs')).list.filter(x=>x.endpoint===EP).map(x=>(x.ns||'owner')+'@'+x.time).sort().join();
+      ok(owners()==='owner@07:00','a tester can\'t switch off the owner\'s reminder by its push address');
+      await call(env2,'POST','push',{endpoint:EP,time:'05:00',tz:'UTC',dates:[]},A.h);
+      ok(/owner@07:00/.test(owners()),`nor change it (${owners()})`);
+    }finally{Date.now=realNow}}
+    // ---- the deploy workflow reads the repository only, and says loudly when worker.js changed but can't be deployed
+    {const wf=require('fs').readFileSync(path.join(ROOT,'.github/workflows/deploy-worker.yml'),'utf8');
+      ok(/^permissions:\n  contents: read$/m.test(wf),'the deploy workflow has permissions: contents: read');
+      ok(/::warning::worker\.js changed on main but was NOT deployed/.test(wf)&&!/::notice::Automatic worker deploys/.test(wf),'missing Cloudflare settings give a warning, not a quiet notice')}
   }finally{globalThis.fetch=realFetch}
 };

@@ -45,9 +45,10 @@ function openShop(){
   if(shopGate().length)return;
   shopOpen=true;shopForm=null;shopMsg='';shopSwipe();renderShop();
   $('#shop-sheet').classList.add('on');$('#shop-backdrop').classList.add('on');$('#shop-sheet').scrollTop=0;
+  if(typeof layerOpen==='function')layerOpen($('#shop-sheet'));   // the page behind is inert, the focus moves in (ui.js)
   if(!shopBusy&&!shopFresh())analyzeWardrobe();
 }
-function closeShop(){if(!shopOpen)return;shopOpen=false;const s=$('#shop-sheet'),b=$('#shop-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on')}
+function closeShop(){if(!shopOpen)return;shopOpen=false;const s=$('#shop-sheet'),b=$('#shop-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');if(typeof layerClose==='function')layerClose(s)}
 document.addEventListener('keydown',e=>{if(shopOpen&&e.key==='Escape')closeShop()});
 /* swiping the sheet down closes it, as on the Wardrobe's item sheet: the header (with the grabber) is a handle at any time, the
    content only while it is scrolled to the top (further down, a downward swipe scrolls it back up, as it must). The choice is

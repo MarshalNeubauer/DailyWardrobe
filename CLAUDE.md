@@ -82,6 +82,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `#pack` and `#care` are in the design system's page selectors (`:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal)`); their own copies of the button, input and `.btns` rules are gone
 - `#toast` is above Settings, the setup and the sheets (z-index 2050, under a question) and `width:max-content`: at `left:50%` it wrapped at half the screen's width
 - the setup's switches are ink when on, like the dress-code switches in Settings
+- reduced motion: the score's checks, the pieces list's rows and the month's days animate only under `prefers-reduced-motion: no-preference` (their `:not(.instant)` rules outranked the reduce rules), and the cards' arrows (`.score .chev`, `.month-link .chev`) turn at once
+- tap targets (the block `/* ---- accessibility ---- */` at the end): Today's day arrows, a piece's ⇄ and − and the Wardrobe's type chips keep their look and take taps over 44px (a `::after` past the box, counted from inside the 1px border); `.linkbtn` has 4px padding above and below (26px, it was 18)
+- `.score .pts` is `color-mix` of `--mut` and `--ink` (4.45:1 on the light card, now over 4.5 in both themes); the folded score list (`#sbox:not(.open) #spanel .mpanel-in`) is `visibility:hidden`, so it isn't read out or reached by Tab
 
 ### `core.js`
 
@@ -730,6 +733,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the Days off summary is redrawn by `renderDaysOffUI` and `renderFormalUI` while Settings is open (it kept the count from when Settings opened)
 - the Schedule summary lists the days from the week's first one (the first day, Sunday first, whose day before isn't a workday): "Sun–Thu" (it read "Mon, Tue, Wed, Thu, Sun")
 - `tests/auditfix.test.js`: the quick bugs of the 2026-11-13 audit
+- `openSettings` draws each part in its own try (blocked storage threw and Settings never opened) and `saveSettings` closes Settings even when storing the server address fails (full storage), with a toast
+- file pickers are `<input type="file" class="vfile">` inside their label (visually hidden, still focusable: with `hidden` the keyboard couldn't reach One item, Several items, Restore file, Replace photo, the close-up); `#photo-url` and `#cfg-city` have `aria-label`s
+- `esc()` escapes `'` too; the city search's results (`findCity`) are escaped (names from Open-Meteo went into the page as HTML)
+- with reduced motion a day step doesn't slide (`stepDay` and the swipe's fly-out check `noMotion()`)
+- the tab bar's buttons are 44px (`nav button`, `--navh`, `fitNav`'s natural top; `NAV_MAX` 58 so the tallest bar is the same 102px): on a day with a photo the bar looks as before (it grows 6px less)
 
 ### `stats.js`
 
@@ -770,6 +778,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - sync errors show the server's `message` before its `error`- the PUT body is `{baseRev, day, reason?, data}` with `data` last (the worker reads a large backup's leading fields without parsing it)
 - the monthly holiday refetch (`refreshHolidays`, app.js) syncs first and refetches only if the synced settings still need it, never offline: its save stamps the settings newest, which on a device away for weeks used to undo another device's newer change
 - Settings' Backup line (`backupSummary`, app.js): "Backed up today / <day>", "Last backup failed · last saved <day>" while `sync_status` says failed, "Not backed up yet"
+- a sync's redraw waits while the item sheet is open (it blanked the field being typed in) or the piece picker is (it closed it): `syncRedraw` keeps it in `syncLater`, and `syncLaterRun` draws it when the sheet closes (`itemShown(false)`) or the picker does (`closePicker`)
 - the Backup line inside Settings (`showSyncStatus`) says the last backup while the next one runs ("Backed up Nov 14, 9:02 · 34 items · syncing…"); it read "Not backed up yet." under a summary saying "Backed up today", since `synced()` clears `sync_status` while `syncing` is still true
 - "Last worn" on Today (`lastWorn`) counts only days marked ✓; an unmarked past day was only planned (the stats' wear counts still take unmarked past days as worn)
 - one name for the type `pants` on screen: "Trousers" (`TYPES`, the packing list, Care); photo prompts still say "dress trousers"
@@ -977,6 +986,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `addGate()` (from `renderAdd`): "Several items" is not shown while not connected; "One item" works without
 - `renderConnUI()` / `connPaste()` / `connSummary()`: Settings → Connection starts with what a connection gives and, while not connected, a field for the invite link (`connectFromLink`); the summary reads "Not connected", "Connected as <name>" or "Connected as the owner"
 - `advToggle(btn)` / `advClose()`: the Advanced folds in Settings
+- dialogs (audit 2026-11-13): Settings (`openSettings`/`closeSettings`), the piece picker (`openPicker`/`closePicker`) and What to buy (`openShop`/`closeShop`) call `layerOpen(el)` / `layerClose(el)`: the page behind (header, main, nav) is inert while any of them or the item sheet is up (`layerInert`, also used by `itemShown` and `setupInert(false)`; `#setup.on` and `#nostore` keep it inert), the focus moves into the dialog and back to what had it
+- a window keydown listener (capture) keeps Tab and Shift+Tab inside the top dialog (`layerUp`: questions, colour sheet, sheets, Settings, item sheet) and closes Settings or the picker on Escape; the question and the colour sheet keep their own keys, What to buy and the item sheet their own Escape
+- `tests/a11yfix.test.js`: the dialogs, the waiting redraws, storage blocked or full, file pickers, labels, escaping, contrast, reduced motion, tap targets
 
 ### `sw.js`
 
@@ -1111,6 +1123,11 @@ Cloudflare Worker. Every endpoint needs the owner's `APP_TOKEN` or a tester's in
 - the Workers AI fallback is `tagWithWorkersAi`: any failure (including the licence step `AI.run(model, {prompt:'agree'})`, now inside a try) answers 502 and gives the tester's tag count back; `PROMPT`'s JSON template lists `trouserKind` and `shoeStyle`
 - item pictures (`itemPhoto`) have the same 5-minute limit as outfit photos (`OPENAI_MS`)
 - `/fetch` catches a link that can't be reached (dead domain, refused connection: `fetch` throws) and answers 502 "That link could not be reached…" (`fetchLinked` does the rest)
+- every KV write a tester causes is counted (`write` in `EXTRA_CAPS`: 200 a day, 400 in the first week; `ALL_CAPS.write` 450 for all testers together, so the owner always has over half of the free plan's 1,000): each new `ph:` photo a backup stores and the backup itself (`writeBudget` → `putPhotos`' `allow`), its daily copies (`keepSnapshots` returns its writes, `countWrites`, never refused), `PUT /render`, `DELETE /render` (1,200 went through unrefused before), feedback, reminder changes, a direct photo (1) and a queued one (`JOB_WRITES` 5); `spendEach` takes several counts for one call or none, `spendUpTo` as many as are left
+- a backup whose new photos pass the day's writes stores the photos that fit and is refused 429 `{what:'backup', write:true}` ("…N of M new photos are saved…"), so sync.js pauses until the next UTC day; the stored photos are skipped next time (`phThere`), and the save finishes then
+- KV lists are counted too (`list`: 30 a day per tester, 60 the first week, 150 for all testers): `GET /render?list=1` and `/sync?snaps=1`
+- `POST /push` changes or switches off only the caller's own subscription (`mine`: same push address and `x.ns === who.ns`); knowing another account's push address is not enough
+- `.github/workflows/deploy-worker.yml` has `permissions: contents: read`, and when it runs (worker.js changed on main) without the Cloudflare secret and variables it prints a `::warning::` that the live worker was not updated (it was a quiet notice)
 - reminders (`dueDay`): a run covers the local clock from the run 15 minutes before to now, so a reminder at 23:46–23:59 fires at the 23:45–00:00 run (for the day before; the old window `[at, at+15)` ran past midnight and never fired), one in the hour the clocks skip fires at the run that jumps over it, and the repeated hour sends it once (`last`); `tests/workerfix.test.js`
 
 **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js. On the next start the app clears swaps and vest choices on every day after today (`checkPlanRules()` / `replanFuture()` in app.js; formal days, today and past days stay), so the new rules apply to the whole future. Settings has "Re-plan upcoming days" for the same on demand.
