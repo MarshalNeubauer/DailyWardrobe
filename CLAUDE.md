@@ -1089,6 +1089,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a device reads the manifest (`asmCmMfGet`, from `asmCmLook` and `asmCmGet`) whenever the worker's list was read again (`asmListAt`), or once a session without a list; a held record older than the manifest's date is deleted (`asmCmMfApply`) and downloaded again; kept in `localStorage.asm_cm_mf`
 - the manifest's dates go into the looks' keys (`asmCmRev`, `mf:` in `asmCmSig`) and the job's record dates into the kept setup's key (`job.rev`), so a re-uploaded mask is a new setup and new pictures; with no manifest nothing changes
 - the PC pre-build reads the manifest every cycle (`asmCmMfGet(true)`) and says when the worker has none yet
+- cm-upload also writes the shared list for testers (worker `cm:shared`, `PUT /cm-shared`): every key in the manifest, the manifest, the background and each listed master's 2048 copy (`master2048`); only when it changed (one KV write, from the day's upload budget), so run it once after a deploy to write the first list
+- testers paint exactly as the owner does: the worker answers their reads of the shared master records from the owner's and lists them, so `asmListGet`, `asmCmLook`, `asmCmMfGet` and `asmCmGet` need nothing tester-specific (no app change)
 
 #### The painting
 - `asmCmPrep` once per master (the setup), `asmCmBuild` per outfit: each pixel the zones' shares (Uint8, adding to 255) of: a garment's cloth × its light (the master's brightness over the zone's lit level, 75th percentile, a white shirt's 90th; at most 1.6, a shirt 1.15; pushed out from each zone's clean pixels over its edge, so no zone's light reaches into another)
@@ -1411,6 +1413,13 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `DELETE /render?key=` removes a kept photo (one made wrong; `delRender`)
 - photos under test keys (`c7e57…`) expire from KV after 7 days (`renderTtl`)
 - not done: `GET /render?list=1` is still one KV list per app start per person (a read cannot replace it without an index document that costs a write per photo)
+- the owner's colour-coded masters are shared with testers (2026-11-14): `cm:shared` = `{keys, t}` lists exactly the render keys that are master assets; owner-only `GET`/`PUT /cm-shared` (`handleShared`), and a PUT with the same keys writes nothing
+- a tester's `GET /render?key=` falls back to the owner's `render:<key>` only when they have no copy of their own and the key is in `cm:shared` (`sharedKeys`); nothing else of the owner's ever falls back (outfit pictures, item photos, backups, snapshots, jobs)
+- `cm:shared` is read at most once a minute per isolate (`SHARED_MS`, a `WeakMap` per KV binding); a `PUT /cm-shared` updates that isolate's copy at once
+- a tester's `GET /render?list=1` adds the `cm:shared` keys to their own (one cached read, no extra list; the list call still counts once against their `list` cap, the fallback reads count nothing)
+- a tester's `PUT`/`DELETE /render` of a master key acts on their own copy only (it then shadows the owner's for them alone)
+- `GET /blob` reads the owner's `blob:<key>` for everyone: every blob is a master's packed setup and blob writes are owner only; if a blob ever holds anything private, this must change
+- `tests/sharedmasters.test.js`: the fallback and its limits, the list, blobs, the 60 s cache, cm-upload writing the list once, and a tester's page painting a suit look against the real worker
 
 #### worker/holidays.js
 
@@ -1448,6 +1457,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - storage per person: every KV key of a person's data starts with `who.ns`: the backup (`<ns>wardrobe:v1`), `<ns>snap:*`, `<ns>render:*`, `<ns>job:*`, `<ns>jobfail:*`, `<ns>jobrun:*`, `<ns>ph:*`; the owner's ns is the empty string, so the owner's key names are byte for byte what they were (`tests/accounts.test.js` asserts the exact names)
 - keys that belong to nobody's namespace: `invite:<hash>`, `invites:index` (the list of invitations, so `GET /invites` reads one document instead of listing KV), `feedback:log`, and `use:<id>:<day>` (the count, only without the Durable Object)
 - `GET /render?list=1`, `/render-queue`, `/render-wait`, `/sync?snaps=1`, `?snap=` and roll back see only the caller's keys
+- the one exception: the owner's colour-coded master records listed in `cm:shared`, which a tester reads and lists as their own (worker/records.js)
 - daily caps, testers only (`DEFAULT_CAPS` `{tag:40, pattern:10, photo:12, item:20}` per UTC day, `utcDay`; an invitation's own `caps` override them, `cleanCaps`): tag = `POST /` and `/tag-many`, pattern = `/pattern`, photo = outfit photos (direct, queued, `replace`), item = item pictures and one-piece edits (`photoCap`: a body with `swap`)
 - a tester's first 7 days after the invitation was made (`FIRST_WEEK_MS`): every daily limit twice (`FIRST_WEEK_X`, in `whoIs`); `/me` gives `firstUntil`, and Connection says until when
 - more caps the app does not show protect KV's daily writes (`EXTRA_CAPS`): 60 photo uploads (`PUT /render`), 20 feedback messages, 30 backups, 20 reminder changes (`push`) a day per tester
