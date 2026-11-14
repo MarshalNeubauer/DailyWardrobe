@@ -45,7 +45,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(num(a.out,/Painted on the GPU: (\d+)/)===looks&&/on the CPU: 0/.test(a.out)&&(a.out.match(/colour-coded suit, GPU \d+ ms\)/g)||[]).length===looks,`every look painted on the GPU, the log says so per look (${tail(a.out)})`);
     ok(/gpu guard: \d\d:\d\d:\d\d start dw-assemble: 48 C, 35 W of 575 W limit, 2100 MB used/.test(a.out)&&/gpu guard: \d\d:\d\d:\d\d end dw-assemble: peaks 48 C, 35 W, 2100 MB/.test(a.out),'the guard is taken for the GPU work and logs its start and its peaks at the end');
     const bursts=(a.out.match(/gpu guard: \S+ suit: \d+ look\(s\) in [\d.]+ s: [\d.]+ s, peaks 48 C, 35 W, 2100 MB/g)||[]).length;
-    ok(bursts>=1&&num(a.out,/(\d+) GPU burst\(s\)/)>=bursts,`each burst (one master's looks, at most --burst seconds) logs its time and peaks, then rests (${bursts} bursts: ${tail(a.out).replace(/.*; /,'')})`);
+    ok(bursts>=1&&num(a.out,/(\d+) GPU burst\(s\)/)>=bursts,`each burst (looks across the masters, at most --burst seconds) logs its time and peaks, then rests (${bursts} bursts: ${tail(a.out).replace(/.*; /,'')})`);
     ok(a.lock===null,'the lock is let go after the GPU work');
     ok(busy.code===0&&/GPU busy: another GPU job is running \(py-job, pid \d+\): one at a time: painting on the CPU this cycle/.test(busy.out)&&num(busy.out,/on the CPU: (\d+)/)===looks&&/"name": "py-job"/.test(busy.lock||''),
       `another GPU job holding gpu.lock (the owner's Python scripts): every look painted on the CPU pool, and its lock left alone (${tail(busy.out)})`);
