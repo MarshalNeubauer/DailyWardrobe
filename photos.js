@@ -29,7 +29,7 @@ function shareRender(ck,rec){const W=workerBase();if(W)fetch(W.url,{method:'PUT'
 // assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
 // called while they are off, so a change there selects only the tests that use them
 const asmLive=()=>typeof ASM_ON!=='undefined'&&ASM_ON;
-const renderFor=o=>{const a=asmLive()&&asmFor(o);if(a)return a;   // put together on the device from item photos (assemble.js)
+const renderFor=o=>{const a=asmLive()&&asmShown(o);if(a)return a;   // (or the same outfit's last picture while its current one is made: asmStale)   // put together on the device from item photos (assemble.js)
   const ck=comboKey(o);if(renders[ck])return renders[ck];
   const v1=renders[comboKeyV1(o)];if(v1){const rec={...v1,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
   const old=renders[key(sel)];if(old&&old.sig===legacySig(o)){const rec={...old,sig:comboSig(o)};keepRender(ck,rec,true);return rec}

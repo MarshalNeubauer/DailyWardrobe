@@ -1229,7 +1229,7 @@ async function asmCmEnsure(o,ahead){const kind=asmCmKind(o);if(!kind)return;if(a
     if(ahead&&L&&!asmCmLate(k))return;
     if(!await asmCmGet(kind)||asmFullWins(o))return;
     const img=await asmPhoto(o,!ahead);if(!img)return;
-    await asmKeepOut(k,img,{stamp:asmStamp(o),t:Date.now()});showIf()}
+    await asmKeepOut(k,img,{stamp:asmStamp(o),t:Date.now(),lid:asmLookId(o)});showIf()}
   catch(e){console.warn('could not paint',e)}finally{asmBusy.delete(bk)}}
 async function asmCmPrebuild(o){const kind=asmCmKind(o);if(!kind||!await asmCmGet(kind))return null;
   const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:asmPreSig(o),img}:null}
