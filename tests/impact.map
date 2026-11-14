@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	710c5ea42343768a451a
+# tested	a627c8abe5c9b09d72f7
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -7909,3 +7909,69 @@ workerfix.test.js	worker/records.js	<loaded>	delRender	getRender	putRender	rende
 workerfix.test.js	worker/remind.js	<loaded>	b64u	dueDay	handlePush	localNow	pushReady	pushTo	sendReminders	subId	unb64u	vapidAuth
 workerfix.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	RenderHub	dataUrlToBlob	dropFail	failJob	fetch	handleRender	hasWatch	hubOf	jobClaim	jobMsg	jobOp	keepMade	outfitPhoto	prune	queueRender	runRenderJob	sget	sput	tellHub	waitForRenders
 workerfix.test.js	worker/tag.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	customText	handleTagMany	lightText	measuredText	orNull	sleep	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
+workersweep.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+workersweep.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+workersweep.test.js	add.js	<loaded>	checkArrivals
+workersweep.test.js	analysis.js	<loaded>
+workersweep.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+workersweep.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPref	asmCmPrepCode	asmCmRoute	asmCmSetupFetch	asmCmSetupKey	asmCmSrcSig	asmCmTile	asmCrWants	asmCuWants	asmHbShirt	asmHbShirtLook	asmKnitTile	asmPaisleyTile	asmWorstedTile	asmWtWants
+workersweep.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus
+workersweep.test.js	asm-watch.js	<any>	<loaded>	asmWatchDark	asmWatchJob	asmWatchMetal	asmWatchPaints
+workersweep.test.js	asm-worker.js	<any>
+workersweep.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBarRgb	asmBlobUp	asmClothOf	asmCmHeld	asmCmLook	asmCmUse	asmGet	asmGetOnce	asmHbCw	asmImg	asmJob	asmKey	asmLinen	asmListGet	asmLoad	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmOffPage	asmPump	asmRun	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTieTile	asmTweedTex	asmTwillTex	asmWeave	asmWorker
+workersweep.test.js	care.js	<loaded>
+workersweep.test.js	colpick.js	<loaded>
+workersweep.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	keySettings	lum	mergeState	mix	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	setHash	setKeys	stateSig	thirdOf	todayDate	trouserKind	watchOpts
+workersweep.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
+workersweep.test.js	draw.js	<loaded>	fabricDef
+workersweep.test.js	dress.js	<loaded>	migrateVests
+workersweep.test.js	figure.js	<loaded>	@{}
+workersweep.test.js	history.js	<loaded>	checkPlanRules	whenPulled
+workersweep.test.js	index.html	<loaded>
+workersweep.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
+workersweep.test.js	kit.js	<loaded>
+workersweep.test.js	month.js	<loaded>	nextWorkday
+workersweep.test.js	pack.js	<loaded>
+workersweep.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	fnv64	keepRender	loadRenders	queuedKeys	rqGet	workerBase
+workersweep.test.js	planner.js	<loaded>
+workersweep.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+workersweep.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
+workersweep.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
+workersweep.test.js	setup.js	<loaded>	setupAuto	setupStart
+workersweep.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then
+workersweep.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	pageIn	show
+workersweep.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	statsPlan	statsPlanned
+workersweep.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.hbtns	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.slide	.stage	.stage .empty	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+workersweep.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	localState	pullDone	pulledYet	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
+workersweep.test.js	tagging.js	<loaded>	claudeOnly	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
+workersweep.test.js	tests/fixedplan.js	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-dark.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-shirt.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-skin.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-tie.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-trousers.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/master.jpg	<any>
+workersweep.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+workersweep.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxPreload	zoomTarget
+workersweep.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+workersweep.test.js	wardrobe.js	<loaded>
+workersweep.test.js	watch/leather.jpg	<loaded>
+workersweep.test.js	watch/shirt-tie.png	<loaded>
+workersweep.test.js	watch/suit.png	<loaded>
