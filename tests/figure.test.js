@@ -11,7 +11,7 @@ module.exports=async({ok,chromium,url,settle})=>{
   const f=await p.evaluate(()=>{const c=document.querySelector('#mannequin-container'),svg=c.querySelector('svg'),o=planFor()[key(sel)],G=mqData(figKind(o));
     const pat=id=>svg.querySelector(`pattern[id="${id}"]`),lap=G.parts.find(x=>x.id==='lapL'),fills=[...svg.querySelectorAll('.fig-watch path')].map(e=>e.getAttribute('fill'));
     return {fig:c.classList.contains('fig'),kind:figKind(o),vb:svg.getAttribute('viewBox'),role:svg.getAttribute('role'),label:svg.getAttribute('aria-label'),
-      noImg:!svg.querySelector('image:not(.fig-shade)'),suitHex:pat('fig-suitB').innerHTML.includes(COLORS[o.top.primaryColor]),lapel:pat('fig-suitL').getAttribute('patternTransform').includes(`rotate(${lap.rot})`),
+      noImg:!svg.querySelector('image:not(.fig-shade):not(.fig-office)'),suitHex:pat('fig-suitB').innerHTML.includes(COLORS[o.top.primaryColor]),lapel:pat('fig-suitL').getAttribute('patternTransform').includes(`rotate(${lap.rot})`),
       tieDots:pat('fig-tie').querySelectorAll('circle').length>0,clip:!!svg.querySelector('.fig-clip'),clipGold:svg.querySelector('.fig-clip rect:nth-child(2)').getAttribute('fill')===METAL.gold,
       watch:fills.length>3&&fills.every(x=>G.watch.some(b=>b.c===x)),hot:c.querySelectorAll('.hot').length,skin:!!svg.querySelector('.fig-skin'),useInClip:!!svg.querySelector('clipPath use'),
       clipOnTie:(()=>{const k=svg.querySelector('.fig-clip').getBoundingClientRect(),t=svg.querySelector('use[href="#fig-bladeP"]').getBoundingClientRect();return k.left<t.right&&k.right>t.left&&k.top>=t.top-8&&k.bottom<=t.bottom})()}});
