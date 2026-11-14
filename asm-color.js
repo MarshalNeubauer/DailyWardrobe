@@ -480,6 +480,12 @@ function asmLegsPrep(A,SH,S,N){const T=A.trousers,ls=S/2048,on=k=>T[k]>127,sk=A.
    40..59 the lapels, 60.. the shirt's cuffs. job.geoU / job.geoV carry them; without them the painter is as before. */
 const ASM_GEO_PX=2048;   // the maps' own size
 const ASM_CM_AA=.7;   // a rib squeezed finer than where the cloth faces the camera is softened like a Gaussian pixel this wide (px; 0 = off)
+/* the rib's softening factor at g2 (its cycles per pixel, squared) against g0 (where the cloth faces the camera), s = pi x the width: a
+   Gaussian pixel's response; past ASM_CM_AA_CUT the positions jumped into another piece and the rib is left alone. The cut fades over
+   ASM_CM_AA_FADE either side (2026-11-14, WebGL stage 2: a hard cut flipped between float64 here and float32 on the graphics chip; the
+   factor there is about e^-21, so only a hair-thin band of pixels moves) */
+const ASM_CM_AA_CUT=2.25,ASM_CM_AA_FADE=.05;
+const asmAaK=(g2,g0,s)=>{const f=g2>g0*g0?Math.exp(-2*s*s*(g2-g0*g0)):1,t=(g2-ASM_CM_AA_CUT+ASM_CM_AA_FADE)/(2*ASM_CM_AA_FADE);return t<=0?f:t>=1?1:f+(1-f)*t};
 async function asmGeoPrep(job,P){if(!job.geoU||!job.geoV)return null;
   // decoded at their own size: a resampled picture would blend the two bytes of a value and the pieces' ids
   const G=ASM_GEO_PX,NG=G*G,du=(await asmData(job.geoU,G)).data,dv=(await asmData(job.geoV,G)).data,U=new Float32Array(NG),V=new Float32Array(NG),R=new Uint8Array(NG);
@@ -522,13 +528,19 @@ function asmCellV(u,v,a,b,m){const i=Math.floor(u),j=Math.floor(v),fu=u-i,fv=v-j
   const di=fu<F?-1:fu>1-F?1:0,dj=fv<F?-1:fv>1-F?1:0,h00=asmH32(i,j,a,b)%m;if(!di&&!dj)return h00;
   const wu=di<0?(F-fu)/(2*F):di>0?(fu-1+F)/(2*F):0,wv=dj<0?(F-fv)/(2*F):dj>0?(fv-1+F)/(2*F):0;
   return (h00*(1-wu)+(asmH32(i+di,j,a,b)%m)*wu)*(1-wv)+((asmH32(i,j+dj,a,b)%m)*(1-wu)+(asmH32(i+di,j+dj,a,b)%m)*wu)*wv}
+/* a wrapping T x T texture r read at (u, v) in texels: the texel's value, faded into its neighbour's within ASM_CELL_FADE of its edge as
+   asmCellV does (2026-11-14, WebGL stage 2: the linen's threads read at a cloth position) */
+function asmCellT(r,T,u,v){const i=Math.floor(u),j=Math.floor(v),fu=u-i,fv=v-j,F=ASM_CELL_FADE,at=(a,b)=>r[(((b%T)+T)%T)*T+(((a%T)+T)%T)];
+  const di=fu<F?-1:fu>1-F?1:0,dj=fv<F?-1:fv>1-F?1:0,h00=at(i,j);if(!di&&!dj)return h00;
+  const wu=di<0?(F-fu)/(2*F):di>0?(fu-1+F)/(2*F):0,wv=dj<0?(F-fv)/(2*F):dj>0?(fv-1+F)/(2*F):0;
+  return (h00*(1-wu)+at(i+di,j)*wu)*(1-wv)+(at(i,j+dj)*(1-wu)+at(i+di,j+dj)*wu)*wv}
 const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(36)};
 /* (2026-11-14 audit) every function and constant the painting reads, so a change to any of them changes the keys by itself: a picture's
    key carries asmCmCodeSig (the job, the setup and the painting: asmCmJob, asmCmPrep, asmCmBuild and everything they call in assemble.js
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
@@ -648,30 +660,38 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
   const suitCol=(T,k,x,y,sh,out)=>{const rep=T.mm*ASM_PX_MM*lsc,repv=rep*T.TH/T.TW;cm[0]=cm[1]=cm[2]=0;
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);asmCmAt(T,c[0]/rep,c[1]/repv,cm)}
     let tw=1;const C=T.cloth,hb=C&&(C.kind==='herringbone'||C.kind==='twill');
-    if(T.k!=null){const c=uvAt(k,x+.5,y+.5),si=Math.floor(c[0]/rep-T.loff+.5),tt=c[1]/(T.blen*lsc),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),
-        hh=j=>asmH32(si,j,374761393,668265263)%2048/1024-1,nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
+    // the stripe's breakup: each stripe (si, counted across) its own strength along its length (smoothly between cells blen long); the
+    // stripe's index faded into its neighbour's within ASM_CELL_FADE of a repeat's edge (half way between two stripes, on the ground), so a
+    // position a hair either side of the edge (float64 here, float32 on the graphics chip) gives the same pixel (2026-11-14, WebGL stage 2)
+    if(T.k!=null){const c=uvAt(k,x+.5,y+.5),su=c[0]/rep-T.loff+.5,si=Math.floor(su),fu=su-si,F=ASM_CELL_FADE,di=fu<F?-1:fu>1-F?1:0,wu=di<0?(F-fu)/(2*F):di>0?(fu-1+F)/(2*F):0,
+        tt=c[1]/(T.blen*lsc),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),
+        h1=(i,j)=>asmH32(i,j,374761393,668265263)%2048/1024-1,hh=j=>di?h1(si,j)*(1-wu)+h1(si+di,j)*wu:h1(si,j),nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
       for(let q=0;q<3;q++)cm[q]=4*T.g[q]+(cm[q]-4*T.g[q])*T.k*nz;sh=T.gain*Math.pow(sh,T.gam)}
     if(T.linen&&lin2||T.tweed&&td2||hb){const c=uvAt(k,x+.5,y+.5);
       // a tweed (asmSuitPaintTex's rule): sampled upright in the picture, its flecks in the second colour
       if(T.tweed&&td2){const u=Math.floor(x/lsc),v=Math.floor(y/lsc),li=(((v%td2.T)+td2.T)%td2.T)*td2.T+(((u%td2.T)+td2.T)%td2.T);sh*=td2.r[li];
         if(T.c2&&td2.f[li])for(let q=0;q<3;q++)cm[q]=cm[q]*(1-T.fmix)+4*T.c2[q]*T.fmix}
-      else if(T.linen&&lin2){const u=Math.floor(c[0]/lsc),v=Math.floor(c[1]/lsc);sh*=lin2.r[(((v%lin2.T)+lin2.T)%lin2.T)*lin2.T+(((u%lin2.T)+lin2.T)%lin2.T)]}
-      else{const pitch=(C.pitch||4)*lsc,cw=C.cw?C.cw*lsc:0,off=C.off?C.off*lsc:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
-          fk=asmCellV((c[0]+dir*c[1])/2,c[1]/3,73856093,19349663,1024);   // the fleck's cell (2 x 3 px along the rib), faded at its edges (asmCellV)
+      else if(T.linen&&lin2)sh*=asmCellT(lin2.r,lin2.T,c[0]/lsc,c[1]/lsc);   // its threads' light, faded at each texel's edge (asmCellT)
+      else{const pitch=(C.pitch||4)*lsc,cw=C.cw?C.cw*lsc:0,off=C.off?C.off*lsc:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1;
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
-        const bo=C.brk&&(col&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(col/2):0;   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
-        let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0]+bo)/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0]+bo)/pitch);
-        if(C.soft&&cw){const fx=(c[0]-off)/cw-col,de=Math.min(fx,1-fx)*cw,sw=C.soft*ls;if(de<sw){const nb=fx<.5?col-1:col+1,d2=nb&1?-1:1,b2=C.brk&&(nb&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(nb/2):0,w=.5-.5*de/sw;
-          ph=ph*(1-w)+Math.cos(2*Math.PI*(c[1]+d2*c[0]+b2)/pitch)*w}}
+        const boOf=cc=>C.brk&&(cc&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(cc/2):0,bo=boOf(col);   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
+        const ribAt=cc=>{const d=cc&1?-1:1,b=boOf(cc);let p=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);p+=Math.cos(2*Math.PI*(s[1]+d*s[0]+b)/pitch)/4}}else p=Math.cos(2*Math.PI*(c[1]+d*c[0]+b)/pitch);return p};
         // (2026-11-14) ribs squeezed finer than the picture can show are softened (ASM_CM_AA): where the solved cloth positions turn a
         // twill's 4 px ribs to 2 px or less they beat into moire, here and again when a phone shrinks the picture. The rib's cycles per
         // pixel (g) come from the positions half a pixel either side; the rib is scaled by a Gaussian pixel's response at g against its
         // response where the cloth faces the camera (g0 = 1/pitch), so the facing cloth is exactly as before and only squeezed ribs fade
-        if(ASM_CM_AA&&job.aa!==false){const a1=uvAt(k,x+1,y+.5),a0=uvAt(k,x,y+.5),b1=uvAt(k,x+.5,y+1),b0=uvAt(k,x+.5,y),
-            gx=((a1[1]-a0[1])+dir*(a1[0]-a0[0]))/pitch,gy=((b1[1]-b0[1])+dir*(b1[0]-b0[0]))/pitch,g2=gx*gx+gy*gy,g0=1/pitch;
-          // (a step into another piece reads as a huge jump: left alone)
-          if(g2<2.25&&g2>g0*g0){const s=Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA);   // (a number in job.aa: the bench's strength)
-           ph*=Math.exp(-2*s*s*(g2-g0*g0))}}
+        // (asmAaK; a step into another piece reads as a huge jump: left alone)
+        const aa=ASM_CM_AA&&job.aa!==false,as=Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA);   // (a number in job.aa: the bench's strength)
+        const a1=aa?uvAt(k,x+1,y+.5):null,a0=aa?uvAt(k,x,y+.5):null,b1=aa?uvAt(k,x+.5,y+1):null,b0=aa?uvAt(k,x+.5,y):null;
+        const aaOf=cc=>{if(!aa)return 1;const d=cc&1?-1:1,gx=((a1[1]-a0[1])+d*(a1[0]-a0[0]))/pitch,gy=((b1[1]-b0[1])+d*(b1[0]-b0[0]))/pitch;return asmAaK(gx*gx+gy*gy,1/pitch,as)};
+        let ph=ribAt(col),fk=asmCellV((c[0]+dir*c[1])/2,c[1]/3,73856093,19349663,1024);   // the fleck's cell (2 x 3 px along the rib), faded at its edges (asmCellV)
+        if(C.soft&&cw){const fx=(c[0]-off)/cw-col,de=Math.min(fx,1-fx)*cw,sw=C.soft*ls;if(de<sw){const nb=fx<.5?col-1:col+1,d2=nb&1?-1:1,b2=boOf(nb),w=.5-.5*de/sw;
+          ph=ph*(1-w)+Math.cos(2*Math.PI*(c[1]+d2*c[0]+b2)/pitch)*w}}
+        ph*=aaOf(col);
+        // a herringbone's column (2026-11-14, WebGL stage 2): within ASM_CELL_FADE of a column's edge its rib and fleck fade into the next
+        // column's (half each at the edge), so float64 here and float32 on the graphics chip landing either side of it give the same pixel
+        if(cw){const fx=(c[0]-off)/cw-col,F=ASM_CELL_FADE,nb=fx<F?col-1:fx>1-F?col+1:col;
+          if(nb!==col){const w=fx<F?(F-fx)/(2*F):(fx-1+F)/(2*F),d2=nb&1?-1:1;ph=ph*(1-w)+ribAt(nb)*aaOf(nb)*w;fk=fk*(1-w)+asmCellV((c[0]+d2*c[1])/2,c[1]/3,73856093,19349663,1024)*w}}
         let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),t=(c[1]-dir*c[0])/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((asmH32(r0,s,2246822519,3266489917)^asmH32(col,0,668265263,0))>>>0)%1024/1024;
           yn=1-C.yarn/2+C.yarn*(hv(s0)*(1-fs)+hv(s0+1)*fs)}
         if(C.float){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),hf=asmH32(r0,col,374761393,668265263)%4096/4096,s=(c[1]-dir*c[0])/(pitch*C.floatL)+hf*7,f=s-Math.floor(s),sn=Math.sin(Math.PI*f);yn*=1-C.float+C.float*sn*sn}

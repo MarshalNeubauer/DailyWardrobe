@@ -6,6 +6,12 @@
 // LOOKS is the table later stages add rows to: a look's jacket, shirt and tie, whether it has solved positions, and whether the graphics
 // chip paints it (gl) or must leave it to the CPU (why: the reason asmGlWhy gives).
 const fs=require('fs'),path=require('path');
+// readings (sett) as Claude gives them: the owner's navy pinstripe (tests/asm2048.test.js), a khaki windowpane (its white-blue-white line
+// group both ways; no linen in its description), a charcoal pinstripe whose description says herringbone (asmClothOf: the grain's columns)
+const PIN={v:2,a:0,bands:[['#2b365a',.94],['#a3aecb',.06]],cross:null,cr:7,tr:40,src:'claude+pixels'};
+const WPB=[['#baa98e',.905],['#e0d9c9',.02],['#baa98e',.015],['#97b0c5',.025],['#baa98e',.015],['#e0d9c9',.02]];
+const WP={v:2,a:0,bands:WPB,cross:{d:90,bands:WPB.map((b,k)=>[k===0||k===2||k===4?null:b[0],b[1]]),r:1.05},cr:3.8,tr:11,src:'claude+pixels'};
+const HBP={v:2,a:0,bands:[['#3b3d42',.47],['#b8b8b4',.06],['#3b3d42',.47]],cross:null,cr:6,tr:30,src:'claude+pixels'};
 const LOOKS=[
   {name:'plain navy',top:['suit','navy'],shirt:'pink',tie:'burgundy',gl:true},
   {name:'plain mid grey',top:['suit','midgrey'],shirt:'white',tie:'navy',gl:true},
@@ -15,10 +21,25 @@ const LOOKS=[
   {name:'twill navy, solved positions',top:['suit','navy',{pattern:'twill'}],shirt:'white',tie:'burgundy',geo:true,gl:true},
   {name:'twill tan and brown',top:['suit','tan',{pattern:'twill',secondaryColor:'brown'}],shirt:'pink',tie:'navy',gl:true},
   {name:'twill light grey, solved positions',top:['suit','lightgrey',{pattern:'twill'}],shirt:'white',tie:'wine',geo:true,gl:true},
-  // not covered yet: the CPU paints them (stage 2 onwards moves rows up)
+  // stage 2: jackets read in bands (asmSuitTex), with the stripe breakup (T.k: kept as they were), the look or the folds' lighting (checks)
+  // (has: what the jacket's cloth must be, so a row can't quietly turn into a plain one: the band tile, the stripe breakup, the grain)
+  {name:'navy pinstripe',top:['suit','navy',{pattern:'pinstripe',sett:PIN}],shirt:'white',tie:'burgundy',gl:true,has:'tile,k'},
+  {name:'navy pinstripe, solved positions',top:['suit','navy',{pattern:'pinstripe',sett:PIN}],shirt:'lightblue',tie:'wine',geo:true,gl:true,has:'tile,k'},
+  {name:'grey chalk stripe on twill',top:['suit','grey',{pattern:'chalk-stripe',patternText:'chalk stripe on a twill',sett:{v:2,a:0,bands:[['#55585e',.9],['#d6d4cc',.1]],cross:null,cr:5,tr:22,src:'claude+pixels'}}],shirt:'white',tie:'navy',gl:true,has:'tile,k,twill'},
+  {name:'khaki windowpane',top:['blazer','khaki',{pattern:'windowpane',sett:WP}],shirt:'lightblue',tie:'navy',gl:true,has:'tile'},
+  {name:'khaki windowpane, solved positions',top:['blazer','khaki',{pattern:'windowpane',sett:WP}],shirt:'white',tie:'burgundy',geo:true,gl:true,has:'tile'},
+  // (the owner's khaki windowpane reads as "a slubby linen-blend ground": the linen texture, asmLinenTile, faded at its texels' edges)
+  {name:'khaki linen windowpane',top:['blazer','khaki',{pattern:'windowpane',patternText:'a slubby linen-blend ground',sett:WP}],shirt:'lightblue',tie:'navy',gl:true,has:'tile,linen'},
+  {name:'khaki linen windowpane, solved positions',top:['blazer','khaki',{pattern:'windowpane',material:'linen',sett:WP}],shirt:'white',tie:'navy',geo:true,gl:true,has:'tile,linen'},
+  {name:'two-colour check (dark: the full look)',top:['blazer','navy',{pattern:'check',sett:{v:2,a:0,bands:[['#1b2333',.5],['#3a4a63',.5]],cross:{d:90,bands:[['#1b2333',.5],['#3a4a63',.5]],r:1},cr:3,tr:14,src:'claude+pixels'}}],shirt:'white',tie:'burgundy',gl:true,has:'tile'},
+  {name:'charcoal pinstripe on herringbone',top:['suit','charcoal',{pattern:'pinstripe',patternText:'pinstripe on a herringbone',sett:HBP}],shirt:'pink',tie:'navy',gl:true,has:'tile,k,herringbone-cols'},
+  {name:'charcoal pinstripe on herringbone, solved positions',top:['suit','charcoal',{pattern:'pinstripe',patternText:'pinstripe on a herringbone',sett:HBP}],shirt:'white',tie:'burgundy',geo:true,gl:true,has:'tile,k,herringbone-cols'},
+  // not covered yet: the CPU paints them (stage 3 onwards moves rows up)
   {name:'herringbone',top:['suit','midgrey',{pattern:'herringbone'}],shirt:'white',tie:'burgundy',gl:false,why:/herringbone/},
   {name:'gingham shirt',top:['suit','navy'],shirt:['lightblue',{pattern:'gingham'}],tie:'burgundy',gl:false,why:/patterned shirt/},
-];
+].filter(L=>!process.env.ASMGL_ONLY||new RegExp(process.env.ASMGL_ONLY).test(L.name));
+// (ASMGL_SIZE=2048 paints the looks at a phone's size, the fixtures enlarged: the spot check; ASMGL_ONLY=<regexp> picks rows by name)
+const SIZE=+process.env.ASMGL_SIZE||512;
 module.exports=async({ok,chromium,url})=>{
   const HOST='https://w.test/',FIX=path.join(__dirname,'fixtures','cm','suit');
   const browser=await chromium.launch();
@@ -35,7 +56,7 @@ module.exports=async({ok,chromium,url})=>{
     const keys=await p.evaluate(ns=>Object.fromEntries(ns.map(n=>[n,asmCmKey('suit',n)])),Object.keys(recs));
     for(const [n,r] of Object.entries(recs))served[keys[n]]=r;
     // the master, a stand-in background (a cream wall, a window, a desk and laptop, fixed noise, blurred), the jobs and the stand-in maps
-    const setup=await p.evaluate(async([h,LOOKS])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;asmAheadSoon=()=>{};asmAhead=async()=>{};
+    const setup=await p.evaluate(async([h,LOOKS,SIZE])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=SIZE;asmAheadSoon=()=>{};asmAhead=async()=>{};
       if(!await asmCmGet('suit'))return {err:'no master'};
       const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');let g=x.createLinearGradient(0,0,512,0);g.addColorStop(0,'#efe9df');g.addColorStop(1,'#d9d1c4');x.fillStyle=g;x.fillRect(0,0,512,512);
       x.fillStyle='#fbf8f2';x.fillRect(20,45,125,280);x.fillStyle='#7a5c40';x.fillRect(300,380,212,20);x.fillStyle='#2b2d31';x.fillRect(380,320,95,60);
@@ -57,16 +78,23 @@ module.exports=async({ok,chromium,url})=>{
       // the picture as asmCmBuild hands it to its JPEG encoder (raw pixels, not the JPEG)
       window.__cap=null;asmJpeg=async img=>{__cap=new Uint8ClampedArray(img.data);return 'data:image/jpeg;base64,'};
       window.__paint=async(i,gl)=>{const j={...__jobs[i],gl};const r=await asmCmBuild(j);return {r,px:__cap}};
-      return {renderer:(()=>{const G2=asmGlInit(512);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg}},[HOST,LOOKS]);
+      // the creased sleeves (the tube path's choice of upper arm or forearm, asmTubePartQ, in whole numbers on both painters): how many
+      // quarter-pixel points the float rule (asmTubePart) would put in the other part
+      const cr=P.geo.segs.filter(g=>g&&g.crease);let pts=0,moved=0;
+      for(const g of cr)for(let k=0;k<P.N;k+=7){if(!P.A.jacket[k]||P.geo.segs[P.geo.seg[k]]!==g)continue;const X=k%P.S+.25,Y=(k-k%P.S)/P.S+.75;pts++;if(asmTubePartQ(g,X,Y)!==asmTubePart(g,X,Y))moved++}
+      return {renderer:(()=>{const G2=asmGlInit(SIZE);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg,crease:cr.length,pts,moved}},[HOST,LOOKS,SIZE]);
     ok(!setup.err&&setup.bg,`the suit master, its masks and a background are on the page (${setup.err||'ok'})`);
     ok(!!setup.renderer,`WebGL2 here: ${setup.renderer}`);
+    ok(setup.crease>=1&&setup.pts>100&&setup.moved<=setup.pts/1000,`the master has a creased sleeve (${setup.crease}), whose part the whole-number rule chooses as the float rule did (${setup.moved} of ${setup.pts} points moved)`);
     // every look, both ways
     for(let i=0;i<LOOKS.length;i++){const L=LOOKS[i];
       const r=await p.evaluate(async i=>{const c=await __paint(i,false),why=asmGlWhy(__jobs[i],(await asmCmSetup(__jobs[i])).P),g=await __paint(i,true);
         const a=c.px,b=g.px,N=a.length/4;let mx=0,sum=0,over=0;for(let k=0;k<N;k++){let m=0;for(let q=0;q<3;q++){const d=Math.abs(a[4*k+q]-b[4*k+q]);sum+=d;if(d>m)m=d}if(m>mx)mx=m;if(m>2)over++}
-        return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms}},i);
+        const T=__jobs[i].cloth.jacket.suit,C=T&&T.cloth,has=!T?'':[T.TW>1||T.TH>1?'tile':'',T.k!=null?'k':'',C?C.kind+(C.cw?'-cols':''):''].filter(Boolean).join(',');
+        return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms,has}},i);
+      if(L.has)ok(r.has===L.has,`${L.name}: the cloth is what the row means (${r.has}, wanted ${L.has})`);
       if(L.gl){ok(r.cpu===false&&r.gl===true,`${L.name}: the graphics chip paints it (switch on), the CPU with the switch off (${r.why||'covered'})`);
-        ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at 512)`)}
+        ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at ${SIZE})`)}
       else ok(r.gl===false&&L.why.test(r.why)&&r.max===0,`${L.name}: not covered (${r.why}): painted on the CPU either way, the same picture`)}
     // fallbacks: no WebGL2 at all, then a lost context, then the retry
     const fb=await p.evaluate(async()=>{const i=0,out={};
