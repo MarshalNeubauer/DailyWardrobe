@@ -1,6 +1,5 @@
 // Watches: chronograph dial, engraved bezel, integrated bracelet and free-text details; drawn on the figure; described in
-// picture prompts; product pictures can be made from the item's own photo (image edit); outfit photos get the watch as a
-// labelled reference.
+// words; product pictures can be made from the item's own photo (image edit).
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
@@ -18,26 +17,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const e=sent[0];ok(e.url==='https://api.openai.com/v1/images/edits'&&/exact item in the reference photo/.test(e.body.get('prompt'))&&e.body.getAll('image[]').length===1,'a product picture from the item\'s own photo is an image edit that recreates it');
     sent=[];await post({mode:'item',item:'a pair of black shoes',key:'c2222222222222222'});
     ok(sent[0].url==='https://api.openai.com/v1/images/generations','without a photo it is generated from the description, as before');
-    // outfit photos: labelled references
-    sent=[];await post({image:PNG,refs:[PNG,PNG],labels:['the suit','the wristwatch (copy it exactly: case shape, bezel)'],outfit:'a navy suit',key:'c3333333333333333'});
-    const pr=sent[0].body.get('prompt');
-    ok(/in this order: the suit; the wristwatch \(copy it exactly: case shape, bezel\)\. Match each one exactly/.test(pr),'outfit photos name each reference photo, the watch included');
-    sent=[];await post({image:PNG,refs:[PNG],labels:['the suit'],outfit:'a navy suit; a stainless steel chronograph wristwatch',key:'c3333333333333334'});
-    const pw=sent[0].body.get('prompt');
-    ok(/The wristwatch is a key detail\. Its face in the illustration is the real watch's photo/.test(pw)&&pw.indexOf('key detail')<pw.indexOf('He is wearing'),'with a watch, its own short sentence comes before the outfit list');
-    ok(!/key detail/.test(pr),'without a watch in the outfit text there is no watch sentence');
-    ok(/fist on the jacket front with the wristwatch on that wrist/.test(pw)&&/printing on a watch dial/.test(pw)&&!/no wristwatch/.test(pw),'with a watch the pose puts it on the wrist, and the dial printing is allowed to stay as in the photo');
-    ok(!/wristwatch on that wrist|crown and pushers|watch dial/.test(pr)&&/He wears no wristwatch: both wrists are bare/.test(pr),'without one the pose and the closing line say nothing of a watch, and the wrists are bare');
-    sent=[];await post({image:PNG,refs:[PNG],labels:['the shirt'],outfit:'a white shirt; grey trousers',nojacket:true,key:'c3333333333333335'});
-    const pn=sent[0].body.get('prompt');
-    ok(/shirt sleeves/.test(pn)&&!/next to the wristwatch|watch dial/.test(pn)&&/no wristwatch/.test(pn),'the same on a day without a jacket');
-    // queued item picture: made later by the queue consumer, by image edit from the reference photo
-    const qsent=[];env.RENDER_QUEUE={send:async m=>{qsent.push(m)}};sent=[];
-    const qr=await (await post({mode:'item',item:'a stainless steel chronograph',key:'c5555555555555555',ref:PNG,queue:true})).json();
-    ok(qr.queued&&sent.length===0&&qsent[0].key==='c5555555555555555'&&JSON.parse(store.get('job:c5555555555555555')).kind==='item','an item picture can be queued (nothing generated yet)');
-    const m={body:qsent[0],attempts:1,ack(){this.acked=true},retry(){this.retried=true}};await worker.queue({messages:[m]},env);
-    ok(m.acked&&sent[0].url==='https://api.openai.com/v1/images/edits'&&store.has('render:c5555555555555555')&&!store.has('job:c5555555555555555'),'the consumer makes it from the reference photo and stores it under the item key');
-    delete env.RENDER_QUEUE;
     // app
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const w={id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph',details:'small seconds at 10, 15/30/45 minute counter at 2'};

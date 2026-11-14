@@ -1,7 +1,7 @@
 // Assembled pictures, the parts of assemble.js around the colour-coded painter (asm-color.js, tested in asmcolor.test.js): the drawn tie
 // bar, the ASM_ON switch, which picture Today shows for a painted look, that the earlier photo-per-item assembler is gone (2026-11-14), and
-// the worker's edit-a-kept-photo jobs (worker.js still accepts them; nothing in the app sends them any more).
-const fs=require('fs'),path=require('path'),{pathToFileURL}=require('url');
+// that the worker refuses its edit-a-kept-photo jobs (removed 2026-11-14) but still deletes a kept photo.
+const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch(),realFetch=globalThis.fetch;
   try{
@@ -47,42 +47,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(t.under==='gpt'&&t.loop.made===0&&t.loop.redraws===0,`a photo made after the master wins, and nothing is painted or redrawn for that outfit (${JSON.stringify(t.loop)})`);
     ok(t.none.use===null&&t.none.key===''&&t.none.job===null&&t.none.pre===null,`a look with no colour-coded master gets no picture, key or job (${JSON.stringify(t.none)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
-    // ---- the worker: an edit of a photo it keeps (baseKey + swap), through the queue ----
+    // ---- the worker: a kept photo can be deleted (the edit-a-kept-photo jobs went with the outfit photo, 2026-11-14) ----
     const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
-    const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
-    const fx=n=>'data:image/jpeg;base64,'+fs.readFileSync(path.join(ROOT,'tests/fixtures/asm-'+n+'.jpg')).toString('base64');
-    let got=[];
-    globalThis.fetch=async(href,init)=>{if(String(href)!=='https://api.openai.com/v1/images/edits')return new Response('',{status:404});const f=init.body,im=f.getAll('image[]');
-      got.push({prompt:f.get('prompt'),quality:f.get('quality'),n:im.length,first:im[0].type,firstSize:im[0].size});return new Response(JSON.stringify({data:[{b64_json:JPG}],usage:{output_tokens:1}}),{status:200,headers:{'content-type':'application/json'}})};
-    try{
-      const store=new Map(),KV={get:async(q,t)=>store.has(q)?(t==='json'?JSON.parse(store.get(q)):store.get(q)):null,put:async(q,v)=>{store.set(q,v)},delete:async q=>{store.delete(q)}};
-      let sent=[];const env={APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:KV,RENDER_QUEUE:{send:async m=>{sent.push(m)}}},HOST='https://w.test/';
-      const post=b=>worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify(b)}),env);
-      const drain=async()=>{const out=[];for(const body of sent.splice(0)){const m={body,attempts:body._a||1,acked:false,retried:null,ack(){this.acked=true},retry(o){this.retried=o}};await worker.queue({messages:[m]},env);out.push(m)}return out};
-      const PNG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC',SZ='2048x2048';
-      const MK='c00000000000a0001',TK='c00000000000a0002',BK='c00000000000a0003',VK='c00000000000a0004',VCK='c00000000000a0005';
-      const mj={mode:'queue',key:MK,image:PNG,refs:[],labels:[],outfit:'a plain mid grey suit, a plain white dress shirt, a green tie',sig:'asm/master {}',master:true,quality:'high',size:SZ};
-      const tj={mode:'queue',key:TK,baseKey:MK,swap:{what:'tie',text:'a navy & pink stripe tie'},refs:[fx('tie')],labels:['the tie'],sig:'asm/piece/tie/x',size:SZ};
-      const bj={mode:'queue',key:BK,baseKey:MK,swap:{what:'tie bar',text:'a slim silver tie bar, clipped horizontally across the tie',add:true},refs:[],labels:[],sig:'asm/piece/bar/x',size:SZ};
-      const vj={mode:'queue',key:VK,baseKey:MK,refs:[],labels:[],sig:'asm/master/vest',quality:'high',size:SZ,swap:{what:'waistcoat',add:true,text:'a matching waistcoat (vest) in exactly the same cloth as the suit jacket, worn under the jacket and buttoned'}};
-      const vcj={mode:'queue',key:VCK,baseKey:VK,swap:{what:'waistcoat',text:'a waistcoat of exactly the same cut and buttons in a solid, flat, bright pure orange cloth with no pattern or texture'},refs:[],labels:[],sig:'asm/calib/vest',size:SZ};
-      // a job that edits a photo the worker doesn't keep yet waits (retries) instead of failing
-      let q=await post(tj);ok(q.status===200&&(await q.json()).queued,'a job with no image of its own is accepted when it names the kept photo to edit');
-      let ms=await drain();ok(ms[0].retried&&ms[0].retried.delaySeconds===60&&got.length===0,'while the photo to edit is not kept yet, the job waits and tries again');
-      q=await post(mj);ms=await drain();
-      ok(ms[0].acked&&store.has('render:'+MK)&&got[0].quality==='high'&&/^Turn the first image/.test(got[0].prompt)&&/reference photo that other photos are edited from/.test(got[0].prompt)&&/No waistcoat, tie bar/.test(got[0].prompt),'a reference photo (master: true) is made at high quality with the reference note and kept under its key');
-      store.set('render:'+MK,JSON.stringify({sig:'asm/master',img:fx('master'),model:'m',t:1}));
-      got=[];await post({...tj,replace:true});ms=await drain();
-      ok(ms[0].acked&&store.has('render:'+TK)&&got[0].n===2&&got[0].first==='image/jpeg'&&got[0].firstSize>20000&&/^Edit the first image/.test(got[0].prompt)&&/Replace only the tie with: a navy & pink stripe tie/.test(got[0].prompt),'an edit of the kept photo: that photo first, then the item\'s photo, and only the tie replaced');
-      got=[];await post(bj);ms=await drain();
-      ok(ms[0].acked&&/Add one thing only: a slim silver tie bar/.test(got[0].prompt)&&!/Replace only/.test(got[0].prompt)&&/must stay exactly[^\n]*the tie, its knot and its pattern/.test(got[0].prompt),'an added piece (swap.add) is added with everything else kept');
-      got=[];await post(vj);await drain();const p1=got[0]&&got[0].prompt;store.set('render:'+VK,JSON.stringify({sig:'',img:fx('master'),model:'m',t:1}));got=[];await post(vcj);await drain();
-      ok(/Add one thing only: a matching waistcoat \(vest\) in exactly the same cloth as the suit jacket/.test(p1)&&/Replace only the waistcoat with: a waistcoat of exactly the same cut[^\n]*orange/.test(got[0].prompt)&&/must stay exactly[^\n]*the jacket and its pattern/.test(got[0].prompt),'a waistcoat is added, or swapped alone');
-      q=await post({mode:'queue',key:'c0000000000000001',swap:{what:'tie',text:'x'}});ok(q.status===400,'a job with neither an image nor a photo to edit is refused');
+    {const store=new Map(),KV={get:async(q,t)=>store.has(q)?(t==='json'?JSON.parse(store.get(q)):store.get(q)):null,put:async(q,v)=>{store.set(q,v)},delete:async q=>{store.delete(q)}};
+      const env={APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:KV},HOST='https://w.test/',TK='c00000000000a0002';
+      const PNG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
+      const q=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({mode:'queue',key:TK,baseKey:'c00000000000a0001',swap:{what:'tie',text:'x'},image:PNG})}),env);
+      ok(q.status===410&&!store.size,'an edit-a-kept-photo job is refused (410) and nothing is stored');
+      store.set('render:'+TK,JSON.stringify({sig:'x',img:PNG,model:'m',t:1}));
       const del=(key,tok='t')=>worker.fetch(new Request(HOST+'render?key='+key,{method:'DELETE',headers:{'x-app-token':tok}}),env);
       const d0=store.has('render:'+TK),d1=await del(TK,'wrong'),d2=await del('not-a-key'),d3=await del(TK);
-      ok(d0&&d1.status===403&&d2.status===400&&d3.status===200&&!store.has('render:'+TK),'DELETE /render?key= removes a kept photo, with the app token and a photo key only');
-    }finally{globalThis.fetch=realFetch}
+      ok(d0&&d1.status===403&&d2.status===400&&d3.status===200&&!store.has('render:'+TK),'DELETE /render?key= removes a kept photo, with the app token and a photo key only');}
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
 

@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/light warm-grey/.test(gens[0].prompt)&&!/Pure white|#ffffff/.test(gens[0].prompt),'a sock picture is on warm grey, even when an old app asks for white');
     ok(/light warm-grey/.test(gens[1].prompt)&&!/Pure white/.test(gens[1].prompt),'other items keep the warm-grey backdrop');
     await post({mode:'item',item:'a single navy dress sock',key:'c00000000000000a3',bg:'white',queue:true});
-    ok(!('bg' in JSON.parse(store.get('job:c00000000000000a3')))&&queued.length===1,'a queued sock picture gets no white background');
+    ok(store.has('render:c00000000000000a3')&&!store.has('job:c00000000000000a3')&&queued.length===0&&gens.length===3,'an old app\'s queue:true is ignored (the queue for pictures is gone): the picture is made at once');
     // app
     const ctx=await browser.newContext({viewport:{width:390,height:900}});
     await ctx.route(HOST+'**',async route=>{const q=route.request();if(q.method()==='POST')sent.push(JSON.parse(q.postData()));

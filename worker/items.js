@@ -1,11 +1,11 @@
 /* Daily Wardrobe worker: item pictures: a product photo of one accessory, made from a short description.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
-import { JOB_TTL, OPENAI_MS, dataUrlToBlob, dropFail, jobMsg } from './render.js';
-import { COMBO_RE, renderId, renderTtl } from './records.js';
-import { JOB_WRITES, spendEach, unspend, utcDay } from './people.js';
+import { OPENAI_MS, dataUrlToBlob } from './render.js';
+import { renderId, renderTtl } from './records.js';
+import { spendEach, unspend } from './people.js';
 
-/* POST /render {mode:'item', item, key} -> a product photo of one accessory (shoes, belt, socks...), made from a short
-   description with OpenAI's image generation, kept in KV under the item's look key like outfit photos */
+/* POST /render {mode:'item', item, key, ref?} -> a product photo of one accessory (shoes, belt, socks...), made from a short
+   description with OpenAI's image generation (or an edit of the item's own photo, ref), kept in KV as render:<key> */
 /* every item, socks included, on the same light warm-grey backdrop so the tiles match (a 'bg' from an older app is ignored) */
 const ITEM_BG = () => 'Plain light warm-grey seamless background, not white';
 const ITEM_PROMPT = item => `Studio product photograph of ${item}. ${ITEM_BG()}, soft even daylight,
@@ -20,17 +20,6 @@ async function renderItem(body, env, json, who) {
   const ns = who.ns;
   const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 1500);
   if (!item) return json({ error: 'no item description' }, 400);
-  // background: the picture is made by the queue consumer (an edit from a reference photo can take minutes); fetch it later with GET ?key=
-  if (body.queue) {
-    const key = String(body.key || '');
-    if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
-    if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
-    const day = utcDay(), over = await spendEach(env, who, [['item', 1], ['write', JOB_WRITES]], day); if (over) return json(over.body, over.status);
-    await env.WARDROBE.put(`${ns}job:${key}`, JSON.stringify({ kind: 'item', key, item, ref: body.ref || null, t: Date.now(), ...(who.caps ? { cap: 'item', capDay: day } : {}) }), JOB_TTL);
-    await dropFail(env, ns, key);
-    await env.RENDER_QUEUE.send(jobMsg(key, ns));
-    return json({ queued: true });
-  }
   const over = await spendEach(env, who, [['item', 1], ['write', 1]]); if (over) return json(over.body, over.status);
   const r = await itemPhoto({ item, ref: body.ref }, env);
   if (!r.ok) { await unspend(env, who, 'item'); await unspend(env, who, 'write'); return json({ error: r.error }, r.status); }

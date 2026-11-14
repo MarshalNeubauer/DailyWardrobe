@@ -29,7 +29,7 @@ The wardrobe is kept on the device and in the person's own backup on the server 
 
 - **Anthropic (Claude)**: item photos and close-ups, to read their type, colour and pattern.
 - **Cloudflare Workers AI**: the same photos, only on a server with no Anthropic key (a fallback reader, `@cf/meta/llama-3.2-11b-vision-instruct` unless `MODEL` says otherwise).
-- **OpenAI**: item photos and the outfit, only when the person taps Generate photo or Generate item pictures.
+- **OpenAI**: an item's photo and description, only when the person taps Generate item pictures (product pictures of shoes, belts, socks, trousers, coats and watches). Outfit pictures are painted on the device and never go to OpenAI.
 - **Open-Meteo**: the place set for the weather (the name typed in its search, then its coordinates), for the forecast and the usual weather by month. Sent from the device, with no account.
 - **Nager.Date**: the country chosen for public holidays, sent from the device; for countries it doesn't cover the server asks **Google**'s public holiday calendar for that country instead.
 - **Apple or Google push services**: with the morning reminder on, the phone's push address goes to the server, which sends an empty push through the phone maker's service (Apple's for an iPhone, Google's for Chrome on Android); the outfit lines stay on the phone.
@@ -43,22 +43,22 @@ Two parts, no build step.
 
 **The app** is a set of static files (`index.html`, `styles.css`, the scripts, `sw.js`) served by **GitHub Pages** from the `main` branch: Settings → Pages → Deploy from a branch → `main` / root. A merge to `main` is a release. Every release bumps the number in `sw.js` (`CACHE='dw-v<n>'`): that number is the version the app shows, and it is how installed copies learn there is something new.
 
-**The server** is one **Cloudflare Worker** (`worker.js`, configured by `wrangler.toml`). It reads photos, makes the outfit pictures, keeps each person's backup and daily copies, and handles invites and feedback. It needs:
+**The server** is one **Cloudflare Worker** (`worker.js`, configured by `wrangler.toml`). It reads photos, makes item pictures, keeps the outfit pictures the owner's computer uploads, keeps each person's backup and daily copies, and handles invites and feedback. It needs:
 
 | Setting | Kind | What for |
 | --- | --- | --- |
 | `APP_TOKEN` | secret | the owner's key to the server; any long random string |
 | `ANTHROPIC_API_KEY` | secret | reading photos with Claude |
-| `OPENAI_API_KEY` | secret | making outfit and item pictures |
+| `OPENAI_API_KEY` | secret | making item pictures (optional: without it only that button fails) |
 | `ALLOWED_ORIGIN` | variable | the app's address, e.g. `https://NAME.github.io` (no path) |
 | `CLAUDE_MODEL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_QUALITY` | variables, optional | which models to use |
 | `MODEL` | variable, optional | the Workers AI model that reads photos when there is no Anthropic key |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | secrets, optional | sign the morning reminder's pushes: the public key is the base64url P-256 public point, the private one the base64url 32-byte private scalar; without them the reminder can't be switched on |
 | `VAPID_SUBJECT` | variable, optional | the contact sent with each push (the app's https address or a `mailto:`) |
-| `TESTER_DAILY_TOTAL` | variable, optional | JSON, e.g. `{"photo":20}`: changes the daily ceilings for all testers together (`tag`, `pattern`, `photo`, `item`, `upload`, `feedback`, `backup`, `push`), on top of each tester's own |
+| `TESTER_DAILY_TOTAL` | variable, optional | JSON, e.g. `{"item":20}`: changes the daily ceilings for all testers together (`tag`, `pattern`, `item`, `upload`, `feedback`, `backup`, `push`), on top of each tester's own |
 | `WARDROBE` | KV namespace | backups, kept pictures, feedback |
-| `RENDER_QUEUE` | Queue `wardrobe-renders` | pictures made in the background |
-| `RENDER_HUB` | Durable Object | tells an open app its picture is ready |
+| `RENDER_QUEUE` | Queue `wardrobe-renders` | finishes deleting a large account in the background |
+| `RENDER_HUB` | Durable Object | counts each tester's daily use |
 | `AI` | Workers AI binding, optional | photo reading when there is no Anthropic key |
 
 Secrets are set once in the Cloudflare dashboard (or `wrangler secret put NAME`) and never live in this repository. `.github/workflows/deploy-worker.yml` deploys the worker whenever a merge to `main` changes it; for that the repository needs the secret `CLOUDFLARE_API_TOKEN` and the variables `CLOUDFLARE_ACCOUNT_ID` and `WARDROBE_KV_ID`. Until they are set the workflow skips and the worker is deployed by hand (`npx wrangler deploy`).
