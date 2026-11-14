@@ -74,6 +74,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(posted.at(-1).time==='06:45','changing the time tells the server');
     await p.click('#remind-sw');await p.waitForFunction(()=>!remindPrefs().on&&!remindBusy);
     ok(posted.at(-1).off===true,'switching it off tells the server');
+    // cleaning reminders (care.js careReminders): with the morning reminder off they follow it (off); switched on by themselves they
+    // subscribe, keep care.json and send only their dates; a suit worn up to its limit is reminded once, the next workday morning
+    {const c0=await p.evaluate(()=>({care:remindCareOn(remindPrefs()),sw:document.querySelector('#care-rem-sw').getAttribute('aria-checked')}));
+      ok(c0.care===false&&c0.sw==='false','with the morning reminder off, the cleaning reminders are off too (they follow it until set)');
+      await p.evaluate(()=>{const ids={top:'suit0',bot:'suit0',shirt:'shirt2',tie:'tie4',shoes:'shoes6'};
+        for(const d of [2,3,4,5,8])dayRecs[key(new Date(2026,10,d))]={date:key(new Date(2026,10,d)),ids,suitDay:true,worn:true};localStorage.removeItem('care_told');cache={}});
+      const n0=posted.length;await p.click('#care-rem-sw');await p.waitForFunction(()=>remindCareOn(remindPrefs())&&!remindBusy);
+      const c1=await p.evaluate(async()=>{const c=await caches.open('dw-keep-remind');return {care:await (await c.match('care.json')).json(),lines:await (await c.match('remind.json')).json(),msg:document.querySelector('.remind-msg').textContent}});
+      const ps2=posted.slice(n0).at(-1)||{},cd=Object.keys(c1.care).sort();
+      ok(ps2.endpoint&&ps2.dates&&ps2.dates.join()===cd.join()&&cd.length>=1&&Object.values(c1.care).filter(t=>/^The navy suit is due for the cleaner\.$/.test(t)).length===1&&!Object.keys(c1.lines).length,
+        `switched on by itself: the server gets only the cleaning reminders' dates (${cd.length}: the navy suit's 'due' once, then its overdue mornings and the grey suit's last wear), no outfit lines`);
+      ok(/when a suit or blazer is due for the cleaner/.test(c1.msg),`it says what it does ("${c1.msg}")`);
+      await p.click('#care-rem-sw');await p.waitForFunction(()=>!remindCareOn(remindPrefs())&&!remindBusy);
+      ok(posted.at(-1).off===true,'switched off with nothing else on: the subscription is switched off')}
     // not connected: not shown
     await p.evaluate(()=>{closeSettings();localStorage.removeItem('worker_url');localStorage.removeItem('app_token');openSettings('schedule')});
     ok(!(await p.isVisible('#remind-box')),'not connected: no reminder switch');

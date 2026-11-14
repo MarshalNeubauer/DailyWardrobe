@@ -47,7 +47,7 @@ function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
     :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" onclick="careSend('${id}','${w}')">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" onclick="careCleaned('${id}')">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
-function careRedraw(){const c=$('#care');if(c&&!c.hidden)renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
+function careRedraw(){if(typeof remindSoon==='function')remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */const c=$('#care');if(c&&!c.hidden)renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
 /* upcoming days the piece was pinned to (a swap, a hand pick) let go of it, as when it is taken out of rotation: they are planned again */
 async function careRelease(id){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
@@ -149,6 +149,28 @@ function careBandFit(){const fig=document.getElementById('mannequin-container'),
     if(careObs[0]!==fig||careObs[1]!==sw){careRO.disconnect();careRO.observe(fig);if(sw)careRO.observe(sw);careObs=[fig,sw]}}}
 /* through a transition (the swatches moving and shrinking, about 0.45 s): laid out again every frame */
 function careBandSoon(){if(!document.getElementById('cband'))return;const end=performance.now()+700;const step=()=>{careBandFit();if(performance.now()<end)requestAnimationFrame(step)};requestAnimationFrame(step)}
+/* ---- cleaning reminders on the phone (the owner's ask, 2026-11-14; sent by the morning reminder's push, remind.js, sw.js) ----
+   {YYYY-MM-DD: text} for the coming workdays: a suit's or blazer's last wear before cleaning, and a wear past it, on the morning it is
+   planned; and once due (worn up to its limit, not sent away or cleaned), one reminder the next workday morning still to come, not again
+   until it is cleaned (localStorage care_told {id: {c: its cleaned date then, d: the day told}}) */
+function careReminders(days,time){const out={},T=todayDate(),add=(d,t)=>{const k=isoKey(d);out[k]=out[k]?out[k]+' '+t:t};
+  const now=new Date(),[h,m]=String(time||'07:00').split(':').map(Number),past=now.getHours()*60+now.getMinutes()>=h*60+m&&isoKey(now)===isoKey(T);
+  const wd=[];for(let g=0;g<days;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(isWorkday(d)&&!(g===0&&past))wd.push(d)}   // (today's time gone: from tomorrow)
+  const plan=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)],last={},nm=i=>{const n=String(i.name||'').trim(),d=desc(i)||'';return n||(new RegExp('\\b'+careNoun(i)+'\\b').test(d)?d:(d+' '+careNoun(i)).trim())};   // (its name as typed, else "navy suit")
+  wd.forEach((d,j)=>{const o=plan(d),s=o&&careDayState(o,d);if(!s)return;
+    if(s.k==='last'){add(d,`Last wear for the ${nm(o.top)} before cleaning: it goes to the cleaner after today.`);if(last[o.top.id]==null)last[o.top.id]=j}
+    else if(s.k==='over')add(d,`The ${nm(o.top)} is overdue for cleaning: today is wear ${s.n} of ${s.limit}.`)});
+  let told={};try{told=JSON.parse(localStorage.getItem('care_told')||'{}')||{}}catch{}
+  const w=careCounts(),keep={},tk=isoKey(T);
+  for(const i of items){if(!CARE_FRAME.includes(i.type)||i.away||i.order)continue;const L=careLimit(i.type);if(L<2)continue;
+    const c=i.cleaned||'',t=told[i.id];
+    if(t&&t.c===c&&(t.d<tk||(t.d===tk&&past))){keep[i.id]=t;continue}   // told already, this time round (this morning included)
+    const j=(w[i.id]||0)>=L?0:last[i.id]!=null?last[i.id]+1:null;   // due already: the first morning to come; due after a coming last wear: the morning after
+    const d=j!=null&&wd[j];if(!d)continue;const o=plan(d);
+    if(o&&o.top&&o.top.id===i.id){if(t&&t.c===c)keep[i.id]=t;continue}   // planned that day: that day's own line says it
+    add(d,`The ${nm(i)} is due for the cleaner.`);keep[i.id]={c,d:isoKey(d)}}
+  try{localStorage.setItem('care_told',JSON.stringify(keep))}catch{}
+  return out}
 /* Settings → Care */
 function renderCareUI(){const el=$('#care-limits');
   if(el)el.innerHTML=CARE_TYPES.map(t=>{const v=careLimit(t);return `<label class="srow">${CARE_PLURAL[t]} <select id="care-lim-${t}" onchange="setCareLimit('${t}',this.value)"><option value="0"${v===0?' selected':''}>Never</option><option value="1"${v===1?' selected':''}>After every wear</option>${Array.from({length:CARE_MAX-1},(_,k)=>k+2).map(n=>`<option value="${n}"${v===n?' selected':''}>After ${n} wears</option>`).join('')}</select></label>`}).join('');

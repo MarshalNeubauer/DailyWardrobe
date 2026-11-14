@@ -59,7 +59,23 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       ok(f0.cut>0&&Math.abs(f0.cut-(f0.swRight+5+9))<1.5&&f0.sw>60,`a coming day: the cut follows the ${Math.round(f0.sw)} px tie swatch (at ${f0.cut})`);
       ok(f1.cut>0&&f1.sw<f0.sw-4&&Math.abs(f1.cut-(f1.swRight+5+9))<1.5,`a swatch tapped: the swatches shrink to ${Math.round(f1.sw)} px and the cut moves with them (at ${f1.cut})`)}
     await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null;renders={};sel=new Date(2026,10,11);cache={}});
-    // ---- the Wardrobe grid: a quiet tag on due pieces only
+    // ---- cleaning reminders for the phone (careReminders, sent by the morning reminder's push): the last wear and a wear past it on
+    // the morning planned; a piece due, once, the next morning to come, and not again until it is cleaned
+    {const rem=await p.evaluate(()=>{localStorage.removeItem('care_told');cache={};const r=careReminders(14,'07:00'),told=JSON.parse(localStorage.getItem('care_told')||'{}');
+        const plan=Object.entries(planMonth(2026,10)).filter(([k,o])=>o&&o.top).map(([k,o])=>[isoKey(keyDate(k)),o.top.id]).filter(([k])=>k>='2026-11-11').sort();
+        return {r,told,plan}});
+      const all=Object.entries(rem.r).sort(),has=(re)=>all.filter(([,t])=>re.test(t)).map(([k])=>k),firstOf=id=>(rem.plan.find(([,x])=>x===id)||[])[0];
+      const navyOver=has(/The navy suit is overdue for cleaning: today is wear 6 of 5/),navyDue=has(/The navy suit is due for the cleaner/);
+      ok(navyOver.length===1&&navyOver[0]===firstOf('navy')&&!navyDue.length,`a suit already due and planned today: that morning says it is overdue (${navyOver.join()}), and no separate "due" reminder`);
+      const charLast=has(/Last wear for the charcoal suit before cleaning: it goes to the cleaner after today/),charDue=has(/The charcoal suit is due for the cleaner\./);
+      const nextWd=d=>{const x=new Date(d+'T12:00');do x.setDate(x.getDate()+1);while(x.getDay()===0||x.getDay()===6);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+      ok(charLast.length===1&&charLast[0]===firstOf('char')&&charDue.length===1&&charDue[0]===nextWd(charLast[0])&&rem.told.char&&rem.told.char.d===charDue[0],
+        `the charcoal suit: its last wear on the morning it is planned (${charLast.join()}), then one "due" reminder the next workday (${charDue.join()})`);
+      const again=await p.evaluate(d=>{TODAY_OVERRIDE=d+'T12:00:00';cache={};const r=careReminders(14,'07:00');TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};return Object.values(r).filter(t=>/The charcoal suit is due/.test(t)).length},nextWd(charDue[0]||'2026-11-13'));
+      ok(again===0,'told once: not again the days after, while it is still not cleaned');
+      const fresh=await p.evaluate(()=>{const n=items.find(i=>i.id==='char');n.cleaned='2026-11-11';cache={};localStorage.removeItem('care_told');const r=careReminders(14,'07:00');delete n.cleaned;cache={};localStorage.removeItem('care_told');
+        return Object.values(r).some(t=>/The charcoal suit (is due|is overdue)|Last wear for the charcoal/.test(t))});
+      ok(!fresh,'cleaned: nothing to remind')}    // ---- the Wardrobe grid: a quiet tag on due pieces only
     await p.evaluate(()=>{flt='all';editing=null;show('wardrobe')});
     const g=await p.evaluate(()=>({navy:(document.querySelector('#gi-navy .caretag')||{}).textContent||'',n:document.querySelectorAll('#wardrobe .caretag').length}));
     ok(g.navy==='Due for cleaning'&&g.n===1,'the grid marks the one due piece "Due for cleaning" (shirts, washed after every wear, are not marked)');
