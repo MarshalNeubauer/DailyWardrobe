@@ -81,8 +81,23 @@ def nums(vs):
     return s
 
 
+EDGE = 6    # px at 2048: a mask's last rows and columns at the frame are its line EDGE px inside, carried straight out
+PAD = 16    # px: the mask is traced on a canvas this much larger each side, so its outline crosses the frame outside the picture
+
+
+def edge_fix(mask):
+    """the frame cuts the figure (the neck at the top, the trousers at the bottom): the soft masks' last few pixels at the border are
+    unreliable (a zone a pixel or two wider there made thin spikes along the crop, 2026-11-14), and an outline that runs along the border
+    gets rounded and simplified into slivers at its corners. So each border band is the line EDGE px inside, and the mask is padded by
+    repeating its border: the outline then leaves the frame square, its corners PAD px outside the picture"""
+    m = mask.astype(np.uint8).copy()
+    m[:EDGE] = m[EDGE]; m[-EDGE:] = m[-EDGE - 1]
+    m[:, :EDGE] = m[:, EDGE:EDGE + 1]; m[:, -EDGE:] = m[:, -EDGE - 1:-EDGE]
+    return np.pad(m, PAD, mode='edge')
+
+
 def to_path(mask, eps=1.1, min_area=40, smooth=1.6, corner=55):
-    m = mask.astype(np.uint8)
+    m = edge_fix(mask)
     cs, _ = cv2.findContours(m, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
     out = []
     for c in cs:
@@ -94,7 +109,7 @@ def to_path(mask, eps=1.1, min_area=40, smooth=1.6, corner=55):
         a = cv2.approxPolyDP(p.astype(np.float32).reshape(-1, 1, 2), eps, True)[:, 0, :].astype(np.float64)
         if len(a) < 3:
             continue
-        a = (a + 0.5) * K
+        a = (a + 0.5 - PAD) * K
         n = len(a)
         T = np.zeros_like(a)   # Catmull-Rom tangents, zero at sharp corners
         for i in range(n):
@@ -116,7 +131,12 @@ def to_path(mask, eps=1.1, min_area=40, smooth=1.6, corner=55):
                 if last: break
                 s += 'l' + nums([p2[0] - p1[0], p2[1] - p1[1]])
             else:
-                c1, c2 = q(a[i] + T[i]), q(a[(i + 1) % n] - T[(i + 1) % n])
+                # a control point never reaches past a third of its own segment: beside a long straight run (the frame's top edge
+                # between the shoulders, 115 units) the Catmull-Rom tangent, (p2 - p0) / 6, was 20 units long, and the curve overshot the
+                # corner into a thin spike out of the neck (the owner's report, 2026-11-14)
+                seg = np.hypot(*(a[(i + 1) % n] - a[i])); lim = seg / 3
+                cl = lambda t: t * min(1.0, lim / max(np.hypot(*t), 1e-9))
+                c1, c2 = q(a[i] + cl(T[i])), q(a[(i + 1) % n] - cl(T[(i + 1) % n]))
                 s += 'c' + nums([c1[0] - p1[0], c1[1] - p1[1], c2[0] - p1[0], c2[1] - p1[1], p2[0] - p1[0], p2[1] - p1[1]])
         out.append(s + 'z')
     return ''.join(out)

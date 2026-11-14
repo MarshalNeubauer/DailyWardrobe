@@ -44,6 +44,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(r.open,`${kind}: an open collar is the master's own (.fig-open), its placket buttons drawn where the painter draws them`);
       ok(!r.useInClip,`${kind}: no <use> inside <clipPath> (WebKit-safe)`);
       ok(/^Torso wearing /.test(r.label),`${kind}: labelled with the outfit (${r.label})`);
+      // the crop at the neck is clean (the owner, 2026-11-14: thin spikes stuck out sideways along the top edge, where a traced curve
+      // overshot its corner): drawn at 2x on a magenta page, no row of the top 12 is wider than row 30, and the figure's edge only widens
+      // going down
+      const top=await p.evaluate(async kind=>{const svg=outfitMannequinSvg({kind,suit:{color:'#808080'},shirt:{color:'#c0c0c0'},tie:{color:'#404040'},bot:{color:'#606060'},bg:'#ff00ff',idPrefix:'t'+kind.replace(/-/g,'')+'-'})
+          .replace('width="100%"','width="780" height="780"');
+        const im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);await im.decode();const c=document.createElement('canvas');c.width=c.height=780;const g=c.getContext('2d');g.drawImage(im,0,0);
+        const d=g.getImageData(0,0,780,40).data,span=y=>{let a=-1,b=-1;for(let x=0;x<780;x++){const o=(y*780+x)*4,bg=d[o]>200&&d[o+1]<60&&d[o+2]>200;if(!bg){if(a<0)a=x;b=x}}return [a,b]};
+        const rows=[];for(let y=0;y<=30;y++)rows.push(span(y));const ref=rows[30];
+        return {ok:rows.slice(0,12).every(([a,b])=>a>=ref[0]&&b<=ref[1])&&rows.every((r,y)=>y===0||(r[0]<=rows[y-1][0]+1&&r[1]>=rows[y-1][1]-1)),rows:[rows[0],rows[6],rows[30]].map(r=>r.join('-')).join(' ')}},kind);
+      ok(top.ok,`${kind}: the figure leaves the top of the frame cleanly, no spikes along the crop (left-right at rows 0, 6, 30: ${top.rows})`);
       const gz=zlib.gzipSync(fs.readFileSync(path.join(ROOT,'mq',kind+'.js'))).length;
       ok(gz<48000,`${kind}: the pose ships at about 40 KB gzip (${(gz/1024).toFixed(1)} KB)`);
     }
