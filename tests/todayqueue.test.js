@@ -67,25 +67,30 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       reply=()=>[200,{data:[{b64_json:JPG}]}];
       store.set('job:'+K,JSON.stringify(job));const put0=KV.put;let sig=null;const f0=globalThis.fetch;
       globalThis.fetch=async(h,init)=>{sig=init&&init.signal;return f0(h,init)};
-      KV.put=async(k,v)=>{if(k.startsWith('render:'))throw new Error('KV down');return put0(k,v)};
-      m=await run(1);ok(m.retried&&m.retried.delaySeconds===60&&!m.acked,'a crash is retried');
+      // a crash before OpenAI is called (reading the job's earlier render throws) is retried; one that keeps crashing is given up
+      const get0=KV.get;KV.get=async(k,t)=>{if(k.startsWith('render:'))throw new Error('KV down');return get0(k,t)};const c0=calls;
+      m=await run(1);ok(m.retried&&m.retried.delaySeconds===60&&!m.acked&&calls===c0,'a crash before the photo is paid for is retried');
       const st=await (await worker.fetch(new Request(HOST+'render-queue',{headers:{'x-app-token':'t'}}),env)).json();
       ok(st.pending.includes(K)&&st.running[K]&&st.running[K].attempts===1,'GET /render-queue says how far a waiting photo got (attempts, when it last began)');
-      m=await run(4);KV.put=put0;globalThis.fetch=f0;
-      ok(m.acked&&store.has('jobfail:'+K)&&/failed making it: KV down/.test(JSON.parse(store.get('jobfail:'+K)).error)&&!store.has('job:'+K),'a job that keeps crashing is recorded as failed, with the reason');
+      m=await run(4);KV.get=get0;
+      ok(m.acked&&store.has('jobfail:'+K)&&/failed making it: KV down/.test(JSON.parse(store.get('jobfail:'+K)).error)&&!store.has('job:'+K)&&!store.has('jobrun:'+K),'a job that keeps crashing is recorded as failed, with the reason, and its records go');
+      store.delete('jobfail:'+K);
+      // the photo is made (paid) and then can't be kept: no retry, so OpenAI is called once
+      store.set('job:'+K,JSON.stringify(job));KV.put=async(k,v)=>{if(k.startsWith('render:'))throw new Error('KV put() limit exceeded for the day.');return put0(k,v)};const c1=calls;
+      m=await run(1);KV.put=put0;globalThis.fetch=f0;
+      ok(m.acked&&!m.retried&&calls===c1+1&&/made but the server couldn’t keep it/.test(JSON.parse(store.get('jobfail:'+K)||'{}').error||'')&&!store.has('job:'+K),'a photo made but not kept is not made again: acked once, the failure recorded (1 OpenAI call)');
       ok(sig&&typeof sig.aborted==='boolean','the call to OpenAI has a time limit');
       store.delete('jobfail:'+K)}
-    // ---- a job stuck as "pending" (its message lost, or its run never finished) is sent again when the app checks, then given up
-    {const K='c5555555555555555',status=async()=>(await worker.fetch(new Request(HOST+'render-queue',{headers:{'x-app-token':'t'}}),env)).json();
-      sent.splice(0);store.set('job:'+K,JSON.stringify({key:K,image:'data:image/png;base64,AA',refs:[],t:Date.now()-12*60000}));   // like the user's: no jobrun, its message gone
+    // ---- the app's status checks send nothing again (a re-send made a second paid photo); a job left untouched 6 hours counts as failed
+    {const K='c5555555555555555',status=async()=>(await worker.fetch(new Request(HOST+'render-queue?keys='+K,{headers:{'x-app-token':'t'}}),env)).json();
+      sent.splice(0);store.set('job:'+K,JSON.stringify({key:K,image:'data:image/png;base64,AA',refs:[],t:Date.now()-20*60000}));   // waiting behind others for 20 minutes
       let st=await status();
-      ok(sent.some(m=>m.key===K)&&st.running[K]&&st.running[K].resends===1,'a job that never started is sent to the queue again when the app checks');
-      sent.splice(0);await status();ok(!sent.length,'…once, not on every check');
-      store.set('jobrun:'+K,JSON.stringify({attempts:1,at:Date.now()-25*60000,resends:1}));await status();
-      ok(sent.some(m=>m.key===K)&&JSON.parse(store.get('jobrun:'+K)).resends===2,'a run that never finished (20 minutes) is sent again too');
-      store.set('jobrun:'+K,JSON.stringify({attempts:0,at:Date.now()-5*60000,resends:3}));sent.splice(0);st=await status();
-      ok(!sent.length&&!store.has('job:'+K)&&/after several tries/.test(JSON.parse(store.get('jobfail:'+K)||'{}').error||'')&&st.failed.some(f=>f.key===K),'after 3 tries it is recorded as failed, not left pending');
-      store.delete('jobfail:'+K);sent.splice(0)}
+      ok(!sent.length&&st.pending.includes(K)&&st.running[K]&&st.running[K].attempts===0&&!st.failed.length,'a job waiting 20 minutes is still pending and is not sent to the queue again');
+      store.set('jobrun:'+K,JSON.stringify({attempts:1,at:Date.now()-25*60000}));st=await status();
+      ok(!sent.length&&st.pending.includes(K),'nor is a run that began 25 minutes ago (the queue redelivers a run that was cut off)');
+      store.set('jobrun:'+K,JSON.stringify({attempts:0,at:Date.now()-7*3600000}));st=await status();
+      ok(!sent.length&&store.has('job:'+K)&&!store.has('jobfail:'+K)&&st.failed.some(f=>f.key===K)&&!st.pending.includes(K),'one untouched for 6 hours is reported as failed, writing and deleting nothing');
+      store.delete('job:'+K);store.delete('jobrun:'+K);sent.splice(0)}
     {const r=await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({mode:'queue',key:'c6666666666666666',image:'data:image/png;base64,AA'})}),env);
       ok(r.status===200&&JSON.parse(store.get('jobrun:c6666666666666666')).attempts===0,'queueing records when the job was sent (so one that never starts is noticed)');
       store.delete('job:c6666666666666666');store.delete('jobrun:c6666666666666666');sent.splice(0)}
