@@ -585,6 +585,18 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - stage 3 numbers (SwiftShader): the 13 new rows max 1 level, mean 0.0001-0.0008 at 512 and 0.0001-0.0011 at 2048; at 2048 GL 0.9-1.7 s against CPU 1.3-3.2 s (herringbone 1.2 s against 2.8 s, tweed 0.9 against 1.3, small figures 1.0-1.7 against 2.3-3.2)
 - texture memory since stage 3: about 197 MB at 2048 as before, about 199 MB while a tweed is painted (its 2 MB tile replaces the 0.25 MB linen)
 - `tests/asmgl.test.js` `has` tags since stage 3: `hbx` (yarn, floats, grain, mottle or breaks), `tweed`, `wv-<kind>`, `c2` (a second colour)
+- stage 4 (2026-11-14): patterned ties and shirts on the suit master are covered, so every suit-master look paints on the chip (only `job.look === false`, a size over `ASM_SIZE` or a missing background still go to the CPU)
+- (stage 4) a tie read from a tile (`asmTieFor`: bands, motifs, `TIE_TEX_K` weaves, the twill capped at `ASM_TIE_TEX_MAX`, knit, paisley) is read at four points a pixel, turned by `tg.lean` plus the pattern's angle (a quarter turn more above `tg.yk`), or on its solved pieces 80/81 (`geoAt`) turned by the pattern's angle only; repeat `(motif?2:1)·bw/across`
+- (stage 4) without the master's tie geometry (`P.tieGeo`) a tile tie is its colour on both painters
+- (stage 4) a shirt tile (`asmCmTile`, with `asmHbShirtLook` already applied CPU-side) is read at its solved front (piece 2, off the jacket's parts) and cuffs (60..79) at 2x2 points (3x3 when `tile.fine`), else 3x3 (woven) or one point turned by its cuff's angle, else upright
+- (stage 4) the jacket's, tie's and shirt's tiles are stacked in one RGBA32F texture on unit 12 (`asmGlAtlas`, places in `uTO`); no new sampler unit; tiles over `ASM_GL_TILE` together stay on the CPU
+- (stage 4) the turned shirt parts (`P.cuffAng` not 0, at most `ASM_GL_CUFFS` 15: `asmGlCuffs`) are an index in the high byte of the lighting texture's part channel (`uL2.w`), their cos/sin a uniform table (`uCu`)
+- (stage 4) tile reads are bilinear (continuous), so no CPU painter change was needed: pictures and the code hash are unchanged
+- (stage 4) the tie clip (`asmBarDraw`) and the shirt's buttons (`asmCmButtons`) stay CPU passes after read-back
+- `asmGlWhy` reasons since stage 4: 'tie tile missing or too large', 'shirt tile missing, too large or without its size', 'tiles too large together', 'too many turned cuffs'; 'patterned tie' / 'patterned shirt' only for a tie or shirt painted another way (no route gives one)
+- (stage 4) the test's stand-in maps also solve the tie (80 above its neck, 81 below), the turned cuffs (60..) and the shirt's front (2) where there is no jacket
+- stage 4 numbers (SwiftShader): the 19 new rows max 1 level, mean 0.0001 at 512 and at 2048; at 2048 GL about 0.6-1.8 s against CPU 0.6-1.2 s (software rendering; the bench's phone chip is ~90 ms); the stacked tiles 8 KB (knit) to 1.3 MB (stripe tie) a look in the table, about 3 MB at most with a band jacket, so about 197-199 MB of textures at 2048 in all
+- `tests/asmgl.test.js` `has` tags since stage 4: `tie-bands`, `tie-motif`, `tie-tex-<kind>`, `texmax`, `tie-knit`, `tie-paisley`, `clip`, `shirt-tile`, `fine`, `hbs`, `shirt-motif`; its uncovered row is now 'cloth look off'
 
 ### `asm-worker.js`
 

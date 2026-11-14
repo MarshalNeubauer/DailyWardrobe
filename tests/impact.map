@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8f3cf015b561fd8eb52a
+# tested	c110d830b744efadf04e
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -360,15 +360,15 @@ asmgl.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg
 asmgl.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 asmgl.test.js	analysis.js	<loaded>
 asmgl.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	addTombstones	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	atomic	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	keepRender	loadRenders	loadWeather	metaGet	metaPut	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
-asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmButtons	asmCmCodeText	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightPrep	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSrcSig	asmCmTile	asmGeoPrep	asmH32	asmHbShirt	asmTieSheenK	asmUvAt
-asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlContext	asmGlCovers	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlWhy
+asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmButtons	asmCmCodeText	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightPrep	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSrcSig	asmCmTile	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKnitTile	asmPaisleyTile	asmTieSheenK	asmUvAt
+asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlContext	asmGlCovers	asmGlCuffs	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlWhy
 asmgl.test.js	asm-worker.js	<any>
-asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmDropOld	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
+asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmDropOld	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
 asmgl.test.js	care.js	<loaded>	careShow
 asmgl.test.js	colpick.js	<loaded>
-asmgl.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	lum	mergeState	mix	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	stateSig	thirdOf	todayDate
+asmgl.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	labHex	lum	mergeState	mix	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	stateSig	thirdOf	todayDate
 asmgl.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
-asmgl.test.js	draw.js	<loaded>	fabricDef
+asmgl.test.js	draw.js	<loaded>	fabricDef	texPlainBand	texTileUrl	texTones
 asmgl.test.js	dress.js	<loaded>	migrateVests
 asmgl.test.js	figure.js	<loaded>	@{}
 asmgl.test.js	index.html	<loaded>
