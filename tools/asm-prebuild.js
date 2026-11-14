@@ -78,7 +78,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
   // (stage 6) --gpu: Chromium in its new headless mode (channel chromium) on the graphics card through ANGLE (D3D11), its 2D canvas and
   // rasterising kept on the processor, so only the one GPU worker's WebGL2 uses the card; the tests' SwiftShader in the usual headless shell
   const gpuLaunch=!GPU?{}:GPU_ANGLE==='swiftshader'?{args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']}
-    :{channel:'chromium',args:['--use-angle='+GPU_ANGLE,'--ignore-gpu-blocklist','--disable-accelerated-2d-canvas','--disable-gpu-rasterization']};
+    :{channel:'chromium',args:['--use-angle='+GPU_ANGLE,'--enable-gpu','--ignore-gpu-blocklist','--disable-accelerated-2d-canvas','--disable-gpu-rasterization']};
   const launch=async o=>{if(PROFILE){fs.mkdirSync(PROFILE,{recursive:true});ctx=await chromium.launchPersistentContext(path.join(PROFILE,'browser'),{...opts,...o})}
     else{browser=await chromium.launch(o);ctx=await browser.newContext(opts)}};
   if(GPU)try{await launch(gpuLaunch)}catch(e){gpuStop(`the browser would not start on the graphics card (${String(e&&e.message||e).split('\n')[0]})`,false);await launch({})}
