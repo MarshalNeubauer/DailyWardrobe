@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	27fa9384eaef6dc3f7f0
+# tested	b0c165a4b6c705d0da85
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -5797,11 +5797,11 @@ sharedmasters.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	
 sharedmasters.test.js	add.js	<loaded>
 sharedmasters.test.js	analysis.js	<loaded>
 sharedmasters.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	tx	txFail	txs	window.fetch
-sharedmasters.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmCopyKey	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmTieSheenK
-sharedmasters.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
-sharedmasters.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
+sharedmasters.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmCopyKey	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMp	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmH32	asmHbShirt	asmTieLit	asmTieSheenK
+sharedmasters.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlTry	asmGlUI	asmGlWhy
+sharedmasters.test.js	asm-watch.js	<any>	<loaded>	asmWatchBlur	asmWatchDark	asmWatchDo	asmWatchImg	asmWatchJob	asmWatchMetal	asmWatchPaint	asmWatchPaints	asmWatchPct	asmWatchSig
 sharedmasters.test.js	asm-worker.js	<any>
-sharedmasters.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmImgOf	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmMicroKind	asmOutKey	asmPhoto	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmTrim	asmWants	asmWorker	renderAsmUI
+sharedmasters.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBuild	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmListGet	asmLoad	asmMicroKind	asmOutKey	asmPhoto	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmTrim	asmWants	asmWorker	renderAsmUI
 sharedmasters.test.js	care.js	<loaded>	careShow
 sharedmasters.test.js	colpick.js	<loaded>
 sharedmasters.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colOf	dayClimate	di	dressOut	hasVest	inRotation	isWorkday	isoKey	key	keySettings	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	setHash	setKeys	todayDate	watchOpts	wearsJacket	wearsTie
@@ -5840,6 +5840,8 @@ sharedmasters.test.js	tools/asm-cm-upload.js	<any>
 sharedmasters.test.js	tools/upload-budget.js	<any>
 sharedmasters.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 sharedmasters.test.js	wardrobe.js	<loaded>
+sharedmasters.test.js	watch/leather.jpg	<loaded>
+sharedmasters.test.js	watch/suit.png	<loaded>
 sharedmasters.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	serve
 sharedmasters.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	listSnapshots	nextRevs	phCollect	putStored	splitPhotos	storedResponse	storedVersion	syncVersion	writeBudget
 sharedmasters.test.js	worker/links.js	<loaded>	readCapped

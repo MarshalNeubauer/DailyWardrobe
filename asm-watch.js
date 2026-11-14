@@ -25,7 +25,9 @@ const ASM_WATCH_TONES={gold:['#fff0b8','#c9a227','#5a4310'],rosegold:['#ffe1cf',
 const asmWatchMetal=w=>{const m=w.metal||'silver';return m==='gold'&&w.primaryColor==='rosegold'?'rosegold':m};
 /* the job's part (assemble.js asmJob): what to paint, or null */
 function asmWatchJob(o,kind){const w=o&&o.watch;if(!kind||!asmWatchPaints(w))return null;const k=ASM_WATCH_MASTER[kind]||kind,g=ASM_WATCH_GEO[k];if(!g)return null;
-  const op=watchOpts(w);return {k,g,metal:asmWatchMetal(w),dial:COLORS[op.dial]||COLORS.charcoal,dark:asmWatchDark(op.dial),band:op.band,strap:colOf(w),mask:'watch/'+k+'.png',leather:'watch/leather.jpg'}}
+  // (everything core.js knows is worked out here, on the page: the painting runs in asm-worker.js, which has no core.js. A COLORS read in
+  // asmWatchDo failed every gold-watch picture in the worker on the day this shipped: phones and the PC builder; tests/sharedmasters)
+  const op=watchOpts(w);return {k,g,metal:asmWatchMetal(w),white:op.dial==='white',dial:COLORS[op.dial]||COLORS.charcoal,dark:asmWatchDark(op.dial),band:op.band,strap:colOf(w),mask:'watch/'+k+'.png',leather:'watch/leather.jpg'}}
 const asmWatchDark=c=>{const h=COLORS[c]||'#000000',v=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);return .2126*v[0]+.7152*v[1]+.0722*v[2]<.45};
 const asmWatchMem=new Map();
 async function asmWatchImg(u){if(!asmWatchMem.has(u))asmWatchMem.set(u,asmData(u).then(d=>d,e=>{asmWatchMem.delete(u);throw e}));return asmWatchMem.get(u)}
@@ -74,7 +76,7 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
       for(let c=0;c<3;c++){let vv=LC[c]*k;vv+=(SH[c]*.3-vv)*sheen;if(stitch)vv=vv*.45+ST[c]*.55;put(q,c,vv,a)}}}
   else if(W.band!=='leather')metal(SP,put);   // a metal bracelet in the case's metal (silver: as the master)
   metal(C,put);
-  if(W.dial!==COLORS.white){const DC=hex(W.dial),MK=hex('#d9d4c4'),m=new Uint8Array(N);for(let q=0;q<N;q++)m[q]=D[q]>.5;const ref=asmWatchPct(Y,m,.75),big=bl(Y,9),sm=bl(Y,2.5);
+  if(!W.white){const DC=hex(W.dial),MK=hex('#d9d4c4'),m=new Uint8Array(N);for(let q=0;q<N;q++)m[q]=D[q]>.5;const ref=asmWatchPct(Y,m,.75),big=bl(Y,9),sm=bl(Y,2.5);
     for(let q=0;q<N;q++){const a=D[q];if(a<.004)continue;
       if(W.dark){const fine=Math.min(1,Math.max(0,(sm[q]-Y[q])/ref)),k=Math.min(1.15,Math.max(.7,big[q]/ref)),t=Math.min(.9,fine*2.6);for(let c=0;c<3;c++){const d=DC[c]*k;put(q,c,d+(MK[c]-d)*t,a)}}
       else{const k=Math.min(1.1,Math.max(.35,Y[q]/ref));for(let c=0;c<3;c++)put(q,c,DC[c]*k,a)}}}   // a light dial: its colour, the printing as dark as before
