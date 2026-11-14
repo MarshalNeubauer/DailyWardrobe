@@ -26,7 +26,8 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
       return {tie:kind({id:'a',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',...cu}),pin:kind({id:'b',type:'suit',primaryColor:'navy',pattern:'pinstripe',...cu}),
         twill:kind({id:'c',type:'suit',primaryColor:'brown',pattern:'twill',...cu}),dobby:kind({id:'d',type:'shirt',primaryColor:'white',pattern:'dobby',...cu}),
         gingham:kind({id:'e',type:'shirt',primaryColor:'lightblue',pattern:'gingham',...cu}),bare:kind({id:'f',type:'tie',primaryColor:'navy',pattern:'solid'}),photo:kind({id:'g',type:'suit',primaryColor:'navy',pattern:'solid',swatch:ph,swSrc:'photo'})}},PH);
-    ok(pick.tie==='close-up'&&pick.twill==='close-up',`a tie and a twill suit show their close-up (${JSON.stringify(pick)})`);
+    ok(pick.tie==='close-up',`a tie shows its close-up (${JSON.stringify(pick)})`);
+    ok(pick.twill==='drawn',"a twill suit with a close-up waits for the painter's tile (a plain patch first: tests/twillswatch.test.js)");
     ok(pick.dobby==='drawn',"a shirt is always drawn, even with a close-up (the owner's choice)");
     ok(pick.photo==='painted',"a suit with no close-up is its painted cloth");
     const pinCu=await p.evaluate(ph=>ovlPiece({id:'pc',type:'suit',primaryColor:'navy',pattern:'pinstripe',swatch:ph,swSrc:'tex',texture:ph,sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#c8cbd2',.05]],tr:30}}),PH);
