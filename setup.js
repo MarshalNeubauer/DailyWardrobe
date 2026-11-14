@@ -26,7 +26,8 @@ const setupAuto=()=>!navigator.webdriver||window.SETUP_AUTO===true;
 function setupEl(){let e=$('#setup');
   if(!e){e=document.createElement('div');e.id='setup';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','su-title');e.tabIndex=-1;document.body.appendChild(e)}
   return e}
-function setupInert(on){for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
+function setupInert(on){if(!on&&typeof layerInert==='function')return layerInert();   // closing: the page stays inert while Settings or a sheet is up (ui.js)
+  for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
 function setupOpen(again){
   closeSettings();
   setup={at:0,first:!again,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};
@@ -40,16 +41,33 @@ function setupClose(){
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
 function setupFinish(toAdd){
   if(setup.first&&!setup.vestSet)settings.vestMode='never';
-  settings.setupDone=Date.now();setupClose();saveUserSettings();
+  const first=setup.first;settings.setupDone=Date.now();setupClose();saveUserSettings().then(()=>{if(first)setupHolidays()});
   if(toAdd&&!items.length){show('wardrobe');openAdd()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
 }
+/* the public holidays of the country the phone's time zone is in, chosen for a new person (audit 2026-11-13: the work week was set,
+   the holidays were not); Settings → Days off changes it. Without a list yet (Nager.Date lacks the Gulf states, whose list comes from
+   the server once connected) the country is kept with an empty list, fetched 0, so the monthly refetch (refreshHolidays) tries again */
+const TZ_CC={'Asia/Kuwait':'KW','Asia/Riyadh':'SA','Asia/Dubai':'AE','Asia/Qatar':'QA','Asia/Bahrain':'BH','Asia/Muscat':'OM','Asia/Baghdad':'IQ','Asia/Amman':'JO','Asia/Beirut':'LB','Africa/Cairo':'EG','Asia/Karachi':'PK','Asia/Kolkata':'IN','Asia/Calcutta':'IN','Asia/Singapore':'SG','Asia/Tokyo':'JP','Asia/Seoul':'KR','Asia/Shanghai':'CN','Asia/Hong_Kong':'HK','Australia/Sydney':'AU','Australia/Melbourne':'AU','Pacific/Auckland':'NZ',
+  'Europe/London':'GB','Europe/Dublin':'IE','Europe/Paris':'FR','Europe/Berlin':'DE','Europe/Madrid':'ES','Europe/Rome':'IT','Europe/Amsterdam':'NL','Europe/Brussels':'BE','Europe/Zurich':'CH','Europe/Vienna':'AT','Europe/Stockholm':'SE','Europe/Oslo':'NO','Europe/Copenhagen':'DK','Europe/Helsinki':'FI','Europe/Warsaw':'PL','Europe/Lisbon':'PT','Europe/Athens':'GR','Europe/Istanbul':'TR','Europe/Moscow':'RU',
+  'America/New_York':'US','America/Chicago':'US','America/Denver':'US','America/Phoenix':'US','America/Los_Angeles':'US','America/Anchorage':'US','Pacific/Honolulu':'US','America/Toronto':'CA','America/Vancouver':'CA','America/Mexico_City':'MX','America/Sao_Paulo':'BR','America/Argentina/Buenos_Aires':'AR','Africa/Johannesburg':'ZA','Africa/Lagos':'NG','Africa/Nairobi':'KE'};
+function tzCountry(){let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch{}
+  if(TZ_CC[tz])return TZ_CC[tz];const m=/-([A-Z]{2})$/.exec(navigator.language||'');return m&&typeof COUNTRY_CODES!=='undefined'&&COUNTRY_CODES.includes(m[1])?m[1]:null}
+async function setupHolidays(){if(settings.holidays&&settings.holidays.country)return;const cc=tzCountry();if(!cc)return;
+  try{await setHolidayCountry(cc,true)}catch(e){console.warn('holidays not loaded',e)}
+  if(!(settings.holidays&&settings.holidays.country)){settings.holidays={country:cc,list:[],skip:[],fetched:0};await saveUserSettings()}}
 /* the app is being driven past a setup that opened by itself (items came in from a sync or a restore, another page was
    opened): it steps aside without being marked as done. One the user started from Settings stays. */
 function setupYield(t){
   if(!setupShown()){if(items.length||(t&&t!=='today'))setupNo=true;return}
   if(setup.first&&(items.length||(t&&t!=='today')))setupClose();
 }
-function setupGo(n){const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true);return}
+/* a city search left unfinished (typed, searching, or results not picked) is said once before Next leaves the Weather step: a new
+   user tapped Next on "Searching…" and had no location (audit 2026-11-13); a second Next goes on */
+function setupCityOpen(){return SETUP_STEPS[setup.at]==='weather'&&!setup.cityWarned&&(!!(setup.q||'').trim()||!!(setup.cities&&setup.cities.length)||setup.cityMsg==='Searching…')}
+function setupGo(n){if(n>0&&setupCityOpen()){setup.cityWarned=true;
+    setup.cityMsg=settings.location?`That city wasn’t picked: the weather stays ${settings.location.name}. Pick a result, or tap Next again to go on.`:'You haven’t picked a city yet: pick one of the results, or tap Next again to go on without a location.';
+    setupDraw();const f=$('#su-city');if(f)f.focus({preventScroll:true});return}
+  const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true);return}
   if(setup.watch){clearInterval(setup.watch);setup.watch=null}
   setup.at=at;setup.msg='';setupDraw();const b=$('#setup .su-body');if(b)b.scrollTop=0}
 
@@ -129,7 +147,7 @@ function setupToday(){
   if(items.length)setupYield();
   const rows=setupNeeds(),left=rows.filter(r=>!r.ok).length;if(!left)return '';
   return `<div class="firstrun" id="firstrun"><h3>Get your first outfit</h3><p class="fr-sub">${left===rows.length?'Add these and Today picks an outfit for every workday.':`${rows.length-left} of ${rows.length} added. Add the rest and Today picks an outfit for every workday.`}</p>
-<ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':'Needed'}</small></li>`).join('')}</ul>
+<ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':r.sub?'If no suit':'Needed'}</small></li>`).join('')}</ul>
 <button type="button" class="fr-add pri" id="fr-add" onclick="openAdd()">Add an item</button></div>`;
 }
 /* the Wardrobe tab with nothing in it */

@@ -145,7 +145,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const jkey=asmPieceKey('jacket',jk),keep=renders[jkey],c2=document.createElement('canvas');c2.width=c2.height=W;const x2=c2.getContext('2d');x2.fillStyle='#ccc';x2.fillRect(0,0,W,W);
       x2.drawImage(await asmImg(keep.img),0,0,W,W,-140,0,W*.8,W*.8);renders[jkey]={...keep,img:c2.toDataURL('image/jpeg',.9)};out.collage=await asmPhoto(o);out.bad=asmBad.has(jkey);renders[jkey]=keep;asmBad.clear();
       // on Today: the assembled picture stands in for the outfit's photo, unless a photo was made for this outfit after the master
-      out.forBefore=asmFor(o);asmTried.clear();await asmEnsure(o);const a=asmFor(o);out.forAfter=!!a&&a.model==='assembled'&&a.img.length>40000;out.keptOut=!!(await metaGet('asm:out:'+asmOutKey(o)));
+      out.forBefore=asmFor(o);asmTried.clear();await asmEnsure(o);const a=asmFor(o);out.forAfter=!!a&&a.model==='assembled'&&(asmOut[asmOutKey(o)].blob||{}).size>30000;out.keptOut=!!(await metaGet('asm:out:'+asmOutKey(o)));
       renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OLD',model:'gpt',t:500};out.overOld=renderFor(o).model;
       renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};out.underNew=renderFor(o).model;
       // and then nothing is put together for it: asmEnsure runs at every redraw of Today, and assembling and redrawing again looped after a Regenerate

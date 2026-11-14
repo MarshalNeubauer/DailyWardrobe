@@ -50,13 +50,13 @@ async function askPersist(){
     localStorage.setItem('persist_ok',kept?'1':'0');return kept}
   catch(e){console.warn('storage not made persistent',e);return null}}
 
-/* ---- the sharp tagging copies (tagging.js keeps one per tagged photo in Cache Storage) of items that no longer exist are
+/* ---- the sharp tagging copies and sharp close-ups (tagging.js keeps them in Cache Storage as tagimg/<id>, closeimg/<id>) of items that no longer exist are
    removed at start-up, not when an item is deleted: a deletion can be undone for a few seconds. Never with an empty
    wardrobe (one that was lost comes back from the backup). ---- */
 async function pruneTagImgs(){
   try{if(!self.caches||!items.length||!(await caches.has(TAGIMG_CACHE)))return 0;
     const c=await caches.open(TAGIMG_CACHE),have=new Set(items.map(i=>String(i.id)));let n=0;
-    for(const r of await c.keys()){const m=/\/tagimg\/([^?#]+)/.exec(r.url);if(!m)continue;let id=m[1];try{id=decodeURIComponent(id)}catch{}
+    for(const r of await c.keys()){const m=/\/(?:tagimg|closeimg)\/([^?#]+)/.exec(r.url);if(!m)continue;let id=m[1];try{id=decodeURIComponent(id)}catch{}
       if(!have.has(id)&&!queue.some(q=>q.id===id)&&await c.delete(r))n++}
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
@@ -71,13 +71,15 @@ function tagFailText(status,j,e){
     tagWhy=off?'You’re offline.':net?'The tagging service couldn’t be reached. Check your connection.':`Something went wrong${e&&e.message?': '+e.message:''}.`;
     return `Photo tagging failed: ${off?'you’re offline':net?'the tagging service couldn’t be reached':e&&e.message||'something went wrong'}. Fill in the details below.`}
   if(j&&j.error==='limit'&&j.message){tagWhy=String(j.message);return tagWhy}
+  const pe=e&&typeof plainErr==='function'?plainErr(e):e;   // a set-up error ("add an ANTHROPIC_API_KEY secret to the worker") in plain words for a tester (ui.js)
+  if(pe&&pe!==e){tagWhy=pe;return `Photo tagging failed: ${pe} Fill in the details below.`}
   tagWhy=`The tagging service answered: ${e||'error '+status}.`;
   return `Photo tagging failed: ${e||'HTTP '+status}. Fill in the details below.`}
 function tagFailed(q){if(localStorage.getItem('worker_url'))q.tagErr=tagWhy||'The tagging service gave no answer.'}
 const tagFailNote=(q,i)=>q.tagErr?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)} <span class="tagfail-do">Fill in the details yourself, or try again.</span></p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
-  q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg)}catch(e){console.warn(e)}
-  q.busy=0;if(ai){delete q.tagErr;await fill(q,ai);takeExtras(q,ai);measureCard(q)}else tagFailed(q);
+  q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn(e)}
+  q.busy=0;if(ai){delete q.tagErr;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}else tagFailed(q);
   if(queue.includes(q))renderAdd()}
 
 /* ---- unsaved Add cards: closing or reloading the page asks first. Installed with the first card. ---- */

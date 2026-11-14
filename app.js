@@ -18,6 +18,12 @@ const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
+/* a start-up fix-up saves an item only while it is still the copy on screen: an edit or a sync may have replaced it meanwhile, and saving the
+   old copy (stamped newest) would undo that change (2026-11-14) */
+const stillCur=it=>items.find(x=>x.id===it.id)===it;
+/* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
+   pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
+const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
 const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
@@ -38,7 +44,9 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
   return last?`Backed up ${when(last)}`:'Not backed up yet'}
 function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};if(typeof applyRole==='function')applyRole();if(typeof remindSoon==='function')remindSoon();
-  const days=l=>{const s=[...l].sort((a,b)=>((a+6)%7)-((b+6)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
+  // the days from the week's first one: the first day (Sunday first) whose day before isn't one of them, so Sun–Thu reads "Sun–Thu"
+  // (sorted from Monday it read "Mon, Tue, Wed, Thu, Sun", audit 2026-11-13)
+  const days=l=>{const has=new Set(l),s0=[0,1,2,3,4,5,6].find(d=>has.has(d)&&!has.has((d+6)%7))||0,s=[...has].sort((a,b)=>((a-s0+7)%7)-((b-s0+7)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
     const run=s.length>2&&s.every((d,i)=>!i||(s[i-1]+1)%7===d);return run?`${n(s[0])}–${n(s[s.length-1])}`:s.map(n).join(', ')};
   const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
   set('schedule',`${days(settings.workdays)} · ${typeof dressSummary==='function'&&dressSummary()||`${bl.length?'blazers '+days(bl):'suits every day'} · vest ${({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']}`}`);
@@ -55,13 +63,16 @@ function openSettings(section){
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
   if(typeof advClose==='function')advClose();   // the Advanced folds start closed every time
   if(cat)setTimeout(()=>{const el=$('#sc-'+cat),m=$('#settings-modal');if(el&&m)m.scrollTop=el.offsetTop-m.querySelector('.shead').offsetHeight-8},0);else if($('#settings-modal'))$('#settings-modal').scrollTop=0;
-  if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
-  if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||'';
-  if(window.showSyncStatus)showSyncStatus();
-  renderSettingsExtras();settingsSummaries();if(queuedKeys().length)checkQueue();
+  // storage that is blocked (localStorage throws) or broken must not keep Settings shut: it opens with what could be drawn (audit 2026-11-13)
+  try{if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
+    if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||''}catch(e){console.warn('connection not read',e)}
+  try{if(window.showSyncStatus)showSyncStatus()}catch(e){console.warn('backup line not drawn',e)}
+  try{renderSettingsExtras()}catch(e){console.warn('Settings drawn in part',e)}
+  try{settingsSummaries();if(queuedKeys().length)checkQueue()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
   setLock(true);appPush('set');   // the phone's Back closes it (appPush, by show())
+  if(typeof layerOpen==='function')layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
    to Today underneath, and Settings stood still under the finger until that scroll ended; also notes the last touch for toggleCat */
@@ -73,19 +84,22 @@ const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.displa
 /* a redraw from work done in the background (photos arriving, the weather, the plan rules check at start-up): while Settings is open
    it waits for Settings to close (todayStale), since drawing Today closes Settings, which snapped shut when opened right after launch */
 function refreshToday(){if(settingsOpen()){todayStale=true;return}renderToday()}
-function closeSettings(){
+function closeSettings(){const was=settingsOpen();
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
   setLock(false);appDrop('set');   // closed by Done or anything else: its Back entry goes
+  if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;renderToday()}
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
-  if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
-  if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim());
+  // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
+  try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
+    if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
+  catch(e){console.warn('connection not saved',e);setTimeout(()=>toast('Couldn’t save the server address: this browser’s storage is full or blocked.',5000),0)}
   closeSettings();
-  renderAdd();
-  if(window.syncNow)syncNow();
+  try{renderAdd()}catch(e){console.warn('Add page not drawn',e)}
+  if(window.syncNow)syncNow().catch(e=>console.warn('sync not started',e));
 }
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
@@ -115,7 +129,7 @@ async function refreshSwatch(it){if(!FABRIC.includes(it.type))return;const src=i
     const tex=src!==it.photo;it.swatch=cropSwatch(c,1,.5,.5,tex&&it.primaryColor?colOf(it):null);it.swSrc=tex?'tex':'photo'}catch(e){console.warn('swatch not cut',e)}}
 /* once: items that already have a close-up get their swatch cut from it, lightness set from the tagged colour (tex_swatch2) */
 async function texSwatches(){if(localStorage.getItem('tex_swatch2')==='1')return 0;let n=0;
-  for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'){await put(it);n++}}
+  for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'&&stillCur(it)){await put(it);n++}}
   localStorage.setItem('tex_swatch2','1');if(n)cache={};return n}
 
 function updateSwatchParam(i, param, val){
@@ -147,7 +161,7 @@ function renderBusy(){let el=document.getElementById('busy');if(!el){if(!documen
 /* the tab bar grows upward until its top is one design gap (--gap, 12px) below Today's below-the-waist tiles, so nothing peeks out
    between them (the score card's top used to); at most 64px, and never shorter than its 38px buttons. Measured with the page at the
    top, from where the tiles end and where the bar's natural top is; kept while on other pages and on days whose tiles sit lower. */
-const NAV_MAX=64;
+const NAV_MAX=58;   // (the bar is 44px at least since 2026-11-14, a tap target's size; it was 38 and grew up to 64, so the tallest is the same 102)
 function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),nav=document.querySelector('body>nav');if(!nav)return;
   // the fit is measured only on a day whose photo has loaded: before it loads the photo has no height, the tiles sit right under the
   // date, and the bar grew to its 64px cap (and was kept there). That measurement is kept per screen size and used everywhere else
@@ -156,7 +170,7 @@ function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),
   const img=document.querySelector('#today:not([hidden]) #mannequin-container > img'),ready=!!(b&&img&&img.complete&&img.naturalHeight>0&&img.getBoundingClientRect().height>60);
   let x=kept;
   if(ready){const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12;
-    const cs=getComputedStyle(nav),natural=innerHeight-38-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
+    const cs=getComputedStyle(nav),natural=innerHeight-44-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)
     // always as if the row had three tiles (belt, shoes, socks): with four (trousers on a blazer day, a coat) each is narrower, and a
     // tile with a product picture (its picture's height follows its width, its label doesn't) is shorter, which made the bar taller on those days; a drawn
     // tile keeps its height whatever the count
@@ -229,7 +243,8 @@ function normTag(parsed,model){
     };
 }
 
-const loadImg=f=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(f)});
+/* the picture of a file; its object URL is let go once it has loaded (each one held the file's bytes until the page closed) */
+const loadImg=f=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=e=>{URL.revokeObjectURL(u);no(e)};i.src=u});
 function shrink(img,max){const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c}
 
 async function fill(q,ai){
@@ -254,24 +269,26 @@ function applyWb(c,g){const o=document.createElement('canvas');o.width=c.width;o
   if(!g)return o;const D=x.getImageData(0,0,o.width,o.height),d=D.data;
   for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*g.r);d[i+1]=Math.min(255,d[i+1]*g.g);d[i+2]=Math.min(255,d[i+2]*g.b)}x.putImageData(D,0,0);return o}
 /* an Add card's pictures from its uncorrected originals, with or without the correction (Show original toggles it) */
-/* an item's photo is kept at PH_MAX (720px, JPEG .85), the size Replace photo keeps: at 360px (JPEG .8) a suit sent to the photo
-   generator was a 270px crop of a mirror selfie */
-function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);q.photo=shrink(q.big,PH_MAX).toDataURL('image/jpeg',.85);
-  if(q.raw.full)q.tagImg=applyWb(q.raw.full,g).toDataURL('image/jpeg',TAG_Q);   // the sharp copy the tagger sees
+/* an item's photo is kept at PH_MAX (JPEG .85), the size Replace photo keeps: at 360px (JPEG .8) a suit sent to the photo
+   generator was a 270px crop of a mirror selfie. It is made from the sharp copy (raw.full, TAG_MAX), not the 800px q.big the
+   card measures from: from q.big every new item's photo was 800px, whatever PH_MAX said (audit 2026-11-13) */
+function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);const sharp=q.raw.full?applyWb(q.raw.full,g):null;
+  q.photo=shrink(sharp||q.big,PH_MAX).toDataURL('image/jpeg',.85);
+  if(sharp)q.tagImg=sharp.toDataURL('image/jpeg',TAG_Q);   // the sharp copy the tagger sees
   if(q.raw.tex){q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85)}generateSwatch(q)}
 /* a close-up with its own white reference (a corner of white paper) is corrected from that; otherwise like its item photo */
-function texGains(q){const r=wbRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}
+function texGains(q){const r=closeRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}
 function toggleWb(i){const q=queue[i];if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
 const TEX_MAX=1536;   // the synced close-up (2026-11-13, the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored one by one on the server and fetched when needed (it was 640)
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
 async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
-  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,TEX_MAX);q.raw.texFull=shrink(img,CLOSE_MAX);q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
+  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw){delete q.raw.tex;delete q.raw.texFull}q.refineNote='';measureCard(q);renderAdd()}
+function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
-  const inp=`<input type="file" accept="image/*" hidden onchange="addTexture(${i},this.files[0]);this.value=''">`;
+  const inp=`<input type="file" accept="image/*" class="vfile" onchange="addTexture(${i},this.files[0]);this.value=''">`;
   return q.texture?`<div class="texslot done"><small class="mut">Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.</small><div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
     :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the realistic photos match better. Optional.</small><label class="btn pri">Add close-up${inp}</label></div>`}
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`:'';
@@ -279,20 +296,21 @@ const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Origina
 async function addFiles(files,multi){
   guardUnsaved();
   if(multi){multiNote(true);for(const f of files)await addMulti(f);return}
-  for(const f of files){
-    const q={id:crypto.randomUUID(),busy:1};
-    queue.push(q);
-    renderAdd();
+  // every photo gets its card at once, and ADD_PAR are tagged at a time (one after another, five photos were five waits in a row)
+  const cards=[...files].map(f=>{const q={id:crypto.randomUUID(),busy:1};queue.push(q);return [q,f]});renderAdd();
+  const one=async([q,f])=>{
     try{
       const img=await loadImg(f);
       q.raw={big:shrink(img,800),full:shrink(img,TAG_MAX)};q.wb=wbGains(q.raw.big);cardPics(q);   // tagged from the corrected, sharp copy
-      const aiResult=await ask(q.tagImg);
-      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureCard(q)}else tagFailed(q)
+      const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)});   // wb: whether the photo was white-balanced (the tagger is told)
+      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else tagFailed(q)
     }catch(e){q.err=1}
     q.busy=0;
     renderAdd();
-  }
+  };
+  let k=0;await Promise.all(Array.from({length:Math.min(ADD_PAR,cards.length)},async()=>{while(k<cards.length)await one(cards[k++])}));
 }
+const ADD_PAR=3;
 
 /* ---- pasted photos, photo links and drag & drop ---- */
 const pasteMsg=t=>{const e=$('#paste-status');if(e)e.textContent=t||''};
@@ -372,16 +390,16 @@ async function addMulti(f){
   try{
     const raw=shrink(await loadImg(f),2576),wb=wbGains(raw),img=applyWb(raw,wb);   // one light reading for the whole photo; Claude reads up to 2576px
     const r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
-      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes()})});
+      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes(),wb:!!wb})});
     const j=await r.json().catch(()=>({}));
     queue.splice(queue.indexOf(holder),1);
-    if(!r.ok){multiMsg(r.status===404||r.status===405?'The server doesn’t support several items yet: it needs an update.':`Couldn’t find the items: ${j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
+    if(!r.ok){multiMsg(r.status===404||r.status===405?'The server doesn’t support several items yet: it needs an update.':`Couldn’t find the items: ${typeof plainErr==='function'?plainErr(j.detail||j.error||'HTTP '+r.status):j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
     const list=j.items||[];
     if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
     list.forEach((it,n)=>{
       const q={id:crypto.randomUUID(),multi:{n:n+1,of:list.length,confidence:it.confidence||'medium'}};
       q.raw={big:cropBox(raw,it.box,800),full:cropBox(raw,it.box,TAG_MAX)};q.wb=wb;cardPics(q);
-      const tg=normTag(it,j.model);fill(q,tg);q.aiTag={...aiFields(tg)};queue.push(q);
+      const tg=normTag(it,j.model);fill(q,tg);q.aiTag={...aiFields(tg)};q.tagAI=aiSignals({...tg,confidence:it.confidence},false);queue.push(q);
     });
     aiModel=j.model||aiModel;aiError='';
     const counts={};for(const it of list){const t=TYPES[it.type]?it.type:'item';counts[t]=(counts[t]||0)+1}
@@ -390,7 +408,10 @@ async function addMulti(f){
   renderAdd();
 }
 /* save every finished card in the queue (Skip the ones you don't want first) */
-async function saveAll(){const n=queue.filter(q=>!q.busy&&!q.err).length;for(let i=queue.length-1;i>=0;i--){const q=queue[i];if(!q.busy&&!q.err)await save(i)}
+/* a card Claude is still reading (tagging again with the close-up, or its pattern) can't be saved yet: saved meanwhile it kept the
+   weaker reading and the pattern call was paid for anyway (audit 2026-11-13); Confirm and Save all wait for it */
+const cardReading=q=>!!(q&&(q.refining||q.patternReading));
+async function saveAll(){if(queue.some(cardReading))return;const n=queue.filter(q=>!q.busy&&!q.err).length;for(let i=queue.length-1;i>=0;i--){const q=queue[i];if(!q.busy&&!q.err)await save(i)}
   multiMsg(`Saved ${n} item${n===1?'':'s'} to your wardrobe.`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
 const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
@@ -425,6 +446,7 @@ async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.pa
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){cache={};toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
 async function save(i){
+  if(cardReading(queue[i]))return;
   const q=queue[i],f=FABRIC.includes(q.type);
   generateSwatch(q);
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
@@ -440,16 +462,19 @@ async function save(i){
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;else await makeSmall(it);
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
-  if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src};
+  if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src,...(q.meas.parts?{parts:q.meas.parts.map(p=>({role:p.role,lab:p.lab,hex:p.hex,share:p.share}))}:{})};   // a patterned cloth's ground and stripe too (colpick.js)
+  if(q.tagAI&&!q.manual)it.tagAI=q.tagAI;   // Claude's colour it gave, how sure it was, its runner-ups (tagging.js aiSignals): to calibrate the verdict later
   wardSaveFields(q,it);   // name, brand, material, notes (wardrobe.js)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (tagging.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (tagging.js)
-  if(!it.sett)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
+  // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
+  if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
   await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
-  if(q.tagImg)keepTagImg(it.id,q.tagImg);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy for the benchmark; what the tagger got wrong
+  if(q.tagImg)keepTagImg(it.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>keepCloseImg(it.id,u,it.texture)).catch(()=>{});   // the sharp close-up for later readings (tagging.js)
+  q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
 }
 let editing=null;
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Colour':k==='secondaryColor'?'Second colour':k==='tertiaryColor'?'Third colour':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
@@ -466,10 +491,10 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
   const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
   try{const im=await imgOf(it.photo);it.photoSm=Math.max(im.naturalWidth,im.naturalHeight)<=PH_SM?it.photo:shrink(im,PH_SM).toDataURL('image/jpeg',.82);it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
-async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)){await put(it);n++}if(n)renderWardrobe();return n}
+async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
-  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" hidden onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
-    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" hidden onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
+  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
+    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" class="vfile" onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
     (tex&&i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
@@ -482,10 +507,16 @@ async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f),
   await setTexture(id,shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),'Close-up added. The realistic photos use it from the next one made.');
   const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f);await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.')}
+async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);if(it)delete it.pbox;   // the pattern's box was on the old picture
+  await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.');const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tagging.js), signed with the new photo
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
-  c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);await setPhoto(id,c.toDataURL('image/jpeg',.9))}
+  c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);
+  // the kept sharp copy turns with it, and the pattern's box (thousandths of the picture) with the copy
+  const sharp=typeof tagImgOf==='function'?await tagImgOf(id,it):null,b=it.pbox;
+  if(b)it.pbox={x:1000-(b.y+b.h),y:b.x,w:b.h,h:b.w};
+  await setPhoto(id,c.toDataURL('image/jpeg',.9));
+  if(sharp)try{const si=await imgOf(sharp),sc=document.createElement('canvas');sc.width=si.naturalHeight;sc.height=si.naturalWidth;const sx=sc.getContext('2d');sx.translate(sc.width,0);sx.rotate(Math.PI/2);sx.drawImage(si,0,0);await keepTagImg(id,sc.toDataURL('image/jpeg',TAG_Q),it.photo)}catch(e){console.warn('sharp copy not turned',e)}}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
   if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
@@ -522,7 +553,8 @@ function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const b
 async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;
   const im=await cropSource(it),f=(im.naturalWidth||im.width)/phEdit.crop.w;   // the frame is measured on the photo; f scales it to the source
   const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
-  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9))}
+  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9));
+  if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with its tools folded under it, then a
    card for the tags, one for rotation, and Delete on its own at the very end */
 function toggleCompare(closeOnly){const el=$('#ivpair');if(!el||(closeOnly&&!phEdit.cmp))return;phEdit.cmp=!phEdit.cmp;el.classList.toggle('cmp',!!phEdit.cmp);el.querySelector('.tagsw').setAttribute('aria-pressed',!!phEdit.cmp)}
@@ -591,12 +623,53 @@ async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast 
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
 let cache={};
-function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];
+const planRuns=[];   // the months worked out (not from the cache) since start-up (tests/speed.test.js)
+function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];if(planRuns.length<200)planRuns.push(k);
   if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
   const start=planStart(y,m),T=todayDate();
-  if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=buildPlan(y,m);
-  return cache[k]=(cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0))}
+  if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=planTrim(buildPlan(y,m));
+  return cache[k]=planTrim((cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0)))}
+/* no outfit is shown for a day before the wardrobe existed (the day the first item was added; items from before `added` existed set no
+   start): a new user saw two weeks of planned past days with ✕ and ✓ and "22 outfits" in the month (audit 2026-11-13). The planner
+   still plans them (rest and variety carry on from them); they are only left out of the month's plan, and a day with a record stays */
+function planStartDay(){let s=Infinity;for(const i of items){if(!i.added)return null;if(i.added<s)s=i.added}if(!isFinite(s))return null;const d=new Date(s);d.setHours(0,0,0,0);return d}
+function planTrim(plan){const s=planStartDay();if(!s)return plan;const T=todayDate();
+  for(const k of Object.keys(plan)){const d=keyDate(k);if(d<s&&d<T&&!(dayRecs[k]&&dayRecs[k].ids))delete plan[k]}return plan}
 const planFor=()=>planMonth(view.y,view.m);
+/* ---- Today's month as last planned, kept in IndexedDB (meta PLAN_SNAP), so start-up draws Today without waiting for the planner
+   (200-390 ms frozen at phone speed, audit 2026-11-13). Used only when nothing it depends on changed (planSig: the day, the items' and
+   day records' stamps, the settings' stamp, the forecast and climate); the month is planned again as soon as the phone is idle
+   (planSnapCheck) and Today redrawn only if it differs. While the kept month is on screen nothing is recorded or locked from it
+   (recordDays/lockUpcoming wait for the real plan). Pieces are kept as their ids plus what the planner added (rest), not as copies
+   of the items (their photos). ---- */
+const PLAN_SNAP='plan_snap';
+const strHash=t=>{let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)}return (h>>>0).toString(36)};
+const planSig=()=>strHash(JSON.stringify([isoKey(todayDate()),items.map(i=>[i.id,i.updated||0]),Object.values(dayRecs).map(r=>[r.date,r.updated||0]).sort((a,b)=>a[0]<b[0]?-1:1),settings.updated||0,weather,climate]));
+function snapOut(x,byId,seen=new Map()){if(!x||typeof x!=='object'||x instanceof Date)return x;if(seen.has(x))return seen.get(x);
+  const it=x.id!=null&&typeof x.type==='string'&&byId.get(x.id);
+  if(it&&it.type===x.type){const extra={};for(const k of Object.keys(x))if(x[k]!==it[k])extra[k]=snapOut(x[k],byId,seen);const r={$i:x.id,$x:extra};seen.set(x,r);return r}
+  const r=Array.isArray(x)?[]:{};seen.set(x,r);for(const k of Object.keys(x))r[k]=snapOut(x[k],byId,seen);return r}
+function snapIn(x,byId){if(!x||typeof x!=='object'||x instanceof Date)return x;
+  if(x.$i!=null&&x.$x){const it=byId.get(x.$i);if(!it)throw new Error('kept plan names a missing item');const r={...it};for(const k of Object.keys(x.$x))r[k]=snapIn(x.$x[k],byId);return r}
+  for(const k of Object.keys(x))x[k]=snapIn(x[k],byId);return x}
+// at start-up, before Today is first drawn: the kept month, if it still holds
+function planSnapUse(s){try{if(!s||!s.plan||s.sig!==planSig()||window.TEST_PLAN)return false;const byId=new Map(items.map(i=>[i.id,i]));
+    cache[s.k]=snapIn(s.plan,byId);cache.snap=s.k;planSnapUsed=s.k;return true}catch(e){console.warn('kept plan not used',e);return false}}
+let planSnapUsed=null;   // the month start-up drew from the kept plan (read by tests/speed.test.js)
+const outSig=o=>o&&JSON.stringify([idsOf(o),!!o.vest,!!o.suitDay,o.notes||[]]);
+// once the phone is idle: plan the month for real; Today is redrawn only if it differs, and the day records and locks are written then
+function planSnapCheck(){const k=cache.snap;if(!k)return;const shown=cache[k];delete cache[k];cache.snap=null;const [y,m]=k.split('-').map(Number);
+  const real=planMonth(y,m),same=Object.keys(real).length===Object.keys(shown).length&&Object.keys(real).every(d=>outSig(real[d])===outSig(shown[d]));
+  if($('#today').hidden)return;if(!same||(typeof pulledYet==='function'&&!pulledYet()))return refreshToday();   // (before the first sync is merged, renderToday waits for it to record)
+  if(items.length)recordDays(real).then(lockUpcoming).then(planSnapSoon)}
+let planSnapT=0;
+function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const T=todayDate(),k=T.getFullYear()+'-'+T.getMonth(),p=cache[k];if(!p||cache.snap||window.TEST_PLAN||!items.length)return;
+  try{metaPut(PLAN_SNAP,{k,sig:planSig(),plan:snapOut(p,new Map(items.map(i=>[i.id,i]))),t:Date.now()}).catch(e=>console.warn('plan not kept',e))}catch(e){console.warn('plan not kept',e)}},1500)}
+/* the forecast and the climate kept on the device, read before Today is first drawn: loadWeather and loadClimate then find them
+   unchanged, so start-up plans once instead of three times (without them, again with the climate, again with the forecast) */
+function wxPreload(){const L=settings.location;if(!L)return;
+  try{const c=JSON.parse(localStorage.getItem('wx_norm')||'null');if(c&&c.lat===L.lat&&c.lon===L.lon&&Array.isArray(c.months))climate=c.months}catch{}
+  try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3)weather=c.days}catch{}}
 
 /* views */
 const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
@@ -684,7 +757,10 @@ function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
 const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 let swapMsg='';
-async function saveDay(rec,quiet){rec.updated=Date.now();dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
+async function saveDay(rec,quiet,auto){rec.updated=Date.now();if(!auto){delete rec.lockOnly;delete rec.base}dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
+/* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
+let todayPullWait=false;
+const whenPulled=f=>afterScripts(()=>typeof afterPull==='function'?afterPull(f):f());
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
   const T=todayDate(),tk=key(T),mine=dayRecs;let changed=false;
@@ -712,12 +788,12 @@ async function lockUpcoming(){
     // is put on the record before the write is awaited, so a lock never comes from a plan that is no longer the one on screen
     const k=key(d),o=planMonth(d.getFullYear(),d.getMonth())[k];if(!o||o.frozen||!SLOTS.some(s=>o[s]))continue;
     const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l))continue;
-    const rec={...(r||{date:k}),lock:l,updated:Date.now()};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
+    const rec={...(r||{date:k}),lock:l,updated:Date.now(),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
     await txs('days','readwrite',s=>s.put(rec))}
   if(n&&window.scheduleSync)scheduleSync()}
 /* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
 async function clearLocks(){const T=todayDate();let n=0;
-  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>T&&r.worn!==true){const c={...r};delete c.lock;await saveDay(c,true);n++}
+  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}   // (lockOnly: core.js dayWins)
   if(n&&window.scheduleSync)scheduleSync();return n}
 async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
@@ -774,8 +850,11 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
     <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`Every ${label} you own, the best match for the rest of the outfit first.`}</small></p>
     ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another ↻</button>`}</div>`:''}
     <div class="pick-grid">${scored.map(card).join('')}</div>`;
-  picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0}
-function closePicker(){picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on')}
+  picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
+  if(typeof layerOpen==='function')layerOpen($('#pick-sheet'))}
+function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
+  if(was&&typeof layerClose==='function')layerClose(s);
+  if(typeof syncLaterRun==='function')syncLaterRun('today')}   // a sync's redraw that waited for the picker (sync.js)
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
 async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
   const it=id?items.find(i=>i.id===id)||null:null;
@@ -801,26 +880,34 @@ const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;swapMsg='';await saveDay(n);renderToday()}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
-/* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay */
-async function replanFuture(){const T=todayDate();let n=0;
-  for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<=T||r.worn===true)continue;
-    const mine=r.force||r.skip||r.ids||typeof r.vest==='boolean'||r.vestOn!==undefined||r.auto;if(!mine&&!r.lock)continue;
+/* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay.
+   rules (new PLAN_RULES): only what the app chose goes, the week's locks (rec.lock) and pieces it recorded by itself (rec.auto);
+   the owner's own picks (force, skip, the vest, a moved outfit's kind, a piece taken off) stay. Returns the days changed
+   (rules: the days whose lock or recorded pieces went; else the days whose own picks were cleared) */
+/* new planning rules (rules: true) let the coming days be planned again, keeping the owner's own picks. Start the plan over (Settings →
+   Schedule, the owner's ask 2026-11-14: "let me completely redo the plan, throwing out my locks and changes") clears today and every
+   coming day not marked worn: locks, swaps, picks, the vest, pieces taken off, the suit or blazer chosen; occasions stay (and days off,
+   which are settings), and the past */
+const dayChanged=(r,today)=>!!(r.force||r.skip||(!today&&r.ids)||typeof r.vest==='boolean'||(r.off&&(r.off.top||r.off.tie))||r.kind||(!today&&r.vestOn!==undefined)||(!today&&r.auto));
+async function replanFuture(rules){const T=todayDate();let n=0;
+  for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if((rules?d<=T:d<T)||r.worn===true)continue;
+    if(rules){if(!r.lock&&!r.auto)continue;const keep={...r};delete keep.lock;if(keep.auto){delete keep.auto;delete keep.ids;delete keep.suitDay;delete keep.vestOn}await saveDay(keep,true);n++;continue}
+    const mine=dayChanged(r,+d===+T);if(!mine&&!r.lock&&!(+d===+T&&r.ids))continue;
     const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
 async function checkPlanRules(){if(!window.TEST_PLAN)return planRulesCheck()}   // (PLAN_RULES is read in planRulesCheck only: a bump selects only the tests that plan for real)
-async function planRulesCheck(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture();
+async function planRulesCheck(){if((settings.planRules||0)>=PLAN_RULES)return;const n=await replanFuture(true);
   settings.planRules=PLAN_RULES;await metaPut('settings',settings);   // kept without a new stamp: noting the rules is not a change to the settings, and a stamp made defaults win over the backup's settings
-  if(n)setTimeout(()=>toast(`The planner was updated: upcoming days were planned again (${n} day${n===1?'':'s'} reset).`,4500),400)}
-async function replanButton(){const T=todayDate();
-  const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
-  const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true);
-  if(!n&&!locked){renderReplanUI('Nothing to reset: every upcoming day follows the planner.');return}
-  if(n&&!await askConfirm(`Undo the swaps on ${n} upcoming day${n===1?'':'s'}?\n\nThe planner chooses ${n===1?'that day':'those days'} again. Formal days, today and past days stay as they are.`,{ok:'Re-plan'}))return;
-  const m=await replanFuture();renderReplanUI(m?`${m} day${m===1?'':'s'} planned again.`:'The coming days were planned again.');todayStale=true}
-function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const T=todayDate();
-  const n=Object.values(dayRecs).filter(r=>keyDate(r.date)>T&&r.worn!==true&&(r.force||r.skip||r.ids||typeof r.vest==='boolean')).length;
-  el.textContent=msg||(n?`${n} upcoming day${n===1?' keeps':'s keep'} pieces from a swap.`:'Every upcoming day follows the planner.')+' The coming week stays as shown when something changes; re-plan to choose it again.'}
+  if(n)setTimeout(()=>toast('The planner was updated: upcoming days were planned again. Your own picks were kept.',4500),400)}
+const replanCount=()=>{const T=todayDate();return Object.values(dayRecs).filter(r=>{const d=keyDate(r.date);return d>=T&&r.worn!==true&&dayChanged(r,+d===+T)}).length};
+async function replanButton(){const T=todayDate(),n=replanCount();
+  const locked=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>=T&&r.worn!==true);
+  if(!n&&!locked){renderReplanUI('Nothing to start over: today and every coming day already follow the planner.');return}
+  if(!await askConfirm(`Start the plan over?\n\nToday and every coming day are planned afresh: the week's locks and ${n?`your changes on ${n} day${n===1?'':'s'} (swaps, picks, the vest, pieces taken off)`:'any changes'} are thrown out. Occasions, days off, days marked worn and the past stay as they are.`,{ok:'Start over'}))return;
+  const m=await replanFuture();renderReplanUI(m?`Started over: ${m} day${m===1?'':'s'} with changes planned afresh, and the week unlocked.`:'Started over: the week was unlocked and planned afresh.');todayStale=true}
+function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const n=replanCount();
+  el.textContent=msg||((n?`${n} day${n===1?' has':'s have'} your changes (swaps, picks, the vest, pieces taken off).`:'Today and the coming days follow the planner.')+' Plans afresh from today, throwing out the week\'s locks and your changes; occasions, days off and days marked worn stay.')}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
   if(o.frozen){const r0=dayRecs[k];if(pastEdit!==k||!r0)return;await saveDay({...r0,vestOn:!!v,worn:true,edited:true});renderToday();return}
  const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
@@ -1115,7 +1202,29 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
   X.putImageData(D,0,0);const url=c.toDataURL('image/png');if(OVL_SUITS.size>12)OVL_SUITS.clear();OVL_SUITS.set(key,url);return url}
 // a plain or finely woven jacket with a close-up shows it again (the owner's choice, 2026-11-13, "the mix": at 64 px the painted grain of
 // a twill was a flat square, its close-up real cloth); a striped, checked or figured one stays painted (its close-up lost the stripes)
+/* a herringbone shirt's swatch (2026-11-14, the owner's pick "D" from mockups of his pink herringbone): cut from the painter's own cloth
+   (asm-color.js asmCmTile: the colour held, every other column lighter, as in the picture), about OVL_HB_PAIRS column pairs across, a
+   OVL_HB_PX square PNG (the enlarged swatch is 46% of the picture). The drawn swatch (the list dot's tile at 2.2x strength) read as harsh
+   charcoal zigzags on near-white. The tile is rasterised, so it is made once per look, asynchronously: until then a plain patch of the
+   shirt's colour (data-hb), replaced where it shows when ready; if it can't be made, the drawn swatch as before */
+const OVL_HB_PAIRS=5,OVL_HB_PX=512,OVL_HB=new Map();
+const ovlHbKey=i=>JSON.stringify([colOf(i),usableSett(i),i.pattern,typeof ASM_HB_COL_LIFT!=='undefined'?[ASM_HB_COL_LIFT,ASM_HB_SHIRT_Y]:0,OVL_HB_PAIRS]);
+function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||typeof asmHbShirt!=='function'||typeof asmCmTile!=='function'||!asmHbShirt(i))return null;
+  const k=ovlHbKey(i);let e=OVL_HB.get(k);
+  if(!e){e={id:'hb'+OVL_HB.size,url:null,fail:false};OVL_HB.set(k,e);
+    const put=h=>document.querySelectorAll(`[data-hb="${e.id}"]`).forEach(x=>{x.outerHTML=h});
+    e.p=asmCmTile(i,'shirt').then(T=>{if(!T)throw new Error('no tile');
+      const g=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055),tc=document.createElement('canvas');tc.width=T.TW;tc.height=T.TH;
+      const tx=tc.getContext('2d'),d=tx.createImageData(T.TW,T.TH);for(let n=0;n<T.TW*T.TH;n++){for(let q=0;q<3;q++)d.data[4*n+q]=g(Math.max(0,Math.min(1,T.t[3*n+q])));d.data[4*n+3]=255}tx.putImageData(d,0,0);
+      const S=OVL_HB_PX,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d'),s=S/(OVL_HB_PAIRS*T.TW);x.imageSmoothingQuality='high';
+      x.save();x.scale(s,s);x.fillStyle=x.createPattern(tc,'repeat');x.fillRect(0,0,S/s,S/s);x.restore();
+      const gr=x.createLinearGradient(0,0,S,S);gr.addColorStop(0,'rgba(255,255,255,.08)');gr.addColorStop(1,'rgba(0,0,0,.10)');x.fillStyle=gr;x.fillRect(0,0,S,S);   // the light, as the drawn swatches have
+      e.url=c.toDataURL('image/png');if(OVL_HB.size>16){const first=OVL_HB.keys().next().value;if(first!==k)OVL_HB.delete(first)}put(`<img src="${e.url}" alt="">`)})
+      .catch(err=>{console.warn('herringbone swatch not made',err);e.fail=true;put(ovlSvg(i))})}
+  if(e.url)return `<img src="${e.url}" alt="">`;if(e.fail)return null;
+  return `<svg data-hb="${e.id}" viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" fill="${colOf(i)}"/></svg>`}
 const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer'){if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${i.swatch}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)}
+  if(i.type==='shirt'){const h=ovlHbShirt(i);if(h)return h}
   return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i)};
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
@@ -1146,7 +1255,7 @@ function figureStage(o){
    Photos are saved per outfit combination, not per day: any day that wears the same pieces reuses the photo.
    The worker keeps a copy (KV) so every device can show it. ---- */
 let renders={},rendering=false,renderMsg={k:'',t:''},renderFail={};   // rendering: an outfit being sent (or, on a worker without a queue, made) now; renderMsg: a note for one day; renderFail: why a queued photo failed, per combination
-const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* the combination a photo shows: which pieces, and everything about them that changes how they look */
 /* Which look a photo shows. The shirt counts only by its base colour (any white shirt shares the photo made with another
@@ -1184,6 +1293,9 @@ async function fetchRemoteRender(o,day){
   try{
     const get=async q=>{const r=await fetch(W.url+'?'+q,{headers:{'x-app-token':W.tok},cache:'no-store'});return r.ok?r.json():null};
     const cur=renders[ck];if(cur&&remoteKeys&&remoteKeys.has(ck))return;   // here and on the worker already: nothing to do
+    // with the worker's list in hand, a day it has no photo for is not asked about: each ask was a 404, logged as an error in the
+    // console for every day shown (audit 2026-11-13: 31 in one session); "none" is the normal answer
+    await remoteList(W);if(remoteListed&&!remoteKeys.has(ck)&&!remoteKeys.has(comboKeyV1(o))){if(cur)shareRender(ck,cur);return}
     let j=await get('key='+ck);
     if(!j){if(cur){shareRender(ck,cur);return}
       // a photo the worker kept under the earlier combination key, or for this date before combinations were used
@@ -1197,11 +1309,16 @@ async function fetchRemoteRender(o,day){
 }
 /* photos the worker keeps that this device lacks (a new install, or made on another device): download the ones the plan needs
    for the month on screen and the next, nearest the selected day first, so swiping between days shows them at once */
-let prefetching=false,prefetchAgain=false,remoteKeys=null;
+let prefetching=false,prefetchAgain=false,remoteKeys=null,remoteListed=false,remoteListP=null;
 const planOf=planMonth;
+/* the worker's list of kept photos (GET ?list=1), read once and shared (remoteKeys is reset to read it again); remoteListed is false
+   when the worker gave no list (an older one, or its daily list allowance used up): then each day is asked about as before */
+function remoteList(W){if(remoteKeys)return Promise.resolve(remoteKeys);
+  return remoteListP||(remoteListP=fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'}).then(r=>r.ok?r.json().catch(()=>null):null).catch(()=>null)
+    .then(j=>{remoteListP=null;remoteListed=!!(j&&Array.isArray(j.keys));remoteKeys=new Set(remoteListed?j.keys:[]);return remoteKeys}))}
 async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetching){prefetchAgain=true;return}prefetching=true;
   try{
-    if(!remoteKeys){const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;if(!j||!Array.isArray(j.keys)){remoteKeys=new Set();return}remoteKeys=new Set(j.keys)}   // no list: fetch per day as before
+    await remoteList(W);if(!remoteListed)return;   // no list: fetch per day as before
     do{prefetchAgain=false;const c=+sel,near=new Map();   // each combination ranked by its day closest to the one on screen
       for(const [y,m] of [[view.y,view.m],[view.m===11?view.y+1:view.y,(view.m+1)%12]])for(const [k,o] of Object.entries(planOf(y,m))){if(!hasOutfit(o))continue;
         const ck=comboKey(o);if(renders[ck]||!remoteKeys.has(ck)||renderTried.has(ck))continue;const d=Math.abs(+keyDate(k)-c),cur=near.get(ck);if(!cur||d<cur[0])near.set(ck,[d,ck,o])}
@@ -1215,7 +1332,7 @@ async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetchin
     }while(prefetchAgain)
   }catch(e){console.warn('photo prefetch failed',e)}finally{prefetching=false}}
 let prefetchTimer=0;const schedulePrefetch=()=>{clearTimeout(prefetchTimer);prefetchTimer=setTimeout(prefetchRenders,250)};
-async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
+async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll(IDBKeyRange.bound('render:','render;',false,true)));renders={};for(const x of all||[])renders[String(x.k).slice(7)]=x.v}catch(e){console.warn(e)}}   // (only the photos' key range: the kept assembled pictures are read by asmLoad)
 /* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
 /* a tie clip is named by its colour (no metal field): "silver", "rose gold", "black" (enamel) */
@@ -1286,7 +1403,8 @@ async function generateRender(){
   try{const q=!replace&&asmLive()&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
     if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open until it is done.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
-  catch(e){renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(e.message)?e.message:'Couldn’t send the photo: '+(e.message||e)}}
+  catch(e){const raw=String(e.message||e),pm=typeof plainErr==='function'?plainErr(raw):raw;   // (the server's set-up errors in plain words for a tester, ui.js)
+    renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(raw)?raw:pm!==raw?pm:'Couldn’t send the photo: '+raw}}
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)refreshToday();renderRegenUI()}
 }
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day.
@@ -1346,7 +1464,8 @@ function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
   readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
 const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="" data-k="${itemKey(i)}" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
-  try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
+  try{await remoteList(W);if(remoteListed&&!remoteKeys.has(k))return;   // not on the worker: no 404 to ask for
+    const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
     await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)refreshToday();else if(!$('#wardrobe').hidden&&!phEdit.crop)renderWardrobe()}catch(e){console.warn('item picture unavailable',e)}}
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
@@ -1363,7 +1482,7 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='';
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
     try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
-  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
+  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${typeof plainErr==='function'?plainErr(err):err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
 /* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
 async function queueCombo(o,replace=false){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
@@ -1371,9 +1490,11 @@ async function queueCombo(o,replace=false){
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o),...(o.top?{}:{nojacket:true}),...(replace?{replace:true}:{})})});
   const j=await r.json().catch(()=>({}));
   if(r.ok&&j.queued)return 'queued';
-  if(r.ok&&j.exists){renderTried.delete(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
+  if(r.ok&&j.exists){renderTried.delete(ck);if(remoteKeys)remoteKeys.add(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
   if(r.ok&&j.image){await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.image),model:j.model||'',t:Date.now()},false);return 'done'}   // an older worker made it right away
-  if(r.status===501||r.status===404||r.status===405)return 'noqueue';
+  // only a worker without the queue (noQueue) is asked again directly: a 501 for a missing image service is the answer, not a
+  // reason to ask twice (one Generate tap sent two POST /render, audit 2026-11-13)
+  if((r.status===501&&j.noQueue)||r.status===404||r.status===405)return 'noqueue';
   throw new Error(j.message||j.error||`HTTP ${r.status}`)}
 const RQ='render_queue';
 const rqGet=()=>{try{const q=JSON.parse(localStorage.getItem(RQ)||'{}');return {keys:[],failed:[],...q}}catch{return {keys:[],failed:[]}}};
@@ -1478,7 +1599,9 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();
-  if(items.length){recordDays(p).then(lockUpcoming);
+  if(cache.snap&&p===cache[cache.snap]){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
+  else if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
+    else if(!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (drawn again once the backup is merged, and recorded then)
   }
 }
 
@@ -1552,7 +1675,7 @@ function stepDay(n,from){
   let g=0;do d.setDate(d.getDate()+n);while(!isWorkday(d)&&++g<7);
   foldAll();sel=d;view={y:d.getFullYear(),m:d.getMonth()};renderToday();
   const sl=$('#slide');if(!sl)return;
-  const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x)return;
+  const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x||noMotion())return;   // reduced motion: the new day just shows
   sl.style.transition='none';sl.style.transform=`translateX(${x}px)`;sl.style.opacity='0';
   void sl.offsetWidth;
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';
@@ -1580,6 +1703,7 @@ function stepDay(n,from){
     const fast=Math.abs(dx)/Math.max(1,Date.now()-t)>.5;
     if(Math.abs(dx)>70||(fast&&Math.abs(dx)>30)){
       const n=dx<0?1:-1,w=sl.offsetWidth||innerWidth;
+      if(noMotion()){stepDay(n,0);return}   // reduced motion: no fly-out and slide-in
       sl.style.transition='transform .16s ease-in,opacity .16s';sl.style.transform=`translateX(${dx<0?-w:w}px)`;sl.style.opacity='0';
       setTimeout(()=>stepDay(n,(dx<0?1:-1)*w*.6),160);
     }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}
@@ -1679,9 +1803,10 @@ addEventListener('popstate',()=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
   if(itemHist){itemHist=false;if(editing)closeItem(true)}});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
-function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;
+function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
-  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on}
+  if(typeof layerInert==='function')layerInert();else for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;   // (ui.js: counts Settings and the sheets too)
+  if(was&&!on&&typeof syncLaterRun==='function')setTimeout(()=>syncLaterRun('wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
 /* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
 function renderItem(){
   const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
@@ -1721,11 +1846,12 @@ let ivDrag=false;
 (()=>{const v=$('#item-view'),b=$('#ivbody'),bd=$('#item-backdrop');if(!v||!b)return;let st=null;
   const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
   v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.ivhead');
-    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:Date.now(),vy:0}},{passive:true});
+    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:e.timeStamp,vy:0}},{passive:true});
   v.addEventListener('touchmove',e=>{
     if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
     if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return}}   // downward: ours; anything else is a scroll or a sideways swipe
-    e.preventDefault();const now=Date.now();if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
+    // the speed from when each touch happened (e.timeStamp), not when it was handled, as in shop.js: on a busy phone a flick handled late read as a slow pull
+    e.preventDefault();const now=e.timeStamp;if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
     st.d=Math.max(0,dy);put(st.d)},{passive:false});
   const end=()=>{
     if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;ivDrag=false;v.style.transition='';
@@ -1810,7 +1936,7 @@ function renderAdd(){
   closeSettings();
   const workerSet = !!localStorage.getItem('worker_url');
   if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || (aiModel?`Last photo read by ${/^claude/.test(aiModel)?'Claude':'AI'} (${aiModel}).`:'Photos are read automatically: the type, colours and pattern are filled in for you.');
-  const ready=queue.filter(q=>!q.busy&&!q.err).length;if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()">Save all ${ready} items</button>`:'';
+  const ready=queue.filter(q=>!q.busy&&!q.err).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading?' disabled title="Claude is still reading a card"':''}>Save all ${ready} items</button>`:'';
   if(typeof addGate==='function')addGate();
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
@@ -1833,7 +1959,7 @@ ${FABRIC.includes(q.type)?`<label class="colrow">Pattern ${patBtn('q',i,q)}</lab
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='yes'?'yes':'no','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:''}${q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:''}${q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
-${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})">Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
+${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderRow(q,i)}<div class="btns"><button class="pri" onclick="save(${i})"${cardReading(q)?' disabled title="Claude is still reading this item"':''}>Confirm</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
 }
 
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
@@ -1877,14 +2003,15 @@ function show(t){
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
-  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
+  if(from==='wardrobe'&&t!=='wardrobe'&&!editing){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
+  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
   if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
   if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
   pageIn(t,from);
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>smallPhotos()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)])).then(([r,d,st,sn])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);wxPreload();planSnapUse(sn);checkPlanRules().then(()=>whenPulled(checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>smallPhotos()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady also waits for every script to have run (afterDom; afterScripts waits for the load event, pictures too, and held it up 30 s once): on a slow load app.js's start-up finished while about.js
    was still to come, and a test read the page before about.js had shown its note after a restart)
@@ -1956,6 +2083,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   const tk=isoKey(todayDate()),skip=new Set(h&&h.skip||[]),up=(h&&h.list||[]).filter(x=>x.d>=tk);
   list.innerHTML=!cc?'':up.length?up.map(x=>{const d=isoToDate(x.d),wk=!settings.workdays.includes(d.getDay());
     return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} onchange="toggleHoliday('${x.d}',this.checked)"><span class="hd">${shortDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
+    :h&&!h.fetched?`<small class="mut">The public holidays of ${esc(countryName(cc))} are loaded once the app is connected (chosen from this phone’s time zone).</small>`   // (setup.js setupHolidays)
     :'<small class="mut">No public holidays in the next year.</small>';
   const own=(settings.daysOff||[]).filter(x=>x.d>=tk),ol=$('#off-list');
   // consecutive days with one name are shown as one range
@@ -1963,7 +2091,8 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?shortDate(isoToDate(r.from)):`${shortDate(isoToDate(r.from))} – ${shortDate(isoToDate(r.to))}`;
     return `<span class="fchip">${l}${r.n&&r.n!=='Day off'?' · '+esc(r.n):''}<button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Untick any you work.`:'');
-  const f=$('#cfg-off-from');if(f)f.min=tk}
+  const f=$('#cfg-off-from');if(f)f.min=tk;
+  if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
 async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI()}
 /* ---- Settings: formal days (any upcoming workday) and regenerating the shown day's photo ---- */
 const shortDate=d=>d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
@@ -1973,7 +2102,8 @@ function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-dat
   const up=Object.values(dayRecs).filter(r=>occOf(r)&&keyDate(r.date)>=T).sort((a,b)=>keyDate(a.date)-keyDate(b.date));
   list.innerHTML=up.length?up.map(r=>{const l=shortDate(keyDate(r.date));return `<span class="fchip">${l} · ${occLabel(occOf(r))}<button type="button" aria-label="Make ${l} a regular day" onclick="setOccasion(null,'${r.date}')">×</button></span>`}).join(''):'<small class="mut">No occasions coming up.</small>';
   const pick=$('#cfg-occasion');if(pick&&!pick.options.length)pick.innerHTML=OCCASIONS.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
-  if(msg!==undefined&&$('#formal-msg'))$('#formal-msg').textContent=msg}
+  if(msg!==undefined&&$('#formal-msg'))$('#formal-msg').textContent=msg;
+  if(settingsOpen())settingsSummaries()}
 async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)return renderFormalUI('Pick a date first.');
   const [y,m,dd]=v.split('-').map(Number),d=new Date(y,m-1,dd),k=key(d),l=shortDate(d);
   if(d<todayDate())return renderFormalUI(`${l} has passed.`);
@@ -2009,7 +2139,7 @@ function useMyLocation(){if(!navigator.geolocation){tell('Location is not availa
 async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();if(!q)return;
   try{const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=5&language=en&name='+encodeURIComponent(q));const j=await r.json();
     const res=(j.results||[]).map(c=>({lat:c.latitude,lon:c.longitude,name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', ')}));
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${c.name}</button>`).join(''):'<small class="mut">No matches.</small>'}
+    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}</button>`).join(''):'<small class="mut">No matches.</small>'}
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */
@@ -2054,7 +2184,8 @@ async function loadClimate(){
 async function loadWeather(force){
   const L=settings.location;if(!L)return;loadClimate();
   try{const c=JSON.parse(localStorage.getItem('wx')||'null');
-    if(!force&&c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3){weather=c.days;cache={};if(!$('#today').hidden)refreshToday();return}}catch{}
+    if(!force&&c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3){if(JSON.stringify(weather)===JSON.stringify(c.days))return;   // already read (wxPreload): the plan stands
+      weather=c.days;cache={};if(!$('#today').hidden)refreshToday();return}}catch{}
   try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${L.lat}&longitude=${L.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`);
     const d=(await r.json()).daily;if(!d||!d.time)return;const days={};
     d.time.forEach((t,i)=>{const [y,m,dd]=t.split('-').map(Number);days[key(new Date(y,m-1,dd))]={tmax:d.temperature_2m_max[i],tmin:d.temperature_2m_min[i],pop:d.precipitation_probability_max[i]??0,rain:d.precipitation_sum[i]??0,code:d.weather_code[i]??0}});

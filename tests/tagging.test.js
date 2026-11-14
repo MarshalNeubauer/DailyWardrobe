@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const base={type:'suit',primaryColor:'taupe',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',metal:null,leather:null,dial:null,band:null,bezel:null};
   const extra={confidence:{type:'high',primaryColor:'medium',pattern:'low'},altColor:'deeptaupe',altPattern:'twill',newColor:null,newPattern:null,clothBox:{x:300,y:200,w:400,h:500}};
   const call=(path,body)=>worker.fetch(new Request('https://w.test/'+path,{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify(body)}),env);
-  const textOf=b=>b.messages[0].content.filter(c=>c.type==='text').map(c=>c.text).join('');
+  const textOf=b=>[...(b.system||[]).map(s=>s.text),...b.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n');   // the fixed rules and the owner's own are in system (cached), the rest after the photos
   try{
     // ---- worker: the request
     reply=()=>({...base,...extra,newColor:{name:'Mushroom<script>',why:'greyer than taupe'},clothBox:{x:900,y:-5,w:400,h:2000}});
@@ -21,7 +21,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const b=sent.at(-1),t=textOf(b),sch=b.output_config.format.schema;
     ok(b.messages[0].content.filter(c=>c.type==='image').length===2&&/The first photo is the whole item\. The second is a close-up/.test(t),'with a close-up, both photos go to Claude, the second named as the close-up');
     ok(b.output_config.effort==='medium'&&b.max_tokens>=12000,'single items are tagged at medium effort');
-    ok(/already white-balanced/.test(b.system)&&!/correct for warm or cool lighting/.test(b.system),'Claude is told the photos are already white-balanced (no second correction)');
+    const sysT=(b.system||[]).map(s=>s.text).join('\n');
+    ok(!/white-balanced/.test(sysT)&&!/Judge shirt colours as in daylight/.test(t)&&/may or may not have been white-balanced/.test(t),'without the app\'s wb flag Claude gets the neutral wording once (no "already white-balanced" against "judge as in daylight")');
     ok(sch.properties.primaryColor.enum.includes('ownmushroom')&&!sch.properties.primaryColor.enum.includes('own<x>')&&sch.properties.pattern.enum.includes('own-seersucker'),'the owner\'s colours and patterns join the allowed answers; malformed ones are dropped');
     ok(/ownmushroom = mushroom \(#8a7f72\), for suit/.test(t)&&/own-seersucker = seersucker: puckered stripes/.test(t)&&!/= bad/.test(t),'the prompt describes them');
     ok(/CIELAB L\*42 a\*3 b\*9 \(#6b5f52\); nearest of the owner's colours: taupe \(ΔE 4\.2\)\. A white reference was in the frame/.test(t)&&!/bad c/.test(t),'the measured colour goes along, with the white-reference note');

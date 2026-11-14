@@ -1,4 +1,4 @@
-/* Daily Wardrobe: the stats page (Settings → Wardrobe stats).
+/* Daily Wardrobe: the stats page (the Insights tab).
    Two sources: what was really worn (the day history from the first day the wardrobe existed; days marked "Not worn" and
    the planner's warm-up days are left out) and what is planned for the next six months. From them: wear counts per item,
    the pieces that never get worn and why, what costs outfits points, the colour balance, the most-worn pairings, rest
@@ -37,10 +37,10 @@ function whyUnused(i){
   switch(i.type){
     case 'pants':{if(!blazerDays)return 'You have no blazer days, so separate trousers are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
       const g=Math.min(...by('blazer').map(j=>Math.max(...by('pants').map(p=>pairScore(j,p)+patternScore([[j,'top'],[p,'bot']])))-(pairScore(j,i)+patternScore([[j,'top'],[i,'bot']]))));
-      return g>QWIN?`They don't suit any of your blazers well enough: ${pts(g)} behind the best pair at the closest.`:'They suit a blazer, but other pairs have rested longer: they come up later than six months.'}
-    case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts have rested longer: it comes up later than six months.';
+      return g>QWIN?`They don't suit any of your blazers well enough: ${pts(g)} behind the best pair at the closest.`:'They suit a blazer, but other pairs suit your outfits a little better or have rested longer, so they aren\'t in the next six months\' plan.'}
+    case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts suit your outfits a little better or have rested longer, so it isn\'t in the next six months\' plan.';
       return darkShirt(i)?`A dark shirt needs a light jacket${wearsTie()?' and a tie lighter than itself':''}; the best such outfit is ${pts(g)} behind your others.`:`With every jacket it is at least ${pts(g)} behind your other shirts.`}
-    case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties have rested longer: it comes up later than six months.':`With every jacket and shirt it is at least ${pts(g)} behind your other ties.`}
+    case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties suit your outfits a little better or have rested longer, so it isn\'t in the next six months\' plan.':`With every jacket and shirt it is at least ${pts(g)} behind your other ties.`}
     case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for colour variety.';
     case 'blazer':return !blazerDays?'You have no blazer days set in Settings.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other blazers take every blazer day first.';
     case 'shoes':{const ok=jackets.some(j=>(j.type==='suit'?[j]:by('pants')).some(b=>shoeScore(j,b,i)>-50));
@@ -145,3 +145,28 @@ async function forgetLearned(kind,k){
   await saveUserSettings();renderStats()}
 function statsToggle(d){const t=d.dataset.type;if(statsOpen[t]===d.open)return;statsOpen[t]=d.open;if(d.open&&!d.querySelector('.st-row')){const y=scrollY;renderStats();scrollTo(0,y)}}
 function openStats(){closeSettings();show('stats');scrollTo({top:0})}   // Insights is a tab now (it was a page opened from Settings)
+/* ---- the next six months are planned a week at a time while the phone is idle (statsPlan), not all at once when Insights opens: that
+   froze a phone for 1.3 s (audit 2026-11-13). Opening the tab (statsShow, from show()) draws the page at once when they are planned,
+   else its top with a line saying so, and the rest as soon as the slices are done. It also starts a few seconds after start-up, so
+   the tab is usually ready. renderStats() called directly still works it out at once (the tests, a change made on the page). ---- */
+const STATS_SLICE=7;   // days planned per idle slice
+let statsWarm=null;
+function statsMonths(){const T=todayDate(),end=new Date(T.getFullYear(),T.getMonth()+STATS_MONTHS,T.getDate()),out=[];
+  for(let y=T.getFullYear(),m=T.getMonth();new Date(y,m,1)<=end;m===11?(m=0,y++):m++)out.push([y,m]);return out}
+const statsPlanned=()=>!!window.TEST_PLAN||statsMonths().every(([y,m])=>cache[y+'-'+m]);
+function statsPlan(){if(statsWarm)return statsWarm;if(statsPlanned())return Promise.resolve();
+  const idle=f=>self.requestIdleCallback?requestIdleCallback(f,{timeout:250}):setTimeout(f,16);
+  return statsWarm=new Promise(done=>{const step=()=>{
+    try{if(statsPlanned()){statsWarm=null;return done()}
+      const T=todayDate(),[y,m]=statsMonths().find(([y,m])=>!cache[y+'-'+m]),start=planStart(y,m);
+      if(+start!==+planStart(T.getFullYear(),T.getMonth()))planMonth(y,m);   // a month built on its own (planMonth's other branch): in one go
+      else{const sim=cache.sim||(cache.sim=planSim(start)),me=new Date(y,m+1,0),at=sim._at?new Date(sim._at):start,next=new Date(at.getFullYear(),at.getMonth(),at.getDate()+STATS_SLICE);
+        if(next>=me)planMonth(y,m);else{sim.upTo(next);sim._at=+next}}}   // (planMonth then only plans the days left; the sim is resumable)
+    catch(e){console.warn('planning ahead for Insights stopped',e);statsWarm=null;return done()}
+    idle(step)};idle(step)})}
+function statsShow(){const el=$('#stats');if(!el)return;
+  if(!items.length||statsPlanned())return renderStats();
+  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
+  statsPlan().then(()=>{if(!el.hidden&&el.querySelector('.st-wait'))renderStats()})}
+// a few seconds after start-up, while nothing else is going on
+if(typeof afterScripts==='function')afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},4000));

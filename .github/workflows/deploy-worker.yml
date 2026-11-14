@@ -10,6 +10,9 @@ on:
     paths: [worker.js, wrangler.toml, .github/workflows/deploy-worker.yml]
   workflow_dispatch:
 concurrency: deploy-worker
+# the job only reads the repository; the Cloudflare token is its own secret
+permissions:
+  contents: read
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,7 +26,8 @@ jobs:
           ACCOUNT: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           KV: ${{ vars.WARDROBE_KV_ID }}
         run: |
-          if [ -z "$TOKEN$ACCOUNT$KV" ]; then echo "::notice::Automatic worker deploys are not set up yet (no Cloudflare token or IDs); skipping."; echo "ready=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          # a warning, not a quiet notice: this run means worker.js (or its config) changed on main, and the live worker stays the old one
+          if [ -z "$TOKEN$ACCOUNT$KV" ]; then echo "::warning::worker.js changed on main but was NOT deployed: automatic worker deploys are not set up (no Cloudflare token or IDs). Deploy it by hand (npx wrangler deploy) or add the secret and variables listed at the top of this workflow."; echo "ready=no" >> "$GITHUB_OUTPUT"; exit 0; fi
           missing=""
           [ -n "$TOKEN" ] || missing="$missing secret CLOUDFLARE_API_TOKEN;"
           [ -n "$ACCOUNT" ] || missing="$missing variable CLOUDFLARE_ACCOUNT_ID;"

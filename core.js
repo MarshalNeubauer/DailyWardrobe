@@ -12,11 +12,11 @@ normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pan
 patLabel=p=>String(p||'').replace(/-/g,' '),
 COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'lightgrey',silvergrey:'silver',silvergray:'silver',darkgray:'darkgrey',middlegrey:'midgrey',middlegray:'midgrey',midgray:'midgrey',mediumgrey:'grey',mediumgray:'grey',
   slateblue:'slate',slategrey:'slate',slategray:'slate',slatebluegrey:'slate',darkslatebluegrey:'slate',darkslate:'slate',bluegrey:'slate',bluegray:'slate',
-  steel:'steelblue',denimblue:'steelblue',denim:'steelblue',dustyblue:'steelblue',verydarknavy:'darknavy',navyblack:'darknavy',inkblue:'darknavy',ink:'darknavy',sapphire:'deepblue',
-  lightblue:'lightblue',skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
-  lightyellow:'paleyellow',butter:'paleyellow',lemon:'paleyellow',eggshell:'ivory',lilac:'lavender',cornflower:'periwinkle',cornflowerblue:'periwinkle',darkblue:'navy',navyblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'khaki',chino:'khaki',stone:'khaki',camel:'tan',sand:'tan',taupe:'taupe',mushroom:'taupe',greige:'taupe',deeptaupe:'deeptaupe',darktaupe:'deeptaupe',richtaupe:'deeptaupe',mink:'deeptaupe',rust:'rust',orange:'rust',burntorange:'rust',terracotta:'rust',copper:'rust',mintgreen:'mint',palegreen:'mint',seafoam:'mint',
+  steel:'steelblue',denimblue:'steelblue',dustyblue:'steelblue',verydarknavy:'darknavy',navyblack:'darknavy',inkblue:'darknavy',ink:'darknavy',sapphire:'deepblue',
+  skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
+  lightyellow:'paleyellow',butter:'paleyellow',lemon:'paleyellow',eggshell:'ivory',lilac:'lavender',cornflower:'periwinkle',cornflowerblue:'periwinkle',darkblue:'navy',navyblue:'navy',midnightblue:'navy',midnight:'navy',offwhite:'cream',ecru:'cream',chino:'khaki',camel:'tan',sand:'tan',mushroom:'taupe',greige:'taupe',darktaupe:'deeptaupe',richtaupe:'deeptaupe',mink:'deeptaupe',orange:'rust',burntorange:'rust',terracotta:'rust',copper:'rust',mintgreen:'mint',palegreen:'mint',seafoam:'mint',
   darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',winered:'wine',merlot:'wine',claret:'wine',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
-  yellow:'gold',mustard:'gold',lavender:'purple',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
+  yellow:'gold',mustard:'gold',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normColFor=(type,c,accent)=>fitCol(type,normCol(c),accent),
 normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 /* colours each item type really comes in: p = main colour, a = stripe / check / motif colours.
@@ -200,7 +200,7 @@ const colorDesc = i => {
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
   return cols.map(colName).join(' & ');
 };
-const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal&&i.type!=='tieclip'?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':' · ')+i.metal:'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
+const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':' · ')+i.metal:'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+typeWord(i):'none';
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
@@ -274,10 +274,17 @@ function mergeState(a,b){
   for(const it of [...(a.items||[]),...(b.items||[])]){const cur=items[it.id];if(!cur||stamp(it)>stamp(cur))items[it.id]=it}
   for(const id of Object.keys(items))if(tomb[id]&&tomb[id]>=stamp(items[id]))delete items[id];
   const cutoff=Date.now()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
-  const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];if(!cur||(d.updated||0)>(cur.updated||0))days[d.date]=d}
+  const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];if(!cur||(d.updated||0)>(cur.updated||0))days[d.date]=dayWins(cur,d);else days[d.date]=dayWins(d,cur)}
   const settings=a.settings&&b.settings?((a.settings.updated||0)>=(b.settings.updated||0)?a.settings:b.settings):(a.settings||b.settings||null);
   return {items:Object.values(items),tombstones:tomb,days:Object.values(days),settings};
 }
+/* of two copies of a day, the newer (n) wins, unless it is only the app's lock of the week (app.js lockUpcoming: lockOnly, base = the
+   version of the record it was built on) and the older (o) was changed after that version: then the older wins whole, with its own
+   lock or none, and the app locks the day again around it (2026-11-14: a phone two days behind locked Nov 17 on its old copy and its
+   newer stamp replaced the owner's pick made on another device). The same rule in worker.js mergeLite. */
+/* (when the older is itself only a lock, what counts is the version it was built on: two locks of one day don't override each other's
+   base, so the newer lock wins unless the older was built on a newer version) */
+const dayWins=(o,n)=>!o||o===n||!n.lockOnly?n:((o.lockOnly?o.base:o.updated)||0)>(n.base||0)?o:n;
 /* compact fingerprint of a snapshot, to tell whether a merge changed anything */
 function stateSig(s){
   s=s||{};const by=(arr,k,v)=>(arr||[]).map(x=>x[k]+':'+v(x)).sort().join(',');

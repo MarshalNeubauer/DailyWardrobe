@@ -16,9 +16,12 @@ const colTarget=()=>!colPick?null:colPick.src==='q'?queue[colPick.ref]:items.fin
 function colChoices(it,k){const cur=k==='primaryColor'?primaryCol(it):it[k];
   return COLOR_OPTS(it.type,cur,k!=='primaryColor').map(x=>x[0]).filter(c=>COLORS[c])}
 /* the three colours nearest the measured cloth (main colour only) */
-function colNear(it,k){if(k!=='primaryColor'||!it.meas)return [];
-  let n=it.meas.near;if(it.meas.lab&&typeof nearestCols==='function')try{n=nearestCols(it.type,it.meas.lab,it.meas.ref)}catch(e){}
-  return (n||[]).filter(x=>COLORS[x.c])}
+/* (2026-11-14) a patterned cloth's colours one by one: its ground for the main colour, its stripe for the second (measureParts); with no
+   such reading a patterned cloth offers none (the whole picture's median of a white/blue stripe is grey: "Use grey" made it worse) */
+function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondaryColor'].includes(k)||typeof nearestCols!=='function')return [];
+  const parts=m.parts&&m.parts.length>1?m.parts:null;if(!parts&&(k!=='primaryColor'||multiCol(it)))return [];
+  const lab=parts?parts[k==='primaryColor'?0:1].lab:m.lab;
+  try{return nearestCols(it.type,lab,m.ref,{kL:measKL(m),skip:it.id,accent:k!=='primaryColor'}).filter(x=>COLORS[x.c])}catch(e){return []}}
 function openColPick(src,ref,k){colPick={src,ref,k};const it=colTarget();if(!it){colPick=null;return}
   colPick.cur=k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):it[k])||'none';colPick.sel=colPick.cur;
   colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||!it.photo)?'tex':'photo';
@@ -65,8 +68,9 @@ const COL_FIELDS=it=>it.type==='socks'?['primaryColor','secondaryColor']:['prima
 async function colAskImgs(it,src){
   if(src==='q'&&it.raw&&it.raw.tex){measureCard(it);return {img:it.tagImg||it.photo||it.texture,closeup:await closeTagImg(it),measured:measHint(it.meas)}}
   let measured;try{const c=await imgOf(it.texture),cv=document.createElement('canvas');cv.width=c.naturalWidth;cv.height=c.naturalHeight;cv.getContext('2d').drawImage(c,0,0);
-    const r=wbRead(cv),m={...measureCloth(cv,null,r.ref?{gains:r.gains,refLum:r.refLum}:{}),src:'closeup'};m.near=nearestCols(it.type,m.lab,m.ref);measured=measHint(m)}catch(e){}
-  const sharp=src==='e'&&typeof tagImgOf==='function'?await tagImgOf(it.id):null;
+    const r=closeRead(cv),m=Object.assign(measureCloth(cv,null,r.ref?{gains:r.gains,refLum:r.refLum}:{}),{src:'closeup'});m.near=nearestCols(it.type,m.lab,m.ref,{kL:measKL(m),skip:it.id});
+    m.parts=measureParts(it,m);if(m.parts)m.groundNear=nearestCols(it.type,m.parts[0].lab,m.ref,{kL:measKL(m),skip:it.id});measured=measHint(m)}catch(e){}
+  const sharp=src==='e'&&typeof tagImgOf==='function'?await tagImgOf(it.id,it):null;
   return {img:sharp||it.tagImg||it.photo||it.texture,closeup:typeof sharpCloseOf==='function'?await sharpCloseOf(it):it.texture,measured}}
 async function colAskRun(){const it=colTarget();if(!it||!it.texture)return;if(!isConnected()){tell(NEED_CONN);return}
   // one of Claude's own readings per request: asked for both, the answer's schema is more than the API compiles ("compiled grammar

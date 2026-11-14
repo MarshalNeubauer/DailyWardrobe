@@ -51,17 +51,20 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   await ctx.setOffline(true);await page.reload();await page.waitForSelector('#n-today',{timeout:5000}).catch(()=>{});
   ok((await page.textContent('h1')).includes('Daily Wardrobe')&&await page.$('#n-today')!==null,'app loads offline from the cache');
   ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitFigureSvg==='function'),'all scripts available offline');
+  // a deep link offline: index.html, with its styles and scripts (asked for under the deep path) from this version's files
+  {const q=await ctx.newPage();await q.goto(url+'some/deep/link').catch(()=>{});const st=await q.waitForFunction(()=>window.appReady,null,{timeout:15000}).then(()=>q.evaluate(()=>getComputedStyle(document.querySelector('nav')).position)).catch(e=>'failed: '+e.message.slice(0,60));await q.close();
+    ok(st==='fixed',`offline, a deep link comes up styled and running (${st})`)}
   await ctx.setOffline(false);
   // cross-origin requests are not intercepted
   const sw=await page.evaluate(()=>fetch('https://example.invalid/x').then(()=>'ok',e=>'network error'));
   ok(sw==='network error','cross-origin requests pass through untouched');
   const manifest=await page.evaluate(()=>fetch('manifest.webmanifest').then(r=>r.json()));
-  ok(manifest.display==='standalone'&&manifest.icons.length===2,'web app manifest with icons');
+  ok(manifest.display==='standalone'&&manifest.icons.length===4&&manifest.id==='./','web app manifest with an id and its icons, any and maskable apart');
   // home-screen icons: right sizes, and a photo (thousands of colours), not flat artwork
   const icons=await page.evaluate(()=>Promise.all([['apple-touch-icon.png',180],['icon-192.png',192],['icon-512.png',512]].map(([f,s])=>new Promise(res=>{const im=new Image();
     im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height).data,set=new Set();
       for(let i=0;i<d.length;i+=4)set.add((d[i]>>2)<<12|(d[i+1]>>2)<<6|(d[i+2]>>2));res({f,ok:im.width===s&&im.height===s,colours:set.size})};im.onerror=()=>res({f,ok:false,colours:0});im.src=f}))));
-  ok(icons.every(i=>i.ok&&i.colours>1500),`home-screen icons are the outfit photo at 180/192/512 px (${icons.map(i=>i.f+':'+i.colours).join(', ')})`);
+  ok(icons.every(i=>i.ok&&i.colours>200),`home-screen icons are the outfit photo at 180/192/512 px (a 256-colour palette since 2026-11-14, dithered: a third of the bytes, no visible change) (${icons.map(i=>i.f+':'+i.colours).join(', ')})`);
   ok(/rel="apple-touch-icon" href="apple-touch-icon.png/.test(require('fs').readFileSync(require('path').join(__dirname,'..','index.html'),'utf8')),'iPhone home-screen icon is linked');
   // coming from the earlier service worker (network-first, took over by itself): the page already runs the new files, so the
   // new worker of that same version takes over quietly, with no prompt and no reload

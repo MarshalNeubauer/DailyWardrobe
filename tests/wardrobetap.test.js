@@ -47,7 +47,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(v.ed===null&&!v.on&&!v.shown&&!v.inert,'Done closes the sheet');
     ok(v.sy===y0&&e6.top===b6.top&&e6.left===b6.left,`and the Wardrobe is exactly where it was (scroll ${y0} → ${v.sy})`);
     // swiping down closes it: from the content while it is scrolled to the top
-    const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
+    // each touch carries its own time, `ms` after the one before (the sheet reads a flick's speed from e.timeStamp): a busy
+    // machine that handles the moves late no longer turns a flick into a slow pull
+    const cdp=await ctx.newCDPSession(p);let clock=0;const T=(type,x,y,ms=16)=>{clock=type==='touchStart'?Math.max(clock+ms,Date.now()):clock+ms;return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}],timestamp:clock/1000})};
     const drag=async(x,y0,y1,n=8,probe)=>{let mid=null;await T('touchStart',x,y0);for(let k=1;k<=n;k++){await T('touchMove',x,y0+(y1-y0)*k/n);await p.waitForTimeout(16);if(probe&&k===n)mid=await probe()}await T('touchEnd');await settle(p,500);return mid};
     const pos=()=>p.evaluate(()=>({top:Math.round(document.querySelector('#item-view').getBoundingClientRect().top),dim:+getComputedStyle(document.querySelector('#item-backdrop')).opacity,ed:editing}));
     await p.tap('#gi-s6 .giopen');await settle(p,500);
@@ -56,7 +58,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(v.ed===null&&!v.shown&&v.bd==='none'&&v.sy===y0,'letting go past a quarter of its height closes it');
     // a short pull springs back
     await p.tap('#gi-s6 .giopen');await settle(p,500);
-    await T('touchStart',200,400);for(let k=1;k<=4;k++){await T('touchMove',200,400+12*k);await p.waitForTimeout(60)}await T('touchEnd');await settle(p,400);v=await view();
+    await T('touchStart',200,400);for(let k=1;k<=4;k++){await T('touchMove',200,400+12*k,60);await p.waitForTimeout(60)}await T('touchEnd');await settle(p,400);v=await view();
     ok(v.ed==='s6'&&v.vt===36,'a short, slow pull springs back');
     // scrolled down: a downward swipe on the content scrolls it back up instead
     await p.evaluate(()=>document.querySelector('#ivbody').scrollTo(0,400));

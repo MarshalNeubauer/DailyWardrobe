@@ -34,9 +34,9 @@ module.exports=async({ok,chromium,url})=>{
       const before={use:asmCmUse(o),can:asmCan(o)};await asmEnsure(o);before.after=asmCmUse(o);const f=asmFor(o),k=asmOutKey(o);
       // a pixel in the middle of the shirt, left of the tie: pink, as the shirt
       let px=null;if(f){const im=new Image();await new Promise(r=>{im.onload=r;im.src=f.img});const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.36),Math.round(im.width*.34),1,1).data].slice(0,3)}
-      const o2={...o,shirt:W.shirt2};return {before,img:f&&f.img.slice(0,23),w:f&&(await new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=f.img})),px,k,k2:asmOutKey(o2),kept:!!(await metaGet('asm:out:'+k)),
+      const o2={...o,shirt:W.shirt2},rec=await metaGet('asm:out:'+k);return {before,img:f&&f.img.slice(0,5),blob:rec&&rec.blob&&rec.blob.type,b64:!!(rec&&rec.img),w:f&&(await new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=f.img})),px,k,k2:asmOutKey(o2),kept:!!(await metaGet('asm:out:'+k)),
         offPage:asmOffPage(),pending:asmPending(o),parts:asmPhotoParts(o).length}});
-    ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.before.can===false&&a.img==='data:image/jpeg;base64,'&&a.kept,`a shirt-and-tie day (which the earlier assembler can't make): its master is looked for, then the day is painted on it and kept (${JSON.stringify(a.before)})`);
+    ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.before.can===false&&a.img==='blob:'&&a.blob==='image/jpeg'&&!a.b64&&a.kept,`a shirt-and-tie day (which the earlier assembler can't make): its master is looked for, then the day is painted on it and kept as a Blob, shown by an object URL (${JSON.stringify(a.before)})`);
     ok(a.w===512&&a.offPage,`painted in the Web Worker at the job's size (${a.w} px)`);
     ok(a.px&&a.px[0]>a.px[2]+15&&a.px[0]>150,`the shirt comes out pink (${a.px})`);
     ok(a.k!==a.k2&&a.parts===0&&a.pending===false,'another shirt colour is another picture; nothing is photographed or queued for it');
@@ -46,15 +46,21 @@ module.exports=async({ok,chromium,url})=>{
     const v=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie,vest:true};await asmEnsure(o);return {use:asmCmUse(o),for:!!asmFor(o),wants:asmWants(o),earlier:asmWants0(o)}});
     ok(v.use===null&&!v.for&&!v.wants,`a kind whose master the worker lacks falls back to the earlier way (${JSON.stringify(v)})`);
     // a suit day: painted on the suit master (the jacket's sleeves and lapels from their masks)
-    const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o);return {use:asmCmUse(o),img:f&&f.img.length}});
+    const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o),r=asmOut[asmOutKey(o)];return {use:asmCmUse(o),img:f&&r&&r.blob&&r.blob.size}});
     ok(s.use==='suit'&&s.img>10000,`a suit day is painted on the suit master (${JSON.stringify(s)})`);
+    // (2026-11-14 audit) a picture kept as base64 before still shows, and becomes a Blob; start-up reads only the kept pictures' key range
+    const bu=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=16;const img=c.toDataURL('image/jpeg');
+      await metaPut('asm:out:cold000000000test',{img,stamp:1,t:Date.now()});await asmLoad();const r={old:asmImgOf('cold000000000test',asmOut.cold000000000test).slice(0,5),only:Object.keys(asmOut).every(k=>/^c/.test(k))};
+      await asmBlobUp();const st=await metaGet('asm:out:cold000000000test');r.blob=!!(st&&st.blob&&!st.img);r.now=asmImgOf('cold000000000test',asmOut.cold000000000test).slice(0,5);
+      r.renders=Object.keys(renders).length>0&&Object.keys(renders).every(k=>/^c/.test(k));return r});
+    ok(bu.old==='data:'&&bu.blob&&bu.now==='blob:'&&bu.only&&bu.renders,`an old base64 picture shows and is turned into a Blob; start-up reads only its own key ranges (${JSON.stringify(bu)})`);
     // a master's setup kept packed (asmCmPack, the phone's disk cache): read back, it paints the very same picture
     const pk=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},job=await asmCmJob(o);
-      const P=await asmCmPrep(job),pack=await asmCmPack(P),Q=await asmCmUnpack(pack,job);const k0=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size;
-      asmCmMem={list:[{key:k0,P}]};const a=await asmCmBuild({...job,diskCache:false});asmCmMem={list:[{key:k0,P:Q}]};const b=await asmCmBuild({...job,diskCache:false});
+      const P=await asmCmPrep(job);P.lx=asmCmLightPrep(P);const pack=await asmCmPack(P),Q=await asmCmUnpack(pack,job);const k0=job.cm+'|'+job.mk+'|'+job.mt+'|'+(job.rev||'')+'|'+job.size;
+      asmCmMem={list:[{key:k0,P,lx:P.lx}]};const a=await asmCmBuild({...job,diskCache:false});asmCmMem={list:[{key:k0,P:Q,lx:Q.lx}]};const b=await asmCmBuild({...job,diskCache:false});const used=asmCmMem.list[0].P===Q;
       let raw=0;const walk=x=>{if(ArrayBuffer.isView(x)){raw+=x.byteLength;return}if(x&&typeof x==='object')for(const v of Object.values(x))walk(v)};walk({...P,M:null});
-      return {same:a.url===b.url,gz:pack&&pack.gz.byteLength,raw,M:Q&&Q.M.length===P.M.length}});
-    ok(pk.same&&pk.M&&pk.gz<pk.raw/5,`a master's setup packed (${(pk.raw/1024|0)} KB -> ${(pk.gz/1024|0)} KB gzipped) and read back paints the identical picture`);
+      return {same:a.url===b.url,used,lx:!!(Q.lx&&Q.lx.ao&&Q.lx.ao.shirt instanceof Uint16Array&&Q.lx.smb.jacket instanceof Uint16Array),gz:pack&&pack.gz.byteLength,raw,M:Q&&Q.M.length===P.M.length}});
+    ok(pk.same&&pk.used&&pk.lx&&pk.M&&pk.gz<pk.raw/5,`a master's setup with its lighting (16-bit) packed (${(pk.raw/1024|0)} KB -> ${(pk.gz/1024|0)} KB gzipped) and read back paints the identical picture`);
     // the cloth look (ASM_CM_LOOK): a black suit is no longer a flat silhouette (lifted, with more variation: folds, sheen, weave); a navy
     // keeps its blue; job.look false paints as before
     const lk=await p.evaluate(async()=>{const W=__W,px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return x.getImageData(0,0,c.width,c.height).data};
@@ -114,10 +120,11 @@ module.exports=async({ok,chromium,url})=>{
   // a fresh phone with the worker's list (2026-11-13): a look the computer built is shown from its picture alone, without the master, its
   // masks or parts; a look nobody built is left to the computer while building ahead, and painted here for the day on screen
   {const browser=await chromium.launch();
-    try{const ctx=await browser.newContext({viewport:{width:390,height:844}});const asked=[],served={};let listed=0;
+    try{const ctx=await browser.newContext({viewport:{width:390,height:844}});const asked=[],served={},fail=new Set();let listed=0;
       await ctx.route(HOST+'**',route=>{const u=new URL(route.request().url()),k=u.searchParams.get('key');if(k)asked.push(k);
         const j=(b,s=200)=>route.fulfill({status:s,contentType:'application/json',body:JSON.stringify(b)});
         if(u.pathname==='/render'&&u.searchParams.get('list')){listed++;return j({keys:Object.keys(served)})}
+        if(u.pathname==='/render'&&k&&fail.has(k)){fail.delete(k);return j({error:'busy'},503)}   // (a worker that fails once)
         if(u.pathname==='/render'&&k)return served[k]?j(served[k]):j({error:'not found'},404);
         if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});
         if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
@@ -130,8 +137,8 @@ module.exports=async({ok,chromium,url})=>{
         let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
         window.__W={watch:I('watch','silver',{metal:'silver'}),suit:I('suit','navy'),shirt:I('shirt','pink'),shirt2:I('shirt','lightblue'),tie:I('tie','burgundy')};items=Object.values(__W)},HOST);
       // the computer's picture of one suit day, under that look's key
-      const built=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};const k0=asmOutKey(o);await asmCmLook(o);return {k0,k:asmOutKey(o),zv:ASM_ZV,use:asmCmUse(o)}});
-      served[built.k]={sig:`asm/out/z${built.zv}/2000`,img:recs.master.img,model:'',t:2000};
+      const built=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};const k0=asmOutKey(o);await asmCmLook(o);return {k0,k:asmOutKey(o),cmv:ASM_CMV,use:asmCmUse(o)}});
+      served[built.k]={sig:`asm/out/cm${built.cmv}/2000`,img:recs.master.img,model:'',t:2000};   // (signed with the masters' version, not ASM_ZV)
       const r1=await p.evaluate(async()=>{await asmListGet(true);const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o);return {use:asmCmUse(o),shown:!!f,master:!!renders[asmCmKey('suit','master')]}});
       const a1=asked.slice(),name=k=>masterKeys.has(k)?'master record':k===built.k?'the picture':k===bgKey?'the background':k;
       ok(built.use==='suit'&&built.k0!==built.k&&r1.shown&&!r1.master&&a1.length===2&&a1.includes(built.k)&&a1.includes(bgKey),`a look the computer built: only the background (once, it is in every look's key) and the picture are downloaded, not the master, its masks or parts (asked for ${a1.length}: ${a1.map(name).join(', ')})`);
@@ -142,9 +149,35 @@ module.exports=async({ok,chromium,url})=>{
       // the earlier way's photos: with the suit and waistcoat masters on the worker, the start-up check downloads none of them
       const vk=await p.evaluate(()=>asmCmKey('vest','master'));served[vk]=recs.master;const n0=asked.length;
       const old=await p.evaluate(async()=>{await asmListGet(true);const st=await asmSync(true);openSettings('photos');renderAsmUI();
-        return {cm:!!st.cm,missing:st.missing.length,text:(document.querySelector('#asm-status')||{}).textContent||'',old:[asmMasterKey(),asmVestKey(),...['jacket','shirt','tie','watch','vest'].map(s=>asmCalibKey(s))]}});
+        const g=document.querySelector('#asm-group'),seen=s=>{const e=g.querySelector(s);return !!e&&getComputedStyle(e).display!=='none'};
+        return {cm:!!st.cm,missing:st.missing.length,text:(document.querySelector('#asm-status')||{}).textContent||'',hidden:!seen('.sactions')&&!seen('#asm-status')&&!seen(':scope>.slabel'),ahead:seen('#cm-box'),
+          old:[asmMasterKey(),asmVestKey(),...['jacket','shirt','tie','watch','vest'].map(s=>asmCalibKey(s))]}});
       const a3=asked.slice(n0);
       ok(old.cm&&old.missing===0&&!a3.some(k=>old.old.includes(k))&&/no item photos are needed/.test(old.text),`with colour-coded masters, the earlier way's master, waistcoat master and calibration photos are not downloaded (asked for ${a3.length}), and Settings says no item photos are needed`);
+      ok(old.hidden&&old.ahead,`with colour-coded masters, Settings hides the earlier way's Item photos (label, status, button) and keeps Pictures ahead (${JSON.stringify({hidden:old.hidden,ahead:old.ahead})})`);
+      // (2026-11-14 audit) a failed download is asked again (it used to count as missing until a restart), and a forced sync clears what
+      // was tried also when the colour-coded masters answer it
+      const pk=await p.evaluate(()=>asmCmKey('suit','part/sleeveR'));fail.add(pk);
+      const rt=await p.evaluate(async k=>{const r={};delete renders[k];asmTried.delete(k);r.first=await asmGet(k);r.tried=asmTried.has(k);r.soon=await asmGet(k);
+        asmRetryAt.clear();r.later=await asmGet(k);asmTried.add('x-test');await asmSync(true);r.cleared=!asmTried.has('x-test');return r},pk);
+      ok(!rt.first&&!rt.tried&&!rt.soon&&rt.later&&rt.cleared,`a download that failed is not counted as tried and comes on the next ask after ASM_RETRY_MS; asmSync(true) clears what was tried (${JSON.stringify(rt)})`);
+      // a listed picture that is refused (another signature) is downloaded once per list, not on every building-ahead pass
+      const rj=await p.evaluate(()=>{const W=__W;return asmOutKey({shirt:W.shirt2,watch:W.watch,top:W.suit,tie:W.tie})});
+      served[rj]={sig:'asm/out/z9/1000',img:recs.master.img,model:'',t:1000};const n4=asked.length;
+      const rr=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt2,watch:W.watch,top:W.suit,tie:W.tie};delete asmOut[asmOutKey(o)];await asmListGet(true);return [await asmGetPre(o,true),await asmGetPre(o,true),await asmGetPre(o,true)]});
+      ok(rr.every(x=>!x)&&asked.slice(n4).filter(k=>k===rj).length===1,`a refused picture is downloaded once per list (${asked.slice(n4).filter(k=>k===rj).length} times for three asks)`);
+      delete served[rj];
+      // the masters' manifest (2026-11-14 audit): a mask uploaded again reaches a phone that holds the old one, the looks' keys change,
+      // and the computer's picture under the new key is taken although the phone's copies are newer than the computer's
+      const mk=await p.evaluate(()=>({mf:asmCmMfKey(),mask:asmCmKey('suit','mask/jacket')}));
+      served[mk.mask]={...served[mk.mask],t:3000};
+      served[mk.mf]={sig:'asm/cm-manifest '+JSON.stringify({keys:Object.fromEntries(Object.entries(served).filter(([k,v])=>v.model==='colormaster').map(([k,v])=>[k,v.t]))}),img:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',model:'manifest',t:3000};
+      const mf=await p.evaluate(async m=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},r={before:renders[m].t,k0:asmOutKey(o)};
+        await asmListGet(true);await asmCmLook(o);r.dropped=!renders[m];await asmCmGet('suit');r.after=renders[m]&&renders[m].t;r.k1=asmOutKey(o);r.kept=!!localStorage.getItem('asm_cm_mf');return r},mk.mask);
+      ok(mf.before===1000&&mf.dropped&&mf.after===3000&&mf.k0!==mf.k1&&mf.kept,`a mask uploaded again (manifest date newer than the phone's copy) is dropped and downloaded afresh, and the look's key changes (${JSON.stringify(mf)})`);
+      served[mf.k1]={sig:`asm/out/cm${built.cmv}/1000`,img:recs.master.img,model:'',t:4000};   // built on a computer whose copies were older
+      const fr=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};asmOut={};await asmListGet(true);await asmEnsure(o);return {stamp:asmStamp(o),shown:!!asmFor(o)}});
+      ok(fr.shown&&fr.stamp===3000,`a fresh phone takes the computer's picture under the look's key even though its copies are newer (${JSON.stringify(fr)})`);
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')')}
     finally{await browser.close()}}
   // the upload script: the app's keys, from a folder laid out as colormaster.js writes it
@@ -158,6 +191,23 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.status===0&&r.stdout.includes('suit master -> '+want)&&/lapelL/.test(r.stdout),`tools/asm-cm-upload.js puts each record under the app's own key (${(r.stdout.match(/suit master -> \S+/)||[r.stderr])[0]})`);
     const rb=spawnSync(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),'--bg',path.join(src,'master.jpg'),'--dry'],{encoding:'utf8'});
     ok(rb.status===0&&rb.stdout.includes('all background -> c'+fnv(`asm/${ver}/cm${cmv}/all/background`)),`--bg puts the background under the app's key (${(rb.stdout.match(/all background -> \S+/)||[rb.stderr])[0]})`);
+    // (2026-11-14) for real against a stand-in worker: the records and the manifest with every record's date; a second run with nothing
+    // new writes nothing, and a --bg run keeps the suit's dates in the manifest
+    const http=require('http'),kv={},puts=[];
+    const srv=http.createServer((q,res)=>{let b='';q.on('data',c=>b+=c);q.on('end',()=>{const u=new URL(q.url,'http://x'),k=u.searchParams.get('key');res.setHeader('content-type','application/json');
+      if(q.method==='PUT'){const o=JSON.parse(b);kv[o.key]=o.rec;puts.push(o.key);return res.end('{"ok":true}')}
+      if(k&&kv[k])return res.end(JSON.stringify(kv[k]));res.statusCode=404;res.end('{"error":"none"}')})});
+    await new Promise(r=>srv.listen(0,'127.0.0.1',r));const W=`http://127.0.0.1:${srv.address().port}/`;
+    const run=args=>new Promise(r=>{const c=require('child_process').spawn(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),...args],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'t'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>r({code,out}))});
+    try{const mfKey='c'+fnv(`asm/${ver}/cm${cmv}/all/manifest`),mk='c'+fnv(`asm/${ver}/cm${cmv}/suit/master`),bgK='c'+fnv(`asm/${ver}/cm${cmv}/all/background`);
+      const mfOf=()=>JSON.parse(/^asm\/cm-manifest (\{.*\})$/.exec(kv[mfKey].sig)[1]).keys;
+      const r1=await run(['--dir',tmp,'--kinds','suit']),n1=puts.length,m1=kv[mfKey]&&mfOf();
+      const r2=await run(['--dir',tmp,'--kinds','suit']),n2=puts.length-n1;
+      const r3=await run(['--bg',path.join(src,'master.jpg')]),m3=kv[mfKey]&&mfOf();
+      ok(r1.code===0&&m1&&m1[mk]===kv[mk].t&&Object.keys(m1).length===n1-1&&/Next: phones/.test(r1.out),`cm-upload writes the manifest with every record's date and says what happens next (${n1} writes, ${m1?Object.keys(m1).length:0} in the manifest)`);
+      ok(r2.code===0&&n2===0,`a second cm-upload with nothing new writes nothing, not even the manifest (${n2} writes)`);
+      ok(r3.code===0&&m3&&m3[mk]===m1[mk]&&m3[bgK]===kv[bgK].t,`a --bg run adds the background's date and keeps the suit's (${m3?Object.keys(m3).length:0} in the manifest)`)}
+    finally{srv.close()}
     fs.rmSync(tmp,{recursive:true,force:true})}
 };
 module.exports.assembled=true;   // tests assembled pictures (assemble.js)
