@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	b20bc1ecfdd2e67ca5f2
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -5105,7 +5106,7 @@ shirtweave.test.js	history.js	<loaded>	checkPlanRules	keyDate	resetCard	whenPull
 shirtweave.test.js	icon-192.png	<loaded>
 shirtweave.test.js	icon-512.png	<loaded>
 shirtweave.test.js	index.html	<loaded>
-shirtweave.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	phSigOf	phSm	renderItem	renderWardrobe	wardPic
+shirtweave.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	phSigOf	phSm	renderItem	renderWardrobe	smallPhotos	wardPic
 shirtweave.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 shirtweave.test.js	manifest.webmanifest	<loaded>
 shirtweave.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
