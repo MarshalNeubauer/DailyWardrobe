@@ -3949,7 +3949,7 @@ queue.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	
 queue.test.js	apple-touch-icon.png	<loaded>
 queue.test.js	asm-color.js	<loaded>	asmCmRoute	asmHbShirt
 queue.test.js	asm-gl.js	<loaded>
-queue.test.js	assemble.js	<loaded>	@	renderAsmUI
+queue.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
 queue.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careShow	careTimes	laundryDays	renderCareUI
 queue.test.js	colpick.js	<loaded>
 queue.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	lum	mix	nm	occOf	offDays	offName	patBase	patLabel	patName	prettyCols	primaryCol	rgbHex	sentence	setHash	setKeys	shoeStyle	sockToe	thirdOf	titleCls	todayDate	typeWord	wearsJacket	wearsTie
@@ -5289,10 +5289,10 @@ sharedmasters.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMConten
 sharedmasters.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmCopyKey	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmTieSheenK
 sharedmasters.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
 sharedmasters.test.js	asm-worker.js	<any>
-sharedmasters.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCmAny	asmCmHeld	asmCmLook	asmCmUse	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmImgOf	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmMicroKind	asmOutKey	asmPhoto	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmTrim	asmWants	asmWorker	renderAsmUI
+sharedmasters.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmImgOf	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmMicroKind	asmOutKey	asmPhoto	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmTrim	asmWants	asmWorker	renderAsmUI
 sharedmasters.test.js	care.js	<loaded>	careShow
 sharedmasters.test.js	colpick.js	<loaded>
-sharedmasters.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colOf	dayClimate	di	hasVest	inRotation	isWorkday	isoKey	key	keySettings	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	setHash	setKeys	todayDate
+sharedmasters.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colOf	dayClimate	di	dressOut	hasVest	inRotation	isWorkday	isoKey	key	keySettings	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	setHash	setKeys	todayDate	wearsJacket	wearsTie
 sharedmasters.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 sharedmasters.test.js	draw.js	<loaded>
 sharedmasters.test.js	dress.js	<loaded>	migrateVests
