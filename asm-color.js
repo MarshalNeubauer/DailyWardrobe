@@ -573,7 +573,11 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
   const uvAt=(k,X,Yv)=>{if(UV&&UV.R[k]){const r=UV.R[k];
       if(r===3&&ZC==='trousers'){const c=asmUvAt(UV,S,k,X,Yv);return P.legs?[c[0]+P.legs.du[k]/16,c[1]+P.legs.dv[k]/16]:c}
       if(r===1&&geo&&geo.flow&&geo.gar==='jacket'&&!geo.seg[k]&&(ZC==='jacket'||ZC==='waistcoat')){const c=asmUvAt(UV,S,k,X,Yv);return asmFlowAt(geo.flow,c[0],c[1])}
-      if(r===2&&ZC==='shirt'&&!(geo&&geo.seg[k]))return asmUvAt(UV,S,k,X,Yv)}
+      if(r===2&&ZC==='shirt'&&!(geo&&geo.seg[k]))return asmUvAt(UV,S,k,X,Yv);
+      // the jacket masters' pieces, each solved in the painter's own frame (flatten_pieces.py): sleeve parts 10..39, lapels 40..59, the
+      // shirt's cuffs 60.. (its front in the V is 2, above)
+      if(r>=10&&r<60&&(ZC==='jacket'||ZC==='waistcoat'))return asmUvAt(UV,S,k,X,Yv);
+      if(r>=60&&ZC==='shirt')return asmUvAt(UV,S,k,X,Yv)}
     if(ZC==='trousers'&&P.legs){if(G3&&G3.tr){const c=asmGeoXY(G3.tr,G3,k,X,Yv,S);return [c[0]+P.legs.du[k]/16,c[1]+P.legs.dv[k]/16]}return asmLegsAt(P.legs,X,Yv,k)}
     if(!geo)return [X,Yv];const si=geo.seg[k],g=geo.segs[si];if(g&&g.parts)return asmTubeAt(g,X,Yv);
     if(si&&g&&g.cs!=null)return [(X-g.cx)*g.cs+(Yv-g.cy)*g.sn,(Yv-g.cy)*g.cs-(X-g.cx)*g.sn];
@@ -669,7 +673,7 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
       else{base=tmp;tmp[0]=tmp[1]=tmp[2]=0;
         if(z==='tie'&&e.tie&&tg){const th=tg.lean+(e.tie.ang||0)+(y<tg.yk?Math.PI/2:0),cs=Math.cos(th),sn=Math.sin(th);
           for(let aa=0;aa<2;aa++)for(let ee=0;ee<2;ee++){const X=x+(ee+.5)/2,Yv=y+(aa+.5)/2;asmCmAt(e.tie,(X*cs+Yv*sn)/e.rep,(Yv*cs-X*sn)/e.repv,tmp)}tmp[0]/=4;tmp[1]/=4;tmp[2]/=4}
-        else if(z==='jacket'||z==='waistcoat'||(z==='shirt'&&geo&&geo.gar==='shirt')){const n=e.tile.fine?3:2;for(let aa=0;aa<n;aa++)for(let ee=0;ee<n;ee++){const uv=uvAt(k,x+(ee+.5)/n,y+(aa+.5)/n);asmCmAt(e.tile,uv[0]/e.rep,uv[1]/e.repv,tmp)}tmp[0]/=n*n;tmp[1]/=n*n;tmp[2]/=n*n}
+        else if(z==='jacket'||z==='waistcoat'||(z==='shirt'&&geo&&geo.gar==='shirt')||(z==='shirt'&&UV&&(UV.R[k]===2||UV.R[k]>=60))){const n=e.tile.fine?3:2;for(let aa=0;aa<n;aa++)for(let ee=0;ee<n;ee++){const uv=uvAt(k,x+(ee+.5)/n,y+(aa+.5)/n);asmCmAt(e.tile,uv[0]/e.rep,uv[1]/e.repv,tmp)}tmp[0]/=n*n;tmp[1]/=n*n;tmp[2]/=n*n}
         else if(z==='shirt'&&e.tile.fine){const ci=P.cuff?P.cuff[k]:255,th=ci<255?P.cuffAng[ci]||0:0,cs=Math.cos(th),sn=Math.sin(th);   // a woven shirt: 3x3 points a pixel (a 3 mm weave is ~10 px; one point skipped its steps)
           for(let aa=0;aa<3;aa++)for(let ee=0;ee<3;ee++){const X=x+(ee+.5)/3,Yv=y+(aa+.5)/3;asmCmAt(e.tile,(X*cs+Yv*sn)/e.rep,(Yv*cs-X*sn)/e.repv,tmp)}tmp[0]/=9;tmp[1]/=9;tmp[2]/=9}
         else if(z==='shirt'&&P.cuff){const ci=P.cuff[k];rot(x+.5,y+.5,ci<255?P.cuffAng[ci]||0:0,e,tmp)}
