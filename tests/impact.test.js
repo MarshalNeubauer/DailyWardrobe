@@ -187,8 +187,8 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
       const {spawnSync}=require('child_process'),kid=spawnSync(process.execPath,['-e',"require('fs').readFileSync(require('path').join(process.argv[1],'tests','fixtures','tie-plaid.jpg'))",ROOT,path.join(ROOT,'tools','atlas.js')],{encoding:'utf8'});
       const {m,odd}=await impactRec.peek(),has=(f,k)=>!!(m.get(f)&&m.get(f).has(k));
       ok(has('stats.js','openStats')&&has('app.js',I.LOADED),'functions a page ran are recorded, also those from before a reload');
-      const blocks=[...m.get('app.js')].filter(k=>k.includes('>')),keyed=k=>/^@\{constel\$wardrobe\}>@document\.addEventListenerkeydown$/.test(k);
-      ok(has('app.js','@{constel$wardrobe}')&&blocks.some(keyed)&&!blocks.some(k=>/touchmove/.test(k)),'of a block that runs at load, the listeners that really fired are recorded (a key was pressed, nothing was touched: '+blocks.filter(keyed).length+' of '+blocks.length+')');
+      const blocks=[...(m.get('itemsheet.js')||[])].filter(k=>k.includes('>')),keyed=k=>/^@\{constel\$wardrobe\}>@document\.addEventListenerkeydown$/.test(k);   // (the Wardrobe's swipe block, itemsheet.js since app.js was split)
+      ok(has('itemsheet.js','@{constel$wardrobe}')&&blocks.some(keyed)&&!blocks.some(k=>/touchmove/.test(k)),'of a block that runs at load, the listeners that really fired are recorded (a key was pressed, nothing was touched: '+blocks.filter(keyed).length+' of '+blocks.length+')');
       ok(odd===0,'Chromium and Node agree on where every function starts, so a page\'s functions go by the names a diff is read with ('+odd+' did not)');
       ok([...(m.get('styles.css')||[])].some(k=>k.includes('#stats')),'CSS rules that applied are recorded');
       ok(has('index.html',I.LOADED)&&has('wrangler.toml',I.ANY)&&!m.has('worker.js'),'so are the files served to the page and the files the test read');

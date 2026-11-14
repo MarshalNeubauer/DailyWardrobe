@@ -77,7 +77,7 @@ export default [
     return {files: [f], languageOptions: {ecmaVersion: 'latest', sourceType: 'script', globals: {...platform, ...writable(others)}}, rules};
   }),
   {files: ['sw.js'], languageOptions: {ecmaVersion: 'latest', sourceType: 'script', globals: globals.serviceworker}, rules: loose},
-  {files: ['worker.js'], languageOptions: {ecmaVersion: 'latest', sourceType: 'module', globals: {...globals.serviceworker, ...globals.es2024}}, rules: loose},
+  {files: ['worker.js', 'worker/**/*.js'], languageOptions: {ecmaVersion: 'latest', sourceType: 'module', globals: {...globals.serviceworker, ...globals.es2024}}, rules: loose},
   // Node scripts. Tests and tools also hand functions to page.evaluate(), which run in the app's page: its names are known there
   {files: ['tools/**/*.js', 'tests/**/*.js'], languageOptions: {ecmaVersion: 'latest', sourceType: 'commonjs', globals: {...globals.node, ...globals.browser, ...writable(appNames), ...writable(pageExtra), ...writable(testExtra)}},
     rules: {...loose, 'no-unused-vars': ['warn', {...unused, vars: 'local'}]}},

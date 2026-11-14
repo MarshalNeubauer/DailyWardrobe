@@ -1,7 +1,7 @@
 // This computer's daily cap on uploads to the worker (the owner's ask, 2026-11-14: "limit the pc to only upload 300 items per day").
 // Each upload (PUT /render) is one KV write, and the free plan allows 1,000 a day for everything, phones' backups included; on
 // 2026-11-14 the PC's picture uploads used them all and every backup failed until the reset. Every PC tool that writes a record asks
-// here first (tools/asm-prebuild.js, asm-cm-upload.js, asm-atlas.js).
+// here first (tools/asm-prebuild.js, asm-cm-upload.js; asm-atlas.js uploads nothing since 2026-11-14).
 //
 // One ledger for every checkout and process on this computer (the watcher's C:\code\dw-assemble, assemble.ps1's copy, a session's
 // worktree): a JSON file outside the repo, written under a lock file so two processes can't both take the last write.

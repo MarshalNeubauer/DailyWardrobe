@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       'the motif is tidied: bands dropped for a motif, a figure with no valid colour dropped, sizes as fractions');
     reply=()=>({...SPEC,motif:{...MOTIF,ground:{name:'x',hex:'nope'}}});
     ok((await call({image:IMG})).status===422,'a motif without a valid ground colour is reported as no pattern, not drawn');
-    ok(/patternBox — for a striped, checked or plaid item, or one with a small figure repeated all over \(a neat or foulard, dots\)/.test(require('fs').readFileSync(path.join(ROOT,'worker.js'),'utf8')),'the tagger marks a pattern box on a neat too, so its colours can be matched to the tie photo');
+    ok(/patternBox — for a striped, checked or plaid item, or one with a small figure repeated all over \(a neat or foulard, dots\)/.test(require('./workersrc.js')()),'the tagger marks a pattern box on a neat too, so its colours can be matched to the tie photo');
 
     // ---- app
     const ctx=await browser.newContext({viewport:{width:390,height:844}});let calls=[];
