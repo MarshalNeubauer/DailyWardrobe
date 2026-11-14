@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	78537769ae21b0b34ffd
-# tested	602a04583f5f952d686e
+# tested	44e2d14c1db4ef136437
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -5089,58 +5088,6 @@ refresh.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS
 refresh.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	mergeLite	nextRevs	phCollect	putStored	readText	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
 refresh.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	utcDay	whoIs
 refresh.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	refsIn	refsOf	storePhotos
-refs.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-refs.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
-refs.test.js	add.js	<loaded>	checkArrivals
-refs.test.js	analysis.js	<loaded>
-refs.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
-refs.test.js	apple-touch-icon.png	<loaded>
-refs.test.js	asm-color.js	<loaded>
-refs.test.js	asm-gl.js	<loaded>
-refs.test.js	asm-watch.js	<loaded>
-refs.test.js	assemble.js	<loaded>	@
-refs.test.js	care.js	<loaded>	careShow
-refs.test.js	colpick.js	<loaded>
-refs.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	di	hexRgb	isWorkday	isoKey	key	keySettings	labHex	lum	mix	nm	occOf	offDays	offName	patBase	patLabel	primaryCol	rgbHex	rgbLab	setHash	setKeys	thirdOf	todayDate	typeWord	watchOpts	watchText
-refs.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
-refs.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figureSvg	texTileUrl	texTones
-refs.test.js	dress.js	<loaded>	migrateVests
-refs.test.js	history.js	<loaded>	checkPlanRules	whenPulled
-refs.test.js	icon-192.png	<loaded>
-refs.test.js	icon-512.png	<loaded>
-refs.test.js	index.html	<loaded>
-refs.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-refs.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
-refs.test.js	manifest.webmanifest	<loaded>
-refs.test.js	mannequin.js	<loaded>	@{}
-refs.test.js	month.js	<loaded>	nextWorkday
-refs.test.js	mq/shirt-open.js	<loaded>
-refs.test.js	mq/shirt-tie.js	<loaded>
-refs.test.js	mq/suit-open.js	<loaded>
-refs.test.js	mq/suit.js	<loaded>
-refs.test.js	mq/vest.js	<loaded>
-refs.test.js	pack.js	<loaded>	packShow
-refs.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	outfitRefs
-refs.test.js	planner.js	<loaded>
-refs.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
-refs.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
-refs.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
-refs.test.js	setup.js	<loaded>	setupAuto	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupShown	setupStart	setupStep	setupToday	setupYield
-refs.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
-refs.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	pageIn	show
-refs.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
-refs.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#setup	#setup .su-skip	#setup button	#setup button.pri	#setup.on	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.kit-start	.linkbtn	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
-refs.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
-refs.test.js	tagging.js	<loaded>	dialCrop	fixBlackBackdrops	outfitRefsFull	patternDiagram	recolourSpecSetts	refRank	trimRefs	turnBy	upgradeCloseups	upgradePhotos
-refs.test.js	tests/fixedplan.js	<any>
-refs.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	todayBtn	wornPill	wxPreload	zoomTarget
-refs.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
-refs.test.js	wardrobe.js	<loaded>
-refs.test.js	watch/leather.jpg	<loaded>
-refs.test.js	watch/shirt-open.png	<loaded>
-refs.test.js	watch/shirt-tie.png	<loaded>
-refs.test.js	watch/suit.png	<loaded>
-refs.test.js	watch/vest.png	<loaded>
 remind.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 remind.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 remind.test.js	add.js	<loaded>	checkArrivals
