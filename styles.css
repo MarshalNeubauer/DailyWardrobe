@@ -1090,3 +1090,14 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 .fig.cb .wornbar{bottom:48px}
 .fig.cb .swstack.up{bottom:96px}
 .fig.cb.swopen .swstack.up{bottom:max(10px,min(96px,calc(54cqw - 232px)))}   /* (stays where it was, above the banner, when the big swatch leaves room) */
+/* ---- worn or not: the date bar's pill (today.js wornPill, 2026-11-14) ----
+   the weather stays centred: with the pill, both sides of the weather line hold back the pill's width (--wp) */
+.day h2 .wx.haspill{display:grid;grid-template-columns:minmax(var(--wp),1fr) minmax(0,max-content) minmax(var(--wp),1fr);--wp:68px;gap:4px;justify-content:stretch}
+.day h2 .wx .wxc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day h2 .wx.haspill .wxc{grid-column:2}
+.wpill{grid-column:3;justify-self:end;width:var(--wp);margin:0;padding:2px 0;min-height:24px;line-height:1.2;border-radius:14px;font-size:13px;font-weight:600;position:relative;cursor:pointer}
+.wpill::after{content:"";position:absolute;inset:-10px -6px}
+.wpill.yes{background:var(--acc);border:1px solid var(--acc);color:#1a1405}
+.wpill.no{background:var(--card);border:1px solid var(--line);color:var(--mut)}
+.fig .wornbar{justify-content:flex-end}.fig .wornbar .lastworn:only-child{margin:0 0 0 auto}   /* "Last worn" alone at the bottom right, clear of the swatches */
+@media (max-width:359px){.day h2 .wx.haspill{--wp:58px;gap:2px}.wpill{font-size:12px}}   /* "Set location" fits beside the pill at 320 px */

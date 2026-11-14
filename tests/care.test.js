@@ -42,8 +42,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     {const f13=await band([2026,10,13]),f20=await band([2026,10,20]),f27=await band([2026,10,27]);
       ok(!f13.text&&/care-near/.test(f20.cls)&&f20.text==='1 wear left · Blazer – wear 5 of 6'&&f20.dots===6&&f20.on===5&&/care-last/.test(f27.cls)&&f27.text==='Last wear · Blazer – to the cleaner today',
         `coming days count the wears planned before them: Friday 13th nothing (4 of 6), the 20th yellow ("${f20.text}"), the 27th red ("${f27.text}")`)}
-    // the banner's cut round the tie swatch: none on today (the ✕/✓ row and the swatches sit above the banner), one on a coming day, and
-    // it follows the swatch when a tap shrinks the stack
+    // the banner's cut round the tie swatch, on today as on a coming day (the swatches no longer step up for the ✕/✓ circles, gone
+    // 2026-11-14), and it follows the swatch when a tap shrinks the stack
     {const lay=async(d,tap)=>{await band(d);if(tap){await p.evaluate(s=>swTap(s),tap);await settle(p,900)}else await settle(p,300);
         return p.evaluate(()=>{const f=document.querySelector('#mannequin-container'),b=f.querySelector('#cband'),sw=[...f.querySelectorAll('.swstack .ovsw')].pop(),wb=f.querySelector('.wornbar'),fr=f.getBoundingClientRect();
           const path=b.querySelector('path').getAttribute('d'),m=/^M([\d.]+) 0/.exec(path),bt=b.getBoundingClientRect().top;
@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       await p.evaluate(()=>{const ph='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><rect width="900" height="900" fill="#556"/></svg>');
         for(const d of [new Date(2026,10,11),new Date(2026,10,20)]){sel=d;cache={};const o=planFor()[key(d)];renders[comboKey(o)]={img:ph,sig:comboSig(o)}}});   // a picture for both days
       const t0=await lay([2026,10,11]),t1=await lay([2026,10,11],'shirt');
-      ok(t0.photo&&t0.cut===0&&t0.wbBottom<=t0.bandTop+1&&t0.swBottom<=t0.bandTop,`today: the banner runs the full width, the ✕/✓ row and the swatches above it (row ${Math.round(t0.wbBottom)} ≤ banner ${Math.round(t0.bandTop)})`);
+      ok(t0.photo&&t0.cut>0&&Math.abs(t0.cut-(t0.swRight+5+9))<1.5,`today: the banner cuts round the tie swatch (cut at ${t0.cut}, swatch edge ${Math.round(t0.swRight)})`);
       ok(t1.cut>0&&Math.abs(t1.cut-(t1.swRight+5+9))<1.5,`a swatch tapped on today: the stack comes down and the banner cuts round the tie swatch (cut at ${t1.cut}, swatch edge ${Math.round(t1.swRight)})`);
       await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null});
       const f0=await lay([2026,10,20]),f1=await lay([2026,10,20],'top');

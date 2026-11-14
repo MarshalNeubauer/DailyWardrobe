@@ -580,7 +580,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 #### Worn, picks, learning and past days
 
-- worn / not worn are ✕ and ✓ over the picture's bottom corners on today and past days, with a "Last worn" pill between them when the look was worn before (`wornMarks` in today.js, `setWorn`)
+- worn / not worn is one pill at the right end of the date bar's weather line on today and past workdays with an outfit (`wornPill`/`toggleWorn` in today.js, `setWorn`; the owner's design 2026-11-14, replacing the ✕ / ✓ circles on the picture): a day is worn unless marked not, so it reads "✓ Wore" (accent fill) with nothing recorded; a tap records `worn:false` ("✕ Didn't", grey) and a tap again clears it (no mark, never `worn:true`, which would freeze today's outfit); the weather stays centred (`.wx.haspill`: a three-column grid whose sides hold the pill's width `--wp`, 68 px, 58 px under 360 px), "Set your location for weather" shortens to "Set location" beside the pill; no pill on future days; the date bar's height is unchanged (`tests/todaytight.test.js`)
+- "Last worn" (`lastWorn` in photos.js, a pill at the picture's bottom right, `wornBar`) counts every earlier day with recorded pieces unless marked "Didn't" (it used to take a ✓); Insights and the cleaning counts still count today only once it is over or recorded worn, as before
+- the swatches on the picture no longer step up on today and past days (`swatchStack(o,false)`): the circles they cleared are gone, so the cleaning banner cuts round the tie swatch on today as on coming days
 - ⇄ beside a piece opens the picker sheet (`openPicker`/`pickItem`: every item for the slot, best match first by `fitOf`; "Suggest another" is the old cycling `swapSlot`)
 - swaps and picks keep a piece taken off pinned (`keepOff`); Reset and an occasion clear `rec.off`
 - changes teach the planner (`learnFrom`: a swap votes a pairing down, a hand pick votes it up)
@@ -594,7 +596,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the score, pieces and month cards share one size (76px folded, a 112px picture slot, one text column) and everything on Today is spaced by `--gap` (12px) in styles.css
 - Today goes two columns (outfit left, cards right) only from 600px wide in landscape; upright (the Duo unfolded, a tablet) it stacks outfit, tiles and cards, the picture (`.fig`) the full width from 600px (under 600px it stays at most 390px, so a phone or the folded Duo fits picture and tiles on one screen); `tests/run.js` checks both
 - with a wardrobe that can't dress a day yet, the "Get your first outfit" checklist (`setupToday`, setup.js) is the first thing in the stage, above the figure or the day-off note
-- `goToday()` from the date-bar pill and the Today tab; `newDayCheck()` moves on to today when the app is reopened on a later day
+- `goToday()` from the Today tab (the date bar's "↩ Today" / "↩ Next outfit" button is gone, the owner 2026-11-14: `todayBtn` returns ''; `tests/daypieces.test.js`); `newDayCheck()` moves on to today when the app is reopened on a later day
 
 #### The pieces list and photos
 

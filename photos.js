@@ -157,10 +157,10 @@ async function generateRender(){
   finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)refreshToday();renderRegenUI()}
 }
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day.
-   Only days marked ✓ count: a past day nobody marked was only planned, and "Last worn" on it said more than anyone knew */
+   A day counts unless marked "Didn't" (2026-11-14, the owner: a day is worn by default; it used to take a ✓) */
 function lastWorn(o){
   const ck=comboKey(o),T=todayDate(),lim=Math.min(+keyDate(key(sel)),+T);let best=null;
-  for(const r of Object.values(dayRecs)){if(!r.ids||r.worn!==true)continue;const d=keyDate(r.date);if(+d>=lim||(best&&d<=best))continue;
+  for(const r of Object.values(dayRecs)){if(!r.ids||r.worn===false)continue;const d=keyDate(r.date);if(+d>=lim||(best&&d<=best))continue;
     const get=id=>id&&items.find(i=>i.id===id)||null,x={suitDay:!!r.suitDay,top:get(r.ids.top),bot:get(r.ids.bot),shirt:get(r.ids.shirt),tie:get(r.ids.tie),clip:get(r.ids.clip),watch:get(r.ids.watch),vest:!!r.vestOn};
     if([x.top,x.shirt,x.tie].some(i=>i&&(i.added||0)>+d+864e5))continue;   // dated before a piece was added: a warm-up day of the planner, never worn
     if((x.top||x.shirt)&&comboKey(x)===ck)best=d}

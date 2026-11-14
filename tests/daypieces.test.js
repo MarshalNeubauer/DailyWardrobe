@@ -25,26 +25,16 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>$('#ibox').classList.contains('open')&&planFor()[key(sel)].overrides),'swapping from the list keeps it open');
     await p.click('#ibox .month-link');await settle(p,600);
     ok(await p.evaluate(()=>!$('#ibox').classList.contains('open')&&$('#ipanel').getBoundingClientRect().height<1),'tapping again folds it away');
-    // back to today
-    ok(await p.evaluate(()=>!document.querySelector('.gotoday')),'no back-to-today button on today');
+    // back to today: no button in the date bar (2026-11-14, the owner); the Today tab does it
     await p.evaluate(()=>{sel=new Date(2026,11,8);view={y:2026,m:11};renderToday()});
-    const g=await p.evaluate(()=>{const b=document.querySelector('.day .gotoday');return b&&{t:b.textContent,a:b.getAttribute('aria-label')}});
-    ok(g&&/Today/.test(g.t)&&/today/.test(g.a),'on a December day the date bar has a Today button');
-    await p.click('.day .gotoday');await p.waitForFunction(()=>key(sel)==='2026-11-9'&&!document.querySelector('.gotoday'),null,{timeout:5000}).catch(()=>{});
-    ok(await p.evaluate(()=>key(sel)==='2026-11-9'&&view.m===10&&!document.querySelector('.gotoday')&&/November 9/.test($('#today .day h2').textContent)),'it brings back today\'s outfit');
+    ok(await p.evaluate(()=>!document.querySelector('.gotoday')&&/December 8/.test($('#today .day h2').textContent)),'on another day the date bar has no Today / Next outfit button');
     await p.evaluate(()=>{sel=new Date(2026,11,15);view={y:2026,m:11};show('wardrobe')});await p.click('#n-today');
-    ok(await p.evaluate(()=>key(sel)==='2026-11-9'&&!$('#today').hidden),'the Today tab also returns to today');
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-13T12:00:00';cache={};sel=new Date(2026,10,9);renderToday()});
-    const wk=await p.evaluate(()=>document.querySelector('.day .gotoday').textContent);
-    await p.click('.day .gotoday');
-    ok(/Next outfit/.test(wk)&&await p.evaluate(()=>key(sel)==='2026-11-15'),'when today is a day off it goes to the next outfit');
-    for(const w of [320,360]){await p.setViewportSize({width:w,height:800});await p.evaluate(()=>{sel=new Date(2026,11,8);view={y:2026,m:11};renderToday()});
-      ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&$('.day .gotoday').getBoundingClientRect().right<=innerWidth),`${w}px: the date bar fits with the Today button`)}
-    // the date bar keeps its height when the Today button appears, even with wide text (CI's font is wider than local)
-    await p.setViewportSize({width:390,height:800});
-    const hs=await p.evaluate(()=>{const st=document.createElement('style');st.textContent='.day h2 .wx{letter-spacing:1.5px}';document.head.appendChild(st);
-      const h=()=>Math.round($('#today .day').getBoundingClientRect().height);settings.location=null;sel=new Date(2026,10,15);renderToday();const a=h();sel=new Date(2026,11,8);renderToday();const b=h();st.remove();return [a,b]});
-    ok(hs[0]===hs[1],`the date bar is the same height with and without the Today button (${hs.join(' / ')})`);
+    ok(await p.evaluate(()=>key(sel)==='2026-11-9'&&view.m===10&&!$('#today').hidden),'the Today tab returns to today\'s outfit');
+    await p.evaluate(()=>{sel=new Date(2026,11,8);view={y:2026,m:11};renderToday()});await p.click('#n-today');
+    ok(await p.evaluate(()=>key(sel)==='2026-11-9'),'also when Today is already the tab on screen');
+    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-13T12:00:00';cache={};sel=new Date(2026,11,8);renderToday()});await p.click('#n-today');
+    ok(await p.evaluate(()=>key(sel)==='2026-11-15'),'when today is a day off the Today tab goes to the next outfit');
+    await p.evaluate(()=>{TODAY_OVERRIDE=null;cache={}});
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
