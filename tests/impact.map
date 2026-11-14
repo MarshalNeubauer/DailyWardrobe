@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	f216d214eb5ed3c560af
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -165,11 +166,9 @@ asmahead.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#
 asmahead.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
 asmahead.test.js	tagging.js	<loaded>	claudeOnly	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
 asmahead.test.js	tests/fixedplan.js	<any>
-asmahead.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-master.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmahead.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmahead.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
@@ -223,13 +222,10 @@ asmatlas.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-v
 asmatlas.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
 asmatlas.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
 asmatlas.test.js	tests/fixedplan.js	<any>
-asmatlas.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
 asmatlas.test.js	tests/fixtures/asm-master.jpg	<any>	<loaded>
 asmatlas.test.js	tests/fixtures/asm-shirt-black.jpg	<any>	<loaded>
 asmatlas.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmatlas.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
 asmatlas.test.js	tests/fixtures/asm-vestmaster.jpg	<any>	<loaded>
-asmatlas.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmatlas.test.js	tests/fixtures/asm-zone-jacket.png	<any>
 asmatlas.test.js	tests/fixtures/asm-zone-shirt.png	<any>
 asmatlas.test.js	tests/fixtures/asm-zone-tie.png	<any>
@@ -525,11 +521,9 @@ asmprebuild.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-vie
 asmprebuild.test.js	sync.js	<loaded>	@db.then	afterPull	applyMerged	localState	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
 asmprebuild.test.js	tagging.js	<loaded>	claudeOnly	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
 asmprebuild.test.js	tests/fixedplan.js	<any>
-asmprebuild.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-master.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmprebuild.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
 asmprebuild.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
 asmprebuild.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
@@ -588,7 +582,7 @@ asmstuck.test.js	analysis.js	<loaded>
 asmstuck.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
 asmstuck.test.js	apple-touch-icon.png	<loaded>
 asmstuck.test.js	asm-color.js	<any>	<loaded>
-asmstuck.test.js	asm-gl.js	<any>	<loaded>	asmGlOnPage
+asmstuck.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage
 asmstuck.test.js	asm-worker.js	<any>
 asmstuck.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmCalibKey	asmKey	asmLoad	asmPump	asmRun	asmStuck	asmSync	asmVestKey	asmVestTag	asmWorker
 asmstuck.test.js	care.js	<loaded>	careShow
@@ -681,11 +675,9 @@ asmweave.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-v
 asmweave.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
 asmweave.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
 asmweave.test.js	tests/fixedplan.js	<any>
-asmweave.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
 asmweave.test.js	tests/fixtures/asm-master.jpg	<loaded>
 asmweave.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmweave.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmweave.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmweave.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<any>
 asmweave.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmweave.test.js	wardrobe.js	<loaded>
@@ -721,16 +713,10 @@ assemble.test.js	styles.css	#about-update[hidden]	#add	#adv-photos:has(#asm-grou
 assemble.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	localState	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
 assemble.test.js	tagging.js	<loaded>	claudeOnly	dialCrop	motifPat	outfitRefsFull	patternPrompt	readable	recolourSpecSetts	renderCustomUI	settText	settable	trimRefs	turnBy	upgradeCloseups	upgradePhotos
 assemble.test.js	tests/fixedplan.js	<any>
-assemble.test.js	tests/fixtures/asm-bar.jpg	<loaded>
-assemble.test.js	tests/fixtures/asm-jacket.jpg	<any>	<loaded>
 assemble.test.js	tests/fixtures/asm-master.jpg	<any>	<loaded>
 assemble.test.js	tests/fixtures/asm-shirt-black.jpg	<any>	<loaded>
-assemble.test.js	tests/fixtures/asm-shirt-pink.jpg	<any>	<loaded>
 assemble.test.js	tests/fixtures/asm-tie.jpg	<any>	<loaded>
-assemble.test.js	tests/fixtures/asm-vest-suit.jpg	<loaded>
-assemble.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
 assemble.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
-assemble.test.js	tests/fixtures/asm-watch.jpg	<any>	<loaded>
 assemble.test.js	ui.js	<loaded>	advClose	advToggle	askAnswer	askConfirm	askEls	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 assemble.test.js	wardrobe.js	<loaded>
 assemble.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	WATCH_KEY	corsFor	dataUrlToBlob	delRender	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	hubOf	jobClaim	jobMsg	keepMade	keepSnapshots	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	renderId	renderTtl	runRenderJob	sameText	serve	sha256Hex	spend	spendEach	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
@@ -1365,7 +1351,7 @@ dress.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@addE
 dress.test.js	apple-touch-icon.png	<loaded>
 dress.test.js	asm-color.js	<loaded>	asmCmRoute	asmGapNote
 dress.test.js	asm-gl.js	<loaded>
-dress.test.js	assemble.js	<loaded>	@	asmCalibKey	asmKey	asmMasterKey	asmSuitBands	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmVestKey	asmVestTag	renderAsmUI
+dress.test.js	assemble.js	<loaded>	@	renderAsmUI
 dress.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careNote	careNoun	careShow	careState	careTimes	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 dress.test.js	colpick.js	<loaded>	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
 dress.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	arriveN	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayWins	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	lum	lumCol	mergeState	mix	needsJacket	needsTie	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	sockToe	stamp	stateSig	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
@@ -3453,7 +3439,7 @@ run.js: planner: shoes, belts, leather and metals	worker.js	<loaded>	@onstTYPE_C
 run.js: renders the outfit without errors	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: renders the outfit without errors	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 run.js: renders the outfit without errors	analysis.js	<loaded>
-run.js: renders the outfit without errors	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	belowBox	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFillSoon	monthLink	nextWorkday	offBtn	offOn	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planRulesCheck	planSnapUse	planStartDay	planTrim	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	renderFor	renderItem	renderPending	renderStalled	renderToday	replanFuture	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	show	slotLabel	slotPool	slots	smallPhotos	stackSVG	swApply	texSwatches	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
+run.js: renders the outfit without errors	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	belowBox	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFillSoon	monthLink	nextWorkday	offBtn	offOn	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planRulesCheck	planSnapSoon	planSnapUse	planStartDay	planTrim	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	renderFor	renderItem	renderPending	renderStalled	renderToday	replanFuture	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	show	slotLabel	slotPool	slots	smallPhotos	stackSVG	swApply	texSwatches	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
 run.js: renders the outfit without errors	apple-touch-icon.png	<loaded>
 run.js: renders the outfit without errors	asm-color.js	<loaded>
 run.js: renders the outfit without errors	asm-gl.js	<loaded>
