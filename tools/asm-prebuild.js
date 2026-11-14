@@ -20,10 +20,9 @@
 //   --origin URL  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/): the page is served from this
 //                 computer under that address, so a worker that only answers the app's own origin (ALLOWED_ORIGIN) answers it
 //   --gpu         (stage 6) paint the looks the graphics chip covers (asm-gl.js asmGlWhy) on the graphics card, in one Web Worker, only
-//                 inside the owner's GPU guard (tools/gpu-guard.js, a port of gpu_guard.py: its lock, watchdog, bursts and rests). A burst
-//                 is up to --burst seconds of looks (default 15) across the masters, one after another, then the guard's rest. The card hot or near its power
-//                 cap, the lock held by another GPU job, nvidia-smi failing, or a WebGL2 that isn't the card (--gpu-match, default
-//                 NVIDIA): those looks are painted on the CPU pool as before. A lost card: no GPU again until this script restarts
+//                 one look after another across the masters (no GPU guard since 2026-11-14, the owner's ask: no bursts, rests, temperature or
+//                 power checks, lock). A WebGL2 that isn't the card (--gpu-match, default NVIDIA) or a failure on the chip: those looks are
+//                 painted on the CPU pool as before. A picture painted on another renderer (the card lost): no GPU again until this script restarts
 //   --gpu-angle B the browser's ANGLE backend for --gpu (default d3d11; the tests use swiftshader, never the real card)
 //   --cm-size N   the painting size (default 2880, ASM_CM_SIZE; the tests paint smaller)
 //   --uploads N   how many pictures are uploaded at once (default 8, 1 to 16). Every look is painted first; the uploads all follow, together
@@ -38,7 +37,6 @@
 // missing or out of date, and only those are painted. In --watch, a cycle in which no look changed asks the worker nothing.
 const fs=require('fs'),path=require('path'),os=require('os'),{execFileSync}=require('child_process');
 const ROOT=path.join(__dirname,'..');
-const {Guard,GpuLost,LockBusy,read:readCard,K}=require('./gpu-guard.js');   // (stage 6) the owner's GPU rules (gpu_guard.py), for --gpu
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:(process.argv[i+1]&&!process.argv[i+1].startsWith('--')?process.argv[i+1]:d)};
 const has=n=>process.argv.includes('--'+n);
 const DRY=has('dry'),DAYS=Math.max(1,Math.min(400,+arg('days',14)||14)),SAVE=arg('save',''),PROFILE=arg('profile','');
@@ -49,14 +47,12 @@ const LOOK_MS=Math.max(10,+arg('look-timeout',180)||180)*1000;   // one look's l
 const CYCLE_MS=Math.max(5,+arg('cycle-timeout',45)||45)*60e3;   // one cycle's longest run: past it the script ends (code 4) and the watcher starts it again
 const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrobe/')).replace(/\/?$/,'/');
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
-// (stage 6) the graphics card, through the guard
+// (stage 6) the graphics card
 const GPU=has('gpu'),GPU_ANGLE=String(arg('gpu-angle','d3d11')).replace(/[^a-z0-9-]/gi,''),GPU_MATCH=new RegExp(arg('gpu-match','NVIDIA'),'i');
 const UPLOADS=Math.max(1,Math.min(16,+arg('uploads',8)||8));
-const BURST_MS=Math.max(1,Math.min(30,+arg('burst',15)||15))*1000,CM_SIZE=Math.max(256,Math.min(2880,+arg('cm-size',2880)||2880));
-// (the tests' simulated card, DW_GPU_SMI a .js file, may shorten the rests; the real card always has gpu_guard.py's)
-const GPU_REST=/\.js$/i.test(process.env.DW_GPU_SMI||'')&&process.env.DW_GPU_TEST_REST?Math.max(0,+process.env.DW_GPU_TEST_REST||0):null;
+const CM_SIZE=Math.max(256,Math.min(2880,+arg('cm-size',2880)||2880));
 if(has('help')||!WORKER.startsWith('http')||!TOKEN){
-  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 14] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>] [--gpu [--burst 10] [--gpu-angle d3d11]]');
+  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 14] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>] [--gpu [--gpu-angle d3d11]]');
   process.exit(has('help')?0:1)}
 const TYPES={js:'text/javascript',css:'text/css',html:'text/html',png:'image/png',json:'application/json',webmanifest:'application/manifest+json'};
 // (with the app's own origin: the worker refuses a write from any other, ALLOWED_ORIGIN)
@@ -122,7 +118,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
   // (2026-11-14 audit) a pool worker that errors or doesn't answer a look within --look-timeout fails that look and is replaced (its
   // next look starts a new one, which reads its master's kept setup back); before, a dead worker left the watcher waiting forever
   // (stage 6) the pool's workers never touch the graphics chip (asm-worker.js?nogl=1, and their jobs say gl:false); worker n (GI), only with
-  // --gpu, is the one that paints on it, inside the guard's bursts
+  // --gpu, is the one that paints on it
   const GI=JOBS;
   await page.evaluate(([n,lookMs,GI])=>{asmAheadSoon=()=>{};asmAhead=async()=>{};asmEnsure=async()=>{};
     const pool=[];
@@ -215,60 +211,43 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       const firstOf={};await Promise.all(runs.map(async run=>{if(!run.looks.length)return;
         if(!firstOf[run.kind]){let go;firstOf[run.kind]=new Promise(r=>go=r);await one(run.looks[0],run.wi);go();for(const l of run.looks.slice(1))await one(l,run.wi)}
         else{await firstOf[run.kind];for(const l of run.looks)await one(l,run.wi)}}))};
-    // (stage 6) --gpu: the looks the graphics chip covers go to the GPU worker, inside the guard; the rest to the CPU pool at the same time;
-    // whatever the GPU side hands back (the card hot, the lock taken, a failure) is painted on the CPU pool after
+    // (stage 6) --gpu: the looks the graphics chip covers go to the GPU worker; the rest to the CPU pool at the same time; whatever the GPU
+    // side hands back (a failure, a renderer that isn't the card) is painted on the CPU pool after
     let gpuLooks=[],cpuLooks=cm;
     if(!gpuOff&&cm.length){const cov=await page.evaluate(async firsts=>{const out=[];for(const f of firsts){const o=planOn(new Date(f+'T12:00:00'));await asmCmLook(o);const kind=asmCmUse(o);
         let ok=false;try{ok=!!kind&&typeof asmGlWhy==='function'&&await asmCmGet(kind)&&!asmGlWhy(await asmJob(o))}catch(e){ok=false}out.push(ok)}return out},cm.map(l=>l.first));
       gpuLooks=cm.filter((l,i)=>cov[i]);cpuLooks=cm.filter((l,i)=>!cov[i]);
       console.log(`${now()} GPU: ${gpuLooks.length} look(s) the graphics chip covers, ${cpuLooks.length} on the CPU pool`)}
     else if(GPU&&cm.length)console.log(`${now()} GPU off: ${gpuOff}`);
-    let gpuRests=0,gpuBursts=0,gpuPeak=null;
     const gpuPass=async ls=>{if(!ls.length)return [];
       const per={};for(const l of ls)(per[l.kind]=per[l.kind]||[]).push(l);const kinds=Object.keys(per),rest=()=>kinds.flatMap(k=>per[k]);
-      // a master's setup (processor work, kept in the GPU worker) outside the bursts: the first before the guard is taken, each next one
-      // while the guard rests
+      // a master's setup (processor work, kept in the GPU worker): the first before any look, each next one while the master before it paints
       const setup=l=>page.evaluate(async([first,GI])=>{const o=planOn(new Date(first+'T12:00:00'));await asmCmLook(o);const job=await asmJob(o);if(!job)return {error:'no job'};job.diskCache=true;
         try{return await __poolMsg(GI,{setup:job})}catch(e){return {error:String(e&&e.message||e)}}},[l.first,GI]).catch(e=>({error:String(e&&e.message||e)}));
       let warm=setup(per[kinds[0]][0]);const ready=async k=>{const w=await warm;warm=null;if(w&&w.error)console.log(`${now()} GPU: the ${k} master's setup failed (${w.error}); the GPU worker works it out with its first look`)};
-      await ready(kinds[0]);
-      const g=new Guard('dw-assemble',{restS:GPU_REST!=null?GPU_REST:K.REST_S,print:l=>console.log('gpu guard: '+l)});
-      try{await g.enter()}
-      catch(e){if(e instanceof LockBusy)console.log(`${now()} GPU busy: ${e.message}: painting on the CPU this cycle`);
-        else if(e instanceof GpuLost&&e.kind==='lost')gpuStop(e.message,true);else console.log(`${now()} GPU not used this cycle: ${e.message}`);return ls}
-      // after a failure on the chip: a card nvidia-smi can't read is lost (no GPU for the rest of the run); else this cycle's other looks go to the CPU
-      const check=async why=>{try{await readCard()}catch(e){gpuStop(`${why}; ${e.message}`,true);return}console.log(`${now()} GPU: ${why}: the rest of this cycle on the CPU`)};
-      let err=null;
-      // one queue across the masters (the owner's choice, 2026-11-14): a burst runs on into the next master's looks while it is under
-      // --burst seconds, so a full build is one burst and one rest, not one per master; a master's setup is waited for inside the burst
-      try{const Q=kinds.flatMap(k=>per[k].map(l=>({k,l})));let cur=kinds[0];
-          while(Q.length&&!paused()){
-            if(!await g.before({wait:false})){console.log(`${now()} GPU: the card is hot or near its power cap (${JSON.stringify(g.last)}): the rest of this cycle on the CPU`);return rest()}
-            // the renderer, once a run, inside the first burst: WebGL2 must be the graphics card (WEBGL_debug_renderer_info), its textures 2880 or more
-            if(!gpuRenderer){const p=await page.evaluate(GI=>__poolMsg(GI,{probe:1}),GI).catch(e=>({error:String(e&&e.message||e)}));
-              if(!(p&&p.renderer&&GPU_MATCH.test(p.renderer)&&p.max>=CM_SIZE)){await g.after('renderer check');
-                gpuStop(`WebGL2 here is ${p&&p.renderer||'missing'}${p&&p.error?' ('+p.error+')':''}, largest texture ${p&&p.max||0}: not the graphics card (${GPU_MATCH.source}) at ${CM_SIZE}`,false);return rest()}
-              gpuRenderer=p.renderer;console.log(`${now()} GPU: ${p.renderer}, largest texture ${p.max}`)}
-            const tb=Date.now();let n=0;const done=new Set();
-            while(Q.length&&(n===0||Date.now()-tb<BURST_MS)&&!paused()){const {k,l}=Q[0];
-              if(k!==cur){await ready(k);cur=k}
-              const t1=Date.now(),r=await paint(l,GI,true);n++;done.add(k);
-              if(!r||r.error){await g.after(`${[...done].join('+')}: ${n} look(s), the last failed`);await check(`a look failed in the GPU worker (${r&&r.error||'no answer'})`);return rest()}
-              Q.shift();per[k].shift();await finish(l,r,t1);
-              if(r.gl&&!GPU_MATCH.test(r.renderer||'')){await g.after(`${[...done].join('+')}: ${n} look(s)`);gpuStop(`a picture was painted on ${r.renderer||'an unknown renderer'}, not the card: Chromium may have lost the GPU`,true);return rest()}
-              if(!r.gl&&/graphics error|no WebGL2 context/.test(r.glWhy)){await g.after(`${[...done].join('+')}: ${n} look(s), the chip failed`);await check(`the chip failed (${r.glWhy})`);return rest()}
-              // the next master's setup starts as soon as this master's last look is painted (it may finish inside the burst or the rest)
-              if(!per[k].length&&!warm){const nk=kinds[kinds.indexOf(k)+1];if(nk)warm=setup(per[nk][0])}}
-            await g.after(`${[...done].join('+')}: ${n} look(s) in ${((Date.now()-tb)/1000).toFixed(1)} s`,{last:!Q.length})}   // no rest after the last burst (the owner's choice)
+      try{await ready(kinds[0]);
+        // the renderer, once a run, before any look is painted on it: WebGL2 must be the graphics card (WEBGL_debug_renderer_info), its textures 2880 or more
+        if(!gpuRenderer){const p=await page.evaluate(GI=>__poolMsg(GI,{probe:1}),GI).catch(e=>({error:String(e&&e.message||e)}));
+          if(!(p&&p.renderer&&GPU_MATCH.test(p.renderer)&&p.max>=CM_SIZE)){gpuStop(`WebGL2 here is ${p&&p.renderer||'missing'}${p&&p.error?' ('+p.error+')':''}, largest texture ${p&&p.max||0}: not the graphics card (${GPU_MATCH.source}) at ${CM_SIZE}`,false);return rest()}
+          gpuRenderer=p.renderer;console.log(`${now()} GPU: ${p.renderer}, largest texture ${p.max}`)}
+        // one look after another across the masters (no guard, no rests: the owner's ask, 2026-11-14)
+        let cur=kinds[0];
+        for(const k of kinds)while(per[k].length&&!paused()){const l=per[k][0];if(k!==cur){await ready(k);cur=k}
+          const t1=Date.now(),r=await paint(l,GI,true);
+          if(!r||r.error){console.log(`${now()} GPU: a look failed in the GPU worker (${r&&r.error||'no answer'}): the rest of this cycle on the CPU`);return rest()}
+          per[k].shift();await finish(l,r,t1);
+          if(r.gl&&!GPU_MATCH.test(r.renderer||'')){gpuStop(`a picture was painted on ${r.renderer||'an unknown renderer'}, not the card: Chromium may have lost the GPU`,true);return rest()}
+          if(!r.gl&&/graphics error|no WebGL2 context/.test(r.glWhy)){console.log(`${now()} GPU: the chip failed (${r.glWhy}): the rest of this cycle on the CPU`);return rest()}
+          if(!per[k].length&&!warm){const nk=kinds[kinds.indexOf(k)+1];if(nk)warm=setup(per[nk][0])}}   // the next master's setup as soon as this one's last look is painted
         return rest()}   // (empty, unless uploads were paused: those looks are then reported as not made by the CPU side)
-      catch(e){err=e;if(e instanceof GpuLost){if(e.kind==='lost')gpuStop(e.message,true);else console.log(`${now()} GPU stopped this cycle: ${e.message}`)}else console.warn(`${now()} GPU side failed:`,e&&e.message||e);return rest()}
-      finally{if(warm)await warm;await g.exit(err);gpuRests+=g.rested;gpuBursts+=g.bursts;gpuPeak=g.peak}};
+      catch(e){console.warn(`${now()} GPU side failed:`,e&&e.message||e);return rest()}
+      finally{if(warm)await warm}};
     const [,back]=await Promise.all([cpuPass(cpuLooks),gpuPass(gpuLooks)]);
     if(back.length){console.log(`${now()} ${back.length} look(s) handed back by the GPU side: painting them on the CPU pool`);await cpuPass(back)}
     await uploadAll();
     saveMade();lastSig=failed?'':sig;   // (a look not made is tried again next cycle, not only when something changes)
     console.log(`Done in ${Math.round((Date.now()-t0)/1000)} s: ${built} built, ${uploaded} uploaded, ${skipped} already current, ${failed} not made.`+
-      (GPU?` Painted on the GPU: ${onGpu}, on the CPU: ${onCpu}`+(gpuBursts?`; ${gpuBursts} GPU burst(s), ${Math.round(gpuRests)} s of guard rests, peaks ${Math.round(gpuPeak.temp)} C, ${Math.round(gpuPeak.power)} W, ${Math.round(gpuPeak.mem)} MB`:'')+(gpuOff?` (GPU off: ${gpuOff})`:'')+'.':''));
+      (GPU?` Painted on the GPU: ${onGpu}, on the CPU: ${onCpu}`+(gpuOff?` (GPU off: ${gpuOff})`:'')+'.':''));
     // patterned pieces the pictures paint plain or generic (asm-color.js: asmCmRoute), so a gap is seen in the log, not only in a picture
     const gaps=await page.evaluate(()=>typeof asmCmGaps==='function'?asmCmGaps().map(x=>`${sentence(itemTitle(x.i))}: ${x.r.why}`):[]).catch(()=>[]);
     if(gaps.length)console.log(`Painted plain (${gaps.length}):\n`+gaps.map(g=>'  - '+g).join('\n'));

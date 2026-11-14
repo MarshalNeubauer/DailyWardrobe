@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	4ec0e41a8a8e867bd65f
+# tested	8ca914268aa48f02f97f
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -579,10 +579,8 @@ asmgpu.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgpu.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgpu.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgpu.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmgpu.test.js	tests/fixtures/fake-smi.js	<any>
 asmgpu.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	todayBtn	wornPill	wxPreload	zoomTarget
 asmgpu.test.js	tools/asm-prebuild.js	<any>
-asmgpu.test.js	tools/gpu-guard.js	<any>
 asmgpu.test.js	tools/upload-budget.js	<any>
 asmgpu.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmgpu.test.js	wardrobe.js	<loaded>
@@ -650,7 +648,6 @@ asmprebuild.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmprebuild.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmprebuild.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	belowBox	canPick	figureStage	hasOutfit	homeDay	offBtn	offOn	ovlCloseup	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitPng	ovlSvg	ovlWeave	piecesBox	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	slotLabel	slots	swApply	swatchStack	todayBtn	vestRow	wornBar	wornMarks	wornPill	wxPreload	zoomTarget
 asmprebuild.test.js	tools/asm-prebuild.js	<any>
-asmprebuild.test.js	tools/gpu-guard.js	<any>
 asmprebuild.test.js	tools/upload-budget.js	<any>
 asmprebuild.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmprebuild.test.js	wardrobe.js	<loaded>
@@ -2000,8 +1997,6 @@ geomaps.test.js	tests/fixedplan.js	<any>
 geomaps.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	todayBtn	wornPill	wxPreload	zoomTarget
 geomaps.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 geomaps.test.js	wardrobe.js	<loaded>
-gpuguard.test.js	tests/fixtures/fake-smi.js	<any>
-gpuguard.test.js	tools/gpu-guard.js	<any>
 hbshirt.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 hbshirt.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 hbshirt.test.js	add.js	<loaded>	checkArrivals
