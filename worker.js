@@ -749,7 +749,10 @@ const jobMsg = (key, ns) => (ns ? { key, ns } : { key });
 /* an earlier failure of this photo is forgotten when it is queued again. KV counts a delete as one of the day's 1,000 writes even
    when there was nothing to delete, so it is looked for first (reads are plentiful) */
 async function dropFail(env, ns, key) { if (await env.WARDROBE.get(`${ns}jobfail:${key}`)) await env.WARDROBE.delete(`${ns}jobfail:${key}`); }
-const START_STALE_MS = 3 * 60000, RUN_STALE_MS = 20 * 60000;
+const LOST_JOB_MS = 6 * 3600000;
+/* a run's hold on its job (RenderHub job-claim): the OpenAI limit and two minutes; a job made or given up stays marked as long as
+   its records live, so a late copy of its message does nothing */
+const CLAIM_MS = OPENAI_MS + 120000, DONE_MS = 3 * 86400000;
 async function queueStatus(req, env, json, who) {
   const ns = who.ns;
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
@@ -770,29 +773,20 @@ async function queueStatus(req, env, json, who) {
     try { pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4)); }
     catch (e) { return json({ error: 'The worker has used up its daily KV list allowance; update the app.', detail: String(e && e.message) }, 503); }
   }
-  // how far each waiting photo got: attempts so far and when the last began (none yet: its message hasn't been taken)
-  // A job whose message never got going (lost, as before the consumer waited for KV) or whose run never finished (the consumer was
-  // stopped) is sent to the queue again, up to 3 times, then recorded as failed: no photo sits "pending" for days.
-  const running = {}, now = Date.now();
+  // how far each waiting photo got: attempts so far and when the last began (none yet: its message hasn't been taken). Nothing is
+  // sent again or written here: a job waiting behind others (two run at a time) is not lost, the queue delivers every message and
+  // redelivers one whose run was cut off, and a re-send made a second paid photo (the 2026-11-13 audit). A job no message has
+  // touched for LOST_JOB_MS is reported as failed (nothing is deleted: if it still runs, its photo is kept)
+  const running = {}, now = Date.now(), lost = [];
   for (const k of pending.slice(0, 20)) {
     let r = await env.WARDROBE.get(`${ns}jobrun:${k}`, 'json');
     if (!r) { const j = await env.WARDROBE.get(`${ns}job:${k}`, 'json'); if (!j) continue; r = { attempts: 0, at: +j.t || now }; }   // a job from before jobrun
-    const stale = r.attempts ? now - r.at > RUN_STALE_MS : now - r.at > START_STALE_MS;
-    if (stale) {
-      const resends = (r.resends || 0) + 1;
-      if (resends > 3) {
-        const error = 'The worker couldn’t get this photo made after several tries. Try again.';
-        await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${k}`, 'json'));
-        await env.WARDROBE.put(`${ns}jobfail:${k}`, JSON.stringify({ error: failFor(ns, error), t: now }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${k}`); await env.WARDROBE.delete(`${ns}jobrun:${k}`);
-        await tellHub(env, ns, { key: k, error: failFor(ns, error) }); continue;
-      }
-      await env.RENDER_QUEUE.send(jobMsg(k, ns)); r = { ...r, attempts: 0, at: now, resends };
-      await env.WARDROBE.put(`${ns}jobrun:${k}`, JSON.stringify(r), JOB_TTL);
-    }
+    if (now - (+r.at || 0) > LOST_JOB_MS) { lost.push(k); continue; }
     running[k] = r;
   }
-  for (const k of Object.keys(running)) if (!pending.includes(k)) delete running[k];
+  if (lost.length) pending = pending.filter(k => !lost.includes(k));
   let failed = failedByKey;
+  if (failed) for (const k of lost) failed.push({ key: k, error: failFor(ns, 'The worker couldn’t get this photo made. Try again.') });
   if (!failed) { failed = [];
     try { for (const k of ns ? [] : (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) { const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' }); } }
     catch { } }
@@ -806,25 +800,68 @@ async function runRenderJob(msg, env) {
   const job = COMBO_RE.test(key) ? await env.WARDROBE.get(`${ns}job:${key}`, 'json') : null;
   // the job is written to KV just before its message is sent, and KV can take up to a minute to show a new key in another
   // location: a consumer that can't see it yet tries again shortly (acking it lost the photo, which then sat "pending" for days)
-  if (!job) { if (COMBO_RE.test(key) && (msg.attempts || 1) < 6) return msg.retry({ delaySeconds: 20 }); return msg.ack(); }
-  const run0 = await env.WARDROBE.get(`${ns}jobrun:${key}`, 'json');
-  await env.WARDROBE.put(`${ns}jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now(), resends: run0 && run0.resends || 0 }), JOB_TTL);   // for GET /render-queue
-  if (!job.replace && await env.WARDROBE.get(`${ns}render:${key}`)) { await refundJob(env, ns, job); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
-  if (!env.OPENAI_API_KEY) { await refundJob(env, ns, job); await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: failFor(ns, 'Add an OPENAI_API_KEY secret to the worker.'), t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
+  if (!job) {
+    if ((await jobClaim(env, ns, key, 'state')).done) return msg.ack();   // made already (its job deleted): a late copy of the message
+    if (COMBO_RE.test(key) && (msg.attempts || 1) < 6) return msg.retry({ delaySeconds: 20 }); return msg.ack();
+  }
+  // one run per job: the person's RenderHub hands the job to one message at a time, so a second copy (the queue delivers at least
+  // once; the app's Try again queues the look again) neither calls OpenAI nor writes; a run cut off frees it after CLAIM_MS
+  const jt = +job.t || 0, c = await jobClaim(env, ns, key, 'claim', jt);
+  if (c.done) return msg.ack();
+  if (c.running) return msg.retry({ delaySeconds: Math.min(900, Math.ceil(c.wait / 1000) + 10) });
+  CLAIMED.set(msg, jt);
+  await env.WARDROBE.put(`${ns}jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now() }), JOB_TTL);   // for GET /render-queue
+  if (!job.replace && await env.WARDROBE.get(`${ns}render:${key}`)) {   // made meanwhile (another device uploaded it): nothing to pay for
+    await refundJob(env, ns, job); await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
+    await jobClaim(env, ns, key, 'done', jt); return msg.ack();
+  }
+  if (!env.OPENAI_API_KEY) { await failJob(env, ns, key, job, 'Add an OPENAI_API_KEY secret to the worker.'); await jobClaim(env, ns, key, 'done', jt); return msg.ack(); }
   const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env, ns);
-  if (r.ok) {
-    await env.WARDROBE.put(`${ns}render:${key}`, JSON.stringify(r.rec), renderTtl(key));
-    await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
-    await tellHub(env, ns, { key, rec: r.rec });
+  if (r.ok) { PAID.add(msg); return keepMade(env, ns, key, job, jt, r.rec, msg); }
+  if (r.retry && (msg.attempts || 1) < 4) { await jobClaim(env, ns, key, 'release', jt); return msg.retry({ delaySeconds: 60 }); }
+  console.log(`photo ${key} failed: ${r.error}`);
+  await failJob(env, ns, key, job, r.error);
+  await jobClaim(env, ns, key, 'done', jt);
+  msg.ack();
+}
+/* messages whose photo OpenAI has made (and been paid for): never retried, whatever happens after (queue() reads it) */
+const PAID = new WeakSet(), CLAIMED = new WeakMap();   // CLAIMED: message -> the job's t it holds the run of
+/* a photo OpenAI made, kept. Nothing here may lead to a retry, which would pay for it again: a failure to keep it (KV over its
+   daily writes) is caught, the photo still goes to an open app through the hub, the failure is recorded, and the message is acked */
+async function keepMade(env, ns, key, job, jt, rec, msg) {
+  try {
+    await env.WARDROBE.put(`${ns}render:${key}`, JSON.stringify(rec), renderTtl(key));
+  } catch (e) {
+    console.log(`photo ${key} made but not kept: ${e && e.message}`);
+    const error = failFor(ns, 'The photo was made but the server couldn’t keep it: ' + String(e && e.message || e));
+    await jobClaim(env, ns, key, 'done', jt);
+    await tellHub(env, ns, { key, rec, error });   // an open app takes the photo itself; one that comes later reads the failure
+    try { await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); } catch { }
+    try { await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`); } catch { }
     return msg.ack();
   }
-  if (r.retry && (msg.attempts || 1) < 4) return msg.retry({ delaySeconds: 60 });
-  console.log(`photo ${key} failed: ${r.error}`);
-  await refundJob(env, ns, job);
-  await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: failFor(ns, r.error), t: Date.now() }), FAIL_TTL);
-  await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
-  await tellHub(env, ns, { key, error: failFor(ns, r.error) });
-  msg.ack();
+  await jobClaim(env, ns, key, 'done', jt);
+  try { await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`); } catch (e) { console.log('job cleanup failed', key, e && e.message); }
+  await tellHub(env, ns, { key, rec });
+  return msg.ack();
+}
+/* a queued photo that won't be made, everywhere the same (it used to be written out four ways): its count given back, the reason kept
+   for the app (plain words for a tester), the job's records gone and an open app told. Each step on its own, so one failing doesn't
+   stop the rest */
+async function failJob(env, ns, key, job, why) {
+  const error = failFor(ns, why), step = async f => { try { await f(); } catch (e) { console.log('failed-job cleanup', key, e && e.message); } };
+  await step(() => refundJob(env, ns, job));
+  await step(() => env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL));
+  await step(() => env.WARDROBE.delete(`${ns}job:${key}`));
+  await step(() => env.WARDROBE.delete(`${ns}jobrun:${key}`));
+  await tellHub(env, ns, { key, error });
+}
+/* the person's RenderHub for one job's run: 'claim' (-> {ok} | {running, wait} | {done}), 'done', 'release', 'state'. Without the
+   binding, or when the hub can't be reached, a run goes ahead as before ({ok}) rather than leaving the photo unmade */
+async function jobClaim(env, ns, key, op, t = 0) {
+  const hub = hubOf(env, ns); if (!hub) return { ok: true };
+  try { const r = await hub.fetch(`https://hub/job-${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key, t }) }); return (await r.json()) || { ok: true }; }
+  catch (e) { console.log('job claim failed', op, key, e && e.message); return { ok: true }; }
 }
 /* ---- the push to an open app (GET /render-wait): the app holds a request open while its photos are being made, and the queue
    job hands each finished photo (or its failure) to one Durable Object, RenderHub, which answers the waiting requests at once with
@@ -844,14 +881,43 @@ async function waitForRenders(req, env, json, who) {
   if (!keys.length) return json({ error: 'no keys' }, 400);
   const ms = Math.max(1000, Math.min(100000, +u.searchParams.get('ms') || 90000));
   const r = await hub.fetch(`https://hub/wait?keys=${keys.join(',')}&ms=${ms}`);
-  return json(await r.json().catch(() => []), r.ok ? 200 : 502);
+  let res = await r.json().catch(() => []);
+  // the hub remembers only that a photo was made ({key, ok}): the photo itself is read here (left out while KV doesn't show it yet:
+  // the app goes on waiting or finds it by polling)
+  if (Array.isArray(res) && env.WARDROBE) res = (await Promise.all(res.map(async m => {
+    if (!m || m.rec || m.error || !m.ok) return m;
+    const rec = await env.WARDROBE.get(`${who.ns}render:${m.key}`, 'json').catch(() => null);
+    return rec ? { key: m.key, rec } : null;
+  }))).filter(Boolean);
+  return json(res, r.ok ? 200 : 502);
 }
 export class RenderHub {
-  constructor(ctx, env) { this.ctx = ctx; this.waiting = new Set(); this.recent = new Map(); this.mem = new Map(); }
+  constructor(ctx, env) { this.ctx = ctx; this.waiting = new Set(); this.recent = new Map(); this.mem = new Map(); this.jobQ = Promise.resolve(); }
   /* the day's use and the "switched off" mark are kept in the object's own storage (no KV write per AI call); where a test or an
      old binding gives no storage, in memory */
   async sget(k) { const s = this.ctx && this.ctx.storage; return s ? await s.get(k) : this.mem.get(k); }
   async sput(k, v) { const s = this.ctx && this.ctx.storage; if (s) await s.put(k, v); else this.mem.set(k, v); }
+  /* the job-* operations (see fetch), one at a time */
+  async jobOp(op, m, now) {
+    const k = 'job:' + m.key, t = +m.t || 0, c = await this.sget(k);
+    if (op === 'state') return { done: !!(c && c.done && c.until > now) };
+    if (op === 'claim') {
+      if (c && c.until > now && !c.done) return { running: true, wait: c.until - now };
+      if (c && c.until > now && c.done && t <= c.at) return { done: true };
+      await this.sput(k, { t, at: now, until: now + CLAIM_MS, done: false });
+      return { ok: true };
+    }
+    if (!c || c.done || c.t !== t) return { ok: false };
+    if (op === 'done') { await this.sput(k, { t, at: now, until: now + DONE_MS, done: true }); await this.prune(now); }
+    else if (op === 'release') await this.sdel(k);
+    return { ok: true };
+  }
+  /* expired job records go (a hundred at a time, where the storage can list) */
+  async prune(now) {
+    const s = this.ctx && this.ctx.storage; if (!s || !s.list || !s.delete) return;
+    try { const old = []; for (const [k, v] of await s.list({ prefix: 'job:', limit: 100 })) if (!v || v.until <= now) old.push(k); if (old.length) await s.delete(old); } catch { }
+  }
+  async sdel(k) { const s = this.ctx && this.ctx.storage; if (s && s.delete) await s.delete(k); else if (s) await s.put(k, null); else this.mem.delete(k); }
   async fetch(req) {
     const u = new URL(req.url), now = Date.now();
     for (const [k, v] of this.recent) if (now - v.at > 600000) this.recent.delete(k);
@@ -859,9 +925,22 @@ export class RenderHub {
     if (u.pathname === '/notify') {
       const m = await req.json().catch(() => null); if (!m || !COMBO_RE.test(String(m.key || ''))) return out({ ok: false });
       const res = m.rec ? { key: m.key, rec: m.rec } : { key: m.key, error: String(m.error || 'failed') };
-      this.recent.set(m.key, { ...res, at: now });
+      // kept for an app between two waits: only whether it was made ({key, ok}; the waiting route reads the photo from KV) or why
+      // not, never the photo itself (a batch of 2048 photos held for 10 minutes could near the object's 128 MB)
+      this.recent.set(m.key, { key: m.key, ...(m.error ? { error: String(m.error) } : { ok: true }), at: now });
       for (const w of [...this.waiting]) if (w.keys.has(m.key)) { this.waiting.delete(w); clearTimeout(w.timer); w.resolve([res]); }
       return out({ ok: true });
+    }
+    // one run per queued job (runRenderJob): {key, t} where t is the job's own stamp (when it was queued).
+    //   job-claim -> {ok} the caller makes it; {running, wait} another message is making it (try again in wait ms; a run cut off
+    //   frees it after CLAIM_MS); {done} it was made or failed after this job was queued (a late copy: nothing to do)
+    //   job-done / job-release: the run ended (made or given up: kept DONE_MS) or will be retried (freed); job-state -> {done}
+    if (u.pathname.startsWith('/job-')) {
+      const m = await req.json().catch(() => null); if (!m || !COMBO_RE.test(String(m.key || ''))) return out({ ok: false, bad: true });
+      // one at a time, whatever the storage does between its awaits: two claims can't both read "free"
+      const run = this.jobQ.then(() => this.jobOp(u.pathname.slice(5), m, Date.now()));
+      this.jobQ = run.catch(() => {});
+      return out(await run);
     }
     if (u.pathname === '/wait') {
       const keys = new Set(String(u.searchParams.get('keys') || '').split(',').filter(Boolean));
@@ -2031,11 +2110,14 @@ export default {
       catch (e) {
         console.log('photo job error', e && e.message);
         // a job that keeps crashing is recorded as failed (the queue would otherwise drop it silently and leave it "pending")
+        // after OpenAI made the photo nothing is retried (a retry pays again); before it, a crash is tried again after a minute
+        if (PAID.has(msg)) { msg.ack(); continue; }
         const key = String(msg.body && msg.body.key || ''), ns = msgNs(msg);
+        if (CLAIMED.has(msg)) await jobClaim(env, ns, key, 'release', CLAIMED.get(msg));   // its run is over: a retry may claim it again
         if ((msg.attempts || 1) < 4 || !COMBO_RE.test(key) || ns === null) { msg.retry({ delaySeconds: 60 }); continue; }
-        try { const error = failFor(ns, 'The worker failed making it: ' + String(e && e.message || e));
-          await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${key}`, 'json'));
-          await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); await tellHub(env, ns, { key, error }); } catch {}
+        let job = null; try { job = await env.WARDROBE.get(`${ns}job:${key}`, 'json'); } catch { }
+        await failJob(env, ns, key, job, 'The worker failed making it: ' + String(e && e.message || e));
+        await jobClaim(env, ns, key, 'done', job && +job.t || 0);
         msg.ack();
       }
     }
