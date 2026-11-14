@@ -40,7 +40,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const flat=texContrast(plain,12),it={id:'w1',type:'shirt',primaryColor:'white',pattern:'woven',sett:s};
       const def=fabricDef('sw',it,'shirt'),fig=fabricDef('fg',it,'shirt','fig'),asStripe={...it,pattern:'stripe'},spec2=specSett(TEX,{tex:c,type:'suit'});   // a woven or tonal-check tie keeps one since 2026-11-13 (tieweave.test.js)
       const L=h=>rgbLab(...hexRgb(h))[0],tn=texTones(colOf(it),s.tex).map(L),f1=s.tex.grid.join('').split('').filter(v=>v==='1').length/96,nv=texTones('#1b2a4a',{...s.tex,lighter:false}).map(L);
-      return {s,flat,def,fig,tones:tn,mean:tn[0]*(1-f1)+tn[1]*f1,whiteL:L(colOf(it)),navy:nv,usable:!!usableSett(it),stripeUsable:!!usableSett(asStripe),summary:settSummary(s),sig:settSig(s),text:settText(it,'shirt'),spec2}},TEX);
+      return {s,flat,def,fig,tones:tn,mean:tn[0]*(1-f1)+tn[1]*f1,whiteL:L(colOf(it)),navy:nv,usable:!!usableSett(it),stripeUsable:!!usableSett(asStripe),summary:settSummary(s),sig:settSig(s),spec2}},TEX);
     ok(sp.s&&sp.s.v===4&&sp.s.tex.kind==='diamond'&&sp.s.tex.grid.length===12&&sp.s.tex.lighter&&sp.s.tex.measured&&sp.s.cr===12&&sp.s.tr===150&&sp.s.src==='claude+pixels','Claude\'s diamond bitmap becomes the shirt\'s pattern reading, with the repeats in the close-up and across the shirt');
     ok(sp.s.tex.rel>.04&&sp.s.tex.rel<.3,`the texture's strength is measured from the user's close-up (a ${Math.round(sp.s.tex.rel*100)}% lightness swing)`);
     ok(sp.flat<.03,`a smooth light falloff is not counted as texture (${(sp.flat*100).toFixed(1)}%)`);
@@ -51,7 +51,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(Math.abs(Tv/T-1.5)<.01&&sp.s.tex.aspect===1.5,`the tile is stretched to the repeat's measured shape (1.5 times as tall as wide: ${(Tv/T).toFixed(2)})`);
     ok(T>=6&&T<=8,`on the figure a repeat is no finer than 6 units (it would only shimmer): ${T}`);
     ok(sp.usable&&!sp.stripeUsable&&sp.spec2===null,'the texture is drawn only while the shirt is a weave pattern, and not for suits');
-    ok(/diamond dobby/.test(sp.summary)&&/^t/.test(sp.sig)&&/tone-on-tone small diamond dobby weave/.test(sp.text),'it is summarised, has its own signature and is described');
+    ok(/diamond dobby/.test(sp.summary)&&/^t/.test(sp.sig),'it is summarised and has its own signature');
     // Add: a woven shirt with a close-up asks Claude and keeps the texture
     await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await addFiles([new File([b],'s.jpg',{type:'image/jpeg'})])});
     await p.waitForFunction(()=>queue[0]&&queue[0].pattern==='woven',null,{timeout:20000});

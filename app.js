@@ -82,8 +82,8 @@ function updateSwatchParam(i, param, val){
 }
 
 let aiError='',aiModel='';
-/* ---- working on it: while a call to Claude or OpenAI runs (tagging, reading a pattern, making a photo or an item picture), and
-   while photos are being made in the background, a spinning pill at the top of the screen says what is happening. Every call
+/* ---- working on it: while a call to Claude or OpenAI runs (tagging, reading a pattern, making an item picture), a spinning pill
+   at the top of the screen says what is happening. Every call
    to the worker's AI endpoints goes through fetch, so one hook catches them all, including new ones. ---- */
 const busyJobs=new Map();let busySeq=0;
 function busyStart(label){const id=++busySeq;busyJobs.set(id,label);renderBusy();return ()=>{busyJobs.delete(id);renderBusy()}}
@@ -91,7 +91,7 @@ function busyLabelFor(u,o){if(!o||String(o.method||'GET').toUpperCase()!=='POST'
   let a,b;try{a=new URL(u,location.href);b=new URL(w.replace(/\/*$/,'/'))}catch{return null}if(a.origin!==b.origin)return null;
   const p=a.pathname.replace(b.pathname,'/').replace(/\/+$/,'')||'/',body=typeof o.body==='string'?o.body.slice(0,4000):'';
   if(p==='/')return 'Claude is tagging the photo…';if(p==='/tag-many')return 'Claude is finding the items…';if(p==='/pattern')return 'Claude is reading the pattern…';
-  if(p==='/render'){if(/"mode":"queue"/.test(body))return null;return /"mode":"item"/.test(body)?'Making the item picture…':'Making the photo…'}
+  if(p==='/render')return /"mode":"item"/.test(body)?'Making the item picture…':null;   // (item pictures: the only thing POST /render makes now)
   return null}
 if(typeof window!=='undefined'&&window.fetch&&!window.fetch.busy){const f0=window.fetch.bind(window);
   window.fetch=function(u,o){const l=busyLabelFor(typeof u==='string'?u:u&&u.url,o);if(!l)return f0(u,o);const end=busyStart(l);const r=f0(u,o);r.then(end,end);return r};window.fetch.busy=1}

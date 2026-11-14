@@ -45,11 +45,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const RD=Date;window.Date=class extends RD{constructor(...a){super(...(a.length?a:[2026,10,3,12]))}};let svg,plain;
       try{svg=itemThumb(w);plain=itemThumb({...w,watchStyle:'date',bezel:'smooth',band:'bracelet'})}finally{window.Date=RD}
       const o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid',photo:'data:image/jpeg;base64,AAA'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:{id:'t',type:'tie',primaryColor:'burgundy',pattern:'solid'},watch:w};
-      renders[itemKey(w)]={sig:'item',img:'data:image/jpeg;base64,BBB'};const ref=outfitRefs(o);
       return {opts:[WATCH_STYLES,BANDS,BEZELS].map(l=>l.map(x=>x[0]).join()).join(' | '),
         // the traced watch (drawWatchTraced) is seen at an angle: its subdials are ellipses, two more than a three-hand watch has
         subdials:(svg.match(/<ellipse /g)||[]).length-(plain.match(/<ellipse /g)||[]).length,blue:svg.includes('#1f4fa8'),nums:/>12<\/text>/.test(svg)&&/>6<\/text>/.test(svg),bezel:/>30<\/text>/.test(svg),plainHas:/>12<\/text>/.test(plain),
-        txt:outfitText(o),desc:itemDesc(w),pic:ITEM_PIC_TYPES.includes('watch'),refs:ref.refs.join(),labels:ref.labels.join('|'),
+        txt:watchText(w),desc:itemDesc(w),pic:ITEM_PIC_TYPES.includes('watch'),
         key:comboKey(o)!==comboKey({...o,watch:{...w,details:'other'}})&&comboKey(o)!==comboKey({...o,watch:{...w,watchStyle:'date'}})}});
     ok(/chronograph/.test(r.opts)&&/integrated/.test(r.opts)&&/engraved/.test(r.opts),`the wardrobe offers chronograph, integrated bracelet and engraved bezel (${r.opts})`);
     ok(r.subdials>=2&&r.blue&&r.nums&&r.bezel&&!r.plainHas,'a chronograph is drawn with subdials (and the minute counter\'s blue segment), 12 and 6 numerals and an engraved bezel');
@@ -57,13 +56,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     sent=[];const long='a watch '+'with many details '.repeat(70)+'END';await post({mode:'item',item:long,key:'c4444444444444444',ref:PNG});
     ok(/END/.test(sent[0].body.get('prompt')),'a long, precise item description reaches the image model in full');
     // with the owner's details the stock "(three subdials and a date window)" is left out: it got a stock chronograph drawn (2026-11-12)
-    ok(/steel chronograph wristwatch with a polished bezel engraved with numerals, a white dial and an integrated stainless steel bracelet.*\(described upright, 12 o'clock at the top.*small seconds at 10/.test(r.txt)&&!/three subdials/.test(r.txt),`outfit photo prompts describe the watch precisely, details included, said to describe it upright (${r.txt})`);
+    ok(/steel chronograph wristwatch with a polished bezel engraved with numerals, a white dial and an integrated stainless steel bracelet[^(]*\(small seconds at 10/.test(r.txt)&&!/three subdials/.test(r.txt),`the watch in words is precise, details included (${r.txt})`);
     ok(r.pic&&/three-quarter view/.test(r.desc),'watches get product pictures');
-    ok(r.refs==='data:image/jpeg;base64,AAA,data:image/jpeg;base64,BBB'&&/^the suit\|the wristwatch/.test(r.labels),'the watch picture goes to outfit photos as a labelled reference');
-    ok(r.key,'changing the watch style or details gives a new outfit photo');
-    const tx=await p.evaluate(()=>outfitText({suitDay:false,top:{type:'blazer',primaryColor:'steelblue',pattern:'other'},shirt:{type:'shirt',primaryColor:'pink',pattern:'solid'},tie:{type:'tie',primaryColor:'navy',secondaryColor:'pink',pattern:'stripe'},
-      clip:{type:'tieclip',primaryColor:'gunmetal',pattern:'solid',metal:'gold'},links:{type:'cufflinks',primaryColor:'gold',pattern:'solid',metal:'other'}}));
-    ok(!/\bother\b/.test(tx)&&/a steel blue blazer/.test(tx)&&/a gunmetal tie bar/.test(tx)&&/gunmetal cufflinks/.test(tx),`photo prompts never say "other": an untagged pattern is left out, a tie bar is named by its colour (its old metal field ignored) and an "other" metal reads as gunmetal (${tx})`);
+    ok(r.key,'changing the watch style or details gives a new outfit photo key');
     // editor
     await p.evaluate(()=>{items=[{id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph'}];flt='all';editing='w1';show('wardrobe')});
     await p.fill('.wdetails input','blue mark at 45');await p.press('.wdetails input','Tab');

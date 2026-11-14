@@ -580,87 +580,6 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   if(!chk.s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
   it.sett=chk.s;delete it.stripes;await put(it);cache={};renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
 
-/* ---- the pattern for the photo generator. Claude's words alone were not enough: on a plaid tie its description had the stripes
-   rising the wrong way and the generator followed it, and it said nothing of how much of each colour there is. So a read
-   pattern is also described from the measurements (direction as the viewer sees it, each colour's share, pinlines, crossing
-   lines), any direction in Claude's words is taken out, and a drawing of the pattern goes along as a reference. ---- */
-/* a band's name: the nearest of Claude's own colour names for this cloth (so the measured shares and its description use one
-   vocabulary; lightness counts half, a photo's exposure being the least certain), else the nearest of the app's colours */
-const nearName=(hex,named)=>{const l=rgbLab(...hexRgb(hex));
-  // hue counts most here: a greyed steel blue in a dim photo is still the blue band, not the beige one of the same lightness
-  const dist=(x,y)=>Math.hypot((x[0]-y[0])/2,1.4*(x[1]-y[1]),1.4*(x[2]-y[2]));
-  if(named&&named.length>=2){let best=named[0],bd=1e9;for(const c of named){const d=dist(l,rgbLab(...hexRgb(c.hex)));if(d<bd){bd=d;best=c}}return String(best.name).toLowerCase()}
-  let best=null,bd=1e9;for(const c of Object.keys(COLORS)){if(CUSTOM_COL[c])continue;const d=dE00(l,labOf(c));if(d<bd){bd=d;best=c}}return colName(best)};
-/* which way the stripes run as the viewer sees them (sett.a is the angle across them; on a jacket or shirt they are snapped straight) */
-function settDirText(s,role){const a=role==='tie'?s.a:Math.round(s.a/90)*90,phi=((a+90)%180+180)%180;   // the stripes' own direction, 0 = horizontal, y down
-  if(phi<15||phi>165)return 'horizontal stripes';if(phi>75&&phi<105)return 'vertical stripes';
-  return phi<90?'diagonal stripes running from the upper left down to the lower right, as the viewer sees them':'diagonal stripes running from the lower left up to the upper right, as the viewer sees them'}
-function settText(i,role){const s=usableSett(i);if(s&&s.tex)return `measured: a tone-on-tone ${TEX_WORDS[s.tex.kind]||'woven texture'}, ${s.tex.contrast}`;if(s&&s.motif)return motifText(s,role);if(!s||!s.bands)return '';
-  const named=[...(i.patternSpec?[i.patternSpec.across,i.patternSpec.along].filter(Boolean).flatMap(d=>d.bands.map(b=>({name:b.name,hex:b.hex}))):[]),...(i.weave&&i.weave.colours||[])].filter(c=>c&&c.name&&/^#[0-9a-f]{6}$/i.test(c.hex||''));
-  const share={},thin={};for(const [h,w] of s.bands){const n=nearName(h,named);if(w<.035)thin[n]=1;else share[n]=(share[n]||0)+w}
-  const tot=Object.values(share).reduce((a,b)=>a+b,0)||1,parts=Object.entries(share).sort((a,b)=>b[1]-a[1]).map(([n,w])=>`${Math.max(1,Math.round(100*w/tot/5)*5)}% ${n}`);
-  const pins=Object.keys(thin);
-  const cross=s.cross?[...new Set(s.cross.bands.filter(b=>b[0]).map(b=>nearName(b[0],named)))]:[];
-  return `measured: ${settDirText(s,role)}; the bands are about ${parts.join(', ')}${pins.length?`, with thin ${pins.join(' and ')} pinlines`:''}`+
-    (cross.length?`; fine ${cross.join(' and ')} lines cross them in the other direction`:'')}
-const DIR_RE=/(?:rising|running|descending|slanting|sloping|going|that run|which run)?\s*(?:diagonally\s+)?(?:from\s+)?(?:the\s+)?(?:upper|lower|top|bottom)[ -](?:left|right)\s+(?:down\s+|up\s+)?(?:to|towards)\s+(?:the\s+)?(?:upper|lower|top|bottom)[ -](?:left|right)(?:\s+as (?:seen|worn))?/gi;
-const dropDir=t=>String(t||'').replace(DIR_RE,'').replace(/\s+([,.:;])/g,'$1').replace(/\s{2,}/g,' ').trim();
-/* what the photo prompt says of an item's pattern */
-function patternPrompt(i,role){if(!i)return '';const m=settText(i,role),d=m?dropDir(i.patternText):i.patternText||'';
-  return [m,d.replace(/\.$/,'')].filter(Boolean).join('. ')}
-/* the drawing of a read pattern for the generator: a tie as its blade (tip down, the pattern at the angle it is worn), anything else
-   as a square of its cloth; on a light grey ground, sharp */
-function patternDiagram(i,role){const fab=i.sett&&i.sett.tex?{def:id=>fabricDef(id,i,'shirt','dia')}:figFabric(i,role);if(!fab)return Promise.resolve(null);
-  const tie=role==='tie',vb=tie?'168 46 54 214':'0 0 200 200',W=tie?360:600,H=tie?Math.round(360*214/54):600;
-  const shape=tie?'<path d="M 182 50 L 208 50 C 211 60 210 70 205 79 C 199 83 191 83 185 79 C 180 70 179 60 182 50 Z" fill="url(#pd)"/><path d="M 186 74 L 204 74 C 207 120 212 172 217 222 L 195 256 L 173 222 C 178 172 183 120 186 74 Z" fill="url(#pd)"/>':'<rect width="200" height="200" fill="url(#pd)"/>';
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${vb}"><defs>${fab.def('pd',0)}</defs><rect x="-10" y="-10" width="400" height="400" fill="#ececea"/>${shape}</svg>`;
-  return new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(im,0,0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>ok(null);
-    im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
-/* the references with the pattern drawings put in after their item's photos; a tie sent without its photo (outfitRefs) has its
-   drawing right before its close-up (at most 8 in all) */
-/* every drawing is added; trimRefs keeps the 8 that matter most */
-async function outfitRefsFull(o){const {refs,labels}=outfitRefs(o),slots=[['tie','tie','the tie'],['top','top',o.suitDay?'the suit':'the blazer'],['shirt','shirt','the shirt'],...(o.top?[]:[['bot','bot','the trousers']])];
-  for(const [s,role,name] of slots){const i=o[s];if(!i||!usableSett(i)||(i.sett.tex&&s!=='shirt'))continue;const img=await patternDiagram(i,role);if(!img)continue;
-    let at=labels.findIndex(l=>l.startsWith(name));at=at>=0?at+1:role==='tie'?labels.findIndex(l=>l.startsWith('a close-up of the tie fabric')):-1;if(at<0)at=refs.length;
-    refs.splice(at,0,img);labels.splice(at,0,i.sett.tex?`a drawing of the shirt's weave texture, its contrast exaggerated so it can be seen: weave this ${TEX_WORDS[i.sett.tex.kind]||'texture'} into the shirt cloth, tone on tone and subtle, at about the scale of the shirt's close-up`:`a drawing of ${name.replace(/^the /,'the ')}'s measured pattern${role==='tie'?' as worn':''}: copy ${i.sett.motif?'its figures, their shapes, colours, arrangement and size':'its colours, their order and proportions and the stripe direction'} exactly, rendered as real woven ${role==='tie'?'silk':'cloth'}`)}
-  const wk=labels.findIndex(l=>l.startsWith('the wristwatch'));   // the watch is small in the picture: its dial enlarged is a second reference
-  if(wk>=0){const src=refs[wk],t=await turnBy(src,WATCH_TURN),d=await dialCrop(src),dt=d&&await turnBy(d,WATCH_TURN);
-    refs.splice(wk,1);labels.splice(wk,1);
-    // the watch goes FIRST, right after the illustration, and its dial enlarged as a reference of its own (refRank 9: never trimmed):
-    // last in the list and its dial halved in a shared image, the generator drew a stock chronograph
-    const w=[[t||src,t?WATCH_WORN:'the wristwatch (copy it exactly: case, bezel, dial and subdials, hands, bracelet links)'],...(dt?[[dt,WATCH_DIAL]]:[])];
-    refs.unshift(...w.map(x=>x[0]));labels.unshift(...w.map(x=>x[1]))}
-  return trimRefs(refs,labels)}
-/* how the watch's photo is turned before it is sent, in degrees clockwise (its photos are taken upright, 12 o'clock at the top) */
-const WATCH_TURN=180;
-/* the whole dial turns with the crown (never mirrored): with the crown toward the hand, what is at 6 o'clock on an upright watch is at
-   the top (the owner's chronograph shows the time in its 6 o'clock subdial, and it came back with the crown turned and that subdial not) */
-const WATCH_DIAL="an enlargement of the same wristwatch's dial, turned the same way: copy its subdials, their places and sizes, the hands and the markings exactly";
-/* turned by a multiple of 90° clockwise */
-const turnBy=(u,deg)=>new Promise(ok=>{const q=((deg/90|0)%4+4)%4;if(!q)return ok(u);const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),side=q%2;
-  c.width=side?im.height:im.width;c.height=side?im.width:im.height;const x=c.getContext('2d');x.translate(c.width/2,c.height/2);x.rotate(q*Math.PI/2);
-  x.drawImage(im,-im.width/2,-im.height/2);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
-/* the middle of the watch's photo (DIAL_PART of its shorter side), enlarged: with the whole watch alone the generator drew a generic
-   dial, with this it drew the owner's white dial and its subdials */
-/* on the left wrist, the arm across the chest and the back of the hand to the camera, a watch is seen half a turn round: the crown
-   toward the hand, 12 o'clock at the bottom. From upright photos the generator drew it upright, the crown toward the elbow (the
-   owner: "backwards") */
-const WATCH_WORN="the wristwatch, turned as worn: crown toward the hand, the whole dial turned with it, 6 o'clock at the top (copy case, bezel, dial, bracelet exactly)";
-const DIAL_PART=.48;
-const dialCrop=u=>new Promise(ok=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height)*DIAL_PART,c=document.createElement('canvas');c.width=c.height=640;
-  c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,640,640);ok(c.toDataURL('image/jpeg',.9))};im.onerror=()=>ok(null);im.src=u});
-/* the worker takes 8 references: when there are more, the least needed go first (the watch dial's enlargement, then the shirt's
-   close-up, then the shirt's texture drawing, then the other drawings and close-ups), never an item's own photo. Cutting the
-   list at 8 dropped the watch, which comes last, once the pattern drawings were added, and the generator drew a generic one.
-   The shirt's close-up used to go first (shot in dim light it reads grey, and the generator is told to match its colour); the
-   owner asked for it to be sent, in the place of the tie's photo (outfitRefs). With that photo gone at most one reference is
-   over, so only the enlargement ever goes: in a fully patterned outfit, where it was dropped before too. */
-/* (since the watch's dial came back generic: its enlargement is never trimmed, so the shirt's close-up goes first again) */
-function refRank(l){return /^an enlargement/.test(l)?9:/^a close-up of the shirt/.test(l)?.5:/^a drawing of the shirt/.test(l)?1:/^a drawing of/.test(l)?2:/^a close-up of the tie/.test(l)?3:/^a close-up/.test(l)?4:9}
-function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
-  while(keep.length>max){let worst=0;for(let n=1;n<keep.length;n++)if(refRank(labels[keep[n]])<refRank(labels[keep[worst]]))worst=n;keep.splice(worst,1)}
-  return {refs:keep.map(k=>refs[k]),labels:keep.map(k=>labels[k])}}
-
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
    noise in a photo (a seam, moire, panes made uneven by drape); Claude reports the pattern as woven: every band of a repeat each
    way, in order, with its width. The exact colours come from the photos: each named thread is matched to its own pixels, the
@@ -769,11 +688,3 @@ function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.gr
   const L=h=>rgbLab(...hexRgb(h))[0];
   return {v:4,tex:{kind:t.kind,grid:t.grid,aspect:+(+t.aspect||t.grid.length/t.grid[0].length).toFixed(2),lighter:L(t.raised.hex)>=L(t.ground.hex),contrast:t.contrast,rel:+(rel??TEX_REL[t.contrast]??.08).toFixed(3),measured:rel!=null},
     a:0,cr:+(+spec.repeatsInCloseup||8).toFixed(2),tr:+(+spec.repeatsAcrossItem||100).toFixed(2),src:'claude+pixels'}}
-/* the motif in words for the photo generator */
-const figWord=f=>f.shape==='figure'&&f.name?`${f.name}s`:SHAPE_WORDS[f.shape]||'small figures';
-const SHAPE_WORDS={square:'small squares','square-with-dot':'tiny squares with a dot in the middle',diamond:'small diamonds',dot:'dots',ring:'small rings',cross:'small crosses',flower:'small flowers',other:'small figures'};
-function motifText(s,role){const m=s.motif,figs=m.figs.map((f,n)=>{const cols=f.names.length===2?`alternating ${f.names[0]} and ${f.names[1]}`:f.names[0];
-    const where=f.place==='corner'?(n?' where the corners meet':' at the grid corners'):f.place==='alternate-cells'?' in every other cell':'';
-    return `${f.shape==='figure'?'small ':''}${cols} ${figWord(f)}${f.centreName?` (each with a ${f.centreName} dot)`:''}${where}`});
-  const lay=m.grid==='diagonal'?'diagonal (45°) grid':m.off?'grid with every other row shifted half a step':m.aspect&&m.aspect<.85?'grid of columns, the figures stacked closer than the columns are apart':'straight grid';
-  return `measured: a neat pattern on a ${lay}: ${figs.join(', with ')}, on a ${m.groundName} ground; about ${Math.round(s.tr)} repeats across the ${role==='tie'?'tie':'cloth'}`}
