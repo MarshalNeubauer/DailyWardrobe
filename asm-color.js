@@ -338,7 +338,10 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
   for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)},how=asmCmRoute(i,z).how;
     try{
       if(how==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
-      else if(how==='bands')c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
+      else if(how==='bands'){c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
+        // (2026-11-14) without the earlier assembler's steeper shading on a dark stripe (ASM_STRIPE gam 1.4, gain .9: its folds went to
+        // black); here the folds' depth is set from real photographs (ASM_CM_FOLD)
+        if(c.suit&&c.suit.gam!=null)c.suit={...c.suit,gam:1,gain:1}}
       else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
       else if(how==='tweed')c.suit=asmTweedTex(i);
       else if(ASM_MICRO[how])c.suit=asmMicroTex(i,how);   // houndstooth, sharkskin, birdseye, nailhead

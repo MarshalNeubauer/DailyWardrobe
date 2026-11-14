@@ -7,7 +7,7 @@
 //   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run cm-upload -- --dir <colormaster folder> [--dry] [--kinds suit,vest]
 //
 //   --dir    the folder colormaster.js writes: out-<kind>\colormaster-2880.png, alpha-<zone>.png, sleeve-sleeve?.png, lapel-lapel?.png, and
-//            when there, uv-u.png and uv-v.png (the solved cloth positions, geo3d\flatten)
+//            when there, uv-u.png and uv-v.png (the solved cloth positions, geo3d\flatten) and light.png (the light map)
 //   --dry    say what would go up, upload nothing
 //   --bg <file>  the background behind every master (asm-color.js asmCmBgKey: an empty, out-of-focus room, square), as a JPEG; with --bg alone
 //                only the background goes up
@@ -47,6 +47,8 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
       ...['sleeveR','sleeveL'].map(s=>['part/'+s,path.join(out,'sleeve-'+s+'.png')]),...(ASM_LAPELS.has(kind)?['lapelR','lapelL'].map(s=>['part/'+s,path.join(out,'lapel-'+s+'.png')]):[])];
     // the solved cloth positions (asm-color.js asmGeoPrep: geo3d/flatten), when the folder has them: lossless PNGs, never re-encoded
     if(out)for(const c of ['u','v']){const f=path.join(out,'uv-'+c+'.png');if(fs.existsSync(f))files.push(['geo/'+c,f])}
+    // (2026-11-14) the light map (asm-color.js asmCmLightKeys: form light, edge glow, collar shadow), when the folder has one: a lossless PNG
+    if(out){const f=path.join(out,'light.png');if(fs.existsSync(f))files.push(['light',f])}
     for(const [name,f,isJpeg] of files){if(!fs.existsSync(f)){console.error('missing '+f);process.exit(2)}
       const key=cmKey(kind,name),sum=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0,16),sig=`asm/cm ${JSON.stringify({kind,name,v:ASM_CMV,sum})}`;
       if(DRY){console.log(`${kind} ${name} -> ${key} (${Math.round(fs.statSync(f).size/1024)} KB file)`);continue}
