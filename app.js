@@ -1006,7 +1006,10 @@ const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'ch
 const shortRest=o=>[o.shirt&&colName(primaryCol(o.shirt))+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
 /* the outfit in a few words, the same everywhere it is named in one line (Today's pieces card, sharing, the morning reminder):
    "navy suit · white shirt · burgundy stripe tie" (sentence() capitalises it where it starts a line) */
-const piecesLine=o=>[o.top?`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&`${colName(primaryCol(o.bot))} trousers`,o.shirt&&`${colName(primaryCol(o.shirt))} shirt`,o.tie&&`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`].filter(Boolean).join(' · ');/* the month plan unfolds in place from the box on Today (no separate page) */
+/* the folded pieces box's line: jacket (or trousers), shirt and tie; a piece the owner named is called by its name, exactly as typed (2026-11-14,
+   the owner: "Medium Grey suit", not "mid grey worsted suit"), the others by colour */
+const piecesLine=o=>{const nmd=i=>itemName(i);return [o.top?nmd(o.top)||`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&(nmd(o.bot)||`${colName(primaryCol(o.bot))} trousers`),o.shirt&&(nmd(o.shirt)||`${colName(primaryCol(o.shirt))} shirt`),
+  o.tie&&(nmd(o.tie)||`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`)].filter(Boolean).join(' · ')};/* the month plan unfolds in place from the box on Today (no separate page) */
 let monthOpen=false,monthPanel=null;
 const monthPlan=planMonth;
 function monthGridHtml(){
@@ -1576,7 +1579,7 @@ function piecesBox(o){
   const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':desc(i)||nm(i))}">${swatchSVG(i,true)}</span>`).join('');
   const sum=piecesLine(o);
   return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
-    <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${sentence(sum)||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${esc(sentence(sum))||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div></div></div></section>`}
 /* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
