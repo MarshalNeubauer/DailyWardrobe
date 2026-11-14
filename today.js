@@ -237,8 +237,15 @@ function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.ti
 function wornBar(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),can=+d<=+T,lw=lastWorn(o);
   const pill=lw?`<small class="lastworn">Last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
-  if(!can)return pill?`<div class="wornbar">${pill}</div>`:'';
-  return `<div class="wornbar" role="group" aria-label="Did you wear this outfit?"><button class="wmark no${o.worn===false?' on':''}" aria-pressed="${o.worn===false}" onclick="setWorn(${o.worn===false?'undefined':'false'})" aria-label="Didn't wear" title="Didn't wear">✕</button>${pill}<button class="wmark yes${o.worn===true?' on':''}" aria-pressed="${o.worn===true}" onclick="setWorn(${o.worn===true?'undefined':'true'})" aria-label="Wore this" title="Wore this">✓</button></div>`}
+  // (2026-11-14, the owner) no ✕ / ✓ circles on the picture any more: worn or not is the pill in the date bar (wornPill); only "Last worn"
+  return pill?`<div class="wornbar">${pill}</div>`:''}
+/* the date bar's pill, at the right end of the weather line, on today and past workdays with an outfit (the owner's design, 2026-11-14):
+   a day is worn unless marked not (rec.worn false), so it starts "✓ Wore"; a tap makes it "✕ Didn't" (grey), a tap goes back. Back is
+   the default (no mark), not rec.worn true, which would freeze today's outfit as worn */
+function wornPill(o){const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate());if(+d>+T||!isWorkday(sel)||!hasOutfit(o))return '';
+  const no=o.worn===false;
+  return `<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" onclick="toggleWorn()" aria-label="${no?"Didn't wear this outfit. Tap if you wore it":"Wore this outfit. Tap if you didn't"}">${no?'✕ Didn\'t':'✓ Wore'}</button>`}
+function toggleWorn(){const o=planFor()[key(sel)];if(!o)return;setWorn(o.worn===false?undefined:false)}
 function figureStage(o){
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
   const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${desc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
@@ -251,7 +258,7 @@ function figureStage(o){
   const ck=comboKey(o),pend=renderPending(o),fail=renderFail[ck],stalled=!pend&&renderStalled(ck);
   const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it…':'It is being made (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made. ${/[.!?]$/.test(fail)?fail:fail+'.'}`:stalled?'This photo has been in the making for over 10 minutes, far longer than one takes. Regenerate photo in ⚙ Settings sends it again.':'';
   const ctl=`<p class="mut render-msg" id="render-msg">${pend?'<span class="spin" aria-hidden="true"></span>':''}${esc(msg)}</p>`;
-  const T0=todayDate(),marks=+new Date(sel.getFullYear(),sel.getMonth(),sel.getDate())<=+T0;   // ✕ and ✓ show on today and past days
+  const marks=false;   // (the swatches no longer step up for the ✕ / ✓ circles, gone from the picture 2026-11-14)
   const cf=typeof careFrame==='function'?careFrame(o):null,cc=cf?cf.cls:'',ch=cf?cf.html:'';   // a suit or blazer coming due for cleaning (care.js)
   return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o,marks)}${wornMarks(o)}${ch}</div>`
     :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}${ch}</div>`)+ctl+
@@ -275,8 +282,8 @@ function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||
   if(opening){inn.innerHTML=rowPanel(o[s]);picOpenReady(el,$('.below'),()=>belowOpen===s)}else{revealRun++;picShut(el)}}
 /* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
 const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
-const todayBtn=()=>{const h=homeDay();if(key(sel)===key(h))return '';const isT=+h===+todayDate();
-  return `<button class="gotoday" onclick="goToday()" aria-label="${isT?"Back to today's outfit":'Go to the next outfit'}">${isT?'↩ Today':'↩ Next outfit'}</button>`};
+/* (2026-11-14, the owner) no "↩ Today" / "↩ Next outfit" button in the date bar on other days: the Today tab does it (goToday) */
+const todayBtn=()=>'';
 function goToday(){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false;show('today');scrollTo({top:0,behavior:'smooth'})}
 /* ---- the day's pieces: a folded box (a strip of fabric chips, like the month box) that unfolds into the full list ---- */
 let listOpen=false;
@@ -298,7 +305,7 @@ function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span><small class="wx">${settings.location?(wxChip(sel)||''):'<a href="#" onclick="openSettings(\'weather\');return false">Set your location for weather</a>'}${todayBtn()}</small></h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc">${settings.location?(wxChip(sel)||''):`<a href="#" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';const first=(typeof setupToday==='function'?setupToday():'')+(typeof kitSampleBanner==='function'?kitSampleBanner():'');   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`

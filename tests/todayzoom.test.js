@@ -31,10 +31,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(css==='manipulation','the picture opts out of the browser\'s own double-tap zoom');
     await dtap(at.x,at.y);
     const z=await p.evaluate(()=>({on:document.querySelector('#mannequin-container').classList.contains('zoomed'),tf:document.querySelector('#mannequin-container img').style.transform,z:{...zoom},
-      marks:getComputedStyle(document.querySelector('.wornbar')).opacity}));
+      marks:document.querySelector('.wornbar')?getComputedStyle(document.querySelector('.wornbar')).opacity:'0'}));
     ok(z.on&&/scale\(2\.5\)/.test(z.tf)&&Math.abs(z.z.x-box.w*(1-2.5)/2)<1&&z.z.y===0,`a double tap, wherever it lands, zooms in 2.5x on the tie and shirt: centred across, the collar at the top (${z.tf})`);
     // the same framing from a tap near a corner
-    await p.evaluate(()=>zoomOut());await dtap(Math.round(box.x+24),Math.round(box.y+24));   // (top left: the bottom corners are the ✕ and ✓, the top right the share button)
+    await p.evaluate(()=>zoomOut());await dtap(Math.round(box.x+24),Math.round(box.y+24));   // (top left: the top right is the share button)
     const z2=await p.evaluate(()=>({...zoom}));
     ok(Math.abs(z2.x-box.w*(1-2.5)/2)<1&&z2.y===0,'a double tap near a corner gives the same framing');
     await p.evaluate(()=>zoomOut());await dtap(at.x,at.y);   // (zoomed again, as the checks below expect)

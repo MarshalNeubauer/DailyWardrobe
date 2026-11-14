@@ -16,11 +16,11 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
       const past=shot(new Date(2026,10,10)),fut=shot(new Date(2026,10,16));
       return {lineHex:line&&line[0],lineW:line&&line[1],sum:ov.sett.bands.reduce((a,b)=>a+b[1],0),orig:pin.sett.bands[1][0],scaled:/scale\\(\\.5\\)/.test(tsv)&&!/scale\\(\\.5\\)/.test(plain),
         n:(full.match(/class="ovsw"/g)||[]).length,nNo:(noTie.match(/class="ovsw"/g)||[]).length,up:/swstack up/.test(noTie)&&!/swstack up/.test(full),none,label:/Tie: /.test(full)&&!/Tie: /.test(noTie),
-        pastUp:/class="swstack up"/.test(past),futFlat:/class="swstack"/.test(fut)&&!/swstack up/.test(fut)}})()`);
+        pastFlat:/class="swstack"/.test(past)&&!/swstack up/.test(past),futFlat:/class="swstack"/.test(fut)&&!/swstack up/.test(fut)}})()`);
     ok(r.lineHex==='#c8cbd2'&&r.lineW>=0.1&&Math.abs(r.sum-1)<1e-9&&r.orig==='#2d3550',`a jacket's stripe is drawn in Claude's colour and at least a tenth of the repeat (${r.lineHex}, ${r.lineW}), the item untouched`);
     ok(r.scaled,'a tie\'s pattern is drawn at half size (more repeats) in the overlay only');
     ok(r.n===3&&r.nNo===2&&r.none===''&&r.label,'one swatch per piece worn: jacket, shirt, tie; none without them');
-    ok(r.pastUp&&r.futFlat,'on a day that shows ✕ and ✓ the stack sits above ✕; on a later day it sits in the corner');
+    ok(r.pastFlat&&r.futFlat,'the stack sits in the corner on every day (the ✕ / ✓ circles it stepped up for are gone, 2026-11-14)');
     // the real cloth where it reads: a tie's and a plain or finely woven jacket's close-up swatch; a shirt and a striped jacket stay drawn
     const pick=await p.evaluate(ph=>{const cu={swatch:ph,swSrc:'tex',texture:ph},kind=i=>{const v=ovlPiece(i);return v.includes(ph)?'close-up':/^<img src="data:image\/png/.test(v)?'painted':'drawn'};
       return {tie:kind({id:'a',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',...cu}),pin:kind({id:'b',type:'suit',primaryColor:'navy',pattern:'pinstripe',...cu}),
