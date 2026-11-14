@@ -909,7 +909,7 @@ span.pk-tick{cursor:default}
 /* ---- who sees what (applyRole in account.js) ---- */
 /* the owner's tools: only for the owner; a tester never sees the server address and code; not connected, the parts that need the
    server are hidden and one line at the top of their section says what connecting turns on (.conn-off-note) */
-body:not(.owner) :is(#adv-schedule,#adv-photos){display:none}
+body:not(.owner) #adv-photos{display:none}
 body.tester #adv-connection{display:none}
 body.nocon .conn-only,.connhide{display:none!important}
 .conn-off-note:empty{display:none}
