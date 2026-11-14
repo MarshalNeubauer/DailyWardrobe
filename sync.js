@@ -31,7 +31,15 @@ async function applyMerged(m,local){
 /* after a sync brought changes: redraw the tab on screen. show() and renderToday() close Settings, which snapped shut when it was
    opened in the first seconds after launch and the start-up sync (scheduleSync, 2.5 s) came back with changes; while it is open,
    the tab waits for it to close (todayStale, viewStale) */
-function syncRedraw(v){if(!v||v==='add')return;if(!settingsOpen())return show(v);if(v==='today')todayStale=true;else viewStale=v}
+/* likewise while the item sheet is open (redrawing it blanked the field being typed in, and further typing replaced what was saved) or the
+   piece picker is (the redraw closed it): the redraw waits for it to close (syncLater, run by syncLaterRun from itemShown / closePicker) */
+let syncLater=null;
+function syncRedraw(v){if(!v||v==='add')return;
+  if(settingsOpen()){if(v==='today')todayStale=true;else viewStale=v;return}
+  if((v==='wardrobe'&&editing)||(v==='today'&&picker)){syncLater=v;return}
+  return show(v)}
+function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
+  if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)renderWardrobe()}
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
 /* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
    "Not backed up yet." under a summary saying "Backed up today" (audit 2026-11-13) */
