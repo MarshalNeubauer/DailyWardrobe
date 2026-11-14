@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	b2ff541e257b7ade2579
+# tested	b0d2f79844831759a538
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -3450,7 +3451,7 @@ kit.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{c
 kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitClose	kitCloseupGuide	kitClothPic	kitColour	kitDraw	kitDuplicate	kitEl	kitGo	kitHasSample	kitImportGo	kitImportOpen	kitImportText	kitInert	kitNorm	kitOpen	kitPattern	kitPatternPic	kitRead	kitSampleBanner	kitSampleLoad	kitSampleRemove	kitSaveCards	kitSaved	kitScorePic	kitShadePic	kitSplit	kitStartRow	kitUnsave	pic	tourOpen	tourSeen
 kit.test.js	manifest.webmanifest	<loaded>
 kit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
-kit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+kit.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG
 kit.test.js	mq/shirt-open.js	<loaded>
 kit.test.js	mq/shirt-tie.js	<loaded>
 kit.test.js	mq/suit-open.js	<loaded>
@@ -3470,7 +3471,7 @@ kit.test.js	styles.css	#add #queue .card	#add #queue .card .btns .pri	#add #queu
 kit.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
 kit.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	recolourSpecSetts	recordTagResult	tagNotes	upgradeCloseups	upgradePhotos
 kit.test.js	tests/fixedplan.js	<any>
-kit.test.js	today.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	applyZoom	belowBox	canPick	figureStage	goToday	hasOutfit	homeDay	offBtn	offOn	piecesBox	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	slotLabel	slots	swApply	todayBtn	vestRow	wornBar	wornMarks	wornPill	wxPreload	zoomTarget
+kit.test.js	today.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	applyZoom	belowBox	canPick	figureStage	goToday	hasOutfit	homeDay	mvSig	offBtn	offOn	piecesBox	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	slotLabel	slots	swApply	todayBtn	vestRow	wornBar	wornMarks	wornPill	wxPreload	zoomTarget
 kit.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	addGate	askAnswer	askConfirm	askEls	isConnected	layerInert	layerUp	uiEsc
 kit.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	moreRow	notesRow	wardBack	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 kit.test.js	watch/leather.jpg	<loaded>
