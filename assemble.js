@@ -1270,15 +1270,20 @@ function asmWorker(){if(asmW!==null)return asmW;asmW=false;
   if(typeof Worker==='undefined'||window.ASM_NO_WORKER)return asmW;
   try{const w=new Worker('asm-worker.js'),st={w,ok:null,busy:null};
     w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;if(!st.ok)asmWorkerDown();else asmPump();return}
-      const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump()};
+      clearTimeout(st.timer);const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump()};
     w.onerror=e=>{e.preventDefault&&e.preventDefault();asmWorkerDown()};
     asmW=st}catch(e){console.warn('no assembly worker',e)}
   return asmW}
 /* the worker can't run (it failed to load, or the browser has no OffscreenCanvas): what is waiting is built on the page */
-function asmWorkerDown(){const st=asmW;asmW=false;if(st&&st.w)try{st.w.terminate()}catch{}
+function asmWorkerDown(){const st=asmW;asmW=false;if(st)clearTimeout(st.timer);if(st&&st.w)try{st.w.terminate()}catch{}
   const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left)asmBuild(t.job).then(t.ok,t.no)}
 let asmSeq=0;
-function asmPump(){const st=asmW;if(!st||!st.ok||st.busy||!asmQ.length)return;const t=asmQ.shift();st.busy=t;st.w.postMessage({id:t.id,job:t.job})}
+function asmPump(){const st=asmW;if(!st||!st.ok||st.busy||!asmQ.length)return;const t=asmQ.shift();st.busy=t;st.timer=setTimeout(()=>asmStuck(st,t),ASM_RUN_MS);st.w.postMessage({id:t.id,job:t.job})}
+/* (2026-11-14 audit) a picture the worker hasn't answered in ASM_RUN_MS (a hung or crashed worker): it fails, the worker is replaced and
+   the line goes on; before, nothing came back and every later picture waited behind it until the app was restarted */
+const ASM_RUN_MS=180e3;
+function asmStuck(st,t){if(asmW!==st||st.busy!==t)return;console.warn('assembly worker stuck: starting a new one');st.busy=null;try{st.w.terminate()}catch{}
+  asmW=null;t.no(new Error('the picture took too long'));asmWorker()}
 /* is the picture work off the page (or still finding out)? the build-ahead runs only then */
 const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
 function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);
