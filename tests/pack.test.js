@@ -23,6 +23,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       a:document.querySelector('#pk-a').value,b:document.querySelector('#pk-b').value,count:document.querySelector('#pack .pcount').textContent,prev:document.querySelector('#pack-btn').parentElement.firstElementChild.id}));
     ok(h.title==='Packing list'&&h.back&&h.today&&h.prev==='pack-btn',`Settings has a Packing list link, first under Your wardrobe; it opens a page of its own with a back button`);
     ok(h.a==='2026-11-16'&&h.b==='2026-11-20'&&h.count==='5 days',`the trip defaults to the next working week (${h.a} to ${h.b}, ${h.count})`);
+    // (2026-11-14, the audit: it always started on a Monday) a Sunday-Thursday week starts on the next Sunday
+    const st=await p.evaluate(()=>{const w=settings.workdays;settings.workdays=[0,1,2,3,4];const d=packDefault();settings.workdays=[6,0,1,2,3];const e=packDefault();settings.workdays=w;return {a:d.a,b:d.b,ea:e.a,eb:e.b}});
+    ok(st.a==='2026-11-15'&&st.b==='2026-11-19'&&st.ea==='2026-11-14'&&st.eb==='2026-11-18',`the default trip follows the work week: Sunday-Thursday ${st.a} to ${st.b}, Saturday-Wednesday ${st.ea} to ${st.eb}`);
     await p.click('#pack .pback');
     ok(await p.evaluate(()=>document.querySelector('#pack').hidden&&!document.querySelector('#today').hidden&&settingsOpen()),'the back button returns to Settings, where it was opened, over Today');
     await p.evaluate(()=>closeSettings());

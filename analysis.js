@@ -190,7 +190,9 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 function fixWhy(f){const why=f.fixed.map(([k,n])=>`Fixes ${plural(n,'day')}: ${k}.`);if(f.dRest>0)why.push(`Gives your jackets proper rest on ${plural(f.dRest,'more day')}.`);return why}
 
 /* ---- the analysis ---- */
-function runAnalysis(list,T,weeks,progress,onCat){
+// one colour memo for the whole analysis (withColRun in planner.js): about a fifth of its time was colour lookups
+function runAnalysis(list,T,weeks,progress,onCat){return withColRun(()=>runAnalysis0(list,T,weeks,progress,onCat))}
+function runAnalysis0(list,T,weeks,progress,onCat){
   weeks=weeks||SHOP_WEEKS;const L=shopList(list),skip=new Set(settings.shopSkip||[]);
   const base=evalPlan(L,T,weeks),D=base.days;
   const seasons={};for(const k of horizonKeys(T,weeks)){const s=dayClimate(keyDate2(k)).season;seasons[s]=(seasons[s]||0)+1}

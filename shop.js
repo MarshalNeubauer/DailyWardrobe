@@ -9,7 +9,12 @@
    - "Not for me" hides that colour and pattern for good (settings.shopSkip: keys type|colour group|pattern class, synced) */
 let shop=null,shopBusy=null,shopPart=null,shopWorker=null,shopOpen=false,shopShown={},shopForm=null,shopMsg='',shopFigN=0;
 const SHOP_STALE=7*864e5;
-const shopSig=()=>items.map(i=>i.id+':'+stamp(i)).sort().join(',')+'|'+JSON.stringify([settings.workdays,settings.blazerDays,settings.vestMode||'auto'])+(wearsJacket()?'':'|nojacket')+(wearsTie()?'':'|notie');
+// (also every setting the planner reads: laundry days, dark shirts, jeans with a blazer, holidays, days off, what it learned, and
+// the occasions marked on coming days; any of them changes the plan the check measures)
+const shopSig=()=>{const T=todayDate(),occ=Object.values(dayRecs).filter(r=>(r.formal||r.occasion)&&keyDate(r.date)>=T).map(r=>r.date+':'+(r.formal?'formal':r.occasion)).sort();
+  return items.map(i=>i.id+':'+stamp(i)).sort().join(',')+'|'+JSON.stringify([settings.workdays,settings.blazerDays,settings.vestMode||'auto'])
+    +'|'+JSON.stringify([settings.laundryDays??1,darkMode(),!!(settings.dress&&settings.dress.jeans),settings.holidays||null,settings.daysOff||[],settings.learn||null,occ])
+    +(wearsJacket()?'':'|nojacket')+(wearsTie()?'':'|notie')};
 const shopFresh=()=>!!shop&&shop.sig===shopSig()&&Date.now()-(shop.at||0)<SHOP_STALE;
 const shopHid=x=>(settings.shopSkip||[]).includes(x.key);
 const shopRecs=r=>r?r.cats.reduce((a,c)=>a+c.recs.filter(x=>!shopHid(x)).length,0):0;
