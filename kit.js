@@ -32,7 +32,7 @@ addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefa
 const kitScorePic=()=>`<svg viewBox="0 0 300 150"><rect x="20" y="22" width="260" height="62" rx="14" class="kp-card"/><rect x="34" y="34" width="70" height="38" rx="10" class="kp-good"/><text x="69" y="60" class="kp-num">96</text><text x="118" y="50" class="kp-t">Excellent</text><text x="118" y="70" class="kp-s">Outfit score · tap for why</text>
 <rect x="20" y="96" width="260" height="38" rx="10" class="kp-card"/><text x="34" y="120" class="kp-s">−2</text><text x="62" y="120" class="kp-t2">The same tie colour as yesterday</text></svg>`;
 const kitClothPic=(paper=true,box=true)=>`<svg viewBox="0 0 200 260"><defs><pattern id="kp-weave" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#3b4256"/><path d="M0 8L8 0M-2 2L2 -2M6 10L10 6" stroke="#4b5370" stroke-width="1.6"/></pattern></defs>
-<rect x="10" y="10" width="180" height="240" rx="12" fill="url(#kp-weave)"/>${paper?`<path d="M10 206 L100 200 L190 204 L190 238 A12 12 0 0 1 178 250 L22 250 A12 12 0 0 1 10 238 Z" fill="#f4f3ef"/>`:''}
+<rect x="10" y="10" width="180" height="240" rx="12" fill="url(#kp-weave)"/>${paper?`<path d="M10 204 H190 V238 A12 12 0 0 1 178 250 H22 A12 12 0 0 1 10 238 Z" fill="#f4f3ef"/>`:''}
 ${box?`<rect x="37" y="46" width="126" height="148" rx="3" fill="none" stroke="#efb446" stroke-width="2.4" stroke-dasharray="7 5"/>`:''}</svg>`;
 const kitShadePic=()=>{const s=['#2c3d66','#253558','#1f2d4a','#19253d','#131c30'];return `<svg viewBox="0 0 300 120">${s.map((c,i)=>`<rect x="${22+i*52}" y="${i===2?18:26}" width="${i===2?50:44}" height="${i===2?60:44}" rx="9" fill="${c}"${i===2?' class="kp-sel"':''}/>`).join('')}
 <text x="47" y="104" class="kp-s" text-anchor="middle">lighter</text><text x="150" y="104" class="kp-t2" text-anchor="middle">as tagged</text><text x="253" y="104" class="kp-s" text-anchor="middle">darker</text></svg>`};
@@ -44,7 +44,7 @@ const kitPatternPic=()=>`<svg viewBox="0 0 300 150"><defs><pattern id="kp-gen" w
 /* ---- the quick tour ---- */
 const TOUR_CARDS=[
   {key:'score',title:'The score',pic:kitScorePic,body:`<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the suit, a colour worn two days running, socks lighter than the trousers.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`},
-  {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true colour and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light.</p><p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">How to take a good close-up</button></p>`},
+  {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true colour and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light: tap the paper on the camera screen before you take the picture.</p><p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">How to take a good close-up</button></p>`},
   {key:'shade',title:'Shade',pic:kitShadePic,body:`<p>If a piece is drawn lighter or darker than the real thing, Shade nudges it, up to six steps either way.</p><p><b>Match close-up</b> sets it from your close-up for you.</p><p class="kit-tip">Shade changes only the drawing. The colour the planner matches stays the one you tagged.</p>`},
   {key:'patterns',title:'Patterns',pic:kitPatternPic,body:`<p>Stripes, checks and weaves are read too.</p><p>With a close-up the app measures the stripes' widths and colours, so the drawing and the outfit pictures show your cloth, not a generic one.</p><p class="kit-tip">If a reading looks wrong, tap <b>Use the simple pattern</b> on the card, or <b>Read pattern from photo</b> on the item later.</p>`}];
 /* then: what happens after the last card (the setup's "Add my first item" goes on to Add) */
@@ -55,7 +55,7 @@ const GUIDE_CARD={key:'guide',title:'A good close-up',pic:()=>kitClothPic(true,t
 <li><b>Fill the screen with cloth.</b> Hold the phone a hand's width away, straight down, so the weave is sharp.</li>
 <li><b>Lay plain white paper along one edge</b>, about a fifth of the picture, on the cloth or right beside it. Keep it out of the middle: the middle (dashed) is where the colour is measured.</li>
 <li><b>Same light on both.</b> Daylight or room light; no flash, no patch of sun, no shadow of your phone across the paper.</li>
-<li><b>Paper white, not glowing.</b> If it looks blown out on the screen, tap the paper before you take the picture.</li></ol>
+<li><b>Tap the paper on the camera screen</b> before you take the picture. The phone sets its exposure there, so the paper comes out white instead of glowing, and the app can read the light from it.</li></ol>
 <p class="kit-tip">No paper? It still works: the colour is then corrected like the main photo, and lightness counts for less.</p>`};
 function kitCloseupGuide(){kitOpen([GUIDE_CARD])}
 

@@ -25,7 +25,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!!document.querySelector('#queue .texguide')),'the close-up step has "Tips for a good close-up"');
     await p.click('#queue .texguide');
     const g=await p.evaluate(()=>({title:document.querySelector('#kit-title').textContent,txt:document.querySelector('.kit-body').textContent,prog:!!document.querySelector('.kit-prog')}));
-    ok(g.title==='A good close-up'&&/white paper along one edge/i.test(g.txt)&&/middle/.test(g.txt)&&/no flash/i.test(g.txt)&&!g.prog,'it opens the guide: paper along one edge, out of the middle, no flash');
+    ok(g.title==='A good close-up'&&/white paper along one edge/i.test(g.txt)&&/middle/.test(g.txt)&&/no flash/i.test(g.txt)&&/tap the paper on the camera screen/i.test(g.txt)&&/exposure/.test(g.txt)&&!g.prog,'it opens the guide: paper along one edge, out of the middle, no flash, tap the paper to set the exposure');
     await p.click('#kit-next');ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')),'"Got it" closes it');
     /* ---- Undo after Confirm ---- */
     const u=await p.evaluate(async()=>{const n0=items.length,q=queue[0];q.type='tie';q.primaryColor='burgundy';q.name='Undo me';await save(0);
