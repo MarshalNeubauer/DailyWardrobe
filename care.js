@@ -151,24 +151,28 @@ function careBandFit(){const fig=document.getElementById('mannequin-container'),
 function careBandSoon(){if(!document.getElementById('cband'))return;const end=performance.now()+700;const step=()=>{careBandFit();if(performance.now()<end)requestAnimationFrame(step)};requestAnimationFrame(step)}
 /* ---- cleaning reminders on the phone (the owner's ask, 2026-11-14; sent by the morning reminder's push, remind.js, sw.js) ----
    {YYYY-MM-DD: text} for the coming workdays: a suit's or blazer's last wear before cleaning, and a wear past it, on the morning it is
-   planned; and once due (worn up to its limit, not sent away or cleaned), one reminder the next workday morning still to come, not again
-   until it is cleaned (localStorage care_told {id: {c: its cleaned date then, d: the day told}}) */
+   planned (overdue: the first such morning only); and once due (worn up to its limit, not sent away or cleaned), one reminder the next workday
+   morning still to come; neither again until it is cleaned (localStorage care_told {id: {c: its cleaned date then, d: due told, o: overdue told}}) */
 function careReminders(days,time){const out={},T=todayDate(),add=(d,t)=>{const k=isoKey(d);out[k]=out[k]?out[k]+' '+t:t};
   const now=new Date(),[h,m]=String(time||'07:00').split(':').map(Number),past=now.getHours()*60+now.getMinutes()>=h*60+m&&isoKey(now)===isoKey(T);
   const wd=[];for(let g=0;g<days;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(isWorkday(d)&&!(g===0&&past))wd.push(d)}   // (today's time gone: from tomorrow)
   const plan=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)],last={},nm=i=>{const n=String(i.name||'').trim(),d=desc(i)||'';return n||(new RegExp('\\b'+careNoun(i)+'\\b').test(d)?d:(d+' '+careNoun(i)).trim())};   // (its name as typed, else "navy suit")
-  wd.forEach((d,j)=>{const o=plan(d),s=o&&careDayState(o,d);if(!s)return;
-    if(s.k==='last'){add(d,`Last wear for the ${nm(o.top)} before cleaning: it goes to the cleaner after today.`);if(last[o.top.id]==null)last[o.top.id]=j}
-    else if(s.k==='over')add(d,`The ${nm(o.top)} is overdue for cleaning: today is wear ${s.n} of ${s.limit}.`)});
   let told={};try{told=JSON.parse(localStorage.getItem('care_told')||'{}')||{}}catch{}
-  const w=careCounts(),keep={},tk=isoKey(T);
-  for(const i of items){if(!CARE_FRAME.includes(i.type)||i.away||i.order)continue;const L=careLimit(i.type);if(L<2)continue;
-    const c=i.cleaned||'',t=told[i.id];
-    if(t&&t.c===c&&(t.d<tk||(t.d===tk&&past))){keep[i.id]=t;continue}   // told already, this time round (this morning included)
+  const tk=isoKey(T),keep={},cOf=i=>i.cleaned||'';
+  // a reminder of this kind (d: due, o: overdue) already sent this time round (since the piece was last cleaned), this morning included
+  const sent=(i,f)=>{const t=told[i.id];return !!(t&&t.c===cOf(i)&&t[f]&&(t[f]<tk||(t[f]===tk&&past)))};
+  const mark=(i,f,v)=>{keep[i.id]={...(keep[i.id]||{c:cOf(i)}),[f]:v}};
+  for(const i of items){const t=told[i.id];if(t&&t.c===cOf(i))keep[i.id]={...t}}   // (kept while the piece isn't cleaned)
+  wd.forEach((d,j)=>{const o=plan(d),s=o&&careDayState(o,d);if(!s)return;const p=o.top;
+    if(s.k==='last'){add(d,`Last wear for the ${nm(p)} before cleaning: it goes to the cleaner after today.`);if(last[p.id]==null)last[p.id]=j}
+    // overdue: the first morning it is planned past its limit only (the owner, 2026-11-14), once per cleaning
+    else if(s.k==='over'&&!sent(p,'o')&&!(keep[p.id]&&keep[p.id].o&&keep[p.id].o<isoKey(d))){add(d,`The ${nm(p)} is overdue for cleaning: today is wear ${s.n} of ${s.limit}.`);mark(p,'o',isoKey(d))}});
+  const w=careCounts();
+  for(const i of items){if(!CARE_FRAME.includes(i.type)||i.away||i.order)continue;const L=careLimit(i.type);if(L<2||sent(i,'d'))continue;
     const j=(w[i.id]||0)>=L?0:last[i.id]!=null?last[i.id]+1:null;   // due already: the first morning to come; due after a coming last wear: the morning after
     const d=j!=null&&wd[j];if(!d)continue;const o=plan(d);
-    if(o&&o.top&&o.top.id===i.id){if(t&&t.c===c)keep[i.id]=t;continue}   // planned that day: that day's own line says it
-    add(d,`The ${nm(i)} is due for the cleaner.`);keep[i.id]={c,d:isoKey(d)}}
+    if(o&&o.top&&o.top.id===i.id)continue;   // planned that day: that day's own line says it
+    add(d,`The ${nm(i)} is due for the cleaner.`);mark(i,'d',isoKey(d))}
   try{localStorage.setItem('care_told',JSON.stringify(keep))}catch{}
   return out}
 /* Settings → Care */
