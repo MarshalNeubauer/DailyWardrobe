@@ -74,7 +74,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(['stripe','fine-stripe'].includes(miss[0])&&miss[1]===null,`a close-up of cloth tagged plain that shows clear stripes suggests ${miss[0]}; a plain one suggests nothing`);
 
     // ---- 7. the kept sharp photo is signed with its item photo
-    const sig=await p.evaluate(async()=>{const a=cloth(40,30,()=>[200,10,10]).toDataURL('image/jpeg'),b=cloth(40,30,()=>[10,200,10]).toDataURL('image/jpeg');
+    const sig=await p.evaluate(async()=>{const a=cloth(40,30,()=>[200,10,10]).toDataURL('image/jpeg');
       await keepTagImg('sg1',a,'data:image/jpeg;base64,PHOTO-A');const same=!!await tagImgOf('sg1',{photo:'data:image/jpeg;base64,PHOTO-A'}),other=await tagImgOf('sg1',{photo:'data:image/jpeg;base64,PHOTO-B'}),any=!!await tagImgOf('sg1');
       await resignTagImg('sg1','data:image/jpeg;base64,PHOTO-B');const again=!!await tagImgOf('sg1',{photo:'data:image/jpeg;base64,PHOTO-B'});return {same,other,any,again}});
     ok(sig.same&&sig.other===null&&sig.any&&sig.again,'the sharp copy is handed out only with the photo it was kept for (after Replace photo the old one is not sent), and a crop signs it again');

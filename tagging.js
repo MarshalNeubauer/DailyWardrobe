@@ -321,7 +321,7 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colo
     q.altPattern&&q.altPattern!==q.pattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?`<button type="button" class="chipbtn" onclick="setq(${i},'pattern','${q.altPattern}')">or ${esc(patName(q.altPattern))}</button>`:''].join('');
   if(ct||alts)out.push(`<p class="tagnote mut"><small>${ct}</small>${alts}</p>`);
   out.push(settNote(q,i));
-  const m=q.meas,where=m&&(m.src==='closeup'?'your close-up':'your photo');
+  const m=q.meas;
   if(m&&m.near&&m.near.length){const n=m.near,pv=(q.measV||[]).filter(v=>v.part);
     out.push(pv.length?`<p class="tagnote measrow">${m.parts.map(p=>`<span class="msw" style="background:${p.hex}" title="${p.hex}"></span>`).join('')}<small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: ${pv.map(v=>`${v.part==='ground'?'ground':'stripe'} closest to ${esc(colName(v.to))}`).join(', ')}</small></p>`
       :`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
