@@ -43,7 +43,7 @@ const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal
 const TYPE_COLOR_TEXT = Object.entries(TYPE_COLORS).map(([t, [p, a]]) => `  ${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n')
   + `\n  watch dial: ${DIAL_COLS.join(', ')}`;
 const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
-{"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
+{"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","trouserKind":"...","shoeStyle":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
 
 type — one of:
   suit (suit jacket, or a jacket and trousers of the same cloth), blazer (odd jacket / sport coat), pants (dress trousers),
@@ -566,6 +566,11 @@ async function handleFetchImage(req, env, json, cors) {
     }
     return new Response('', { status: 508 });
   };
+  try { return await fetchLinked(u, get, json, cors); }
+  catch (e) { console.log('link fetch failed', u.hostname, e && e.message); return json({ error: 'That link could not be reached. Check it, or save the photo and add it from the phone.' }, 502); }   // a dead domain, a refused connection, a reset
+}
+async function fetchLinked(u, get, json, cors) {
+  const NOT_PUBLIC = 'That link is not on the public web.';
   let r = await get(u.href);
   if (!r) return json({ error: NOT_PUBLIC }, 400);
   if (!r.ok) return json({ error: `The link returned an error (${r.status}).` }, 502);
@@ -744,7 +749,10 @@ const jobMsg = (key, ns) => (ns ? { key, ns } : { key });
 /* an earlier failure of this photo is forgotten when it is queued again. KV counts a delete as one of the day's 1,000 writes even
    when there was nothing to delete, so it is looked for first (reads are plentiful) */
 async function dropFail(env, ns, key) { if (await env.WARDROBE.get(`${ns}jobfail:${key}`)) await env.WARDROBE.delete(`${ns}jobfail:${key}`); }
-const START_STALE_MS = 3 * 60000, RUN_STALE_MS = 20 * 60000;
+const LOST_JOB_MS = 6 * 3600000;
+/* a run's hold on its job (RenderHub job-claim): the OpenAI limit and two minutes; a job made or given up stays marked as long as
+   its records live, so a late copy of its message does nothing */
+const CLAIM_MS = OPENAI_MS + 120000, DONE_MS = 3 * 86400000;
 async function queueStatus(req, env, json, who) {
   const ns = who.ns;
   if (!env.RENDER_QUEUE || !env.WARDROBE) return json({ error: 'no queue', noQueue: true }, 501);
@@ -765,29 +773,20 @@ async function queueStatus(req, env, json, who) {
     try { pending = (await env.WARDROBE.list({ prefix: 'job:' })).keys.map(k => k.name.slice(4)); }
     catch (e) { return json({ error: 'The worker has used up its daily KV list allowance; update the app.', detail: String(e && e.message) }, 503); }
   }
-  // how far each waiting photo got: attempts so far and when the last began (none yet: its message hasn't been taken)
-  // A job whose message never got going (lost, as before the consumer waited for KV) or whose run never finished (the consumer was
-  // stopped) is sent to the queue again, up to 3 times, then recorded as failed: no photo sits "pending" for days.
-  const running = {}, now = Date.now();
+  // how far each waiting photo got: attempts so far and when the last began (none yet: its message hasn't been taken). Nothing is
+  // sent again or written here: a job waiting behind others (two run at a time) is not lost, the queue delivers every message and
+  // redelivers one whose run was cut off, and a re-send made a second paid photo (the 2026-11-13 audit). A job no message has
+  // touched for LOST_JOB_MS is reported as failed (nothing is deleted: if it still runs, its photo is kept)
+  const running = {}, now = Date.now(), lost = [];
   for (const k of pending.slice(0, 20)) {
     let r = await env.WARDROBE.get(`${ns}jobrun:${k}`, 'json');
     if (!r) { const j = await env.WARDROBE.get(`${ns}job:${k}`, 'json'); if (!j) continue; r = { attempts: 0, at: +j.t || now }; }   // a job from before jobrun
-    const stale = r.attempts ? now - r.at > RUN_STALE_MS : now - r.at > START_STALE_MS;
-    if (stale) {
-      const resends = (r.resends || 0) + 1;
-      if (resends > 3) {
-        const error = 'The worker couldn’t get this photo made after several tries. Try again.';
-        await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${k}`, 'json'));
-        await env.WARDROBE.put(`${ns}jobfail:${k}`, JSON.stringify({ error: failFor(ns, error), t: now }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${k}`); await env.WARDROBE.delete(`${ns}jobrun:${k}`);
-        await tellHub(env, ns, { key: k, error: failFor(ns, error) }); continue;
-      }
-      await env.RENDER_QUEUE.send(jobMsg(k, ns)); r = { ...r, attempts: 0, at: now, resends };
-      await env.WARDROBE.put(`${ns}jobrun:${k}`, JSON.stringify(r), JOB_TTL);
-    }
+    if (now - (+r.at || 0) > LOST_JOB_MS) { lost.push(k); continue; }
     running[k] = r;
   }
-  for (const k of Object.keys(running)) if (!pending.includes(k)) delete running[k];
+  if (lost.length) pending = pending.filter(k => !lost.includes(k));
   let failed = failedByKey;
+  if (failed) for (const k of lost) failed.push({ key: k, error: failFor(ns, 'The worker couldn’t get this photo made. Try again.') });
   if (!failed) { failed = [];
     try { for (const k of ns ? [] : (await env.WARDROBE.list({ prefix: 'jobfail:' })).keys.slice(0, 50)) { const f = await env.WARDROBE.get(k.name, 'json'); failed.push({ key: k.name.slice(8), error: f && f.error || 'failed' }); } }
     catch { } }
@@ -801,25 +800,68 @@ async function runRenderJob(msg, env) {
   const job = COMBO_RE.test(key) ? await env.WARDROBE.get(`${ns}job:${key}`, 'json') : null;
   // the job is written to KV just before its message is sent, and KV can take up to a minute to show a new key in another
   // location: a consumer that can't see it yet tries again shortly (acking it lost the photo, which then sat "pending" for days)
-  if (!job) { if (COMBO_RE.test(key) && (msg.attempts || 1) < 6) return msg.retry({ delaySeconds: 20 }); return msg.ack(); }
-  const run0 = await env.WARDROBE.get(`${ns}jobrun:${key}`, 'json');
-  await env.WARDROBE.put(`${ns}jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now(), resends: run0 && run0.resends || 0 }), JOB_TTL);   // for GET /render-queue
-  if (!job.replace && await env.WARDROBE.get(`${ns}render:${key}`)) { await refundJob(env, ns, job); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
-  if (!env.OPENAI_API_KEY) { await refundJob(env, ns, job); await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: failFor(ns, 'Add an OPENAI_API_KEY secret to the worker.'), t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); return msg.ack(); }
+  if (!job) {
+    if ((await jobClaim(env, ns, key, 'state')).done) return msg.ack();   // made already (its job deleted): a late copy of the message
+    if (COMBO_RE.test(key) && (msg.attempts || 1) < 6) return msg.retry({ delaySeconds: 20 }); return msg.ack();
+  }
+  // one run per job: the person's RenderHub hands the job to one message at a time, so a second copy (the queue delivers at least
+  // once; the app's Try again queues the look again) neither calls OpenAI nor writes; a run cut off frees it after CLAIM_MS
+  const jt = +job.t || 0, c = await jobClaim(env, ns, key, 'claim', jt);
+  if (c.done) return msg.ack();
+  if (c.running) return msg.retry({ delaySeconds: Math.min(900, Math.ceil(c.wait / 1000) + 10) });
+  CLAIMED.set(msg, jt);
+  await env.WARDROBE.put(`${ns}jobrun:${key}`, JSON.stringify({ attempts: msg.attempts || 1, at: Date.now() }), JOB_TTL);   // for GET /render-queue
+  if (!job.replace && await env.WARDROBE.get(`${ns}render:${key}`)) {   // made meanwhile (another device uploaded it): nothing to pay for
+    await refundJob(env, ns, job); await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
+    await jobClaim(env, ns, key, 'done', jt); return msg.ack();
+  }
+  if (!env.OPENAI_API_KEY) { await failJob(env, ns, key, job, 'Add an OPENAI_API_KEY secret to the worker.'); await jobClaim(env, ns, key, 'done', jt); return msg.ack(); }
   const r = job.kind === 'item' ? await itemPhoto(job, env) : await outfitPhoto(job, env, ns);
-  if (r.ok) {
-    await env.WARDROBE.put(`${ns}render:${key}`, JSON.stringify(r.rec), renderTtl(key));
-    await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
-    await tellHub(env, ns, { key, rec: r.rec });
+  if (r.ok) { PAID.add(msg); return keepMade(env, ns, key, job, jt, r.rec, msg); }
+  if (r.retry && (msg.attempts || 1) < 4) { await jobClaim(env, ns, key, 'release', jt); return msg.retry({ delaySeconds: 60 }); }
+  console.log(`photo ${key} failed: ${r.error}`);
+  await failJob(env, ns, key, job, r.error);
+  await jobClaim(env, ns, key, 'done', jt);
+  msg.ack();
+}
+/* messages whose photo OpenAI has made (and been paid for): never retried, whatever happens after (queue() reads it) */
+const PAID = new WeakSet(), CLAIMED = new WeakMap();   // CLAIMED: message -> the job's t it holds the run of
+/* a photo OpenAI made, kept. Nothing here may lead to a retry, which would pay for it again: a failure to keep it (KV over its
+   daily writes) is caught, the photo still goes to an open app through the hub, the failure is recorded, and the message is acked */
+async function keepMade(env, ns, key, job, jt, rec, msg) {
+  try {
+    await env.WARDROBE.put(`${ns}render:${key}`, JSON.stringify(rec), renderTtl(key));
+  } catch (e) {
+    console.log(`photo ${key} made but not kept: ${e && e.message}`);
+    const error = failFor(ns, 'The photo was made but the server couldn’t keep it: ' + String(e && e.message || e));
+    await jobClaim(env, ns, key, 'done', jt);
+    await tellHub(env, ns, { key, rec, error });   // an open app takes the photo itself; one that comes later reads the failure
+    try { await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); } catch { }
+    try { await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`); } catch { }
     return msg.ack();
   }
-  if (r.retry && (msg.attempts || 1) < 4) return msg.retry({ delaySeconds: 60 });
-  console.log(`photo ${key} failed: ${r.error}`);
-  await refundJob(env, ns, job);
-  await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error: failFor(ns, r.error), t: Date.now() }), FAIL_TTL);
-  await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`);
-  await tellHub(env, ns, { key, error: failFor(ns, r.error) });
-  msg.ack();
+  await jobClaim(env, ns, key, 'done', jt);
+  try { await env.WARDROBE.delete(`${ns}job:${key}`); await env.WARDROBE.delete(`${ns}jobrun:${key}`); } catch (e) { console.log('job cleanup failed', key, e && e.message); }
+  await tellHub(env, ns, { key, rec });
+  return msg.ack();
+}
+/* a queued photo that won't be made, everywhere the same (it used to be written out four ways): its count given back, the reason kept
+   for the app (plain words for a tester), the job's records gone and an open app told. Each step on its own, so one failing doesn't
+   stop the rest */
+async function failJob(env, ns, key, job, why) {
+  const error = failFor(ns, why), step = async f => { try { await f(); } catch (e) { console.log('failed-job cleanup', key, e && e.message); } };
+  await step(() => refundJob(env, ns, job));
+  await step(() => env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL));
+  await step(() => env.WARDROBE.delete(`${ns}job:${key}`));
+  await step(() => env.WARDROBE.delete(`${ns}jobrun:${key}`));
+  await tellHub(env, ns, { key, error });
+}
+/* the person's RenderHub for one job's run: 'claim' (-> {ok} | {running, wait} | {done}), 'done', 'release', 'state'. Without the
+   binding, or when the hub can't be reached, a run goes ahead as before ({ok}) rather than leaving the photo unmade */
+async function jobClaim(env, ns, key, op, t = 0) {
+  const hub = hubOf(env, ns); if (!hub) return { ok: true };
+  try { const r = await hub.fetch(`https://hub/job-${op}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key, t }) }); return (await r.json()) || { ok: true }; }
+  catch (e) { console.log('job claim failed', op, key, e && e.message); return { ok: true }; }
 }
 /* ---- the push to an open app (GET /render-wait): the app holds a request open while its photos are being made, and the queue
    job hands each finished photo (or its failure) to one Durable Object, RenderHub, which answers the waiting requests at once with
@@ -839,14 +881,43 @@ async function waitForRenders(req, env, json, who) {
   if (!keys.length) return json({ error: 'no keys' }, 400);
   const ms = Math.max(1000, Math.min(100000, +u.searchParams.get('ms') || 90000));
   const r = await hub.fetch(`https://hub/wait?keys=${keys.join(',')}&ms=${ms}`);
-  return json(await r.json().catch(() => []), r.ok ? 200 : 502);
+  let res = await r.json().catch(() => []);
+  // the hub remembers only that a photo was made ({key, ok}): the photo itself is read here (left out while KV doesn't show it yet:
+  // the app goes on waiting or finds it by polling)
+  if (Array.isArray(res) && env.WARDROBE) res = (await Promise.all(res.map(async m => {
+    if (!m || m.rec || m.error || !m.ok) return m;
+    const rec = await env.WARDROBE.get(`${who.ns}render:${m.key}`, 'json').catch(() => null);
+    return rec ? { key: m.key, rec } : null;
+  }))).filter(Boolean);
+  return json(res, r.ok ? 200 : 502);
 }
 export class RenderHub {
-  constructor(ctx, env) { this.ctx = ctx; this.waiting = new Set(); this.recent = new Map(); this.mem = new Map(); }
+  constructor(ctx, env) { this.ctx = ctx; this.waiting = new Set(); this.recent = new Map(); this.mem = new Map(); this.jobQ = Promise.resolve(); }
   /* the day's use and the "switched off" mark are kept in the object's own storage (no KV write per AI call); where a test or an
      old binding gives no storage, in memory */
   async sget(k) { const s = this.ctx && this.ctx.storage; return s ? await s.get(k) : this.mem.get(k); }
   async sput(k, v) { const s = this.ctx && this.ctx.storage; if (s) await s.put(k, v); else this.mem.set(k, v); }
+  /* the job-* operations (see fetch), one at a time */
+  async jobOp(op, m, now) {
+    const k = 'job:' + m.key, t = +m.t || 0, c = await this.sget(k);
+    if (op === 'state') return { done: !!(c && c.done && c.until > now) };
+    if (op === 'claim') {
+      if (c && c.until > now && !c.done) return { running: true, wait: c.until - now };
+      if (c && c.until > now && c.done && t <= c.at) return { done: true };
+      await this.sput(k, { t, at: now, until: now + CLAIM_MS, done: false });
+      return { ok: true };
+    }
+    if (!c || c.done || c.t !== t) return { ok: false };
+    if (op === 'done') { await this.sput(k, { t, at: now, until: now + DONE_MS, done: true }); await this.prune(now); }
+    else if (op === 'release') await this.sdel(k);
+    return { ok: true };
+  }
+  /* expired job records go (a hundred at a time, where the storage can list) */
+  async prune(now) {
+    const s = this.ctx && this.ctx.storage; if (!s || !s.list || !s.delete) return;
+    try { const old = []; for (const [k, v] of await s.list({ prefix: 'job:', limit: 100 })) if (!v || v.until <= now) old.push(k); if (old.length) await s.delete(old); } catch { }
+  }
+  async sdel(k) { const s = this.ctx && this.ctx.storage; if (s && s.delete) await s.delete(k); else if (s) await s.put(k, null); else this.mem.delete(k); }
   async fetch(req) {
     const u = new URL(req.url), now = Date.now();
     for (const [k, v] of this.recent) if (now - v.at > 600000) this.recent.delete(k);
@@ -854,9 +925,22 @@ export class RenderHub {
     if (u.pathname === '/notify') {
       const m = await req.json().catch(() => null); if (!m || !COMBO_RE.test(String(m.key || ''))) return out({ ok: false });
       const res = m.rec ? { key: m.key, rec: m.rec } : { key: m.key, error: String(m.error || 'failed') };
-      this.recent.set(m.key, { ...res, at: now });
+      // kept for an app between two waits: only whether it was made ({key, ok}; the waiting route reads the photo from KV) or why
+      // not, never the photo itself (a batch of 2048 photos held for 10 minutes could near the object's 128 MB)
+      this.recent.set(m.key, { key: m.key, ...(m.error ? { error: String(m.error) } : { ok: true }), at: now });
       for (const w of [...this.waiting]) if (w.keys.has(m.key)) { this.waiting.delete(w); clearTimeout(w.timer); w.resolve([res]); }
       return out({ ok: true });
+    }
+    // one run per queued job (runRenderJob): {key, t} where t is the job's own stamp (when it was queued).
+    //   job-claim -> {ok} the caller makes it; {running, wait} another message is making it (try again in wait ms; a run cut off
+    //   frees it after CLAIM_MS); {done} it was made or failed after this job was queued (a late copy: nothing to do)
+    //   job-done / job-release: the run ended (made or given up: kept DONE_MS) or will be retried (freed); job-state -> {done}
+    if (u.pathname.startsWith('/job-')) {
+      const m = await req.json().catch(() => null); if (!m || !COMBO_RE.test(String(m.key || ''))) return out({ ok: false, bad: true });
+      // one at a time, whatever the storage does between its awaits: two claims can't both read "free"
+      const run = this.jobQ.then(() => this.jobOp(u.pathname.slice(5), m, Date.now()));
+      this.jobQ = run.catch(() => {});
+      return out(await run);
     }
     if (u.pathname === '/wait') {
       const keys = new Set(String(u.searchParams.get('keys') || '').split(',').filter(Boolean));
@@ -931,12 +1015,12 @@ async function itemPhoto({ item, ref: refUrl }, env) {
       form.append('model', model); form.append('prompt', ITEM_REF_PROMPT(item)); form.append('image[]', ref, `item.${ref.type.split('/')[1]}`);
       form.append('size', '1024x1024'); form.append('quality', env.OPENAI_IMAGE_QUALITY || 'high'); form.append('output_format', 'jpeg'); form.append('n', '1');
       if (/^gpt-image-1/.test(model)) form.append('input_fidelity', 'high');
-      r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form });
+      r = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}` }, body: form, signal: AbortSignal.timeout(OPENAI_MS) });
     } else {
       r = await fetch('https://api.openai.com/v1/images/generations', { method: 'POST', headers: { authorization: `Bearer ${env.OPENAI_API_KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }) });
+        body: JSON.stringify({ model, prompt: ITEM_PROMPT(item), size: '1024x1024', quality: env.OPENAI_IMAGE_QUALITY || 'medium', output_format: 'jpeg', n: 1 }), signal: AbortSignal.timeout(OPENAI_MS) });
     }
-  } catch (e) { return { ok: false, status: 502, retry: true, error: 'Could not reach the OpenAI API: ' + String(e && e.message) }; }
+  } catch (e) { return { ok: false, status: 502, retry: true, error: (e && e.name === 'TimeoutError' ? 'OpenAI took over 5 minutes' : 'Could not reach the OpenAI API: ' + String(e && e.message)) }; }
   const out = await r.json().catch(() => null);
   if (!r.ok) { const msg = out && out.error && out.error.message || `HTTP ${r.status}`; return { ok: false, status: 502, retry: r.status === 429 && !/quota|billing/i.test(msg) || r.status >= 500, error: `OpenAI: ${msg}` }; }
   const b64 = out && out.data && out.data[0] && out.data[0].b64_json;
@@ -1906,100 +1990,118 @@ const ROUTES = {
   'DELETE /account': [handleAccount, UNSET],
 };
 
+/* one request, routed (fetch() catches what it throws) */
+async function serve(req, env, cors, allowed, origin) {
+  let viewer = null, where = '';   // who is asking (set once known) and the route: a tester's answers are put in plain words
+  const json = (body, status = 200) =>
+    new Response(JSON.stringify(viewer && viewer.role === 'tester' ? plainFor(body, where) : body), { status, headers: { ...cors, 'content-type': 'application/json' } });
+
+  if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+  if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
+  const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
+  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
+  const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
+  if (route) {
+    const a = await whoIs(env, req.headers.get('x-app-token') || '');
+    viewer = a.who || a.offWho || null;
+    if (!a.who && a.offWho && req.method === 'DELETE' && path === '/account') return route[0](req, env, json, a.offWho, cors);
+    return a.who ? route[0](req, env, json, a.who, cors) : deny(a, route[1]);
+  }
+  // only POST / tags a photo: any other address is unknown (a POST to /holidayz used to be read as a photo and spent a Claude call),
+  // and a known address asked with another method says so
+  if (path !== '') return json({ error: 'not found' }, Object.keys(ROUTES).some(k => k.endsWith(' ' + path)) ? 405 : 404);
+  if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
+
+  // POST / : tag one photo. The token comes as the x-app-token header and is checked before the body (up to 15 MB) is read; the
+  // body's appToken (sent by apps before 2026-11-12, beside the header) is no longer read
+  const a = await whoIs(env, req.headers.get('x-app-token') || '');
+  if (!a.who) return deny(a, UNSET);
+  const who = a.who; viewer = who;
+  if (+(req.headers.get('content-length') || 0) > TAG_LIMIT) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
+  const inBody = await readCapped(req.body, TAG_LIMIT);
+  if (inBody.over) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
+  let body;
+  try { body = JSON.parse(new TextDecoder().decode(inBody.bytes)); } catch { return json({ error: 'bad json' }, 400); }
+  if (!body || typeof body !== 'object') return json({ error: 'bad json' }, 400);
+
+  // The model wants the image as a data URI inside the user message.
+  let image = String(body.image || '');
+  if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
+  if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
+
+  if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
+  const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
+  if (env.ANTHROPIC_API_KEY) {
+    const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
+    // never both: together the answer's schema is more than the API compiles ("compiled grammar is too large", 2026-11-13)
+    const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
+    const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
+    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
+    if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
+    return json(c.body, c.status);
+  }
+  // Workers AI: any answer that is not a tag gives the tester's count back
+  const r = await tagWithWorkersAi(env, image);
+  if (r.status !== 200) await unspend(env, who, 'tag');
+  return json(r.body, r.status);
+}
+/* the fallback tagger (no ANTHROPIC_API_KEY): Llama 3.2 Vision on Workers AI, told the JSON shape in the prompt -> {status, body} */
+async function tagWithWorkersAi(env, image) {
+  const model = env.MODEL || DEFAULT_MODEL;
+  const input = {
+    max_tokens: 300,
+    temperature: 0.1,
+    messages: [
+      { role: 'system', content: 'You are a menswear expert who labels clothing photos. You answer with JSON only.' },
+      { role: 'user', content: [
+        { type: 'text', text: PROMPT },
+        { type: 'image_url', image_url: { url: image } },
+      ] },
+    ],
+  };
+  const fail = e => ({ status: 502, body: { error: 'ai', detail: String(e && e.message || e) } });
+  let out;
+  try {
+    out = await env.AI.run(model, input);
+  } catch (e) {
+    if (!/5016|agree/i.test(String(e && e.message))) return fail(e);
+    // Llama 3.2 Vision is gated: the account must accept Meta's licence once (error 5016). Do that and retry.
+    try { await env.AI.run(model, { prompt: 'agree' }); out = await env.AI.run(model, input); }
+    catch (e2) { return fail(e2); }
+  }
+  const raw = out && out.response;
+  console.log(`tagged by Workers AI (${model})`);
+  if (raw && typeof raw === 'object') return { status: 200, body: { ...raw, model } };
+  const text = String(raw || '');
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) return { status: 502, body: { error: 'no json in model output', detail: text.slice(0, 300) } };
+  try { return { status: 200, body: { ...JSON.parse(m[0]), model } }; }
+  catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
+}
+/* the CORS headers for a request's Origin. ALLOWED_ORIGIN may list several origins, separated by commas; the one that matches is
+   echoed. Max-Age: the browser keeps a preflight's answer 2 hours, so most calls skip the extra round trip (100-300 ms from Kuwait) */
+function corsFor(req, env) {
+  const origin = req.headers.get('Origin') || '';
+  const allowed = String(env.ALLOWED_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
+  return { allowed, origin, cors: {
+    'Access-Control-Allow-Origin': !allowed.length ? '*' : allowed.includes(origin) ? origin : allowed[0],
+    'Access-Control-Allow-Headers': 'content-type,x-app-token',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+    'Access-Control-Max-Age': '7200',
+    ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
+  } };
+}
+/* what any uncaught error answers (a KV write over the day's allowance, a Durable Object restarting): a JSON 503 with the CORS
+   headers, so the app reads a reason instead of "Failed to fetch" (Cloudflare's own error 1101 page carries no CORS headers) */
+const SERVER_DOWN = 'The server had a problem just now. Try again in a moment.';
 export default {
   async fetch(req, env) {
-    const origin = req.headers.get('Origin') || '';
-    // ALLOWED_ORIGIN may list several origins, separated by commas; the one that matches is the one echoed
-    const allowed = String(env.ALLOWED_ORIGIN || '').split(',').map(o => o.trim()).filter(Boolean);
-    const cors = {
-      'Access-Control-Allow-Origin': !allowed.length ? '*' : allowed.includes(origin) ? origin : allowed[0],
-      'Access-Control-Allow-Headers': 'content-type,x-app-token',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
-    };
-    let viewer = null, where = '';   // who is asking (set once known) and the route: a tester's answers are put in plain words
-    const json = (body, status = 200) =>
-      new Response(JSON.stringify(viewer && viewer.role === 'tester' ? plainFor(body, where) : body), { status, headers: { ...cors, 'content-type': 'application/json' } });
-
-    if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
-    const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
-    const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
-    const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
-    if (route) {
-      const a = await whoIs(env, req.headers.get('x-app-token') || '');
-      viewer = a.who || a.offWho || null;
-      if (!a.who && a.offWho && req.method === 'DELETE' && path === '/account') return route[0](req, env, json, a.offWho, cors);
-      return a.who ? route[0](req, env, json, a.who, cors) : deny(a, route[1]);
+    const { cors, allowed, origin } = corsFor(req, env);
+    try { return await serve(req, env, cors, allowed, origin); }
+    catch (e) {
+      console.log('uncaught error', req.method, new URL(req.url).pathname, e && (e.stack || e.message));
+      return new Response(JSON.stringify({ error: 'server', message: SERVER_DOWN, detail: SERVER_DOWN }), { status: 503, headers: { ...cors, 'content-type': 'application/json' } });
     }
-    if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
-
-    // POST / : tag one photo. The app sends the token as a header; an older cached app only in the body, so without the header
-    // the body is read first (15 MB at most, and no further).
-    const header = req.headers.get('x-app-token') || '';
-    let a = header || !env.APP_TOKEN ? await whoIs(env, header) : null;
-    if (a && !a.who) return deny(a, UNSET);
-    if (+(req.headers.get('content-length') || 0) > TAG_LIMIT) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
-    const inBody = await readCapped(req.body, TAG_LIMIT);
-    if (inBody.over) return json({ error: 'photo too large', detail: 'That photo is too large (over 15 MB).' }, 413);
-    let body;
-    try { body = JSON.parse(new TextDecoder().decode(inBody.bytes)); } catch { return json({ error: 'bad json' }, 400); }
-    if (!body || typeof body !== 'object') return json({ error: 'bad json' }, 400);
-    if (!a) { a = await whoIs(env, body.appToken || ''); if (!a.who) return deny(a, UNSET); }
-    const who = a.who; viewer = who;
-
-    // The model wants the image as a data URI inside the user message.
-    let image = String(body.image || '');
-    if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
-    if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
-
-    if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
-    const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
-    if (env.ANTHROPIC_API_KEY) {
-      const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
-      // never both: together the answer's schema is more than the API compiles ("compiled grammar is too large", 2026-11-13)
-      const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
-      const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
-      const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
-      if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
-      return json(c.body, c.status);
-    }
-
-    const model = env.MODEL || DEFAULT_MODEL;
-    const input = {
-      max_tokens: 300,
-      temperature: 0.1,
-      messages: [
-        { role: 'system', content: 'You are a menswear expert who labels clothing photos. You answer with JSON only.' },
-        { role: 'user', content: [
-          { type: 'text', text: PROMPT },
-          { type: 'image_url', image_url: { url: image } },
-        ] },
-      ],
-    };
-
-    let out;
-    try {
-      out = await env.AI.run(model, input);
-    } catch (e) {
-      // Llama 3.2 Vision is gated: the account must accept Meta's licence once (error 5016). Do that and retry.
-      if (/5016|agree/i.test(String(e && e.message))) {
-        await env.AI.run(model, { prompt: 'agree' });
-        try { out = await env.AI.run(model, input); }
-        catch (e2) { return json({ error: 'ai', detail: String(e2 && e2.message) }, 502); }
-      } else {
-        return json({ error: 'ai', detail: String(e && e.message) }, 502);
-      }
-    }
-
-    const raw = out && out.response;
-    console.log(`tagged by Workers AI (${model})`);
-    if (raw && typeof raw === 'object') return json({ ...raw, model });
-    const text = String(raw || '');
-    const m = text.match(/\{[\s\S]*\}/);
-    if (!m) return json({ error: 'no json in model output', detail: text.slice(0, 300) }, 502);
-    try { return json({ ...JSON.parse(m[0]), model }); }
-    catch { return json({ error: 'unparseable model output', detail: m[0].slice(0, 300) }, 502); }
   },
   // Cloudflare Queue consumer (queue "wardrobe-renders", see wrangler.toml): background outfit photos
   async queue(batch, env) {
@@ -2008,11 +2110,14 @@ export default {
       catch (e) {
         console.log('photo job error', e && e.message);
         // a job that keeps crashing is recorded as failed (the queue would otherwise drop it silently and leave it "pending")
+        // after OpenAI made the photo nothing is retried (a retry pays again); before it, a crash is tried again after a minute
+        if (PAID.has(msg)) { msg.ack(); continue; }
         const key = String(msg.body && msg.body.key || ''), ns = msgNs(msg);
+        if (CLAIMED.has(msg)) await jobClaim(env, ns, key, 'release', CLAIMED.get(msg));   // its run is over: a retry may claim it again
         if ((msg.attempts || 1) < 4 || !COMBO_RE.test(key) || ns === null) { msg.retry({ delaySeconds: 60 }); continue; }
-        try { const error = failFor(ns, 'The worker failed making it: ' + String(e && e.message || e));
-          await refundJob(env, ns, await env.WARDROBE.get(`${ns}job:${key}`, 'json'));
-          await env.WARDROBE.put(`${ns}jobfail:${key}`, JSON.stringify({ error, t: Date.now() }), FAIL_TTL); await env.WARDROBE.delete(`${ns}job:${key}`); await tellHub(env, ns, { key, error }); } catch {}
+        let job = null; try { job = await env.WARDROBE.get(`${ns}job:${key}`, 'json'); } catch { }
+        await failJob(env, ns, key, job, 'The worker failed making it: ' + String(e && e.message || e));
+        await jobClaim(env, ns, key, 'done', job && +job.t || 0);
         msg.ack();
       }
     }
@@ -2062,18 +2167,30 @@ function localNow(now, tz) {
     return { date: `${p.year}-${p.month}-${p.day}`, min: +p.hour * 60 + +p.minute };
   } catch { return null; }
 }
+/* the run covers the local clock from the run before (prev, 15 minutes earlier) to now (cur): a reminder at `at` (minutes) is due
+   when its time lies in (prev, cur]. -> the local date it is due for, or null. Across midnight a 23:50 reminder belongs to the
+   day before (the 23:45-00:00 run; the old window [at, at+15) ran past 23:59 and never fired); where the clocks go forward the
+   skipped hour lies in one run's span (01:45 -> 03:00), so a 02:30 reminder still fires; where they go back the repeated hour is
+   covered twice and `last` keeps it to one */
+function dueDay(prev, cur, at) {
+  if (!prev || !cur) return null;
+  if (prev.date === cur.date) return prev.min < at && at <= cur.min ? cur.date : null;
+  return at > prev.min ? prev.date : at <= cur.min ? cur.date : null;
+}
 async function sendReminders(env, now = new Date()) {
   if (!pushReady(env)) return { sent: 0 };
   const doc = (await env.WARDROBE.get(PUSH_KEY, 'json')) || { list: [] }, list = Array.isArray(doc.list) ? doc.list : [];
   let changed = false, sent = 0;
+  const before = new Date(now.getTime() - PUSH_STEP * 60000), l0 = tz => localNow(before, tz);
   for (const s of [...list]) {
     const l = localNow(now, s.tz), [h, m] = String(s.time || '').split(':').map(Number);
-    if (!l || s.last === l.date || !(s.dates || []).includes(l.date)) continue;
+    if (!l || !Number.isFinite(h) || !Number.isFinite(m)) continue;
     const at = h * 60 + m;
-    if (l.min < at || l.min >= at + PUSH_STEP) continue;   // its quarter of an hour (the cron runs every 15 minutes)
+    const day = dueDay(l0(s.tz), l, at);   // the local date whose reminder falls since the last run, if any
+    if (!day || s.last === day || !(s.dates || []).includes(day)) continue;
     const st = await pushTo(env, s.endpoint);
     if (st === 404 || st === 410) { list.splice(list.indexOf(s), 1); changed = true; continue; }
-    if (st >= 200 && st < 300) { s.last = l.date; sent++; changed = true; }
+    if (st >= 200 && st < 300) { s.last = day; sent++; changed = true; }
   }
   if (changed) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list }));
   return { sent };
