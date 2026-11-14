@@ -23,10 +23,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const q=measureCloth(await ld('tests/fixtures/suit-mink.jpg'),{x:220,y:550,w:113,h:125});q.near=nearestCols('suit',q.lab,false);
       return {m:{lab:r.lab,near:r.near,brown:Math.round(dE00(r.lab,labOf('brown'),2)*10)/10},ph:{lab:q.lab,near:q.near}}});
     ok(m.near[0].c==='deeptaupe'&&m.near[0].d<=5&&m.brown-m.near[0].d>=4,`the close-up measures closest to deep taupe (ΔE ${m.near[0].d}), far from brown (ΔE ${m.brown}); L* ${m.lab[0]}, a* ${m.lab[1]}, b* ${m.lab[2]}`);
-    // the card
-    const card=await p.evaluate(m=>{show('add');addManual();const q=queue[0];q.manual=false;setq(0,'type','suit');q.primaryColor='brown';q.meas={...m,hex:'#3c3631',ref:false,src:'closeup'};renderAdd();
-      const o=document.querySelector('#queue .measalt');return o&&{txt:o.textContent,btn:o.querySelector('button').textContent}},{lab:m.lab,near:m.near});
-    ok(card&&/measures much closer to deep taupe \(ΔE [\d.]+\) than to brown \(ΔE [\d.]+\)/.test(card.txt)&&card.btn==='Use deep taupe',`the card offers the measured colour (${card&&card.txt})`);
+    // the card (2026-11-14: one verdict per colour; not sure enough to change it, the card asks "Measured: deep taupe?")
+    const card=await p.evaluate(m=>{show('add');addManual();const q=queue[0];q.manual=false;setq(0,'type','suit');q.primaryColor='brown';q.meas={...m,hex:'#3c3631',ref:false,src:'closeup',sharp:.5,spread:2};renderAdd();
+      const o=document.querySelector('#queue .measalt'),v=q.measV.find(x=>x.f==='primaryColor');return o&&{txt:o.textContent,btn:o.querySelector('button').textContent,v,brown:q.primaryColor}},{lab:m.lab,near:m.near});
+    ok(card&&/Measured: deep taupe\?/.test(card.txt)&&card.btn==='Use deep taupe'&&card.brown==='brown',`the card asks about the measured colour and leaves the tag (${card&&card.txt}; confidence ${card&&card.v.conf})`);
     await p.click('#queue .measalt button');
     ok(await p.evaluate(()=>queue[0].primaryColor==='deeptaupe'&&!document.querySelector('#queue .measalt')),'one tap takes it, and the offer goes away');
     // the photo alone (no close-up, no white reference) is too dark to trust: it measures nearest black, and offers nothing
