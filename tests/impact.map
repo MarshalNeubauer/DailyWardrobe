@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8b49fe470ebc53ad43f7
+# tested	5e5861b2a71b051ab81e
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -134,52 +134,19 @@ aiverdict.test.js	tagging.js	<loaded>	aiFields	aiFor	aiSignals	applyMeasured	cal
 aiverdict.test.js	tests/fixedplan.js	<any>
 aiverdict.test.js	ui.js	<loaded>	addGate	isConnected	layerInert	layerUp
 aiverdict.test.js	wardrobe.js	<loaded>	matRow	moreRow	wardSaveFields
-asm2048.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-asm2048.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
-asm2048.test.js	analysis.js	<loaded>
-asm2048.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	lookSig	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	shirtPatterned	shirtTextured	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	wxPreload	zoomTarget
-asm2048.test.js	apple-touch-icon.png	<loaded>
-asm2048.test.js	asm-color.js	<loaded>
-asm2048.test.js	asm-gl.js	<loaded>
-asm2048.test.js	assemble.js	<any>	<loaded>	@	asmAreas	asmBig	asmBlurF	asmBox	asmCalibJob	asmCalibKey	asmClothOf	asmCmUse	asmColTile	asmDE	asmData	asmImg	asmInfo	asmKey	asmKeyFill	asmLab	asmLinen	asmLinenTile	asmLook	asmMajor	asmMasterKey	asmMotif	asmNear	asmNeeds	asmOutKey	asmP2On	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmPx	asmShirtAngles	asmSleeveFlow	asmSleeveSegs	asmStripeCount	asmSuitBands	asmSuitPaint	asmSuitPaintTex	asmSuitPaintable	asmSuitPrep	asmSuitPrep0	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTexFor	asmTexReady	asmTieFor	asmTieMask	asmTiePaint	asmTiePrep	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestMasterJob	asmVestTag	asmWeave	asmWeaveSig	asmZoneKey	asmZonesFromImgs
-asm2048.test.js	care.js	<loaded>	careShow
-asm2048.test.js	colpick.js	<loaded>
-asm2048.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	key	labHex	lum	mix	nm	occOf	offDays	offName	patBase	patLabel	primaryCol	rgbHex	rgbLab	shadeHex	thirdOf	todayDate	typeWord	wearsJacket
-asm2048.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
-asm2048.test.js	draw.js	<loaded>	fabricDef
-asm2048.test.js	dress.js	<loaded>	migrateVests
-asm2048.test.js	figure.js	<loaded>	@{}
-asm2048.test.js	icon-192.png	<loaded>
-asm2048.test.js	icon-512.png	<loaded>
-asm2048.test.js	index.html	<loaded>
-asm2048.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
-asm2048.test.js	manifest.webmanifest	<loaded>
-asm2048.test.js	pack.js	<loaded>	packShow
-asm2048.test.js	planner.js	<loaded>
-asm2048.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
-asm2048.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
-asm2048.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
-asm2048.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
-asm2048.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
-asm2048.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.kit-start	.linkbtn	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
-asm2048.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
-asm2048.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
-asm2048.test.js	tests/fixedplan.js	<any>
-asm2048.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
-asm2048.test.js	wardrobe.js	<loaded>
 asmahead.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmahead.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 asmahead.test.js	analysis.js	<loaded>
 asmahead.test.js	app.js	<loaded>	@$today.addEventListenerclick	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$wardrobe}	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	@{constv$itemviewb$ivbodybd$itemba}	aAn	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	belowBox	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	foldAll	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	noMotion	offBtn	offOn	ovlCloseup	ovlHbShirt	ovlItem	ovlPiece	ovlSuitPng	ovlSvg	ovlWeave	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planSnapSoon	planSnapUse	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	renderFor	renderItem	renderPending	renderStalled	renderToday	replanFuture	resetCard	rqGet	saveDay	saveUserSettings	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	shortRest	shortTop	show	slotLabel	slotPool	slots	smallPhotos	stackSVG	stepDay	swApply	swClose	swatchStack	texSwatches	tieWord	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomOut	zoomTarget
 asmahead.test.js	apple-touch-icon.png	<loaded>
-asmahead.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmGeoKeys	asmCmGet	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMfGet	asmCmMfGet1	asmCmMfNow	asmCmPref	asmCmWarm	asmHbShirt
-asmahead.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage
+asmahead.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfNow	asmCmMp	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmUnpack	asmCmWarm	asmCmWeaveTag	asmH32	asmHbShirt	asmTieLit	asmTieSheenK
+asmahead.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlTry	asmGlWhy
 asmahead.test.js	asm-worker.js	<any>
-asmahead.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBig	asmBlobUp	asmBox	asmBuild	asmCalibKey	asmCan	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmCompose	asmCount	asmDE	asmData	asmDrift	asmDropOld	asmEnsure	asmFill	asmFor	asmFresh	asmFullWins	asmGet	asmGetAtlas	asmGetOnce	asmGetPre	asmGetPre1	asmGetZones	asmImg	asmImgOf	asmInfo	asmJob	asmJpeg	asmKeepOut	asmKey	asmKeyFill	asmLab	asmListGet	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmOffPage	asmOutKey	asmP2On	asmPack	asmPackZones	asmPaint	asmPaintFull	asmPaintPrep	asmPaintable	asmParts	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmPx	asmRun	asmSeams	asmShirtAngles	asmShirtOwn	asmShow	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieMask	asmTiePaint	asmTiePrep	asmTieSig	asmTouchWatch	asmTrim	asmUpZones	asmVestKey	asmVestTag	asmWants	asmWants0	asmWeave	asmWeaveSig	asmWorker	asmWorkerDown	asmZoneImgs	asmZoneKey	asmZones	asmZonesKept	asmZonesOk
+asmahead.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBlobUp	asmBuild	asmCalibKey	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmLab	asmListGet	asmLoad	asmMasterKey	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPump	asmRun	asmShirtAngles	asmShow	asmStamp	asmSuitBands	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmVestKey	asmVestTag	asmWants	asmWeave	asmWorker	asmWorkerDown	asmZoneImgs	asmZoneKey
 asmahead.test.js	care.js	<loaded>	careCounts	careLimit	careNote	careNoun	careShow	careTimes
 asmahead.test.js	colpick.js	<loaded>
 asmahead.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	lum	mix	nm	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts
-asmahead.test.js	detect.js	<loaded>	@	settSig	texPat	usableSett
+asmahead.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmahead.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmahead.test.js	dress.js	<loaded>	migrateVests
 asmahead.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
@@ -197,13 +164,23 @@ asmahead.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 asmahead.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	statsPlan	statsPlanned	wornDays
 asmahead.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#setup	#setup .su-skip	#setup button	#setup button.pri	#setup.on	#shop-backdrop	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#today	#today .row .dot	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.cap	.carenote	.carenote a	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.dot	.dot svg	.fig	.fig .lastworn	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig .swstack.up	.fig .wornbar	.fig .wornbar .lastworn:only-child	.fig .wornbar>*	.fig .wshare	.fig.photo	.fig.photo img	.fig>svg	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-start	.linkbtn	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mc	.mc .dn	.mc.rest	.mc.sel:not(.today)	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pri	.pstrip	.render-msg	.render-msg:empty	.row	.row .mut	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.slide	.stack	.stack.rest	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.thumb	.thumb svg	.warn	.wmark	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
 asmahead.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
-asmahead.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+asmahead.test.js	tagging.js	<loaded>	claudeOnly	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
 asmahead.test.js	tests/fixedplan.js	<any>
-asmahead.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-master.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmahead.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmahead.test.js	tests/fixtures/asm-watch.jpg	<loaded>
+asmahead.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/master.jpg	<any>
+asmahead.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
+asmahead.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmahead.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmahead.test.js	wardrobe.js	<loaded>
 asmatlas.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -214,7 +191,7 @@ asmatlas.test.js	apple-touch-icon.png	<loaded>
 asmatlas.test.js	asm-color.js	<any>	<loaded>	asmCmKey	asmCmKind	asmCmPref
 asmatlas.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage
 asmatlas.test.js	asm-worker.js	<any>
-asmatlas.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmAtlasBuild	asmAtlasDecode	asmAtlasEncode	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmAtlasSig	asmBig	asmBlobUp	asmBox	asmCalibKey	asmCan	asmCmHeld	asmCmSeen	asmCmUse	asmCount	asmDE	asmData	asmDropOld	asmFill	asmImg	asmInfo	asmJob	asmKey	asmLab	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmP2On	asmPaint	asmPaintFull	asmPaintPrep	asmPaintable	asmParts	asmPhoto	asmPieceKey	asmPump	asmPx	asmRun	asmShirtAngles	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexFor	asmTexReady	asmTexTile	asmTieFor	asmTieSig	asmVestKey	asmVestTag	asmVestZone	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesFromImgs
+asmatlas.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBlobUp	asmCalibKey	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmImg	asmJob	asmKey	asmLab	asmLoad	asmMasterKey	asmMotif	asmPhoto	asmPump	asmRun	asmShirtAngles	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmVestKey	asmVestTag	asmWeave	asmWorker	asmZoneImgs	asmZoneKey
 asmatlas.test.js	care.js	<loaded>	careShow
 asmatlas.test.js	colpick.js	<loaded>
 asmatlas.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	lum	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	rgbLab	thirdOf	todayDate
@@ -245,13 +222,15 @@ asmatlas.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-v
 asmatlas.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
 asmatlas.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
 asmatlas.test.js	tests/fixedplan.js	<any>
-asmatlas.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
-asmatlas.test.js	tests/fixtures/asm-master.jpg	<loaded>
-asmatlas.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-master.jpg	<any>	<loaded>
+asmatlas.test.js	tests/fixtures/asm-shirt-black.jpg	<any>	<loaded>
 asmatlas.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmatlas.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
-asmatlas.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
-asmatlas.test.js	tests/fixtures/asm-watch.jpg	<loaded>
+asmatlas.test.js	tests/fixtures/asm-vestmaster.jpg	<any>	<loaded>
+asmatlas.test.js	tests/fixtures/asm-zone-jacket.png	<any>
+asmatlas.test.js	tests/fixtures/asm-zone-shirt.png	<any>
+asmatlas.test.js	tests/fixtures/asm-zone-tie.png	<any>
+asmatlas.test.js	tests/fixtures/asm-zone-vest.png	<any>
+asmatlas.test.js	tests/fixtures/asm-zone-watch.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
@@ -271,6 +250,39 @@ asmatlas.test.js	tools/upload-budget.js	<any>
 asmatlas.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmatlas.test.js	wardrobe.js	<loaded>
 asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	corsFor	fetch	getRender	handleBlob	handleInvites	handleMe	handleSync	isParted	isPv	kvMeta	orNull	ownerOnly	putRender	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
+asmcloth.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+asmcloth.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+asmcloth.test.js	analysis.js	<loaded>
+asmcloth.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	wxPreload	zoomTarget
+asmcloth.test.js	apple-touch-icon.png	<loaded>
+asmcloth.test.js	asm-color.js	<loaded>
+asmcloth.test.js	asm-gl.js	<loaded>
+asmcloth.test.js	assemble.js	<loaded>	@	asmClothOf	asmData	asmImg	asmLinen	asmLinenTile	asmMotif	asmSleeveFlow	asmSleeveSegs	asmStripeCount	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmWeave
+asmcloth.test.js	care.js	<loaded>	careShow
+asmcloth.test.js	colpick.js	<loaded>
+asmcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	lum	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	thirdOf	todayDate
+asmcloth.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
+asmcloth.test.js	draw.js	<loaded>	fabricDef
+asmcloth.test.js	dress.js	<loaded>	migrateVests
+asmcloth.test.js	figure.js	<loaded>	@{}
+asmcloth.test.js	icon-192.png	<loaded>
+asmcloth.test.js	icon-512.png	<loaded>
+asmcloth.test.js	index.html	<loaded>
+asmcloth.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
+asmcloth.test.js	manifest.webmanifest	<loaded>
+asmcloth.test.js	pack.js	<loaded>	packShow
+asmcloth.test.js	planner.js	<loaded>
+asmcloth.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
+asmcloth.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+asmcloth.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+asmcloth.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+asmcloth.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+asmcloth.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.kit-start	.linkbtn	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+asmcloth.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
+asmcloth.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+asmcloth.test.js	tests/fixedplan.js	<any>
+asmcloth.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+asmcloth.test.js	wardrobe.js	<loaded>
 asmcode.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmcode.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 asmcode.test.js	analysis.js	<loaded>
@@ -278,7 +290,7 @@ asmcode.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bs
 asmcode.test.js	apple-touch-icon.png	<loaded>
 asmcode.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmHbShirt	asmTieSheenK
 asmcode.test.js	asm-gl.js	<loaded>
-asmcode.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmCmHeld	asmCmUse	asmDropOld	asmKey	asmLoad	asmMicroKind	asmOutKey	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmVestKey	asmVestTag
+asmcode.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmCmHeld	asmCmUse	asmKey	asmLoad	asmMicroKind	asmOutKey	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmVestKey	asmVestTag
 asmcode.test.js	care.js	<loaded>	careShow
 asmcode.test.js	colpick.js	<loaded>
 asmcode.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colOf	dayClimate	di	isWorkday	isoKey	key	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	todayDate
@@ -311,7 +323,7 @@ asmcolor.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@a
 asmcolor.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSet	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmGapUI	asmH32	asmHbShirt	asmLegsPrep	asmTieLit	asmTieSheenK
 asmcolor.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlTry	asmGlUI	asmGlWhy
 asmcolor.test.js	asm-worker.js	<any>
-asmcolor.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCalibKey	asmCan	asmClothOf	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDropOld	asmEnsure	asmFlowAt	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmInfo	asmJob	asmJpeg	asmKeepOut	asmKey	asmLinen	asmListGet	asmLoad	asmLook	asmMasterKey	asmMicroKind	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmPaintable	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPolyAt	asmPreSigOk	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTq	asmTqn	asmTqr	asmTrim	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmVestKept	asmVestKey	asmVestTag	asmWants	asmWants0	asmWorker	asmZonesKept	renderAsmUI
+asmcolor.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmEnsure	asmFlowAt	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmLinen	asmListGet	asmLoad	asmMasterKey	asmMicroKind	asmOffPage	asmOutKey	asmPhoto	asmPolyAt	asmPreSigOk	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmStamp	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTq	asmTqn	asmTqr	asmTrim	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag	asmWants	asmWorker	renderAsmUI
 asmcolor.test.js	care.js	<loaded>	careLimit	careShow	laundryDays	renderCareUI
 asmcolor.test.js	colpick.js	<loaded>
 asmcolor.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	key	lum	mergeState	mix	nm	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	shoeStyle	stateSig	thirdOf	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
@@ -374,7 +386,7 @@ asmgl.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bser
 asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCanvas	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSrcSig	asmCmTile	asmCmWk	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKnitTile	asmLegsAt	asmLegsPrep	asmPaisleyTile	asmTieLit	asmTieSheenK	asmUvAt
 asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlBytes	asmGlContext	asmGlCovers	asmGlCuffs	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSame	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlUse	asmGlVar	asmGlWhy
 asmgl.test.js	asm-worker.js	<any>
-asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmDropOld	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
+asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
 asmgl.test.js	care.js	<loaded>	careShow
 asmgl.test.js	colpick.js	<loaded>
 asmgl.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	labHex	lum	mergeState	mix	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	stateSig	thirdOf	todayDate
@@ -427,7 +439,7 @@ asmgpu.test.js	analysis.js	<loaded>
 asmgpu.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
 asmgpu.test.js	asm-color.js	<loaded>	asmCmBgKey	asmCmKey
 asmgpu.test.js	asm-gl.js	<loaded>
-asmgpu.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
+asmgpu.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
 asmgpu.test.js	care.js	<loaded>	careShow
 asmgpu.test.js	colpick.js	<loaded>
 asmgpu.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	occOf	offDays	offName	todayDate
@@ -474,60 +486,18 @@ asmgpu.test.js	tools/upload-budget.js	<any>
 asmgpu.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmgpu.test.js	wardrobe.js	<loaded>
 asmgpu.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleBlob	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	readText	renderId	sameText	serve	sha256Hex	spend	splitPhotos	stampOf	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
-asmp2.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-asmp2.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
-asmp2.test.js	analysis.js	<loaded>
-asmp2.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	appPush	applyTheme	applyZoom	asmLive	backupSummary	busyLabelFor	cap1	checkArrivals	checkPlanRules	closeSettings	countryName	esc	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	isoDate	itemDesc	itemKey	itemShown	keyDate	loadRenders	loadWeather	lockUpcoming	lookSig	metaGet	metaPut	missingItemPics	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	openSettings	pageIn	planFor	planMonth	planOn	planSnapSoon	planSnapUse	queuedKeys	recordDays	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderItem	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	renderToday	replanCount	resetCard	rqGet	setCatOpen	setLock	settingsOpen	settingsSummaries	shirtPatterned	shirtTextured	shortDate	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	unit	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
-asmp2.test.js	apple-touch-icon.png	<loaded>
-asmp2.test.js	asm-color.js	<any>	<loaded>	asmCmGaps	asmCmKey	asmCmKind	asmCmPref	asmCmRoute	asmCmStatus	asmCmUI	asmGapUI
-asmp2.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
-asmp2.test.js	asm-worker.js	<any>
-asmp2.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBarRgb	asmBarSig	asmBig	asmBlobUp	asmBox	asmCalibKey	asmCan	asmCmAny	asmCmHeld	asmCmSeen	asmCmUse	asmCount	asmDE	asmData	asmDropOld	asmFill	asmGet	asmImg	asmInfo	asmJob	asmKey	asmLab	asmListGet	asmLoad	asmLook	asmMajor	asmMasterItem	asmMasterKey	asmMasterSig	asmMicroKind	asmMotif	asmNeeds	asmOutKey	asmP2Able	asmP2On	asmP2Set	asmPaintable	asmParts	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmPx	asmRun	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexFor	asmTexTile	asmTieFor	asmTieSig	asmVestKept	asmVestKey	asmVestTag	asmVestZone	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesKept	renderAsmUI
-asmp2.test.js	care.js	<loaded>	careLimit	careShow	laundryDays	renderCareUI
-asmp2.test.js	colpick.js	<loaded>
-asmp2.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	lum	mix	nm	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	thirdOf	titleCls	todayDate	typeWord	watchOpts	watchText	wearsJacket	wearsTie
-asmp2.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
-asmp2.test.js	draw.js	<loaded>	fabricDef
-asmp2.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-asmp2.test.js	figure.js	<loaded>	@{}
-asmp2.test.js	icon-192.png	<loaded>
-asmp2.test.js	icon-512.png	<loaded>
-asmp2.test.js	index.html	<loaded>
-asmp2.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
-asmp2.test.js	manifest.webmanifest	<loaded>
-asmp2.test.js	pack.js	<loaded>	packShow
-asmp2.test.js	planner.js	<loaded>
-asmp2.test.js	remind.js	<loaded>	remindCan	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
-asmp2.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
-asmp2.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
-asmp2.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
-asmp2.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	statsPlan	statsPlanned
-asmp2.test.js	styles.css	#about-update[hidden]	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox.open .mpanel-in	#settings-modal .mpanel-in	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date]	#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.adv	.adv-head .chev	.adv-in	.adv-in>.sgroup:first-child	.adv-t	.adv-t small	.adv.open .adv-head .chev	.adv.open .adv-in	.btn	.btns	.cap	.carelink	.conn-msg	.conn-off-note .linkbtn	.conn-off-note:empty	.conn-tick	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.days	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.fb-list	.fchips	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.hlist	.hlist:empty	.kit-start	.linkbtn	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mhead h3	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pri	.sactions	.sactions:empty	.sbody	.score .chev,.month-link .chev	.score .lbl b,.mltxt b	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .num,.mlstrip,.pstrip	.score summary,.month-link	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.slinks .slink+.slink	.srow	.srow select	.stack	.stack.none	.stack.rest	.stage	.stage .empty	.stage .firstrun	.vfile	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	:root	<loaded>	body	body.nocon .conn-only,.connhide	body:not(.owner) #adv-photos	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
-asmp2.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
-asmp2.test.js	tagging.js	<loaded>	claudeOnly	motifPat	readable	recolourSpecSetts	renderCustomUI	settable	upgradeCloseups	upgradePhotos
-asmp2.test.js	tests/fixedplan.js	<any>
-asmp2.test.js	tests/fixtures/asm-bar.jpg	<loaded>
-asmp2.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
-asmp2.test.js	tests/fixtures/asm-master.jpg	<loaded>
-asmp2.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
-asmp2.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmp2.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
-asmp2.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
-asmp2.test.js	tests/fixtures/asm-watch.jpg	<loaded>
-asmp2.test.js	ui.js	<loaded>	advClose	advToggle	connNote	connSummary	isConnected	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
-asmp2.test.js	wardrobe.js	<loaded>
 asmprebuild.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmprebuild.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 asmprebuild.test.js	analysis.js	<loaded>
-asmprebuild.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	addTombstones	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	atomic	belowBox	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	offBtn	offOn	ovlCloseup	ovlHbShirt	ovlItem	ovlPiece	ovlSuitPng	ovlSvg	ovlWeave	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planSnapSoon	planSnapUse	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	remoteList	renderFor	renderItem	renderPending	renderStalled	renderToday	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	shortRest	shortTop	show	slotLabel	slots	smallPhotos	stackSVG	swApply	swatchStack	texSwatches	tieWord	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
-asmprebuild.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmGeoKeys	asmCmGet	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPrebuild	asmCmPref	asmCmSig	asmHbShirt
-asmprebuild.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage
+asmprebuild.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	addTombstones	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	atomic	belowBox	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureLabel	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keepRender	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	offBtn	offOn	ovlCloseup	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitPng	ovlSvg	ovlWeave	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planSnapSoon	planSnapUse	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	remoteList	renderFor	renderItem	renderPending	renderStalled	renderToday	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	shortRest	shortTop	show	slotLabel	slots	smallPhotos	stackSVG	swApply	swatchStack	texSwatches	tieWord	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
+asmprebuild.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPrebuild	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmHbShirt	asmTieSheenK
+asmprebuild.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus
 asmprebuild.test.js	asm-worker.js	<any>
-asmprebuild.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBlobUp	asmCalibKey	asmCan	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDropOld	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetAtlas	asmGetOnce	asmGetPre	asmGetPre1	asmGetZones	asmImg	asmImgOf	asmInfo	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmLook	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmOutKey	asmP2On	asmPaintable	asmParts	asmPending	asmPhoto	asmPhotoParts	asmPieceKey	asmPreSig	asmPreSigOk	asmPrebuildOne	asmPump	asmRun	asmShow	asmStamp	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmVestKey	asmVestTag	asmWants	asmWants0	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZonesKept
+asmprebuild.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmCalibKey	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmMasterKey	asmMicroKind	asmMotif	asmOutKey	asmPhoto	asmPreSig	asmPreSigOk	asmPrebuildOne	asmPump	asmRun	asmShow	asmStamp	asmSuitBands	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmVestKey	asmVestTag	asmWants	asmWeave	asmWorker	asmZoneImgs	asmZoneKey
 asmprebuild.test.js	care.js	<loaded>	careCounts	careLimit	careNote	careNoun	careShow	careTimes
 asmprebuild.test.js	colpick.js	<loaded>
-asmprebuild.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	lum	mergeState	mix	nm	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	stateSig	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts
-asmprebuild.test.js	detect.js	<loaded>	@	settSig	texPat	usableSett
+asmprebuild.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	lum	mergeState	mix	nm	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	shoeStyle	sockToe	stateSig	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts
+asmprebuild.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmprebuild.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmprebuild.test.js	dress.js	<loaded>	migrateVests
 asmprebuild.test.js	figure.js	<loaded>	@{}
@@ -547,21 +517,31 @@ asmprebuild.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneT
 asmprebuild.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
 asmprebuild.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 asmprebuild.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
-asmprebuild.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#shop-backdrop	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#today	#today .row .dot	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.cap	.carenote	.carenote a	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.dot	.dot svg	.fig	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig .swstack.up	.fig .wornbar	.fig .wornbar>*	.fig .wshare	.fig.photo	.fig.photo img	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-start	.linkbtn	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pri	.pstrip	.render-msg	.render-msg:empty	.row	.row .mut	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.slide	.stack	.stack.rest	.stage	.stage .empty	.stage .firstrun	.thumb	.thumb svg	.wmark	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
-asmprebuild.test.js	sync.js	<loaded>	@db.then	afterPull	applyMerged	localState	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
-asmprebuild.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+asmprebuild.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#shop-backdrop	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#today	#today .row .dot	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.cap	.carenote	.carenote a	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.dot	.dot svg	.fig	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig .swstack.up	.fig .wornbar	.fig .wornbar>*	.fig .wshare	.fig.photo	.fig.photo img	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-start	.linkbtn	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pri	.pstrip	.render-msg	.render-msg:empty	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.slide	.stack	.stack.rest	.stage	.stage .empty	.stage .firstrun	.thumb	.thumb svg	.wmark	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+asmprebuild.test.js	sync.js	<loaded>	@db.then	afterPull	applyMerged	localState	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
+asmprebuild.test.js	tagging.js	<loaded>	claudeOnly	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
 asmprebuild.test.js	tests/fixedplan.js	<any>
-asmprebuild.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-master.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmprebuild.test.js	tests/fixtures/asm-watch.jpg	<loaded>
+asmprebuild.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/master.jpg	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
+asmprebuild.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmprebuild.test.js	tools/asm-prebuild.js	<any>
 asmprebuild.test.js	tools/gpu-guard.js	<any>
 asmprebuild.test.js	tools/upload-budget.js	<any>
 asmprebuild.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmprebuild.test.js	wardrobe.js	<loaded>
-asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvFull	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	putRender	readText	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
+asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleBlob	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvFull	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	putRender	readText	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
 asmroute.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmroute.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 asmroute.test.js	analysis.js	<loaded>
@@ -569,7 +549,7 @@ asmroute.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@b
 asmroute.test.js	apple-touch-icon.png	<loaded>
 asmroute.test.js	asm-color.js	<loaded>	asmCmGaps	asmCmPref	asmCmRoute	asmCmStatus	asmCmUI	asmCmWeaveTag	asmGapNote	asmGapUI
 asmroute.test.js	asm-gl.js	<loaded>	asmGlPref	asmGlStatus	asmGlUI
-asmroute.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDropOld	asmKey	asmLoad	asmMicroGrid	asmMicroKind	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
+asmroute.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmKey	asmLoad	asmMicroGrid	asmMicroKind	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
 asmroute.test.js	care.js	<loaded>	careShow
 asmroute.test.js	colpick.js	<loaded>
 asmroute.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colName	colorDesc	dayClimate	desc	di	dressOut	inRotation	isWorkday	isoKey	itemName	itemTitle	key	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	sentence	titleCls	todayDate	wearsJacket	wearsTie
@@ -602,9 +582,9 @@ asmstuck.test.js	analysis.js	<loaded>
 asmstuck.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
 asmstuck.test.js	apple-touch-icon.png	<loaded>
 asmstuck.test.js	asm-color.js	<any>	<loaded>
-asmstuck.test.js	asm-gl.js	<any>	<loaded>	asmGlOnPage
+asmstuck.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage
 asmstuck.test.js	asm-worker.js	<any>
-asmstuck.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmCalibKey	asmDropOld	asmKey	asmLoad	asmPump	asmRun	asmStuck	asmSync	asmVestKey	asmVestTag	asmWorker
+asmstuck.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmCalibKey	asmKey	asmLoad	asmPump	asmRun	asmStuck	asmSync	asmVestKey	asmVestTag	asmWorker
 asmstuck.test.js	care.js	<loaded>	careShow
 asmstuck.test.js	colpick.js	<loaded>
 asmstuck.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	occOf	offDays	offName	todayDate
@@ -637,7 +617,7 @@ asmtwill.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@b
 asmtwill.test.js	apple-touch-icon.png	<loaded>
 asmtwill.test.js	asm-color.js	<loaded>	asmCmRoute	asmCmWeaveTag	asmHbShirt
 asmtwill.test.js	asm-gl.js	<loaded>
-asmtwill.test.js	assemble.js	<loaded>	@	asmCalibKey	asmCmUse	asmHbCw	asmInfo	asmKey	asmLinen	asmLook	asmMasterKey	asmMicroKind	asmMotif	asmNeeds	asmPaintable	asmParts	asmPhotoParts	asmPieceKey	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTieSig	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave	asmWeaveSig
+asmtwill.test.js	assemble.js	<loaded>	@	asmHbCw	asmLinen	asmMicroKind	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmTweedTex	asmTweedTile	asmTwillTex
 asmtwill.test.js	care.js	<loaded>	careShow
 asmtwill.test.js	colpick.js	<loaded>
 asmtwill.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colName	colOf	colorDesc	dayClimate	di	hasVest	inRotation	isWorkday	isoKey	key	nm	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	todayDate	typeWord	wearsJacket
@@ -671,7 +651,7 @@ asmweave.test.js	apple-touch-icon.png	<loaded>
 asmweave.test.js	asm-color.js	<any>	<loaded>	asmCmKey	asmCmKind	asmCmPref
 asmweave.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage
 asmweave.test.js	asm-worker.js	<any>
-asmweave.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAtlasNow	asmAtlasOk	asmBlobUp	asmBox	asmCalibKey	asmCan	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmDropOld	asmImg	asmInfo	asmJob	asmKey	asmLoad	asmLook	asmMasterItem	asmMasterKey	asmMasterSig	asmMotif	asmNeeds	asmOutKey	asmP2On	asmPaint	asmPaintPrep	asmPaintable	asmParts	asmPhoto	asmPhotoParts	asmPieceKey	asmPump	asmRepeatPx	asmRun	asmShirtAngles	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexFor	asmTexMm	asmTexReady	asmTexTile	asmTieFor	asmTieSig	asmUnpack	asmUnpackZones	asmVestKey	asmVestTag	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey
+asmweave.test.js	assemble.js	<loaded>	@	asmData	asmImg	asmMotif	asmRepeatPx	asmShirtAngles	asmTexMm	asmWeave
 asmweave.test.js	care.js	<loaded>	careShow
 asmweave.test.js	colpick.js	<loaded>
 asmweave.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	key	lum	mix	nm	occOf	offDays	offName	patBase	patLabel	primaryCol	rgbHex	rgbLab	thirdOf	todayDate	typeWord	wearsJacket
@@ -695,11 +675,9 @@ asmweave.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-v
 asmweave.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
 asmweave.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
 asmweave.test.js	tests/fixedplan.js	<any>
-asmweave.test.js	tests/fixtures/asm-jacket.jpg	<loaded>
 asmweave.test.js	tests/fixtures/asm-master.jpg	<loaded>
 asmweave.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmweave.test.js	tests/fixtures/asm-tie.jpg	<loaded>
-asmweave.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmweave.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<any>
 asmweave.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmweave.test.js	wardrobe.js	<loaded>
@@ -708,10 +686,10 @@ assemble.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStar
 assemble.test.js	analysis.js	<loaded>
 assemble.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@addEventListenerpopstate	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@document.addEventListenervisibilitychange	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$wardrobe}	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	@{constv$itemviewb$ivbodybd$itemba}	aAn	addTombstones	adviceFor	afterDom	afterScripts	appDrop	appPush	applyTheme	applyZoom	asmLive	atomic	backupSummary	belowBox	busyLabelFor	canPick	cap1	checkArrivals	checkPlanRules	checkQueue	clipWord	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	countryName	dayActions	dayChanged	esc	fetchItemPic	fetchRemoteRender	figureLabel	figurePng	figureStage	finishQueueMsg	fitNav	fitNavSoon	fixItemBackdrops	fnv64	generateRender	hasOutfit	homeDay	idsOf	isoDate	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keepRender	keptPhoto	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	metalWord	missingItemPics	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	offBtn	offOn	onSyncedData	openSettings	outfitRefs	outfitText	ovlCloseup	ovlHbShirt	ovlItem	ovlPiece	ovlSuitPng	ovlSvg	ovlWeave	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planSnapSoon	planSnapUse	prefetchRenders	put	putRaw	queueCombo	queueDelay	queuedKeys	recordDays	refreshHolidays	refreshToday	remoteList	renderBusy	renderDaysOffUI	renderFor	renderFormalUI	renderItem	renderItemPicUI	renderPending	renderRegenUI	renderReplanUI	renderSettingsExtras	renderStalled	renderToday	replanCount	replanFuture	resetCard	rqGet	rqSet	saveDay	saveUserSettings	schedulePrefetch	scheduleQueueCheck	scoreCard	sentAt	setCatOpen	setLock	settingsOpen	settingsSummaries	shareMark	shirtPatterned	shirtTextured	shortDate	shortRest	shortTop	show	showCost	shrinkUrl	slotLabel	slotPool	slots	smallPhotos	stackSVG	startQueueWatch	stopQueueWatch	swApply	swatchStack	texSwatches	tieWord	toast	todayBtn	tx	txFail	txs	unit	vestRow	waitPush	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
 assemble.test.js	apple-touch-icon.png	<loaded>
-assemble.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmRoute	asmCmSig	asmCmStamp	asmCmStatus	asmCmUI	asmCmWarm	asmGapUI	asmHbShirt
+assemble.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmWarm	asmCmWeaveTag	asmGapUI	asmHbShirt	asmTieSheenK
 assemble.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
 assemble.test.js	asm-worker.js	<any>
-assemble.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmAtlasKey	asmAtlasNow	asmAtlasOk	asmBarDraw	asmBarMask	asmBarRgb	asmBarSig	asmBig	asmBlobUp	asmBlurF	asmBox	asmCalibJob	asmCalibKey	asmCan	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmCompose	asmCostOf	asmCount	asmDE	asmData	asmDrift	asmDropOld	asmEnsure	asmFill	asmFor	asmFresh	asmFullWins	asmGet	asmGetAtlas	asmGetOnce	asmGetPre	asmGetPre1	asmGetZones	asmImg	asmImgOf	asmInfo	asmJob	asmKeepOut	asmKey	asmKeyFill	asmLab	asmLinen	asmListGet	asmLoad	asmLook	asmMajor	asmMake	asmMakeMissing	asmMasterItem	asmMasterJob	asmMasterKey	asmMasterOutfit	asmMasterSig	asmMicroKind	asmMotif	asmNear	asmNeeds	asmOffPage	asmOutKey	asmP2On	asmPack	asmPackZones	asmPaintable	asmParts	asmPending	asmPhoto	asmPhotoParts	asmPieceJob	asmPieceKey	asmPreSigOk	asmPump	asmPx	asmQueueOutfit	asmRun	asmSeams	asmShirtOwn	asmShirtText	asmShow	asmSleeveImgs	asmStamp	asmSuitBands	asmSuitCut	asmSuitPaintable	asmSuitSig	asmSuitTexFor	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieMask	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmUnpack	asmUnpackZones	asmVestEdge	asmVestKept	asmVestKey	asmVestMasterJob	asmVestTag	asmVestZone	asmWants	asmWants0	asmWatch	asmWeave	asmWeaveSig	asmWorker	asmZoneImgs	asmZoneKey	asmZones	asmZonesKept	asmZonesOk	renderAsmUI
+assemble.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBarDraw	asmBarRgb	asmBarSig	asmBlobUp	asmCalibKey	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmLab	asmLinen	asmListGet	asmLoad	asmMasterKey	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPreSig	asmPreSigOk	asmPrebuildOne	asmPump	asmRun	asmShow	asmStamp	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmVestKey	asmVestTag	asmWants	asmWeave	asmWorker	asmZoneImgs	asmZoneKey	renderAsmUI
 assemble.test.js	care.js	<loaded>	careCounts	careLimit	careNote	careNoun	careShow	careTimes	laundryDays	renderCareUI
 assemble.test.js	colpick.js	<loaded>
 assemble.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	lum	mix	nm	occOf	offDays	offName	patBase	patLabel	patName	prettyCols	primaryCol	rgbHex	sentence	shoeStyle	sockToe	thirdOf	titleCls	todayDate	typeWord	watchOpts	watchText	wearsJacket	wearsTie
@@ -735,16 +713,10 @@ assemble.test.js	styles.css	#about-update[hidden]	#add	#adv-photos:has(#asm-grou
 assemble.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	localState	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
 assemble.test.js	tagging.js	<loaded>	claudeOnly	dialCrop	motifPat	outfitRefsFull	patternPrompt	readable	recolourSpecSetts	renderCustomUI	settText	settable	trimRefs	turnBy	upgradeCloseups	upgradePhotos
 assemble.test.js	tests/fixedplan.js	<any>
-assemble.test.js	tests/fixtures/asm-bar.jpg	<loaded>
-assemble.test.js	tests/fixtures/asm-jacket.jpg	<any>	<loaded>
 assemble.test.js	tests/fixtures/asm-master.jpg	<any>	<loaded>
 assemble.test.js	tests/fixtures/asm-shirt-black.jpg	<any>	<loaded>
-assemble.test.js	tests/fixtures/asm-shirt-pink.jpg	<any>	<loaded>
 assemble.test.js	tests/fixtures/asm-tie.jpg	<any>	<loaded>
-assemble.test.js	tests/fixtures/asm-vest-suit.jpg	<loaded>
-assemble.test.js	tests/fixtures/asm-vestcalib.jpg	<loaded>
 assemble.test.js	tests/fixtures/asm-vestmaster.jpg	<loaded>
-assemble.test.js	tests/fixtures/asm-watch.jpg	<any>	<loaded>
 assemble.test.js	ui.js	<loaded>	advClose	advToggle	askAnswer	askConfirm	askEls	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 assemble.test.js	wardrobe.js	<loaded>
 assemble.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	WATCH_KEY	corsFor	dataUrlToBlob	delRender	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	hubOf	jobClaim	jobMsg	keepMade	keepSnapshots	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	renderId	renderTtl	runRenderJob	sameText	serve	sha256Hex	spend	spendEach	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
@@ -787,6 +759,38 @@ auditfix.test.js	tagging.js	<loaded>	outfitRefsFull	patternPrompt	readPatternWit
 auditfix.test.js	tests/fixedplan.js	<any>
 auditfix.test.js	ui.js	<loaded>	addGate	advClose	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	ownerHere	plainErr	renderConnUI	uiEsc
 auditfix.test.js	wardrobe.js	<loaded>	matRow	moreRow
+beltswap.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+beltswap.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+beltswap.test.js	analysis.js	<loaded>
+beltswap.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	belowBox	beltless	busyLabelFor	canPick	checkArrivals	checkPlanRules	closePicker	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keepOff	keyDate	lastWorn	learnFrom	learnVote	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFillSoon	monthLink	nextWorkday	offBtn	offOn	pageIn	pickItem	piecesBox	piecesLine	planFor	planMonth	planOn	planRulesCheck	planSnapSoon	planSnapUse	planStartDay	planTrim	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	renderFor	renderItem	renderPending	renderStalled	renderToday	replanFuture	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	show	slotLabel	slotPool	slots	smallPhotos	stackSVG	swApply	swapSlot	texSwatches	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
+beltswap.test.js	apple-touch-icon.png	<loaded>
+beltswap.test.js	asm-color.js	<loaded>
+beltswap.test.js	asm-gl.js	<loaded>
+beltswap.test.js	assemble.js	<loaded>	@
+beltswap.test.js	care.js	<loaded>	careCounts	careLimit	careNote	careNoun	careShow	careTimes
+beltswap.test.js	colpick.js	<loaded>
+beltswap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM	SLOT_TYPE	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	lum	lumCol	mix	nm	occOf	offDays	offName	patBase	patLabel	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
+beltswap.test.js	detect.js	<loaded>	@	usableSett
+beltswap.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
+beltswap.test.js	dress.js	<loaded>	migrateVests
+beltswap.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
+beltswap.test.js	icon-192.png	<loaded>
+beltswap.test.js	icon-512.png	<loaded>
+beltswap.test.js	index.html	<loaded>
+beltswap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
+beltswap.test.js	manifest.webmanifest	<loaded>
+beltswap.test.js	pack.js	<loaded>	packShow
+beltswap.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkShirt	darkUnderLight	fam	finish	frozenOutfit	itemVote	jacketGroup	leatherGroup	lookRepeat	metalOf	outfit	outfitScore	pairDown	pairKey	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	watchFit	withColRun
+beltswap.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+beltswap.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+beltswap.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+beltswap.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+beltswap.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
+beltswap.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#shop-backdrop	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#today	#today .row .dot	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.cap	.carenote	.carenote a	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.dot	.dot svg	.fig	.fig .wornbar	.fig .wornbar>*	.fig .wshare	.fig>svg	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-start	.linkbtn	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pri	.pstrip	.render-msg	.render-msg:empty	.resetbox .month-link	.resetbox .rsicon	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score li	.score li small	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.side>.dayact,.side>p	.side>.mbox:last-child	.side>.score,.side>.mbox	.slide	.stack	.stage	.stage .empty	.stage .firstrun	.thumb	.thumb svg	.warn	.wmark	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+beltswap.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
+beltswap.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+beltswap.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+beltswap.test.js	wardrobe.js	<loaded>
 boxfold.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 boxfold.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 boxfold.test.js	analysis.js	<loaded>
@@ -999,7 +1003,7 @@ cmhandedge.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	
 cmhandedge.test.js	apple-touch-icon.png	<loaded>
 cmhandedge.test.js	asm-color.js	<loaded>	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCodeText	asmCmFoldW	asmCmHandEdge	asmCmHash	asmCmLightPrep	asmCmMp	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmSetup	asmCmSrcSig	asmH32	asmLegsPrep	asmTieLit	asmTieSheenK
 cmhandedge.test.js	asm-gl.js	<loaded>
-cmhandedge.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmData	asmDropOld	asmImg	asmJpeg	asmKey	asmLoad	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag
+cmhandedge.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmData	asmImg	asmJpeg	asmKey	asmLoad	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag
 cmhandedge.test.js	care.js	<loaded>	careShow
 cmhandedge.test.js	colpick.js	<loaded>
 cmhandedge.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	occOf	offDays	offName	todayDate
@@ -1379,7 +1383,7 @@ dress.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@addE
 dress.test.js	apple-touch-icon.png	<loaded>
 dress.test.js	asm-color.js	<loaded>	asmCmRoute	asmGapNote
 dress.test.js	asm-gl.js	<loaded>
-dress.test.js	assemble.js	<loaded>	@	asmCalibKey	asmInfo	asmKey	asmLook	asmMasterKey	asmNeeds	asmPaintable	asmPieceKey	asmSuitBands	asmSuitPaintable	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmVestKey	asmVestTag	renderAsmUI
+dress.test.js	assemble.js	<loaded>	@	renderAsmUI
 dress.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careNote	careNoun	careShow	careState	careTimes	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 dress.test.js	colpick.js	<loaded>	EC	EP	colBtn	colLabel	patBtn	patTitle	patVar
 dress.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	arriveN	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayWins	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	lum	lumCol	mergeState	mix	needsJacket	needsTie	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shadeName	shoeStyle	sockToe	stamp	stateSig	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
@@ -1513,7 +1517,7 @@ geomaps.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bs
 geomaps.test.js	apple-touch-icon.png	<loaded>
 geomaps.test.js	asm-color.js	<loaded>	asmCmAssets	asmCmBgKey	asmCmGeoKeys	asmCmHash	asmCmKey	asmCmLightKeys	asmCmMfNow	asmCmRev	asmGeoPrep	asmUvAt
 geomaps.test.js	asm-gl.js	<loaded>
-geomaps.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmData	asmDropOld	asmImg	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
+geomaps.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmData	asmImg	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
 geomaps.test.js	care.js	<loaded>	careShow
 geomaps.test.js	colpick.js	<loaded>
 geomaps.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	occOf	offDays	offName	todayDate
@@ -1548,7 +1552,7 @@ hbshirt.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bs
 hbshirt.test.js	apple-touch-icon.png	<loaded>
 hbshirt.test.js	asm-color.js	<loaded>	asmCmTile	asmCmWeaveTag	asmHbShirt	asmHbShirtLook
 hbshirt.test.js	asm-gl.js	<loaded>
-hbshirt.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDropOld	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmTexMm	asmVestKey	asmVestTag	asmWeave
+hbshirt.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmTexMm	asmVestKey	asmVestTag	asmWeave
 hbshirt.test.js	care.js	<loaded>	careShow
 hbshirt.test.js	colpick.js	<loaded>
 hbshirt.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	labHex	lum	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	rgbLab	thirdOf	todayDate
@@ -1581,7 +1585,7 @@ hbswatch.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@b
 hbswatch.test.js	apple-touch-icon.png	<loaded>
 hbswatch.test.js	asm-color.js	<loaded>	asmCmTile	asmHbShirt	asmHbShirtLook
 hbswatch.test.js	asm-gl.js	<loaded>
-hbswatch.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDropOld	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmVestKey	asmVestTag	asmWeave
+hbswatch.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmVestKey	asmVestTag	asmWeave
 hbswatch.test.js	care.js	<loaded>	careShow
 hbswatch.test.js	colpick.js	<loaded>
 hbswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	lum	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	thirdOf	todayDate
@@ -1962,7 +1966,7 @@ masterspeed.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then
 masterspeed.test.js	asm-color.js	<any>	<loaded>	asmB64	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobOf	asmCmBlobRead	asmCmBlur	asmCmCodeText	asmCmCopyKey	asmCmCopySig	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmDiskPut	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMasterCopyRec	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmSetup	asmCmSetupBlob	asmCmSetupFetch	asmCmSetupKey	asmCmSrcSig	asmCmStatus	asmCmUI	asmCmUnpack	asmCmWarm	asmGapUI	asmUnB64
 masterspeed.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
 masterspeed.test.js	asm-worker.js	<any>
-masterspeed.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBodyFlow	asmCalibKey	asmCmAny	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmDropOld	asmGet	asmGetOnce	asmImg	asmInfo	asmKey	asmListGet	asmLoad	asmMasterKey	asmNeeds	asmOffPage	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKept	asmVestKey	asmVestTag	asmWorker	asmZonesKept	renderAsmUI
+masterspeed.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBodyFlow	asmCalibKey	asmCmAny	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmGet	asmGetOnce	asmImg	asmKey	asmListGet	asmLoad	asmMasterKey	asmOffPage	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag	asmWorker	renderAsmUI
 masterspeed.test.js	care.js	<loaded>	careShow
 masterspeed.test.js	colpick.js	<loaded>
 masterspeed.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	mergeState	occOf	offDays	offName	stateSig	todayDate	wearsJacket
@@ -3467,7 +3471,7 @@ run.js: planner: shoes, belts, leather and metals	worker.js	<loaded>	@onstTYPE_C
 run.js: renders the outfit without errors	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: renders the outfit without errors	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 run.js: renders the outfit without errors	analysis.js	<loaded>
-run.js: renders the outfit without errors	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	belowBox	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFillSoon	monthLink	nextWorkday	offBtn	offOn	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planRulesCheck	planSnapUse	planStartDay	planTrim	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	renderFor	renderItem	renderPending	renderStalled	renderToday	replanFuture	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	show	slotLabel	slotPool	slots	smallPhotos	stackSVG	swApply	texSwatches	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
+run.js: renders the outfit without errors	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@tocolnavigator.serviceWorker.registersw.js.catch	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	aAn	adviceFor	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	belowBox	busyLabelFor	canPick	checkArrivals	checkPlanRules	closeSettings	comboKey	comboKeyV1	comboSig	comboSigV1	dayActions	esc	fetchItemPic	fetchRemoteRender	figureStage	fitNav	fitNavSoon	fixItemBackdrops	fnv64	hasOutfit	homeDay	idsOf	itemDesc	itemKey	itemPic	itemPicHtml	itemShown	keyDate	lastWorn	loadRenders	loadWeather	lockIds	lockUpcoming	lookSig	metaGet	metaPut	monthFillSoon	monthLink	nextWorkday	offBtn	offOn	pageIn	piecesBox	piecesLine	planFor	planMonth	planOn	planRulesCheck	planSnapSoon	planSnapUse	planStartDay	planTrim	prefetchRenders	queuedKeys	recordDays	refreshHolidays	refreshToday	renderFor	renderItem	renderPending	renderStalled	renderToday	replanFuture	resetCard	rqGet	saveDay	schedulePrefetch	scoreCard	setLock	settingsOpen	shareMark	shirtPatterned	shirtTextured	show	slotLabel	slotPool	slots	smallPhotos	stackSVG	swApply	texSwatches	todayBtn	tx	txFail	txs	vestRow	whenPulled	window.fetch	workerBase	wornBar	wornMarks	wxPreload	zoomTarget
 run.js: renders the outfit without errors	apple-touch-icon.png	<loaded>
 run.js: renders the outfit without errors	asm-color.js	<loaded>
 run.js: renders the outfit without errors	asm-gl.js	<loaded>
@@ -4441,7 +4445,7 @@ takeoff.test.js	app.js	<loaded>	@$today.addEventListenerclick	@aGetsettingsmetaG
 takeoff.test.js	apple-touch-icon.png	<loaded>
 takeoff.test.js	asm-color.js	<loaded>	asmCmAssets	asmCmBlur	asmCmGeoKeys	asmCmGet	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMfGet	asmCmMfGet1	asmCmMfNow	asmCmPref	asmCmRoute	asmCmTrSc	asmLegsAt	asmLegsPrep
 takeoff.test.js	asm-gl.js	<loaded>
-takeoff.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmCan	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmDropOld	asmEnsure	asmFor	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLoad	asmMasterKey	asmPending	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag	asmWants	asmWants0
+takeoff.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmEnsure	asmFor	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLoad	asmMasterKey	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag	asmWants
 takeoff.test.js	care.js	<loaded>	careCounts	careLimit	careNote	careNoun	careShow	careTimes
 takeoff.test.js	colpick.js	<loaded>
 takeoff.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM	SLOT_TYPE	accentOf	applyCustom	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	lum	lumCol	mix	needsJacket	needsTie	nm	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	shoeStyle	sockToe	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie

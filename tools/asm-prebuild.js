@@ -152,12 +152,11 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
     if(!synced.on){console.error('Assembled pictures are switched off in this checkout (ASM_ON in assemble.js).');process.exit(2)}
     // every look of the coming workdays, once: its key and, painted on a colour-coded master, its signature (known before painting)
     const looks=await page.evaluate(async([days,size])=>{if(typeof asmCmMfGet==='function')await asmCmMfGet(true);   // the masters' manifest, every cycle (one small read): a master uploaded again is downloaded afresh and its looks painted again
-      await asmGet(asmMasterKey(),true);
       if(typeof ASM_CM_KINDS!=='undefined'){self.ASM_CM_SIZE=size;for(const k of Object.keys(ASM_CM_KINDS))await asmCmGet(k)}   // painted here at 2880 (--cm-size), scaled to 2048; every mask too, since a look's signature is its newest record's date
       const T=todayDate(),seen=new Map();
       for(let i=0;i<days;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;
-        const o=planOn(d);if(!o)continue;await asmCmLook(o);const kind=asmCmUse(o);if(!kind&&!asmCan(o))continue;const k=asmOutKey(o);
-        if(!seen.has(k))seen.set(k,{first:isoKey(d),kind:kind||'',sig:kind?asmPreSig(o):''})}
+        const o=planOn(d);if(!o)continue;await asmCmLook(o);const kind=asmCmUse(o);if(!kind)continue;const k=asmOutKey(o);   // (a look with no colour-coded master shows its own photo or the drawing)
+        if(!seen.has(k))seen.set(k,{first:isoKey(d),kind,sig:asmPreSig(o)})}
       return [...seen].map(([key,v])=>({key,...v}))},[DAYS,CM_SIZE]);
     const sig=JSON.stringify(looks.map(l=>[l.key,l.sig]));
     if(!first&&sig===lastSig){return {quiet:true}}   // nothing changed since the last cycle
@@ -170,14 +169,12 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
     await Promise.all(looks.map(async l=>{
       if(listed&&!listed.has(l.key)){need.push(l);return}
       if(l.sig&&made[l.key]===l.sig){cur.push(l);return}
-      if(l.sig){const c=await api('render?key='+l.key,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);if(c&&c.sig===l.sig){made[l.key]=l.sig;cur.push(l)}else need.push(l);return}
-      need.push(l)}));   // a look of the earlier way: its signature is known only once made (checked after)
+      const c=await api('render?key='+l.key,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);if(c&&c.sig===l.sig){made[l.key]=l.sig;cur.push(l)}else need.push(l)}));
     console.log(`${now()} ${synced.items} items; ${looks.length} looks in the next ${DAYS} days: ${need.length} to make, ${cur.length} already current${DRY?' (dry run: nothing is uploaded)':''}`);
     let built=0,skipped=cur.length,uploaded=0,failed=0,done=0,onGpu=0,onCpu=0;
-    const cm=need.filter(l=>l.kind),old=need.filter(l=>!l.kind);
+    const cm=need;
     const report=(l,msg)=>{done++;console.log(`[${done}/${need.length}] ${l.first} ${msg}`)};
     const upload=async(l,r)=>{built++;
-      if(!l.sig){const c=await api('render?key='+r.key,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);if(c&&c.sig===r.sig){skipped++;return `${r.key} current, skipped`}}
       if(SAVE){fs.mkdirSync(SAVE,{recursive:true});fs.writeFileSync(path.join(SAVE,`${l.first}-${r.key}.jpg`),Buffer.from(r.img.split(',')[1],'base64'))}
       if(DRY)return `${r.key} built (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`;
       if(!budget.take(1)){failed++;pauseUploads(LIMIT_WHY);return 'not uploaded: this computer\'s daily upload limit is used up'}
@@ -188,11 +185,11 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       return `upload refused: ${up.status} ${body}`};
     // (stage 6) gpu: the job may be painted on the graphics chip (the GPU worker only); every pool job says gl:false
     const paint=(l,wi,gpu)=>page.evaluate(async([first,wi,gpu])=>{const o=planOn(new Date(first+'T12:00:00'));await asmCmLook(o);const kind=asmCmUse(o);
-      if(!kind){const r=await asmPrebuildOne(o);return r&&{...r,how:'(earlier way)'}}
+      if(!kind)return {error:'no colour-coded master for it'};
       if(!await asmCmGet(kind))return {error:'its master is missing on the worker'};const job=await asmJob(o);if(!job)return {error:'no job'};job.diskCache=true;job.gl=!!gpu;
       try{const res=await __poolRun(wi,job);return res&&res.url?{key:asmOutKey(o),sig:asmPreSig(o),img:res.url,how:`(colour-coded ${kind})`,gl:!!res.gl,ms:res.ms,renderer:res.renderer||'',glWhy:res.glWhy||''}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi,!!gpu]);
     const way=r=>r.gl?`GPU ${r.ms} ms`:`CPU${r.glWhy?': '+r.glWhy:''}`;
-    const finish=async(l,r,t1)=>{if(r.gl)onGpu++;else onCpu++;if(r.how&&r.how!=='(earlier way)')r.how=r.how.replace(/\)$/,', '+way(r)+')');report(l,`${await upload(l,r)} (${Date.now()-t1} ms)`)};
+    const finish=async(l,r,t1)=>{if(r.gl)onGpu++;else onCpu++;if(r.how)r.how=r.how.replace(/\)$/,', '+way(r)+')');report(l,`${await upload(l,r)} (${Date.now()-t1} ms)`)};
     const one=async(l,wi)=>{if(paused()){failed++;report(l,'not made: uploads paused until the worker\'s daily reset');return}
       const t1=Date.now(),r=await paint(l,wi,false);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
       await finish(l,r,t1)};
@@ -256,7 +253,6 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       finally{if(warm)await warm;await g.exit(err);gpuRests+=g.rested;gpuBursts+=g.bursts;gpuPeak=g.peak}};
     const [,back]=await Promise.all([cpuPass(cpuLooks),gpuPass(gpuLooks)]);
     if(back.length){console.log(`${now()} ${back.length} look(s) handed back by the GPU side: painting them on the CPU pool`);await cpuPass(back)}
-    for(const l of old)await one(l,0);   // the earlier way: one at a time, in the page's own worker
     saveMade();lastSig=failed?'':sig;   // (a look not made is tried again next cycle, not only when something changes)
     console.log(`Done in ${Math.round((Date.now()-t0)/1000)} s: ${built} built, ${uploaded} uploaded, ${skipped} already current, ${failed} not made.`+
       (GPU?` Painted on the GPU: ${onGpu}, on the CPU: ${onCpu}`+(gpuBursts?`; ${gpuBursts} GPU burst(s), ${Math.round(gpuRests)} s of guard rests, peaks ${Math.round(gpuPeak.temp)} C, ${Math.round(gpuPeak.power)} W, ${Math.round(gpuPeak.mem)} MB`:'')+(gpuOff?` (GPU off: ${gpuOff})`:'')+'.':''));

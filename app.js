@@ -807,11 +807,17 @@ async function swapSlot(slot){
   // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
   const follow=FOLLOW[slot]||[];
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  keepOff(force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
+  keepOff(force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;
+  if(slot==='belt'&&o.belt&&beltless(k,rec)){swapMsg=BELT_STUCK;renderToday();return}
+  swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
 }
 /* a piece taken off (rec.off) stays pinned through a swap or a pick of another piece, so putting it back brings the same one */
 const keepOff=(force,k,slot)=>{const r=dayRecs[k];if(!r||!r.off||!r.force)return;for(const s of ['top','tie','clip'])if(s!==slot&&r.off[s==='clip'?'tie':s]&&r.force[s])force[s]=r.force[s]};
-const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks']};
+const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks'],belt:['shoes','socks']};   // (a belt swap brings shoes that match it, as a shoe swap brings a belt: the owner's ask, 2026-11-14)
+/* would this record leave the day with no belt? (planned with the record in memory only, nothing saved): a belt swap or pick whose
+   only matching shoes don't suit the outfit (a black suit wants black shoes, and only the black belt matches them) changes nothing */
+const beltless=(k,rec)=>{const prev=dayRecs[k];dayRecs[k]=rec;cache={};let n=null;try{n=planFor()[k]}finally{if(prev)dayRecs[k]=prev;else delete dayRecs[k];cache={}}return !(n&&n.belt)};
+const BELT_STUCK='Your other belts need shoes that don’t suit this outfit, so the belt stays.';
 /* ---- learning from changes (the votes are read by the planner, see planner.js) ----
    A piece swapped away votes against its pairing with the pieces that stayed (a shirt with the jacket and the tie, a tie
    with the jacket and the shirt, trousers or shoes with the jacket); a piece chosen by hand votes for its pairings. Pieces
@@ -865,6 +871,7 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   force[slot]=id;keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;
+  if(slot==='belt'&&beltless(k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';renderToday();return}
   swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);renderToday()}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
@@ -1398,14 +1405,14 @@ async function renderCombo(o){
 /* Generate or Regenerate (Settings → This day's photo; there is no month batch any more) the shown day's photo. It goes to the worker's background queue,
    so the app can be swiped to another day, closed or locked: the worker makes it and the app picks it up when it next looks
    (every 20 s while open, and on opening). Only a worker without the queue makes it while the app waits. */
-const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck))||(asmLive()&&asmPending(o)))};
+const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck)))};
 /* a photo waiting over 10 minutes has stalled (one takes about a minute; retries a few more): the button offers to send it again */
 const STALL_MS=10*60000,renderStalled=ck=>{const q=rqGet();return q.keys.includes(ck)&&Date.now()-sentAt(q,ck)>STALL_MS};
 async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
   const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
-  // an outfit that is put together from item photos needs only its missing items made (a Regenerate still makes a whole photo)
-  try{const q=!replace&&asmLive()&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
+  // an outfit painted on a colour-coded master is only painted (nothing to pay for); a Regenerate still makes a whole photo
+  try{const q=!replace&&asmLive()&&asmWants(o)?(await asmEnsure(o),'asm'):await queueCombo(o,replace);
     if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open until it is done.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
   catch(e){const raw=String(e.message||e),pm=typeof plainErr==='function'?plainErr(raw):raw;   // (the server's set-up errors in plain words for a tester, ui.js)
