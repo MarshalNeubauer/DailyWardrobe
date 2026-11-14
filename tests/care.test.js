@@ -26,17 +26,39 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(c.st.limit===5&&c.st.due&&!c.st.near&&c.nr.near&&!c.nr.due&&c.tie.limit===0&&!c.tie.due,'defaults: a suit is due after 5 wears and nearly due at 4; a tie is never due');
     const cl=await p.evaluate(()=>{items.find(i=>i.id==='char').cleaned='2026-10-29';cache={};const a=careCounts().char;delete items.find(i=>i.id==='char').cleaned;cache={};return a});
     ok(cl===2,'only the wears after the day it was cleaned count ('+cl+')');
-    // ---- Today: one quiet line when today's wear reaches the limit
-    const note=async()=>p.evaluate(()=>{cache={};show('today');const e=document.querySelector('#carenote');return e?e.textContent:''});
+    // ---- Today: the cleaning frame and banner on the picture (careFrame, the owner's design 2026-11-14): yellow one wear short, red on
+    // the last wear and past it; on today and coming days, the wears planned in between counted; suits and blazers only
+    const band=async d=>p.evaluate(d=>{if(d)sel=new Date(...d);cache={};show('today');const f=document.querySelector('#mannequin-container'),b=f&&f.querySelector('#cband');
+      return {cls:f?f.className:'',text:b?b.querySelector('.ctxt').textContent.replace(/\s+/g,' ').trim():'',dots:b?b.querySelectorAll('.cdots i').length:0,on:b?b.querySelectorAll('.cdots i.on').length:0,
+        extra:b&&b.querySelector('.cdots em')?b.querySelector('.cdots em').textContent:'',note:(document.querySelector('#carenote')||{}).textContent||''}},d);
     await p.evaluate(()=>{dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'grey'}}});
-    ok(await note()==='','Today says nothing about cleaning for a suit that is not near its limit');
+    {const b=await band();ok(!b.text&&!/\bcb\b/.test(b.cls)&&!b.note,'nothing about cleaning for a suit that is not near its limit')}
     await p.evaluate(()=>{dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'char'}}});
-    ok(/5th wear since cleaning: it is due for the cleaner after today/.test(await note()),'Today has one line when the suit reaches its limit with this wear');
+    {const b=await band();ok(/care-last/.test(b.cls)&&b.text==='Last wear · Suit – to the cleaner today'&&b.dots===5&&b.on===5&&!b.note,`the suit's 5th wear today: a red frame, five dots, "${b.text}" (and no grey line any more)`)}
     await p.evaluate(()=>{dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'navy'}}});
-    {const n=await note();ok(/This suit is due for the cleaner: worn 5 times since cleaning, due after 5/.test(n)&&n.match(/due for the cleaner/g).length===1,'and when it is already past it (said once)')}
-    await p.evaluate(()=>{sel=new Date(2026,10,12)});const other=await note();
-    ok(other==='','no line on another day');
-    await p.evaluate(()=>{delete dayRecs['2026-11-11'];sel=new Date(2026,10,11);cache={}});
+    {const b=await band();ok(/care-over/.test(b.cls)&&b.text==='Overdue · Suit – worn 6 of 5'&&b.on===5&&b.extra==='+1',`worn past its limit: red, "${b.text}", five dots and ${b.extra}`)}
+    // coming days: the blazer (3 wears, due after 6) is planned every Friday
+    await p.evaluate(()=>{delete dayRecs['2026-11-11']});
+    {const f13=await band([2026,10,13]),f20=await band([2026,10,20]),f27=await band([2026,10,27]);
+      ok(!f13.text&&/care-near/.test(f20.cls)&&f20.text==='1 wear left · Blazer – wear 5 of 6'&&f20.dots===6&&f20.on===5&&/care-last/.test(f27.cls)&&f27.text==='Last wear · Blazer – to the cleaner today',
+        `coming days count the wears planned before them: Friday 13th nothing (4 of 6), the 20th yellow ("${f20.text}"), the 27th red ("${f27.text}")`)}
+    // the banner's cut round the tie swatch: none on today (the ✕/✓ row and the swatches sit above the banner), one on a coming day, and
+    // it follows the swatch when a tap shrinks the stack
+    {const lay=async(d,tap)=>{await band(d);if(tap){await p.evaluate(s=>swTap(s),tap);await settle(p,900)}else await settle(p,300);
+        return p.evaluate(()=>{const f=document.querySelector('#mannequin-container'),b=f.querySelector('#cband'),sw=[...f.querySelectorAll('.swstack .ovsw')].pop(),wb=f.querySelector('.wornbar'),fr=f.getBoundingClientRect();
+          const path=b.querySelector('path').getAttribute('d'),m=/^M([\d.]+) 0/.exec(path),bt=b.getBoundingClientRect().top;
+          return {photo:f.classList.contains('photo'),cut:m?+m[1]:null,sw:sw?sw.getBoundingClientRect().width:0,swRight:sw?sw.getBoundingClientRect().right-fr.left:0,swBottom:sw?sw.getBoundingClientRect().bottom:0,bandTop:bt,wbBottom:wb?wb.getBoundingClientRect().bottom:null}})};
+      await p.evaluate(()=>{dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'char'}}});   // (before the pictures: the outfit is their key)
+      await p.evaluate(()=>{const ph='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><rect width="900" height="900" fill="#556"/></svg>');
+        for(const d of [new Date(2026,10,11),new Date(2026,10,20)]){sel=d;cache={};const o=planFor()[key(d)];renders[comboKey(o)]={img:ph,sig:comboSig(o)}}});   // a picture for both days
+      const t0=await lay([2026,10,11]),t1=await lay([2026,10,11],'shirt');
+      ok(t0.photo&&t0.cut===0&&t0.wbBottom<=t0.bandTop+1&&t0.swBottom<=t0.bandTop,`today: the banner runs the full width, the ✕/✓ row and the swatches above it (row ${Math.round(t0.wbBottom)} ≤ banner ${Math.round(t0.bandTop)})`);
+      ok(t1.cut>0&&Math.abs(t1.cut-(t1.swRight+5+9))<1.5,`a swatch tapped on today: the stack comes down and the banner cuts round the tie swatch (cut at ${t1.cut}, swatch edge ${Math.round(t1.swRight)})`);
+      await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null});
+      const f0=await lay([2026,10,20]),f1=await lay([2026,10,20],'top');
+      ok(f0.cut>0&&Math.abs(f0.cut-(f0.swRight+5+9))<1.5&&f0.sw>60,`a coming day: the cut follows the ${Math.round(f0.sw)} px tie swatch (at ${f0.cut})`);
+      ok(f1.cut>0&&f1.sw<f0.sw-4&&Math.abs(f1.cut-(f1.swRight+5+9))<1.5,`a swatch tapped: the swatches shrink to ${Math.round(f1.sw)} px and the cut moves with them (at ${f1.cut})`)}
+    await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null;renders={};sel=new Date(2026,10,11);cache={}});
     // ---- the Wardrobe grid: a quiet tag on due pieces only
     await p.evaluate(()=>{flt='all';editing=null;show('wardrobe')});
     const g=await p.evaluate(()=>({navy:(document.querySelector('#gi-navy .caretag')||{}).textContent||'',n:document.querySelectorAll('#wardrobe .caretag').length}));
