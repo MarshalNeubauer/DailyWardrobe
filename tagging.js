@@ -81,6 +81,31 @@ async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V
   try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
   if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
   return n}
+/* a transparent picture saved as an item photo before shrink() gave it a backdrop (2026-11-14, the owner's socks: a cut-out PNG whose
+   photo showed on black, a JPEG having no transparency): a photo whose edge is nearly all pure black (BB_EDGE of it under BB_DARK) and
+   whose item isn't dark itself has the black joined to its edge (under BB_FILL: the JPEG's soft fringe too) made white, the one-pixel
+   rim beside it half way; a dark item, or a photo with a real dark backdrop, is left. Once (localStorage black_bd). Its sharp copy
+   keeps the black, so it isn't signed again (a crop then cuts from the photo itself). */
+const BB_FLAG='black_bd',BB_V='1',BB_DARK=12,BB_FILL=48,BB_EDGE=.9;
+function blackBackdrop(c){const W=c.width,H=c.height,x=c.getContext('2d',{willReadFrequently:true}),D=x.getImageData(0,0,W,H),p=D.data,mx=k=>Math.max(p[4*k],p[4*k+1],p[4*k+2]);
+  let e=0,n=0;const edge=[];for(let X=0;X<W;X++)edge.push(X,(H-1)*W+X);for(let Y=1;Y<H-1;Y++)edge.push(Y*W,Y*W+W-1);
+  for(let i=0;i<edge.length;i+=2){n++;if(mx(edge[i])<=BB_DARK)e++}if(e<BB_EDGE*n)return false;
+  const bg=new Uint8Array(W*H),st=new Int32Array(W*H);let sp=0;for(const k of edge)if(!bg[k]&&mx(k)<=BB_FILL){bg[k]=1;st[sp++]=k}
+  while(sp){const k=st[--sp],X=k%W;for(const j of [X>0?k-1:-1,X<W-1?k+1:-1,k-W,k+W])if(j>=0&&j<W*H&&!bg[j]&&mx(j)<=BB_FILL){bg[j]=1;st[sp++]=j}}
+  for(let k=0;k<W*H;k++){if(bg[k]){p[4*k]=p[4*k+1]=p[4*k+2]=255;continue}const X=k%W;
+    if((X>0&&bg[k-1])||(X<W-1&&bg[k+1])||(k>=W&&bg[k-W])||(k+W<W*H&&bg[k+W]))for(let q=0;q<3;q++)p[4*k+q]=Math.round((p[4*k+q]+255)/2)}
+  x.putImageData(D,0,0);return true}
+async function fixBlackBackdrops(){try{if(localStorage.getItem(BB_FLAG)===BB_V)return 0}catch{return 0}
+  let n=0;
+  for(const it of items){if(!it.photo)continue;
+    try{const h=String(colOf(it)).replace('#',''),lum=.3*parseInt(h.slice(0,2),16)+.59*parseInt(h.slice(2,4),16)+.11*parseInt(h.slice(4,6),16);if(!(lum>=70))continue;   // a dark item's own black can't be told from the backdrop
+      const ph=await imgOf(it.photo),c=document.createElement('canvas');c.width=ph.naturalWidth;c.height=ph.naturalHeight;c.getContext('2d').drawImage(ph,0,0);
+      if(!blackBackdrop(c)||!stillCur(it))continue;
+      it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
+    catch(e){console.warn('backdrop not fixed',it.id,e)}}
+  try{localStorage.setItem(BB_FLAG,BB_V)}catch{}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw()}
+  return n}
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */
