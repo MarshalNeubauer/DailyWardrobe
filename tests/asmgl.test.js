@@ -12,6 +12,10 @@ const PIN={v:2,a:0,bands:[['#2b365a',.94],['#a3aecb',.06]],cross:null,cr:7,tr:40
 const WPB=[['#baa98e',.905],['#e0d9c9',.02],['#baa98e',.015],['#97b0c5',.025],['#baa98e',.015],['#e0d9c9',.02]];
 const WP={v:2,a:0,bands:WPB,cross:{d:90,bands:WPB.map((b,k)=>[k===0||k===2||k===4?null:b[0],b[1]]),r:1.05},cr:3.8,tr:11,src:'claude+pixels'};
 const HBP={v:2,a:0,bands:[['#3b3d42',.47],['#b8b8b4',.06],['#3b3d42',.47]],cross:null,cr:6,tr:30,src:'claude+pixels'};
+// the owner's navy & pink stripe tie (tests/asm2048.test.js), its count as the close-up shows it
+const STT={v:2,a:-45,bands:[['#16151d',.85],['#e090a0',.15]],cross:null,cr:2.75,tr:3.6,src:'claude+pixels'};
+// the owner's pink herringbone shirt (tests/herringbone.test.js)
+const HBS={v:4,tex:{kind:'herringbone',grid:['1000000110','0100001010','0010010010','0001100010'],aspect:.3,lighter:true,contrast:'subtle',rel:.179},a:0,cr:13,tr:45};
 const LOOKS=[
   {name:'plain navy',top:['suit','navy'],shirt:'pink',tie:'burgundy',gl:true},
   {name:'plain mid grey',top:['suit','midgrey'],shirt:'white',tie:'navy',gl:true},
@@ -48,8 +52,29 @@ const LOOKS=[
   {name:'sharkskin, solved positions',top:['suit','grey',{pattern:'sharkskin'}],shirt:'pink',tie:'navy',geo:true,gl:true,has:'wv-sharkskin'},
   {name:'birdseye',top:['suit','navy',{pattern:'birdseye'}],shirt:'white',tie:'burgundy',gl:true,has:'wv-birdseye'},
   {name:'nailhead',top:['suit','charcoal',{pattern:'nailhead'}],shirt:'lightblue',tie:'wine',gl:true,has:'wv-nailhead'},
-  // not covered yet: the CPU paints them (stages 4 and 5 move rows up)
-  {name:'gingham shirt',top:['suit','navy'],shirt:['lightblue',{pattern:'gingham'}],tie:'burgundy',gl:false,why:/patterned shirt/},
+  // stage 4: ties read from a tile (asmTieFor: tie-bands, tie-motif, tie-tex-<kind> (texmax: the twill's count held at ASM_TIE_TEX_MAX),
+  // tie-knit, tie-paisley), the tie clip (asmBarDraw, after read-back: clip), shirts drawn from a tile (asmCmTile: shirt-tile; fine: a
+  // woven shirt's 3x3 points; hbs: the herringbone shirt's look, asmHbShirtLook)
+  {name:'navy & pink stripe tie',top:['suit','navy'],shirt:'white',tie:['navy',{pattern:'stripe',secondaryColor:'pink',sett:STT}],gl:true,has:'tie-bands'},
+  {name:'navy & pink stripe tie, solved positions',top:['suit','charcoal'],shirt:'lightblue',tie:['navy',{pattern:'stripe',secondaryColor:'pink',sett:STT}],geo:true,gl:true,has:'tie-bands'},
+  {name:'foulard (neat motif) tie',top:['suit','grey'],shirt:'white',tie:['navy',{pattern:'foulard',sett:{v:3,motif:{grid:'diagonal',ground:'#313363',figs:[{shape:'square',place:'cell',size:.9,cols:['#755ea0']}]},a:45,cr:17,tr:20,src:'claude+pixels'}}],gl:true,has:'tie-motif'},
+  {name:'charcoal check tie',top:['suit','navy'],shirt:'lightblue',tie:['charcoal',{pattern:'check',sett:{v:2,a:0,bands:[['#3a3b3f',.6],['#8a8c90',.4]],cross:{d:90,bands:[['#3a3b3f',.6],['#8a8c90',.4]],r:1},cr:4,tr:6,src:'claude+pixels'}}],gl:true,has:'tie-bands'},
+  {name:'tonal woven tie',top:['suit','charcoal'],shirt:'white',tie:['black',{pattern:'woven',sett:{v:4,tex:{kind:'diamond',grid:['00011000','00100100','01000010','10000001','10000001','01000010','00100100','00011000'],aspect:1,lighter:true,contrast:'medium',rel:.35},a:0,cr:40,tr:32,src:'claude+pixels'}}],gl:true,has:'tie-tex-diamond'},
+  {name:'burgundy twill tie',top:['suit','navy'],shirt:'white',tie:['burgundy',{pattern:'woven',sett:{v:4,tex:{kind:'twill',grid:['0001','0010','0100','1000'],aspect:1,lighter:true,contrast:'low',rel:.35},a:0,cr:60,tr:80,src:'claude+pixels'}}],gl:true,has:'tie-tex-twill,texmax'},
+  {name:'knit tie',top:['suit','grey'],shirt:'white',tie:['navy',{pattern:'knit'}],gl:true,has:'tie-knit'},
+  {name:'paisley tie',top:['suit','navy'],shirt:'white',tie:['burgundy',{pattern:'paisley',secondaryColor:'navy'}],gl:true,has:'tie-paisley'},
+  {name:'stripe tie with a clip',top:['suit','navy'],shirt:'white',tie:['navy',{pattern:'stripe',secondaryColor:'pink',sett:STT}],clip:'silver',gl:true,has:'tie-bands,clip'},
+  {name:'pink herringbone shirt',top:['suit','navy'],shirt:['pink',{pattern:'herringbone',sett:HBS}],tie:'navy',gl:true,has:'shirt-tile,fine,hbs'},
+  {name:'pink herringbone shirt, solved positions',top:['suit','charcoal'],shirt:['pink',{pattern:'herringbone',sett:HBS}],tie:'navy',geo:true,gl:true,has:'shirt-tile,fine,hbs'},
+  {name:'white woven diamond (dobby) shirt',top:['suit','navy'],shirt:['white',{pattern:'woven',sett:{v:4,tex:{kind:'diamond',grid:['1001','0110','0110','1001'],aspect:1.4,lighter:true,contrast:'subtle',rel:.2},a:0,cr:24,tr:45}}],tie:'burgundy',gl:true,has:'shirt-tile,fine'},
+  {name:'grey chevron motif shirt',top:['suit','navy'],shirt:['white',{secondaryColor:'grey',pattern:'dobby',sett:{v:3,motif:{grid:'straight',ground:'#eeeef2',groundName:'white',figs:[{shape:'figure',place:'cell',size:.5,cols:['#6a6870'],bmp:['1000001','1100011','1111111','0111110','0011100','0001000']}],aspect:.82},a:0,cr:10,tr:80,src:'claude+pixels'}}],tie:'burgundy',gl:true,has:'shirt-tile,shirt-motif'},
+  {name:'gingham shirt',top:['suit','navy'],shirt:['lightblue',{pattern:'gingham'}],tie:'burgundy',gl:true,has:'shirt-tile'},
+  {name:'blue stripe shirt',top:['suit','grey'],shirt:['white',{pattern:'stripe',secondaryColor:'blue'}],tie:'navy',gl:true,has:'shirt-tile'},
+  {name:'blue stripe shirt, solved positions',top:['suit','navy'],shirt:['white',{pattern:'stripe',secondaryColor:'blue'}],tie:'burgundy',geo:true,gl:true,has:'shirt-tile'},
+  {name:'end-on-end fleck shirt',top:['suit','navy'],shirt:['lightblue',{pattern:'end-on-end'}],tie:'navy',gl:true,has:'shirt-tile'},
+  {name:'navy stripe shirt (dark: the full look), paisley tie',top:['suit','grey'],shirt:['navy',{pattern:'stripe',secondaryColor:'white'}],tie:['burgundy',{pattern:'paisley',secondaryColor:'navy'}],gl:true,has:'tie-paisley,shirt-tile'},
+  // not covered: the CPU paints it (the cloth look off; on the suit master no other look is left to the CPU)
+  {name:'cloth look off',top:['suit','navy'],shirt:['lightblue',{pattern:'gingham'}],tie:'burgundy',jx:{look:false},gl:false,why:/cloth look off/},
 ].filter(L=>!process.env.ASMGL_ONLY||new RegExp(process.env.ASMGL_ONLY).test(L.name));
 // (ASMGL_SIZE=2048 paints the looks at a phone's size, the fixtures enlarged: the spot check; ASMGL_ONLY=<regexp> picks rows by name)
 const SIZE=+process.env.ASMGL_SIZE||512;
@@ -77,14 +102,17 @@ module.exports=async({ok,chromium,url})=>{
       const b=document.createElement('canvas');b.width=b.height=512;const bx=b.getContext('2d');bx.filter='blur(3px)';bx.drawImage(c,0,0);
       renders[asmCmBgKey()]={img:b.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
       let n=0;const I=(type,c,x={})=>({id:type+(n++),type,primaryColor:c,pattern:'solid',...x}),watch=I('watch','silver',{metal:'silver'});items=[watch];
-      window.__jobs=[];for(const L of LOOKS){const top=I(L.top[0],L.top[1],L.top[2]||{}),sh=Array.isArray(L.shirt)?I('shirt',L.shirt[0],L.shirt[1]):I('shirt',L.shirt),tie=I('tie',L.tie);items.push(top,sh,tie);
-        const j=await asmCmJob({top,shirt:sh,tie,watch});j.diskCache=false;__jobs.push(j)}
+      window.__jobs=[];window.__its=[];for(const L of LOOKS){const top=I(L.top[0],L.top[1],L.top[2]||{}),sh=Array.isArray(L.shirt)?I('shirt',L.shirt[0],L.shirt[1]):I('shirt',L.shirt),tie=Array.isArray(L.tie)?I('tie',L.tie[0],L.tie[1]):I('tie',L.tie);items.push(top,sh,tie);
+        const clip=L.clip?I('tieclip',L.clip,{metal:L.clip}):null;
+        const j=await asmCmJob({top,shirt:sh,tie,watch,...(clip?{clip}:{})});Object.assign(j,L.jx||{});j.diskCache=false;__jobs.push(j);__its.push({sh,tie})}
       // stand-in solved positions at the maps' 2048: the body piece 1, sleeve parts 10+, lapels 40+ (from the master's own parts at 512), each
       // position a smooth bend of the picture's, encoded as asmGeoPrep reads them
-      const hit=await asmCmSetup(__jobs[0]),P=hit.P,G=ASM_GEO_PX,f=G/P.S;
+      const hit=await asmCmSetup(__jobs[0]),P=hit.P,G=ASM_GEO_PX,f=G/P.S,pc={tie:0,cuff:0,front:0,other:0};
       const enc=fn=>{const cv=document.createElement('canvas');cv.width=cv.height=G;const cx=cv.getContext('2d'),d=cx.createImageData(G,G);
         for(let Y=0;Y<G;Y++)for(let X=0;X<G;X++){const k=Math.floor(Y/f)*P.S+Math.floor(X/f),j=4*(Y*G+X),si=P.geo.seg[k],gs=P.geo.segs[si];
-          const r=!P.A.jacket[k]?0:!si?1:gs&&gs.parts?10+2*si:40+si,v=r?Math.round((fn(X,Y,r)+1024)*16):0;d.data[j]=v>>8;d.data[j+1]=v&255;d.data[j+2]=r;d.data[j+3]=255}
+          // (stage 4) where there is no jacket: the tie's knot 80 above its neck and blade 81, the shirt's turned cuffs 60.., its front 2
+          const cu=P.cuff?P.cuff[k]:255,r=P.A.jacket[k]?(!si?1:gs&&gs.parts?10+2*si:40+si):P.A.tie[k]?(Math.floor(k/P.S)<P.tieGeo.yk?80:81):
+            P.A.shirt[k]?(cu<255&&P.cuffAng[cu]?60+Math.min(19,cu%20):2):0,v=r?Math.round((fn(X,Y,r)+1024)*16):0;pc[r>=80?'tie':r>=60?'cuff':r===2?'front':'other']++;d.data[j]=v>>8;d.data[j+1]=v&255;d.data[j+2]=r;d.data[j+3]=255}
         cx.putImageData(d,0,0);return cv.toDataURL('image/png')};
       const geo={geoU:enc((X,Y,r)=>X*1.03+8*Math.sin(Y/150)+r),geoV:enc((X,Y,r)=>Y*.97+5*Math.sin(X/210)-r),gt:'77.78'};
       LOOKS.forEach((L,i)=>{if(L.geo)Object.assign(__jobs[i],geo)});
@@ -95,20 +123,25 @@ module.exports=async({ok,chromium,url})=>{
       // quarter-pixel points the float rule (asmTubePart) would put in the other part
       const cr=P.geo.segs.filter(g=>g&&g.crease);let pts=0,moved=0;
       for(const g of cr)for(let k=0;k<P.N;k+=7){if(!P.A.jacket[k]||P.geo.segs[P.geo.seg[k]]!==g)continue;const X=k%P.S+.25,Y=(k-k%P.S)/P.S+.75;pts++;if(asmTubePartQ(g,X,Y)!==asmTubePart(g,X,Y))moved++}
-      return {renderer:(()=>{const G2=asmGlInit(SIZE);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg,crease:cr.length,pts,moved}},[HOST,LOOKS,SIZE]);
+      return {renderer:(()=>{const G2=asmGlInit(SIZE);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg,crease:cr.length,pts,moved,pc,cuffs:asmGlCuffs(P).n}},[HOST,LOOKS,SIZE]);
     ok(!setup.err&&setup.bg,`the suit master, its masks and a background are on the page (${setup.err||'ok'})`);
     ok(!!setup.renderer,`WebGL2 here: ${setup.renderer}`);
     ok(setup.crease>=1&&setup.pts>100&&setup.moved<=setup.pts/1000,`the master has a creased sleeve (${setup.crease}), whose part the whole-number rule chooses as the float rule did (${setup.moved} of ${setup.pts} points moved)`);
+    ok(setup.cuffs>=1&&setup.pc.tie>0&&setup.pc.cuff>0&&setup.pc.front>0,`the master has turned shirt cuffs (${setup.cuffs}), and the stand-in maps solve the tie, the cuffs and the shirt's front (${JSON.stringify(setup.pc)} map pixels)`);
     // every look, both ways
     for(let i=0;i<LOOKS.length;i++){const L=LOOKS[i];
       const r=await p.evaluate(async i=>{const c=await __paint(i,false),why=asmGlWhy(__jobs[i],(await asmCmSetup(__jobs[i])).P),g=await __paint(i,true);
         const a=c.px,b=g.px,N=a.length/4;let mx=0,sum=0,over=0;for(let k=0;k<N;k++){let m=0;for(let q=0;q<3;q++){const d=Math.abs(a[4*k+q]-b[4*k+q]);sum+=d;if(d>m)m=d}if(m>mx)mx=m;if(m>2)over++}
         const T=__jobs[i].cloth.jacket.suit,C=T&&T.cloth,W=T&&T.wv,has=!T?'':[T.TW>1||T.TH>1?'tile':'',T.k!=null?'k':'',C?C.kind+(C.cw?'-cols':''):'',C&&(C.yarn||C.float||C.grain||C.mottle||C.pbrk)?'hbx':'',
           T.tweed?'tweed':'',W?'wv-'+W.kind:'',(C&&C.c2)||(T.tweed&&T.c2)||(W&&W.c2)?'c2':''].filter(Boolean).join(',');
-        return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms,has}},i);
+        // (stage 4) the tie's and shirt's tiles
+        const it=__its[i],cl=__jobs[i].cloth,ts=usableSett(it.tie),ss=usableSett(it.sh),how=asmCmRoute(it.tie,'tie').how,TI=cl.tie.tie,SH=cl.shirt.tile;
+        const has2=[has,TI?(how==='tie'?(ts.bands?'tie-bands':ts.motif?'tie-motif':'tie-tex-'+ts.tex.kind):'tie-'+how):'',TI&&TI.across===ASM_TIE_TEX_MAX?'texmax':'',__jobs[i].bar?'clip':'',
+          SH?'shirt-tile':'',SH&&SH.fine?'fine':'',SH&&asmHbShirt(it.sh)?'hbs':'',SH&&ss&&ss.motif?'shirt-motif':''].filter(Boolean).join(',');
+        return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms,has:has2,tkb:asmGlState&&asmGlState.tileBytes?Math.round(asmGlState.tileBytes/1024):0}},i);
       if(L.has)ok(r.has===L.has,`${L.name}: the cloth is what the row means (${r.has}, wanted ${L.has})`);
       if(L.gl){ok(r.cpu===false&&r.gl===true,`${L.name}: the graphics chip paints it (switch on), the CPU with the switch off (${r.why||'covered'})`);
-        ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at ${SIZE})`)}
+        ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at ${SIZE}; tiles ${r.tkb} KB)`)}
       else ok(r.gl===false&&L.why.test(r.why)&&r.max===0,`${L.name}: not covered (${r.why}): painted on the CPU either way, the same picture`)}
     // fallbacks: no WebGL2 at all, then a lost context, then the retry
     const fb=await p.evaluate(async()=>{const i=0,out={};
