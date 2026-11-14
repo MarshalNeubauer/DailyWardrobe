@@ -1004,9 +1004,9 @@ function itemThumb(i,full){
   return `<div class="ph thumb"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${TYPES[i.type]||'Item'}">${g}</svg></div>`;
 }
 
-/* ---------- torso figure (figure.js), worn with the app's tagged-colour fabrics ----------
-   The figure is drawn in a 390x400 box, about 2.7x the mannequin's scale; these factors size each weave so a
-   pinstripe suit shows ~25 stripes across the body and a polka-dot tie 3-4 dots across. */
+/* ---------- the outfit figure (mannequin.js), worn with the app's tagged-colour fabrics ----------
+   These factors size each weave on the traced mannequins (390x390 viewBox), so a pinstripe suit shows about the painter's stripe count
+   and a polka-dot tie 3-4 dots across. */
 const FIG_SCALE={top:1.6,shirt:1.7,tie:1.5,bot:1.6};   // (bot: the shirt masters' trousers, at the jacket's scale)
 function figFabric(item,role){
   if(!item)return null;const k=FIG_SCALE[role];
@@ -1029,22 +1029,21 @@ function figStripeLift(i){const s=i&&usableSett(i),sp=i&&i.patternSpec&&i.patter
     rgb=h=>[1,3,5].map(k=>lin(parseInt(String(h).slice(k,k+2),16)||0)),mix=(a,b)=>{const x=rgb(a),y=rgb(b);return '#'+x.map((v,k)=>gam(v+(y[k]-v)*FIG_STRIPE_MIX).toString(16).padStart(2,'0')).join('')};
   const ok=h=>/^#[0-9a-f]{6}$/i.test(String(h));if(!ok(g))return i;
   return {...i,sett:{...s,bands:s.bands.map((b,k)=>b[0]&&b[0]!==g&&ok(sp.bands[k].hex)?[mix(g,sp.bands[k].hex),b[1]]:b)}}}
-/* the master an outfit's figure is traced from (asmCmKind, asm-color.js), when its mannequin ships (mannequin.js, mq/<kind>.js): a
-   waistcoat without a tie has no master, so it is the waistcoat mannequin with the tie's place in the shirt */
-const figKind=o=>{const k=typeof asmCmKind==='function'?asmCmKind(o):null,m=k==='vest-open'?'vest':k;return m&&typeof mqHas==='function'&&mqHas(m)?m:null};
+/* the mannequin an outfit is drawn on (mannequin.js, mq/<kind>.js): its colour-coded master (asmCmKind, asm-color.js); a waistcoat without
+   a tie has no master, so it is the waistcoat mannequin with the tie's place in the shirt; an outfit with no master (no shirt, or no
+   trousers or belt without a jacket) takes the pose its pieces would have: a jacket with or without a tie, else the shirt masters, whose
+   missing trousers and belt are a plain dark grey and a dark brown, and a missing shirt a plain off-white */
+const figKind=o=>{let k=typeof asmCmKind==='function'?asmCmKind(o):null;
+  if(!k)k=o.top?(o.tie?(o.vest?'vest':'suit'):'suit-open'):(o.tie?'shirt-tie':'shirt-open');
+  return k==='vest-open'?'vest':k};
+const FIG_NO_SHIRT={color:'#F2F0EB'};
 function figureSvg(o,prefix='fig-'){
   const label=`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt)+(o.top?'':', no jacket')+(o.tie?'':', open collar'),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`;
   const clip=o.clip&&!o.vest?{color:colOf(o.clip)}:null,kind=figKind(o);
-  if(kind){const top=o.top&&figStripeLift(o.top),bot=!o.top&&o.bot&&figStripeLift(o.bot);
-    // a banded stripe (a pinstripe) at 1.6x figFabric's scale gives about the painter's stripe count; checks (a windowpane: about 7
-    // panes across, as painted), twills and solids stay at 1x
-    const k=i=>{const s=i&&usableSett(i);return s&&s.bands&&s.bands.length>1&&STRIPE_PATS.includes(patBase(i.pattern))?1.6:1};
-    return outfitMannequinSvg({kind,suit:figFabric(top||o.shirt,top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),bot:bot?figFabric(bot,'bot'):null,
-      beltColor:o.belt?colOf(o.belt):null,vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):null,bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:k(top),shirt:1,tie:1,bot:k(bot)}})}
-  let watch=null;
-  if(o.watch){const wo=watchOpts(o.watch),tones=METAL_TONES[o.watch.metal]||METAL_TONES.silver,dial=COLORS[wo.dial]||'#12151A';
-    watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
-  return outfitFigureSvg({
-    suit:figFabric(o.top||o.shirt,o.top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),
-    watch,clip,vest:!!(o.vest&&o.top),jacket:!!o.top,bg:figBg(),idPrefix:prefix,ariaLabel:label});
+  const top=o.top&&figStripeLift(o.top),bot=!o.top&&o.bot&&figStripeLift(o.bot),shirt=figFabric(o.shirt,'shirt')||FIG_NO_SHIRT;
+  // a banded stripe (a pinstripe) at 1.6x figFabric's scale gives about the painter's stripe count; checks (a windowpane: about 7
+  // panes across, as painted), twills and solids stay at 1x
+  const k=i=>{const s=i&&usableSett(i);return s&&s.bands&&s.bands.length>1&&STRIPE_PATS.includes(patBase(i.pattern))?1.6:1};
+  return outfitMannequinSvg({kind,suit:top?figFabric(top,'top'):shirt,shirt,tie:figFabric(o.tie,'tie'),bot:bot?figFabric(bot,'bot'):{color:'#4A4E55'},
+    beltColor:o.belt?colOf(o.belt):'#3A2A22',vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):FIG_NO_SHIRT.color,bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:k(top),shirt:1,tie:1,bot:k(bot)}});
 }

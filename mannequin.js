@@ -3,8 +3,9 @@
    so the drawing has exactly the pose and proportions of the painted outfit picture. Every garment piece takes the day's fabrics as
    ready-made <pattern>s (figFabric in draw.js: spec.def(id, rot)); each sleeve, lapel, collar leaf, cuff and tie piece gets its own
    rotated copy, so stripes follow the part at the angle of the solved cloth positions. The pattern ids suitB (body and waistcoat),
-   suitL/suitR (the lapels, viewer's left and right), shirt and tie are kept from figure.js, as are bladeP (the tie's blade), lapL/lapR,
-   .fig-clip, .fig-watch and .fig-vest. Skin and the watch are the master's own tones in bands (the watch is always the master's steel
+   suitL/suitR (the lapels, viewer's left and right), shirt and tie (kept from the earlier drawn figure), bladeP (the tie's blade), lapL/lapR,
+   .fig-clip, .fig-watch, .fig-vest and .fig-open are the names other code and the tests look for; on the shirt masters suitB is the
+   shirt and the trousers' legs are leg<i> (base pants). Skin and the watch are the master's own tones in bands (the watch is always the master's steel
    watch, as in the painted picture). The form shading is one small picture scaled up (no blur filter: it cost a fifth of the drawing
    time on a phone). WebKit-safe: no <use> inside <clipPath>. */
 (function(){
@@ -19,7 +20,7 @@ function mqData(kind) {
   const raw = (self.MQ_RAW || {})[kind]; if (!raw) return null;
   try { return (memo[kind] = JSON.parse(raw)); } catch (e) { return null; }
 }
-/* a fabric pattern turned by rot and, k != 1, its scale multiplied (figFabric's scale was set for figure.js's cloth sizes) */
+/* a fabric pattern turned by rot and, k != 1, its scale multiplied (a pinstripe's 1.6, draw.js figureSvg) */
 function pattern(id, spec, rot, k = 1) {
   const s = spec || {};
   if (typeof s.def === 'function') { const p = s.def(id, rot); return k === 1 ? p : p.replace(/(patternTransform="[^"]*?scale\()([\d.]+)/, (m, a, b) => a + (+b * k).toFixed(3)); }
@@ -44,6 +45,7 @@ function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, bot = null, beltC
   const tieSpec = tie || shirt;   // no tie on a pose that has one (a waistcoat without a tie): its place is shirt
   const defs = [pattern(`${P}suitB`, suit, G.bodyRot || 0, fab.suit), pattern(`${P}shirt`, shirt, 0, fab.shirt), pattern(`${P}tie`, tieSpec, 0, tie ? fab.tie : fab.shirt)];
   G.parts.forEach((p, i) => defs.push(pattern(P + pid(p, i), suit, p.rot, fab.suit)));
+  for (const L of ['lapL', 'lapR']) if (!G.parts.some(p => p.id === L)) defs.push(pattern(P + (L === 'lapL' ? 'suitL' : 'suitR'), suit, 0, fab.suit));   // (a pose without lapels keeps every pattern id)
   G.cuffs.forEach((c, i) => defs.push(pattern(`${P}cuff${i}`, shirt, c.rot, fab.shirt)));
   if (tie) G.tie.forEach((t, i) => defs.push(pattern(`${P}tie${i}`, tie, t.rot, fab.tie)));
   if (G.legs) { defs.push(pattern(`${P}pants`, bot, 0, fab.bot || 1)); G.legs.forEach((l, i) => defs.push(pattern(`${P}leg${i}`, bot, l.rot, fab.bot || 1))); }

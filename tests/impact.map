@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	dc1c6e5e817dbf639f67
+# tested	f27a2eb59b9874dad547
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -15,13 +15,13 @@ a11yfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 a11yfix.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 a11yfix.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 a11yfix.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-a11yfix.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 a11yfix.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dayChanged	fitOf	fitTag	idsOf	keyDate	lockIds	lockUpcoming	openPicker	pickPic	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
 a11yfix.test.js	index.html	<loaded>
 a11yfix.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
 a11yfix.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBanner	kitStartRow
 a11yfix.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 a11yfix.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+a11yfix.test.js	mq/shirt-open.js	<loaded>
 a11yfix.test.js	mq/shirt-tie.js	<loaded>
 a11yfix.test.js	mq/suit-open.js	<loaded>
 a11yfix.test.js	mq/suit.js	<loaded>
@@ -62,7 +62,6 @@ about.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 about.test.js	detect.js	<any>	<loaded>	@
 about.test.js	draw.js	<any>	<loaded>
 about.test.js	dress.js	<any>	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-about.test.js	figure.js	<any>	<loaded>	@{}
 about.test.js	history.js	<any>	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 about.test.js	icon-192.png	<loaded>
 about.test.js	icon-512.png	<loaded>
@@ -72,6 +71,7 @@ about.test.js	kit.js	<any>	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 about.test.js	manifest.webmanifest	<loaded>
 about.test.js	mannequin.js	<any>	<loaded>	@{}
 about.test.js	month.js	<any>	<loaded>	nextWorkday
+about.test.js	mq/shirt-open.js	<loaded>
 about.test.js	mq/shirt-tie.js	<loaded>
 about.test.js	mq/suit-open.js	<loaded>
 about.test.js	mq/suit.js	<loaded>
@@ -115,7 +115,6 @@ accounts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	C
 accounts.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 accounts.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 accounts.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-accounts.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 accounts.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	renderReplanUI	replanCount	resetCard	scoreCard	whenPulled
 accounts.test.js	icon-192.png	<loaded>
 accounts.test.js	icon-512.png	<loaded>
@@ -125,6 +124,7 @@ accounts.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 accounts.test.js	manifest.webmanifest	<loaded>
 accounts.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 accounts.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+accounts.test.js	mq/shirt-open.js	<loaded>
 accounts.test.js	mq/shirt-tie.js	<loaded>
 accounts.test.js	mq/suit-open.js	<loaded>
 accounts.test.js	mq/suit.js	<loaded>
@@ -173,7 +173,6 @@ addqty.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acc
 addqty.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 addqty.test.js	draw.js	<loaded>	drawSock	fabricDef	itemThumb	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 addqty.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-addqty.test.js	figure.js	<loaded>	@{}
 addqty.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 addqty.test.js	icon-192.png	<loaded>
 addqty.test.js	icon-512.png	<loaded>
@@ -183,6 +182,7 @@ addqty.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 addqty.test.js	manifest.webmanifest	<loaded>
 addqty.test.js	mannequin.js	<loaded>	@{}
 addqty.test.js	month.js	<loaded>	nextWorkday
+addqty.test.js	mq/shirt-open.js	<loaded>
 addqty.test.js	mq/shirt-tie.js	<loaded>
 addqty.test.js	mq/suit-open.js	<loaded>
 addqty.test.js	mq/suit.js	<loaded>
@@ -225,7 +225,6 @@ aiverdict.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 aiverdict.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 aiverdict.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
 aiverdict.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-aiverdict.test.js	figure.js	<loaded>	@{}
 aiverdict.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 aiverdict.test.js	icon-192.png	<loaded>
 aiverdict.test.js	icon-512.png	<loaded>
@@ -235,6 +234,7 @@ aiverdict.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStart
 aiverdict.test.js	manifest.webmanifest	<loaded>
 aiverdict.test.js	mannequin.js	<loaded>	@{}
 aiverdict.test.js	month.js	<loaded>	nextWorkday
+aiverdict.test.js	mq/shirt-open.js	<loaded>
 aiverdict.test.js	mq/shirt-tie.js	<loaded>
 aiverdict.test.js	mq/suit-open.js	<loaded>
 aiverdict.test.js	mq/suit.js	<loaded>
@@ -277,7 +277,6 @@ asmahead.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmahead.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmahead.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmahead.test.js	dress.js	<loaded>	migrateVests
-asmahead.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 asmahead.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 asmahead.test.js	icon-192.png	<loaded>
 asmahead.test.js	icon-512.png	<loaded>
@@ -287,6 +286,7 @@ asmahead.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmahead.test.js	manifest.webmanifest	<loaded>
 asmahead.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 asmahead.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+asmahead.test.js	mq/shirt-open.js	<loaded>
 asmahead.test.js	mq/shirt-tie.js	<loaded>
 asmahead.test.js	mq/suit-open.js	<loaded>
 asmahead.test.js	mq/suit.js	<loaded>
@@ -345,7 +345,6 @@ asmatlas.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmatlas.test.js	detect.js	<loaded>	@	settSig	texPat	usableSett
 asmatlas.test.js	draw.js	<loaded>	fabricDef
 asmatlas.test.js	dress.js	<loaded>	migrateVests
-asmatlas.test.js	figure.js	<loaded>	@{}
 asmatlas.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmatlas.test.js	icon-192.png	<loaded>
 asmatlas.test.js	icon-512.png	<loaded>
@@ -355,6 +354,7 @@ asmatlas.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmatlas.test.js	manifest.webmanifest	<loaded>
 asmatlas.test.js	mannequin.js	<loaded>	@{}
 asmatlas.test.js	month.js	<loaded>	nextWorkday
+asmatlas.test.js	mq/shirt-open.js	<any>	<loaded>
 asmatlas.test.js	mq/shirt-tie.js	<any>	<loaded>
 asmatlas.test.js	mq/suit-open.js	<any>	<loaded>
 asmatlas.test.js	mq/suit.js	<any>	<loaded>
@@ -434,7 +434,6 @@ asmcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmcloth.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmcloth.test.js	draw.js	<loaded>	fabricDef
 asmcloth.test.js	dress.js	<loaded>	migrateVests
-asmcloth.test.js	figure.js	<loaded>	@{}
 asmcloth.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmcloth.test.js	icon-192.png	<loaded>
 asmcloth.test.js	icon-512.png	<loaded>
@@ -444,6 +443,7 @@ asmcloth.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcloth.test.js	manifest.webmanifest	<loaded>
 asmcloth.test.js	mannequin.js	<loaded>	@{}
 asmcloth.test.js	month.js	<loaded>	nextWorkday
+asmcloth.test.js	mq/shirt-open.js	<loaded>
 asmcloth.test.js	mq/shirt-tie.js	<loaded>
 asmcloth.test.js	mq/suit-open.js	<loaded>
 asmcloth.test.js	mq/suit.js	<loaded>
@@ -486,7 +486,6 @@ asmcode.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ap
 asmcode.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmcode.test.js	draw.js	<loaded>
 asmcode.test.js	dress.js	<loaded>	migrateVests
-asmcode.test.js	figure.js	<loaded>	@{}
 asmcode.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmcode.test.js	icon-192.png	<loaded>
 asmcode.test.js	icon-512.png	<loaded>
@@ -496,6 +495,7 @@ asmcode.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcode.test.js	manifest.webmanifest	<loaded>
 asmcode.test.js	mannequin.js	<loaded>	@{}
 asmcode.test.js	month.js	<loaded>	nextWorkday
+asmcode.test.js	mq/shirt-open.js	<loaded>
 asmcode.test.js	mq/shirt-tie.js	<loaded>
 asmcode.test.js	mq/suit-open.js	<loaded>
 asmcode.test.js	mq/suit.js	<loaded>
@@ -538,13 +538,13 @@ asmcolor.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmcolor.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmcolor.test.js	draw.js	<loaded>	fabricDef
 asmcolor.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-asmcolor.test.js	figure.js	<loaded>	@{}
 asmcolor.test.js	history.js	<loaded>	checkPlanRules	keyDate	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	whenPulled
 asmcolor.test.js	index.html	<loaded>
 asmcolor.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 asmcolor.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcolor.test.js	mannequin.js	<loaded>	@{}
 asmcolor.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+asmcolor.test.js	mq/shirt-open.js	<loaded>
 asmcolor.test.js	mq/shirt-tie.js	<loaded>
 asmcolor.test.js	mq/suit-open.js	<loaded>
 asmcolor.test.js	mq/suit.js	<loaded>
@@ -615,7 +615,6 @@ asmcr.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	appl
 asmcr.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 asmcr.test.js	draw.js	<loaded>
 asmcr.test.js	dress.js	<loaded>	migrateVests
-asmcr.test.js	figure.js	<loaded>	@{}
 asmcr.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmcr.test.js	icon-192.png	<loaded>
 asmcr.test.js	icon-512.png	<loaded>
@@ -625,6 +624,7 @@ asmcr.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcr.test.js	manifest.webmanifest	<loaded>
 asmcr.test.js	mannequin.js	<loaded>	@{}
 asmcr.test.js	month.js	<loaded>	nextWorkday
+asmcr.test.js	mq/shirt-open.js	<loaded>
 asmcr.test.js	mq/shirt-tie.js	<loaded>
 asmcr.test.js	mq/suit-open.js	<loaded>
 asmcr.test.js	mq/suit.js	<loaded>
@@ -667,7 +667,6 @@ asmcu.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	appl
 asmcu.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 asmcu.test.js	draw.js	<loaded>
 asmcu.test.js	dress.js	<loaded>	migrateVests
-asmcu.test.js	figure.js	<loaded>	@{}
 asmcu.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmcu.test.js	icon-192.png	<loaded>
 asmcu.test.js	icon-512.png	<loaded>
@@ -677,6 +676,7 @@ asmcu.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcu.test.js	manifest.webmanifest	<loaded>
 asmcu.test.js	mannequin.js	<loaded>	@{}
 asmcu.test.js	month.js	<loaded>	nextWorkday
+asmcu.test.js	mq/shirt-open.js	<loaded>
 asmcu.test.js	mq/shirt-tie.js	<loaded>
 asmcu.test.js	mq/suit-open.js	<loaded>
 asmcu.test.js	mq/suit.js	<loaded>
@@ -719,13 +719,13 @@ asmgl.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acce
 asmgl.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmgl.test.js	draw.js	<loaded>	fabricDef	texPlainBand	texTileUrl	texTones
 asmgl.test.js	dress.js	<loaded>	migrateVests
-asmgl.test.js	figure.js	<loaded>	@{}
 asmgl.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmgl.test.js	index.html	<loaded>
 asmgl.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 asmgl.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmgl.test.js	mannequin.js	<loaded>	@{}
 asmgl.test.js	month.js	<loaded>	nextWorkday
+asmgl.test.js	mq/shirt-open.js	<loaded>
 asmgl.test.js	mq/shirt-tie.js	<loaded>
 asmgl.test.js	mq/suit-open.js	<loaded>
 asmgl.test.js	mq/suit.js	<loaded>
@@ -786,13 +786,13 @@ asmgpu.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	app
 asmgpu.test.js	detect.js	<loaded>	@
 asmgpu.test.js	draw.js	<loaded>
 asmgpu.test.js	dress.js	<loaded>	migrateVests
-asmgpu.test.js	figure.js	<loaded>	@{}
 asmgpu.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmgpu.test.js	index.html	<loaded>
 asmgpu.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 asmgpu.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmgpu.test.js	mannequin.js	<loaded>	@{}
 asmgpu.test.js	month.js	<loaded>	nextWorkday
+asmgpu.test.js	mq/shirt-open.js	<any>	<loaded>
 asmgpu.test.js	mq/shirt-tie.js	<any>	<loaded>
 asmgpu.test.js	mq/suit-open.js	<any>	<loaded>
 asmgpu.test.js	mq/suit.js	<any>	<loaded>
@@ -856,13 +856,13 @@ asmprebuild.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 asmprebuild.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmprebuild.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmprebuild.test.js	dress.js	<loaded>	migrateVests
-asmprebuild.test.js	figure.js	<loaded>	@{}
 asmprebuild.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 asmprebuild.test.js	index.html	<loaded>
 asmprebuild.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 asmprebuild.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmprebuild.test.js	mannequin.js	<loaded>	@{}
 asmprebuild.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+asmprebuild.test.js	mq/shirt-open.js	<any>	<loaded>
 asmprebuild.test.js	mq/shirt-tie.js	<any>	<loaded>
 asmprebuild.test.js	mq/suit-open.js	<any>	<loaded>
 asmprebuild.test.js	mq/suit.js	<any>	<loaded>
@@ -929,7 +929,6 @@ asmroute.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmroute.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 asmroute.test.js	draw.js	<loaded>
 asmroute.test.js	dress.js	<loaded>	migrateVests
-asmroute.test.js	figure.js	<loaded>	@{}
 asmroute.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmroute.test.js	icon-192.png	<loaded>
 asmroute.test.js	icon-512.png	<loaded>
@@ -939,6 +938,7 @@ asmroute.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmroute.test.js	manifest.webmanifest	<loaded>
 asmroute.test.js	mannequin.js	<loaded>	@{}
 asmroute.test.js	month.js	<loaded>	nextWorkday
+asmroute.test.js	mq/shirt-open.js	<loaded>
 asmroute.test.js	mq/shirt-tie.js	<loaded>
 asmroute.test.js	mq/suit-open.js	<loaded>
 asmroute.test.js	mq/suit.js	<loaded>
@@ -995,7 +995,6 @@ asmstuck.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmstuck.test.js	detect.js	<loaded>	@
 asmstuck.test.js	draw.js	<loaded>
 asmstuck.test.js	dress.js	<loaded>	migrateVests
-asmstuck.test.js	figure.js	<loaded>	@{}
 asmstuck.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmstuck.test.js	icon-192.png	<loaded>
 asmstuck.test.js	icon-512.png	<loaded>
@@ -1005,6 +1004,7 @@ asmstuck.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmstuck.test.js	manifest.webmanifest	<loaded>
 asmstuck.test.js	mannequin.js	<loaded>	@{}
 asmstuck.test.js	month.js	<loaded>	nextWorkday
+asmstuck.test.js	mq/shirt-open.js	<loaded>
 asmstuck.test.js	mq/shirt-tie.js	<loaded>
 asmstuck.test.js	mq/suit-open.js	<loaded>
 asmstuck.test.js	mq/suit.js	<loaded>
@@ -1047,7 +1047,6 @@ asmtwill.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmtwill.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmtwill.test.js	draw.js	<loaded>
 asmtwill.test.js	dress.js	<loaded>	migrateVests
-asmtwill.test.js	figure.js	<loaded>	@{}
 asmtwill.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmtwill.test.js	icon-192.png	<loaded>
 asmtwill.test.js	icon-512.png	<loaded>
@@ -1057,6 +1056,7 @@ asmtwill.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmtwill.test.js	manifest.webmanifest	<loaded>
 asmtwill.test.js	mannequin.js	<loaded>	@{}
 asmtwill.test.js	month.js	<loaded>	nextWorkday
+asmtwill.test.js	mq/shirt-open.js	<loaded>
 asmtwill.test.js	mq/shirt-tie.js	<loaded>
 asmtwill.test.js	mq/suit-open.js	<loaded>
 asmtwill.test.js	mq/suit.js	<loaded>
@@ -1100,7 +1100,6 @@ asmwatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	L
 asmwatch.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmwatch.test.js	draw.js	<loaded>
 asmwatch.test.js	dress.js	<loaded>	migrateVests
-asmwatch.test.js	figure.js	<loaded>	@{}
 asmwatch.test.js	history.js	<loaded>	checkPlanRules	keyDate	planRulesCheck	replanFuture	whenPulled
 asmwatch.test.js	icon-192.png	<loaded>
 asmwatch.test.js	icon-512.png	<loaded>
@@ -1110,6 +1109,7 @@ asmwatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmwatch.test.js	manifest.webmanifest	<loaded>
 asmwatch.test.js	mannequin.js	<loaded>	@{}
 asmwatch.test.js	month.js	<loaded>	nextWorkday
+asmwatch.test.js	mq/shirt-open.js	<loaded>
 asmwatch.test.js	mq/shirt-tie.js	<loaded>
 asmwatch.test.js	mq/suit-open.js	<loaded>
 asmwatch.test.js	mq/suit.js	<loaded>
@@ -1153,7 +1153,6 @@ asmweave.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 asmweave.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmweave.test.js	draw.js	<loaded>	fabricDef	texPlainBand
 asmweave.test.js	dress.js	<loaded>	migrateVests
-asmweave.test.js	figure.js	<loaded>	@{}
 asmweave.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 asmweave.test.js	icon-192.png	<loaded>
 asmweave.test.js	icon-512.png	<loaded>
@@ -1163,6 +1162,7 @@ asmweave.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmweave.test.js	manifest.webmanifest	<loaded>
 asmweave.test.js	mannequin.js	<loaded>	@{}
 asmweave.test.js	month.js	<loaded>	nextWorkday
+asmweave.test.js	mq/shirt-open.js	<loaded>
 asmweave.test.js	mq/shirt-tie.js	<loaded>
 asmweave.test.js	mq/suit-open.js	<loaded>
 asmweave.test.js	mq/suit.js	<loaded>
@@ -1210,7 +1210,6 @@ assemble.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 assemble.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 assemble.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 assemble.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-assemble.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 assemble.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 assemble.test.js	icon-192.png	<loaded>
 assemble.test.js	icon-512.png	<loaded>
@@ -1220,6 +1219,7 @@ assemble.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 assemble.test.js	manifest.webmanifest	<loaded>
 assemble.test.js	mannequin.js	<loaded>	@{}
 assemble.test.js	month.js	<loaded>	nextWorkday	planOn
+assemble.test.js	mq/shirt-open.js	<loaded>
 assemble.test.js	mq/shirt-tie.js	<loaded>
 assemble.test.js	mq/suit-open.js	<loaded>
 assemble.test.js	mq/suit.js	<loaded>
@@ -1275,7 +1275,6 @@ auditfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 auditfix.test.js	detect.js	<loaded>	@	usableSett
 auditfix.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG
 auditfix.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-auditfix.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 auditfix.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	renderReplanUI	replanCount	resetCard	scoreCard	whenPulled
 auditfix.test.js	icon-192.png	<loaded>
 auditfix.test.js	icon-512.png	<loaded>
@@ -1285,6 +1284,7 @@ auditfix.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 auditfix.test.js	manifest.webmanifest	<loaded>
 auditfix.test.js	mannequin.js	<loaded>	@{}
 auditfix.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+auditfix.test.js	mq/shirt-open.js	<loaded>
 auditfix.test.js	mq/shirt-tie.js	<loaded>
 auditfix.test.js	mq/suit-open.js	<loaded>
 auditfix.test.js	mq/suit.js	<loaded>
@@ -1328,7 +1328,6 @@ beltswap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	L
 beltswap.test.js	detect.js	<loaded>	@	usableSett
 beltswap.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 beltswap.test.js	dress.js	<loaded>	migrateVests
-beltswap.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 beltswap.test.js	history.js	<loaded>	adviceFor	beltless	checkPlanRules	closePicker	dayActions	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	whenPulled
 beltswap.test.js	icon-192.png	<loaded>
 beltswap.test.js	icon-512.png	<loaded>
@@ -1338,6 +1337,7 @@ beltswap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 beltswap.test.js	manifest.webmanifest	<loaded>
 beltswap.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 beltswap.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+beltswap.test.js	mq/shirt-open.js	<loaded>
 beltswap.test.js	mq/shirt-tie.js	<loaded>
 beltswap.test.js	mq/suit-open.js	<loaded>
 beltswap.test.js	mq/suit.js	<loaded>
@@ -1379,7 +1379,6 @@ boxfold.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LU
 boxfold.test.js	detect.js	<loaded>	@	usableSett
 boxfold.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 boxfold.test.js	dress.js	<loaded>	migrateVests
-boxfold.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 boxfold.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 boxfold.test.js	icon-192.png	<loaded>
 boxfold.test.js	icon-512.png	<loaded>
@@ -1389,6 +1388,7 @@ boxfold.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 boxfold.test.js	manifest.webmanifest	<loaded>
 boxfold.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 boxfold.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+boxfold.test.js	mq/shirt-open.js	<loaded>
 boxfold.test.js	mq/shirt-tie.js	<loaded>
 boxfold.test.js	mq/suit-open.js	<loaded>
 boxfold.test.js	mq/suit.js	<loaded>
@@ -1431,7 +1431,6 @@ care.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLOR
 care.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 care.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figEyes	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 care.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-care.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 care.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	whenPulled
 care.test.js	icon-192.png	<loaded>
 care.test.js	icon-512.png	<loaded>
@@ -1441,6 +1440,7 @@ care.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 care.test.js	manifest.webmanifest	<loaded>
 care.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 care.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+care.test.js	mq/shirt-open.js	<loaded>
 care.test.js	mq/shirt-tie.js	<loaded>
 care.test.js	mq/suit-open.js	<loaded>
 care.test.js	mq/suit.js	<loaded>
@@ -1487,7 +1487,6 @@ casual.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COL
 casual.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 casual.test.js	draw.js	<loaded>	drawOxfordSide	drawShoePair	drawShoeSide	drawSneakerPair	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 casual.test.js	dress.js	<loaded>	migrateVests
-casual.test.js	figure.js	<loaded>	@{}
 casual.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 casual.test.js	icon-192.png	<loaded>
 casual.test.js	icon-512.png	<loaded>
@@ -1497,6 +1496,7 @@ casual.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 casual.test.js	manifest.webmanifest	<loaded>
 casual.test.js	mannequin.js	<loaded>	@{}
 casual.test.js	month.js	<loaded>	nextWorkday
+casual.test.js	mq/shirt-open.js	<loaded>
 casual.test.js	mq/shirt-tie.js	<loaded>
 casual.test.js	mq/suit-open.js	<loaded>
 casual.test.js	mq/suit.js	<loaded>
@@ -1543,7 +1543,6 @@ claude.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COL
 claude.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 claude.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 claude.test.js	dress.js	<loaded>	migrateVests
-claude.test.js	figure.js	<loaded>	@{}
 claude.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 claude.test.js	icon-192.png	<loaded>
 claude.test.js	icon-512.png	<loaded>
@@ -1553,6 +1552,7 @@ claude.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 claude.test.js	manifest.webmanifest	<loaded>
 claude.test.js	mannequin.js	<loaded>	@{}
 claude.test.js	month.js	<loaded>	nextWorkday
+claude.test.js	mq/shirt-open.js	<loaded>
 claude.test.js	mq/shirt-tie.js	<loaded>
 claude.test.js	mq/suit-open.js	<loaded>
 claude.test.js	mq/suit.js	<loaded>
@@ -1599,7 +1599,6 @@ claudepattern.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 claudepattern.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 claudepattern.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 claudepattern.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-claudepattern.test.js	figure.js	<loaded>	@{}
 claudepattern.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 claudepattern.test.js	icon-192.png	<loaded>
 claudepattern.test.js	icon-512.png	<loaded>
@@ -1609,6 +1608,7 @@ claudepattern.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitS
 claudepattern.test.js	manifest.webmanifest	<loaded>
 claudepattern.test.js	mannequin.js	<loaded>	@{}
 claudepattern.test.js	month.js	<loaded>	nextWorkday
+claudepattern.test.js	mq/shirt-open.js	<loaded>
 claudepattern.test.js	mq/shirt-tie.js	<loaded>
 claudepattern.test.js	mq/suit-open.js	<loaded>
 claudepattern.test.js	mq/suit.js	<loaded>
@@ -1654,7 +1654,6 @@ climate.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LU
 climate.test.js	detect.js	<loaded>	@	texPat	usableSett
 climate.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 climate.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-climate.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 climate.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 climate.test.js	icon-192.png	<loaded>
 climate.test.js	icon-512.png	<loaded>
@@ -1664,6 +1663,7 @@ climate.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 climate.test.js	manifest.webmanifest	<loaded>
 climate.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 climate.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+climate.test.js	mq/shirt-open.js	<loaded>
 climate.test.js	mq/shirt-tie.js	<loaded>
 climate.test.js	mq/suit-open.js	<loaded>
 climate.test.js	mq/suit.js	<loaded>
@@ -1700,7 +1700,6 @@ cmcuffsteel.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 cmcuffsteel.test.js	detect.js	<loaded>	@
 cmcuffsteel.test.js	draw.js	<loaded>
 cmcuffsteel.test.js	dress.js	<loaded>	migrateVests
-cmcuffsteel.test.js	figure.js	<loaded>	@{}
 cmcuffsteel.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 cmcuffsteel.test.js	icon-192.png	<loaded>
 cmcuffsteel.test.js	icon-512.png	<loaded>
@@ -1710,6 +1709,7 @@ cmcuffsteel.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 cmcuffsteel.test.js	manifest.webmanifest	<loaded>
 cmcuffsteel.test.js	mannequin.js	<loaded>	@{}
 cmcuffsteel.test.js	month.js	<loaded>	nextWorkday
+cmcuffsteel.test.js	mq/shirt-open.js	<loaded>
 cmcuffsteel.test.js	mq/shirt-tie.js	<loaded>
 cmcuffsteel.test.js	mq/suit-open.js	<loaded>
 cmcuffsteel.test.js	mq/suit.js	<loaded>
@@ -1764,7 +1764,6 @@ cmhandedge.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 cmhandedge.test.js	detect.js	<loaded>	@
 cmhandedge.test.js	draw.js	<loaded>
 cmhandedge.test.js	dress.js	<loaded>	migrateVests
-cmhandedge.test.js	figure.js	<loaded>	@{}
 cmhandedge.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 cmhandedge.test.js	icon-192.png	<loaded>
 cmhandedge.test.js	icon-512.png	<loaded>
@@ -1774,6 +1773,7 @@ cmhandedge.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 cmhandedge.test.js	manifest.webmanifest	<loaded>
 cmhandedge.test.js	mannequin.js	<loaded>	@{}
 cmhandedge.test.js	month.js	<loaded>	nextWorkday
+cmhandedge.test.js	mq/shirt-open.js	<loaded>
 cmhandedge.test.js	mq/shirt-tie.js	<loaded>
 cmhandedge.test.js	mq/suit-open.js	<loaded>
 cmhandedge.test.js	mq/suit.js	<loaded>
@@ -1828,7 +1828,6 @@ colouraudit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 colouraudit.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 colouraudit.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
 colouraudit.test.js	dress.js	<loaded>	migrateVests
-colouraudit.test.js	figure.js	<loaded>	@{}
 colouraudit.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 colouraudit.test.js	icon-192.png	<loaded>
 colouraudit.test.js	icon-512.png	<loaded>
@@ -1838,6 +1837,7 @@ colouraudit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 colouraudit.test.js	manifest.webmanifest	<loaded>
 colouraudit.test.js	mannequin.js	<loaded>	@{}
 colouraudit.test.js	month.js	<loaded>	nextWorkday
+colouraudit.test.js	mq/shirt-open.js	<loaded>
 colouraudit.test.js	mq/shirt-tie.js	<loaded>
 colouraudit.test.js	mq/suit-open.js	<loaded>
 colouraudit.test.js	mq/suit.js	<loaded>
@@ -1884,7 +1884,6 @@ colours.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 colours.test.js	detect.js	<loaded>	@	usableSett
 colours.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 colours.test.js	dress.js	<loaded>	migrateVests
-colours.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 colours.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 colours.test.js	icon-192.png	<loaded>
 colours.test.js	icon-512.png	<loaded>
@@ -1894,6 +1893,7 @@ colours.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 colours.test.js	manifest.webmanifest	<loaded>
 colours.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 colours.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	revealNeed	stackSVG
+colours.test.js	mq/shirt-open.js	<loaded>
 colours.test.js	mq/shirt-tie.js	<loaded>
 colours.test.js	mq/suit-open.js	<loaded>
 colours.test.js	mq/suit.js	<loaded>
@@ -1936,7 +1936,6 @@ colpick.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 colpick.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 colpick.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawShoePair	drawShoeSide	fabricDef	figEyes	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 colpick.test.js	dress.js	<loaded>	migrateVests
-colpick.test.js	figure.js	<loaded>	@{}
 colpick.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 colpick.test.js	icon-192.png	<loaded>
 colpick.test.js	icon-512.png	<loaded>
@@ -1946,6 +1945,7 @@ colpick.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 colpick.test.js	manifest.webmanifest	<loaded>
 colpick.test.js	mannequin.js	<loaded>	@{}
 colpick.test.js	month.js	<loaded>	nextWorkday
+colpick.test.js	mq/shirt-open.js	<loaded>
 colpick.test.js	mq/shirt-tie.js	<loaded>
 colpick.test.js	mq/suit-open.js	<loaded>
 colpick.test.js	mq/suit.js	<loaded>
@@ -1988,7 +1988,6 @@ compare.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 compare.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 compare.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 compare.test.js	dress.js	<loaded>	migrateVests
-compare.test.js	figure.js	<loaded>	@{}
 compare.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 compare.test.js	icon-192.png	<loaded>
 compare.test.js	icon-512.png	<loaded>
@@ -1998,6 +1997,7 @@ compare.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 compare.test.js	manifest.webmanifest	<loaded>
 compare.test.js	mannequin.js	<loaded>	@{}
 compare.test.js	month.js	<loaded>	nextWorkday
+compare.test.js	mq/shirt-open.js	<loaded>
 compare.test.js	mq/shirt-tie.js	<loaded>
 compare.test.js	mq/suit-open.js	<loaded>
 compare.test.js	mq/suit.js	<loaded>
@@ -2039,13 +2039,13 @@ connkeep.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 connkeep.test.js	detect.js	<loaded>	@
 connkeep.test.js	draw.js	<loaded>
 connkeep.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-connkeep.test.js	figure.js	<loaded>	@{}
 connkeep.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 connkeep.test.js	index.html	<loaded>
 connkeep.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 connkeep.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 connkeep.test.js	mannequin.js	<loaded>	@{}
 connkeep.test.js	month.js	<loaded>	nextWorkday
+connkeep.test.js	mq/shirt-open.js	<loaded>
 connkeep.test.js	mq/shirt-tie.js	<loaded>
 connkeep.test.js	mq/suit-open.js	<loaded>
 connkeep.test.js	mq/suit.js	<loaded>
@@ -2083,7 +2083,6 @@ darkshirts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 darkshirts.test.js	detect.js	<loaded>	@
 darkshirts.test.js	draw.js	<loaded>
 darkshirts.test.js	dress.js	<loaded>	migrateVests
-darkshirts.test.js	figure.js	<loaded>	@{}
 darkshirts.test.js	history.js	<loaded>	checkPlanRules	keyDate	whenPulled
 darkshirts.test.js	icon-192.png	<loaded>
 darkshirts.test.js	icon-512.png	<loaded>
@@ -2093,6 +2092,7 @@ darkshirts.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 darkshirts.test.js	manifest.webmanifest	<loaded>
 darkshirts.test.js	mannequin.js	<loaded>	@{}
 darkshirts.test.js	month.js	<loaded>	nextWorkday
+darkshirts.test.js	mq/shirt-open.js	<loaded>
 darkshirts.test.js	mq/shirt-tie.js	<loaded>
 darkshirts.test.js	mq/suit-open.js	<loaded>
 darkshirts.test.js	mq/suit.js	<loaded>
@@ -2135,7 +2135,6 @@ daypieces.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 daypieces.test.js	detect.js	<loaded>	@	usableSett
 daypieces.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 daypieces.test.js	dress.js	<loaded>	migrateVests
-daypieces.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 daypieces.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	fitOf	fitTag	foldEdge	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	openPicker	pickNext	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	whenPulled
 daypieces.test.js	icon-192.png	<loaded>
 daypieces.test.js	icon-512.png	<loaded>
@@ -2143,8 +2142,9 @@ daypieces.test.js	index.html	<loaded>
 daypieces.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
 daypieces.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 daypieces.test.js	manifest.webmanifest	<loaded>
-daypieces.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+daypieces.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 daypieces.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+daypieces.test.js	mq/shirt-open.js	<loaded>
 daypieces.test.js	mq/shirt-tie.js	<loaded>
 daypieces.test.js	mq/suit-open.js	<loaded>
 daypieces.test.js	mq/suit.js	<loaded>
@@ -2187,7 +2187,6 @@ daysoff.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ac
 daysoff.test.js	detect.js	<loaded>	@	texPat	usableSett
 daysoff.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 daysoff.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-daysoff.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 daysoff.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 daysoff.test.js	icon-192.png	<loaded>
 daysoff.test.js	icon-512.png	<loaded>
@@ -2197,6 +2196,7 @@ daysoff.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 daysoff.test.js	manifest.webmanifest	<loaded>
 daysoff.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 daysoff.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+daysoff.test.js	mq/shirt-open.js	<loaded>
 daysoff.test.js	mq/shirt-tie.js	<loaded>
 daysoff.test.js	mq/suit-open.js	<loaded>
 daysoff.test.js	mq/suit.js	<loaded>
@@ -2239,7 +2239,6 @@ deeptaupe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 deeptaupe.test.js	detect.js	<loaded>	@	usableSett
 deeptaupe.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg
 deeptaupe.test.js	dress.js	<loaded>	migrateVests
-deeptaupe.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 deeptaupe.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 deeptaupe.test.js	icon-192.png	<loaded>
 deeptaupe.test.js	icon-512.png	<loaded>
@@ -2249,6 +2248,7 @@ deeptaupe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 deeptaupe.test.js	manifest.webmanifest	<loaded>
 deeptaupe.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 deeptaupe.test.js	month.js	<loaded>	nextWorkday
+deeptaupe.test.js	mq/shirt-open.js	<loaded>
 deeptaupe.test.js	mq/shirt-tie.js	<loaded>
 deeptaupe.test.js	mq/suit-open.js	<loaded>
 deeptaupe.test.js	mq/suit.js	<loaded>
@@ -2303,13 +2303,13 @@ deltasync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 deltasync.test.js	detect.js	<loaded>	@	texPat	usableSett
 deltasync.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figureSvg	swatchSVG
 deltasync.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-deltasync.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 deltasync.test.js	history.js	<loaded>	checkPlanRules	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 deltasync.test.js	index.html	<loaded>
 deltasync.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	phSigOf	renderItem	smallPhotos
 deltasync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 deltasync.test.js	mannequin.js	<loaded>	@{}
 deltasync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
+deltasync.test.js	mq/shirt-open.js	<loaded>
 deltasync.test.js	mq/shirt-tie.js	<loaded>
 deltasync.test.js	mq/suit-open.js	<loaded>
 deltasync.test.js	mq/suit.js	<loaded>
@@ -2370,7 +2370,6 @@ display.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 display.test.js	detect.js	<loaded>	@	usableSett
 display.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
 display.test.js	dress.js	<loaded>	migrateVests
-display.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 display.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 display.test.js	icon-192.png	<loaded>
 display.test.js	icon-512.png	<loaded>
@@ -2380,6 +2379,7 @@ display.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 display.test.js	manifest.webmanifest	<loaded>
 display.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 display.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	revealNeed	stackSVG
+display.test.js	mq/shirt-open.js	<loaded>
 display.test.js	mq/shirt-tie.js	<loaded>
 display.test.js	mq/suit-open.js	<loaded>
 display.test.js	mq/suit.js	<loaded>
@@ -2422,7 +2422,6 @@ dress.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLO
 dress.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 dress.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figEyes	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 dress.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	dressSynced	dressWhyUnused	legacyVest	migrateVests	renderDressUI	setDress
-dress.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 dress.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 dress.test.js	icon-192.png	<loaded>
 dress.test.js	icon-512.png	<loaded>
@@ -2432,6 +2431,7 @@ dress.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 dress.test.js	manifest.webmanifest	<loaded>
 dress.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 dress.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+dress.test.js	mq/shirt-open.js	<loaded>
 dress.test.js	mq/shirt-tie.js	<loaded>
 dress.test.js	mq/suit-open.js	<loaded>
 dress.test.js	mq/suit.js	<loaded>
@@ -2479,7 +2479,6 @@ enamelclip.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 enamelclip.test.js	detect.js	<loaded>	@
 enamelclip.test.js	draw.js	<loaded>
 enamelclip.test.js	dress.js	<loaded>	migrateVests
-enamelclip.test.js	figure.js	<loaded>	@{}
 enamelclip.test.js	history.js	<loaded>	checkPlanRules	keyDate	planRulesCheck	replanFuture	whenPulled
 enamelclip.test.js	icon-192.png	<loaded>
 enamelclip.test.js	icon-512.png	<loaded>
@@ -2489,6 +2488,7 @@ enamelclip.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 enamelclip.test.js	manifest.webmanifest	<loaded>
 enamelclip.test.js	mannequin.js	<loaded>	@{}
 enamelclip.test.js	month.js	<loaded>	nextWorkday
+enamelclip.test.js	mq/shirt-open.js	<loaded>
 enamelclip.test.js	mq/shirt-tie.js	<loaded>
 enamelclip.test.js	mq/suit-open.js	<loaded>
 enamelclip.test.js	mq/suit.js	<loaded>
@@ -2531,7 +2531,6 @@ figure.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acc
 figure.test.js	detect.js	<loaded>	@	usableSett
 figure.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 figure.test.js	dress.js	<loaded>	migrateVests
-figure.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 figure.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 figure.test.js	icon-192.png	<loaded>
 figure.test.js	icon-512.png	<loaded>
@@ -2541,6 +2540,7 @@ figure.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 figure.test.js	manifest.webmanifest	<loaded>
 figure.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 figure.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+figure.test.js	mq/shirt-open.js	<loaded>
 figure.test.js	mq/shirt-tie.js	<loaded>
 figure.test.js	mq/suit-open.js	<loaded>
 figure.test.js	mq/suit.js	<loaded>
@@ -2583,7 +2583,6 @@ figuremotif.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 figuremotif.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 figuremotif.test.js	draw.js	<loaded>	fabricDef	figFabric	itemThumb	swatchSVG
 figuremotif.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-figuremotif.test.js	figure.js	<loaded>	@{}
 figuremotif.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 figuremotif.test.js	icon-192.png	<loaded>
 figuremotif.test.js	icon-512.png	<loaded>
@@ -2593,6 +2592,7 @@ figuremotif.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitSta
 figuremotif.test.js	manifest.webmanifest	<loaded>
 figuremotif.test.js	mannequin.js	<loaded>	@{}
 figuremotif.test.js	month.js	<loaded>	nextWorkday
+figuremotif.test.js	mq/shirt-open.js	<loaded>
 figuremotif.test.js	mq/shirt-tie.js	<loaded>
 figuremotif.test.js	mq/suit-open.js	<loaded>
 figuremotif.test.js	mq/suit.js	<loaded>
@@ -2635,7 +2635,6 @@ foldtap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LU
 foldtap.test.js	detect.js	<loaded>	@	usableSett
 foldtap.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 foldtap.test.js	dress.js	<loaded>	migrateVests
-foldtap.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 foldtap.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	fitOf	fitTag	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	openPicker	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
 foldtap.test.js	icon-192.png	<loaded>
 foldtap.test.js	icon-512.png	<loaded>
@@ -2645,6 +2644,7 @@ foldtap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 foldtap.test.js	manifest.webmanifest	<loaded>
 foldtap.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 foldtap.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+foldtap.test.js	mq/shirt-open.js	<loaded>
 foldtap.test.js	mq/shirt-tie.js	<loaded>
 foldtap.test.js	mq/suit-open.js	<loaded>
 foldtap.test.js	mq/suit.js	<loaded>
@@ -2687,7 +2687,6 @@ geomaps.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ap
 geomaps.test.js	detect.js	<loaded>	@
 geomaps.test.js	draw.js	<loaded>
 geomaps.test.js	dress.js	<loaded>	migrateVests
-geomaps.test.js	figure.js	<loaded>	@{}
 geomaps.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 geomaps.test.js	icon-192.png	<loaded>
 geomaps.test.js	icon-512.png	<loaded>
@@ -2697,6 +2696,7 @@ geomaps.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 geomaps.test.js	manifest.webmanifest	<loaded>
 geomaps.test.js	mannequin.js	<loaded>	@{}
 geomaps.test.js	month.js	<loaded>	nextWorkday
+geomaps.test.js	mq/shirt-open.js	<loaded>
 geomaps.test.js	mq/shirt-tie.js	<loaded>
 geomaps.test.js	mq/suit-open.js	<loaded>
 geomaps.test.js	mq/suit.js	<loaded>
@@ -2739,7 +2739,6 @@ hbshirt.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ac
 hbshirt.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 hbshirt.test.js	draw.js	<loaded>	fabricDef	texPlainBand	texTileUrl	texTones
 hbshirt.test.js	dress.js	<loaded>	migrateVests
-hbshirt.test.js	figure.js	<loaded>	@{}
 hbshirt.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 hbshirt.test.js	icon-192.png	<loaded>
 hbshirt.test.js	icon-512.png	<loaded>
@@ -2749,6 +2748,7 @@ hbshirt.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 hbshirt.test.js	manifest.webmanifest	<loaded>
 hbshirt.test.js	mannequin.js	<loaded>	@{}
 hbshirt.test.js	month.js	<loaded>	nextWorkday
+hbshirt.test.js	mq/shirt-open.js	<loaded>
 hbshirt.test.js	mq/shirt-tie.js	<loaded>
 hbshirt.test.js	mq/suit-open.js	<loaded>
 hbshirt.test.js	mq/suit.js	<loaded>
@@ -2791,7 +2791,6 @@ hbswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 hbswatch.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 hbswatch.test.js	draw.js	<loaded>	fabricDef	swatchSVG	texPlainBand
 hbswatch.test.js	dress.js	<loaded>	migrateVests
-hbswatch.test.js	figure.js	<loaded>	@{}
 hbswatch.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 hbswatch.test.js	icon-192.png	<loaded>
 hbswatch.test.js	icon-512.png	<loaded>
@@ -2801,6 +2800,7 @@ hbswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 hbswatch.test.js	manifest.webmanifest	<loaded>
 hbswatch.test.js	mannequin.js	<loaded>	@{}
 hbswatch.test.js	month.js	<loaded>	nextWorkday
+hbswatch.test.js	mq/shirt-open.js	<loaded>
 hbswatch.test.js	mq/shirt-tie.js	<loaded>
 hbswatch.test.js	mq/suit-open.js	<loaded>
 hbswatch.test.js	mq/suit.js	<loaded>
@@ -2843,7 +2843,6 @@ herringbone.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 herringbone.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 herringbone.test.js	draw.js	<loaded>	fabricDef	texPlainBand	texTileUrl	texTones
 herringbone.test.js	dress.js	<loaded>	migrateVests
-herringbone.test.js	figure.js	<loaded>	@{}
 herringbone.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 herringbone.test.js	icon-192.png	<loaded>
 herringbone.test.js	icon-512.png	<loaded>
@@ -2853,6 +2852,7 @@ herringbone.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 herringbone.test.js	manifest.webmanifest	<loaded>
 herringbone.test.js	mannequin.js	<loaded>	@{}
 herringbone.test.js	month.js	<loaded>	nextWorkday
+herringbone.test.js	mq/shirt-open.js	<loaded>
 herringbone.test.js	mq/shirt-tie.js	<loaded>
 herringbone.test.js	mq/suit-open.js	<loaded>
 herringbone.test.js	mq/suit.js	<loaded>
@@ -2908,7 +2908,6 @@ history.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LU
 history.test.js	detect.js	<loaded>	@	usableSett
 history.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 history.test.js	dress.js	<loaded>	migrateVests
-history.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 history.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	fitOf	fitTag	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	openPicker	pickNext	pickPic	recordDays	resetCard	resetDay	saveDay	scoreCard	setWorn	slotPool	swapSlot	whenPulled
 history.test.js	icon-192.png	<loaded>
 history.test.js	icon-512.png	<loaded>
@@ -2918,6 +2917,7 @@ history.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 history.test.js	manifest.webmanifest	<loaded>
 history.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 history.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+history.test.js	mq/shirt-open.js	<loaded>
 history.test.js	mq/shirt-tie.js	<loaded>
 history.test.js	mq/suit-open.js	<loaded>
 history.test.js	mq/suit.js	<loaded>
@@ -2961,7 +2961,6 @@ impact.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	app
 impact.test.js	detect.js	<loaded>	@
 impact.test.js	draw.js	<loaded>
 impact.test.js	dress.js	<loaded>	migrateVests
-impact.test.js	figure.js	<loaded>	@{}
 impact.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 impact.test.js	icon-192.png	<loaded>
 impact.test.js	icon-512.png	<loaded>
@@ -2971,6 +2970,7 @@ impact.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBa
 impact.test.js	manifest.webmanifest	<loaded>
 impact.test.js	mannequin.js	<loaded>	@{}
 impact.test.js	month.js	<loaded>	nextWorkday
+impact.test.js	mq/shirt-open.js	<loaded>
 impact.test.js	mq/shirt-tie.js	<loaded>
 impact.test.js	mq/suit-open.js	<loaded>
 impact.test.js	mq/suit.js	<loaded>
@@ -3017,7 +3017,6 @@ invitelink.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 invitelink.test.js	detect.js	<loaded>	@
 invitelink.test.js	draw.js	<loaded>
 invitelink.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-invitelink.test.js	figure.js	<loaded>	@{}
 invitelink.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 invitelink.test.js	icon-192.png	<loaded>
 invitelink.test.js	icon-512.png	<loaded>
@@ -3027,6 +3026,7 @@ invitelink.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 invitelink.test.js	manifest.webmanifest	<loaded>
 invitelink.test.js	mannequin.js	<loaded>	@{}
 invitelink.test.js	month.js	<loaded>	nextWorkday
+invitelink.test.js	mq/shirt-open.js	<loaded>
 invitelink.test.js	mq/shirt-tie.js	<loaded>
 invitelink.test.js	mq/suit-open.js	<loaded>
 invitelink.test.js	mq/suit.js	<loaded>
@@ -3064,7 +3064,6 @@ itempics.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	S
 itempics.test.js	detect.js	<loaded>	@	texPat	usableSett
 itempics.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 itempics.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-itempics.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 itempics.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	foldEdge	idsOf	keepOff	keyDate	learnFrom	learnVote	renderReplanUI	replanCount	resetCard	resetDay	saveDay	scoreCard	setFormal	setOccasion	setWorn	swapSlot	whenPulled
 itempics.test.js	icon-192.png	<loaded>
 itempics.test.js	icon-512.png	<loaded>
@@ -3074,6 +3073,7 @@ itempics.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 itempics.test.js	manifest.webmanifest	<loaded>
 itempics.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 itempics.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+itempics.test.js	mq/shirt-open.js	<loaded>
 itempics.test.js	mq/shirt-tie.js	<loaded>
 itempics.test.js	mq/suit-open.js	<loaded>
 itempics.test.js	mq/suit.js	<loaded>
@@ -3116,7 +3116,6 @@ jacketcolour.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 jacketcolour.test.js	detect.js	<loaded>	@
 jacketcolour.test.js	draw.js	<loaded>
 jacketcolour.test.js	dress.js	<loaded>	migrateVests
-jacketcolour.test.js	figure.js	<loaded>	@{}
 jacketcolour.test.js	history.js	<loaded>	checkPlanRules	idsOf	keyDate	whenPulled
 jacketcolour.test.js	icon-192.png	<loaded>
 jacketcolour.test.js	icon-512.png	<loaded>
@@ -3126,6 +3125,7 @@ jacketcolour.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 jacketcolour.test.js	manifest.webmanifest	<loaded>
 jacketcolour.test.js	mannequin.js	<loaded>	@{}
 jacketcolour.test.js	month.js	<loaded>	nextWorkday
+jacketcolour.test.js	mq/shirt-open.js	<loaded>
 jacketcolour.test.js	mq/shirt-tie.js	<loaded>
 jacketcolour.test.js	mq/suit-open.js	<loaded>
 jacketcolour.test.js	mq/suit.js	<loaded>
@@ -3150,6 +3150,8 @@ jacketcolour.test.js	wardrobe.js	<loaded>
 jacketcolour.test.js	watch/leather.jpg	<loaded>
 jacketcolour.test.js	watch/shirt-open.png	<loaded>
 jacketcolour.test.js	watch/shirt-tie.png	<loaded>
+jacketcolour.test.js	watch/suit.png	<loaded>
+jacketcolour.test.js	watch/vest.png	<loaded>
 jacketshare.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 jacketshare.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 jacketshare.test.js	add.js	<loaded>	checkArrivals
@@ -3166,7 +3168,6 @@ jacketshare.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 jacketshare.test.js	detect.js	<loaded>	@
 jacketshare.test.js	draw.js	<loaded>
 jacketshare.test.js	dress.js	<loaded>	migrateVests
-jacketshare.test.js	figure.js	<loaded>	@{}
 jacketshare.test.js	history.js	<loaded>	checkPlanRules	keyDate	whenPulled
 jacketshare.test.js	icon-192.png	<loaded>
 jacketshare.test.js	icon-512.png	<loaded>
@@ -3176,6 +3177,7 @@ jacketshare.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 jacketshare.test.js	manifest.webmanifest	<loaded>
 jacketshare.test.js	mannequin.js	<loaded>	@{}
 jacketshare.test.js	month.js	<loaded>	nextWorkday
+jacketshare.test.js	mq/shirt-open.js	<loaded>
 jacketshare.test.js	mq/shirt-tie.js	<loaded>
 jacketshare.test.js	mq/suit-open.js	<loaded>
 jacketshare.test.js	mq/suit.js	<loaded>
@@ -3218,7 +3220,6 @@ khaki.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLO
 khaki.test.js	detect.js	<loaded>	@
 khaki.test.js	draw.js	<loaded>
 khaki.test.js	dress.js	<loaded>	migrateVests
-khaki.test.js	figure.js	<loaded>	@{}
 khaki.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 khaki.test.js	icon-192.png	<loaded>
 khaki.test.js	icon-512.png	<loaded>
@@ -3228,6 +3229,7 @@ khaki.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 khaki.test.js	manifest.webmanifest	<loaded>
 khaki.test.js	mannequin.js	<loaded>	@{}
 khaki.test.js	month.js	<loaded>	nextWorkday
+khaki.test.js	mq/shirt-open.js	<loaded>
 khaki.test.js	mq/shirt-tie.js	<loaded>
 khaki.test.js	mq/suit-open.js	<loaded>
 khaki.test.js	mq/suit.js	<loaded>
@@ -3283,7 +3285,6 @@ kit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLOR_
 kit.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 kit.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 kit.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-kit.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 kit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 kit.test.js	icon-192.png	<loaded>
 kit.test.js	icon-512.png	<loaded>
@@ -3293,6 +3294,7 @@ kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitClose	kitCloseupGuide	ki
 kit.test.js	manifest.webmanifest	<loaded>
 kit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 kit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+kit.test.js	mq/shirt-open.js	<loaded>
 kit.test.js	mq/shirt-tie.js	<loaded>
 kit.test.js	mq/suit-open.js	<loaded>
 kit.test.js	mq/suit.js	<loaded>
@@ -3334,13 +3336,13 @@ kvlimit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ap
 kvlimit.test.js	detect.js	<loaded>	@
 kvlimit.test.js	draw.js	<loaded>
 kvlimit.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-kvlimit.test.js	figure.js	<loaded>	@{}
 kvlimit.test.js	history.js	<loaded>	checkPlanRules	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 kvlimit.test.js	index.html	<loaded>
 kvlimit.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 kvlimit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 kvlimit.test.js	mannequin.js	<loaded>	@{}
 kvlimit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+kvlimit.test.js	mq/shirt-open.js	<loaded>
 kvlimit.test.js	mq/shirt-tie.js	<loaded>
 kvlimit.test.js	mq/suit-open.js	<loaded>
 kvlimit.test.js	mq/suit.js	<loaded>
@@ -3396,7 +3398,6 @@ listphoto.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 listphoto.test.js	detect.js	<loaded>	@	usableSett
 listphoto.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 listphoto.test.js	dress.js	<loaded>	migrateVests
-listphoto.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 listphoto.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	fitOf	fitTag	foldEdge	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	openPicker	pickNext	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	whenPulled
 listphoto.test.js	icon-192.png	<loaded>
 listphoto.test.js	icon-512.png	<loaded>
@@ -3406,6 +3407,7 @@ listphoto.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 listphoto.test.js	manifest.webmanifest	<loaded>
 listphoto.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 listphoto.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+listphoto.test.js	mq/shirt-open.js	<loaded>
 listphoto.test.js	mq/shirt-tie.js	<loaded>
 listphoto.test.js	mq/suit-open.js	<loaded>
 listphoto.test.js	mq/suit.js	<loaded>
@@ -3448,7 +3450,6 @@ mannequin.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 mannequin.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 mannequin.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 mannequin.test.js	dress.js	<loaded>	migrateVests
-mannequin.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 mannequin.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 mannequin.test.js	icon-192.png	<loaded>
 mannequin.test.js	icon-512.png	<loaded>
@@ -3458,6 +3459,7 @@ mannequin.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 mannequin.test.js	manifest.webmanifest	<loaded>
 mannequin.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 mannequin.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+mannequin.test.js	mq/shirt-open.js	<any>	<loaded>
 mannequin.test.js	mq/shirt-tie.js	<any>	<loaded>
 mannequin.test.js	mq/suit-open.js	<any>	<loaded>
 mannequin.test.js	mq/suit.js	<any>	<loaded>
@@ -3500,13 +3502,13 @@ masterspeed.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 masterspeed.test.js	detect.js	<loaded>	@
 masterspeed.test.js	draw.js	<loaded>
 masterspeed.test.js	dress.js	<loaded>	migrateVests
-masterspeed.test.js	figure.js	<loaded>	@{}
 masterspeed.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 masterspeed.test.js	index.html	<loaded>
 masterspeed.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 masterspeed.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 masterspeed.test.js	mannequin.js	<loaded>	@{}
 masterspeed.test.js	month.js	<loaded>	nextWorkday	planOn
+masterspeed.test.js	mq/shirt-open.js	<loaded>
 masterspeed.test.js	mq/shirt-tie.js	<loaded>
 masterspeed.test.js	mq/suit-open.js	<loaded>
 masterspeed.test.js	mq/suit.js	<loaded>
@@ -3561,7 +3563,6 @@ measalt.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 measalt.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 measalt.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
 measalt.test.js	dress.js	<loaded>	migrateVests
-measalt.test.js	figure.js	<loaded>	@{}
 measalt.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 measalt.test.js	icon-192.png	<loaded>
 measalt.test.js	icon-512.png	<loaded>
@@ -3571,6 +3572,7 @@ measalt.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 measalt.test.js	manifest.webmanifest	<loaded>
 measalt.test.js	mannequin.js	<loaded>	@{}
 measalt.test.js	month.js	<loaded>	nextWorkday
+measalt.test.js	mq/shirt-open.js	<loaded>
 measalt.test.js	mq/shirt-tie.js	<loaded>
 measalt.test.js	mq/suit-open.js	<loaded>
 measalt.test.js	mq/suit.js	<loaded>
@@ -3628,7 +3630,6 @@ measure.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ac
 measure.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 measure.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
 measure.test.js	dress.js	<loaded>	migrateVests
-measure.test.js	figure.js	<loaded>	@{}
 measure.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 measure.test.js	icon-192.png	<loaded>
 measure.test.js	icon-512.png	<loaded>
@@ -3638,6 +3639,7 @@ measure.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 measure.test.js	manifest.webmanifest	<loaded>
 measure.test.js	mannequin.js	<loaded>	@{}
 measure.test.js	month.js	<loaded>	nextWorkday
+measure.test.js	mq/shirt-open.js	<loaded>
 measure.test.js	mq/shirt-tie.js	<loaded>
 measure.test.js	mq/suit-open.js	<loaded>
 measure.test.js	mq/suit.js	<loaded>
@@ -3684,7 +3686,6 @@ month.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acce
 month.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 month.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 month.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-month.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 month.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 month.test.js	icon-192.png	<loaded>
 month.test.js	icon-512.png	<loaded>
@@ -3694,6 +3695,7 @@ month.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 month.test.js	manifest.webmanifest	<loaded>
 month.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 month.test.js	month.js	<loaded>	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+month.test.js	mq/shirt-open.js	<loaded>
 month.test.js	mq/shirt-tie.js	<loaded>
 month.test.js	mq/suit-open.js	<loaded>
 month.test.js	mq/suit.js	<loaded>
@@ -3736,7 +3738,6 @@ monthswipe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 monthswipe.test.js	detect.js	<loaded>	@	usableSett
 monthswipe.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 monthswipe.test.js	dress.js	<loaded>	migrateVests
-monthswipe.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 monthswipe.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 monthswipe.test.js	icon-192.png	<loaded>
 monthswipe.test.js	icon-512.png	<loaded>
@@ -3746,6 +3747,7 @@ monthswipe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 monthswipe.test.js	manifest.webmanifest	<loaded>
 monthswipe.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 monthswipe.test.js	month.js	<loaded>	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+monthswipe.test.js	mq/shirt-open.js	<loaded>
 monthswipe.test.js	mq/shirt-tie.js	<loaded>
 monthswipe.test.js	mq/suit-open.js	<loaded>
 monthswipe.test.js	mq/suit.js	<loaded>
@@ -3788,7 +3790,6 @@ monthunfold.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 monthunfold.test.js	detect.js	<loaded>	@	usableSett
 monthunfold.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 monthunfold.test.js	dress.js	<loaded>	migrateVests
-monthunfold.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 monthunfold.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 monthunfold.test.js	icon-192.png	<loaded>
 monthunfold.test.js	icon-512.png	<loaded>
@@ -3798,6 +3799,7 @@ monthunfold.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 monthunfold.test.js	manifest.webmanifest	<loaded>
 monthunfold.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 monthunfold.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStep	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+monthunfold.test.js	mq/shirt-open.js	<loaded>
 monthunfold.test.js	mq/shirt-tie.js	<loaded>
 monthunfold.test.js	mq/suit-open.js	<loaded>
 monthunfold.test.js	mq/suit.js	<loaded>
@@ -3840,7 +3842,6 @@ motif.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLO
 motif.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 motif.test.js	draw.js	<loaded>	fabricDef	figFabric	itemThumb	swatchSVG
 motif.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-motif.test.js	figure.js	<loaded>	@{}
 motif.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 motif.test.js	icon-192.png	<loaded>
 motif.test.js	icon-512.png	<loaded>
@@ -3850,6 +3851,7 @@ motif.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 motif.test.js	manifest.webmanifest	<loaded>
 motif.test.js	mannequin.js	<loaded>	@{}
 motif.test.js	month.js	<loaded>	nextWorkday
+motif.test.js	mq/shirt-open.js	<loaded>
 motif.test.js	mq/shirt-tie.js	<loaded>
 motif.test.js	mq/suit-open.js	<loaded>
 motif.test.js	mq/suit.js	<loaded>
@@ -3902,7 +3904,6 @@ moveoutfit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 moveoutfit.test.js	detect.js	<loaded>	@	usableSett
 moveoutfit.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 moveoutfit.test.js	dress.js	<loaded>	migrateVests
-moveoutfit.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 moveoutfit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 moveoutfit.test.js	icon-192.png	<loaded>
 moveoutfit.test.js	icon-512.png	<loaded>
@@ -3912,6 +3913,7 @@ moveoutfit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 moveoutfit.test.js	manifest.webmanifest	<loaded>
 moveoutfit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 moveoutfit.test.js	month.js	<loaded>	monthFillSoon	monthGridHtml	monthLink	nextWorkday	openDay	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+moveoutfit.test.js	mq/shirt-open.js	<loaded>
 moveoutfit.test.js	mq/shirt-tie.js	<loaded>
 moveoutfit.test.js	mq/suit-open.js	<loaded>
 moveoutfit.test.js	mq/suit.js	<loaded>
@@ -3954,7 +3956,6 @@ multi.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLO
 multi.test.js	detect.js	<loaded>	@	analyzeStripes	boxBlur	detectPattern	detectQueued	lumGrid	sobel	texPat	tieWeave	usableSett
 multi.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 multi.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-multi.test.js	figure.js	<loaded>	@{}
 multi.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 multi.test.js	icon-192.png	<loaded>
 multi.test.js	icon-512.png	<loaded>
@@ -3964,6 +3965,7 @@ multi.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 multi.test.js	manifest.webmanifest	<loaded>
 multi.test.js	mannequin.js	<loaded>	@{}
 multi.test.js	month.js	<loaded>	nextWorkday
+multi.test.js	mq/shirt-open.js	<loaded>
 multi.test.js	mq/shirt-tie.js	<loaded>
 multi.test.js	mq/suit-open.js	<loaded>
 multi.test.js	mq/suit.js	<loaded>
@@ -4005,7 +4007,6 @@ navbar.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acc
 navbar.test.js	detect.js	<loaded>	@	usableSett
 navbar.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 navbar.test.js	dress.js	<loaded>	migrateVests
-navbar.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 navbar.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	recordDays	resetCard	saveDay	scoreCard	whenPulled
 navbar.test.js	icon-192.png	<loaded>
 navbar.test.js	icon-512.png	<loaded>
@@ -4015,6 +4016,7 @@ navbar.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 navbar.test.js	manifest.webmanifest	<loaded>
 navbar.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 navbar.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+navbar.test.js	mq/shirt-open.js	<loaded>
 navbar.test.js	mq/shirt-tie.js	<loaded>
 navbar.test.js	mq/suit-open.js	<loaded>
 navbar.test.js	mq/suit.js	<loaded>
@@ -4057,7 +4059,6 @@ navfit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acc
 navfit.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 navfit.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 navfit.test.js	dress.js	<loaded>	migrateVests
-navfit.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 navfit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 navfit.test.js	icon-192.png	<loaded>
 navfit.test.js	icon-512.png	<loaded>
@@ -4067,6 +4068,7 @@ navfit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 navfit.test.js	manifest.webmanifest	<loaded>
 navfit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 navfit.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+navfit.test.js	mq/shirt-open.js	<loaded>
 navfit.test.js	mq/shirt-tie.js	<loaded>
 navfit.test.js	mq/suit-open.js	<loaded>
 navfit.test.js	mq/suit.js	<loaded>
@@ -4110,7 +4112,6 @@ newuser.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LU
 newuser.test.js	detect.js	<loaded>	@	usableSett
 newuser.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 newuser.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-newuser.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 newuser.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	planRulesCheck	renderReplanUI	replanCount	replanFuture	resetCard	scoreCard	slotPool	whenPulled
 newuser.test.js	icon-192.png	<loaded>
 newuser.test.js	icon-512.png	<loaded>
@@ -4120,6 +4121,7 @@ newuser.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 newuser.test.js	manifest.webmanifest	<loaded>
 newuser.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 newuser.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+newuser.test.js	mq/shirt-open.js	<loaded>
 newuser.test.js	mq/shirt-tie.js	<loaded>
 newuser.test.js	mq/suit-open.js	<loaded>
 newuser.test.js	mq/suit.js	<loaded>
@@ -4161,7 +4163,6 @@ occasions.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 occasions.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 occasions.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 occasions.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-occasions.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 occasions.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	foldEdge	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	setOccasion	slotPool	swapSlot	whenPulled
 occasions.test.js	icon-192.png	<loaded>
 occasions.test.js	icon-512.png	<loaded>
@@ -4169,8 +4170,9 @@ occasions.test.js	index.html	<loaded>
 occasions.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	smallPhotos
 occasions.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 occasions.test.js	manifest.webmanifest	<loaded>
-occasions.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+occasions.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 occasions.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+occasions.test.js	mq/shirt-open.js	<loaded>
 occasions.test.js	mq/shirt-tie.js	<loaded>
 occasions.test.js	mq/suit-open.js	<loaded>
 occasions.test.js	mq/suit.js	<loaded>
@@ -4212,7 +4214,6 @@ onorder.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 onorder.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 onorder.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 onorder.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-onorder.test.js	figure.js	<loaded>	@{}
 onorder.test.js	history.js	<loaded>	checkPlanRules	slotPool	whenPulled
 onorder.test.js	icon-192.png	<loaded>
 onorder.test.js	icon-512.png	<loaded>
@@ -4222,6 +4223,7 @@ onorder.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRo
 onorder.test.js	manifest.webmanifest	<loaded>
 onorder.test.js	mannequin.js	<loaded>	@{}
 onorder.test.js	month.js	<loaded>	nextWorkday
+onorder.test.js	mq/shirt-open.js	<loaded>
 onorder.test.js	mq/shirt-tie.js	<loaded>
 onorder.test.js	mq/suit-open.js	<loaded>
 onorder.test.js	mq/suit.js	<loaded>
@@ -4264,7 +4266,6 @@ pack.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM	S
 pack.test.js	detect.js	<loaded>	@	texPat	usableSett
 pack.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 pack.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-pack.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 pack.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 pack.test.js	icon-192.png	<loaded>
 pack.test.js	icon-512.png	<loaded>
@@ -4274,6 +4275,7 @@ pack.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 pack.test.js	manifest.webmanifest	<loaded>
 pack.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 pack.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+pack.test.js	mq/shirt-open.js	<loaded>
 pack.test.js	mq/shirt-tie.js	<loaded>
 pack.test.js	mq/suit-open.js	<loaded>
 pack.test.js	mq/suit.js	<loaded>
@@ -4315,7 +4317,6 @@ pagescroll.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 pagescroll.test.js	detect.js	<loaded>	@	usableSett
 pagescroll.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 pagescroll.test.js	dress.js	<loaded>	migrateVests
-pagescroll.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 pagescroll.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 pagescroll.test.js	icon-192.png	<loaded>
 pagescroll.test.js	icon-512.png	<loaded>
@@ -4325,6 +4326,7 @@ pagescroll.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 pagescroll.test.js	manifest.webmanifest	<loaded>
 pagescroll.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 pagescroll.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+pagescroll.test.js	mq/shirt-open.js	<loaded>
 pagescroll.test.js	mq/shirt-tie.js	<loaded>
 pagescroll.test.js	mq/suit-open.js	<loaded>
 pagescroll.test.js	mq/suit.js	<loaded>
@@ -4367,7 +4369,6 @@ paste.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLO
 paste.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 paste.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 paste.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	migrateVests	renderDressUI
-paste.test.js	figure.js	<loaded>	@{}
 paste.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 paste.test.js	icon-192.png	<loaded>
 paste.test.js	icon-512.png	<loaded>
@@ -4377,6 +4378,7 @@ paste.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBan
 paste.test.js	manifest.webmanifest	<loaded>
 paste.test.js	mannequin.js	<loaded>	@{}
 paste.test.js	month.js	<loaded>	nextWorkday
+paste.test.js	mq/shirt-open.js	<loaded>
 paste.test.js	mq/shirt-tie.js	<loaded>
 paste.test.js	mq/suit-open.js	<loaded>
 paste.test.js	mq/suit.js	<loaded>
@@ -4417,7 +4419,6 @@ patternphoto.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 patternphoto.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 patternphoto.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figureSvg
 patternphoto.test.js	dress.js	<loaded>	migrateVests
-patternphoto.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 patternphoto.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 patternphoto.test.js	icon-192.png	<loaded>
 patternphoto.test.js	icon-512.png	<loaded>
@@ -4427,6 +4428,7 @@ patternphoto.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 patternphoto.test.js	manifest.webmanifest	<loaded>
 patternphoto.test.js	mannequin.js	<loaded>	@{}
 patternphoto.test.js	month.js	<loaded>	nextWorkday
+patternphoto.test.js	mq/shirt-open.js	<loaded>
 patternphoto.test.js	mq/shirt-tie.js	<loaded>
 patternphoto.test.js	mq/suit-open.js	<loaded>
 patternphoto.test.js	mq/suit.js	<loaded>
@@ -4469,7 +4471,6 @@ photobackdrop.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 photobackdrop.test.js	detect.js	<loaded>	@
 photobackdrop.test.js	draw.js	<loaded>
 photobackdrop.test.js	dress.js	<loaded>	migrateVests
-photobackdrop.test.js	figure.js	<loaded>	@{}
 photobackdrop.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 photobackdrop.test.js	icon-192.png	<loaded>
 photobackdrop.test.js	icon-512.png	<loaded>
@@ -4479,6 +4480,7 @@ photobackdrop.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 photobackdrop.test.js	manifest.webmanifest	<loaded>
 photobackdrop.test.js	mannequin.js	<loaded>	@{}
 photobackdrop.test.js	month.js	<loaded>	nextWorkday
+photobackdrop.test.js	mq/shirt-open.js	<loaded>
 photobackdrop.test.js	mq/shirt-tie.js	<loaded>
 photobackdrop.test.js	mq/suit-open.js	<loaded>
 photobackdrop.test.js	mq/suit.js	<loaded>
@@ -4521,7 +4523,6 @@ photoedit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 photoedit.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 photoedit.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 photoedit.test.js	dress.js	<loaded>	migrateVests
-photoedit.test.js	figure.js	<loaded>	@{}
 photoedit.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 photoedit.test.js	icon-192.png	<loaded>
 photoedit.test.js	icon-512.png	<loaded>
@@ -4531,6 +4532,7 @@ photoedit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 photoedit.test.js	manifest.webmanifest	<loaded>
 photoedit.test.js	mannequin.js	<loaded>	@{}
 photoedit.test.js	month.js	<loaded>	nextWorkday
+photoedit.test.js	mq/shirt-open.js	<loaded>
 photoedit.test.js	mq/shirt-tie.js	<loaded>
 photoedit.test.js	mq/suit-open.js	<loaded>
 photoedit.test.js	mq/suit.js	<loaded>
@@ -4581,7 +4583,6 @@ picfold.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ac
 picfold.test.js	detect.js	<loaded>	@	usableSett
 picfold.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 picfold.test.js	dress.js	<loaded>	migrateVests
-picfold.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 picfold.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 picfold.test.js	icon-192.png	<loaded>
 picfold.test.js	icon-512.png	<loaded>
@@ -4591,6 +4592,7 @@ picfold.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 picfold.test.js	manifest.webmanifest	<loaded>
 picfold.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 picfold.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+picfold.test.js	mq/shirt-open.js	<loaded>
 picfold.test.js	mq/shirt-tie.js	<loaded>
 picfold.test.js	mq/suit-open.js	<loaded>
 picfold.test.js	mq/suit.js	<loaded>
@@ -4633,7 +4635,6 @@ picker.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM
 picker.test.js	detect.js	<loaded>	@	usableSett
 picker.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 picker.test.js	dress.js	<loaded>	migrateVests
-picker.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 picker.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	checkPlanRules	closePicker	correctPast	dayActions	fitOf	fitTag	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	openPicker	pickItem	pickNext	pickPic	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	togglePastEdit	whenPulled
 picker.test.js	icon-192.png	<loaded>
 picker.test.js	icon-512.png	<loaded>
@@ -4643,6 +4644,7 @@ picker.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 picker.test.js	manifest.webmanifest	<loaded>
 picker.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 picker.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+picker.test.js	mq/shirt-open.js	<loaded>
 picker.test.js	mq/shirt-tie.js	<loaded>
 picker.test.js	mq/suit-open.js	<loaded>
 picker.test.js	mq/suit.js	<loaded>
@@ -4684,7 +4686,6 @@ piecesname.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 piecesname.test.js	detect.js	<loaded>	@	usableSett
 piecesname.test.js	draw.js	<loaded>	fabricDef	swatchSVG
 piecesname.test.js	dress.js	<loaded>	migrateVests
-piecesname.test.js	figure.js	<loaded>	@{}
 piecesname.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 piecesname.test.js	icon-192.png	<loaded>
 piecesname.test.js	icon-512.png	<loaded>
@@ -4694,6 +4695,7 @@ piecesname.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 piecesname.test.js	manifest.webmanifest	<loaded>
 piecesname.test.js	mannequin.js	<loaded>	@{}
 piecesname.test.js	month.js	<loaded>	nextWorkday	piecesLine
+piecesname.test.js	mq/shirt-open.js	<loaded>
 piecesname.test.js	mq/shirt-tie.js	<loaded>
 piecesname.test.js	mq/suit-open.js	<loaded>
 piecesname.test.js	mq/suit.js	<loaded>
@@ -4736,7 +4738,6 @@ planahead.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 planahead.test.js	detect.js	<loaded>	@
 planahead.test.js	draw.js	<loaded>
 planahead.test.js	dress.js	<loaded>	migrateVests
-planahead.test.js	figure.js	<loaded>	@{}
 planahead.test.js	history.js	<loaded>	checkPlanRules	idsOf	planRulesCheck	replanFuture	whenPulled
 planahead.test.js	icon-192.png	<loaded>
 planahead.test.js	icon-512.png	<loaded>
@@ -4746,6 +4747,7 @@ planahead.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 planahead.test.js	manifest.webmanifest	<loaded>
 planahead.test.js	mannequin.js	<loaded>	@{}
 planahead.test.js	month.js	<loaded>	nextWorkday
+planahead.test.js	mq/shirt-open.js	<loaded>
 planahead.test.js	mq/shirt-tie.js	<loaded>
 planahead.test.js	mq/suit-open.js	<loaded>
 planahead.test.js	mq/suit.js	<loaded>
@@ -4788,7 +4790,6 @@ planaudit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 planaudit.test.js	detect.js	<loaded>	@
 planaudit.test.js	draw.js	<loaded>
 planaudit.test.js	dress.js	<loaded>	migrateVests
-planaudit.test.js	figure.js	<loaded>	@{}
 planaudit.test.js	history.js	<loaded>	checkPlanRules	keyDate	planRulesCheck	replanFuture	whenPulled
 planaudit.test.js	icon-192.png	<loaded>
 planaudit.test.js	icon-512.png	<loaded>
@@ -4798,6 +4799,7 @@ planaudit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 planaudit.test.js	manifest.webmanifest	<loaded>
 planaudit.test.js	mannequin.js	<loaded>	@{}
 planaudit.test.js	month.js	<loaded>	nextWorkday
+planaudit.test.js	mq/shirt-open.js	<loaded>
 planaudit.test.js	mq/shirt-tie.js	<loaded>
 planaudit.test.js	mq/suit-open.js	<loaded>
 planaudit.test.js	mq/suit.js	<loaded>
@@ -4839,7 +4841,6 @@ plannerfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 plannerfix.test.js	detect.js	<loaded>	@
 plannerfix.test.js	draw.js	<loaded>
 plannerfix.test.js	dress.js	<loaded>	migrateVests
-plannerfix.test.js	figure.js	<loaded>	@{}
 plannerfix.test.js	history.js	<loaded>	checkPlanRules	keyDate	whenPulled
 plannerfix.test.js	icon-192.png	<loaded>
 plannerfix.test.js	icon-512.png	<loaded>
@@ -4849,6 +4850,7 @@ plannerfix.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 plannerfix.test.js	manifest.webmanifest	<loaded>
 plannerfix.test.js	mannequin.js	<loaded>	@{}
 plannerfix.test.js	month.js	<loaded>	nextWorkday
+plannerfix.test.js	mq/shirt-open.js	<loaded>
 plannerfix.test.js	mq/shirt-tie.js	<loaded>
 plannerfix.test.js	mq/suit-open.js	<loaded>
 plannerfix.test.js	mq/suit.js	<loaded>
@@ -4891,7 +4893,6 @@ prefetch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 prefetch.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 prefetch.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 prefetch.test.js	dress.js	<loaded>	migrateVests
-prefetch.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 prefetch.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	resetCard	scoreCard	whenPulled
 prefetch.test.js	icon-192.png	<loaded>
 prefetch.test.js	icon-512.png	<loaded>
@@ -4901,6 +4902,7 @@ prefetch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 prefetch.test.js	manifest.webmanifest	<loaded>
 prefetch.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 prefetch.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+prefetch.test.js	mq/shirt-open.js	<loaded>
 prefetch.test.js	mq/shirt-tie.js	<loaded>
 prefetch.test.js	mq/suit-open.js	<loaded>
 prefetch.test.js	mq/suit.js	<loaded>
@@ -4941,7 +4943,6 @@ raincoat.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 raincoat.test.js	detect.js	<loaded>	@	usableSett
 raincoat.test.js	draw.js	<loaded>	coatFabric	coatMarks	fabricDef	figEyes	itemThumb	rainFabric	rainMarks
 raincoat.test.js	dress.js	<loaded>	migrateVests
-raincoat.test.js	figure.js	<loaded>	@{}
 raincoat.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 raincoat.test.js	icon-192.png	<loaded>
 raincoat.test.js	icon-512.png	<loaded>
@@ -4951,6 +4952,7 @@ raincoat.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 raincoat.test.js	manifest.webmanifest	<loaded>
 raincoat.test.js	mannequin.js	<loaded>	@{}
 raincoat.test.js	month.js	<loaded>	nextWorkday
+raincoat.test.js	mq/shirt-open.js	<loaded>
 raincoat.test.js	mq/shirt-tie.js	<loaded>
 raincoat.test.js	mq/suit-open.js	<loaded>
 raincoat.test.js	mq/suit.js	<loaded>
@@ -4993,7 +4995,6 @@ refresh.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ac
 refresh.test.js	detect.js	<loaded>	@	usableSett
 refresh.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	tieFabric	tieMarks	trouserMarks
 refresh.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-refresh.test.js	figure.js	<loaded>	@{}
 refresh.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 refresh.test.js	icon-192.png	<loaded>
 refresh.test.js	icon-512.png	<loaded>
@@ -5003,6 +5004,7 @@ refresh.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 refresh.test.js	manifest.webmanifest	<loaded>
 refresh.test.js	mannequin.js	<loaded>	@{}
 refresh.test.js	month.js	<loaded>	nextWorkday
+refresh.test.js	mq/shirt-open.js	<loaded>
 refresh.test.js	mq/shirt-tie.js	<loaded>
 refresh.test.js	mq/suit-open.js	<loaded>
 refresh.test.js	mq/suit.js	<loaded>
@@ -5044,7 +5046,6 @@ refs.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accen
 refs.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 refs.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figureSvg	texTileUrl	texTones
 refs.test.js	dress.js	<loaded>	migrateVests
-refs.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 refs.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 refs.test.js	icon-192.png	<loaded>
 refs.test.js	icon-512.png	<loaded>
@@ -5054,6 +5055,7 @@ refs.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 refs.test.js	manifest.webmanifest	<loaded>
 refs.test.js	mannequin.js	<loaded>	@{}
 refs.test.js	month.js	<loaded>	nextWorkday
+refs.test.js	mq/shirt-open.js	<loaded>
 refs.test.js	mq/shirt-tie.js	<loaded>
 refs.test.js	mq/suit-open.js	<loaded>
 refs.test.js	mq/suit.js	<loaded>
@@ -5095,13 +5097,13 @@ remind.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	app
 remind.test.js	detect.js	<loaded>	@	texPat	usableSett
 remind.test.js	draw.js	<loaded>
 remind.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-remind.test.js	figure.js	<loaded>	@{}
 remind.test.js	history.js	<loaded>	checkPlanRules	keyDate	renderReplanUI	replanCount	whenPulled
 remind.test.js	index.html	<loaded>
 remind.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 remind.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 remind.test.js	mannequin.js	<loaded>	@{}
 remind.test.js	month.js	<loaded>	nextWorkday	piecesLine
+remind.test.js	mq/shirt-open.js	<loaded>
 remind.test.js	mq/shirt-tie.js	<loaded>
 remind.test.js	mq/suit-open.js	<loaded>
 remind.test.js	mq/suit.js	<loaded>
@@ -5145,7 +5147,6 @@ render-sync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 render-sync.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 render-sync.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 render-sync.test.js	dress.js	<loaded>	migrateVests
-render-sync.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 render-sync.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	resetCard	scoreCard	whenPulled
 render-sync.test.js	icon-192.png	<loaded>
 render-sync.test.js	icon-512.png	<loaded>
@@ -5155,6 +5156,7 @@ render-sync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 render-sync.test.js	manifest.webmanifest	<loaded>
 render-sync.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 render-sync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+render-sync.test.js	mq/shirt-open.js	<loaded>
 render-sync.test.js	mq/shirt-tie.js	<loaded>
 render-sync.test.js	mq/suit-open.js	<loaded>
 render-sync.test.js	mq/suit.js	<loaded>
@@ -5196,7 +5198,6 @@ render.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acc
 render.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 render.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 render.test.js	dress.js	<loaded>	dressOn	dressSummary	legacyVest	migrateVests	renderDressUI
-render.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 render.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 render.test.js	icon-192.png	<loaded>
 render.test.js	icon-512.png	<loaded>
@@ -5206,6 +5207,7 @@ render.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 render.test.js	manifest.webmanifest	<loaded>
 render.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 render.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+render.test.js	mq/shirt-open.js	<loaded>
 render.test.js	mq/shirt-tie.js	<loaded>
 render.test.js	mq/suit-open.js	<loaded>
 render.test.js	mq/suit.js	<loaded>
@@ -5248,7 +5250,6 @@ replan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM
 replan.test.js	detect.js	<loaded>	@	texPat	usableSett
 replan.test.js	draw.js	<loaded>	fabricDef
 replan.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-replan.test.js	figure.js	<loaded>	@{}
 replan.test.js	history.js	<loaded>	checkPlanRules	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	renderReplanUI	replanButton	replanCount	replanFuture	resetCard	saveDay	whenPulled
 replan.test.js	icon-192.png	<loaded>
 replan.test.js	icon-512.png	<loaded>
@@ -5258,6 +5259,7 @@ replan.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 replan.test.js	manifest.webmanifest	<loaded>
 replan.test.js	mannequin.js	<loaded>	@{}
 replan.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+replan.test.js	mq/shirt-open.js	<loaded>
 replan.test.js	mq/shirt-tie.js	<loaded>
 replan.test.js	mq/suit-open.js	<loaded>
 replan.test.js	mq/suit.js	<loaded>
@@ -5299,7 +5301,6 @@ reveal.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acc
 reveal.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 reveal.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	swatchSVG
 reveal.test.js	dress.js	<loaded>	migrateVests
-reveal.test.js	figure.js	<loaded>	@{}
 reveal.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 reveal.test.js	icon-192.png	<loaded>
 reveal.test.js	icon-512.png	<loaded>
@@ -5309,6 +5310,7 @@ reveal.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 reveal.test.js	manifest.webmanifest	<loaded>
 reveal.test.js	mannequin.js	<loaded>	@{}
 reveal.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+reveal.test.js	mq/shirt-open.js	<loaded>
 reveal.test.js	mq/shirt-tie.js	<loaded>
 reveal.test.js	mq/suit-open.js	<loaded>
 reveal.test.js	mq/suit.js	<loaded>
@@ -5351,7 +5353,6 @@ reviewfixes.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 reviewfixes.test.js	detect.js	<loaded>	@	detectQueued	usableSett
 reviewfixes.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 reviewfixes.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-reviewfixes.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 reviewfixes.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 reviewfixes.test.js	icon-192.png	<loaded>
 reviewfixes.test.js	icon-512.png	<loaded>
@@ -5361,6 +5362,7 @@ reviewfixes.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitSta
 reviewfixes.test.js	manifest.webmanifest	<loaded>
 reviewfixes.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 reviewfixes.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+reviewfixes.test.js	mq/shirt-open.js	<loaded>
 reviewfixes.test.js	mq/shirt-tie.js	<loaded>
 reviewfixes.test.js	mq/suit-open.js	<loaded>
 reviewfixes.test.js	mq/suit.js	<loaded>
@@ -5402,7 +5404,6 @@ rotation-pause.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 rotation-pause.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 rotation-pause.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 rotation-pause.test.js	dress.js	<loaded>	migrateVests
-rotation-pause.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 rotation-pause.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	whenPulled
 rotation-pause.test.js	icon-192.png	<loaded>
 rotation-pause.test.js	icon-512.png	<loaded>
@@ -5412,6 +5413,7 @@ rotation-pause.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 rotation-pause.test.js	manifest.webmanifest	<loaded>
 rotation-pause.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 rotation-pause.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+rotation-pause.test.js	mq/shirt-open.js	<loaded>
 rotation-pause.test.js	mq/shirt-tie.js	<loaded>
 rotation-pause.test.js	mq/suit-open.js	<loaded>
 rotation-pause.test.js	mq/suit.js	<loaded>
@@ -5454,7 +5456,6 @@ rotation.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	L
 rotation.test.js	detect.js	<loaded>	@
 rotation.test.js	draw.js	<loaded>
 rotation.test.js	dress.js	<loaded>	migrateVests
-rotation.test.js	figure.js	<loaded>	@{}
 rotation.test.js	history.js	<loaded>	checkPlanRules	keyDate	whenPulled
 rotation.test.js	icon-192.png	<loaded>
 rotation.test.js	icon-512.png	<loaded>
@@ -5464,6 +5465,7 @@ rotation.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 rotation.test.js	manifest.webmanifest	<loaded>
 rotation.test.js	mannequin.js	<loaded>	@{}
 rotation.test.js	month.js	<loaded>	nextWorkday
+rotation.test.js	mq/shirt-open.js	<loaded>
 rotation.test.js	mq/shirt-tie.js	<loaded>
 rotation.test.js	mq/suit-open.js	<loaded>
 rotation.test.js	mq/suit.js	<loaded>
@@ -5506,7 +5508,6 @@ rules8.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM
 rules8.test.js	detect.js	<loaded>	@	usableSett
 rules8.test.js	draw.js	<loaded>	fabricDef
 rules8.test.js	dress.js	<loaded>	migrateVests
-rules8.test.js	figure.js	<loaded>	@{}
 rules8.test.js	history.js	<loaded>	checkPlanRules	idsOf	keyDate	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	whenPulled
 rules8.test.js	icon-192.png	<loaded>
 rules8.test.js	icon-512.png	<loaded>
@@ -5516,6 +5517,7 @@ rules8.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 rules8.test.js	manifest.webmanifest	<loaded>
 rules8.test.js	mannequin.js	<loaded>	@{}
 rules8.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+rules8.test.js	mq/shirt-open.js	<loaded>
 rules8.test.js	mq/shirt-tie.js	<loaded>
 rules8.test.js	mq/suit-open.js	<loaded>
 rules8.test.js	mq/suit.js	<loaded>
@@ -5561,7 +5563,6 @@ run.js: add an item without a photo; it persists	core.js	$	<loaded>	@PATS_BY{con
 run.js: add an item without a photo; it persists	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 run.js: add an item without a photo; it persists	draw.js	<loaded>	drawBelt	fabricDef	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
 run.js: add an item without a photo; it persists	dress.js	<loaded>	dressNewItem	migrateVests
-run.js: add an item without a photo; it persists	figure.js	<loaded>	@{}
 run.js: add an item without a photo; it persists	history.js	<loaded>	checkPlanRules	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	whenPulled
 run.js: add an item without a photo; it persists	icon-192.png	<loaded>
 run.js: add an item without a photo; it persists	icon-512.png	<loaded>
@@ -5571,6 +5572,7 @@ run.js: add an item without a photo; it persists	kit.js	<loaded>	kitHasSample	ki
 run.js: add an item without a photo; it persists	manifest.webmanifest	<loaded>
 run.js: add an item without a photo; it persists	mannequin.js	<loaded>	@{}
 run.js: add an item without a photo; it persists	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+run.js: add an item without a photo; it persists	mq/shirt-open.js	<loaded>
 run.js: add an item without a photo; it persists	mq/shirt-tie.js	<loaded>
 run.js: add an item without a photo; it persists	mq/suit-open.js	<loaded>
 run.js: add an item without a photo; it persists	mq/suit.js	<loaded>
@@ -5613,7 +5615,6 @@ run.js: figure draws the tie, and the shirt when there is no jacket	core.js	$	<l
 run.js: figure draws the tie, and the shirt when there is no jacket	detect.js	<loaded>	@	usableSett
 run.js: figure draws the tie, and the shirt when there is no jacket	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg
 run.js: figure draws the tie, and the shirt when there is no jacket	dress.js	<loaded>	migrateVests
-run.js: figure draws the tie, and the shirt when there is no jacket	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 run.js: figure draws the tie, and the shirt when there is no jacket	history.js	<loaded>	checkPlanRules	whenPulled
 run.js: figure draws the tie, and the shirt when there is no jacket	icon-192.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	icon-512.png	<loaded>
@@ -5621,8 +5622,9 @@ run.js: figure draws the tie, and the shirt when there is no jacket	index.html	<
 run.js: figure draws the tie, and the shirt when there is no jacket	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 run.js: figure draws the tie, and the shirt when there is no jacket	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 run.js: figure draws the tie, and the shirt when there is no jacket	manifest.webmanifest	<loaded>
-run.js: figure draws the tie, and the shirt when there is no jacket	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+run.js: figure draws the tie, and the shirt when there is no jacket	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 run.js: figure draws the tie, and the shirt when there is no jacket	month.js	<loaded>	nextWorkday
+run.js: figure draws the tie, and the shirt when there is no jacket	mq/shirt-open.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/shirt-tie.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/suit-open.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/suit.js	<loaded>
@@ -5665,7 +5667,6 @@ run.js: outfit score	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 run.js: outfit score	detect.js	<loaded>	@
 run.js: outfit score	draw.js	<loaded>
 run.js: outfit score	dress.js	<loaded>	migrateVests
-run.js: outfit score	figure.js	<loaded>	@{}
 run.js: outfit score	history.js	<loaded>	checkPlanRules	planRulesCheck	replanFuture	whenPulled
 run.js: outfit score	icon-192.png	<loaded>
 run.js: outfit score	icon-512.png	<loaded>
@@ -5675,6 +5676,7 @@ run.js: outfit score	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 run.js: outfit score	manifest.webmanifest	<loaded>
 run.js: outfit score	mannequin.js	<loaded>	@{}
 run.js: outfit score	month.js	<loaded>	nextWorkday
+run.js: outfit score	mq/shirt-open.js	<loaded>
 run.js: outfit score	mq/shirt-tie.js	<loaded>
 run.js: outfit score	mq/suit-open.js	<loaded>
 run.js: outfit score	mq/suit.js	<loaded>
@@ -5716,7 +5718,6 @@ run.js: pattern detection on synthetic fabric photos	core.js	$	<loaded>	@PATS_BY
 run.js: pattern detection on synthetic fabric photos	detect.js	<loaded>	@	analyzeChecks	analyzeStripes	boxBlur	detectPattern	foldBands	lumGrid	mapRuns	normAng	period	periodCh	project	sobel	variance
 run.js: pattern detection on synthetic fabric photos	draw.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	dress.js	<loaded>	migrateVests
-run.js: pattern detection on synthetic fabric photos	figure.js	<loaded>	@{}
 run.js: pattern detection on synthetic fabric photos	history.js	<loaded>	checkPlanRules	whenPulled
 run.js: pattern detection on synthetic fabric photos	icon-192.png	<loaded>
 run.js: pattern detection on synthetic fabric photos	icon-512.png	<loaded>
@@ -5726,6 +5727,7 @@ run.js: pattern detection on synthetic fabric photos	kit.js	<loaded>	kitHasSampl
 run.js: pattern detection on synthetic fabric photos	manifest.webmanifest	<loaded>
 run.js: pattern detection on synthetic fabric photos	mannequin.js	<loaded>	@{}
 run.js: pattern detection on synthetic fabric photos	month.js	<loaded>	nextWorkday
+run.js: pattern detection on synthetic fabric photos	mq/shirt-open.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/shirt-tie.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/suit-open.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/suit.js	<loaded>
@@ -5768,7 +5770,6 @@ run.js: planner: independent outfit checklist	core.js	$	<loaded>	@PATS_BY{consts
 run.js: planner: independent outfit checklist	detect.js	<loaded>	@
 run.js: planner: independent outfit checklist	draw.js	<loaded>
 run.js: planner: independent outfit checklist	dress.js	<loaded>	migrateVests
-run.js: planner: independent outfit checklist	figure.js	<loaded>	@{}
 run.js: planner: independent outfit checklist	history.js	<loaded>	checkPlanRules	planRulesCheck	replanFuture	whenPulled
 run.js: planner: independent outfit checklist	icon-192.png	<loaded>
 run.js: planner: independent outfit checklist	icon-512.png	<loaded>
@@ -5778,6 +5779,7 @@ run.js: planner: independent outfit checklist	kit.js	<loaded>	kitHasSample	kitSa
 run.js: planner: independent outfit checklist	manifest.webmanifest	<loaded>
 run.js: planner: independent outfit checklist	mannequin.js	<loaded>	@{}
 run.js: planner: independent outfit checklist	month.js	<loaded>	nextWorkday
+run.js: planner: independent outfit checklist	mq/shirt-open.js	<loaded>
 run.js: planner: independent outfit checklist	mq/shirt-tie.js	<loaded>
 run.js: planner: independent outfit checklist	mq/suit-open.js	<loaded>
 run.js: planner: independent outfit checklist	mq/suit.js	<loaded>
@@ -5819,7 +5821,6 @@ run.js: planner: shoes, belts, leather and metals	core.js	$	<loaded>	@PATS_BY{co
 run.js: planner: shoes, belts, leather and metals	detect.js	<loaded>	@	usableSett
 run.js: planner: shoes, belts, leather and metals	draw.js	<loaded>	fabricDef
 run.js: planner: shoes, belts, leather and metals	dress.js	<loaded>	migrateVests
-run.js: planner: shoes, belts, leather and metals	figure.js	<loaded>	@{}
 run.js: planner: shoes, belts, leather and metals	history.js	<loaded>	checkPlanRules	planRulesCheck	replanFuture	whenPulled
 run.js: planner: shoes, belts, leather and metals	icon-192.png	<loaded>
 run.js: planner: shoes, belts, leather and metals	icon-512.png	<loaded>
@@ -5829,6 +5830,7 @@ run.js: planner: shoes, belts, leather and metals	kit.js	<loaded>	kitHasSample	k
 run.js: planner: shoes, belts, leather and metals	manifest.webmanifest	<loaded>
 run.js: planner: shoes, belts, leather and metals	mannequin.js	<loaded>	@{}
 run.js: planner: shoes, belts, leather and metals	month.js	<loaded>	nextWorkday
+run.js: planner: shoes, belts, leather and metals	mq/shirt-open.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/shirt-tie.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/suit-open.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/suit.js	<loaded>
@@ -5871,7 +5873,6 @@ run.js: renders the outfit without errors	core.js	$	<loaded>	@PATS_BY{constsuiti
 run.js: renders the outfit without errors	detect.js	<loaded>	@	usableSett
 run.js: renders the outfit without errors	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 run.js: renders the outfit without errors	dress.js	<loaded>	migrateVests
-run.js: renders the outfit without errors	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 run.js: renders the outfit without errors	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 run.js: renders the outfit without errors	icon-192.png	<loaded>
 run.js: renders the outfit without errors	icon-512.png	<loaded>
@@ -5881,6 +5882,7 @@ run.js: renders the outfit without errors	kit.js	<loaded>	kitHasSample	kitSample
 run.js: renders the outfit without errors	manifest.webmanifest	<loaded>
 run.js: renders the outfit without errors	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 run.js: renders the outfit without errors	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+run.js: renders the outfit without errors	mq/shirt-open.js	<loaded>
 run.js: renders the outfit without errors	mq/shirt-tie.js	<loaded>
 run.js: renders the outfit without errors	mq/suit-open.js	<loaded>
 run.js: renders the outfit without errors	mq/suit.js	<loaded>
@@ -5922,7 +5924,6 @@ run.js: swipe edge cases and month crossing	core.js	$	<loaded>	@PATS_BY{constsui
 run.js: swipe edge cases and month crossing	detect.js	<loaded>	@	usableSett
 run.js: swipe edge cases and month crossing	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 run.js: swipe edge cases and month crossing	dress.js	<loaded>	migrateVests
-run.js: swipe edge cases and month crossing	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 run.js: swipe edge cases and month crossing	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 run.js: swipe edge cases and month crossing	icon-192.png	<loaded>
 run.js: swipe edge cases and month crossing	icon-512.png	<loaded>
@@ -5932,6 +5933,7 @@ run.js: swipe edge cases and month crossing	kit.js	<loaded>	kitHasSample	kitSamp
 run.js: swipe edge cases and month crossing	manifest.webmanifest	<loaded>
 run.js: swipe edge cases and month crossing	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 run.js: swipe edge cases and month crossing	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+run.js: swipe edge cases and month crossing	mq/shirt-open.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/shirt-tie.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/suit-open.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/suit.js	<loaded>
@@ -5974,7 +5976,6 @@ run.js: swipe moves only the outfit, across viewports	core.js	$	<loaded>	@PATS_B
 run.js: swipe moves only the outfit, across viewports	detect.js	<loaded>	@	usableSett
 run.js: swipe moves only the outfit, across viewports	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 run.js: swipe moves only the outfit, across viewports	dress.js	<loaded>	migrateVests
-run.js: swipe moves only the outfit, across viewports	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 run.js: swipe moves only the outfit, across viewports	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 run.js: swipe moves only the outfit, across viewports	icon-192.png	<loaded>
 run.js: swipe moves only the outfit, across viewports	icon-512.png	<loaded>
@@ -5984,6 +5985,7 @@ run.js: swipe moves only the outfit, across viewports	kit.js	<loaded>	kitHasSamp
 run.js: swipe moves only the outfit, across viewports	manifest.webmanifest	<loaded>
 run.js: swipe moves only the outfit, across viewports	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 run.js: swipe moves only the outfit, across viewports	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+run.js: swipe moves only the outfit, across viewports	mq/shirt-open.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/shirt-tie.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/suit-open.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/suit.js	<loaded>
@@ -6026,7 +6028,6 @@ safety.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COL
 safety.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 safety.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figureSvg	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
 safety.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-safety.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 safety.test.js	history.js	<loaded>	checkPlanRules	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	whenPulled
 safety.test.js	icon-192.png	<loaded>
 safety.test.js	icon-512.png	<loaded>
@@ -6036,6 +6037,7 @@ safety.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 safety.test.js	manifest.webmanifest	<loaded>
 safety.test.js	mannequin.js	<loaded>	@{}
 safety.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+safety.test.js	mq/shirt-open.js	<loaded>
 safety.test.js	mq/shirt-tie.js	<loaded>
 safety.test.js	mq/suit-open.js	<loaded>
 safety.test.js	mq/suit.js	<loaded>
@@ -6078,7 +6080,6 @@ safetysync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 safetysync.test.js	detect.js	<loaded>	@
 safetysync.test.js	draw.js	<loaded>
 safetysync.test.js	dress.js	<loaded>	dressSynced	migrateVests
-safetysync.test.js	figure.js	<loaded>	@{}
 safetysync.test.js	history.js	<loaded>	checkPlanRules	planRulesCheck	replanFuture	whenPulled
 safetysync.test.js	icon-192.png	<loaded>
 safetysync.test.js	icon-512.png	<loaded>
@@ -6088,6 +6089,7 @@ safetysync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 safetysync.test.js	manifest.webmanifest	<loaded>
 safetysync.test.js	mannequin.js	<loaded>	@{}
 safetysync.test.js	month.js	<loaded>	nextWorkday
+safetysync.test.js	mq/shirt-open.js	<loaded>
 safetysync.test.js	mq/shirt-tie.js	<loaded>
 safetysync.test.js	mq/suit-open.js	<loaded>
 safetysync.test.js	mq/suit.js	<loaded>
@@ -6128,7 +6130,6 @@ scoreanim.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 scoreanim.test.js	detect.js	<loaded>	@	usableSett
 scoreanim.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 scoreanim.test.js	dress.js	<loaded>	migrateVests
-scoreanim.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 scoreanim.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
 scoreanim.test.js	icon-192.png	<loaded>
 scoreanim.test.js	icon-512.png	<loaded>
@@ -6138,6 +6139,7 @@ scoreanim.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampl
 scoreanim.test.js	manifest.webmanifest	<loaded>
 scoreanim.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 scoreanim.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+scoreanim.test.js	mq/shirt-open.js	<loaded>
 scoreanim.test.js	mq/shirt-tie.js	<loaded>
 scoreanim.test.js	mq/suit-open.js	<loaded>
 scoreanim.test.js	mq/suit.js	<loaded>
@@ -6179,7 +6181,6 @@ scorefix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	L
 scorefix.test.js	detect.js	<loaded>	@	usableSett
 scorefix.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 scorefix.test.js	dress.js	<loaded>	migrateVests
-scorefix.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 scorefix.test.js	history.js	<loaded>	adviceFor	applyFix	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	foldEdge	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
 scorefix.test.js	icon-192.png	<loaded>
 scorefix.test.js	icon-512.png	<loaded>
@@ -6189,6 +6190,7 @@ scorefix.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 scorefix.test.js	manifest.webmanifest	<loaded>
 scorefix.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 scorefix.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+scorefix.test.js	mq/shirt-open.js	<loaded>
 scorefix.test.js	mq/shirt-tie.js	<loaded>
 scorefix.test.js	mq/suit-open.js	<loaded>
 scorefix.test.js	mq/suit.js	<loaded>
@@ -6230,7 +6232,6 @@ sett.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLOR
 sett.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 sett.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 sett.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-sett.test.js	figure.js	<loaded>	@{}
 sett.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 sett.test.js	icon-192.png	<loaded>
 sett.test.js	icon-512.png	<loaded>
@@ -6240,6 +6241,7 @@ sett.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 sett.test.js	manifest.webmanifest	<loaded>
 sett.test.js	mannequin.js	<loaded>	@{}
 sett.test.js	month.js	<loaded>	nextWorkday
+sett.test.js	mq/shirt-open.js	<loaded>
 sett.test.js	mq/shirt-tie.js	<loaded>
 sett.test.js	mq/suit-open.js	<loaded>
 sett.test.js	mq/suit.js	<loaded>
@@ -6284,7 +6286,6 @@ settingslock.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 settingslock.test.js	detect.js	<loaded>	@
 settingslock.test.js	draw.js	<loaded>
 settingslock.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-settingslock.test.js	figure.js	<loaded>	@{}
 settingslock.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 settingslock.test.js	icon-192.png	<loaded>
 settingslock.test.js	icon-512.png	<loaded>
@@ -6294,6 +6295,7 @@ settingslock.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 settingslock.test.js	manifest.webmanifest	<loaded>
 settingslock.test.js	mannequin.js	<loaded>	@{}
 settingslock.test.js	month.js	<loaded>	nextWorkday
+settingslock.test.js	mq/shirt-open.js	<loaded>
 settingslock.test.js	mq/shirt-tie.js	<loaded>
 settingslock.test.js	mq/suit-open.js	<loaded>
 settingslock.test.js	mq/suit.js	<loaded>
@@ -6335,13 +6337,13 @@ settingsmerge.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstri
 settingsmerge.test.js	detect.js	<loaded>	@
 settingsmerge.test.js	draw.js	<loaded>
 settingsmerge.test.js	dress.js	<loaded>	dressSynced	migrateVests
-settingsmerge.test.js	figure.js	<loaded>	@{}
 settingsmerge.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 settingsmerge.test.js	index.html	<loaded>
 settingsmerge.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 settingsmerge.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 settingsmerge.test.js	mannequin.js	<loaded>	@{}
 settingsmerge.test.js	month.js	<loaded>	nextWorkday
+settingsmerge.test.js	mq/shirt-open.js	<loaded>
 settingsmerge.test.js	mq/shirt-tie.js	<loaded>
 settingsmerge.test.js	mq/suit-open.js	<loaded>
 settingsmerge.test.js	mq/suit.js	<loaded>
@@ -6384,7 +6386,6 @@ settingsstay.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 settingsstay.test.js	detect.js	<loaded>	@	texPat	usableSett
 settingsstay.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 settingsstay.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-settingsstay.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 settingsstay.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 settingsstay.test.js	icon-192.png	<loaded>
 settingsstay.test.js	icon-512.png	<loaded>
@@ -6394,6 +6395,7 @@ settingsstay.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 settingsstay.test.js	manifest.webmanifest	<loaded>
 settingsstay.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 settingsstay.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+settingsstay.test.js	mq/shirt-open.js	<loaded>
 settingsstay.test.js	mq/shirt-tie.js	<loaded>
 settingsstay.test.js	mq/suit-open.js	<loaded>
 settingsstay.test.js	mq/suit.js	<loaded>
@@ -6436,7 +6438,6 @@ setup.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	acce
 setup.test.js	detect.js	<loaded>	@	texPat	usableSett
 setup.test.js	draw.js	<loaded>	drawOxfordSide	drawShoePair	drawShoeSide	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 setup.test.js	dress.js	<loaded>	dressOn	dressSummary	legacyVest	migrateVests	renderDressUI
-setup.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 setup.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 setup.test.js	icon-192.png	<loaded>
 setup.test.js	icon-512.png	<loaded>
@@ -6446,6 +6447,7 @@ setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitClose	kitClothPic	kitD
 setup.test.js	manifest.webmanifest	<loaded>
 setup.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 setup.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+setup.test.js	mq/shirt-open.js	<loaded>
 setup.test.js	mq/shirt-tie.js	<loaded>
 setup.test.js	mq/suit-open.js	<loaded>
 setup.test.js	mq/suit.js	<loaded>
@@ -6488,7 +6490,6 @@ shade.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLO
 shade.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 shade.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
 shade.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-shade.test.js	figure.js	<loaded>	@{}
 shade.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 shade.test.js	icon-192.png	<loaded>
 shade.test.js	icon-512.png	<loaded>
@@ -6498,6 +6499,7 @@ shade.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 shade.test.js	manifest.webmanifest	<loaded>
 shade.test.js	mannequin.js	<loaded>	@{}
 shade.test.js	month.js	<loaded>	nextWorkday
+shade.test.js	mq/shirt-open.js	<loaded>
 shade.test.js	mq/shirt-tie.js	<loaded>
 shade.test.js	mq/suit-open.js	<loaded>
 shade.test.js	mq/suit.js	<loaded>
@@ -6542,13 +6544,13 @@ sharedmasters.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 sharedmasters.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 sharedmasters.test.js	draw.js	<loaded>
 sharedmasters.test.js	dress.js	<loaded>	migrateVests
-sharedmasters.test.js	figure.js	<loaded>	@{}
 sharedmasters.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 sharedmasters.test.js	index.html	<loaded>
 sharedmasters.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem
 sharedmasters.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sharedmasters.test.js	mannequin.js	<loaded>	@{}
 sharedmasters.test.js	month.js	<loaded>	nextWorkday	planOn
+sharedmasters.test.js	mq/shirt-open.js	<loaded>
 sharedmasters.test.js	mq/shirt-tie.js	<loaded>
 sharedmasters.test.js	mq/suit-open.js	<loaded>
 sharedmasters.test.js	mq/suit.js	<loaded>
@@ -6604,7 +6606,6 @@ sharpclose.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 sharpclose.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	corrAt	detrend	foldBins	labGrid	normAng	periodCh	projAvg	projIdx	settBands	settFromCanvas	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 sharpclose.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	fabricDef	figEyes	itemThumb	swatchSVG
 sharpclose.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-sharpclose.test.js	figure.js	<loaded>	@{}
 sharpclose.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 sharpclose.test.js	icon-192.png	<loaded>
 sharpclose.test.js	icon-512.png	<loaded>
@@ -6614,6 +6615,7 @@ sharpclose.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sharpclose.test.js	manifest.webmanifest	<loaded>
 sharpclose.test.js	mannequin.js	<loaded>	@{}
 sharpclose.test.js	month.js	<loaded>	nextWorkday
+sharpclose.test.js	mq/shirt-open.js	<loaded>
 sharpclose.test.js	mq/shirt-tie.js	<loaded>
 sharpclose.test.js	mq/suit-open.js	<loaded>
 sharpclose.test.js	mq/suit.js	<loaded>
@@ -6656,7 +6658,6 @@ shirts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COL
 shirts.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 shirts.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	shirtFabric	shirtMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 shirts.test.js	dress.js	<loaded>	migrateVests
-shirts.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 shirts.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 shirts.test.js	icon-192.png	<loaded>
 shirts.test.js	icon-512.png	<loaded>
@@ -6666,6 +6667,7 @@ shirts.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 shirts.test.js	manifest.webmanifest	<loaded>
 shirts.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 shirts.test.js	month.js	<loaded>	nextWorkday
+shirts.test.js	mq/shirt-open.js	<loaded>
 shirts.test.js	mq/shirt-tie.js	<loaded>
 shirts.test.js	mq/suit-open.js	<loaded>
 shirts.test.js	mq/suit.js	<loaded>
@@ -6721,7 +6723,6 @@ shirtweave.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 shirtweave.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 shirtweave.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG	texTileUrl	texTones
 shirtweave.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-shirtweave.test.js	figure.js	<loaded>	@{}
 shirtweave.test.js	history.js	<loaded>	checkPlanRules	keyDate	resetCard	whenPulled
 shirtweave.test.js	icon-192.png	<loaded>
 shirtweave.test.js	icon-512.png	<loaded>
@@ -6731,6 +6732,7 @@ shirtweave.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStar
 shirtweave.test.js	manifest.webmanifest	<loaded>
 shirtweave.test.js	mannequin.js	<loaded>	@{}
 shirtweave.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+shirtweave.test.js	mq/shirt-open.js	<loaded>
 shirtweave.test.js	mq/shirt-tie.js	<loaded>
 shirtweave.test.js	mq/suit-open.js	<loaded>
 shirtweave.test.js	mq/suit.js	<loaded>
@@ -6774,7 +6776,6 @@ shop.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 shop.test.js	detect.js	<loaded>	@	usableSett
 shop.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 shop.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-shop.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 shop.test.js	history.js	<loaded>	checkPlanRules	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 shop.test.js	icon-192.png	<loaded>
 shop.test.js	icon-512.png	<loaded>
@@ -6784,6 +6785,7 @@ shop.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBann
 shop.test.js	manifest.webmanifest	<loaded>
 shop.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 shop.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+shop.test.js	mq/shirt-open.js	<loaded>
 shop.test.js	mq/shirt-tie.js	<loaded>
 shop.test.js	mq/suit-open.js	<loaded>
 shop.test.js	mq/suit.js	<loaded>
@@ -6826,7 +6828,6 @@ shopswipe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 shopswipe.test.js	detect.js	<loaded>	@	usableSett
 shopswipe.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 shopswipe.test.js	dress.js	<loaded>	migrateVests
-shopswipe.test.js	figure.js	<loaded>	@{}
 shopswipe.test.js	history.js	<loaded>	checkPlanRules	keyDate	whenPulled
 shopswipe.test.js	icon-192.png	<loaded>
 shopswipe.test.js	icon-512.png	<loaded>
@@ -6836,6 +6837,7 @@ shopswipe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 shopswipe.test.js	manifest.webmanifest	<loaded>
 shopswipe.test.js	mannequin.js	<loaded>	@{}
 shopswipe.test.js	month.js	<loaded>	nextWorkday
+shopswipe.test.js	mq/shirt-open.js	<loaded>
 shopswipe.test.js	mq/shirt-tie.js	<loaded>
 shopswipe.test.js	mq/suit-open.js	<loaded>
 shopswipe.test.js	mq/suit.js	<loaded>
@@ -6878,7 +6880,6 @@ snapshots.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 snapshots.test.js	detect.js	<loaded>	@	texPat
 snapshots.test.js	draw.js	<loaded>
 snapshots.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-snapshots.test.js	figure.js	<loaded>	@{}
 snapshots.test.js	history.js	<loaded>	checkPlanRules	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 snapshots.test.js	icon-192.png	<loaded>
 snapshots.test.js	icon-512.png	<loaded>
@@ -6888,6 +6889,7 @@ snapshots.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 snapshots.test.js	manifest.webmanifest	<loaded>
 snapshots.test.js	mannequin.js	<loaded>	@{}
 snapshots.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+snapshots.test.js	mq/shirt-open.js	<loaded>
 snapshots.test.js	mq/shirt-tie.js	<loaded>
 snapshots.test.js	mq/suit-open.js	<loaded>
 snapshots.test.js	mq/suit.js	<loaded>
@@ -6929,7 +6931,6 @@ socktoe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 socktoe.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 socktoe.test.js	draw.js	<loaded>	drawSock	fabricDef	itemThumb	swatchSVG	tieFabric	tieMarks	trouserMarks
 socktoe.test.js	dress.js	<loaded>	migrateVests
-socktoe.test.js	figure.js	<loaded>	@{}
 socktoe.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 socktoe.test.js	icon-192.png	<loaded>
 socktoe.test.js	icon-512.png	<loaded>
@@ -6939,6 +6940,7 @@ socktoe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 socktoe.test.js	manifest.webmanifest	<loaded>
 socktoe.test.js	mannequin.js	<loaded>	@{}
 socktoe.test.js	month.js	<loaded>	nextWorkday
+socktoe.test.js	mq/shirt-open.js	<loaded>
 socktoe.test.js	mq/shirt-tie.js	<loaded>
 socktoe.test.js	mq/suit-open.js	<loaded>
 socktoe.test.js	mq/suit.js	<loaded>
@@ -6989,7 +6991,6 @@ speed.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM	
 speed.test.js	detect.js	<loaded>	@	usableSett
 speed.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 speed.test.js	dress.js	<loaded>	legacyVest	migrateVests
-speed.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 speed.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 speed.test.js	icon-192.png	<loaded>
 speed.test.js	icon-512.png	<loaded>
@@ -6999,6 +7000,7 @@ speed.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 speed.test.js	manifest.webmanifest	<any>	<loaded>
 speed.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 speed.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+speed.test.js	mq/shirt-open.js	<loaded>
 speed.test.js	mq/shirt-tie.js	<loaded>
 speed.test.js	mq/suit-open.js	<loaded>
 speed.test.js	mq/suit.js	<loaded>
@@ -7040,7 +7042,6 @@ staledevice.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 staledevice.test.js	detect.js	<loaded>	@	usableSett
 staledevice.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	tieFabric	tieMarks
 staledevice.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-staledevice.test.js	figure.js	<loaded>	@{}
 staledevice.test.js	history.js	<loaded>	checkPlanRules	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	whenPulled
 staledevice.test.js	icon-192.png	<loaded>
 staledevice.test.js	icon-512.png	<loaded>
@@ -7050,6 +7051,7 @@ staledevice.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 staledevice.test.js	manifest.webmanifest	<loaded>
 staledevice.test.js	mannequin.js	<loaded>	@{}
 staledevice.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
+staledevice.test.js	mq/shirt-open.js	<loaded>
 staledevice.test.js	mq/shirt-tie.js	<loaded>
 staledevice.test.js	mq/suit-open.js	<loaded>
 staledevice.test.js	mq/suit.js	<loaded>
@@ -7096,7 +7098,6 @@ stats.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM	
 stats.test.js	detect.js	<loaded>	@	texPat	usableSett
 stats.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 stats.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-stats.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 stats.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 stats.test.js	icon-192.png	<loaded>
 stats.test.js	icon-512.png	<loaded>
@@ -7106,6 +7107,7 @@ stats.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 stats.test.js	manifest.webmanifest	<loaded>
 stats.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 stats.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+stats.test.js	mq/shirt-open.js	<loaded>
 stats.test.js	mq/shirt-tie.js	<loaded>
 stats.test.js	mq/suit-open.js	<loaded>
 stats.test.js	mq/suit.js	<loaded>
@@ -7147,7 +7149,6 @@ subback.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 subback.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 subback.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 subback.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-subback.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 subback.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 subback.test.js	icon-192.png	<loaded>
 subback.test.js	icon-512.png	<loaded>
@@ -7157,6 +7158,7 @@ subback.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 subback.test.js	manifest.webmanifest	<loaded>
 subback.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 subback.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+subback.test.js	mq/shirt-open.js	<loaded>
 subback.test.js	mq/shirt-tie.js	<loaded>
 subback.test.js	mq/suit-open.js	<loaded>
 subback.test.js	mq/suit.js	<loaded>
@@ -7201,7 +7203,6 @@ sw.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 sw.test.js	detect.js	<any>	<loaded>	@
 sw.test.js	draw.js	<any>	<loaded>
 sw.test.js	dress.js	<any>	<loaded>	migrateVests
-sw.test.js	figure.js	<any>	<loaded>	@{}
 sw.test.js	history.js	<any>	<loaded>	checkPlanRules	whenPulled
 sw.test.js	icon-192.png	<any>
 sw.test.js	icon-512.png	<any>
@@ -7211,6 +7212,7 @@ sw.test.js	kit.js	<any>	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sw.test.js	manifest.webmanifest	<any>
 sw.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 sw.test.js	month.js	<any>	<loaded>	nextWorkday
+sw.test.js	mq/shirt-open.js	<any>	<loaded>
 sw.test.js	mq/shirt-tie.js	<any>	<loaded>
 sw.test.js	mq/suit-open.js	<any>	<loaded>
 sw.test.js	mq/suit.js	<any>	<loaded>
@@ -7254,7 +7256,6 @@ swatchzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 swatchzoom.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 swatchzoom.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG
 swatchzoom.test.js	dress.js	<loaded>	migrateVests
-swatchzoom.test.js	figure.js	<loaded>	@{}
 swatchzoom.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 swatchzoom.test.js	icon-192.png	<loaded>
 swatchzoom.test.js	icon-512.png	<loaded>
@@ -7264,6 +7265,7 @@ swatchzoom.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 swatchzoom.test.js	manifest.webmanifest	<loaded>
 swatchzoom.test.js	mannequin.js	<loaded>	@{}
 swatchzoom.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+swatchzoom.test.js	mq/shirt-open.js	<loaded>
 swatchzoom.test.js	mq/shirt-tie.js	<loaded>
 swatchzoom.test.js	mq/suit-open.js	<loaded>
 swatchzoom.test.js	mq/suit.js	<loaded>
@@ -7306,7 +7308,6 @@ sync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accen
 sync.test.js	detect.js	<loaded>	@	texPat	usableSett
 sync.test.js	draw.js	<loaded>	drawBelt	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 sync.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-sync.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 sync.test.js	history.js	<loaded>	checkPlanRules	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 sync.test.js	icon-192.png	<loaded>
 sync.test.js	icon-512.png	<loaded>
@@ -7316,6 +7317,7 @@ sync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sync.test.js	manifest.webmanifest	<loaded>
 sync.test.js	mannequin.js	<loaded>	@{}
 sync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
+sync.test.js	mq/shirt-open.js	<loaded>
 sync.test.js	mq/shirt-tie.js	<loaded>
 sync.test.js	mq/suit-open.js	<loaded>
 sync.test.js	mq/suit.js	<loaded>
@@ -7363,7 +7365,6 @@ tabmove.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	ap
 tabmove.test.js	detect.js	<loaded>	@
 tabmove.test.js	draw.js	<loaded>
 tabmove.test.js	dress.js	<loaded>	migrateVests
-tabmove.test.js	figure.js	<loaded>	@{}
 tabmove.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 tabmove.test.js	icon-192.png	<loaded>
 tabmove.test.js	icon-512.png	<loaded>
@@ -7373,6 +7374,7 @@ tabmove.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tabmove.test.js	manifest.webmanifest	<loaded>
 tabmove.test.js	mannequin.js	<loaded>	@{}
 tabmove.test.js	month.js	<loaded>	nextWorkday
+tabmove.test.js	mq/shirt-open.js	<loaded>
 tabmove.test.js	mq/shirt-tie.js	<loaded>
 tabmove.test.js	mq/suit-open.js	<loaded>
 tabmove.test.js	mq/suit.js	<loaded>
@@ -7415,7 +7417,6 @@ tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 tagging.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 tagging.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figureSvg	itemThumb	swatchSVG
 tagging.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	migrateVests	renderDressUI
-tagging.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 tagging.test.js	history.js	<loaded>	checkPlanRules	keyDate	renderReplanUI	replanCount	resetCard	whenPulled
 tagging.test.js	icon-192.png	<loaded>
 tagging.test.js	icon-512.png	<loaded>
@@ -7425,6 +7426,7 @@ tagging.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRo
 tagging.test.js	manifest.webmanifest	<loaded>
 tagging.test.js	mannequin.js	<loaded>	@{}
 tagging.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+tagging.test.js	mq/shirt-open.js	<loaded>
 tagging.test.js	mq/shirt-tie.js	<loaded>
 tagging.test.js	mq/suit-open.js	<loaded>
 tagging.test.js	mq/suit.js	<loaded>
@@ -7467,7 +7469,6 @@ tagswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 tagswatch.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 tagswatch.test.js	draw.js	<loaded>	fabricDef	itemThumb	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 tagswatch.test.js	dress.js	<loaded>	migrateVests
-tagswatch.test.js	figure.js	<loaded>	@{}
 tagswatch.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 tagswatch.test.js	icon-192.png	<loaded>
 tagswatch.test.js	icon-512.png	<loaded>
@@ -7477,6 +7478,7 @@ tagswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tagswatch.test.js	manifest.webmanifest	<loaded>
 tagswatch.test.js	mannequin.js	<loaded>	@{}
 tagswatch.test.js	month.js	<loaded>	nextWorkday
+tagswatch.test.js	mq/shirt-open.js	<loaded>
 tagswatch.test.js	mq/shirt-tie.js	<loaded>
 tagswatch.test.js	mq/suit-open.js	<loaded>
 tagswatch.test.js	mq/suit.js	<loaded>
@@ -7519,7 +7521,6 @@ takeoff.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LU
 takeoff.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 takeoff.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG
 takeoff.test.js	dress.js	<loaded>	migrateVests
-takeoff.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 takeoff.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	replanFuture	resetCard	resetDay	saveDay	scoreCard	setWorn	slotPool	whenPulled
 takeoff.test.js	icon-192.png	<loaded>
 takeoff.test.js	icon-512.png	<loaded>
@@ -7529,6 +7530,7 @@ takeoff.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 takeoff.test.js	manifest.webmanifest	<loaded>
 takeoff.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 takeoff.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+takeoff.test.js	mq/shirt-open.js	<loaded>
 takeoff.test.js	mq/shirt-tie.js	<loaded>
 takeoff.test.js	mq/suit-open.js	<loaded>
 takeoff.test.js	mq/suit.js	<loaded>
@@ -7570,13 +7572,13 @@ testersync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 testersync.test.js	detect.js	<loaded>	@
 testersync.test.js	draw.js	<loaded>
 testersync.test.js	dress.js	<loaded>	migrateVests
-testersync.test.js	figure.js	<loaded>	@{}
 testersync.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 testersync.test.js	index.html	<loaded>
 testersync.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 testersync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 testersync.test.js	mannequin.js	<loaded>	@{}
 testersync.test.js	month.js	<loaded>	nextWorkday
+testersync.test.js	mq/shirt-open.js	<loaded>
 testersync.test.js	mq/shirt-tie.js	<loaded>
 testersync.test.js	mq/suit-open.js	<loaded>
 testersync.test.js	mq/suit.js	<loaded>
@@ -7614,7 +7616,6 @@ testerview.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 testerview.test.js	detect.js	<loaded>	@
 testerview.test.js	draw.js	<loaded>
 testerview.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-testerview.test.js	figure.js	<loaded>	@{}
 testerview.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 testerview.test.js	icon-192.png	<loaded>
 testerview.test.js	icon-512.png	<loaded>
@@ -7624,6 +7625,7 @@ testerview.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 testerview.test.js	manifest.webmanifest	<loaded>
 testerview.test.js	mannequin.js	<loaded>	@{}
 testerview.test.js	month.js	<loaded>	nextWorkday
+testerview.test.js	mq/shirt-open.js	<loaded>
 testerview.test.js	mq/shirt-tie.js	<loaded>
 testerview.test.js	mq/suit-open.js	<loaded>
 testerview.test.js	mq/suit.js	<loaded>
@@ -7666,7 +7668,6 @@ texswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 texswatch.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 texswatch.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	swatchSVG	texTileUrl	texTones	tieFabric	tieMarks	trouserMarks
 texswatch.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-texswatch.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 texswatch.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	whenPulled
 texswatch.test.js	icon-192.png	<loaded>
 texswatch.test.js	icon-512.png	<loaded>
@@ -7676,6 +7677,7 @@ texswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStart
 texswatch.test.js	manifest.webmanifest	<loaded>
 texswatch.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 texswatch.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	stackSVG
+texswatch.test.js	mq/shirt-open.js	<loaded>
 texswatch.test.js	mq/shirt-tie.js	<loaded>
 texswatch.test.js	mq/suit-open.js	<loaded>
 texswatch.test.js	mq/suit.js	<loaded>
@@ -7721,7 +7723,6 @@ texture.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 texture.test.js	detect.js	<loaded>	@	detectQueued	texPat	tieWeave	usableSett
 texture.test.js	draw.js	<loaded>	drawOxfordSide	drawShoePair	drawShoeSide	fabricDef	itemThumb	leatherLayers	swatchSVG
 texture.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-texture.test.js	figure.js	<loaded>	@{}
 texture.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 texture.test.js	icon-192.png	<loaded>
 texture.test.js	icon-512.png	<loaded>
@@ -7731,6 +7732,7 @@ texture.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRo
 texture.test.js	manifest.webmanifest	<loaded>
 texture.test.js	mannequin.js	<loaded>	@{}
 texture.test.js	month.js	<loaded>	nextWorkday
+texture.test.js	mq/shirt-open.js	<loaded>
 texture.test.js	mq/shirt-tie.js	<loaded>
 texture.test.js	mq/suit-open.js	<loaded>
 texture.test.js	mq/suit.js	<loaded>
@@ -7777,7 +7779,6 @@ theme.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	appl
 theme.test.js	detect.js	<loaded>	@
 theme.test.js	draw.js	<loaded>
 theme.test.js	dress.js	<loaded>	migrateVests
-theme.test.js	figure.js	<loaded>	@{}
 theme.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 theme.test.js	icon-192.png	<loaded>
 theme.test.js	icon-512.png	<loaded>
@@ -7787,6 +7788,7 @@ theme.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 theme.test.js	manifest.webmanifest	<loaded>
 theme.test.js	mannequin.js	<loaded>	@{}
 theme.test.js	month.js	<loaded>	nextWorkday
+theme.test.js	mq/shirt-open.js	<loaded>
 theme.test.js	mq/shirt-tie.js	<loaded>
 theme.test.js	mq/suit-open.js	<loaded>
 theme.test.js	mq/suit.js	<loaded>
@@ -7829,7 +7831,6 @@ tiegap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LUM
 tiegap.test.js	detect.js	<loaded>	@
 tiegap.test.js	draw.js	<loaded>
 tiegap.test.js	dress.js	<loaded>	migrateVests
-tiegap.test.js	figure.js	<loaded>	@{}
 tiegap.test.js	history.js	<loaded>	checkPlanRules	keyDate	planRulesCheck	replanFuture	whenPulled
 tiegap.test.js	icon-192.png	<loaded>
 tiegap.test.js	icon-512.png	<loaded>
@@ -7839,6 +7840,7 @@ tiegap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tiegap.test.js	manifest.webmanifest	<loaded>
 tiegap.test.js	mannequin.js	<loaded>	@{}
 tiegap.test.js	month.js	<loaded>	nextWorkday
+tiegap.test.js	mq/shirt-open.js	<loaded>
 tiegap.test.js	mq/shirt-tie.js	<loaded>
 tiegap.test.js	mq/suit-open.js	<loaded>
 tiegap.test.js	mq/suit.js	<loaded>
@@ -7880,7 +7882,6 @@ tieweave.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	C
 tieweave.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 tieweave.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG	texTileUrl	texTones
 tieweave.test.js	dress.js	<loaded>	migrateVests
-tieweave.test.js	figure.js	<loaded>	@{}
 tieweave.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 tieweave.test.js	icon-192.png	<loaded>
 tieweave.test.js	icon-512.png	<loaded>
@@ -7890,6 +7891,7 @@ tieweave.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tieweave.test.js	manifest.webmanifest	<loaded>
 tieweave.test.js	mannequin.js	<loaded>	@{}
 tieweave.test.js	month.js	<loaded>	nextWorkday
+tieweave.test.js	mq/shirt-open.js	<loaded>
 tieweave.test.js	mq/shirt-tie.js	<loaded>
 tieweave.test.js	mq/suit-open.js	<loaded>
 tieweave.test.js	mq/suit.js	<loaded>
@@ -7932,7 +7934,6 @@ tiewoven.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	L
 tiewoven.test.js	detect.js	<loaded>	@	usableSett
 tiewoven.test.js	draw.js	<loaded>	fabricDef
 tiewoven.test.js	dress.js	<loaded>	migrateVests
-tiewoven.test.js	figure.js	<loaded>	@{}
 tiewoven.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 tiewoven.test.js	icon-192.png	<loaded>
 tiewoven.test.js	icon-512.png	<loaded>
@@ -7942,6 +7943,7 @@ tiewoven.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tiewoven.test.js	manifest.webmanifest	<loaded>
 tiewoven.test.js	mannequin.js	<loaded>	@{}
 tiewoven.test.js	month.js	<loaded>	nextWorkday
+tiewoven.test.js	mq/shirt-open.js	<loaded>
 tiewoven.test.js	mq/shirt-tie.js	<loaded>
 tiewoven.test.js	mq/suit-open.js	<loaded>
 tiewoven.test.js	mq/suit.js	<loaded>
@@ -7997,7 +7999,6 @@ todaycards.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 todaycards.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 todaycards.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 todaycards.test.js	dress.js	<loaded>	migrateVests
-todaycards.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 todaycards.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 todaycards.test.js	icon-192.png	<loaded>
 todaycards.test.js	icon-512.png	<loaded>
@@ -8007,6 +8008,7 @@ todaycards.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todaycards.test.js	manifest.webmanifest	<loaded>
 todaycards.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 todaycards.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+todaycards.test.js	mq/shirt-open.js	<loaded>
 todaycards.test.js	mq/shirt-tie.js	<loaded>
 todaycards.test.js	mq/suit-open.js	<loaded>
 todaycards.test.js	mq/suit.js	<loaded>
@@ -8049,7 +8051,6 @@ todayswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 todayswatch.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 todayswatch.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	swatchSVG	texPlainBand	texTileSmooth	texTileUrl	texTones
 todayswatch.test.js	dress.js	<loaded>	migrateVests
-todayswatch.test.js	figure.js	<loaded>	@{}
 todayswatch.test.js	history.js	<loaded>	checkPlanRules	keyDate	whenPulled
 todayswatch.test.js	icon-192.png	<loaded>
 todayswatch.test.js	icon-512.png	<loaded>
@@ -8059,6 +8060,7 @@ todayswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todayswatch.test.js	manifest.webmanifest	<loaded>
 todayswatch.test.js	mannequin.js	<loaded>	@{}
 todayswatch.test.js	month.js	<loaded>	nextWorkday	planOn
+todayswatch.test.js	mq/shirt-open.js	<loaded>
 todayswatch.test.js	mq/shirt-tie.js	<loaded>
 todayswatch.test.js	mq/suit-open.js	<loaded>
 todayswatch.test.js	mq/suit.js	<loaded>
@@ -8101,7 +8103,6 @@ todaytight.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 todaytight.test.js	detect.js	<loaded>	@	usableSett
 todaytight.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 todaytight.test.js	dress.js	<loaded>	migrateVests
-todaytight.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 todaytight.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	scoreCard	setWorn	whenPulled
 todaytight.test.js	icon-192.png	<loaded>
 todaytight.test.js	icon-512.png	<loaded>
@@ -8111,6 +8112,7 @@ todaytight.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todaytight.test.js	manifest.webmanifest	<loaded>
 todaytight.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 todaytight.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+todaytight.test.js	mq/shirt-open.js	<loaded>
 todaytight.test.js	mq/shirt-tie.js	<loaded>
 todaytight.test.js	mq/suit-open.js	<loaded>
 todaytight.test.js	mq/suit.js	<loaded>
@@ -8153,7 +8155,6 @@ todayzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 todayzoom.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 todayzoom.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG	texTileUrl	texTones
 todayzoom.test.js	dress.js	<loaded>	migrateVests
-todayzoom.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 todayzoom.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	foldEdge	idsOf	keyDate	resetCard	scoreCard	toggleScore	whenPulled
 todayzoom.test.js	icon-192.png	<loaded>
 todayzoom.test.js	icon-512.png	<loaded>
@@ -8163,6 +8164,7 @@ todayzoom.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todayzoom.test.js	manifest.webmanifest	<loaded>
 todayzoom.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 todayzoom.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+todayzoom.test.js	mq/shirt-open.js	<loaded>
 todayzoom.test.js	mq/shirt-tie.js	<loaded>
 todayzoom.test.js	mq/suit-open.js	<loaded>
 todayzoom.test.js	mq/suit.js	<loaded>
@@ -8200,7 +8202,6 @@ twillswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 twillswatch.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 twillswatch.test.js	draw.js	<loaded>
 twillswatch.test.js	dress.js	<loaded>	migrateVests
-twillswatch.test.js	figure.js	<loaded>	@{}
 twillswatch.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 twillswatch.test.js	icon-192.png	<loaded>
 twillswatch.test.js	icon-512.png	<loaded>
@@ -8210,6 +8211,7 @@ twillswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 twillswatch.test.js	manifest.webmanifest	<loaded>
 twillswatch.test.js	mannequin.js	<loaded>	@{}
 twillswatch.test.js	month.js	<loaded>	nextWorkday
+twillswatch.test.js	mq/shirt-open.js	<loaded>
 twillswatch.test.js	mq/shirt-tie.js	<loaded>
 twillswatch.test.js	mq/suit-open.js	<loaded>
 twillswatch.test.js	mq/suit.js	<loaded>
@@ -8255,7 +8257,6 @@ ui.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	C
 ui.test.js	detect.js	<any>	<loaded>	@	texPat	tieWeave	usableSett
 ui.test.js	draw.js	<any>	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 ui.test.js	dress.js	<any>	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-ui.test.js	figure.js	<any>	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 ui.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 ui.test.js	icon-192.png	<loaded>
 ui.test.js	icon-512.png	<loaded>
@@ -8263,8 +8264,9 @@ ui.test.js	index.html	<any>	<loaded>
 ui.test.js	itemsheet.js	<any>	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	histDrop	histPush	itemBody	itemShown	noMotion	openItem	patSummary	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
 ui.test.js	kit.js	<any>	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 ui.test.js	manifest.webmanifest	<loaded>
-ui.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+ui.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 ui.test.js	month.js	<any>	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+ui.test.js	mq/shirt-open.js	<loaded>
 ui.test.js	mq/shirt-tie.js	<loaded>
 ui.test.js	mq/suit-open.js	<loaded>
 ui.test.js	mq/suit.js	<loaded>
@@ -8308,7 +8310,6 @@ uipages.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 uipages.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 uipages.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figEyes	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 uipages.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-uipages.test.js	figure.js	<loaded>	@{}
 uipages.test.js	history.js	<loaded>	checkPlanRules	clearLocks	keyDate	renderReplanUI	replanCount	whenPulled
 uipages.test.js	icon-192.png	<loaded>
 uipages.test.js	icon-512.png	<loaded>
@@ -8318,6 +8319,7 @@ uipages.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 uipages.test.js	manifest.webmanifest	<loaded>
 uipages.test.js	mannequin.js	<loaded>	@{}
 uipages.test.js	month.js	<loaded>	nextWorkday
+uipages.test.js	mq/shirt-open.js	<loaded>
 uipages.test.js	mq/shirt-tie.js	<loaded>
 uipages.test.js	mq/suit-open.js	<loaded>
 uipages.test.js	mq/suit.js	<loaded>
@@ -8361,7 +8363,6 @@ vest.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	COLOR
 vest.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 vest.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 vest.test.js	dress.js	<loaded>	migrateVests
-vest.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 vest.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	setVest	slotPool	whenPulled
 vest.test.js	icon-192.png	<loaded>
 vest.test.js	icon-512.png	<loaded>
@@ -8371,6 +8372,7 @@ vest.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 vest.test.js	manifest.webmanifest	<loaded>
 vest.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 vest.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+vest.test.js	mq/shirt-open.js	<loaded>
 vest.test.js	mq/shirt-tie.js	<loaded>
 vest.test.js	mq/suit-open.js	<loaded>
 vest.test.js	mq/suit.js	<loaded>
@@ -8413,7 +8415,6 @@ wardgrid.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	a
 wardgrid.test.js	detect.js	<loaded>	@
 wardgrid.test.js	draw.js	<loaded>
 wardgrid.test.js	dress.js	<loaded>	migrateVests
-wardgrid.test.js	figure.js	<loaded>	@{}
 wardgrid.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 wardgrid.test.js	icon-192.png	<loaded>
 wardgrid.test.js	icon-512.png	<loaded>
@@ -8423,6 +8424,7 @@ wardgrid.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 wardgrid.test.js	manifest.webmanifest	<loaded>
 wardgrid.test.js	mannequin.js	<loaded>	@{}
 wardgrid.test.js	month.js	<loaded>	nextWorkday
+wardgrid.test.js	mq/shirt-open.js	<loaded>
 wardgrid.test.js	mq/shirt-tie.js	<loaded>
 wardgrid.test.js	mq/suit-open.js	<loaded>
 wardgrid.test.js	mq/suit.js	<loaded>
@@ -8465,7 +8467,6 @@ wardpic.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	CO
 wardpic.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 wardpic.test.js	draw.js	<loaded>	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	tieFabric	tieMarks	trouserMarks
 wardpic.test.js	dress.js	<loaded>	migrateVests
-wardpic.test.js	figure.js	<loaded>	@{}
 wardpic.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 wardpic.test.js	icon-192.png	<loaded>
 wardpic.test.js	icon-512.png	<loaded>
@@ -8475,6 +8476,7 @@ wardpic.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 wardpic.test.js	manifest.webmanifest	<loaded>
 wardpic.test.js	mannequin.js	<loaded>	@{}
 wardpic.test.js	month.js	<loaded>	nextWorkday
+wardpic.test.js	mq/shirt-open.js	<loaded>
 wardpic.test.js	mq/shirt-tie.js	<loaded>
 wardpic.test.js	mq/suit-open.js	<loaded>
 wardpic.test.js	mq/suit.js	<loaded>
@@ -8517,7 +8519,6 @@ wardrobe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	C
 wardrobe.test.js	detect.js	<loaded>	@	detectQueued	settSig	texPat	tieWeave	usableSett
 wardrobe.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figEyes	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardrobe.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests
-wardrobe.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 wardrobe.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	fitOf	fitTag	idsOf	keyDate	lockIds	lockUpcoming	openPicker	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	whenPulled
 wardrobe.test.js	icon-192.png	<loaded>
 wardrobe.test.js	icon-512.png	<loaded>
@@ -8527,6 +8528,7 @@ wardrobe.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitDuplicate	kitHasSam
 wardrobe.test.js	manifest.webmanifest	<loaded>
 wardrobe.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 wardrobe.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+wardrobe.test.js	mq/shirt-open.js	<loaded>
 wardrobe.test.js	mq/shirt-tie.js	<loaded>
 wardrobe.test.js	mq/suit-open.js	<loaded>
 wardrobe.test.js	mq/suit.js	<loaded>
@@ -8573,7 +8575,6 @@ wardrobetap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 wardrobetap.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 wardrobetap.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardrobetap.test.js	dress.js	<loaded>	migrateVests
-wardrobetap.test.js	figure.js	<loaded>	@{}
 wardrobetap.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 wardrobetap.test.js	icon-192.png	<loaded>
 wardrobetap.test.js	icon-512.png	<loaded>
@@ -8583,6 +8584,7 @@ wardrobetap.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitDuplicate	kitHas
 wardrobetap.test.js	manifest.webmanifest	<loaded>
 wardrobetap.test.js	mannequin.js	<loaded>	@{}
 wardrobetap.test.js	month.js	<loaded>	nextWorkday
+wardrobetap.test.js	mq/shirt-open.js	<loaded>
 wardrobetap.test.js	mq/shirt-tie.js	<loaded>
 wardrobetap.test.js	mq/suit-open.js	<loaded>
 wardrobetap.test.js	mq/suit.js	<loaded>
@@ -8625,7 +8627,6 @@ wardswipe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 wardswipe.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 wardswipe.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawOxfordSide	drawShoePair	drawShoeSide	fabricDef	figEyes	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardswipe.test.js	dress.js	<loaded>	migrateVests
-wardswipe.test.js	figure.js	<loaded>	@{}
 wardswipe.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 wardswipe.test.js	icon-192.png	<loaded>
 wardswipe.test.js	icon-512.png	<loaded>
@@ -8635,6 +8636,7 @@ wardswipe.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampl
 wardswipe.test.js	manifest.webmanifest	<loaded>
 wardswipe.test.js	mannequin.js	<loaded>	@{}
 wardswipe.test.js	month.js	<loaded>	nextWorkday
+wardswipe.test.js	mq/shirt-open.js	<loaded>
 wardswipe.test.js	mq/shirt-tie.js	<loaded>
 wardswipe.test.js	mq/suit-open.js	<loaded>
 wardswipe.test.js	mq/suit.js	<loaded>
@@ -8677,7 +8679,6 @@ watchmatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 watchmatch.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 watchmatch.test.js	draw.js	<loaded>	drawWatch	drawWatchTraced	itemThumb
 watchmatch.test.js	dress.js	<loaded>	migrateVests
-watchmatch.test.js	figure.js	<loaded>	@{}
 watchmatch.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 watchmatch.test.js	icon-192.png	<loaded>
 watchmatch.test.js	icon-512.png	<loaded>
@@ -8687,6 +8688,7 @@ watchmatch.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSamp
 watchmatch.test.js	manifest.webmanifest	<loaded>
 watchmatch.test.js	mannequin.js	<loaded>	@{}
 watchmatch.test.js	month.js	<loaded>	nextWorkday
+watchmatch.test.js	mq/shirt-open.js	<loaded>
 watchmatch.test.js	mq/shirt-tie.js	<loaded>
 watchmatch.test.js	mq/suit-open.js	<loaded>
 watchmatch.test.js	mq/suit.js	<loaded>
@@ -8734,7 +8736,6 @@ weather.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	LU
 weather.test.js	detect.js	<loaded>	@	texPat	usableSett
 weather.test.js	draw.js	<loaded>	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figEyes	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	swatchSVG
 weather.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-weather.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 weather.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	setFormal	setOccasion	slotPool	whenPulled
 weather.test.js	icon-192.png	<loaded>
 weather.test.js	icon-512.png	<loaded>
@@ -8744,6 +8745,7 @@ weather.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 weather.test.js	manifest.webmanifest	<loaded>
 weather.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 weather.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+weather.test.js	mq/shirt-open.js	<loaded>
 weather.test.js	mq/shirt-tie.js	<loaded>
 weather.test.js	mq/suit-open.js	<loaded>
 weather.test.js	mq/suit.js	<loaded>
@@ -8780,7 +8782,6 @@ weeklock.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	L
 weeklock.test.js	detect.js	<loaded>	@	texPat	usableSett
 weeklock.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	itemThumb	leatherLayers	swatchSVG
 weeklock.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-weeklock.test.js	figure.js	<loaded>	@{}	@{}>esc	@{}>f	@{}>frame	@{}>hex	@{}>outfitFigureSvg	@{}>pattern
 weeklock.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	closePicker	dayActions	dayChanged	idsOf	keepOff	keyDate	learnFrom	learnVote	lockIds	lockUpcoming	pickItem	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	whenPulled
 weeklock.test.js	icon-192.png	<loaded>
 weeklock.test.js	icon-512.png	<loaded>
@@ -8790,6 +8791,7 @@ weeklock.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 weeklock.test.js	manifest.webmanifest	<loaded>
 weeklock.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 weeklock.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+weeklock.test.js	mq/shirt-open.js	<loaded>
 weeklock.test.js	mq/shirt-tie.js	<loaded>
 weeklock.test.js	mq/suit-open.js	<loaded>
 weeklock.test.js	mq/suit.js	<loaded>
@@ -8843,13 +8845,13 @@ workersweep.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 workersweep.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 workersweep.test.js	draw.js	<loaded>	fabricDef
 workersweep.test.js	dress.js	<loaded>	migrateVests
-workersweep.test.js	figure.js	<loaded>	@{}
 workersweep.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 workersweep.test.js	index.html	<loaded>
 workersweep.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 workersweep.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 workersweep.test.js	mannequin.js	<loaded>	@{}
 workersweep.test.js	month.js	<loaded>	nextWorkday
+workersweep.test.js	mq/shirt-open.js	<loaded>
 workersweep.test.js	mq/shirt-tie.js	<loaded>
 workersweep.test.js	mq/suit-open.js	<loaded>
 workersweep.test.js	mq/suit.js	<loaded>
