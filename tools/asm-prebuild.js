@@ -273,11 +273,13 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
         return j&&{kind:k,copyKey:asmCmCopyKey(k),copySig:asmCmCopySig(renders[asmCmKey(k,'master')].t),dk:asmCmDiskKey(j)}}).filter(Boolean)).catch(()=>[]);
     for(const w of want){if(paused())return;
       if(shared[w.copyKey]!==w.copySig){const c=await page.evaluate(k=>asmCmMasterCopyRec(k),w.kind);
-        if(c){const up=await api('render',{method:'PUT',body:JSON.stringify({key:c.key,rec:c.rec})});const body=await up.text().catch(()=>'');
+        if(c){if(!budget.take(1)){pauseUploads(LIMIT_WHY);return}   // this computer's daily cap (tools/upload-budget.js)
+          const up=await api('render',{method:'PUT',body:JSON.stringify({key:c.key,rec:c.rec})});const body=await up.text().catch(()=>'');
           if(up.ok){shared[w.copyKey]=w.copySig;console.log(`${now()} ${w.kind}: the master's 2048 copy for phones uploaded (${Math.round(c.rec.img.length*3/4/1024)} KB)`)}
           else if(up.status===429&&/"kv-limit"/.test(body)){pauseUploads();return}else console.warn(`${now()} ${w.kind}: master copy refused: ${up.status} ${body.slice(0,120)}`)}}
       const bk='setup:'+w.kind;if(shared[bk]!==w.dk){const b=await page.evaluate(async k=>{const x=await asmCmSetupBlob(k,ASM_SIZE);return x&&{key:x.key,dk:x.dk,b64:asmB64(x.bytes)}},w.kind).catch(e=>{console.warn(`${now()} ${w.kind}: setup not made: ${e.message}`);return null});
-        if(b&&b.dk===w.dk){const bytes=Buffer.from(b.b64,'base64'),up=await fetch(new URL('blob?key='+b.key+'&sig='+encodeURIComponent(b.dk),WORKER).href,{method:'PUT',headers:{'x-app-token':TOKEN,'content-type':'application/octet-stream',origin:new URL(ORIGIN).origin},body:bytes});
+        if(b&&b.dk===w.dk){if(!budget.take(1)){pauseUploads(LIMIT_WHY);return}
+          const bytes=Buffer.from(b.b64,'base64'),up=await fetch(new URL('blob?key='+b.key+'&sig='+encodeURIComponent(b.dk),WORKER).href,{method:'PUT',headers:{'x-app-token':TOKEN,'content-type':'application/octet-stream',origin:new URL(ORIGIN).origin},body:bytes});
           const body=await up.text().catch(()=>'');if(up.ok){shared[bk]=w.dk;console.log(`${now()} ${w.kind}: its setup for phones uploaded (${Math.round(bytes.length/1024)} KB)`)}
           else if(up.status===429&&/"kv-limit"/.test(body)){pauseUploads();return}else console.warn(`${now()} ${w.kind}: setup refused: ${up.status} ${body.slice(0,120)}`)}}
       if(SHARED)try{fs.writeFileSync(SHARED,JSON.stringify(shared))}catch{}}};
