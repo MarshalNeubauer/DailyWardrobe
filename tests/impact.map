@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	7caaf90e6fe0d4571143
-# tested	19beb56bec00874a0c52
+# tested	239252f080e62c322544
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -453,6 +452,7 @@ asmgpu.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmgpu.test.js	tests/fixtures/fake-smi.js	<any>
 asmgpu.test.js	tools/asm-prebuild.js	<any>
 asmgpu.test.js	tools/gpu-guard.js	<any>
+asmgpu.test.js	tools/upload-budget.js	<any>
 asmgpu.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmgpu.test.js	wardrobe.js	<loaded>
 asmgpu.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	readText	renderId	sameText	serve	sha256Hex	spend	splitPhotos	stampOf	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
@@ -537,8 +537,8 @@ asmprebuild.test.js	tests/fixtures/asm-shirt-black.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-tie.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmprebuild.test.js	tools/asm-prebuild.js	<any>
-asmprebuild.test.js	tools/upload-budget.js	<any>
 asmprebuild.test.js	tools/gpu-guard.js	<any>
+asmprebuild.test.js	tools/upload-budget.js	<any>
 asmprebuild.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmprebuild.test.js	wardrobe.js	<loaded>
 asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvFull	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	putRender	readText	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
