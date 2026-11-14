@@ -48,7 +48,7 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
       if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);n++}
     catch(e){console.warn('close-up not upgraded',it.id,e)}}
   try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
-  if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
   return n}
 
 /* item photos saved at 720 px before PH_MAX was raised (2026-11-13, the owner: "upgrade the main photo size stored as well"): on the device
@@ -72,7 +72,7 @@ async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V
       if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
   try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
-  if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
   return n}
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white

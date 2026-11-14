@@ -21,6 +21,9 @@ const putRaw=i=>tx('readwrite',s=>s.put(i));
 /* a start-up fix-up saves an item only while it is still the copy on screen: an edit or a sync may have replaced it meanwhile, and saving the
    old copy (stamped newest) would undo that change (2026-11-14) */
 const stillCur=it=>items.find(x=>x.id===it.id)===it;
+/* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
+   pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
+const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
 const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
@@ -483,7 +486,7 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
   const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
   try{const im=await imgOf(it.photo);it.photoSm=Math.max(im.naturalWidth,im.naturalHeight)<=PH_SM?it.photo:shrink(im,PH_SM).toDataURL('image/jpeg',.82);it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
-async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)renderWardrobe();return n}
+async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
   return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
     (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" class="vfile" onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
