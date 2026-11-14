@@ -243,7 +243,8 @@ function normTag(parsed,model){
     };
 }
 
-const loadImg=f=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(f)});
+/* the picture of a file; its object URL is let go once it has loaded (each one held the file's bytes until the page closed) */
+const loadImg=f=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=e=>{URL.revokeObjectURL(u);no(e)};i.src=u});
 function shrink(img,max){const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c}
 
 async function fill(q,ai){
@@ -276,15 +277,15 @@ function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);const 
   if(sharp)q.tagImg=sharp.toDataURL('image/jpeg',TAG_Q);   // the sharp copy the tagger sees
   if(q.raw.tex){q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85)}generateSwatch(q)}
 /* a close-up with its own white reference (a corner of white paper) is corrected from that; otherwise like its item photo */
-function texGains(q){const r=wbRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}
+function texGains(q){const r=closeRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}
 function toggleWb(i){const q=queue[i];if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
 const TEX_MAX=1536;   // the synced close-up (2026-11-13, the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored one by one on the server and fetched when needed (it was 640)
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
 async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
-  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,TEX_MAX);q.raw.texFull=shrink(img,CLOSE_MAX);q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
+  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw){delete q.raw.tex;delete q.raw.texFull}q.refineNote='';measureCard(q);renderAdd()}
+function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
   const inp=`<input type="file" accept="image/*" class="vfile" onchange="addTexture(${i},this.files[0]);this.value=''">`;
@@ -295,20 +296,21 @@ const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Origina
 async function addFiles(files,multi){
   guardUnsaved();
   if(multi){multiNote(true);for(const f of files)await addMulti(f);return}
-  for(const f of files){
-    const q={id:crypto.randomUUID(),busy:1};
-    queue.push(q);
-    renderAdd();
+  // every photo gets its card at once, and ADD_PAR are tagged at a time (one after another, five photos were five waits in a row)
+  const cards=[...files].map(f=>{const q={id:crypto.randomUUID(),busy:1};queue.push(q);return [q,f]});renderAdd();
+  const one=async([q,f])=>{
     try{
       const img=await loadImg(f);
       q.raw={big:shrink(img,800),full:shrink(img,TAG_MAX)};q.wb=wbGains(q.raw.big);cardPics(q);   // tagged from the corrected, sharp copy
-      const aiResult=await ask(q.tagImg);
-      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureCard(q)}else tagFailed(q)
+      const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)});   // wb: whether the photo was white-balanced (the tagger is told)
+      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else tagFailed(q)
     }catch(e){q.err=1}
     q.busy=0;
     renderAdd();
-  }
+  };
+  let k=0;await Promise.all(Array.from({length:Math.min(ADD_PAR,cards.length)},async()=>{while(k<cards.length)await one(cards[k++])}));
 }
+const ADD_PAR=3;
 
 /* ---- pasted photos, photo links and drag & drop ---- */
 const pasteMsg=t=>{const e=$('#paste-status');if(e)e.textContent=t||''};
@@ -388,7 +390,7 @@ async function addMulti(f){
   try{
     const raw=shrink(await loadImg(f),2576),wb=wbGains(raw),img=applyWb(raw,wb);   // one light reading for the whole photo; Claude reads up to 2576px
     const r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
-      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes()})});
+      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes(),wb:!!wb})});
     const j=await r.json().catch(()=>({}));
     queue.splice(queue.indexOf(holder),1);
     if(!r.ok){multiMsg(r.status===404||r.status===405?'The server doesn’t support several items yet: it needs an update.':`Couldn’t find the items: ${j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
@@ -460,16 +462,18 @@ async function save(i){
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;else await makeSmall(it);
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
-  if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src};
+  if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src,...(q.meas.parts?{parts:q.meas.parts.map(p=>({role:p.role,lab:p.lab,hex:p.hex,share:p.share}))}:{})};   // a patterned cloth's ground and stripe too (colpick.js)
   wardSaveFields(q,it);   // name, brand, material, notes (wardrobe.js)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (tagging.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (tagging.js)
-  if(!it.sett)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
+  // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
+  if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
   await put(it);items.push(it);cache={};queue.splice(i,1);renderAdd();
-  if(q.tagImg)keepTagImg(it.id,q.tagImg);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy for the benchmark; what the tagger got wrong
+  if(q.tagImg)keepTagImg(it.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>keepCloseImg(it.id,u,it.texture)).catch(()=>{});   // the sharp close-up for later readings (tagging.js)
+  q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
 }
 let editing=null;
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Colour':k==='secondaryColor'?'Second colour':k==='tertiaryColor'?'Third colour':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
@@ -502,10 +506,16 @@ async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f),
   await setTexture(id,shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),'Close-up added. The realistic photos use it from the next one made.');
   const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f);await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.')}
+async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);if(it)delete it.pbox;   // the pattern's box was on the old picture
+  await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.');const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tagging.js), signed with the new photo
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
-  c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);await setPhoto(id,c.toDataURL('image/jpeg',.9))}
+  c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);
+  // the kept sharp copy turns with it, and the pattern's box (thousandths of the picture) with the copy
+  const sharp=typeof tagImgOf==='function'?await tagImgOf(id,it):null,b=it.pbox;
+  if(b)it.pbox={x:1000-(b.y+b.h),y:b.x,w:b.h,h:b.w};
+  await setPhoto(id,c.toDataURL('image/jpeg',.9));
+  if(sharp)try{const si=await imgOf(sharp),sc=document.createElement('canvas');sc.width=si.naturalHeight;sc.height=si.naturalWidth;const sx=sc.getContext('2d');sx.translate(sc.width,0);sx.rotate(Math.PI/2);sx.drawImage(si,0,0);await keepTagImg(id,sc.toDataURL('image/jpeg',TAG_Q),it.photo)}catch(e){console.warn('sharp copy not turned',e)}}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
   if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
@@ -542,7 +552,8 @@ function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const b
 async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;
   const im=await cropSource(it),f=(im.naturalWidth||im.width)/phEdit.crop.w;   // the frame is measured on the photo; f scales it to the source
   const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
-  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9))}
+  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9));
+  if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with its tools folded under it, then a
    card for the tags, one for rotation, and Delete on its own at the very end */
 function toggleCompare(closeOnly){const el=$('#ivpair');if(!el||(closeOnly&&!phEdit.cmp))return;phEdit.cmp=!phEdit.cmp;el.classList.toggle('cmp',!!phEdit.cmp);el.querySelector('.tagsw').setAttribute('aria-pressed',!!phEdit.cmp)}

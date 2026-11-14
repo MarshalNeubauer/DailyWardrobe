@@ -12,11 +12,11 @@ normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pan
 patLabel=p=>String(p||'').replace(/-/g,' '),
 COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'lightgrey',silvergrey:'silver',silvergray:'silver',darkgray:'darkgrey',middlegrey:'midgrey',middlegray:'midgrey',midgray:'midgrey',mediumgrey:'grey',mediumgray:'grey',
   slateblue:'slate',slategrey:'slate',slategray:'slate',slatebluegrey:'slate',darkslatebluegrey:'slate',darkslate:'slate',bluegrey:'slate',bluegray:'slate',
-  steel:'steelblue',denimblue:'steelblue',denim:'steelblue',dustyblue:'steelblue',verydarknavy:'darknavy',navyblack:'darknavy',inkblue:'darknavy',ink:'darknavy',sapphire:'deepblue',
-  lightblue:'lightblue',skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
-  lightyellow:'paleyellow',butter:'paleyellow',lemon:'paleyellow',eggshell:'ivory',lilac:'lavender',cornflower:'periwinkle',cornflowerblue:'periwinkle',darkblue:'navy',navyblue:'navy',midnightblue:'navy',midnight:'navy',ivory:'cream',offwhite:'cream',ecru:'cream',beige:'tan',khaki:'khaki',chino:'khaki',stone:'khaki',camel:'tan',sand:'tan',taupe:'taupe',mushroom:'taupe',greige:'taupe',deeptaupe:'deeptaupe',darktaupe:'deeptaupe',richtaupe:'deeptaupe',mink:'deeptaupe',rust:'rust',orange:'rust',burntorange:'rust',terracotta:'rust',copper:'rust',mintgreen:'mint',palegreen:'mint',seafoam:'mint',
+  steel:'steelblue',denimblue:'steelblue',dustyblue:'steelblue',verydarknavy:'darknavy',navyblack:'darknavy',inkblue:'darknavy',ink:'darknavy',sapphire:'deepblue',
+  skyblue:'lightblue',babyblue:'lightblue',paleblue:'lightblue',powderblue:'lightblue',royalblue:'blue',cobalt:'blue',
+  lightyellow:'paleyellow',butter:'paleyellow',lemon:'paleyellow',eggshell:'ivory',lilac:'lavender',cornflower:'periwinkle',cornflowerblue:'periwinkle',darkblue:'navy',navyblue:'navy',midnightblue:'navy',midnight:'navy',offwhite:'cream',ecru:'cream',chino:'khaki',camel:'tan',sand:'tan',mushroom:'taupe',greige:'taupe',darktaupe:'deeptaupe',richtaupe:'deeptaupe',mink:'deeptaupe',orange:'rust',burntorange:'rust',terracotta:'rust',copper:'rust',mintgreen:'mint',palegreen:'mint',seafoam:'mint',
   darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',winered:'wine',merlot:'wine',claret:'wine',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
-  yellow:'gold',mustard:'gold',lavender:'purple',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
+  yellow:'gold',mustard:'gold',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normColFor=(type,c,accent)=>fitCol(type,normCol(c),accent),
 normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 /* colours each item type really comes in: p = main colour, a = stripe / check / motif colours.
