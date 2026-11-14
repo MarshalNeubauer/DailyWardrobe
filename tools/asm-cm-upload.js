@@ -2,7 +2,8 @@
 // its sleeve and lapel masks, as photo records under the keys the app asks for (asmCmKey). A record already there with the same
 // signature is left alone (no KV write). Then it writes the manifest (asm-color.js asmCmMfKey: every record's date), so a device that
 // holds an older copy of a re-uploaded file downloads it again and the looks painted from it are painted again. Run it after any
-// master, mask, part or the background is made again (and once to write the first manifest).
+// master, mask, part or the background is made again (and once to write the first manifest). Last, the list of master records testers may
+// read from the owner's (the worker's cm:shared), written only when it changed.
 //
 //   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run cm-upload -- --dir <colormaster folder> [--dry] [--kinds suit,vest]
 //
@@ -77,5 +78,15 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
   if(!changed&&todo.length)budget.give(1);   // the manifest's reserved write was not needed
   if(changed){const r=await api('render',{method:'PUT',body:JSON.stringify({key:mfKey,rec:{sig:'asm/cm-manifest '+JSON.stringify({keys}),img:MF_IMG,model:'manifest',t:Date.now()}})});
     if(!r.ok){console.error(`manifest: upload refused ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}console.log(`manifest written (${Object.keys(keys).length} records)`)}
+  // (2026-11-14) the shared list (worker/records.js cm:shared, owner-only PUT /cm-shared): exactly the render keys testers may read from the
+  // owner's records: every record in the manifest, the manifest, the background and each master's 2048 copy for phones (asm-color.js
+  // asmCmCopyKey, uploaded by npm run assemble). Written only when it changed (one KV write); the worker also skips an unchanged list
+  const shared=[...new Set([...Object.keys(keys),mfKey,cmKey('all','background'),...Object.keys(ZONES).filter(k=>keys[cmKey(k,'master')]).map(k=>cmKey(k,'master2048'))])].sort();
+  const curSh=await api('cm-shared',{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);
+  if(!(curSh&&Array.isArray(curSh.keys)&&[...curSh.keys].sort().join()===shared.join())){
+    if(!budget.take(1)){console.error(`The shared list for testers needs writing, but ${budget.why()}.`);process.exit(4)}
+    const r=await api('cm-shared',{method:'PUT',body:JSON.stringify({keys:shared})});
+    if(!r.ok){budget.give(1);console.error(`shared list: refused ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}
+    console.log(`shared list for testers written (${shared.length} records)`)}
   console.log(`${up} uploaded (${Math.round(bytes/1048576)} MB), ${same} already current.`);
   if(up||changed)console.log('Next: phones take the new files the next time they read the manifest (within a few minutes while open). The PC watcher (C:\\code\\assemble-watch.ps1) repaints every look within a few minutes; without it, run npm run assemble.')})().catch(e=>{console.error(e.message||e);process.exit(1)});

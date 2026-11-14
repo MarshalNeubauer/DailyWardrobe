@@ -193,6 +193,7 @@ module.exports=async({ok,chromium,url})=>{
     // new writes nothing, and a --bg run keeps the suit's dates in the manifest
     const http=require('http'),kv={},puts=[];
     const srv=http.createServer((q,res)=>{let b='';q.on('data',c=>b+=c);q.on('end',()=>{const u=new URL(q.url,'http://x'),k=u.searchParams.get('key');res.setHeader('content-type','application/json');
+      if(u.pathname==='/cm-shared'){if(q.method==='PUT'){kv['cm:shared']=JSON.parse(b);puts.push('cm:shared');return res.end('{"ok":true}')}if(kv['cm:shared'])return res.end(JSON.stringify(kv['cm:shared']));res.statusCode=404;return res.end('{"error":"none"}')}   // the shared list (tests/sharedmasters.test.js)
       if(q.method==='PUT'){const o=JSON.parse(b);kv[o.key]=o.rec;puts.push(o.key);return res.end('{"ok":true}')}
       if(k&&kv[k])return res.end(JSON.stringify(kv[k]));res.statusCode=404;res.end('{"error":"none"}')})});
     await new Promise(r=>srv.listen(0,'127.0.0.1',r));const W=`http://127.0.0.1:${srv.address().port}/`;
@@ -206,7 +207,7 @@ module.exports=async({ok,chromium,url})=>{
       const r1=await run(['--dir',tmp,'--kinds','suit']),n1=puts.length,m1=kv[mfKey]&&mfOf();
       const r2=await run(['--dir',tmp,'--kinds','suit']),n2=puts.length-n1;
       const r3=await run(['--bg',path.join(src,'master.jpg')]),m3=kv[mfKey]&&mfOf();
-      ok(r1.code===0&&m1&&m1[mk]===kv[mk].t&&Object.keys(m1).length===n1-1&&/Next: phones/.test(r1.out),`cm-upload writes the manifest with every record's date and says what happens next (${n1} writes, ${m1?Object.keys(m1).length:0} in the manifest)`);
+      ok(r1.code===0&&m1&&m1[mk]===kv[mk].t&&Object.keys(m1).length===n1-2&&/Next: phones/.test(r1.out),`cm-upload writes the manifest with every record's date and says what happens next (${n1} writes, ${m1?Object.keys(m1).length:0} in the manifest)`);
       ok(r2.code===0&&n2===0,`a second cm-upload with nothing new writes nothing, not even the manifest (${n2} writes)`);
       ok(r3.code===0&&m3&&m3[mk]===m1[mk]&&m3[bgK]===kv[bgK].t,`a --bg run adds the background's date and keeps the suit's (${m3?Object.keys(m3).length:0} in the manifest)`)}
     finally{srv.close()}

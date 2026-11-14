@@ -23,7 +23,7 @@ import { FREE_EXTRA, FREE_PAT_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCu
 import { handlePattern } from './worker/pattern.js';
 import { handleFetchImage, readCapped } from './worker/links.js';
 import { CLAIMED, PAID, failJob, handleRender, jobClaim, queueStatus, runRenderJob, waitForRenders } from './worker/render.js';
-import { COMBO_RE, delRender, getRender, handleBlob, putRender } from './worker/records.js';
+import { COMBO_RE, delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
 import { handleAccount, handleFeedback, handleInvites, handleMe, msgNs, plainFor, spend, unspend, whoIs } from './worker/people.js';
@@ -46,6 +46,8 @@ const ROUTES = {
   'DELETE /render': [delRender],
   'GET /blob': [handleBlob],
   'PUT /blob': [handleBlob],
+  'GET /cm-shared': [handleShared],
+  'PUT /cm-shared': [handleShared],
   'GET /me': [handleMe, UNSET],
   'GET /invites': [handleInvites, UNSET],
   'POST /invites': [handleInvites, UNSET],
