@@ -25,7 +25,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const sch=sent.output_config.format.schema.properties.items.items;
     ok(sch.required.includes('box')&&sch.required.includes('confidence')&&sch.properties.box.required.join()==='x,y,w,h'&&sch.additionalProperties===false,'structured output asks for a box and confidence per item');
     ok(sent.max_tokens>=16000&&sent.output_config.effort==='medium','enough tokens and effort for a long list');
-    const pr=sent.messages[0].content[1].text;
+    const pr=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n');
     ok(/ONE item of type suit/.test(pr)&&/jacket hanging on its own is a blazer/.test(pr)&&/Trousers hanging or folded/.test(pr)&&/left to right/.test(pr),'the prompt covers suits (jacket + trousers = one), blazers, trousers and order');
     ok(/periwinkle/.test(pr)&&/end-on-end/.test(pr),'the prompt includes the full colour and texture lists');
     ok((await call({image:'x'},{})).status===403,'needs the app token');
