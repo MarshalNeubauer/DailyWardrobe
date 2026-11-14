@@ -140,15 +140,20 @@ function careBandFit(){const fig=document.getElementById('mannequin-container'),
     :cut.ny<=0?`M${t(cut.nx+F)} 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${t(cut.nx)}V${F}A${F} ${F} 0 0 1 ${t(cut.nx+F)} 0Z`
     :`M0 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${t(cut.nx)}V${t(cut.ny+cut.cr)}A${cut.cr} ${cut.cr} 0 0 0 ${t(cut.nx-cut.cr)} ${t(cut.ny)}H0Z`;
   const svg=band.querySelector('svg');svg.setAttribute('width',W);svg.setAttribute('height',BH);svg.setAttribute('viewBox',`0 0 ${W} ${BH}`);svg.querySelector('path').setAttribute('d',d);
-  const row=band.querySelector('.crow'),txt=row.querySelector('.ctxt');row.style.left=(cut?t(cut.nx+12):14)+'px';
-  if(txt.dataset.two){txt.innerHTML=txt.dataset.one;delete txt.dataset.two}row.style.fontSize='';txt.style.lineHeight='';
-  for(let fs=13;fs>=11&&row.scrollWidth>row.clientWidth+1;fs-=.5)row.style.fontSize=fs+'px';
-  if(row.scrollWidth>row.clientWidth+1){txt.dataset.one=txt.innerHTML;txt.dataset.two='1';txt.innerHTML=txt.innerHTML.replace(' · ','<br>');row.style.fontSize='12.5px';txt.style.lineHeight='1.2'}
+  const row=band.querySelector('.crow'),txt=row.querySelector('.ctxt');
+  // the words are fitted once, for the narrowest space they ever get (beside a full-size tie swatch: the stack's 10 px from the edge, 64 px,
+  // the gap), and keep that size while the cut moves (the owner, 2026-11-14: refitted every frame of a swatch's shrinking, the text
+  // jumped between sizes); fitted again only when the picture's width changes
+  if(band.dataset.fitW!==String(W)){band.dataset.fitW=String(W);row.style.left=(st?t(10+64+M+12):14)+'px';
+    if(txt.dataset.two){txt.innerHTML=txt.dataset.one;delete txt.dataset.two}row.style.fontSize='';txt.style.lineHeight='';
+    for(let fs=13;fs>=11&&row.scrollWidth>row.clientWidth+1;fs-=.5)row.style.fontSize=fs+'px';
+    if(row.scrollWidth>row.clientWidth+1){txt.dataset.one=txt.innerHTML;txt.dataset.two='1';txt.innerHTML=txt.innerHTML.replace(' · ','<br>');row.style.fontSize='12.5px';txt.style.lineHeight='1.2'}}
+  row.style.left=(cut?t(cut.nx+12):14)+'px';   // (the dots follow the cut; the words, right-aligned, stay put)
   // follow the picture and the tie swatch as they change size (a swatch tapped shrinks the stack; the photo loading sets the height)
   if(typeof ResizeObserver==='function'){if(!careRO)careRO=new ResizeObserver(()=>requestAnimationFrame(careBandFit));
     if(careObs[0]!==fig||careObs[1]!==sw){careRO.disconnect();careRO.observe(fig);if(sw)careRO.observe(sw);careObs=[fig,sw]}}}
 /* through a transition (the swatches moving and shrinking, about 0.45 s): laid out again every frame */
-function careBandSoon(){if(!document.getElementById('cband'))return;const end=performance.now()+700;const step=()=>{careBandFit();if(performance.now()<end)requestAnimationFrame(step)};requestAnimationFrame(step)}
+function careBandSoon(){if(!document.getElementById('cband'))return;careBandFit();   /* (at once too: the words never show a frame unfitted) */const end=performance.now()+700;const step=()=>{careBandFit();if(performance.now()<end)requestAnimationFrame(step)};requestAnimationFrame(step)}
 /* ---- cleaning reminders on the phone (the owner's ask, 2026-11-14; sent by the morning reminder's push, remind.js, sw.js) ----
    {YYYY-MM-DD: text} for the coming workdays: a suit's or blazer's last wear before cleaning, and a wear past it, on the morning it is
    planned (overdue: the first such morning only); and once due (worn up to its limit, not sent away or cleaned), one reminder the next workday
