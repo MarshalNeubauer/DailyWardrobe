@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	3afcc0ced532e60bfd97
+# tested	8f3cf015b561fd8eb52a
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -363,7 +363,7 @@ asmgl.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bser
 asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmButtons	asmCmCodeText	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightPrep	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSrcSig	asmCmTile	asmGeoPrep	asmH32	asmHbShirt	asmTieSheenK	asmUvAt
 asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlContext	asmGlCovers	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlWhy
 asmgl.test.js	asm-worker.js	<any>
-asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmDropOld	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroKind	asmMotif	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTwillTex	asmVestKey	asmVestTag	asmWeave
+asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmDropOld	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
 asmgl.test.js	care.js	<loaded>	careShow
 asmgl.test.js	colpick.js	<loaded>
 asmgl.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	lum	mergeState	mix	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	stateSig	thirdOf	todayDate

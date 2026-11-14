@@ -12,6 +12,10 @@
        as a texture and read at four points a pixel as asmCmAt does; a stripe's breakup (T.k, faded between stripes like asmCellV), its
        softness and minimum widths (already in the tile), its steeper shading on a dark ground, and no look or lighting (kept as it was);
        the twill or herringbone grain under it (asmClothOf, the herringbone's columns faded at their edges). Not linen (stage 3)
+     - (stage 3) every other jacket cloth on the suit master: the standalone herringbone (asmTwillTex with yarn, floats, grain cells,
+       mottle and the column break, each faded at its rib's and column's edge as on the CPU), tweed (asmTweedTile as an RG32F texture,
+       sampled upright, its Donegal fleck in the second colour) and the small woven figures (asmMicroTex: the thread grid as uniforms,
+       4x4 points a pixel, each crossing faded at its edge as asmCellT does)
      - the shirt and tie solid colours; skin, watch and the dark zone (the half-hidden button drawn as a horn button) as on the CPU
      - the background picture darkened by the figure's shadow and dithered; the lighting (ASM_CM_LIGHT)
      - the jacket's cloth positions as on the CPU (uvAt): the master's solved positions (job.geoU/geoV, asmGeoPrep: the body's through the
@@ -39,10 +43,13 @@ function asmGlWhy(job,P){if(!job||job.cm!=='suit')return 'master '+(job&&job.cm)
     // (stage 2) a band tile (asmSuitTex: stripes, checks, windowpanes, one or two colours) with or without the stripe breakup (T.k), on
     // no grain, the linen texture (asmLinenTile: a linen windowpane), or a plain twill or herringbone grain (asmClothOf: no yarn, floats,
     // grain cells, mottle or breaks: those are stage 3's)
-    if(T.tweed||T.wv)return 'jacket cloth '+(T.tweed?'tweed':'small figure');
+    // (stage 3) the standalone herringbone (asmTwillTex: yarn, floats, grain cells, mottle, the column break), tweed (asmTweedTile, its
+    // Donegal fleck) and the small woven figures (asmMicroTex: houndstooth, sharkskin, birdseye, nailhead, a thread grid of at most 8x8)
+    // are covered; a herringbone's soft column edge (ASM_HB_SOFT, 0 today) is not
+    if(T.wv&&!(T.wv.N>=1&&T.wv.N<=8&&T.wv.g&&T.wv.g.length>=T.wv.N*T.wv.N))return 'jacket small figure grid too large';
     if(!t||!(T.TW>=1&&T.TH>=1)||t.length<3*T.TW*T.TH)return 'jacket cloth without its tile';
     if(T.TW>ASM_GL_TILE||T.TH>ASM_GL_TILE)return 'jacket tile too large';
-    if(C&&!T.linen&&((C.kind!=='twill'&&C.kind!=='herringbone')||C.yarn||C.float||C.grain||C.mottle||C.thin||C.soft||C.brk||C.pbrk))return 'jacket cloth '+(C.kind||'other');
+    if(C&&!T.linen&&((C.kind!=='twill'&&C.kind!=='herringbone')||C.soft))return 'jacket cloth '+(C.soft?'herringbone with soft column edges':C.kind||'other');
     if(T.k!=null&&!(T.g&&T.blen>0&&T.mm>0))return 'jacket stripe without its ground';
     if((T.TW>1||T.TH>1)&&!(T.mm>0))return 'jacket tile without its size'}
   if(!P)return '';
@@ -138,6 +145,9 @@ uniform int uS,uHasGeo,uGeo16;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform ivec4 uQ
 uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uTieK,uLs,uAA;
 uniform ivec4 uTT;uniform vec4 uRep,uSk,uCl;   // the band tile (TW, TH, has a tile, has the stripe breakup); its repeat, the breakup, the grain
 uniform sampler2D uLinT;uniform int uLinen,uLinN;uniform float uLsc;   // the linen texture (asmLinenTile, uLinN square), on a linen cloth
+// (stage 3) the herringbone's extras: yarn, float, float length, grain; mottle, thin, break, pair break. A tweed (uLinT holds asmTweedTile's
+// r and f then): has a second colour, its mix. A small woven figure: N (0 = none), thread width, swing, mix toward the second colour; the grid
+uniform vec4 uHb1,uHb2;uniform int uTweed;uniform vec4 uTd;uniform vec3 uTc2;uniform vec4 uWv;uniform vec4 uWg[16];uniform vec3 uWc2;
 out vec4 oC;
 const float PI=3.14159265358979;
 float lum(vec3 c){return .2126*c.r+.7152*c.g+.0722*c.b;}
@@ -196,10 +206,32 @@ float cellT(float u,float v){float fi=floor(u),fj=floor(v),fu=u-fi,fv=v-fj,F=${f
   return (h00*(1.-wu)+linAt(i+di,j)*wu)*(1.-wv)+(linAt(i,j+dj)*(1.-wu)+linAt(i+di,j+dj)*wu)*wv;}
 // the stripe breakup's value for stripe i, cell j
 float hS(int i,int j){return float(h32(i,j,374761393u,668265263u)%2048u)/1024.-1.;}
+// (stage 3) i mod n, never negative (GLSL leaves % of a negative number undefined)
+int imod(int i,int n){return i>=0?i%n:(n-1)-((-i-1)%n);}
+// a herringbone's break for column cc (ASM_HB_BREAK on odd columns, else ASM_HB_PBRK: each pair of columns, one V, shifted from the next)
+float boOf(int cc){return uHb2.z!=0.&&(cc&1)!=0?uHb2.z*uTw.x:(uHb2.w!=0.?uHb2.w*uTw.x*floor(float(cc)*.5):0.);}
 // a rib of the grain for column cc (a herringbone's odd columns run the other way): four points a pixel (C.ss) or the pixel's middle
-float ribAt(int si,float X,float Y,ivec2 p,vec2 c,int cc){float d=(cc&1)!=0?-1.:1.,pitch=uTw.x,ph=0.;
-  if(uCl.y>.5){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);ph+=cos(2.*PI*fract((s.y+d*s.x)/pitch))/4.;}}
-  else ph=cos(2.*PI*fract((c.y+d*c.x)/pitch));return ph;}
+float ribAt(int si,float X,float Y,ivec2 p,vec2 c,int cc){float d=(cc&1)!=0?-1.:1.,pitch=uTw.x,ph=0.,b=boOf(cc);
+  if(uCl.y>.5){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);ph+=cos(2.*PI*fract((s.y+d*s.x+b)/pitch))/4.;}}
+  else ph=cos(2.*PI*fract((c.y+d*c.x+b)/pitch));return ph;}
+// the yarn breakup and raised floats of rib r0 in column cc (al: the position along the rib)
+float hYarn(int r0,int s,int cc){return float((h32(r0,s,2246822519u,3266489917u)^h32(cc,0,668265263u,0u))%1024u)/1024.;}
+float yn1(int r0,int cc,float al){float y=1.,pitch=uTw.x;
+  if(uHb1.x>0.){float t=al/(pitch*1.7),s0=floor(t),f=t-s0,fs=f*f*(3.-2.*f);int s=int(s0);y=1.-uHb1.x/2.+uHb1.x*(hYarn(r0,s,cc)*(1.-fs)+hYarn(r0,s+1,cc)*fs);}
+  if(uHb1.y>0.){float hf=float(h32(r0,cc,374761393u,668265263u)%4096u)/4096.,s=al/(pitch*uHb1.z)+hf*7.,f=s-floor(s),sn=sin(PI*f);y*=1.-uHb1.y+uHb1.y*sn*sn;}return y;}
+// ... with the rib's index faded into its neighbour's within ASM_CELL_FADE of its edge (as asmCellV)
+float ynOf(vec2 c,int cc){float d=(cc&1)!=0?-1.:1.,q=(c.y+d*c.x+boOf(cc))/uTw.x+.5,rf=floor(q),fq=q-rf,F=${f(ASM_CELL_FADE)},al=c.y-d*c.x;int r=int(rf);
+  int di=fq<F?-1:(fq>1.-F?1:0);float v=yn1(r,cc,al);if(di==0)return v;float w=di<0?(F-fq)/(2.*F):(fq-1.+F)/(2.*F);return v*(1.-w)+yn1(r+di,cc,al)*w;}
+// the woollen mottle: value noise (asm-color.js's vn)
+float hM(int i,int j){return float(h32(i,j,1597334677u,3812015801u)%2048u)/1024.-1.;}
+float vnz(float u,float v){float i0=floor(u),j0=floor(v),fu=u-i0,fv=v-j0,su=fu*fu*(3.-2.*fu),sv=fv*fv*(3.-2.*fv);int i=int(i0),j=int(j0);
+  return (hM(i,j)*(1.-su)+hM(i+1,j)*su)*(1.-sv)+(hM(i,j+1)*(1.-su)+hM(i+1,j+1)*su)*sv;}
+// a small woven figure's thread crossing (a, b), wrapping, and read at (u, v) crossings faded at each edge (asmCellT)
+float wgAt(int a,int b){int N=int(uWv.x),k=imod(b,N)*N+imod(a,N);return uWg[k>>2][k&3];}
+float cellG(float u,float v){float fi=floor(u),fj=floor(v),fu=u-fi,fv=v-fj,F=${f(ASM_CELL_FADE)};int i=int(fi),j=int(fj);
+  int di=fu<F?-1:(fu>1.-F?1:0),dj=fv<F?-1:(fv>1.-F?1:0);float h00=wgAt(i,j);if(di==0&&dj==0)return h00;
+  float wu=di<0?(F-fu)/(2.*F):(di>0?(fu-1.+F)/(2.*F):0.),wv=dj<0?(F-fv)/(2.*F):(dj>0?(fv-1.+F)/(2.*F):0.);
+  return (h00*(1.-wu)+wgAt(i+di,j)*wu)*(1.-wv)+(wgAt(i,j+dj)*(1.-wu)+wgAt(i+di,j+dj)*wu)*wv;}
 // ribs squeezed finer than the picture can show, softened (ASM_CM_AA, #360; asmAaK): a Gaussian pixel's response at the rib's cycles per
 // pixel against its response where the cloth faces the camera; a step into another piece (past ASM_CM_AA_CUT) is left alone, faded
 float aaOf(vec2 da,vec2 db,int cc){if(uAA<=0.)return 1.;float d=(cc&1)!=0?-1.:1.,pitch=uTw.x,gx=(da.y+d*da.x)/pitch,gy=(db.y+d*db.x)/pitch,g2=gx*gx+gy*gy,g0=1./pitch;
@@ -214,14 +246,28 @@ vec3 suit(int si,int x,int y,ivec2 p,float sh,out float tw){float X=float(x),Y=f
     float nz=max(0.,1.+uSk.y*(n0*(1.-fs)+n1*fs));cm=4.*uSg+(cm-4.*uSg)*uSk.x*nz;sh=uSk.z*pow(max(sh,0.),uSk.w);}
   // a linen cloth: its threads' light (before any grain, as on the CPU); else the grain under it (asmClothOf / asmTwillTex): a twill's
   // ribs, or a herringbone's in columns, their fleck (asmCellV), a second colour
-  if(uLinen==1)sh*=cellT(c.x/uLsc,c.y/uLsc);
+  // (stage 3) a tweed: sampled upright in the picture at whole picture pixels over the cloth's scale (a power of two on the suit master,
+  // so the same cell as the CPU's), its flecks in the second colour
+  if(uTweed==1){int T=uLinN,u=int(floor(X/uLsc)),v=int(floor(Y/uLsc));vec2 rf=texelFetch(uLinT,ivec2(imod(u,T),imod(v,T)),0).rg;sh*=rf.x;
+    if(uTd.x>.5&&rf.y!=0.)cm=cm*(1.-uTd.y)+4.*uTc2*uTd.y;}
+  else if(uLinen==1)sh*=cellT(c.x/uLsc,c.y/uLsc);
   else if(uCl.x>.5){float cw=uCl.z,off=uCl.w;int col=uCl.x>1.5&&cw>0.?int(floor((c.x-off)/cw)):0;float d=(col&1)!=0?-1.:1.;vec2 da=vec2(0.),db=vec2(0.);
     if(uAA>0.){da=uvAt(si,vec2(X+1.,Y+.5),p)-uvAt(si,vec2(X,Y+.5),p);db=uvAt(si,vec2(X+.5,Y+1.),p)-uvAt(si,vec2(X+.5,Y),p);}
     float ph=ribAt(si,X,Y,p,c,col)*aaOf(da,db,col),fk=cellV((c.x+d*c.y)/2.,c.y/3.,73856093u,19349663u,1024u);
     // a herringbone's column faded into the next within ASM_CELL_FADE of its edge (as on the CPU)
     if(cw>0.){float fx=(c.x-off)/cw-float(col);if(fx<FD||fx>1.-FD){int nb=fx<FD?col-1:col+1;float w=fx<FD?(FD-fx)/(2.*FD):(fx-1.+FD)/(2.*FD),d2=(nb&1)!=0?-1.:1.;
       ph=ph*(1.-w)+ribAt(si,X,Y,p,c,nb)*aaOf(da,db,nb)*w;fk=fk*(1.-w)+cellV((c.x+d2*c.y)/2.,c.y/3.,73856093u,19349663u,1024u)*w;}}
-    tw=1.+uTw.y*ph+uTw.z*(fk/512.-1.);if(uTw.w>0.){float m=uTw.w*(1.+ph)/2.;cm=cm*(1.-m)+4.*uJ2*m;}}
+    // (stage 3) the standalone herringbone's yarn breakup and floats (faded at the rib's and the column's edge), grain cells, mottle
+    float yn=1.,mo=0.;bool yf=uHb1.x>0.||uHb1.y>0.;if(yf)yn=ynOf(c,col);
+    if(yf&&cw>0.){float fx=(c.x-off)/cw-float(col);if(fx<FD||fx>1.-FD){int nb=fx<FD?col-1:col+1;float w=fx<FD?(FD-fx)/(2.*FD):(fx-1.+FD)/(2.*FD);yn=yn*(1.-w)+ynOf(c,nb)*w;}}
+    if(uHb1.w>0.){float gs=${f(.6*ASM_PX_MM)}*uLs,gv=cellV(c.x/gs,c.y/gs,2654435761u,2246822519u,4096u)/4096.;yn*=1.-uHb1.w+2.*uHb1.w*pow(gv,1.6);}
+    if(uHb2.x>0.){float m1=${f(4*ASM_PX_MM)}*uLs,m2=${f(11*ASM_PX_MM)}*uLs;mo=uHb2.x*(.55*vnz(c.x/m1,c.y/m1)+.45*vnz(c.x/m2+17.3,c.y/m2+5.1));}
+    float pr=uHb2.y!=0.?2.*((ph+1.)/2.)*((ph+1.)/2.)-.75:ph;
+    tw=1.+mo+uTw.y*pr*yn+uTw.z*(fk/512.-1.);if(uTw.w>0.){float m=uTw.w*(1.+ph)/2.;cm=cm*(1.-m)+4.*uJ2*m;}}
+  // (stage 3) a small woven figure (asmMicroTex): its thread grid along the cloth, 4x4 points a pixel from three positions
+  if(uWv.x>0.){float tp=uWv.y,v=0.;vec2 p0=uvAt(si,vec2(X,Y),p),px=uvAt(si,vec2(X+1.,Y),p),py=uvAt(si,vec2(X,Y+1.),p);
+    for(int a=0;a<4;a++)for(int e=0;e<4;e++){float fx=(float(e)+.5)/4.,fy=(float(a)+.5)/4.,u=p0.x+(px.x-p0.x)*fx+(py.x-p0.x)*fy,w=p0.y+(px.y-p0.y)*fx+(py.y-p0.y)*fy;v+=cellG(u/tp,w/tp);}
+    v/=16.;tw*=1.+uWv.z*v;if(uWv.w>0.){float m=uWv.w*(1.-v)/2.;cm=cm*(1.-m)+4.*uWc2*m;}}
   return cm/4.*sh*pow(max(0.,tw),2.2);}
 void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);uint k=uint(y*uS+x);
   uvec4 A=texelFetch(uA,p,0),SH=texelFetch(uSh,p,0),L1=texelFetch(uL1,p,0),L2=texelFetch(uL2,p,0);vec4 K=texelFetch(uKeep,p,0);
@@ -310,12 +356,22 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
     gl.uniform4i(u('uTT'),tile?TW:1,tile?TH:1,tile?1:0,keep?1:0);gl.uniform4f(u('uRep'),rep,rep*TH/TW,T.loff||0,(T.blen||1)*lsc);
     gl.uniform4f(u('uSk'),keep?T.k:0,keep?T.brk:0,keep?T.gain:1,keep?T.gam:1);gl.uniform3fv(u('uSg'),keep?T.g:[0,0,0]);
     gl.uniform4f(u('uCl'),C&&C.kind==='herringbone'?2:C&&C.kind==='twill'?1:0,C&&C.ss?1:0,C&&C.cw?C.cw*lsc:0,C&&C.off?C.off*lsc:0);
-    // a linen cloth: the linen texture (256 x 256 light factors, the same on every device), uploaded once
-    if(T.linen&&!G.linN){if(G.lint)gl.deleteTexture(G.lint);const ln=asmLinenTile();G.lint=asmGlTex(gl,14,ln.T,ln.T,gl.R32F,gl.RED,gl.FLOAT,ln.r);G.linN=ln.T}
-    gl.uniform1i(u('uLinen'),T.linen?1:0);gl.uniform1i(u('uLinN'),G.linN||1);gl.uniform1f(u('uLsc'),lsc);
-    gl.uniform4f(u('uTw'),C?(C.pitch||4)*lsc:4,C?C.amp:0,C&&C.fleck!=null?C.fleck:.08,C&&C.c2?C.mix:0);gl.uniform3fv(u('uJ2'),C&&C.c2||[0,0,0])}
-  else{G.ttex=asmGlTex(gl,12,1,1,gl.RGBA32F,gl.RGBA,gl.FLOAT,new Float32Array(4));gl.uniform4i(u('uTT'),1,1,0,0);gl.uniform1i(u('uLinen'),0)}
-  if(!G.lint){G.lint=asmGlTex(gl,14,1,1,gl.R32F,gl.RED,gl.FLOAT,new Float32Array([1]));G.linN=0}   // (a stand-in until a linen cloth comes)
+    // a linen cloth: the linen texture (256 x 256 light factors, the same on every device); (stage 3) a tweed: asmTweedTile's 512 x 512
+    // light factors and flecks (RG32F, 2 MB); one at a time on unit 14, uploaded when the cloth changes
+    const ck=T.tweed?'tweed':T.linen?'linen':null;
+    if(ck&&G.clothK!==ck){if(G.lint)gl.deleteTexture(G.lint);
+      if(ck==='linen'){const ln=asmLinenTile();G.lint=asmGlTex(gl,14,ln.T,ln.T,gl.R32F,gl.RED,gl.FLOAT,ln.r);G.linN=ln.T;G.clothBytes=4*ln.T*ln.T}
+      else{const td=asmTweedTile(),n=td.T*td.T,rf=new Float32Array(2*n);for(let q=0;q<n;q++){rf[2*q]=td.r[q];rf[2*q+1]=td.f[q]}G.lint=asmGlTex(gl,14,td.T,td.T,gl.RG32F,gl.RG,gl.FLOAT,rf);G.linN=td.T;G.clothBytes=8*n}
+      G.clothK=ck}
+    gl.uniform1i(u('uLinen'),T.linen&&!T.tweed?1:0);gl.uniform1i(u('uLinN'),G.linN||1);gl.uniform1f(u('uLsc'),lsc);
+    gl.uniform1i(u('uTweed'),T.tweed?1:0);gl.uniform4f(u('uTd'),T.tweed&&T.c2?1:0,T.fmix||0,0,0);gl.uniform3fv(u('uTc2'),T.tweed&&T.c2?[T.c2[0],T.c2[1],T.c2[2]]:[0,0,0]);
+    gl.uniform4f(u('uTw'),C?(C.pitch||4)*lsc:4,C?C.amp:0,C&&C.fleck!=null?C.fleck:.08,C&&C.c2?C.mix:0);gl.uniform3fv(u('uJ2'),C&&C.c2||[0,0,0]);
+    // (stage 3) the herringbone's extras (asmTwillTex), and a small woven figure's thread grid (asmMicroTex)
+    gl.uniform4f(u('uHb1'),C&&C.yarn||0,C&&C.float||0,C&&C.floatL||1,C&&C.grain||0);gl.uniform4f(u('uHb2'),C&&C.mottle||0,C&&C.thin?1:0,C&&C.brk||0,C&&C.pbrk||0);
+    const W=T.wv,wg=new Float32Array(64);if(W)wg.set(W.g.subarray?W.g.subarray(0,W.N*W.N):W.g.slice(0,W.N*W.N));
+    gl.uniform4f(u('uWv'),W?W.N:0,W?W.thr*ASM_PX_MM*lsc:1,W?W.amp:0,W&&W.c2?W.mix:0);gl.uniform4fv(u('uWg'),wg);gl.uniform3fv(u('uWc2'),W&&W.c2?[W.c2[0],W.c2[1],W.c2[2]]:[0,0,0])}
+  else{G.ttex=asmGlTex(gl,12,1,1,gl.RGBA32F,gl.RGBA,gl.FLOAT,new Float32Array(4));gl.uniform4i(u('uTT'),1,1,0,0);gl.uniform1i(u('uLinen'),0);gl.uniform1i(u('uTweed'),0);gl.uniform4f(u('uWv'),0,1,0,0)}
+  if(!G.lint){G.lint=asmGlTex(gl,14,1,1,gl.R32F,gl.RED,gl.FLOAT,new Float32Array([1]));G.linN=0;G.clothK=null;G.clothBytes=0}   // (a stand-in until a linen or tweed cloth comes)
   gl.uniform1f(u('uAA'),ASM_CM_AA&&job.aa!==false?Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA):0);   // (asmCmBuild's rule: job.aa false = off, a number = the bench's strength)
   const St=hexLin(cl.shirt.hex),sl=lum(St)<LK.dark?lookOf(St):null;gl.uniform3fv(u('uSt'),St);gl.uniform4f(u('uSl'),sl?1:0,sl?0:1,sl?sl.lift:0,sl?sl.boost:1);
   const Ti=hexLin(cl.tie.hex);gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti)));gl.uniform1f(u('uLs'),S/ASM_SIZE);
@@ -343,7 +399,7 @@ function asmGlUI(b){if(!b)return;let g=document.getElementById('gl-box');if(!g){
   document.getElementById('cfg-gl').value=asmGlPref()?'on':'off';asmGlStatus()}
 function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)return;
   const last=asmGlLast?` Last picture painted on this phone: ${asmGlLast.gl?'graphics chip':'processor'}${asmGlLast.ms!=null?`, ${asmGlLast.ms} ms`:''}.`:'';
-  el.textContent=(asmGlPref()?'On: pictures this phone paints of a plain, twill, striped or checked jacket with a plain shirt and tie are painted on the graphics chip (about ten times faster, the same picture within 2 levels); every other look on the processor.'
+  el.textContent=(asmGlPref()?'On: pictures this phone paints of a jacket of any cloth with a plain shirt and tie (no waistcoat) are painted on the graphics chip (about ten times faster, the same picture within 2 levels); every other look on the processor.'
     :'Off on this phone: every picture painted here uses the processor, as before.')+last}
 function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else localStorage.removeItem(ASM_GL)}catch{}asmGlStatus()}
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */
