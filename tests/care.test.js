@@ -66,13 +66,16 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         return {r,told,plan}});
       const all=Object.entries(rem.r).sort(),has=(re)=>all.filter(([,t])=>re.test(t)).map(([k])=>k),firstOf=id=>(rem.plan.find(([,x])=>x===id)||[])[0];
       const navyOver=has(/The navy suit is overdue for cleaning: today is wear 6 of 5/),navyDue=has(/The navy suit is due for the cleaner/);
-      ok(navyOver.length===1&&navyOver[0]===firstOf('navy')&&!navyDue.length,`a suit already due and planned today: that morning says it is overdue (${navyOver.join()}), and no separate "due" reminder`);
+      const navyAnyOver=has(/The navy suit is overdue/);
+      ok(navyOver.length===1&&navyOver[0]===firstOf('navy')&&navyAnyOver.length===1&&!navyDue.length&&rem.told.navy&&rem.told.navy.o===navyOver[0],`a suit already due and planned today: that morning says it is overdue (${navyOver.join()}), and only that morning (${navyAnyOver.length} overdue reminder in two weeks; the planner chooses it again on ${rem.plan.filter(([,x])=>x==='navy').length-1} more days), no separate "due" reminder`);
       const charLast=has(/Last wear for the charcoal suit before cleaning: it goes to the cleaner after today/),charDue=has(/The charcoal suit is due for the cleaner\./);
       const nextWd=d=>{const x=new Date(d+'T12:00');do x.setDate(x.getDate()+1);while(x.getDay()===0||x.getDay()===6);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
       ok(charLast.length===1&&charLast[0]===firstOf('char')&&charDue.length===1&&charDue[0]===nextWd(charLast[0])&&rem.told.char&&rem.told.char.d===charDue[0],
         `the charcoal suit: its last wear on the morning it is planned (${charLast.join()}), then one "due" reminder the next workday (${charDue.join()})`);
       const again=await p.evaluate(d=>{TODAY_OVERRIDE=d+'T12:00:00';cache={};const r=careReminders(14,'07:00');TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};return Object.values(r).filter(t=>/The charcoal suit is due/.test(t)).length},nextWd(charDue[0]||'2026-11-13'));
       ok(again===0,'told once: not again the days after, while it is still not cleaned');
+      const overAgain=await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-12T12:00:00';cache={};const r=careReminders(14,'07:00');TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};return Object.values(r).filter(t=>/The navy suit is overdue/.test(t)).length});
+      ok(overAgain===0,'the overdue reminder told on its first morning: not again on the later mornings it is planned')
       const fresh=await p.evaluate(()=>{const n=items.find(i=>i.id==='char');n.cleaned='2026-11-11';cache={};localStorage.removeItem('care_told');const r=careReminders(14,'07:00');delete n.cleaned;cache={};localStorage.removeItem('care_told');
         return Object.values(r).some(t=>/The charcoal suit (is due|is overdue)|Last wear for the charcoal/.test(t))});
       ok(!fresh,'cleaned: nothing to remind')}    // ---- the Wardrobe grid: a quiet tag on due pieces only
