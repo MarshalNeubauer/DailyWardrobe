@@ -497,6 +497,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 #### The precision swatch
 
+- `shrink()` draws every picture on white first (2026-11-14, the owner's socks: a transparent cut-out saved as a JPEG had a black backdrop); `fixBlackBackdrops` (tagging.js, start-up after `upgradePhotos`, once: `localStorage.black_bd`) makes white the edge-joined black of a photo saved before whose edge is nearly all black, unless the item itself is dark (colour luminance under 70); `tests/photobackdrop.test.js`
 - the precision swatch (`item.swatch`, 128px, `cropSwatch`) is cut from the fabric close-up when there is one (`q.texCanvas`, white-balanced; the Add inspector's zoom/position sliders work on it), else from the item photo; `item.swSrc` says which ('tex'/'photo'); the editor re-cuts it when the close-up is added, replaced, removed or undone (`refreshSwatch`)
 - a close-up swatch takes its lightness from the tagged colour (`matchLight`: each pixel keeps its lightness above/below the crop's median and its hue; near white the swing narrows so threads stay under paper white): a close-up shot in dim light made a white shirt grey; changing the colour (Add card `setq`, editor `sete`) re-cuts it
 - `texSwatches()` re-cuts existing close-up swatches once (localStorage flag `tex_swatch2`)
