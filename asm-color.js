@@ -479,6 +479,7 @@ function asmLegsPrep(A,SH,S,N){const T=A.trousers,ls=S/2048,on=k=>T[k]>127,sk=A.
    sleeve's parts (upper arm and forearm in the painter's own frames, the forearm's lines shifted to meet the upper arm's at the crease),
    40..59 the lapels, 60.. the shirt's cuffs. job.geoU / job.geoV carry them; without them the painter is as before. */
 const ASM_GEO_PX=2048;   // the maps' own size
+const ASM_CM_AA=.7;   // a rib squeezed finer than where the cloth faces the camera is softened like a Gaussian pixel this wide (px; 0 = off)
 async function asmGeoPrep(job,P){if(!job.geoU||!job.geoV)return null;
   // decoded at their own size: a resampled picture would blend the two bytes of a value and the pieces' ids
   const G=ASM_GEO_PX,NG=G*G,du=(await asmData(job.geoU,G)).data,dv=(await asmData(job.geoV,G)).data,U=new Float32Array(NG),V=new Float32Array(NG),R=new Uint8Array(NG);
@@ -527,7 +528,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
@@ -662,6 +663,15 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
         let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0]+bo)/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0]+bo)/pitch);
         if(C.soft&&cw){const fx=(c[0]-off)/cw-col,de=Math.min(fx,1-fx)*cw,sw=C.soft*ls;if(de<sw){const nb=fx<.5?col-1:col+1,d2=nb&1?-1:1,b2=C.brk&&(nb&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(nb/2):0,w=.5-.5*de/sw;
           ph=ph*(1-w)+Math.cos(2*Math.PI*(c[1]+d2*c[0]+b2)/pitch)*w}}
+        // (2026-11-14) ribs squeezed finer than the picture can show are softened (ASM_CM_AA): where the solved cloth positions turn a
+        // twill's 4 px ribs to 2 px or less they beat into moire, here and again when a phone shrinks the picture. The rib's cycles per
+        // pixel (g) come from the positions half a pixel either side; the rib is scaled by a Gaussian pixel's response at g against its
+        // response where the cloth faces the camera (g0 = 1/pitch), so the facing cloth is exactly as before and only squeezed ribs fade
+        if(ASM_CM_AA&&job.aa!==false){const a1=uvAt(k,x+1,y+.5),a0=uvAt(k,x,y+.5),b1=uvAt(k,x+.5,y+1),b0=uvAt(k,x+.5,y),
+            gx=((a1[1]-a0[1])+dir*(a1[0]-a0[0]))/pitch,gy=((b1[1]-b0[1])+dir*(b1[0]-b0[0]))/pitch,g2=gx*gx+gy*gy,g0=1/pitch;
+          // (a step into another piece reads as a huge jump: left alone)
+          if(g2<2.25&&g2>g0*g0){const s=Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA);   // (a number in job.aa: the bench's strength)
+           ph*=Math.exp(-2*s*s*(g2-g0*g0))}}
         let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),t=(c[1]-dir*c[0])/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((asmH32(r0,s,2246822519,3266489917)^asmH32(col,0,668265263,0))>>>0)%1024/1024;
           yn=1-C.yarn/2+C.yarn*(hv(s0)*(1-fs)+hv(s0+1)*fs)}
         if(C.float){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),hf=asmH32(r0,col,374761393,668265263)%4096/4096,s=(c[1]-dir*c[0])/(pitch*C.floatL)+hf*7,f=s-Math.floor(s),sn=Math.sin(Math.PI*f);yn*=1-C.float+C.float*sn*sn}

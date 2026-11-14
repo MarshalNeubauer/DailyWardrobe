@@ -119,7 +119,7 @@ function asmGlFrag(){const LK=ASM_CM_LOOK,LI=ASM_CM_LIGHT,F=ASM_FLOW,f=asmGlF;
 precision highp float;precision highp int;precision highp usampler2D;precision highp isampler2D;
 uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR;uniform sampler2D uKeep,uLin,uTube,uFlow,uGeo;uniform isampler2D uRow;
 uniform int uS,uHasGeo;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform vec4 uFl;uniform vec2 uSm;
-uniform vec3 uJ,uJ2,uSt,uTi,uBtn;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uTieK,uLs;
+uniform vec3 uJ,uJ2,uSt,uTi,uBtn;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uTieK,uLs,uAA;
 out vec4 oC;
 const float PI=3.14159265358979;
 float lum(vec3 c){return .2126*c.r+.7152*c.g+.0722*c.b;}
@@ -167,6 +167,11 @@ vec3 flatC(vec3 base,float s,bool look,float lift,float bo,bool shirt,int x,int 
 vec3 twill(int si,int x,int y,ivec2 p,float sh,out float tw){vec3 cm=4.*uJ;float pitch=uTw.x;vec2 c=uvAt(si,vec2(float(x)+.5,float(y)+.5),p);
   float fk=cellV((c.x+c.y)/2.,c.y/3.,73856093u,19349663u,1024u);float ph=0.;
   for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvAt(si,vec2(float(x)+(float(e)+.5)/2.,float(y)+(float(a)+.5)/2.),p);ph+=cos(2.*PI*fract((s.y+s.x)/pitch))/4.;}
+  // ribs squeezed finer than the picture can show, softened (ASM_CM_AA, #360): a Gaussian pixel's response at the rib's cycles per pixel
+  // against its response where the cloth faces the camera; a step into another piece (g2 >= 2.25) is left alone
+  if(uAA>0.){float X=float(x),Y=float(y);vec2 a1=uvAt(si,vec2(X+1.,Y+.5),p),a0=uvAt(si,vec2(X,Y+.5),p),b1=uvAt(si,vec2(X+.5,Y+1.),p),b0=uvAt(si,vec2(X+.5,Y),p);
+    float gx=((a1.y-a0.y)+(a1.x-a0.x))/pitch,gy=((b1.y-b0.y)+(b1.x-b0.x))/pitch,g2=gx*gx+gy*gy,g0=1./pitch;
+    if(g2<2.25&&g2>g0*g0)ph*=exp(-2.*uAA*uAA*(g2-g0*g0));}
   tw=1.+uTw.y*ph+uTw.z*(fk/512.-1.);if(uTw.w>0.){float m=uTw.w*(1.+ph)/2.;cm=cm*(1.-m)+4.*uJ2*m;}
   return cm/4.*sh*pow(max(0.,tw),2.2);}
 void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);uint k=uint(y*uS+x);
@@ -237,6 +242,7 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   const J=hexLin(cl.jacket.hex),jl=lum(J)<LK.dark?lookOf(J):null,T=cl.jacket.suit;
   gl.uniform3fv(u('uJ'),T?Array.from(T.c):J);gl.uniform4f(u('uJm'),jl?1:0,jl?0:1,T?1:0,0);gl.uniform4f(u('uJl'),jl?jl.lift:0,jl?jl.boost:1,0,0);
   if(T){const C=T.cloth,lsc=S/ASM_SIZE*ASM_CM_KINDS[job.cm].pxmm;gl.uniform4f(u('uTw'),(C.pitch||4)*lsc,C.amp,C.fleck!=null?C.fleck:.08,C.c2?C.mix:0);gl.uniform3fv(u('uJ2'),C.c2||[0,0,0])}
+  gl.uniform1f(u('uAA'),ASM_CM_AA&&job.aa!==false?Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA):0);   // (asmCmBuild's rule: job.aa false = off, a number = the bench's strength)
   const St=hexLin(cl.shirt.hex),sl=lum(St)<LK.dark?lookOf(St):null;gl.uniform3fv(u('uSt'),St);gl.uniform4f(u('uSl'),sl?1:0,sl?0:1,sl?sl.lift:0,sl?sl.boost:1);
   const Ti=hexLin(cl.tie.hex);gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti)));gl.uniform1f(u('uLs'),S/ASM_SIZE);
   const Lf=Math.max(1e-4,lum(J));gl.uniform3fv(u('uBtn'),J.map(v=>v/Lf*.6+.4));
