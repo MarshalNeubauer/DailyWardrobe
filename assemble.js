@@ -505,11 +505,11 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){return asmCmUse(o)?asmCmJob(o):null}
+async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const j=await asmCmJob(o);if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,k);if(w)j.watch=w}return j}   // (the day's watch painted after: asm-watch.js)
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
-  return job&&job.cm?asmCmBuild(job):{}}
+  if(!job||!job.cm)return {};const r=await asmCmBuild(job);return job.watch&&typeof asmWatchPaint==='function'?asmWatchPaint(r,job.watch):r}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
 async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)}
 /* the worker: one picture at a time; the day on screen goes to the front of the line (asmRun(job, true)) */
