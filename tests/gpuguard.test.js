@@ -30,6 +30,7 @@ module.exports=async({ok})=>{
   {const c=Card(()=>[55,300,9000]),g=guard(c,'calm');await g.enter();
     const t0=c.t;await g.before();c.t+=10;await g.after('one');
     ok(c.t-t0>=10+C.REST_S,`a ${C.REST_S} s rest follows each burst (${(c.t-t0).toFixed(0)} s for a 10 s burst)`);
+    {const t1=c.t;await g.before();c.t+=10;await g.after('final',{last:true});ok(c.t-t1<10+1,`no rest after a job's last burst ({last:true}): ${(c.t-t1).toFixed(0)} s for a 10 s burst`)}
     ok(fs.existsSync(LOCK)&&G.readLock().pid===process.pid,'the lock is held while the guard is');
     const n0=lines.length;for(let i=0;i<12;i++){await g.before();c.t+=10;await g.after('b'+i)}
     const longs=lines.slice(n0).filter(l=>/ long rest /.test(l));
