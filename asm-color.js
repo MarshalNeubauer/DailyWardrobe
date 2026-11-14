@@ -338,6 +338,8 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
     P.geo={seg,segs:sg.segs,flow:GAR==='jacket'?asmBodyFlow(zj,sm,S,S):null,gar:GAR}}
   // the trousers on the shirt masters: their lines follow the legs (asmLegsPrep), as a jacket's follow its sleeves and body
   if(A.trousers&&P.shade.trousers)P.legs=asmLegsPrep(A,P.shade.trousers,S,N);
+  // a surface-normal map of the master (a trial, 2026-11-14: job.normals, estimated on a computer): the cloth's own lengths (asmGeoPrep)
+  if(job.normals)P.g3=await asmGeoPrep(job,P);
   // the tie (asmTiePrep's rules): the knot, the blade's lean and width
   if(A.tie){const wid=new Int32Array(S);let y0=S,y1=0;for(let k=0;k<N;k++)if(A.tie[k]>127){const y=(k/S)|0;wid[y]++;if(y<y0)y0=y;if(y>y1)y1=y}
     // the knot is searched in the tie's top 30%, but no lower than 1.5 of its widest row below its top: on the shirt-and-tie master the
@@ -435,6 +437,61 @@ function asmLegsPrep(A,SH,S,N){const T=A.trousers,ls=S/2048,on=k=>T[k]>127,sk=A.
     const gx=(at(k+1)-at(k-1))/2,gy=(at(k+S)-at(k-S))/2,cl=v=>v<-MX?-MX:v>MX?MX:v;du[k]=Math.round(16*cl(-K*gx));dv[k]=Math.round(16*cl(-K*gy))}
   return {y0,y1,yc,xf,co,R:Rr,du,dv}}
 /* a trousers pixel's [across, along]: across is cloth from the fly (left of it negative), along the row, both moved with the folds */
+/* Cloth lengths from a surface-normal map (a trial, 2026-11-14, the owner's ask: "a 3D model of the model the painter uses"). The map is
+   estimated per master on a computer (job.normals: an image, rgb = (n+1)/2, n = [right, up, toward the camera], unit length). Where the
+   cloth turns away from the camera one pixel holds more cloth: a step across the picture covers sqrt(1+(nx/nz)^2) of cloth, a step down
+   sqrt(1+(ny/nz)^2) (the depth's slope is -n/nz). Adding those up from an anchor gives each pixel's position on the cloth, measured, where
+   the painter's cylinders and traced flows only guess it:
+   - trousers: across from the fly (each row's xf), down from the crotch row; the folds' small shift (asmLegsPrep's du/dv) kept on top
+   - the jacket's body and the waistcoat: across from the body's middle (the flow's mid), down from the shoulder line; the traced stripe
+     flow (asmBodyFlow) is then applied to those cloth positions, so the stripes keep their lean in to the neck and round the darts
+   - the shirt's front on the shirt masters: across from the placket (the shirt's middle each row), down from the middle row
+   Sleeves and lapels keep their tubes and straight parts. The normals are smoothed (ASM_GEO_BLUR px at 2048) and a pixel turned further
+   than ASM_GEO_NZ toward the edge counts as ASM_GEO_NZ (edges of the silhouette would stretch without bound); outside the garment a
+   step counts as one pixel (a hand over the cloth has its own normals). */
+const ASM_GEO_BLUR=4,ASM_GEO_NZ=.3,ASM_GEO_LIGHT=[-.6,.35,.72];
+/* the trial's parts: cloth positions solved on a computer (job.geoU/geoV, geo3d/flatten/flatten.py: least squares over each garment,
+   so they can't break where a row crosses a lapel or the hand), and the normals themselves (job.normals: the window light, and the
+   first prototype's row-by-row sums, used only without solved positions) */
+async function asmGeoPrep(job,P){const G=job.normals?await asmGeoNormals(job,P):{lamMean:{}};
+  if(job.geoU&&job.geoV){const S=P.S,N=P.N,du=(await asmData(job.geoU,S)).data,dv=(await asmData(job.geoV,S)).data,U=new Float32Array(N),V=new Float32Array(N),R=new Uint8Array(N);
+    // (each value is round((position + 1024) * 16) in two bytes, red high and green low; blue is the garment: 1 body, 2 shirt, 3 trousers)
+    for(let k=0;k<N;k++){const j=4*k;R[k]=du[j+2];if(R[k]){U[k]=((du[j]<<8)|du[j+1])/16-1024;V[k]=((dv[j]<<8)|dv[j+1])/16-1024}}
+    G.uv={U,V,R}}
+  return G}
+/* a point's solved cloth position (X, Y in the picture), from the four pixel centres around it that belong to the same garment */
+function asmUvAt(uv,S,k,X,Y){const x=X-.5,y=Y-.5,x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0,r=uv.R[k];let su=0,sv=0,sw=0;
+  for(let j=0;j<2;j++)for(let i=0;i<2;i++){const xx=x0+i,yy=y0+j;if(xx<0||yy<0||xx>=S||yy>=S)continue;const q=yy*S+xx;if(uv.R[q]!==r)continue;const w=(i?fx:1-fx)*(j?fy:1-fy);su+=w*uv.U[q];sv+=w*uv.V[q];sw+=w}
+  return sw>1e-6?[su/sw,sv/sw]:[uv.U[k],uv.V[k]]}
+async function asmGeoNormals(job,P){const S=P.S,N=P.N,A=P.A,d=(await asmData(job.normals,S)).data,ls=S/2048;
+  let nx=new Float32Array(N),ny=new Float32Array(N),nz=new Float32Array(N);for(let k=0;k<N;k++){nx[k]=d[4*k]/127.5-1;ny[k]=d[4*k+1]/127.5-1;nz[k]=d[4*k+2]/127.5-1}
+  const R=Math.max(1,Math.round(ASM_GEO_BLUR*ls)),bl=v=>{let b=asmCmBlur(v,S,R);b=asmCmBlur(b,S,R);return b};nx=bl(nx);ny=bl(ny);nz=bl(nz);
+  const sx=new Float32Array(N),sy=new Float32Array(N);
+  for(let k=0;k<N;k++){const l=Math.hypot(nx[k],ny[k],nz[k])||1,x=nx[k]/l,y=ny[k]/l,z=Math.max(ASM_GEO_NZ,nz[k]/l);sx[k]=Math.sqrt(1+(x/z)*(x/z));sy[k]=Math.sqrt(1+(y/z)*(y/z))}
+  // the window light by the surface (job.geoLight): how much each point faces a light from the left, a little above and in front
+  // (ASM_GEO_LIGHT), as a share of that garment's average; the painter's flat left-to-right ramp stands in without it
+  const Ld=ASM_GEO_LIGHT,Ll=Math.hypot(...Ld),lam=new Float32Array(N);
+  for(let k=0;k<N;k++){const l=Math.hypot(nx[k],ny[k],nz[k])||1;lam[k]=Math.max(0,(nx[k]*Ld[0]+ny[k]*Ld[1]+nz[k]*Ld[2])/(l*Ll))}
+  const G={sx,sy,lam,lamMean:{}};
+  for(const z of ['jacket','waistcoat','shirt','tie','trousers'])if(A[z]){let t=0,n=0;for(let k=0;k<N;k+=3)if(A[z][k]>200){t+=lam[k];n++}if(n)G.lamMean[z]=t/n}
+  if(job.geoU)return G;   // solved positions come with the job: no row-by-row sums
+  // one field: X from the anchor column each row (xa(y)), Y from the anchor row (ya), stretches counted only inside the garment (m)
+  const field=(m,xa,ya)=>{const X=new Float32Array(N),Y=new Float32Array(N),s=(arr,k)=>m(k)?arr[k]:1;
+    for(let y=0;y<S;y++){const a=Math.max(0,Math.min(S-1,Math.round(xa(y)))),r=y*S;X[r+a]=a;for(let x=a+1;x<S;x++)X[r+x]=X[r+x-1]+(s(sx,r+x-1)+s(sx,r+x))/2;for(let x=a-1;x>=0;x--)X[r+x]=X[r+x+1]-(s(sx,r+x+1)+s(sx,r+x))/2}
+    const b=Math.max(0,Math.min(S-1,Math.round(ya)));for(let x=0;x<S;x++){Y[b*S+x]=b;for(let y=b+1;y<S;y++)Y[y*S+x]=Y[(y-1)*S+x]+(s(sy,(y-1)*S+x)+s(sy,y*S+x))/2;for(let y=b-1;y>=0;y--)Y[y*S+x]=Y[(y+1)*S+x]-(s(sy,(y+1)*S+x)+s(sy,y*S+x))/2}
+    return {X,Y}};
+  if(P.legs&&A.trousers){const L=P.legs;G.tr=field(k=>A.trousers[k]>127,y=>L.xf[Math.max(L.y0,Math.min(L.y1,y))],Math.min(L.y1,L.yc<S?L.yc:(L.y0+L.y1)/2))}
+  const fl=P.geo&&P.geo.flow;
+  if(fl&&A.jacket){const jm=k=>(A.jacket[k]>127||(A.waistcoat&&A.waistcoat[k]>127))&&!P.geo.seg[k];G.body=field(jm,()=>fl.mid,fl.ysh)}
+  if(P.geo&&P.geo.gar==='shirt'&&A.shirt){const mid=new Float32Array(S);let y0=-1,y1=-1;
+    for(let y=0;y<S;y++){let a=-1,b=-1;for(let x=0;x<S;x++){const k=y*S+x;if(A.shirt[k]>127&&!P.geo.seg[k]){if(a<0)a=x;b=x}}mid[y]=a<0?NaN:(a+b)/2;if(a>=0){if(y0<0)y0=y;y1=y}}
+    if(y0>=0){let last=NaN;for(let y=0;y<S;y++){if(!isNaN(mid[y]))last=mid[y];else mid[y]=last}const m0=mid[y0];for(let y=0;y<y0;y++)mid[y]=m0;
+      // the placket runs straight down: the middles' own line, fitted (a hand or the tie widening a row would bend it)
+      let sw=0,sy2=0,sm=0,syy=0,sym=0;for(let y=y0;y<=y1;y++){sw++;sy2+=y;sm+=mid[y];syy+=y*y;sym+=y*mid[y]}const bb=(sw*sym-sy2*sm)/Math.max(1e-6,sw*syy-sy2*sy2),aa=(sm-bb*sy2)/sw;
+      G.shirt=field(k=>A.shirt[k]>127&&!P.geo.seg[k],y=>aa+bb*y,(y0+y1)/2)}}
+  return G}
+/* a pixel's cloth position in one of those fields, at a point inside the pixel (X, Y in the picture) */
+const asmGeoXY=(F,G,k,X,Y,S)=>{const x=k%S,y=(k-x)/S;return [F.X[k]+(X-x-.5)*G.sx[k],F.Y[k]+(Y-y-.5)*G.sy[k]]};
 function asmLegsAt(G,X,Y,k){const y=Math.max(G.y0,Math.min(G.y1,Math.floor(Y))),xf=G.xf[y],s=X<xf?0:1,t=Math.abs(X-xf),co=G.co[2*y+s],R=G.R[2*y+s],Q=.95,q=(t-co)/R;
   const u=q>Q?co+R*(Math.asin(Q)+(q-Q)/Math.sqrt(1-Q*Q)):q<-Q?co+R*(-Math.asin(Q)+(q+Q)/Math.sqrt(1-Q*Q)):co+R*Math.asin(q);
   return [(s?u:-u)+(k!=null?G.du[k]/16:0),Y+(k!=null?G.dv[k]/16:0)]}
@@ -472,7 +529,7 @@ async function asmCmUnpack(rec,job){if(!rec||!rec.meta||!rec.gz||typeof Decompre
       if(x&&typeof x==='object'&&Object.getPrototypeOf(x)===Object.prototype){const o={};for(const [k,v] of Object.entries(x))o[k]=back(v);return o}return x};
     const P=back(rec.meta);P.M=(await asmData(job.master,job.size)).data;return P}
   catch(e){console.warn('could not read the kept master',e);return null}}
-async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size,keep=job.size>ASM_SIZE?4:1;
+async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size+(job.normals||job.geoU?'|n'+(job.nt||'1'):''),keep=job.size>ASM_SIZE?4:1;
   if(!asmCmMem||!asmCmMem.list)asmCmMem={list:[]};let hit=asmCmMem.list.find(e=>e.key===key);
   if(!hit){while(asmCmMem.list.length>=keep)asmCmMem.list.shift();const dk=job.cm+'|v'+ASM_CMV+'|'+asmCmSrcSig()+'|z'+ASM_CM_PACKV+'|'+key;
     // (2026-11-13) on every device, phones included: kept packed (asmCmPack, about 5 MB a master); a phone used to work it out again at
@@ -490,7 +547,9 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
   // the lighting (ASM_CM_LIGHT) on the jacket, waistcoat, shirt and tie; its master-only part kept with the master's setup
   const LI=ASM_CM_LIGHT,LZ={jacket:1,waistcoat:1,shirt:1,tie:1,trousers:1},LXP=LK?(hit.lx||(hit.lx=asmCmLightPrep(P))):null;
   const lxF=(z,k,x,y,e)=>{let f=1;const a=LXP.ao[z];if(a){let v=a[k];if(z==='jacket'&&LXP.aob&&geo&&!geo.seg[k])v=Math.max(v,LXP.aob[k]);f*=1-LI.ak*v}
-    f*=1+LI.win*(e.look?LI.wd:1)*(1-2*x/S);
+    // the window light: by how much the point faces it (the normal-map trial, job.geoLight), else a flat ramp from left to right
+    const g3=job.geoLight&&P.g3&&P.g3.lamMean[z]?P.g3:null;
+    f*=1+LI.win*(e.look?LI.wd:1)*(g3?Math.max(-1,Math.min(1,g3.lam[k]/g3.lamMean[z]-1)):(1-2*x/S));
     if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const t=(x-LXP.tl[y])/w;f*=1-LI.te*Math.pow(Math.abs(t-.5)*2,3)}}return f};
   const lxPost=(c,z,k,x,y,s)=>{let h=0;const sl=Math.min(s,1.3);if(z==='jacket'&&LXP.rim)h+=LI.rim*LXP.rim[k]*sl;
     if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const u=((x-LXP.tl[y])/w-LI.tp)/LI.tsw;h+=LI.ts*tieK()*Math.exp(-u*u)*sl}}c[0]+=h;c[1]+=h;c[2]+=h;
@@ -509,8 +568,18 @@ async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.si
     for(let q=0;q<3;q++){let v=c[q]<=0?0:Math.pow(c[q],1/2.2);v=v+LK.toe*Math.pow(1-v,3)-LK.sh*Math.pow(v,4);c[q]=Math.pow(Math.max(0,v),2.2)}};
   // a jacket pixel's [across, along] (px): a sleeve's tube, a lapel's own axis, the body's stripe flow, or upright
   let ZC='';   // the zone being painted: a trousers pixel follows the legs (asmLegsAt)
-  const uvAt=(k,X,Yv)=>{if(ZC==='trousers'&&P.legs)return asmLegsAt(P.legs,X,Yv,k);if(!geo)return [X,Yv];const si=geo.seg[k],g=geo.segs[si];if(g&&g.parts)return asmTubeAt(g,X,Yv);
-    if(si&&g&&g.cs!=null)return [(X-g.cx)*g.cs+(Yv-g.cy)*g.sn,(Yv-g.cy)*g.cs-(X-g.cx)*g.sn];return geo.flow&&geo.gar==='jacket'?asmFlowAt(geo.flow,X,Yv):[X,Yv]};
+  const G3=P.g3||null;   // the surface-normal trial (asmGeoPrep): cloth positions measured from the master's normals
+  const UV=G3&&G3.uv||null;   // solved cloth positions (asmGeoPrep), by garment: 1 the jacket's body, 2 the shirt's front, 3 the trousers
+  const uvAt=(k,X,Yv)=>{if(UV&&UV.R[k]){const r=UV.R[k];
+      if(r===3&&ZC==='trousers'){const c=asmUvAt(UV,S,k,X,Yv);return P.legs?[c[0]+P.legs.du[k]/16,c[1]+P.legs.dv[k]/16]:c}
+      if(r===1&&geo&&geo.flow&&geo.gar==='jacket'&&!geo.seg[k]&&(ZC==='jacket'||ZC==='waistcoat')){const c=asmUvAt(UV,S,k,X,Yv);return asmFlowAt(geo.flow,c[0],c[1])}
+      if(r===2&&ZC==='shirt'&&!(geo&&geo.seg[k]))return asmUvAt(UV,S,k,X,Yv)}
+    if(ZC==='trousers'&&P.legs){if(G3&&G3.tr){const c=asmGeoXY(G3.tr,G3,k,X,Yv,S);return [c[0]+P.legs.du[k]/16,c[1]+P.legs.dv[k]/16]}return asmLegsAt(P.legs,X,Yv,k)}
+    if(!geo)return [X,Yv];const si=geo.seg[k],g=geo.segs[si];if(g&&g.parts)return asmTubeAt(g,X,Yv);
+    if(si&&g&&g.cs!=null)return [(X-g.cx)*g.cs+(Yv-g.cy)*g.sn,(Yv-g.cy)*g.cs-(X-g.cx)*g.sn];
+    if(geo.flow&&geo.gar==='jacket'){if(G3&&G3.body){const c=asmGeoXY(G3.body,G3,k,X,Yv,S);return asmFlowAt(geo.flow,c[0],c[1])}return asmFlowAt(geo.flow,X,Yv)}
+    if(G3&&G3.shirt&&ZC==='shirt')return asmGeoXY(G3.shirt,G3,k,X,Yv,S);
+    return [X,Yv]};
   const cl={};for(const [z,c] of Object.entries(job.cloth||{})){const e={flat:hexLin(c.hex)};
     if(c.suit)e.suit=c.suit;else if(c.tie&&tg){e.tie=c.tie;e.rep=(c.tie.motif?2:1)*tg.bw/Math.max(.5,c.tie.across||1.5);e.repv=e.rep*c.tie.TH/c.tie.TW}
     else if(c.tile){e.tile=c.tile;e.rep=c.tile.mm*P.pxmm;e.repv=e.rep*c.tile.TH/c.tile.TW}
