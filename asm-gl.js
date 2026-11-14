@@ -221,7 +221,7 @@ uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR,uGeoI,uW;uniform sampler2D uKeep,uTube
 // (geo.gar 'shirt'); the legs' first and last row; the waistcoat's mean light; the belt's colour; a read trousers' tile (has one, repeat)
 const int uOut=${V[0]|0},uWc=${V[1]|0},uGarS=${V[2]|0},uLegs=${V[3]|0},uPoly=${V[4]|0};uniform ivec2 uLy;uniform float uSmW;uniform vec3 uBelt;uniform vec4 uOT;
 uniform int uS,uHasGeo,uGeo16;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform ivec4 uQ[${ASM_GL_SEGS*4}];uniform vec4 uFl;uniform vec2 uSm;
-uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform float uWin,uTieK,uLs,uAA;
+uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform vec4 uMat;uniform vec2 uMatT;uniform float uWin,uTieK,uLs,uAA;
 uniform ivec4 uTT;uniform vec4 uRep,uSk,uCl;   // the band tile (TW, TH, has a tile, has the stripe breakup); its repeat, the breakup, the grain
 uniform sampler2D uLinT;uniform int uLinen,uLinN;uniform float uLsc;   // the linen texture (asmLinenTile, uLinN square), on a linen cloth
 // (stage 3) the herringbone's extras: yarn, float, float length, grain; mottle, thin, break, pair break. A tweed (uLinT holds asmTweedTile's
@@ -230,7 +230,7 @@ uniform vec4 uHb1,uHb2;uniform int uTweed;uniform vec4 uTd;uniform vec3 uTc2;uni
 // (stage 4) the tiles' places in uTile (x, y, width, height: 0 jacket, 1 tie, 2 shirt); the tie's tile (has one, the knot's last row), its
 // repeat, its turns (the blade's cos/sin, the knot's; on the solved pieces 80/81 the pattern's own); the shirt's (has one), its repeat,
 // fine (3x3 points), has turned parts; the turned parts' cos/sin, two to a vec4 (entry 0 upright)
-uniform ivec4 uTO[3];uniform ivec2 uTie;uniform vec2 uTr,uTs;uniform vec4 uTa;uniform int uShT;uniform vec4 uShR;uniform vec4 uCu[8];
+uniform ivec4 uTO[15];uniform ivec2 uTie;uniform vec2 uTr,uTs;uniform vec4 uTa;uniform int uShT;uniform vec4 uShR;uniform vec4 uCu[8];
 out vec4 oC;
 const float PI=3.14159265358979;
 float lum(vec3 c){return .2126*c.r+.7152*c.g+.0722*c.b;}
@@ -288,6 +288,7 @@ vec2 uvC(int si,vec2 P,ivec2 p){uint r=uHasGeo==1?texelFetch(uGR,p,0).r:0u;bool 
   if(!sv&&ty>1.5){vec4 g=uG[b+1];return vec2((P.x-g.z)*g.x+(P.y-g.w)*g.y,(P.y-g.w)*g.x-(P.x-g.z)*g.y);}
   return uFl.w>.5?flowAt(c):c;}
 // --- the look and the lighting (lookBase, lookAfter, lxF, lxPost)
+float matS(float s,vec2 m){return s<1.?pow(max(s,0.),m.x):1.+(s-1.)*m.y;}
 vec3 tone(vec3 c){vec3 v=pow(max(c,0.),vec3(1./2.2)),w=1.-v,v2=v*v;v=v+${f(LK.toe)}*w*w*w-${f(LK.sh)}*v2*v2;return pow(max(v,0.),vec3(2.2));}   // (cubes written out: GLSL's pow is undefined below 0)
 vec3 lookAfter(vec3 c,float s,bool shirt,int x,int y,bool plain,float tw,float bo){
   if(plain&&!shirt){float u=float(x)/uLs,v=float(y)/uLs;float h=float(h32(int(floor((u+v)/2.)),int(fdiv3(v)),73856093u,19349663u)%1024u)/512.-1.;
@@ -295,7 +296,7 @@ vec3 lookAfter(vec3 c,float s,bool shirt,int x,int y,bool plain,float tw,float b
   float t=clamp((s-${f(LK.s0)})/(${f(LK.s1-LK.s0)}),0.,1.);c+=${f(LK.sheen)}*t*t*(3.-2.*t)*(shirt?.25:1.)*max(0.,1.+${f(LK.sk)}*(tw-1.));return tone(c);}
 vec3 lookBase(vec3 b,float lift){float y=lum(b);if(y<lift)b+=lift-y;float m=max(b.r,max(b.g,b.b));if(m>${f(LK.cmax)})b*=${f(LK.cmax)}/m;return b;}
 vec3 post(vec3 c,int z,uint k,int x,ivec2 tr,float s,float rim){float h=0.,sl=min(s,1.3);if(z==0)h+=${f(LI.rim)}*rim*sl;
-  if(z==1&&tr.x>=0){float w=float(tr.y-tr.x);if(w>4.){float u=((float(x-tr.x))/w-${f(LI.tp)})/${f(LI.tsw)};h+=${f(LI.ts)}*uTieK*exp(-u*u)*sl;}}c+=h;
+  if(z==1&&tr.x>=0){float w=float(tr.y-tr.x);if(w>4.){float u=((float(x-tr.x))/w-${f(LI.tp)})/${f(LI.tsw)};h+=${f(LI.ts)}*uTieK*exp(-u*u)*sl*clamp((s-${f(ASM_TIE_LIT[0])})/${f(ASM_TIE_LIT[1])},0.,${f(ASM_TIE_LIT[2])});}}c+=h;
   float S=float(uS),d=clamp(1.-s/.85,0.,1.),l=clamp((s-.95)/.5,0.,1.)*(1.-float(x)/S),y0=lum(c);
   c.r*=1.+${f(LI.warm)}*d*.9-${f(LI.cool)}*l*.5;c.g*=1.+${f(LI.warm)}*d*.15;c.b*=1.-${f(LI.warm)}*d*.9+${f(LI.cool)}*l*1.2;float y1=lum(c);if(y1>0.)c*=y0/y1;
   float h1=float(h32(int(k),int(k>>7u),2246822519u,3266489917u))/4294967296.,h2=float(h32(int(k+977u),int(k>>3u),2654435761u,1u))/4294967296.;return c*(1.+${f(LI.grain)}*(h1+h2-1.));}
@@ -304,23 +305,32 @@ vec3 flatC(vec3 base,float s,bool look,float lift,float bo,bool shirt,int x,int 
   if(s<=1.)c=base*s;else c=base+(s-1.)*lum(base);if(look)c=lookAfter(c,s,shirt,x,y,true,1.,bo);return c;}
 // the app's suit cloth (suitCol): a band tile read at four points a pixel (asmCmAt: bilinear, wrapping), or a 1x1 tile's colour
 // (stage 4) tile t of the three stacked in uTile (uTO[t]: its place and size)
-vec3 tileAt(int t,float u,float v){ivec4 o=uTO[t];int TW=o.z,TH=o.w;float x=(u-floor(u))*float(TW)-.5,y=(v-floor(v))*float(TH)-.5,x0=floor(x),y0=floor(y),fx=x-x0,fy=y-y0;
+// (2026-11-14) filtered reads (asm-color.js asmCmRead): uTO[5t+L] is tile t's level L (0 the tile, 1..4 its halvings, asmCmMips); tileRead:
+// the n x n points of one pixel (in repeats, row by row) -> their mean, from the level whose texels are as far apart as the points
+vec3 tileLv(int ix,float u,float v);
+vec3 tileAt(int t,float u,float v){return tileLv(t*5,u,v);}
+vec3 tileRead(int t,vec2 q[9],int n){int m=n-1,N=n*n;ivec4 o=uTO[t*5];float ax=abs(q[m].x-q[0].x),ay=abs(q[n*m].x-q[0].x),bx=abs(q[m].y-q[0].y),by=abs(q[n*m].y-q[0].y);
+  float fp=max(max(ax,ay)*float(o.z),max(bx,by)*float(o.w))/float(m),lod=fp>${f(ASM_CM_LOD0)}?min(log2(fp/${f(ASM_CM_LOD0)}),${f(ASM_CM_MIPS)}):0.;vec3 a=vec3(0.),b=vec3(0.);
+  int l0=int(floor(lod)),l1=l0<${ASM_CM_MIPS}?l0+1:l0;float fr=lod-float(l0);
+  for(int i=0;i<9;i++){if(i<N){a+=tileLv(t*5+l0,q[i].x,q[i].y);if(lod>0.)b+=tileLv(t*5+l1,q[i].x,q[i].y);}}
+  return (lod>0.?a*(1.-fr)+b*fr:a)/float(N);}
+vec3 tileLv(int ix,float u,float v){ivec4 o=uTO[ix];int TW=o.z,TH=o.w;float x=(u-floor(u))*float(TW)-.5,y=(v-floor(v))*float(TH)-.5,x0=floor(x),y0=floor(y),fx=x-x0,fy=y-y0;
   int i0=(int(x0)+TW)%TW+o.x,i1=(int(x0)+1+TW)%TW+o.x,j0=(int(y0)+TH)%TH+o.y,j1=(int(y0)+1+TH)%TH+o.y;
   return (texelFetch(uTile,ivec2(i0,j0),0).rgb*(1.-fx)+texelFetch(uTile,ivec2(i1,j0),0).rgb*fx)*(1.-fy)+(texelFetch(uTile,ivec2(i0,j1),0).rgb*(1.-fx)+texelFetch(uTile,ivec2(i1,j1),0).rgb*fx)*fy;}
 // (stage 4) the tie read from its tile (asmCmBuild's tie: four points a pixel, turned by the blade's lean and the pattern's angle, a quarter
 // turn more in the knot; on the solved knot (80) and blade (81) their positions, turned by the pattern's angle only)
 vec3 tieBase(int x,int y,ivec2 p){float X=float(x),Y=float(y);uint r=uHasGeo==1?texelFetch(uGR,p,0).r:0u;bool tr=r==80u||r==81u;
-  vec2 cs=tr?uTs:(y<uTie.y?uTa.zw:uTa.xy);vec3 b=vec3(0.);
-  for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 q=vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.);if(tr)q=geoAt(p,r,q);b+=tileAt(1,(q.x*cs.x+q.y*cs.y)/uTr.x,(q.y*cs.x-q.x*cs.y)/uTr.y);}
-  return b/4.;}
+  vec2 cs=tr?uTs:(y<uTie.y?uTa.zw:uTa.xy);vec2 Q[9];
+  for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 q=vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.);if(tr)q=geoAt(p,r,q);Q[a*2+e]=vec2((q.x*cs.x+q.y*cs.y)/uTr.x,(q.y*cs.x-q.x*cs.y)/uTr.y);}
+  return tileRead(1,Q,2);}
 // (stage 4) the shirt read from its tile (asmCmBuild's shirt): on its solved pieces 2x2 points a pixel (3x3 woven, tile.fine) at their
 // positions; else a woven shirt 3x3 points, turned in a cuff; else one point, turned in a cuff; the turn's cos/sin from uCu
 vec2 cuCs(int c){vec4 v=uCu[c>>1];return (c&1)!=0?v.zw:v.xy;}
 vec3 shirtBase(int x,int y,ivec2 p,int si,int cu){float X=float(x),Y=float(y),rp=uShR.x,rv=uShR.y;vec3 b=vec3(0.);uint r=uHasGeo==1?texelFetch(uGR,p,0).r:0u;
-  if(uGarS==1||r==2u||(r>=60u&&r<80u)){int n=uShR.z>.5?3:2;float fn=float(n);   // (stage 5: every shirt pixel on the shirt masters, as on the CPU)
-    for(int a=0;a<3;a++)for(int e=0;e<3;e++){if(a<n&&e<n){vec2 c=uvShirt(si,vec2(X+(float(e)+.5)/fn,Y+(float(a)+.5)/fn),p,r);b+=tileAt(2,c.x/rp,c.y/rv);}}return b/(fn*fn);}
+  if(uGarS==1||r==2u||(r>=60u&&r<80u)){int n=uShR.z>.5?3:2;float fn=float(n);vec2 Q[9];   // (stage 5: every shirt pixel on the shirt masters, as on the CPU)
+    for(int a=0;a<3;a++)for(int e=0;e<3;e++){if(a<n&&e<n){vec2 c=uvShirt(si,vec2(X+(float(e)+.5)/fn,Y+(float(a)+.5)/fn),p,r);Q[a*n+e]=vec2(c.x/rp,c.y/rv);}}return tileRead(2,Q,n);}
   vec2 cs=cuCs(cu);
-  if(uShR.z>.5){for(int a=0;a<3;a++)for(int e=0;e<3;e++){float Xs=X+(float(e)+.5)/3.,Ys=Y+(float(a)+.5)/3.;b+=tileAt(2,(Xs*cs.x+Ys*cs.y)/rp,(Ys*cs.x-Xs*cs.y)/rv);}return b/9.;}
+  if(uShR.z>.5){vec2 Q[9];for(int a=0;a<3;a++)for(int e=0;e<3;e++){float Xs=X+(float(e)+.5)/3.,Ys=Y+(float(a)+.5)/3.;Q[a*3+e]=vec2((Xs*cs.x+Ys*cs.y)/rp,(Ys*cs.x-Xs*cs.y)/rv);}return tileRead(2,Q,3);}
   if(uShR.w>.5){float Xs=X+.5,Ys=Y+.5;return tileAt(2,(Xs*cs.x+Ys*cs.y)/rp,(Ys*cs.x-Xs*cs.y)/rv);}
   return tileAt(2,(X+.5)/rp,(Y+.5)/rv);}
 // the linen's light at (u, v) texels, faded at each texel's edge (asmCellT)
@@ -364,7 +374,7 @@ float aaOf(vec2 da,vec2 db,int cc){if(uAA<=0.)return 1.;float d=(cc&1)!=0?-1.:1.
 // (stage 5) the cloth alone, without the garment's light: its colour (times its weave's lift) and the factor its light takes (sh: a tweed's
 // or linen's threads), so the jacket and the waistcoat share one reading of it; outer() applies each one's light (and a stripe's ground curve)
 vec3 suit(int si,int x,int y,ivec2 p,out float tw,out float sh){float X=float(x),Y=float(y),FD=${f(ASM_CELL_FADE)};vec3 cm=vec3(0.);sh=1.;
-  if(uTT.z==1){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);cm+=tileAt(0,s.x/uRep.x,s.y/uRep.y);}}else cm=4.*uJ;
+  if(uTT.z==1){vec2 Q[9];for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 s=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);Q[a*2+e]=vec2(s.x/uRep.x,s.y/uRep.y);}cm=4.*tileRead(0,Q,2);}else cm=4.*uJ;
   tw=1.;vec2 c=uvC(si,vec2(X+.5,Y+.5),p);
   // a stripe's breakup (T.k): each stripe its own strength along its length, faded between stripes (asmCellV's rule) and smoothly along
   if(uTT.w==1){float su=c.x/uRep.x-uRep.z+.5,fi=floor(su),fu=su-fi;int i=int(fi),di=fu<FD?-1:(fu>1.-FD?1:0);float wu=di<0?(FD-fu)/(2.*FD):(di>0?(fu-1.+FD)/(2.*FD):0.);
@@ -399,13 +409,13 @@ vec3 suit(int si,int x,int y,ivec2 p,out float tw,out float sh){float X=float(x)
   return cm/4.*pow(max(0.,tw),2.2);}
 // (stage 5) a read trousers' tile (asmCmTile): along the legs at 2x2 points a pixel, else upright at the pixel's middle
 vec3 trTile(int si,int x,int y,ivec2 p){float X=float(x),Y=float(y);vec3 b=vec3(0.);
-  if(uLegs==1){for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 c=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);b+=tileAt(0,c.x/uOT.y,c.y/uOT.z);}return b/4.;}
+  if(uLegs==1){vec2 Q[9];for(int a=0;a<2;a++)for(int e=0;e<2;e++){vec2 c=uvC(si,vec2(X+(float(e)+.5)/2.,Y+(float(a)+.5)/2.),p);Q[a*2+e]=vec2(c.x/uOT.y,c.y/uOT.z);}return tileRead(0,Q,2);}
   return tileAt(0,(X+.5)/uOT.y,(Y+.5)/uOT.z);}
 // the outer garment (z 0: the jacket or the trousers) and (stage 5) the waistcoat, in the same cloth: its light s, large folds sl and their
 // zone mean sm, contact shadow ao (and the jacket body's under its sleeves, aob), lit rim; the cloth read once for both (cb: suit()'s colour
 // or a read trousers' tile, tw its weave, shm its light's factor)
 // (uJm: the full look, the folds' lighting, the suit cloth, lit; a striped jacket (T.k) is kept as it was: neither look nor lighting)
-vec3 outer(int x,int y,uint k,ivec2 tr,float s,float sl,float sm,float ao,float aob,float rim,vec3 cb,float tw,float shm){bool look=uJm.x>.5,lit=uJm.w>.5;
+vec3 outer(int x,int y,uint k,ivec2 tr,float s,float sl,float sm,float ao,float aob,float rim,vec3 cb,float tw,float shm){bool look=uJm.x>.5,lit=uJm.w>.5;s=matS(s,uMat.xy);
   if(uJm.y>.5&&sm>0.){if(sl>.01)s=sm*pow(sl/sm,${f(LK.lgam)})*(s/sl);}
   if(lit){float v=max(ao,aob);s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+uWin*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/float(uS));}
   // (a stripe's dark ground: its steeper shading, T.gain and T.gam)
@@ -428,14 +438,14 @@ void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);u
   // (stage 5) the belt (shirt masters): flat, neither look nor lighting
   if(uOut==1){uint bs=L2.w>>8u;if(bs>0u)sum+=float(bs)/255.*flatC(uBelt,float(L2.y)/40000.,false,0.,1.,false,x,y);}
   // the tie (z 1): its flat colour or (stage 4) its tile, its edges darker
-  if(A.y>0u){float s=float(SH.y)/40000.;s*=1.-${f(LI.ak)}*float(L2.x)/${f(ASM_CM_U16)};s*=1.+uWin*(1.-2.*float(x)/S);
+  if(A.y>0u){float s=matS(float(SH.y)/40000.,uMatT);s*=1.-${f(LI.ak)}*float(L2.x)/${f(ASM_CM_U16)};s*=1.+uWin*(1.-2.*float(x)/S);
     if(tr.x>=0){float w=float(tr.y-tr.x);if(w>4.){float t=float(x-tr.x)/w;s*=1.-${f(LI.te)}*pow(abs(t-.5)*2.,3.);}}
     sum+=float(A.y)/255.*post(flatC(uTie.x==1?tieBase(x,y,p):uTi,s,false,0.,1.,false,x,y),1,k,x,tr,s,0.);}
   // the background picture (z 2): as it is, darker by the figure's shadow, dithered
   if(A.z>0u){float s=1.-${f(ASM_CM_BG_SHADOW)}*float(SH.w)/255.,h=float((k*2654435761u)%1024u)/1024.;uvec4 B=texelFetch(uBG,p,0);
     vec3 lo=vec3(lin(B.r),lin(B.g),lin(B.b)),hi=vec3(lin(min(B.r+1u,255u)),lin(min(B.g+1u,255u)),lin(min(B.b+1u,255u)));sum+=float(A.z)/255.*(lo+(hi-lo)*h)*s;}
   // the shirt (z 3)
-  if(A.w>0u){float s=float(SH.z)/40000.;bool look=uSl.x>.5;
+  if(A.w>0u){float s=matS(float(SH.z)/40000.,uMat.zw);bool look=uSl.x>.5;
     if(uSl.y>.5&&uSm.y>0.){float sl=float(L1.y)/40000.;if(sl>.01)s=uSm.y*pow(sl/uSm.y,${f(LK.lgam)})*(s/sl);}
     s*=1.-${f(LI.ak)}*float(L1.w)/${f(ASM_CM_U16)};s*=1.+uWin*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/S);
     sum+=float(A.w)/255.*post(flatC(uShT==1?shirtBase(x,y,p,si,cu):uSt,s,look,uSl.z,uSl.w,true,x,y),3,k,x,tr,s,0.);}   // (stage 4: or its tile)
@@ -496,10 +506,13 @@ function asmGlUploadGeo(G,uv){const gl=G.gl,S=G.S;gl.useProgram(G.prog);for(cons
   gl.uniform1i(gl.getUniformLocation(G.prog,'uHasGeo'),uv&&uv.U.length===S*S?1:0);gl.uniform1i(gl.getUniformLocation(G.prog,'uGeo16'),g16)}
 /* (stage 4) the look's tiles, [jacket, tie, shirt] (each {c: linear RGB, TW, TH} or null), stacked in one RGBA32F texture on unit 12 (the
    sampler units 0..14 were all taken): each one's place and size in uTO; about 1 MB a tile */
-function asmGlAtlas(G,ts){const gl=G.gl;let W=1,H=0;for(const t of ts)if(t){W=Math.max(W,t.TW);H+=t.TH}H=Math.max(1,H);
-  const f=new Float32Array(4*W*H),to=new Int32Array(12);let y=0;
-  ts.forEach((t,i)=>{if(!t){to.set([0,0,1,1],4*i);return}to.set([0,y,t.TW,t.TH],4*i);
-    for(let r=0;r<t.TH;r++)for(let x=0;x<t.TW;x++){const s=3*(r*t.TW+x),d=4*((y+r)*W+x);f[d]=t.c[s];f[d+1]=t.c[s+1];f[d+2]=t.c[s+2]}y+=t.TH});
+function asmGlAtlas(G,ts){const gl=G.gl;let W0=1,W1=1,H=0;const ms=ts.map(t=>t?asmCmMips(t):null),bh=m=>Math.max(m[0].TH,m.slice(1).reduce((a,l)=>a+l.TH,0));
+  for(const m of ms)if(m){W0=Math.max(W0,m[0].TW);W1=Math.max(W1,m[1].TW);H+=bh(m)}H=Math.max(1,H);
+  // (2026-11-14) each tile with its halvings (asm-color.js asmCmMips) stacked to its right: uTO[5i+L] = level L of tile i
+  const W=W0+W1,f=new Float32Array(4*W*H),to=new Int32Array(60);let y=0;
+  const put=(l,x0,y0)=>{for(let r=0;r<l.TH;r++)for(let x=0;x<l.TW;x++){const s=3*(r*l.TW+x),d=4*((y0+r)*W+x0+x);f[d]=l.c[s];f[d+1]=l.c[s+1];f[d+2]=l.c[s+2]}};
+  ms.forEach((m,i)=>{if(!m){for(let L=0;L<5;L++)to.set([0,0,1,1],4*(5*i+L));return}let yy=y;
+    m.forEach((l,L)=>{if(!L){put(l,0,y);to.set([0,y,l.TW,l.TH],20*i)}else{put(l,W0,yy);to.set([W0,yy,l.TW,l.TH],4*(5*i+L));yy+=l.TH}});y+=bh(m)});
   if(G.ttex)gl.deleteTexture(G.ttex);G.ttex=asmGlTex(gl,12,W,H,gl.RGBA32F,gl.RGBA,gl.FLOAT,f);G.tileBytes=16*W*H;
   gl.uniform4iv(gl.getUniformLocation(G.prog,'uTO'),to)}
 /* ---- one look */
@@ -544,7 +557,7 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   if(!G.lint){G.lint=asmGlTex(gl,14,1,1,gl.R32F,gl.RED,gl.FLOAT,new Float32Array([1]));G.linN=0;G.clothK=null;G.clothBytes=0}   // (a stand-in until a linen or tweed cloth comes)
   gl.uniform1f(u('uAA'),ASM_CM_AA&&job.aa!==false?Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA):0);   // (asmCmBuild's rule: job.aa false = off, a number = the bench's strength)
   const St=hexLin(cl.shirt.hex),sl=lum(St)<LK.dark?lookOf(St):null;gl.uniform3fv(u('uSt'),St);gl.uniform4f(u('uSl'),sl?1:0,sl?0:1,sl?sl.lift:0,sl?sl.boost:1);
-  const Ti=cl.tie?hexLin(cl.tie.hex):[0,0,0];gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti)));gl.uniform1f(u('uLs'),S/ASM_SIZE);
+  const Ti=cl.tie?hexLin(cl.tie.hex):[0,0,0];gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti))*(cl.tie&&Array.isArray(cl.tie.mat)?cl.tie.mat[1]:1));{const mo=Array.isArray(OZ.mat)?OZ.mat:[1,1],ms=Array.isArray(cl.shirt.mat)?cl.shirt.mat:[1,1],mt=cl.tie&&Array.isArray(cl.tie.mat)?cl.tie.mat:[1,1];gl.uniform4f(u('uMat'),mo[0],mo[1],ms[0],ms[1]);gl.uniform2f(u('uMatT'),mt[0],mt[1])}gl.uniform1f(u('uLs'),S/ASM_SIZE);
   const Lf=Math.max(1e-4,lum(J));gl.uniform3fv(u('uBtn'),J.map(v=>v/Lf*.6+.4));
   // (stage 4) the tie read from its tile (asmCmBuild's e.tie: only with the master's tie geometry, else its colour): its repeat (the count
   // across the blade, twice the size for a motif), the turns' cos and sin worked out here in float64 (blade, knot; the pattern's own on the
