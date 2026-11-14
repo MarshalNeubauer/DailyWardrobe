@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	7caaf90e6fe0d4571143
+# tested	19beb56bec00874a0c52
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -362,7 +363,7 @@ asmgl.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg
 asmgl.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 asmgl.test.js	analysis.js	<loaded>
 asmgl.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	addTombstones	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	atomic	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	keepRender	loadRenders	loadWeather	metaGet	metaPut	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
-asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCodeText	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightPrep	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSrcSig	asmCmTile	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKnitTile	asmLegsAt	asmLegsPrep	asmPaisleyTile	asmTieSheenK	asmUvAt
+asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCanvas	asmCmCodeText	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightPrep	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSrcSig	asmCmTile	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKnitTile	asmLegsAt	asmLegsPrep	asmPaisleyTile	asmTieSheenK	asmUvAt
 asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlBytes	asmGlContext	asmGlCovers	asmGlCuffs	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSame	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlUse	asmGlVar	asmGlWhy
 asmgl.test.js	asm-worker.js	<any>
 asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmDropOld	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
@@ -411,6 +412,50 @@ asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmgl.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmgl.test.js	wardrobe.js	<loaded>
+asmgpu.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+asmgpu.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
+asmgpu.test.js	analysis.js	<loaded>
+asmgpu.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	workerBase	wxPreload	zoomTarget
+asmgpu.test.js	asm-color.js	<loaded>	asmCmBgKey	asmCmKey
+asmgpu.test.js	asm-gl.js	<loaded>
+asmgpu.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDropOld	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
+asmgpu.test.js	care.js	<loaded>	careShow
+asmgpu.test.js	colpick.js	<loaded>
+asmgpu.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	di	isWorkday	isoKey	key	occOf	offDays	offName	todayDate
+asmgpu.test.js	detect.js	<loaded>	@
+asmgpu.test.js	draw.js	<loaded>
+asmgpu.test.js	dress.js	<loaded>	migrateVests
+asmgpu.test.js	figure.js	<loaded>	@{}
+asmgpu.test.js	index.html	<loaded>
+asmgpu.test.js	pack.js	<loaded>	packShow
+asmgpu.test.js	planner.js	<loaded>
+asmgpu.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
+asmgpu.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+asmgpu.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+asmgpu.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+asmgpu.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+asmgpu.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+asmgpu.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	syncNeedsPull	syncUrl
+asmgpu.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+asmgpu.test.js	tests/fixedplan.js	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/master.jpg	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
+asmgpu.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmgpu.test.js	tests/fixtures/fake-smi.js	<any>
+asmgpu.test.js	tools/asm-prebuild.js	<any>
+asmgpu.test.js	tools/gpu-guard.js	<any>
+asmgpu.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+asmgpu.test.js	wardrobe.js	<loaded>
+asmgpu.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	readText	renderId	sameText	serve	sha256Hex	spend	splitPhotos	stampOf	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
 asmp2.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmp2.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 asmp2.test.js	analysis.js	<loaded>
@@ -493,6 +538,7 @@ asmprebuild.test.js	tests/fixtures/asm-tie.jpg	<loaded>
 asmprebuild.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmprebuild.test.js	tools/asm-prebuild.js	<any>
 asmprebuild.test.js	tools/upload-budget.js	<any>
+asmprebuild.test.js	tools/gpu-guard.js	<any>
 asmprebuild.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmprebuild.test.js	wardrobe.js	<loaded>
 asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvFull	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	putRender	readText	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
@@ -1401,6 +1447,8 @@ geomaps.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePho
 geomaps.test.js	tests/fixedplan.js	<any>
 geomaps.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 geomaps.test.js	wardrobe.js	<loaded>
+gpuguard.test.js	tests/fixtures/fake-smi.js	<any>
+gpuguard.test.js	tools/gpu-guard.js	<any>
 hbshirt.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 hbshirt.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 hbshirt.test.js	analysis.js	<loaded>

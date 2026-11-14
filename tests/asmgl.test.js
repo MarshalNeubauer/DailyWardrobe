@@ -188,7 +188,9 @@ module.exports=async({ok,chromium,url})=>{
         for(const i of ix)if(LOOKS[i].geo)Object.assign(__jobs[i],geo)}
       const hit=await asmCmSetup(__jobs[0]),P=hit.P,pc=pcs.suit;
       // the picture as asmCmBuild hands it to its JPEG encoder (raw pixels, not the JPEG)
-      window.__cap=null;asmJpeg=async img=>{__cap=new Uint8ClampedArray(img.data);return 'data:image/jpeg;base64,'};
+      // (stage 6) over a phone's size (ASMGL_SIZE=2880, the PC's) the picture before its scaling to 2048 (both painters scale it the same way)
+      const pid=OffscreenCanvasRenderingContext2D.prototype.putImageData;OffscreenCanvasRenderingContext2D.prototype.putImageData=function(img,...a){if(SIZE>ASM_SIZE&&img.width===SIZE)window.__big=new Uint8ClampedArray(img.data);return pid.call(this,img,...a)};
+      window.__cap=null;asmJpeg=async img=>{__cap=SIZE>ASM_SIZE?window.__big:new Uint8ClampedArray(img.data);window.__capW=img.width;return 'data:image/jpeg;base64,'};
       window.__paint=async(i,gl)=>{const j={...__jobs[i],gl};const r=await asmCmBuild(j);return {r,px:__cap}};
       // the creased sleeves (the tube path's choice of upper arm or forearm, asmTubePartQ, in whole numbers on both painters): how many
       // quarter-pixel points the float rule (asmTubePart) would put in the other part
@@ -239,11 +241,18 @@ module.exports=async({ok,chromium,url})=>{
       out.on=(await asmCmJob(o)).gl;localStorage.setItem('asm_gl','0');out.off=(await asmCmJob(o)).gl;localStorage.removeItem('asm_gl');
       const cov=__jobs[0],unc=__jobs[__jobs.length-1];
       out.page=[asmGlOnPage(cov,{ok:true,gl:false}),asmGlOnPage(cov,{ok:true,gl:true}),asmGlOnPage(unc,{ok:true,gl:false}),asmGlOnPage({...cov,gl:false},{ok:true,gl:false})];
+      out.size=[asmGlWhy({...cov,size:2048}),asmGlWhy({...cov,size:2880}),asmGlWhy({...cov,size:2881})];   // (stage 6) the PC's 2880 is covered
       const w=new Worker('asm-worker.js');const next=()=>new Promise(r=>{w.onmessage=e=>r(e.data)});
       const ready=await next();const {geoU,geoV,...job}=cov;w.postMessage({id:1,job:{...job,gl:true}});const res=await next();w.terminate();
-      out.ready=ready;out.res={gl:res.res&&res.res.gl,url:!!(res.res&&res.res.url&&res.res.url.startsWith('data:image/jpeg')),err:res.error||null,ms:res.res&&res.res.ms};return out});
+      out.ready=ready;out.res={gl:res.res&&res.res.gl,url:!!(res.res&&res.res.url&&res.res.url.startsWith('data:image/jpeg')),err:res.error||null,ms:res.res&&res.res.ms};
+      // (stage 6) the PC pre-build's CPU pool: asm-worker.js?nogl=1 never touches the chip, whatever the job says
+      const w2=new Worker('asm-worker.js?nogl=1');const next2=()=>new Promise(r=>{w2.onmessage=e=>r(e.data)});const ready2=await next2();
+      w2.postMessage({id:1,probe:1});const pr=await next2();w2.postMessage({id:2,job:{...job,gl:true}});const res2=await next2();w2.terminate();
+      out.nogl={ready:ready2.gl,probe:pr.res&&pr.res.renderer,gl:res2.res&&res2.res.gl,url:!!(res2.res&&res2.res.url)};return out});
     ok(rt.on===true&&rt.off===false,'the job carries the switch (localStorage asm_gl \'0\' = off on this phone)');
     ok(rt.page.join()==='true,false,false,false',`the page paints a look itself only when it is covered, the switch is on and the worker has no WebGL2 (${rt.page})`);
+    ok(rt.nogl.ready===false&&rt.nogl.probe===null&&rt.nogl.gl===false&&rt.nogl.url,`a worker started as asm-worker.js?nogl=1 (the PC's CPU pool) has no WebGL2 and paints a job that allows the chip on the CPU (${JSON.stringify(rt.nogl)})`);
+    ok(rt.size[0]===''&&rt.size[1]===''&&/larger than the graphics chip paints/.test(rt.size[2]),`a phone's 2048 and the PC pre-build's 2880 are covered, a larger picture is not (${JSON.stringify(rt.size)}; ASMGL_SIZE=2880 paints the table at 2880)`);
     ok(rt.ready.ready===true&&rt.ready.gl===true&&rt.res.gl===true&&rt.res.url,`the app's worker says it has WebGL2 and paints a covered look on the graphics chip (${JSON.stringify(rt.res)})`);
     // Settings: the owner's switch
     const ui=await p.evaluate(()=>{const b=document.createElement('div');document.body.appendChild(b);asmGlNote({gl:true,ms:91});asmGlUI(b);const s=document.getElementById('cfg-gl'),out={v:s.value,txt:document.getElementById('gl-status').textContent};
