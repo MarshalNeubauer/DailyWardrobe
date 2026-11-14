@@ -65,11 +65,17 @@ const saveMade=()=>{if(MADE&&!DRY)try{fs.writeFileSync(MADE,JSON.stringify(made)
 /* the worker's writes for the day used up (2026-11-14: 429 kv-limit; it reset at 00:00 UTC): no more uploads until then, and in --watch no
    cycles either (it rebuilt and retried every picture every 5 minutes, 76 refused each time). Kept with the profile, so a restart keeps it */
 const PAUSE=PROFILE?path.join(PROFILE,'upload-pause.json'):'';
-let pauseUntil=0;try{if(PAUSE&&fs.existsSync(PAUSE))pauseUntil=+JSON.parse(fs.readFileSync(PAUSE,'utf8')).until||0}catch{pauseUntil=0}
+// why it paused (2026-11-14: the owner raised the day's limit and the watcher stayed paused until 03:02): 'cap', this computer's daily
+// limit, lifts as soon as the limit has room again (checked every cycle: a limit raised for the day, budget.today); 'server', the worker's
+// own writes used up, is tried again an hour later (the plan may have been upgraded; refused again, it pauses again). A pause file
+// from before, with no reason, counts as 'cap'
+let pauseUntil=0,pauseKind='cap';try{if(PAUSE&&fs.existsSync(PAUSE)){const j=JSON.parse(fs.readFileSync(PAUSE,'utf8'));pauseUntil=+j.until||0;pauseKind=j.why==='server'?'server':'cap'}}catch{pauseUntil=0}
 const paused=()=>Date.now()<pauseUntil;
 const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)+2*60e3};   // (two minutes past the reset)
-const pauseUploads=(why)=>{if(paused())return;pauseUntil=nextUtcDay();if(PAUSE)try{fs.writeFileSync(PAUSE,JSON.stringify({until:pauseUntil}))}catch{}
-  console.log(`${now()} ${why||'The worker\'s writes for today are used up'}: uploads paused until ${new Date(pauseUntil).toLocaleString()} (its daily reset).`)};
+const pauseUploads=(why)=>{if(paused())return;pauseKind=why?'cap':'server';pauseUntil=why?nextUtcDay():Math.min(nextUtcDay(),Date.now()+60*60e3);
+  if(PAUSE)try{fs.writeFileSync(PAUSE,JSON.stringify({until:pauseUntil,why:pauseKind}))}catch{}
+  console.log(`${now()} ${why||'The worker\'s writes for today are used up'}: uploads paused until ${new Date(pauseUntil).toLocaleString()}${why?' (its daily reset, or sooner if the limit is raised)':' (then tried again)'}.`)};
+const liftPause=why=>{pauseUntil=0;if(PAUSE)try{fs.rmSync(PAUSE,{force:true})}catch{}console.log(`${now()} ${why}: uploading again.`)};
 // this computer's own daily cap (tools/upload-budget.js, 300 a day for every PC tool together): reached, uploads pause the same way
 const budget=require('./upload-budget.js');
 const LIMIT_WHY=`This computer's daily upload limit (${budget.LIMIT}) is used up`;
@@ -141,11 +147,12 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
   page.on('crash',()=>{console.error(`${now()} the page crashed: ending so the watcher starts again`);process.exit(3)});
   // one cycle: bring the wardrobe and the weather up to date, list every coming look, paint the missing or changed ones
   let lastSig='';
-  let wasPaused=paused();if(wasPaused)console.log(`${now()} Uploads are paused until ${new Date(pauseUntil).toLocaleString()} (the worker's writes for the day are used up).`);
+  let wasPaused=paused();if(wasPaused)console.log(`${now()} Uploads are paused until ${new Date(pauseUntil).toLocaleString()} (${pauseKind==='server'?'the worker\'s writes for the day are used up':'this computer\'s daily upload limit is used up'}).`);
   const cycle=async first=>{const t0=Date.now();
+    if(!DRY&&paused()&&pauseKind==='cap'&&budget.left()>0){wasPaused=false;lastSig='';liftPause(`This computer's upload limit has room again (${budget.left()} of ${budget.limitNow?budget.limitNow():budget.LIMIT} left today)`)}
     if(!DRY&&!paused()&&budget.left()<=0)pauseUploads(LIMIT_WHY);
     if(paused()&&!DRY){wasPaused=true;return {quiet:true}}   // nothing can be uploaded until the reset: nothing is painted either
-    if(wasPaused){wasPaused=false;lastSig='';console.log(`${now()} The worker's daily reset has passed: uploading again.`)}
+    if(wasPaused){wasPaused=false;lastSig='';console.log(`${now()} The pause is over: uploading again.`)}
     const synced=await page.evaluate(async()=>{const ok=await syncNow();try{await loadClimate();await loadWeather()}catch(e){}cache={};return {ok,items:items.length,on:typeof ASM_ON!=='undefined'&&ASM_ON}});
     if(!synced.ok||!synced.items){console.error(`${now()} Could not load the wardrobe from the backup:`,await page.evaluate(()=>localStorage.getItem('sync_status')));if(first)process.exit(2);return}
     if(!synced.on){console.error('Assembled pictures are switched off in this checkout (ASM_ON in assemble.js).');process.exit(2)}
