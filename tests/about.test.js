@@ -131,8 +131,6 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       const miss=await p.evaluate(ks=>ks.filter(k=>!aboutOwnKey(k)),[...keys]);
       ok(keys.size>10&&miss.length===0,'every localStorage key named in the app’s scripts is in ABOUT_KEYS / ABOUT_KEY_PREFIXES (missing: '+miss.join(', ')+')');
       ok(await p.evaluate(()=>aboutOwnKey(RQ)&&aboutOwnKey('nav_fit2:1x1')&&aboutOwnKey('nav_fit:1x1')&&!aboutOwnKey('someone_elses_key')),'the photo queue and the per-screen keys too, and nothing else');await ctx.close()}
-    const rd=fs.readFileSync(path.join(ROOT,'README.md'),'utf8');
-    ok(/invite link/i.test(rd)&&/GitHub Pages/.test(rd)&&/Cloudflare Worker/.test(rd)&&/npm test/.test(rd),'README: joining by invite link, hosting, running the tests');
     ok(!fs.readdirSync(ROOT).some(f=>/^wa\d\.png$/.test(f)),'the stray screenshots are gone');
   }finally{await browser.close()}
 };

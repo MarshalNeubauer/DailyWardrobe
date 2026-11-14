@@ -5,12 +5,16 @@
   "scripts": {
     "test": "node tests/run.js --changed",
     "test:all": "node tests/run.js",
+    "test:webkit": "node tests/run.js --webkit",
+    "lint": "node tests/lint.js",
+    "gaps": "node tests/gaps.js",
     "assemble": "node tools/asm-prebuild.js",
     "atlas": "node tools/asm-atlas.js",
-    "cm-upload": "node tools/asm-cm-upload.js",
-    "test:webkit": "TEST_BROWSER=webkit node tests/run.js"
+    "cm-upload": "node tools/asm-cm-upload.js"
   },
   "devDependencies": {
+    "eslint": "10.14.0",
+    "globals": "17.13.0",
     "playwright": "1.63.0"
   }
 }

@@ -3,6 +3,7 @@
 //   node tests/run.js --changed   only the checks the change since origin/main can affect (`npm test`; see tests/impact.js)
 //   node tests/run.js --changed --list   say which those are, and run nothing
 //   node tests/run.js <name>      the tests/*.test.js files whose name contains <name> (or TEST_ONLY=<name>)
+//   node tests/run.js --webkit    on WebKit instead of Chromium (`npm run test:webkit`)
 //   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 16); TEST_JOBS=1 runs
 //                                 them one after another in this process, printing as it goes
 // Serves the repo over HTTP, drives the app in headless Chromium and checks rendering, gestures, layout,
@@ -10,7 +11,10 @@
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),{fork}=require('child_process'),{chromium,devices}=require('playwright'),impact=require('./impact');
 const ROOT=path.resolve(__dirname,'..'),readFile=fs.readFile;
 let rec=null;   // records what each test uses (tests/impact.js); NO_IMPACT=1 turns it off
-// TEST_BROWSER=webkit runs every test on WebKit (Safari's engine; tests/webkit.js); the recorder is Chromium only, so it is off
+// --webkit (`npm run test:webkit`) or TEST_BROWSER=webkit runs every test on WebKit (Safari's engine; tests/webkit.js); the
+// recorder is Chromium only, so it is off. (The flag sets the variable, which the worker processes inherit: Windows' shells
+// have no `VAR=x cmd`.)
+if(process.argv.includes('--webkit'))process.env.TEST_BROWSER='webkit';
 const WEBKIT=process.env.TEST_BROWSER==='webkit';
 if(WEBKIT)process.env.NO_IMPACT='1';
 const TYPES={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml'};
@@ -24,7 +28,7 @@ const ok=(cond,msg)=>{if(cond){passes++;console.log('  ✓ '+msg)}else{failures+
    for 4 frames, instead of a fixed pause. `max` is the pause it replaced; it may wait up to twice that on a busy machine, so a
    check never runs in the middle of an animation (DEBUG_SETTLE=1 logs each wait and what was still moving) */
 const settle=async(page,max=1000)=>{const t0=Date.now();
-  const r=await page.evaluate(max=>new Promise(res=>{let last=scrollY,still=0,n=0,why='';const t0=performance.now();
+  const r=await page.evaluate(max=>new Promise(res=>{let last=scrollY,still=0,why='';const t0=performance.now();
     const live=()=>document.getAnimations().filter(a=>(a.playState==='running'||a.pending)&&a.effect&&a.effect.getComputedTiming().endTime!==Infinity);
     const f=()=>{const L=live();if(scrollY===last&&!L.length)still++;else{still=0;why=L.map(a=>(a.animationName||a.transitionProperty)+'@'+(a.effect.target.id||String(a.effect.target.className).slice(0,20))).join(',')+(scrollY!==last?' scroll':'')}
       last=scrollY;if(still>=4||performance.now()-t0>2*max)res(why);else requestAnimationFrame(f)};requestAnimationFrame(f)}),max).catch(()=>'');
@@ -270,10 +274,17 @@ const jobsWanted=()=>{const n=parseInt(process.env.TEST_JOBS,10);return n>=1?n:M
    time, keeps what each prints and sends it back whole with the counts and what the test used */
 const worker=async()=>{const B=await bench();let out=null;   // null between tests: anything printed then goes straight out
   for(const k of ['stdout','stderr']){const w=process[k].write.bind(process[k]);process[k].write=(d,...a)=>{if(out==null)return w(d,...a);out+=typeof d==='string'?d:Buffer.from(d).toString();const cb=a[a.length-1];if(typeof cb==='function')cb();return true}}
-  let chain=Promise.resolve();
+  let chain=Promise.resolve(),cur=null,last=null;
+  /* a promise that fails with nobody waiting for it used to stop the whole process ("the test process stopped"), which named
+     no culprit: now it fails the test it happened in, with its stack. One that fails after its test ended is told to the parent */
+  process.on('unhandledRejection',e=>{const why=String(e&&e.stack||e).split('\n').slice(0,6).join('\n    ');
+    if(cur){failures++;console.log('  ✗ a promise failed with nothing waiting for it: '+why);return}
+    process.send({late:true,out:'\n  ✗ a promise failed with nothing waiting for it, after '+(last?label(last):'start-up')+' had finished: '+why+'\n'})});
   process.on('message',m=>{chain=chain.then(async()=>{
     if(m.exit){out=null;await B.close();process.exit(0)}
-    out='';passes=0;failures=0;const r=await B.run(m.run);
+    out='';passes=0;failures=0;cur=m.run;const r=await B.run(m.run);
+    // (a rejection is reported on the next turn of the event loop: give one that the test's last step caused that turn)
+    await new Promise(res=>setImmediate(res));cur=null;last=m.run;
     const text=out;out=null;process.send({key:m.run,out:text,passes,failures,ms:r.ms,res:r.res&&{bad:r.res.bad,m:[...r.res.m].map(([f,S])=>[f,[...S]])}})})});
   process.send({ready:true})};
 
@@ -283,7 +294,7 @@ const RETRY_MAX=5;
 const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
   const spawn=()=>{const c=fork(__filename,['--worker'],{env:process.env});let job=null;live.add(c);
     const next=()=>{job=queue.shift();if(job)c.send({run:job});else{c.send({exit:true})}};
-    c.on('message',m=>{if(m.ready){next();return}
+    c.on('message',m=>{if(m.ready){next();return}if(m.late){process.stdout.write(m.out);failures++;return}
       job=null;done(m.key,m.out,m.passes,m.failures,m.ms,m.res&&{bad:m.res.bad,m:new Map(m.res.m.map(([f,L])=>[f,new Set(L)]))});next()});
     // a worker that dies takes its test with it: that test has failed, and another worker takes its place
     c.on('exit',code=>{live.delete(c);if(job){done(job,'  ✗ the test process stopped (exit code '+code+')\n',0,1,0,{m:new Map(),bad:true});if(queue.length)spawn()}
@@ -311,8 +322,9 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
         console.log('\n• '+label(key)+'\n  (failed while other tests were running:\n'+first.get(key)[1].split('\n').filter(l=>/^  ✗/.test(l)).map(l=>'  '+l).join('\n')+'\n   run again by itself:)');
         if(!f)alone.push(key);count(key,out,p,f,ms,res)})}
     else for(const a of again){console.log('\n• '+label(a[0]));count(...a)}
-  }else if(keys.length){const B=await bench();
-    for(const key of keys){console.log('\n• '+label(key));const r=await B.run(key);times.push([key,r.ms]);if(r.res)results.set(key,r.res)}
+  }else if(keys.length){const B=await bench();let cur=null;
+    process.on('unhandledRejection',e=>{failures++;console.log('  ✗ a promise failed with nothing waiting for it'+(cur?'':' (between tests)')+': '+String(e&&e.stack||e).split('\n').slice(0,6).join('\n    '))});
+    for(const key of keys){console.log('\n• '+label(key));cur=key;const r=await B.run(key);cur=null;times.push([key,r.ms]);if(r.res)results.set(key,r.res)}
     await B.close()}
   keepTimes(times);
   // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on
@@ -326,5 +338,5 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   // the slowest files, so the suite can be kept quick
   if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${label(f)} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`+(jobs>1?` (${jobs} at a time; one after another ${(times.reduce((a,t)=>a+t[1],0)/1000).toFixed(0)}s)`:''));
   if(alone.length)console.log('\nfailed with other tests running, passed by '+(alone.length>1?'themselves':'itself')+' (a check there depends on timing: make it wait for its condition): '+alone.map(label).join(', '));
-  console.log(`\n${passes} passed, ${failures} failed`+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:''));process.exit(failures?1:0);
+  console.log(`\n${passes} passed, ${failures} failed`+(alone.length?`, ${alone.length} flaky (passed on retry)`:'')+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:''));process.exit(failures?1:0);
 })();
