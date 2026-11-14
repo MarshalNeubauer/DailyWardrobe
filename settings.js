@@ -26,7 +26,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
   set('daysoff',[h&&h.country?`${h.country} holidays`:'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
-  set('photos',typeof isConnected==='function'&&!isConnected()?'Needs a connection':'Item pictures');
+  set('photos',picsDrawn()?'Drawing only':typeof isConnected==='function'&&!isConnected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
   set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
@@ -170,7 +170,7 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
 function renderSettingsExtras(){
   if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderReplanUI();renderDaysOffUI();renderCustomUI();if(typeof renderConnUI==='function')renderConnUI();
-  if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
+  renderPicturesUI();if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
   if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
@@ -179,6 +179,24 @@ function renderSettingsExtras(){
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
   settingsSummaries();
 }
+/* ---- Settings → Outfit pictures: "Painted pictures" (the default) or "Drawing only" (photos.js picsDrawn; settings.pictures, synced).
+   For everyone, at the top of the category, not in the Advanced fold; drawn here rather than in index.html, like the other rows made
+   from the settings. The line under it says what the choice does ---- */
+const PICS_HELP={painted:'Painted pictures: the outfit is painted in its own cloth, on this device or ready-made from the server.',
+  drawn:'Drawing only: the outfit is drawn, nothing is downloaded or painted; faster and uses less data.'};
+function renderPicturesUI(){const pan=$('#sp-photos .mpanel-in');if(!pan)return;let g=$('#pics-box');
+  if(!g){g=document.createElement('div');g.id='pics-box';g.className='sgroup pics-box';pan.insertBefore(g,pan.firstChild)}
+  const v=picsDrawn()?'drawn':'painted';
+  g.innerHTML=`<div class="slabel">Today’s outfit</div><p class="shelp" id="pics-help">${PICS_HELP[v]}</p>
+<label class="srow">Show <select id="cfg-pictures" onchange="setPictures(this.value)" aria-label="Today’s outfit" aria-describedby="pics-help"><option value="painted">Painted pictures</option><option value="drawn">Drawing only</option></select></label>`;
+  $('#cfg-pictures').value=v}
+async function setPictures(v){const d=v==='drawn';if(d===picsDrawn())return;settings.pictures=d?'drawn':'painted';await saveUserSettings();picsSwitched();
+  renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI();settingsSummaries()}
+/* the choice changed (here, or on another device: start.js onSyncedData): Today is drawn again (once Settings closes, refreshToday), and
+   back on "Painted pictures" the day on screen is painted or downloaded at once, while Settings is still open, and building ahead resumes
+   from asmEnsure; on "Drawing only" building ahead stops at its next look (asmAhead's stop) */
+function picsSwitched(){refreshToday();if(picsDrawn()||!asmLive())return;
+  asmSync();const o=planFor()[key(sel)];if(o&&hasOutfit(o))asmEnsure(o);schedulePrefetch()}
 function setVestMode(v){settings.vestMode=v;saveUserSettings();settingsSummaries()}
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
 async function setDarkShirts(v){settings.darkShirts=v;await clearLocks();await saveUserSettings();todayStale=true;settingsSummaries()}

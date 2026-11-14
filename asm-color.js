@@ -1267,7 +1267,7 @@ function asmGapUI(){const b=$('#cm-box');if(!b)return;let g=$('#cm-gaps');if(!g)
 async function asmReadGaps(){const list=asmCmGaps().filter(x=>x.r.gap==='reading').map(x=>x.i);if(!list.length||asmGapRun)return;asmGapRun={n:list.length,done:0};asmGapUI();
   try{for(const it of list){await rereadSett(it.id);asmGapRun.done++;asmGapUI()}}finally{asmGapRun=null;asmGapUI()}
   asmOut={};asmTried.clear();refreshToday()}
-/* the item sheet's line when the pictures paint this piece plain or generic */
-function asmGapNote(i){if(typeof ASM_ON!=='undefined'&&!ASM_ON)return '';const z=ASM_CM_ZONE[i.type];if(!z)return '';const r=asmCmRoute(i,z);
+/* the item sheet's line when the pictures paint this piece plain or generic (none with "Drawing only": nothing is painted) */
+function asmGapNote(i){if(typeof ASM_ON!=='undefined'&&!ASM_ON||asmDrawn())return '';const z=ASM_CM_ZONE[i.type];if(!z)return '';const r=asmCmRoute(i,z);
   return r.gap?`<p class="shelp asmgap">Outfit pictures: ${esc(r.why)}.</p>`:''}
 function asmCmSet(v){try{if(v==='off')localStorage.setItem(ASM_CM,'0');else localStorage.removeItem(ASM_CM)}catch{}asmOut={};asmTried.clear();refreshToday()}
