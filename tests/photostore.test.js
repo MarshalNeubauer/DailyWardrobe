@@ -3,7 +3,7 @@
 // Node against a mocked KV that counts what is written: saves and photo dedupe, the copies and Roll back, an older app's GET and PUT
 // (also over 20 MB), the conversion of a backup stored inline (and of one stored with #284's index), account deletion, and the daily
 // clean-up, which must never delete a photo the backup or a kept copy refers to.
-const path=require('path'),fs=require('fs'),os=require('os'),crypto=require('crypto'),{pathToFileURL}=require('url'),{execSync}=require('child_process');
+const path=require('path'),fs=require('fs'),os=require('os'),crypto=require('crypto'),{pathToFileURL}=require('url');
 module.exports=async({ok,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const store=new Map(),meta=new Map(),exp=new Map(),writes=[];let hook=null;
@@ -146,7 +146,9 @@ module.exports=async({ok,ROOT})=>{
       `a copy kept inline (${(inl.length/1e6).toFixed(1)} MB) is converted to ${kb(store.get('snap:2026-10').length)}, keeps its expiry and comes back the same (${wrote(w0,/^ph:/).length} photos written: the ones nothing else kept)`);}
 
   // ---- a backup stored with #284's index (the worker before this change) is converted too
-  {let Old=null;try{const src=execSync('git show 036c1d6:worker.js',{cwd:ROOT,encoding:'utf8',maxBuffer:64<<20}),f=path.join(os.tmpdir(),`dw-pv-old-worker-${process.pid}.mjs`);fs.writeFileSync(f,src);Old=(await import(pathToFileURL(f).href)).default;fs.unlinkSync(f)}catch(e){}
+  // (commit 036c1d6's worker.js, kept as a fixture: a shallow clone has no history to `git show` it from)
+  {let Old=null,oldErr='';try{const src=fs.readFileSync(path.join(__dirname,'fixtures','old-worker','worker-036c1d6.js'),'utf8'),f=path.join(os.tmpdir(),`dw-pv-old-worker-${process.pid}.mjs`);fs.writeFileSync(f,src);Old=(await import(pathToFileURL(f).href)).default;fs.unlinkSync(f)}catch(e){oldErr=e.message}
+    ok(!!Old,'the worker from before loads (tests/fixtures/old-worker/worker-036c1d6.js) '+oldErr);
     if(Old){const s2=seed();
       const st2=new Map(),m2=new Map(),K2={get:async(k,t)=>st2.has(k)?(t==='json'?JSON.parse(st2.get(k)):st2.get(k)):null,getWithMetadata:async k=>({value:st2.has(k)?st2.get(k):null,metadata:m2.get(k)||null}),put:async(k,v,o)=>{st2.set(k,v);m2.set(k,o&&o.metadata)},delete:async k=>{st2.delete(k);m2.delete(k)},list:async({prefix})=>({keys:[...st2.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:m2.get(name)})),list_complete:true})};
       await Old.fetch(new Request(HOST+'sync',{method:'PUT',headers:{'x-app-token':'secret','content-type':'application/json'},body:JSON.stringify({baseRev:0,day:'2026-11-01',data:s2})}),{APP_TOKEN:'secret',WARDROBE:K2});
