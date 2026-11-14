@@ -212,9 +212,16 @@ const DARK_JKT=['black','charcoal','darkgrey'];
 const JKT_SAME=60;
 const JKT_VDARK=34,darkJkt=c=>DARK_JKT.includes(c)||lumCol(c)<JKT_VDARK;
 const nearCost=(a,b)=>a.g!==b.g&&darkJkt(a.c)&&darkJkt(b.c)?26:groupsNear(a.g,b.g)?6:0;
-const colourRepeat=(i,prev,next)=>{const me={g:jacketGroup(i),c:planCol(i)};let v=0;
-  (prev||[]).slice(0,2).forEach((p,n)=>{if(!p||!p.g)return;v+=p.g===me.g?(n?12:JKT_SAME):n?Math.round(nearCost(p,me)/3):nearCost(p,me)});
-  if(next&&next.g)v+=next.g===me.g?JKT_SAME:nearCost(next,me);return v};
+const colourRepeat=(i,prev,next,gw)=>{const me={g:jacketGroup(i),c:planCol(i)},w=gw?gw(me.g):1;let v=0;
+  (prev||[]).slice(0,2).forEach((p,n)=>{if(!p||!p.g)return;v+=p.g===me.g?Math.round((n?12:JKT_SAME)*w):n?Math.round(nearCost(p,me)/3):nearCost(p,me)});
+  if(next&&next.g)v+=next.g===me.g?Math.round(JKT_SAME*w):nearCost(next,me);return v};
+/* how avoidable a repeat of group g is among the jackets the day can take (topGw): the other jackets over the group's own, at most 1. A
+   wardrobe with three grey suits and one brown one can't avoid a grey after a grey without brown every other day: there a grey repeat
+   costs (1/3)³ of JKT_SAME, about 2, and the four suits rotate evenly (2026-11-14, the audit's walkthrough: brown 35 of 94 suit days, the
+   greys 19-20; now 23-24 each). Measured with a suit every workday (tests/jacketshare.test.js): a third (20) left brown on 40% of the suit
+   days, squared (7) 31%, cubed 25%, each suit 31 of 124, a grey after a grey on 61 of 124 days, the fewest even rotation allows. Cubed
+   leaves the full cost to a balanced wardrobe (no group bigger than the rest together: the owner's, unchanged) */
+const topGw=pl=>{const c={};for(const i of pl){const g=jacketGroup(i);c[g]=(c[g]||0)+1}return g=>Math.min(1,((pl.length-(c[g]||0))/Math.max(1,c[g]||0))**3)};
 /* shirts and ties get the same treatment, with their own groups. White and light blue are the staples: a repeat of those costs
    little. These penalties only choose among outfits that already score within QWIN of the best one. */
 const SHIRT_GROUP={white:'white',ivory:'white',cream:'white',lightblue:'lightblue',periwinkle:'blue',blue:'blue',steelblue:'blue',lavender:'purple',pink:'pink',
@@ -301,7 +308,8 @@ const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i)
 const shoeBound=i=>{if(i.type!=='suit'||day.formal||occ)return false;const ok=by('shoes').filter(s=>finish(s.leather)!=='patent'&&shoeScore(i,i,s)>-50);return ok.length>0&&ok.every(s=>since(s)<=1)};
 // a cold-weather suit on a warm day (or a summer one on a cold day) only when there is no other
 const offSeason=i=>seasonFit(i,day.clim.season)<=-15?200:0;
-const top=noJ?null:best(pool(suitDay?'suit':'blazer','top'),i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+over(i,60)*.2-offSeason(i)-(shoeBound(i)?10:0)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)+(occ?occ.top(i,day.clim.season)*3:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&{g:p.jg,c:p.jc}),day.ahead&&day.ahead.next)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0)+4*itemVote(i));
+const tpl=noJ?[]:pool(suitDay?'suit':'blazer','top'),tgw=topGw(tpl);
+const top=noJ?null:best(tpl,i=>Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+over(i,60)*.2-offSeason(i)-(shoeBound(i)?10:0)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)+(occ?occ.top(i,day.clim.season)*3:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&{g:p.jg,c:p.jc}),day.ahead&&day.ahead.next,tgw)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft,tgw)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0)+4*itemVote(i));
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
 const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
 const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.occ==='wedding'||day.clim.season!=='warm'))));
