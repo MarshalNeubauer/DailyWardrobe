@@ -1405,14 +1405,14 @@ async function renderCombo(o){
 /* Generate or Regenerate (Settings → This day's photo; there is no month batch any more) the shown day's photo. It goes to the worker's background queue,
    so the app can be swiped to another day, closed or locked: the worker makes it and the app picks it up when it next looks
    (every 20 s while open, and on opening). Only a worker without the queue makes it while the app waits. */
-const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck))||(asmLive()&&asmPending(o)))};
+const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck)))};
 /* a photo waiting over 10 minutes has stalled (one takes about a minute; retries a few more): the button offers to send it again */
 const STALL_MS=10*60000,renderStalled=ck=>{const q=rqGet();return q.keys.includes(ck)&&Date.now()-sentAt(q,ck)>STALL_MS};
 async function generateRender(){
   const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
   const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
-  // an outfit that is put together from item photos needs only its missing items made (a Regenerate still makes a whole photo)
-  try{const q=!replace&&asmLive()&&asmWants(o)?await asmQueueOutfit(o):await queueCombo(o,replace);
+  // an outfit painted on a colour-coded master is only painted (nothing to pay for); a Regenerate still makes a whole photo
+  try{const q=!replace&&asmLive()&&asmWants(o)?(await asmEnsure(o),'asm'):await queueCombo(o,replace);
     if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
     else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open until it is done.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
   catch(e){const raw=String(e.message||e),pm=typeof plainErr==='function'?plainErr(raw):raw;   // (the server's set-up errors in plain words for a tester, ui.js)

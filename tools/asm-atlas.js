@@ -1,38 +1,34 @@
 // The master atlas: every pixel of the assembled pictures' masters measured once, on this computer.
 //
-// It runs the app itself in a headless browser, connected as the owner, so it measures the very photos a phone downloads (the master,
-// the waistcoat master, the black calibration shirt and the zones' pictures, from the worker). Two results:
-//   - the phone's share: what the painter works out for the master (assemble.js asmAtlasBuild: three pictures), uploaded to the worker
-//     so phones download it instead of working it out (asmGetAtlas); a phone uses it only while the photos it was measured from are
-//     the ones it holds. Three KV writes, and none when the worker already has this very atlas.
-//   - the full atlas, for work on this computer (tools/atlas-measure.js): every pixel's colour, part, edge, light, detail, surface and
-//     weave direction, for the suit master and the waistcoat master, written to --out as one gzipped typed array per property, with
-//     atlas.json saying what each holds and how it is scaled, and pictures of some of them; tools/atlas.js reads it back.
-//   - the same for each colour-coded master on the worker (asm-color.js: cm-suit, cm-vest, cm-shirt-tie, cm-shirt-open), at 2048 as a
-//     phone paints them, from the painter's own work on it (asmCmPrep: the soft zones, each zone's light, sleeves, tie, cuffs). Nothing of
-//     these is uploaded: the phones work it out themselves.
+// It runs the app itself in a headless browser, connected as the owner, so it measures the very photos a phone downloads. For work on
+// this computer only; nothing is uploaded:
+//   - the earlier assembler's suit master and waistcoat master (their photos, the black calibration shirt and the SAM zone pictures are
+//     still on the worker; phones no longer use them, 2026-11-14): every pixel's colour, part, edge, light, detail, surface and weave
+//     direction (tools/atlas-measure.js), written to --out as one gzipped typed array per property, with atlas.json saying what each
+//     holds and how it is scaled, and pictures of some of them; tools/atlas.js reads it back.
+//   - the same for each colour-coded master on the worker (asm-color.js: cm-suit, cm-vest, cm-shirt-tie, cm-shirt-open, cm-suit-open), at
+//     2048 as a phone paints them, from the painter's own work on it (asmCmPrep: the soft zones, each zone's light, sleeves, tie, cuffs).
+// (Until 2026-11-14 it also uploaded "the phone's share", three pictures the earlier assembler's shirt painter read instead of working
+// the master out; that painter is gone, and so is the upload.)
 //
-//   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run atlas -- [--out <folder>] [--parts <folder>] [--dry] [--origin <app url>]
+//   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run atlas -- [--out <folder>] [--parts <folder>] [--origin <app url>]
 //
 //   --out     where the full atlas goes (default: ./atlas, which git ignores)
 //   --parts   a folder of finer part pictures made with SAM (zone-lapelL-2048.png, zone-lapelR-…, zone-sleeveL-…, zone-sleeveR-…;
 //             white = the part): without it the jacket is one part
-//   --dry     measure and write the full atlas, upload nothing
+//   --dry     accepted as before (nothing is uploaded either way)
 //   --origin  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/), as for npm run assemble
-// Run it again whenever a master, the black calibration shirt or a zone picture is made again. The token is read from the
-// environment only.
-const fs=require('fs'),path=require('path'),zlib=require('zlib'),budget=require('./upload-budget.js');
+// Run it again whenever a master or a mask is made again. The token is read from the environment only.
+const fs=require('fs'),path=require('path'),zlib=require('zlib');
 const ROOT=path.join(__dirname,'..');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:process.argv[i+1]};
-const DRY=process.argv.includes('--dry'),OUT=path.resolve(arg('out',path.join(process.cwd(),'atlas'))),PARTS=arg('parts',''),CM_SIZE=+arg('cm-size',0)||0;   // (--cm-size: the colour-coded masters at another size than a phone's 2048, for the tests)
+const OUT=path.resolve(arg('out',path.join(process.cwd(),'atlas'))),PARTS=arg('parts',''),CM_SIZE=+arg('cm-size',0)||0;   // (--cm-size: the colour-coded masters at another size than a phone's 2048, for the tests)
 const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrobe/')).replace(/\/?$/,'/');
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 if(process.argv.includes('--help')||!WORKER.startsWith('http')||!TOKEN){
   console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run atlas -- [--out <folder>] [--parts <folder>] [--dry] [--origin <app url>]');
   process.exit(process.argv.includes('--help')?0:1)}
 const TYPES={js:'text/javascript',css:'text/css',html:'text/html',png:'image/png',json:'application/json',webmanifest:'application/manifest+json'};
-// (with the app's own origin: the worker refuses a write from any other, ALLOWED_ORIGIN)
-const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token':TOKEN,'content-type':'application/json',origin:new URL(ORIGIN).origin,...(opt.headers||{})}});
 const dataUrl=f=>'data:image/png;base64,'+fs.readFileSync(f).toString('base64');
 const writeUrl=(f,u)=>fs.writeFileSync(f,Buffer.from(u.split(',')[1],'base64'));
 
@@ -61,25 +57,10 @@ const writeUrl=(f,u)=>fs.writeFileSync(f,Buffer.from(u.split(',')[1],'base64'));
   const miss=Object.entries(src).filter(([n,v])=>!v.t&&n!=='vest'&&n!=='zone-vest').map(([n])=>n);
   if(miss.length){console.error('The worker lacks: '+miss.join(', ')+'. Make or upload the masters, the black calibration shirt and the zones\' pictures first.');process.exit(2)}
   fs.mkdirSync(OUT,{recursive:true});
-  // ---- the phone's share
-  const ph=await page.evaluate(async()=>{const r=await asmAtlasBuild();return r&&{sig:r.sig,W:r.W,n:r.n,imgs:r.imgs,keys:Object.fromEntries(ASM_ATLAS.map(p=>[p,asmAtlasKey(p)]))}});
-  if(!ph){console.error('Could not measure the master for the phones.');process.exit(2)}
-  fs.mkdirSync(path.join(OUT,'phone'),{recursive:true});let up=0,cur=0;
-  const todo=[];
-  for(const [p,k] of Object.entries(ph.keys)){writeUrl(path.join(OUT,'phone','paint-'+p+'.png'),ph.imgs[p]);
-    const now=await api('render?key='+k,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);
-    if(now&&now.sig===ph.sig){cur++;continue}if(!DRY)todo.push([p,k])}
-  // this computer's daily cap (tools/upload-budget.js): the pictures still needed are reserved together, all or none
-  if(todo.length&&!budget.take(todo.length)){console.error(`The phones' atlas needs ${todo.length} uploads, but ${budget.why()}: nothing uploaded.`);process.exit(4)}
-  for(const [p,k] of todo){
-    const r=await api('render',{method:'PUT',body:JSON.stringify({key:k,rec:{sig:ph.sig,img:ph.imgs[p],model:'atlas',t:Date.now()}})});
-    if(!r.ok){console.error(`Upload of the phones' atlas (${p}) refused: ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}up++}
-  console.log(`Phones: the painter's ${ph.n.toLocaleString()} shirt pixels at ${ph.W}px, ${DRY?'not uploaded (dry run)':up?up+' of 3 pictures uploaded':''}${cur?(up?', ':'')+cur+' already current':''}.`);
   // ---- the full atlas
   await page.addScriptTag({path:path.join(__dirname,'atlas-measure.js')});
   const fine={};if(PARTS)for(const n of ['lapelL','lapelR','sleeveL','sleeveR']){const f=path.join(PARTS,`zone-${n}-2048.png`);if(fs.existsSync(f))fine[n]=dataUrl(f)}
-  const man={version:1,built:new Date().toISOString(),pxPerMm:ASM_PX_MM_NOTE(),sources:src,phone:{sig:ph.sig,keys:ph.keys,files:Object.fromEntries(Object.keys(ph.keys).map(p=>[p,'phone/paint-'+p+'.png'])),
-    encoding:'a: R shirt share 1-255 (0 = not painted), G blend-toward offset (dx+7)*16+(dy+7) (0 = itself), B weave direction (deg+90)/180*254; m, c: R*256+G over 65535 x 1.6 = white / black shirt shading'},
+  const man={version:1,built:new Date().toISOString(),pxPerMm:ASM_PX_MM_NOTE(),sources:src,
     fineParts:Object.keys(fine),masters:{}};
   for(const m of ['suit','vest']){if(!src[m==='suit'?'master':'vest'].t){console.log('No waistcoat master on the worker: only the suit master is measured.');continue}
     const r=await page.evaluate(async([m,fine])=>{const k=m==='suit'?asmMasterKey():asmVestKey(),zs=asmZoneImgs()||{},parts={jacket:zs.jacket,shirt:zs.shirt,tie:zs.tie,watch:zs.watch,...fine};

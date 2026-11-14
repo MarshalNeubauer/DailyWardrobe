@@ -1,24 +1,23 @@
-// Assembled pictures built off the page and ahead of time (assemble.js: asmRun / asm-worker.js, asmAhead): the pixel work runs in a
-// Web Worker and gives the same picture as on the page; the next days' looks are put together in the background, so swiping to a day
-// shows its picture at once, not the drawing first; nothing is built ahead without a worker; the day on screen is not redrawn under a finger.
+// Assembled pictures painted off the page and ahead of time (assemble.js: asmRun / asm-worker.js, asmAhead): the painting runs in a
+// Web Worker and gives the same picture as on the page; the next days' looks are painted in the background, so swiping to a day shows its
+// picture at once, not the drawing first; nothing is built ahead without a worker; the day on screen is not redrawn under a finger.
+// Fixtures: the colour-coded suit master and its masks at 512 (tests/fixtures/cm/suit/), kept on the device as if downloaded.
+const fs=require('fs'),path=require('path');
 module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    // a wardrobe whose every look has its pieces kept on the device (the real photos), the master's watch and a white shirt need none
-    await p.evaluate(async()=>{const data=async n=>{const d=await asmData('tests/fixtures/asm-'+n+'.jpg'),c=document.createElement('canvas');c.width=c.height=d.width;c.getContext('2d').putImageData(d,0,0);return c.toDataURL('image/jpeg',.9)};
+    const FIX=path.join(__dirname,'fixtures','cm','suit'),recs=fs.readdirSync(FIX).map(f=>[f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/'),`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64')]);
+    // a wardrobe whose every look is painted on the suit master, its records on the device
+    await p.evaluate(async recs=>{self.ASM_CM_SIZE=512;for(const [n,img] of recs)renders[asmCmKey('suit',n)]={sig:'asm/cm test',img,model:'colormaster',t:1000};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const watch=I('watch','silver',{metal:'silver'}),jk=I('blazer','khaki',{pattern:'windowpane'}),black=I('shirt','black'),white=I('shirt','white'),t1=I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),t2=I('tie','burgundy');
       items=[watch,jk,black,white,t1,t2,I('pants','grey'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[1,2,3,4,5];settings.blazerDays=[1,2,3,4,5];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
-      const put=async(k,f,sig='')=>{renders[k]={sig,img:await data(f),model:'',t:1000}};
-      await put(asmMasterKey(),'master',asmMasterSig({watch,shirt:asmMasterItem('shirt','white')}));
-      for(const s of ['jacket','shirt','tie','watch'])await put(asmCalibKey(s),s==='shirt'?'shirt-black':s);
-      await put(asmPieceKey('jacket',jk),'jacket');await put(asmPieceKey('shirt',black),'shirt-black');await put(asmPieceKey('tie',t1),'tie');await put(asmPieceKey('tie',t2),'tie');
       window.__lt=[];new PerformanceObserver(l=>{for(const e of l.getEntries())__lt.push(Math.round(e.duration))}).observe({type:'longtask'});
-      show('today')});
+      show('today')},recs);
     // the worker and the page make the same picture
     const same=await p.evaluate(async()=>{const o=planFor()[key(sel)],job=await asmJob(o),w=await asmRun(job),pg=await asmBuild(job);
       const px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);return x.getImageData(0,0,im.width,im.width).data};
