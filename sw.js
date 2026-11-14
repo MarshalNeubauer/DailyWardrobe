@@ -8,7 +8,7 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tagging.js) and survive updates. */
-const CACHE='dw-v313';
+const CACHE='dw-v314';
 const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','add.js','itemsheet.js','history.js','today.js','month.js','photos.js','settings.js','start.js','ui.js','safety.js','dress.js','tagging.js','assemble.js','asm-color.js','asm-gl.js','asm-worker.js','stats.js','care.js','wardrobe.js','colpick.js','pack.js','shop.js','sync.js','account.js','remind.js','setup.js','kit.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 // cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
 // being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
@@ -20,6 +20,10 @@ self.addEventListener('message',e=>{const d=e.data||{};
 self.addEventListener('fetch',e=>{
   const req=e.request,url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==location.origin||req.cache==='no-store')return;   // let the browser handle it
+  // a Web Worker asked for with a query (asm-worker.js?nogl=1): answered from the cache it would be the cached file's address without the
+  // query, and a worker reads its flags from its own address (self.location), so the CPU-only worker turned WebGL on (found 2026-11-14 by
+  // the nightly run on Linux; the PC builder blocks this service worker, so it was never affected)
+  if(req.destination==='worker'&&url.search)return;
   e.respondWith((async()=>{
     const cache=await caches.open(CACHE);
     const hit=await cache.match(req,{ignoreSearch:true});
