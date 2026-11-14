@@ -72,6 +72,11 @@ const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and t
 function inviteEnded(token){if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);if(typeof tell==='function')tell(ENDED)}
 /* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day */
 const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
+/* why uploads pause until the next UTC day: a tester's own daily backups used up (the server's message), or the server's whole allowance of
+   saves for the day (2026-11-14, error 'kv-limit': Cloudflare's 1,000 writes a day), said in words with the local time it resets */
+const backupFullMsg=pr=>{if(pr&&pr.error==='kv-limit'){let at='';try{at=new Date(nextUtcDay()).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+  return `Today’s backups are used up on the server. Your changes are kept on this phone and back up after ${at||'midnight UTC'}.`}
+  return (pr&&pr.message)||'Today’s backups are used up.'};
 /* ---- the small sync (worker.js syncLiteGet / syncLitePost). A newer worker answers GET /sync?lite=1&since=<the version last agreed
    on> with only the records changed since, with photos as references (dwph:<hash>), every tombstone, and what it holds of each record
    (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,
@@ -127,7 +132,7 @@ async function syncLite(remote,local,url,token,inline){
   if(p.status===409)return {again:{since}};                                   // another device saved first: what it saved, then again
   if(p.status===400&&Array.isArray(pr.missing)){pr.missing.forEach(h=>inline.add(h));return {again:{since}}}
   if(p.status===422&&pr.error==='legacy')return {again:{legacy:true}};          // a backup the server can't index: the whole of it
-  if(p.status===429&&pr.what==='backup'){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',pr.message||'Today’s backups are used up.');setSyncStatus(pr.message||'Today’s backups are used up.');return false}
+  if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
   if(p.status===403&&pr.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
   if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
   setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;
@@ -163,7 +168,7 @@ async function syncOnce(){
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoring?{reason:'restore'}:{}),data:now})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));
-      if(p.status===429&&pr.what==='backup'){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',pr.message||'Today’s backups are used up.');setSyncStatus(pr.message||'Today’s backups are used up.');return false}
+      if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
       if(p.status===403&&pr.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
       if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
       setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;

@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	c0621259fb3b84543ba9
+# tested	bb723d1eceac839e075a
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -492,7 +492,7 @@ asmprebuild.test.js	tests/fixtures/asm-watch.jpg	<loaded>
 asmprebuild.test.js	tools/asm-prebuild.js	<any>
 asmprebuild.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmprebuild.test.js	wardrobe.js	<loaded>
-asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	putRender	readText	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
+asmprebuild.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	kvFull	kvMeta	loadAny	loadSync	orNull	ownerOnly	phCollect	putRender	readText	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
 asmroute.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmroute.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 asmroute.test.js	analysis.js	<loaded>
@@ -1694,6 +1694,35 @@ khaki.test.js	tests/fixedplan.js	<any>
 khaki.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 khaki.test.js	wardrobe.js	<loaded>
 khaki.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
+kvlimit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+kvlimit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+kvlimit.test.js	analysis.js	<loaded>
+kvlimit.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@document.addEventListenervisibilitychange	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	addTombstones	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	atomic	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	hasOutfit	homeDay	idsOf	itemShown	keyDate	loadRenders	loadWeather	lockIds	lockUpcoming	metaGet	metaPut	monthFillSoon	monthLink	nextWorkday	onSyncedData	pageIn	planFor	planMonth	planOn	planSnapSoon	planSnapUse	put	putRaw	queuedKeys	recordDays	refreshHolidays	refreshToday	renderItem	renderToday	resetCard	rqGet	saveDay	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	wxPreload	zoomTarget
+kvlimit.test.js	asm-color.js	<loaded>
+kvlimit.test.js	asm-gl.js	<loaded>
+kvlimit.test.js	assemble.js	<loaded>	@
+kvlimit.test.js	care.js	<loaded>	careShow
+kvlimit.test.js	colpick.js	<loaded>
+kvlimit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	dayWins	di	inRotation	isWorkday	isoKey	key	mergeState	occOf	offDays	offName	stamp	stateSig	todayDate
+kvlimit.test.js	detect.js	<loaded>	@
+kvlimit.test.js	draw.js	<loaded>
+kvlimit.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
+kvlimit.test.js	figure.js	<loaded>	@{}
+kvlimit.test.js	index.html	<loaded>
+kvlimit.test.js	pack.js	<loaded>	packShow
+kvlimit.test.js	planner.js	<loaded>
+kvlimit.test.js	remind.js	<loaded>	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+kvlimit.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
+kvlimit.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
+kvlimit.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+kvlimit.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+kvlimit.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.mbox	.mbox .chev	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.score .chev,.month-link .chev	.score .lbl b,.mltxt b	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .num,.mlstrip,.pstrip	.score summary,.month-link	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
+kvlimit.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	backupFullMsg	isPh	localState	nextUtcDay	phIn	phOut	phStrings	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncUrl	synced
+kvlimit.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+kvlimit.test.js	tests/fixedplan.js	<any>
+kvlimit.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+kvlimit.test.js	wardrobe.js	<loaded>
+kvlimit.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvFull	kvMeta	liteSig	loadAny	mergeLite	nextRevs	orNull	phCollect	putPhotos	putRender	putStored	putWhole	pvMeta	pvText	readPv	readText	refsIn	refsOf	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	spendUpTo	splitPhotos	stampOf	storePhotos	storedVersion	syncLiteGet	syncLitePost	syncVersion	utcDay	whoIs	writeBudget
 labbench.test.js	lab/gl-bench.html	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/mask-background.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/mask-dark.png	<loaded>
@@ -4157,7 +4186,7 @@ testersync.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	
 testersync.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 testersync.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	statsPlan	statsPlanned
 testersync.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast.on	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
-testersync.test.js	sync.js	<loaded>	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	inviteEnded	localState	nextUtcDay	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
+testersync.test.js	sync.js	<loaded>	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	backupFullMsg	inviteEnded	localState	nextUtcDay	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
 testersync.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
 testersync.test.js	tests/fixedplan.js	<any>
 testersync.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp	ownerHere	plainErr	tell
@@ -4907,4 +4936,4 @@ weeklock.test.js	tagging.js	<loaded>	recolourSpecSetts	renderCustomUI	upgradeClo
 weeklock.test.js	ui.js	<loaded>	addGate	advClose	connNote	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 weeklock.test.js	wardrobe.js	<loaded>
 workerfix.test.js	.github/workflows/deploy-worker.yml	<any>
-workerfix.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	ITEM_BG	ITEM_PROMPT	RENDER_PROMPT	ROUTES.* /sync	ROUTES.GET /fetch	RenderHub	allCaps	arrOf	b64u	capOf	cleanCaps	cleanCustom	cleanPattern	cleanTag	convertSnaps	correctionsText	corsFor	countWrites	customText	dataUrlToBlob	delRender	dropFail	dropParts	dueDay	failFor	failJob	fetch	fetchLinked	firstWeek	gcDue	gcKey	gcSpace	getRender	handleFetchImage	handleInvites	handleMe	handlePattern	handlePush	handleRender	handleSync	handleTagMany	hasWatch	hubOf	isParted	isPhoto	isPv	itemPhoto	jobClaim	jobMsg	jobOp	keepMade	keepSnapshots	kvMeta	lightText	limitBody	listAll	liteSig	localNow	measuredText	mergeLite	msgNs	nextRevs	orNull	outfitPhoto	ownerOnly	phCollect	phHash	phKey	phThere	photoCap	photoGc	plainFor	prune	publicHost	pushReady	pushTo	putPhotos	putRender	putStored	pvMeta	pvText	queue	queueRender	readCapped	refsIn	refsOf	refundJob	renderId	renderItem	renderTtl	runRenderJob	sameText	scheduled	sendReminders	serve	sget	sha256Hex	sleep	smallBody	spend	spendEach	spendUpTo	splitPhotos	sput	stampOf	storePhotos	storedVersion	subId	syncLitePost	syncVersion	tagSchema	tagWithClaude	tagWithWorkersAi	tellHub	txt	unb64u	unspend	useCount	usedOf	utcDay	vapidAuth	waitForRenders	wbOf	whoIs	writeBudget
+workerfix.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	ITEM_BG	ITEM_PROMPT	RENDER_PROMPT	ROUTES.* /sync	ROUTES.GET /fetch	RenderHub	allCaps	arrOf	b64u	capOf	cleanCaps	cleanCustom	cleanPattern	cleanTag	convertSnaps	correctionsText	corsFor	countWrites	customText	dataUrlToBlob	delRender	dropFail	dropParts	dueDay	failFor	failJob	fetch	fetchLinked	firstWeek	gcDue	gcKey	gcSpace	getRender	handleFetchImage	handleInvites	handleMe	handlePattern	handlePush	handleRender	handleSync	handleTagMany	hasWatch	hubOf	isParted	isPhoto	isPv	itemPhoto	jobClaim	jobMsg	jobOp	keepMade	keepSnapshots	kvFull	kvMeta	lightText	limitBody	listAll	liteSig	localNow	measuredText	mergeLite	msgNs	nextRevs	orNull	outfitPhoto	ownerOnly	phCollect	phHash	phKey	phThere	photoCap	photoGc	plainFor	prune	publicHost	pushReady	pushTo	putPhotos	putRender	putStored	pvMeta	pvText	queue	queueRender	readCapped	refsIn	refsOf	refundJob	renderId	renderItem	renderTtl	runRenderJob	sameText	scheduled	sendReminders	serve	sget	sha256Hex	sleep	smallBody	spend	spendEach	spendUpTo	splitPhotos	sput	stampOf	storePhotos	storedVersion	subId	syncLitePost	syncVersion	tagSchema	tagWithClaude	tagWithWorkersAi	tellHub	txt	unb64u	unspend	useCount	usedOf	utcDay	vapidAuth	waitForRenders	wbOf	whoIs	writeBudget

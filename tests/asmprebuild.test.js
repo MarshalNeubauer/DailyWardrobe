@@ -74,6 +74,16 @@ module.exports=async({ok,chromium,url})=>{
     const r1=await run(),outs=[...store.keys()].filter(k=>k.startsWith('render:')&&/^asm\/out\/z\d+\/1000$/.test(JSON.parse(store.get(k)).sig||''));
     const p1=puts,r2=await run();srv.close();
     ok(r1.code===0&&outs.length>=1&&p1===outs.length&&!store.get('wardrobe:v1').includes('"rev":2'),`npm run assemble builds every coming look and uploads it, and leaves the backup alone (${outs.length} uploaded: ${(r1.out.match(/Done.*/)||[''])[0]})`);
-    ok(r2.code===0&&puts===p1&&/already current/.test(r2.out)&&new RegExp(`0 uploaded, ${outs.length} already current`).test(r2.out),`a second run uploads nothing: every picture is current (${(r2.out.match(/Done.*/)||[''])[0]})`);}
+    ok(r2.code===0&&puts===p1&&/already current/.test(r2.out)&&new RegExp(`0 uploaded, ${outs.length} already current`).test(r2.out),`a second run uploads nothing: every picture is current (${(r2.out.match(/Done.*/)||[''])[0]})`);
+    // (2026-11-14) the worker's writes for the day used up (Cloudflare's KV answers "limit exceeded"): the script stops at the first refusal,
+    // keeps the pause with its profile, and a run before the reset uploads nothing (it used to retry every picture every 5 minutes)
+    for(const k of [...store.keys()])if(k.startsWith('render:')&&/^asm\/out\//.test(JSON.parse(store.get(k)).sig||''))store.delete(k);
+    const put0=KV.put;KV.put=async(k,v,o)=>{if(k.startsWith('render:'))throw new Error('KV put() limit exceeded for the day.');return put0(k,v,o)};
+    const prof=require('fs').mkdtempSync(path.join(require('os').tmpdir(),'dw-pause-'));puts=0;
+    srv.listen(0,'127.0.0.1');await new Promise(x=>srv.once('listening',x));const W2=`http://127.0.0.1:${srv.address().port}/`;
+    const runQ=()=>new Promise(res=>{const c=require('child_process').spawn(process.execPath,[s,'--days','14','--profile',prof,'--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W2,DW_TOKEN:'owner-code'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
+    const q1=await runQ(),pq1=puts,pf=require('fs').existsSync(path.join(prof,'upload-pause.json')),q2=await runQ();srv.close();KV.put=put0;
+    ok(pq1===1&&/uploads paused until/.test(q1.out)&&pf,`when the worker's writes for the day are used up, the script stops at the first refused upload and keeps the pause (${pq1} upload tried)`);
+    ok(puts===pq1&&/Uploads are paused until/.test(q2.out),'a run before the daily reset uploads nothing');}
 };
 module.exports.assembled=true;   // tests assembled pictures (assemble.js)
