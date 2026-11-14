@@ -3,10 +3,12 @@
 // While a test runs, the runner records what it really uses (tests/impact.map, one line per test and file):
 //   - every top-level function of the app's scripts it runs in the page (V8 coverage over CDP) and of worker.js in Node,
 //   - every rule of styles.css that applied to an element (CSS rule usage),
-//   - every other file its pages were served (<loaded>) and every file it read itself or ran in a Web Worker (<any>).
+//   - every other file its pages were served (<loaded>) and every file it read itself or ran in a Web Worker (<any>),
+//   - every file in a subfolder (tools/*.js, fixtures) that a Node process it started ran or read (<any>; tests/childrec.js).
 // For a change, the edited functions and CSS rules are worked out from `git diff` against origin/main, and only the tests
 // that use one of them run. Anything that can't be narrowed down (top-level code, index.html, a new selector that no plain
-// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / fixedplan.js / package.json select all.
+// rule covers, a file V8 can't parse) selects every test that loads that file; run.js / impact.js / fixedplan.js / childrec.js /
+// package.json select all.
 // A block that runs at load, `(()=>{…})()`, is recorded by the functions it holds (units), and a selector new to the sheet
 // selects the tests of the plain rule it can only apply inside (cssImpact). After main has been merged into a branch that
 // had passed, only the tests that both sides' changes can affect run again (select, lastPass).
@@ -18,7 +20,7 @@
 //   - `git push` is refused while the map has changes that aren't committed (.githooks/pre-push, switched on by tests/run.js).
 const fs=require('fs'),path=require('path'),vm=require('vm'),inspector=require('inspector'),crypto=require('crypto'),{execFileSync}=require('child_process'),{fileURLToPath,pathToFileURL}=require('url');
 const MAP='tests/impact.map',ANY='<any>',LOADED='<loaded>',SMOKE='run.js: renders the outfit without errors';
-const realRead=fs.readFileSync;
+const realRead=fs.readFileSync,CHILDREC=path.join(__dirname,'childrec.js');
 
 /* ---------- V8: the Node-side coverage session, and the top-level functions of a source text ---------- */
 let session=null,covOn=null;
@@ -262,16 +264,25 @@ const fingerprint=(root,commit)=>{let rows;
   }catch(e){return null}
   return crypto.createHash('sha256').update(rows.filter(([f])=>f!==MAP&&!/\.md$/.test(f)&&f!=='LICENSE').map(r=>r.join(' ')).sort().join('\n')).digest('hex').slice(0,20)};
 /* the service worker serves one version at a time (sw.js): a phone only takes changed app files when CACHE in sw.js has a new name.
-   So a commit that changes a file in sw.js's ASSETS against origin/main while CACHE is still origin/main's is refused. */
+   So a commit whose branch changed a file in sw.js's ASSETS (since it left origin/main) is refused unless its CACHE number is
+   above origin/main's: not just different, since two branches that each bumped to the same number would land as one bump. */
 const cacheOf=t=>{const m=/const CACHE='([^']+)'/.exec(t||'');return m?m[1]:null};
-const cacheStale=root=>{const mine=git(root,'show','HEAD:sw.js'),theirs=git(root,'show','origin/main:sw.js');if(!mine||!theirs||!cacheOf(mine)||cacheOf(mine)!==cacheOf(theirs))return '';
+const cacheNum=c=>{const m=/(\d+)$/.exec(c||'');return m?+m[1]:null};
+const cacheStale=root=>{const mine=git(root,'show','HEAD:sw.js'),theirs=git(root,'show','origin/main:sw.js');if(!mine||!theirs||!cacheOf(mine)||!cacheOf(theirs))return '';
   const a=/const ASSETS=\[([^\]]*)\]/.exec(mine),files=a?[...a[1].matchAll(/'([^']+)'/g)].map(m=>m[1]).filter(f=>f!=='./'):[];if(!files.length)return '';
-  const ch=(git(root,'diff','--name-only','origin/main','HEAD','--',...files)||'').trim().split('\n').filter(Boolean);
-  return ch.length?'App files changed ('+ch.slice(0,4).join(', ')+(ch.length>4?', …':'')+') but CACHE in sw.js is still '+cacheOf(mine)+", the same as main's.\nPhones only take new files when CACHE has a new name: bump it to one above main's, run `npm test`, commit and push again.":''};
+  // the branch's own changes: since where it left main (main's later changes are main's, already under main's CACHE)
+  const base=(git(root,'merge-base','origin/main','HEAD')||'').trim()||'origin/main';
+  const ch=(git(root,'diff','--name-only',base,'HEAD','--',...files)||'').trim().split('\n').filter(Boolean);if(!ch.length)return '';
+  const n=cacheNum(cacheOf(mine)),m=cacheNum(cacheOf(theirs));
+  if(n!=null&&m!=null?n>m:cacheOf(mine)!==cacheOf(theirs))return '';
+  return 'App files changed ('+ch.slice(0,4).join(', ')+(ch.length>4?', …':'')+') but CACHE in sw.js is '+(cacheOf(mine)===cacheOf(theirs)?'still '+cacheOf(mine)+", the same as main's.":cacheOf(mine)+', not above main\'s '+cacheOf(theirs)+'.')+"\nPhones only take new files when CACHE has a new name: merge origin/main, bump CACHE to one above main's, run `npm test`, commit and push again."};
+/* the newest origin/main for the CACHE check: fetched for at most a few seconds; offline, the copy at hand is used (and said so) */
+const fetchMain=root=>{if(process.env.TEST_BASE)return true;try{execFileSync('git',['fetch','-q','origin','main'],{cwd:root,stdio:'ignore',timeout:+process.env.PREPUSH_FETCH_MS||8000});return true}catch(e){return false}};
 /* before a push (.githooks/pre-push → `node tests/impact.js pre-push`): the map may not be left behind */
-const prePush=root=>{const dirty=(git(root,'status','--porcelain','--',MAP)||'').trim();
+const prePush=(root,opts)=>{const dirty=(git(root,'status','--porcelain','--',MAP)||'').trim();
   if(dirty)return {ok:false,msg:MAP+' has changes that are not committed. It records what each test uses, and later sessions choose their tests from it:\ncommit it with your change, then push again.'};
-  const stale=cacheStale(root);if(stale)return {ok:false,msg:stale};
+  const fresh=opts&&opts.fetch?fetchMain(root):true;
+  const stale=cacheStale(root);if(stale)return {ok:false,msg:stale+(fresh?'':'\n(GitHub could not be reached: this compared with the copy of main fetched last.)')};
   const fp=fingerprint(root,'HEAD');
   if(fp&&!stampsOf(git(root,'show','HEAD:'+MAP)).includes(fp))return {ok:true,msg:'Note: `npm test` has not passed on exactly these files (or its '+MAP+' is not in the commit).\nIf this reaches main as it is, the next `npm test` there runs every check.'};
   return {ok:true,msg:''}};
@@ -299,7 +310,7 @@ const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Ma
   if(text!==was)fs.writeFileSync(path.join(root,MAP),text)};
 
 /* ---------- choosing ---------- */
-const FULL=/^(?:tests\/run\.js|tests\/impact\.js|tests\/fixedplan\.js|package(?:-lock)?\.json)$/;   // (fixedplan.js is put into the pages of most tests, not served: nothing records it)
+const FULL=/^(?:tests\/run\.js|tests\/impact\.js|tests\/fixedplan\.js|tests\/childrec\.js|package(?:-lock)?\.json)$/;   // (fixedplan.js is put into the pages of most tests, not served: nothing records it; childrec.js records what child processes read)
 const servedFile=f=>!f.includes('/')&&/\.(?:js|html|css|webmanifest|png|svg|ico)$/.test(f)&&f!=='worker.js';
 /* changes: [{file, kind:'test'|'js'|'css'|'other', units:Set, top}] → {all, why} or {tests:Map(test → reason)} */
 const pick=(map,all,changes)=>{const out=new Map(),add=(t,why)=>{if(all.includes(t)&&!out.has(t))out.set(t,why)};
@@ -318,6 +329,11 @@ const pick=(map,all,changes)=>{const out=new Map(),add=(t,why)=>{if(all.includes
   for(const t of all){if(!map.has(t))add(t,'not in the map yet');else if(real&&map.get(t).has(ANY))add(t,'what it uses is unknown')}
   return {tests:out}};
 
+/* does a test's source name the constant n? A test file can list names it only uses in made-up sources of its own, so a change
+   to the app's constant of that name doesn't select it: `module.exports.ignoreNames=['CACHE']` (tests/impact.test.js, whose
+   CACHE lines are a throwaway sw.js; without it every app change, which must bump CACHE, ran that slowest test) */
+const namedBy=(src,n)=>{if(src==null||!nameRe(n).test(src))return false;const m=/module\.exports\.ignoreNames\s*=\s*\[([^\]]*)\]/.exec(src);
+  return !(m&&[...m[1].matchAll(/['"]([^'"]+)['"]/g)].some(x=>x[1]===n))};
 /* what changed between a commit and the files as they are now → {files, said, all, why} or {files, said, tests: Map(test → reason)} */
 const impactOf=async(root,base,all,map)=>{
   const files=changedFiles(root,base);if(!files)return {files:[],said:[],all:true,why:'git could not list the changes'};
@@ -339,7 +355,7 @@ const impactOf=async(root,base,all,map)=>{
     for(const g of scripts)if(alone?g===c.file:g!=='worker.js'&&g!=='sw.js'){const t=newOf(g);if(t!=null)sources.set(g,await analyse(t))}
     const fl=follow(c.file,c.syms,sources);
     for(const [g,x] of fl.files){let e=changes.find(e=>e.file===g&&e.kind==='js');if(!e){e={file:g,kind:'js',units:new Set(),top:false};changes.push(e)}for(const u of x.units)e.units.add(u);if(x.top)e.top=true}
-    for(const n of fl.names){const re=nameRe(n),tests=all.filter(t=>{const src=newOf('tests/'+(t.startsWith('run.js: ')?'run.js':t));return src!=null&&re.test(src)});
+    for(const n of fl.names){const tests=all.filter(t=>namedBy(newOf('tests/'+(t.startsWith('run.js: ')?'run.js':t)),n));
       if(tests.length)changes.push({file:c.file,kind:'named',name:n,tests})}}
   return {files,said,...pick(map,all,changes)}};
 
@@ -388,6 +404,21 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
     if(/^[^/]+\.js$/.test(r)&&/node:internal\/modules/.test(new Error().stack))return;cur.add(r,ANY)}catch(e){}};
   for(const k of ['readFileSync','readFile','createReadStream']){const o=fs[k];fs[k]=function(p,...a){note(p);return o.call(this,p,...a)}}
   const pr=fs.promises.readFile;fs.promises.readFile=function(p,...a){note(p);return pr.call(this,p,...a)};
+  /* a child process the test starts (`node tools/asm-atlas.js`): a repo file named in its command line is noted, and a Node child
+     gets tests/childrec.js (NODE_OPTIONS), which writes the repo files it reads into recDir when it exits; end() adds them.
+     Except root-level files: a tool serves those to its own headless page (the app), which the test's pages already record
+     function by function; noting them whole would select the test for every app change */
+  let recDir=null;
+  const cp=require('child_process'),isNode=c=>typeof c==='string'&&(c===process.execPath||/(?:^|[\\/])node(?:\.exe)?$/i.test(c));
+  const childEnv=e=>{e=e||process.env;if(!recDir){try{recDir=fs.mkdtempSync(path.join(require('os').tmpdir(),'dw-rec-'))}catch(x){return e}}
+    return {...e,NODE_OPTIONS:((e.NODE_OPTIONS||'')+' --require '+JSON.stringify(CHILDREC)).trim(),DW_REC_DIR:recDir,DW_REC_ROOT:root}};
+  for(const k of ['spawn','spawnSync','execFile','execFileSync','fork']){const o=cp[k];
+    cp[k]=function(file,...rest){if(cur)try{const args=Array.isArray(rest[0])?rest[0]:[],i=Array.isArray(rest[0])?1:0;
+        for(const a of [file,...args]){const r=typeof a==='string'&&!a.startsWith('-')?relOf(a):null;if(r&&r!==cur.self&&r.includes('/')){try{if(fs.statSync(path.join(root,r)).isFile())cur.add(r,ANY)}catch(e){}}}
+        if(k==='fork'||isNode(file)){const opts=rest[i]&&typeof rest[i]==='object'?rest[i]:null,o2={...(opts||{}),env:childEnv(opts&&opts.env)};if(opts)rest[i]=o2;else rest.splice(i,0,o2)}}catch(e){}
+      return o.call(this,file,...rest)}}
+  const childReads=()=>{if(!recDir)return [];const out=[];try{for(const f of fs.readdirSync(recDir)){for(const l of realRead(path.join(recDir,f),'utf8').split('\n'))if(l)out.push(l)}fs.rmSync(recDir,{recursive:true,force:true})}catch(e){}recDir=null;return out};
+  const kids=c=>{for(const l of childReads()){const r=relOf(path.join(root,l));if(r&&r!==c.self&&r.includes('/'))c.add(r,ANY)}};
   // a function goes by the name scan() gives it (the name a diff is read with), found by where it starts; Chromium's own
   // name is only used where the two disagree (c.odd counts those)
   const addJs=(c,result,node)=>{for(const e of result){const f=urlRel(e.url);if(!f||!/\.js$/.test(f)||(node&&f.includes('/')))continue;const C=canon.get(f);
@@ -426,13 +457,13 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
       process.emitWarning=warn},
     served(f){if(cur&&f&&!/\.js$/.test(f))cur.add(f,LOADED)},
     /* what the running test has used so far (for tests/impact.test.js) */
-    async peek(){for(const p of [...live.keys()])await take(p,false);return cur&&{m:cur.m,odd:cur.odd}},
-    async begin(key,self){await nodeCov();await post('Profiler.takePreciseCoverage');cur=mk(key);cur.self=self||null},
-    async end(){const c=cur;for(const p of [...live.keys()])await take(p,true);
+    async peek(){for(const p of [...live.keys()])await take(p,false);if(cur)kids(cur);return cur&&{m:cur.m,odd:cur.odd}},
+    async begin(key,self){await nodeCov();await post('Profiler.takePreciseCoverage');childReads();cur=mk(key);cur.self=self||null},
+    async end(){const c=cur;for(const p of [...live.keys()])await take(p,true);kids(c);
       try{addJs(c,(await post('Profiler.takePreciseCoverage')).result,true)}catch(e){c.bad=true}
       for(const [f,S] of atLoad)if(c.m.has(f))for(const k of S)c.add(f,k);
       cur=null;return {m:c.m,bad:c.bad}}}};
 
-module.exports={MAP,ANY,LOADED,SMOKE,units,flat,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,impactOf,lastPass,recorder,fingerprint,stampsOf,prePush,cacheStale,installHook};
+module.exports={MAP,ANY,LOADED,SMOKE,units,flat,scan,jsLex,analyse,follow,hunksOf,jsImpact,cssScan,cssImpact,load,save,pick,select,impactOf,lastPass,recorder,fingerprint,stampsOf,prePush,cacheStale,installHook,namedBy};
 
-if(require.main===module&&process.argv[2]==='pre-push'){const r=prePush(path.resolve(__dirname,'..'));if(r.msg)console.error(r.msg);process.exit(r.ok?0:1)}
+if(require.main===module&&process.argv[2]==='pre-push'){const r=prePush(path.resolve(__dirname,'..'),{fetch:true});if(r.msg)console.error(r.msg);process.exit(r.ok?0:1)}

@@ -61,7 +61,10 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>queue[0].secondaryColor===null&&document.querySelector('#queue .colbtn[data-k="secondaryColor"]').textContent==='None'),'on the Add card a second colour can be set back to None');
     // Ask Claude: the close-up, the photo and the close-up's measurement go to the tagger; its pick is selected, its colours can all be taken
     const asked=[];
-    await p.route('**/fakeworker/**',async r=>{const b=r.request().postDataJSON();asked.push(b);await new Promise(z=>setTimeout(z,300));
+    // only the tagging request is Claude's: the app's own calls to the same fake server (a backup 2.5 s after a save, on a busy
+    // machine during the test) get a 503, or they were counted as a second request and answered with a tag
+    const notTag=r=>r.request().method()!=='POST'||/\/(?:sync|push|render)\b/.test(new URL(r.request().url()).pathname);
+    await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});const b=r.request().postDataJSON();asked.push(b);await new Promise(z=>setTimeout(z,300));
       await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'burgundy',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'wine',altPattern:'none',newColor:null,newPattern:null})}})});
     await p.evaluate(()=>{localStorage.setItem('worker_url',location.origin+'/fakeworker/');localStorage.setItem('app_token','t')});
     await p.evaluate(ph=>{queue.length=0;show('wardrobe');items=[{id:'t1',type:'tie',primaryColor:'red',secondaryColor:null,pattern:'solid',photo:ph,texture:ph,added:3}];editing='t1';renderWardrobe()},PH);
@@ -80,8 +83,10 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent)&&colPick.sel==='navy')&&asked.length===1,'the second colour shows the same answer without asking again');
     await p.keyboard.press('Escape');
     // a colour Claude names that the app lacks: a New chip in Claude's shade; picking it adds it to the owner's colours and uses it
-    await p.unroute('**/fakeworker/**');
-    await p.route('**/fakeworker/**',async r=>{asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'green',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',
+    // (unrouteAll waits for a handler still running: the one above answers after 300 ms, and a plain unroute let a busy machine
+    // hand its request on, so its late fulfill failed with "Route is already handled" and stopped the test process)
+    await p.unrouteAll({behavior:'wait'});
+    await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'green',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',
       confidence:{type:'high',primaryColor:'low',pattern:'high'},altColor:'olive',altPattern:'none',newColor:{name:'bottle green',why:'darker and bluer than green'},newPattern:null,
       ownColors:{primary:{name:'bottle green',hex:'#1f4a3a'},secondary:{name:'navy',hex:'#1b2a4a'},tertiary:null}})}})});
     await p.evaluate(()=>{delete colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cpaskbtn');
@@ -100,8 +105,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="ownbottlegreen"]')),'once added it is a normal colour in the list, not offered as new again');
     await p.keyboard.press('Escape');
     // several colours, two of them new to the app: "Use all" takes every one, adding the new ones to the owner's colours
-    await p.unroute('**/fakeworker/**');
-    await p.route('**/fakeworker/**',async r=>{asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'purple',secondaryColor:'tan',tertiaryColor:'navy',pattern:'solid',
+    await p.unrouteAll({behavior:'wait'});
+    await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'purple',secondaryColor:'tan',tertiaryColor:'navy',pattern:'solid',
       confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'none',altPattern:'none',newColor:{name:'smoky plum',why:'greyer than purple'},newPattern:null,
       ownColors:{primary:{name:'smoky plum',hex:'#5a3f55'},secondary:{name:'mushroom',hex:'#a39383'},tertiary:{name:'navy',hex:'#1b2a4a'}}})}})});
     await p.evaluate(()=>{delete colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cpaskbtn');
@@ -116,8 +121,8 @@ module.exports=async({ok,chromium,url})=>{
     await p.keyboard.press('Escape');
     // patterns: the field is a drawn swatch; Ask Claude names the pattern in its own words; a name the app lacks is a New chip
     // drawn like Claude's listed pick; picking it adds it to the owner's patterns (for suits, blazers and trousers) and uses it
-    await p.unroute('**/fakeworker/**');
-    await p.route('**/fakeworker/**',async r=>{asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'blazer',primaryColor:'midgrey',secondaryColor:'none',tertiaryColor:'none',pattern:'twill',
+    await p.unrouteAll({behavior:'wait'});
+    await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'blazer',primaryColor:'midgrey',secondaryColor:'none',tertiaryColor:'none',pattern:'twill',
       confidence:{type:'high',primaryColor:'high',pattern:'medium'},altColor:'none',altPattern:'windowpane',newColor:null,newPattern:null,ownColors:null,
       ownPattern:{name:'broken twill',description:'A fine twill whose ribs reverse every few threads.',fits:false}})}})});
     await p.evaluate(ph=>{items.push({id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'other',photo:ph,texture:ph,added:5});editing='b1';renderWardrobe()},PH);
