@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	f27a2eb59b9874dad547
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -20,6 +21,7 @@ a11yfix.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}
 a11yfix.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBanner	kitStartRow
 a11yfix.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 a11yfix.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+a11yfix.test.js	mq/shirt-open.js	<loaded>
 a11yfix.test.js	mq/shirt-tie.js	<loaded>
 a11yfix.test.js	mq/suit-open.js	<loaded>
 a11yfix.test.js	mq/suit.js	<loaded>
@@ -69,6 +71,7 @@ about.test.js	kit.js	<any>	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 about.test.js	manifest.webmanifest	<loaded>
 about.test.js	mannequin.js	<any>	<loaded>	@{}
 about.test.js	month.js	<any>	<loaded>	nextWorkday
+about.test.js	mq/shirt-open.js	<loaded>
 about.test.js	mq/shirt-tie.js	<loaded>
 about.test.js	mq/suit-open.js	<loaded>
 about.test.js	mq/suit.js	<loaded>
@@ -121,6 +124,7 @@ accounts.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 accounts.test.js	manifest.webmanifest	<loaded>
 accounts.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 accounts.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+accounts.test.js	mq/shirt-open.js	<loaded>
 accounts.test.js	mq/shirt-tie.js	<loaded>
 accounts.test.js	mq/suit-open.js	<loaded>
 accounts.test.js	mq/suit.js	<loaded>
@@ -178,6 +182,7 @@ addqty.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 addqty.test.js	manifest.webmanifest	<loaded>
 addqty.test.js	mannequin.js	<loaded>	@{}
 addqty.test.js	month.js	<loaded>	nextWorkday
+addqty.test.js	mq/shirt-open.js	<loaded>
 addqty.test.js	mq/shirt-tie.js	<loaded>
 addqty.test.js	mq/suit-open.js	<loaded>
 addqty.test.js	mq/suit.js	<loaded>
@@ -229,6 +234,7 @@ aiverdict.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStart
 aiverdict.test.js	manifest.webmanifest	<loaded>
 aiverdict.test.js	mannequin.js	<loaded>	@{}
 aiverdict.test.js	month.js	<loaded>	nextWorkday
+aiverdict.test.js	mq/shirt-open.js	<loaded>
 aiverdict.test.js	mq/shirt-tie.js	<loaded>
 aiverdict.test.js	mq/suit-open.js	<loaded>
 aiverdict.test.js	mq/suit.js	<loaded>
@@ -280,6 +286,7 @@ asmahead.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmahead.test.js	manifest.webmanifest	<loaded>
 asmahead.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 asmahead.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+asmahead.test.js	mq/shirt-open.js	<loaded>
 asmahead.test.js	mq/shirt-tie.js	<loaded>
 asmahead.test.js	mq/suit-open.js	<loaded>
 asmahead.test.js	mq/suit.js	<loaded>
@@ -347,6 +354,7 @@ asmatlas.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmatlas.test.js	manifest.webmanifest	<loaded>
 asmatlas.test.js	mannequin.js	<loaded>	@{}
 asmatlas.test.js	month.js	<loaded>	nextWorkday
+asmatlas.test.js	mq/shirt-open.js	<any>	<loaded>
 asmatlas.test.js	mq/shirt-tie.js	<any>	<loaded>
 asmatlas.test.js	mq/suit-open.js	<any>	<loaded>
 asmatlas.test.js	mq/suit.js	<any>	<loaded>
@@ -435,6 +443,7 @@ asmcloth.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcloth.test.js	manifest.webmanifest	<loaded>
 asmcloth.test.js	mannequin.js	<loaded>	@{}
 asmcloth.test.js	month.js	<loaded>	nextWorkday
+asmcloth.test.js	mq/shirt-open.js	<loaded>
 asmcloth.test.js	mq/shirt-tie.js	<loaded>
 asmcloth.test.js	mq/suit-open.js	<loaded>
 asmcloth.test.js	mq/suit.js	<loaded>
@@ -486,6 +495,7 @@ asmcode.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcode.test.js	manifest.webmanifest	<loaded>
 asmcode.test.js	mannequin.js	<loaded>	@{}
 asmcode.test.js	month.js	<loaded>	nextWorkday
+asmcode.test.js	mq/shirt-open.js	<loaded>
 asmcode.test.js	mq/shirt-tie.js	<loaded>
 asmcode.test.js	mq/suit-open.js	<loaded>
 asmcode.test.js	mq/suit.js	<loaded>
@@ -534,6 +544,7 @@ asmcolor.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody
 asmcolor.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcolor.test.js	mannequin.js	<loaded>	@{}
 asmcolor.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+asmcolor.test.js	mq/shirt-open.js	<loaded>
 asmcolor.test.js	mq/shirt-tie.js	<loaded>
 asmcolor.test.js	mq/suit-open.js	<loaded>
 asmcolor.test.js	mq/suit.js	<loaded>
@@ -613,6 +624,7 @@ asmcr.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcr.test.js	manifest.webmanifest	<loaded>
 asmcr.test.js	mannequin.js	<loaded>	@{}
 asmcr.test.js	month.js	<loaded>	nextWorkday
+asmcr.test.js	mq/shirt-open.js	<loaded>
 asmcr.test.js	mq/shirt-tie.js	<loaded>
 asmcr.test.js	mq/suit-open.js	<loaded>
 asmcr.test.js	mq/suit.js	<loaded>
@@ -664,6 +676,7 @@ asmcu.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmcu.test.js	manifest.webmanifest	<loaded>
 asmcu.test.js	mannequin.js	<loaded>	@{}
 asmcu.test.js	month.js	<loaded>	nextWorkday
+asmcu.test.js	mq/shirt-open.js	<loaded>
 asmcu.test.js	mq/shirt-tie.js	<loaded>
 asmcu.test.js	mq/suit-open.js	<loaded>
 asmcu.test.js	mq/suit.js	<loaded>
@@ -712,6 +725,7 @@ asmgl.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{const
 asmgl.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmgl.test.js	mannequin.js	<loaded>	@{}
 asmgl.test.js	month.js	<loaded>	nextWorkday
+asmgl.test.js	mq/shirt-open.js	<loaded>
 asmgl.test.js	mq/shirt-tie.js	<loaded>
 asmgl.test.js	mq/suit-open.js	<loaded>
 asmgl.test.js	mq/suit.js	<loaded>
@@ -778,6 +792,7 @@ asmgpu.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{cons
 asmgpu.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmgpu.test.js	mannequin.js	<loaded>	@{}
 asmgpu.test.js	month.js	<loaded>	nextWorkday
+asmgpu.test.js	mq/shirt-open.js	<any>	<loaded>
 asmgpu.test.js	mq/shirt-tie.js	<any>	<loaded>
 asmgpu.test.js	mq/suit-open.js	<any>	<loaded>
 asmgpu.test.js	mq/suit.js	<any>	<loaded>
@@ -847,6 +862,7 @@ asmprebuild.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@
 asmprebuild.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmprebuild.test.js	mannequin.js	<loaded>	@{}
 asmprebuild.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+asmprebuild.test.js	mq/shirt-open.js	<any>	<loaded>
 asmprebuild.test.js	mq/shirt-tie.js	<any>	<loaded>
 asmprebuild.test.js	mq/suit-open.js	<any>	<loaded>
 asmprebuild.test.js	mq/suit.js	<any>	<loaded>
@@ -922,6 +938,7 @@ asmroute.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmroute.test.js	manifest.webmanifest	<loaded>
 asmroute.test.js	mannequin.js	<loaded>	@{}
 asmroute.test.js	month.js	<loaded>	nextWorkday
+asmroute.test.js	mq/shirt-open.js	<loaded>
 asmroute.test.js	mq/shirt-tie.js	<loaded>
 asmroute.test.js	mq/suit-open.js	<loaded>
 asmroute.test.js	mq/suit.js	<loaded>
@@ -987,6 +1004,7 @@ asmstuck.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmstuck.test.js	manifest.webmanifest	<loaded>
 asmstuck.test.js	mannequin.js	<loaded>	@{}
 asmstuck.test.js	month.js	<loaded>	nextWorkday
+asmstuck.test.js	mq/shirt-open.js	<loaded>
 asmstuck.test.js	mq/shirt-tie.js	<loaded>
 asmstuck.test.js	mq/suit-open.js	<loaded>
 asmstuck.test.js	mq/suit.js	<loaded>
@@ -1038,6 +1056,7 @@ asmtwill.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmtwill.test.js	manifest.webmanifest	<loaded>
 asmtwill.test.js	mannequin.js	<loaded>	@{}
 asmtwill.test.js	month.js	<loaded>	nextWorkday
+asmtwill.test.js	mq/shirt-open.js	<loaded>
 asmtwill.test.js	mq/shirt-tie.js	<loaded>
 asmtwill.test.js	mq/suit-open.js	<loaded>
 asmtwill.test.js	mq/suit.js	<loaded>
@@ -1090,6 +1109,7 @@ asmwatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmwatch.test.js	manifest.webmanifest	<loaded>
 asmwatch.test.js	mannequin.js	<loaded>	@{}
 asmwatch.test.js	month.js	<loaded>	nextWorkday
+asmwatch.test.js	mq/shirt-open.js	<loaded>
 asmwatch.test.js	mq/shirt-tie.js	<loaded>
 asmwatch.test.js	mq/suit-open.js	<loaded>
 asmwatch.test.js	mq/suit.js	<loaded>
@@ -1142,6 +1162,7 @@ asmweave.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 asmweave.test.js	manifest.webmanifest	<loaded>
 asmweave.test.js	mannequin.js	<loaded>	@{}
 asmweave.test.js	month.js	<loaded>	nextWorkday
+asmweave.test.js	mq/shirt-open.js	<loaded>
 asmweave.test.js	mq/shirt-tie.js	<loaded>
 asmweave.test.js	mq/suit-open.js	<loaded>
 asmweave.test.js	mq/suit.js	<loaded>
@@ -1198,6 +1219,7 @@ assemble.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 assemble.test.js	manifest.webmanifest	<loaded>
 assemble.test.js	mannequin.js	<loaded>	@{}
 assemble.test.js	month.js	<loaded>	nextWorkday	planOn
+assemble.test.js	mq/shirt-open.js	<loaded>
 assemble.test.js	mq/shirt-tie.js	<loaded>
 assemble.test.js	mq/suit-open.js	<loaded>
 assemble.test.js	mq/suit.js	<loaded>
@@ -1262,6 +1284,7 @@ auditfix.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 auditfix.test.js	manifest.webmanifest	<loaded>
 auditfix.test.js	mannequin.js	<loaded>	@{}
 auditfix.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+auditfix.test.js	mq/shirt-open.js	<loaded>
 auditfix.test.js	mq/shirt-tie.js	<loaded>
 auditfix.test.js	mq/suit-open.js	<loaded>
 auditfix.test.js	mq/suit.js	<loaded>
@@ -1314,6 +1337,7 @@ beltswap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 beltswap.test.js	manifest.webmanifest	<loaded>
 beltswap.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 beltswap.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+beltswap.test.js	mq/shirt-open.js	<loaded>
 beltswap.test.js	mq/shirt-tie.js	<loaded>
 beltswap.test.js	mq/suit-open.js	<loaded>
 beltswap.test.js	mq/suit.js	<loaded>
@@ -1364,6 +1388,7 @@ boxfold.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 boxfold.test.js	manifest.webmanifest	<loaded>
 boxfold.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 boxfold.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+boxfold.test.js	mq/shirt-open.js	<loaded>
 boxfold.test.js	mq/shirt-tie.js	<loaded>
 boxfold.test.js	mq/suit-open.js	<loaded>
 boxfold.test.js	mq/suit.js	<loaded>
@@ -1415,6 +1440,7 @@ care.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 care.test.js	manifest.webmanifest	<loaded>
 care.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 care.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+care.test.js	mq/shirt-open.js	<loaded>
 care.test.js	mq/shirt-tie.js	<loaded>
 care.test.js	mq/suit-open.js	<loaded>
 care.test.js	mq/suit.js	<loaded>
@@ -1470,6 +1496,7 @@ casual.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 casual.test.js	manifest.webmanifest	<loaded>
 casual.test.js	mannequin.js	<loaded>	@{}
 casual.test.js	month.js	<loaded>	nextWorkday
+casual.test.js	mq/shirt-open.js	<loaded>
 casual.test.js	mq/shirt-tie.js	<loaded>
 casual.test.js	mq/suit-open.js	<loaded>
 casual.test.js	mq/suit.js	<loaded>
@@ -1525,6 +1552,7 @@ claude.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 claude.test.js	manifest.webmanifest	<loaded>
 claude.test.js	mannequin.js	<loaded>	@{}
 claude.test.js	month.js	<loaded>	nextWorkday
+claude.test.js	mq/shirt-open.js	<loaded>
 claude.test.js	mq/shirt-tie.js	<loaded>
 claude.test.js	mq/suit-open.js	<loaded>
 claude.test.js	mq/suit.js	<loaded>
@@ -1580,6 +1608,7 @@ claudepattern.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitS
 claudepattern.test.js	manifest.webmanifest	<loaded>
 claudepattern.test.js	mannequin.js	<loaded>	@{}
 claudepattern.test.js	month.js	<loaded>	nextWorkday
+claudepattern.test.js	mq/shirt-open.js	<loaded>
 claudepattern.test.js	mq/shirt-tie.js	<loaded>
 claudepattern.test.js	mq/suit-open.js	<loaded>
 claudepattern.test.js	mq/suit.js	<loaded>
@@ -1634,6 +1663,7 @@ climate.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 climate.test.js	manifest.webmanifest	<loaded>
 climate.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 climate.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+climate.test.js	mq/shirt-open.js	<loaded>
 climate.test.js	mq/shirt-tie.js	<loaded>
 climate.test.js	mq/suit-open.js	<loaded>
 climate.test.js	mq/suit.js	<loaded>
@@ -1679,6 +1709,7 @@ cmcuffsteel.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 cmcuffsteel.test.js	manifest.webmanifest	<loaded>
 cmcuffsteel.test.js	mannequin.js	<loaded>	@{}
 cmcuffsteel.test.js	month.js	<loaded>	nextWorkday
+cmcuffsteel.test.js	mq/shirt-open.js	<loaded>
 cmcuffsteel.test.js	mq/shirt-tie.js	<loaded>
 cmcuffsteel.test.js	mq/suit-open.js	<loaded>
 cmcuffsteel.test.js	mq/suit.js	<loaded>
@@ -1742,6 +1773,7 @@ cmhandedge.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 cmhandedge.test.js	manifest.webmanifest	<loaded>
 cmhandedge.test.js	mannequin.js	<loaded>	@{}
 cmhandedge.test.js	month.js	<loaded>	nextWorkday
+cmhandedge.test.js	mq/shirt-open.js	<loaded>
 cmhandedge.test.js	mq/shirt-tie.js	<loaded>
 cmhandedge.test.js	mq/suit-open.js	<loaded>
 cmhandedge.test.js	mq/suit.js	<loaded>
@@ -1805,6 +1837,7 @@ colouraudit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 colouraudit.test.js	manifest.webmanifest	<loaded>
 colouraudit.test.js	mannequin.js	<loaded>	@{}
 colouraudit.test.js	month.js	<loaded>	nextWorkday
+colouraudit.test.js	mq/shirt-open.js	<loaded>
 colouraudit.test.js	mq/shirt-tie.js	<loaded>
 colouraudit.test.js	mq/suit-open.js	<loaded>
 colouraudit.test.js	mq/suit.js	<loaded>
@@ -1860,6 +1893,7 @@ colours.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 colours.test.js	manifest.webmanifest	<loaded>
 colours.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 colours.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	revealNeed	stackSVG
+colours.test.js	mq/shirt-open.js	<loaded>
 colours.test.js	mq/shirt-tie.js	<loaded>
 colours.test.js	mq/suit-open.js	<loaded>
 colours.test.js	mq/suit.js	<loaded>
@@ -1911,6 +1945,7 @@ colpick.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 colpick.test.js	manifest.webmanifest	<loaded>
 colpick.test.js	mannequin.js	<loaded>	@{}
 colpick.test.js	month.js	<loaded>	nextWorkday
+colpick.test.js	mq/shirt-open.js	<loaded>
 colpick.test.js	mq/shirt-tie.js	<loaded>
 colpick.test.js	mq/suit-open.js	<loaded>
 colpick.test.js	mq/suit.js	<loaded>
@@ -1962,6 +1997,7 @@ compare.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 compare.test.js	manifest.webmanifest	<loaded>
 compare.test.js	mannequin.js	<loaded>	@{}
 compare.test.js	month.js	<loaded>	nextWorkday
+compare.test.js	mq/shirt-open.js	<loaded>
 compare.test.js	mq/shirt-tie.js	<loaded>
 compare.test.js	mq/suit-open.js	<loaded>
 compare.test.js	mq/suit.js	<loaded>
@@ -2009,6 +2045,7 @@ connkeep.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody
 connkeep.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 connkeep.test.js	mannequin.js	<loaded>	@{}
 connkeep.test.js	month.js	<loaded>	nextWorkday
+connkeep.test.js	mq/shirt-open.js	<loaded>
 connkeep.test.js	mq/shirt-tie.js	<loaded>
 connkeep.test.js	mq/suit-open.js	<loaded>
 connkeep.test.js	mq/suit.js	<loaded>
@@ -2105,8 +2142,9 @@ daypieces.test.js	index.html	<loaded>
 daypieces.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
 daypieces.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 daypieces.test.js	manifest.webmanifest	<loaded>
-daypieces.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+daypieces.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 daypieces.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+daypieces.test.js	mq/shirt-open.js	<loaded>
 daypieces.test.js	mq/shirt-tie.js	<loaded>
 daypieces.test.js	mq/suit-open.js	<loaded>
 daypieces.test.js	mq/suit.js	<loaded>
@@ -2158,6 +2196,7 @@ daysoff.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 daysoff.test.js	manifest.webmanifest	<loaded>
 daysoff.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 daysoff.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+daysoff.test.js	mq/shirt-open.js	<loaded>
 daysoff.test.js	mq/shirt-tie.js	<loaded>
 daysoff.test.js	mq/suit-open.js	<loaded>
 daysoff.test.js	mq/suit.js	<loaded>
@@ -2270,6 +2309,7 @@ deltasync.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{c
 deltasync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 deltasync.test.js	mannequin.js	<loaded>	@{}
 deltasync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
+deltasync.test.js	mq/shirt-open.js	<loaded>
 deltasync.test.js	mq/shirt-tie.js	<loaded>
 deltasync.test.js	mq/suit-open.js	<loaded>
 deltasync.test.js	mq/suit.js	<loaded>
@@ -2339,6 +2379,7 @@ display.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 display.test.js	manifest.webmanifest	<loaded>
 display.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 display.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	revealNeed	stackSVG
+display.test.js	mq/shirt-open.js	<loaded>
 display.test.js	mq/shirt-tie.js	<loaded>
 display.test.js	mq/suit-open.js	<loaded>
 display.test.js	mq/suit.js	<loaded>
@@ -2447,6 +2488,7 @@ enamelclip.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 enamelclip.test.js	manifest.webmanifest	<loaded>
 enamelclip.test.js	mannequin.js	<loaded>	@{}
 enamelclip.test.js	month.js	<loaded>	nextWorkday
+enamelclip.test.js	mq/shirt-open.js	<loaded>
 enamelclip.test.js	mq/shirt-tie.js	<loaded>
 enamelclip.test.js	mq/suit-open.js	<loaded>
 enamelclip.test.js	mq/suit.js	<loaded>
@@ -2602,6 +2644,7 @@ foldtap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 foldtap.test.js	manifest.webmanifest	<loaded>
 foldtap.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 foldtap.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+foldtap.test.js	mq/shirt-open.js	<loaded>
 foldtap.test.js	mq/shirt-tie.js	<loaded>
 foldtap.test.js	mq/suit-open.js	<loaded>
 foldtap.test.js	mq/suit.js	<loaded>
@@ -2653,6 +2696,7 @@ geomaps.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 geomaps.test.js	manifest.webmanifest	<loaded>
 geomaps.test.js	mannequin.js	<loaded>	@{}
 geomaps.test.js	month.js	<loaded>	nextWorkday
+geomaps.test.js	mq/shirt-open.js	<loaded>
 geomaps.test.js	mq/shirt-tie.js	<loaded>
 geomaps.test.js	mq/suit-open.js	<loaded>
 geomaps.test.js	mq/suit.js	<loaded>
@@ -2704,6 +2748,7 @@ hbshirt.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 hbshirt.test.js	manifest.webmanifest	<loaded>
 hbshirt.test.js	mannequin.js	<loaded>	@{}
 hbshirt.test.js	month.js	<loaded>	nextWorkday
+hbshirt.test.js	mq/shirt-open.js	<loaded>
 hbshirt.test.js	mq/shirt-tie.js	<loaded>
 hbshirt.test.js	mq/suit-open.js	<loaded>
 hbshirt.test.js	mq/suit.js	<loaded>
@@ -2755,6 +2800,7 @@ hbswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 hbswatch.test.js	manifest.webmanifest	<loaded>
 hbswatch.test.js	mannequin.js	<loaded>	@{}
 hbswatch.test.js	month.js	<loaded>	nextWorkday
+hbswatch.test.js	mq/shirt-open.js	<loaded>
 hbswatch.test.js	mq/shirt-tie.js	<loaded>
 hbswatch.test.js	mq/suit-open.js	<loaded>
 hbswatch.test.js	mq/suit.js	<loaded>
@@ -2806,6 +2852,7 @@ herringbone.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 herringbone.test.js	manifest.webmanifest	<loaded>
 herringbone.test.js	mannequin.js	<loaded>	@{}
 herringbone.test.js	month.js	<loaded>	nextWorkday
+herringbone.test.js	mq/shirt-open.js	<loaded>
 herringbone.test.js	mq/shirt-tie.js	<loaded>
 herringbone.test.js	mq/suit-open.js	<loaded>
 herringbone.test.js	mq/suit.js	<loaded>
@@ -2870,6 +2917,7 @@ history.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 history.test.js	manifest.webmanifest	<loaded>
 history.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 history.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+history.test.js	mq/shirt-open.js	<loaded>
 history.test.js	mq/shirt-tie.js	<loaded>
 history.test.js	mq/suit-open.js	<loaded>
 history.test.js	mq/suit.js	<loaded>
@@ -2922,6 +2970,7 @@ impact.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBa
 impact.test.js	manifest.webmanifest	<loaded>
 impact.test.js	mannequin.js	<loaded>	@{}
 impact.test.js	month.js	<loaded>	nextWorkday
+impact.test.js	mq/shirt-open.js	<loaded>
 impact.test.js	mq/shirt-tie.js	<loaded>
 impact.test.js	mq/suit-open.js	<loaded>
 impact.test.js	mq/suit.js	<loaded>
@@ -2977,6 +3026,7 @@ invitelink.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 invitelink.test.js	manifest.webmanifest	<loaded>
 invitelink.test.js	mannequin.js	<loaded>	@{}
 invitelink.test.js	month.js	<loaded>	nextWorkday
+invitelink.test.js	mq/shirt-open.js	<loaded>
 invitelink.test.js	mq/shirt-tie.js	<loaded>
 invitelink.test.js	mq/suit-open.js	<loaded>
 invitelink.test.js	mq/suit.js	<loaded>
@@ -3023,6 +3073,7 @@ itempics.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 itempics.test.js	manifest.webmanifest	<loaded>
 itempics.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 itempics.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+itempics.test.js	mq/shirt-open.js	<loaded>
 itempics.test.js	mq/shirt-tie.js	<loaded>
 itempics.test.js	mq/suit-open.js	<loaded>
 itempics.test.js	mq/suit.js	<loaded>
@@ -3074,6 +3125,7 @@ jacketcolour.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 jacketcolour.test.js	manifest.webmanifest	<loaded>
 jacketcolour.test.js	mannequin.js	<loaded>	@{}
 jacketcolour.test.js	month.js	<loaded>	nextWorkday
+jacketcolour.test.js	mq/shirt-open.js	<loaded>
 jacketcolour.test.js	mq/shirt-tie.js	<loaded>
 jacketcolour.test.js	mq/suit-open.js	<loaded>
 jacketcolour.test.js	mq/suit.js	<loaded>
@@ -3098,6 +3150,8 @@ jacketcolour.test.js	wardrobe.js	<loaded>
 jacketcolour.test.js	watch/leather.jpg	<loaded>
 jacketcolour.test.js	watch/shirt-open.png	<loaded>
 jacketcolour.test.js	watch/shirt-tie.png	<loaded>
+jacketcolour.test.js	watch/suit.png	<loaded>
+jacketcolour.test.js	watch/vest.png	<loaded>
 jacketshare.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 jacketshare.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 jacketshare.test.js	add.js	<loaded>	checkArrivals
@@ -3123,6 +3177,7 @@ jacketshare.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 jacketshare.test.js	manifest.webmanifest	<loaded>
 jacketshare.test.js	mannequin.js	<loaded>	@{}
 jacketshare.test.js	month.js	<loaded>	nextWorkday
+jacketshare.test.js	mq/shirt-open.js	<loaded>
 jacketshare.test.js	mq/shirt-tie.js	<loaded>
 jacketshare.test.js	mq/suit-open.js	<loaded>
 jacketshare.test.js	mq/suit.js	<loaded>
@@ -3174,6 +3229,7 @@ khaki.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 khaki.test.js	manifest.webmanifest	<loaded>
 khaki.test.js	mannequin.js	<loaded>	@{}
 khaki.test.js	month.js	<loaded>	nextWorkday
+khaki.test.js	mq/shirt-open.js	<loaded>
 khaki.test.js	mq/shirt-tie.js	<loaded>
 khaki.test.js	mq/suit-open.js	<loaded>
 khaki.test.js	mq/suit.js	<loaded>
@@ -3238,6 +3294,7 @@ kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitClose	kitCloseupGuide	ki
 kit.test.js	manifest.webmanifest	<loaded>
 kit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 kit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+kit.test.js	mq/shirt-open.js	<loaded>
 kit.test.js	mq/shirt-tie.js	<loaded>
 kit.test.js	mq/suit-open.js	<loaded>
 kit.test.js	mq/suit.js	<loaded>
@@ -3285,6 +3342,7 @@ kvlimit.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{con
 kvlimit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 kvlimit.test.js	mannequin.js	<loaded>	@{}
 kvlimit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+kvlimit.test.js	mq/shirt-open.js	<loaded>
 kvlimit.test.js	mq/shirt-tie.js	<loaded>
 kvlimit.test.js	mq/suit-open.js	<loaded>
 kvlimit.test.js	mq/suit.js	<loaded>
@@ -3349,6 +3407,7 @@ listphoto.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 listphoto.test.js	manifest.webmanifest	<loaded>
 listphoto.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 listphoto.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+listphoto.test.js	mq/shirt-open.js	<loaded>
 listphoto.test.js	mq/shirt-tie.js	<loaded>
 listphoto.test.js	mq/suit-open.js	<loaded>
 listphoto.test.js	mq/suit.js	<loaded>
@@ -3449,6 +3508,7 @@ masterspeed.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@
 masterspeed.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 masterspeed.test.js	mannequin.js	<loaded>	@{}
 masterspeed.test.js	month.js	<loaded>	nextWorkday	planOn
+masterspeed.test.js	mq/shirt-open.js	<loaded>
 masterspeed.test.js	mq/shirt-tie.js	<loaded>
 masterspeed.test.js	mq/suit-open.js	<loaded>
 masterspeed.test.js	mq/suit.js	<loaded>
@@ -3512,6 +3572,7 @@ measalt.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 measalt.test.js	manifest.webmanifest	<loaded>
 measalt.test.js	mannequin.js	<loaded>	@{}
 measalt.test.js	month.js	<loaded>	nextWorkday
+measalt.test.js	mq/shirt-open.js	<loaded>
 measalt.test.js	mq/shirt-tie.js	<loaded>
 measalt.test.js	mq/suit-open.js	<loaded>
 measalt.test.js	mq/suit.js	<loaded>
@@ -3578,6 +3639,7 @@ measure.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 measure.test.js	manifest.webmanifest	<loaded>
 measure.test.js	mannequin.js	<loaded>	@{}
 measure.test.js	month.js	<loaded>	nextWorkday
+measure.test.js	mq/shirt-open.js	<loaded>
 measure.test.js	mq/shirt-tie.js	<loaded>
 measure.test.js	mq/suit-open.js	<loaded>
 measure.test.js	mq/suit.js	<loaded>
@@ -3633,6 +3695,7 @@ month.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 month.test.js	manifest.webmanifest	<loaded>
 month.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 month.test.js	month.js	<loaded>	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+month.test.js	mq/shirt-open.js	<loaded>
 month.test.js	mq/shirt-tie.js	<loaded>
 month.test.js	mq/suit-open.js	<loaded>
 month.test.js	mq/suit.js	<loaded>
@@ -3684,6 +3747,7 @@ monthswipe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 monthswipe.test.js	manifest.webmanifest	<loaded>
 monthswipe.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 monthswipe.test.js	month.js	<loaded>	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+monthswipe.test.js	mq/shirt-open.js	<loaded>
 monthswipe.test.js	mq/shirt-tie.js	<loaded>
 monthswipe.test.js	mq/suit-open.js	<loaded>
 monthswipe.test.js	mq/suit.js	<loaded>
@@ -3735,6 +3799,7 @@ monthunfold.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 monthunfold.test.js	manifest.webmanifest	<loaded>
 monthunfold.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 monthunfold.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStep	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+monthunfold.test.js	mq/shirt-open.js	<loaded>
 monthunfold.test.js	mq/shirt-tie.js	<loaded>
 monthunfold.test.js	mq/suit-open.js	<loaded>
 monthunfold.test.js	mq/suit.js	<loaded>
@@ -3786,6 +3851,7 @@ motif.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 motif.test.js	manifest.webmanifest	<loaded>
 motif.test.js	mannequin.js	<loaded>	@{}
 motif.test.js	month.js	<loaded>	nextWorkday
+motif.test.js	mq/shirt-open.js	<loaded>
 motif.test.js	mq/shirt-tie.js	<loaded>
 motif.test.js	mq/suit-open.js	<loaded>
 motif.test.js	mq/suit.js	<loaded>
@@ -3847,6 +3913,7 @@ moveoutfit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 moveoutfit.test.js	manifest.webmanifest	<loaded>
 moveoutfit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 moveoutfit.test.js	month.js	<loaded>	monthFillSoon	monthGridHtml	monthLink	nextWorkday	openDay	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+moveoutfit.test.js	mq/shirt-open.js	<loaded>
 moveoutfit.test.js	mq/shirt-tie.js	<loaded>
 moveoutfit.test.js	mq/suit-open.js	<loaded>
 moveoutfit.test.js	mq/suit.js	<loaded>
@@ -3898,6 +3965,7 @@ multi.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 multi.test.js	manifest.webmanifest	<loaded>
 multi.test.js	mannequin.js	<loaded>	@{}
 multi.test.js	month.js	<loaded>	nextWorkday
+multi.test.js	mq/shirt-open.js	<loaded>
 multi.test.js	mq/shirt-tie.js	<loaded>
 multi.test.js	mq/suit-open.js	<loaded>
 multi.test.js	mq/suit.js	<loaded>
@@ -3948,6 +4016,7 @@ navbar.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 navbar.test.js	manifest.webmanifest	<loaded>
 navbar.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 navbar.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+navbar.test.js	mq/shirt-open.js	<loaded>
 navbar.test.js	mq/shirt-tie.js	<loaded>
 navbar.test.js	mq/suit-open.js	<loaded>
 navbar.test.js	mq/suit.js	<loaded>
@@ -3999,6 +4068,7 @@ navfit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 navfit.test.js	manifest.webmanifest	<loaded>
 navfit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 navfit.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+navfit.test.js	mq/shirt-open.js	<loaded>
 navfit.test.js	mq/shirt-tie.js	<loaded>
 navfit.test.js	mq/suit-open.js	<loaded>
 navfit.test.js	mq/suit.js	<loaded>
@@ -4051,6 +4121,7 @@ newuser.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 newuser.test.js	manifest.webmanifest	<loaded>
 newuser.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 newuser.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+newuser.test.js	mq/shirt-open.js	<loaded>
 newuser.test.js	mq/shirt-tie.js	<loaded>
 newuser.test.js	mq/suit-open.js	<loaded>
 newuser.test.js	mq/suit.js	<loaded>
@@ -4152,6 +4223,7 @@ onorder.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRo
 onorder.test.js	manifest.webmanifest	<loaded>
 onorder.test.js	mannequin.js	<loaded>	@{}
 onorder.test.js	month.js	<loaded>	nextWorkday
+onorder.test.js	mq/shirt-open.js	<loaded>
 onorder.test.js	mq/shirt-tie.js	<loaded>
 onorder.test.js	mq/suit-open.js	<loaded>
 onorder.test.js	mq/suit.js	<loaded>
@@ -4203,6 +4275,7 @@ pack.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 pack.test.js	manifest.webmanifest	<loaded>
 pack.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 pack.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+pack.test.js	mq/shirt-open.js	<loaded>
 pack.test.js	mq/shirt-tie.js	<loaded>
 pack.test.js	mq/suit-open.js	<loaded>
 pack.test.js	mq/suit.js	<loaded>
@@ -4253,6 +4326,7 @@ pagescroll.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 pagescroll.test.js	manifest.webmanifest	<loaded>
 pagescroll.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 pagescroll.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+pagescroll.test.js	mq/shirt-open.js	<loaded>
 pagescroll.test.js	mq/shirt-tie.js	<loaded>
 pagescroll.test.js	mq/suit-open.js	<loaded>
 pagescroll.test.js	mq/suit.js	<loaded>
@@ -4304,6 +4378,7 @@ paste.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBan
 paste.test.js	manifest.webmanifest	<loaded>
 paste.test.js	mannequin.js	<loaded>	@{}
 paste.test.js	month.js	<loaded>	nextWorkday
+paste.test.js	mq/shirt-open.js	<loaded>
 paste.test.js	mq/shirt-tie.js	<loaded>
 paste.test.js	mq/suit-open.js	<loaded>
 paste.test.js	mq/suit.js	<loaded>
@@ -4353,6 +4428,7 @@ patternphoto.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 patternphoto.test.js	manifest.webmanifest	<loaded>
 patternphoto.test.js	mannequin.js	<loaded>	@{}
 patternphoto.test.js	month.js	<loaded>	nextWorkday
+patternphoto.test.js	mq/shirt-open.js	<loaded>
 patternphoto.test.js	mq/shirt-tie.js	<loaded>
 patternphoto.test.js	mq/suit-open.js	<loaded>
 patternphoto.test.js	mq/suit.js	<loaded>
@@ -4404,6 +4480,7 @@ photobackdrop.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 photobackdrop.test.js	manifest.webmanifest	<loaded>
 photobackdrop.test.js	mannequin.js	<loaded>	@{}
 photobackdrop.test.js	month.js	<loaded>	nextWorkday
+photobackdrop.test.js	mq/shirt-open.js	<loaded>
 photobackdrop.test.js	mq/shirt-tie.js	<loaded>
 photobackdrop.test.js	mq/suit-open.js	<loaded>
 photobackdrop.test.js	mq/suit.js	<loaded>
@@ -4455,6 +4532,7 @@ photoedit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 photoedit.test.js	manifest.webmanifest	<loaded>
 photoedit.test.js	mannequin.js	<loaded>	@{}
 photoedit.test.js	month.js	<loaded>	nextWorkday
+photoedit.test.js	mq/shirt-open.js	<loaded>
 photoedit.test.js	mq/shirt-tie.js	<loaded>
 photoedit.test.js	mq/suit-open.js	<loaded>
 photoedit.test.js	mq/suit.js	<loaded>
@@ -4514,6 +4592,7 @@ picfold.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 picfold.test.js	manifest.webmanifest	<loaded>
 picfold.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 picfold.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+picfold.test.js	mq/shirt-open.js	<loaded>
 picfold.test.js	mq/shirt-tie.js	<loaded>
 picfold.test.js	mq/suit-open.js	<loaded>
 picfold.test.js	mq/suit.js	<loaded>
@@ -4565,6 +4644,7 @@ picker.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 picker.test.js	manifest.webmanifest	<loaded>
 picker.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 picker.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+picker.test.js	mq/shirt-open.js	<loaded>
 picker.test.js	mq/shirt-tie.js	<loaded>
 picker.test.js	mq/suit-open.js	<loaded>
 picker.test.js	mq/suit.js	<loaded>
@@ -4615,6 +4695,7 @@ piecesname.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 piecesname.test.js	manifest.webmanifest	<loaded>
 piecesname.test.js	mannequin.js	<loaded>	@{}
 piecesname.test.js	month.js	<loaded>	nextWorkday	piecesLine
+piecesname.test.js	mq/shirt-open.js	<loaded>
 piecesname.test.js	mq/shirt-tie.js	<loaded>
 piecesname.test.js	mq/suit-open.js	<loaded>
 piecesname.test.js	mq/suit.js	<loaded>
@@ -4666,6 +4747,7 @@ planahead.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 planahead.test.js	manifest.webmanifest	<loaded>
 planahead.test.js	mannequin.js	<loaded>	@{}
 planahead.test.js	month.js	<loaded>	nextWorkday
+planahead.test.js	mq/shirt-open.js	<loaded>
 planahead.test.js	mq/shirt-tie.js	<loaded>
 planahead.test.js	mq/suit-open.js	<loaded>
 planahead.test.js	mq/suit.js	<loaded>
@@ -4717,6 +4799,7 @@ planaudit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 planaudit.test.js	manifest.webmanifest	<loaded>
 planaudit.test.js	mannequin.js	<loaded>	@{}
 planaudit.test.js	month.js	<loaded>	nextWorkday
+planaudit.test.js	mq/shirt-open.js	<loaded>
 planaudit.test.js	mq/shirt-tie.js	<loaded>
 planaudit.test.js	mq/suit-open.js	<loaded>
 planaudit.test.js	mq/suit.js	<loaded>
@@ -4767,6 +4850,7 @@ plannerfix.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 plannerfix.test.js	manifest.webmanifest	<loaded>
 plannerfix.test.js	mannequin.js	<loaded>	@{}
 plannerfix.test.js	month.js	<loaded>	nextWorkday
+plannerfix.test.js	mq/shirt-open.js	<loaded>
 plannerfix.test.js	mq/shirt-tie.js	<loaded>
 plannerfix.test.js	mq/suit-open.js	<loaded>
 plannerfix.test.js	mq/suit.js	<loaded>
@@ -4818,6 +4902,7 @@ prefetch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 prefetch.test.js	manifest.webmanifest	<loaded>
 prefetch.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 prefetch.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+prefetch.test.js	mq/shirt-open.js	<loaded>
 prefetch.test.js	mq/shirt-tie.js	<loaded>
 prefetch.test.js	mq/suit-open.js	<loaded>
 prefetch.test.js	mq/suit.js	<loaded>
@@ -4867,6 +4952,7 @@ raincoat.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 raincoat.test.js	manifest.webmanifest	<loaded>
 raincoat.test.js	mannequin.js	<loaded>	@{}
 raincoat.test.js	month.js	<loaded>	nextWorkday
+raincoat.test.js	mq/shirt-open.js	<loaded>
 raincoat.test.js	mq/shirt-tie.js	<loaded>
 raincoat.test.js	mq/suit-open.js	<loaded>
 raincoat.test.js	mq/suit.js	<loaded>
@@ -4918,6 +5004,7 @@ refresh.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 refresh.test.js	manifest.webmanifest	<loaded>
 refresh.test.js	mannequin.js	<loaded>	@{}
 refresh.test.js	month.js	<loaded>	nextWorkday
+refresh.test.js	mq/shirt-open.js	<loaded>
 refresh.test.js	mq/shirt-tie.js	<loaded>
 refresh.test.js	mq/suit-open.js	<loaded>
 refresh.test.js	mq/suit.js	<loaded>
@@ -4968,6 +5055,7 @@ refs.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 refs.test.js	manifest.webmanifest	<loaded>
 refs.test.js	mannequin.js	<loaded>	@{}
 refs.test.js	month.js	<loaded>	nextWorkday
+refs.test.js	mq/shirt-open.js	<loaded>
 refs.test.js	mq/shirt-tie.js	<loaded>
 refs.test.js	mq/suit-open.js	<loaded>
 refs.test.js	mq/suit.js	<loaded>
@@ -5015,6 +5103,7 @@ remind.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	
 remind.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 remind.test.js	mannequin.js	<loaded>	@{}
 remind.test.js	month.js	<loaded>	nextWorkday	piecesLine
+remind.test.js	mq/shirt-open.js	<loaded>
 remind.test.js	mq/shirt-tie.js	<loaded>
 remind.test.js	mq/suit-open.js	<loaded>
 remind.test.js	mq/suit.js	<loaded>
@@ -5067,6 +5156,7 @@ render-sync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 render-sync.test.js	manifest.webmanifest	<loaded>
 render-sync.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 render-sync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+render-sync.test.js	mq/shirt-open.js	<loaded>
 render-sync.test.js	mq/shirt-tie.js	<loaded>
 render-sync.test.js	mq/suit-open.js	<loaded>
 render-sync.test.js	mq/suit.js	<loaded>
@@ -5117,6 +5207,7 @@ render.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 render.test.js	manifest.webmanifest	<loaded>
 render.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 render.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+render.test.js	mq/shirt-open.js	<loaded>
 render.test.js	mq/shirt-tie.js	<loaded>
 render.test.js	mq/suit-open.js	<loaded>
 render.test.js	mq/suit.js	<loaded>
@@ -5168,6 +5259,7 @@ replan.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 replan.test.js	manifest.webmanifest	<loaded>
 replan.test.js	mannequin.js	<loaded>	@{}
 replan.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+replan.test.js	mq/shirt-open.js	<loaded>
 replan.test.js	mq/shirt-tie.js	<loaded>
 replan.test.js	mq/suit-open.js	<loaded>
 replan.test.js	mq/suit.js	<loaded>
@@ -5218,6 +5310,7 @@ reveal.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 reveal.test.js	manifest.webmanifest	<loaded>
 reveal.test.js	mannequin.js	<loaded>	@{}
 reveal.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+reveal.test.js	mq/shirt-open.js	<loaded>
 reveal.test.js	mq/shirt-tie.js	<loaded>
 reveal.test.js	mq/suit-open.js	<loaded>
 reveal.test.js	mq/suit.js	<loaded>
@@ -5269,6 +5362,7 @@ reviewfixes.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitSta
 reviewfixes.test.js	manifest.webmanifest	<loaded>
 reviewfixes.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 reviewfixes.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+reviewfixes.test.js	mq/shirt-open.js	<loaded>
 reviewfixes.test.js	mq/shirt-tie.js	<loaded>
 reviewfixes.test.js	mq/suit-open.js	<loaded>
 reviewfixes.test.js	mq/suit.js	<loaded>
@@ -5319,6 +5413,7 @@ rotation-pause.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 rotation-pause.test.js	manifest.webmanifest	<loaded>
 rotation-pause.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 rotation-pause.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+rotation-pause.test.js	mq/shirt-open.js	<loaded>
 rotation-pause.test.js	mq/shirt-tie.js	<loaded>
 rotation-pause.test.js	mq/suit-open.js	<loaded>
 rotation-pause.test.js	mq/suit.js	<loaded>
@@ -5370,6 +5465,7 @@ rotation.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 rotation.test.js	manifest.webmanifest	<loaded>
 rotation.test.js	mannequin.js	<loaded>	@{}
 rotation.test.js	month.js	<loaded>	nextWorkday
+rotation.test.js	mq/shirt-open.js	<loaded>
 rotation.test.js	mq/shirt-tie.js	<loaded>
 rotation.test.js	mq/suit-open.js	<loaded>
 rotation.test.js	mq/suit.js	<loaded>
@@ -5421,6 +5517,7 @@ rules8.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 rules8.test.js	manifest.webmanifest	<loaded>
 rules8.test.js	mannequin.js	<loaded>	@{}
 rules8.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+rules8.test.js	mq/shirt-open.js	<loaded>
 rules8.test.js	mq/shirt-tie.js	<loaded>
 rules8.test.js	mq/suit-open.js	<loaded>
 rules8.test.js	mq/suit.js	<loaded>
@@ -5475,6 +5572,7 @@ run.js: add an item without a photo; it persists	kit.js	<loaded>	kitHasSample	ki
 run.js: add an item without a photo; it persists	manifest.webmanifest	<loaded>
 run.js: add an item without a photo; it persists	mannequin.js	<loaded>	@{}
 run.js: add an item without a photo; it persists	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+run.js: add an item without a photo; it persists	mq/shirt-open.js	<loaded>
 run.js: add an item without a photo; it persists	mq/shirt-tie.js	<loaded>
 run.js: add an item without a photo; it persists	mq/suit-open.js	<loaded>
 run.js: add an item without a photo; it persists	mq/suit.js	<loaded>
@@ -5524,8 +5622,9 @@ run.js: figure draws the tie, and the shirt when there is no jacket	index.html	<
 run.js: figure draws the tie, and the shirt when there is no jacket	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 run.js: figure draws the tie, and the shirt when there is no jacket	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 run.js: figure draws the tie, and the shirt when there is no jacket	manifest.webmanifest	<loaded>
-run.js: figure draws the tie, and the shirt when there is no jacket	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+run.js: figure draws the tie, and the shirt when there is no jacket	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 run.js: figure draws the tie, and the shirt when there is no jacket	month.js	<loaded>	nextWorkday
+run.js: figure draws the tie, and the shirt when there is no jacket	mq/shirt-open.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/shirt-tie.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/suit-open.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/suit.js	<loaded>
@@ -5577,6 +5676,7 @@ run.js: outfit score	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 run.js: outfit score	manifest.webmanifest	<loaded>
 run.js: outfit score	mannequin.js	<loaded>	@{}
 run.js: outfit score	month.js	<loaded>	nextWorkday
+run.js: outfit score	mq/shirt-open.js	<loaded>
 run.js: outfit score	mq/shirt-tie.js	<loaded>
 run.js: outfit score	mq/suit-open.js	<loaded>
 run.js: outfit score	mq/suit.js	<loaded>
@@ -5627,6 +5727,7 @@ run.js: pattern detection on synthetic fabric photos	kit.js	<loaded>	kitHasSampl
 run.js: pattern detection on synthetic fabric photos	manifest.webmanifest	<loaded>
 run.js: pattern detection on synthetic fabric photos	mannequin.js	<loaded>	@{}
 run.js: pattern detection on synthetic fabric photos	month.js	<loaded>	nextWorkday
+run.js: pattern detection on synthetic fabric photos	mq/shirt-open.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/shirt-tie.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/suit-open.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/suit.js	<loaded>
@@ -5678,6 +5779,7 @@ run.js: planner: independent outfit checklist	kit.js	<loaded>	kitHasSample	kitSa
 run.js: planner: independent outfit checklist	manifest.webmanifest	<loaded>
 run.js: planner: independent outfit checklist	mannequin.js	<loaded>	@{}
 run.js: planner: independent outfit checklist	month.js	<loaded>	nextWorkday
+run.js: planner: independent outfit checklist	mq/shirt-open.js	<loaded>
 run.js: planner: independent outfit checklist	mq/shirt-tie.js	<loaded>
 run.js: planner: independent outfit checklist	mq/suit-open.js	<loaded>
 run.js: planner: independent outfit checklist	mq/suit.js	<loaded>
@@ -5728,6 +5830,7 @@ run.js: planner: shoes, belts, leather and metals	kit.js	<loaded>	kitHasSample	k
 run.js: planner: shoes, belts, leather and metals	manifest.webmanifest	<loaded>
 run.js: planner: shoes, belts, leather and metals	mannequin.js	<loaded>	@{}
 run.js: planner: shoes, belts, leather and metals	month.js	<loaded>	nextWorkday
+run.js: planner: shoes, belts, leather and metals	mq/shirt-open.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/shirt-tie.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/suit-open.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/suit.js	<loaded>
@@ -5779,6 +5882,7 @@ run.js: renders the outfit without errors	kit.js	<loaded>	kitHasSample	kitSample
 run.js: renders the outfit without errors	manifest.webmanifest	<loaded>
 run.js: renders the outfit without errors	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 run.js: renders the outfit without errors	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+run.js: renders the outfit without errors	mq/shirt-open.js	<loaded>
 run.js: renders the outfit without errors	mq/shirt-tie.js	<loaded>
 run.js: renders the outfit without errors	mq/suit-open.js	<loaded>
 run.js: renders the outfit without errors	mq/suit.js	<loaded>
@@ -5829,6 +5933,7 @@ run.js: swipe edge cases and month crossing	kit.js	<loaded>	kitHasSample	kitSamp
 run.js: swipe edge cases and month crossing	manifest.webmanifest	<loaded>
 run.js: swipe edge cases and month crossing	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 run.js: swipe edge cases and month crossing	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+run.js: swipe edge cases and month crossing	mq/shirt-open.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/shirt-tie.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/suit-open.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/suit.js	<loaded>
@@ -5880,6 +5985,7 @@ run.js: swipe moves only the outfit, across viewports	kit.js	<loaded>	kitHasSamp
 run.js: swipe moves only the outfit, across viewports	manifest.webmanifest	<loaded>
 run.js: swipe moves only the outfit, across viewports	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 run.js: swipe moves only the outfit, across viewports	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+run.js: swipe moves only the outfit, across viewports	mq/shirt-open.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/shirt-tie.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/suit-open.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/suit.js	<loaded>
@@ -5931,6 +6037,7 @@ safety.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 safety.test.js	manifest.webmanifest	<loaded>
 safety.test.js	mannequin.js	<loaded>	@{}
 safety.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+safety.test.js	mq/shirt-open.js	<loaded>
 safety.test.js	mq/shirt-tie.js	<loaded>
 safety.test.js	mq/suit-open.js	<loaded>
 safety.test.js	mq/suit.js	<loaded>
@@ -5982,6 +6089,7 @@ safetysync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 safetysync.test.js	manifest.webmanifest	<loaded>
 safetysync.test.js	mannequin.js	<loaded>	@{}
 safetysync.test.js	month.js	<loaded>	nextWorkday
+safetysync.test.js	mq/shirt-open.js	<loaded>
 safetysync.test.js	mq/shirt-tie.js	<loaded>
 safetysync.test.js	mq/suit-open.js	<loaded>
 safetysync.test.js	mq/suit.js	<loaded>
@@ -6031,6 +6139,7 @@ scoreanim.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampl
 scoreanim.test.js	manifest.webmanifest	<loaded>
 scoreanim.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 scoreanim.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+scoreanim.test.js	mq/shirt-open.js	<loaded>
 scoreanim.test.js	mq/shirt-tie.js	<loaded>
 scoreanim.test.js	mq/suit-open.js	<loaded>
 scoreanim.test.js	mq/suit.js	<loaded>
@@ -6081,6 +6190,7 @@ scorefix.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 scorefix.test.js	manifest.webmanifest	<loaded>
 scorefix.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 scorefix.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+scorefix.test.js	mq/shirt-open.js	<loaded>
 scorefix.test.js	mq/shirt-tie.js	<loaded>
 scorefix.test.js	mq/suit-open.js	<loaded>
 scorefix.test.js	mq/suit.js	<loaded>
@@ -6131,6 +6241,7 @@ sett.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 sett.test.js	manifest.webmanifest	<loaded>
 sett.test.js	mannequin.js	<loaded>	@{}
 sett.test.js	month.js	<loaded>	nextWorkday
+sett.test.js	mq/shirt-open.js	<loaded>
 sett.test.js	mq/shirt-tie.js	<loaded>
 sett.test.js	mq/suit-open.js	<loaded>
 sett.test.js	mq/suit.js	<loaded>
@@ -6184,6 +6295,7 @@ settingslock.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 settingslock.test.js	manifest.webmanifest	<loaded>
 settingslock.test.js	mannequin.js	<loaded>	@{}
 settingslock.test.js	month.js	<loaded>	nextWorkday
+settingslock.test.js	mq/shirt-open.js	<loaded>
 settingslock.test.js	mq/shirt-tie.js	<loaded>
 settingslock.test.js	mq/suit-open.js	<loaded>
 settingslock.test.js	mq/suit.js	<loaded>
@@ -6231,6 +6343,7 @@ settingsmerge.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}
 settingsmerge.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 settingsmerge.test.js	mannequin.js	<loaded>	@{}
 settingsmerge.test.js	month.js	<loaded>	nextWorkday
+settingsmerge.test.js	mq/shirt-open.js	<loaded>
 settingsmerge.test.js	mq/shirt-tie.js	<loaded>
 settingsmerge.test.js	mq/suit-open.js	<loaded>
 settingsmerge.test.js	mq/suit.js	<loaded>
@@ -6282,6 +6395,7 @@ settingsstay.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 settingsstay.test.js	manifest.webmanifest	<loaded>
 settingsstay.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 settingsstay.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+settingsstay.test.js	mq/shirt-open.js	<loaded>
 settingsstay.test.js	mq/shirt-tie.js	<loaded>
 settingsstay.test.js	mq/suit-open.js	<loaded>
 settingsstay.test.js	mq/suit.js	<loaded>
@@ -6333,6 +6447,7 @@ setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitClose	kitClothPic	kitD
 setup.test.js	manifest.webmanifest	<loaded>
 setup.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 setup.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+setup.test.js	mq/shirt-open.js	<loaded>
 setup.test.js	mq/shirt-tie.js	<loaded>
 setup.test.js	mq/suit-open.js	<loaded>
 setup.test.js	mq/suit.js	<loaded>
@@ -6384,6 +6499,7 @@ shade.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
 shade.test.js	manifest.webmanifest	<loaded>
 shade.test.js	mannequin.js	<loaded>	@{}
 shade.test.js	month.js	<loaded>	nextWorkday
+shade.test.js	mq/shirt-open.js	<loaded>
 shade.test.js	mq/shirt-tie.js	<loaded>
 shade.test.js	mq/suit-open.js	<loaded>
 shade.test.js	mq/suit.js	<loaded>
@@ -6434,6 +6550,7 @@ sharedmasters.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}
 sharedmasters.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sharedmasters.test.js	mannequin.js	<loaded>	@{}
 sharedmasters.test.js	month.js	<loaded>	nextWorkday	planOn
+sharedmasters.test.js	mq/shirt-open.js	<loaded>
 sharedmasters.test.js	mq/shirt-tie.js	<loaded>
 sharedmasters.test.js	mq/suit-open.js	<loaded>
 sharedmasters.test.js	mq/suit.js	<loaded>
@@ -6498,6 +6615,7 @@ sharpclose.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sharpclose.test.js	manifest.webmanifest	<loaded>
 sharpclose.test.js	mannequin.js	<loaded>	@{}
 sharpclose.test.js	month.js	<loaded>	nextWorkday
+sharpclose.test.js	mq/shirt-open.js	<loaded>
 sharpclose.test.js	mq/shirt-tie.js	<loaded>
 sharpclose.test.js	mq/suit-open.js	<loaded>
 sharpclose.test.js	mq/suit.js	<loaded>
@@ -6614,6 +6732,7 @@ shirtweave.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStar
 shirtweave.test.js	manifest.webmanifest	<loaded>
 shirtweave.test.js	mannequin.js	<loaded>	@{}
 shirtweave.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+shirtweave.test.js	mq/shirt-open.js	<loaded>
 shirtweave.test.js	mq/shirt-tie.js	<loaded>
 shirtweave.test.js	mq/suit-open.js	<loaded>
 shirtweave.test.js	mq/suit.js	<loaded>
@@ -6666,6 +6785,7 @@ shop.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampleBann
 shop.test.js	manifest.webmanifest	<loaded>
 shop.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 shop.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+shop.test.js	mq/shirt-open.js	<loaded>
 shop.test.js	mq/shirt-tie.js	<loaded>
 shop.test.js	mq/suit-open.js	<loaded>
 shop.test.js	mq/suit.js	<loaded>
@@ -6717,6 +6837,7 @@ shopswipe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 shopswipe.test.js	manifest.webmanifest	<loaded>
 shopswipe.test.js	mannequin.js	<loaded>	@{}
 shopswipe.test.js	month.js	<loaded>	nextWorkday
+shopswipe.test.js	mq/shirt-open.js	<loaded>
 shopswipe.test.js	mq/shirt-tie.js	<loaded>
 shopswipe.test.js	mq/suit-open.js	<loaded>
 shopswipe.test.js	mq/suit.js	<loaded>
@@ -6768,6 +6889,7 @@ snapshots.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 snapshots.test.js	manifest.webmanifest	<loaded>
 snapshots.test.js	mannequin.js	<loaded>	@{}
 snapshots.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
+snapshots.test.js	mq/shirt-open.js	<loaded>
 snapshots.test.js	mq/shirt-tie.js	<loaded>
 snapshots.test.js	mq/suit-open.js	<loaded>
 snapshots.test.js	mq/suit.js	<loaded>
@@ -6818,6 +6940,7 @@ socktoe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 socktoe.test.js	manifest.webmanifest	<loaded>
 socktoe.test.js	mannequin.js	<loaded>	@{}
 socktoe.test.js	month.js	<loaded>	nextWorkday
+socktoe.test.js	mq/shirt-open.js	<loaded>
 socktoe.test.js	mq/shirt-tie.js	<loaded>
 socktoe.test.js	mq/suit-open.js	<loaded>
 socktoe.test.js	mq/suit.js	<loaded>
@@ -6877,6 +7000,7 @@ speed.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 speed.test.js	manifest.webmanifest	<any>	<loaded>
 speed.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 speed.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+speed.test.js	mq/shirt-open.js	<loaded>
 speed.test.js	mq/shirt-tie.js	<loaded>
 speed.test.js	mq/suit-open.js	<loaded>
 speed.test.js	mq/suit.js	<loaded>
@@ -6927,6 +7051,7 @@ staledevice.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 staledevice.test.js	manifest.webmanifest	<loaded>
 staledevice.test.js	mannequin.js	<loaded>	@{}
 staledevice.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
+staledevice.test.js	mq/shirt-open.js	<loaded>
 staledevice.test.js	mq/shirt-tie.js	<loaded>
 staledevice.test.js	mq/suit-open.js	<loaded>
 staledevice.test.js	mq/suit.js	<loaded>
@@ -6982,6 +7107,7 @@ stats.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 stats.test.js	manifest.webmanifest	<loaded>
 stats.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 stats.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+stats.test.js	mq/shirt-open.js	<loaded>
 stats.test.js	mq/shirt-tie.js	<loaded>
 stats.test.js	mq/suit-open.js	<loaded>
 stats.test.js	mq/suit.js	<loaded>
@@ -7032,6 +7158,7 @@ subback.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 subback.test.js	manifest.webmanifest	<loaded>
 subback.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 subback.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+subback.test.js	mq/shirt-open.js	<loaded>
 subback.test.js	mq/shirt-tie.js	<loaded>
 subback.test.js	mq/suit-open.js	<loaded>
 subback.test.js	mq/suit.js	<loaded>
@@ -7138,6 +7265,7 @@ swatchzoom.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 swatchzoom.test.js	manifest.webmanifest	<loaded>
 swatchzoom.test.js	mannequin.js	<loaded>	@{}
 swatchzoom.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+swatchzoom.test.js	mq/shirt-open.js	<loaded>
 swatchzoom.test.js	mq/shirt-tie.js	<loaded>
 swatchzoom.test.js	mq/suit-open.js	<loaded>
 swatchzoom.test.js	mq/suit.js	<loaded>
@@ -7189,6 +7317,7 @@ sync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sync.test.js	manifest.webmanifest	<loaded>
 sync.test.js	mannequin.js	<loaded>	@{}
 sync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
+sync.test.js	mq/shirt-open.js	<loaded>
 sync.test.js	mq/shirt-tie.js	<loaded>
 sync.test.js	mq/suit-open.js	<loaded>
 sync.test.js	mq/suit.js	<loaded>
@@ -7245,6 +7374,7 @@ tabmove.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tabmove.test.js	manifest.webmanifest	<loaded>
 tabmove.test.js	mannequin.js	<loaded>	@{}
 tabmove.test.js	month.js	<loaded>	nextWorkday
+tabmove.test.js	mq/shirt-open.js	<loaded>
 tabmove.test.js	mq/shirt-tie.js	<loaded>
 tabmove.test.js	mq/suit-open.js	<loaded>
 tabmove.test.js	mq/suit.js	<loaded>
@@ -7296,6 +7426,7 @@ tagging.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRo
 tagging.test.js	manifest.webmanifest	<loaded>
 tagging.test.js	mannequin.js	<loaded>	@{}
 tagging.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+tagging.test.js	mq/shirt-open.js	<loaded>
 tagging.test.js	mq/shirt-tie.js	<loaded>
 tagging.test.js	mq/suit-open.js	<loaded>
 tagging.test.js	mq/suit.js	<loaded>
@@ -7347,6 +7478,7 @@ tagswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tagswatch.test.js	manifest.webmanifest	<loaded>
 tagswatch.test.js	mannequin.js	<loaded>	@{}
 tagswatch.test.js	month.js	<loaded>	nextWorkday
+tagswatch.test.js	mq/shirt-open.js	<loaded>
 tagswatch.test.js	mq/shirt-tie.js	<loaded>
 tagswatch.test.js	mq/suit-open.js	<loaded>
 tagswatch.test.js	mq/suit.js	<loaded>
@@ -7398,6 +7530,7 @@ takeoff.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 takeoff.test.js	manifest.webmanifest	<loaded>
 takeoff.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 takeoff.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+takeoff.test.js	mq/shirt-open.js	<loaded>
 takeoff.test.js	mq/shirt-tie.js	<loaded>
 takeoff.test.js	mq/suit-open.js	<loaded>
 takeoff.test.js	mq/suit.js	<loaded>
@@ -7445,6 +7578,7 @@ testersync.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{
 testersync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 testersync.test.js	mannequin.js	<loaded>	@{}
 testersync.test.js	month.js	<loaded>	nextWorkday
+testersync.test.js	mq/shirt-open.js	<loaded>
 testersync.test.js	mq/shirt-tie.js	<loaded>
 testersync.test.js	mq/suit-open.js	<loaded>
 testersync.test.js	mq/suit.js	<loaded>
@@ -7491,6 +7625,7 @@ testerview.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 testerview.test.js	manifest.webmanifest	<loaded>
 testerview.test.js	mannequin.js	<loaded>	@{}
 testerview.test.js	month.js	<loaded>	nextWorkday
+testerview.test.js	mq/shirt-open.js	<loaded>
 testerview.test.js	mq/shirt-tie.js	<loaded>
 testerview.test.js	mq/suit-open.js	<loaded>
 testerview.test.js	mq/suit.js	<loaded>
@@ -7542,6 +7677,7 @@ texswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStart
 texswatch.test.js	manifest.webmanifest	<loaded>
 texswatch.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 texswatch.test.js	month.js	<loaded>	monthBelow	monthFillSoon	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	stackSVG
+texswatch.test.js	mq/shirt-open.js	<loaded>
 texswatch.test.js	mq/shirt-tie.js	<loaded>
 texswatch.test.js	mq/suit-open.js	<loaded>
 texswatch.test.js	mq/suit.js	<loaded>
@@ -7596,6 +7732,7 @@ texture.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitSaved	kitStartRo
 texture.test.js	manifest.webmanifest	<loaded>
 texture.test.js	mannequin.js	<loaded>	@{}
 texture.test.js	month.js	<loaded>	nextWorkday
+texture.test.js	mq/shirt-open.js	<loaded>
 texture.test.js	mq/shirt-tie.js	<loaded>
 texture.test.js	mq/suit-open.js	<loaded>
 texture.test.js	mq/suit.js	<loaded>
@@ -7651,6 +7788,7 @@ theme.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 theme.test.js	manifest.webmanifest	<loaded>
 theme.test.js	mannequin.js	<loaded>	@{}
 theme.test.js	month.js	<loaded>	nextWorkday
+theme.test.js	mq/shirt-open.js	<loaded>
 theme.test.js	mq/shirt-tie.js	<loaded>
 theme.test.js	mq/suit-open.js	<loaded>
 theme.test.js	mq/suit.js	<loaded>
@@ -7702,6 +7840,7 @@ tiegap.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tiegap.test.js	manifest.webmanifest	<loaded>
 tiegap.test.js	mannequin.js	<loaded>	@{}
 tiegap.test.js	month.js	<loaded>	nextWorkday
+tiegap.test.js	mq/shirt-open.js	<loaded>
 tiegap.test.js	mq/shirt-tie.js	<loaded>
 tiegap.test.js	mq/suit-open.js	<loaded>
 tiegap.test.js	mq/suit.js	<loaded>
@@ -7752,6 +7891,7 @@ tieweave.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tieweave.test.js	manifest.webmanifest	<loaded>
 tieweave.test.js	mannequin.js	<loaded>	@{}
 tieweave.test.js	month.js	<loaded>	nextWorkday
+tieweave.test.js	mq/shirt-open.js	<loaded>
 tieweave.test.js	mq/shirt-tie.js	<loaded>
 tieweave.test.js	mq/suit-open.js	<loaded>
 tieweave.test.js	mq/suit.js	<loaded>
@@ -7803,6 +7943,7 @@ tiewoven.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 tiewoven.test.js	manifest.webmanifest	<loaded>
 tiewoven.test.js	mannequin.js	<loaded>	@{}
 tiewoven.test.js	month.js	<loaded>	nextWorkday
+tiewoven.test.js	mq/shirt-open.js	<loaded>
 tiewoven.test.js	mq/shirt-tie.js	<loaded>
 tiewoven.test.js	mq/suit-open.js	<loaded>
 tiewoven.test.js	mq/suit.js	<loaded>
@@ -7867,6 +8008,7 @@ todaycards.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todaycards.test.js	manifest.webmanifest	<loaded>
 todaycards.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 todaycards.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord
+todaycards.test.js	mq/shirt-open.js	<loaded>
 todaycards.test.js	mq/shirt-tie.js	<loaded>
 todaycards.test.js	mq/suit-open.js	<loaded>
 todaycards.test.js	mq/suit.js	<loaded>
@@ -7918,6 +8060,7 @@ todayswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todayswatch.test.js	manifest.webmanifest	<loaded>
 todayswatch.test.js	mannequin.js	<loaded>	@{}
 todayswatch.test.js	month.js	<loaded>	nextWorkday	planOn
+todayswatch.test.js	mq/shirt-open.js	<loaded>
 todayswatch.test.js	mq/shirt-tie.js	<loaded>
 todayswatch.test.js	mq/suit-open.js	<loaded>
 todayswatch.test.js	mq/suit.js	<loaded>
@@ -7969,6 +8112,7 @@ todaytight.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todaytight.test.js	manifest.webmanifest	<loaded>
 todaytight.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 todaytight.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+todaytight.test.js	mq/shirt-open.js	<loaded>
 todaytight.test.js	mq/shirt-tie.js	<loaded>
 todaytight.test.js	mq/suit-open.js	<loaded>
 todaytight.test.js	mq/suit.js	<loaded>
@@ -8020,6 +8164,7 @@ todayzoom.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 todayzoom.test.js	manifest.webmanifest	<loaded>
 todayzoom.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 todayzoom.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+todayzoom.test.js	mq/shirt-open.js	<loaded>
 todayzoom.test.js	mq/shirt-tie.js	<loaded>
 todayzoom.test.js	mq/suit-open.js	<loaded>
 todayzoom.test.js	mq/suit.js	<loaded>
@@ -8066,6 +8211,7 @@ twillswatch.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 twillswatch.test.js	manifest.webmanifest	<loaded>
 twillswatch.test.js	mannequin.js	<loaded>	@{}
 twillswatch.test.js	month.js	<loaded>	nextWorkday
+twillswatch.test.js	mq/shirt-open.js	<loaded>
 twillswatch.test.js	mq/shirt-tie.js	<loaded>
 twillswatch.test.js	mq/suit-open.js	<loaded>
 twillswatch.test.js	mq/suit.js	<loaded>
@@ -8118,8 +8264,9 @@ ui.test.js	index.html	<any>	<loaded>
 ui.test.js	itemsheet.js	<any>	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	histDrop	histPush	itemBody	itemShown	noMotion	openItem	patSummary	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
 ui.test.js	kit.js	<any>	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 ui.test.js	manifest.webmanifest	<loaded>
-ui.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
+ui.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 ui.test.js	month.js	<any>	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+ui.test.js	mq/shirt-open.js	<loaded>
 ui.test.js	mq/shirt-tie.js	<loaded>
 ui.test.js	mq/suit-open.js	<loaded>
 ui.test.js	mq/suit.js	<loaded>
@@ -8172,6 +8319,7 @@ uipages.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 uipages.test.js	manifest.webmanifest	<loaded>
 uipages.test.js	mannequin.js	<loaded>	@{}
 uipages.test.js	month.js	<loaded>	nextWorkday
+uipages.test.js	mq/shirt-open.js	<loaded>
 uipages.test.js	mq/shirt-tie.js	<loaded>
 uipages.test.js	mq/suit-open.js	<loaded>
 uipages.test.js	mq/suit.js	<loaded>
@@ -8276,6 +8424,7 @@ wardgrid.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 wardgrid.test.js	manifest.webmanifest	<loaded>
 wardgrid.test.js	mannequin.js	<loaded>	@{}
 wardgrid.test.js	month.js	<loaded>	nextWorkday
+wardgrid.test.js	mq/shirt-open.js	<loaded>
 wardgrid.test.js	mq/shirt-tie.js	<loaded>
 wardgrid.test.js	mq/suit-open.js	<loaded>
 wardgrid.test.js	mq/suit.js	<loaded>
@@ -8327,6 +8476,7 @@ wardpic.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 wardpic.test.js	manifest.webmanifest	<loaded>
 wardpic.test.js	mannequin.js	<loaded>	@{}
 wardpic.test.js	month.js	<loaded>	nextWorkday
+wardpic.test.js	mq/shirt-open.js	<loaded>
 wardpic.test.js	mq/shirt-tie.js	<loaded>
 wardpic.test.js	mq/suit-open.js	<loaded>
 wardpic.test.js	mq/suit.js	<loaded>
@@ -8378,6 +8528,7 @@ wardrobe.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitDuplicate	kitHasSam
 wardrobe.test.js	manifest.webmanifest	<loaded>
 wardrobe.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 wardrobe.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shortRest	shortTop	stackSVG	tieWord
+wardrobe.test.js	mq/shirt-open.js	<loaded>
 wardrobe.test.js	mq/shirt-tie.js	<loaded>
 wardrobe.test.js	mq/suit-open.js	<loaded>
 wardrobe.test.js	mq/suit.js	<loaded>
@@ -8433,6 +8584,7 @@ wardrobetap.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitDuplicate	kitHas
 wardrobetap.test.js	manifest.webmanifest	<loaded>
 wardrobetap.test.js	mannequin.js	<loaded>	@{}
 wardrobetap.test.js	month.js	<loaded>	nextWorkday
+wardrobetap.test.js	mq/shirt-open.js	<loaded>
 wardrobetap.test.js	mq/shirt-tie.js	<loaded>
 wardrobetap.test.js	mq/suit-open.js	<loaded>
 wardrobetap.test.js	mq/suit.js	<loaded>
@@ -8484,6 +8636,7 @@ wardswipe.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSampl
 wardswipe.test.js	manifest.webmanifest	<loaded>
 wardswipe.test.js	mannequin.js	<loaded>	@{}
 wardswipe.test.js	month.js	<loaded>	nextWorkday
+wardswipe.test.js	mq/shirt-open.js	<loaded>
 wardswipe.test.js	mq/shirt-tie.js	<loaded>
 wardswipe.test.js	mq/suit-open.js	<loaded>
 wardswipe.test.js	mq/suit.js	<loaded>
@@ -8535,6 +8688,7 @@ watchmatch.test.js	kit.js	<loaded>	@addEventListenerkeydown	kitHasSample	kitSamp
 watchmatch.test.js	manifest.webmanifest	<loaded>
 watchmatch.test.js	mannequin.js	<loaded>	@{}
 watchmatch.test.js	month.js	<loaded>	nextWorkday
+watchmatch.test.js	mq/shirt-open.js	<loaded>
 watchmatch.test.js	mq/shirt-tie.js	<loaded>
 watchmatch.test.js	mq/suit-open.js	<loaded>
 watchmatch.test.js	mq/suit.js	<loaded>
@@ -8591,6 +8745,7 @@ weather.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 weather.test.js	manifest.webmanifest	<loaded>
 weather.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 weather.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+weather.test.js	mq/shirt-open.js	<loaded>
 weather.test.js	mq/shirt-tie.js	<loaded>
 weather.test.js	mq/suit-open.js	<loaded>
 weather.test.js	mq/suit.js	<loaded>
@@ -8636,6 +8791,7 @@ weeklock.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 weeklock.test.js	manifest.webmanifest	<loaded>
 weeklock.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 weeklock.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+weeklock.test.js	mq/shirt-open.js	<loaded>
 weeklock.test.js	mq/shirt-tie.js	<loaded>
 weeklock.test.js	mq/suit-open.js	<loaded>
 weeklock.test.js	mq/suit.js	<loaded>
@@ -8695,6 +8851,7 @@ workersweep.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@
 workersweep.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 workersweep.test.js	mannequin.js	<loaded>	@{}
 workersweep.test.js	month.js	<loaded>	nextWorkday
+workersweep.test.js	mq/shirt-open.js	<loaded>
 workersweep.test.js	mq/shirt-tie.js	<loaded>
 workersweep.test.js	mq/suit-open.js	<loaded>
 workersweep.test.js	mq/suit.js	<loaded>
