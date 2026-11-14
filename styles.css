@@ -1098,3 +1098,11 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 .wpill.no{background:var(--card);border:1px solid var(--line);color:var(--mut)}
 .fig .wornbar{justify-content:flex-end}.fig .wornbar .lastworn:only-child{margin:0 0 0 auto}   /* "Last worn" alone at the bottom right, clear of the swatches */
 @media (max-width:359px){.day h2 .wx.haspill{--wp:58px;gap:2px}.wpill{font-size:12px}}   /* "Set location" fits beside the pill at 320 px */
+
+/* ---- how many (add.js qtyRow, 2026-11-14): shirts and socks added several at once ---- */
+#add .qtyrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 4px}
+#add .qtyl{display:flex;flex-direction:column;font-weight:600}#add .qtyl small{font-weight:400;font-size:12.5px}
+#add .qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:var(--r-ctl,12px);overflow:hidden;flex:none}
+#add .qtyb{width:var(--ctl-h,44px);height:var(--ctl-h,44px);min-height:0;margin:0;padding:0;border:0;border-radius:0;background:var(--card);color:var(--ink);font-size:20px;font-weight:600}
+#add .qtyb:disabled{opacity:.35}
+#add .qty output{min-width:40px;text-align:center;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:var(--ctl-h,44px)}
