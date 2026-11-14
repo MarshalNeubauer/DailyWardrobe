@@ -81,8 +81,8 @@ const LOOKS=[
   {name:'vest: plain navy suit',top:['suit','navy'],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'m-vest,wc'},
   {name:'vest: plain mid grey suit, pink shirt, navy tie',top:['suit','midgrey'],vest:true,shirt:'pink',tie:'navy',gl:true,has:'m-vest,wc'},
   {name:'vest: plain black suit, solved positions',top:['suit','black'],vest:true,shirt:'lightblue',tie:'wine',geo:true,gl:true,has:'m-vest,wc'},
-  {name:'vest: twill charcoal suit',top:['suit','charcoal',{pattern:'twill'}],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'twill,m-vest,wc'},
-  {name:'vest: twill tan and brown suit, solved positions',top:['suit','tan',{pattern:'twill',secondaryColor:'brown'}],vest:true,shirt:'pink',tie:'navy',geo:true,gl:true,has:'twill,c2,m-vest,wc'},
+  {name:'vest: twill charcoal suit',top:['suit','charcoal',{pattern:'twill'}],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'tile,m-vest,wc'},   // (2026-11-14: a twill suit with no close-up cloth is the worsted tile, asmWorstedTile)
+  {name:'vest: twill tan and brown suit, solved positions',top:['suit','tan',{pattern:'twill',secondaryColor:'brown'}],vest:true,shirt:'pink',tie:'navy',geo:true,gl:true,has:'tile,m-vest,wc'},
   {name:'vest: navy pinstripe suit',top:['suit','navy',{pattern:'pinstripe',sett:PIN}],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'tile,k,m-vest,wc'},
   {name:'vest: navy pinstripe suit, solved positions, stripe tie',top:['suit','navy',{pattern:'pinstripe',sett:PIN}],vest:true,shirt:'lightblue',tie:['navy',{pattern:'stripe',secondaryColor:'pink',sett:STT}],geo:true,gl:true,has:'tile,k,tie-bands,m-vest,wc'},
   {name:'vest-open: plain grey suit',top:['suit','grey'],vest:true,shirt:'white',tie:null,gl:true,has:'m-vest-open,wc'},
