@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	f216d214eb5ed3c560af
-# tested	ba922c3c4f6bf1d85061
+# tested	b35118adcd06b94d84ba
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	analysis.js	<loaded>
@@ -252,7 +251,7 @@ asmatlas.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmatlas.test.js	wardrobe.js	<loaded>
 asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	corsFor	fetch	getRender	handleBlob	handleInvites	handleMe	handleSync	isParted	isPv	kvMeta	orNull	ownerOnly	putRender	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
 asmcloth.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-asmcloth.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
+asmcloth.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 asmcloth.test.js	analysis.js	<loaded>
 asmcloth.test.js	app.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	@db.then	@{constb$ivbody}	@{constel$todayinPice}	@{constel$today}	@{constel$wardrobe}	@{constroot$today}	@{constv$itemviewb$ivbodybd$itemba}	afterDom	afterScripts	appDrop	applyTheme	applyZoom	asmLive	busyLabelFor	checkArrivals	checkPlanRules	closeSettings	fitNav	fitNavSoon	fixItemBackdrops	fnv64	homeDay	itemShown	loadRenders	loadWeather	metaGet	nextWorkday	pageIn	planFor	planMonth	planSnapUse	queuedKeys	refreshHolidays	refreshToday	renderItem	renderToday	rqGet	setLock	settingsOpen	show	smallPhotos	swApply	texSwatches	todayBtn	tx	txFail	txs	whenPulled	window.fetch	wxPreload	zoomTarget
 asmcloth.test.js	apple-touch-icon.png	<loaded>
@@ -279,7 +278,7 @@ asmcloth.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	se
 asmcloth.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 asmcloth.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
 asmcloth.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.kit-start	.linkbtn	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
-asmcloth.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	syncNeedsPull	syncUrl
+asmcloth.test.js	sync.js	<loaded>	@db.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl
 asmcloth.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
 asmcloth.test.js	tests/fixedplan.js	<any>
 asmcloth.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
