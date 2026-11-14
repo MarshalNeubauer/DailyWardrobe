@@ -85,8 +85,8 @@ function connSummary(){if(!isConnected())return 'Not connected';const m=typeof a
   return m?(m.role==='owner'?'Connected as the owner':'Connected as '+(m.name||'a tester')):'Connected'}
 let connMsg='',connBusy=false;
 function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?el.querySelector('#conn-link').value:'';
-  el.innerHTML=isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, outfit photos can be made, and your wardrobe is backed up.</p>`
-   :`<p class="shelp" id="conn-state">The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, realistic outfit photos can be made, and your wardrobe is backed up.</p>
+  el.innerHTML=isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`
+   :`<p class="shelp" id="conn-state">The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>
 <div class="sform"><input type="text" id="conn-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();connPaste()}"><button type="button" class="pri" id="conn-go" onclick="connPaste()"${connBusy?' disabled':''}>${connBusy?'Connecting…':'Connect'}</button></div>
 <p class="shelp conn-msg" id="conn-msg" role="status">${uiEsc(connMsg)}</p>`;
   if(typed&&el.querySelector('#conn-link'))el.querySelector('#conn-link').value=typed;

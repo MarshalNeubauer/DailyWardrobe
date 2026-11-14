@@ -148,8 +148,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const pk=await p.evaluate(()=>[...document.querySelectorAll('#pick-sheet .pick-it .pick-nm')].map(x=>x.textContent));
     ok(pk.includes('Wedding suit')&&pk.some(t=>/charcoal|navy/i.test(t)),`the piece picker shows the name, and the description for unnamed pieces (${pk.join(' | ')})`);
     await p.evaluate(()=>closePicker());
-    const texts=await p.evaluate(()=>{const o=planFor()[key(sel)],it=items.find(i=>i.id===window.__top);return {d:desc(it),nm:nm(it),r:JSON.stringify(rateOutfit(o).checks.map(c=>c.why)),ot:typeof outfitText==='function'?outfitText(o):''}});
-    ok(/^(navy|charcoal)$/.test(texts.d)&&/^(navy|charcoal) suit$/.test(texts.nm)&&!/Wedding/.test(texts.r)&&!/Wedding/.test(texts.ot),'the planner\'s rule texts and descriptions keep using the colour description');
+    const texts=await p.evaluate(()=>{const o=planFor()[key(sel)],it=items.find(i=>i.id===window.__top);return {d:desc(it),nm:nm(it),r:JSON.stringify(rateOutfit(o).checks.map(c=>c.why))}});
+    ok(/^(navy|charcoal)$/.test(texts.d)&&/^(navy|charcoal) suit$/.test(texts.nm)&&!/Wedding/.test(texts.r),'the planner\'s rule texts and descriptions keep using the colour description');
 
     // ---- the Add card: More details, folded
     await p.evaluate(()=>{show('add');addManual();setq(0,'type','tie')});
