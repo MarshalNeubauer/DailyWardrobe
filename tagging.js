@@ -111,10 +111,10 @@ const wbGains=c=>wbRead(c).gains;
    - a solid core: what is left after taking 2 px off every edge covers WB_CORE (1%) of the picture (a check's light lines, a stripe's
      narrow white and a fold's highlight are thinner than that);
    - set apart in lightness: the reference is WB_GAP (28 levels) brighter than the cloth's median, and few pixels (under WB_TRANS, 7%)
-     lie between half way and the reference (paper's edge is a thin line; a light cloth's own highlights shade into it);
-   - not a lighter copy of a coloured cloth: when the cloth has colour (C* WB_CHROMA 7 or more), the reference may not lean the same way
-     (hue within 35° and over 40% of its chroma): a light blue shirt's highlights are light blue, paper takes the light's cast. */
-const WB_CORE=.01,WB_GAP=28,WB_TRANS=.07,WB_CHROMA=7;
+     lie between half way and the reference (paper's edge is a thin line; a light cloth's own highlights shade into it).
+   (Its hue is not tested: under warm light white paper leans the same way as a brown cloth.) Each of the walkthrough's false references
+   fails the core, the gap or the in-between test. */
+const WB_CORE=.01,WB_GAP=28,WB_TRANS=.07;
 function wbSolidStats(d,lums,isRef,w,h,refLum){const n=w*h;let core=0;
   for(let y=2;y<h-2;y++)for(let x=2;x<w-2;x++){let all=1;for(let j=-2;j<=2&&all;j++)for(let i=-2;i<=2;i++)if(!isRef[(y+j)*w+x+i]){all=0;break}core+=all}
   const cl=[];let ra=0,rb=0,rn=0;const ca=[],cb=[];
@@ -125,9 +125,7 @@ function wbSolidStats(d,lums,isRef,w,h,refLum){const n=w*h;let core=0;
   let hue=180;if(Cc>0&&Cr>0){hue=Math.abs(Math.atan2(rB,rA)-Math.atan2(cB,cA))*180/Math.PI;if(hue>180)hue=360-hue}
   return {core:core/n,gap,trans:trans/n,Cc,Cr,hue}}
 function wbSolidOk(s){
-  if(s.core<WB_CORE||s.gap<WB_GAP||s.trans>WB_TRANS)return false;
-  if(s.Cc>=WB_CHROMA&&s.hue<35&&s.Cr>.4*s.Cc)return false;
-  return true}
+  return !(s.core<WB_CORE||s.gap<WB_GAP||s.trans>WB_TRANS)}
 /* the light reading of a close-up: strict about what counts as white paper */
 const closeRead=c=>wbRead(c,{strict:true});
 
@@ -325,8 +323,8 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colo
   out.push(settNote(q,i));
   const m=q.meas,where=m&&(m.src==='closeup'?'your close-up':'your photo');
   if(m&&m.near&&m.near.length){const n=m.near,pv=(q.measV||[]).filter(v=>v.part);
-    out.push(pv.length?`<p class="tagnote measrow">${m.parts.map(p=>`<span class="msw" style="background:${p.hex}" title="${p.hex}"></span>`).join('')}<small>Measured in ${where}${m.ref?' (white reference)':''}: ${pv.map(v=>`${v.part==='ground'?'ground':'stripe'} closest to ${esc(colName(v.to))}`).join(', ')}</small></p>`
-      :`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured in ${where}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
+    out.push(pv.length?`<p class="tagnote measrow">${m.parts.map(p=>`<span class="msw" style="background:${p.hex}" title="${p.hex}"></span>`).join('')}<small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: ${pv.map(v=>`${v.part==='ground'?'ground':'stripe'} closest to ${esc(colName(v.to))}`).join(', ')}</small></p>`
+      :`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
   // changed by the measurement (with Undo), or asked about when it is not sure
   for(const [f,a] of Object.entries(q.auto||{}))out.push(`<div class="offer measauto" data-f="${f}"><small>Changed ${f==='primaryColor'?'':fieldLabel[f]+' '}${esc(colName(a.from))} → <b>${esc(colName(a.to))}</b> (measured from ${a.src==='closeup'?'your close-up':'your photo'})</small><button type="button" class="chipbtn" onclick="undoMeasured(${i},'${f}')">Undo</button></div>`);
   for(const v of q.measV||[])if(v.mode==='flag'&&!(q.edited&&q.edited[v.f])&&!(q.auto&&q.auto[v.f]))out.push(`<div class="offer measalt" data-f="${v.f}"><small>Measured${v.f==='primaryColor'?'':` ${fieldLabel[v.f]}`}: <b>${esc(colName(v.to))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'${v.f}','${v.to}')">Use ${esc(colName(v.to))}</button></div>`);
@@ -444,7 +442,9 @@ function settFromWeave(w){const c=(w&&w.colours||[]).filter(x=>/^#[0-9a-f]{6}$/i
    its bands and crossing lines are used */
 /* white balance and, when the picture has a white reference (a white shirt under the tie, a white wall, paper), exposure set
    from it too: an underexposed photo otherwise reads every band too dark (a cream reads grey). At most 1.6x, in linear light. */
-function settCanvas(c,wb,strict){const r=wbRead(c,{strict:!!strict}),g=wb||r.gains,out=applyWb(c,g);if(!r.ref||r.refLum>=235||r.frac<.03)return out;   // a few white threads are no reference (partly blended, they read dim)
+/* (2026-11-14, strict: a close-up) the white balance only from a real patch of paper (closeRead); the exposure may still be raised from the
+   cloth's own white threads (at most 1.6x, never lowered): a tie's thin white edging and a white dobby's ground read white, as before */
+function settCanvas(c,wb,strict){const r=wbRead(c),g=wb||(strict?closeRead(c).gains:r.gains),out=applyWb(c,g);if(!r.ref||r.refLum>=235||r.frac<.03)return out;   // a few white threads are no reference (partly blended, they read dim)
   const k=Math.min(1.6,sLin(243)/sLin(Math.max(1,r.refLum))),x=out.getContext('2d',{willReadFrequently:true}),D=x.getImageData(0,0,out.width,out.height),d=D.data,lut=new Uint8ClampedArray(256);
   for(let v=0;v<256;v++)lut[v]=Math.round(linS(Math.min(1,sLin(v)*k)));for(let i=0;i<d.length;i+=4){d[i]=lut[d[i]];d[i+1]=lut[d[i+1]];d[i+2]=lut[d[i+2]]}x.putImageData(D,0,0);return out}
 /* a reading takes 1.8-2.5 s at phone speed and the card asked for the same one again and again (every re-tag, toggle and Claude's
@@ -485,11 +485,11 @@ function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.
    -84° with lines crossing them, and Today drew the suit as a brown windowpane): a stripe has no crossing lines, and on a jacket, shirt
    or trousers it runs upright; read level from a close-up (or by Claude) it is only turned upright, since a close-up can be held either
    way, but level in the item photo it is a misreading */
-function settCheck(type,pat,s){if(!s||!s.bands)return {s};const p=patBase(pat)||'';if(!STRIPE_PATS.includes(p))return {s};
-  // crossing lines: a jacket's or trousers' stripe read with them is a misreading (the pinstripe drawn as a windowpane); on a shirt or
-  // a tie they are the weave or a stray fold at most, so they are only dropped (the walkthrough's white/blue shirt kept its stripes)
+function settCheck(type,pat,s){if(!s||!s.bands||type==='tie')return {s};const p=patBase(pat)||'';if(!STRIPE_PATS.includes(p))return {s};   // (a tie keeps any reading: a plaid tie is often tagged stripe)
+  // crossing lines: a jacket's or trousers' stripe read with them is a misreading (the pinstripe drawn as a windowpane); on a shirt
+  // they are the weave or a stray fold at most, so they are only dropped (the walkthrough's white/blue shirt kept its stripes)
   if(s.cross&&s.cross.bands&&s.cross.bands.some(b=>b[0])){if(['suit','blazer','pants'].includes(type))return {reject:'cross'};s={...s,cross:null}}
-  const a=((s.a%180)+180)%180;if(type==='tie'||a<20||a>160)return {s};
+  const a=((s.a%180)+180)%180;if(a<20||a>160)return {s};
   return /photo/.test(s.src||'')?{reject:'level'}:{s:{...s,a:0}}}
 /* a pattern the tag missed: a close-up of cloth tagged plain that clearly shows stripes or a check (bands 12+ ΔE00 apart, two repeats or
    more, a sharp close-up) is suggested, never set */
