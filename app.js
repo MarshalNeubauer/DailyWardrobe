@@ -6,13 +6,31 @@ let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.
 
 /* storage */
 // stores: items (wardrobe), days (outfit history, keyed by date), meta (key/value: deletion tombstones, settings, sync state)
-const db=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
+/* The connection can be lost while the app runs (2026-11-14, a tester's iPhone 17 Pro: the sample wardrobe, Confirm on Add and every
+   other save did nothing, and a navy suit card was left on Add at each tap): iOS Safari closes a page's database connection when the
+   app has been in the background (switching to Messages for the invite link, the Share sheet), and every transaction then throws
+   InvalidStateError at once, which was not seen as a storage failure, so nothing said so. Now the connection is opened again and the
+   transaction retried once (dbLive, txs, atomic); a failure that remains is a storage failure and is said. `db` stays the first opening
+   (start-up and safety.js wait on it). */
+let dbCur=null,dbConn=null;
+function dbOpen(){const p=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
   r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});
     if(!d.objectStoreNames.contains('days'))d.createObjectStore('days',{keyPath:'date'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'k'})};
-  r.onsuccess=()=>ok(r.result);r.onerror=no});
+  r.onsuccess=()=>{const d=r.result;dbConn=d;d.onclose=()=>dbDrop(d);d.onversionchange=()=>{try{d.close()}catch{}dbDrop(d)};ok(d)};r.onerror=()=>no(r.error)});
+  dbCur=p;p.catch(()=>{if(dbCur===p)dbCur=null});return p}
+function dbDrop(d){if(dbConn===d){dbConn=null;dbCur=null}}
+const db=dbOpen();
+const dbLive=()=>dbCur||dbOpen();
+// the browser closed the connection (iOS Safari's "Connection to Indexed Database server lost", a closing database)
+const dbGone=e=>!!e&&(e.name==='InvalidStateError'||e.name==='UnknownError'||/connection|closing|closed/i.test(e.message||''));
+// run one transaction; when the connection is gone, open it again and run it once more (an aborted transaction stored nothing)
+async function dbRetry(m,run){const d=await dbLive();try{return await run(d)}catch(e){
+  if(!dbGone(e)||e.name==='QuotaExceededError')throw dbMark(e,m);try{d.close()}catch{}dbDrop(d);console.warn('storage connection lost: opening it again',e);
+  try{return await run(await dbLive())}catch(e2){throw dbMark(e2,m)}}}
+const dbMark=(e,m)=>{try{if(e&&typeof e==='object'&&!e.dwStore)e.dwStore=m==='readonly'?'read':'write'}catch{}return e};
 /* a transaction that fails or is aborted (storage full) rejects with the browser's error, marked as a storage failure (safety.js shows it) */
 const txFail=(t,no,m)=>ev=>{let e=t.error||(ev&&ev.target&&ev.target.error)||new Error('the browser stopped it');try{e.dwStore=m==='readonly'?'read':'write'}catch{}no(e)};
-const txs=async(store,m,f)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,m);t.onerror=t.onabort=txFail(t,no,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result)})};
+const txs=(store,m,f)=>dbRetry(m,d=>new Promise((ok,no)=>{const t=d.transaction(store,m);t.onerror=t.onabort=txFail(t,no,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result)}));
 const tx=(m,f)=>txs('items',m,f);
 const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=(k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
 /* ---- the connection kept in the database too (2026-11-14: on the owner's iPhone the Home Screen app's localStorage lost the server
@@ -29,8 +47,8 @@ const connRestored=db.then(async()=>{let n=0;
   connReady=true;await connKeep();if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep()});
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
-const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
-  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)})};
+const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
+  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)}));
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));

@@ -150,7 +150,8 @@ function kitImportText(t){const r=kitRead(t),el=$('#kit-prev'),b=$('#kit-imp');i
     :`<li class="bad"><span class="kit-dot kit-no" aria-hidden="true">!</span><span><b>Row ${x.line}</b><small>${esc(x.why)}</small></span></li>`).join('')}</ul>`;
   if(b){b.disabled=!good.length;b.textContent=good.length?`Add ${good.length} item${good.length===1?'':'s'}`:'Add items'}}
 /* each row saved as a card added by hand (app.js save: the dress code's waistcoat rule, swatches, sync), then one Undo for them all */
-async function kitSaveCards(cards){kitQuiet=true;const ids=[];try{for(const c of cards){queue.unshift({...c});await save(0);const it=items[items.length-1];if(it&&it.id===c.id)ids.push(it.id)}}finally{kitQuiet=false}return ids}
+async function kitSaveCards(cards){kitQuiet=true;const ids=[];try{for(const c of cards){queue.unshift({...c});await save(0);const it=items[items.length-1];if(it&&it.id===c.id){ids.push(it.id);continue}
+  const k=queue.findIndex(q=>q.id===c.id);if(k>=0)queue.splice(k,1);if($('#add')&&!$('#add').hidden)renderAdd();break}}finally{kitQuiet=false}return ids}   // (a card that failed was left on Add: the tester's stray navy suits)
 async function kitImportGo(){if(!kitImp)return;const cards=kitImp.rows.filter(x=>x.ok).map(x=>x.card);if(!cards.length)return;
   const ids=await kitSaveCards(cards);kitClose();cache={};todayStale=true;if($('#add')&&!$('#add').hidden)renderAdd();
   toast(`Imported ${ids.length} item${ids.length===1?'':'s'}.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave({its:ids,qs:[]})})}
@@ -167,7 +168,7 @@ const KIT_SAMPLE=[
 const kitHasSample=()=>items.some(i=>i.sample);
 async function kitSampleLoad(){if(items.length&&!kitHasSample()&&!await askConfirm('Add the sample wardrobe next to your own clothes?',{ok:'Add the sample'}))return;
   const cards=KIT_SAMPLE.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:FABRIC.includes(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}));
-  const ids=await kitSaveCards(cards);
+  const ids=await kitSaveCards(cards);if(!ids.length)return;   // (save said why)
   cache={};todayStale=true;show('today');if(typeof goToday==='function')goToday();   // on a weekend, the next workday's outfit
   toast(`A sample wardrobe of ${ids.length} pieces: swipe through the days to see outfits.`,4500)}
 async function kitSampleRemove(){const s=items.filter(i=>i.sample);if(!s.length)return;
