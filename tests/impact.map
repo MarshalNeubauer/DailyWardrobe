@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	e2b8782447ca6b49274f
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -3395,6 +3394,7 @@ mannequin.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 mannequin.test.js	manifest.webmanifest	<loaded>
 mannequin.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 mannequin.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
+mannequin.test.js	mq/shirt-tie.js	<any>	<loaded>
 mannequin.test.js	mq/suit-open.js	<any>	<loaded>
 mannequin.test.js	mq/suit.js	<any>	<loaded>
 mannequin.test.js	mq/vest.js	<any>	<loaded>

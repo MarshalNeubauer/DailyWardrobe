@@ -1007,7 +1007,7 @@ function itemThumb(i,full){
 /* ---------- torso figure (figure.js), worn with the app's tagged-colour fabrics ----------
    The figure is drawn in a 390x400 box, about 2.7x the mannequin's scale; these factors size each weave so a
    pinstripe suit shows ~25 stripes across the body and a polka-dot tie 3-4 dots across. */
-const FIG_SCALE={top:1.6,shirt:1.7,tie:1.5};
+const FIG_SCALE={top:1.6,shirt:1.7,tie:1.5,bot:1.6};   // (bot: the shirt masters' trousers, at the jacket's scale)
 function figFabric(item,role){
   if(!item)return null;const k=FIG_SCALE[role];
   return {def:(id,rot)=>{let p=fabricDef(id,item,role,'fig');const m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';if(m)p=p.replace(m[0],'');
@@ -1035,11 +1035,12 @@ const figKind=o=>{const k=typeof asmCmKind==='function'?asmCmKind(o):null,m=k===
 function figureSvg(o,prefix='fig-'){
   const label=`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt)+(o.top?'':', no jacket')+(o.tie?'':', open collar'),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`;
   const clip=o.clip&&!o.vest?{color:colOf(o.clip)}:null,kind=figKind(o);
-  if(kind){const top=o.top&&figStripeLift(o.top),bs=top&&usableSett(top);
+  if(kind){const top=o.top&&figStripeLift(o.top),bot=!o.top&&o.bot&&figStripeLift(o.bot);
     // a banded stripe (a pinstripe) at 1.6x figFabric's scale gives about the painter's stripe count; checks (a windowpane: about 7
     // panes across, as painted), twills and solids stay at 1x
-    return outfitMannequinSvg({kind,suit:figFabric(top||o.shirt,top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),vest:!!(o.vest&&o.top),clip,
-      shirtColor:o.shirt?colOf(o.shirt):null,bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:bs&&bs.bands&&bs.bands.length>1&&STRIPE_PATS.includes(patBase(top.pattern))?1.6:1,shirt:1,tie:1}})}
+    const k=i=>{const s=i&&usableSett(i);return s&&s.bands&&s.bands.length>1&&STRIPE_PATS.includes(patBase(i.pattern))?1.6:1};
+    return outfitMannequinSvg({kind,suit:figFabric(top||o.shirt,top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),bot:bot?figFabric(bot,'bot'):null,
+      beltColor:o.belt?colOf(o.belt):null,vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):null,bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:k(top),shirt:1,tie:1,bot:k(bot)}})}
   let watch=null;
   if(o.watch){const wo=watchOpts(o.watch),tones=METAL_TONES[o.watch.metal]||METAL_TONES.silver,dial=COLORS[wo.dial]||'#12151A';
     watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
