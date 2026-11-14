@@ -1117,3 +1117,5 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 .home-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center}
 .home-ico{width:20px;height:20px;vertical-align:-4px;color:var(--acc-ink,var(--acc))}
 .home-note{margin-top:4px}
+.home-cta{margin:4px 0 14px}.home-install{width:100%;min-height:48px;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px}.home-install .home-ico{color:inherit}
+.home-install[hidden],.home-manual[hidden]{display:none!important}   /* (the setup's and the sheet's button rules outrank the attribute) */
