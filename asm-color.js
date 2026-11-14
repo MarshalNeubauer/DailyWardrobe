@@ -64,7 +64,7 @@ const ASM_CM_PAINTV=9;   // 2: jackets and trousers without a stripe or check re
      master's blotchy grain, which smudged the weave)
    - a jacket painted with stripes (a band tile with stripe breakup, T.k: his two pinstripes) is left exactly as before (the bolder weave
      broke the pinstripes' lines; the owner: leave them out) */
-const ASM_CM_LOOK={ymin:.012,fp:1.7,chroma:.55,wk:4,sk:5,cmax:.8,grain:.05,sheen:.024,s0:.45,s1:1.5,dy:.03,dk:2,toe:.025,sh:.06,dark:.035,lgam:1,lr:12};   // (lgam 1 since 2026-11-14: the folds' depth is set per zone from real photographs, ASM_CM_FOLD; it was 1.3)
+const ASM_CM_LOOK={ymin:.012,fp:1.7,chroma:.55,wk:4,sk:5,cmax:.8,grain:.05,sheen:.024,s0:.45,s1:1.5,dy:.03,dk:2,toe:.025,sh:.06,dark:.035,lgam:1.3,lr:12};
 /* the lighting (same choice, on top of the look): contact shadows where a layer lies on another (the shirt under the tie, waistcoat,
    jacket and hands; the jacket's body under its sleeves and lapels; each layer's outline moved adx,ady px at 2048 down and to the right,
    away from the window, blurred `ar` px, `ak` deep); a window light from the left (`win` across the picture, `wd` of it on a dark cloth,
@@ -159,20 +159,28 @@ const ASM_CM_U16=65535;
 /* (2026-11-14) the folds' depth, fitted to real photographs (the owner's references: a navy pinstripe suit in a studio, a white shirt
    and tie outdoors): per zone [the median light over the lit level, the least and the greatest power]. Measured on the references: jacket
    p10 .43, median .74, p90 1.33; shirt p10 .67, median .91, p90 1.12. The bench is C:\code\watch-test\light (stats.js) */
-const ASM_CM_FOLD={jacket:[.82,.44,.3],waistcoat:[.82,.44,.3],trousers:[.82,.44,.35],shirt:[.93,.66,.4],tie:[.88,.6,.45]};   // [median, 10th percentile, least power] (set a little over the references': the contact shadows and the window's light come after)
+const ASM_CM_FOLD={jacket:[.82,.44,.3],waistcoat:[.82,.44,.3],trousers:[.82,.44,.35]};   // (shirts and ties keep their folds: opened, a burgundy shirt lost its sleeves' shadows)   // [median, 10th percentile, least power] (set a little over the references': the contact shadows and the window's light come after)
 /* with a light map the window's light is on the body's shape, and the old ramp across the whole picture keeps ASM_CM_WINK of its strength */
-const ASM_CM_WINK=.25;
+const ASM_CM_WINK=.8;
 /* a weave shows by the light: its ribs' relief is strongest where the cloth is lit and fades in the folds' shade. A jacket's, waistcoat's
    or trousers' woven ribs (suitCol's SUITTW) are drawn at [least, per unit of light, most] of their strength */
 const ASM_CM_WLIGHT=[.5,.6,1.15];
 const asmCmWk=s=>{const W=ASM_CM_WLIGHT,k=W[0]+W[1]*s;return k<W[0]?W[0]:k>W[2]?W[2]:k};
 const ASM_CM_FOLD_KEEP=.8;
+/* how much of a zone's fold power and scale (P.fold) a cloth takes, by its own lightness (linear luminance): all of it at or below
+   ASM_CM_FOLD_Y[0] (black, dark navy, a dark pinstripe's ground), none at or above ASM_CM_FOLD_Y[1] (charcoal, a slate tweed, a mid grey and anything lighter);
+   asmCmMp: a garment's light = [the power below the lit level, the strength above it, a scale] from that and its material (asmCmMat) */
+const ASM_CM_FOLD_Y=[.02,.05];
+const ASM_CM_FOLD_MAX=.55;   // at most this much of the power and scale (in full, a navy pinstripe lost its darker far side)
+const asmCmFoldW=y=>{const Y=ASM_CM_FOLD_Y,w=(Y[1]-y)/(Y[1]-Y[0]);return ASM_CM_FOLD_MAX*(w<0?0:w>1?1:w)};
+function asmCmMp(P,z,c,lin){const f=P.fold&&P.fold[z==='waistcoat'?'jacket':z],m=Array.isArray(c.mat)?c.mat:[1,1],g=c.suit&&c.suit.g?c.suit.g:lin,w=f?asmCmFoldW(.2126*g[0]+.7152*g[1]+.0722*g[2]):0;
+  return [m[0]*(f?1+(f[0]-1)*w:1),m[1],f?Math.pow(f[1],w):1]}
 /* (2026-11-14) the material's own light, [the power on a cloth's light below its lit level (over 1: crisper, deeper folds; under 1: softer),
    the strength of its light above the lit level (its highlights and sheen)]: linen creases sharply and is matt; tweed, flannel and
    melange are soft and matt; a worsted has a little sheen; chinos and denim are crisp and matt; an oxford or twill shirt is softer than
    poplin, a sateen shinier; a silk tie is crisp and shiny, a knitted, wool, grenadine or linen one soft and matt. Read from the item's
    material, pattern and description (few items have a material set, so the pattern's name counts) */
-const ASM_CM_MAT={linen:[1.15,.8],soft:[.9,.6],worsted:[1,1.15],chino:[1.05,.7],oxford:[.95,.8],sateen:[1,1.3],poplin:[1,1],silk:[1.1,1.3],knit:[.9,.4]};
+const ASM_CM_MAT={linen:[1.15,.8],soft:[.96,.6],worsted:[1,1.15],chino:[1.05,.7],oxford:[.95,.8],sateen:[1,1.3],poplin:[1,1],silk:[1.1,1.3],knit:[.9,.4]};
 function asmCmMat(i,z){if(!i)return [1,1];const M=ASM_CM_MAT,t=((i.material||'')+' '+(typeof patName==='function'?patName(i.pattern):i.pattern||'')+' '+(i.patternText||'')).toLowerCase();
   if(z==='tie')return /knit|wool|grenadine|linen|cashmere/.test(t)?M.knit:M.silk;
   if(z==='shirt')return /linen/.test(t)?M.linen:/sateen|satin/.test(t)?M.sateen:/oxford|flannel|twill|chambray/.test(t)?M.oxford:M.poplin;
@@ -410,7 +418,7 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
   // a garment's colour is its colour where the cloth is lit: light = the pixel's brightness over the zone's lit level (75th
   // percentile, a white shirt's 90th), at most 1.6 (a shirt 1.15); against the median half of every garment came out too light
   const pct=(a,p)=>{const v=[];for(let k=0;k<N;k+=7)if(a[k]>=CLEAN)v.push(Y[k]);v.sort((x,y)=>x-y);return v.length?v[Math.min(v.length-1,Math.floor(v.length*p))]:1};
-  const shade={},keep={},LM=job.light?(await asmData(job.light,S)).data:null;
+  const shade={},keep={},fold={},LM=job.light?(await asmData(job.light,S)).data:null;
   for(const z of names){const a=A[z];
     if(KEEP.has(z)){const idx=[];for(let k=0;k<N;k++)if(a[k]&&a[k]<CLEAN)idx.push(k);const I=Int32Array.from(idx),C=new Float32Array(3*I.length);
       for(let q=0;q<3;q++){const v=new Float32Array(N);for(let k=0;k<N;k++)v[k]=L[M[4*k+q]];const o=pushOut(a,v);for(let i=0;i<I.length;i++)C[3*i+q]=o[I[i]]}
@@ -436,9 +444,12 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
       // (the owner, 2026-11-14: "everything looks more washed out") lifting the shadows alone made every garment lighter overall; the
       // zone's mean light is brought back ASM_CM_FOLD_KEEP of the way to what it was, so the cloth keeps its tone and only the folds' shape changes
       if(gm!==1){let m0=0,m1=0,n=0;for(let k=0;k<N;k+=7)if(a[k]>=CLEAN){const x=v[k];m0+=x;m1+=x<1?Math.pow(x,gm):x;n++}
-        const sc=n&&m1>0?Math.pow(m0/m1,ASM_CM_FOLD_KEEP):1;for(let k=0;k<N;k++)if(a[k])v[k]=(v[k]<1?Math.pow(v[k],gm):v[k])*sc}}
+        // (the owner again, on the mid grey suit: "you don't think the lighting totally washes it out here?") the power and the scale are
+        // only kept here (P.fold): each look takes as much of them as its cloth is dark (asmCmFoldW), so only dark cloth, whose shadows
+        // really went to black, has them opened, and a mid or light cloth keeps the folds it had
+        fold[z]=[gm,n&&m1>0?Math.pow(m0/m1,ASM_CM_FOLD_KEEP):1]}}
     const o=pushOut(a,v),u=new Uint16Array(N);for(let k=0;k<N;k++)u[k]=Math.round(Math.max(0,o[k])*40000);shade[z]=u}
-  const P={kind:job.cm,S,N,M,A,names,shade,keep,geo:null,tieGeo:null,cuff:null,cuffAng:[0],pxmm:ASM_PX_MM*S/ASM_SIZE*K.pxmm,bgShadow:null,lm:LM};
+  const P={kind:job.cm,S,N,M,A,names,shade,keep,geo:null,tieGeo:null,cuff:null,cuffAng:[0],pxmm:ASM_PX_MM*S/ASM_SIZE*K.pxmm,bgShadow:null,lm:LM,fold};
   // the figure's shadow on the wall behind (for a background picture): everything but the wall, moved down and to the right and blurred
   // wide (three box blurs ~ a gaussian); 0..255
   if(A.background){const f=S/2048,dx=Math.round(34*f),dy=Math.round(20*f),R=Math.max(2,Math.round(50*f));let g=new Float32Array(N);
@@ -650,7 +661,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
@@ -783,7 +794,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
     if(c.suit)e.suit=c.suit;else if(c.tie&&tg){e.tie=c.tie;e.rep=(c.tie.motif?2:1)*tg.bw/Math.max(.5,c.tie.across||1.5);e.repv=e.rep*c.tie.TH/c.tie.TW}
     else if(c.tile){e.tile=c.tile;e.rep=c.tile.mm*P.pxmm;e.repv=e.rep*c.tile.TH/c.tile.TW}
     // a striped jacket is left as it was; a dark cloth takes the full look; a lighter one its folds' lighting only
-    if(LK&&LZ[z]&&Array.isArray(c.mat)&&(c.mat[0]!==1||c.mat[1]!==1))e.mp=c.mat;   // the material's folds and highlights (asmCmMat)
+    if(LK&&LZ[z]){const mp=asmCmMp(P,z,c,e.flat);if(mp[0]!==1||mp[1]!==1||mp[2]!==1)e.mp=mp}   // the folds' depth by the cloth's darkness, the material's folds and highlights (asmCmMp)
     if(LK&&GARZ[z]){if(c.suit&&c.suit.k!=null)e.keep=1;else if(lum(e.flat)<LK.dark)e.look=lookOf(e.flat);else e.light=1}
     // trousers fill a large, evenly lit area on the shirt masters: the full look's bolder weave read as diagonal lines down each leg and
     // its sheen turned the window-side leg a blotchy grey beside a black one, so trousers of any colour take the folds' lighting only
@@ -885,7 +896,7 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
       // (2026-11-14) a striped jacket takes the lighting too (contact shadows, the window, lit edges, grain): only the cloth look's bolder
       // weave broke its lines, and without any lighting it was a flat dark shape beside every other jacket
       let s=P.shade[z][k]/40000;const e=cl[z],lit=!!(LXP&&e&&LZ[z]);let base;
-      if(e&&e.mp)s=s<1?Math.pow(s,e.mp[0]):1+(s-1)*e.mp[1];   // the material: its folds' depth below the lit level, its highlights above (asmCmMat)
+      if(e&&e.mp)s=(s<1?Math.pow(s,e.mp[0]):1+(s-1)*e.mp[1])*e.mp[2];   // the material: its folds' depth below the lit level, its highlights above (asmCmMat)
       if(e&&e.light&&LXP.sm[z]){const sl=LXP.smb[z][k]/40000;if(sl>.01)s=LXP.sm[z]*Math.pow(sl/LXP.sm[z],LK.lgam)*(s/sl)}   // a lighter cloth: its large folds deeper
       if(lit)s*=lxF(z,k,x,y,e);
       if(e&&e.suit){SUITTW=1;suitCol(e.suit,k,x,y,s,c);

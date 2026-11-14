@@ -221,7 +221,7 @@ uniform usampler2D uA,uSh,uL1,uL2,uBG,uGR,uGeoI,uW;uniform sampler2D uKeep,uTube
 // (geo.gar 'shirt'); the legs' first and last row; the waistcoat's mean light; the belt's colour; a read trousers' tile (has one, repeat)
 const int uOut=${V[0]|0},uWc=${V[1]|0},uGarS=${V[2]|0},uLegs=${V[3]|0},uPoly=${V[4]|0};uniform ivec2 uLy;uniform float uSmW;uniform vec3 uBelt;uniform vec4 uOT;
 uniform int uS,uHasGeo,uGeo16;uniform vec4 uG[${ASM_GL_SEGS*9}];uniform ivec4 uQ[${ASM_GL_SEGS*4}];uniform vec4 uFl;uniform vec2 uSm;
-uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform vec4 uMat;uniform vec2 uMatT;uniform float uWin,uTieK,uLs,uAA;
+uniform vec3 uJ,uJ2,uSt,uTi,uBtn,uSg;uniform vec4 uJm;uniform vec4 uJl;uniform vec4 uTw;uniform vec4 uSl;uniform vec3 uMatO,uMatS,uMatT;uniform float uWin,uTieK,uLs,uAA;
 uniform ivec4 uTT;uniform vec4 uRep,uSk,uCl;   // the band tile (TW, TH, has a tile, has the stripe breakup); its repeat, the breakup, the grain
 uniform sampler2D uLinT;uniform int uLinen,uLinN;uniform float uLsc;   // the linen texture (asmLinenTile, uLinN square), on a linen cloth
 // (stage 3) the herringbone's extras: yarn, float, float length, grain; mottle, thin, break, pair break. A tweed (uLinT holds asmTweedTile's
@@ -288,7 +288,7 @@ vec2 uvC(int si,vec2 P,ivec2 p){uint r=uHasGeo==1?texelFetch(uGR,p,0).r:0u;bool 
   if(!sv&&ty>1.5){vec4 g=uG[b+1];return vec2((P.x-g.z)*g.x+(P.y-g.w)*g.y,(P.y-g.w)*g.x-(P.x-g.z)*g.y);}
   return uFl.w>.5?flowAt(c):c;}
 // --- the look and the lighting (lookBase, lookAfter, lxF, lxPost)
-float matS(float s,vec2 m){return s<1.?pow(max(s,0.),m.x):1.+(s-1.)*m.y;}
+float matS(float s,vec3 m){return (s<1.?pow(max(s,0.),m.x):1.+(s-1.)*m.y)*m.z;}
 vec3 tone(vec3 c){vec3 v=pow(max(c,0.),vec3(1./2.2)),w=1.-v,v2=v*v;v=v+${f(LK.toe)}*w*w*w-${f(LK.sh)}*v2*v2;return pow(max(v,0.),vec3(2.2));}   // (cubes written out: GLSL's pow is undefined below 0)
 vec3 lookAfter(vec3 c,float s,bool shirt,int x,int y,bool plain,float tw,float bo){
   if(plain&&!shirt){float u=float(x)/uLs,v=float(y)/uLs;float h=float(h32(int(floor((u+v)/2.)),int(fdiv3(v)),73856093u,19349663u)%1024u)/512.-1.;
@@ -415,7 +415,7 @@ vec3 trTile(int si,int x,int y,ivec2 p){float X=float(x),Y=float(y);vec3 b=vec3(
 // zone mean sm, contact shadow ao (and the jacket body's under its sleeves, aob), lit rim; the cloth read once for both (cb: suit()'s colour
 // or a read trousers' tile, tw its weave, shm its light's factor)
 // (uJm: the full look, the folds' lighting, the suit cloth, lit; a striped jacket (T.k) is kept as it was: neither look nor lighting)
-vec3 outer(int x,int y,uint k,ivec2 tr,float s,float sl,float sm,float ao,float aob,float rim,vec3 cb,float tw,float shm){bool look=uJm.x>.5,lit=uJm.w>.5;s=matS(s,uMat.xy);
+vec3 outer(int x,int y,uint k,ivec2 tr,float s,float sl,float sm,float ao,float aob,float rim,vec3 cb,float tw,float shm){bool look=uJm.x>.5,lit=uJm.w>.5;s=matS(s,uMatO);
   if(uJm.y>.5&&sm>0.){if(sl>.01)s=sm*pow(sl/sm,${f(LK.lgam)})*(s/sl);}
   if(lit){float v=max(ao,aob);s*=1.-${f(LI.ak)}*v/${f(ASM_CM_U16)};s*=1.+uWin*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/float(uS));}
   // (a stripe's dark ground: its steeper shading, T.gain and T.gam)
@@ -445,7 +445,7 @@ void main(){int x=int(gl_FragCoord.x),y=int(gl_FragCoord.y);ivec2 p=ivec2(x,y);u
   if(A.z>0u){float s=1.-${f(ASM_CM_BG_SHADOW)}*float(SH.w)/255.,h=float((k*2654435761u)%1024u)/1024.;uvec4 B=texelFetch(uBG,p,0);
     vec3 lo=vec3(lin(B.r),lin(B.g),lin(B.b)),hi=vec3(lin(min(B.r+1u,255u)),lin(min(B.g+1u,255u)),lin(min(B.b+1u,255u)));sum+=float(A.z)/255.*(lo+(hi-lo)*h)*s;}
   // the shirt (z 3)
-  if(A.w>0u){float s=matS(float(SH.z)/40000.,uMat.zw);bool look=uSl.x>.5;
+  if(A.w>0u){float s=matS(float(SH.z)/40000.,uMatS);bool look=uSl.x>.5;
     if(uSl.y>.5&&uSm.y>0.){float sl=float(L1.y)/40000.;if(sl>.01)s=uSm.y*pow(sl/uSm.y,${f(LK.lgam)})*(s/sl);}
     s*=1.-${f(LI.ak)}*float(L1.w)/${f(ASM_CM_U16)};s*=1.+uWin*(look?${f(LI.wd)}:1.)*(1.-2.*float(x)/S);
     sum+=float(A.w)/255.*post(flatC(uShT==1?shirtBase(x,y,p,si,cu):uSt,s,look,uSl.z,uSl.w,true,x,y),3,k,x,tr,s,0.);}   // (stage 4: or its tile)
@@ -557,7 +557,7 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   if(!G.lint){G.lint=asmGlTex(gl,14,1,1,gl.R32F,gl.RED,gl.FLOAT,new Float32Array([1]));G.linN=0;G.clothK=null;G.clothBytes=0}   // (a stand-in until a linen or tweed cloth comes)
   gl.uniform1f(u('uAA'),ASM_CM_AA&&job.aa!==false?Math.PI*(typeof job.aa==='number'?job.aa:ASM_CM_AA):0);   // (asmCmBuild's rule: job.aa false = off, a number = the bench's strength)
   const St=hexLin(cl.shirt.hex),sl=lum(St)<LK.dark?lookOf(St):null;gl.uniform3fv(u('uSt'),St);gl.uniform4f(u('uSl'),sl?1:0,sl?0:1,sl?sl.lift:0,sl?sl.boost:1);
-  const Ti=cl.tie?hexLin(cl.tie.hex):[0,0,0];gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti))*(cl.tie&&Array.isArray(cl.tie.mat)?cl.tie.mat[1]:1));{const mo=Array.isArray(OZ.mat)?OZ.mat:[1,1],ms=Array.isArray(cl.shirt.mat)?cl.shirt.mat:[1,1],mt=cl.tie&&Array.isArray(cl.tie.mat)?cl.tie.mat:[1,1];gl.uniform4f(u('uMat'),mo[0],mo[1],ms[0],ms[1]);gl.uniform2f(u('uMatT'),mt[0],mt[1])}gl.uniform1f(u('uLs'),S/ASM_SIZE);
+  const Ti=cl.tie?hexLin(cl.tie.hex):[0,0,0];gl.uniform3fv(u('uTi'),Ti);gl.uniform1f(u('uTieK'),asmTieSheenK(lum(Ti))*(cl.tie&&Array.isArray(cl.tie.mat)?cl.tie.mat[1]:1));{const mo=asmCmMp(P,jk?'jacket':'trousers',OZ,J),ms=asmCmMp(P,'shirt',cl.shirt,St),mt=cl.tie?asmCmMp(P,'tie',cl.tie,Ti):[1,1,1];gl.uniform3f(u('uMatO'),mo[0],mo[1],mo[2]);gl.uniform3f(u('uMatS'),ms[0],ms[1],ms[2]);gl.uniform3f(u('uMatT'),mt[0],mt[1],mt[2])}gl.uniform1f(u('uLs'),S/ASM_SIZE);
   const Lf=Math.max(1e-4,lum(J));gl.uniform3fv(u('uBtn'),J.map(v=>v/Lf*.6+.4));
   // (stage 4) the tie read from its tile (asmCmBuild's e.tie: only with the master's tie geometry, else its colour): its repeat (the count
   // across the blade, twice the size for a motif), the turns' cos and sin worked out here in float64 (blade, knot; the pattern's own on the
