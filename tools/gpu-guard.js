@@ -97,11 +97,12 @@ class Guard{
       if(!wait)return false;
       await this.sleep(2)}
     this._check();this.burst={temp:0,power:0,mem:0};this.t0=this.clock();return true}
-  /* after a burst: its time and peaks logged, then the rest */
-  async after(what=''){const dt=this.t0!=null?this.clock()-this.t0:0;this.busy+=dt;this.bursts++;const b=this.burst||{};
+  /* after a burst: its time and peaks logged, then the rest; {last:true} (the owner's choice, 2026-11-14) skips the rest after a job's
+     final burst, when nothing more follows it (the lock is let go at once); the rests between bursts and every other rule stay */
+  async after(what='',{last=false}={}){const dt=this.t0!=null?this.clock()-this.t0:0;this.busy+=dt;this.bursts++;const b=this.burst||{};
     if(this.last&&this.burst)for(const k in b)b[k]=Math.max(b[k],this.last[k]);   // (a burst shorter than POLL_S still has the latest reading)
     this.log(`${what}: ${dt.toFixed(1)} s, peaks ${(b.temp||0).toFixed(0)} C, ${(b.power||0).toFixed(0)} W, ${(b.mem||0).toFixed(0)} MB`);
-    this.lastBurst={s:dt,...b};this.burst=null;this.t0=null;this._check();await this._rest(this.restS)}
+    this.lastBurst={s:dt,...b};this.burst=null;this.t0=null;this._check();if(!last)await this._rest(this.restS)}
   async _rest(s){const end=this.clock()+s;this.rested+=s;while(this.clock()<end){this._check();await this.sleep(Math.min(1,end-this.clock()))}this._check()}
   log(msg){const line=hms()+' '+msg;if(this.printer)this.printer(line);else console.log(line);
     if(this.logf)try{fs.mkdirSync(path.dirname(this.logf),{recursive:true});fs.appendFileSync(this.logf,line+'\n')}catch{}}

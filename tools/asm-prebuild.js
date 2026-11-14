@@ -250,7 +250,7 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
               if(!r.gl&&/graphics error|no WebGL2 context/.test(r.glWhy)){await g.after(`${[...done].join('+')}: ${n} look(s), the chip failed`);await check(`the chip failed (${r.glWhy})`);return rest()}
               // the next master's setup starts as soon as this master's last look is painted (it may finish inside the burst or the rest)
               if(!per[k].length&&!warm){const nk=kinds[kinds.indexOf(k)+1];if(nk)warm=setup(per[nk][0])}}
-            await g.after(`${[...done].join('+')}: ${n} look(s) in ${((Date.now()-tb)/1000).toFixed(1)} s`)}
+            await g.after(`${[...done].join('+')}: ${n} look(s) in ${((Date.now()-tb)/1000).toFixed(1)} s`,{last:!Q.length})}   // no rest after the last burst (the owner's choice)
         return rest()}   // (empty, unless uploads were paused: those looks are then reported as not made by the CPU side)
       catch(e){err=e;if(e instanceof GpuLost){if(e.kind==='lost')gpuStop(e.message,true);else console.log(`${now()} GPU stopped this cycle: ${e.message}`)}else console.warn(`${now()} GPU side failed:`,e&&e.message||e);return rest()}
       finally{if(warm)await warm;await g.exit(err);gpuRests+=g.rested;gpuBursts+=g.bursts;gpuPeak=g.peak}};
