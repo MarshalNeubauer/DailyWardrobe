@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	b0c165a4b6c705d0da85
+# tested	5fa336aef1a16e0217d7
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -237,7 +238,7 @@ asmahead.test.js	add.js	<loaded>	checkArrivals
 asmahead.test.js	analysis.js	<loaded>
 asmahead.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 asmahead.test.js	apple-touch-icon.png	<loaded>
-asmahead.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfNow	asmCmMp	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmUnpack	asmCmWarm	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmH32	asmHbShirt	asmTieLit	asmTieSheenK
+asmahead.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfNow	asmCmMp	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmUnpack	asmCmWarm	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmH32	asmHbShirt	asmTieLit	asmTieSheenK	asmWtTag	asmWtWants
 asmahead.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlTry	asmGlWhy
 asmahead.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 asmahead.test.js	asm-worker.js	<any>
@@ -432,7 +433,7 @@ asmcode.test.js	add.js	<loaded>	checkArrivals
 asmcode.test.js	analysis.js	<loaded>
 asmcode.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 asmcode.test.js	apple-touch-icon.png	<loaded>
-asmcode.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmTieSheenK
+asmcode.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmTieSheenK	asmWtTag	asmWtWants
 asmcode.test.js	asm-gl.js	<loaded>
 asmcode.test.js	asm-watch.js	<loaded>	asmWatchPaints
 asmcode.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmCmHeld	asmCmUse	asmKey	asmLoad	asmMicroKind	asmOutKey	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmVestKey	asmVestTag
@@ -471,12 +472,14 @@ asmcode.test.js	wardrobe.js	<loaded>
 asmcode.test.js	watch/leather.jpg	<loaded>
 asmcode.test.js	watch/shirt-open.png	<loaded>
 asmcode.test.js	watch/shirt-tie.png	<loaded>
+asmcode.test.js	watch/suit.png	<loaded>
+asmcode.test.js	watch/vest.png	<loaded>
 asmcolor.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmcolor.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 asmcolor.test.js	add.js	<loaded>	checkArrivals
 asmcolor.test.js	analysis.js	<loaded>
 asmcolor.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
-asmcolor.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSet	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmH32	asmHbShirt	asmLegsPrep	asmTieLit	asmTieSheenK
+asmcolor.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSet	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmH32	asmHbShirt	asmLegsPrep	asmTieLit	asmTieSheenK	asmWtTag	asmWtWants
 asmcolor.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlTry	asmGlUI	asmGlWhy
 asmcolor.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 asmcolor.test.js	asm-worker.js	<any>
@@ -596,13 +599,13 @@ asmcu.test.js	add.js	<loaded>	checkArrivals
 asmcu.test.js	analysis.js	<loaded>
 asmcu.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 asmcu.test.js	apple-touch-icon.png	<loaded>
-asmcu.test.js	asm-color.js	<loaded>	asmCmRoute	asmCuDark	asmCuFine	asmCuPatch	asmCuTag	asmCuTile1	asmCuWants	asmCuWrap
+asmcu.test.js	asm-color.js	<loaded>	asmCmRoute	asmCuDark	asmCuFine	asmCuPatch	asmCuTag	asmCuTile1	asmCuWants	asmCuWrap	asmWorstedTile	asmWtTag	asmWtWants
 asmcu.test.js	asm-gl.js	<loaded>
 asmcu.test.js	asm-watch.js	<loaded>
-asmcu.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave
+asmcu.test.js	assemble.js	<loaded>	@	asmLinen	asmSuitBands	asmSuitWeave
 asmcu.test.js	care.js	<loaded>	careShow
 asmcu.test.js	colpick.js	<loaded>
-asmcu.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colOf	dayClimate	di	isWorkday	isoKey	key	keySettings	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	setHash	setKeys	todayDate
+asmcu.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	colOf	dayClimate	di	isWorkday	isoKey	key	keySettings	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	setHash	setKeys	todayDate	trouserKind
 asmcu.test.js	detect.js	<loaded>	@	texPat	tieWeave	usableSett
 asmcu.test.js	draw.js	<loaded>
 asmcu.test.js	dress.js	<loaded>	migrateVests
@@ -642,14 +645,14 @@ asmgl.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 asmgl.test.js	add.js	<loaded>	checkArrivals
 asmgl.test.js	analysis.js	<loaded>
 asmgl.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
-asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCanvas	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSrcSig	asmCmTile	asmCmWk	asmCrWants	asmCuWants	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKnitTile	asmLegsAt	asmLegsPrep	asmPaisleyTile	asmTieLit	asmTieSheenK	asmUvAt
+asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCanvas	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSrcSig	asmCmTile	asmCmWk	asmCrWants	asmCuWants	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKnitTile	asmLegsAt	asmLegsPrep	asmPaisleyTile	asmTieLit	asmTieSheenK	asmUvAt	asmWorstedTile	asmWtWants
 asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlBytes	asmGlContext	asmGlCovers	asmGlCuffs	asmGlEncode	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRenderer	asmGlReset	asmGlSame	asmGlSet	asmGlStatus	asmGlTex	asmGlTry	asmGlUI	asmGlUpload	asmGlUploadGeo	asmGlUse	asmGlVar	asmGlWhy
 asmgl.test.js	asm-watch.js	<any>	<loaded>
 asmgl.test.js	asm-worker.js	<any>
 asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
 asmgl.test.js	care.js	<loaded>	careShow
 asmgl.test.js	colpick.js	<loaded>
-asmgl.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	keySettings	labHex	lum	mergeState	mix	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	setHash	setKeys	stateSig	thirdOf	todayDate
+asmgl.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	accentOf	applyCustom	colOf	dayClimate	di	hexRgb	isWorkday	isoKey	key	keySettings	labHex	lum	mergeState	mix	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	setHash	setKeys	stateSig	thirdOf	todayDate	trouserKind
 asmgl.test.js	detect.js	<loaded>	@	settSig	texPat	tieWeave	usableSett
 asmgl.test.js	draw.js	<loaded>	fabricDef	texPlainBand	texTileUrl	texTones
 asmgl.test.js	dress.js	<loaded>	migrateVests
@@ -769,7 +772,7 @@ asmprebuild.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	is
 asmprebuild.test.js	add.js	<loaded>	checkArrivals
 asmprebuild.test.js	analysis.js	<loaded>
 asmprebuild.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
-asmprebuild.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPrebuild	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmTieSheenK
+asmprebuild.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPrebuild	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmTieSheenK	asmWtTag	asmWtWants
 asmprebuild.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus
 asmprebuild.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 asmprebuild.test.js	asm-worker.js	<any>
@@ -938,6 +941,8 @@ asmstuck.test.js	wardrobe.js	<loaded>
 asmstuck.test.js	watch/leather.jpg	<loaded>
 asmstuck.test.js	watch/shirt-open.png	<loaded>
 asmstuck.test.js	watch/shirt-tie.png	<loaded>
+asmstuck.test.js	watch/suit.png	<loaded>
+asmstuck.test.js	watch/vest.png	<loaded>
 asmtwill.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmtwill.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 asmtwill.test.js	add.js	<loaded>	checkArrivals
@@ -991,7 +996,7 @@ asmwatch.test.js	add.js	<loaded>	checkArrivals
 asmwatch.test.js	analysis.js	<loaded>
 asmwatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 asmwatch.test.js	apple-touch-icon.png	<loaded>
-asmwatch.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmPref	asmCmRev	asmCmRoute	asmCmSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmTieSheenK
+asmwatch.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmPref	asmCmRev	asmCmRoute	asmCmSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmTieSheenK	asmWtTag	asmWtWants
 asmwatch.test.js	asm-gl.js	<any>	<loaded>
 asmwatch.test.js	asm-watch.js	<any>	<loaded>	asmWatchBlur	asmWatchDark	asmWatchDo	asmWatchImg	asmWatchJob	asmWatchMetal	asmWatchPaint	asmWatchPaints	asmWatchPct	asmWatchSig
 asmwatch.test.js	asm-worker.js	<any>
@@ -1081,13 +1086,17 @@ asmweave.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{con
 asmweave.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 asmweave.test.js	wardrobe.js	<loaded>
 asmweave.test.js	watch/leather.jpg	<loaded>
+asmweave.test.js	watch/shirt-open.png	<loaded>
+asmweave.test.js	watch/shirt-tie.png	<loaded>
+asmweave.test.js	watch/suit.png	<loaded>
+asmweave.test.js	watch/vest.png	<loaded>
 assemble.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 assemble.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 assemble.test.js	add.js	<loaded>	checkArrivals
 assemble.test.js	analysis.js	<loaded>
 assemble.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	renderBusy	texSwatches	tx	txFail	txs	window.fetch
 assemble.test.js	apple-touch-icon.png	<loaded>
-assemble.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmWarm	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmTieSheenK
+assemble.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmWarm	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmTieSheenK	asmWtTag	asmWtWants
 assemble.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
 assemble.test.js	asm-watch.js	<loaded>	asmWatchPaints
 assemble.test.js	asm-worker.js	<any>
@@ -5800,6 +5809,9 @@ sharedmasters.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMConten
 sharedmasters.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmCopyKey	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMp	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmH32	asmHbShirt	asmTieLit	asmTieSheenK
 sharedmasters.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlTry	asmGlUI	asmGlWhy
 sharedmasters.test.js	asm-watch.js	<any>	<loaded>	asmWatchBlur	asmWatchDark	asmWatchDo	asmWatchImg	asmWatchJob	asmWatchMetal	asmWatchPaint	asmWatchPaints	asmWatchPct	asmWatchSig
+sharedmasters.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmCopyKey	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmTieSheenK	asmWtTag	asmWtWants
+sharedmasters.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
+sharedmasters.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 sharedmasters.test.js	asm-worker.js	<any>
 sharedmasters.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBuild	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmListGet	asmLoad	asmMicroKind	asmOutKey	asmPhoto	asmPump	asmRun	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmTrim	asmWants	asmWorker	renderAsmUI
 sharedmasters.test.js	care.js	<loaded>	careShow

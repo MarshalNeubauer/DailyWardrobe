@@ -264,7 +264,7 @@ const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOu
 const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc/lg'+ASM_LEGV:h==='tile'?'/lg'+ASM_LEGV:''};   // (/lg: the lines follow the legs, asmLegsPrep)
 const ASM_LEGV=1;
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV+'.'+asmCmCodeSig()],rev=asmCmRev(k);if(rev)s.push('mf:'+rev);   // the painter's code and the master's record dates (asmCmCode, asmCmRev)
-  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i)+asmCrTag(z,i))}
+  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i)+asmCrTag(z,i)+asmWtTag(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
   if(typeof asmWatchPaints==='function'&&asmWatchPaints(o.watch))s.push('watch:'+asmWatchSig(o.watch));   // another watch than the master's (asm-watch.js)
   if(ASM_CM_BTN[k])s.push('btn'+ASM_CM_BTNV);   // the masters whose shirt buttons are drawn: a new look of them paints those looks again
@@ -558,6 +558,30 @@ async function asmCuTile1(i){const L=ASM_LIN,h=String(colOf(i)).replace('#',''),
   lo.sort((a,b)=>a-b);const shown=lo[Math.floor(lo.length*.95)]-lo[Math.floor(lo.length*.05)],gain=asmSuitWeave(i)==='herringbone'?ASM_CU.hb:asmCuFine(i)&&shown>ASM_CU.fine?ASM_CU.fine/shown:Math.max(1,Math.min(ASM_CU.kmax,ASM_CU.show/Math.max(1e-4,shown)));
   const t=new Float32Array(3*n);for(let k=0;k<n;k++)for(let q=0;q<3;q++)t[3*k+q]=Math.max(0,base[q]*(1+gain*(rel[q][k]-1)));
   return {t,c:new Float32Array(base),TW:T,TH:T,mm,linen:false,cloth:null,...(asmSuitWeave(i)==='herringbone'?{slv:ASM_CU.hbs/ASM_CU.hb}:{}),cu:{x:p.x0,y:p.y0,side:p.P,of:W,even:+p.sd.toFixed(3),line:+p.e.toFixed(3),usual:+p.med.toFixed(3),sharp:+(p.sharp/(p.f90||1)).toFixed(2),swing:+swing.toFixed(3),shown:+shown.toFixed(3),gain:+gain.toFixed(2)}}}
+/* a worsted twill (2026-11-14, the owner's pick "strong" from mockups on his Black suit): the generated twill (asmTwillTex) read as a
+   woven crosshatch, a faint check over the whole jacket, which a plain black twill doesn't have. asmWorstedTile(item): rounded ribs with a
+   narrow groove between them, rising about 60 degrees to the right (ASM_WT.k: whole rib cycles across the tile each way), each rib a
+   touch lighter or darker and wandering a little, the yarn's twist along it, a fine fleck; drawn three times life size like a close-up
+   (ASM_WT.mm across the tile), its light swing ASM_WT.amp (the painter tones detail down a lot on dark cloth: at a third of it the ribs
+   didn't show), a second colour on the ribs as asmTwillTex's mix. Every term repeats over the tile. For a suit or blazer and dress trousers
+   whose twill isn't painted from a close-up (asmWtWants); herringbone, chinos and jeans keep their painters */
+const ASM_WT={T:256,k:[14,8],mm:24,amp:2.8,twist:1,v:1},asmWtMem=new Map();
+const asmWtWants=(i,z)=>!!i&&(z==='jacket'||z==='waistcoat'||z==='trousers')&&(i.type==='suit'||i.type==='blazer'||(i.type==='pants'&&!(typeof trouserKind==='function'&&trouserKind(i))))&&asmCmRoute(i,z).how==='twill';
+const asmWtTag=(z,i)=>asmWtWants(i,z)&&!asmCuWants(i,'twill')?'/wt'+ASM_WT.v:'';
+function asmWorstedTile(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},base=lin(colOf(i)),c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
+  const key=JSON.stringify([base,c2,ASM_WT]);let det=asmWtMem.get('d');const T=ASM_WT.T,n=T*T,[kx,ky]=ASM_WT.k;
+  if(!det){let s=12345;const rnd=()=>(s=(Math.imul(s,1103515245)+12345)&0x7fffffff)/0x7fffffff;
+    const pn=(f,c)=>{const w=[];for(let q=0;q<c;q++)w.push([1+Math.floor(rnd()*f),Math.floor(rnd()*(2*f+1))-f,rnd()*6.283,.5+rnd()]);return (x,y)=>{let v=0,m=0;for(const [a,b,p,g] of w){v+=g*Math.sin(6.283*(a*x+b*y)/T+p);m+=g}return v/m}};   // smooth noise of whole cycles over the tile
+    const wob=pn(3,6),thick=pn(6,8),cloud=pn(4,6),d=new Float32Array(n),rib=new Float32Array(n);
+    for(let y=0;y<T;y++)for(let x=0;x<T;x++){const ph=(kx*x+ky*y)/T+.06*wob(x,y),r=ph-Math.floor(ph),ri=Math.floor(ph);
+      const ridge=Math.pow(Math.sin(Math.PI*r),.7),tws=Math.sin(6.283*(2*(-ky*x+kx*y)/T+1.5*r)),rv=Math.sin(ri*12.9898+7)*43758.5453;
+      d[y*T+x]=ridge-.62+ASM_WT.twist*.18*tws*ridge+.10*((rv-Math.floor(rv))-.5)+.04*thick(x,y)+.015*cloud(x,y)+.05*(rnd()-.5);rib[y*T+x]=ridge}
+    let m=0;for(let k=0;k<n;k++)m+=d[k];m/=n;const v=[];for(let k=0;k<n;k+=7)v.push(d[k]-m);v.sort((a,b)=>a-b);const sw=v[Math.floor(v.length*.95)]-v[Math.floor(v.length*.05)];
+    for(let k=0;k<n;k++)d[k]=(d[k]-m)/sw;det={d,rib};asmWtMem.set('d',det)}
+  let t=asmWtMem.get(key);
+  if(!t){t=new Float32Array(3*n);for(let k=0;k<n;k++){const g=1+ASM_WT.amp*det.d[k];for(let q=0;q<3;q++){const b=c2?base[q]+(c2[q]-base[q])*ASM_TWILL.mix*det.rib[k]:base[q];t[3*k+q]=Math.max(0,b*g)}}
+    if(asmWtMem.size>24){asmWtMem.clear();asmWtMem.set('d',det)}asmWtMem.set(key,t)}
+  return {t,c:new Float32Array(base),TW:T,TH:T,mm:ASM_WT.mm,linen:asmLinen(i),cloth:null}}
 /* the job for asmCmBuild, or null when the kind's master or masks are not on the device */
 async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
@@ -568,6 +592,7 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
     try{
       if(how==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
       else if(how==='bands')c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
+      else if(how==='twill'&&asmWtWants(i,z))c.suit=asmWorstedTile(i);   // a worsted twill's ribs (asmWorstedTile)
       else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
       else if(how==='tweed')c.suit=asmTweedTex(i);
       else if(ASM_MICRO[how])c.suit=asmMicroTex(i,how);   // houndstooth, sharkskin, birdseye, nailhead
@@ -847,7 +872,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_WT,asmWtMem,asmWtWants,asmWorstedTile,ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
