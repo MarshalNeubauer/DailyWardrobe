@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	c49cd773861cb8ecbf66
-# tested	9dad3babe9d9d4b6dfa2
+# tested	2e0e5c8ba3e7868d0889
 <every page test>	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 <every page test>	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole
 <every page test>	analysis.js	<loaded>
@@ -2863,8 +2862,6 @@ wardrobe.test.js	icon-512.png	<loaded>
 wardrobe.test.js	index.html	<loaded>
 wardrobe.test.js	manifest.webmanifest	<loaded>
 wardrobe.test.js	planner.js	beltFit	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	finish	leatherGroup	metalOf	outfitScore	patInfo	patternScore	pcol	rateOutfit	shirtGroup	shirtScore	shoeCtx	shoeScore	sockEcho	sockScore	tieGroup	tieScore
-wardrobe.test.js	remind.js	remindPrefs	remindSoon	remindStart{}>@document.addEventListenervisibilitychange
-wardrobe.test.js	planner.js	beltFit	clothesScore	colsOf	darkShirt	darkUnderLight	fam	finish	leatherGroup	metalOf	outfitScore	patInfo	patternScore	pcol	rateOutfit	shirtGroup	shirtScore	shoeCtx	shoeScore	sockEcho	sockScore	tieGroup	tieScore
 wardrobe.test.js	remind.js	remindPrefs	remindRefresh	remindSoon	remindStart{}>@document.addEventListenervisibilitychange
 wardrobe.test.js	safety.js	adoptBackupSettings	askPersist	guardUnsaved	tagFailNote
 wardrobe.test.js	setup.js	setupWardEmpty
