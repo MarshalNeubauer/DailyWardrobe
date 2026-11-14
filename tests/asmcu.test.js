@@ -31,6 +31,17 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.hb,'a herringbone suit with a close-up takes its cloth from it, at three times its strength, its sleeves at twice (the tile carries 2/3 for them; another cloth carries none)');
     ok(r.bright,'a bright neutral cloth with no paper in the close-up still gives a tile (its light threads are not paper)');
     ok(r.offPaper,'a strip of white paper along an edge is kept out of the patch');
+    // a worsted twill with no close-up cloth (the owner's Black suit, 2026-11-14): asmWorstedTile, ribs that repeat over the tile, its mean
+    // the item's colour, rising to the right; herringbone, jeans and a suit painted from its close-up keep their painters
+    const w=await p.evaluate(()=>{const blk={id:'wt1',type:'suit',primaryColor:'black',pattern:'twill',texture:'x'},T=asmWorstedTile(blk),n=T.TW*T.TH;let m=0;for(let k=0;k<n;k++)m+=T.t[3*k+1];m/=n;
+      // the seam: the tile's last column against its first, as alike as two neighbouring columns inside it
+      const dc=(a,b)=>{let s=0;for(let y=0;y<T.TH;y++)s+=Math.abs(T.t[3*(y*T.TW+a)+1]-T.t[3*(y*T.TW+b)+1]);return s/T.TH},dEdge=dc(T.TW-1,0),dIn=(dc(100,101)+dc(30,31)+dc(200,201))/3;
+      // rising to the right: the pattern matches itself one rib along (kx,ky)'s perpendicular
+      const at=(x,y)=>T.t[3*(((y%T.TH)+T.TH)%T.TH*T.TW+((x%T.TW)+T.TW)%T.TW)+1];let up=0,dn=0;for(let y=0;y<T.TH;y+=3)for(let x=0;x<T.TW;x+=3){up+=Math.abs(at(x,y)-at(x+8,y-14));dn+=Math.abs(at(x,y)-at(x+8,y+14))}
+      return {mean:m/T.c[1],seam:dEdge<=1.5*dIn,rise:up<dn,tag:asmWtTag('jacket',blk),hb:asmWtWants({...blk,pattern:'herringbone'},'jacket'),jeans:asmWtWants({id:'j',type:'pants',primaryColor:'navy',pattern:'twill',trouserKind:'jeans'},'trousers'),
+        cuTag:asmWtTag('jacket',{id:'g',type:'suit',primaryColor:'grey',pattern:'twill',texture:'x'})}});
+    ok(Math.abs(w.mean-1)<.1&&w.seam&&w.rise,`a black twill without close-up cloth gets the worsted tile: mean ${w.mean.toFixed(3)} of its colour (the deepest grooves stop at black), no seam (${w.seam}), ribs rising to the right (${w.rise})`);
+    ok(w.tag==='/wt1'&&!w.hb&&!w.jeans&&w.cuTag==='','only those looks get a new key: herringbone and jeans keep their painters, a twill painted from its close-up is unchanged');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
