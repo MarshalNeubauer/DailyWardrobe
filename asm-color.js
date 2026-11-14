@@ -377,7 +377,7 @@ async function asmPaisleyTile(i){const T=128,cv=document.createElement('canvas')
    like any read cloth (c.suit, a tile). null when there is no close-up, no clean patch, or nothing in it to show: the item is then
    painted as before. ASM_CU: tile texels a side, the patch's sides tried (of the close-up's shorter side), how even a patch must be, how
    much stronger the detail is drawn, the least detail worth drawing */
-const ASM_CU={T:256,sides:[.5,.4,.32,.25],even:.16,edge:8,show:.12,kmax:3.5,min:.02,zoom:3,sharp:.6,flat:18,dark:.012,fine:.5,v:6};   // (measured on the owner's three brown close-ups: a window with a seam has a line 10-24 times the cloth's usual, a clean one 4-7 times)
+const ASM_CU={T:256,sides:[.5,.4,.32,.25],even:.16,edge:8,show:.12,kmax:3.5,min:.02,zoom:3,sharp:.6,flat:18,dark:.012,fine:.5,paper:1.3,solid:.6,v:7};   // (measured on the owner's three brown close-ups: a window with a seam has a line 10-24 times the cloth's usual, a clean one 4-7 times)
 /* (at its real size a fine twill's ribs are under one pixel of the picture and average to a flat colour, exactly what the close-up was
    meant to cure) the cloth is drawn ASM_CU.zoom times its real size, as shirt weaves and ties are drawn larger than life so they show on
    a phone; and a patch must be in focus: its fine detail at least ASM_CU.sharp of the cloth's sharpest tenth (the first build took the
@@ -401,6 +401,13 @@ const asmCuTag=(z,i)=>(z==='jacket'||z==='waistcoat'||z==='trousers')&&asmCuWant
    light at 9 px); the largest side whose best window is clean enough wins, else the cleanest of the smallest */
 function asmCuPatch(d,W,H){const L=ASM_LIN,N=W*H,Y=new Float32Array(N),m=new Uint8Array(N);
   for(let k=0;k<N;k++){const r=L[d[4*k]],g=L[d[4*k+1]],b=L[d[4*k+2]],mx=Math.max(r,g,b),mn=Math.min(r,g,b);Y[k]=.2126*r+.7152*g+.0722*b;m[k]=Y[k]>.42&&(mx-mn)/(mx||1)<.16?0:1}
+  /* (the owner's new Light Grey close-up, 2026-11-14: "now it's painting without any texture": a well-lit light grey, no paper in it, and
+     27% of its pixels, the light threads, counted as paper, so no window was all cloth) paper is a solid area clearly brighter than the
+     cloth: ASM_CU.paper times the picture's 30th percentile of light, and ASM_CU.solid of its 13 px surroundings bright too */
+  {const ys=[];for(let k=0;k<N;k+=7)ys.push(Y[k]);ys.sort((a,b)=>a-b);const lim=ASM_CU.paper*ys[Math.floor(ys.length*.3)],P=new Float32Array(N);for(let k=0;k<N;k++)P[k]=!m[k]&&Y[k]>lim?1:0;
+    const bx=(a,R)=>{const t=new Float32Array(N),o=new Float32Array(N);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let q=-R;q<=R;q++)s+=a[y*W+Math.min(W-1,Math.max(0,x+q))];t[y*W+x]=s/(2*R+1)}
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let q=-R;q<=R;q++)s+=t[Math.min(H-1,Math.max(0,y+q))*W+x];o[y*W+x]=s/(2*R+1)}return o};
+    const S=bx(P,6);for(let k=0;k<N;k++)m[k]=S[k]>ASM_CU.solid?0:1}
   const box=(a,R)=>{const t=new Float32Array(N),o=new Float32Array(N),cx=v=>v<0?0:v>W-1?W-1:v,cy=v=>v<0?0:v>H-1?H-1:v;
     for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let k=-R;k<=R;k++)s+=a[y*W+cx(x+k)];t[y*W+x]=s/(2*R+1)}
     for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let k=-R;k<=R;k++)s+=t[cy(y+k)*W+x];o[y*W+x]=s/(2*R+1)}return o};

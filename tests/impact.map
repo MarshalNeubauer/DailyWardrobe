@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	7eda42218a9624c99c9f
+# tested	299aaa185b537a001dcd
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -510,6 +510,7 @@ asmcu.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
 asmcu.test.js	add.js	<loaded>	checkArrivals
 asmcu.test.js	analysis.js	<loaded>
 asmcu.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@constdbnewPromise	afterDom	afterScripts	busyLabelFor	connKeep	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+asmcu.test.js	apple-touch-icon.png	<loaded>
 asmcu.test.js	asm-color.js	<loaded>	asmCmRoute	asmCuDark	asmCuFine	asmCuPatch	asmCuTag	asmCuTile1	asmCuWants	asmCuWrap
 asmcu.test.js	asm-gl.js	<loaded>
 asmcu.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave
@@ -521,9 +522,12 @@ asmcu.test.js	draw.js	<loaded>
 asmcu.test.js	dress.js	<loaded>	migrateVests
 asmcu.test.js	figure.js	<loaded>	@{}
 asmcu.test.js	history.js	<loaded>	checkPlanRules	whenPulled
+asmcu.test.js	icon-192.png	<loaded>
+asmcu.test.js	icon-512.png	<loaded>
 asmcu.test.js	index.html	<loaded>
 asmcu.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 asmcu.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
+asmcu.test.js	manifest.webmanifest	<loaded>
 asmcu.test.js	month.js	<loaded>	nextWorkday
 asmcu.test.js	pack.js	<loaded>	packShow
 asmcu.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders	queuedKeys	rqGet

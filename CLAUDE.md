@@ -1188,6 +1188,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - (the owner: "Half strength for medium grey") a cloth whose pattern or description says fine or worsted (`asmCuFine`) shows its grain no stronger than `ASM_CU.fine` (.5 swing); other cloths show theirs as in the close-up, brought up to `ASM_CU.show` when fainter
 - (the owner: "Leave the current painter for black solid color suits") cloth darker than `ASM_CU.dark` is not taken from the close-up (`asmCuDark`): his black suit lost its ribs and went plain
 - a new close-up or a retagged colour repaints the item's looks by itself (the tag holds the close-up's length and tail, the key the colour); a change to `ASM_CU` or the functions repaints all (they are in `asmCmCode`); tests/asmcu.test.js
+- (the owner, same day: a new Light Grey close-up "painting without any texture") `asmCuPatch` counted a well-lit light grey's light threads as white paper (27% of the picture, scattered), found no all-cloth window and the suit fell back to flat colour; paper is now a solid area (`ASM_CU.solid` of its 13 px surroundings) brighter than `ASM_CU.paper` times the picture's 30th percentile of light
 - the bench's sheets for this are in `C:\code\watch-test\light\brown3\show`, `cu\show` and `cu\r2`
 
 #### Phones
