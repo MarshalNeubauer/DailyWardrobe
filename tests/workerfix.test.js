@@ -48,7 +48,7 @@ module.exports=async({ok,ROOT})=>{
       mode='ok';let sent=null;env.AI.run=async(m,i)=>{sent=i.messages[1].content[0].text;return {response:'{"type":"pants","trouserKind":"chinos"}'}};
       r=await J(await call(env,'POST','',{image:PNG},T));ok(r.s===200&&r.trouserKind==='chinos'&&await used()===1,'a good answer counts once');
       ok(/"trouserKind":"\.\.\.","shoeStyle":"\.\.\."/.test(sent||''),'the JSON template Workers AI gets includes trouserKind and shoeStyle');}
-    // ---- item pictures have a time limit like outfit photos
+    // ---- item pictures have a time limit
     {let sig=null;globalThis.fetch=async(u,i)=>{if(String(u).startsWith('https://api.openai.com/')){sig=i&&i.signal;return new Response(JSON.stringify({data:[{b64_json:'AAAA'}]}),{status:200})}return new Response('',{status:599})};
       const env={APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:kv()};
       const r=await call(env,'POST','render',{mode:'item',item:'brown suede loafers',key:'c0000000000000001'},{'x-app-token':'t'});
@@ -76,44 +76,16 @@ module.exports=async({ok,ROOT})=>{
       ok(dst.length===1&&dst[0]==='07:00',`where the clocks go forward (New York, 14 Mar 2027) a reminder in the skipped hour still fires, once (${dst.join()})`);
       const back=await fires('01:30','America/New_York','2026-11-01','2026-11-01T00:00:00Z',24);
       ok(back.length===1,`where they go back the repeated hour sends it once (${back.join()})`);}
-    // ---- no duplicate paid photos: a queued job is made once, whatever is delivered twice or fails after OpenAI answered
-    {let openai=0,delay=0;globalThis.fetch=async u=>{if(String(u).startsWith('https://api.openai.com/')){openai++;if(delay)await new Promise(r=>setTimeout(r,delay));return new Response(JSON.stringify({data:[{b64_json:'AAAA'}]}),{status:200})}return new Response('',{status:599})};
-      const mk=o=>{const store=kv(o),sent=[];hubs.clear();return {store,sent,env:{APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:store,RENDER_QUEUE:{send:async m=>{sent.push(m)}},RENDER_HUB:HUB}}};
-      const T={'x-app-token':'t'},msg=(body,attempts=1)=>({body,attempts,acked:false,retried:null,ack(){this.acked=true},retry(o){this.retried=o}});
-      const queueIt=(env,key,x={})=>call(env,'POST','render',{mode:'queue',key,image:PNG,...x},T);
-      // the photo is made, then keeping it fails (KV over its writes): acked, never retried; a copy of the message does nothing
-      {const {store,sent,env}=mk({failPut:k=>k.startsWith('render:')}),K='c00000000000000a1';openai=0;
-        await queueIt(env,K);const w=call(env,'GET','render-wait?keys='+K+'&ms=5000',undefined,T);await new Promise(r=>setTimeout(r,20));
-        const m1=msg(sent[0]);await worker.queue({messages:[m1]},env);const got=await (await w).json();
-        const m2=msg(sent[0],2);await worker.queue({messages:[m2]},env);
-        ok(openai===1&&m1.acked&&!m1.retried&&m2.acked&&!m2.retried,`a photo made but not kept: acked, and a second delivery does nothing (${openai} OpenAI call)`);
-        ok(Array.isArray(got)&&got[0]&&got[0].rec&&got[0].rec.img,'the open app still gets the photo through the hub');
-        ok(/couldn’t keep it/.test(JSON.parse(store.store.get('jobfail:'+K)||'{}').error||''),'and the failure is recorded for an app that comes later')}
-      // two copies of one message at once (two consumers run side by side): one makes it, the other waits and then finds it done
-      {const {store,sent,env}=mk(),K='c00000000000000a2';openai=0;delay=40;
-        await queueIt(env,K);const a=msg(sent[0]),b=msg(sent[0]);
-        await Promise.all([worker.queue({messages:[a]},env),worker.queue({messages:[b]},env)]);delay=0;
-        const late=[a,b].find(x=>x.retried);ok(openai===1&&late&&late.retried.delaySeconds>0&&store.store.has('render:'+K),`two copies of a message at once make one photo (${openai} OpenAI call); the other is put back to wait`);
-        const again=msg(sent[0],2);await worker.queue({messages:[again]},env);
-        ok(openai===1&&again.acked,'when it comes back the photo is made, so it does nothing')}
-      // the app's Try again while the first run is still going: queued again under the same key, still one photo
-      {const {store,sent,env}=mk(),K='c00000000000000a3';openai=0;delay=40;
-        await queueIt(env,K);const first=msg(sent[0]),run=worker.queue({messages:[first]},env);await new Promise(r=>setTimeout(r,10));
-        await queueIt(env,K,{replace:true});const second=msg(sent[1]);await worker.queue({messages:[second]},env);await run;delay=0;
-        ok(openai===1&&first.acked&&second.retried,`a look queued again while it is being made is not made twice (${openai} OpenAI call)`);
-        await new Promise(r=>setTimeout(r,5));await queueIt(env,K,{replace:true});await worker.queue({messages:[msg(sent[2])]},env);
-        ok(openai===2,'a regenerate asked for after it was made is made (a new job)')}
-      // the hub keeps whether a photo was made, not the photo; a wait after it still gets the photo (read from KV)
-      {const {store,sent,env}=mk(),K='c00000000000000a4';openai=0;
-        await queueIt(env,K);await worker.queue({messages:[msg(sent[0])]},env);
-        const hub=hubs.get('renders'),kept=hub&&hub.recent.get(K);
-        ok(kept&&kept.ok&&!kept.rec&&!JSON.stringify([...hub.recent.values()]).includes('AAAA'),'RenderHub remembers {key, ok}, not the 2048 photo');
-        const got=await (await call(env,'GET','render-wait?keys='+K+'&ms=1000',undefined,T)).json();
-        ok(Array.isArray(got)&&got[0]&&got[0].rec&&got[0].rec.img==='data:image/jpeg;base64,AAAA','a wait after it was made gets the photo, read from KV')}
-      // a job that can't be made leaves no records behind, by any path (one helper, failJob)
-      {const {store,sent,env}=mk(),K='c00000000000000a5';delete env.OPENAI_API_KEY;
-        store.store.set('job:'+K,JSON.stringify({key:K,image:PNG,t:Date.now()}));const m=msg({key:K});await worker.queue({messages:[m]},env);
-        ok(m.acked&&store.store.has('jobfail:'+K)&&!store.store.has('job:'+K)&&!store.store.has('jobrun:'+K),'a job given up (no OpenAI key) keeps its reason and leaves no job or jobrun record')}}
+    // ---- the queue now only finishes deleted accounts: a photo job left from before 2026-11-14 is dropped, nothing made or paid for
+    {let openai=0;globalThis.fetch=async u=>{if(String(u).startsWith('https://api.openai.com/'))openai++;return new Response('',{status:599})};
+      const store=kv(),sent=[],env={APP_TOKEN:'t',OPENAI_API_KEY:'k',WARDROBE:store,RENDER_QUEUE:{send:async m=>{sent.push(m)}},RENDER_HUB:HUB},K='c00000000000000a1';
+      const msg=(body,attempts=1)=>({body,attempts,acked:false,retried:null,ack(){this.acked=true},retry(o){this.retried=o}});
+      store.store.set('job:'+K,JSON.stringify({key:K,image:PNG,t:Date.now()}));
+      const old=msg({key:K}),oldT=msg({key:K,ns:'u:abcdefgh12:'});await worker.queue({messages:[old,oldT]},env);
+      ok(old.acked&&!old.retried&&oldT.acked&&openai===0&&!store.store.has('render:'+K)&&!sent.length,'a leftover outfit-photo message is acked and dropped: no OpenAI call, nothing written');
+      for(let i=0;i<5;i++)store.store.set(`u:abcdefgh12:render:c${String(i).padStart(16,'0')}`,'{}');
+      const w=msg({wipe:'u:abcdefgh12:',n:1});await worker.queue({messages:[w]},env);
+      ok(w.acked&&![...store.store.keys()].some(k=>k.startsWith('u:abcdefgh12:'))&&store.store.has('job:'+K),'a {wipe} message deletes that account\'s keys and nothing else');}
     // ---- every KV write a tester causes is counted against a daily cap; lists too; everyone together stays well under 1,000
     {const realNow=Date.now;try{
       const store=kv(),env={APP_TOKEN:'own',WARDROBE:store,RENDER_HUB:HUB,TESTER_DAILY_TOTAL:JSON.stringify({write:40})};hubs.clear();

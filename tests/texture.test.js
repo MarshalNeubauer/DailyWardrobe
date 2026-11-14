@@ -1,18 +1,8 @@
 // Fabric close-ups and white balance: suits, blazers, trousers, shirts and ties can carry a second photo (a close-up of the
 // cloth). Add asks for one item or several; a one-item card asks for the close-up as step 2. Photos are white-balanced from
-// their bright near-neutral pixels. The close-up shows as the right half of the "As tagged" swatch and goes to the
-// realistic photo as a labelled reference.
-const path=require('path'),{pathToFileURL}=require('url');
+// their bright near-neutral pixels. The close-up shows as the right half of the "As tagged" swatch.
+const path=require('path');
 module.exports=async({ok,chromium,url,ROOT,settle})=>{
-  // worker: up to 8 reference photos reach OpenAI
-  const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
-  const realFetch=globalThis.fetch;let sent=null;const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
-  globalThis.fetch=async(href,init)=>{if(String(href)==='https://api.openai.com/v1/images/edits'){sent=init.body;return new Response(JSON.stringify({data:[{b64_json:JPG}]}),{status:200,headers:{'content-type':'application/json'}})}return new Response('',{status:404})};
-  try{const img='data:image/jpeg;base64,'+JPG,refs=Array(9).fill(img),labels=refs.map((_,k)=>'a close-up of the suit fabric (match its exact colour and weave) '+k);
-    await worker.fetch(new Request('https://w.test/render',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:img,refs,labels,outfit:'x',key:'c0000000000000001'})}),{APP_TOKEN:'t',OPENAI_API_KEY:'k'});
-    ok(sent&&sent.getAll('image[]').length===9&&/close-up of the suit fabric \(match its exact colour and weave\) 0/.test(sent.get('prompt'))&&!/ 8\b/.test(sent.get('prompt').split('in this order')[1]||''),'the worker passes up to 8 labelled reference photos (illustration + 8)')}
-  finally{globalThis.fetch=realFetch}
-
   const browser=await chromium.launch();const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();
   const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
