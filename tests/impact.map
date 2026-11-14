@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	b20bc1ecfdd2e67ca5f2
-# tested	d7f4769802a62aa0284f
+# tested	8b0f84590abec430b08d
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -3672,7 +3671,7 @@ queue.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	idsOf	keyD
 queue.test.js	icon-192.png	<loaded>
 queue.test.js	icon-512.png	<loaded>
 queue.test.js	index.html	<loaded>
-queue.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem
+queue.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 queue.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 queue.test.js	manifest.webmanifest	<loaded>
 queue.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	stackSVG
