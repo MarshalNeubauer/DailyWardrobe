@@ -513,6 +513,8 @@ html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* 
 /* Wardrobe: each item is one box, its photo and its name; tapping it opens it (Delete is inside, out of the way) */
 #wardrobe .grid{gap:10px}
 #wardrobe .gi{padding:8px;display:flex;flex-direction:column}
+#stats .st-wait{display:flex;align-items:center;gap:8px;margin:16px 4px}
+.gi{content-visibility:auto;contain-intrinsic-size:auto 230px}   /* boxes off screen are not laid out or painted until scrolled to (opening the Wardrobe: audit measured −42%) */
 #wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb{border-radius:10px}
 .gimeta{display:flex;flex-direction:column;gap:1px;padding:8px 4px 2px;min-width:0}
 .gimeta .gtype{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}

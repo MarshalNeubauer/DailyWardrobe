@@ -1,4 +1,4 @@
-/* Daily Wardrobe: the stats page (Settings → Wardrobe stats).
+/* Daily Wardrobe: the stats page (the Insights tab).
    Two sources: what was really worn (the day history from the first day the wardrobe existed; days marked "Not worn" and
    the planner's warm-up days are left out) and what is planned for the next six months. From them: wear counts per item,
    the pieces that never get worn and why, what costs outfits points, the colour balance, the most-worn pairings, rest
@@ -145,3 +145,28 @@ async function forgetLearned(kind,k){
   await saveUserSettings();renderStats()}
 function statsToggle(d){const t=d.dataset.type;if(statsOpen[t]===d.open)return;statsOpen[t]=d.open;if(d.open&&!d.querySelector('.st-row')){const y=scrollY;renderStats();scrollTo(0,y)}}
 function openStats(){closeSettings();show('stats');scrollTo({top:0})}   // Insights is a tab now (it was a page opened from Settings)
+/* ---- the next six months are planned a week at a time while the phone is idle (statsPlan), not all at once when Insights opens: that
+   froze a phone for 1.3 s (audit 2026-11-13). Opening the tab (statsShow, from show()) draws the page at once when they are planned,
+   else its top with a line saying so, and the rest as soon as the slices are done. It also starts a few seconds after start-up, so
+   the tab is usually ready. renderStats() called directly still works it out at once (the tests, a change made on the page). ---- */
+const STATS_SLICE=7;   // days planned per idle slice
+let statsWarm=null;
+function statsMonths(){const T=todayDate(),end=new Date(T.getFullYear(),T.getMonth()+STATS_MONTHS,T.getDate()),out=[];
+  for(let y=T.getFullYear(),m=T.getMonth();new Date(y,m,1)<=end;m===11?(m=0,y++):m++)out.push([y,m]);return out}
+const statsPlanned=()=>!!window.TEST_PLAN||statsMonths().every(([y,m])=>cache[y+'-'+m]);
+function statsPlan(){if(statsWarm)return statsWarm;if(statsPlanned())return Promise.resolve();
+  const idle=f=>self.requestIdleCallback?requestIdleCallback(f,{timeout:250}):setTimeout(f,16);
+  return statsWarm=new Promise(done=>{const step=()=>{
+    try{if(statsPlanned()){statsWarm=null;return done()}
+      const T=todayDate(),[y,m]=statsMonths().find(([y,m])=>!cache[y+'-'+m]),start=planStart(y,m);
+      if(+start!==+planStart(T.getFullYear(),T.getMonth()))planMonth(y,m);   // a month built on its own (planMonth's other branch): in one go
+      else{const sim=cache.sim||(cache.sim=planSim(start)),me=new Date(y,m+1,0),at=sim._at?new Date(sim._at):start,next=new Date(at.getFullYear(),at.getMonth(),at.getDate()+STATS_SLICE);
+        if(next>=me)planMonth(y,m);else{sim.upTo(next);sim._at=+next}}}   // (planMonth then only plans the days left; the sim is resumable)
+    catch(e){console.warn('planning ahead for Insights stopped',e);statsWarm=null;return done()}
+    idle(step)};idle(step)})}
+function statsShow(){const el=$('#stats');if(!el)return;
+  if(!items.length||statsPlanned())return renderStats();
+  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
+  statsPlan().then(()=>{if(!el.hidden&&el.querySelector('.st-wait'))renderStats()})}
+// a few seconds after start-up, while nothing else is going on
+if(typeof afterScripts==='function')afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},4000));

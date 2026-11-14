@@ -20,6 +20,8 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(()=>openSettings());
     ok(!(await p.isVisible('#stats-btn'))&&await p.isVisible('#n-stats')&&(await p.textContent('#n-stats'))==='Insights','Insights is a tab (no longer a link in Settings)');
     await p.evaluate(()=>closeSettings());await p.click('#n-stats');
+    const wait=await p.evaluate(()=>!!document.querySelector('#stats .st-wait'));await p.waitForFunction(()=>!!document.querySelector('#stats .st-tiles'),null,{timeout:20000});
+    ok(wait,'the tab shows at once, saying it is planning the next six months, and the stats follow (planned in idle slices, stats.js statsShow)');
     ok(await p.evaluate(()=>!$('#stats').hidden&&$('#today').hidden&&$('#settings-modal').style.display==='none'&&/Insights/.test($('#stats h2').textContent)&&!$('#stats .pback')&&$('#n-stats').classList.contains('on')),'it opens Insights, a tab with no ‹');
     const s=await p.evaluate(()=>{const S=buildStats(),row=id=>S.rows.find(r=>r.i.id===id);
       return {worn:S.worn.map(w=>w.date).join(),navy:row('suit0').worn,ch:row('suit1').worn,tie:row('tie11').worn,last:row('suit0').last&&key(row('suit0').last),plan:S.plan.length,planNavy:row('suit0').planned,next:!!row('suit0').next,
