@@ -55,7 +55,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         links:[...links.querySelectorAll('.slink b')].map(b=>b.textContent).join(),one:links.querySelectorAll('.slink').length===links.children.length,head:first.textContent,
         gaps:[...links.querySelectorAll('.slink')].map(b=>Math.round(b.getBoundingClientRect().height)),radius:getComputedStyle(links).borderTopLeftRadius}});
     ok(!st.hit,`nothing in Settings says worker, Cloudflare, KV, token or benchmark${st.hit?' (“…'+st.hit+'…”)':''}`);
-    ok(st.sums[4]==='Needs a connection'&&/^Your own colours & patterns$/.test(st.sums[5])&&/needs a connection/.test(st.sums[6])&&st.sums[7]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(4,8).join(' | ')})`);
+    ok(st.sums[4]==='Painted pictures · needs a connection'&&/^Your own colours & patterns$/.test(st.sums[5])&&/needs a connection/.test(st.sums[6])&&st.sums[7]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(4,8).join(' | ')})`);
     ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
@@ -95,7 +95,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn'),msg:!!document.querySelector('#render-msg'),
       batch:!document.querySelector('#batch-btn'),items:!!document.querySelector('#itempic-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
       closeSettings();openAdd();r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
-    ok(on.gen&&!on.msg&&on.batch&&on.items&&!on.note&&on.group&&/^Item pictures$/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the item pictures are there; no outfit photo to make anywhere (the day's photo was retired 2026-11-14) (${on.conn})`);
+    ok(on.gen&&!on.msg&&on.batch&&on.items&&!on.note&&on.group&&/^Painted pictures$/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the item pictures are there; no outfit photo to make anywhere (the day's photo was retired 2026-11-14) (${on.conn})`);
     await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
 
     /* ---- the accent as text ---- */

@@ -57,5 +57,6 @@ connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','read
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
-function onSyncedData(m){dayRecs=Object.fromEntries((m.days||[]).map(d=>[d.date,d]));if(m.settings){settings={...settings,...m.settings};keySettings(settings);applyCustom(settings.custom)}if(typeof dressSynced==='function')dressSynced(m);loadWeather()}
+function onSyncedData(m){dayRecs=Object.fromEntries((m.days||[]).map(d=>[d.date,d]));const drawn=picsDrawn();if(m.settings){settings={...settings,...m.settings};keySettings(settings);applyCustom(settings.custom)}if(typeof dressSynced==='function')dressSynced(m);loadWeather();
+  if(picsDrawn()!==drawn&&typeof picsSwitched==='function'){picsSwitched();if(settingsOpen()){renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI()}}}   // "Drawing only" chosen on another device
 

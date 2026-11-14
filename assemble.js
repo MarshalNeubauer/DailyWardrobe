@@ -9,6 +9,9 @@ const ASM_VER=3;   // in every key (asmKey): the colour-coded masters' keys too,
 const ASM_SIZE=2048;   // a phone paints at 2048 (the computer's pre-build paints at ASM_CM_SIZE 2880 and scales to this)
 /* ASM_ON: are assembled pictures in use? Off, Today shows each outfit's own photo or drawing and nothing is fetched or painted */
 let ASM_ON=!self.ASM_TEST_OFF;   // (tests switch assembled pictures off unless the test file says module.exports.assembled=true: tests/run.js)
+/* Settings → Outfit pictures → "Drawing only" (photos.js picsDrawn): nothing is painted or downloaded for Today (asmEnsure, asmAhead, asmSync,
+   renderAsmUI); the lower-level calls the PC's pre-build makes (asmCmLook, asmCmGet, asmPrebuildOne, asmJob) don't ask, so it keeps building */
+const asmDrawn=()=>typeof picsDrawn==='function'&&picsDrawn();
 try{for(const k of ['asm_paint2','asm_none','asm_vest'])localStorage.removeItem(k)}catch{}   // the earlier assembler's settings on a phone (2026-11-14: deleted)
 const asmImg=u=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('could not read a photo'));im.src=u});
 /* a photo as pixels, W wide and high (its own width when not given: photos are square) */
@@ -634,7 +637,7 @@ async function asmGetOnce(key,force){if(renders[key])return true;const W=workerB
 /* bring what this outfit needs onto the device, paint its picture, keep it and show it (asm-color.js asmCmEnsure: the computer's
    picture first). Not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet"
    painted it and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
-async function asmEnsure(o,ahead){await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return asmCmEnsure(o,ahead)}
+async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return asmCmEnsure(o,ahead)}
 /* the day on screen's picture is ready: Today is redrawn, but not under a finger (a redraw removes what the touch started on and the
    swipe or scroll stops); then it waits for the finger to lift */
 let asmTouch=0,asmLate=false;
@@ -659,13 +662,13 @@ async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),
     if(i&&i%10===0)await new Promise(r=>setTimeout(r,0));if(asmAheadAgain)return [];
     const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
   return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
-async function asmAhead(){if(!ASM_ON||!asmCmAny()||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
+async function asmAhead(){if(!ASM_ON||asmDrawn()||!asmCmAny()||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
   try{do{asmAheadAgain=false;const seen=new Set(),todo=[];
       for(const o of await asmAheadDays()){const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);if(!asmFullWins(o)&&!asmFor(o))todo.push(o)}
       // (2026-11-13) the looks the computer built first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
       // a time and grouped by master, so a master's setup is read once for all its looks (asmCmBuild keeps one in memory on a phone)
       const L=await asmListGet(),built=todo.filter(o=>asmCmUse(o)&&L&&L.has(asmOutKey(o))),rest=todo.filter(o=>!built.includes(o));
-      const stop=()=>asmAheadAgain||document.hidden||!asmOffPage();let i=0;
+      const stop=()=>asmAheadAgain||document.hidden||!asmOffPage()||asmDrawn();let i=0;
       await Promise.all(Array.from({length:ASM_AHEAD_N},async()=>{while(i<built.length&&!stop())await asmEnsure(built[i++],true)}));
       rest.sort((a,b)=>String(asmCmUse(a)||'').localeCompare(String(asmCmUse(b)||'')));   // (a stable sort: nearest first within a master)
       for(const o of rest){if(stop())break;await asmEnsure(o,true)}
@@ -676,7 +679,7 @@ async function asmAhead(){if(!ASM_ON||!asmCmAny()||!asmOffPage()||document.hidde
 let asmState={checked:false,cm:false},asmSyncing=null;
 /* look at the worker (start-up, Settings): the list of what it keeps and the masters' manifest. A forced look (Settings) waits for the
    look under way and then asks afresh for what was missing or failed before */
-function asmSync(force){if(!ASM_ON||!workerBase())return Promise.resolve(asmState);if(asmSyncing)return force?asmSyncing.then(()=>asmSync(true)):asmSyncing;
+function asmSync(force){if(!ASM_ON||asmDrawn()||!workerBase())return Promise.resolve(asmState);if(asmSyncing)return force?asmSyncing.then(()=>asmSync(true)):asmSyncing;
   asmSyncing=(async()=>{
     try{if(force){asmTried.clear();asmRetryAt.clear();asmPreNo.clear();await asmListGet(true);await asmCmMfGet(true)}else await asmListGet();
       asmState={checked:true,cm:asmCmAny()}}
@@ -687,4 +690,6 @@ function asmSync(force){if(!ASM_ON||!workerBase())return Promise.resolve(asmStat
     return asmState})();
   return asmSyncing}
 /* Settings → Outfit pictures → Advanced: the colour-coded masters' rows (asm-color.js asmCmUI) */
-function renderAsmUI(){const grp=$('#asm-group');if(grp)grp.hidden=!ASM_ON;if(ASM_ON&&typeof asmCmUI==='function')asmCmUI()}
+/* (with "Drawing only" the group is hidden, and with it the whole Advanced fold (styles.css #adv-photos:has(#asm-group[hidden])): Pictures
+   ahead, Painted plain and the graphics-chip switch are about the painter; and asmCmStatus would read the worker's list) */
+function renderAsmUI(){const on=ASM_ON&&!asmDrawn(),grp=$('#asm-group');if(grp)grp.hidden=!on;if(on&&typeof asmCmUI==='function')asmCmUI()}

@@ -28,7 +28,14 @@ function shareRender(ck,rec){const W=workerBase();if(W)fetch(W.url,{method:'PUT'
 // assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
 // called while they are off, so a change there selects only the tests that use them
 const asmLive=()=>typeof ASM_ON!=='undefined'&&ASM_ON;
-const renderFor=o=>{const a=asmLive()&&asmShown(o);if(a)return a;   // (or the same outfit's last picture while its current one is made: asmStale)   // put together on the device from item photos (assemble.js)
+/* Settings → Outfit pictures → "Drawing only" (settings.pictures 'drawn', synced like every setting; absent or 'painted' = painted
+   pictures, as before). 2026-11-14, the owner: "let the user turn off the painter and only use the mannequin". With it on, Today always
+   shows the traced mannequin (no painted picture, no kept outfit photo) and nothing is painted or downloaded for the pictures: no masters,
+   no built pictures, no list, no outfit photos (asmEnsure, asmAhead, asmSync, fetchRemoteRender, prefetchRenders all return). Item
+   pictures (the product photos on the tiles under the figure, made on a tap) are their own feature and are not affected. What is already
+   kept stays on the device, so switching back shows it at once. The PC's pre-build (tools/asm-prebuild.js) ignores it */
+const picsDrawn=()=>typeof settings!=='undefined'&&!!settings&&settings.pictures==='drawn';
+const renderFor=o=>{if(picsDrawn())return null;const a=asmLive()&&asmShown(o);if(a)return a;   // (or the same outfit's last picture while its current one is made: asmStale)   // put together on the device from item photos (assemble.js)
   const ck=comboKey(o);if(renders[ck])return renders[ck];
   const v1=renders[comboKeyV1(o)];if(v1){const rec={...v1,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
   const old=renders[key(sel)];if(old&&old.sig===legacySig(o)){const rec={...old,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
@@ -36,7 +43,7 @@ const renderFor=o=>{const a=asmLive()&&asmShown(o);if(a)return a;   // (or the s
 /* a combination with no photo here: ask the worker (another device may have made it); one with a photo only here: share it */
 const renderTried=new Set();
 async function fetchRemoteRender(o,day){
-  const W=workerBase(),ck=comboKey(o);if(!W||renderTried.has(ck))return;renderTried.add(ck);
+  const W=workerBase(),ck=comboKey(o);if(!W||picsDrawn()||renderTried.has(ck))return;renderTried.add(ck);
   try{
     const get=async q=>{const r=await fetch(W.url+'?'+q,{headers:{'x-app-token':W.tok},cache:'no-store'});return r.ok?r.json():null};
     const cur=renders[ck];if(cur&&remoteKeys&&remoteKeys.has(ck))return;   // here and on the worker already: nothing to do
@@ -63,7 +70,7 @@ const planOf=planMonth;
 function remoteList(W){if(remoteKeys)return Promise.resolve(remoteKeys);
   return remoteListP||(remoteListP=fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'}).then(r=>r.ok?r.json().catch(()=>null):null).catch(()=>null)
     .then(j=>{remoteListP=null;remoteListed=!!(j&&Array.isArray(j.keys));remoteKeys=new Set(remoteListed?j.keys:[]);return remoteKeys}))}
-async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetching){prefetchAgain=true;return}prefetching=true;
+async function prefetchRenders(){const W=workerBase();if(!W||picsDrawn())return;if(prefetching){prefetchAgain=true;return}prefetching=true;
   try{
     await remoteList(W);if(!remoteListed)return;   // no list: fetch per day as before
     do{prefetchAgain=false;const c=+sel,near=new Map();   // each combination ranked by its day closest to the one on screen

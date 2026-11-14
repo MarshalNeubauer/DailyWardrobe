@@ -64,12 +64,18 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the Suit vest row hides when ties are off too (`renderDressUI`), with a note: no waistcoat is planned without a tie
 - a Settings row whose dropdown doesn't fit beside its label wraps it onto its own line (Dark shirts was cut off at 390px)
 - About: Send is switched off while not connected
+- Outfit pictures starts with "Today’s outfit" (`#pics-box`, `#cfg-pictures`, `renderPicturesUI`/`setPictures` in settings.js; 2026-11-14, the owner: "build an option in settings to let the user turn off the painter and only use the mannequin"): "Painted pictures" (the default) or "Drawing only", for everyone, not in a fold, with a line under it saying what the choice does (`PICS_HELP`); drawn from settings.js, not in index.html
+- the choice is `settings.pictures` ('drawn'; absent or 'painted' = painted), synced setting by setting like the others, so all of a person's devices follow it; a sync that changes it calls `picsSwitched` (start.js `onSyncedData`)
+- with "Drawing only" the Advanced fold of Outfit pictures is hidden (`renderAsmUI` hides `#asm-group`, and `#adv-photos:has(#asm-group[hidden])` the fold): Pictures ahead, Painted plain and the graphics-chip switch are the painter's; the item sheet's "Outfit pictures: …" line (`asmGapNote`) goes too
+- the Outfit pictures summary is the choice: "Drawing only", "Painted pictures", or "Painted pictures · needs a connection" (the masters come from the server)
 
 #### Today (today.js)
 
 - Today's date is "Thu, November 12" below 360px (`.dlong`/`.dshort`) so the day never wraps alone
 - the folded pieces box (`piecesLine`, `piecesBox`): a jacket, trousers, shirt or tie the owner named is called by its name exactly as typed (`itemName`; "Medium Grey suit", not "mid grey worsted suit"), the others by colour; the line is escaped (`esc`); `tests/piecesname.test.js`
 - the picture has no share button (2026-11-14, the owner: "the user can just send a screenshot"; it was `shareMark`/`shareOutfit`, `.wshare`, at its top right)
+- with "Drawing only" (Settings → Outfit pictures, `picsDrawn()`) Today always shows the traced mannequin on its office background: `renderFor` gives null, so neither a painted picture nor an outfit photo kept from before shows, and there are no swatches (they are for pictures only); `tests/drawnonly.test.js`
+- switching back to "Painted pictures" paints or downloads the day on screen at once, while Settings is still open (`picsSwitched`: `asmSync`, `asmEnsure`, `schedulePrefetch`), and Today shows it when Settings closes (`refreshToday` → `todayStale`); building ahead resumes from `asmEnsure`
 
 #### Today's cloth swatches (today.js)
 
@@ -690,6 +696,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - outfit photos are no longer made (2026-11-14): the prompt builders (`outfitText`, `outfitRefs`, `outfitRefsFull`) were removed; kept photos still show on their days (`renderFor`) and still sync (`GET`/`PUT /render`)
 - a no-jacket day's photo key includes the trousers; `comboSig` has `-` in the tie's place, so a tieless outfit has its own photo key
 - `POST /render` is sent only for item pictures (`renderItemPic`, `{mode:'item'}`); the busy pill (app.js `busyLabelFor`) shows "Making the item picture…" for that and nothing for any other `/render` POST
+- `picsDrawn()`: Settings → Outfit pictures is "Drawing only" (`settings.pictures==='drawn'`); then `renderFor` returns null and `fetchRemoteRender` and `prefetchRenders` ask the server for nothing
+- item pictures (the tiles' product photos, made on a tap) are their own feature and are not affected by "Drawing only": a missing one is still downloaded (`fetchItemPic`, which may read `GET /render?list=1` once a session)
+- with "Drawing only", kept outfit photos and painted pictures stay on the device (nothing is deleted), so switching back shows them at once
 
 #### The watch
 
@@ -1023,6 +1032,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a phone asks for the computer's upload before downloading a master (`asmGetPre`, once a session per look); PC pictures are signed `asm/out/cm<ASM_CMV>/<stamp>` (`asmPreSig`); one signed another way (`asmPreSigOk`: the earlier assembler's `asm/out/z…`) is never taken
 - a listed PC picture that was refused is not downloaded again until the list is read again (`asmPreNo`); building ahead used to download each refused picture on every pass
 - `asmPrebuildOne(o)` is the computer's one look (see `npm run assemble` under asm-color.js); `tests/asmprebuild.test.js`
+- `asmDrawn()` (= photos.js `picsDrawn`, guarded for the Web Worker): with "Drawing only" `asmEnsure`, `asmAhead` (and its `stop`, so a pass under way ends at its next look) and `asmSync` return at once and `renderAsmUI` hides the Advanced group: no master, mask, manifest, setup blob, built picture or list is downloaded and nothing is painted; `asmLoad` still reads the kept pictures (local only)
+- the PC's pre-build (`tools/asm-prebuild.js`) ignores "Drawing only" even when the owner's synced settings say it: it calls `asmCmLook`, `asmCmGet`, `asmJob` and overrides `asmEnsure`/`asmAhead`, none of which asks; `tests/drawnonly.test.js` runs it with `pictures:'drawn'` in the backup
 
 #### Shirt weaves
 - the shirt weaves (`asmWeave(i)`, the owner's choice 2026-11-12 from renders of his shirts on the 2048 master): herringbone at Claude's count across the shirt (`ASM_SHIRT_MM` 550 / `sett.tr`), 12 mm when the count is at the server's cap (`ASM_TR_CAP` 80) or missing (`ASM_HB_TR` 45: his pink herringbone as he chose it)
