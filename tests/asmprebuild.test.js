@@ -84,8 +84,13 @@ module.exports=async({ok,chromium,url})=>{
     const prof2=fs_.mkdtempSync(path.join(os_.tmpdir(),'dw-cap-'));puts=0;
     srv.listen(0,'127.0.0.1');await new Promise(x=>srv.once('listening',x));const W3=`http://127.0.0.1:${srv.address().port}/`;
     const runC=()=>new Promise(res=>{const c=require('child_process').spawn(process.execPath,[s,'--days','14','--cm-size','512','--profile',prof2,'--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W3,DW_TOKEN:'owner-code',DW_UPLOAD_LEDGER:led,DW_UPLOAD_LIMIT:'1'}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
-    const c1=await runC(),pc1=puts,c2=await runC();srv.close();const usedC=JSON.parse(fs_.readFileSync(led,'utf8')).used;fs_.rmSync(led,{force:true});
+    const c1=await runC(),pc1=puts,c2=await runC(),pc2=puts,usedC=JSON.parse(fs_.readFileSync(led,'utf8')).used;
     ok(pc1===0&&usedC===1&&/daily upload limit \(1\) is used up: uploads paused until/.test(c1.out)&&!/\[1\/1\]/.test(c1.out),`with this computer's daily cap reached, the script uploads and paints nothing and pauses until the reset (${pc1} uploads)`);
-    ok(puts===pc1&&/Uploads are paused until/.test(c2.out),'a run later that day uploads nothing');}
+    ok(pc2===pc1&&/Uploads are paused until/.test(c2.out),'a run later that day uploads nothing');
+    // (2026-11-14: the owner raised the day's limit and the watcher stayed paused until 03:02) the limit raised for today: the pause the
+    // cap left lifts at the next run, and it uploads
+    fs_.writeFileSync(led,JSON.stringify({...JSON.parse(fs_.readFileSync(led,'utf8')),limit:5}));
+    const c3=await runC();srv.close();fs_.rmSync(led,{force:true});
+    ok(puts>pc2&&/upload limit has room again \(4 of 5 left today\): uploading again/.test(c3.out)&&!fs_.existsSync(path.join(prof2,'upload-pause.json')),`the day's limit raised: the cap's pause lifts at the next run and it uploads (${puts-pc2} upload${puts-pc2===1?'':'s'})`);}
 };
 module.exports.assembled=true;   // tests assembled pictures (assemble.js)
