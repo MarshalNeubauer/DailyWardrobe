@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	f1c91edecf9757465414
+# tested	5e6569d205d9253b6eea
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -1790,7 +1790,7 @@ dress.test.js	ui.js	<loaded>	addGate	advClose	connNote	connSummary	isConnected	l
 dress.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	moreRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 dress.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	ROUTES.* /sync	WATCH_KEY	arrOf	corsFor	countWrites	dataUrlToBlob	dropParts	fetch	getRender	handleRender	handleSync	hasWatch	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	outfitPhoto	phCollect	photoCap	putPhotos	putStored	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendEach	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	utcDay	whoIs	writeBudget
 dress.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	mergeLite	mergeSettingsLite	nextRevs	phCollect	putStored	readText	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
-dress.test.js	worker/people.js	<loaded>	countWrites	photoCap	sameText	sha256Hex	spend	spendEach	spendUpTo	utcDay	whoIs
+dress.test.js	worker/people.js	<loaded>	countWrites	photoCap	sameText	sha256Hex	spend	spendEach	spendUpTo	unspend	utcDay	whoIs
 dress.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 dress.test.js	worker/records.js	<loaded>	renderId
 dress.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	WATCH_KEY	dataUrlToBlob	handleRender	hasWatch	outfitPhoto
@@ -2412,45 +2412,45 @@ kit.test.js	today.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPic
 kit.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	addGate	askAnswer	askConfirm	askEls	isConnected	layerInert	layerUp	uiEsc
 kit.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	moreRow	notesRow	wardBack	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 kvlimit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-kvlimit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	isTester
+kvlimit.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 kvlimit.test.js	add.js	<loaded>	checkArrivals
 kvlimit.test.js	analysis.js	<loaded>
-kvlimit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
+kvlimit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constdbnewPromise	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 kvlimit.test.js	asm-color.js	<loaded>
 kvlimit.test.js	asm-gl.js	<loaded>
-kvlimit.test.js	assemble.js	<loaded>	@
-kvlimit.test.js	care.js	<loaded>	careShow
+kvlimit.test.js	assemble.js	<loaded>	@	renderAsmUI
+kvlimit.test.js	care.js	<loaded>	careLimit	careShow	laundryDays	renderCareUI
 kvlimit.test.js	colpick.js	<loaded>
-kvlimit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	dayWins	di	inRotation	isWorkday	isoKey	key	keySettings	mergeSettings	mergeState	occOf	offDays	offName	setHash	setKeys	stamp	stateSig	todayDate
+kvlimit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	applyCustom	dayClimate	dayWins	di	inRotation	isWorkday	isoKey	key	keySettings	mergeSettings	mergeState	occOf	offDays	offName	setHash	setKeys	stamp	stateSig	todayDate	wearsJacket	wearsTie
 kvlimit.test.js	detect.js	<loaded>	@
 kvlimit.test.js	draw.js	<loaded>
-kvlimit.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
+kvlimit.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
 kvlimit.test.js	figure.js	<loaded>	@{}
-kvlimit.test.js	history.js	<loaded>	checkPlanRules	idsOf	keyDate	lockIds	lockUpcoming	recordDays	resetCard	saveDay	whenPulled
+kvlimit.test.js	history.js	<loaded>	checkPlanRules	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 kvlimit.test.js	index.html	<loaded>
 kvlimit.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 kvlimit.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 kvlimit.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn
 kvlimit.test.js	pack.js	<loaded>	packShow
-kvlimit.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders	queuedKeys	rqGet
+kvlimit.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	queuedKeys	renderItemPicUI	renderPending	rqGet
 kvlimit.test.js	planner.js	<loaded>
-kvlimit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+kvlimit.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 kvlimit.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
-kvlimit.test.js	settings.js	<loaded>	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
+kvlimit.test.js	settings.js	<loaded>	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderRegenUI	renderSettingsExtras	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit
 kvlimit.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupShown	setupStart	setupToday	setupYield
 kvlimit.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
-kvlimit.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@db.then	appDrop	onSyncedData	pageIn	show
+kvlimit.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@db.then	appDrop	appPush	onSyncedData	pageIn	show
 kvlimit.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
-kvlimit.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.kit-start	.linkbtn	.mbox	.mbox .chev	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.score .chev,.month-link .chev	.score .lbl b,.mltxt b	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .num,.mlstrip,.pstrip	.score summary,.month-link	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slide	.stage	.stage .empty	.stage .firstrun	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	main	nav	nav button	nav button.on	nav::before
-kvlimit.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	backupFullMsg	isPh	localState	nextUtcDay	phIn	phOut	phStrings	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncUrl	synced
-kvlimit.test.js	tagging.js	<loaded>	recolourSpecSetts	upgradeCloseups	upgradePhotos
+kvlimit.test.js	styles.css	#about-update[hidden]	#add	#adv-photos:has(#asm-group[hidden])	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#itempic-btn[disabled]	#modal-backdrop	#modal-backdrop,#settings-modal	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox.open .mpanel-in	#settings-modal .mpanel-in	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date]	#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.acct-box .acct-h	.adv	.adv-head .chev	.adv-in	.adv-t	.adv-t small	.btn	.carelink	.conn-off-note:empty	.conn-tick	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.days	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.fb-list	.fchips	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.hlist	.hlist:empty	.kit-start	.linkbtn	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pri	.sactions	.sactions:empty	.sbody	.score .chev,.month-link .chev	.score .lbl b,.mltxt b	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .num,.mlstrip,.pstrip	.score summary,.month-link	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.slinks .slink+.slink	.srow	.srow select	.stage	.stage .empty	.stage .firstrun	.vfile	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	:root	<loaded>	body	body:not(.owner) #adv-photos	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header h1	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
+kvlimit.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	backupFullMsg	isPh	localState	nextUtcDay	phIn	phOut	phStrings	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncTap	syncUrl	synced
+kvlimit.test.js	tagging.js	<loaded>	recolourSpecSetts	renderCustomUI	upgradeCloseups	upgradePhotos
 kvlimit.test.js	tests/fixedplan.js	<any>
 kvlimit.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	swApply	todayBtn	wxPreload	zoomTarget
-kvlimit.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+kvlimit.test.js	ui.js	<loaded>	advClose	connSummary	isConnected	layerInert	layerOpen	layerUp	needConn	renderConnUI
 kvlimit.test.js	wardrobe.js	<loaded>
 kvlimit.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvFull	kvMeta	liteSig	loadAny	mergeLite	nextRevs	orNull	phCollect	putPhotos	putRender	putStored	putWhole	pvMeta	pvText	readPv	readText	refsIn	refsOf	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	spendUpTo	splitPhotos	stampOf	storePhotos	storedVersion	syncLiteGet	syncLitePost	syncVersion	utcDay	whoIs	writeBudget
 kvlimit.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	mergeLite	nextRevs	phCollect	putStored	readText	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
-kvlimit.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendEach	spendUpTo	utcDay	whoIs
+kvlimit.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	spendUpTo	usedOf	utcDay	whoIs
 kvlimit.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	putWhole	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 kvlimit.test.js	worker/records.js	<loaded>	putRender	renderId	renderTtl
 labbench.test.js	lab/gl-bench.html	<loaded>
@@ -5280,7 +5280,7 @@ socktoe.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 socktoe.test.js	icon-192.png	<loaded>
 socktoe.test.js	icon-512.png	<loaded>
 socktoe.test.js	index.html	<loaded>
-socktoe.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	itemBody	itemShown	noMotion	photoTools	renderItem	wardPic
+socktoe.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	itemBody	itemShown	noMotion	photoTools	renderItem	smallPhotos	wardPic
 socktoe.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 socktoe.test.js	manifest.webmanifest	<loaded>
 socktoe.test.js	month.js	<loaded>	nextWorkday
@@ -5588,7 +5588,7 @@ sync.test.js	index.html	<loaded>
 sync.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
 sync.test.js	kit.js	<loaded>	kitHasSample	kitSampleBanner	kitStartRow
 sync.test.js	manifest.webmanifest	<loaded>
-sync.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	planOn	stackSVG
+sync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn	shortRest	shortTop	stackSVG	tieWord
 sync.test.js	pack.js	<loaded>	packShow
 sync.test.js	photos.js	<loaded>	aAn	asmLive	esc	fetchItemPic	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	loadRenders	missingItemPics	queuedKeys	remoteList	renderItemPicUI	renderPending	rqGet	workerBase
 sync.test.js	planner.js	<loaded>
@@ -5603,7 +5603,7 @@ sync.test.js	styles.css	#about-update[hidden]	#add	#adv-photos:has(#asm-group[hi
 sync.test.js	sync.js	<loaded>	@addEventListenerpagehide	@db.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	isPh	localState	phIn	phOut	phStrings	pullDone	pulledYet	restoreBackup	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncUrl	synced
 sync.test.js	tagging.js	<loaded>	recolourSpecSetts	renderCustomUI	upgradeCloseups	upgradePhotos
 sync.test.js	tests/fixedplan.js	<any>
-sync.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	swApply	todayBtn	wxPreload	zoomTarget
+sync.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	mvSig	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	swApply	todayBtn	wxPreload	zoomTarget
 sync.test.js	ui.js	<loaded>	advClose	connNote	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	tell	uiEsc
 sync.test.js	wardrobe.js	<loaded>	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 sync.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerOnly	phCollect	putPhotos	putStored	putWhole	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	usedOf	utcDay	whoIs	writeBudget
