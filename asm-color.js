@@ -321,17 +321,17 @@ async function asmCmMfApply(keys){let n=0;
      rectangle two cells tall); the steps are nudged until the cells around the middle, laid over each other, are sharpest
    - the confidence test: per, the share of the cloth's contrast that the repeat explains (the averaged cell's variance over the
      cells' own), and sd, how strong the averaged cell is; under ASM_CR.per or ASM_CR.sd there is no tile and the shirt is drawn as before
-     (measured on his nine, per / sd: the grey-figured dobby .89 / .42; White dobby .50 / .07, Lavender dobby .35 / .11, Light blue dobby
-     .30 / .05, White woven .25 / .13, Check .04 / .02, two with no repeat at all: on tone-on-tone weaves the finder locks onto threads)
+     (measured on his shirts, per / sd: the grey-figured dobby .95 / .31, the lavender print .90 / .37; White woven .75 / .06, Check
+     .70 / .04 and the other tone-on-tone weaves fainter still: they stay as drawn)
    - asmCrTile1: the cells around the middle averaged into one (sampled along the pattern's own rows and columns, so it is straightened
      and the camera's angle averages out), each colour against the photo's lighting; the ground (the lighter part) becomes the tagged
      colour and the figure keeps its own colour against it; life size, never finer than ASM_TEX_MIN_MM
-   - printed patterns (a micro-print lost its dots to the weave under them), herringbone, twill and end-on-end shirts (their own painters
-     and the owner's sizes of 2026-11-12) and band readings are left alone (asmCrWants)
+   - herringbone, twill and end-on-end shirts (their own painters and the owner's sizes of 2026-11-12) and band readings are left alone
+     (asmCrWants); a print is taken (his lavender print: once the search reached its sprigs' 70 px repeat and looked past the threads)
    The tile is an ordinary shirt tile ({t,TW,TH,mm,fine}), so both painters paint it as they paint asmCmTile's */
-const ASM_CR={W:480,flat:12,D:7,win:.5,peak:.25,nc:3,Q:20,TW:64,ground:.45,per:.6,sd:.12,v:1};
+const ASM_CR={W:480,flat:12,D:4,smooth:2,step:3,win:.5,peak:.12,cand:14,strong:.6,near:.9,tilt:14,comb:3,align:4,TWmax:160,nc:3,Q:20,TW:64,ground:.45,per:.6,sd:.12,v:3};
 const asmCrWants=i=>{if(!i||i.type!=='shirt'||!i.texture)return false;const s=typeof usableSett==='function'?usableSett(i):null;
-  return asmCmRoute(i,'shirt').how==='tile'&&!(s&&s.bands)&&!/herringbone|twill|end-on-end|print|foulard|polka|dot/i.test(String(i.pattern||'')+' '+(patBase(i.pattern)||''))};
+  return asmCmRoute(i,'shirt').how==='tile'&&!(s&&s.bands)&&!/herringbone|twill|end-on-end/i.test(String(i.pattern||'')+' '+(patBase(i.pattern)||''))};
 const asmCrTag=(z,i)=>z==='shirt'&&asmCrWants(i)?'/cr'+ASM_CR.v+'.'+i.texture.length+i.texture.slice(-12).replace(/[^A-Za-z0-9]/g,''):'';
 /* the repeat of a cloth in RGBA pixels d (W x H): {ax,ay,bx,by (the two steps, px), half (a brick layout), per, sd, peaks, R,G,B,Yb} or null */
 function asmCrFind(d,W,H){const L=ASM_LIN,N=W*H,R=new Float32Array(N),G=new Float32Array(N),B=new Float32Array(N),Y=new Float32Array(N);
@@ -340,23 +340,44 @@ function asmCrFind(d,W,H){const L=ASM_LIN,N=W*H,R=new Float32Array(N),G=new Floa
   const box=(a,r)=>{const t=new Float32Array(N),q=new Float32Array(N);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let k=-r;k<=r;k++)s+=a[y*W+cx(x+k)];t[y*W+x]=s/(2*r+1)}
     for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let k=-r;k<=r;k++)s+=t[cy(y+k)*W+x];q[y*W+x]=s/(2*r+1)}return q};
   let Yb=Y;for(let j=0;j<3;j++)Yb=box(Yb,Math.round(W/ASM_CR.flat));const F=new Float32Array(N);for(let k=0;k<N;k++)F[k]=Y[k]/(Yb[k]||1)-1;
+  // (the owner's lavender print: its figures repeat 70 px apart, past the W/7 first searched, and the weave's threads under them gave
+  // stronger short peaks) the search reaches W/ASM_CR.D and runs on the light smoothed over ASM_CR.smooth px, which leaves figures and
+  // removes threads; the pile below still reads the unsmoothed light
+  const Fs=ASM_CR.smooth?box(box(F,ASM_CR.smooth),ASM_CR.smooth):F,ST=ASM_CR.step;
   const D=Math.round(W/ASM_CR.D),M=Math.round(Math.min(W,H)*ASM_CR.win),x0=(W-M)>>1,y0=(H-M)>>1,AW=2*D+1,A=new Float32Array(AW*(D+1));
-  for(let dy=0;dy<=D;dy++)for(let dx=-D;dx<=D;dx++){let s=0;for(let y=y0;y<y0+M;y+=2){const r0=y*W,r1=cy(y+dy)*W;for(let x=x0;x<x0+M;x+=2)s+=F[r0+x]*F[r1+cx(x+dx)]}A[dy*AW+dx+D]=s}
+  for(let dy=0;dy<=D;dy++)for(let dx=-D;dx<=D;dx++){let s=0;for(let y=y0;y<y0+M;y+=ST){const r0=y*W,r1=cy(y+dy)*W;for(let x=x0;x<x0+M;x+=ST)s+=Fs[r0+x]*Fs[r1+cx(x+dx)]}A[dy*AW+dx+D]=s}
   const a0=A[D];if(!(a0>0))return null;const at=(dx,dy)=>dy<0?at(-dx,-dy):(Math.abs(dx)>D||dy>D?-1:A[dy*AW+dx+D]/a0),pk=[];
   for(let dy=0;dy<D;dy++)for(let dx=-D+1;dx<D;dx++){if(dx*dx+dy*dy<16||(dy===0&&dx<0))continue;const v=at(dx,dy);if(v<ASM_CR.peak)continue;let ok=1;for(let j=-1;j<=1&&ok;j++)for(let i=-1;i<=1;i++)if((i||j)&&at(dx+i,dy+j)>v){ok=0;break}
-    if(ok){const px=(at(dx+1,dy)-at(dx-1,dy))/(2*(2*v-at(dx+1,dy)-at(dx-1,dy))||1),py=(at(dx,dy+1)-at(dx,dy-1))/(2*(2*v-at(dx,dy+1)-at(dx,dy-1))||1);pk.push({x:dx+Math.max(-.5,Math.min(.5,px)),y:dy+Math.max(-.5,Math.min(.5,py))})}}
-  pk.sort((p,q)=>Math.hypot(p.x,p.y)-Math.hypot(q.x,q.y));if(pk.length<2)return null;
-  let a=pk[0],b=pk.find(p=>Math.abs(p.x*a.y-p.y*a.x)/(Math.hypot(p.x,p.y)*Math.hypot(a.x,a.y))>.35);if(!b)return null;
-  if(Math.abs(a.y)>Math.abs(a.x)){const t=a;a=b;b=t}if(a.x<0)a={x:-a.x,y:-a.y};if(b.y<0)b={x:-b.x,y:-b.y};
-  const mx=W/2,my=H/2,nc=ASM_CR.nc,Q=ASM_CR.Q,nn=(2*nc+1)*(2*nc+1);
+    if(ok){const px=(at(dx+1,dy)-at(dx-1,dy))/(2*(2*v-at(dx+1,dy)-at(dx-1,dy))||1),py=(at(dx,dy+1)-at(dx,dy-1))/(2*(2*v-at(dx,dy+1)-at(dx,dy-1))||1);pk.push({x:dx+Math.max(-.5,Math.min(.5,px)),y:dy+Math.max(-.5,Math.min(.5,py)),v})}}
+  if(pk.length<2)return null;{let vm=0;for(const p of pk)if(p.v>vm)vm=p.v;const st=pk.filter(p=>p.v>=ASM_CR.strong*vm).sort((p,q)=>Math.hypot(p.x,p.y)-Math.hypot(q.x,q.y));pk.length=0;for(const p of st.slice(0,ASM_CR.cand))pk.push(p)}   // the shortest of the strong peaks
+  if(pk.length<2)return null;
+  const mx=W/2,my=H/2,Q=ASM_CR.Q;
+  // as many cells either side of the middle as fit in the picture (at most ASM_CR.nc)
+  const ncOf=(ax,ay,bx,by)=>Math.max(1,Math.min(ASM_CR.nc,Math.floor(Math.min((W/2-2)/(Math.abs(ax)+Math.abs(bx)||1),(H/2-2)/(Math.abs(ay)+Math.abs(by)||1))-1)));
   const samp=(arr,x,y)=>{x=x<0?0:x>W-1.001?W-1.001:x;y=y<0?0:y>H-1.001?H-1.001:y;const xi=x|0,yi=y|0,fx=x-xi,fy=y-yi,k=yi*W+xi;return (arr[k]*(1-fx)+arr[k+1]*fx)*(1-fy)+(arr[k+W]*(1-fx)+arr[k+W+1]*fx)*fy};
-  // the pile of cells: [the averaged cell's variance, the cells' own variance]
-  const pile=(ax,ay,bx,by)=>{let m1=0,m2=0,t1=0,t2=0;for(let v=0;v<Q;v++)for(let u=0;u<Q;u++){let s=0;for(let j=-nc;j<=nc;j++)for(let i=-nc;i<=nc;i++){const f=samp(F,mx+(i+u/Q)*ax+(j+v/Q)*bx,my+(i+u/Q)*ay+(j+v/Q)*by);s+=f;t1+=f;t2+=f*f}s/=nn;m1+=s;m2+=s*s}
-    const n=Q*Q,nt=n*nn;return [m2/n-(m1/n)*(m1/n),t2/nt-(t1/nt)*(t1/nt)]};
+  // the pile of cells: [what the repeat explains, the cells' own variance]. What it explains is measured between two halves of the pile
+  // (alternate cells): how far one half's averaged cell agrees with the other's, so a pile of few large cells, whose average still
+  // holds each cell's own noise, is not flattered (the first build's plain variance picked cells two and four repeats wide)
+  const pile=(ax,ay,bx,by)=>{const nc=ncOf(ax,ay,bx,by),nn=(2*nc+1)*(2*nc+1);let a1=0,b1=0,ab=0,t1=0,t2=0;const na=(nn+1)>>1,nb=nn-na;for(let v=0;v<Q;v++)for(let u=0;u<Q;u++){let sa=0,sb=0;for(let j=-nc;j<=nc;j++)for(let i=-nc;i<=nc;i++){const f=samp(Fs,mx+(i+u/Q)*ax+(j+v/Q)*bx,my+(i+u/Q)*ay+(j+v/Q)*by);if((i+j)&1)sb+=f;else sa+=f;t1+=f;t2+=f*f}sa/=na;sb/=nb;a1+=sa;b1+=sb;ab+=sa*sb}
+    const n=Q*Q,nt=n*nn;return [ab/n-(a1/n)*(b1/n),t2/nt-(t1/nt)*(t1/nt)]};
+  // (the owner's lavender print, 2026-11-14: "why didn't this one pass": the two shortest peaks were the weave's threads, 1 mm, under
+  // figures 7 mm apart) every pair of the strongest peaks is tried as the repeat's steps: the pair whose pile of cells explains most of
+  // the cloth's contrast wins, and of the pairs within ASM_CR.near of it the smallest cell (a double cell explains as much as a single)
+  const prs=[];for(let i=0;i<pk.length;i++)for(let j=i+1;j<pk.length;j++){const p=pk[i],q=pk[j],cr=Math.abs(p.x*q.y-p.y*q.x);if(cr/(Math.hypot(p.x,p.y)*Math.hypot(q.x,q.y))<=.35)continue;const v=pile(p.x,p.y,q.x,q.y);prs.push({p,q,cr,per:v[1]>0?v[0]/v[1]:0})}
+  if(!prs.length)return null;let top=0;for(const r of prs)if(r.per>top)top=r.per;let pick=null;for(const r of prs)if(r.per>=ASM_CR.near*top&&(!pick||r.cr<pick.cr))pick=r;
+  let a=pick.p,b=pick.q;if(Math.abs(a.y)>Math.abs(a.x)){const t=a;a=b;b=t}if(a.x<0)a={x:-a.x,y:-a.y};if(b.y<0)b={x:-b.x,y:-b.y};
   let P=[a.x,a.y,b.x,b.y],best=pile(P[0],P[1],P[2],P[3])[0];for(const st of [.3,.15,.07,.03])for(let pass=0;pass<3;pass++)for(let q=0;q<4;q++)for(const sg of [-1,1]){const T2=P.slice();T2[q]+=sg*st;const v=pile(T2[0],T2[1],T2[2],T2[3])[0];if(v>best){best=v;P=T2}}
-  const pv=pile(P[0],P[1],P[2],P[3]);let ax=P[0],ay=P[1],bx=P[2],by=P[3];const la2=ax*ax+ay*ay,sh=(bx*ax+by*ay)/la2,half=Math.abs(sh-Math.round(sh))>.25;
-  if(half){const s=Math.sign(sh-Math.round(sh))||1;bx=2*bx-s*ax;by=2*by-s*ay}{const r=Math.round((bx*ax+by*ay)/la2);bx-=r*ax;by-=r*ay}
-  return {ax,ay,bx,by,half,per:pv[1]>0?pv[0]/pv[1]:0,sd:Math.sqrt(Math.max(0,pv[0])),peaks:pk.length,R,G,B,Yb,samp}}
+  const pv=pile(P[0],P[1],P[2],P[3]);
+  // (the owner, on his lavender print: "how come they turned the pattern sideways?": its figures sit on a diagonal grid, and a tile
+  // sampled along the two steps lays those diagonals level) the tile's cell is upright: its sides are the pattern's shortest repeat
+  // within ASM_CR.tilt degrees of level and its shortest within that of upright (whole-number sums of the two steps; the few degrees
+  // left are the camera's tilt, straightened). A cell of several repeats is as good a tile as a cell of one
+  const tl=Math.tan(ASM_CR.tilt*Math.PI/180),C=ASM_CR.comb;let hx=0,hy=0,hl=1e9,wx=0,wy=0,wl=1e9;
+  for(let m=-C;m<=C;m++)for(let n=-C;n<=C;n++){if(!m&&!n)continue;const x=m*P[0]+n*P[2],y=m*P[1]+n*P[3],l=Math.hypot(x,y);if(x>0&&Math.abs(y)<=tl*x&&l<hl){hl=l;hx=x;hy=y}if(y>0&&Math.abs(x)<=tl*y&&l<wl){wl=l;wx=x;wy=y}}
+  if(hl>1e8||wl>1e8)return null;const cells=Math.abs(hx*wy-hy*wx)/(Math.abs(P[0]*P[3]-P[1]*P[2])||1);
+  // the sides are nudged as the steps were (a sum of steps adds up their errors)
+  {let Hc=[hx,hy,wx,wy],bh=pile(hx,hy,wx,wy)[0];for(const st of [.3,.15,.07,.03])for(let pass=0;pass<3;pass++)for(let q=0;q<4;q++)for(const sg of [-1,1]){const T2=Hc.slice();T2[q]+=sg*st;const v=pile(T2[0],T2[1],T2[2],T2[3])[0];if(v>bh){bh=v;Hc=T2}}hx=Hc[0];hy=Hc[1];wx=Hc[2];wy=Hc[3]}
+  return {ax:hx,ay:hy,bx:wx,by:wy,cells:Math.round(cells),nc:ncOf(hx,hy,wx,wy),per:pv[1]>0?pv[0]/pv[1]:0,sd:Math.sqrt(Math.max(0,pv[0])),peaks:pk.length,R,G,B,Yb,Fs,samp}}
 const asmCrMem=new Map();
 function asmCrTile(i){if(!i||!i.texture||typeof document==='undefined')return Promise.resolve(null);const key=i.id+'|'+colOf(i)+'|'+i.texture.length+i.texture.slice(-12);let p=asmCrMem.get(key);
   if(!p){if(asmCrMem.size>24)asmCrMem.clear();p=asmCrTile1(i).catch(()=>null);asmCrMem.set(key,p)}return p}
@@ -365,10 +386,23 @@ function asmCrTile(i){if(!i||!i.texture||typeof document==='undefined')return Pr
 async function asmCrTile1(i,all){const L=ASM_LIN,im=new Image();im.src=i.texture;await im.decode();if(!im.naturalWidth||!im.naturalHeight)return null;
   const W=Math.min(ASM_CR.W,im.naturalWidth),H=Math.max(8,Math.round(W*im.naturalHeight/im.naturalWidth)),cv=document.createElement('canvas');cv.width=W;cv.height=H;
   const g=cv.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';g.drawImage(im,0,0,W,H);const f=asmCrFind(g.getImageData(0,0,W,H).data,W,H);if(!f)return null;
-  const cr={across:+Math.hypot(f.ax,f.ay).toFixed(2),down:+Math.hypot(f.bx,f.by).toFixed(2),of:W,brick:f.half,per:+f.per.toFixed(3),sd:+f.sd.toFixed(3),peaks:f.peaks};
+  const cr={across:+Math.hypot(f.ax,f.ay).toFixed(2),down:+Math.hypot(f.bx,f.by).toFixed(2),of:W,cells:f.cells,per:+f.per.toFixed(3),sd:+f.sd.toFixed(3),peaks:f.peaks};
   if(!all&&!(f.per>=ASM_CR.per&&f.sd>=ASM_CR.sd))return null;
-  const la=Math.hypot(f.ax,f.ay),lb=Math.hypot(f.bx,f.by),TW=ASM_CR.TW,TH=Math.max(8,Math.min(512,Math.round(TW*lb/la))),n=TW*TH,t=new Float32Array(3*n),lum=new Float32Array(n),nc=ASM_CR.nc,nb=f.half?2:nc,mx=W/2,my=H/2;
-  for(let v=0;v<TH;v++)for(let u=0;u<TW;u++){let r=0,gg=0,bb=0,c=0;for(let j=-nb;j<=nb;j++)for(let ii=-nc;ii<=nc;ii++){const x=mx+(ii+u/TW)*f.ax+(j+v/TH)*f.bx,y=my+(ii+u/TW)*f.ay+(j+v/TH)*f.by;if(x<1||y<1||x>W-2||y>H-2)continue;
+  const la=Math.hypot(f.ax,f.ay),lb=Math.hypot(f.bx,f.by),TW=Math.max(ASM_CR.TW,Math.min(ASM_CR.TWmax,Math.round(la*1.25))),TH=Math.max(8,Math.min(512,Math.round(TW*lb/la))),n=TW*TH,t=new Float32Array(3*n),lum=new Float32Array(n),nc=f.nc,nb=nc,mx=W/2,my=H/2;
+  // each cell is lined up on the others before they are averaged (ASM_CR.align px either way, then half steps; twice): cloth is never
+  // quite flat, and cells a few px out of step blurred a print's small figures into soft dashes
+  const AL=ASM_CR.align,CL=[];for(let j=-nb;j<=nb;j++)for(let ii=-nc;ii<=nc;ii++){let ok=1;for(const cu of [0,1])for(const cw of [0,1]){const x=mx+(ii+cu)*f.ax+(j+cw)*f.bx,y=my+(ii+cu)*f.ay+(j+cw)*f.by;if(x<AL+2||y<AL+2||x>W-AL-3||y>H-AL-3)ok=0}if(ok)CL.push({ii,j,ox:0,oy:0})}
+  if(!CL.length)return null;
+  {const GU=32,GV=Math.max(8,Math.round(GU*lb/la)),gn=GU*GV,tp=new Float32Array(gn),px=new Float32Array(gn),py=new Float32Array(gn);
+    for(let v=0;v<GV;v++)for(let u=0;u<GU;u++){const k=v*GU+u;px[k]=(u+.5)/GU*f.ax+(v+.5)/GV*f.bx;py[k]=(u+.5)/GU*f.ay+(v+.5)/GV*f.by}
+    const dot=(c,ox,oy)=>{const bx0=mx+c.ii*f.ax+c.j*f.bx+ox,by0=my+c.ii*f.ay+c.j*f.by+oy;let s=0;for(let k=0;k<gn;k++)s+=f.samp(f.Fs,bx0+px[k],by0+py[k])*tp[k];return s};
+    for(let it=0;it<2&&CL.length>1;it++){tp.fill(0);for(const c of CL){const bx0=mx+c.ii*f.ax+c.j*f.bx+c.ox,by0=my+c.ii*f.ay+c.j*f.by+c.oy;for(let k=0;k<gn;k++)tp[k]+=f.samp(f.Fs,bx0+px[k],by0+py[k])}
+      for(const c of CL){let bo=[0,0],bv=-1e9;for(let oy=-AL;oy<=AL;oy++)for(let ox=-AL;ox<=AL;ox++){const v=dot(c,ox,oy);if(v>bv){bv=v;bo=[ox,oy]}}
+        const b0=bo;for(const dy of [-.5,0,.5])for(const dx of [-.5,0,.5]){const v=dot(c,b0[0]+dx,b0[1]+dy);if(v>bv){bv=v;bo=[b0[0]+dx,b0[1]+dy]}}c.nx=bo[0];c.ny=bo[1]}
+      for(const c of CL){c.ox=c.nx;c.oy=c.ny}}
+    // the offsets' mean is taken out, so the tile stays where the pile was
+    let sx=0,sy=0;for(const c of CL){sx+=c.ox;sy+=c.oy}sx/=CL.length;sy/=CL.length;for(const c of CL){c.ox-=sx;c.oy-=sy}}
+  for(let v=0;v<TH;v++)for(let u=0;u<TW;u++){let r=0,gg=0,bb=0,c=0;for(const ce of CL){const x=mx+(ce.ii+u/TW)*f.ax+(ce.j+v/TH)*f.bx+ce.ox,y=my+(ce.ii+u/TW)*f.ay+(ce.j+v/TH)*f.by+ce.oy;if(x<1||y<1||x>W-2||y>H-2)continue;
       const l=f.samp(f.Yb,x,y)||1;r+=f.samp(f.R,x,y)/l;gg+=f.samp(f.G,x,y)/l;bb+=f.samp(f.B,x,y)/l;c++}
     const k=v*TW+u;if(!c)c=1;t[3*k]=r/c;t[3*k+1]=gg/c;t[3*k+2]=bb/c;lum[k]=.2126*t[3*k]+.7152*t[3*k+1]+.0722*t[3*k+2]}
   // the ground (the lighter part) becomes the tagged colour; the figure keeps its colour against it
