@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- worker
     reply=()=>({...SPEC,motif:{...MOTIF,figures:[...MOTIF.figures,{shape:'figure',placement:'cell',colours:[{name:'grey',hex:'#6a6870'}],centre:null,sizePct:20,bitmap:['abc'],name:'bad'}]}});
     let r=await call({image:IMG,closeup:IMG,type:'shirt'}),j=await r.json();
-    const t=sent.messages[0].content.find(c=>c.type==='text').text,sch=sent.output_config.format.schema;
+    const t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),sch=sent.output_config.format.schema;
     ok(r.status===200&&/a shirt's figured dobby whose small figures are woven in a second, clearly different colour/.test(t)&&/it is a motif, not a texture/.test(t)&&/figure \(any other small shape: draw it in "bitmap"\)/.test(t),'the pattern prompt sends two-colour figured dobbies to a motif, and asks for any other figure as a bitmap');
     ok(sch.properties.motif.anyOf[0].required.includes('cellAspect')&&sch.properties.motif.anyOf[0].required.includes('rowOffset'),'the motif carries the grid\'s cell shape and row offset');
     const f=j.motif.figures;
