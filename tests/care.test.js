@@ -44,7 +44,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         `coming days count the wears planned before them: Friday 13th nothing (4 of 6), the 20th yellow ("${f20.text}"), the 27th red ("${f27.text}")`)}
     // the banner's cut round the tie swatch: none on today (the ✕/✓ row and the swatches sit above the banner), one on a coming day, and
     // it follows the swatch when a tap shrinks the stack
-    {const lay=async(d,tap)=>{await band(d);if(tap){await p.evaluate(s=>swTap(s),tap);await settle(p,900)}else await settle(p,300);
+    {const lay=async(d,tap)=>{await band(d);if(tap){await p.evaluate(s=>{const row=document.querySelector('#cband .crow'),seen=window.__bandSeen=new Set(),end=performance.now()+900;   // every frame of the tap's transition
+          const look=()=>{seen.add(getComputedStyle(row).fontSize+'|'+row.querySelector('.ctxt').innerHTML);if(performance.now()<end)requestAnimationFrame(look)};look();swTap(s)},tap);await settle(p,1000)}else await settle(p,300);
         return p.evaluate(()=>{const f=document.querySelector('#mannequin-container'),b=f.querySelector('#cband'),sw=[...f.querySelectorAll('.swstack .ovsw')].pop(),wb=f.querySelector('.wornbar'),fr=f.getBoundingClientRect();
           const path=b.querySelector('path').getAttribute('d'),m=/^M([\d.]+) 0/.exec(path),bt=b.getBoundingClientRect().top;
           return {photo:f.classList.contains('photo'),cut:m?+m[1]:null,sw:sw?sw.getBoundingClientRect().width:0,swRight:sw?sw.getBoundingClientRect().right-fr.left:0,swBottom:sw?sw.getBoundingClientRect().bottom:0,bandTop:bt,wbBottom:wb?wb.getBoundingClientRect().bottom:null}})};
@@ -57,6 +58,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null});
       const f0=await lay([2026,10,20]),f1=await lay([2026,10,20],'top');
       ok(f0.cut>0&&Math.abs(f0.cut-(f0.swRight+5+9))<1.5&&f0.sw>60,`a coming day: the cut follows the ${Math.round(f0.sw)} px tie swatch (at ${f0.cut})`);
+      {const seen=await p.evaluate(()=>[...window.__bandSeen]);ok(seen.length===1,`while the swatches shrink, the banner's words keep one size and one layout (${seen.length} seen: ${seen.map(x=>x.split('|')[0]).join(', ')})`)}
       ok(f1.cut>0&&f1.sw<f0.sw-4&&Math.abs(f1.cut-(f1.swRight+5+9))<1.5,`a swatch tapped: the swatches shrink to ${Math.round(f1.sw)} px and the cut moves with them (at ${f1.cut})`)}
     await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null;renders={};sel=new Date(2026,10,11);cache={}});
     // ---- cleaning reminders for the phone (careReminders, sent by the morning reminder's push): the last wear and a wear past it on
