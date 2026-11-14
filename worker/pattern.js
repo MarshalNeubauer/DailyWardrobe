@@ -126,6 +126,38 @@ function cleanPattern(p) {
     repeatsInCloseup: num(p.repeatsInCloseup, .2, 60, 1), repeatsAcrossItem: num(p.repeatsAcrossItem, .2, 80, 1), paneAspect: num(p.paneAspect, .3, 3, 1),
     ignored: txt(p.ignored, 200), description: txt(p.description, 600) };
 }
+/* POST /pattern {cloth:true, image, closeup, type} (2026-11-14, the cloth reading): a plain or finely woven suit, blazer or trousers has
+   no pattern to report, and the pattern prompt above strips exactly what makes its cloth (slubs, sheen, the weave's texture). This asks
+   for that instead: the weave, the yarn colours and their shares, how mottled and slubbed it is and its sheen. The app paints from it
+   (asm-color.js asmFabTex) together with what it measures in the close-up. */
+const CLOTH_WEAVES = ['twill', 'herringbone', 'plain', 'hopsack', 'sharkskin', 'birdseye', 'nailhead', 'flannel', 'fresco', 'tweed', 'other'];
+const CLOTH_SCHEMA = { type: 'object', additionalProperties: false, required: ['weave', 'yarns', 'melange', 'slub', 'sheen', 'description'],
+  properties: { weave: { type: 'string', enum: CLOTH_WEAVES },
+    yarns: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['name', 'hex', 'sharePct'], properties: { name: { type: 'string' }, hex: { type: 'string' }, sharePct: { type: 'number' } } } },
+    melange: { type: 'string', enum: ['none', 'faint', 'clear', 'strong'] }, slub: { type: 'string', enum: ['none', 'some', 'strong'] },
+    sheen: { type: 'string', enum: ['matte', 'soft', 'lustrous'] }, description: { type: 'string' } } };
+const CLOTH_PROMPT = `You are describing the cloth of a plain or finely woven suit, blazer or pair of trousers so an app can paint it. The first
+photo is the whole item; the second (when there is one) is a close-up of its cloth: read the cloth from the close-up. There is no
+stripe or check to report. Report what gives this cloth its character from a step away:
+
+weave — twill (fine diagonal ribs), herringbone, plain (a plain or tropical weave, no ribs), hopsack (a visible basket weave),
+  sharkskin (a two-tone twill of alternating light and dark yarns), birdseye, nailhead, flannel (a soft, brushed surface), fresco
+  (an open, crisp, high-twist plain weave), tweed, or other.
+yarns — the yarn colours you can tell apart in the close-up, most of the cloth first, at most four: a plain colour name, an sRGB hex
+  of how that yarn looks in neutral daylight, and sharePct, its share of the surface in percent (they add up to 100). A cloth of one
+  colour has one yarn. A melange or two-tone cloth lists its darker and its lighter yarn, even when they are close shades.
+melange — how mottled the colour is from a step away: none (one even colour), faint, clear, or strong (heathered, clearly two-tone).
+slub — thicker, uneven threads showing as short streaks: none, some, or strong.
+sheen — matte, soft (a worsted's gentle lustre), or lustrous (mohair, silk blends, a hard-finished worsted).
+description — one sentence on the cloth for a photo-realistic image generator: the weave, the yarns, how it reads from a step away.`;
+function cleanCloth(p) {
+  const hex = h => (HEX_RE.test(h || '') ? h.toLowerCase() : null), pick = (v, list, d) => (list.includes(v) ? v : d);
+  const y = (Array.isArray(p.yarns) ? p.yarns : []).slice(0, 4).map(x => ({ name: txt(x.name, 30), hex: hex(x.hex), share: Math.max(0, +x.sharePct || 0) })).filter(x => x.hex);
+  if (!y.length) return null;
+  const t = y.reduce((a, x) => a + x.share, 0) || y.length;
+  return { weave: pick(p.weave, CLOTH_WEAVES, 'other'), yarns: y.map(x => ({ ...x, share: +((x.share || 1) / t).toFixed(3) })), melange: pick(p.melange, ['none', 'faint', 'clear', 'strong'], 'faint'),
+    slub: pick(p.slub, ['none', 'some', 'strong'], 'none'), sheen: pick(p.sheen, ['matte', 'soft', 'lustrous'], 'soft'), description: txt(p.description, 400) };
+}
 async function handlePattern(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Reading a pattern needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
   const text = await req.text();
@@ -134,6 +166,13 @@ async function handlePattern(req, env, json, who) {
   const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
   const over = await spend(env, who, 'pattern'); if (over) return json(over.body, over.status);
+  if (body.cloth) {
+    const k = await tagWithClaude(env, String(body.image || ''), { schema: CLOTH_SCHEMA, prompt: CLOTH_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 4000 });
+    if (k.status !== 200) { await unspend(env, who, 'pattern'); return json(k.body, k.status); }
+    const cl = cleanCloth(k.body);
+    if (!cl) return json({ error: 'no cloth', detail: 'Claude could not describe the cloth.' }, 422);
+    return json({ layout: 'cloth', cloth: cl, model: k.body.model });
+  }
   const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000 });
   if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
   const out = cleanPattern(c.body);
