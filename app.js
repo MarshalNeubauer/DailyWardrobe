@@ -605,12 +605,46 @@ async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast 
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
 let cache={};
-function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];
-  if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
+const planRuns=[];   // the months worked out (not from the cache) since start-up (tests/speed.test.js)
+function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];if(planRuns.length<200)planRuns.push(k);  if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
   const start=planStart(y,m),T=todayDate();
   if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=buildPlan(y,m);
   return cache[k]=(cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0))}
 const planFor=()=>planMonth(view.y,view.m);
+/* ---- Today's month as last planned, kept in IndexedDB (meta PLAN_SNAP), so start-up draws Today without waiting for the planner
+   (200-390 ms frozen at phone speed, audit 2026-11-13). Used only when nothing it depends on changed (planSig: the day, the items' and
+   day records' stamps, the settings' stamp, the forecast and climate); the month is planned again as soon as the phone is idle
+   (planSnapCheck) and Today redrawn only if it differs. While the kept month is on screen nothing is recorded or locked from it
+   (recordDays/lockUpcoming wait for the real plan). Pieces are kept as their ids plus what the planner added (rest), not as copies
+   of the items (their photos). ---- */
+const PLAN_SNAP='plan_snap';
+const strHash=t=>{let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)}return (h>>>0).toString(36)};
+const planSig=()=>strHash(JSON.stringify([isoKey(todayDate()),items.map(i=>[i.id,i.updated||0]),Object.values(dayRecs).map(r=>[r.date,r.updated||0]).sort((a,b)=>a[0]<b[0]?-1:1),settings.updated||0,weather,climate]));
+function snapOut(x,byId,seen=new Map()){if(!x||typeof x!=='object'||x instanceof Date)return x;if(seen.has(x))return seen.get(x);
+  const it=x.id!=null&&typeof x.type==='string'&&byId.get(x.id);
+  if(it&&it.type===x.type){const extra={};for(const k of Object.keys(x))if(x[k]!==it[k])extra[k]=snapOut(x[k],byId,seen);const r={$i:x.id,$x:extra};seen.set(x,r);return r}
+  const r=Array.isArray(x)?[]:{};seen.set(x,r);for(const k of Object.keys(x))r[k]=snapOut(x[k],byId,seen);return r}
+function snapIn(x,byId){if(!x||typeof x!=='object'||x instanceof Date)return x;
+  if(x.$i!=null&&x.$x){const it=byId.get(x.$i);if(!it)throw new Error('kept plan names a missing item');const r={...it};for(const k of Object.keys(x.$x))r[k]=snapIn(x.$x[k],byId);return r}
+  for(const k of Object.keys(x))x[k]=snapIn(x[k],byId);return x}
+// at start-up, before Today is first drawn: the kept month, if it still holds
+function planSnapUse(s){try{if(!s||!s.plan||s.sig!==planSig()||window.TEST_PLAN)return false;const byId=new Map(items.map(i=>[i.id,i]));
+    cache[s.k]=snapIn(s.plan,byId);cache.snap=s.k;planSnapUsed=s.k;return true}catch(e){console.warn('kept plan not used',e);return false}}
+let planSnapUsed=null;   // the month start-up drew from the kept plan (read by tests/speed.test.js)
+const outSig=o=>o&&JSON.stringify([idsOf(o),!!o.vest,!!o.suitDay,o.notes||[]]);
+// once the phone is idle: plan the month for real; Today is redrawn only if it differs, and the day records and locks are written then
+function planSnapCheck(){const k=cache.snap;if(!k)return;const shown=cache[k];delete cache[k];cache.snap=null;const [y,m]=k.split('-').map(Number);
+  const real=planMonth(y,m),same=Object.keys(real).length===Object.keys(shown).length&&Object.keys(real).every(d=>outSig(real[d])===outSig(shown[d]));
+  if($('#today').hidden)return;if(!same)return refreshToday();
+  if(items.length)recordDays(real).then(lockUpcoming).then(planSnapSoon)}
+let planSnapT=0;
+function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const T=todayDate(),k=T.getFullYear()+'-'+T.getMonth(),p=cache[k];if(!p||cache.snap||window.TEST_PLAN||!items.length)return;
+  try{metaPut(PLAN_SNAP,{k,sig:planSig(),plan:snapOut(p,new Map(items.map(i=>[i.id,i]))),t:Date.now()}).catch(e=>console.warn('plan not kept',e))}catch(e){console.warn('plan not kept',e)}},1500)}
+/* the forecast and the climate kept on the device, read before Today is first drawn: loadWeather and loadClimate then find them
+   unchanged, so start-up plans once instead of three times (without them, again with the climate, again with the forecast) */
+function wxPreload(){const L=settings.location;if(!L)return;
+  try{const c=JSON.parse(localStorage.getItem('wx_norm')||'null');if(c&&c.lat===L.lat&&c.lon===L.lon&&Array.isArray(c.months))climate=c.months}catch{}
+  try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3)weather=c.days}catch{}}
 
 /* views */
 const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
@@ -1497,7 +1531,8 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();
-  if(items.length){recordDays(p).then(lockUpcoming);
+  if(cache.snap&&p===cache[cache.snap]){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
+  else if(items.length){recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
   }
 }
 
@@ -1898,14 +1933,15 @@ function show(t){
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn)btn.classList.toggle('on',s===t)}
-  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>renderStats()};if(f[t])f[t]();
+  if(from==='wardrobe'&&t!=='wardrobe'&&!editing){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
+  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
   if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
   if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
   pageIn(t,from);
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>smallPhotos()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)])).then(([r,d,st,sn])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);wxPreload();planSnapUse(sn);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>smallPhotos()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady also waits for every script to have run (afterDom; afterScripts waits for the load event, pictures too, and held it up 30 s once): on a slow load app.js's start-up finished while about.js
    was still to come, and a test read the page before about.js had shown its note after a restart)
@@ -2077,7 +2113,8 @@ async function loadClimate(){
 async function loadWeather(force){
   const L=settings.location;if(!L)return;loadClimate();
   try{const c=JSON.parse(localStorage.getItem('wx')||'null');
-    if(!force&&c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3){weather=c.days;cache={};if(!$('#today').hidden)refreshToday();return}}catch{}
+    if(!force&&c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3){if(JSON.stringify(weather)===JSON.stringify(c.days))return;   // already read (wxPreload): the plan stands
+      weather=c.days;cache={};if(!$('#today').hidden)refreshToday();return}}catch{}
   try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${L.lat}&longitude=${L.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`);
     const d=(await r.json()).daily;if(!d||!d.time)return;const days={};
     d.time.forEach((t,i)=>{const [y,m,dd]=t.split('-').map(Number);days[key(new Date(y,m-1,dd))]={tmax:d.temperature_2m_max[i],tmin:d.temperature_2m_min[i],pop:d.precipitation_probability_max[i]??0,rain:d.precipitation_sum[i]??0,code:d.weather_code[i]??0}});

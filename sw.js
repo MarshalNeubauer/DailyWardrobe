@@ -8,9 +8,11 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tagging.js) and survive updates. */
-const CACHE='dw-v280';
+const CACHE='dw-v281';
 const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','ui.js','safety.js','dress.js','tagging.js','assemble.js','asm-color.js','asm-worker.js','stats.js','care.js','wardrobe.js','colpick.js','pack.js','shop.js','sync.js','account.js','remind.js','setup.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'reload'})))))});
+// cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
+// being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'no-cache'})))))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('message',e=>{const d=e.data||{};
   if(d.type==='skipWaiting')self.skipWaiting();
@@ -22,6 +24,10 @@ self.addEventListener('fetch',e=>{
     const cache=await caches.open(CACHE);
     const hit=await cache.match(req,{ignoreSearch:true});
     if(hit)return hit;
+    // a deep link (…/app/some/path) is answered with index.html offline, whose styles.css and scripts then resolve under that path:
+    // one of this version's files asked for under another folder is that file (the page came up unstyled, audit 2026-11-13)
+    const name=url.pathname.split('/').pop();
+    if(name&&ASSETS.includes(name)){const same=await cache.match(name);if(same)return same}
     // not one of this version's files (or the cache was cleared): the network, kept for offline use
     try{
       const res=await fetch(req,{cache:'no-cache'});
