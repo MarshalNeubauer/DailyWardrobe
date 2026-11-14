@@ -26,7 +26,8 @@ const setupAuto=()=>!navigator.webdriver||window.SETUP_AUTO===true;
 function setupEl(){let e=$('#setup');
   if(!e){e=document.createElement('div');e.id='setup';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','su-title');e.tabIndex=-1;document.body.appendChild(e)}
   return e}
-function setupInert(on){for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
+function setupInert(on){if(!on&&typeof layerInert==='function')return layerInert();   // closing: the page stays inert while Settings or a sheet is up (ui.js)
+  for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
 function setupOpen(again){
   closeSettings();
   setup={at:0,first:!again,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};

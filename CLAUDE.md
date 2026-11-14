@@ -82,6 +82,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `#pack` and `#care` are in the design system's page selectors (`:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal)`); their own copies of the button, input and `.btns` rules are gone
 - `#toast` is above Settings, the setup and the sheets (z-index 2050, under a question) and `width:max-content`: at `left:50%` it wrapped at half the screen's width
 - the setup's switches are ink when on, like the dress-code switches in Settings
+- reduced motion: the score's checks, the pieces list's rows and the month's days animate only under `prefers-reduced-motion: no-preference` (their `:not(.instant)` rules outranked the reduce rules), and the cards' arrows (`.score .chev`, `.month-link .chev`) turn at once
+- tap targets (the block `/* ---- accessibility ---- */` at the end): Today's day arrows, a piece's ⇄ and − and the Wardrobe's type chips keep their look and take taps over 44px (a `::after` past the box, counted from inside the 1px border); `.linkbtn` has 4px padding above and below (26px, it was 18)
+- `.score .pts` is `color-mix` of `--mut` and `--ink` (4.45:1 on the light card, now over 4.5 in both themes); the folded score list (`#sbox:not(.open) #spanel .mpanel-in`) is `visibility:hidden`, so it isn't read out or reached by Tab
 
 ### `core.js`
 
@@ -714,6 +717,11 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - the Days off summary is redrawn by `renderDaysOffUI` and `renderFormalUI` while Settings is open (it kept the count from when Settings opened)
 - the Schedule summary lists the days from the week's first one (the first day, Sunday first, whose day before isn't a workday): "Sun–Thu" (it read "Mon, Tue, Wed, Thu, Sun")
 - `tests/auditfix.test.js`: the quick bugs of the 2026-11-13 audit
+- `openSettings` draws each part in its own try (blocked storage threw and Settings never opened) and `saveSettings` closes Settings even when storing the server address fails (full storage), with a toast
+- file pickers are `<input type="file" class="vfile">` inside their label (visually hidden, still focusable: with `hidden` the keyboard couldn't reach One item, Several items, Restore file, Replace photo, the close-up); `#photo-url` and `#cfg-city` have `aria-label`s
+- `esc()` escapes `'` too; the city search's results (`findCity`) are escaped (names from Open-Meteo went into the page as HTML)
+- with reduced motion a day step doesn't slide (`stepDay` and the swipe's fly-out check `noMotion()`)
+- the tab bar's buttons are 44px (`nav button`, `--navh`, `fitNav`'s natural top; `NAV_MAX` 58 so the tallest bar is the same 102px): on a day with a photo the bar looks as before (it grows 6px less)
 
 ### `stats.js`
 
@@ -753,6 +761,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - sync errors show the server's `message` before its `error`- the PUT body is `{baseRev, day, reason?, data}` with `data` last (the worker reads a large backup's leading fields without parsing it)
 - the monthly holiday refetch (`refreshHolidays`, app.js) syncs first and refetches only if the synced settings still need it, never offline: its save stamps the settings newest, which on a device away for weeks used to undo another device's newer change
 - Settings' Backup line (`backupSummary`, app.js): "Backed up today / <day>", "Last backup failed · last saved <day>" while `sync_status` says failed, "Not backed up yet"
+- a sync's redraw waits while the item sheet is open (it blanked the field being typed in) or the piece picker is (it closed it): `syncRedraw` keeps it in `syncLater`, and `syncLaterRun` draws it when the sheet closes (`itemShown(false)`) or the picker does (`closePicker`)
 - the Backup line inside Settings (`showSyncStatus`) says the last backup while the next one runs ("Backed up Nov 14, 9:02 · 34 items · syncing…"); it read "Not backed up yet." under a summary saying "Backed up today", since `synced()` clears `sync_status` while `syncing` is still true
 - "Last worn" on Today (`lastWorn`) counts only days marked ✓; an unmarked past day was only planned (the stats' wear counts still take unmarked past days as worn)
 - one name for the type `pants` on screen: "Trousers" (`TYPES`, the packing list, Care); photo prompts still say "dress trousers"
@@ -959,6 +968,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `addGate()` (from `renderAdd`): "Several items" is not shown while not connected; "One item" works without
 - `renderConnUI()` / `connPaste()` / `connSummary()`: Settings → Connection starts with what a connection gives and, while not connected, a field for the invite link (`connectFromLink`); the summary reads "Not connected", "Connected as <name>" or "Connected as the owner"
 - `advToggle(btn)` / `advClose()`: the Advanced folds in Settings
+- dialogs (audit 2026-11-13): Settings (`openSettings`/`closeSettings`), the piece picker (`openPicker`/`closePicker`) and What to buy (`openShop`/`closeShop`) call `layerOpen(el)` / `layerClose(el)`: the page behind (header, main, nav) is inert while any of them or the item sheet is up (`layerInert`, also used by `itemShown` and `setupInert(false)`; `#setup.on` and `#nostore` keep it inert), the focus moves into the dialog and back to what had it
+- a window keydown listener (capture) keeps Tab and Shift+Tab inside the top dialog (`layerUp`: questions, colour sheet, sheets, Settings, item sheet) and closes Settings or the picker on Escape; the question and the colour sheet keep their own keys, What to buy and the item sheet their own Escape
+- `tests/a11yfix.test.js`: the dialogs, the waiting redraws, storage blocked or full, file pickers, labels, escaping, contrast, reduced motion, tap targets
 
 ### `sw.js`
 

@@ -6,7 +6,7 @@
 .hbtns{display:flex;gap:4px;align-items:center}
 *{box-sizing:border-box}
 /* the bottom tab bar: compact buttons, and it reaches into the home-indicator zone (only 16px of the inset kept clear below it) */
-:root{--navpad:max(0px, calc(env(safe-area-inset-bottom) - 18px));--navx:0px;--navh:calc(38px + var(--navx) + var(--navpad))}   /* --navx: the tab bar grown to meet Today's tiles (fitNav in app.js) */
+:root{--navpad:max(0px, calc(env(safe-area-inset-bottom) - 18px));--navx:0px;--navh:calc(44px + var(--navx) + var(--navpad))}   /* --navx: the tab bar grown to meet Today's tiles (fitNav in app.js) */
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(var(--navh) + 12px)}
 header{display:flex;justify-content:space-between;align-items:center;padding:calc(6px + env(safe-area-inset-top)) 12px 6px 16px;background:#101820 repeating-linear-gradient(90deg,transparent 0 11px,#ffffff14 11px 12px);color:#f2f0e8}
 h1,h2{margin:0;font-weight:700;letter-spacing:-.01em}h1{font-size:21px}h2{font-size:19px}
@@ -19,7 +19,7 @@ header button{background:none;border:0;color:inherit;font-size:22px;line-height:
 .pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn{display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid var(--line);cursor:pointer;margin:10px 0}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--navpad);z-index:900}
-nav button{flex:1;border:0;border-radius:0;background:none;padding:0;height:calc(38px + var(--navx));transition:height .2s ease;font-size:15px;line-height:calc(38px + var(--navx));font-weight:600;color:var(--mut)}
+nav button{flex:1;border:0;border-radius:0;background:none;padding:0;height:calc(44px + var(--navx));transition:height .2s ease;font-size:15px;line-height:calc(44px + var(--navx));font-weight:600;color:var(--mut)}
 nav button.on{color:var(--ink)}
 /* the marker over the tab that is showing slides from tab to tab (app.js pageIn sets --ti; .tab-none: a page that isn't a tab) */
 nav::before{content:"";position:absolute;top:0;left:0;width:calc(100% / 3);height:3px;background:var(--acc);transform:translateX(calc(var(--ti,0) * 100%));transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .2s;pointer-events:none}
@@ -190,7 +190,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .mbox.open .mpanel{grid-template-rows:1fr}
 .mpanel-in{overflow:hidden;min-height:0;padding:0 10px;opacity:0;transform:translateY(-8px);transition:opacity .3s ease,transform .45s cubic-bezier(.2,.8,.2,1),padding .45s}
 .mbox.open .mpanel-in{opacity:1;transform:none;padding:4px 10px 12px}
-.mbox.open:not(.instant) .mc:not(.blank){animation:mcIn .38s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 12ms + 80ms)}
+@media (prefers-reduced-motion:no-preference){.mbox.open:not(.instant) .mc:not(.blank){animation:mcIn .38s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 12ms + 80ms)}}   /* (only there: the reduce rule was outranked) */
 @keyframes mcIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
 .mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev{transition:none}
 @media (prefers-reduced-motion:reduce){.mpanel,.mpanel-in,.mbox .chev{transition:none}.mbox.open .mc{animation:none}}
@@ -247,10 +247,10 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .pchip{width:22px;height:22px;border-radius:6px;overflow:hidden;border:1px solid #0003;display:block}.pchip svg{width:100%;height:100%;display:block}
 .pchip.vest{border-radius:6px 6px 11px 11px}
 .ibox .list{margin:0;padding:0 4px;background:none}
-.ibox.open:not(.instant) .list>*{animation:mcIn .34s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion:no-preference){.ibox.open:not(.instant) .list>*{animation:mcIn .34s cubic-bezier(.2,.8,.2,1) both}
 .ibox.open:not(.instant) .list>:nth-child(2){animation-delay:30ms}.ibox.open:not(.instant) .list>:nth-child(3){animation-delay:60ms}
 .ibox.open:not(.instant) .list>:nth-child(4){animation-delay:90ms}.ibox.open:not(.instant) .list>:nth-child(5){animation-delay:120ms}
-.ibox.open:not(.instant) .list>:nth-child(n+6){animation-delay:150ms}
+.ibox.open:not(.instant) .list>:nth-child(n+6){animation-delay:150ms}}
 @media (prefers-reduced-motion:reduce){.ibox.open .list>*{animation:none}}
 /* back to today, on the date bar */
 .day h2{min-width:0}.day h2 .wx{display:flex;justify-content:center;align-items:center;gap:8px;min-height:30px;flex-wrap:nowrap;min-width:0}
@@ -358,7 +358,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .day h2 .wx{min-height:24px;margin-top:0}
 .below{margin-top:8px}
 /* Today fills the screen between the header and the tab bar, so a swipe works anywhere on it even when a day shows one line */
-#today{min-height:calc(100vh - 164px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:calc(100dvh - 164px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+#today{min-height:calc(100vh - 170px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:calc(100dvh - 170px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}   /* (170: the tab bar is 44px, it was 38 with 164) */
 
 /* Today's cards (score, pieces, month plan): one size. Each is 76px tall folded, with a 112px picture slot on the left
    (score badge, piece swatches, the week's stacks), a one-line title, a subtitle of up to two lines and a chevron.
@@ -399,9 +399,10 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .sfix{margin:0 4px 8px;padding:10px 0 4px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}.sfix>small{font-size:13px;color:var(--mut)}
 .sfixbtn{display:flex;align-items:center;gap:10px;min-height:44px;margin:0;padding:4px 10px 4px 6px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .sfixbtn .dot{width:32px;height:32px;border-radius:8px;flex:none}.sfixbtn .sfixnm{flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sfixbtn b{flex:none;color:#2f7a4f;font-variant-numeric:tabular-nums}
-.score.open:not(.instant) li{animation:mcIn .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 90ms)}
+/* (the animations only where motion is welcome: the reduce rule below was outranked by :not(.instant)'s specificity, audit 2026-11-13) */
+@media (prefers-reduced-motion:no-preference){.score.open:not(.instant) li{animation:mcIn .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 90ms)}
 .score.open:not(.instant) .sbar i{animation:barIn .75s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 220ms)}
-.score.open:not(.instant) .num{animation:numPop .5s cubic-bezier(.2,.8,.2,1)}
+.score.open:not(.instant) .num{animation:numPop .5s cubic-bezier(.2,.8,.2,1)}}
 @keyframes barIn{from{transform:scaleX(0)}to{transform:none}}
 @keyframes numPop{0%{transform:none}35%{transform:scale(1.05)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.score.open li,.score.open .sbar i,.score.open .num{animation:none}}
@@ -1006,3 +1007,22 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cpfig .cpdraw{display:flex;justify-content:center}.cpfig .ph.thumb{width:auto;height:100%;aspect-ratio:1;background:none;border-radius:0}
 .cppatbig .cpdraw{position:absolute;inset:0}.cppatbig .cpdraw svg{width:100%;height:100%;display:block}
 .cppat .cpnow{z-index:1}
+/* ---- accessibility (audit 2026-11-13) ---- */
+/* a file picker's input is in the label, visually hidden but focusable (with `hidden` the label was out of reach of the keyboard) */
+.vfile{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;opacity:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+label:has(>.vfile){position:relative}
+label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset:2px}
+/* tap targets at least 44px where the look stays as it is: the hit area reaches past the drawn box (Today's day arrows, a piece's
+   swap and take-off buttons, the Wardrobe's type chips) */
+.nav.day>button,.row .swap,#wardrobe .chip{position:relative}
+.nav.day>button::after{content:"";position:absolute;inset:-3px}   /* (from inside the 1px border: 40px -> 44px) */
+.row .swap::after{content:"";position:absolute;inset:-10px -4px}
+#wardrobe .chip::after{content:"";position:absolute;inset:-3px -3px -7px}   /* (from inside the 1px border: 36px -> 44px; the row clips 1px of the top) */
+/* reduced motion: the cards' arrows turn at once (.score .chev / .month-link .chev, set after the reduce rule, kept turning them) */
+@media (prefers-reduced-motion:reduce){.score .chev,.month-link .chev,.mbox .chev,.adv-head .chev{transition:none}}
+/* a text link button: at least 24px to tap (it was 18), without moving the text around it */
+.linkbtn{padding-top:4px;padding-bottom:4px}
+/* the score's points: 4.45:1 on the light card, now over 4.5 in both themes */
+.score .pts{color:color-mix(in srgb,var(--mut) 82%,var(--ink))}
+/* the folded score list is not read out or reached by Tab (its height is 0, but its checks and fix buttons were still there) */
+#sbox:not(.open) #spanel .mpanel-in{visibility:hidden}
