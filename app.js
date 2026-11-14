@@ -1236,7 +1236,7 @@ async function prefetchRenders(){const W=workerBase();if(!W)return;if(prefetchin
     }while(prefetchAgain)
   }catch(e){console.warn('photo prefetch failed',e)}finally{prefetching=false}}
 let prefetchTimer=0;const schedulePrefetch=()=>{clearTimeout(prefetchTimer);prefetchTimer=setTimeout(prefetchRenders,250)};
-async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll());renders={};for(const x of all||[])if(String(x.k).startsWith('render:'))renders[x.k.slice(7)]=x.v}catch(e){console.warn(e)}}
+async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll(IDBKeyRange.bound('render:','render;',false,true)));renders={};for(const x of all||[])renders[String(x.k).slice(7)]=x.v}catch(e){console.warn(e)}}   // (only the photos' key range: the kept assembled pictures are read by asmLoad)
 /* a metal as words for the photo prompt: 'other' (a dark grey metal) reads as gunmetal */
 const metalWord=i=>({gold:'gold',other:'gunmetal'})[i&&i.metal]||'silver';
 /* a tie clip is named by its colour (no metal field): "silver", "rose gold", "black" (enamel) */
