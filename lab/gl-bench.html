@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>GL Painter Bench</title>
+<!-- DailyWardrobe lab page (not part of the app: not in index.html, not in sw.js's ASSETS). Times the WebGL2 painter prototype
+     (PR #355, lab/asm-gl.js) against the CPU painter on this device. No analytics, nothing is sent anywhere: the only requests are
+     this repo's own files. -->
+<style>
+:root{--bg:#f6f4f0;--card:#fff;--fg:#1d1d1f;--mute:#6b6b70;--line:#dedad3;--acc:#1f4f8f;--accfg:#fff;--ok:#1d7a3a;--bad:#b3261e;--barbg:#e7e3dc}
+@media (prefers-color-scheme:dark){:root{--bg:#141416;--card:#1e1e21;--fg:#ececef;--mute:#a0a0a8;--line:#34343a;--acc:#6ea0e6;--accfg:#0b1320;--ok:#5fcf80;--bad:#ff7b72;--barbg:#2c2c31}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+main{max-width:720px;margin:0 auto}
+h1{font-size:22px;margin:4px 0 4px}h2{font-size:17px;margin:0 0 8px}h3{font-size:15px;margin:12px 0 4px}
+p{margin:6px 0}.note{color:var(--mute);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.kv{display:flex;gap:10px;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+.kv:first-child{border-top:0}.kv>span:first-child{color:var(--mute);flex:0 0 42%}.kv>span:last-child{text-align:right;overflow-wrap:anywhere;min-width:0}
+.ok{color:var(--ok)}.no,.bad{color:var(--bad)}
+#opts{display:grid;gap:10px}
+#opts label{display:flex;align-items:center;gap:8px;font-size:15px}
+#opts input[type=radio],#opts input[type=checkbox]{width:20px;height:20px;margin:0}
+select{font:inherit;padding:4px 6px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.btn{display:block;width:100%;font:600 18px/1 inherit;font-family:inherit;padding:16px;border:0;border-radius:12px;background:var(--acc);color:var(--accfg);cursor:pointer;margin-top:12px}
+.btn:disabled{opacity:.5}
+#barw{height:10px;border-radius:5px;background:var(--barbg);overflow:hidden;margin:8px 0}#bar{height:100%;width:0;background:var(--acc);transition:width .2s}
+#step{font-size:15px;min-height:1.4em}#log{padding-left:18px;margin:8px 0 0;font-size:13px;color:var(--mute)}#log .bad{color:var(--bad)}
+#prev{border-color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 4px;border-top:1px solid var(--line);text-align:right;vertical-align:top}th{color:var(--mute);font-weight:600;font-size:12px}
+th:first-child,td:first-child{text-align:left;overflow-wrap:anywhere}
+td .note,td .bad{font-size:11px}
+#tablew{overflow-x:auto}
+.errs{padding-left:18px;color:var(--bad);font-size:13px;overflow-wrap:anywhere}
+#pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.pn{font-size:13px;font-weight:600;margin-bottom:4px}.pr{display:flex;gap:6px}
+figure{margin:0;flex:1;min-width:0}figure canvas,.none{width:100%;aspect-ratio:1;display:block;border-radius:6px;background:var(--barbg)}
+.none{display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:12px}
+figcaption{font-size:11px;color:var(--mute);text-align:center}
+textarea{width:100%;height:220px;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px}
+#copied{min-height:1.4em;font-size:14px;color:var(--ok)}
+</style>
+</head>
+<body>
+<main>
+<h1>GL painter bench</h1>
+<p class="note">DailyWardrobe lab page: times the WebGL2 painter prototype against today&rsquo;s CPU painter on this phone. It is not part of the app and sends nothing anywhere.</p>
+<div id="prev" class="card bad" hidden></div>
+<div class="card"><h2>This device</h2><div id="device"><p id="boot">Loading the bench&hellip;</p></div></div>
+<div class="card">
+<h2>Run</h2>
+<div id="opts">
+<label><input type="radio" name="size" value="2048" checked> 2048 px (as the app paints)</label>
+<label><input type="radio" name="size" value="1024"> 1024 px (lighter; use it if 2048 fails)</label>
+<label>Runs per look <select id="runs"><option>5</option><option>3</option><option>1</option></select></label>
+<label><input type="checkbox" id="half"> Half-float texture for the kept zones (less GPU memory)</label>
+<label><input type="checkbox" id="alsopage"> Also time GL on the page thread</label>
+</div>
+<p class="note">Keep the screen on and Safari in front while it runs. Nothing heavy runs before you tap Start.</p>
+<button class="btn" id="start" disabled>Start</button>
+</div>
+<div class="card" id="progress" hidden>
+<h2>Progress <span class="note" id="elapsed">0:00</span></h2>
+<div id="step"></div><div id="barw"><div id="bar"></div></div>
+<ol id="log"></ol>
+</div>
+<div id="results" hidden>
+<div class="card"><h2>Results</h2><div id="tablew"><div id="table"></div></div></div>
+<div class="card"><h2>Pictures (CPU | GL)</h2><div id="pics"></div></div>
+<div class="card"><h2>Results to paste</h2>
+<button class="btn" id="copy">Copy results</button>
+<p id="copied"></p>
+<textarea id="json" readonly spellcheck="false" aria-label="Results as JSON"></textarea>
+</div>
+</div>
+</main>
+<script>
+/* errors anywhere on the page are kept and shown (and go into the results) */
+var glbErrors=[];
+(function(){
+  function note(m){glbErrors.push(m);var b=document.getElementById('boot');if(b&&!b.hidden)b.textContent='Error: '+m;var l=document.getElementById('log');if(l){var li=document.createElement('li');li.className='bad';li.textContent='Page error: '+m;l.appendChild(li)}}
+  window.addEventListener('error',function(e){note((e.message||'error')+(e.filename?' ('+String(e.filename).split('/').pop()+':'+e.lineno+')':''))});
+  window.addEventListener('unhandledrejection',function(e){var r=e.reason;note('promise: '+(r&&r.message||r))});
+})();
+/* the scripts, fetched past the app's service worker (cache:'no-store', which sw.js leaves to the network), so they are always main's
+   current files, whatever app version this phone has cached; run in order on the page, and joined into the Worker's one script */
+var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
+(async function(){
+  var PAGE=['../core.js','../detect.js','../draw.js','../assemble.js','asm-color-pr355.js','asm-gl.js','gl-bench-run.js','gl-bench.js'];
+  var WORKER=['../assemble.js','asm-color-pr355.js','asm-gl.js','gl-bench-run.js'];
+  try{
+    var src={};
+    await Promise.all(PAGE.map(async function(u){var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+': HTTP '+r.status);src[u]=await r.text()}));
+    try{var sw=await (await fetch('../sw.js',{cache:'no-store'})).text(),m=/const CACHE='([^']+)'/.exec(sw);GLB_APP_VERSION=m?m[1]:null}catch(e){}
+    GLB_WORKER_SRC=WORKER.map(function(u){return src[u]+'\n;\n'}).join('');
+    for(var i=0;i<PAGE.length;i++){var u=PAGE[i];
+      await new Promise(function(ok,no){var s=document.createElement('script');s.src=URL.createObjectURL(new Blob([src[u]+'\n//# sourceURL='+u.replace('../','')],{type:'text/javascript'}));
+        s.onload=ok;s.onerror=function(){no(new Error('could not run '+u))};document.head.appendChild(s)})}
+  }catch(e){document.getElementById('boot').textContent='Could not load the bench: '+(e&&e.message||e);glbErrors.push(String(e&&e.message||e))}
+})();
+</script>
+</body>
+</html>
