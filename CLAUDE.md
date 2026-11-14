@@ -247,7 +247,7 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - a pattern the tag missed: a sharp close-up of cloth tagged solid with bands 12+ ΔE00 apart and two repeats suggests stripes or a check (`missedPattern`, `.measpat`), never sets it
 - `settFrom` keeps each input's reading (`settMemo`, by the card's canvases): the same reading is not worked out again on every re-tag or toggle (1.8-2.5 s each at phone speed)
 - the kept sharp photo is signed with its item photo (`keepTagImg(id,url,photo)`, header `x-ph`); `tagImgOf(id,it)` gives nothing for another photo; Replace photo keeps a new copy and drops `pbox`, Rotate turns the copy and `pbox`, a crop or `upgradePhotos` signs it again (`resignTagImg`); `cropSource` still takes any copy (its own similarity test)
-- tag requests carry `wb` (was the photo white-balanced) from `tagExtras` and `/tag-many`
+- tag requests carry `wb` (was the photo white-balanced) from `tagExtras` and `/tag-many`, and `/pattern` from `claudePattern` (one flag for both pictures: the card's photo correction); a saved item's re-read and Ask Claude send none (unknown)
 - `benchEstimate(n,{img,close})` prices the sizes really sent (TAG_MAX and CLOSE_MAX, 4:3)
 
 ### `assemble.js`

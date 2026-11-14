@@ -619,9 +619,9 @@ function trimRefs(refs,labels,max=8){const keep=refs.map((_,k)=>k);
    close-up's exposure is matched to the item photo's (which has a white wall to set it), and where a thread's pixels read grey
    though Claude sees a colour (a light-blue line woven into khaki linen), the pixels keep the lightness and Claude the hue.
    Without the worker, or when Claude finds no pattern, the pixel reader (settFrom) is used. ---- */
-async function claudePattern({image,closeup,type}){const w=localStorage.getItem('worker_url');if(!w||!image)return null;
+async function claudePattern({image,closeup,type,wb}){const w=localStorage.getItem('worker_url');if(!w||!image)return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
-      body:JSON.stringify({image,...(closeup?{closeup}:{}),type})});
+      body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})})});   // wb: both pictures white-balanced (worker.js)
     const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
     return r.ok&&(j.across||j.motif||j.texture)&&j.layout!=='none'?j:null}catch{return null}}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];
@@ -672,7 +672,7 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
 /* ask Claude for a card's pattern once it has a close-up (the noise it strips is what the pixel reader can't) */
 async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
   q.patternReading=1;renderAdd();const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
-  const spec=await claudePattern({image:q.tagImg,closeup,type:q.type});q.patternReading=0;
+  const spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)});q.patternReading=0;   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
   if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
   readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q))renderAdd()}
 

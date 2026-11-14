@@ -83,9 +83,11 @@ module.exports=async({ok,chromium,url})=>{
     const par=await p.evaluate(async()=>{const was=ask;let live=0,max=0;const sent=[];window.ask=async(img,x)=>{sent.push(x&&x.wb);live++;max=Math.max(max,live);await new Promise(r=>setTimeout(r,150));live--;return null};
       const file=async n=>new File([await new Promise(r=>cloth(60,40,()=>[n*40,90,120]).toBlob(r,'image/png'))],`p${n}.png`,{type:'image/png'});
       const fs=[];for(let n=0;n<5;n++)fs.push(await file(n));show('add');const t0=performance.now();await addFiles(fs,false);const ms=performance.now()-t0;window.ask=was;
-      const ex=tagExtras({wb:true}),cards=queue.length;queue.length=0;renderAdd();return {max,sent,cards,ms,ex:ex.wb,none:'wb' in tagExtras({})}});
+      let pat=null;const f0=window.fetch;localStorage.setItem('worker_url','https://w.test/');window.fetch=async(u,o)=>{pat=JSON.parse(o.body);return new Response('{}',{status:500})};
+      await claudePattern({image:'data:image/jpeg;base64,AA',type:'tie',wb:false});window.fetch=f0;localStorage.removeItem('worker_url');
+      const ex=tagExtras({wb:true}),cards=queue.length;window.patWb=pat&&pat.wb;queue.length=0;renderAdd();return {max,sent,cards,ms,ex:ex.wb,none:'wb' in tagExtras({}),pat:window.patWb}});
     ok(par.max===3&&par.cards===5,`five photos get five cards and are tagged three at a time (at most ${par.max} at once, ${Math.round(par.ms)} ms)`);
-    ok(par.sent.length===5&&par.sent.every(v=>typeof v==='boolean')&&par.ex===true&&!par.none,'every tag request says whether its photo was white-balanced (wb)');
+    ok(par.sent.length===5&&par.sent.every(v=>typeof v==='boolean')&&par.ex===true&&!par.none&&par.pat===false,'every tag request, and a pattern reading, says whether its pictures were white-balanced (wb)');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
