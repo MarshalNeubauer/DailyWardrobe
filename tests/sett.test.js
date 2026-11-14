@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // ---- worker
     reply=()=>({...base,patternBox:{x:293,y:272,w:339,h:543},weave});
     const r=await (await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:IMG})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'})).json();
-    const sch=sent.output_config.format.schema,t=sent.messages[0].content.find(c=>c.type==='text').text;
+    const sch=sent.output_config.format.schema,t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n');
     ok(sch.required.includes('weave')&&sch.required.includes('patternBox')&&sch.properties.weave.anyOf[0].properties.colours,'Claude is asked for the weave (layout, direction, repeats, colours, crossing lines, description) and a box on the patterned cloth');
     ok(/description: one or two sentences describing the pattern for a photo-realistic image generator/.test(t)&&/patternBox/.test(t),'the prompt explains both');
     ok(r.weave.colours.length===3&&r.weave.colours[0].hex==='#6e655a'&&!/</.test(r.weave.description)&&r.patternBox.w===339,'the answer is tidied (bad colours dropped, text cleaned)');
