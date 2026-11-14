@@ -173,7 +173,7 @@ const ASM_CM_FOLD_KEEP=.8;
 const ASM_CM_FOLD_Y=[.02,.05];
 const ASM_CM_FOLD_MAX=.55;   // at most this much of the power and scale (in full, a navy pinstripe lost its darker far side)
 const asmCmFoldW=y=>{const Y=ASM_CM_FOLD_Y,w=(Y[1]-y)/(Y[1]-Y[0]);return ASM_CM_FOLD_MAX*(w<0?0:w>1?1:w)};
-function asmCmMp(P,z,c,lin){const f=P.fold&&P.fold[z==='waistcoat'?'jacket':z],m=Array.isArray(c.mat)?c.mat:[1,1],g=c.suit&&c.suit.g?c.suit.g:lin,w=f?asmCmFoldW(.2126*g[0]+.7152*g[1]+.0722*g[2]):0;
+function asmCmMp(P,z,c,lin){const f=P.fold&&P.fold[z==='waistcoat'?'jacket':z],m=Array.isArray(c.mat)?c.mat:[1,1],g=c.suit&&c.suit.g?c.suit.g:lin,w=f&&!(c.suit&&c.suit.k!=null)?asmCmFoldW(.2126*g[0]+.7152*g[1]+.0722*g[2]):0;   // (a striped jacket takes none: the owner, 2026-11-14, "no shadowing on the right side": its far side's shadow is its own steeper shading, ASM_STRIPE gam and gain, which stay)
   return [m[0]*(f?1+(f[0]-1)*w:1),m[1],f?Math.pow(f[1],w):1]}
 /* (2026-11-14) the material's own light, [the power on a cloth's light below its lit level (over 1: crisper, deeper folds; under 1: softer),
    the strength of its light above the lit level (its highlights and sheen)]: linen creases sharply and is matt; tweed, flannel and
@@ -375,10 +375,7 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
   for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)},how=asmCmRoute(i,z).how;
     try{
       if(how==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
-      else if(how==='bands'){c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
-        // (2026-11-14) without the earlier assembler's steeper shading on a dark stripe (ASM_STRIPE gam 1.4, gain .9: its folds went to
-        // black); here the folds' depth is set from real photographs (ASM_CM_FOLD)
-        if(c.suit&&c.suit.gam!=null)c.suit={...c.suit,gam:1,gain:1}}
+      else if(how==='bands')c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
       else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
       else if(how==='tweed')c.suit=asmTweedTex(i);
       else if(ASM_MICRO[how])c.suit=asmMicroTex(i,how);   // houndstooth, sharkskin, birdseye, nailhead
@@ -424,15 +421,9 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
       for(let q=0;q<3;q++){const v=new Float32Array(N);for(let k=0;k<N;k++)v[k]=L[M[4*k+q]];const o=pushOut(a,v);for(let i=0;i<I.length;i++)C[3*i+q]=o[I[i]]}
       keep[z]={I,C};continue}   // (the edge pixels in order: looked up by binary search, a map over every pixel was 33 MB a zone at 2880)
     const sh=z==='shirt',ref=pct(a,sh?.9:.75)||1,cap=sh?1.15:1.6,v=new Float32Array(N);
-    // (2026-11-14) the light is read along the cloth's own colour (the zone's lit pixels' mean), not from the luminance: the masters'
-    // garments are strong colours whose luminance is mostly their weakest channels' noise (measured on the blue jacket, magenta tie and
-    // blue trousers: about 30% less pixel noise); a white shirt reads the same either way
-    let ar=0,ag=0,ab=0,an=0;for(let k=0;k<N;k+=7)if(a[k]>=CLEAN&&Y[k]>ref*.95&&Y[k]<ref*1.05){const j=4*k;ar+=L[M[j]];ag+=L[M[j+1]];ab+=L[M[j+2]];an++}
-    const aa=an?(ar*ar+ag*ag+ab*ab)/(an*an):0;
-    // (a pixel whose colour is off the cloth's own, the wall's green spilt on an outline, keeps the luminance's reading: along the colour
-    // it read as black specks down a sleeve's edge)
-    if(aa>1e-6){ar/=an;ag/=an;ab/=an;for(let k=0;k<N;k++){if(!a[k])continue;const j=4*k,pr=(L[M[j]]*ar+L[M[j+1]]*ag+L[M[j+2]]*ab)/aa,yl=Y[k]/ref;v[k]=Math.min(cap,Math.max(0,yl>1.3*pr||pr>1.3*yl?yl:pr))}}
-    else for(let k=0;k<N;k++)v[k]=Math.min(cap,Y[k]/ref);
+    // (2026-11-14: reading the light along the cloth's own colour was tried for its lower noise and dropped: in the masters' shadows the
+    // strong channel falls less than the others, so shadows read about 30% lighter and a navy pinstripe lost its darker far side)
+    for(let k=0;k<N;k++)v[k]=Math.min(cap,Y[k]/ref);
     // the form light from the master's light map (the body's own shape toward the window), where there is one
     if(LM)for(let k=0;k<N;k++)if(a[k])v[k]=Math.min(1.63,v[k]*(1+(LM[4*k]-128)/255));   // (1.63: the light is kept in 16 bits over 40000)
     // the folds' depth as in real photographs (ASM_CM_FOLD): below its lit level a cloth's light is raised to the power that puts the
