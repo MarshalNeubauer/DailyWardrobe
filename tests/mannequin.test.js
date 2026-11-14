@@ -3,7 +3,7 @@
 // watch; a striped jacket's lines get the painter's lift; no tie clip on a waistcoat day; WebKit-safe; about as quick to draw as the
 // earlier figure; shipped in the app's cache (sw.js ASSETS), nothing fetched.
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
-const KINDS=['vest'];   // the poses whose mannequin has shipped
+const KINDS=['vest','suit'];   // the poses whose mannequin has shipped
 module.exports=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);

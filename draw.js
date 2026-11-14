@@ -1036,9 +1036,10 @@ function figureSvg(o,prefix='fig-'){
   const label=`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt)+(o.top?'':', no jacket')+(o.tie?'':', open collar'),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`;
   const clip=o.clip&&!o.vest?{color:colOf(o.clip)}:null,kind=figKind(o);
   if(kind){const top=o.top&&figStripeLift(o.top),bs=top&&usableSett(top);
-    // a banded cloth (a pinstripe) at 1.6x figFabric's scale gives about the painter's stripe count; twills and solids stay at 1x
+    // a banded stripe (a pinstripe) at 1.6x figFabric's scale gives about the painter's stripe count; checks (a windowpane: about 7
+    // panes across, as painted), twills and solids stay at 1x
     return outfitMannequinSvg({kind,suit:figFabric(top||o.shirt,top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),vest:!!(o.vest&&o.top),clip,
-      bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:bs&&bs.bands&&bs.bands.length>1?1.6:1,shirt:1,tie:1}})}
+      bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:bs&&bs.bands&&bs.bands.length>1&&STRIPE_PATS.includes(patBase(top.pattern))?1.6:1,shirt:1,tie:1}})}
   let watch=null;
   if(o.watch){const wo=watchOpts(o.watch),tones=METAL_TONES[o.watch.metal]||METAL_TONES.silver,dial=COLORS[wo.dial]||'#12151A';
     watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
