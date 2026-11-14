@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	55a49a57956553abd5ec
-# tested	4fd73c29cf76f2be154e
+# tested	11f6936a11fcf6a9564f
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -5900,7 +5899,7 @@ texswatch.test.js	tests/fixedplan.js	<any>
 texswatch.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 texswatch.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 texswatch.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<loaded>
-texswatch.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	belowBox	canPick	figureStage	hasOutfit	homeDay	offBtn	offOn	piecesBox	planFor	planMonth	planSnapUse	renderToday	shareMark	slotLabel	slots	swApply	todayBtn	toggleList	vestRow	wornBar	wornMarks	wxPreload	zoomTarget
+texswatch.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	belowBox	canPick	figureStage	hasOutfit	homeDay	offBtn	offOn	piecesBox	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	shareMark	slotLabel	slots	swApply	todayBtn	toggleList	vestRow	wornBar	wornMarks	wxPreload	zoomTarget
 texswatch.test.js	ui.js	<loaded>	addGate	isConnected	layerInert	layerUp
 texswatch.test.js	wardrobe.js	<loaded>	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 texture.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
