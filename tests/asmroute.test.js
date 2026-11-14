@@ -4,7 +4,7 @@
 // a way to be painted (or is put on the no-painter list on purpose, which changes the snapshot below).
 const fs=require('fs'),path=require('path');
 module.exports=async({ok,chromium,url})=>{
-  const src=fs.readFileSync(path.join(__dirname,'..','worker.js'),'utf8'),m=src.match(/const PATTERN_LIST = \[([^\]]*)\]/);
+  const src=require('./workersrc.js')(),m=src.match(/const PATTERN_LIST = \[([^\]]*)\]/);
   const tagged=m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[];
   const browser=await chromium.launch();const p=await (await browser.newContext()).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{

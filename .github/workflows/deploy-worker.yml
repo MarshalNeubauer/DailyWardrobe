@@ -1,5 +1,5 @@
 name: Deploy worker
-# Deploys worker.js to Cloudflare whenever a change to it reaches main (after the tests pass).
+# Deploys worker.js (the entry; Wrangler bundles its ES modules in worker/) to Cloudflare whenever a change to it reaches main (after the tests pass).
 # Needs, in GitHub > Settings > Secrets and variables > Actions:
 #   secret   CLOUDFLARE_API_TOKEN   (Cloudflare token from the "Edit Cloudflare Workers" template, plus Queues edit)
 #   variable CLOUDFLARE_ACCOUNT_ID
@@ -7,7 +7,7 @@ name: Deploy worker
 on:
   push:
     branches: [main]
-    paths: [worker.js, wrangler.toml, .github/workflows/deploy-worker.yml]
+    paths: [worker.js, 'worker/**', wrangler.toml, .github/workflows/deploy-worker.yml]
   workflow_dispatch:
 concurrency: deploy-worker
 # the job only reads the repository; the Cloudflare token is its own secret

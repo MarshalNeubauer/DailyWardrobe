@@ -16,7 +16,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.one,'without a second colour it draws a tone-on-tone weave');
     ok(r.solidRule&&r.lum,'for outfit rules it counts as a solid (no pattern clash, its brightness is the main colour)');
     ok(/woven/i.test(r.label),`it is named woven (${r.label})`);
-    const src=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8');
+    const src=require('./workersrc.js')();
     ok(/tie:\n\s*solid, woven \(a textured solid/.test(src),'the tagger is told about woven ties');
     // tonal check (e.g. black on charcoal glen check)
     const t=await p.evaluate(()=>{const T=x=>({id:'t',type:'tie',primaryColor:'black',secondaryColor:'charcoal',pattern:'tonal-check',...x});

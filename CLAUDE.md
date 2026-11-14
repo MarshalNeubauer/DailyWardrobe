@@ -633,6 +633,9 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 
 ### `app.js`
 
+- app.js was split on 2026-11-14 (the audit's recommendation) into classic scripts loaded in its place, in this order: `app.js` (state, IndexedDB, the busy pill, the tab bar's fit, `ask`, colour helpers, photo loading, the precision swatch), `add.js` (the Add page), `itemsheet.js` (the item sheet, its photo editor, the Wardrobe grid), `history.js` (past days, locks, learning, the piece picker, occasions, the score card), `today.js` (the month's plan and snapshot, Today's rows, figure and overlays, the pieces box, zoom, swatches, swiping, `renderToday`), `month.js`, `photos.js` (photo keys, kept photos, the realistic photo, item pictures, the queue), `settings.js` (Settings and its categories, toasts, `refreshAll`, weather, the theme), `start.js` (`show`, the page moves, the start-up chain, the service worker); the bullets below say "app.js" for all of them
+- the start-up chain must stay in the last of them (`start.js`): its callbacks can run before the scripts after it (ui.js…) have loaded, so whatever Today draws at start-up lives in these files or earlier (see `itemTitle` in core.js); a new file goes into index.html and sw.js `ASSETS` in load order
+- nothing a script runs at load may reach a name declared in a later script (function declarations are hoisted only within their own file); the split was checked mechanically for that (only `applyTheme` → `renderToday`, guarded by `window.appReady`, crosses)
 - IndexedDB storage (items, day history, settings; generated photos in `meta` as `render:<combination key>`)
 - forms (the Wardrobe editor can replace, rotate, zoom-crop and undo an item's photo without touching its tags: `photoTools`, `setPhoto`)
 - an item's photo is kept at `PH_MAX` (1536px since 2026-11-13, first 720px; JPEG .85) by Add too (`cardPics`), as Replace photo always did; it was 360px (JPEG .8), and the owner's suit, cropped later, went to the photo generator as a 270px piece of a mirror selfie; photos added before stay as they are; the backup grows with them (it was 14.7 MB for 91 items)
@@ -1076,6 +1079,12 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - `tests/sw.test.js` serves releases from its own server: a reload stays on the installed version, a bumped `sw.js` prompts and waits, Update switches and reloads with every file new, a version left waiting runs after the app is closed and opened, and a worker following the earlier network-first one takes over without a reload
 
 ### `worker.js`
+
+- worker.js is the entry (the route table `ROUTES`, `serve`, `corsFor`, the handlers fetch/queue/scheduled, `export { RenderHub }`); the routes live in ES modules in `worker/` (2026-11-14): `tag.js` (POST /, /tag-many, the prompt and schema, the Workers AI fallback), `pattern.js`, `links.js` (GET /fetch), `render.js` (POST /render, the queue jobs, `RenderHub`), `items.js` (item pictures), `records.js` (GET/PUT/DELETE /render, /blob), `holidays.js`, `backup.js` (the backup's versions, parts, snapshots, syncLite), `photostore.js` (photos stored once, their clean-up, /sync), `people.js` (`whoIs`, plain errors, caps, invitations, feedback, account deletion), `remind.js` (Web Push)
+- each module imports what it uses from the others by name; the modules import each other in cycles (only functions cross at load), and none imports worker.js: a constant read at load time by another module would hit the cycle's TDZ, so keep load-time tables inside their own module
+- Wrangler bundles the modules on deploy (`main = "worker.js"`; checked with `npx wrangler@4.158.0 deploy --dry-run --outdir <dir>`), and the deploy workflow also runs on `worker/**`
+- tests that read the worker's text (prompts, lists) take `require('./workersrc.js')()`: worker.js and every worker/ module; tests/impact.js records worker/ modules function by function like worker.js (`workerFile`, `workerFiles`) and follows a changed constant across the worker's files
+- worker.js still accepts edit-a-kept-photo jobs (`baseKey`, `swap`, `SWAP_PROMPT`) from the deleted earlier assembler; nothing sends them
 
 Cloudflare Worker. Every endpoint needs the owner's `APP_TOKEN` or a tester's invite code (see the bullets on `whoIs` below); with `APP_TOKEN` unset every route refuses.
 
