@@ -339,7 +339,7 @@ async function asmCmPrep(job){const S=job.size,N=S*S,K=ASM_CM_KINDS[job.cm],L=AS
   // the trousers on the shirt masters: their lines follow the legs (asmLegsPrep), as a jacket's follow its sleeves and body
   if(A.trousers&&P.shade.trousers)P.legs=asmLegsPrep(A,P.shade.trousers,S,N);
   // a surface-normal map of the master (a trial, 2026-11-14: job.normals, estimated on a computer): the cloth's own lengths (asmGeoPrep)
-  if(job.normals)P.g3=await asmGeoPrep(job,P);
+  if(job.normals||job.geoU)P.g3=await asmGeoPrep(job,P);
   // the tie (asmTiePrep's rules): the knot, the blade's lean and width
   if(A.tie){const wid=new Int32Array(S);let y0=S,y1=0;for(let k=0;k<N;k++)if(A.tie[k]>127){const y=(k/S)|0;wid[y]++;if(y<y0)y0=y;if(y>y1)y1=y}
     // the knot is searched in the tie's top 30%, but no lower than 1.5 of its widest row below its top: on the shirt-and-tie master the
