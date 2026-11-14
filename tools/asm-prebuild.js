@@ -21,7 +21,7 @@
 //                 computer under that address, so a worker that only answers the app's own origin (ALLOWED_ORIGIN) answers it
 //   --gpu         (stage 6) paint the looks the graphics chip covers (asm-gl.js asmGlWhy) on the graphics card, in one Web Worker, only
 //                 inside the owner's GPU guard (tools/gpu-guard.js, a port of gpu_guard.py: its lock, watchdog, bursts and rests). A burst
-//                 is one master's looks, at most --burst seconds (default 10), then the guard's rest. The card hot or near its power
+//                 is up to --burst seconds of looks (default 15) across the masters, one after another, then the guard's rest. The card hot or near its power
 //                 cap, the lock held by another GPU job, nvidia-smi failing, or a WebGL2 that isn't the card (--gpu-match, default
 //                 NVIDIA): those looks are painted on the CPU pool as before. A lost card: no GPU again until this script restarts
 //   --gpu-angle B the browser's ANGLE backend for --gpu (default d3d11; the tests use swiftshader, never the real card)
@@ -49,7 +49,7 @@ const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrob
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 // (stage 6) the graphics card, through the guard
 const GPU=has('gpu'),GPU_ANGLE=String(arg('gpu-angle','d3d11')).replace(/[^a-z0-9-]/gi,''),GPU_MATCH=new RegExp(arg('gpu-match','NVIDIA'),'i');
-const BURST_MS=Math.max(1,Math.min(30,+arg('burst',10)||10))*1000,CM_SIZE=Math.max(256,Math.min(2880,+arg('cm-size',2880)||2880));
+const BURST_MS=Math.max(1,Math.min(30,+arg('burst',15)||15))*1000,CM_SIZE=Math.max(256,Math.min(2880,+arg('cm-size',2880)||2880));
 // (the tests' simulated card, DW_GPU_SMI a .js file, may shorten the rests; the real card always has gpu_guard.py's)
 const GPU_REST=/\.js$/i.test(process.env.DW_GPU_SMI||'')&&process.env.DW_GPU_TEST_REST?Math.max(0,+process.env.DW_GPU_TEST_REST||0):null;
 if(has('help')||!WORKER.startsWith('http')||!TOKEN){
@@ -230,22 +230,27 @@ const gpuStop=(why,lost)=>{if(gpuOff)return;gpuOff=why+' (since '+now()+')';
       // after a failure on the chip: a card nvidia-smi can't read is lost (no GPU for the rest of the run); else this cycle's other looks go to the CPU
       const check=async why=>{try{await readCard()}catch(e){gpuStop(`${why}; ${e.message}`,true);return}console.log(`${now()} GPU: ${why}: the rest of this cycle on the CPU`)};
       let err=null;
-      try{for(let ki=0;ki<kinds.length;ki++){const k=kinds[ki],L=per[k];if(ki)await ready(k);
-          while(L.length&&!paused()){
+      // one queue across the masters (the owner's choice, 2026-11-14): a burst runs on into the next master's looks while it is under
+      // --burst seconds, so a full build is one burst and one rest, not one per master; a master's setup is waited for inside the burst
+      try{const Q=kinds.flatMap(k=>per[k].map(l=>({k,l})));let cur=kinds[0];
+          while(Q.length&&!paused()){
             if(!await g.before({wait:false})){console.log(`${now()} GPU: the card is hot or near its power cap (${JSON.stringify(g.last)}): the rest of this cycle on the CPU`);return rest()}
             // the renderer, once a run, inside the first burst: WebGL2 must be the graphics card (WEBGL_debug_renderer_info), its textures 2880 or more
             if(!gpuRenderer){const p=await page.evaluate(GI=>__poolMsg(GI,{probe:1}),GI).catch(e=>({error:String(e&&e.message||e)}));
               if(!(p&&p.renderer&&GPU_MATCH.test(p.renderer)&&p.max>=CM_SIZE)){await g.after('renderer check');
                 gpuStop(`WebGL2 here is ${p&&p.renderer||'missing'}${p&&p.error?' ('+p.error+')':''}, largest texture ${p&&p.max||0}: not the graphics card (${GPU_MATCH.source}) at ${CM_SIZE}`,false);return rest()}
               gpuRenderer=p.renderer;console.log(`${now()} GPU: ${p.renderer}, largest texture ${p.max}`)}
-            const tb=Date.now();let n=0;
-            while(L.length&&(n===0||Date.now()-tb<BURST_MS)&&!paused()){const l=L[0],t1=Date.now(),r=await paint(l,GI,true);n++;
-              if(!r||r.error){await g.after(`${k}: ${n} look(s), the last failed`);await check(`a look failed in the GPU worker (${r&&r.error||'no answer'})`);return rest()}
-              L.shift();await finish(l,r,t1);
-              if(r.gl&&!GPU_MATCH.test(r.renderer||'')){await g.after(`${k}: ${n} look(s)`);gpuStop(`a picture was painted on ${r.renderer||'an unknown renderer'}, not the card: Chromium may have lost the GPU`,true);return rest()}
-              if(!r.gl&&/graphics error|no WebGL2 context/.test(r.glWhy)){await g.after(`${k}: ${n} look(s), the chip failed`);await check(`the chip failed (${r.glWhy})`);return rest()}}
-            if(!L.length&&ki+1<kinds.length)warm=setup(per[kinds[ki+1]][0]);   // (the next master's setup while the guard rests)
-            await g.after(`${k}: ${n} look(s) in ${((Date.now()-tb)/1000).toFixed(1)} s`)}}
+            const tb=Date.now();let n=0;const done=new Set();
+            while(Q.length&&(n===0||Date.now()-tb<BURST_MS)&&!paused()){const {k,l}=Q[0];
+              if(k!==cur){await ready(k);cur=k}
+              const t1=Date.now(),r=await paint(l,GI,true);n++;done.add(k);
+              if(!r||r.error){await g.after(`${[...done].join('+')}: ${n} look(s), the last failed`);await check(`a look failed in the GPU worker (${r&&r.error||'no answer'})`);return rest()}
+              Q.shift();per[k].shift();await finish(l,r,t1);
+              if(r.gl&&!GPU_MATCH.test(r.renderer||'')){await g.after(`${[...done].join('+')}: ${n} look(s)`);gpuStop(`a picture was painted on ${r.renderer||'an unknown renderer'}, not the card: Chromium may have lost the GPU`,true);return rest()}
+              if(!r.gl&&/graphics error|no WebGL2 context/.test(r.glWhy)){await g.after(`${[...done].join('+')}: ${n} look(s), the chip failed`);await check(`the chip failed (${r.glWhy})`);return rest()}
+              // the next master's setup starts as soon as this master's last look is painted (it may finish inside the burst or the rest)
+              if(!per[k].length&&!warm){const nk=kinds[kinds.indexOf(k)+1];if(nk)warm=setup(per[nk][0])}}
+            await g.after(`${[...done].join('+')}: ${n} look(s) in ${((Date.now()-tb)/1000).toFixed(1)} s`)}
         return rest()}   // (empty, unless uploads were paused: those looks are then reported as not made by the CPU side)
       catch(e){err=e;if(e instanceof GpuLost){if(e.kind==='lost')gpuStop(e.message,true);else console.log(`${now()} GPU stopped this cycle: ${e.message}`)}else console.warn(`${now()} GPU side failed:`,e&&e.message||e);return rest()}
       finally{if(warm)await warm;await g.exit(err);gpuRests+=g.rested;gpuBursts+=g.bursts;gpuPeak=g.peak}};
