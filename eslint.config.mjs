@@ -43,7 +43,7 @@ const topNames = f => {
   return out;
 };
 const names = new Map(classic.map(f => [f, topNames(f) || new Set()]));
-/* names a script puts on the page from inside a function (`window.outfitFigureSvg = …` in figure.js), and those the tests'
+/* names a script puts on the page from inside a function (`self.outfitMannequinSvg = …` in mannequin.js), and those the tests'
    page scripts add (tests/fixedplan.js: TEST_PLAN; helpers a test defines in one page.evaluate() and uses in the next) */
 const onWindow = files => new Set(files.flatMap(f => [...fs.readFileSync(path.join(ROOT, f), 'utf8').matchAll(/\b(?:window|self|globalThis)\.([A-Za-z_$][\w$]*)\s*=(?!=)/g)].map(m => m[1])));
 const tests = fs.readdirSync(path.join(ROOT, 'tests')).filter(f => f.endsWith('.js')).map(f => 'tests/' + f);

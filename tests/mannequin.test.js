@@ -3,7 +3,7 @@
 // watch; a striped jacket's lines get the painter's lift; no tie clip on a waistcoat day; WebKit-safe; about as quick to draw as the
 // earlier figure; shipped in the app's cache (sw.js ASSETS), nothing fetched.
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
-const KINDS=['vest','suit','suit-open','shirt-tie'];   // the poses whose mannequin has shipped
+const KINDS=['vest','suit','suit-open','shirt-tie','shirt-open'];   // the poses whose mannequin has shipped
 module.exports=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
@@ -59,16 +59,21 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(t.svg&&t.vest&&t.ids,'Today draws a waistcoat day as the waistcoat mannequin');
     // two on a page don't share ids
     ok(await p.evaluate(()=>{const o=planFor()[key(sel)],a=figureSvg(o,'a-'),b=figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return ![...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))}),'two figures on a page use distinct ids');
-    // a pose without its mannequin yet (or no master at all) keeps the earlier drawing
-    const fb=await p.evaluate(()=>{const o={...planFor()[key(sel)],vest:false};const raw=MQ_RAW.suit;const s=figureSvg(o,'f-');return {old:/viewBox="0 0 390 400"/.test(s),has:!!raw}});
-    ok(fb.has||fb.old,'a pose whose mannequin hasn\'t shipped keeps the earlier drawing');
-    // as quick to draw as the earlier figure: decoded and drawn on a 1170-pixel canvas (390 css px at 3x), median of 5
-    const sp=await p.evaluate(async()=>{const o=planFor()[key(sel)],neu=figureSvg(o,'s-'),was=mqHas;window.mqHas=()=>false;const old=figureSvg(o,'o-');window.mqHas=was;
+    // a day with no colour-coded master still gets the nearest mannequin (the earlier drawing is gone): no belt on a shirt day, no shirt
+    const nm0=await p.evaluate(()=>{const g=t=>items.find(i=>i.type===t),r={};
+      const a={suitDay:false,top:null,bot:g('pants'),shirt:g('shirt'),tie:null,belt:null,watch:g('watch')},b={suitDay:true,top:g('suit'),bot:g('suit'),shirt:null,tie:g('tie'),vest:false};
+      for(const [n,o] of [['noBelt',a],['noShirt',b]]){const s=figureSvg(o,'n'+n+'-');r[n]={master:asmCmKind(o),kind:figKind(o),sq:/viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}}
+      r.old=typeof outfitFigureSvg==='undefined';return r});
+    ok(nm0.noBelt.master===null&&nm0.noBelt.kind==='shirt-open'&&nm0.noBelt.sq&&nm0.noShirt.master===null&&nm0.noShirt.kind==='suit'&&nm0.noShirt.sq&&nm0.old,
+      `an outfit with no colour-coded master is drawn on the nearest mannequin (${JSON.stringify(nm0)}); the earlier drawing is gone`);
+    // quick to draw: decoded and drawn on a 1170-pixel canvas (390 css px at 3x), median of 5, against the earlier figure's 25 ms here
+    // (measured 2026-11-14 on this machine: the mannequin 24 ms; on a 4x-throttled phone 95-101 ms against the earlier figure's 107-124 ms)
+    const sp=await p.evaluate(async()=>{const o=planFor()[key(sel)],neu=figureSvg(o,'s-');
       const t=async s=>{const c=document.createElement('canvas');c.width=1170;c.height=1200;const g=c.getContext('2d');const r=[];
         for(let i=0;i<5;i++){const x=s.replace('width="100%"','width="1170"').replace(/(id="|url\(#|href="#)([a-z]+-)/g,(m,a,b)=>a+'r'+i+b),t0=performance.now(),im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(x);await im.decode();g.drawImage(im,0,0);g.getImageData(0,0,1,1);r.push(performance.now()-t0)}
         return r.sort((a,b)=>a-b)[2]};
-      const b0=performance.now(),built=figureSvg(o,'z-'),bms=performance.now()-b0;return {neu:await t(neu),old:await t(old),bms}});
-    ok(sp.neu<=Math.max(sp.old*1.35,sp.old+40)&&sp.bms<20,`it draws about as fast as the earlier figure (${sp.neu.toFixed(0)} ms against ${sp.old.toFixed(0)} ms; its SVG built in ${sp.bms.toFixed(1)} ms)`);
+      const b0=performance.now(),built=figureSvg(o,'z-'),bms=performance.now()-b0;return {neu:await t(neu),bms}});
+    ok(sp.neu<150&&sp.bms<20,`it draws within its budget (${sp.neu.toFixed(0)} ms, 150 allowed; its SVG built in ${sp.bms.toFixed(1)} ms)`);
     // shipped with the app: in the cache list and the page, nothing fetched for it
     const sw=fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'),html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
     ok(['mannequin.js',...KINDS.map(k=>`mq/${k}.js`)].every(f=>sw.includes(`'${f}'`)&&html.includes(`src="${f}"`)),'the renderer and every shipped pose are app files (sw.js ASSETS, index.html)');
