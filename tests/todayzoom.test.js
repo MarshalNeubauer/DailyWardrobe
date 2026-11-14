@@ -77,28 +77,24 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(/Claude is reading the pattern/.test(during)&&await p.evaluate(()=>!!document.querySelector('#busy .spin')),`a spinning pill shows while Claude works ("${during}")`);
     ok(await busy()==='','it goes away when the answer comes');
     const tg=p.evaluate(()=>ask('data:image/png;base64,AA',{}));await p.waitForFunction(()=>/tagging/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const tagging=await busy();await tg;
-    const rd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({image:'x',key:'c1'})}));await p.waitForFunction(()=>/Making the photo/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const making=await busy();await rd;
     const iq=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({mode:'item',key:'c2'})}));await p.waitForFunction(()=>/item picture/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const itemPic=await busy();await iq;
-    ok(/tagging/.test(tagging)&&/Making the photo/.test(making)&&/item picture/.test(itemPic),`tagging, making a photo and an item picture each say so ("${tagging}", "${making}", "${itemPic}")`);
+    ok(/tagging/.test(tagging)&&/item picture/.test(itemPic),`tagging and making an item picture each say so ("${tagging}", "${itemPic}")`);
     const two=[p.evaluate(()=>claudePattern({image:'data:image/png;base64,AA',type:'tie'})),p.evaluate(()=>ask('data:image/png;base64,AA',{}))];await p.waitForFunction(()=>/\+1/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const both=await busy();await Promise.all(two);
     ok(/\+1/.test(both),`two at once: the latest, with a count of the rest ("${both}")`);
-    const qd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({mode:'queue',key:'c3'})}));await p.waitForTimeout(250);const queued=await busy();await qd;
+    const qd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({image:'x',key:'c3'})}));await p.waitForTimeout(250);const other=await busy();await qd;
     const syncs=p.evaluate(()=>fetch('https://w.test/sync',{method:'GET'}));await p.waitForTimeout(250);const sync=await busy();await syncs;
-    ok(queued===''&&sync==='','handing a job to the queue or syncing shows nothing (no AI is waiting on it)');
+    ok(other===''&&sync==='','a POST /render that is not an item picture (the retired outfit photo) or a sync shows nothing');
     delay=0;
     const dz=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];renderToday();const t=zoomTarget(),r=t.getBoundingClientRect();toggleZoom(r.x+r.width/2,r.y+r.height/3);
       const out={tag:t.tagName,tf:t.style.transform};zoomOut();return out});
     ok(dz.tag==='svg'&&/translate\(-?[\d.]+px, ?-?[\d.]+px\) scale\(2\.5\)/.test(dz.tf),`the drawing (no photo yet) zooms too (${dz.tf})`);
-    // ---- a textured shirt in the photo
-    const tx=await p.evaluate(async()=>{const sh=items.find(i=>i.type==='shirt'),o=planFor()[key(sel)];const plain=comboKey({...o,shirt:sh}),ptxt=outfitText({...o,shirt:sh});
+    // ---- a textured shirt's photo key
+    const tx=await p.evaluate(async()=>{const sh=items.find(i=>i.type==='shirt'),o=planFor()[key(sel)];const plain=comboKey({...o,shirt:sh});
       const grid=['10000001','01000010','00100100','00011000','00011000','00100100','01000010','10000001'];
       const w={...sh,id:'shw',pattern:'woven',texture:'data:image/jpeg;base64,AA',sett:{v:4,tex:{kind:'diamond',grid,aspect:1.4,lighter:true,contrast:'subtle',rel:.2},a:0,cr:20,tr:45,src:'claude+pixels'}};
-      const oo={...o,shirt:w},refs=await outfitRefsFull(oo),plainRefs=await outfitRefsFull({...o,shirt:sh}),other={...w,sett:{...w.sett,tex:{...w.sett.tex,kind:'herringbone',grid:['10','01']}}};
-      const i=refs.labels.findIndex(l=>/weave texture/.test(l));
-      return {plain,tex:comboKey(oo),other:comboKey({...o,shirt:other}),ptxt,text:outfitText(oo),label:refs.labels[i]||'',img:(refs.refs[i]||'').slice(0,22),n:refs.refs.length,plainDia:plainRefs.labels.some(l=>/drawing of the shirt/.test(l))}});
+      const oo={...o,shirt:w},other={...w,sett:{...w.sett,tex:{...w.sett.tex,kind:'herringbone',grid:['10','01']}}};
+      return {plain,tex:comboKey(oo),other:comboKey({...o,shirt:other})}});
     ok(tx.tex!==tx.plain&&tx.other!==tx.tex,'a shirt with a read weave texture gets its own photo (a plain white shirt\'s photo isn\'t reused), and each texture its own');
-    ok(/plain white dress shirt/.test(tx.ptxt)&&/white dress shirt woven with a fine, subtle tone-on-tone small diamond dobby weave/.test(tx.text),`the photo prompt describes the weave ("${tx.text.match(/a white dress shirt[^;]*/)[0].slice(0,90)}…")`);
-    ok(/drawing of the shirt's weave texture/.test(tx.label)&&/^data:image\/png/.test(tx.img)&&tx.n<=8&&!tx.plainDia,'a drawing of the texture (contrast exaggerated) goes to the generator with the shirt\'s close-up');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
   }finally{await browser.close()}

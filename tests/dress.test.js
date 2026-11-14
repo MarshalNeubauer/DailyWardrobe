@@ -29,7 +29,6 @@ const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],bl
 const GOLD={full:'91c49caa',small:'10040aba'};   // recorded again 2026-11-14 for the clip rule (planner.js clipAllowed: the test wardrobe's gold clip is no longer drawn in by its gold watch, its buckles being silver; with the rule off the signatures are the previous 2e6c164 / b2a7db53)   // both recorded again after the planner audit's fixes (2026-11-14: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' white shirt; were a8483609 and f91f12be)
 //   // (before that: recorded again after the same-tie-within-three-workdays rule, planner.js TIE_GAP, 2026-11-13; were 33c35d9d and 27343082)
 //   // small: recorded again after the shirt rule (care.js: a worn shirt waits a day), which changes a wardrobe this small; full: recorded again after the next fixed day's tie and shirt rule (planner.js fixedAhead nx, 2026-11-13): this plan forces a tie on Nov 16, so Nov 15 now avoids it (was fb07c45e, the pre-dress-code recording)
-const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
 
 module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const browser=await chromium.launch();
@@ -89,7 +88,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
         ids:['suitB','suitL','suitR','shirt','tie'].every(x=>!!fig.querySelector('pattern[id$="'+x+'"]')),use:/<clipPath[^>]*>\\s*<use/.test(fig.innerHTML),
         chips:[...document.querySelectorAll('#ibox .pchip')].map(e=>e.title.split(':')[0]).join(),notes:[...document.querySelectorAll('#today .note, #today .notes li')].map(e=>e.textContent).join('|'),
         text:document.querySelector('#today').textContent,fixes:a?a.fixes.map(f=>f.slot).join():'',stuck:a?a.stuck.join():'',cell:cell?cell.getAttribute('aria-label'):'',stackRects:cell?cell.querySelectorAll('svg.stack defs').length:-1,
-        photo:outfitText(o),key:comboKey(o),sig:comboSig(o),nojacket:!o.top,keyTie:comboKey({...o,tie:items.find(i=>i.type==='tie')})};
+        key:comboKey(o),sig:comboSig(o),nojacket:!o.top,keyTie:comboKey({...o,tie:items.find(i=>i.type==='tie')})};
       toggleMonth();return r})()`);
     const tJ=await today({jacket:true,tie:false},10),tD=await today(null,10),tN=await today({jacket:false,tie:false},10),tT=await today({jacket:false,tie:true},10);
     ok(/Tie,Tie clip|Tie,/.test(tD.rows)&&!tD.open&&tD.blade,'by default Today lists the tie and draws it');
@@ -99,16 +98,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/^Pants,Shirt,Tie/.test(tT.rows)&&!tT.open&&tT.blade&&!tT.lapels,`without jackets but with ties: shirt sleeves and a tie (${tT.rows})`);
     ok(!/No jacket/.test(tN.cell)&&/trousers/i.test(tN.cell)&&tN.stackRects===2&&tJ.stackRects===2&&tD.stackRects===3,`the month's stacks show only what is worn (${tN.cell})`);
     ok(!/Incomplete/.test(tJ.text)&&!/Incomplete/.test(tN.text)&&!/Incomplete/.test(tT.text),'no day reads Incomplete on Today');
-    ok(/collar open/.test(tJ.photo)&&/no tie/.test(tJ.photo)&&!/ tie[;,]| tie$/.test(tJ.photo.replace(/no tie/g,''))&&tJ.key!==tJ.keyTie&&/\|-\|/.test(tJ.sig)&&!tJ.nojacket,`a jacket without a tie is described with an open collar and has its own photo key (${tJ.photo})`);
-    ok(/no jacket/.test(tN.photo)&&/collar open with no tie/.test(tN.photo)&&tN.nojacket&&tN.key!==tN.keyTie&&/no jacket/.test(tT.photo)&&!/no tie/.test(tT.photo),'shirt sleeves without a tie likewise; with a tie it is listed');
-    // what the server's prompt says for it
-    const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default,realFetch=globalThis.fetch,prompts=[];
-    globalThis.fetch=async(href,init)=>{if(String(href)!=='https://api.openai.com/v1/images/edits')return new Response('',{status:404});prompts.push(init.body.get('prompt'));
-      return new Response(JSON.stringify({data:[{b64_json:JPG}]}),{status:200,headers:{'content-type':'application/json'}})};
-    try{for(const [text,nj] of [[tJ.photo,false],[tN.photo,true]]){
-        await worker.fetch(new Request('https://w.test/render',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:'data:image/jpeg;base64,'+JPG,refs:[],labels:[],outfit:text,key:'c7e57000000000d0'+(nj?'2':'1'),sig:'x',...(nj?{nojacket:true}:{})})}),{APP_TOKEN:'t',OPENAI_API_KEY:'k'})}}
-    finally{globalThis.fetch=realFetch}
-    ok(prompts.length===2&&/if none is listed he wears no tie: the shirt collar is open/.test(prompts[0])&&/collar open/.test(prompts[0])&&!/shirt, silk tie,/.test(prompts[0])&&/no tie unless one is listed/.test(prompts[1]),'the photo prompt asks for an open collar and no tie when none is listed, with and without a jacket');
+    ok(tJ.key!==tJ.keyTie&&/\|-\|/.test(tJ.sig)&&!tJ.nojacket,`a jacket without a tie has its own photo key (${tJ.sig})`);
+    ok(tN.nojacket&&tN.key!==tN.keyTie,'shirt sleeves without a tie likewise');
 
     // ---- 5. stats and what to buy ----
     const st=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'full');settings.dress={jacket:true,tie:false};cache={};dayRecs={};const S=buildStats(),tie=items.find(i=>i.type==='tie');

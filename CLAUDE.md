@@ -133,7 +133,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - one title style: `.cap` doesn't capitalise every word; `sentence(t)` capitalises a generated description's first letter (`itemTitle`, the item sheet, the piece picker, Today's pieces line, Laundry, Stats, What to buy); a name the user typed is shown exactly as typed
 - `itemName(i)` / `itemTitle(i)` / `titleCls(i)`: an item's own name (`item.name`), what it is called on screen (the name, else `desc(i)`), and the class for it (`named`: shown as typed; `cap`: a description, capitalised)
 - they are in core.js, not wardrobe.js, because Today is drawn at start-up, which can be before the later scripts have loaded: in wardrobe.js the start-up render threw now and then and the app came up with an empty wardrobe
-- the planner's texts (`desc`, `nm`, `rateOutfit` notes, `outfitText`) never use the name
+- the planner's texts (`desc`, `nm`, `rateOutfit` notes) never use the name
 - `avgText(v)`: an average score with one decimal, rounded down ("99.9"), "100" only when every day scored 100; Stats' "What costs you points" is "Small deductions" and What to buy says "days with a deduction"
 - the dress code: `settings.dress = {jacket, tie}` (synced; a missing object or key means yes); `wearsJacket()` / `wearsTie()` read it
 - `needsJacket(o)` / `needsTie(o)`: is an outfit without that piece short of one (not on a `casual` day, not when the dress code leaves it out); the score and Today's pieces list use them
@@ -295,7 +295,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `detect.js`
 
 - stripe/check detection from photos (canvas)
-- `usableSett(i)`: the item's `sett`, unless it is a band reading of a `MOTIF_PATS` pattern (an older reading); a weave pattern (`texPat`) takes a texture or a figure (motif) reading; drawing, `settText`, photo diagrams and `patSummary` use it
+- `usableSett(i)`: the item's `sett`, unless it is a band reading of a `MOTIF_PATS` pattern (an older reading); a weave pattern (`texPat`) takes a texture or a figure (motif) reading; drawing and `patSummary` use it
 - `settSig(s)`: a reading's signature for photo keys (`comboSig`): band colours, or the motif's grid, ground, figures and colours
 - the full sett (`analyzeSett`/`settFromCanvas`): every band of one repeat in its own colour (per-step medians in Lab, merged until neighbours differ by ΔE 5; a 1–2 step band lying between its neighbours is their blurred edge), the direction, the lines crossing the other way (the residual after the main bands, projected; thread colour = 2 × pixel − band), and the scale (`cr`); stored as `item.sett` `{v:2,a,bands:[[hex,w]],cross:{d,bands:[[hex|null,w]],r},cr,tr,src}`
 - `analyzeSett` stays on the page (it needs the canvas); `settFrom`'s cache (tagging.js `settMemo`) keeps it from running again for the same pictures
@@ -343,7 +343,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `draw.js`
 
 - procedural fabric patterns (`fabricDef`), `figureSvg()` glue for the torso figure, accessories, wardrobe thumbnails (`itemThumb`)
-- `outfitText()` (photos.js) adds an item's `patternText` (Claude's description) for the photo generator, and `comboSig` (photos.js) includes the sett and description, so such an item gets its own photo
+- `comboSig` (photos.js) includes an item's sett and `patternText` (Claude's description), so such an item gets its own photo key
 
 #### Fabrics
 
@@ -482,11 +482,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `TIE_TEX_K`, `ASM_TIE_TEX_MAX`, `ASM_TIE_FIG_MAX`, `TIE_DARK_L` and `TIE_DARK_X` are all in `asmTieSig`
 - on a tie no ground lightness is mixed into a line (the quarter mix is for a line whose threads cross the ground's): it darkened the repp tie's blue stripe and turned a thin white edging grey
 
-#### Patterns for the photo generator
-- a striped or checked shirt, or one with a motif reading (`shirtPatterned` in photos.js), is described to the photo generator ("a white stripe dress shirt (…)", `motifText` for a motif, its drawing as a reference) and gets its own photo key; plain and finely woven shirts share one photo per colour
-- the realistic photo gets a read pattern three ways (`patternPrompt`, `outfitRefsFull`): a description from the measurements (`settText`: direction as the viewer sees it from `sett.a`, each colour's share named with Claude's `weave.colours` names (hue-weighted match), pinlines, crossing lines), Claude's `patternText` with any direction phrase removed (`dropDir`: Claude once had a plaid tie's stripes rising the wrong way and the generator copied it), and a drawing of the pattern (`patternDiagram`: a tie's blade tip down, else a square of cloth) inserted after the item's photo
-- `motifText()` describes a motif (grid, figures, colours, ground, repeats across); `outfitRefsFull` labels its diagram as figures
-- tested against the user's real worker: the same outfit made the old way and the new way, the new one had the right stripe direction, colour balance and crossing lines
+#### Patterns and photo keys
+- a striped or checked shirt, or one with a motif reading (`shirtPatterned` in photos.js), gets its own photo key; plain and finely woven shirts share one photo per colour
+- the words and drawings that described a read pattern to the retired outfit-photo generator (`patternPrompt`, `settText`, `motifText`, `patternDiagram`, `outfitRefsFull`, `trimRefs`, the watch's turned references) were removed on 2026-11-14 (the owner: "remove the leftovers too")
 
 ### `app.js`
 
@@ -673,7 +671,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `photos.js`
 
-- a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`), a prompt line (`shirtTexText`) and a drawing of its texture with 2.5× contrast (`fabricDef(…,'dia')`) after its close-up
+- a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`)
 - "Last worn" (`lastWorn`) counts only days marked ✓; the stats still count unmarked past days as worn
 
 #### Outfit photos
@@ -681,27 +679,14 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - outfit photos are kept on the device as the worker made them (`keptPhoto`): shrunk to 900px and re-encoded at JPEG .85 (`shrinkUrl(…,900)`) they were softer than the 1024 original on a 3x phone and when zoomed; photos kept before stay 900px until made again
 - background download of the worker's photos for the month on screen and the next, nearest day first (`prefetchRenders`, after one `GET /render?list=1`)
 - a day the worker has no photo for is not asked about (`fetchRemoteRender`, `fetchItemPic`): the worker's list (`remoteList`, `GET ?list=1`, once, shared with `prefetchRenders`; `remoteListed` false when the worker gives none, then each day is asked as before) says which it keeps; each ask was a 404 logged in the console for every day shown
-- outfit photos are no longer made (2026-11-14): `outfitText`, `outfitRefs` and `outfitRefsFull` (what that photo was asked with) stay as tested helpers, unused by the app; kept photos still show and sync
-- a no-jacket day's photo key includes the trousers and its request sends `nojacket`
-- `outfitText` describes a jacket without a tie as "worn with the collar open and the top button undone, with no tie"; `comboSig` has `-` in the tie's place, so a tieless outfit has its own photo key
-- `outfitRefs()` sends each close-up after its item's photo, labelled "a close-up of the … fabric (match its exact colour and weave)" (suit/blazer, shirt, tie; trousers on no-jacket days); the planner worker never gets `texture`
-- the worker takes 8 references; `trimRefs` (tagging.js) drops the least needed first (`refRank`: the shirt's close-up, then its texture drawing (the user's choice: the drawing is in the tagged colour, a dim close-up reads grey), other drawings, close-ups), never an item's photo: cutting at 8 once dropped the watch and the generator drew a generic one
-- a tie with a close-up is sent without its photo (`outfitRefs`), the shirt's close-up going in its place; a tie without a close-up keeps its photo (the owner's choice after an A/B on the real worker, 2026-11-11: no difference to see that one run to the next doesn't also make, about 391 tokens saved a 270×360 photo)
-- a tie sent without its photo has its pattern drawing right before its close-up (`outfitRefsFull`, tagging.js)
-- an outfit photo at `gpt-image-2` medium with 8 references costs about 11¢ (1,756 output tokens, 5.3¢ of it), not the 7¢ the app's texts say; high is 7,024 output tokens (21.1¢)
-- `gpt-image-2` accepts any size divisible by 16 up to 3840 on the long edge; 2048x2048 at medium is about 15 to 16¢ a photo, visibly sharper in the watch, tie and shirt weave (2026-11-12); the worker still asks for 1024x1024
+- outfit photos are no longer made (2026-11-14): the prompt builders (`outfitText`, `outfitRefs`, `outfitRefsFull`) were removed; kept photos still show on their days (`renderFor`) and still sync (`GET`/`PUT /render`)
+- a no-jacket day's photo key includes the trousers; `comboSig` has `-` in the tie's place, so a tieless outfit has its own photo key
+- `POST /render` is sent only for item pictures (`renderItemPic`, `{mode:'item'}`); the busy pill (app.js `busyLabelFor`) shows "Making the item picture…" for that and nothing for any other `/render` POST
 
 #### The watch
 
-- the watch and its dial's enlargement go FIRST, right after the illustration, as two references (`WATCH_WORN`, `WATCH_DIAL`): at the end of the list the generator drew a stock chronograph
-- the dial's enlargement is `dialCrop` (tagging.js, `DIAL_PART` .48 of the photo's middle): the watch is about 80px in the picture and with its photo alone the dial came back generic
-- the enlargement is never trimmed (`refRank` 9): in a full outfit (9 candidates) the shirt's close-up goes first; the enlargement going first is why the owner's watch came back generic from 2026-11-11
-- both go turned half a turn (`turnBy(…, WATCH_TURN)`, 180°): on the left wrist, arm across the chest, a watch is seen with its crown toward the hand and 12 o'clock at the bottom; from upright photos it was drawn upright, crown toward the elbow, which the owner called backwards; the prompt says the same and the figure's watch has its crown toward the hand (`.fig-crown`)
-- the watch reference is the owner's own photo (`o.watch.photo`), its product picture (`itemPic`) only when there is none: the product picture is a redrawing whose dial details are already lost
-- (retired 2026-11-14) the drawing was the generator's pose with the watch's own dial in its case (`figurePng`, `figureSvg` `photo:true`); neither exists now
-- `watchText(w, {worn})` (core.js): with the owner's Details the style's stock layout is left out ("chronograph", not "chronograph (three subdials and a date window)"); `worn` (outfit photos, `outfitText`) says the details describe the watch upright and every position turns with it
+- `watchText(w)` (core.js): with the owner's Details the style's stock layout is left out ("chronograph", not "chronograph (three subdials and a date window)"); used by the item picture's description (`itemDesc`)
 - `WATCH_KEY(outfit)` (worker/render.js): with a wristwatch in the outfit, a short sentence before "He is wearing" says the watch is a key detail and its face in the illustration is its real photo, to keep as it is
-- on the owner's Seiko Arctura (2026-11-12) words, references and high quality alone gave a stock chronograph; the real dial on the drawing gave a closer but not faithful dial (the watch is about 90px across); the owner declined a second paid edit per photo and a larger framing for now
 
 #### Item pictures
 
@@ -815,7 +800,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - invite link `<app url>#invite=<code>&w=<server>`; `connectFromLink` stores `worker_url`/`app_token` only when `/me` accepts; `acctStart()` runs it for `#invite=` at start-up
 - a refused link changes nothing; `#invite` is dropped from the address unless the server was unreachable
 - a link on a phone connected with another code: with a local wardrobe (`acctHasLocal`) it asks, wipes (`wipeDevice`) and reloads; else it switches and drops `sync_mark`, `last_sync`, `sync_status` (a sync once merged the owner's wardrobe into a tester's)
-- Connection's `#acct-box`: `renderAccountUI`, `loadAccount` (at most once in 3 s); testers see use against caps (`ACCT_CAPS`, `acctUse`), the owner invites (`createInvite`, `copyInvite`, `revokeInvite`, `purgeInvite`)
+- Connection's `#acct-box`: `renderAccountUI`, `loadAccount` (at most once in 3 s); testers see use against caps (`ACCT_CAPS`: item pictures, photo readings, pattern readings; `acctUse`), the owner invites (`createInvite`, `copyInvite`, `revokeInvite`, `purgeInvite`)
 - `acctStart()` wraps `renderSettingsExtras` (settings.js); an old server (404/405 on `/me`) leaves the box empty
 - the role is remembered per code (`rememberRole`, `acct_role`, `acctRole()`, `isTester()`)
 - iPhone: a Home Screen app has its own storage; a tester connecting in Safari (`iosInSafari`) gets `homeScreenGuide()` and "Copy my invitation link" (`copyInviteLink`, `myInviteLink`; testers only)

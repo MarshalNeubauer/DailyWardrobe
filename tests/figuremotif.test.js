@@ -43,24 +43,22 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o={suitDay:true,top:{id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:it,tie:{id:'x',type:'tie',primaryColor:'burgundy',pattern:'solid'}};
       return {s,ground:L(s.motif.ground),fig:L(s.motif.figs[0].cols[0]),rects:(def.match(/<rect /g)||[]).length,ratio:H/W,figCol:def.includes(s.motif.figs[0].cols[0]),
         offDiff:off!==def,usable:!!usableSett(it),band:usableSett({...it,sett:{v:2,bands:[['#fff',.5],['#888',.5]]}}),patterned:shirtPatterned(it),
-        key:comboKey(o)!==comboKey({...o,shirt:{...it,sett:null}}),text:settText(it,'shirt')}},spec);
+        key:comboKey(o)!==comboKey({...o,shirt:{...it,sett:null}})}},spec);
     ok(m.s.v===3&&m.s.motif.figs[0].bmp.join()===CHEV.join()&&m.s.motif.aspect===.82&&m.s.cr===8&&m.s.tr===40,'the reading keeps the figure\'s bitmap, the cell shape and the scale');
     ok(m.ground>85&&m.fig>35&&m.fig<65,`colours come from the close-up, at full contrast: white ground L* ${m.ground.toFixed(0)}, grey figures L* ${m.fig.toFixed(0)}`);
     ok(m.figCol&&m.rects>=1+4*CHEV.length&&Math.abs(m.ratio-.82)<.01,`the swatch draws the chevrons row by row (${m.rects} rects) on cells 0.82 as tall as wide`);
     ok(m.offDiff,'a half-row offset moves every other row');
     ok(m.usable&&m.band===null,'a dobby shirt takes the figure reading (a band reading still does not apply)');
     ok(m.patterned&&m.key,'the figured shirt counts as patterned: its own photo key');
-    ok(/small grey downward chevrons/.test(m.text)&&/grid of columns, the figures stacked closer than the columns are apart/.test(m.text)&&/white ground/.test(m.text)&&/about 40 repeats/.test(m.text),
-      `the photo generator is told the figure, the layout and the colours (${m.text})`);
     // the Add card: a dobby shirt's close-up asks Claude, and the reading is saved
     await p.evaluate(async()=>{items=[];show('add');const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await addFiles([new File([b],'s.png',{type:'image/png'})])});
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await addTexture(0,new File([b],'c.png',{type:'image/png'}))});
     await p.waitForFunction(()=>queue[0]&&queue[0].sett&&queue[0].sett.motif,null,{timeout:20000});
     ok(calls.length===1&&calls[0].type==='shirt'&&/read by Claude/.test(await p.textContent('#queue')),'a dobby shirt\'s close-up asks Claude for the pattern on the Add card');
     await p.evaluate(()=>save(0));
-    const sv=await p.evaluate(async()=>{const it=items[0],o={suitDay:true,top:{id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:it};const {labels}=await outfitRefsFull(o);
-      return {motif:!!(it.sett&&it.sett.motif),pool:asmCmGaps().filter(x=>x.i.id===it.id).length,label:labels.find(l=>/the shirt's measured pattern/.test(l))||''}});
-    ok(sv.motif&&sv.pool===0&&/copy its figures/.test(sv.label),'saved with its reading; Settings → Painted plain doesn\'t list it to read again; the photo generator gets its drawing');
+    const sv=await p.evaluate(async()=>{const it=items[0];
+      return {motif:!!(it.sett&&it.sett.motif),pool:asmCmGaps().filter(x=>x.i.id===it.id).length}});
+    ok(sv.motif&&sv.pool===0,'saved with its reading; Settings → Painted plain doesn\'t list it to read again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

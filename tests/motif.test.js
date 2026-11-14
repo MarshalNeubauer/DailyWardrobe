@@ -48,7 +48,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const def=fabricDef('q',it,'tie'),fig=fabricDef('q',it,'tie','fig');
       const o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:it};
       const key1=comboKey(o),key2=comboKey({...o,tie:{...it,sett:{...s,motif:{...mm,ground:'#000000'}}}});
-      return {s,lab,noBoxGround:L(noBox.motif.ground)[0],def,fig,key1,key2,text:settText(it,'tie'),prompt:patternPrompt({...it,patternText:spec.description},'tie'),sum:settSummary(s)}},spec);
+      return {s,lab,noBoxGround:L(noBox.motif.ground)[0],def,fig,key1,key2,sum:settSummary(s)}},spec);
     const l=m.lab,hue=x=>Math.atan2(x[2],x[1])*180/Math.PI;
     ok(m.s.v===3&&m.s.src==='claude+pixels'&&m.s.a===45&&m.s.cr===15&&m.s.tr===9,'the tie\'s motif is kept with its diagonal grid and its scale (cells in the close-up and across the tie)');
     ok(l.white[0]>85&&l.white[0]>l.purple[0]&&l.purple[0]>l.navy[0]&&l.navy[0]>l.ground[0]&&l.ground[0]<30,
@@ -61,14 +61,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const T=d=>+d.match(/width="([\d.]+)"/)[1];
     ok(T(m.fig)<T(m.def)&&T(m.fig)>2,`on the figure the tile is sized so about 9 cells fit across the tie (tile ${T(m.fig)} vs swatch ${T(m.def)})`);
     ok(m.key1!==m.key2,'a different motif reading makes a different outfit photo key (no stale photo)');
-    ok(/diagonal \(45°\) grid/.test(m.text)&&/alternating purple and navy small squares/.test(m.text)&&/white tiny squares with a dot in the middle \(each with a navy dot\)/.test(m.text)&&/dark navy ground/.test(m.text)&&/about 9 repeats across the tie/.test(m.text),
-      'the photo generator is told the motif in words: grid, figures, colours, ground and scale');
-    ok(/neat pattern/.test(m.prompt)&&/A woven silk neat/.test(m.prompt)&&/2 figures on a diagonal grid, read by Claude/.test(m.sum),'the prompt adds Claude\'s description; the summary names the motif');
+    ok(/2 figures on a diagonal grid, read by Claude/.test(m.sum),'the summary names the motif');
 
-    // an older band reading of the same tie is ignored: no plaid drawn, described or sent as a diagram
+    // an older band reading of the same tie is ignored: no plaid drawn
     const old=await p.evaluate(()=>{const it={id:'t2',type:'tie',primaryColor:'purple',secondaryColor:'navy',tertiaryColor:'white',pattern:'foulard',sett:{v:2,a:-45,bands:[['#6c5584',.5],['#463a64',.5]],cross:null,cr:3,tr:4,src:'claude+pixels'}};
-      items=[it];return {use:usableSett(it),def:fabricDef('q',it,'tie'),text:settText(it,'tie'),sum:patSummary(it),stripe:usableSett({...it,pattern:'stripe'})}});
-    ok(old.use===null&&!old.def.includes('#6c5584')&&old.text===''&&/older reading drew these foulard figures as stripes/.test(old.sum)&&old.stripe,'an older band reading of a foulard is ignored (drawn generic, not described), and the editor says to read it again; a striped tie keeps its bands');
+      items=[it];return {use:usableSett(it),def:fabricDef('q',it,'tie'),sum:patSummary(it),stripe:usableSett({...it,pattern:'stripe'})}});
+    ok(old.use===null&&!old.def.includes('#6c5584')&&/older reading drew these foulard figures as stripes/.test(old.sum)&&old.stripe,'an older band reading of a foulard is ignored (drawn generic, not described), and the editor says to read it again; a striped tie keeps its bands');
 
     // the Add card: the tagger says foulard; once the close-up is in, Claude reads the motif
     await p.evaluate(async()=>{items=[];show('add');const b=await (await fetch('tests/fixtures/tie-neat.jpg')).blob();await addFiles([new File([b],'t.jpg',{type:'image/jpeg'})])});
@@ -77,9 +75,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const card=await p.evaluate(()=>document.querySelector('#queue').textContent);
     ok(calls.length===1&&calls[0].closeup&&calls[0].type==='tie'&&/2 figures on a diagonal grid, read by Claude/.test(card),'a foulard tie\'s close-up asks Claude for the pattern, and the card shows the motif');
     await p.evaluate(()=>save(0));
-    const sv=await p.evaluate(async()=>{const it=items[0],o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'charcoal',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:it};
-      const {labels}=await outfitRefsFull(o);return {motif:!!(it.sett&&it.sett.motif),spec:!!it.patternSpec,label:labels.find(x=>/measured pattern/.test(x))||''}});
-    ok(sv.motif&&sv.spec&&/copy its figures, their shapes, colours, arrangement and size exactly/.test(sv.label),'the saved tie keeps the motif, and the photo generator gets a drawing of it labelled as figures');
+    const sv=await p.evaluate(async()=>{const it=items[0];return {motif:!!(it.sett&&it.sett.motif),spec:!!it.patternSpec}});
+    ok(sv.motif&&sv.spec,'the saved tie keeps the motif and Claude\'s reading');
     // a foulard without Claude: no band reading (it would be a plaid); the generic foulard is drawn
     await p.evaluate(()=>localStorage.removeItem('worker_url'));
     const q2=await p.evaluate(async()=>{const q={type:'tie',pattern:'foulard',raw:{full:document.createElement('canvas'),tex:document.createElement('canvas')},weave:{layout:'check'}};return readSett(q)});

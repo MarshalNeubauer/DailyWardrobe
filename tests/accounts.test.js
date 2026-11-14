@@ -252,7 +252,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await p.evaluate(async t=>typeof connectFromLink==='function'&&(await connectFromLink('#invite='+t+'&w='+encodeURIComponent(localStorage.getItem('worker_url'))))===true&&(await connectFromLink('nonsense'))===false,T),'connectFromLink(text) answers true for a good link and false for anything else');
       await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>/Connected as Tess/.test(document.querySelector('#acct-box').textContent));
       let box=await p.evaluate(()=>({t:document.querySelector('#acct-box').innerText.replace(/\s+/g,' '),w:document.querySelector('#settings-modal').scrollWidth<=document.querySelector('#settings-modal').clientWidth,inv:!!document.querySelector('#acct-create')}));
-      ok(/Outfit photos today: [01] of 1/.test(box.t)&&/Item pictures today: 0 of 0/.test(box.t)&&/Photo readings today: [01] of 1/.test(box.t)&&/Pattern readings today: 0 of 0/.test(box.t)&&box.w&&!box.inv&&!/worker|token|KV|endpoint/i.test(box.t),`Settings → Connection shows who is connected and today\'s use against each cap (${box.t})`);
+      ok(!/Outfit photos/.test(box.t)&&/Item pictures today: 0 of 0/.test(box.t)&&/Photo readings today: [01] of 1/.test(box.t)&&/Pattern readings today: 0 of 0/.test(box.t)&&box.w&&!box.inv&&!/worker|token|KV|endpoint/i.test(box.t),`Settings → Connection shows who is connected and today\'s use against each cap (${box.t})`);
       await p.evaluate(()=>closeSettings());
       if(vp.width===390){
         // a limit reaches the user: Add card, pattern reading, item picture (the app makes no outfit photo since 2026-11-14)
@@ -276,7 +276,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await p.evaluate(()=>{closeSettings();localStorage.setItem('app_token','owner-secret')});await p.evaluate(()=>openSettings('connection'));
       await p.waitForFunction(()=>document.querySelector('#acct-create')&&document.querySelector('#acct-list .acct-inv'));
       box=await p.evaluate(()=>document.querySelector('#acct-box').innerText.replace(/\s+/g,' '));
-      ok(/Connected as the owner/.test(box)&&/Invite testers/.test(box)&&/Tess/.test(box)&&/Outfit photos today: \d of 1/.test(box),`the owner sees "Invite testers" and each tester\'s use today (${vp.width}px)`);
+      ok(/Connected as the owner/.test(box)&&/Invite testers/.test(box)&&/Tess/.test(box)&&/Photo readings today: \d of 1/.test(box),`the owner sees "Invite testers" and each tester\'s use today (${vp.width}px)`);
       await p.fill('#acct-name','Sam');await p.click('#acct-create');await p.waitForFunction(()=>document.querySelector('#acct-link-url'));
       const link=await p.evaluate(()=>({u:document.querySelector('#acct-link-url').value,n:document.querySelectorAll('#acct-list .acct-inv').length,
         h:[...document.querySelectorAll('#acct-box button,#acct-box input')].map(e=>Math.round(e.getBoundingClientRect().height)),w:document.querySelector('#settings-modal').scrollWidth<=document.querySelector('#settings-modal').clientWidth}));

@@ -65,7 +65,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await stored(p,`s=>s.units==='${other}'`),'the units are stored');
     await next(p,'connect');
     const c0=await p.evaluate(()=>({link:!!document.querySelector('#su-link'),note:document.querySelector('#su-without').textContent,all:document.querySelector('#setup').textContent}));
-    ok(c0.link&&/works without/.test(c0.note)&&/by hand/.test(c0.note)&&/no automatic photo reading/.test(c0.note)&&/no outfit photos/.test(c0.note),'Connection, not connected: a field for the invite link, and it says the app works without it and what is then missing');
+    ok(c0.link&&/works without/.test(c0.note)&&/by hand/.test(c0.note)&&/no automatic photo reading/.test(c0.note)&&/no item pictures/.test(c0.note),'Connection, not connected: a field for the invite link, and it says the app works without it and what is then missing');
     ok(!/worker|cloudflare|token|endpoint/i.test(c0.all),'in plain words');
     await p.fill('#su-link','hello there');await p.click('#su-connect');
     await p.waitForFunction(()=>!!document.querySelector('#setup .su-err'));
