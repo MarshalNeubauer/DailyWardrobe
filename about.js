@@ -163,7 +163,7 @@ async function deleteMyData(server){
   location.reload()}
 
 /* ---- the page ---- */
-function renderAbout(){aboutShow();
+function renderAbout(){aboutShow();if(typeof homeAbout==='function')homeAbout();   // "Add to Home Screen", on an iPhone or iPad in a browser tab (kit.js)
   // the owner reads the feedback (below it) rather than sending it to someone: no "goes to the person who invited you"
   if($('#fb-help'))$('#fb-help').textContent='What works, what doesn’t, what is missing'+(typeof acctRole==='function'&&acctRole()==='owner'?'.':': it goes to the person who invited you.');
   if($('#fb-send'))$('#fb-send').disabled=!aboutConn();   // no connection: the button is off, with the reason under it
