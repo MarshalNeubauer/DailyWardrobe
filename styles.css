@@ -1089,4 +1089,4 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
    come down into the banner, which then cuts round it) */
 .fig.cb .wornbar{bottom:48px}
 .fig.cb .swstack.up{bottom:96px}
-.fig.cb.swopen .swstack.up{bottom:max(10px,min(58px,calc(54cqw - 232px)))}
+.fig.cb.swopen .swstack.up{bottom:max(10px,min(96px,calc(54cqw - 232px)))}   /* (stays where it was, above the banner, when the big swatch leaves room) */
