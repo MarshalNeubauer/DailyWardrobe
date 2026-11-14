@@ -116,7 +116,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
           const g=ASM_WATCH_GEO.suit,k=im.width/2048;g2={w:im.width,dial:[...x.getImageData(Math.round(g.cx*k),Math.round(g.cy*k),1,1).data].slice(0,3)}}
         else if(window.WDEBUG){const j=await asmJob(o2);let pg=null,wk=null;try{const r=await asmBuild(j);pg=r&&r.url?'ok '+r.url.length:'no url '+JSON.stringify(Object.keys(r||{}))}catch(e){pg='page error: '+(e&&e.message||e)}
           try{const r=await asmRun(j,true);wk=r&&r.url?'ok':'no url'}catch(e){wk='worker error: '+(e&&e.message||e)}gerr='job '+!!j+' watch '+!!(j&&j.watch)+' | page '+pg+' | worker '+wk}}catch(e){gerr=String(e&&e.message||e)}
-      return {before,after:asmCmUse(o),listed,size:r&&r.blob&&r.blob.size,mf:Object.keys(asmCmMfNow().keys).length,px,gold:{use:asmCmUse(o2),key:asmOutKey(o2)!==asmOutKey(o),job:!!asmWatchJob(o2,asmCmUse(o2)),pic:g2,err:gerr,bad:[...(typeof asmBad!=='undefined'?asmBad:[])].slice(0,3)}}});
+      return {before,after:asmCmUse(o),listed,size:r&&r.blob&&r.blob.size,mf:Object.keys(asmCmMfNow().keys).length,px,gold:{use:asmCmUse(o2),key:asmOutKey(o2)!==asmOutKey(o),job:!!asmWatchJob(o2,asmCmUse(o2)),pic:g2,err:gerr}}});
     const masterGets=seen.filter(x=>x[1]==='/render'&&x[3]===ck('suit','master'));
     ok(seen.length&&seen.every(x=>x[0]===code),`the page is connected as the tester (${seen.length} requests)`);
     ok(res.listed&&res.mf>0,`the tester's list names the owner's master and manifest, and the manifest is read (${res.mf} records in it)`);
