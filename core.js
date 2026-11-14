@@ -274,10 +274,17 @@ function mergeState(a,b){
   for(const it of [...(a.items||[]),...(b.items||[])]){const cur=items[it.id];if(!cur||stamp(it)>stamp(cur))items[it.id]=it}
   for(const id of Object.keys(items))if(tomb[id]&&tomb[id]>=stamp(items[id]))delete items[id];
   const cutoff=Date.now()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
-  const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];if(!cur||(d.updated||0)>(cur.updated||0))days[d.date]=d}
+  const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];if(!cur||(d.updated||0)>(cur.updated||0))days[d.date]=dayWins(cur,d);else days[d.date]=dayWins(d,cur)}
   const settings=a.settings&&b.settings?((a.settings.updated||0)>=(b.settings.updated||0)?a.settings:b.settings):(a.settings||b.settings||null);
   return {items:Object.values(items),tombstones:tomb,days:Object.values(days),settings};
 }
+/* of two copies of a day, the newer (n) wins, unless it is only the app's lock of the week (app.js lockUpcoming: lockOnly, base = the
+   version of the record it was built on) and the older (o) was changed after that version: then the older wins whole, with its own
+   lock or none, and the app locks the day again around it (2026-11-14: a phone two days behind locked Nov 17 on its old copy and its
+   newer stamp replaced the owner's pick made on another device). The same rule in worker.js mergeLite. */
+/* (when the older is itself only a lock, what counts is the version it was built on: two locks of one day don't override each other's
+   base, so the newer lock wins unless the older was built on a newer version) */
+const dayWins=(o,n)=>!o||o===n||!n.lockOnly?n:((o.lockOnly?o.base:o.updated)||0)>(n.base||0)?o:n;
 /* compact fingerprint of a snapshot, to tell whether a merge changed anything */
 function stateSig(s){
   s=s||{};const by=(arr,k,v)=>(arr||[]).map(x=>x[k]+':'+v(x)).sort().join(',');

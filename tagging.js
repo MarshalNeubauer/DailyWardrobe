@@ -52,10 +52,10 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,W,H);const ma=mean(a),mb=mean(b),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
       const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
       for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
-      it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);n++}
+      if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);n++}
     catch(e){console.warn('close-up not upgraded',it.id,e)}}
   try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
-  if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
   return n}
 
 /* item photos saved at 720 px before PH_MAX was raised (2026-11-13, the owner: "upgrade the main photo size stored as well"): on the device
@@ -76,10 +76,10 @@ async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V
       const ma=mean(ph),mb=mean(c),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
       const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
       for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
-      it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
+      if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
   try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
-  if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
   return n}
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
@@ -518,7 +518,7 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
   for(const it of items)if(it.patternSpec&&it.patternSpec.across&&it.sett&&it.sett.src==='claude+pixels'&&it.texture)try{
     const c=await canvasOf(it.texture),full=it.pbox?await canvasOf(await tagImgOf(it.id,it)||it.photo):null;
     const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
-    if(s&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
+    if(s&&stillCur(it)&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
   localStorage.setItem('spec_recolour','3');if(n)cache={};return n}
 /* Wardrobe editor: read it again from the kept sharp copy (or the close-up) */
 async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;

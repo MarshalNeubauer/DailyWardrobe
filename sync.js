@@ -46,6 +46,16 @@ function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'';
   if(last&&!/failed|turn on/i.test(st))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}${/^Syncing/.test(st)?' · syncing…':''}`;
   else el.textContent=st||(syncUrl()?'Not backed up yet.':'Not connected.')}
+/* ---- the first pull (2026-11-14): a connected device saves nothing at start-up until it has merged the backup once. On the owner's
+   phone, two days behind, the week's locks (stamped 07:00) and the one-time photo upgrade (82 items re-saved at 07:45) were written on
+   its old copy before it synced; stamped newest, they replaced a pick made on another device and 11 newer tags, and brought back 4
+   deleted items. Start-up writers (app.js: Today's locks and history, the upgrades, arrivals, a re-plan for new rules) run afterPull.
+   Not connected (no server, no code, an ended invitation): at once. A failed pull (offline) keeps them waiting until one succeeds. */
+let syncPulled=false;const pullWait=[];
+const syncNeedsPull=()=>{const t=localStorage.getItem('app_token');return !!(syncUrl()&&t&&localStorage.getItem('invite_ended')!==t)};
+const pulledYet=()=>syncPulled||!syncNeedsPull();
+function pullDone(){if(syncPulled)return;syncPulled=true;for(const f of pullWait.splice(0))try{f()}catch(e){console.warn(e)}}
+function afterPull(f){if(pulledYet())return Promise.resolve().then(f);return new Promise((ok,no)=>pullWait.push(()=>{try{ok(f())}catch(e){no(e)}}))}
 /* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
 async function syncNow(){
   if(syncRun){await syncRun.catch(()=>{});if(syncRun)await syncRun.catch(()=>{})}
@@ -97,10 +107,14 @@ async function syncLite(remote,local,url,token,inline){
   const now=mergeState(await applyMerged(mergeState(local,got),local),got),ix=remote.idx||{i:{},d:{},s:-1},tomb=remote.tombstones||{};
   // everything the backup holds must be here now; when not (storage cleared, a marker from another backup), ask for all of it
   const has=Object.fromEntries(now.items.map(i=>[i.id,stamp(i)])),hasD=Object.fromEntries(now.days.map(d=>[d.date,d.updated||0]));
-  const lacks=Object.entries(ix.i).some(([id,s])=>!(id in has?has[id]>=s:(now.tombstones[id]||0)>=s))||Object.entries(ix.d).some(([d,u])=>!(d in hasD)||hasD[d]<u)||(ix.s>0&&!(now.settings&&(now.settings.updated||0)>=ix.s));
+  // (a day the backup sent that this device kept its own, older copy of: core.js dayWins, an automatic lock that lost to a change it never
+  // saw. Not lacking: it is sent up below, and the worker's merge, by the same rule, keeps it)
+  const gotD=new Set((got.days||[]).map(d=>d.date)),keptD=d=>gotD.has(d.date)&&d.date in ix.d&&(d.updated||0)<ix.d[d.date];
+  const lacks=Object.entries(ix.i).some(([id,s])=>!(id in has?has[id]>=s:(now.tombstones[id]||0)>=s))||Object.entries(ix.d).some(([d,u])=>!(d in hasD)||(hasD[d]<u&&!gotD.has(d)))||(ix.s>0&&!(now.settings&&(now.settings.updated||0)>=ix.s));
   if(lacks&&!remote.all)return {again:{all:true}};
+  pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
-  const up={items:now.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:now.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]),
+  const up={items:now.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:now.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoring=false;return true}
@@ -132,16 +146,17 @@ async function syncOnce(){
       let q=quick?'?v='+encodeURIComponent(mark.v):'';
       if(lite){const s=all?null:since||(last&&last.v);q='?lite=1'+(s?'&since='+encodeURIComponent(s):'')+(quick?'&v='+encodeURIComponent(mark.v):'')}
       const r=await fetch(url+q,{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
-      if(r.status===403&&remote.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
+      if(r.status===403&&remote.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);pullDone();return false}
+      if(r.status===501)pullDone();   // the server keeps no backup (no KV): nothing this device could be behind
       if(!r.ok)throw new Error(remote.message||remote.error||'HTTP '+r.status);
-      if(quick&&remote.same){synced();return true}
+      if(quick&&remote.same){synced();pullDone();return true}
       if(remote.lite===1){const res=await syncLite(remote,local,url,token,inline);if(!res||res===true)return res;
         const a=res.again;if(a.all)all=true;if(a.since){since=a.since;all=false}if(a.legacy)lite=false;continue}
       if(++full>3)break;
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(merged,local),remote.data||{});
+      const now=mergeState(await applyMerged(merged,local),remote.data||{});pullDone();
       if(remote.data&&stateSig(now)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();return true}
       if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoring?{reason:'restore'}:{}),data:now})});   // data last: the server reads a large backup's few leading fields without parsing the whole

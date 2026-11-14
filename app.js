@@ -18,6 +18,12 @@ const atomic=async(store,key,fn)=>{const d=await db;return new Promise((ok,no)=>
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
+/* a start-up fix-up saves an item only while it is still the copy on screen: an edit or a sync may have replaced it meanwhile, and saving the
+   old copy (stamped newest) would undo that change (2026-11-14) */
+const stillCur=it=>items.find(x=>x.id===it.id)===it;
+/* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
+   pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
+const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
 const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
@@ -123,7 +129,7 @@ async function refreshSwatch(it){if(!FABRIC.includes(it.type))return;const src=i
     const tex=src!==it.photo;it.swatch=cropSwatch(c,1,.5,.5,tex&&it.primaryColor?colOf(it):null);it.swSrc=tex?'tex':'photo'}catch(e){console.warn('swatch not cut',e)}}
 /* once: items that already have a close-up get their swatch cut from it, lightness set from the tagged colour (tex_swatch2) */
 async function texSwatches(){if(localStorage.getItem('tex_swatch2')==='1')return 0;let n=0;
-  for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'){await put(it);n++}}
+  for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'&&stillCur(it)){await put(it);n++}}
   localStorage.setItem('tex_swatch2','1');if(n)cache={};return n}
 
 function updateSwatchParam(i, param, val){
@@ -484,7 +490,7 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
   const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
   try{const im=await imgOf(it.photo);it.photoSm=Math.max(im.naturalWidth,im.naturalHeight)<=PH_SM?it.photo:shrink(im,PH_SM).toDataURL('image/jpeg',.82);it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
-async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)){await put(it);n++}if(n)renderWardrobe();return n}
+async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
   return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
     (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" class="vfile" onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
@@ -709,7 +715,10 @@ function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
 const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 let swapMsg='';
-async function saveDay(rec,quiet){rec.updated=Date.now();dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
+async function saveDay(rec,quiet,auto){rec.updated=Date.now();if(!auto){delete rec.lockOnly;delete rec.base}dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
+/* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
+let todayPullWait=false;
+const whenPulled=f=>afterScripts(()=>typeof afterPull==='function'?afterPull(f):f());
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
   const T=todayDate(),tk=key(T),mine=dayRecs;let changed=false;
@@ -737,12 +746,12 @@ async function lockUpcoming(){
     // is put on the record before the write is awaited, so a lock never comes from a plan that is no longer the one on screen
     const k=key(d),o=planMonth(d.getFullYear(),d.getMonth())[k];if(!o||o.frozen||!SLOTS.some(s=>o[s]))continue;
     const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l))continue;
-    const rec={...(r||{date:k}),lock:l,updated:Date.now()};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
+    const rec={...(r||{date:k}),lock:l,updated:Date.now(),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
     await txs('days','readwrite',s=>s.put(rec))}
   if(n&&window.scheduleSync)scheduleSync()}
 /* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
 async function clearLocks(){const T=todayDate();let n=0;
-  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>T&&r.worn!==true){const c={...r};delete c.lock;await saveDay(c,true);n++}
+  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}   // (lockOnly: core.js dayWins)
   if(n&&window.scheduleSync)scheduleSync();return n}
 async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
@@ -1512,7 +1521,8 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();
-  if(items.length){recordDays(p).then(lockUpcoming);
+  if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordDays(p).then(lockUpcoming);
+    else if(!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (drawn again once the backup is merged, and recorded then)
   }
 }
 
@@ -1921,7 +1931,7 @@ function show(t){
   pageIn(t,from);
 }
 
-db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(checkArrivals).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()});afterScripts(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>smallPhotos()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+db.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')])).then(([r,d,st])=>{items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings={...settings,...st};applyCustom(settings.custom);checkPlanRules().then(()=>whenPulled(checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>smallPhotos()));if(queuedKeys().length){checkQueue();startQueueWatch()}afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
 
 /* (window.appReady also waits for every script to have run (afterDom; afterScripts waits for the load event, pictures too, and held it up 30 s once): on a slow load app.js's start-up finished while about.js
    was still to come, and a test read the page before about.js had shown its note after a restart)

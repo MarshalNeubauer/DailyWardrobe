@@ -1336,7 +1336,10 @@ function mergeLite(a, b) {
   for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; if (!cur || stampOf(it) > stampOf(cur)) items[it.id] = it; }
   for (const id of Object.keys(items)) if (tomb[id] && tomb[id] >= stampOf(items[id])) delete items[id];
   const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
-  const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; if (!cur || (d.updated || 0) > (cur.updated || 0)) days[d.date] = d; }
+  // (a newer copy that is only the app's lock of the week loses to an older copy changed after the version the lock was built on:
+  // core.js dayWins, 2026-11-14)
+  const dayWins = (o, n) => !o || o === n || !n.lockOnly ? n : ((o.lockOnly ? o.base : o.updated) || 0) > (n.base || 0) ? o : n;
+  const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; days[d.date] = !cur || (d.updated || 0) > (cur.updated || 0) ? dayWins(cur, d) : dayWins(d, cur); }
   const settings = a.settings && b.settings ? ((a.settings.updated || 0) >= (b.settings.updated || 0) ? a.settings : b.settings) : (a.settings || b.settings || null);
   return { items: Object.values(items), tombstones: tomb, days: Object.values(days), settings };
 }
