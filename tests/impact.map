@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	9e6a88751c80695a55a8
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -3289,6 +3290,7 @@ mannequin.test.js	wardrobe.js	<loaded>
 mannequin.test.js	watch/leather.jpg	<loaded>
 mannequin.test.js	watch/shirt-open.png	<loaded>
 mannequin.test.js	watch/shirt-tie.png	<loaded>
+mannequin.test.js	watch/suit.png	<loaded>
 mannequin.test.js	watch/vest.png	<loaded>
 masterspeed.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 masterspeed.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	isTester	loadAccount	rememberRole	renderAccountUI
@@ -6043,6 +6045,11 @@ settingsstay.test.js	tests/fixedplan.js	<any>
 settingsstay.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	belowBox	canPick	figureStage	hasOutfit	homeDay	offBtn	offOn	piecesBox	planFor	planMonth	planSnapUse	renderToday	slotLabel	slots	swApply	todayBtn	vestRow	wornBar	wornMarks	wornPill	wxPreload	zoomTarget
 settingsstay.test.js	ui.js	<loaded>	advClose	connNote	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 settingsstay.test.js	wardrobe.js	<loaded>
+settingsstay.test.js	watch/leather.jpg	<loaded>
+settingsstay.test.js	watch/shirt-open.png	<loaded>
+settingsstay.test.js	watch/shirt-tie.png	<loaded>
+settingsstay.test.js	watch/suit.png	<loaded>
+settingsstay.test.js	watch/vest.png	<loaded>
 setup.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 setup.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	connectFromLink	dropInviteHash	inviteParts	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 setup.test.js	add.js	<loaded>	checkArrivals	renderAdd
@@ -7196,6 +7203,8 @@ testerview.test.js	tests/fixedplan.js	<any>
 testerview.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	todayBtn	wornPill	wxPreload	zoomTarget
 testerview.test.js	ui.js	<loaded>	advClose	connNote	connSummary	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 testerview.test.js	wardrobe.js	<loaded>
+testerview.test.js	watch/leather.jpg	<loaded>
+testerview.test.js	watch/shirt-open.png	<loaded>
 testerview.test.js	watch/shirt-tie.png	<loaded>
 testerview.test.js	watch/suit.png	<loaded>
 testerview.test.js	watch/vest.png	<loaded>
