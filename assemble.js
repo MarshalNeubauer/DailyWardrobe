@@ -1269,7 +1269,7 @@ const asmQ=[];
 function asmWorker(){if(asmW!==null)return asmW;asmW=false;
   if(typeof Worker==='undefined'||window.ASM_NO_WORKER)return asmW;
   try{const w=new Worker('asm-worker.js'),st={w,ok:null,busy:null};
-    w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;if(!st.ok)asmWorkerDown();else asmPump();return}
+    w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;st.gl=!!d.gl;if(!st.ok)asmWorkerDown();else asmPump();return}
       clearTimeout(st.timer);const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump()};
     w.onerror=e=>{e.preventDefault&&e.preventDefault();asmWorkerDown()};
     asmW=st}catch(e){console.warn('no assembly worker',e)}
@@ -1287,7 +1287,10 @@ function asmStuck(st,t){if(asmW!==st||st.busy!==t)return;console.warn('assembly 
 /* is the picture work off the page (or still finding out)? the build-ahead runs only then */
 const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
 function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);
-  return new Promise((ok,no)=>{const t={id:++asmSeq,job,ok,no};if(front)asmQ.unshift(t);else asmQ.push(t);asmPump()})}
+  // (2026-11-14) a worker without WebGL2 (an iPhone before iOS 17 has OffscreenCanvas but no WebGL in a worker): a look the graphics chip
+  // covers is painted on the page's own (asm-gl.js asmGlOnPage), a fraction of a second; everything else still goes to the worker
+  if(typeof asmGlOnPage==='function'&&asmGlOnPage(job,st))return asmBuild(job).then(r=>{asmGlNote(r);return r});
+  return new Promise((ok,no)=>{const t={id:++asmSeq,job,ok:r=>{if(typeof asmGlNote==='function')asmGlNote(r);ok(r)},no};if(front)asmQ.unshift(t);else asmQ.push(t);asmPump()})}
 /* the outfit's assembled picture as a JPEG data URL, or null when it can't be made (yet): no master, a piece missing or one that
    came out wrong (asmBad), an outfit of another kind. Zones worked out on the way are kept (meta) */
 const asmBad=new Set();

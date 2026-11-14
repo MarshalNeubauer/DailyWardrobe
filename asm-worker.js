@@ -2,7 +2,7 @@
    its own decoder and encoder, since a worker has no <img> or <canvas>: photos are decoded with createImageBitmap and drawn on an
    OffscreenCanvas. One picture at a time, in the order they come. Without OffscreenCanvas it says so ({ready:false}) and the page
    builds the pictures itself. */
-importScripts('assemble.js','asm-color.js');
+importScripts('assemble.js','asm-color.js','asm-gl.js');   // (asm-gl.js: the looks the graphics chip covers are painted there, WebGL2 on an OffscreenCanvas)
 const ASM_CAN=typeof OffscreenCanvas!=='undefined'&&typeof createImageBitmap!=='undefined'&&typeof FileReaderSync!=='undefined';
 asmData=async(u,W)=>{const bm=await createImageBitmap(await (await fetch(u)).blob()),w=W||bm.width,c=new OffscreenCanvas(w,w),x=c.getContext('2d',{willReadFrequently:true});
   x.drawImage(bm,0,0,w,w);if(bm.close)bm.close();return x.getImageData(0,0,w,w)};
@@ -11,4 +11,4 @@ asmJpeg=async img=>{const c=new OffscreenCanvas(img.width,img.height);c.getConte
 let asmChain=Promise.resolve();
 onmessage=e=>{const {id,job}=e.data||{};
   asmChain=asmChain.then(async()=>{try{postMessage({id,res:await asmBuild(job)})}catch(err){postMessage({id,error:String(err&&err.message||err)})}})};
-postMessage({ready:ASM_CAN});
+postMessage({ready:ASM_CAN,gl:ASM_CAN&&asmGlProbe()});   // gl: WebGL2 here (without it the page paints the covered looks on its own, asmGlOnPage)

@@ -538,10 +538,29 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 - start-up reads only the key ranges it needs: `asmLoad` the `asm:out:` range, `loadRenders` (app.js) the `render:` range (`IDBKeyRange.bound(p, p with ':'→';', false, true)`); both used to read the whole meta store
 - the lighting's master-only part (`asmCmLightPrep`) is 16-bit (`ao`, `aob`, `rim` over `ASM_CM_U16`, `smb` over 40000 like the shading) and worked out with the setup and packed with it (`P.lx`, `ASM_CM_PACKV` 2): measured at 2048 on a computer, lighting 112 -> 56 MB, a master in memory 201 -> 145 MB, a picture from the kept setup 5.9 -> 3.1 s (no lighting to work out again: about 5 s less on a phone); the picture changed by at most one level in 735 of 12.6 M channel values
 
+### `asm-gl.js`
+
+- the colour-coded painter's per-look pass on the graphics chip (WebGL2; 2026-11-14, stage 1 of the port the owner approved after the iPhone bench: about 90 ms a look against 0.45-1.5 s on the CPU at 2048); loaded after asm-color.js on the page (index.html) and in asm-worker.js; in `ASSETS` in sw.js
+- routing: `asmCmBuild` first calls `asmGlTry(job, hit)` (hit from `asmCmSetup`, the master's setup now shared by both painters); it paints on the graphics chip when the look is covered and WebGL2 works, else returns null and the CPU painter paints exactly as before
+- coverage is one rule, `asmGlWhy(job, P)` ('' = covered, else why; `asmGlCovers` = not why): later stages extend it and the shader; without P it looks at the job only (the page's routing)
+- covered in stage 1: the `suit` master, cloth look on, a background picture, `job.size <= ASM_SIZE` (the PC's 2880 pre-build stays on the CPU), the jacket solid or a plain one- or two-colour twill (`asmTwillTex`, not herringbone/linen/tweed/bands/small figures), shirt and tie solid; solved cloth positions (`job.geoU/geoV`, #356) are followed as on the CPU (body through the stripe flow, sleeve parts 10..39 and lapels 40..59 as they are)
+- not covered yet (CPU): the vest, suit-open and shirt masters, herringbone, bands (pinstripes, windowpanes), tweed, linen, small figures, patterned shirts and ties (#359's solved tie positions 80/81 matter only once ties with patterns are covered)
+- the shared 32-bit hash rule: every random cloth detail goes through `asmH32` (a cell's two integers, `Math.imul` and `>>> 0`, which a shader's uint multiply reproduces bit for bit) and a detail read at a cloth position through `asmCellV`, which also fades a cell into its neighbour within `ASM_CELL_FADE` (.02 of a cell) of its edge, so CPU and GL agree; both are in asm-color.js and written in GLSL by `asmGlHashGlsl`
+- why the fade: the position comes from float64 maths on the CPU and float32 on the chip, and a hard cell edge between the two flipped the twill's fleck (iPhone: up to 8 levels on 13-18 of 4.2 M pixels; desktop D3D11: 11 levels on 316); with it, 2048 against the CPU: largest difference 1-2, no pixel over 2 (SwiftShader and an RTX 5090)
+- in asm-color.js the other hashes (lighting grain, background dither, stripe breakup, herringbone yarn/float/grain/mottle) go through `asmH32` too, bit-identical to before; only the twill/herringbone fleck uses `asmCellV` (its pictures changed slightly; the code hash, `asmCmCodeSig`, repainted them)
+- picture keys stay "look + code": a GL picture has the CPU picture's key; asm-gl.js is not in `asmCmCode` (a GL change must keep the two within 2 levels, which `tests/asmgl.test.js` enforces)
+- the worker says whether it has WebGL2 (`{ready, gl}`, `asmGlProbe`); without it (an iPhone before iOS 17) `asmRun` paints a covered look on the page's own WebGL2 (`asmGlOnPage`); everything else still goes to the worker
+- a lost context (`webglcontextlost`, or `isContextLost()` after painting): that look is painted on the CPU and the chip is tried again after `ASM_GL_RETRY_MS` (60 s); no WebGL2 at all is remembered (`asmGlNone`) for the session
+- the master's arrays are packed once per master (`asmGlPack`) and uploaded (`asmGlUpload`, about 210 MB of textures at 2048 with the background and the output, the packed copy let go after), the solved positions separately (`asmGlUploadGeo`, about 36 MB more); `asmGlTry` returns `{url, gl:true, ms}` and the CPU `{url, gl:false, ms}`
+- the switch: Settings → Outfit pictures → Advanced (owner only), "Graphics-chip painting" On (default) / Off (`asmGlUI`, `asmGlSet`, `localStorage.asm_gl` '0' = off on this phone); `asmCmJob` puts it in the job (`job.gl`, the worker has no localStorage); the line under it says how the last picture painted on this phone was made and how long it took (`asmGlNote` from `asmRun`)
+- `tests/asmgl.test.js`: a table of looks (`LOOKS`: jacket, shirt, tie, solved positions or not, painted on the chip or why not) each painted both ways at 512 in the test Chromium (SwiftShader), largest difference at most 2 and mean under 0.1; plus no WebGL2, a lost context and its retry, the job's switch, the page's routing, the real worker painting on its chip, and the Settings switch; stages 2-5 add rows
+- `lab/gl-bench.html` (the iPhone bench) now compares the live asm-color.js with the live asm-gl.js (the pinned pre-#356 copies are gone); `tests/labbench.test.js` asks for at most 2 levels
+
 ### `asm-worker.js`
 
 - the Web Worker that puts assembled pictures together (see `assemble.js`); in `ASSETS` in sw.js
 - it loads `asm-color.js` too
+- it loads `asm-gl.js` too, and its ready message says whether WebGL2 works in it (`gl`)
 
 ### `detect.js`
 

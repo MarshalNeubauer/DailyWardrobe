@@ -314,7 +314,7 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
     cloth[z]=c}
   const bg=renders[asmCmBgKey()];
   return {cm:kind,size:self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,rev:asmCmHash(keys.filter(k=>!gks.includes(k)).map(k=>renders[k].t||0).join(',')),master:renders[keys[0]].img,masks,parts,cloth,...geo,bg:bg?bg.img:null,bgt:bg?bg.t:0,
-    bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null}}
+    bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null,gl:typeof asmGlPref==='function'?asmGlPref():false}}   // (gl: this phone's graphics-chip switch, asm-gl.js; the worker has no localStorage)
 
 /* ---- the pixel work (page or worker): the colour-free part once per master (asmCmPrep), then each outfit (asmCmBuild) ---- */
 let asmCmMem=null;
@@ -507,13 +507,27 @@ function asmCmAt(T,u,v,o){const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*
 /* (the computer's pre-build, job.diskCache) a master's colour-free part is also saved in this browser's IndexedDB, so a restart reads it
    back in a few seconds instead of working it out again (about 15 s a master at 2880). Its key carries the source of the functions that
    make it, so a change to how it is worked out never reads an old one; a master's older parts are deleted when a new one is saved. */
+/* the one rule for random cloth details (2026-11-14, the WebGL port, asm-gl.js): every random detail of the painting goes through asmH32,
+   a cell's two integer coordinates hashed in 32-bit integer maths (Math.imul and >>> 0, which a shader's uint multiply reproduces bit for
+   bit), and a detail read at a cloth position goes through asmCellV, which also fades a cell's value into its neighbour's within
+   ASM_CELL_FADE of the cell's edge: the position comes out of float64 maths here and float32 on the graphics chip, and where the two land
+   either side of a cell edge a hard cell flipped (the twill's fleck: up to 8 levels on 13-18 of 4.2 M pixels on the owner's iPhone);
+   faded, the value moves by a hair instead. asm-gl.js writes the same two in GLSL (asmGlHashGlsl); a later cloth's random detail uses
+   them too, so the two painters keep agreeing */
+const ASM_CELL_FADE=.02;   // of a cell, each side of an edge (the value is half each cell's at the edge itself)
+const asmH32=(i,j,a,b)=>(Math.imul(i|0,a)^Math.imul(j|0,b))>>>0;
+/* the cell value (asmH32 % m, 0..m-1, as a float) at cloth position (u, v) in cells, faded over cell edges */
+function asmCellV(u,v,a,b,m){const i=Math.floor(u),j=Math.floor(v),fu=u-i,fv=v-j,F=ASM_CELL_FADE;
+  const di=fu<F?-1:fu>1-F?1:0,dj=fv<F?-1:fv>1-F?1:0,h00=asmH32(i,j,a,b)%m;if(!di&&!dj)return h00;
+  const wu=di<0?(F-fu)/(2*F):di>0?(fu-1+F)/(2*F):0,wv=dj<0?(F-fv)/(2*F):dj>0?(fv-1+F)/(2*F):0;
+  return (h00*(1-wu)+(asmH32(i+di,j,a,b)%m)*wu)*(1-wv)+((asmH32(i,j+dj,a,b)%m)*(1-wu)+(asmH32(i+di,j+dj,a,b)%m)*wu)*wv}
 const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(36)};
 /* (2026-11-14 audit) every function and constant the painting reads, so a change to any of them changes the keys by itself: a picture's
    key carries asmCmCodeSig (the job, the setup and the painting: asmCmJob, asmCmPrep, asmCmBuild and everything they call in assemble.js
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
@@ -552,7 +566,9 @@ async function asmCmUnpack(rec,job){if(!rec||!rec.meta||!rec.gz||typeof Decompre
       if(x&&typeof x==='object'&&Object.getPrototypeOf(x)===Object.prototype){const o={};for(const [k,v] of Object.entries(x))o[k]=back(v);return o}return x};
     const P=back(rec.meta);P.M=(await asmData(job.master,job.size)).data;return P}
   catch(e){console.warn('could not read the kept master',e);return null}}
-async function asmCmBuild(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+(job.rev||'')+'|'+job.size,   // (rev: every record's date: a mask uploaded again is a new setup)
+/* the master's colour-free part for a job, kept in memory (asmCmMem) and on disk, with its solved cloth positions: {key, P, lx, uv, gk};
+   shared by the CPU painter below and the graphics chip's (asm-gl.js) */
+async function asmCmSetup(job){const key=job.cm+'|'+job.mk+'|'+job.mt+'|'+(job.rev||'')+'|'+job.size,   // (rev: every record's date: a mask uploaded again is a new setup)
 keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-build gives each pool worker one master's looks, and a switch
             // reads the kept setup back (it kept four at 2880 in each of up to 16 workers: several GB)
   if(!asmCmMem||!asmCmMem.list)asmCmMem={list:[]};let hit=asmCmMem.list.find(e=>e.key===key);
@@ -566,7 +582,12 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
   // the master's solved cloth positions (asmGeoPrep), decoded once per master and maps (kept beside the setup, not packed with it: about
   // 36 MB of floats that don't compress, and the maps decode in well under a second)
   const gk=job.geoU?job.gt||'1':'';if(hit.gk!==gk){hit.uv=gk?await asmGeoPrep(job,hit.P):null;hit.gk=gk}
-  const P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
+  return hit}
+async function asmCmBuild(job){const hit=await asmCmSetup(job);
+  // (2026-11-14) a look the graphics chip covers (asm-gl.js asmGlCovers) is painted there, about ten times faster and within 2 levels
+  // of the picture below; anything else, no WebGL2, a lost context or the switch off (job.gl false) is painted here as before
+  if(job.gl!==false&&typeof asmGlTry==='function'){const r=await asmGlTry(job,hit);if(r)return r}
+  const t0=performance.now(),P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
   // the background picture at this size (kept while the same picture and size come back)
   let BG=null;if(job.bg&&P.bgShadow){const bk=job.bgt+'|'+S;if(!asmCmMem.bg||asmCmMem.bg.k!==bk)asmCmMem.bg={k:bk,d:(await asmData(job.bg,S)).data};BG=asmCmMem.bg.d}
   const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
@@ -582,14 +603,14 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
     if(z==='tie'&&LXP.tl&&LXP.tl[y]>=0){const w=LXP.tr[y]-LXP.tl[y];if(w>4){const u=((x-LXP.tl[y])/w-LI.tp)/LI.tsw;h+=LI.ts*tieK()*Math.exp(-u*u)*sl}}c[0]+=h;c[1]+=h;c[2]+=h;
     const d=Math.min(1,Math.max(0,1-s/.85)),l=Math.min(1,Math.max(0,(s-.95)/.5))*(1-x/S),y0=lum(c);
     c[0]*=1+LI.warm*d*.9-LI.cool*l*.5;c[1]*=1+LI.warm*d*.15;c[2]*=1-LI.warm*d*.9+LI.cool*l*1.2;const y1=lum(c);if(y1>0){const f=y0/y1;c[0]*=f;c[1]*=f;c[2]*=f}
-    const h1=((Math.imul(k,2246822519)^Math.imul(k>>>7,3266489917))>>>0)/4294967296,h2=((Math.imul(k+977,2654435761)^(k>>>3))>>>0)/4294967296,g=1+LI.grain*(h1+h2-1);c[0]*=g;c[1]*=g;c[2]*=g};
+    const h1=asmH32(k,k>>>7,2246822519,3266489917)/4294967296,h2=asmH32(k+977,k>>>3,2654435761,1)/4294967296,g=1+LI.grain*(h1+h2-1);c[0]*=g;c[1]*=g;c[2]*=g};
   let TIEK=null;const tieK=()=>TIEK!=null?TIEK:(TIEK=asmTieSheenK(cl.tie&&cl.tie.flat?lum(cl.tie.flat):1));   // the tie's sheen follows its own brightness (asmTieSheenK)
   const lookOf=f=>{const mx=Math.max(f[0],f[1],f[2]),mn=Math.min(f[0],f[1],f[2]),sat=mx>0?(mx-mn)/mx:0,y=lum(f);
     return {lift:LK.ymin*(1-LK.chroma*Math.min(1,sat/.7)),boost:1+LK.dk*Math.max(0,1-y/LK.dy)}};
   const lookBase=(b,e)=>{lb[0]=b[0];lb[1]=b[1];lb[2]=b[2];const y=lum(lb);if(y<e.look.lift){const d=e.look.lift-y;lb[0]+=d;lb[1]+=d;lb[2]+=d}
     const m=Math.max(lb[0],lb[1],lb[2]);if(m>LK.cmax){const f=LK.cmax/m;lb[0]*=f;lb[1]*=f;lb[2]*=f}return lb};
   const lookAfter=(c,s,z,x,y,plain,tw,bo)=>{
-    if(plain&&LK.grain&&z!=='shirt'){const u=x/ls,v=y/ls,h=((Math.imul(Math.floor((u+v)/2)|0,73856093)^Math.imul(Math.floor(v/3)|0,19349663))>>>0)%1024/512-1;
+    if(plain&&LK.grain&&z!=='shirt'){const u=x/ls,v=y/ls,h=asmH32(Math.floor((u+v)/2),Math.floor(v/3),73856093,19349663)%1024/512-1;   // (pixel cells: whole numbers at a phone's size, the same on the graphics chip)
       tw=1+LK.grain*bo*(.6*Math.cos(2*Math.PI*(u+v)/4)+.5*h);c[0]*=tw;c[1]*=tw;c[2]*=tw}
     const t=Math.min(1,Math.max(0,(s-LK.s0)/(LK.s1-LK.s0))),sp=LK.sheen*t*t*(3-2*t)*(z==='shirt'?.25:1)*Math.max(0,1+LK.sk*(tw-1));c[0]+=sp;c[1]+=sp;c[2]+=sp;
     for(let q=0;q<3;q++){let v=c[q]<=0?0:Math.pow(c[q],1/2.2);v=v+LK.toe*Math.pow(1-v,3)-LK.sh*Math.pow(v,4);c[q]=Math.pow(Math.max(0,v),2.2)}};
@@ -627,7 +648,7 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
     for(let a=0;a<2;a++)for(let e=0;e<2;e++){const c=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);asmCmAt(T,c[0]/rep,c[1]/repv,cm)}
     let tw=1;const C=T.cloth,hb=C&&(C.kind==='herringbone'||C.kind==='twill');
     if(T.k!=null){const c=uvAt(k,x+.5,y+.5),si=Math.floor(c[0]/rep-T.loff+.5),tt=c[1]/(T.blen*lsc),j0=Math.floor(tt),f0=tt-j0,fs=f0*f0*(3-2*f0),
-        hh=j=>((Math.imul(si|0,374761393)^Math.imul(j|0,668265263))>>>0)%2048/1024-1,nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
+        hh=j=>asmH32(si,j,374761393,668265263)%2048/1024-1,nz=Math.max(0,1+T.brk*(hh(j0)*(1-fs)+hh(j0+1)*fs));
       for(let q=0;q<3;q++)cm[q]=4*T.g[q]+(cm[q]-4*T.g[q])*T.k*nz;sh=T.gain*Math.pow(sh,T.gam)}
     if(T.linen&&lin2||T.tweed&&td2||hb){const c=uvAt(k,x+.5,y+.5);
       // a tweed (asmSuitPaintTex's rule): sampled upright in the picture, its flecks in the second colour
@@ -635,20 +656,20 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
         if(T.c2&&td2.f[li])for(let q=0;q<3;q++)cm[q]=cm[q]*(1-T.fmix)+4*T.c2[q]*T.fmix}
       else if(T.linen&&lin2){const u=Math.floor(c[0]/lsc),v=Math.floor(c[1]/lsc);sh*=lin2.r[(((v%lin2.T)+lin2.T)%lin2.T)*lin2.T+(((u%lin2.T)+lin2.T)%lin2.T)]}
       else{const pitch=(C.pitch||4)*lsc,cw=C.cw?C.cw*lsc:0,off=C.off?C.off*lsc:0,col=C.kind==='herringbone'&&cw?Math.floor((c[0]-off)/cw):0,dir=col&1?-1:1,
-          h=(Math.imul(Math.floor((c[0]+dir*c[1])/2)|0,73856093)^Math.imul(Math.floor(c[1]/3)|0,19349663))>>>0;
+          fk=asmCellV((c[0]+dir*c[1])/2,c[1]/3,73856093,19349663,1024);   // the fleck's cell (2 x 3 px along the rib), faded at its edges (asmCellV)
         // (asmSuitPaintTex's rules: a plain twill averages its rib over four points a pixel, its own fleck, and a two-colour twill's ribs lean toward its second colour)
         const bo=C.brk&&(col&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(col/2):0;   // the herringbone's break (ASM_HB_BREAK): without it the ribs met at each column edge and read as jagged V's
         let ph=0;if(C.ss){for(let a=0;a<2;a++)for(let e=0;e<2;e++){const s=uvAt(k,x+(e+.5)/2,y+(a+.5)/2);ph+=Math.cos(2*Math.PI*(s[1]+dir*s[0]+bo)/pitch)/4}}else ph=Math.cos(2*Math.PI*(c[1]+dir*c[0]+bo)/pitch);
         if(C.soft&&cw){const fx=(c[0]-off)/cw-col,de=Math.min(fx,1-fx)*cw,sw=C.soft*ls;if(de<sw){const nb=fx<.5?col-1:col+1,d2=nb&1?-1:1,b2=C.brk&&(nb&1)?C.brk*pitch:C.pbrk?C.pbrk*pitch*Math.floor(nb/2):0,w=.5-.5*de/sw;
           ph=ph*(1-w)+Math.cos(2*Math.PI*(c[1]+d2*c[0]+b2)/pitch)*w}}
-        let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),t=(c[1]-dir*c[0])/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((Math.imul(r0|0,2246822519)^Math.imul(s|0,3266489917)^Math.imul(col|0,668265263))>>>0)%1024/1024;
+        let yn=1;if(C.yarn){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),t=(c[1]-dir*c[0])/(pitch*1.7),s0=Math.floor(t),f=t-s0,fs=f*f*(3-2*f),hv=s=>((asmH32(r0,s,2246822519,3266489917)^asmH32(col,0,668265263,0))>>>0)%1024/1024;
           yn=1-C.yarn/2+C.yarn*(hv(s0)*(1-fs)+hv(s0+1)*fs)}
-        if(C.float){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),hf=((Math.imul(r0|0,374761393)^Math.imul(col|0,668265263))>>>0)%4096/4096,s=(c[1]-dir*c[0])/(pitch*C.floatL)+hf*7,f=s-Math.floor(s),sn=Math.sin(Math.PI*f);yn*=1-C.float+C.float*sn*sn}
-        if(C.grain){const gs=.6*ASM_PX_MM*ls,gi=Math.floor(c[0]/gs),gj=Math.floor(c[1]/gs),gv=((Math.imul(gi|0,2654435761)^Math.imul(gj|0,2246822519))>>>0)%4096/4096;tw*=1;yn*=1-C.grain+2*C.grain*Math.pow(gv,1.6)}
-        let mo=0;if(C.mottle){const vn=(u,v)=>{const i0=Math.floor(u),j0=Math.floor(v),fu=u-i0,fv=v-j0,su=fu*fu*(3-2*fu),sv=fv*fv*(3-2*fv),hh=(i,j)=>((Math.imul(i|0,1597334677)^Math.imul(j|0,3812015801))>>>0)%2048/1024-1;
+        if(C.float){const r0=Math.floor((c[1]+dir*c[0]+bo)/pitch+.5),hf=asmH32(r0,col,374761393,668265263)%4096/4096,s=(c[1]-dir*c[0])/(pitch*C.floatL)+hf*7,f=s-Math.floor(s),sn=Math.sin(Math.PI*f);yn*=1-C.float+C.float*sn*sn}
+        if(C.grain){const gs=.6*ASM_PX_MM*ls,gi=Math.floor(c[0]/gs),gj=Math.floor(c[1]/gs),gv=asmH32(gi,gj,2654435761,2246822519)%4096/4096;tw*=1;yn*=1-C.grain+2*C.grain*Math.pow(gv,1.6)}
+        let mo=0;if(C.mottle){const vn=(u,v)=>{const i0=Math.floor(u),j0=Math.floor(v),fu=u-i0,fv=v-j0,su=fu*fu*(3-2*fu),sv=fv*fv*(3-2*fv),hh=(i,j)=>asmH32(i,j,1597334677,3812015801)%2048/1024-1;
           return (hh(i0,j0)*(1-su)+hh(i0+1,j0)*su)*(1-sv)+(hh(i0,j0+1)*(1-su)+hh(i0+1,j0+1)*su)*sv},m1=4*ASM_PX_MM*ls,m2=11*ASM_PX_MM*ls;mo=C.mottle*(.55*vn(c[0]/m1,c[1]/m1)+.45*vn(c[0]/m2+17.3,c[1]/m2+5.1))}
         const pr=C.thin?2*Math.pow((ph+1)/2,2)-.75:ph;
-        tw=1+mo+C.amp*pr*yn+(C.fleck!=null?C.fleck:.08)*((h%1024)/512-1);if(C.c2){const m=C.mix*(1+ph)/2;for(let e=0;e<3;e++)cm[e]=cm[e]*(1-m)+4*C.c2[e]*m}}}
+        tw=1+mo+C.amp*pr*yn+(C.fleck!=null?C.fleck:.08)*(fk/512-1);if(C.c2){const m=C.mix*(1+ph)/2;for(let e=0;e<3;e++)cm[e]=cm[e]*(1-m)+4*C.c2[e]*m}}}
     // a small woven figure (asmMicroTex: houndstooth, sharkskin, birdseye, nailhead): its thread grid along the cloth (uvAt), 4x4 points
     // a pixel (the cloth's direction from the pixel's own and its neighbours' positions: three lookups, not sixteen)
     if(T.wv){const W=T.wv,tp=W.thr*ASM_PX_MM*lsc,p0=uvAt(k,x,y),px=uvAt(k,x+1,y),py=uvAt(k,x,y+1),N=W.N;let v=0;
@@ -670,7 +691,7 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
     for(let zi=0;zi<names.length;zi++){const z=names[zi],a8=A[z][k];if(!a8)continue;const a=a8/255;ZC=z;
       // the background picture, its share of the pixel as it is (not the master's light: the master's wall was a flat colour whose
       // blotches showed through), darker by the figure's shadow, dithered a fraction of a level (an 8-bit picture enlarged bands)
-      if(z==='background'&&BG){const s=1-ASM_CM_BG_SHADOW*P.bgShadow[k]/255,h=((Math.imul(k,2654435761)>>>0)%1024)/1024;
+      if(z==='background'&&BG){const s=1-ASM_CM_BG_SHADOW*P.bgShadow[k]/255,h=(asmH32(k,0,2654435761,0)%1024)/1024;
         for(let q=0;q<3;q++){const v=BG[j+q],lo=L[v],hi=L[v<255?v+1:255];c[q]=(lo+(hi-lo)*h)*s}r+=a*c[0];g+=a*c[1];b+=a*c[2];continue}
       if(KEEP.has(z)){const K=P.keep[z];let i=-1;if(a8<CLEAN){let lo=0,hi=K.I.length-1;while(lo<=hi){const m=(lo+hi)>>1,v=K.I[m];if(v===k){i=m;break}if(v<k)lo=m+1;else hi=m-1}}if(i<0){c[0]=L[M[j]];c[1]=L[M[j+1]];c[2]=L[M[j+2]]}else{c[0]=K.C[3*i];c[1]=K.C[3*i+1];c[2]=K.C[3*i+2]}
         if(z==='skin'&&c[2]>c[0]*.92)c[2]=c[0]*.92;   // skin is never bluer than red: its edge beside the button read purple (the button smudge)
@@ -722,7 +743,7 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
   let img=new ImageData(o,S,S);
   if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
     x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(big,0,0,ASM_SIZE,ASM_SIZE);img=x.getImageData(0,0,ASM_SIZE,ASM_SIZE)}
-  return {url:await asmJpeg(img)}}
+  const ms=Math.round(performance.now()-t0);return {url:await asmJpeg(img),gl:false,ms}}   // (gl, ms: which painter and how long, for Settings' line, asmGlNote)
 
 /* ---- Today: the colour-coded way of asmEnsure / asmPrebuildOne ---- */
 /* a look the computer hasn't built: when this phone first saw it missing, and whether that is long enough ago to paint it here */
@@ -747,7 +768,7 @@ async function asmCmPrebuild(o){const kind=asmCmKind(o);if(!kind||!await asmCmGe
    "Painted plain" with the other pieces waiting for a reading) */
 function asmCmUI(){const grp=$('#asm-group');if(!grp)return;let b=$('#cm-box');if(!b){b=document.createElement('div');b.id='cm-box';b.className='sgroup';grp.appendChild(b)}
   b.innerHTML=`<div class="slabel">Pictures ahead</div><p class="shelp" id="cm-status" role="status"></p>`;
-  asmGapUI();asmCmStatus()}
+  asmGapUI();asmCmStatus();if(typeof asmGlUI==='function')asmGlUI(b)}
 /* the workdays of the next ASM_AHEAD days painted on a colour-coded master: how many looks, how many the computer has built (the
    worker's list, asmListGet: built pictures are uploaded under their look's key) and how many this phone holds; and when the list
    was read. The worker's list has no dates, so "checked" is when this phone asked, not when the computer last built */

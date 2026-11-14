@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(J.options.size===1024&&o&&o.looks.length===4,`results for the four looks at 1024 (${o?o.looks.map(l=>l.name).join(', '):'none'})`);
     ok(o&&o.looks.every(l=>l.cpu>0),'every look timed on the CPU ('+(o?o.looks.map(l=>l.cpu).join(', '):'')+' ms)');
     const gl=[J.worker,J.page].filter(x=>x&&x.looks).flatMap(x=>x.looks).filter(l=>l.gl!=null);
-    ok(gl.length?gl.every(l=>l.diff&&l.diff.max<=16):!!((J.worker&&J.worker.glWhy)||(J.page&&J.page.glWhy)),gl.length?`GL painted and compared (largest difference ${Math.max(...gl.map(l=>l.diff.max))})`:'no WebGL here: the bench says why ('+((J.page&&J.page.glWhy)||(J.worker&&J.worker.glWhy))+')');
+    ok(gl.length?gl.every(l=>l.diff&&l.diff.max<=2):!!((J.worker&&J.worker.glWhy)||(J.page&&J.page.glWhy)),gl.length?`GL painted and compared (largest difference ${Math.max(...gl.map(l=>l.diff.max))})`:'no WebGL here: the bench says why ('+((J.page&&J.page.glWhy)||(J.worker&&J.worker.glWhy))+')');
     ok(!J.errors.length,'no errors in the results: '+J.errors.join('; '));
     ok(await p.$$eval('#pics canvas',c=>c.length)>=4,'the pictures are shown');
     ok((await p.$$eval('#table tbody tr',r=>r.length))===4,'the results table has a row per look');
