@@ -3,11 +3,11 @@
    bench in a Web Worker (lab/gl-bench-run.js), and on the page thread when the Worker has no WebGL, then shows the results with a
    "Copy results" button. Nothing is sent anywhere and nothing heavy runs before Start is tapped. */
 /* global asmCmKey, asmCmBgKey, asmCmJob, glbRun, GLB_WORKER_SRC, GLB_APP_VERSION, glbErrors, items:writable */
-const GLB_VER='2026-11-14.1';
-/* the CPU painter compared against: asm-color.js as it was when asm-gl.js was ported (66b6295, before PR #356's solved cloth positions),
-   kept here as lab/asm-color-pr355.js, so a later change to the app's painter never shows up as a GL difference. (The suit fixtures have
-   no solved-position maps, so #356's painter draws them the same anyway.) */
-const GLB_PAINTER='asm-color.js at 66b6295 (pre-#356, the code asm-gl.js was ported from)';
+const GLB_VER='2026-11-14.2';
+/* the CPU painter compared against: the app's own asm-color.js against the app's own asm-gl.js (since stage 1 of the port, both from main:
+   their random cloth details share one 32-bit hash, asmH32 / asmCellV, so they agree within 2 levels; before, the bench pinned a copy of
+   asm-color.js from 66b6295 beside the prototype asm-gl.js of PR #355) */
+const GLB_PAINTER='asm-color.js from main (the app\'s CPU painter)';
 const GLB_FIX=['master.jpg','mask-background.png','mask-dark.png','mask-jacket.png','mask-shirt.png','mask-skin.png','mask-tie.png','mask-watch.png','part-lapelL.png','part-lapelR.png','part-sleeveL.png','part-sleeveR.png'];
 const GLB_LS='dw_lab_glbench_run';   // this page's own note of a run in progress (a run that kills the tab is reported at the next load)
 var renders={};   // asm-color.js reads the masters from the app's `renders` (app.js, not loaded here)
@@ -44,7 +44,7 @@ function glbShowDevice(){const d=GLB_DEV,p=GLB_PROBE,rows=[['Browser',d.ua],['Pa
     ['Worker WebGL2 (OffscreenCanvas)',p?(p.webgl2?glbYes(1)+' '+glbEsc(p.renderer)+', max texture '+p.maxTex:glbYes(0)+(p.err?' '+glbEsc(p.err):'')):'checking…'],
     ['Pixel ratio',d.dpr],['Cores (hardwareConcurrency)',d.cores==null?'not given':d.cores],
     ['performance.memory',d.memory?`limit ${d.memory.jsHeapSizeLimitMB} MB, used ${d.memory.usedJSHeapSizeMB} MB`:'not available (Safari has none)'],
-    ['App scripts',glbEsc(GLB_APP_VERSION||'?')+' (from main, past the app’s offline cache); the CPU painter pinned to '+GLB_PAINTER]];
+    ['App scripts',glbEsc(GLB_APP_VERSION||'?')+' (from main, past the app’s offline cache); the CPU painter: '+GLB_PAINTER]];
   glb$('device').innerHTML=rows.map(([k,v])=>`<div class="kv"><span>${glbEsc(k)}</span><span>${k==='Browser'?glbEsc(v):v}</span></div>`).join('')}
 
 /* ---- the looks: the suit fixtures as the app's records, a stand-in background, four outfits ---- */
@@ -89,7 +89,7 @@ function glbInWorker(o){return new Promise(ok=>{let w,done=false,last=Date.now()
 async function glbOnPage(o){try{return await glbRun(o,p=>glbProgress('Page thread',p))}catch(e){return {error:String(e&&e.message||e)}}}
 
 async function glbStart(){if(glbBusy)return;glbBusy=true;
-  const S=+document.querySelector('input[name=size]:checked').value,runs=+glb$('runs').value,half=glb$('half').checked,alsoPage=glb$('alsopage').checked;
+  const S=+document.querySelector('input[name=size]:checked').value,runs=+glb$('runs').value,half=false,alsoPage=glb$('alsopage').checked;
   for(const el of document.querySelectorAll('#opts input,#opts select,#start'))el.disabled=true;
   glb$('results').hidden=true;glb$('progress').hidden=false;glb$('log').innerHTML='';glb$('bar').style.width='0%';
   const t0=Date.now(),tick=setInterval(()=>{const s=Math.round((Date.now()-t0)/1000);glb$('elapsed').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`},1000);

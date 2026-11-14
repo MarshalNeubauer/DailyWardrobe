@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
 <title>GL Painter Bench</title>
-<!-- DailyWardrobe lab page (not part of the app: not in index.html, not in sw.js's ASSETS). Times the WebGL2 painter prototype
-     (PR #355, lab/asm-gl.js) against the CPU painter on this device. No analytics, nothing is sent anywhere: the only requests are
+<!-- DailyWardrobe lab page (not part of the app: not in index.html, not in sw.js's ASSETS). Times the app's WebGL2 painter
+     (asm-gl.js) against its CPU painter (asm-color.js) on this device. No analytics, nothing is sent anywhere: the only requests are
      this repo's own files. -->
 <style>
 :root{--bg:#f6f4f0;--card:#fff;--fg:#1d1d1f;--mute:#6b6b70;--line:#dedad3;--acc:#1f4f8f;--accfg:#fff;--ok:#1d7a3a;--bad:#b3261e;--barbg:#e7e3dc}
@@ -58,7 +58,6 @@ textarea{width:100%;height:220px;font:12px/1.35 ui-monospace,Menlo,Consolas,mono
 <label><input type="radio" name="size" value="2048" checked> 2048 px (as the app paints)</label>
 <label><input type="radio" name="size" value="1024"> 1024 px (lighter; use it if 2048 fails)</label>
 <label>Runs per look <select id="runs"><option>5</option><option>3</option><option>1</option></select></label>
-<label><input type="checkbox" id="half"> Half-float texture for the kept zones (less GPU memory)</label>
 <label><input type="checkbox" id="alsopage"> Also time GL on the page thread</label>
 </div>
 <p class="note">Keep the screen on and Safari in front while it runs. Nothing heavy runs before you tap Start.</p>
@@ -91,8 +90,8 @@ var glbErrors=[];
    current files, whatever app version this phone has cached; run in order on the page, and joined into the Worker's one script */
 var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
 (async function(){
-  var PAGE=['../core.js','../detect.js','../draw.js','../assemble.js','asm-color-pr355.js','asm-gl.js','gl-bench-run.js','gl-bench.js'];
-  var WORKER=['../assemble.js','asm-color-pr355.js','asm-gl.js','gl-bench-run.js'];
+  var PAGE=['../core.js','../detect.js','../draw.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js','gl-bench.js'];
+  var WORKER=['../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js'];
   try{
     var src={};
     await Promise.all(PAGE.map(async function(u){var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+': HTTP '+r.status);src[u]=await r.text()}));

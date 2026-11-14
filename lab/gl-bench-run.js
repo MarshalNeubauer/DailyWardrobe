@@ -1,8 +1,8 @@
 /* DailyWardrobe lab (not part of the app): the WebGL2 painter bench's runner (lab/gl-bench.html). It runs in the bench's Web Worker
    (put together by the page from ../assemble.js, ../asm-color.js, asm-gl.js and this file) or on the page thread: the suit master's
-   setup once, then every look painted on the CPU (asmCmBuild) and on the GPU (asm-gl.js), timed, and the two pictures compared pixel
-   by pixel. Nothing is sent anywhere: the results go back to the page only. Adapted from tools/asm-gl-bench.js (PR #355). */
-/* global asmCmPrep, asmCmLightPrep, asmCmBuild, asmCmCanvas, asmGlContext, asmGlProgram, asmGlRenderer, asmGlPack, asmGlUpload, asmGlPaint, asmGlCan, asmJpeg:writable, asmData:writable, asmCmMem:writable, asmGlState:writable, FileReaderSync */
+   setup once, then every look painted on the CPU (asmCmBuild with job.gl false) and on the GPU (asm-gl.js), timed, and the two pictures
+   compared pixel by pixel. Nothing is sent anywhere: the results go back to the page only. Adapted from tools/asm-gl-bench.js (PR #355). */
+/* global asmCmPrep, asmCmLightPrep, asmCmBuild, asmCmCanvas, asmGlContext, asmGlProgram, asmGlRenderer, asmGlPack, asmGlUpload, asmGlUploadGeo, asmGlPaint, asmGlWhy, asmJpeg:writable, asmData:writable, asmCmMem:writable, asmGlState:writable, FileReaderSync */
 const GLB_IN_WORKER=typeof document==='undefined';
 /* WebGL2 for the bench: the app prototype's own (an OffscreenCanvas), else a page canvas (iOS below 17 has no WebGL in OffscreenCanvas) */
 function glbContext(S){let gl=null,kind='OffscreenCanvas';try{gl=asmGlContext(S)}catch{gl=null}
@@ -39,9 +39,9 @@ async function glbRun(o,prog){
           gl.canvas.addEventListener('webglcontextcreationerror',e=>out.errors.push('webglcontextcreationerror: '+(e.statusMessage||'')))}
         try{G={gl,S,prog:asmGlProgram(gl),renderer:out.renderer};asmGlState=G;out.glInit=r1(T()-t)}catch(e){out.glWhy='shader: '+glbErr(e);G=null}}
       await step(G?'GL ready ('+out.glInit+' ms)':'GL not available: '+out.glWhy);
-      if(G){const why=asmGlCan(j0,P);if(why){out.glWhy='the prototype falls back for this master: '+why;G=null}}
+      if(G){const why=asmGlWhy(j0,P);if(why){out.glWhy='the graphics chip leaves this look to the CPU: '+why;G=null}}
       if(G){try{t=T();const pk=asmGlPack(P);out.glPack=r1(T()-t);await step('GL pack '+out.glPack+' ms');
-          t=T();asmGlUpload(G,pk,{half:!!o.half});G.key=key;out.glUpload=r1(T()-t);const ge=glbGlErr(G.gl);if(ge)throw new Error('upload: '+ge);if(lost)throw new Error(lost);await step('GL upload '+out.glUpload+' ms');
+          t=T();asmGlUpload(G,pk);asmGlUploadGeo(G,null);G.key=key;out.glUpload=r1(T()-t);const ge=glbGlErr(G.gl);if(ge)throw new Error('upload: '+ge);if(lost)throw new Error(lost);await step('GL upload '+out.glUpload+' ms');
           t=T();await asmGlPaint(G,j0,P);out.glFirst=r1(T()-t);const ge2=glbGlErr(G.gl);if(ge2)throw new Error('first look: '+ge2);if(lost||G.gl.isContextLost())throw new Error(lost||'WebGL context lost');
           out.glSetup=r1(out.glInit+out.glPack+out.glUpload+out.glFirst);await step('GL first look '+out.glFirst+' ms')}
         catch(e){out.glWhy='GL setup failed: '+glbErr(e);out.errors.push(out.glWhy);G=null}}}
@@ -50,11 +50,11 @@ async function glbRun(o,prog){
     // every look: the CPU, then the GPU, then the difference
     for(const job of jobs){const r={name:job.name};out.looks.push(r);
       try{
-        if(cpuRuns>0){const cpu=[],cpuJ=[];cap=null;for(let i=0;i<cpuRuns;i++){t=T();await asmCmBuild(job);cpu.push(T()-t-jt);cpuJ.push(jt);await step(job.name+': CPU run '+(i+1)+'/'+cpuRuns+' '+Math.round(cpu[i])+' ms')}
+        if(cpuRuns>0){const cpu=[],cpuJ=[];cap=null;for(let i=0;i<cpuRuns;i++){t=T();await asmCmBuild({...job,gl:false});cpu.push(T()-t-jt);cpuJ.push(jt);await step(job.name+': CPU run '+(i+1)+'/'+cpuRuns+' '+Math.round(cpu[i])+' ms')}
           r.cpu=med(cpu);r.cpuJpeg=med(cpuJ);r.cpuAll=cpu.map(v=>Math.round(v))}
         const cpx=cap&&cap.data;cap=null;
         if(cpx&&TH)thumbs[job.name+'|cpu']=await glbThumb(cpx,S,TH);
-        if(G){const why=asmGlCan(job,P);r.path=why?'falls back: '+why:'GL';
+        if(G){const why=asmGlWhy(job,P);r.path=why?'falls back: '+why:'GL';
           if(!why){const gl=[];let px=null;
             for(let i=0;i<runs;i++){t=T();px=await asmGlPaint(G,job,P);gl.push(T()-t);const ge=glbGlErr(G.gl);if(ge)throw new Error('GL paint: '+ge);if(lost||G.gl.isContextLost())throw new Error(lost||'WebGL context lost');
               await step(job.name+': GL run '+(i+1)+'/'+runs+' '+gl[i].toFixed(1)+' ms')}
