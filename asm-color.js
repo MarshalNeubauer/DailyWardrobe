@@ -264,7 +264,7 @@ const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOu
 const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc/lg'+ASM_LEGV:h==='tile'?'/lg'+ASM_LEGV:''};   // (/lg: the lines follow the legs, asmLegsPrep)
 const ASM_LEGV=1;
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV+'.'+asmCmCodeSig()],rev=asmCmRev(k);if(rev)s.push('mf:'+rev);   // the painter's code and the master's record dates (asmCmCode, asmCmRev)
-  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i))}
+  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i)+asmCrTag(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
   if(ASM_CM_BTN[k])s.push('btn'+ASM_CM_BTNV);   // the masters whose shirt buttons are drawn: a new look of them paints those looks again
   const bg=renders[asmCmBgKey()];if(bg)s.push('bg:'+bg.t+'/'+ASM_CM_BG_SHADOW);
@@ -310,6 +310,73 @@ async function asmCmMfApply(keys){let n=0;
   for(const [k,t] of Object.entries(keys)){const r=renders[k];if(r&&(+r.t||0)<+t){delete renders[k];asmTried.delete(k);n++;try{await txs('meta','readwrite',st=>st.delete('render:'+k))}catch{}}}
   asmCmMf={keys};try{localStorage.setItem(ASM_CM_MF,JSON.stringify(asmCmMf))}catch{}
   if(n)console.info(`manifest: ${n} master photo${n===1?'':'s'} uploaded again, downloading them afresh`);return n}
+
+/* ---- a figured shirt's cloth as one whole repeat cut from its close-up (2026-11-14) ----
+   (the owner, from 2048 mockups of his white shirt with grey figures: "Move the repeat finder into the app... any dobby and other figured
+   shirts with a close up", then, after sheets of all nine that qualify, "Build it with the strict confidence test") The close-up cloth
+   of the suits (asmCuTile1) blends a square's edges to make it repeat, which cuts and doubles a regular figure; here the pattern's own
+   repeat is found and exactly one cell is cut, so it tiles with no seam:
+   - asmCrFind: on a copy ASM_CR.W wide, the cloth's light with the photo's lighting divided out; its self-similarity over the middle
+     window at every shift up to W/ASM_CR.D; the two shortest strong, non-parallel peaks are the repeat's steps (a brick layout gives a
+     rectangle two cells tall); the steps are nudged until the cells around the middle, laid over each other, are sharpest
+   - the confidence test: per, the share of the cloth's contrast that the repeat explains (the averaged cell's variance over the
+     cells' own), and sd, how strong the averaged cell is; under ASM_CR.per or ASM_CR.sd there is no tile and the shirt is drawn as before
+     (measured on his nine, per / sd: the grey-figured dobby .89 / .42; White dobby .50 / .07, Lavender dobby .35 / .11, Light blue dobby
+     .30 / .05, White woven .25 / .13, Check .04 / .02, two with no repeat at all: on tone-on-tone weaves the finder locks onto threads)
+   - asmCrTile1: the cells around the middle averaged into one (sampled along the pattern's own rows and columns, so it is straightened
+     and the camera's angle averages out), each colour against the photo's lighting; the ground (the lighter part) becomes the tagged
+     colour and the figure keeps its own colour against it; life size, never finer than ASM_TEX_MIN_MM
+   - printed patterns (a micro-print lost its dots to the weave under them), herringbone, twill and end-on-end shirts (their own painters
+     and the owner's sizes of 2026-11-12) and band readings are left alone (asmCrWants)
+   The tile is an ordinary shirt tile ({t,TW,TH,mm,fine}), so both painters paint it as they paint asmCmTile's */
+const ASM_CR={W:480,flat:12,D:7,win:.5,peak:.25,nc:3,Q:20,TW:64,ground:.45,per:.6,sd:.12,v:1};
+const asmCrWants=i=>{if(!i||i.type!=='shirt'||!i.texture)return false;const s=typeof usableSett==='function'?usableSett(i):null;
+  return asmCmRoute(i,'shirt').how==='tile'&&!(s&&s.bands)&&!/herringbone|twill|end-on-end|print|foulard|polka|dot/i.test(String(i.pattern||'')+' '+(patBase(i.pattern)||''))};
+const asmCrTag=(z,i)=>z==='shirt'&&asmCrWants(i)?'/cr'+ASM_CR.v+'.'+i.texture.length+i.texture.slice(-12).replace(/[^A-Za-z0-9]/g,''):'';
+/* the repeat of a cloth in RGBA pixels d (W x H): {ax,ay,bx,by (the two steps, px), half (a brick layout), per, sd, peaks, R,G,B,Yb} or null */
+function asmCrFind(d,W,H){const L=ASM_LIN,N=W*H,R=new Float32Array(N),G=new Float32Array(N),B=new Float32Array(N),Y=new Float32Array(N);
+  for(let k=0;k<N;k++){R[k]=L[d[4*k]];G[k]=L[d[4*k+1]];B[k]=L[d[4*k+2]];Y[k]=.2126*R[k]+.7152*G[k]+.0722*B[k]}
+  const cx=v=>v<0?0:v>W-1?W-1:v,cy=v=>v<0?0:v>H-1?H-1:v;
+  const box=(a,r)=>{const t=new Float32Array(N),q=new Float32Array(N);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let k=-r;k<=r;k++)s+=a[y*W+cx(x+k)];t[y*W+x]=s/(2*r+1)}
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let k=-r;k<=r;k++)s+=t[cy(y+k)*W+x];q[y*W+x]=s/(2*r+1)}return q};
+  let Yb=Y;for(let j=0;j<3;j++)Yb=box(Yb,Math.round(W/ASM_CR.flat));const F=new Float32Array(N);for(let k=0;k<N;k++)F[k]=Y[k]/(Yb[k]||1)-1;
+  const D=Math.round(W/ASM_CR.D),M=Math.round(Math.min(W,H)*ASM_CR.win),x0=(W-M)>>1,y0=(H-M)>>1,AW=2*D+1,A=new Float32Array(AW*(D+1));
+  for(let dy=0;dy<=D;dy++)for(let dx=-D;dx<=D;dx++){let s=0;for(let y=y0;y<y0+M;y+=2){const r0=y*W,r1=cy(y+dy)*W;for(let x=x0;x<x0+M;x+=2)s+=F[r0+x]*F[r1+cx(x+dx)]}A[dy*AW+dx+D]=s}
+  const a0=A[D];if(!(a0>0))return null;const at=(dx,dy)=>dy<0?at(-dx,-dy):(Math.abs(dx)>D||dy>D?-1:A[dy*AW+dx+D]/a0),pk=[];
+  for(let dy=0;dy<D;dy++)for(let dx=-D+1;dx<D;dx++){if(dx*dx+dy*dy<16||(dy===0&&dx<0))continue;const v=at(dx,dy);if(v<ASM_CR.peak)continue;let ok=1;for(let j=-1;j<=1&&ok;j++)for(let i=-1;i<=1;i++)if((i||j)&&at(dx+i,dy+j)>v){ok=0;break}
+    if(ok){const px=(at(dx+1,dy)-at(dx-1,dy))/(2*(2*v-at(dx+1,dy)-at(dx-1,dy))||1),py=(at(dx,dy+1)-at(dx,dy-1))/(2*(2*v-at(dx,dy+1)-at(dx,dy-1))||1);pk.push({x:dx+Math.max(-.5,Math.min(.5,px)),y:dy+Math.max(-.5,Math.min(.5,py))})}}
+  pk.sort((p,q)=>Math.hypot(p.x,p.y)-Math.hypot(q.x,q.y));if(pk.length<2)return null;
+  let a=pk[0],b=pk.find(p=>Math.abs(p.x*a.y-p.y*a.x)/(Math.hypot(p.x,p.y)*Math.hypot(a.x,a.y))>.35);if(!b)return null;
+  if(Math.abs(a.y)>Math.abs(a.x)){const t=a;a=b;b=t}if(a.x<0)a={x:-a.x,y:-a.y};if(b.y<0)b={x:-b.x,y:-b.y};
+  const mx=W/2,my=H/2,nc=ASM_CR.nc,Q=ASM_CR.Q,nn=(2*nc+1)*(2*nc+1);
+  const samp=(arr,x,y)=>{x=x<0?0:x>W-1.001?W-1.001:x;y=y<0?0:y>H-1.001?H-1.001:y;const xi=x|0,yi=y|0,fx=x-xi,fy=y-yi,k=yi*W+xi;return (arr[k]*(1-fx)+arr[k+1]*fx)*(1-fy)+(arr[k+W]*(1-fx)+arr[k+W+1]*fx)*fy};
+  // the pile of cells: [the averaged cell's variance, the cells' own variance]
+  const pile=(ax,ay,bx,by)=>{let m1=0,m2=0,t1=0,t2=0;for(let v=0;v<Q;v++)for(let u=0;u<Q;u++){let s=0;for(let j=-nc;j<=nc;j++)for(let i=-nc;i<=nc;i++){const f=samp(F,mx+(i+u/Q)*ax+(j+v/Q)*bx,my+(i+u/Q)*ay+(j+v/Q)*by);s+=f;t1+=f;t2+=f*f}s/=nn;m1+=s;m2+=s*s}
+    const n=Q*Q,nt=n*nn;return [m2/n-(m1/n)*(m1/n),t2/nt-(t1/nt)*(t1/nt)]};
+  let P=[a.x,a.y,b.x,b.y],best=pile(P[0],P[1],P[2],P[3])[0];for(const st of [.3,.15,.07,.03])for(let pass=0;pass<3;pass++)for(let q=0;q<4;q++)for(const sg of [-1,1]){const T2=P.slice();T2[q]+=sg*st;const v=pile(T2[0],T2[1],T2[2],T2[3])[0];if(v>best){best=v;P=T2}}
+  const pv=pile(P[0],P[1],P[2],P[3]);let ax=P[0],ay=P[1],bx=P[2],by=P[3];const la2=ax*ax+ay*ay,sh=(bx*ax+by*ay)/la2,half=Math.abs(sh-Math.round(sh))>.25;
+  if(half){const s=Math.sign(sh-Math.round(sh))||1;bx=2*bx-s*ax;by=2*by-s*ay}{const r=Math.round((bx*ax+by*ay)/la2);bx-=r*ax;by-=r*ay}
+  return {ax,ay,bx,by,half,per:pv[1]>0?pv[0]/pv[1]:0,sd:Math.sqrt(Math.max(0,pv[0])),peaks:pk.length,R,G,B,Yb,samp}}
+const asmCrMem=new Map();
+function asmCrTile(i){if(!i||!i.texture||typeof document==='undefined')return Promise.resolve(null);const key=i.id+'|'+colOf(i)+'|'+i.texture.length+i.texture.slice(-12);let p=asmCrMem.get(key);
+  if(!p){if(asmCrMem.size>24)asmCrMem.clear();p=asmCrTile1(i).catch(()=>null);asmCrMem.set(key,p)}return p}
+/* the tile: one repeat (two cells of a brick layout) -> {t,TW,TH,mm,fine,cr} or null when no repeat is found or it is not sure enough;
+   all=true gives the tile whatever the confidence (the bench, the tests) */
+async function asmCrTile1(i,all){const L=ASM_LIN,im=new Image();im.src=i.texture;await im.decode();if(!im.naturalWidth||!im.naturalHeight)return null;
+  const W=Math.min(ASM_CR.W,im.naturalWidth),H=Math.max(8,Math.round(W*im.naturalHeight/im.naturalWidth)),cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const g=cv.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';g.drawImage(im,0,0,W,H);const f=asmCrFind(g.getImageData(0,0,W,H).data,W,H);if(!f)return null;
+  const cr={across:+Math.hypot(f.ax,f.ay).toFixed(2),down:+Math.hypot(f.bx,f.by).toFixed(2),of:W,brick:f.half,per:+f.per.toFixed(3),sd:+f.sd.toFixed(3),peaks:f.peaks};
+  if(!all&&!(f.per>=ASM_CR.per&&f.sd>=ASM_CR.sd))return null;
+  const la=Math.hypot(f.ax,f.ay),lb=Math.hypot(f.bx,f.by),TW=ASM_CR.TW,TH=Math.max(8,Math.min(512,Math.round(TW*lb/la))),n=TW*TH,t=new Float32Array(3*n),lum=new Float32Array(n),nc=ASM_CR.nc,nb=f.half?2:nc,mx=W/2,my=H/2;
+  for(let v=0;v<TH;v++)for(let u=0;u<TW;u++){let r=0,gg=0,bb=0,c=0;for(let j=-nb;j<=nb;j++)for(let ii=-nc;ii<=nc;ii++){const x=mx+(ii+u/TW)*f.ax+(j+v/TH)*f.bx,y=my+(ii+u/TW)*f.ay+(j+v/TH)*f.by;if(x<1||y<1||x>W-2||y>H-2)continue;
+      const l=f.samp(f.Yb,x,y)||1;r+=f.samp(f.R,x,y)/l;gg+=f.samp(f.G,x,y)/l;bb+=f.samp(f.B,x,y)/l;c++}
+    const k=v*TW+u;if(!c)c=1;t[3*k]=r/c;t[3*k+1]=gg/c;t[3*k+2]=bb/c;lum[k]=.2126*t[3*k]+.7152*t[3*k+1]+.0722*t[3*k+2]}
+  // the ground (the lighter part) becomes the tagged colour; the figure keeps its colour against it
+  const srt=Array.from(lum).sort((p,q)=>p-q),cut=srt[Math.floor(n*ASM_CR.ground)],gr=[0,0,0];let gn=0;for(let k=0;k<n;k++)if(lum[k]>=cut){gr[0]+=t[3*k];gr[1]+=t[3*k+1];gr[2]+=t[3*k+2];gn++}
+  const h=String(colOf(i)).replace('#',''),base=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]);
+  for(let k=0;k<n;k++)for(let q=0;q<3;q++)t[3*k+q]=Math.min(1,base[q]*t[3*k+q]/((gr[q]/gn)||1));
+  const mm=Math.max(ASM_TEX_MIN_MM,la/W*ASM_CLOSEUP_MM);cr.mm=+mm.toFixed(2);
+  return {t,TW,TH,mm,fine:true,cr}}
 
 /* ---- page side: the job (what the picture needs, as plain data the worker can take) ---- */
 const ASM_CM_SOFT={top:.3,bot:.3,shirt:.45};   // a swatch drawing's contrast on full-size cloth (toward its ground): jackets and trousers 30%, shirts 45%
@@ -473,7 +540,8 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
       else if(how==='paisley')c.tie=await asmPaisleyTile(i);
       // a shirt, or read trousers: one repeat of the app's drawing; anything else is its colour (the swatch's drawing of a fine weave,
       // tiled over a whole jacket, was a field of dots and dashes: the owner's light grey twill)
-      else if(how==='tile'){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T}
+      else if(how==='tile'){const T=await asmCmTile(i,z==='shirt'?'shirt':'bot');if(T)c.tile=T;
+        if(z==='shirt'&&asmCrWants(i)){const C=await asmCrTile(i);if(C)c.tile=C}}   // a figured shirt: one whole repeat from its close-up, when the finder is sure
     }catch(e){console.warn('cloth',z,e)}
     // a plain or finely woven suit, blazer or trousers with a close-up: a patch of the close-up is its cloth (asmCuTile)
     if((z==='jacket'||z==='waistcoat'||z==='trousers')&&asmCuWants(i,how)){const T=await asmCuTile(i);if(T){c.suit=T;delete c.tile}}
@@ -744,7 +812,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
