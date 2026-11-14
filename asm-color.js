@@ -141,7 +141,9 @@ function asmCmHandEdge(A,M,S,N){if(!A.skin||!A.shirt)return;const R=Math.max(2,M
   // the inside of the cuff beside the watch: the watch zone is a hull round the watch and took in the cuff's shaded inner face, which then
   // stayed the master's white under any coloured cuff. From the shirt's edge, watch pixels are shirt as far as the master stays smooth and
   // near-neutral (no step of ASM_CM_CUFF_STEP levels: the bracelet's and case's edges stop it), at most ASM_CM_CUFF_PX away
-  if(A.watch){const lv=k=>(M[4*k]+M[4*k+1]+M[4*k+2])/3,neu=k=>Math.max(M[4*k],M[4*k+1],M[4*k+2])-Math.min(M[4*k],M[4*k+1],M[4*k+2])<28,D=new Int16Array(N).fill(-1),mx=Math.round(ASM_CM_CUFF_PX*S/2048);let q=[];
+  // (2026-11-14, shirt-open's top links) and cool (blue >= red - 6): the cuff's white is cool, the bracelet's steel warm grey (red 10-25
+  // above blue); smooth near-neutral link faces next to the shirt were turned into shirt and painted in the shirt's colour
+  if(A.watch){const lv=k=>(M[4*k]+M[4*k+1]+M[4*k+2])/3,neu=k=>Math.max(M[4*k],M[4*k+1],M[4*k+2])-Math.min(M[4*k],M[4*k+1],M[4*k+2])<28&&M[4*k+2]>=M[4*k]-6,D=new Int16Array(N).fill(-1),mx=Math.round(ASM_CM_CUFF_PX*S/2048);let q=[];
     for(let k=S;k<N-S;k++)if(A.watch[k]>127&&neu(k)&&(A.shirt[k-1]>127||A.shirt[k+1]>127||A.shirt[k-S]>127||A.shirt[k+S]>127)){D[k]=0;q.push(k)}
     for(let d=0;d<mx&&q.length;d++){const nx=[];for(const k of q){const x=k%S,l=lv(k);for(const n of [k-1,k+1,k-S,k+S])if(n>=0&&n<N&&D[n]<0&&A.watch[n]>127&&Math.abs(n%S-x)<=1&&neu(n)&&Math.abs(lv(n)-l)<ASM_CM_CUFF_STEP){D[n]=d+1;nx.push(n)}}q=nx}
     for(let k=0;k<N;k++)if(D[k]>=0){A.shirt[k]=Math.min(255,A.shirt[k]+A.watch[k]);A.watch[k]=0}}
