@@ -2,7 +2,7 @@
 // own photo is never dropped. A tie with a close-up is sent without its photo, and the shirt's close-up goes in its place.
 // The watch (tested with the owner's Seiko, 2026-11-12): from references at the end of the list, words and a drawn three-hand watch the
 // generator drew a stock chronograph. Now the watch and its dial's enlargement go FIRST, as two references, turned as worn; the
-// enlargement is never trimmed; the drawing the generator edits carries the watch's own dial (figureSvg photo:true, figurePng).
+// enlargement is never trimmed. (The generator that edited the drawing is retired, 2026-11-14.)
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   try{
@@ -27,14 +27,11 @@ module.exports=async({ok,chromium,url})=>{
       const fall=outfitRefs({suitDay:true,top:null,shirt:null,tie:null,watch:{...wi,photo:null}}).refs[0]===pic;delete renders[itemKey(wi)];
       // what the worker keeps of a label (worker.js handleRender): it must arrive whole
       const cut=l=>String(l).replace(/[^\w ,.:()'-]/g,'').slice(0,160);
-      // the drawing for the generator: the watch's face is its own dial; Today's drawing keeps its drawn hands
-      const svgP=figureSvg(po,'q-',{photo:true,face:im}),svgT=figureSvg(po,'q2-');
-      const png=await figurePng(po);
       // the watch's words: no stock "three subdials" with the owner's details, and they are said to describe it upright
       const wd={...po.watch,details:'time on a large subdial at 6'};
       return {all,n:refs.length,labels,plain:plain.labels,dial:await size(plain.refs[1]),own,fall,whole:[WATCH_WORN,WATCH_DIAL].every(l=>cut(l)===l),
         turned:await dark(w,61,61)&&!(await dark(w,3,3))&&await dark(im,3,3),
-        face:svgP.includes(`href="${im}"`)&&!/M 0 0 L 0 -7/.test(svgP),today:!svgT.includes('<image')&&/M 0 0 L 0 -7/.test(svgT),png:/^data:image\/png/.test(png),
+        retired:typeof figurePng==='undefined',
         words:watchText(po.watch).includes('three subdials')&&!watchText(wd).includes('three subdials')&&/described upright.*time on a large subdial/.test(watchText(wd,{worn:true}))&&!/upright/.test(watchText(wd))}});
     ok(r.all===9&&r.n===8,`a full outfit has ${r.all} references; 8 go to the generator`);
     ok(r.labels[0]===WATCH_WORN_TEXT&&r.labels[1]===WATCH_DIAL_TEXT,'the watch and its dial enlarged go first, right after the illustration');
@@ -47,7 +44,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.plain.join('|')===[WATCH_WORN_TEXT,WATCH_DIAL_TEXT,'the suit','the tie'].join('|')&&r.dial==='640x640'&&r.turned,`with room, the watch and its 640px dial enlargement go first, both turned half a turn as the watch sits on the wrist (${r.dial})`);
     ok(r.whole,'the watch labels reach the generator whole (the worker keeps 160 characters of a label)');
     ok(r.own&&r.fall,'the watch reference is the owner\'s own photo, its product picture only when there is no photo');
-    ok(r.face&&r.today&&r.png,'the drawing the generator edits has the watch\'s own dial as its face (no drawn hands); Today\'s drawing keeps its drawn hands');
+    ok(r.retired,'the drawing is no longer sent to the generator (figurePng retired 2026-11-14; these references are what that photo was asked with)');
     ok(r.words,'with the owner\'s details the stock "three subdials" wording is left out, and in the outfit photo the details are said to describe the watch upright');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

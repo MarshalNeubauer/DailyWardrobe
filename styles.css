@@ -130,7 +130,6 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
   display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 1px 4px rgba(0,0,0,.3);transition:background .15s,border-color .15s,transform .1s}
 .wmark:active{transform:scale(.92)}.wmark.yes.on{background:#2f7a4f;border-color:#2f7a4f}.wmark.no.on{background:#a23b3b;border-color:#a23b3b}
 .fig .lastworn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:600;color:#fff;background:rgba(16,24,32,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:4px 10px;border-radius:99px}
-.render-msg{max-width:390px;margin:8px auto 0;text-align:center;font-size:13px}.render-msg:empty{display:none}.render-msg .spin{margin-right:6px;vertical-align:-2px}
 .multi-opt{display:flex;gap:8px;align-items:flex-start;margin:10px 0 2px;font-size:14px;line-height:1.35}
 .multi-opt input{margin-top:3px;width:18px;height:18px;flex:none}
 #multi-status:empty{display:none}#multi-status{font-size:13px;margin:4px 0}

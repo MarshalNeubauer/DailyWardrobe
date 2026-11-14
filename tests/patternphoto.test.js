@@ -38,12 +38,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   try{const lab=r.labels[at],IMG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
     await worker.fetch(new Request('https://w.test/render',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:IMG,refs:[IMG],labels:[lab],outfit:'x'})}),{APP_TOKEN:'t',OPENAI_API_KEY:'k'});
     ok(form&&form.get('prompt').includes(lab),'the worker passes the drawing\'s label on whole')}finally{globalThis.fetch=real}
-  // both ways of making a photo send the drawing
-  await p.evaluate(async()=>{const im=new Image();im.src='tests/fixtures/tie-plaid.jpg';await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);
-    const tie={id:'t2',type:'tie',primaryColor:'taupe',pattern:'stripe',photo:c.toDataURL('image/jpeg',.5),sett:settFrom({full:c,box:{x:293,y:272,w:339,h:543},type:'tie'})};
-    const o={top:{id:'s2',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h2',type:'shirt',primaryColor:'white',pattern:'solid'},tie,suitDay:true};
-    await renderCombo(o);await queueCombo(o)});
-  ok(sent.length===2&&sent.every(b=>b.labels.some(l=>/measured pattern/.test(l))&&b.refs.length===b.labels.length),'a photo made now and one queued for the worker both send the pattern drawing');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
 };

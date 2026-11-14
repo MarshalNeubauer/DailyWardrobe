@@ -1,4 +1,4 @@
-// Generated photos are saved per outfit combination: any day with the same pieces reuses the photo (no new charge),
+// Kept outfit photos (made before the photo generator was retired, 2026-11-14) are saved per outfit combination: any day with the same pieces reuses the photo,
 // and the worker keeps a copy (KV, render:c<16 hex>) so every device shows it. Photos saved per date before this
 // change are moved over the first time their outfit is shown.
 const path=require('path'),{pathToFileURL}=require('url');
@@ -26,15 +26,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const A=await device();await A.p.evaluate(setup);
     const ck=await A.p.evaluate(()=>comboKey(planFor()[key(sel)]));
     ok(/^c[0-9a-f]{16}$/.test(ck),`each outfit combination has a key (${ck})`);
-    await A.p.evaluate(()=>generateRender());await A.p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    {const shown=await photoShown(A.p),why=await A.p.evaluate(()=>(document.querySelector('#render-msg')||{}).textContent||'');ok(calls===1&&shown,`desktop generates the photo (calls ${calls}, shown ${shown}${why?', "'+why+'"':''})`)}
+    // (the photo generator is retired, 2026-11-14: an outfit photo kept from before is shared as it was)
+    await A.p.evaluate(async j=>{const o=planFor()[key(sel)];await keepRender(comboKey(o),{sig:comboSig(o),img:'data:image/jpeg;base64,'+j,model:'gpt-image-2',t:Date.now()},true);renderToday()},JPG);
+    for(let w=0;w<30&&!store.has('render:'+ck);w++)await new Promise(r=>setTimeout(r,100));
+    {const shown=await photoShown(A.p);ok(calls===0&&shown,`the desktop shows its kept photo (calls ${calls}, shown ${shown})`)}
     ok(store.has('render:'+ck)&&puts.some(([k,o])=>k==='render:'+ck&&!o),'the worker keeps it under the combination key (no expiry)');
     ok(await A.p.evaluate(async k=>!!(await metaGet('render:'+k)),ck),'and so does the device');
     // the same combination on another day: shown at once, nothing generated
     const other=await A.p.evaluate(()=>{const o=planFor()[key(sel)],d='2026-11-18';
       dayRecs[d]={date:d,force:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,...(o.clip?{clip:o.clip.id}:{}),...(o.watch?{watch:o.watch.id}:{})},vest:o.vest};cache={};
       sel=new Date(2026,10,18);renderToday();const o2=planFor()[key(sel)];return {same:comboKey(o2)===comboKey(o),btn:!!document.querySelector('.render-btn'),cap:(document.querySelector('.fig.photo .lastworn')||{}).textContent||''}});
-    ok(other.same&&await photoShown(A.p)&&!other.btn&&calls===1,'another day with the same outfit reuses the photo (no new charge)');
+    ok(other.same&&await photoShown(A.p)&&!other.btn&&calls===0,'another day with the same outfit reuses the photo (no new charge)');
     ok(/^(Last worn |$)/.test(other.cap)&&!/gpt|Generated/.test(other.cap),`the caption shows when the look was last worn, not the model ("${other.cap}")`);
     // a different combination has no photo; changing how a piece looks (colour) makes it a different combination
     ok(await A.p.evaluate(()=>{sel=new Date(2026,10,17);renderToday();return !document.querySelector('.fig.photo')}),'a different outfit is drawn, not given the photo');
@@ -56,7 +58,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // the phone gets it from the worker for any day with that combination
     const B=await device();await B.p.evaluate(setup);
     await B.p.waitForFunction(()=>!!document.querySelector('.fig.photo img'),null,{timeout:8000}).catch(()=>{});
-    ok(await photoShown(B.p)&&calls===1,'the phone shows the desktop\'s photo without generating another');
+    ok(await photoShown(B.p)&&calls===0,'the phone shows the desktop\'s photo without generating another');
     // photos saved per date before this change: a local one is moved and shared; a worker one is picked up
     store.clear();
     const mig=await A.p.evaluate(async()=>{const o=planFor()['2026-11-16'],ck=comboKey(o);delete renders[ck];delete renders[comboKeyV1(o)];await txs('meta','readwrite',s=>s.delete('render:'+ck));

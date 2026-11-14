@@ -265,15 +265,12 @@ function figureStage(o){
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   if(asmLive())setTimeout(()=>asmEnsure(o),0);   // and its item photos, to put the outfit's picture together here
   schedulePrefetch();   // and the rest of the month's photos, nearest first
-  // a photo replaces the illustration. Today has no Generate button (the owner, 2026-11-13: pictures that cost money are made only
-  // from Settings → This day's photo, "Regenerate photo"); a photo asked for there says here how it is getting on
-  const ck=comboKey(o),pend=renderPending(o),fail=renderFail[ck],stalled=!pend&&renderStalled(ck);
-  const msg=renderMsg.k===key(sel)&&renderMsg.t?renderMsg.t:pend?(rendering===ck?'Sending it…':'It is being made (about a minute). You can swipe to another day or close the app: it appears here when it’s ready.'):fail?`The photo couldn’t be made. ${/[.!?]$/.test(fail)?fail:fail+'.'}`:stalled?'This photo has been in the making for over 10 minutes, far longer than one takes. Regenerate photo in ⚙ Settings sends it again.':'';
-  const ctl=`<p class="mut render-msg" id="render-msg">${pend?'<span class="spin" aria-hidden="true"></span>':''}${esc(msg)}</p>`;
+  // a painted (or kept) picture replaces the drawing; until it is ready the traced mannequin of the same pose shows (draw.js figureSvg).
+  // Nothing paid is ever made from here (the drawn-figure photo was retired 2026-11-14)
   const marks=false;   // (the swatches no longer step up for the ✕ / ✓ circles, gone from the picture 2026-11-14)
   const cf=typeof careFrame==='function'?careFrame(o):null,cc=cf?cf.cls:'',ch=cf?cf.html:'';   // a suit or blazer coming due for cleaning (care.js)
   return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o,marks)}${wornMarks(o)}${ch}</div>`
-    :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}${ch}</div>`)+ctl+
+    :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}${ch}</div>`)+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }
 
@@ -282,7 +279,7 @@ function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:t
   if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};cache={};checkArrivals().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
   if(home){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false}
   if(!$('#today').hidden)refreshToday()}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(queuedKeys().length){checkQueue();startQueueWatch()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
   newDayCheck();try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(settings.location&&(!c||Date.now()-c.t>3*3600e3))loadWeather()}catch{}
   remoteKeys=null;schedulePrefetch()});   // photos made on another device meanwhile
 function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||!o[s])return;const opening=belowOpen!==s,was=el.classList.contains('open');

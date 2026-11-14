@@ -30,15 +30,6 @@ module.exports=async({ok,chromium,url})=>{
     const pr=await p.evaluate(async()=>{const was=items;items=[{id:'keep1',type:'tie',primaryColor:'navy',pattern:'solid'}];const c=await caches.open(TAGIMG_CACHE);for(const n of ['tagimg/gone1','closeimg/gone2','closeimg/keep1'])await c.put(new Request(n),new Response('x'));
       const n=await pruneTagImgs();items=was;const left=(await c.keys()).map(k=>k.url.replace(/^.*\/(\w+img\/)/,'$1'));return {n,left}});
     ok(pr.n===2&&pr.left.includes('closeimg/keep1')&&!pr.left.some(u=>/gone/.test(u)),`kept close-ups of deleted items are removed with the tagging copies (${JSON.stringify(pr)})`);
-    // one Generate tap, one request
-    let posts=0;await p.route('https://w.test/**',route=>{if(route.request().method()==='POST'){posts++;return route.fulfill({status:501,contentType:'application/json',body:JSON.stringify({error:'Add an OPENAI_API_KEY secret to the worker to generate realistic photos.'})})}return route.fulfill({status:404,contentType:'application/json',body:'{"error":"none"}'})});
-    const g=await p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('shirt','lightblue'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      const was=[typeof TODAY_OVERRIDE==='undefined'?undefined:TODAY_OVERRIDE,sel];
-      settings.workdays=[0,1,2,3,4];dayRecs={};localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t');TODAY_OVERRIDE='2026-11-15T12:00:00';sel=new Date(2026,10,16);cache={};
-      await generateRender();const out={msg:renderMsg.t,o:!!planFor()[key(sel)]};items=[];TODAY_OVERRIDE=was[0];sel=was[1];cache={};localStorage.removeItem('worker_url');return out});
-    ok(posts===1,`a Generate tap that the server can't serve sends one request, not two (${posts}; "${g.msg}")`);
-    await p.unroute('https://w.test/**');
     // the Backup line inside Settings while a backup runs
     const b=await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()));localStorage.removeItem('sync_status');syncing=true;openSettings('backup');const a=document.querySelector('#sync-status').textContent,s=document.querySelector('#sum-backup').textContent;
       syncing=false;localStorage.setItem('sync_status','Syncing…');showSyncStatus();const c=document.querySelector('#sync-status').textContent;for(const k of ['sync_status','worker_url','app_token','last_sync'])localStorage.removeItem(k);closeSettings();return {a,s,c}});
