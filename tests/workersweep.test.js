@@ -15,7 +15,7 @@ module.exports=async({ok,chromium,url})=>{
       if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const recs={};for(const kind of ['suit','shirt-tie']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
+    const recs={};for(const kind of ['suit','shirt-tie','vest','suit-open','shirt-open']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
       recs[kind+'|'+n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(d,f)).toString('base64'),model:'colormaster',t:1000}}}
     const keys=await p.evaluate(rs=>{const o={};for(const k of Object.keys(rs)){const [kind,n]=k.split('|');o[k]=asmCmKey(kind,n)}return o},Object.fromEntries(Object.keys(recs).map(k=>[k,1])));
     for(const [k,r] of Object.entries(recs))served[keys[k]]=r;
@@ -41,6 +41,14 @@ module.exports=async({ok,chromium,url})=>{
       clips.forEach(c=>looks.push({name:'clip '+c.primaryColor,o:{top:jackets[9],shirt:shirts[0],tie:ties[1],watch:watches[1],clip:c}}));
       pants.forEach((b,i)=>looks.push({name:'no jacket: trousers '+b.pattern+' '+b.primaryColor,o:{shirt:shirts[i%shirts.length],tie:ties[i%ties.length],bot:b,belt,shoes,watch:watches[i%watches.length]}}));
       watches.forEach(w=>looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (shirt and tie)',o:{shirt:shirts[0],tie:ties[0],bot:pants[0],belt,shoes,watch:w}}));
+      // the waistcoat master (a suit with its waistcoat), the open-collar jacket (no tie) and the open-collar shirt (no jacket, no tie)
+      const suits=jackets.filter(j=>j.type==='suit');suits.forEach(s=>s.vest='yes');
+      suits.forEach((s,i)=>looks.push({name:'waistcoat day: '+s.pattern+' '+s.primaryColor,o:{top:s,vest:true,shirt:shirts[i%shirts.length],tie:ties[i%ties.length],watch:watches[i%watches.length]}}));
+      jackets.forEach((j,i)=>looks.push({name:'open collar, jacket '+j.pattern+' '+j.primaryColor,o:{top:j,shirt:shirts[i%shirts.length],watch:watches[i%watches.length]}}));
+      pants.forEach((b,i)=>looks.push({name:'open collar, no jacket: trousers '+b.pattern+' '+b.primaryColor,o:{shirt:shirts[i%shirts.length],bot:b,belt,shoes,watch:watches[(i+1)%watches.length]}}));
+      watches.forEach(w=>{looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (waistcoat)',o:{top:suits[0],vest:true,shirt:shirts[0],tie:ties[0],watch:w}});
+        looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (open collar)',o:{top:jackets[0],shirt:shirts[0],watch:w}});
+        looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (open shirt)',o:{shirt:shirts[0],bot:pants[0],belt,shoes,watch:w}})});
       const out=[];await asmListGet(true);
       for(const L of looks){const k=asmCmKind(L.o);let r={name:L.name,kind:k};
         try{await asmCmLook(L.o);if(!await asmCmGet(k)){r.err='master not here';out.push(r);continue}const job=await asmJob(L.o);if(!job){r.err='no job';out.push(r);continue}
@@ -48,7 +56,8 @@ module.exports=async({ok,chromium,url})=>{
       return {offPage:asmOffPage(),out}},HOST);
     const bad=res.out.filter(r=>!r.ok);
     ok(res.offPage,'the looks are built in the Web Worker');
-    ok(res.out.length>=37,`${res.out.length} looks swept, on the suit and the shirt-and-tie masters (${res.out.filter(r=>r.watch).length} with a painted watch)`);
+    const kinds=[...new Set(res.out.map(r=>r.kind))].sort().join(',');
+    ok(res.out.length>=72&&kinds==='shirt-open,shirt-tie,suit,suit-open,vest',`${res.out.length} looks swept on all five masters (${kinds}; ${res.out.filter(r=>r.watch).length} with a painted watch)`);
     ok(!bad.length,`every one comes back as a picture from the worker${bad.length?': '+bad.map(r=>`${r.name} (${r.kind}): ${r.err||'no picture'}`).join('; '):''}`);
     ok(errs.length===0,'no page errors: '+errs.join(' | '));
   }finally{await browser.close()}

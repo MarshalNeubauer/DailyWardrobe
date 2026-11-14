@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	a65ade039990a53b0b6b
+# tested	366136ad77aeb52553ba
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	checkArrivals	renderAdd	shadeRow
@@ -8035,6 +8036,17 @@ workersweep.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-vie
 workersweep.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	localState	pullDone	pulledYet	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl	synced
 workersweep.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
 workersweep.test.js	tests/fixedplan.js	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-belt.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-buckle.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-dark.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-shirt.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-skin.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-trousers.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/mask-watch.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/master.jpg	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/part-sleeveL.png	<any>
+workersweep.test.js	tests/fixtures/cm/shirt-open/part-sleeveR.png	<any>
 workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
 workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
 workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
@@ -8047,6 +8059,17 @@ workersweep.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
 workersweep.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
 workersweep.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
 workersweep.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/mask-background.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/mask-dark.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/mask-jacket.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/mask-shirt.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/mask-skin.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/mask-watch.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/master.jpg	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/part-lapelL.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/part-lapelR.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/part-sleeveL.png	<any>
+workersweep.test.js	tests/fixtures/cm/suit-open/part-sleeveR.png	<any>
 workersweep.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
 workersweep.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
 workersweep.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
@@ -8059,9 +8082,24 @@ workersweep.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 workersweep.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 workersweep.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 workersweep.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-background.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-dark.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-jacket.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-shirt.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-skin.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-tie.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-waistcoat.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/mask-watch.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/master.jpg	<any>
+workersweep.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
+workersweep.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
 workersweep.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxPreload	zoomTarget
 workersweep.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 workersweep.test.js	wardrobe.js	<loaded>
 workersweep.test.js	watch/leather.jpg	<loaded>
+workersweep.test.js	watch/shirt-open.png	<loaded>
 workersweep.test.js	watch/shirt-tie.png	<loaded>
 workersweep.test.js	watch/suit.png	<loaded>
+workersweep.test.js	watch/vest.png	<loaded>
