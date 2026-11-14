@@ -37,10 +37,10 @@ function whyUnused(i){
   switch(i.type){
     case 'pants':{if(!blazerDays)return 'You have no blazer days, so separate trousers are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
       const g=Math.min(...by('blazer').map(j=>Math.max(...by('pants').map(p=>pairScore(j,p)+patternScore([[j,'top'],[p,'bot']])))-(pairScore(j,i)+patternScore([[j,'top'],[i,'bot']]))));
-      return g>QWIN?`They don't suit any of your blazers well enough: ${pts(g)} behind the best pair at the closest.`:'They suit a blazer, but other pairs have rested longer: they come up later than six months.'}
-    case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts have rested longer: it comes up later than six months.';
+      return g>QWIN?`They don't suit any of your blazers well enough: ${pts(g)} behind the best pair at the closest.`:'They suit a blazer, but other pairs suit your outfits a little better or have rested longer, so they aren\'t in the next six months\' plan.'}
+    case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts suit your outfits a little better or have rested longer, so it isn\'t in the next six months\' plan.';
       return darkShirt(i)?`A dark shirt needs a light jacket${wearsTie()?' and a tie lighter than itself':''}; the best such outfit is ${pts(g)} behind your others.`:`With every jacket it is at least ${pts(g)} behind your other shirts.`}
-    case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties have rested longer: it comes up later than six months.':`With every jacket and shirt it is at least ${pts(g)} behind your other ties.`}
+    case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties suit your outfits a little better or have rested longer, so it isn\'t in the next six months\' plan.':`With every jacket and shirt it is at least ${pts(g)} behind your other ties.`}
     case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for colour variety.';
     case 'blazer':return !blazerDays?'You have no blazer days set in Settings.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other blazers take every blazer day first.';
     case 'shoes':{const ok=jackets.some(j=>(j.type==='suit'?[j]:by('pants')).some(b=>shoeScore(j,b,i)>-50));

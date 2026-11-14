@@ -13,6 +13,10 @@
 //                 what changed; it ends with code 10 when main has moved on GitHub (C:\code\assemble-watch.ps1 then updates and restarts it)
 //   --dry         build and report, upload nothing
 //   --save D      keep a copy of every picture in folder D (named <first day>-<key>.jpg)
+//   --head SHA    (with --watch) the commit of main this checkout is at: the watcher passes it, so a move of main between its checkout
+//                 and this script's start is noticed (without it, main is read when the script starts)
+//   --look-timeout S   a look's longest wait for its Web Worker (default 180): past it the look fails and the worker is replaced
+//   --cycle-timeout M  a cycle's longest run (default 45): past it the script ends with code 4 (the watcher starts it again)
 //   --origin URL  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/): the page is served from this
 //                 computer under that address, so a worker that only answers the app's own origin (ALLOWED_ORIGIN) answers it
 // Each upload is one KV write (the free plan allows 1,000 a day for everything); the token is read from the environment only.
@@ -29,10 +33,13 @@ const has=n=>process.argv.includes('--'+n);
 const DRY=has('dry'),DAYS=Math.max(1,Math.min(400,+arg('days',120)||120)),SAVE=arg('save',''),PROFILE=arg('profile','');
 const JOBS=Math.max(1,Math.min(32,+arg('jobs',Math.min(16,Math.max(1,Math.floor(os.cpus().length/2))))||1));   // half the logical cores (one a physical core on a hyperthreaded CPU), at most 16
 const WATCH=has('watch')?Math.max(1,+arg('watch',5)||5):0;
+const HEAD=/^[0-9a-f]{7,40}$/i.test(arg('head',''))?arg('head',''):'';   // the commit of main the watcher checked out (C:\code\assemble-watch.ps1)
+const LOOK_MS=Math.max(10,+arg('look-timeout',180)||180)*1000;   // one look's longest wait for a pool worker (a master worked out from scratch at 2880 takes about 30 s)
+const CYCLE_MS=Math.max(5,+arg('cycle-timeout',45)||45)*60e3;   // one cycle's longest run: past it the script ends (code 4) and the watcher starts it again
 const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrobe/')).replace(/\/?$/,'/');
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 if(has('help')||!WORKER.startsWith('http')||!TOKEN){
-  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 120] [--jobs 16] [--profile <folder>] [--watch 5] [--dry] [--save <folder>] [--origin <app url>]');
+  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 120] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>]');
   process.exit(has('help')?0:1)}
 const TYPES={js:'text/javascript',css:'text/css',html:'text/html',png:'image/png',json:'application/json',webmanifest:'application/manifest+json'};
 // (with the app's own origin: the worker refuses a write from any other, ALLOWED_ORIGIN)
@@ -72,12 +79,25 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
   if(await page.evaluate(([w,t])=>{const same=localStorage.getItem('worker_url')===w&&localStorage.getItem('app_token')===t;localStorage.setItem('worker_url',w);localStorage.setItem('app_token',t);return !same},[WORKER,TOKEN])){
     await page.reload();await page.waitForFunction(()=>window.appReady,null,{timeout:60000})}
   // the app's own building ahead and Today's own pictures stay idle (this script does the building); a pool of Web Workers for the painting
-  await page.evaluate(n=>{asmAheadSoon=()=>{};asmAhead=async()=>{};asmEnsure=async()=>{};
-    const pool=[];window.__poolRun=(i,job)=>{let w=pool[i];if(!w){w=pool[i]={w:new Worker('asm-worker.js'),ready:null,seq:0,wait:new Map()};
-        w.ready=new Promise(ok=>{w.w.onmessage=e=>{const d=e.data||{};if('ready' in d){ok(d.ready);return}const cb=w.wait.get(d.id);if(cb){w.wait.delete(d.id);d.error?cb.no(new Error(d.error)):cb.ok(d.res)}}})}
-      return w.ready.then(ok=>{if(!ok)throw new Error('no Web Worker');return new Promise((ok2,no)=>{const id=++w.seq;w.wait.set(id,{ok:ok2,no});w.w.postMessage({id,job})})})};
-    window.__poolN=n},JOBS);
-  const head=WATCH?gitRemote():'';   // main on GitHub when the run began (not this checkout's own commit: a branch would always differ)
+  // (2026-11-14 audit) a pool worker that errors or doesn't answer a look within --look-timeout fails that look and is replaced (its
+  // next look starts a new one, which reads its master's kept setup back); before, a dead worker left the watcher waiting forever
+  await page.evaluate(([n,lookMs])=>{asmAheadSoon=()=>{};asmAhead=async()=>{};asmEnsure=async()=>{};
+    const pool=[];
+    const drop=(i,w,msg)=>{for(const cb of w.wait.values())cb.no(new Error(msg));w.wait.clear();try{w.w.terminate()}catch{}if(pool[i]===w)pool[i]=null};
+    const make=i=>{const w={w:new Worker('asm-worker.js'),ready:null,seq:0,wait:new Map()};
+      w.ready=new Promise(ok=>{w.w.onmessage=e=>{const d=e.data||{};if('ready' in d){ok(d.ready);return}const cb=w.wait.get(d.id);if(cb){w.wait.delete(d.id);d.error?cb.no(new Error(d.error)):cb.ok(d.res)}};
+        w.w.onerror=e=>{if(e&&e.preventDefault)e.preventDefault();ok(false);drop(i,w,'the Web Worker failed'+(e&&e.message?': '+e.message:''))};
+        w.w.onmessageerror=()=>drop(i,w,'the Web Worker sent something unreadable')});
+      return w};
+    window.__poolRun=(i,job)=>{const w=pool[i]||(pool[i]=make(i));
+      return w.ready.then(ok=>{if(!ok)throw new Error('no Web Worker');return new Promise((ok2,no)=>{const id=++w.seq;
+        const t=setTimeout(()=>drop(i,w,`no picture after ${Math.round(lookMs/1000)} s: the Web Worker was replaced`),lookMs);
+        w.wait.set(id,{ok:v=>{clearTimeout(t);ok2(v)},no:e=>{clearTimeout(t);no(e)}});w.w.postMessage({id,job})})})};
+    window.__poolN=n},[JOBS,LOOK_MS]);
+  // main on GitHub when the run began: the commit the watcher checked out (--head; read here after the browser started, main might
+  // already have moved and this run would never notice), else asked now (not this checkout's own commit: a branch would always differ)
+  const head=WATCH?(HEAD||gitRemote()):'';
+  page.on('crash',()=>{console.error(`${now()} the page crashed: ending so the watcher starts again`);process.exit(3)});
   // one cycle: bring the wardrobe and the weather up to date, list every coming look, paint the missing or changed ones
   let lastSig='';
   const cycle=async first=>{const t0=Date.now();
@@ -133,17 +153,20 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
       if(!firstOf[run.kind]){let go;firstOf[run.kind]=new Promise(r=>go=r);await one(run.looks[0],run.wi);go();for(const l of run.looks.slice(1))await one(l,run.wi)}
       else{await firstOf[run.kind];for(const l of run.looks)await one(l,run.wi)}}));
     for(const l of old)await one(l,0);   // the earlier way: one at a time, in the page's own worker
-    saveMade();lastSig=sig;
+    saveMade();lastSig=failed?'':sig;   // (a look not made is tried again next cycle, not only when something changes)
     console.log(`Done in ${Math.round((Date.now()-t0)/1000)} s: ${built} built, ${uploaded} uploaded, ${skipped} already current, ${failed} not made.`);
     // patterned pieces the pictures paint plain or generic (asm-color.js: asmCmRoute), so a gap is seen in the log, not only in a picture
     const gaps=await page.evaluate(()=>typeof asmCmGaps==='function'?asmCmGaps().map(x=>`${sentence(itemTitle(x.i))}: ${x.r.why}`):[]).catch(()=>[]);
     if(gaps.length)console.log(`Painted plain (${gaps.length}):\n`+gaps.map(g=>'  - '+g).join('\n'));
     return {failed}};
-  await cycle(true);
+  // (2026-11-14 audit) a cycle that hangs (the page, a request) ends the script after --cycle-timeout, so the watcher starts it again
+  const guarded=async first=>{const g=setTimeout(()=>{console.error(`${now()} a cycle ran over ${Math.round(CYCLE_MS/60e3)} min: ending so the watcher starts again`);process.exit(4)},CYCLE_MS);
+    try{return await cycle(first)}finally{clearTimeout(g)}};
+  await guarded(true);
   if(!WATCH){await ctx.close();if(browser)await browser.close();return}
   // --watch: keep the page and its workers (with their masters) open; look again every WATCH minutes
   console.log(`${now()} watching: every ${WATCH} min`);
   for(;;){await new Promise(r=>setTimeout(r,WATCH*60e3));
     const remote=gitRemote();if(head&&remote&&remote!==head){console.log(`${now()} main moved (${remote.slice(0,7)}): ending so the app can be updated`);await ctx.close();if(browser)await browser.close();process.exit(10)}
-    try{const r=await cycle(false);if(r&&r.quiet)continue}catch(e){console.warn(`${now()} cycle failed:`,e&&e.message||e)}}
+    try{const r=await guarded(false);if(r&&r.quiet)continue}catch(e){console.warn(`${now()} cycle failed:`,e&&e.message||e)}}
 })().catch(e=>{console.error(e);process.exit(1)});

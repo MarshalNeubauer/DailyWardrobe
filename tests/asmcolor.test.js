@@ -34,9 +34,9 @@ module.exports=async({ok,chromium,url})=>{
       const before={use:asmCmUse(o),can:asmCan(o)};await asmEnsure(o);before.after=asmCmUse(o);const f=asmFor(o),k=asmOutKey(o);
       // a pixel in the middle of the shirt, left of the tie: pink, as the shirt
       let px=null;if(f){const im=new Image();await new Promise(r=>{im.onload=r;im.src=f.img});const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.36),Math.round(im.width*.34),1,1).data].slice(0,3)}
-      const o2={...o,shirt:W.shirt2};return {before,img:f&&f.img.slice(0,23),w:f&&(await new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=f.img})),px,k,k2:asmOutKey(o2),kept:!!(await metaGet('asm:out:'+k)),
+      const o2={...o,shirt:W.shirt2},rec=await metaGet('asm:out:'+k);return {before,img:f&&f.img.slice(0,5),blob:rec&&rec.blob&&rec.blob.type,b64:!!(rec&&rec.img),w:f&&(await new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=f.img})),px,k,k2:asmOutKey(o2),kept:!!(await metaGet('asm:out:'+k)),
         offPage:asmOffPage(),pending:asmPending(o),parts:asmPhotoParts(o).length}});
-    ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.before.can===false&&a.img==='data:image/jpeg;base64,'&&a.kept,`a shirt-and-tie day (which the earlier assembler can't make): its master is looked for, then the day is painted on it and kept (${JSON.stringify(a.before)})`);
+    ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.before.can===false&&a.img==='blob:'&&a.blob==='image/jpeg'&&!a.b64&&a.kept,`a shirt-and-tie day (which the earlier assembler can't make): its master is looked for, then the day is painted on it and kept as a Blob, shown by an object URL (${JSON.stringify(a.before)})`);
     ok(a.w===512&&a.offPage,`painted in the Web Worker at the job's size (${a.w} px)`);
     ok(a.px&&a.px[0]>a.px[2]+15&&a.px[0]>150,`the shirt comes out pink (${a.px})`);
     ok(a.k!==a.k2&&a.parts===0&&a.pending===false,'another shirt colour is another picture; nothing is photographed or queued for it');
@@ -46,15 +46,21 @@ module.exports=async({ok,chromium,url})=>{
     const v=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie,vest:true};await asmEnsure(o);return {use:asmCmUse(o),for:!!asmFor(o),wants:asmWants(o),earlier:asmWants0(o)}});
     ok(v.use===null&&!v.for&&!v.wants,`a kind whose master the worker lacks falls back to the earlier way (${JSON.stringify(v)})`);
     // a suit day: painted on the suit master (the jacket's sleeves and lapels from their masks)
-    const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o);return {use:asmCmUse(o),img:f&&f.img.length}});
+    const s=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o);const f=asmFor(o),r=asmOut[asmOutKey(o)];return {use:asmCmUse(o),img:f&&r&&r.blob&&r.blob.size}});
     ok(s.use==='suit'&&s.img>10000,`a suit day is painted on the suit master (${JSON.stringify(s)})`);
+    // (2026-11-14 audit) a picture kept as base64 before still shows, and becomes a Blob; start-up reads only the kept pictures' key range
+    const bu=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=16;const img=c.toDataURL('image/jpeg');
+      await metaPut('asm:out:cold000000000test',{img,stamp:1,t:Date.now()});await asmLoad();const r={old:asmImgOf('cold000000000test',asmOut.cold000000000test).slice(0,5),only:Object.keys(asmOut).every(k=>/^c/.test(k))};
+      await asmBlobUp();const st=await metaGet('asm:out:cold000000000test');r.blob=!!(st&&st.blob&&!st.img);r.now=asmImgOf('cold000000000test',asmOut.cold000000000test).slice(0,5);
+      r.renders=Object.keys(renders).length>0&&Object.keys(renders).every(k=>/^c/.test(k));return r});
+    ok(bu.old==='data:'&&bu.blob&&bu.now==='blob:'&&bu.only&&bu.renders,`an old base64 picture shows and is turned into a Blob; start-up reads only its own key ranges (${JSON.stringify(bu)})`);
     // a master's setup kept packed (asmCmPack, the phone's disk cache): read back, it paints the very same picture
     const pk=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},job=await asmCmJob(o);
-      const P=await asmCmPrep(job),pack=await asmCmPack(P),Q=await asmCmUnpack(pack,job);const k0=job.cm+'|'+job.mk+'|'+job.mt+'|'+job.size;
-      asmCmMem={list:[{key:k0,P}]};const a=await asmCmBuild({...job,diskCache:false});asmCmMem={list:[{key:k0,P:Q}]};const b=await asmCmBuild({...job,diskCache:false});
+      const P=await asmCmPrep(job);P.lx=asmCmLightPrep(P);const pack=await asmCmPack(P),Q=await asmCmUnpack(pack,job);const k0=job.cm+'|'+job.mk+'|'+job.mt+'|'+(job.rev||'')+'|'+job.size;
+      asmCmMem={list:[{key:k0,P,lx:P.lx}]};const a=await asmCmBuild({...job,diskCache:false});asmCmMem={list:[{key:k0,P:Q,lx:Q.lx}]};const b=await asmCmBuild({...job,diskCache:false});const used=asmCmMem.list[0].P===Q;
       let raw=0;const walk=x=>{if(ArrayBuffer.isView(x)){raw+=x.byteLength;return}if(x&&typeof x==='object')for(const v of Object.values(x))walk(v)};walk({...P,M:null});
-      return {same:a.url===b.url,gz:pack&&pack.gz.byteLength,raw,M:Q&&Q.M.length===P.M.length}});
-    ok(pk.same&&pk.M&&pk.gz<pk.raw/5,`a master's setup packed (${(pk.raw/1024|0)} KB -> ${(pk.gz/1024|0)} KB gzipped) and read back paints the identical picture`);
+      return {same:a.url===b.url,used,lx:!!(Q.lx&&Q.lx.ao&&Q.lx.ao.shirt instanceof Uint16Array&&Q.lx.smb.jacket instanceof Uint16Array),gz:pack&&pack.gz.byteLength,raw,M:Q&&Q.M.length===P.M.length}});
+    ok(pk.same&&pk.used&&pk.lx&&pk.M&&pk.gz<pk.raw/5,`a master's setup with its lighting (16-bit) packed (${(pk.raw/1024|0)} KB -> ${(pk.gz/1024|0)} KB gzipped) and read back paints the identical picture`);
     // the cloth look (ASM_CM_LOOK): a black suit is no longer a flat silhouette (lifted, with more variation: folds, sheen, weave); a navy
     // keeps its blue; job.look false paints as before
     const lk=await p.evaluate(async()=>{const W=__W,px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return x.getImageData(0,0,c.width,c.height).data};

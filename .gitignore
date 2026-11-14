@@ -1,3 +1,15 @@
 node_modules/
 atlas/
 .claude/
+# wrangler's local secrets and state, other secrets
+.dev.vars
+.dev.vars.*
+.wrangler/
+.env
+.env.*
+# logs and test output
+*.log
+test-results/
+playwright-report/
+# Windows
+Thumbs.db

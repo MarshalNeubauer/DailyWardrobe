@@ -8,7 +8,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch();const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:'data:image/png;base64,iVBORw0KGgo='})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
-    const prompt=sent.messages[0].content.find(c=>c.type==='text').text,schema=sent.output_config.format.schema;
+    const prompt=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),schema=sent.output_config.format.schema;
     const wTable={};for(const m of prompt.matchAll(/^  (\w+): ([a-z, ]+) \| ([a-z, ]+)$/gm))wTable[m[1]]=[m[2].split(', '),m[3].split(', ')];
     const dial=(prompt.match(/^  watch dial: ([a-z, ]+)$/m)||[])[1];
     await p.goto(url);await p.waitForFunction(()=>window.appReady);

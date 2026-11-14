@@ -64,7 +64,6 @@ ${TYPE_COLOR_TEXT}
     espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown; brown is a clearly warm, coloured brown); rust is a burnt orange-brown;
   ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
   blue with a violet cast, between lightblue and blue; grey for cufflinks means gunmetal; a tie clip's colour is its finish: silver, gold, rosegold, gunmetal, or an enamel colour)
-  Judge shirt colours as in daylight: warm indoor light makes white look ivory and grey look beige.
 
 secondaryColor — the colour of the stripe, check line, dot or motif, from the type's line colours (after the |). "none" if plain.
   Socks: the colour of a contrasting toe cap (the knitted tip over the toes, often a light heather grey on a dark sock), or "none"
@@ -122,6 +121,19 @@ dial, band, bezel — watches only, otherwise null:
   bezel: fluted (finely ridged ring around the crystal) or smooth.`;
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
+/* the field rules alone (from "type —"): Claude answers through structured output, so it gets no JSON template or "no code
+   fences" line (those are for Workers AI, which reads PROMPT whole) */
+const TAG_RULES = PROMPT.slice(PROMPT.indexOf('type —'));
+const TAG_INTRO = 'Identify the single clothing item in the first photo.\n\n';
+/* how to read the photos' colours, by the app's wb flag: true = it white-balanced them from a white reference, false = sent as the
+   camera took them, absent (an older app) = not known. "Photos are white-balanced" in the system prompt and "judge as in daylight"
+   in the rules said both at once (2026-11-13 audit) */
+function lightText(wb) {
+  if (wb === true) return 'The app white-balanced these photos from a white reference in the frame: take their colours as shown and do not shift them for warm or cool light; only allow for shadows, sheen and folds.';
+  if (wb === false) return 'These photos are as the camera took them (the app found no white reference, so it did not correct them): judge the colours as they would look in neutral daylight, allowing for the light\'s cast (warm indoor light makes white look ivory and grey look beige) as well as for shadows, sheen and folds.';
+  return 'These photos may or may not have been white-balanced. Judge the colours as they would look in neutral daylight: allow for a warm or cool cast only where the photo clearly has one (whites and greys look tinted), and for shadows, sheen and folds.';
+}
+const wbOf = body => (body && typeof body.wb === 'boolean' ? body.wb : undefined);
 
 /* ---- Claude API ---- */
 const CLAUDE_DEFAULT = 'claude-opus-5-5';
@@ -275,38 +287,64 @@ function correctionsText(list) {
     + l.map(f => `  ${f.type} ${f.field}: ${f.from} -> ${f.to}`).join('\n') : '';
 }
 
+const CLAUDE_SYSTEM = 'You are a menswear expert who labels clothing photos for a wardrobe app.';
+/* each call to Claude: at most 3 minutes an attempt; one retry after 2 s, or the API's retry-after up to 20 s */
+const CLAUDE_MS = 180000, CLAUDE_RETRY_MS = 2000, CLAUDE_RETRY_MAX = 20000;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function tagWithClaude(env, image, opts = {}) {
   const m = image.match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   if (!m) return { status: 400, body: { error: 'no image' } };
   const model = env.CLAUDE_MODEL || CLAUDE_DEFAULT;
   const headers = { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
+  /* The order is the cache's: the system prompt holds the fixed instructions (opts.prompt, the same for every call of a kind) with
+     the first cache point, then the owner's colours, patterns and corrections (opts.owner, the same from call to call) with the
+     second; the photos and what changes with each call (opts.text: the close-up note, the light, the measurement) come last.
+     The fixed text used to follow the photos, so nothing could be cached. A prefix under the model's minimum is simply not cached */
+  const cached = t => ({ type: 'text', text: t, cache_control: { type: 'ephemeral' } });
   const body = {
     model,
     max_tokens: opts.maxTokens || 4000,    // thinking counts toward this; a single item's JSON is ~100 tokens
     output_config: { effort: opts.effort || 'low', format: { type: 'json_schema', schema: opts.schema || TAG_SCHEMA } },
-    system: 'You are a menswear expert who labels clothing photos for a wardrobe app. The app has already white-balanced the photos, '
-      + 'so take their colours as shown and do not shift them for warm or cool light; only allow for shadows, sheen and folds.',
+    system: [cached(CLAUDE_SYSTEM + '\n\n' + (opts.prompt || TAG_INTRO + TAG_RULES)), ...(opts.owner ? [cached(opts.owner.trim())] : [])],
     messages: [{ role: 'user', content: [
       { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
       ...(opts.closeup ? [{ type: 'image', source: { type: 'base64', media_type: opts.closeup[1], data: opts.closeup[2] } }] : []),
-      { type: 'text', text: (opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.\n\n' : '') + (opts.prompt || PROMPT) },
+      { type: 'text', text: [opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.' : '', lightText(opts.wb), (opts.text || '').trim()].filter(Boolean).join('\n\n') },
     ] }],
   };
   // If a safety classifier declines (very unlikely for clothing photos), let the API retry on its recommended model.
   if (/opus|fable|sonnet-5-5/.test(model)) { body.fallbacks = 'default'; headers['anthropic-beta'] = 'server-side-fallback-2026-07-01'; }
-  let r;
-  try { r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) }); }
-  catch (e) { return { status: 502, body: { error: 'ai', detail: 'Could not reach the Claude API: ' + String(e && e.message) } }; }
-  const out = await r.json().catch(() => null);
+  const sent = JSON.stringify(body), pause = env.CLAUDE_RETRY_MS != null ? +env.CLAUDE_RETRY_MS || 0 : CLAUDE_RETRY_MS;   // (tests set it to 0)
+  let r, out;
+  // one automatic retry on an overloaded or failing API (429, 529, 5xx, a dropped connection), after its retry-after or a short
+  // pause; every attempt has a time limit (CLAUDE_MS)
+  for (let attempt = 1; ; attempt++) {
+    try { r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: sent, signal: AbortSignal.timeout(CLAUDE_MS) }); }
+    catch (e) {
+      if (e && e.name === 'TimeoutError') return { status: 504, body: { error: 'ai', detail: `Claude took over ${CLAUDE_MS / 60000} minutes to answer. Try again.` } };
+      if (attempt < 2) { await sleep(pause); continue; }
+      return { status: 502, body: { error: 'ai', detail: 'Could not reach the Claude API: ' + String(e && e.message) } };
+    }
+    if (attempt < 2 && (r.status === 429 || r.status >= 500)) {
+      const after = Math.min(CLAUDE_RETRY_MAX, Math.max(pause, (+r.headers.get('retry-after') || 0) * 1000));
+      console.log(`Claude API ${r.status}; trying again in ${after} ms`);
+      try { await r.body?.cancel(); } catch { }
+      await sleep(after); continue;
+    }
+    out = await r.json().catch(() => null);
+    break;
+  }
   if (!r.ok) {
     const msg = out && out.error && out.error.message || `HTTP ${r.status}`;
-    const hint = r.status === 401 ? ' (check the ANTHROPIC_API_KEY secret)' : /credit|billing/i.test(msg) ? ' (add credits in the Claude Console: Billing)' : r.status === 429 ? ' (rate limited; try again shortly)' : '';
+    const hint = r.status === 401 ? ' (check the ANTHROPIC_API_KEY secret)' : /credit|billing/i.test(msg) ? ' (add credits in the Claude Console: Billing)' : r.status === 429 ? ' (rate limited; try again shortly)' : r.status === 529 ? ' (overloaded; try again shortly)' : '';
     return { status: 502, body: { error: 'ai', detail: `Claude API: ${msg}${hint}` } };
   }
+  if (!out) return { status: 502, body: { error: 'ai', detail: 'Claude API: an answer that was not JSON' } };
   if (out.stop_reason === 'refusal') return { status: 502, body: { error: 'ai', detail: 'Claude declined to label this photo.' } };
   if (out.stop_reason === 'max_tokens') return { status: 502, body: { error: 'ai', detail: 'Claude ran out of tokens before answering.' } };
   const text = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  console.log(`tagged by Claude (${out.model}); tokens in ${out.usage && out.usage.input_tokens}, out ${out.usage && out.usage.output_tokens}`);
+  const u = out.usage || {};
+  console.log(`tagged by Claude (${out.model}); tokens in ${u.input_tokens}, cache read ${u.cache_read_input_tokens || 0}, cache written ${u.cache_creation_input_tokens || 0}, out ${u.output_tokens}`);
   try { return { status: 200, body: { ...JSON.parse(text), model: out.model } }; }
   catch { return { status: 502, body: { error: 'unparseable model output', detail: text.slice(0, 300) } }; }
 }
@@ -322,7 +360,8 @@ function cleanTag(t) {
     return { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) }; };
   let weave = null;
   if (t.weave && typeof t.weave === 'object') { const w = t.weave;
-    weave = { layout: w.layout, direction: w.direction, repeatsAcross: Math.max(.2, Math.min(12, +w.repeatsAcross || 1)),
+    // up to 80: a pinstripe jacket has 20-40 stripes across its front (the prompt says so); capped at 12 it was drawn 2.5x too wide
+    weave = { layout: w.layout, direction: w.direction, repeatsAcross: Math.max(.2, Math.min(80, +w.repeatsAcross || 1)),
       colours: (Array.isArray(w.colours) ? w.colours : []).slice(0, 24).filter(c => c && HEX_RE.test(c.hex || '')).map(c => ({ name: txt(c.name, 30), hex: c.hex.toLowerCase(), width: ['hairline', 'narrow', 'medium', 'wide'].includes(c.width) ? c.width : 'medium' })),
       crossing: txt(w.crossing, 300), description: txt(w.description, 600) }; }
   const own = c => c && typeof c === 'object' && HEX_RE.test(c.hex || '') && /[a-z]{2}/i.test(txt(c.name, 30)) ? { name: txt(c.name, 30).toLowerCase(), hex: c.hex.toLowerCase() } : null;
@@ -350,7 +389,7 @@ const MULTI_SCHEMA = {
   } } },
 };
 const MULTI_PROMPT = `This photo shows several clothing items, for example dress shirts hanging on a closet rail, suits or blazers on
-hangers, or trousers hanging or folded. List every distinct item you can see, from left to right. Reply with JSON only.
+hangers, or trousers hanging or folded. List every distinct item you can see, from left to right.
 
 Rules:
 - Each physical item is listed once. Count sleeves, collars and hangers to separate neighbouring items; items that overlap
@@ -375,7 +414,7 @@ async function handleTagMany(req, env, json, who) {
   const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
     properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT + customText(custom) + correctionsText(body.corrections), maxTokens: 16000, effort: 'medium' });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium' });
   if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
@@ -517,7 +556,7 @@ async function handlePattern(req, env, json, who) {
   const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
   const over = await spend(env, who, 'pattern'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: kind + PATTERN_PROMPT, closeup: cm, effort: 'high', maxTokens: 16000 });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000 });
   if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
   const out = cleanPattern(c.body);
   if (!out.across && !out.motif && !out.texture) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
@@ -1297,7 +1336,10 @@ function mergeLite(a, b) {
   for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; if (!cur || stampOf(it) > stampOf(cur)) items[it.id] = it; }
   for (const id of Object.keys(items)) if (tomb[id] && tomb[id] >= stampOf(items[id])) delete items[id];
   const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
-  const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; if (!cur || (d.updated || 0) > (cur.updated || 0)) days[d.date] = d; }
+  // (a newer copy that is only the app's lock of the week loses to an older copy changed after the version the lock was built on:
+  // core.js dayWins, 2026-11-14)
+  const dayWins = (o, n) => !o || o === n || !n.lockOnly ? n : ((o.lockOnly ? o.base : o.updated) || 0) > (n.base || 0) ? o : n;
+  const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; days[d.date] = !cur || (d.updated || 0) > (cur.updated || 0) ? dayWins(cur, d) : dayWins(d, cur); }
   const settings = a.settings && b.settings ? ((a.settings.updated || 0) >= (b.settings.updated || 0) ? a.settings : b.settings) : (a.settings || b.settings || null);
   return { items: Object.values(items), tombstones: tomb, days: Object.values(days), settings };
 }
@@ -2111,8 +2153,11 @@ async function serve(req, env, cors, allowed, origin) {
     const custom = cleanCustom(body.custom), cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
     // never both: together the answer's schema is more than the API compiles ("compiled grammar is too large", 2026-11-13)
     const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
-    const prompt = PROMPT + customText(custom) + SINGLE_EXTRA + (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured) + correctionsText(body.corrections);
-    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt, closeup: cm, effort: 'medium', maxTokens: 12000 });
+    // fixed (cached): the rules and the single-item extras; the owner's own (cached next): colours, patterns, corrections; per call:
+    // the picker's extras and the measurement
+    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA,
+      owner: customText(custom) + correctionsText(body.corrections), text: (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured),
+      closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 12000 });
     if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
     return json(c.body, c.status);
   }

@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       const unmarked=lastWorn(o2);delete dayRecs['2026-11-9'];return {d:d&&key(d),diff,unmarked:unmarked&&key(unmarked)}});
     ok(cap.d==='2026-11-2'&&cap.diff===null,'last worn finds the most recent day with the same look');
     ok(cap.unmarked==='2026-11-2',`a day never marked worn isn't "last worn" (${cap.unmarked})`);
-    await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};figView='photo';renderToday()});
+    await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};renderToday()});
     ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
     // there is no month batch (the owner, 2026-11-13: no bulk paid pictures): Settings offers only this day's photo
     await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings('photos')});
