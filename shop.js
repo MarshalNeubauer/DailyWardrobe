@@ -80,7 +80,7 @@ function shopSwipe(){if(shopSwipeOn)return;const v=$('#shop-sheet'),bd=$('#shop-
 /* run the analysis in the background; the sheet fills in section by section */
 function analyzeWardrobe(){
   if(shopWorker){shopWorker.terminate();shopWorker=null}
-  const sig=shopSig(),strip=({photo,swatch,stripes,texture,sett,patternText,weave,pbox,patternSpec,meas,...i})=>i;   // the planner needs the tags only: no pictures
+  const sig=shopSig(),strip=({photo,swatch,stripes,texture,sett,patternText,weave,pbox,patternSpec,meas,tagAI,...i})=>i;   // the planner needs the tags only: no pictures (nor how sure the tagger was)
   const payload={list:items.map(strip),days:Object.values(dayRecs),settings,weather,climate,today:TODAY_OVERRIDE,weeks:SHOP_WEEKS};
   const redraw=()=>{if(shopOpen)renderShop();const b=$('#shop-btn');if(b)b.outerHTML=shopButton()};
   const finish=res=>{shopWorker=null;shopBusy=null;shopPart=null;shop={sig,at:Date.now(),res};metaPut('shop',shop).catch(()=>{});redraw()};

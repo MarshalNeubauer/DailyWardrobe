@@ -271,15 +271,38 @@ function colourVerdicts(q){const m=q.meas;if(!m||!m.lab||!q.type)return [];const
     let agree=null;if(m.photo&&!part){const pn=nearestCols(q.type,m.photo.lab,false,{kL:2,skip:q.id})[0];agree=!!pn&&(pn.c===best.c||dE00(m.photo.lab,m.lab,3)<5)}
     const cal=(accent?0:!!calibLab(tag,q.type,q.id)+!!calibLab(best.c,q.type,q.id));
     const conf=best.c===tag?0:measConf({gap,best:best.d,spread:part?null:m.spread,sharp:m.sharp,ref:m.ref,src:m.src,agree,part:!!part,cal});
-    const trusted=m.src==='closeup'||m.ref,mode=best.c===tag||!colsFor(q.type,accent).includes(best.c)?null:trusted&&conf>=MEAS_AUTO?'auto':conf>=MEAS_FLAG&&gap>=MEAS_FLAG_GAP&&best.d<=FAR_DE?'flag':null;
-    out.push({f,from:tag,to:best.c,d:best.d,dTag,gap,conf,mode,part:part?part.role:null,lab,cal})}
+    const ai=aiFor(q,f,tag,best.c),mode=verdictMode({same:best.c===tag,inList:colsFor(q.type,accent).includes(best.c),trusted:m.src==='closeup'||!!m.ref,ref:!!m.ref,conf,canFlag:gap>=MEAS_FLAG_GAP&&best.d<=FAR_DE},ai);
+    out.push({f,from:tag,to:best.c,d:best.d,dTag,gap,conf,mode,part:part?part.role:null,lab,cal,...(ai?{ai:ai.c}:{})})}
   return out}
+/* ---- Claude's own signals in the verdict (2026-11-14, the owner's "Do 2"): how sure Claude was of the colour and its runner-up
+   (q.tagAI, from the same answer: no extra call) weigh with the measurement. Only while the field still holds Claude's answer.
+   - Claude unsure (low) and its runner-up is the measured colour: the measurement decides from AI_LOW_AUTO (close-up or white
+     reference), and asks from AI_LOW_FLAG
+   - Claude sure (high) and no white reference: never changed; asked only from AI_HIGH_FLAG
+   - otherwise (medium, no signals, a runner-up that is a third colour): the measurement alone, as before (MEAS_AUTO, MEAS_FLAG)
+   A runner-up that agrees is no evidence by itself: tagging again with the close-up tells Claude the measurement and asks it to
+   name the measured colour as runner-up when it picks another (worker.js), so it nearly always agrees. ---- */
+/* calibrated 2026-11-14 by replaying mocked answers over the owner's 42 close-up items and the walkthrough's 24 (no saved item had
+   Claude's confidence yet): 0 wrong changes on both when Claude, right, says high or medium; recall is small (the measuring itself
+   matches his tags 40% of the time) and is an estimate until items are tagged with the signals saved (item.tagAI) */
+const AI_LOW_AUTO=.55,AI_LOW_FLAG=.25,AI_HIGH_FLAG=.6;
+function aiFor(q,f,tag,to){const t=q.tagAI;if(f!=='primaryColor'||!t||t.col!==tag||!t.conf||!t.conf.primaryColor)return null;
+  return {c:t.conf.primaryColor,agree:!!t.alt&&t.alt===to}}
+function verdictMode(x,ai){if(x.same||!x.inList)return null;const c=ai&&ai.c;
+  if(c==='high'&&!x.ref)return x.canFlag&&x.conf>=AI_HIGH_FLAG?'flag':null;
+  if(c==='low'&&ai.agree&&x.trusted&&x.conf>=AI_LOW_AUTO)return 'auto';
+  if(x.trusted&&x.conf>=MEAS_AUTO)return 'auto';
+  return x.canFlag&&x.conf>=(c==='low'?AI_LOW_FLAG:MEAS_FLAG)?'flag':null}
+/* what of Claude's answer is kept (on the card, then the saved item): the colour it gave, how sure it was of each field, its
+   runner-ups, and whether it was told the measurement (seen). tag-many gives one confidence for the whole item */
+function aiSignals(ai,seen){if(!ai)return null;const c=ai.conf||(typeof ai.confidence==='string'?{type:ai.confidence,primaryColor:ai.confidence,pattern:ai.confidence}:null);
+  return {col:aiFields(ai).primaryColor,conf:c?{type:c.type||null,primaryColor:c.primaryColor||null,pattern:c.pattern||null}:null,alt:ai.altColor||null,altPat:ai.altPattern||null,seen:!!seen}}
 /* the card takes a confident measurement: the colour changes and the card says so with an Undo; a field set by hand, or one whose
    change was undone, stays */
 function applyMeasured(q){if(!q||q.manual)return [];const done=[];q.auto=q.auto||{};
   for(const f of Object.keys(q.auto))if(q[f]!==q.auto[f].to)delete q.auto[f];   // Claude's answer (tagging again) or the owner changed it since
   for(const v of q.measV||[]){if(v.mode!=='auto'||(q.edited&&q.edited[v.f])||(q.autoUndo&&q.autoUndo[v.f]===v.to)||q[v.f]===v.to)continue;
-    q.auto[v.f]={from:q[v.f],to:v.to,src:q.meas.src,conf:v.conf};q[v.f]=v.to;done.push(v.f)}
+    q.auto[v.f]={from:q[v.f],to:v.to,src:q.meas.src,conf:v.conf,...(v.ai?{ai:v.ai}:{})};q[v.f]=v.to;done.push(v.f)}
   if(done.length){if(q.texCanvas&&typeof generateSwatch==='function')generateSwatch(q);q.measV=colourVerdicts(q)}
   return done}
 function undoMeasured(i,f){const q=queue[i];if(!q||!q.auto||!q.auto[f])return;const a=q.auto[f];q[f]=a.from;delete q.auto[f];q.autoUndo={...q.autoUndo,[f]:a.to};q.edited={...q.edited,[f]:true};
@@ -295,19 +318,19 @@ const valName=(k,v)=>!v?'none':k==='type'?(TYPES[v]||v).toLowerCase():k==='patte
 /* what the tagger answered, as the card's values (the same normalising as a first tag) */
 function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?ai.primaryColor:'grey',secondaryColor:ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null,
   tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:normPat(ai.type,ai.pattern)}}
-function takeExtras(q,ai){Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
+function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
   q.aiTag={...aiFields(ai)};readSett(q)}
 async function closeTagImg(q){const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);
   if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();return}
   q.refining=1;renderAdd();
-  const ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:measHint(q.meas),wb:!!(q.wb&&!q.wbOff)});const k=queue.indexOf(q);q.refining=0;
+  const hint=measHint(q.meas),ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)});const k=queue.indexOf(q);q.refining=0;
   if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0)renderAdd();return}
   const f=aiFields(ai),changes=[];
   for(const key of TAG_FIELDS)if(!(q.edited&&q.edited[key])&&f[key]!==q[key]){changes.push(`${fieldLabel[key]} ${valName(key,q[key])} → ${valName(key,f[key])}`);q[key]=f[key]}
   if(changes.some(c=>c.startsWith('item ')))q.pattern=normPat(q.type,q.pattern);
-  takeExtras(q,ai);measureAndApply(q);q.model=ai.model||q.model;
+  takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
   readPatternWithClaude(q)}
 
@@ -326,7 +349,7 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colo
     out.push(pv.length?`<p class="tagnote measrow">${m.parts.map(p=>`<span class="msw" style="background:${p.hex}" title="${p.hex}"></span>`).join('')}<small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: ${pv.map(v=>`${v.part==='ground'?'ground':'stripe'} closest to ${esc(colName(v.to))}`).join(', ')}</small></p>`
       :`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
   // changed by the measurement (with Undo), or asked about when it is not sure
-  for(const [f,a] of Object.entries(q.auto||{}))out.push(`<div class="offer measauto" data-f="${f}"><small>Changed ${f==='primaryColor'?'':fieldLabel[f]+' '}${esc(colName(a.from))} → <b>${esc(colName(a.to))}</b> (measured from ${a.src==='closeup'?'your close-up':'your photo'})</small><button type="button" class="chipbtn" onclick="undoMeasured(${i},'${f}')">Undo</button></div>`);
+  for(const [f,a] of Object.entries(q.auto||{}))out.push(`<div class="offer measauto" data-f="${f}"><small>Changed ${f==='primaryColor'?'':fieldLabel[f]+' '}${esc(colName(a.from))} → <b>${esc(colName(a.to))}</b> (measured from ${a.src==='closeup'?'your close-up':'your photo'}${a.ai==='low'?'; Claude wasn’t sure':''})</small><button type="button" class="chipbtn" onclick="undoMeasured(${i},'${f}')">Undo</button></div>`);
   for(const v of q.measV||[])if(v.mode==='flag'&&!(q.edited&&q.edited[v.f])&&!(q.auto&&q.auto[v.f]))out.push(`<div class="offer measalt" data-f="${v.f}"><small>Measured${v.f==='primaryColor'?'':` ${fieldLabel[v.f]}`}: <b>${esc(colName(v.to))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'${v.f}','${v.to}')">Use ${esc(colName(v.to))}</button></div>`);
   const mp=q.missed&&q.raw&&q.missed.c===q.raw.tex?q.missed.p:null;   // (missedPattern, worked out when the card was measured)
   if(mp&&(patBase(q.pattern)||'solid')==='solid'&&!(q.edited&&q.edited.pattern))out.push(`<div class="offer measpat"><small>The close-up shows ${/check|pane/.test(mp)?'a check':'stripes'}: <b>${esc(patName(mp))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'pattern','${mp}')">Use ${esc(patName(mp))}</button></div>`);
