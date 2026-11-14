@@ -76,8 +76,8 @@ function tagFailText(status,j,e){
 function tagFailed(q){if(localStorage.getItem('worker_url'))q.tagErr=tagWhy||'The tagging service gave no answer.'}
 const tagFailNote=(q,i)=>q.tagErr?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)} <span class="tagfail-do">Fill in the details yourself, or try again.</span></p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
-  q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg)}catch(e){console.warn(e)}
-  q.busy=0;if(ai){delete q.tagErr;await fill(q,ai);takeExtras(q,ai);measureCard(q)}else tagFailed(q);
+  q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn(e)}
+  q.busy=0;if(ai){delete q.tagErr;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}else tagFailed(q);
   if(queue.includes(q))renderAdd()}
 
 /* ---- unsaved Add cards: closing or reloading the page asks first. Installed with the first card. ---- */

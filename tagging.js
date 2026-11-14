@@ -7,14 +7,21 @@ const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
 const tagFixes=skipId=>(settings.tagFixes||[]).filter(f=>f.id!==skipId).slice(-20).map(({field,type,from,to})=>({field,type,from,to}));
-const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{})});
+const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
 
 /* ---- tagging copies: the sharp photo sent to the tagger is kept on this device only (Cache Storage, not synced, not loaded
    at start-up), so the benchmark can re-tag an item from the same picture later ---- */
 const TAGIMG_CACHE='dw-keep-tagimg';
-async function keepTagImg(id,url){try{if(!url||!self.caches)return;const c=await caches.open(TAGIMG_CACHE);await c.put(new Request('tagimg/'+id),new Response(await (await fetch(url)).blob()))}catch(e){console.warn('tag copy not kept',e)}}
-async function tagImgOf(id){try{if(!self.caches)return null;const c=await caches.open(TAGIMG_CACHE),r=await c.match(new Request('tagimg/'+id));if(!r)return null;
+/* (2026-11-14) signed with the item photo it belongs to (x-ph: phSigOf of the photo, like a close-up's texSig): after Replace photo, or an
+   Undo back to another picture, the old copy is no longer handed out to "Read pattern from photo", Ask Claude or the recolouring, which
+   sent the old picture. Replace and Rotate keep a new copy (keepPhotoCopy in app.js); a crop or an upgrade of the same picture signs the
+   copy again (resignTagImg). tagImgOf(id) without the item (the crop's own similarity test) takes any copy. */
+async function keepTagImg(id,url,photo){try{if(!url||!self.caches)return;const c=await caches.open(TAGIMG_CACHE);
+  await c.put(new Request('tagimg/'+id),new Response(await (await fetch(url)).blob(),{headers:{'content-type':'image/jpeg',...(photo?{'x-ph':texSig(photo)}:{})}}))}catch(e){console.warn('tag copy not kept',e)}}
+async function tagImgOf(id,it){try{if(!self.caches)return null;const c=await caches.open(TAGIMG_CACHE),r=await c.match(new Request('tagimg/'+id));if(!r)return null;
+  const sig=r.headers.get('x-ph');if(it&&sig&&sig!==texSig(it.photo||''))return null;   // a copy of another picture than the item's photo now
   const b=await r.blob();return await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)})}catch{return null}}
+async function resignTagImg(id,photo){try{const u=await tagImgOf(id);if(u)await keepTagImg(id,u,photo)}catch{}}
 
 /* the sharp close-up (CLOSE_MAX, on this device only, in the same cache): the synced close-up was 640 px until 2026-11-13 (TEX_MAX is now
    1536, the same), too small for a fine weave
@@ -69,7 +76,7 @@ async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V
       const ma=mean(ph),mb=mean(c),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
       const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
       for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
-      it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
+      it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
   try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
   if(n){cache={};if(typeof renderWardrobe==='function')renderWardrobe();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
@@ -77,7 +84,7 @@ async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */
-function wbRead(c){
+function wbRead(c,{strict=false}={}){
   const k=Math.min(1,200/Math.max(c.width,c.height)),w=Math.max(1,Math.round(c.width*k)),h=Math.max(1,Math.round(c.height*k)),t=document.createElement('canvas');t.width=w;t.height=h;
   const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0,w,h);const d=x.getImageData(0,0,w,h).data,n=w*h,lums=new Float32Array(n);
   for(let i=0,j=0;i<d.length;i+=4,j++)lums[j]=(d[i]+d[i+1]+d[i+2])/3;
@@ -92,10 +99,37 @@ function wbRead(c){
   const isRef=new Uint8Array(n);for(let i=0,j=0;i<d.length;i+=4,j++){if(lums[j]<thr)continue;const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);if(!(mx>=250&&mn>=250)&&(mx-mn)/mx<.35)isRef[j]=1}
   let solid=0;for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const j=y*w+x;if(isRef[j]&&isRef[j-1]+isRef[j+1]+isRef[j-w]+isRef[j+w]>=3)solid++}
   if(solid<m*.5||(R+G+B)/3/m<1.15*p25)return {gains:null,ref:false,refLum:0,frac:m/n};
+  const st=strict?wbSolidStats(d,lums,isRef,w,h,(R+G+B)/3/m):null;
+  if(st&&!wbSolidOk(st))return {gains:null,ref:false,refLum:0,frac:m/n,st};
   const g=(R+G+B)/3/m,cl=v=>Math.min(1.18,Math.max(.85,v)),gains={r:cl(g/(R/m)),g:cl(g/(G/m)),b:cl(g/(B/m))};
   const sig=Math.max(...Object.values(gains).map(v=>Math.abs(v-1)))>=.02;
-  return {gains:sig?gains:null,ref:true,refLum:(R/m*gains.r+G/m*gains.g+B/m*gains.b)/3,frac:m/n}}
+  return {gains:sig?gains:null,ref:true,refLum:(R/m*gains.r+G/m*gains.g+B/m*gains.b)/3,frac:m/n,...(st?{st}:{})}}
 const wbGains=c=>wbRead(c).gains;
+/* a close-up's white reference must be a real patch of paper (or a white shirt's front), not the cloth's own light parts (2026-11-14,
+   the new-user walkthrough: "white paper" was found in close-ups of a light blue shirt, cream trousers, a white/blue stripe and a check
+   blazer, and their exposure was corrected the wrong way). Three tests on the reference pixels (isRef, at most 200 px):
+   - a solid core: what is left after taking 2 px off every edge covers WB_CORE (1%) of the picture (a check's light lines, a stripe's
+     narrow white and a fold's highlight are thinner than that);
+   - set apart in lightness: the reference is WB_GAP (28 levels) brighter than the cloth's median, and few pixels (under WB_TRANS, 7%)
+     lie between half way and the reference (paper's edge is a thin line; a light cloth's own highlights shade into it);
+   - not a lighter copy of a coloured cloth: when the cloth has colour (C* WB_CHROMA 7 or more), the reference may not lean the same way
+     (hue within 35° and over 40% of its chroma): a light blue shirt's highlights are light blue, paper takes the light's cast. */
+const WB_CORE=.01,WB_GAP=28,WB_TRANS=.07,WB_CHROMA=7;
+function wbSolidStats(d,lums,isRef,w,h,refLum){const n=w*h;let core=0;
+  for(let y=2;y<h-2;y++)for(let x=2;x<w-2;x++){let all=1;for(let j=-2;j<=2&&all;j++)for(let i=-2;i<=2;i++)if(!isRef[(y+j)*w+x+i]){all=0;break}core+=all}
+  const cl=[];let ra=0,rb=0,rn=0;const ca=[],cb=[];
+  for(let j=0;j<n;j++){if(isRef[j]){const l=rgbLab(d[4*j],d[4*j+1],d[4*j+2]);ra+=l[1];rb+=l[2];rn++}else{cl.push(lums[j]);if(j%3===0){const l=rgbLab(d[4*j],d[4*j+1],d[4*j+2]);ca.push(l[1]);cb.push(l[2])}}}
+  cl.sort((a,b)=>a-b);const med=cl.length?cl[cl.length>>1]:0,gap=refLum-med;
+  let trans=0;for(const v of cl)if(v>med+gap*.5)trans++;
+  const md=a=>{const s=a.slice().sort((x,y)=>x-y);return s.length?s[s.length>>1]:0},cA=md(ca),cB=md(cb),Cc=Math.hypot(cA,cB),rA=rn?ra/rn:0,rB=rn?rb/rn:0,Cr=Math.hypot(rA,rB);
+  let hue=180;if(Cc>0&&Cr>0){hue=Math.abs(Math.atan2(rB,rA)-Math.atan2(cB,cA))*180/Math.PI;if(hue>180)hue=360-hue}
+  return {core:core/n,gap,trans:trans/n,Cc,Cr,hue}}
+function wbSolidOk(s){
+  if(s.core<WB_CORE||s.gap<WB_GAP||s.trans>WB_TRANS)return false;
+  if(s.Cc>=WB_CHROMA&&s.hue<35&&s.Cr>.4*s.Cc)return false;
+  return true}
+/* the light reading of a close-up: strict about what counts as white paper */
+const closeRead=c=>wbRead(c,{strict:true});
 
 /* ---- measuring the cloth: the median CIELAB colour of a region (a box in thousandths, or the middle of the picture), after
    the white-balance gains; with a white reference (paper in the close-up) the exposure is also set from it, so lightness is
@@ -107,34 +141,153 @@ function measureCloth(c,box,{gains=null,refLum=0}={}){
   const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,bx.x,bx.y,bx.w,bx.h,0,0,w,h);const d=x.getImageData(0,0,w,h).data;
   const g=gains||{r:1,g:1,b:1},ex=refLum?sLin(243)/sLin(Math.min(250,refLum)):1;
   let px=[];for(let i=0;i<d.length;i+=4){const rgb=[d[i]*g.r,d[i+1]*g.g,d[i+2]*g.b].map(v=>linS(Math.min(1,sLin(Math.min(255,v))*ex)));px.push(rgb)}
-  if(refLum){const keep=px.filter(([r,gg,b])=>{const mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);return !(mx>225&&(mx-mn)/mx<.12)});if(keep.length>=px.length*.2)px=keep}   // not the paper
-  const labs=px.map(p=>rgbLab(...p)).sort((a,b)=>a[0]-b[0]),cut=Math.floor(labs.length*.1),mid=labs.slice(cut,labs.length-cut||labs.length);
+  const ok=new Uint8Array(px.length).fill(1);
+  if(refLum){let n=0;const no=px.map(([r,gg,b])=>{const mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);return mx>225&&(mx-mn)/mx<.12});for(const v of no)if(!v)n++;if(n>=px.length*.2)no.forEach((v,j)=>{if(v)ok[j]=0})}   // not the paper
+  const all=px.map(p=>rgbLab(...p)),edge=measEdgeCut(all,ok,w,h);
+  const labs=all.filter((_,j)=>ok[j]).sort((a,b)=>a[0]-b[0]),cut=Math.floor(labs.length*.1),mid=labs.slice(cut,labs.length-cut||labs.length);
   const med=j=>{const v=mid.map(l=>l[j]).sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};
-  const lab=[med(0),med(1),med(2)].map(v=>Math.round(v*10)/10);return {lab,hex:labHex(lab),ref:!!refLum}}
+  const lab=[med(0),med(1),med(2)].map(v=>Math.round(v*10)/10),dl=labs.map(l=>Math.hypot(l[0]-lab[0],l[1]-lab[1],l[2]-lab[2])).sort((a,b)=>a-b);
+  const out={lab,hex:labHex(lab),ref:!!refLum,spread:Math.round(10*(dl[dl.length>>1]||0))/10,edge:Math.round(100*edge)/100};
+  Object.defineProperty(out,'px',{value:labs,enumerable:false});   // the cloth's pixels (for the pattern's colours), never saved or sent
+  return out}
+/* the background, or a collar or shirt caught at the crop's edge (2026-11-14: the walkthrough's belt measured the wall behind it): pixels
+   far from the cloth's own colour (ΔE76 over 14, or 3 times the usual distance) that are joined to the region's edge are left out, when
+   they are under MEAS_EDGE_MAX (45%) of it (more than that is the cloth itself, a stripe touching the edge everywhere) */
+const MEAS_EDGE_MAX=.45;
+function measEdgeCut(all,ok,w,h){const n=all.length,idx=[];for(let j=0;j<n;j++)if(ok[j])idx.push(j);if(idx.length<50)return 0;
+  const md=k=>{const v=idx.map(j=>all[j][k]).sort((a,b)=>a-b);return v[v.length>>1]},m=[md(0),md(1),md(2)];
+  const d=new Float32Array(n);for(const j of idx)d[j]=Math.hypot(all[j][0]-m[0],all[j][1]-m[1],all[j][2]-m[2]);
+  const ds=idx.map(j=>d[j]).sort((a,b)=>a-b),thr=Math.max(14,3*ds[ds.length>>1]),far=j=>ok[j]&&d[j]>thr;
+  const cut=new Uint8Array(n),st=[];for(let x=0;x<w;x++)for(const y of [0,h-1]){const j=y*w+x;if(far(j)&&!cut[j]){cut[j]=1;st.push(j)}}
+  for(let y=0;y<h;y++)for(const x of [0,w-1]){const j=y*w+x;if(far(j)&&!cut[j]){cut[j]=1;st.push(j)}}
+  let c=st.length;while(st.length){const j=st.pop(),x=j%w,y=(j/w)|0;for(const k of [x>0?j-1:-1,x<w-1?j+1:-1,y>0?j-w:-1,y<h-1?j+w:-1])if(k>=0&&!cut[k]&&far(k)){cut[k]=1;c++;st.push(k)}}
+  if(c>idx.length*MEAS_EDGE_MAX||!c)return 0;for(let j=0;j<n;j++)if(cut[j])ok[j]=0;return c/idx.length}
 /* the colour each name has in this wardrobe: the median of the owner's own measured items of that colour (the same kind of
    item), once there are two; otherwise the app's swatch. Measurements with a white reference count first. */
+/* (2026-11-14) only plain cloth teaches it: a solid, or a one-colour weave (twill, herringbone, a shirt's dobby) with no second colour.
+   The walkthrough's plain brown tie measured nearest navy after two navy patterned ties had taught "navy" their stripes' average. An
+   item never teaches its own measurement (skip: its id), so a card or the calibration can't confirm itself. */
 const typeGroup=t=>['suit','blazer','pants','overcoat','raincoat'].includes(t)?'cloth':t;
-function calibLab(c,type){const ms=items.filter(i=>primaryCol(i)===c&&i.meas&&typeGroup(i.type)===typeGroup(type)).map(i=>i.meas),good=ms.filter(m=>m.ref),use=good.length>=2?good:ms;
+const ONE_COL_WEAVES=['solid','twill','herringbone','birdseye','nailhead','sharkskin','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit','tweed'];
+const plainCloth=i=>!!i&&ONE_COL_WEAVES.includes(patBase(i.pattern)||'solid')&&!i.secondaryColor;
+function calibLab(c,type,skip){const ms=items.filter(i=>i.id!==skip&&primaryCol(i)===c&&i.meas&&i.meas.lab&&plainCloth(i)&&typeGroup(i.type)===typeGroup(type)).map(i=>i.meas),good=ms.filter(m=>m.ref),use=good.length>=2?good:ms;
   if(use.length<2)return null;const med=j=>{const v=use.map(m=>m.lab[j]).sort((a,b)=>a-b);return v[Math.floor(v.length/2)]};return [med(0),med(1),med(2)]}
-function nearestCols(type,lab,ref){return colsFor(type).map(c=>({c,d:Math.round(dE00(lab,calibLab(c,type)||labOf(c),ref?1:2)*10)/10})).sort((a,b)=>a.d-b.d).slice(0,3)}
+/* how much lightness counts: fully with a white reference; a close-up without one is exposed by the phone to a mid tone whatever
+   the cloth (a white shirt reads light grey, navy reads lighter), so its lightness counts a third; a photo's half */
+const measKL=m=>m&&m.ref?1:m&&m.src==='closeup'?MEAS_KL_CLOSE:2,MEAS_KL_CLOSE=3;
+const colRef=(c,type,skip,accent)=>(!accent&&calibLab(c,type,skip))||labOf(c);
+function nearestCols(type,lab,ref,o={}){const kL=o.kL||(ref?1:2);return colsFor(type,o.accent).filter(c=>COLORS[c]).map(c=>({c,d:Math.round(dE00(lab,colRef(c,type,o.skip,o.accent),kL)*10)/10})).sort((a,b)=>a.d-b.d).slice(0,3)}
 const FAR_DE=12;   // further than this from every allowed colour: offer to add a new one
 /* the measured colour disagrees with the tag: the closest listed colour is near (ΔE ≤ 8) and the tagged one is clearly further
    (4+ ΔE more). Claude once kept "brown" on a muted, almost grey mink suit whose close-up measured deep taupe at ΔE 4 (brown 12).
    Only a close-up or a measurement with a white reference counts: the same suit's photo alone, too dark, measured nearest black. */
+/* (2026-11-14) now one verdict per colour (colourVerdicts): measuredAlt is the main colour's, when it disagrees enough to say so */
 const MEAS_NEAR=8,MEAS_GAP=4;
-function measuredAlt(q){const m=q.meas;if(!m||!m.lab||!m.near||!m.near.length||!q.primaryColor||!(m.src==='closeup'||m.ref))return null;const best=m.near[0];
-  if(best.c===q.primaryColor||best.d>MEAS_NEAR||!colsFor(q.type).includes(best.c))return null;
-  const tagged=Math.round(dE00(m.lab,calibLab(q.primaryColor,q.type)||labOf(q.primaryColor),m.ref?1:2)*10)/10;
-  return tagged-best.d>=MEAS_GAP?{c:best.c,d:best.d,tagged}:null}
+function measuredAlt(q){const v=(q.measV||colourVerdicts(q)).find(x=>x.f==='primaryColor');return v&&v.mode?{c:v.to,d:v.d,tagged:v.dTag,mode:v.mode,conf:v.conf}:null}
 /* the card's measurement: the close-up when there is one (with its own white reference if it has one, else the item photo's
    light reading), otherwise the plain-cloth box Claude pointed at in the item photo */
+/* (2026-11-14) with both, the photo is measured too (photo: its box) so the two can be compared (one of the confidence's parts); the
+   close-up's white reference must be a real patch (closeRead); its sharpness is kept (sharp) */
 function measureCard(q){
   let m=null;
-  if(q.raw&&q.raw.tex){const r=wbRead(q.raw.tex);
-    m=r.ref?{...measureCloth(q.raw.tex,null,{gains:r.gains,refLum:r.refLum}),src:'closeup'}:{...measureCloth(q.raw.tex,null,{gains:q.wbOff?null:q.wb}),src:'closeup'}}
-  else if(q.clothBox&&q.raw&&q.raw.big)m={...measureCloth(q.raw.big,q.clothBox,{gains:q.wbOff?null:q.wb}),src:'photo'};
-  if(m)m.near=nearestCols(q.type,m.lab,m.ref);q.meas=m;return m}
-const measHint=m=>m&&{lab:m.lab,hex:m.hex,ref:m.ref,src:m.src,near:m.near};
+  if(q.raw&&q.raw.tex){const r=closeRead(q.raw.tex);
+    m=Object.assign(measureCloth(q.raw.tex,null,r.ref?{gains:r.gains,refLum:r.refLum}:{gains:q.wbOff?null:q.wb}),{src:'closeup',sharp:sharpness(q.raw.tex)})}
+  if(q.clothBox&&q.raw&&q.raw.big){const p=Object.assign(measureCloth(q.raw.big,q.clothBox,{gains:q.wbOff?null:q.wb}),{src:'photo'});
+    if(m)m.photo={lab:p.lab,hex:p.hex,spread:p.spread};else m=p}
+  if(m){m.near=nearestCols(q.type,m.lab,m.ref,{kL:measKL(m),skip:q.id});m.parts=measureParts(q,m);if(m.parts)m.groundNear=nearestCols(q.type,m.parts[0].lab,m.ref,{kL:measKL(m),skip:q.id})}
+  q.meas=m;q.measV=m?colourVerdicts(q):[];return m}
+/* what the tagger is told: for a patterned cloth its ground (the whole picture's median of a white/blue stripe is a grey nobody wears) */
+const measHint=m=>m&&{lab:m.parts?m.parts[0].lab:m.lab,hex:m.parts?m.parts[0].hex:m.hex,ref:m.ref,src:m.src,near:m.parts&&m.groundNear?m.groundNear:m.near,...(m.parts?{parts:m.parts.map(p=>({role:p.role,hex:p.hex,share:p.share}))}:{})};
+
+/* ---- a patterned cloth's colours, measured one by one (2026-11-14, the owner's design): a white/blue stripe must read white and blue,
+   not the grey in between. With a band reading (detect.js analyzeSett, or Claude's reading coloured from the pixels) the widest band
+   is the ground and the band furthest from it the stripe or check; with none yet, the cloth's pixels are split in two (measSplit). The
+   ground is compared with the main colour, the stripe with the second. A one-colour weave (twill, a dobby) is measured whole. ---- */
+const MULTI_PATS=()=>[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS,'paisley','tonal-check'];
+const multiCol=i=>!!i&&MULTI_PATS().includes(patBase(i.pattern)||'solid');
+function measureParts(q,m){if(!multiCol(q)||!m||!m.px)return null;const L=h=>rgbLab(...hexRgb(h));
+  const s=q.sett&&!q.settOff?q.sett:null;let seed=null;
+  // the reading's colours come from another picture or exposure (the item photo's box, Claude's hexes): they only seed the split of
+  // this picture's own pixels, moved by the difference between the two medians
+  if(s&&s.bands&&s.bands.length>=2){const g=s.bands.reduce((a,b)=>b[1]>a[1]?b:a),gl=L(g[0]);let ln=null,bd=-1;
+    for(const b of s.bands)if(b!==g){const dd=dE00(L(b[0]),gl);if(dd>bd){bd=dd;ln=b}}
+    if(ln&&bd>=6)seed=[gl,L(ln[0])]}
+  else if(s&&s.motif&&s.motif.figs[0])seed=[L(s.motif.ground),L(s.motif.figs[0].cols[0])];
+  const parts=measSplit(m.px,seed);if(!parts)return null;
+  // two colours in about equal shares (a repp tie's navy and blue): which is the "ground" is the tagger's call, so the parts are named
+  // in the order nearest the tags
+  if(parts[0].share<.65&&q.secondaryColor&&COLORS[q.secondaryColor]&&COLORS[primaryCol(q)]){const P=labOf(primaryCol(q)),S=labOf(q.secondaryColor),[a,b]=parts;
+    if(dE00(a.lab,S)+dE00(b.lab,P)<dE00(a.lab,P)+dE00(b.lab,S))return [{...b,role:'ground'},{...a,role:'line'}]}
+  return parts}
+/* the cloth's pixels in two groups (k-means in Lab, from its two most different tenths, or from the reading's two colours): the larger
+   is the ground; a thin stripe is blurred with the ground beside it, so of the other group the half furthest from the ground gives its
+   colour */
+function measSplit(px,seed){if(px.length<60)return null;const n=px.length,st=Math.max(1,Math.floor(n/4000)),P=[];for(let j=0;j<n;j+=st)P.push(px[j]);
+  const md=k=>{const v=P.map(p=>p[k]).sort((a,b)=>a-b);return v[v.length>>1]},m=[md(0),md(1),md(2)],dm=p=>Math.hypot(p[0]-m[0],p[1]-m[1],p[2]-m[2]);
+  const far=P.slice().sort((a,b)=>dm(b)-dm(a)),c1=far[Math.floor(far.length*.05)];let A=m.slice(),B=c1.slice(),lab=new Uint8Array(P.length);
+  if(seed){const sm=[0,1,2].map(k=>seed[0][k]*.8+seed[1][k]*.2),off=m.map((v,k)=>v-sm[k]);A=seed[0].map((v,k)=>v+off[k]);B=seed[1].map((v,k)=>v+off[k])}
+  for(let it=0;it<10;it++){const sa=[0,0,0,0],sb=[0,0,0,0];P.forEach((p,j)=>{const da=Math.hypot(p[0]-A[0],p[1]-A[1],p[2]-A[2]),db=Math.hypot(p[0]-B[0],p[1]-B[1],p[2]-B[2]);lab[j]=db<da?1:0;const s=lab[j]?sb:sa;s[0]+=p[0];s[1]+=p[1];s[2]+=p[2];s[3]++});
+    if(!sa[3]||!sb[3])return null;A=sa.slice(0,3).map(v=>v/sa[3]);B=sb.slice(0,3).map(v=>v/sb[3])}
+  let nb=lab.reduce((s,v)=>s+v,0);if(nb>P.length/2){[A,B]=[B,A];lab=lab.map(v=>1-v);nb=P.length-nb}
+  if(dE00(A,B)<8||nb<P.length*.04)return null;   // one colour, or a few specks
+  const G=P.filter((_,j)=>!lab[j]),gm=[0,1,2].map(k=>{const v=G.map(p=>p[k]).sort((a,b)=>a-b);return v[v.length>>1]});
+  const Ls=P.filter((_,j)=>lab[j]).sort((a,b)=>Math.hypot(b[0]-gm[0],b[1]-gm[1],b[2]-gm[2])-Math.hypot(a[0]-gm[0],a[1]-gm[1],a[2]-gm[2])),half=Ls.slice(0,Math.max(6,Ls.length>>1));
+  const lm=[0,1,2].map(k=>half.reduce((s,p)=>s+p[k],0)/half.length),r=v=>v.map(x=>Math.round(x*10)/10);
+  return [{role:'ground',lab:r(gm),hex:labHex(gm),share:Math.round(100*(1-nb/P.length))/100,src:'pixels'},{role:'line',lab:r(lm),hex:labHex(lm),share:Math.round(100*nb/P.length)/100,src:'pixels'}]}
+
+/* ---- the close-up's sharpness (0-1): the fine detail's share of the detail at four times the scale, on a 400 px copy. A soft close-up
+   (a crop of a web photo, a shaken phone) has lost its fine detail; a plain cloth photographed sharply still has its grain and noise.
+   Under BLUR_SHARP the card warns that the weave can't be read (the walkthrough's pinstripe close-up was read as a check). ---- */
+const BLUR_SHARP=.25,sharpMemo=new WeakMap();
+function sharpness(c){if(!c||!c.width)return null;if(sharpMemo.has(c))return sharpMemo.get(c);
+  const grey=(S)=>{const k=Math.min(1,S/Math.max(c.width,c.height)),w=Math.max(8,Math.round(c.width*k)),h=Math.max(8,Math.round(c.height*k)),t=document.createElement('canvas');t.width=w;t.height=h;
+    const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0,w,h);const d=x.getImageData(0,0,w,h).data,g=new Float32Array(w*h);for(let j=0;j<w*h;j++)g[j]=.299*d[4*j]+.587*d[4*j+1]+.114*d[4*j+2];return {g,w,h}};
+  const lap=({g,w,h})=>{let s=0,n=0;for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const j=y*w+x;s+=Math.abs(4*g[j]-g[j-1]-g[j+1]-g[j-w]-g[j+w]);n++}return n?s/n:0};
+  const fine=lap(grey(400)),coarse=lap(grey(100)),v=Math.round(100*fine/(fine+coarse+1e-6))/100;sharpMemo.set(c,v);return v}
+
+/* ---- the verdict on each colour: does the measurement agree with the tag, and how sure is it (2026-11-14, the owner's design: colour
+   recognition runs on every item and, when confident, overrules the tag; when unsure it only asks). The confidence (0-1) comes from:
+   a white reference in the picture, the close-up's sharpness, how even the cloth (or the band) is, how much nearer the measured colour
+   is than the tagged one (ΔE00), how near it is at all, and whether the item photo agrees with the close-up. MEAS_AUTO is the
+   confidence that changes the colour, chosen on the owner's wardrobe so auto-changes were right 95% of the time; between MEAS_FLAG_GAP
+   and that, the card asks ("Measured: charcoal?") without changing it. A field set by hand (q.edited) is never overruled. ---- */
+/* calibrated 2026-11-14 on the owner's 42 items with a close-up (a read-only copy of his backup) and the walkthrough's 24: each item
+   measured as tagged and as tagged with its nearest other colour, and his own corrections replayed. No confidence reached 95% right:
+   the most confident wrong change (his pale pink herringbone shirt "white", 0.69) sat above every right one, so MEAS_AUTO is above
+   all of them (no colour changed by itself on either set) and stays there until the measuring earns it; MEAS_FLAG (0.4) asks about 4
+   of his 42 correct main colours (the old "Use …" offer came on 13 of them; on the walkthrough 1 of 24, was 14) */
+const MEAS_AUTO=.75,MEAS_FLAG=.4,MEAS_FLAG_GAP=3;
+const clamp01=v=>Math.max(0,Math.min(1,v));
+function measConf({gap,best,spread,sharp,ref,src,agree,part,cal}){
+  const g=clamp01((gap-1)/8),nr=clamp01((12-best)/8),u=spread==null?.6:clamp01((16-spread)/12),s=sharp==null?.7:clamp01((sharp-BLUR_SHARP*.8)/(.55-BLUR_SHARP*.8));
+  // cal: how many of the two colours (the tag's, the measured one's) are known from the owner's own plain items; a bare swatch is only
+  // a name's usual shade (the owner's pale pink shirt measured far from the app's pink, and nearest white)
+  const base=Math.sqrt(g*nr)*(.65+.35*u)*(.55+.45*s)*(ref?1:src==='closeup'?.88:.6)*(agree===true?1.1:agree===false?.6:1)*(part?.85:1)*[.6,.8,1][cal??2];
+  return Math.round(100*clamp01(base))/100}
+function colourVerdicts(q){const m=q.meas;if(!m||!m.lab||!q.type)return [];const out=[],kL=measKL(m);
+  const parts=m.parts,fields=[['primaryColor',parts?parts.find(p=>p.role==='ground'):null]];
+  if(parts&&q.secondaryColor)fields.push(['secondaryColor',parts.find(p=>p.role==='line')]);
+  for(const [f,part] of fields){const tag=f==='primaryColor'?primaryCol(q):q[f];if(!tag||!COLORS[tag])continue;const accent=f!=='primaryColor',lab=part?part.lab:m.lab;
+    const near=nearestCols(q.type,lab,m.ref,{kL,skip:q.id,accent}),best=near[0];if(!best)continue;
+    const dTag=Math.round(dE00(lab,colRef(tag,q.type,q.id,accent),kL)*10)/10,gap=Math.round((dTag-best.d)*10)/10;
+    let agree=null;if(m.photo&&!part){const pn=nearestCols(q.type,m.photo.lab,false,{kL:2,skip:q.id})[0];agree=!!pn&&(pn.c===best.c||dE00(m.photo.lab,m.lab,3)<5)}
+    const cal=(accent?0:!!calibLab(tag,q.type,q.id)+!!calibLab(best.c,q.type,q.id));
+    const conf=best.c===tag?0:measConf({gap,best:best.d,spread:part?null:m.spread,sharp:m.sharp,ref:m.ref,src:m.src,agree,part:!!part,cal});
+    const trusted=m.src==='closeup'||m.ref,mode=best.c===tag||!colsFor(q.type,accent).includes(best.c)?null:trusted&&conf>=MEAS_AUTO?'auto':conf>=MEAS_FLAG&&gap>=MEAS_FLAG_GAP&&best.d<=FAR_DE?'flag':null;
+    out.push({f,from:tag,to:best.c,d:best.d,dTag,gap,conf,mode,part:part?part.role:null,lab,cal})}
+  return out}
+/* the card takes a confident measurement: the colour changes and the card says so with an Undo; a field set by hand, or one whose
+   change was undone, stays */
+function applyMeasured(q){if(!q||q.manual)return [];const done=[];q.auto=q.auto||{};
+  for(const f of Object.keys(q.auto))if(q[f]!==q.auto[f].to)delete q.auto[f];   // Claude's answer (tagging again) or the owner changed it since
+  for(const v of q.measV||[]){if(v.mode!=='auto'||(q.edited&&q.edited[v.f])||(q.autoUndo&&q.autoUndo[v.f]===v.to)||q[v.f]===v.to)continue;
+    q.auto[v.f]={from:q[v.f],to:v.to,src:q.meas.src,conf:v.conf};q[v.f]=v.to;done.push(v.f)}
+  if(done.length){if(q.texCanvas&&typeof generateSwatch==='function')generateSwatch(q);q.measV=colourVerdicts(q)}
+  return done}
+function undoMeasured(i,f){const q=queue[i];if(!q||!q.auto||!q.auto[f])return;const a=q.auto[f];q[f]=a.from;delete q.auto[f];q.autoUndo={...q.autoUndo,[f]:a.to};q.edited={...q.edited,[f]:true};
+  if(q.texCanvas&&typeof generateSwatch==='function')generateSwatch(q);q.measV=colourVerdicts(q);renderAdd()}
+/* measure the card and take what is sure (the first tag, tagging again from the close-up, Try again) */
+function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured(q)}
 
 /* ---- tagging again once the close-up is in: both photos and the measurement go to the tagger; fields the owner has set by
    hand stay, the rest take the new answer, and the card says what changed ---- */
@@ -147,32 +300,40 @@ function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?
 function takeExtras(q,ai){Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
   q.aiTag={...aiFields(ai)};readSett(q)}
-async function closeTagImg(q){const r=wbRead(q.raw.texFull||q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.texFull||q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
+async function closeTagImg(q){const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);
   if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();return}
   q.refining=1;renderAdd();
-  const ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:measHint(q.meas)});const k=queue.indexOf(q);q.refining=0;
+  const ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:measHint(q.meas),wb:!!(q.wb&&!q.wbOff)});const k=queue.indexOf(q);q.refining=0;
   if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0)renderAdd();return}
   const f=aiFields(ai),changes=[];
   for(const key of TAG_FIELDS)if(!(q.edited&&q.edited[key])&&f[key]!==q[key]){changes.push(`${fieldLabel[key]} ${valName(key,q[key])} → ${valName(key,f[key])}`);q[key]=f[key]}
   if(changes.some(c=>c.startsWith('item ')))q.pattern=normPat(q.type,q.pattern);
-  takeExtras(q,ai);measureCard(q);q.model=ai.model||q.model;
+  takeExtras(q,ai);measureAndApply(q);q.model=ai.model||q.model;
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
   readPatternWithClaude(q)}
 
 /* ---- the card's tagging notes: how sure Claude was, its runner-up (one tap to take it), the measured colour, and an offer to
    add a colour or pattern when none of the listed ones fits ---- */
 const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]&&c[k]!=='high').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';
-function tagNotes(q,i){if(q.manual)return '';const out=[];
+function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');
   else if(q.refineNote)out.push(`<p class="tagnote"><small>${esc(q.refineNote)}</small></p>`);
   const ct=confTxt(q.conf),alts=[q.altColor&&q.altColor!==q.primaryColor&&colsFor(q.type).includes(q.altColor)?`<button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.altColor}')">or ${esc(colName(q.altColor))}</button>`:'',
     q.altPattern&&q.altPattern!==q.pattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?`<button type="button" class="chipbtn" onclick="setq(${i},'pattern','${q.altPattern}')">or ${esc(patName(q.altPattern))}</button>`:''].join('');
   if(ct||alts)out.push(`<p class="tagnote mut"><small>${ct}</small>${alts}</p>`);
   out.push(settNote(q,i));
-  const m=q.meas;if(m&&m.near&&m.near.length){const n=m.near;out.push(`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured ${m.src==='closeup'?'in the close-up':'in the photo'}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
-  const ma=measuredAlt(q);if(ma)out.push(`<div class="offer measalt"><small>The ${m.src==='closeup'?'close-up':'photo'} measures much closer to <b>${esc(colName(ma.c))}</b> (ΔE ${ma.d}) than to ${esc(colName(q.primaryColor))} (ΔE ${ma.tagged}).</small><button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${ma.c}')">Use ${esc(colName(ma.c))}</button></div>`);
-  if(FABRIC.includes(q.type)||COLS_BY[q.type]){const far=m&&m.near&&m.near.length&&m.near[0].d>FAR_DE;
+  const m=q.meas,where=m&&(m.src==='closeup'?'your close-up':'your photo');
+  if(m&&m.near&&m.near.length){const n=m.near,pv=(q.measV||[]).filter(v=>v.part);
+    out.push(pv.length?`<p class="tagnote measrow">${m.parts.map(p=>`<span class="msw" style="background:${p.hex}" title="${p.hex}"></span>`).join('')}<small>Measured in ${where}${m.ref?' (white reference)':''}: ${pv.map(v=>`${v.part==='ground'?'ground':'stripe'} closest to ${esc(colName(v.to))}`).join(', ')}</small></p>`
+      :`<p class="tagnote measrow"><span class="msw" style="background:${m.hex}" title="${m.hex}"></span><small>Measured in ${where}${m.ref?' (white reference)':''}: closest ${n.map(x=>`${esc(colName(x.c))} (ΔE ${x.d})`).join(', ')}</small></p>`)}
+  // changed by the measurement (with Undo), or asked about when it is not sure
+  for(const [f,a] of Object.entries(q.auto||{}))out.push(`<div class="offer measauto" data-f="${f}"><small>Changed ${f==='primaryColor'?'':fieldLabel[f]+' '}${esc(colName(a.from))} → <b>${esc(colName(a.to))}</b> (measured from ${a.src==='closeup'?'your close-up':'your photo'})</small><button type="button" class="chipbtn" onclick="undoMeasured(${i},'${f}')">Undo</button></div>`);
+  for(const v of q.measV||[])if(v.mode==='flag'&&!(q.edited&&q.edited[v.f])&&!(q.auto&&q.auto[v.f]))out.push(`<div class="offer measalt" data-f="${v.f}"><small>Measured${v.f==='primaryColor'?'':` ${fieldLabel[v.f]}`}: <b>${esc(colName(v.to))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'${v.f}','${v.to}')">Use ${esc(colName(v.to))}</button></div>`);
+  const mp=q.missed&&q.raw&&q.missed.c===q.raw.tex?q.missed.p:null;   // (missedPattern, worked out when the card was measured)
+  if(mp&&(patBase(q.pattern)||'solid')==='solid'&&!(q.edited&&q.edited.pattern))out.push(`<div class="offer measpat"><small>The close-up shows ${/check|pane/.test(mp)?'a check':'stripes'}: <b>${esc(patName(mp))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'pattern','${mp}')">Use ${esc(patName(mp))}</button></div>`);
+  if(m&&m.src==='closeup'&&m.sharp!=null&&m.sharp<BLUR_SHARP&&TEXTURE_TYPES.includes(q.type))out.push(`<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>`);
+  if(FABRIC.includes(q.type)||COLS_BY[q.type]){const pv=(q.measV||[]).find(v=>v.f==='primaryColor'),far=m&&m.src==='closeup'&&!(m.sharp!=null&&m.sharp<BLUR_SHARP)&&pv&&pv.d>FAR_DE;   // (a blurry or photo-only measurement is no reason to add a colour)
     if(q.colForm)out.push(newColForm(q,i));
     else if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colours quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured colour is far from every colour for this item.'}</small><button type="button" class="chipbtn" onclick="openColForm(${i})">Add as a new colour</button></div>`)}
   if(PATS_BY[q.type]){if(q.patForm)out.push(newPatForm(q,i));
@@ -263,7 +424,9 @@ function tagStatsCard(){const st=settings.tagStats||{n:0,wrong:{}},fx=(settings.
 const PRICE_IN=4,PRICE_OUT=20;   // Claude Opus 5.5, $ per million tokens (the worker's default model)
 /* visual tokens of a picture (28-pixel patches, capped like the API) */
 const visTok=(w,h)=>{const s=Math.min(1,2576/Math.max(w,h));w*=s;h*=s;const t=Math.ceil(w/28)*Math.ceil(h/28);return Math.min(4784,t)};
-function benchEstimate(n){const per=(visTok(1024,1024)+visTok(640,640)*.5+4000)*PRICE_IN/1e6+2500*PRICE_OUT/1e6;return n*per}
+/* (2026-11-14) at the sizes really sent: the sharp photo (TAG_MAX, a phone's 4:3) and the sharp close-up (CLOSE_MAX); it assumed 1024 and
+   half a 640 close-up, about 30% low (the audit) */
+function benchEstimate(n,{img=[TAG_MAX,TAG_MAX*.75],close=[CLOSE_MAX,CLOSE_MAX*.75]}={}){const per=(visTok(...img)+(close?visTok(...close):0)+4000)*PRICE_IN/1e6+2500*PRICE_OUT/1e6;return n*per}
 
 /* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
@@ -281,13 +444,19 @@ function settFromWeave(w){const c=(w&&w.colours||[]).filter(x=>/^#[0-9a-f]{6}$/i
    its bands and crossing lines are used */
 /* white balance and, when the picture has a white reference (a white shirt under the tie, a white wall, paper), exposure set
    from it too: an underexposed photo otherwise reads every band too dark (a cream reads grey). At most 1.6x, in linear light. */
-function settCanvas(c,wb){const r=wbRead(c),g=wb||r.gains,out=applyWb(c,g);if(!r.ref||r.refLum>=235||r.frac<.03)return out;   // a few white threads are no reference (partly blended, they read dim)
+function settCanvas(c,wb,strict){const r=wbRead(c,{strict:!!strict}),g=wb||r.gains,out=applyWb(c,g);if(!r.ref||r.refLum>=235||r.frac<.03)return out;   // a few white threads are no reference (partly blended, they read dim)
   const k=Math.min(1.6,sLin(243)/sLin(Math.max(1,r.refLum))),x=out.getContext('2d',{willReadFrequently:true}),D=x.getImageData(0,0,out.width,out.height),d=D.data,lut=new Uint8ClampedArray(256);
   for(let v=0;v<256;v++)lut[v]=Math.round(linS(Math.min(1,sLin(v)*k)));for(let i=0;i<d.length;i+=4){d[i]=lut[d[i]];d[i+1]=lut[d[i+1]];d[i+2]=lut[d[i+2]]}x.putImageData(D,0,0);return out}
-function settFrom({full,box,tex,weave,wb,type}){let s=null,c=null;
+/* a reading takes 1.8-2.5 s at phone speed and the card asked for the same one again and again (every re-tag, toggle and Claude's
+   answer): each input's reading is kept (by the card's own canvases, which live as long as the card), so it is worked out once */
+const settMemo=new WeakMap();
+function settFrom(a){const k0=a.tex||a.full;if(!k0)return settFromRaw(a);const key=JSON.stringify([a.full?1:0,a.tex?1:0,a.box||null,a.weave||null,a.wb||null,a.type||null]);
+  let m=settMemo.get(k0);if(!m){m=[];settMemo.set(k0,m)}const hit=m.find(e=>e.full===a.full&&e.tex===a.tex&&e.key===key);if(hit)return hit.s&&JSON.parse(JSON.stringify(hit.s));
+  const s=settFromRaw(a);m.push({full:a.full,tex:a.tex,key,s:s&&JSON.parse(JSON.stringify(s))});return s}
+function settFromRaw({full,box,tex,weave,wb,type}){let s=null,c=null;
   const opt={straight:!!type&&type!=='tie'};   // a jacket's, shirt's or trousers' pattern is straight in the photo
   try{if(full&&box){s=settFromCanvas(settCanvas(full,wb),box,opt);if(s){s.src='photo';s.tr=+(s.cr/.8).toFixed(2)}}   // the box spans about 80% of the item's width
-    if(tex){const r=wbRead(tex);c=settFromCanvas(settCanvas(tex,r.ref?r.gains:wb),null,opt);if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
+    if(tex){const r=closeRead(tex);c=settFromCanvas(settCanvas(tex,r.ref?r.gains:wb,true),null,opt);if(c){c.src='closeup';c.tr=1.5}}}catch(e){console.warn('pattern not read',e)}
   // the close-up's colours are moved so its ground matches the item photo's: the item photo usually has a white wall behind it to
   // set its exposure, the close-up of a khaki cloth has nothing white in it and reads darker
   if(s&&c&&c.cr>=1.5){const g=b=>b.reduce((x,y)=>y[1]>x[1]?y:x),L=h=>rgbLab(...hexRgb(h)),d=L(g(s.bands)[0]).map((v,k)=>v-L(g(c.bands)[0])[k]);
@@ -307,14 +476,37 @@ const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p);
 const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 const specSett=(spec,args)=>spec&&(spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
-function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&(q.raw.texFull||q.raw.tex),wb:q.wbOff?null:q.wb,type:q.type};
-  if(ok&&q.spec){const s=specSett(q.spec,args);if(s){q.sett=s;return s}}
-  q.sett=ok&&!claudeOnly(q.type,q.pattern)?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.texFull||q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;return q.sett}
-function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);renderAdd()}
+function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type};q.settReject=null;
+  let s=null;if(ok&&q.spec)s=specSett(q.spec,args);
+  if(!s)s=ok&&!claudeOnly(q.type,q.pattern)?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;
+  const chk=settCheck(q.type,q.pattern,s);if(chk.reject){q.settReject=chk.reject;s=null}else s=chk.s;
+  q.sett=s;return s}
+/* a band reading that contradicts the tag is not used (2026-11-14: the walkthrough's soft pinstripe close-up was read as level bands at
+   -84° with lines crossing them, and Today drew the suit as a brown windowpane): a stripe has no crossing lines, and on a jacket, shirt
+   or trousers it runs upright; read level from a close-up (or by Claude) it is only turned upright, since a close-up can be held either
+   way, but level in the item photo it is a misreading */
+function settCheck(type,pat,s){if(!s||!s.bands)return {s};const p=patBase(pat)||'';if(!STRIPE_PATS.includes(p))return {s};
+  // crossing lines: a jacket's or trousers' stripe read with them is a misreading (the pinstripe drawn as a windowpane); on a shirt or
+  // a tie they are the weave or a stray fold at most, so they are only dropped (the walkthrough's white/blue shirt kept its stripes)
+  if(s.cross&&s.cross.bands&&s.cross.bands.some(b=>b[0])){if(['suit','blazer','pants'].includes(type))return {reject:'cross'};s={...s,cross:null}}
+  const a=((s.a%180)+180)%180;if(type==='tie'||a<20||a>160)return {s};
+  return /photo/.test(s.src||'')?{reject:'level'}:{s:{...s,a:0}}}
+/* a pattern the tag missed: a close-up of cloth tagged plain that clearly shows stripes or a check (bands 12+ ΔE00 apart, two repeats or
+   more, a sharp close-up) is suggested, never set */
+function missedPattern(q){if(!q||!q.raw||!q.raw.tex||(patBase(q.pattern)||'solid')!=='solid'||!PATS_BY[q.type])return null;
+  if(q.missed&&q.missed.c===q.raw.tex)return q.missed.p;let p=null;
+  if((sharpness(q.raw.tex)||0)>=BLUR_SHARP){const s=settFrom({tex:q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type});
+    if(s&&s.bands&&s.bands.length>=2&&s.cr>=2){const L=h=>rgbLab(...hexRgb(h)),g=s.bands.reduce((a,b)=>b[1]>a[1]?b:a),gl=L(g[0]),con=Math.max(...s.bands.filter(b=>b!==g).map(b=>dE00(L(b[0]),gl))),line=1-g[1];
+      const cross=s.cross&&s.cross.bands.some(b=>b[0]),jacket=['suit','blazer','pants'].includes(q.type);
+      if(con>=12)p=cross?(jacket?(line<.15?'windowpane':'glen-check'):'check'):(jacket?(line<.15?'pinstripe':'chalk-stripe'):q.type==='shirt'&&line<.15?'fine-stripe':'stripe');
+      if(p&&!(PATS_BY[q.type]||[]).includes(p))p=null}}
+  q.missed={c:q.raw.tex,p};return p}
+function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);renderAdd()}
 const settSummary=s=>s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colours from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colours from the photo`:`${s.bands.length} colour band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
+  if(q.settReject)return `<p class="tagnote settrej"><small>The pattern reader saw ${q.settReject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${esc(patName(q.pattern).toLowerCase())}: drawn with the simple pattern.</small></p>`;
   return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the simple pattern</button></p>`:''}
 /* once: Claude-read patterns saved without a pattern box were exposure-matched to the whole item photo (wall and all, a navy
    pinstripe came out lavender): recolour them from the saved reading and the close-up, no new call to Claude */
@@ -324,20 +516,21 @@ function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
 async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3')return 0;let n=0;
   const canvasOf=async src=>{if(!src)return null;const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c};
   for(const it of items)if(it.patternSpec&&it.patternSpec.across&&it.sett&&it.sett.src==='claude+pixels'&&it.texture)try{
-    const c=await canvasOf(it.texture),full=it.pbox?await canvasOf(await tagImgOf(it.id)||it.photo):null;
+    const c=await canvasOf(it.texture),full=it.pbox?await canvasOf(await tagImgOf(it.id,it)||it.photo):null;
     const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
     if(s&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
   localStorage.setItem('spec_recolour','3');if(n)cache={};return n}
 /* Wardrobe editor: read it again from the kept sharp copy (or the close-up) */
 async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};
-  const full=it.pbox?await toCanvas(await tagImgOf(it.id)):null,tex=await toCanvas(it.texture);
-  let spec=null;const img=await tagImgOf(it.id)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:await sharpCloseOf(it),type:it.type})}
+  const full=it.pbox?await toCanvas(await tagImgOf(it.id,it)):null,tex=await toCanvas(it.texture);
+  let spec=null;const img=await tagImgOf(it.id,it)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:await sharpCloseOf(it),type:it.type})}
   const full2=full||(it.photo?await toCanvas(it.photo):null);
   const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(claudeOnly(it.type,it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
   if(spec){it.patternSpec=spec;if(spec.description)it.patternText=spec.description}
-  if(!s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
-  it.sett=s;delete it.stripes;await put(it);cache={};renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
+  const chk=settCheck(it.type,it.pattern,s);if(chk.reject){toast(`The reading showed ${chk.reject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${patName(it.pattern).toLowerCase()}: the pattern stays as it was.`);return}
+  if(!chk.s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
+  it.sett=chk.s;delete it.stripes;await put(it);cache={};renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
 
 /* ---- the pattern for the photo generator. Claude's words alone were not enough: on a plaid tie its description had the stripes
    rising the wrong way and the generator followed it, and it said nothing of how much of each colour there is. So a read
@@ -438,7 +631,7 @@ function cropCanvas(c,box){const x=box.x/1000*c.width,y=box.y/1000*c.height,w=Ma
   o.width=Math.round(w);o.height=Math.round(h);o.getContext('2d').drawImage(c,x,y,w,h,0,0,o.width,o.height);return o}
 function settFromSpec(spec,{tex,full,box,wb,type}){
   const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
-  let src=null;try{src=tex?settCanvas(tex,wbRead(tex).ref?null:wb):full&&box?cropCanvas(settCanvas(full,wb),box):null}catch{}
+  let src=null;try{src=tex?settCanvas(tex,closeRead(tex).ref?null:wb,true):full&&box?cropCanvas(settCanvas(full,wb),box):null}catch{}
   const labs=src?sampleLabs(src):[],ground=labs.length?medLab(labs):null;   // the whole cloth's median: for the exposure match only (below)
   // the close-up's exposure matched to the item photo's (the median of the patterned area in each); only with the pattern's box:
   // a whole photo's median takes in the wall and the next jackets (it turned a navy pinstripe lavender)
@@ -480,7 +673,7 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
 async function readPatternWithClaude(q){if(!q||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;
   q.patternReading=1;renderAdd();const spec=await claudePattern({image:q.tagImg,closeup:await closeTagImg(q),type:q.type});q.patternReading=0;
   if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
-  readSett(q);if(queue.includes(q))renderAdd()}
+  readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q))renderAdd()}
 
 /* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
    pixels. A band reader can't draw these: it turns a checkerboard of mini squares into a diagonal plaid. Claude gives the grid,
@@ -488,7 +681,7 @@ async function readPatternWithClaude(q){if(!q||!q.raw||!q.raw.tex||!q.tagImg||!r
    matched to the item photo's, and Claude's hue kept where a colour's pixels read grey. ---- */
 function motifFromSpec(spec,{tex,full,box,wb}){const m=spec&&spec.motif;if(!m||!m.ground||!m.figures||!m.figures.length)return null;
   const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
-  let src=null;try{src=tex?settCanvas(tex,wbRead(tex).ref?null:wb):full?(box?cropCanvas(settCanvas(full,wb),box):settCanvas(full,wb)):null}catch{}
+  let src=null;try{src=tex?settCanvas(tex,closeRead(tex).ref?null:wb,true):full?(box?cropCanvas(settCanvas(full,wb),box):settCanvas(full,wb)):null}catch{}
   const labs=src?sampleLabs(src):[],med=labs.length?medLab(labs):null;
   // only with a box on the cloth: the whole photo's median is mostly its background (a tie on a grey wall)
   let delta=[0,0,0];if(tex&&full&&box&&med)try{const g2=medLab(sampleLabs(cropCanvas(settCanvas(full,wb),box)));delta=g2.map((v,k)=>v-med[k])}catch{}
@@ -523,7 +716,7 @@ function texContrast(c,cells){const W=Math.min(320,c.width),H=Math.max(8,Math.ro
   if(res.length<200)return null;res.sort((a,b)=>a-b);const med=[...L].sort((a,b)=>a-b)[L.length>>1];
   return Math.max(.015,Math.min(.35,(res[Math.floor(res.length*.92)]-res[Math.floor(res.length*.08)])/Math.max(20,med)))}
 function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.grid.length<2)return null;
-  let rel=null;if(tex)try{rel=texContrast(settCanvas(tex,null),+spec.repeatsInCloseup||8)}catch{}
+  let rel=null;if(tex)try{rel=texContrast(settCanvas(tex,null,true),+spec.repeatsInCloseup||8)}catch{}
   const L=h=>rgbLab(...hexRgb(h))[0];
   return {v:4,tex:{kind:t.kind,grid:t.grid,aspect:+(+t.aspect||t.grid.length/t.grid[0].length).toFixed(2),lighter:L(t.raised.hex)>=L(t.ground.hex),contrast:t.contrast,rel:+(rel??TEX_REL[t.contrast]??.08).toFixed(3),measured:rel!=null},
     a:0,cr:+(+spec.repeatsInCloseup||8).toFixed(2),tr:+(+spec.repeatsAcrossItem||100).toFixed(2),src:'claude+pixels'}}
