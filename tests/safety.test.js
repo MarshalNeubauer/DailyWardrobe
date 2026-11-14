@@ -24,10 +24,10 @@ module.exports=async({ok,chromium,url,settle})=>{
   const full=await toastText(p);
   ok(/Couldn.t save: your phone.s storage is full/.test(full),`a save that fails for lack of space says so (“${full}”)`);
   ok(await p.evaluate(()=>queue.length===1&&items.length===0&&!!document.querySelector('#queue .card button.pri')),'the card stays, so it can be saved again');
-  // any other rejection stays quiet; a storage failure nobody caught is shown
-  await p.evaluate(()=>{document.querySelector('#toast').classList.remove('on');Promise.reject(new Error('something else'))});
+  // any other rejection with no tap before it stays quiet (one right after a tap says so: errnet.test.js); a storage failure nobody caught is shown
+  await p.evaluate(()=>{errTapAt=0;document.querySelector('#toast').classList.remove('on');Promise.reject(new Error('something else'))});
   await p.evaluate(()=>new Promise(r=>setTimeout(r,300)));   // waits to see that nothing appears
-  ok(await toastText(p)==='','a rejection that is not about storage shows nothing');
+  ok(await toastText(p)==='','a rejection that is not about storage, with no tap before it, shows nothing');
   await p.evaluate(()=>{storeToldAt=0;metaPut('probe',1)});await saveToast(p);   // (storeToldAt: one failure is said once, so the earlier toast is forgotten first)
   ok(/Couldn.t save/.test(await toastText(p)),'a failed save that nothing caught is still shown');
   // with room again, the same card saves

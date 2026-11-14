@@ -83,18 +83,20 @@ const aboutEsc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 const aboutSay=(id,t,bad)=>{const e=$(id);if(e){e.textContent=t;e.classList.toggle('about-bad',!!bad)}};
 
 /* ---- feedback ---- */
+// the phone's recent problems go along (safety.js errReport), within the server's 4,000 characters; cleared once sent
+const fbWithErrs=t=>{const r=typeof errReport==='function'?errReport():'';return r?(t+'\n\n— Problems noted on this phone —\n'+r).slice(0,4000):t};
 async function sendFeedback(){
   const el=$('#fb-text'),b=$('#fb-send'),text=(el&&el.value||'').trim();
   if(!text){aboutSay('#fb-status','Write something first.',true);return}
   const c=aboutConn();if(!c){aboutSay('#fb-status','Feedback needs a connection. Connect first, under Connection.',true);return}
   if(b)b.disabled=true;aboutSay('#fb-status','Sending…');
   try{
-    let r;try{r=await fetch(c.at('feedback'),{method:'POST',headers:c.head,body:JSON.stringify({text,version:appVersion(),where:'settings'})})}
+    let r;try{r=await fetch(c.at('feedback'),{method:'POST',headers:c.head,body:JSON.stringify({text:fbWithErrs(text),version:appVersion(),where:'settings'})})}
     catch{aboutSay('#fb-status','Couldn’t send it: the server didn’t answer. Check your connection and try again.',true);return}
     const j=await r.json().catch(()=>({}));
     if(r.status===404)aboutSay('#fb-status','Feedback isn’t available yet. Please try again in a few days.',true);
     else if(!r.ok)aboutSay('#fb-status','Couldn’t send it: '+(j&&j.error?j.error:'the server answered '+r.status)+'.',true);
-    else{el.value='';aboutSay('#fb-status','Thank you. Your feedback was sent.');loadFeedback()}
+    else{el.value='';try{localStorage.removeItem('err_log')}catch{}aboutSay('#fb-status','Thank you. Your feedback was sent.');loadFeedback()}
   }finally{if(b)b.disabled=false}}
 /* the owner also sees what was sent in (GET /me says who this is; anything but a clear "owner" shows nothing) */
 const fbWhen=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,d=new Date(n);return isNaN(d)?'':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})};
@@ -116,7 +118,7 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','remind','remind_sent','care_told','black_bd'];
+const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','remind','remind_sent','care_told','black_bd','err_log'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));
