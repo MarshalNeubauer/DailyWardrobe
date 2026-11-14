@@ -8,7 +8,7 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tagging.js) and survive updates. */
-const CACHE='dw-v330';
+const CACHE='dw-v331';
 const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','figure.js','draw.js','app.js','add.js','itemsheet.js','history.js','today.js','month.js','photos.js','settings.js','start.js','ui.js','safety.js','dress.js','tagging.js','assemble.js','asm-color.js','asm-gl.js','asm-worker.js','stats.js','care.js','wardrobe.js','colpick.js','pack.js','shop.js','sync.js','account.js','remind.js','setup.js','kit.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 // cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
 // being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
