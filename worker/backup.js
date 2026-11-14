@@ -187,8 +187,25 @@ function mergeLite(a, b) {
   // core.js dayWins, 2026-11-14)
   const dayWins = (o, n) => !o || o === n || !n.lockOnly ? n : ((o.lockOnly ? o.base : o.updated) || 0) > (n.base || 0) ? o : n;
   const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; days[d.date] = !cur || (d.updated || 0) > (cur.updated || 0) ? dayWins(cur, d) : dayWins(d, cur); }
-  const settings = a.settings && b.settings ? ((a.settings.updated || 0) >= (b.settings.updated || 0) ? a.settings : b.settings) : (a.settings || b.settings || null);
+  const settings = a.settings && b.settings ? mergeSettingsLite(a.settings, b.settings) : (a.settings || b.settings || null);
   return { items: Object.values(items), tombstones: tomb, days: Object.values(days), settings };
+}
+/* core.js mergeSettings, for the worker (2026-11-14): setting by setting by each one's stamp (settings.ks; a copy without it counts its
+   one stamp for all), the result one above both when it took anything from the copy with the older overall stamp */
+const SET_META = ['updated', 'ks', 'kh'];
+const setHashLite = v => { const s = JSON.stringify(v === undefined ? null : v); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
+const setKeysLite = s => Object.keys(s || {}).filter(k => !SET_META.includes(k));
+const setStampLite = (s, k) => s.ks ? (+s.ks[k] || 0) : (s.updated || 0);
+function mergeSettingsLite(a, b) {
+  const ua = a.updated || 0, ub = b.updated || 0, hi = ua >= ub ? a : b; if (!a.ks && !b.ks) return hi;
+  const out = {}, ks = {}, kh = {}; let mixed = false;
+  for (const k of new Set([...setKeysLite(a), ...setKeysLite(b), ...Object.keys(a.ks || {}), ...Object.keys(b.ks || {})])) {
+    const sa = setStampLite(a, k), sb = setStampLite(b, k), w = sa === sb ? hi : sa > sb ? a : b;
+    if (w !== hi && setHashLite(w[k]) !== setHashLite(hi[k])) mixed = true;
+    if (k in w) out[k] = w[k]; ks[k] = Math.max(sa, sb); kh[k] = (w.kh && w.kh[k]) || setHashLite(w[k]);
+  }
+  out.ks = ks; out.kh = kh; out.updated = mixed ? Math.max(ua, ub) + 1 : Math.max(ua, ub);
+  return mixed ? out : (hi.ks ? hi : Object.assign(out, { updated: hi.updated || 0 }));
 }
 function liteSig(s) {
   s = s || {}; const by = (arr, k, v) => arrOf(arr).map(x => x[k] + ':' + v(x)).sort().join(',');

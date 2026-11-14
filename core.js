@@ -275,9 +275,41 @@ function mergeState(a,b){
   for(const id of Object.keys(items))if(tomb[id]&&tomb[id]>=stamp(items[id]))delete items[id];
   const cutoff=Date.now()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
   const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];if(!cur||(d.updated||0)>(cur.updated||0))days[d.date]=dayWins(cur,d);else days[d.date]=dayWins(d,cur)}
-  const settings=a.settings&&b.settings?((a.settings.updated||0)>=(b.settings.updated||0)?a.settings:b.settings):(a.settings||b.settings||null);
+  const settings=a.settings&&b.settings?mergeSettings(a.settings,b.settings):(a.settings||b.settings||null);
   return {items:Object.values(items),tombstones:tomb,days:Object.values(days),settings};
 }
+/* ---- settings, setting by setting (2026-11-14, the audit: two phones each changing a different setting, the later save dropped the
+   other's change, as whole copies won by their one stamp). Each setting has its own stamp (settings.ks) and a fingerprint of the value
+   it was stamped with (settings.kh): stampSettings, called wherever the settings are saved, stamps only the settings whose value changed
+   since (a new or a removed one too). mergeSettings takes each setting from the copy with the newer stamp for it; a copy saved before
+   (no ks) counts its one stamp for every setting, so two old copies merge as before. When the merge takes anything from the copy with the
+   older overall stamp, the result's overall stamp is one above both, so it is uploaded (sync.js sends settings newer than the server's)
+   and wins on the other devices too. The same rule is in the worker's merge. */
+const SET_META=['updated','ks','kh'];
+const setHash=v=>{const s=JSON.stringify(v===undefined?null:v);let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
+const setKeys=s=>Object.keys(s||{}).filter(k=>!SET_META.includes(k));
+/* called where the settings are read (start-up, after a sync, Settings): a copy from before gets every setting stamped with its one
+   stamp; a setting the copy lacks that only the app's defaults filled in gets stamp 0, so a default never wins over another device's
+   choice. Its values are taken as they are, so this must run before anything changes them (stampSettings stamps what changed since) */
+function keySettings(s){if(!s)return s;
+  if(!s.ks||!s.kh){const was=s.updated||0;s.ks={};s.kh={};for(const k of setKeys(s)){s.ks[k]=was;s.kh[k]=setHash(s[k])}return s}
+  for(const k of setKeys(s))if(!(k in s.kh)){s.kh[k]=setHash(s[k]);s.ks[k]=0}return s}
+function stampSettings(s,t){t=t||Date.now();if(!s)return s;
+  if(!s.ks||!s.kh)keySettings(s);
+  for(const k of new Set([...setKeys(s),...Object.keys(s.kh)])){const h=k in s?setHash(s[k]):'-';if(s.kh[k]!==h){s.kh[k]=h;s.ks[k]=t}}
+  s.updated=Math.max(t,(s.updated||0)+1);return s}
+/* every setting stamped t (a roll-back or restore: the restored copy wins every setting on every device) */
+function stampAllSettings(s,t){if(!s)return s;s.ks={};s.kh={};for(const k of setKeys(s)){s.ks[k]=t;s.kh[k]=setHash(s[k])}s.updated=t;return s}
+const setStampOf=(s,k)=>s.ks?(s.ks[k]||0):(s.updated||0);
+function mergeSettings(a,b){
+  const ua=a.updated||0,ub=b.updated||0,hi=ua>=ub?a:b;if(!a.ks&&!b.ks)return keySettings({...hi});   // two copies from before: the newer whole, as always
+  const out={},ks={},kh={};let mixed=false;
+  for(const k of new Set([...setKeys(a),...setKeys(b),...Object.keys(a.ks||{}),...Object.keys(b.ks||{})])){
+    const sa=setStampOf(a,k),sb=setStampOf(b,k),w=sa===sb?hi:sa>sb?a:b;
+    if(w!==hi&&setHash(w[k])!==setHash(hi[k]))mixed=true;
+    if(k in w)out[k]=w[k];ks[k]=Math.max(sa,sb);kh[k]=w.kh&&w.kh[k]||setHash(w[k])}
+  out.ks=ks;out.kh=kh;out.updated=mixed?Math.max(ua,ub)+1:Math.max(ua,ub);
+  return mixed?out:(hi.ks?hi:Object.assign(out,{updated:hi.updated||0}))}
 /* of two copies of a day, the newer (n) wins, unless it is only the app's lock of the week (app.js lockUpcoming: lockOnly, base = the
    version of the record it was built on) and the older (o) was changed after that version: then the older wins whole, with its own
    lock or none, and the app locks the day again around it (2026-11-14: a phone two days behind locked Nov 17 on its old copy and its
