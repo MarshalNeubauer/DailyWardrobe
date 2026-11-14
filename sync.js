@@ -33,9 +33,11 @@ async function applyMerged(m,local){
    the tab waits for it to close (todayStale, viewStale) */
 function syncRedraw(v){if(!v||v==='add')return;if(!settingsOpen())return show(v);if(v==='today')todayStale=true;else viewStale=v}
 function setSyncStatus(t){localStorage.setItem('sync_status',t);showSyncStatus()}
-function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0;
-  el.textContent=localStorage.getItem('sync_status')||(syncUrl()?'Not backed up yet.':'Not connected.');
-  if(last&&!syncing&&!/failed|turn on/i.test(el.textContent))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}`}
+/* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
+   "Not backed up yet." under a summary saying "Backed up today" (audit 2026-11-13) */
+function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'';
+  if(last&&!/failed|turn on/i.test(st))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}${/^Syncing/.test(st)?' · syncing…':''}`;
+  else el.textContent=st||(syncUrl()?'Not backed up yet.':'Not connected.')}
 /* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
 async function syncNow(){
   if(syncRun){await syncRun.catch(()=>{});if(syncRun)await syncRun.catch(()=>{})}
