@@ -64,9 +64,10 @@ function kitCloseupGuide(){kitOpen([GUIDE_CARD])}
    does) and puts their cards back on Add, in their places */
 let kitBatch=null,kitQuiet=false;
 const KIT_UNDO_MS=8000;
-function kitSaved(it,q,i){if(kitQuiet)return;const now=Date.now();
-  if(!kitBatch||now-kitBatch.at>1500)kitBatch={its:[],qs:[],at:now};kitBatch.its.push(it.id);kitBatch.qs.push({q,i});kitBatch.at=now;const b=kitBatch,n=b.its.length;
-  toast(n===1?`Saved: ${sentence(itemTitle(it))}.`:`Saved ${n} items.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave(b)})}
+function kitSaved(it,q,i,copies){if(kitQuiet)return;const now=Date.now(),more=(copies||[]).map(c=>c.id);
+  if(!kitBatch||now-kitBatch.at>1500)kitBatch={its:[],qs:[],at:now};kitBatch.its.push(it.id,...more);kitBatch.qs.push({q,i});kitBatch.at=now;const b=kitBatch,n=b.its.length;
+  // one card with copies (add.js qtyRow): "Saved 3: White."
+  toast(n===1?`Saved: ${sentence(itemTitle(it))}.`:b.qs.length===1?`Saved ${n}: ${sentence(itemTitle(it))}.`:`Saved ${n} items.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave(b)})}
 async function kitUnsave(b){if(!b)return;
   for(const id of b.its){await del(id);items=items.filter(x=>x.id!==id)}
   for(const {q,i} of b.qs.slice().reverse()){if(!q)continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q)}
