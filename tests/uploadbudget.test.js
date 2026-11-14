@@ -16,6 +16,10 @@ module.exports=async({ok})=>{
     fs.writeFileSync(L,JSON.stringify({day:'2000-01-01',used:999}));
     ok(b.left()===10&&b.take(1)&&JSON.parse(fs.readFileSync(L,'utf8')).day===b.day(),'a ledger from another day starts the new day at 0');
     b=fresh(300);ok(/upload limit \(300\)/.test(b.why()),`the refusal names the limit ("${b.why()}")`);
+    // (2026-11-14) a limit for today only: kept in the ledger with the day, read by every tool, gone the next day
+    b=fresh(10);b.take(10);ok(!b.take(1)&&b.today(25)===25&&b.limitNow()===25&&b.left()===15&&b.take(15)&&!b.take(1)&&b.used()===25,`today's own limit lifts the cap and keeps the count (used ${b.used()} of ${b.limitNow()})`);
+    ok(b.today(null)===10&&b.left()===0,'taken out again, the usual limit is back');
+    b.today(500);fs.writeFileSync(L,JSON.stringify({...JSON.parse(fs.readFileSync(L,'utf8')),day:'2000-01-01'}));ok(b.limitNow()===10&&b.left()===10,'a limit left by another day is not today\'s');
     delete process.env.DW_UPLOAD_LIMIT;delete require.cache[require.resolve(mod)];ok(require(mod).LIMIT===300,'with no DW_UPLOAD_LIMIT the limit is 300');
     // four processes, 25 single takes each, against a limit of 60: exactly 60 granted
     fresh(60);
