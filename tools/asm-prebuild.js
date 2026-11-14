@@ -5,7 +5,7 @@
 //
 //   DW_WORKER=https://<worker>.workers.dev DW_TOKEN=<owner code> npm run assemble -- [options]
 //
-//   --days N      how far ahead to plan (default 120)
+//   --days N      how far ahead to plan (default 14: each upload is one of the worker's writes, 1,000 a day on Cloudflare's free plan)
 //   --jobs N      how many pictures are painted at once (default: half the computer's logical cores, at most 16)
 //   --profile D   keep the browser's data in folder D between runs: the wardrobe, the masters and each master's worked-out part
 //                 stay there, and so does a record of what was uploaded (made-pictures.json), so a run starts warm
@@ -30,7 +30,7 @@ const fs=require('fs'),path=require('path'),os=require('os'),{execFileSync}=requ
 const ROOT=path.join(__dirname,'..');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:(process.argv[i+1]&&!process.argv[i+1].startsWith('--')?process.argv[i+1]:d)};
 const has=n=>process.argv.includes('--'+n);
-const DRY=has('dry'),DAYS=Math.max(1,Math.min(400,+arg('days',120)||120)),SAVE=arg('save',''),PROFILE=arg('profile','');
+const DRY=has('dry'),DAYS=Math.max(1,Math.min(400,+arg('days',14)||14)),SAVE=arg('save',''),PROFILE=arg('profile','');
 const JOBS=Math.max(1,Math.min(32,+arg('jobs',Math.min(16,Math.max(1,Math.floor(os.cpus().length/2))))||1));   // half the logical cores (one a physical core on a hyperthreaded CPU), at most 16
 const WATCH=has('watch')?Math.max(1,+arg('watch',5)||5):0;
 const HEAD=/^[0-9a-f]{7,40}$/i.test(arg('head',''))?arg('head',''):'';   // the commit of main the watcher checked out (C:\code\assemble-watch.ps1)
@@ -39,7 +39,7 @@ const CYCLE_MS=Math.max(5,+arg('cycle-timeout',45)||45)*60e3;   // one cycle's l
 const ORIGIN=String(arg('origin','https://marshalneubauer.github.io/DailyWardrobe/')).replace(/\/?$/,'/');
 const WORKER=String(process.env.DW_WORKER||arg('worker','')).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN||'';
 if(has('help')||!WORKER.startsWith('http')||!TOKEN){
-  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 120] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>]');
+  console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run assemble -- [--days 14] [--jobs 16] [--profile <folder>] [--watch 5] [--head <sha>] [--look-timeout 180] [--cycle-timeout 45] [--dry] [--save <folder>] [--origin <app url>]');
   process.exit(has('help')?0:1)}
 const TYPES={js:'text/javascript',css:'text/css',html:'text/html',png:'image/png',json:'application/json',webmanifest:'application/manifest+json'};
 // (with the app's own origin: the worker refuses a write from any other, ALLOWED_ORIGIN)
@@ -49,6 +49,14 @@ const now=()=>new Date().toLocaleTimeString();
 const MADE=PROFILE?path.join(PROFILE,'made-pictures.json'):'';
 let made={};try{if(MADE&&fs.existsSync(MADE))made=JSON.parse(fs.readFileSync(MADE,'utf8'))}catch{made={}}
 const saveMade=()=>{if(MADE&&!DRY)try{fs.writeFileSync(MADE,JSON.stringify(made))}catch(e){console.warn('could not save made-pictures.json',e.message)}};
+/* the worker's writes for the day used up (2026-11-14: 429 kv-limit; it reset at 00:00 UTC): no more uploads until then, and in --watch no
+   cycles either (it rebuilt and retried every picture every 5 minutes, 76 refused each time). Kept with the profile, so a restart keeps it */
+const PAUSE=PROFILE?path.join(PROFILE,'upload-pause.json'):'';
+let pauseUntil=0;try{if(PAUSE&&fs.existsSync(PAUSE))pauseUntil=+JSON.parse(fs.readFileSync(PAUSE,'utf8')).until||0}catch{pauseUntil=0}
+const paused=()=>Date.now()<pauseUntil;
+const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)+2*60e3};   // (two minutes past the reset)
+const pauseUploads=()=>{if(paused())return;pauseUntil=nextUtcDay();if(PAUSE)try{fs.writeFileSync(PAUSE,JSON.stringify({until:pauseUntil}))}catch{}
+  console.log(`${now()} The worker's writes for today are used up: uploads paused until ${new Date(pauseUntil).toLocaleString()} (its daily reset).`)};
 // the app's commit, for --watch to notice that main moved
 const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origin','refs/heads/main'],{encoding:'utf8',timeout:30000}).split(/\s/)[0]}catch{return ''}};
 
@@ -100,7 +108,10 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
   page.on('crash',()=>{console.error(`${now()} the page crashed: ending so the watcher starts again`);process.exit(3)});
   // one cycle: bring the wardrobe and the weather up to date, list every coming look, paint the missing or changed ones
   let lastSig='';
+  let wasPaused=paused();if(wasPaused)console.log(`${now()} Uploads are paused until ${new Date(pauseUntil).toLocaleString()} (the worker's writes for the day are used up).`);
   const cycle=async first=>{const t0=Date.now();
+    if(paused()&&!DRY){wasPaused=true;return {quiet:true}}   // nothing can be uploaded until the reset: nothing is painted either
+    if(wasPaused){wasPaused=false;lastSig='';console.log(`${now()} The worker's daily reset has passed: uploading again.`)}
     const synced=await page.evaluate(async()=>{const ok=await syncNow();try{await loadClimate();await loadWeather()}catch(e){}cache={};return {ok,items:items.length,on:typeof ASM_ON!=='undefined'&&ASM_ON}});
     if(!synced.ok||!synced.items){console.error(`${now()} Could not load the wardrobe from the backup:`,await page.evaluate(()=>localStorage.getItem('sync_status')));if(first)process.exit(2);return}
     if(!synced.on){console.error('Assembled pictures are switched off in this checkout (ASM_ON in assemble.js).');process.exit(2)}
@@ -141,12 +152,15 @@ const gitRemote=()=>{try{return execFileSync('git',['-C',ROOT,'ls-remote','origi
       if(DRY)return `${r.key} built (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`;
       const up=await api('render',{method:'PUT',body:JSON.stringify({key:r.key,rec:{sig:r.sig,img:r.img,model:'assembled',t:Date.now()}})});
       if(up.ok){uploaded++;made[r.key]=r.sig;return `${r.key} uploaded (${Math.round(r.img.length/1024)} KB)${r.how?' '+r.how:''}`}
-      failed++;return `upload refused: ${up.status} ${await up.text().catch(()=>'')}`};
+      const body=await up.text().catch(()=>'');failed++;
+      if(up.status===429&&/"kv-limit"/.test(body)){pauseUploads();return 'upload refused: the worker\'s writes for today are used up'}
+      return `upload refused: ${up.status} ${body}`};
     const paint=(l,wi)=>page.evaluate(async([first,wi])=>{const o=planOn(new Date(first+'T12:00:00'));await asmCmLook(o);const kind=asmCmUse(o);
       if(!kind){const r=await asmPrebuildOne(o);return r&&{...r,how:'(earlier way)'}}
       if(!await asmCmGet(kind))return {error:'its master is missing on the worker'};const job=await asmJob(o);if(!job)return {error:'no job'};job.diskCache=true;
       try{const res=await __poolRun(wi,job);return res&&res.url?{key:asmOutKey(o),sig:asmPreSig(o),img:res.url,how:`(colour-coded ${kind})`}:{error:'no picture'}}catch(e){return {error:String(e&&e.message||e)}}},[l.first,wi]);
-    const one=async(l,wi)=>{const t1=Date.now(),r=await paint(l,wi);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
+    const one=async(l,wi)=>{if(paused()){failed++;report(l,'not made: uploads paused until the worker\'s daily reset');return}
+      const t1=Date.now(),r=await paint(l,wi);if(!r||r.error){failed++;report(l,`not made${r&&r.error?': '+r.error:''}`);return}
       report(l,`${await upload(l,r)} (${Date.now()-t1} ms)`)};
     // a master's first look on one worker first (it works the master out, or reads it back, and saves it), then that master's other workers
     const firstOf={};await Promise.all(runs.map(async run=>{if(!run.looks.length)return;
