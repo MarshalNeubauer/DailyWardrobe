@@ -2,7 +2,7 @@
 // without the backup's photos. A wardrobe of 40 items with real-sized photos (about 10 MB, as the owner's 98 items are 16 MB) is put on
 // the real worker.js in Node as an older worker stored it; three devices sync through it: two with this app, one playing an older app
 // (whole backup each time). Also the worker from before this change, against this app, and a tester's daily backup limit.
-const path=require('path'),fs=require('fs'),os=require('os'),crypto=require('crypto'),{pathToFileURL}=require('url'),{execSync}=require('child_process');
+const path=require('path'),fs=require('fs'),os=require('os'),crypto=require('crypto'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const store=new Map(),meta=new Map();
@@ -103,9 +103,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await sync(B);
     ok(/Rolled back\./.test(rb.st)&&rb.c5==='navy'&&(await itemOf(B,'it5')).primaryColor==='navy'&&(await itemOf(B,'it5')).photo===seed.items[5].photo&&store.has('snap:before-restore'),`Roll back goes through the small sync and reaches the other device (${rb.st})`);
 
-    // the worker from before this change: this app syncs with it the old way
-    let OldW=null;
-    try{const src=execSync('git show ef18d06:worker.js',{cwd:ROOT,encoding:'utf8',maxBuffer:64<<20}),f=path.join(os.tmpdir(),`dw-old-worker-${process.pid}.mjs`);fs.writeFileSync(f,src);OldW=(await import(pathToFileURL(f).href)).default;fs.unlinkSync(f)}catch(e){}
+    // the worker from before this change (commit ef18d06's worker.js, kept as a fixture: a shallow clone has no history to
+    // `git show` it from, and the check used to skip itself there): this app syncs with it the old way
+    let OldW=null,oldErr='';
+    try{const src=fs.readFileSync(path.join(__dirname,'fixtures','old-worker','worker-ef18d06.js'),'utf8'),f=path.join(os.tmpdir(),`dw-old-worker-${process.pid}.mjs`);fs.writeFileSync(f,src);OldW=(await import(pathToFileURL(f).href)).default;fs.unlinkSync(f)}catch(e){oldErr=e.message}
+    ok(!!OldW,'the worker from before loads (tests/fixtures/old-worker/worker-ef18d06.js) '+oldErr);
     if(OldW){W=OldW;
       await edit(A,'it14',{primaryColor:'pink'});const o1=await measured(A);
       ok(o1.ok&&o1.t.some(x=>x.m==='PUT')&&!o1.t.some(x=>x.m==='POST')&&stored().data.items.find(i=>i.id==='it14').primaryColor==='pink',`against the worker from before, this app syncs the whole backup as before (${kb(o1)})`);

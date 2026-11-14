@@ -20,6 +20,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);return {ctx,p,errs}};
   const sync=p=>p.evaluate(()=>syncNow());
+  // a sync whose requests are counted: the backup an edit schedules (scheduleSync, 2.5 s after it) is called off first, since on
+  // a busy machine it came due in the middle of the count and added a request
+  const syncQ=p=>p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()});
   const add=(p,fields)=>p.evaluate(async f=>{const it={id:crypto.randomUUID(),type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),...f};await put(it);items.push(it);return it.id},fields);
   const names=p=>p.evaluate(()=>items.map(i=>i.type+':'+i.primaryColor).sort().join(','));
 
@@ -61,13 +64,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const race=await Promise.all([names(A.p),names(B.p)]);
   ok(!race[0].includes('tie:gold')&&race[0].includes('tie:pink')&&race[1]===race[0],'a delete and an edit made during a sync survive it, on both devices');
   // nothing changed since the last sync: one tiny request, no backup downloaded or uploaded
-  await sync(A.p);await sync(B.p);traffic.length=0;const okQuick=await sync(A.p),t1=[...traffic];
+  await syncQ(A.p);await syncQ(B.p);traffic.length=0;const okQuick=await syncQ(A.p),t1=[...traffic];
   ok(okQuick&&t1.length===1&&t1[0].m==='GET'&&/[?&]v=\d+%3A\d+$/.test(t1[0].q)&&t1[0].down<200,`a sync with nothing new is one small request, with no backup sent either way (${JSON.stringify(t1)})`);
   // a change on the other device is still found (the version no longer matches, so the backup comes down)
-  await add(B.p,{type:'socks',primaryColor:'navy'});await sync(B.p);traffic.length=0;await sync(A.p);
+  await add(B.p,{type:'socks',primaryColor:'navy'});await syncQ(B.p);traffic.length=0;await syncQ(A.p);
   ok((await names(A.p)).includes('socks:navy')&&traffic[0].down>200,'a change made on the other device is still picked up');
   // a change here goes up as before, and the next sync is quick again
-  await add(A.p,{type:'socks',primaryColor:'brown'});traffic.length=0;await sync(A.p);const t2=[...traffic];traffic.length=0;await sync(A.p);
+  await add(A.p,{type:'socks',primaryColor:'brown'});traffic.length=0;await syncQ(A.p);const t2=[...traffic];traffic.length=0;await syncQ(A.p);
   ok(t2.some(t=>t.m==='POST')&&JSON.parse(store.get('wardrobe:v1')).data.items.some(i=>i.primaryColor==='brown')&&traffic.length===1&&traffic[0].down<200,'a local change is uploaded; the sync after it is quick again');
   // the wardrobe is lost on the device (storage cleared) but the marker survives: the backup must come back, not be emptied
   await A.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));items=[]});await sync(A.p);

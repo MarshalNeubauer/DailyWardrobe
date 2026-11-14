@@ -1,4 +1,4 @@
-// The bottom tab bar is compact (38px buttons, reaching into the home-indicator zone) so Today's picture and the tiles under it
+// The bottom tab bar is compact (44px buttons, a tap target's size, reaching into the home-indicator zone) so Today's picture and the tiles under it
 // fit on one screen; page content still clears it.
 module.exports=async({ok,chromium,url,devices,WARDROBES})=>{
   const browser=await chromium.launch();const ctx=await browser.newContext({...devices['iPhone 13']});const p=await ctx.newPage();
@@ -9,8 +9,8 @@ module.exports=async({ok,chromium,url,devices,WARDROBES})=>{
     scrollTo(0,document.documentElement.scrollHeight);const last=[...document.querySelectorAll('#today > *')].filter(e=>e.offsetHeight).pop();
     return {nav:n.getBoundingClientRect().height,btn:b.getBoundingClientRect().height,pad:cs.getPropertyValue('--navpad'),
       clear:innerHeight-n.getBoundingClientRect().height-last.getBoundingClientRect().bottom}});
-  ok(r.nav<=40,`the tab bar is compact (${r.nav}px without a home indicator; it was 55px)`);
-  ok(r.btn>=38,`its buttons stay a comfortable tap height (${r.btn}px)`);
+  ok(r.nav<=46,`the tab bar is compact (${r.nav}px without a home indicator; it was 55px, then 39)`);
+  ok(r.btn>=44,`its buttons are a full tap target's height (${r.btn}px)`);
   ok(/max\(0px,\s*calc\(.*-\s*18px\)\)/.test(r.pad),'with a home indicator it keeps only part of the inset clear below it');
   ok(r.clear>=8,`scrolled to the bottom, Today's last card clears the bar (${Math.round(r.clear)}px)`);
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
