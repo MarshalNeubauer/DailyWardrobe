@@ -28,6 +28,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const ok2=await syncNow();window.fetch=f0;return {ok1,ok2,st,pause,writes:n,reset:new Date(pause).toISOString()}});
     ok(!r.ok1&&/Today’s backups are used up on the server\. Your changes are kept on this phone and back up after 3:00/.test(r.st),`the app says why, with the local reset time ("${r.st}")`);
     ok(r.pause>Date.now()&&/T00:00:00/.test(r.reset)&&r.writes===0&&!r.ok2,'and sends nothing more until the next UTC day');
+    // (2026-11-14, the owner: Sync now did nothing and the status still read "Backed up 10:28") the status says why while paused, and the
+    // Sync now button always tries: with the server's allowance back (a plan upgraded), it backs up at once
+    const s1=await p.evaluate(()=>{localStorage.setItem('last_sync',Date.now()-3600e3);openSettings('backup');showSyncStatus();return document.querySelector('#sync-status').textContent});
+    ok(/^Today’s backups are used up on the server\..*Last backed up /.test(s1),`while paused, the status says so instead of only the last backup's time ("${s1}")`);
+    full=false;
+    const s2=await p.evaluate(async()=>{const ok=await syncTap();return {ok,pause:localStorage.getItem('sync_pause'),st:document.querySelector('#sync-status').textContent,btn:document.querySelector('.sactions button.conn-only').getAttribute('onclick')}});
+    ok(s2.ok&&!s2.pause&&/^Backed up /.test(s2.st)&&s2.btn==='syncTap()',`Sync now tries despite the pause: the server takes it now, the pause is gone ("${s2.st}")`);
+    full=true;
+    const s3=await p.evaluate(async()=>{const it={id:'n2',type:'tie',primaryColor:'green',pattern:'solid',added:Date.now()};await put(it);items.push(it);const ok=await syncTap();return {ok,pause:+localStorage.getItem('sync_pause')||0}});
+    ok(!s3.ok&&s3.pause>Date.now(),'still refused: the pause comes back');
     ok(!errs.length,'no page errors: '+errs.join('; '))}
   finally{await browser.close()}
 };

@@ -45,6 +45,9 @@ function setSyncStatus(t){if(typeof isTester==='function'&&isTester()&&typeof pl
 /* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
    "Not backed up yet." under a summary saying "Backed up today" (audit 2026-11-13) */
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'';
+  // backups paused (the day's saves used up): said, not hidden behind the last backup's time (2026-11-14: the owner saw only "Backed up 10:28"
+  // and a Sync now that did nothing)
+  if((+localStorage.getItem('sync_pause')||0)>Date.now()){el.textContent=(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.')+(last?` Last backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}.`:'');return}
   if(last&&!/failed|turn on/i.test(st))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}${/^Syncing/.test(st)?' · syncing…':''}`;
   else el.textContent=st||(syncUrl()?'Not backed up yet.':'Not connected.')}
 /* ---- the first pull (2026-11-14): a connected device saves nothing at start-up until it has merged the backup once. On the owner's
@@ -58,6 +61,9 @@ const pulledYet=()=>syncPulled||!syncNeedsPull();
 function pullDone(){if(syncPulled)return;syncPulled=true;for(const f of pullWait.splice(0))try{f()}catch(e){console.warn(e)}}
 function afterPull(f){if(pulledYet())return Promise.resolve().then(f);return new Promise((ok,no)=>pullWait.push(()=>{try{ok(f())}catch(e){no(e)}}))}
 /* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
+/* the Sync now button: a tap always tries, a pause from the day's saves being used up included (the server's allowance may have been raised
+   since: the owner upgraded Cloudflare's plan); if the server still refuses, the pause comes back with its message */
+function syncTap(){localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');return syncNow()}
 async function syncNow(){
   if(syncRun){await syncRun.catch(()=>{});if(syncRun)await syncRun.catch(()=>{})}
   syncRun=syncOnce();try{return await syncRun}finally{syncRun=null}
