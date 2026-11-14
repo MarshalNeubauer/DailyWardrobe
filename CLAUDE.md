@@ -719,6 +719,10 @@ Static app served from `main` by GitHub Pages (no build step). Classic scripts l
 ### `sync.js`
 
 - backup/sync through the worker's `/sync` endpoint (KV)
+- the first pull (2026-11-14, after the owner's phone, two days behind, locked the week at 07:00 and re-saved 82 items in the one-time photo upgrade at 07:45 before it synced: their newer stamps replaced a Nov 17 pick made on another device and 11 newer tags, and brought back 4 deleted items): a connected device saves nothing at start-up until a sync has merged the backup (`afterPull`, `pulledYet`, `pullDone`; app.js `whenPulled`): Today's history and the week's locks (`recordDays`/`lockUpcoming`, Today drawn again once pulled), arrivals, `texSwatches`, `recolourSpecSetts`, `upgradeCloseups`, `upgradePhotos`, `smallPhotos`; not connected, an ended invitation or a server with no backup (501): at once; offline: they wait
+- a start-up fix-up saves an item only while it is still the copy in `items` (`stillCur` in app.js): an edit or a sync merge replaces the object, and saving the old one undid the change
+- the week's locks and their clearing are marked as the app's own (`lockOnly: 1`, `base`: the version of the hand changes they include; `saveDay(rec, quiet, true)` keeps the mark, any other `saveDay` removes it): in a merge (`dayWins` in core.js `mergeState`, the same in worker.js `mergeLite`) a newer automatic copy loses to an older one changed after its base, and two automatic copies compare their bases
+- a day kept that way is older than the backup's copy: the small sync doesn't count it as missing (it got it) and sends it up (`keptD` in `syncLite`), and the worker's merge keeps it, so the devices settle; `tests/staledevice.test.js` replays the morning (with the wait removed the phone's old "twill" overwrote the other device's "pinstripe")
 - backup file download/restore
 - When nothing changed on the device since the last sync (`sync_mark`: the backup's version and a fingerprint of the wardrobe), it asks `GET /sync?v=<rev>:<saved>` and neither downloads nor uploads the backup
 - any local change takes the full merge path
