@@ -130,7 +130,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         for(const m of src.matchAll(/localStorage\[\s*(['"`])([^'"`]+)\1/g))keys.add(m[2])}
       const miss=await p.evaluate(ks=>ks.filter(k=>!aboutOwnKey(k)),[...keys]);
       ok(keys.size>10&&miss.length===0,'every localStorage key named in the app’s scripts is in ABOUT_KEYS / ABOUT_KEY_PREFIXES (missing: '+miss.join(', ')+')');
-      ok(await p.evaluate(()=>aboutOwnKey(RQ)&&aboutOwnKey('nav_fit2:1x1')&&aboutOwnKey('nav_fit:1x1')&&!aboutOwnKey('someone_elses_key')),'the photo queue and the per-screen keys too, and nothing else');await ctx.close()}
+      ok(await p.evaluate(()=>aboutOwnKey('render_queue')&&aboutOwnKey('nav_fit2:1x1')&&aboutOwnKey('nav_fit:1x1')&&!aboutOwnKey('someone_elses_key')),'the photo queue and the per-screen keys too, and nothing else');await ctx.close()}
     ok(!fs.readdirSync(ROOT).some(f=>/^wa\d\.png$/.test(f)),'the stray screenshots are gone');
   }finally{await browser.close()}
 };

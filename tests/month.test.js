@@ -71,10 +71,10 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(cap.unmarked==='2026-11-2',`a day never marked worn isn't "last worn" (${cap.unmarked})`);
     await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};renderToday()});
     ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
-    // there is no month batch (the owner, 2026-11-13: no bulk paid pictures): Settings offers only this day's photo
+    // no paid outfit photo is offered at all (the owner: no month batch 2026-11-13; the day's photo retired 2026-11-14)
     await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings('photos')});
     const st=await p.evaluate(()=>({batch:!!document.querySelector('#batch-btn'),fn:typeof startBatch,regen:!!document.querySelector('#regen-btn')}));
-    ok(!st.batch&&st.fn==='undefined'&&st.regen&&calls===0,'Settings has no "Generate photos for this month", only this day\'s photo; nothing was made');
+    ok(!st.batch&&st.fn==='undefined'&&!st.regen&&calls===0,'Settings has no "Generate photos for this month" and no day\'s photo; nothing was made');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

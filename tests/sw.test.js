@@ -50,7 +50,8 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   // offline: the app shell still loads and renders
   await ctx.setOffline(true);await page.reload();await page.waitForSelector('#n-today',{timeout:5000}).catch(()=>{});
   ok((await page.textContent('h1')).includes('Daily Wardrobe')&&await page.$('#n-today')!==null,'app loads offline from the cache');
-  ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitFigureSvg==='function'),'all scripts available offline');
+  ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitMannequinSvg==='function'),'all scripts available offline');
+  ok(await page.evaluate(()=>{const s=outfitMannequinSvg({kind:'vest',suit:{color:'#333'},shirt:{color:'#eee'},tie:{color:'#a00'}});return /viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}),'the traced mannequin\'s pose data comes from the cache offline (nothing fetched)');
   // a deep link offline: index.html, with its styles and scripts (asked for under the deep path) from this version's files
   {const q=await ctx.newPage();await q.goto(url+'some/deep/link').catch(()=>{});const st=await q.waitForFunction(()=>window.appReady,null,{timeout:15000}).then(()=>q.evaluate(()=>getComputedStyle(document.querySelector('nav')).position)).catch(e=>'failed: '+e.message.slice(0,60));await q.close();
     ok(st==='fixed',`offline, a deep link comes up styled and running (${st})`)}

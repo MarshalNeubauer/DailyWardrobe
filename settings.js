@@ -26,7 +26,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
   set('daysoff',[h&&h.country?`${h.country} holidays`:'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
-  set('photos',typeof isConnected==='function'&&!isConnected()?'Needs a connection':'This day’s photo, and item pictures');
+  set('photos',typeof isConnected==='function'&&!isConnected()?'Needs a connection':'Item pictures');
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
   set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
@@ -41,7 +41,7 @@ function openSettings(section){
     if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||''}catch(e){console.warn('connection not read',e)}
   try{if(window.showSyncStatus)showSyncStatus()}catch(e){console.warn('backup line not drawn',e)}
   try{renderSettingsExtras()}catch(e){console.warn('Settings drawn in part',e)}
-  try{settingsSummaries();if(queuedKeys().length)checkQueue()}catch(e){console.warn('Settings summaries not drawn',e)}
+  try{settingsSummaries()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
   setLock(true);appPush('set');   // the phone's Back closes it (appPush, by show())
@@ -150,7 +150,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   const f=$('#cfg-off-from');if(f)f.min=tk;
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
 async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI()}
-/* ---- Settings: formal days (any upcoming workday) and regenerating the shown day's photo ---- */
+/* ---- Settings: formal days (any upcoming workday) ---- */
 const shortDate=d=>d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
 const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-date');if(!list)return;
@@ -168,11 +168,8 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   const occ=($('#cfg-occasion')||{}).value||'formal',O=OCCASIONS.find(x=>x[0]===occ)||OCCASIONS[0],what=occ==='casual'?'a day without a jacket or tie':`${aAn(O[1].toLowerCase())} day`;
   if(o.occasion===occ)return renderFormalUI(`${l} is already ${what}.`);
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
-function renderRegenUI(){const btn=$('#regen-btn'),st=$('#regen-status');if(!btn)return;const o=planFor()[key(sel)],l=shortDate(sel);
-  const r=o&&renderFor(o),pend=renderPending(o);btn.disabled=!o||!!rendering||pend;btn.textContent=pend?'Making photo…':o?`${r?'Regenerate':'Generate'} photo for ${l}`:`No outfit on ${l}`;
-  if(st)st.textContent=o?(r?`Makes a new realistic photo of the day shown on Today${showCost()?' (about 7¢)':''}; it replaces the current one for every day with this look.`:`The day shown on Today has no photo yet${showCost()?' (about 7¢)':''}.`):'Pick a workday on Today first.';if(typeof needConn==='function'&&needConn(btn)&&st)st.textContent=''}
 function renderSettingsExtras(){
-  if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderRegenUI();renderReplanUI();renderDaysOffUI();renderCustomUI();if(typeof renderConnUI==='function')renderConnUI();
+  if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderReplanUI();renderDaysOffUI();renderCustomUI();if(typeof renderConnUI==='function')renderConnUI();
   if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
   if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};

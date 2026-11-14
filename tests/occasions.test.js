@@ -63,10 +63,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(!t.c.lapels&&t.w.lapels&&/no jacket/.test(t.c.label)&&!/Suit|Blazer|Tie/.test(t.c.rows)&&/Pants,Shirt/.test(t.c.rows)&&/trousers/i.test(t.c.sum),`the no-jacket day is drawn in shirt sleeves and lists no jacket or tie (${t.c.rows})`);
     ok(/planned/.test(t.cellCls)&&t.stack&&/No jacket/.test(t.cellLabel),`the month shows it as an outfit (${t.cellLabel})`);
     ok(/no jacket/.test(t.text)&&/collar open with no tie/.test(t.text)&&/trousers|pants/.test(t.text)&&t.keyDiff,'its photo is described without a jacket or tie, and the trousers are part of the look');
-    // the photo prompt: shirt sleeves for the no-jacket day, the jacket pose otherwise
-    await p.evaluate(()=>{sel=new Date(2026,10,18);renderToday()});await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    await p.evaluate(()=>{sel=new Date(2026,10,17);renderToday()});await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(prompts.length===2&&/in shirt sleeves with no jacket/.test(prompts[0])&&!/waist button/.test(prompts[0])&&/waist button, fastening it/.test(prompts[1])&&/just below the jacket pocket flaps/.test(prompts[1])&&/both shoulders and both elbows fully inside the picture/.test(prompts[1])&&/crown and pushers point toward the hand/.test(prompts[1])&&prompts.every(t=>/a smooth creamy blur with no sharp detail anywhere: a plain light office wall/.test(t)&&!/bright office/.test(t)),'the realistic photo of a no-jacket day asks for shirt sleeves; other days keep the jacket pose');
     // re-planning keeps the occasions; × makes a day regular again
     const keep=await p.evaluate(async()=>{await swapSlot('shirt');await replanFuture();cache={};return [17,18,19].map(d=>occOf(dayRecs['2026-11-'+d])).join()});
     ok(keep==='wedding,casual,funeral','re-planning upcoming days keeps their occasions');

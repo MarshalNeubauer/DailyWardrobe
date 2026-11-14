@@ -8,15 +8,13 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the role is remembered for the connection's code
     const as=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','code-'+r);acct.me=null;rememberRole({role:r})},role);
-    // a workday on Today (the regenerate line names a price only for a day with an outfit: run on a Friday, a day off in the
-    // default Sunday-to-Thursday week, this failed whatever the code)
-    const texts=()=>p.evaluate(()=>{const was=[typeof TODAY_OVERRIDE==='undefined'?undefined:TODAY_OVERRIDE,sel];TODAY_OVERRIDE='2026-11-16T12:00:00';sel=new Date(2026,10,16);cache={};const o=planFor()[key(sel)];const regen=(renderRegenUI(),(document.querySelector('#regen-status')||{}).textContent||'');TODAY_OVERRIDE=was[0];sel=was[1];cache={};return {cost:showCost(),regen,
-      fb:(renderAbout(),document.querySelector('#fb-help').textContent)}});
+    // (the day's photo line with its price went with the photo generator, 2026-11-14; showCost still guards the item pictures' price)
+    const texts=()=>p.evaluate(()=>({cost:showCost(),fb:(renderAbout(),document.querySelector('#fb-help').textContent)}));
     await as('tester');const t=await texts();
-    ok(t.cost===false&&!/¢/.test(t.regen),`a tester sees no costs (${t.regen})`);
+    ok(t.cost===false,'a tester sees no costs');
     ok(/goes to the person who invited you/.test(t.fb),'a tester is told who reads the feedback');
     await as('owner');const o=await texts();
-    ok(o.cost===true&&/about 7¢/.test(o.regen)&&!/invited you/.test(o.fb)&&/^What works, what doesn’t, what is missing\.$/.test(o.fb),`the owner sees costs, and no "person who invited you" (${o.fb})`);
+    ok(o.cost===true&&!/invited you/.test(o.fb)&&/^What works, what doesn’t, what is missing\.$/.test(o.fb),`the owner sees costs, and no "person who invited you" (${o.fb})`);
     ok(await p.evaluate(()=>{localStorage.setItem('app_token','another');return acctRole()===null&&showCost()}),'a remembered role belongs to its code: another code is asked again');
     // the owner's tools (the Advanced sections) are the owner's only
     const advs=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');if(r){localStorage.setItem('app_token','code-'+r);acct.me=null;rememberRole({role:r})}else{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')}applyRole();

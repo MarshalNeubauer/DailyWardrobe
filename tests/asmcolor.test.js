@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url})=>{
       // a pixel in the middle of the shirt, left of the tie: pink, as the shirt
       let px=null;if(f){const im=new Image();await new Promise(r=>{im.onload=r;im.src=f.img});const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.36),Math.round(im.width*.34),1,1).data].slice(0,3)}
       const o2={...o,shirt:W.shirt2},rec=await metaGet('asm:out:'+k);return {before,img:f&&f.img.slice(0,5),blob:rec&&rec.blob&&rec.blob.type,b64:!!(rec&&rec.img),w:f&&(await new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=f.img})),px,k,k2:asmOutKey(o2),kept:!!(await metaGet('asm:out:'+k)),
-        offPage:asmOffPage(),pending:renderPending(o)}});
+        offPage:asmOffPage(),pending:typeof renderPending==='function'}});
     ok(a.before.use===null&&a.before.after==='shirt-tie'&&a.img==='blob:'&&a.blob==='image/jpeg'&&!a.b64&&a.kept,`a shirt-and-tie day: its master is looked for, then the day is painted on it and kept as a Blob, shown by an object URL (${JSON.stringify(a.before)})`);
     ok(a.w===512&&a.offPage,`painted in the Web Worker at the job's size (${a.w} px)`);
     ok(a.px&&a.px[0]>a.px[2]+15&&a.px[0]>150,`the shirt comes out pink (${a.px})`);

@@ -255,15 +255,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(/Outfit photos today: [01] of 1/.test(box.t)&&/Item pictures today: 0 of 0/.test(box.t)&&/Photo readings today: [01] of 1/.test(box.t)&&/Pattern readings today: 0 of 0/.test(box.t)&&box.w&&!box.inv&&!/worker|token|KV|endpoint/i.test(box.t),`Settings → Connection shows who is connected and today\'s use against each cap (${box.t})`);
       await p.evaluate(()=>closeSettings());
       if(vp.width===390){
-        // a limit reaches the user: outfit photo, Add card, pattern reading, item picture
+        // a limit reaches the user: Add card, pattern reading, item picture (the app makes no outfit photo since 2026-11-14)
         await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
           items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
           settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
-        await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering&&queuedKeys().length===1,null,{timeout:15000});
-        await p.evaluate(()=>{stepDay(1)});await settle(p,300);
-        await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering&&/limit/.test(document.querySelector('#render-msg').textContent),null,{timeout:15000});
-        const msg=await p.evaluate(()=>document.querySelector('#render-msg').textContent);
-        ok(msg==='Today’s limit of 1 outfit photos is used up. It starts again at midnight UTC.',`Generate photo over the cap shows the server\'s sentence, nothing else ("${msg}")`);
         const itemErr=await p.evaluate(()=>renderItemPic(items.find(i=>i.type==='shoes')).then(()=>'',e=>e.message));
         ok(/limit of 0 item pictures is used up/.test(itemErr),`an item picture over the cap fails with the sentence (${itemErr})`);
         await p.evaluate(()=>show('add'));
@@ -275,7 +270,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         await p.evaluate(u=>{document.querySelector('#toast').textContent='';claudePattern({image:u,type:'tie'})},PNG);
         await p.waitForFunction(()=>/limit of 0 pattern readings is used up/.test(document.querySelector('#toast').textContent)&&document.querySelector('#toast').classList.contains('on'));
         ok(true,'a pattern reading over the cap says so in a toast');
-        await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>/Outfit photos today: 1 of 1/.test(document.querySelector('#acct-box').innerText.replace(/\s+/g,' ')));
+        await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>/Photo readings today: 1 of 1/.test(document.querySelector('#acct-box').innerText.replace(/\s+/g,' ')));
         ok(true,'and Settings shows the day\'s use going up')}
       // the owner: invite, copy, revoke
       await p.evaluate(()=>{closeSettings();localStorage.setItem('app_token','owner-secret')});await p.evaluate(()=>openSettings('connection'));

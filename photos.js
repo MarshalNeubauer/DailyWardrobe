@@ -1,9 +1,8 @@
-/* Daily Wardrobe: outfit photos: keys, kept photos, the realistic photo, item pictures and the background queue
+/* Daily Wardrobe: outfit photos: keys, kept photos and item pictures
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
-/* ---- realistic photo: the figure + item photos -> worker /render (OpenAI image edit).
-   Photos are saved per outfit combination, not per day: any day that wears the same pieces reuses the photo.
-   The worker keeps a copy (KV) so every device can show it. ---- */
-let renders={},rendering=false,renderMsg={k:'',t:''},renderFail={};   // rendering: an outfit being sent (or, on a worker without a queue, made) now; renderMsg: a note for one day; renderFail: why a queued photo failed, per combination
+/* ---- kept outfit photos (made by the retired photo generator, worker /render): saved per outfit combination, not per day, so any
+   day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
+let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* the combination a photo shows: which pieces, and everything about them that changes how they look */
@@ -38,7 +37,7 @@ const renderFor=o=>{const a=asmLive()&&asmFor(o);if(a)return a;   // put togethe
 /* a combination with no photo here: ask the worker (another device may have made it); one with a photo only here: share it */
 const renderTried=new Set();
 async function fetchRemoteRender(o,day){
-  const W=workerBase(),ck=comboKey(o);if(!W||renderTried.has(ck)||rendering)return;renderTried.add(ck);
+  const W=workerBase(),ck=comboKey(o);if(!W||renderTried.has(ck))return;renderTried.add(ck);
   try{
     const get=async q=>{const r=await fetch(W.url+'?'+q,{headers:{'x-app-token':W.tok},cache:'no-store'});return r.ok?r.json():null};
     const cur=renders[ck];if(cur&&remoteKeys&&remoteKeys.has(ck))return;   // here and on the worker already: nothing to do
@@ -97,25 +96,11 @@ function outfitText(o){
     o.watch&&watchText(o.watch,{worn:true}),o.links&&`${metalWord(o.links)} cufflinks`];
   return prettyCols(parts.filter(Boolean).join('; '));
 }
-/* draw the figure SVG onto a canvas and return a PNG data URL. With a jacket the picture is the square FIG_CROP of the drawing
-   (viewBox units): the shoulders fill its width and it ends just under the pocket flaps, the close framing the photo generator
-   copies (sent whole, 390x400, it came back zoomed out, down to the hips). A no-jacket day keeps the whole drawing */
-const FIG_CROP={x:11,y:0,s:368};
-async function figurePng(o,w=780){
-  const crop=o&&o.top?FIG_CROP:null,k=crop?w/crop.s:w/390,W=Math.round(390*k),H=Math.round(400*k);
-  // the watch's face on the drawing is its own photo's dial (as the dial reference is cut), turned as worn in figure.js
-  const wp=o&&o.watch&&(o.watch.photo||(itemPic(o.watch)||{}).img),face=wp&&typeof dialCrop==='function'?await dialCrop(wp):null;
-  const svg=figureSvg(o,'r-',{photo:true,face}).replace('width="100%"',`width="${W}" height="${H}"`).replace('style="display:block;height:auto"','');
-  return new Promise((ok,no)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=w;c.height=crop?w:H;const x=c.getContext('2d');
-    x.fillStyle=figBg();x.fillRect(0,0,c.width,c.height);x.drawImage(im,crop?-crop.x*k:0,crop?-crop.y*k:0,W,H);ok(c.toDataURL('image/png'))};im.onerror=()=>no(new Error('could not draw the illustration'));
-    im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
-}
 /* an outfit photo is kept on the device as the worker made it: shrunk to 900px (JPEG .85) it was softer than the 1024 original, and
    Today shows it up to 390 points wide on a 3x screen (1170 pixels) and zooms 2.5x. Assembled pictures keep their 900px (assemble.js):
    their kept zones were measured at that size */
 const keptPhoto=u=>u;
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
-/* generate and keep the photo for one outfit; throws with a readable message */
 /* reference photos for an outfit photo, each labelled: the jacket and tie photos, and the watch's own photo or its product
    picture (no shirt photo: an outfit photo is shared by every shirt of that colour). A tie with a close-up goes without its
    photo (the owner's choice after a trial: the close-up and the pattern drawing carry the tie, and its place goes to the
@@ -127,35 +112,11 @@ function outfitRefs(o){const refs=[],labels=[];const add=(img,l)=>{if(img){refs.
   // the owner's own photo of the watch first: a product picture is the generator's redrawing, and its dial's details are already lost
   if(o.watch)add(o.watch.photo||(itemPic(o.watch)||{}).img,'the wristwatch (copy it exactly: case shape, bezel, dial layout and subdials, numerals, hands, bracelet links)');
   return {refs,labels}}
-async function renderCombo(o){
-  const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok)throw new Error('Connect in ⚙ Settings first.');
-  const image=await figurePng(o);
-  const {refs,labels}=await outfitRefsFull(o);
-  const r=await fetch(new URL('render',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},body:JSON.stringify({image,refs,labels,outfit:outfitText(o),key:comboKey(o),sig:comboSig(o),...(o.top?{}:{nojacket:true})})});
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error((r.status===404||r.status===405)?'The server doesn’t support photos yet: it needs an update.':(j.message||j.error||`HTTP ${r.status}`));
-  const rec={sig:comboSig(o),img:keptPhoto(j.image),model:j.model||'',t:Date.now()};
-  await keepRender(comboKey(o),rec,false);   // the worker already kept a copy
-  return rec;
-}
-/* Generate or Regenerate (Settings → This day's photo; there is no month batch any more) the shown day's photo. It goes to the worker's background queue,
-   so the app can be swiped to another day, closed or locked: the worker makes it and the app picks it up when it next looks
-   (every 20 s while open, and on opening). Only a worker without the queue makes it while the app waits. */
-const renderPending=o=>{const ck=o&&comboKey(o);return !!ck&&(rendering===ck||(queuedKeys().includes(ck)&&!renderStalled(ck)))};
-/* a photo waiting over 10 minutes has stalled (one takes about a minute; retries a few more): the button offers to send it again */
-const STALL_MS=10*60000,renderStalled=ck=>{const q=rqGet();return q.keys.includes(ck)&&Date.now()-sentAt(q,ck)>STALL_MS};
-async function generateRender(){
-  const o=planFor()[key(sel)];if(!o||rendering||renderPending(o))return;
-  const day=key(sel),ck=comboKey(o),replace=!!renderFor(o);rendering=ck;delete renderFail[ck];renderMsg={k:day,t:''};renderToday();renderRegenUI();
-  // an outfit painted on a colour-coded master is only painted (nothing to pay for); a Regenerate still makes a whole photo
-  try{const q=!replace&&asmLive()&&asmWants(o)?(await asmEnsure(o),'asm'):await queueCombo(o,replace);
-    if(q==='queued'){const s=rqGet();s.keys=[...new Set([...s.keys,ck])];s.total=(s.total||0)+1;s.sentAt=Date.now();s.at={...(s.at||{}),[ck]:s.sentAt};s.failed=s.failed||[];rqSet(s);startQueueWatch()}
-    else if(q==='noqueue'){renderMsg={k:day,t:'This takes about 30–90 seconds. Keep the app open until it is done.'};renderToday();await renderCombo(o);renderMsg={k:'',t:''}}}
-  catch(e){const raw=String(e.message||e),pm=typeof plainErr==='function'?plainErr(raw):raw;   // (the server's set-up errors in plain words for a tester, ui.js)
-    renderMsg={k:day,t:/Connect in|server doesn|Today’s limit/.test(raw)?raw:pm!==raw?pm:'Couldn’t send the photo: '+raw}}
-  finally{rendering=false;if(key(sel)===day&&!$('#today').hidden)refreshToday();renderRegenUI()}
-}
+/* (2026-11-14, the owner) the outfit photo made by OpenAI from the drawn figure (Settings → This day's photo, Regenerate; the figure as
+   the pose, the worker's background queue) is retired: the colour-coded masters paint every look on the device, nothing paid. Photos
+   already kept still show on their days (renderFor), and the worker's /render endpoint is left unused. outfitText and outfitRefs
+   (above) and outfitRefsFull (tagging.js) are what that photo was asked with; nothing in the app sends them now. */
+try{localStorage.removeItem('render_queue')}catch{}   // a queue of photos the app will never look for again
 /* when this look (same suit, tie, clip, watch, vest; any shirt of the same colour) was last worn, before the shown day.
    A day counts unless marked "Didn't" (2026-11-14, the owner: a day is worn by default; it used to take a ✓) */
 function lastWorn(o){
@@ -232,69 +193,3 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
     try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${typeof plainErr==='function'?plainErr(err):err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
-/* ---- background photos (worker queue): send one outfit's inputs; the worker makes the photo later ---- */
-async function queueCombo(o,replace=false){
-  const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
-  const image=await figurePng(o),{refs,labels}=await outfitRefsFull(o),ck=comboKey(o);
-  const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'queue',image,refs,labels,outfit:outfitText(o),key:ck,sig:comboSig(o),...(o.top?{}:{nojacket:true}),...(replace?{replace:true}:{})})});
-  const j=await r.json().catch(()=>({}));
-  if(r.ok&&j.queued)return 'queued';
-  if(r.ok&&j.exists){renderTried.delete(ck);if(remoteKeys)remoteKeys.add(ck);await fetchRemoteRender(o,'');return renders[ck]?'done':'queued'}
-  if(r.ok&&j.image){await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.image),model:j.model||'',t:Date.now()},false);return 'done'}   // an older worker made it right away
-  // only a worker without the queue (noQueue) is asked again directly: a 501 for a missing image service is the answer, not a
-  // reason to ask twice (one Generate tap sent two POST /render, audit 2026-11-13)
-  if((r.status===501&&j.noQueue)||r.status===404||r.status===405)return 'noqueue';
-  throw new Error(j.message||j.error||`HTTP ${r.status}`)}
-const RQ='render_queue';
-const rqGet=()=>{try{const q=JSON.parse(localStorage.getItem(RQ)||'{}');return {keys:[],failed:[],...q}}catch{return {keys:[],failed:[]}}};
-const rqSet=q=>{try{q.keys.length?localStorage.setItem(RQ,JSON.stringify(q)):localStorage.removeItem(RQ)}catch{}renderBusy()};
-const queuedKeys=()=>rqGet().keys;
-/* ask the worker how the queued photos are doing and bring the finished ones home */
-let rqTimer=null,rqBusy=false;
-async function checkQueue(){const q=rqGet(),W=workerBase();if(!q.keys.length||!W||rqBusy)return;rqBusy=true;const removed=new Set(),newFail=[],fresh={};
-  // by key: the worker reads each one, no KV list (lists are capped per day)
-  try{const r=await fetch(W.url+'-queue?keys='+q.keys.slice(0,40).join(','),{headers:{'x-app-token':W.tok},cache:'no-store'});const st=await r.json().catch(()=>null);if(!r.ok||!st)return;
-    const pend=new Set(st.pending||[]),fail=Object.fromEntries((st.failed||[]).map(f=>[f.key,f.error]));let got=0,shown=false;
-    for(const k of [...q.keys]){
-      if(pend.has(k)){const run=st.running&&st.running[k];if(run&&run.at>sentAt(q,k))fresh[k]=run.at;continue}   // the worker started it again: wait afresh
-      if(fail[k]){newFail.push(fail[k]);renderFail[k]=fail[k];shown=true;removed.add(k);continue}
-      const g=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=g.ok?await g.json().catch(()=>null):null;
-      if(j&&j.img){await keepRender(k,{sig:j.sig||'',img:keptPhoto(j.img),model:j.model||'',t:j.t||Date.now()},false);got++;removed.add(k);
-        const o=planFor()[key(sel)];if(o&&comboKey(o)===k)shown=true}
-      else if(!g.ok&&g.status!==404)continue;
-      else if(Date.now()-sentAt(q,k)>LOST_MS)removed.add(k)}   // neither waiting, failed nor finished for a long time: lost (expired), stop waiting for it
-      // (a job just sent can be missing from the worker's list for up to a minute: KV lists are only eventually consistent)
-    // applied to the list as it is now: a push may have taken some meanwhile, and new photos may have been sent
-    const q2=rqGet();q2.keys=q2.keys.filter(k=>!removed.has(k));if(Object.keys(fresh).length)q2.at={...(q2.at||{}),...fresh};if(q2.at)for(const k of removed)delete q2.at[k];q2.failed=[...(q2.failed||[]),...newFail];finishQueueMsg(q2);
-    rqSet(q2);renderRegenUI();if((shown||removed.size)&&!$('#today').hidden)refreshToday();
-  }catch(e){console.warn('queue check failed',e)}finally{rqBusy=false}}
-/* Bringing photos home. The worker pushes: while photos are waiting and the app is on screen, a request to GET /render-wait is held
-   open, and the worker answers it the moment a queue job finishes, with the photo itself (waitPush). Polling GET /render-queue
-   stays as the backup (a worker without the push, a dropped connection), timed by what a photo takes: none is ready within 40 s
-   of sending, so the first look is then; after that every 7 s, every 20 s after 3 minutes (a month batch) and every minute after 15. */
-/* when each photo was sent (rqGet().at), and how long one may go unseen before it counts as lost: the queue retries a failing
-   photo for several minutes and a month batch makes two at a time, so 45 minutes */
-const LOST_MS=45*60000,sentAt=(q,k)=>(q.at&&q.at[k])||q.sentAt||0;
-const queueDelay=age=>age<40000?40000-age:age<300000?20000:60000;   // the push brings photos the moment they're made; polling is only the backup
-function scheduleQueueCheck(){clearTimeout(rqTimer);rqTimer=null;const q=rqGet();if(!q.keys.length)return;
-  rqTimer=setTimeout(async()=>{rqTimer=null;if(document.visibilityState==='visible')await checkQueue();scheduleQueueCheck()},Math.max(1000,queueDelay(Date.now()-(q.sentAt||0))))}
-function startQueueWatch(){renderBusy();scheduleQueueCheck();waitPush()}
-function stopQueueWatch(){clearTimeout(rqTimer);rqTimer=null}
-let PUSH_WAIT=90000,pushOn=false,noPush=false;
-async function waitPush(){const W=workerBase(),keys=queuedKeys();if(pushOn||noPush||!W||!keys.length||document.visibilityState!=='visible')return;pushOn=true;let pause=0;
-  try{const r=await fetch(W.url+'-wait?keys='+keys.join(',')+'&ms='+PUSH_WAIT,{headers:{'x-app-token':W.tok},cache:'no-store'});
-    if(r.status===501||(r.status>=400&&r.status<500)){noPush=true;return}   // an older worker without the push (or no access): polling only
-    const res=r.ok?await r.json().catch(()=>[]):[];if(!r.ok)pause=5000;if(Array.isArray(res)&&res.length)await takeQueued(res)}
-  catch{pause=5000}   // the connection dropped (the app went to the background): look again shortly
-  finally{pushOn=false}
-  if(pause)await new Promise(ok=>setTimeout(ok,pause));waitPush()}
-/* finished (or failed) queued photos, from the push or from polling */
-async function takeQueued(res){res=(res||[]).filter(m=>m&&m.key);if(!res.length)return;
-  // every finished photo is kept, even one the app had stopped waiting for: it is for an outfit the user asked for
-  for(const m of res)if(m.rec&&m.rec.img)await keepRender(m.key,{sig:m.rec.sig||'',img:keptPhoto(m.rec.img),model:m.rec.model||'',t:m.rec.t||Date.now()},false);
-  const q=rqGet(),mine=new Set(q.keys);for(const m of res){if(!mine.has(m.key))continue;if(!m.rec&&m.error){q.failed.push(m.error);renderFail[m.key]=m.error}q.keys=q.keys.filter(k=>k!==m.key)}
-  finishQueueMsg(q);rqSet(q);renderRegenUI();if(!$('#today').hidden)refreshToday()}
-function finishQueueMsg(q){const done=(q.total||0)-q.keys.length-q.failed.length;
-  q.msg=q.keys.length?`Making photos: ${done} of ${q.total} done. You can close the app; they appear as they finish.`
-    :`All ${done} photo${done===1?'':'s'} ready${q.failed.length?`; ${q.failed.length} failed (${q.failed[q.failed.length-1]})`:''}.`;
-  if(!q.keys.length)stopQueueWatch()}

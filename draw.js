@@ -1019,15 +1019,30 @@ let figBgMemo=null;
 const figBg=()=>{const k=(document.documentElement.dataset.theme||'')+'|'+(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'d':'l');
   if(figBgMemo&&figBgMemo.k===k)return figBgMemo.v;
   const v=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),c=/^#[0-9a-f]{3,8}$/i.test(v)?v:'#e8ebec';figBgMemo={k,v:c};return c};
-/* photo:true = the drawing the photo generator starts from (figurePng): the watch's face is its own photo (the owner's, else its
-   product picture), turned as worn; the generator edits this drawing, so it starts from the real dial in the right place and size
-   (from its references and words alone it drew a stock chronograph). With no photo the dial is left blank, not three drawn hands */
-function figureSvg(o,prefix='fig-',{photo=false,face=null}={}){   // face: the watch photo's dial crop (dialCrop), given by figurePng
+/* a striped jacket's lines as the painter shows them (assemble.js asmSuitTex): the reading's measured line colour is blurred into the
+   ground and nearly vanishes on a dark cloth, so where Claude named each band's colour (patternSpec.across) the figure takes the line
+   FIG_STRIPE_MIX of the way from the ground to it, in linear light, as the painted picture's stripes read */
+const FIG_STRIPE_MIX=.3;
+function figStripeLift(i){const s=i&&usableSett(i),sp=i&&i.patternSpec&&i.patternSpec.across;
+  if(!s||s.v!==2||!s.bands||s.bands.length<2||!STRIPE_PATS.includes(patBase(i.pattern))||!sp||!sp.bands||sp.bands.length!==s.bands.length)return i;
+  const g=s.bands.reduce((a,b)=>b[1]>a[1]?b:a)[0],lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>Math.round(255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)),
+    rgb=h=>[1,3,5].map(k=>lin(parseInt(String(h).slice(k,k+2),16)||0)),mix=(a,b)=>{const x=rgb(a),y=rgb(b);return '#'+x.map((v,k)=>gam(v+(y[k]-v)*FIG_STRIPE_MIX).toString(16).padStart(2,'0')).join('')};
+  const ok=h=>/^#[0-9a-f]{6}$/i.test(String(h));if(!ok(g))return i;
+  return {...i,sett:{...s,bands:s.bands.map((b,k)=>b[0]&&b[0]!==g&&ok(sp.bands[k].hex)?[mix(g,sp.bands[k].hex),b[1]]:b)}}}
+/* the master an outfit's figure is traced from (asmCmKind, asm-color.js), when its mannequin ships (mannequin.js, mq/<kind>.js): a
+   waistcoat without a tie has no master, so it is the waistcoat mannequin with the tie's place in the shirt */
+const figKind=o=>{const k=typeof asmCmKind==='function'?asmCmKind(o):null,m=k==='vest-open'?'vest':k;return m&&typeof mqHas==='function'&&mqHas(m)?m:null};
+function figureSvg(o,prefix='fig-'){
+  const label=`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt)+(o.top?'':', no jacket')+(o.tie?'':', open collar'),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`;
+  const clip=o.clip&&!o.vest?{color:colOf(o.clip)}:null,kind=figKind(o);
+  if(kind){const top=o.top&&figStripeLift(o.top),bs=top&&usableSett(top);
+    // a banded cloth (a pinstripe) at 1.6x figFabric's scale gives about the painter's stripe count; twills and solids stay at 1x
+    return outfitMannequinSvg({kind,suit:figFabric(top||o.shirt,top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),vest:!!(o.vest&&o.top),clip,
+      bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:bs&&bs.bands&&bs.bands.length>1?1.6:1,shirt:1,tie:1}})}
   let watch=null;
   if(o.watch){const wo=watchOpts(o.watch),tones=METAL_TONES[o.watch.metal]||METAL_TONES.silver,dial=COLORS[wo.dial]||'#12151A';
-    watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125',blank:photo,img:photo&&face||null}}
+    watch={metal:tones,dial,strap:wo.band!=='leather'?tones[1]:colOf(o.watch),marks:lum(dial)<.45?'#D9DEE6':'#1D2125'}}
   return outfitFigureSvg({
     suit:figFabric(o.top||o.shirt,o.top?'top':'shirt'),shirt:figFabric(o.shirt,'shirt'),tie:figFabric(o.tie,'tie'),
-    watch,clip:o.clip&&!o.vest?{color:colOf(o.clip)}:null,vest:!!(o.vest&&o.top),jacket:!!o.top,bg:figBg(),idPrefix:prefix,
-    ariaLabel:`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt)+(o.top?'':', no jacket')+(o.tie?'':', open collar'),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`});
+    watch,clip,vest:!!(o.vest&&o.top),jacket:!!o.top,bg:figBg(),idPrefix:prefix,ariaLabel:label});
 }

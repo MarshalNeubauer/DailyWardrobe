@@ -47,7 +47,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - What to buy waits for a wardrobe big enough to judge (`shopGate`, `SHOP_MIN` in shop.js: 3 jackets, or 3 pairs of trousers when the dress code has no jackets; 5 shirts; 4 ties when ties are worn; 2 pairs of shoes, all in rotation): until then the card says what to add and doesn't open (`openShop` returns)
 - the page links (Packing list, Laundry & cleaning) are one card (`.slinks`) under a "Your wardrobe" heading, each with a short line
 - wording: nothing a tester reads says worker, Cloudflare, KV, token or benchmark ("the server", "Connect in ⚙ Settings first.", "it needs an update"); `tests/ui.test.js` reads all of Settings for those words
-- error texts the code tests by pattern: `/Connect in|server doesn|Today’s limit/` in `generateRender`, `startItemPics`
+- error texts the code tests by pattern: `/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/` in `startItemPics`
 - Privacy: outfit pictures are drawn or painted by the app; item photos and the outfit go to OpenAI only on a tap of Generate photo or Generate item pictures
 - the user's phone may run the Dark Reader extension; the page opts out via the `darkreader-lock` meta tag; keep it
 
@@ -312,22 +312,30 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - speed: `binMedians` sorts typed arrays numerically, `labGrid` works out `rgbLab` inline with its sRGB curve from a table (`LAB_LIN`), the crossing-direction search builds each angle's projection once, `periodCh` runs on typed arrays; readings identical to before over 94 cases, `tests/sett.test.js` 36 s → 17 s
 - the old brightness-only stripe reader (`detectQueued` → `item.stripes`) runs at Confirm only for a card with no close-up whose full reading found nothing and wasn't turned down (`q.settReject`); old items keep their `stripes`, and "Read pattern from photo" (`redetect`, itemsheet.js) still uses it for items with no close-up or box
 
-### `figure.js`
+### `figure.js`, `mannequin.js` and `mq/<kind>.js` (Today's outfit figure)
 
-- Today's torso figure (`jacket:false` draws it in shirt sleeves with a button placket, for no-jacket days)
-- no head or neck (cropped at the collar, the user's request); athletic build
-- shirt collar band with points on the tie knot; slim notched lapels around a wide opening so the vest shows
-- set-in sleeves cut by the shoulder line (`clipShoulder`)
-- the pose follows the photo the owner chose as the model: the left forearm lower across the chest with the watch, the right hand raised to the waist button right under the left wrist, clear of the watch (`.fig-hand-l`, `.fig-hand-r`)
-- the pose comes from the drawing: a photo used as the pose source made the generator copy that photo's watch
-- the photo generator gets a square crop of the drawing with a jacket (`FIG_CROP` in photos.js, `figurePng`: shoulders across, ending under the pocket flaps); sent whole it came back zoomed out, down to the hips; a no-jacket day sends the whole drawing; the worker's `RENDER_PROMPT` (worker/render.js) describes the same pose and crop
-- `FIG_CROP` is 368 of the drawing's 390 units and the prompt asks for both shoulders and elbows inside the picture with a strip of background either side: the crop alone changed nothing, the wording did ("shoulders filling the width" ran them off both edges)
-- the chest pocket is a welt in the jacket's cloth (`.fig-welt`): drawn as a dark stroke it came back as a dark line in the pocket
-- no tap targets on it
-- fabrics come in as ready-made `<pattern>`s from `figFabric()` in draw.js; keep the pattern ids (`suitB/suitL/suitR/shirt/tie`)
-- keep `bladeP`, `.fig-clip`, `.fig-watch`, `.fig-vest`, and no `<use>` inside `<clipPath>`
-- no tie (`tie` null): an open collar (`.fig-open`: the throat between collar leaves that lie open on the shirt front) and, under a jacket, a buttoned placket down to the lapels' meeting point; in shirt sleeves the existing placket follows; with a tie the drawing is unchanged, character for character
-- the figure's `aria-label` (draw.js `figureSvg`) says "open collar" when there is no tie
+- Today's figure is a traced mannequin (2026-11-14, the owner's choice from a prototype, `C:\code\audit-2026-11-13\mannequin-proposal\`): one vector torso per colour-coded master, in exactly the painted picture's pose and square frame; it shows until the day's painted picture is ready, and wherever `figureSvg` is drawn (Shop)
+- `draw.js` `figureSvg(o, prefix)` picks the pose with `figKind(o)`: `asmCmKind(o)` (asm-color.js), `vest-open` drawn as `vest` with the tie's place in the shirt (no master exists), and only when that pose's data has shipped (`mqHas`); any other outfit gets figure.js's earlier drawing (`outfitFigureSvg`, 390x400)
+- poses shipped: `vest` (waistcoat, jacket and tie)
+- `mannequin.js` `outfitMannequinSvg({kind, suit, shirt, tie, vest, clip, bg, idPrefix, ariaLabel, fab})` draws it: viewBox 390x390, no bottom fade (the figure reaches the frame like the painted picture)
+- each pose's data is `mq/<kind>.js`: `MQ_RAW[kind]` holds it as a JSON string (a string loads far quicker than the same object literal), parsed once by `mqData(kind)`; about 93 KB raw, 38 KB gzip a pose; loaded by index.html and in sw.js `ASSETS`, so it works offline and nothing is fetched for it
+- `tools/mq-trace.py <kind>` makes it on the PC (numpy, scipy, opencv, Pillow: `C:\code\geo3d\.venv`), read-only on `C:\code\watch-test\colormaster\out-<kind>\` (zone masks, `uv-u.png` solved pieces, `light.png`, the master photo) and the Sapiens normals in `C:\code\watch-test\geo3d\sapiens-2b\<kind>-cc\`; re-run it whenever a master's masks, pieces or maps change, then bump `CACHE`
+- outlines: OpenCV contours smoothed along the curve, Douglas-Peucker, Catmull-Rom cubics with sharp corners kept, coordinates in tenths
+- the silhouette, waistcoat, shirt and buttons from the zone masks; sleeves (pieces 14/15, 18/19), lapels (43/44) and collar leaves (45/46) from the solved pieces inside the jacket mask; cuffs from pieces 60-79; the tie's knot and blade from pieces 80/81
+- every garment piece is filled from the day's items (`figFabric` patterns); pattern ids `suitB` (body and waistcoat), `suitL`/`suitR` (the lapels, viewer's left and right), `shirt`, `tie`; each other part's copy is `sp<i>`, `cuff<i>`, `tie<i>`, turned to the part's stripe angle (sleeves, cuffs and tie: the direction of constant u in the solved positions; lapels and collar leaves: their long axis)
+- a banded jacket cloth (a pinstripe) is drawn at 1.6x `figFabric`'s scale (about the painter's stripe count); twills and solids at 1x
+- a striped jacket's lines get the painter's lift (`figStripeLift`, `FIG_STRIPE_MIX` .3): where the reading names each band's colour (`patternSpec.across`) the line is taken that share of the way from the ground to it in linear light, as the painted picture's stripes read; the measured line colour alone nearly vanished on a dark cloth
+- kept ids and classes: `bladeP` (the blade, drawn with `<use>`), `lapL`/`lapR`, `.fig-vest`, `.fig-clip`, `.fig-watch`; the hands are one traced skin group `.fig-skin` (no `.fig-hand-l/r`); no `<use>` inside `<clipPath>` (the silhouette and skin clips are plain paths)
+- the form shading is one small lossless WebP (195 px, 2 viewBox units a pixel, about 7 KB): black where the cloth is in shadow, white where it is lit, from the master's brightness over each zone's lit level times `light.png` R, blurred at 2048; the browser scales it up smoothly, so no SVG blur filter is needed
+- lit edges from `light.png` G and the normals, the collar shadow from `light.png` B, seams and creases ("ink") from a difference of Gaussians on the master photo; the hand's cast shadow from the skin and watch masks
+- the hands are photo-like (the owner's choice): the master's skin in 9 tone bands, the inner ones softened by a 0.6 blur clipped to the skin (only the hands' own box is filtered)
+- the watch is always the master's steel watch in 7 tone bands (the owner's rule, as the painted picture), whatever the item's metal, and with no watch item too (the wrist under it is not traced)
+- the tie clip sits where the painter puts it (assemble.js `asmBarDraw`, measured by the tracer on the tie mask: 60% down the visible tie, clipped on from its left edge, 0.8 of its width), in the clip's colour; never on a waistcoat day
+- `FIG_HOTSPOTS` are the waistcoat pose's pieces' centre points measured from the masks (`mqData(kind).hot`), `FIG_VIEWBOX` 390x390
+- speed (2026-11-14, Chromium CPU, 4x throttle, 390 css px at DPR 3, decode and draw on a 1170-pixel canvas, median of 7): the earlier figure 107-124 ms, the prototype mannequin 152 ms, the shipped mannequin 95-101 ms; the prototype's blur on its five vector shading layers was the extra, the shading picture replaced it
+- `tests/mannequin.test.js`: each shipped pose renders with the items' fabrics, the steel watch, the clip rule, no `<use>` in clip paths, its size and a speed budget against the earlier figure; `KINDS` there lists the shipped poses
+- the earlier drawing (figure.js) stays for outfits with no traced pose: a jacket, shirt collar band, set-in sleeves (`clipShoulder`), the left forearm across the chest with the watch and the right hand at the waist button (`.fig-hand-l`, `.fig-hand-r`); no tie draws an open collar (`.fig-open`)
+- the drawing is no longer sent anywhere: the OpenAI outfit photo made from it (Settings → This day's photo, `generateRender`, `figurePng`, `FIG_CROP`, the worker queue) was retired 2026-11-14 (the owner)
 
 ### `draw.js`
 
@@ -669,7 +677,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - outfit photos are kept on the device as the worker made them (`keptPhoto`): shrunk to 900px and re-encoded at JPEG .85 (`shrinkUrl(…,900)`) they were softer than the 1024 original on a 3x phone and when zoomed; photos kept before stay 900px until made again
 - background download of the worker's photos for the month on screen and the next, nearest day first (`prefetchRenders`, after one `GET /render?list=1`)
 - a day the worker has no photo for is not asked about (`fetchRemoteRender`, `fetchItemPic`): the worker's list (`remoteList`, `GET ?list=1`, once, shared with `prefetchRenders`; `remoteListed` false when the worker gives none, then each day is asked as before) says which it keeps; each ask was a 404 logged in the console for every day shown
-- one Generate tap is one request: `queueCombo` falls back to the direct `/render` only for a worker without the queue (404, 405, or 501 with `noQueue`); a 501 for a missing image service is the answer (it was sent twice)
+- outfit photos are no longer made (2026-11-14): `outfitText`, `outfitRefs` and `outfitRefsFull` (what that photo was asked with) stay as tested helpers, unused by the app; kept photos still show and sync
 - a no-jacket day's photo key includes the trousers and its request sends `nojacket`
 - `outfitText` describes a jacket without a tie as "worn with the collar open and the top button undone, with no tie"; `comboSig` has `-` in the tie's place, so a tieless outfit has its own photo key
 - `outfitRefs()` sends each close-up after its item's photo, labelled "a close-up of the … fabric (match its exact colour and weave)" (suit/blazer, shirt, tie; trousers on no-jacket days); the planner worker never gets `texture`
@@ -686,7 +694,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the enlargement is never trimmed (`refRank` 9): in a full outfit (9 candidates) the shirt's close-up goes first; the enlargement going first is why the owner's watch came back generic from 2026-11-11
 - both go turned half a turn (`turnBy(…, WATCH_TURN)`, 180°): on the left wrist, arm across the chest, a watch is seen with its crown toward the hand and 12 o'clock at the bottom; from upright photos it was drawn upright, crown toward the elbow, which the owner called backwards; the prompt says the same and the figure's watch has its crown toward the hand (`.fig-crown`)
 - the watch reference is the owner's own photo (`o.watch.photo`), its product picture (`itemPic`) only when there is none: the product picture is a redrawing whose dial details are already lost
-- the drawing the generator edits carries the watch's own dial: `figurePng` cuts it with `dialCrop` and passes it as `face` to `figureSvg(o, prefix, {photo:true, face})`; figure.js puts it in the case, clipped round and turned `rotate(90)` in the hand's frame (crown toward the hand, 6 o'clock at the top); `photo:true` with no photo leaves the dial blank; Today's drawing keeps its drawn hands
+- (retired 2026-11-14) the drawing was the generator's pose with the watch's own dial in its case (`figurePng`, `figureSvg` `photo:true`); neither exists now
 - `watchText(w, {worn})` (core.js): with the owner's Details the style's stock layout is left out ("chronograph", not "chronograph (three subdials and a date window)"); `worn` (outfit photos, `outfitText`) says the details describe the watch upright and every position turns with it
 - `WATCH_KEY(outfit)` (worker/render.js): with a wristwatch in the outfit, a short sentence before "He is wearing" says the watch is a key detail and its face in the illustration is its real photo, to keep as it is
 - on the owner's Seiko Arctura (2026-11-12) words, references and high quality alone gave a stock chronograph; the real dial on the drawing gave a closer but not faithful dial (the watch is about 90px across); the owner declined a second paid edit per photo and a larger framing for now
@@ -739,7 +747,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `addGate()` hides "Several items" while not connected and shows `#add-group-off`
 - `applyRole()` (account.js) sets `body.owner`/`tester`/`nocon`: Advanced folds are owner-only; Connection's address and code hidden from testers
 - `renderConnUI`/`connPaste`/`connSummary` draw Settings → Connection; `advToggle`/`advClose` the Advanced folds
-- `plainErr(message)` turns server set-up errors (`TECH_RE`) into plain words unless the owner is connected; used by `generateRender`, `tagFailText`, Several items, the picture batch and a tester's `setSyncStatus` (a raw OPENAI_API_KEY message once reached a new user)
+- `plainErr(message)` turns server set-up errors (`TECH_RE`) into plain words unless the owner is connected; used by `tagFailText`, Several items, the picture batch and a tester's `setSyncStatus` (a raw OPENAI_API_KEY message once reached a new user)
 - dialogs call `layerOpen`/`layerClose` (Settings, picker, What to buy); `layerInert` keeps the page behind inert and returns focus; `layerUp` traps Tab and handles Escape
 - `tests/a11yfix.test.js` covers dialogs, waiting redraws, storage failures, labels, contrast, motion, tap targets
 
@@ -807,7 +815,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `acctStart()` wraps `renderSettingsExtras` (settings.js); an old server (404/405 on `/me`) leaves the box empty
 - the role is remembered per code (`rememberRole`, `acct_role`, `acctRole()`, `isTester()`)
 - iPhone: a Home Screen app has its own storage; a tester connecting in Safari (`iosInSafari`) gets `homeScreenGuide()` and "Copy my invitation link" (`copyInviteLink`, `myInviteLink`; testers only)
-- a daily limit shows the server's `message`: through `detail` on Add, alone in `generateRender`, thrown by `renderCombo`/`renderItemPic`/`queueCombo`, toasted for pattern reading via `limitNote`
+- a daily limit shows the server's `message`: through `detail` on Add, thrown by `renderItemPic`, toasted for pattern reading via `limitNote`
 - testers see no costs (`showCost()` in settings.js)
 - About's Feedback line (`#fb-help`) says where feedback goes to testers only
 - tests: `tests/accounts.test.js`, `tests/testerview.test.js`, `tests/invitelink.test.js`
@@ -998,7 +1006,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today: `renderFor(o)` (photos.js) returns `asmFor(o)` first, the picture kept on the device (`asmOut`, meta `asm:out:<key>`, the newest `ASM_KEEP` 150); `figureStage` (today.js) calls `asmEnsure(o)`, which looks for the look's master (`asmCmLook`) and hands over to asm-color.js `asmCmEnsure`
 - a photo made for the outfit after its master (Settings: Regenerate) wins (`asmFullWins`, the owner's choice): `asmFor` gives null and `asmEnsure` does nothing for it (taking that null as "not made yet" once painted and redrew Today in a loop after a Regenerate)
 - a look's key carries everything it is painted from (`asmOutKey` = asm-color.js `asmCmOutKey`), so a kept picture is right whoever made it (`asmFresh` is true for it): a fresh phone with newer copies of the masters used to refuse every PC picture and paint them all itself
-- Today has no Generate / Try again button (2026-11-13, the owner: paid pictures only from Settings): Settings → This day's photo (`#regen-btn`, `generateRender` in photos.js); for a look painted on a colour-coded master it only paints (`asmEnsure`, nothing paid); Regenerate makes a whole photo of the outfit
+- no outfit photo is made from the app at all (2026-11-14, the owner): Settings no longer has "This day's photo" / Regenerate (`#regen-btn`, `generateRender`), Today has no `#render-msg`, and the background queue client (`queueCombo`, `checkQueue`, `waitPush`, the `#busy` count, localStorage `render_queue`, removed at start-up) is gone; a painted look is painted by `asmEnsure` from Today as before, and an outfit photo kept from before still shows on its days (`renderFor`, `fetchRemoteRender`)
 - no picture is ever made or paid for by itself (the owner, 2026-11-13); there is no month batch; don't add automatic paid generation back
 - off the page: the painting runs in a Web Worker, `asm-worker.js`; `asmJob(o)` (= `asmCmJob`, or null) gathers plain data, `asmBuild(job)` paints in either thread, `asmRun(job, front)` queues it, the day on screen first (`asmQ`)
 - no worker (it failed to load, or no OffscreenCanvas: `{ready:false}`, `asmWorkerDown`): pictures are painted on the page and nothing is built ahead (`asmOffPage`); `window.ASM_NO_WORKER` forces that in tests
@@ -1401,11 +1409,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the push: the consumer hands each finished photo (or failure) to the Durable Object `RenderHub` (binding `RENDER_HUB`, `tellHub(env, ns, m)`), which answers the app's held `GET /render-wait?keys=…&ms=` (`waitForRenders`) with the photo itself (KV can lag a minute); no binding → 501 and the app only polls
 - RenderHub's `recent` keeps `{key, ok}` or `{key, error}` for 10 minutes, never the photo (2048 photos for 10 minutes could near the object's 128 MB); a waiting app still gets the photo in the push, and `waitForRenders` reads a remembered one from KV (left out while KV doesn't show it yet)
 - `RenderHub` is one instance per person (`hubOf(env, ns)`: `renders` for the owner, `renders:u:<id>:` for a tester), so a held `/render-wait` can only be answered with the caller's own photos
-- the app (photos.js) holds `/render-wait` open while photos are queued and it is visible (`waitPush`, `PUSH_WAIT` 90 s, `takeQueued`); polling `/render-queue` is the backup on a schedule (`queueDelay`: first look 40 s after sending, then 20 s, 60 s after 5 min; `scheduleQueueCheck`, `rqGet().sentAt`)
-- the app (photos.js) offers "Try again" for a photo waiting over 10 minutes (`renderStalled`, `STALL_MS`), which queues it again; the `#busy` pill doesn't count stalled photos; when the worker started a job again the app waits afresh from `running[k].at`
-- the app (photos.js): a queued photo missing from `/render-queue` and not yet made counts as lost only after `LOST_MS` (45 min, from `rqGet().at[key]`): KV lists lag up to a minute, and giving up early made the push be ignored; `takeQueued` keeps any pushed photo, waited for or not
-- the app (photos.js): `checkQueue` and `takeQueued` apply their changes to a fresh copy of the waiting list, so a push and a poll finishing together don't undo each other
-- Today's Generate and Settings → Regenerate use the queue (`generateRender` → `queueCombo(o,replace)` in photos.js), so the app can be swiped, closed or locked; `{replace:true}` makes the worker queue and make it though a photo is kept; the button shows "Making photo…" while queued (`renderPending`), a failure shows its reason with "Try again" (`renderFail`); a worker without the queue still makes it on the page
+- the app no longer sends outfit photos (2026-11-14, the owner retired the photo made from the drawn figure): nothing calls POST `/render` for an outfit, `{mode:'queue'}`, `/render-queue` or `/render-wait`; the endpoints, the queue consumer and `RenderHub` are left in place, unused (not redeployed for it); item pictures still use `/render` (`mode:'item'`)
 
 #### worker/items.js
 
@@ -1482,7 +1486,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `wipeSome(env, ns, budget)` deletes a part (30 KV calls in the request) and the queue finishes the rest a part per message (`{wipe:'owner'|'u:<id>:', n}`, `runWipe`); without the queue the answer carries `more:true` and the same call deletes the next part
 - KV budget with testers, for the record: a queued photo is about 6 KV writes (job, jobrun twice, the photo, two deletes); moving the job records into the Durable Object would be the next step
 - `tests/accounts.test.js`: the owner and two testers against one mocked KV, queue and a Durable Object per name: isolation of sync, snapshots, photos, lists, queue and push; the owner's exact key names; caps (429, clear the next day by moving `Date.now`, refunds, KV fallback); invitations, revoking, `/me`, feedback, account deletion; the hardening; and the app (invitation link, Connection page, limit messages)
-- the owner's path is covered by the existing suites `queue`, `todayqueue`, `sync`, `snapshots`, `render`, `render-sync`, `prefetch`, `paste`, `tagging`, `multi`
+- the owner's path is covered by the existing suites `sync`, `snapshots`, `render`, `render-sync`, `prefetch`, `paste`, `tagging`, `multi`
 
 #### worker/remind.js
 

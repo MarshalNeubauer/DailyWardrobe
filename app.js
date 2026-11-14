@@ -96,8 +96,7 @@ function busyLabelFor(u,o){if(!o||String(o.method||'GET').toUpperCase()!=='POST'
 if(typeof window!=='undefined'&&window.fetch&&!window.fetch.busy){const f0=window.fetch.bind(window);
   window.fetch=function(u,o){const l=busyLabelFor(typeof u==='string'?u:u&&u.url,o);if(!l)return f0(u,o);const end=busyStart(l);const r=f0(u,o);r.then(end,end);return r};window.fetch.busy=1}
 function renderBusy(){let el=document.getElementById('busy');if(!el){if(!document.body)return;el=document.createElement('div');el.id='busy';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.appendChild(el)}
-  const live=[...busyJobs.values()],bg=typeof queuedKeys==='function'?queuedKeys().filter(k=>!renderStalled(k)).length:0;   // a stalled photo isn't being made: its day offers Try again
-  if(bg)live.push(`Making ${bg} photo${bg===1?'':'s'} in the background…`);
+  const live=[...busyJobs.values()];
   document.body.classList.toggle('busy-on',!!live.length);if(!live.length){el.classList.remove('on');return}
   el.innerHTML=`<span class="spin" aria-hidden="true"></span><span>${esc(live[live.length-1])}${live.length>1?` <small>+${live.length-1}</small>`:''}</span>`;el.classList.add('on')}
 /* the tab bar grows upward until its top is one design gap (--gap, 12px) below Today's below-the-waist tiles, so nothing peeks out

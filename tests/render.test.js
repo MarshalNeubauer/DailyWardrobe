@@ -1,5 +1,5 @@
-// Settings → This day's photo, "Regenerate photo" (Today has no Generate button): the figure is rasterised and sent with item photos to the worker's /render, which calls
-// OpenAI's image edit API (mocked); the photo is stored per day on the device and dropped when the outfit changes.
+// Outfit photos: the photo generator that worked from the drawn figure is retired (2026-11-14): no button, no code path; a photo kept
+// from before still shows on its days. The worker's /render (OpenAI's image edit API, mocked) is checked on its own.
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
@@ -21,19 +21,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white',photo:ph}),I('shirt','lightblue',{photo:ph}),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('watch','black',{metal:'silver'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')},PHOTO);
-    ok(!(await p.$('.render-btn'))&&!(await p.isVisible('text=Generate realistic photo')),'Today has no Generate button: a photo costs money, so it is asked for in Settings only');
-    await p.evaluate(()=>{openSettings('photos');document.querySelector('#regen-btn').click();closeSettings()});await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(sent&&sent.auth==='Bearer sk-o'&&sent.model==='gpt-image-2'&&sent.size==='1024x1024'&&sent.quality==='medium'&&sent.fmt==='jpeg','the worker calls the OpenAI image edit API with the key, model, size and quality');
-    const exp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {shirtHasPhoto:!!o.shirt.photo,n:1+['top','tie'].filter(s=>o[s]&&o[s].photo).length,top:prettyCols(nm(o.top)),shirt:prettyCols(nm(o.shirt)),tie:prettyCols(nm(o.tie))}});
-    ok(exp.shirtHasPhoto&&sent.images.length===exp.n&&sent.images[0].type==='image/png'&&sent.images[0].size>5000&&sent.images.slice(1).every(b=>b.type==='image/jpeg'),`the rasterised illustration is the first image, followed by the suit/tie photos, not the shirt's (${sent.images.length})`);
-    ok([exp.top,exp.tie].every(t=>sent.prompt.includes(t))&&/a plain light blue dress shirt/.test(sent.prompt)&&/same pose/i.test(sent.prompt),'the prompt describes the outfit (the shirt by its colour only) and asks to keep the pose');
+    // (2026-11-14, the owner) the outfit photo made from the drawn figure is retired: no button anywhere, nothing sent from the app
+    ok(!(await p.$('.render-btn'))&&!(await p.$('#render-msg'))&&await p.evaluate(()=>{openSettings('photos');const r=!document.querySelector('#regen-btn')&&!/This day.s photo/.test(document.querySelector('#settings-modal').textContent);closeSettings();return r}),
+      'no Generate button on Today and no "This day\'s photo" in Settings');
+    ok(await p.evaluate(()=>['generateRender','renderCombo','queueCombo','figurePng','checkQueue','renderRegenUI'].every(f=>typeof window[f]==='undefined')&&typeof FIG_CROP==='undefined'),'the photo generator\'s code paths are gone from the app');
+    ok(gens===0,'nothing was asked of the image generator');
+    // a photo kept from before still shows on its days
+    await p.evaluate(async ph=>{const o=planFor()[key(sel)];await keepRender(comboKey(o),{sig:comboSig(o),img:ph,model:'gpt-image-2',t:Date.now()},false);renderToday()},PHOTO);
     const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:(document.querySelector('.fig.photo .lastworn')||{}).textContent||'',btn:!!document.querySelector('.render-btn'),mode:!!document.querySelector('.figmode')}));
-    ok(shown.img&&/^(Last worn \w{3}, \w{3} \d+)?$/.test(shown.by)&&!shown.btn&&!shown.mode,`the photo replaces the illustration (no picture switch, no button under it); the only caption is the last-worn date, when there is one ("${shown.by}")`);
-    // regenerating lives in Settings
-    const rg=await p.evaluate(()=>{openSettings('photos');const b=document.querySelector('#regen-btn');return {t:b.textContent,d:b.disabled}});
-    ok(/^Regenerate photo for \w{3}, \w{3} \d+$/.test(rg.t)&&!rg.d,`Settings offers to regenerate the shown day's photo ("${rg.t}")`);
-    const n0=gens;await p.click('#regen-btn');await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(gens===n0+1&&await p.evaluate(()=>!!document.querySelector('.fig.photo img')&&!settingsOpen()),'tapping it makes a new photo and shows Today');
+    ok(shown.img&&/^(Last worn \w{3}, \w{3} \d+)?$/.test(shown.by)&&!shown.btn&&!shown.mode,`a kept photo replaces the drawing; the only caption is the last-worn date, when there is one ("${shown.by}")`);
     // stored on the device: survives a reload
     await p.reload();await p.waitForFunction(()=>window.appReady);
     const kept=await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
@@ -41,24 +37,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');return !!document.querySelector('.fig.photo img')},PHOTO);
     ok(kept,'the photo is kept for that day after a reload');
-    // kept as the worker made it, not shrunk to 900px and re-encoded (keptPhoto): Today wants every pixel of a 1024 or 2048 photo
-    ok(await p.evaluate(ph=>{const o=planFor()[key(sel)];return renders[comboKey(o)]&&renders[comboKey(o)].img===ph},PHOTO),'the photo is kept byte for byte as the worker sent it');
+    ok(await p.evaluate(ph=>{const o=planFor()[key(sel)];return renders[comboKey(o)]&&renders[comboKey(o)].img===ph},PHOTO),'the photo is kept byte for byte');
     {const fs=require('fs'),src=['app.js','photos.js','today.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n');
       ok(!/shrinkUrl\([^)]*,\s*900\)/.test(src),'no outfit photo is shrunk to 900px any more (app.js, photos.js, today.js; assembled pictures keep theirs, in assemble.js)');}
     ok(await p.evaluate(async()=>!(await localState()).renders&&!JSON.stringify(await localState()).includes('render:')),'photos stay on the device (not in backup/sync data)');
-    // changing the outfit drops the photo
     ok(await p.evaluate(()=>{const o=planFor()[key(sel)],before=!!renderFor(o),sw={...o,tie:{...o.tie,id:'other',primaryColor:'green'}};return before&&!renderFor(sw)}),'after a swap the stored photo no longer matches, so it is not shown');
-    // errors
-    reply=()=>[403,{error:{message:'Your organization must be verified to use the model gpt-image-1.'}}];
-    await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(/verify your organization/i.test(await p.textContent('#render-msg')),'an unverified OpenAI org is explained');
-    env={APP_TOKEN:'t'};await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
-    ok(/OPENAI_API_KEY/.test(await p.textContent('#render-msg')),'no OpenAI key on the worker: says what to add');
+    // the worker's /render endpoint (unused by the app's outfits now; item pictures and the owner's tools use it)
+    const PNG1='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+    await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:PNG1,outfit:'a navy suit'})}),env);
+    ok(sent&&sent.auth==='Bearer sk-o'&&sent.model==='gpt-image-2'&&sent.size==='1024x1024'&&sent.quality==='medium'&&sent.fmt==='jpeg','the worker calls the OpenAI image edit API with the key, model, size and quality');
     env={APP_TOKEN:'t',OPENAI_API_KEY:'k',OPENAI_IMAGE_MODEL:'gpt-image-x',OPENAI_IMAGE_QUALITY:'high'};reply=()=>[200,{data:[{b64_json:JPG}]}];
-    await p.evaluate(()=>generateRender());await p.waitForFunction(()=>!rendering,null,{timeout:15000});
+    await worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:PNG1,outfit:'a navy suit'})}),env);
     ok(sent.model==='gpt-image-x'&&sent.quality==='high','OPENAI_IMAGE_MODEL and OPENAI_IMAGE_QUALITY override the defaults');
     // one request may ask for its own quality (a cheap test or batch photo); anything else falls back to the worker setting
-    const PNG1='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
     const rq=q=>worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:PNG1,outfit:'a navy suit',quality:q})}),env);
     await rq('low');const qLow=sent.quality;await rq('ultra');const qBad=sent.quality;
     ok(qLow==='low'&&qBad==='high',`a request can ask for low quality; an unknown value uses the worker setting (${qLow}, ${qBad})`);

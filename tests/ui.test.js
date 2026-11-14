@@ -59,7 +59,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
-        inside:['#cfg-url','#cfg-token','#asm-group'].every(inAdv),gone:!document.querySelector('#weave-box,#bench-box,#adv-tagging'),out:['#cfg-workdays','#replan-btn','#regen-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
+        inside:['#cfg-url','#cfg-token','#asm-group'].every(inAdv),gone:!document.querySelector('#weave-box,#bench-box,#adv-tagging'),out:['#cfg-workdays','#replan-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
         label:document.querySelector('#adv-connection .adv-head').innerText.replace(/\s+/g,' ')}});
     ok(adv.ids==='adv-photos,adv-connection'&&adv.shut,'Outfit pictures and Connection each have an Advanced fold, closed when Settings opens (Schedule\'s held only Re-plan, now Start the plan over, for everyone)');
     ok(adv.inside&&adv.gone&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code and the item-photo tools are inside them (shirt weaves and the accuracy check are gone); the everyday controls, Start the plan over among them, are not');
@@ -76,14 +76,14 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
 
     /* ---- what needs a connection: not shown until the app is connected (a switched-off button looked broken) ---- */
     await p.evaluate(()=>{openSettings('photos')});await settle(p,300);
-    const off=await p.evaluate(()=>({vis:['#regen-btn','#itempic-btn'].map(s=>!!document.querySelector(s).offsetParent),note:document.querySelector('#photos-conn').textContent,noteVis:!!document.querySelector('#photos-conn').offsetParent,
+    const off=await p.evaluate(()=>({vis:['#itempic-btn'].map(s=>!!document.querySelector(s).offsetParent),note:document.querySelector('#photos-conn').textContent,noteVis:!!document.querySelector('#photos-conn').offsetParent,
       go:!!document.querySelector('#photos-conn button'),backup:(openSettings('backup'),{sync:!!document.querySelector('#sp-backup button[onclick="syncTap()"]').offsetParent,snaps:!!document.querySelector('#snap-list').offsetParent,file:!!document.querySelector('#sp-backup button[onclick="downloadBackup()"]').offsetParent,note:document.querySelector('#backup-conn').textContent})}));
     ok(off.vis.every(v=>!v)&&/^Making outfit photos needs a connection/.test(off.note)&&off.noteVis&&off.go,`not connected: Outfit pictures shows one line saying what connecting turns on, with a Connect button, and none of its buttons (“${off.note}”)`);
     ok(!off.backup.sync&&!off.backup.snaps&&off.backup.file&&/^Backing up and syncing needs a connection/.test(off.backup.note),'Backup: no Sync now or daily backups; the backup file still works');
     await p.evaluate(()=>{openSettings('photos');document.querySelector('#photos-conn button').click()});await settle(p,600);
     ok(await p.evaluate(()=>document.querySelector('#sc-connection').classList.contains('open')&&document.activeElement===document.querySelector('#conn-link')),'Connect opens Connection with the cursor in the invite-link field');
     await p.evaluate(()=>{closeSettings();show('today')});
-    const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:document.querySelector('#render-msg').textContent,refresh:!!document.querySelector('#refresh-btn').offsetParent}));
+    const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:!!document.querySelector('#render-msg'),refresh:!!document.querySelector('#refresh-btn').offsetParent}));
     ok(!g0.btn&&!g0.msg&&!g0.refresh,'Today: no Generate button and no "needs a connection" under the figure; no Refresh in the header');
     await p.evaluate(()=>openAdd());
     ok(await p.evaluate(()=>!document.querySelector('#add-group').offsetParent&&!!document.querySelector('#add-one').offsetParent),'Add: "Several items" is not shown; "One item" is');
@@ -92,10 +92,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>closeItem());
     // connected: everything is there again
     await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');closeSettings();show('today')},SRV);
-    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn').disabled,msg:document.querySelector('#render-msg').textContent,
-      batch:!document.querySelector('#batch-btn'),regen:!!document.querySelector('#regen-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
+    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn'),msg:!!document.querySelector('#render-msg'),
+      batch:!document.querySelector('#batch-btn'),items:!!document.querySelector('#itempic-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
       closeSettings();openAdd();r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
-    ok(on.gen&&!on.msg&&on.batch&&on.regen&&!on.note&&on.group&&/This day’s photo/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the buttons are there and work, a day's photo from Settings only (${on.conn})`);
+    ok(on.gen&&!on.msg&&on.batch&&on.items&&!on.note&&on.group&&/^Item pictures$/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the item pictures are there; no outfit photo to make anywhere (the day's photo was retired 2026-11-14) (${on.conn})`);
     await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
 
     /* ---- the accent as text ---- */
