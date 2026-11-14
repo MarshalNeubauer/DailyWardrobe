@@ -1197,7 +1197,29 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
   X.putImageData(D,0,0);const url=c.toDataURL('image/png');if(OVL_SUITS.size>12)OVL_SUITS.clear();OVL_SUITS.set(key,url);return url}
 // a plain or finely woven jacket with a close-up shows it again (the owner's choice, 2026-11-13, "the mix": at 64 px the painted grain of
 // a twill was a flat square, its close-up real cloth); a striped, checked or figured one stays painted (its close-up lost the stripes)
+/* a herringbone shirt's swatch (2026-11-14, the owner's pick "D" from mockups of his pink herringbone): cut from the painter's own cloth
+   (asm-color.js asmCmTile: the colour held, every other column lighter, as in the picture), about OVL_HB_PAIRS column pairs across, a
+   OVL_HB_PX square PNG (the enlarged swatch is 46% of the picture). The drawn swatch (the list dot's tile at 2.2x strength) read as harsh
+   charcoal zigzags on near-white. The tile is rasterised, so it is made once per look, asynchronously: until then a plain patch of the
+   shirt's colour (data-hb), replaced where it shows when ready; if it can't be made, the drawn swatch as before */
+const OVL_HB_PAIRS=5,OVL_HB_PX=512,OVL_HB=new Map();
+const ovlHbKey=i=>JSON.stringify([colOf(i),usableSett(i),i.pattern,typeof ASM_HB_COL_LIFT!=='undefined'?[ASM_HB_COL_LIFT,ASM_HB_SHIRT_Y]:0,OVL_HB_PAIRS]);
+function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||typeof asmHbShirt!=='function'||typeof asmCmTile!=='function'||!asmHbShirt(i))return null;
+  const k=ovlHbKey(i);let e=OVL_HB.get(k);
+  if(!e){e={id:'hb'+OVL_HB.size,url:null,fail:false};OVL_HB.set(k,e);
+    const put=h=>document.querySelectorAll(`[data-hb="${e.id}"]`).forEach(x=>{x.outerHTML=h});
+    e.p=asmCmTile(i,'shirt').then(T=>{if(!T)throw new Error('no tile');
+      const g=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055),tc=document.createElement('canvas');tc.width=T.TW;tc.height=T.TH;
+      const tx=tc.getContext('2d'),d=tx.createImageData(T.TW,T.TH);for(let n=0;n<T.TW*T.TH;n++){for(let q=0;q<3;q++)d.data[4*n+q]=g(Math.max(0,Math.min(1,T.t[3*n+q])));d.data[4*n+3]=255}tx.putImageData(d,0,0);
+      const S=OVL_HB_PX,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d'),s=S/(OVL_HB_PAIRS*T.TW);x.imageSmoothingQuality='high';
+      x.save();x.scale(s,s);x.fillStyle=x.createPattern(tc,'repeat');x.fillRect(0,0,S/s,S/s);x.restore();
+      const gr=x.createLinearGradient(0,0,S,S);gr.addColorStop(0,'rgba(255,255,255,.08)');gr.addColorStop(1,'rgba(0,0,0,.10)');x.fillStyle=gr;x.fillRect(0,0,S,S);   // the light, as the drawn swatches have
+      e.url=c.toDataURL('image/png');if(OVL_HB.size>16){const first=OVL_HB.keys().next().value;if(first!==k)OVL_HB.delete(first)}put(`<img src="${e.url}" alt="">`)})
+      .catch(err=>{console.warn('herringbone swatch not made',err);e.fail=true;put(ovlSvg(i))})}
+  if(e.url)return `<img src="${e.url}" alt="">`;if(e.fail)return null;
+  return `<svg data-hb="${e.id}" viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" fill="${colOf(i)}"/></svg>`}
 const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer'){if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${i.swatch}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)}
+  if(i.type==='shirt'){const h=ovlHbShirt(i);if(h)return h}
   return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i)};
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
