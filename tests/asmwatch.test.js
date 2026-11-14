@@ -10,7 +10,6 @@ module.exports=async({ok,chromium,url})=>{
       const seiko=I('watch','silver',{metal:'silver',dial:'white',band:'integrated'}),gold=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'}),blackDial=I('watch','silver',{metal:'silver',dial:'black',band:'bracelet'});
       const paints=[asmWatchPaints(seiko),asmWatchPaints(gold),asmWatchPaints(blackDial),asmWatchPaints(null)];
       const o=w=>({top:I('suit','navy'),shirt:I('shirt','white'),tie:I('tie','burgundy'),watch:w,suitDay:true});
-      const sig=w=>{const s=asmCmSig(o(w));return s};   // (asmCmKind needs a shirt; '' when there is no master for it)
       const sigS=asmCmSig({...o(seiko)}),sigG=asmCmSig({...o(gold)});
       // the painting, on the 512 px suit master (geometry in the 2048 frame, scaled)
       const M=await asmData('tests/fixtures/cm/suit/master.jpg'),S=M.width,before=Uint8ClampedArray.from(M.data),px=Uint8ClampedArray.from(M.data);
