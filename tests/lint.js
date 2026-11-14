@@ -15,11 +15,17 @@ const LINTED=f=>/\.js$/.test(f)&&!f.startsWith('tests/fixtures/')&&!f.startsWith
   if(process.argv.includes('--changed')){
     const base=(git('merge-base','HEAD','origin/main')||'').trim();if(!base){console.log('lint: no origin/main to compare with; skipped.');return}
     const files=(git('diff','--name-only','--diff-filter=AMR','--no-renames',base,'HEAD')||'').split('\n').filter(f=>f&&LINTED(f));
-    results=[];
-    for(const f of files){const src=git('show','HEAD:'+f);if(src==null)continue;
-      if(await eslint.isPathIgnored(path.join(ROOT,f)))continue;
-      const lines=new Set();for(const m of (git('diff','-U0','--no-renames',base,'HEAD','--',f)||'').matchAll(/^@@ -\S+ \+(\d+)(?:,(\d+))? @@/gm)){const a=+m[1],n=m[2]==null?1:+m[2];for(let i=a;i<a+n;i++)lines.add(i)}
-      touched.set(f,lines);results.push(...await eslint.lintText(src,{filePath:path.join(ROOT,f)}))}
+    results=[];if(!files.length)return;
+    // two git calls for all the files (each call costs about 50-100 ms on Windows): the lines each changed, and their committed text
+    for(const part of (git('diff','-U0','--no-renames',base,'HEAD','--',...files)||'').split(/^diff --git /m).slice(1)){
+      const f=(/^\+\+\+ b\/(.+)$/m.exec(part)||[])[1];if(!f)continue;const lines=new Set();
+      for(const m of part.matchAll(/^@@ -\S+ \+(\d+)(?:,(\d+))? @@/gm)){const a=+m[1],n=m[2]==null?1:+m[2];for(let i=a;i<a+n;i++)lines.add(i)}
+      touched.set(f,lines)}
+    let batch=Buffer.alloc(0);try{batch=execFileSync('git',['cat-file','--batch'],{cwd:ROOT,input:files.map(f=>'HEAD:'+f).join('\n')+'\n',maxBuffer:1<<28,stdio:['pipe','pipe','ignore']})}catch(e){}
+    const text=new Map();for(let at=0,k=0;at<batch.length&&k<files.length;k++){const nl=batch.indexOf(10,at),head=batch.slice(at,nl).toString(),m=/ blob (\d+)$/.exec(head);
+      if(!m){at=nl+1;continue}const n=+m[1];text.set(files[k],batch.slice(nl+1,nl+1+n).toString('utf8'));at=nl+1+n+1}
+    for(const f of files){if(!text.has(f)||await eslint.isPathIgnored(path.join(ROOT,f)))continue;if(!touched.has(f))touched.set(f,new Set());
+      results.push(...await eslint.lintText(text.get(f),{filePath:path.join(ROOT,f)}))}
   }else results=await eslint.lintFiles(['.']);
   let errors=0,warnings=0,hidden=0;const out=[];
   for(const r of results){const f=path.relative(ROOT,r.filePath).split(path.sep).join('/'),T=touched.get(f);
