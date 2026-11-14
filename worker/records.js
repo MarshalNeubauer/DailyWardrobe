@@ -45,7 +45,9 @@ async function handleBlob(req, env, json, who, cors) {
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
   const kk = `${who.ns}blob:${key}`;
   if (req.method === 'GET') {
-    const v = await env.WARDROBE.get(kk, 'arrayBuffer');
+    // every blob is the owner's (writes are owner only), and every one is a master's setup for phones: a tester reads the owner's
+    // (their own prefix can never hold one). If a blob ever holds anything private, this must change
+    const v = await env.WARDROBE.get(`blob:${key}`, 'arrayBuffer');
     return v ? new Response(v, { headers: { ...cors, 'content-type': 'application/octet-stream', 'cache-control': 'no-store' } }) : json({ error: 'none' }, 404);
   }
   const no = ownerOnly(who, json); if (no) return no;
@@ -69,12 +71,47 @@ async function getRender(req, env, json, who) {
     const keys = []; let cursor;
     try { do { const page = await env.WARDROBE.list({ prefix: `${ns}render:c`, cursor }); for (const k of page.keys) keys.push(k.name.slice(ns.length + 7)); cursor = page.list_complete ? null : page.cursor; } while (cursor && keys.length < 20000); }
     catch (e) { return json({ error: 'listing not available right now', detail: String(e && e.message) }, 503); }   // the daily list allowance: the app then asks per photo
-    return json({ keys: keys.filter(k => COMBO_RE.test(k)) });
+    // a tester's list also names the owner's shared master records (one cached read, not a list): their phone then marks them held
+    const own = keys.filter(k => COMBO_RE.test(k));
+    if (!ns) return json({ keys: own });
+    const mine = new Set(own); for (const k of await sharedKeys(env)) if (!mine.has(k)) own.push(k);
+    return json({ keys: own });
   }
   const id = renderId({ key: q.get('key'), day: q.get('day') });
   if (!id) return json({ error: 'bad key' }, 400);
-  const rec = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
+  let rec = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
+  // a tester reads the owner's colour-coded master records (only the keys in cm:shared) when they have no copy of their own
+  if (!rec && ns && (await sharedKeys(env)).has(id)) rec = await env.WARDROBE.get(`render:${id}`, 'json');
   return rec ? json(rec) : json({ error: 'none' }, 404);
 }
 
-export { COMBO_RE, delRender, getRender, handleBlob, putRender, renderId, renderTtl };
+/* ---- the owner's colour-coded masters, shared with testers (2026-11-14). tools/asm-cm-upload.js writes SHARED_KEY = {keys, t}: exactly
+   the render keys that are master assets (each master, mask, part, geo/u|v and light, the 2048 copies, the background, the manifest).
+   A tester's GET /render?key= of one of them falls back to the owner's record, and their GET /render?list=1 includes them, so a tester's
+   phone paints as the owner's does. Nothing else ever falls back (outfit pictures, item photos, backups, snapshots, jobs). Owner-only
+   GET/PUT /cm-shared; a PUT that changes nothing writes nothing. Read at most once a minute per isolate (SHARED_MS) */
+const SHARED_KEY = 'cm:shared', SHARED_MS = 60e3, SHARED_MAX = 2000;
+const sharedCache = new WeakMap();   // the KV binding -> {at, set}
+async function sharedKeys(env) {
+  const kv = env.WARDROBE, c = sharedCache.get(kv);
+  if (c && Date.now() - c.at < SHARED_MS) return c.set;
+  let set = new Set();
+  try { const v = await kv.get(SHARED_KEY, 'json'); if (v && Array.isArray(v.keys)) set = new Set(v.keys.filter(k => COMBO_RE.test(k))); } catch { }
+  sharedCache.set(kv, { at: Date.now(), set });
+  return set;
+}
+async function handleShared(req, env, json, who) {
+  const no = ownerOnly(who, json); if (no) return no;
+  if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
+  if (req.method === 'GET') { const v = await env.WARDROBE.get(SHARED_KEY, 'json'); return v ? json(v) : json({ error: 'none' }, 404); }
+  let b; try { b = JSON.parse(await req.text()); } catch { return json({ error: 'bad json' }, 400); }
+  const keys = Array.isArray(b && b.keys) ? [...new Set(b.keys.map(String))].sort() : null;
+  if (!keys || keys.length > SHARED_MAX || !keys.every(k => COMBO_RE.test(k))) return json({ error: 'bad keys' }, 400);
+  const cur = await env.WARDROBE.get(SHARED_KEY, 'json');
+  if (cur && Array.isArray(cur.keys) && [...cur.keys].sort().join() === keys.join()) return json({ ok: true, kept: 'same', n: keys.length });
+  await env.WARDROBE.put(SHARED_KEY, JSON.stringify({ keys, t: Date.now() }));
+  sharedCache.set(env.WARDROBE, { at: Date.now(), set: new Set(keys) });
+  return json({ ok: true, n: keys.length });
+}
+
+export { COMBO_RE, SHARED_KEY, delRender, getRender, handleBlob, handleShared, putRender, renderId, renderTtl };
