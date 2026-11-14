@@ -162,6 +162,14 @@ const sockScore=(bot,sh,s,echo)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?
 const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',khaki:'tan',burgundy:'burgundy',oxblood:'burgundy',wine:'burgundy'})[c]||c;
 const finish=l=>l==='suede'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':l==='canvas'||l==='knit'?'textile':'smooth';
 const metalOf=i=>i&&i.type==='tieclip'?clipMetal(i):i&&i.metal||'silver';   // a tie clip by its colour: null (enamel) goes with any metal
+/* an enamel clip (black, red, blue, navy: clipMetal null) by the tie it is worn on (2026-11-14, the owner: 7 of his 9 clips were never
+   planned; an enamel clip scored 0 against a matching metal's 9, so it never won): picking up an accent of the tie (its second or third
+   colour, by family) ENAMEL_ACCENT (11, above a clip matching the watch and the buckle, 9); the tie's own colour or its close relative
+   (red with burgundy, blue with navy) ENAMEL_TONE (8, just under: it comes round when silver has been worn); anything else ENAMEL_CLASH
+   (-5). Gold and gunmetal clips still lose to a silver watch and buckle (metalPref) */
+const ENAMEL_ACCENT=11,ENAMEL_TONE=8,ENAMEL_CLASH=-5,ENAMEL_NEAR={red:['burgundy'],burgundy:['red'],blue:['navy'],navy:['blue']};
+const enamelPref=(c,tie)=>{if(!tie)return 0;const f=fam(colBase(planCol(c))),t=colsOf(tie);if(!t.length)return 0;
+  if(t.slice(1).includes(f))return ENAMEL_ACCENT;if(t[0]===f||(ENAMEL_NEAR[f]||[]).includes(t[0]))return ENAMEL_TONE;return ENAMEL_CLASH};
 function beltFit(shoe,belt){
   if(shoeStyle(shoe)==='sneaker')return 0;   // sneakers don't call for a matching belt: any belt will do
   if(leatherGroup(planCol(belt))!==leatherGroup(planCol(shoe)))return null;
@@ -352,7 +360,7 @@ for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.len
 }
 const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
 const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s,sockEcho(shirt,tie))+2*itemVote(s));
-const metalPref=c=>metalOf(c)===null?0:(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0);
+const metalPref=c=>metalOf(c)===null?enamelPref(c,tie):(watch?(metalOf(c)===metalOf(watch)?6:-4):0)+(belt?(metalOf(c)===metalOf(belt)?3:-2):0);
 const clip=vest||!tie?null:best(pool('tieclip','clip'),metalPref);   // the vest holds the tie: no clip
 // cufflinks only (and always) with French cuffs
 const french=shirt&&shirt.cuff==='french',links=french?best(pool('cufflinks','links'),metalPref):null;
