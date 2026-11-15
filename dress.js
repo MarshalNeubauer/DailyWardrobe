@@ -17,8 +17,14 @@ function renderDressUI(){const el=$('#cfg-dress');if(!el)return;const j=wearsJac
     +(j?t?'':'<p class="shelp dress-note">The suit vest is hidden: a waistcoat is only worn with a tie.</p>':'<p class="shelp dress-note">Blazer days and the suit vest don\'t apply without jackets, so they are hidden. A day you mark as formal, a wedding or a funeral is still dressed in full from what you own.</p>');
   // (2026-11-13) the suit vest also hides without ties: no waistcoat is ever planned without a tie (planner.js outfit)
   const e=$('#blazer-group');if(e)e.classList.toggle('dress-hide',!j);const v=$('#vest-row');if(v)v.classList.toggle('dress-hide',!j||!t)}
-/* a change re-plans the coming week too (clearLocks), like the other planner settings */
-async function setDress(k,on){settings.dress={jacket:wearsJacket(),tie:wearsTie(),...(settings.dress&&settings.dress.jeans?{jeans:true}:{}),[k]:!!on};if(!settings.dress.jeans)delete settings.dress.jeans;await clearLocks();await saveUserSettings();todayStale=true;renderDressUI();settingsSummaries()}
+/* a change re-plans the coming week too (clearLocks), like the other planner settings. The setting is saved and the switch redrawn
+   first, then the locks let go (one write per locked day): the other way round a tap followed at once by a swipe away lost it, and
+   the switch looked unchanged meanwhile (the audit) */
+async function setDress(k,on){settings.dress={jacket:wearsJacket(),tie:wearsTie(),...(settings.dress&&settings.dress.jeans?{jeans:true}:{}),[k]:!!on};if(!settings.dress.jeans)delete settings.dress.jeans;
+  todayStale=true;renderDressUI();settingsSummaries();await saveUserSettings();await clearLocks();cache={}}
+/* a new suit's Vest row: "With vest" when the waistcoat is worn every suit day (Settings or the setup's "Every suit day") and ties
+   are worn; else none, as before (the audit: every suit added after choosing "Every suit day" was saved without one) */
+const newSuitVest=()=>settings.vestMode==='always'&&wearsJacket()&&wearsTie()?'yes':'no';
 /* the Schedule category's one-line summary, when the dress code is not the usual one ('' otherwise: app.js writes its own) */
 function dressSummary(){const j=wearsJacket(),t=wearsTie();return j&&t?'':j?'no ties':t?'no jackets':'no jackets or ties'}
 /* why a piece is never worn, for a wardrobe without jackets (stats.js whyUnused; null = its usual answer) */
@@ -26,7 +32,7 @@ function dressWhyUnused(i){
   if(i.type==='pants')return 'Your other trousers go better with your shirts, or have rested longer.';
   if(i.type==='shirt')return 'Your other shirts go better with your trousers, or have rested longer.';
   if(i.type==='shoes'){const ok=items.some(b=>b.type==='pants'&&shoeScore(null,b,i)>-50);
-    return !ok?`${colName(primaryCol(i))} shoes don't suit any of your trousers.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':'Another pair always suits the outfit better.'}
+    return !ok?`${colName(primaryCol(i))} shoes don't suit any of your trousers.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:'Another pair always suits the outfit better.'}
   return null}
 
 /* ---- waistcoats: a suit has one only when it says so ----

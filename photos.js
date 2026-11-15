@@ -49,7 +49,8 @@ async function fetchRemoteRender(o,day){
     const cur=renders[ck];if(cur&&remoteKeys&&remoteKeys.has(ck))return;   // here and on the worker already: nothing to do
     // with the worker's list in hand, a day it has no photo for is not asked about: each ask was a 404, logged as an error in the
     // console for every day shown (audit 2026-11-13: 31 in one session); "none" is the normal answer
-    await remoteList(W);if(remoteListed&&!remoteKeys.has(ck)&&!remoteKeys.has(comboKeyV1(o))){if(cur)shareRender(ck,cur);return}
+    await remoteList();if(remoteHold())return;   // the server's lists are used up today: no day-by-day asks either
+    if(remoteListed&&!remoteKeys.has(ck)&&!remoteKeys.has(comboKeyV1(o))){if(cur)shareRender(ck,cur);return}
     let j=await get('key='+ck);
     if(!j){if(cur){shareRender(ck,cur);return}
       // a photo the worker kept under the earlier combination key, or for this date before combinations were used
@@ -65,14 +66,39 @@ async function fetchRemoteRender(o,day){
    for the month on screen and the next, nearest the selected day first, so swiping between days shows them at once */
 let prefetching=false,prefetchAgain=false,remoteKeys=null,remoteListed=false,remoteListP=null;
 const planOf=planMonth;
-/* the worker's list of kept photos (GET ?list=1), read once and shared (remoteKeys is reset to read it again); remoteListed is false
-   when the worker gave no list (an older one, or its daily list allowance used up): then each day is asked about as before */
-function remoteList(W){if(remoteKeys)return Promise.resolve(remoteKeys);
-  return remoteListP||(remoteListP=fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'}).then(r=>r.ok?r.json().catch(()=>null):null).catch(()=>null)
-    .then(j=>{remoteListP=null;remoteListed=!!(j&&Array.isArray(j.keys));remoteKeys=new Set(remoteListed?j.keys:[]);return remoteKeys}))}
+/* the worker's list of kept photos (GET /render?list=1): ONE request, shared by everything that needs it (the outfit photos here and
+   assemble.js asmListGet; they used to ask separately, two lists every start), kept LIST_MS. A list costs one of the server's daily
+   KV lists (testers share 150 a day): refused (429: the day's list allowance; 503: the server's lists failing, the free plan's daily
+   lists used up) it is not asked for again until the next UTC day (localStorage list_pause {w, until}; the audit of 2026-11-14 saw 23
+   refused lists in 20 s after one start, then one more on every swipe); a forced ask (Settings' Pictures ahead, Refresh) still tries
+   once. Offline or unreachable: not asked again for LIST_RETRY_MS. Resolves to the Set of keys, or null when there is none */
+const LIST_MS=10*60e3;
+const LIST_RETRY_MS=60e3;
+let listKeys=null,listAt=0,listP=null,listOf='',listFailAt=0;
+const listNextDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
+function listPaused(W){try{const p=JSON.parse(localStorage.getItem('list_pause')||'null');return !!p&&p.w===W.url&&Date.now()<p.until}catch{return false}}
+function workerList(force){const W=workerBase();if(!W)return Promise.resolve(null);
+  const of=W.url+'|'+W.tok;if(of!==listOf){listOf=of;listKeys=null;listAt=0;listFailAt=0}   // another server or account: nothing of the last one's
+  if(listP)return listP;
+  if(!force&&(listKeys&&Date.now()-listAt<LIST_MS||listPaused(W)||Date.now()-listFailAt<LIST_RETRY_MS))return Promise.resolve(listKeys);
+  listP=(async()=>{try{const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'});
+      if(r.status===429||r.status===503){try{localStorage.setItem('list_pause',JSON.stringify({w:W.url,until:listNextDay()}))}catch{}return listKeys}
+      const j=r.ok?await r.json().catch(()=>null):null;
+      if(j&&Array.isArray(j.keys)){listKeys=new Set(j.keys);listAt=Date.now();listFailAt=0;try{localStorage.removeItem('list_pause')}catch{}}else listFailAt=Date.now()}
+    catch(e){listFailAt=Date.now();console.warn('no list',e)}
+    finally{listP=null}return listKeys})();
+  return listP}
+/* the outfit photos' copy of the list (remoteKeys, a copy: prefetchRenders crosses off keys that turn out empty; reset to read it again);
+   remoteListed is false when there is no list (an older worker): then each day is asked about as before, except while the list is
+   paused for the day (remoteHold): then no day is asked about either, those were the refused requests' 404s */
+function remoteList(){if(remoteKeys)return Promise.resolve(remoteKeys);
+  return remoteListP||(remoteListP=workerList().then(L=>{remoteListP=null;remoteListed=!!L;remoteKeys=new Set(L||[]);
+    if(L&&!localPicsTried){localPicsTried=true;shareLocalPics()}   // once a session, when the server answers again
+    return remoteKeys}))}
+const remoteHold=()=>{const W=workerBase();return !remoteListed&&!!W&&listPaused(W)};
 async function prefetchRenders(){const W=workerBase();if(!W||picsDrawn())return;if(prefetching){prefetchAgain=true;return}prefetching=true;
   try{
-    await remoteList(W);if(!remoteListed)return;   // no list: fetch per day as before
+    await remoteList();if(!remoteListed)return;   // no list: fetch per day as before
     do{prefetchAgain=false;const c=+sel,near=new Map();   // each combination ranked by its day closest to the one on screen
       for(const [y,m] of [[view.y,view.m],[view.m===11?view.y+1:view.y,(view.m+1)%12]])for(const [k,o] of Object.entries(planOf(y,m))){if(!hasOutfit(o))continue;
         const ck=comboKey(o);if(renders[ck]||!remoteKeys.has(ck)||renderTried.has(ck))continue;const d=Math.abs(+keyDate(k)-c),cur=near.get(ck);if(!cur||d<cur[0])near.set(ck,[d,ck,o])}
@@ -156,23 +182,43 @@ async function fixItemBackdrops(){let n=0;for(const [k,r] of Object.entries(rend
 function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
   readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
 const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="" data-k="${itemKey(i)}" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
-async function fetchItemPic(i){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
-  try{await remoteList(W);if(remoteListed&&!remoteKeys.has(k))return;   // not on the worker: no 404 to ask for
+/* sure: asked before paying for a new picture (startItemPics), so without a list the key is asked for even while lists are paused */
+async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
+  try{await remoteList();if(remoteListed&&!remoteKeys.has(k)||!sure&&remoteHold())return;   // not on the worker: no 404 to ask for
     const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
     await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)refreshToday();else if(!$('#wardrobe').hidden&&!phEdit.crop)renderWardrobe()}catch(e){console.warn('item picture unavailable',e)}}
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
-  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.error||`HTTP ${r.status}`);
-  await keepRender(itemKey(i),{sig:'item',img:await itemImg(j.image),model:j.model||'',t:Date.now(),grey:1},false);
+  const j=await r.json().catch(()=>({}));
+  // a refusal stops the batch (stop): the server's limits, its saves used up, no key; the next picture would only be refused too
+  if(!r.ok){const e=new Error(j.message||j.error||`HTTP ${r.status}`);e.stop=[401,403,429,501,503].includes(r.status);throw e}
+  // made (and paid for) but the server couldn't keep it (its saves used up, worker/items.js): kept on this phone, marked local so it
+  // is uploaded later (shareLocalPics), and the batch stops before paying for another that couldn't be kept either
+  const local=j.stored===false;
+  await keepRender(itemKey(i),{sig:'item',img:await itemImg(j.image),model:j.model||'',t:Date.now(),grey:1,...(local?{local:1}:{})},false);
+  if(local){const e=new Error(j.message||'The server can’t save more pictures today.');e.stop=true;e.kept=true;throw e}
 }
-const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type))return false;const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
+/* item pictures kept only on this phone (made while the server couldn't save): uploaded once the server takes them again; a refusal
+   keeps the mark for the next try (a new batch, or the next start's list) */
+let localPicsTried=false;
+async function shareLocalPics(){const W=workerBase();if(!W)return 0;let n=0;
+  for(const [k,rec] of Object.entries(renders))if(rec&&rec.local){const clean={...rec};delete clean.local;
+    try{const r=await fetch(W.url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({key:k,rec:clean})});
+      if(!r.ok)break;await keepRender(k,clean,false);n++}catch{break}}
+  return n}
+const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type)||i.sample)return false;/* (not the sample wardrobe's pieces: not his) */const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
 let itemBatch=false;
 function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
   b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt, sock, trousers, coat and watch has a picture';b.disabled=!n;if(typeof needConn==='function')needConn(b)}
 async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();if(!todo.length)return;
   if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, trousers, coats and watches.${showCost()?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}`,{ok:'Generate'}))return;
-  itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='';
+  itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='',kept=false;
+  await shareLocalPics();
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
-    try{renderTried.delete(itemKey(i));await fetchItemPic(i);if(!renders[itemKey(i)])await renderItemPic(i);done++}catch(e){fail++;err=e.message;if(/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
-  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed (${typeof plainErr==='function'?plainErr(err):err})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
+    try{renderTried.delete(itemKey(i));await fetchItemPic(i,true);if(!renders[itemKey(i)])await renderItemPic(i);done++}
+    // (a picture the server refused, e.stop without kept, was not made and nothing was paid: it counts as not made, not failed)
+    catch(e){err=e.message;if(e.kept){done++;kept=true}else if(!e.stop)fail++;if(e.stop||/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
+  // what wasn't tried after a stop is said as such: "failed" read as if each had been tried (and paid for)
+  const left=todo.length-done-fail,why=err?(typeof plainErr==='function'?plainErr(err):err):'';
+  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed`:''}${left?`, ${left} not made`:''}${kept||fail||left?` (${why})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}

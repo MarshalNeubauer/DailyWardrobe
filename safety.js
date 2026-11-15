@@ -82,25 +82,35 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();if(items.length)askPersist()}
+function safetyStart(){pruneTagImgs();if(items.length)askPersist();if(typeof wardPendingRestore==='function')whenPulled(wardPendingRestore);if(typeof addRestore==='function')addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
-let tagWhy='';
+let tagWhy='',tagNetLast=false;
+/* one sentence, one full stop: the server's own sentences end with one ("…by hand.." was shown) */
+const oneStop=t=>String(t??'').trim().replace(/[\s.]+$/,'');
+/* the server's reason in words a tester can read: its own sentence (`message`, then `detail`), a set-up error in plain words (ui.js
+   plainErr), and never a bare code ("mock", "busy") or a status number */
+function tagReason(status,j,e){const m=j&&typeof j.message==='string'&&j.message.trim()?j.message:(j&&j.detail)||e||'';
+  const pe=m&&typeof plainErr==='function'?plainErr(m):m;
+  // its own "Try again later, or add the item by hand." is left out: the card has Try again and is filled in by hand right there
+  const t=pe&&/\s/.test(String(pe).trim())?oneStop(String(pe).replace(/\s*Try again later\b[^.]*\.?\s*$/i,'')):'';
+  return t||'The photo couldn’t be read just now'}
 // called by ask() (app.js) when the server couldn't be asked or refused: returns the Add page's note and keeps the reason for the card
-function tagFailText(status,j,e){
-  if(!status){const off=navigator.onLine===false,net=off||e instanceof TypeError;
-    tagWhy=off?'You’re offline.':net?'The tagging service couldn’t be reached. Check your connection.':`Something went wrong${e&&e.message?': '+e.message:''}.`;
-    return `Photo tagging failed: ${off?'you’re offline':net?'the tagging service couldn’t be reached':e&&e.message||'something went wrong'}. Fill in the details below.`}
+function tagFailText(status,j,e){tagNetLast=false;
+  if(!status){const off=navigator.onLine===false,net=off||e instanceof TypeError;tagNetLast=net;
+    tagWhy=off?'You’re offline.':net?'The server couldn’t be reached. Check your connection.':'Something went wrong while reading it.';
+    return `Photo tagging failed: ${off?'you’re offline':net?'the server couldn’t be reached':'something went wrong'}. Fill in the details below.`}
   if(j&&j.error==='limit'&&j.message){tagWhy=String(j.message);return tagWhy}
-  const pe=e&&typeof plainErr==='function'?plainErr(e):e;   // a set-up error ("add an ANTHROPIC_API_KEY secret to the worker") in plain words for a tester (ui.js)
-  if(pe&&pe!==e){tagWhy=pe;return `Photo tagging failed: ${pe} Fill in the details below.`}
-  tagWhy=`The tagging service answered: ${e||'error '+status}.`;
-  return `Photo tagging failed: ${e||'HTTP '+status}. Fill in the details below.`}
-function tagFailed(q){if(localStorage.getItem('worker_url'))q.tagErr=tagWhy||'The tagging service gave no answer.'}
-const tagFailNote=(q,i)=>q.tagErr?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)} <span class="tagfail-do">Fill in the details yourself, or try again.</span></p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
+  const why=tagReason(status,j,e);tagWhy=why+'.';
+  return `Photo tagging failed: ${why}. Fill in the details below.`}
+/* the Add note was about the connection (cleared once back online) */
+const tagNetText=t=>/offline|couldn’t be reached/.test(t||'');
+function tagFailed(q){if(localStorage.getItem('worker_url')){q.tagErr=tagWhy||'No answer came back.';if(tagNetLast)q.tagNet=1;else delete q.tagNet}}
+/* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
+const tagFailNote=(q,i)=>q.tagErr?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn(e)}
-  q.busy=0;if(ai){delete q.tagErr;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}else tagFailed(q);
+  q.busy=0;if(ai){delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}else tagFailed(q);
   if(queue.includes(q))renderAdd()}
 
 /* ---- unsaved Add cards: closing or reloading the page asks first. Installed with the first card. ---- */
@@ -116,5 +126,5 @@ async function adoptBackupSettings(local,data){
   if(localStorage.getItem('last_sync')||!data||!data.settings||!local||!local.settings)return false;
   if((local.settings.updated||0)<=(data.settings.updated||0))return false;   // the merge takes the backup's by itself
   const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
-  settings={...settings,...data.settings};keySettings(settings);applyCustom(settings.custom);cache={};loadWeather();
+  settings=takeSettings(settings,data.settings);applyCustom(settings.custom);cache={};loadWeather();
   if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return true}

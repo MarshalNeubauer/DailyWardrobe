@@ -26,7 +26,8 @@ const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],bl
     lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>c.label[0]+c.pts).join('')+' '+o.notes.length)}}
   let h=0x811c9dc5;for(const c of lines.join('\\n'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return {n:lines.length,h:h.toString(16),first:lines[0]}}`;
 /* recorded from the app before the dress code (commit 671db36), with the same two strings */
-const GOLD={full:'91c49caa',small:'10040aba'};   // recorded again 2026-11-14 for the clip rule (planner.js clipAllowed: the test wardrobe's gold clip is no longer drawn in by its gold watch, its buckles being silver; with the rule off the signatures are the previous 2e6c164 / b2a7db53)   // both recorded again after the planner audit's fixes (2026-11-14: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' white shirt; were a8483609 and f91f12be)
+const GOLD={full:'91c49caa',small:'e9ea9c35'};   // small: recorded again 2026-11-15 for the jacket worn the workday before (planner.js JKT_AGAIN; was 10040aba): its two suits alternate instead of the brown one running two days, scores 97.14 -> 97.18 on average, the lowest 91 -> 92
+//   // recorded again 2026-11-14 for the clip rule (planner.js clipAllowed: the test wardrobe's gold clip is no longer drawn in by its gold watch, its buckles being silver; with the rule off the signatures are the previous 2e6c164 / b2a7db53)   // both recorded again after the planner audit's fixes (2026-11-14: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' white shirt; were a8483609 and f91f12be)
 //   // (before that: recorded again after the same-tie-within-three-workdays rule, planner.js TIE_GAP, 2026-11-13; were 33c35d9d and 27343082)
 //   // small: recorded again after the shirt rule (care.js: a worn shirt waits a day), which changes a wardrobe this small; full: recorded again after the next fixed day's tie and shirt rule (planner.js fixedAhead nx, 2026-11-13): this plan forces a tie on Nov 16, so Nov 15 now avoids it (was fb07c45e, the pre-dress-code recording)
 
@@ -94,8 +95,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/Tie,Tie clip|Tie,/.test(tD.rows)&&!tD.open&&tD.blade,'by default Today lists the tie and draws it');
     ok(/^Suit/.test(tJ.rows)&&!/Tie/.test(tJ.rows)&&!/Add one/.test(tJ.none)&&!/Tie/.test(tJ.chips)&&!/\btie\b/i.test(tJ.sum)&&!/tie/.test(tJ.fixes)&&!/Tie/.test(tJ.stuck),`without ties Today has no tie row, prompt, chip or advice (${tJ.rows})`);
     ok(tJ.open&&!tJ.blade&&!tJ.clip&&tJ.lapels&&/open collar/.test(tJ.label)&&tJ.ids&&!tJ.use,'the jacket is drawn over an open collar with a placket, no tie or clip; the pattern ids stay');
-    ok(!/Suit|Blazer|Tie/.test(tN.rows)&&/^Pants,Shirt/.test(tN.rows)&&!/Add one/.test(tN.none)&&tN.open&&!tN.lapels&&!tN.blade&&/no jacket, open collar/.test(tN.label)&&tN.ids,`without jackets or ties Today lists trousers and a shirt and draws shirt sleeves with an open collar (${tN.rows})`);
-    ok(/^Pants,Shirt,Tie/.test(tT.rows)&&!tT.open&&tT.blade&&!tT.lapels,`without jackets but with ties: shirt sleeves and a tie (${tT.rows})`);
+    ok(!/Suit|Blazer|Tie/.test(tN.rows)&&/^Trousers,Shirt/.test(tN.rows)&&!/Add one/.test(tN.none)&&tN.open&&!tN.lapels&&!tN.blade&&/no jacket, open collar/.test(tN.label)&&tN.ids,`without jackets or ties Today lists trousers and a shirt and draws shirt sleeves with an open collar (${tN.rows})`);
+    ok(/^Trousers,Shirt,Tie/.test(tT.rows)&&!tT.open&&tT.blade&&!tT.lapels,`without jackets but with ties: shirt sleeves and a tie (${tT.rows})`);
     ok(!/No jacket/.test(tN.cell)&&/trousers/i.test(tN.cell)&&tN.stackRects===2&&tJ.stackRects===2&&tD.stackRects===3,`the month's stacks show only what is worn (${tN.cell})`);
     ok(!/Incomplete/.test(tJ.text)&&!/Incomplete/.test(tN.text)&&!/Incomplete/.test(tT.text),'no day reads Incomplete on Today');
     ok(tJ.key!==tJ.keyTie&&/\|-\|/.test(tJ.sig)&&!tJ.nojacket,`a jacket without a tie has its own photo key (${tJ.sig})`);
@@ -126,7 +127,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       labels:[...document.querySelectorAll('#cfg-dress .dress-txt b')].map(b=>b.textContent).join('|'),help:[...document.querySelectorAll('#cfg-dress .dress-txt small')].every(s=>s.textContent.length>20),
       blazer:document.querySelector('#blazer-group').offsetHeight>0,vest:document.querySelector('#vest-row').offsetHeight>0,sum:document.querySelector('#sum-schedule').textContent,wide:document.documentElement.scrollWidth<=innerWidth}));
     ok(s0.sw==='switch:true:44,switch:true:44,switch:false:44'&&s0.labels==='Jackets (suits and blazers)|Ties|Jeans with a blazer'&&s0.help&&s0.blazer&&s0.vest&&/vest/.test(s0.sum)&&s0.wide,`Settings → Schedule has the dress-code switches: jackets and ties on, jeans with a blazer off, each with its help (${s0.labels}; ${s0.sum})`);
-    await p.click('#dress-tie');await p.waitForFunction(()=>settings.dress&&settings.dress.tie===false&&document.querySelector('#dress-tie').getAttribute('aria-checked')==='false');
+    await p.click('#dress-tie');await p.waitForFunction(()=>settings.dress&&settings.dress.tie===false&&document.querySelector('#dress-tie').getAttribute('aria-checked')==='false'&&!Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>todayDate()));
     const s1=await p.evaluate(async()=>({dress:JSON.stringify(settings.dress),locks:Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length,stored:JSON.stringify((await metaGet('settings')).dress),sum:document.querySelector('#sum-schedule').textContent,stamped:settings.updated>0,
       vest:document.querySelector('#vest-row').offsetHeight,blazer:document.querySelector('#blazer-group').offsetHeight>0,note:(document.querySelector('.dress-note')||{}).textContent||''}));
     ok(s1.dress==='{"jacket":true,"tie":false}'&&s1.stored===s1.dress&&s1.locks===0&&/no ties/.test(s1.sum)&&s1.stamped,`switching ties off is saved and releases the locked week (${s1.sum})`);
@@ -219,7 +220,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       await A.q.evaluate(async()=>{await putRaw({id:'s1',type:'suit',primaryColor:'charcoal',pattern:'solid',added:1000,updated:Date.now()-60000});await metaPut('settings',{workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',units:'F',planRules:PLAN_RULES,updated:Date.now()-60000})});
       store.set('wardrobe:v1',JSON.stringify({rev:1,saved:Date.now()-50000,data:await A.q.evaluate(()=>localState())}));meta.set('wardrobe:v1',{rev:1,saved:Date.now()-50000});
       // B opens first, with the backup out of reach: nothing is changed, and its suits still read as three-piece
-      online=false;await connect(B.q);await B.q.reload();await B.q.waitForFunction(()=>window.appReady);await B.q.waitForFunction(()=>!syncing&&!vestMigrating&&/failed/i.test(localStorage.getItem('sync_status')||''),null,{timeout:15000});
+      online=false;await connect(B.q);await B.q.reload();await B.q.waitForFunction(()=>window.appReady);await B.q.waitForFunction(()=>!syncing&&!vestMigrating&&/failed|^Not backed up:/i.test(localStorage.getItem('sync_status')||''),null,{timeout:15000});
       const b0=await state(B.q);
       ok(b0.suits==='s1:navy:undefined,s2:grey:undefined'&&!b0.flag&&b0.has==='true,true',`a device that can't reach the backup changes nothing yet, and its suits stay three-piece (${b0.suits})`);
       // back online: it takes the other device's newer suit and settings first, then gives the suits their value

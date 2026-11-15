@@ -126,6 +126,7 @@ const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather'
 /* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
    temperature units and the weather location */
 let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'auto',updated:0};
+const SET_DEFAULTS=JSON.parse(JSON.stringify(settings));   // the app's own defaults, for a setting a synced copy marks removed (takeSettings)
 /* three-piece suits: a suit may have a matching vest (hasVest). vestMode: 'auto' (suit days that aren't hot, and
    formal days), 'always' (every suit day) or 'never'; a day can override it. A vest means no tie clip. */
 const VESTS=[['yes','Matching vest'],['no','No vest']],VEST_MODES=[['auto','Suit days, except hot ones'],['always','Every suit day'],['never','Never']];
@@ -166,11 +167,22 @@ function dayClimate(d){
   // no forecast that far ahead: the month's usual weather at the location (see loadClimate in app.js), judged like a forecast
   const n=climate&&climate[d.getMonth()];
   if(n&&typeof n.tmax==='number'){const t=n.tmax;return {wx:null,norm:n,season:t>=24?'warm':t<=12?'cold':'mild',rain:false,cold:t<10,veryCold:t<4}}
-  const south=settings.location&&settings.location.lat<0,m=(d.getMonth()+(south?6:0))%12;
+  // no location: the holiday country (chosen from the phone's time zone at setup) gives a hot climate's usual highs and the hemisphere
+  // (2026-11-15, the audit: a Kuwait phone with no location was told in December to get an overcoat, Sydney's January was winter)
+  const cc=!settings.location&&settings.holidays&&settings.holidays.country,ht=cc&&CC_TMAX[cc];
+  if(ht){const t=ht[d.getMonth()];return {wx:null,season:t>=24?'warm':t<=12?'cold':'mild',rain:false,cold:t<10,veryCold:t<4}}
+  const south=settings.location?settings.location.lat<0:SOUTH_CC.includes(cc),m=(d.getMonth()+(south?6:0))%12;
   const season=[11,0,1].includes(m)?'cold':[5,6,7].includes(m)?'warm':'mild';
   return {wx:null,season,rain:false,cold:season==='cold',veryCold:false};
 }
-const itemSeason=i=>i&&(i.season||(i.pattern==='tweed'?'cold':'all'));
+/* usual monthly highs (°C) of the Gulf countries, for a phone with no location (dayClimate), and the southern hemisphere's countries */
+const CC_TMAX={KW:[19,22,27,34,41,46,47,47,44,37,28,21],SA:[20,23,28,33,39,42,43,43,40,34,27,22],AE:[24,25,28,33,38,40,41,41,39,35,30,26],QA:[22,24,28,33,39,42,42,42,39,35,29,24],
+  BH:[20,22,25,30,35,38,39,39,37,33,27,22],OM:[25,26,29,34,38,39,37,35,35,34,30,27],IQ:[16,19,24,30,37,43,46,46,42,34,24,18]};
+const SOUTH_CC=['AU','NZ','ZA','AR','CL','UY','PY','BR','BO','PE','NA','BW','ZW','MZ','MG','LS','SZ','FJ'];
+/* an item's season: the one set on it, else from its pattern or material (2026-11-15, the audit: a flannel suit planned on a 29°C day
+   with full Weather points); a season chosen in the item sheet ('all' too) wins */
+const MAT_SEASON={flannel:'cold',tweed:'cold',corduroy:'cold',velvet:'cold',linen:'warm','linen blend':'warm',seersucker:'warm'};
+const itemSeason=i=>i&&(i.season||(i.pattern==='tweed'?'cold':SEASON_TYPES.includes(i.type)&&MAT_SEASON[String(i.material||'').toLowerCase()]||'all'));
 const seasonFit=(i,season)=>{const s=itemSeason(i);if(!i||!s||s==='all'||s===season)return 0;return season==='mild'?-4:-15};
 
 /* matching logic & helpers */
@@ -200,7 +212,12 @@ const colorDesc = i => {
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
   return cols.map(colName).join(' & ');
 };
-const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':' · ')+i.metal:'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
+/* (2026-11-15, the new-user audit) cufflinks are named by their colour and metal ("Light blue · silver"; plain silver links "Silver"), the metal
+   'other' is "gunmetal" in words (it read "Other"), a sneaker's leather "leather" (not "calf"), and a season only for a type that has one */
+const metalWord=m=>m==='other'?'gunmetal':m;
+const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
+const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
+const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+typeWord(i):'none';
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
@@ -297,6 +314,16 @@ function stampSettings(s,t){t=t||Date.now();if(!s)return s;
   if(!s.ks||!s.kh)keySettings(s);
   for(const k of new Set([...setKeys(s),...Object.keys(s.kh)])){const h=k in s?setHash(s[k]):'-';if(s.kh[k]!==h){s.kh[k]=h;s.ks[k]=t}}
   s.updated=Math.max(t,(s.updated||0)+1);return s}
+/* stored or downloaded settings (st) taken over the ones in memory (cur) -> the new in-memory settings, keyed. Spread over them, except
+   a setting st marks removed (kh '-': a roll-back to a copy without it, or a removal on another device): it goes from memory too, or, when
+   the app has a default for it, back to that default with stamp 0, so it never wins over the removal (2026-11-15, the audit: a roll-back's
+   removed day off and holidays stayed in memory, and the next change on that phone stamped them back for every device) */
+function takeSettings(cur,st){const s={...cur,...st};
+  if(st&&st.kh){let ks=null,kh=null;
+    for(const k of Object.keys(st.kh))if(st.kh[k]==='-'&&!(k in st)&&!SET_META.includes(k)){
+      if(k in SET_DEFAULTS){if(!ks){ks={...st.ks};kh={...st.kh}}s[k]=JSON.parse(JSON.stringify(SET_DEFAULTS[k]));ks[k]=0;kh[k]=setHash(s[k])}else delete s[k]}
+    if(ks){s.ks=ks;s.kh=kh}}
+  return keySettings(s)}
 /* every setting stamped t (a roll-back or restore: the restored copy wins every setting on every device) */
 function stampAllSettings(s,t){if(!s)return s;s.ks={};s.kh={};for(const k of setKeys(s)){s.ks[k]=t;s.kh[k]=setHash(s[k])}s.updated=t;return s}
 const setStampOf=(s,k)=>s.ks?(s.ks[k]||0):(s.updated||0);

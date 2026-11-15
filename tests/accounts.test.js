@@ -225,7 +225,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await p.waitForFunction(()=>/didn’t work/.test(document.querySelector('#toast').textContent));
       ok(await p.evaluate(()=>!localStorage.getItem('app_token')&&!localStorage.getItem('worker_url')),`a link the server doesn\'t accept connects nothing and says so (${vp.width}px)`);
       // the real one
-      await p.goto(url+'#invite='+T+'&w='+encodeURIComponent(HOST));await p.reload();
+      await p.goto('about:blank');await p.goto(url+'#invite='+T+'&w='+encodeURIComponent(HOST));   // a fresh load (a hash change alone connects at once)
       await p.waitForFunction(t=>localStorage.getItem('app_token')===t,T);await p.waitForFunction(()=>window.appReady&&/Connected as Tess/.test(document.querySelector('#toast').textContent));
       ok(await p.evaluate(h=>localStorage.getItem('worker_url')===h&&!location.hash&&document.querySelector('#toast').classList.contains('on'),HOST),`opening an invitation link connects the app: address and code stored, "Connected as Tess", the link gone from the address bar (${vp.width}px)`);
       ok(await p.evaluate(async t=>typeof connectFromLink==='function'&&(await connectFromLink('#invite='+t+'&w='+encodeURIComponent(localStorage.getItem('worker_url'))))===true&&(await connectFromLink('nonsense'))===false,T),'connectFromLink(text) answers true for a good link and false for anything else');

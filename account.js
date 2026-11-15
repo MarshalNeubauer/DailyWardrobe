@@ -13,48 +13,86 @@ async function acctCall(path,opt={},base=acctBase()){if(!base)return {status:0,j
   try{const r=await fetch(new URL(path,base.url).href,{...opt,headers:{'x-app-token':base.tok,...(opt.body?{'content-type':'application/json'}:{})},cache:'no-store'});
     return {status:r.status,j:await r.json().catch(()=>({}))}}
   catch{return {status:0,j:{}}}}
-/* the parts of an invitation link, or null: the text may be the whole link or only what follows the # */
-function inviteParts(text){const s=String(text||''),h=s.includes('#')?s.slice(s.indexOf('#')+1):s,p=new URLSearchParams(h),code=p.get('invite')||'',w=p.get('w')||'';
+/* the parts of an invitation link, or null: the text may be the whole link or only what follows the #. A full stop, comma or bracket
+   a mail or chat app put right after the link is not part of it */
+function inviteParts(text){const s=String(text||'').trim().replace(/[.,;:!?)\]>'"”’]+$/,''),h=s.includes('#')?s.slice(s.indexOf('#')+1):s,p=new URLSearchParams(h),code=(p.get('invite')||'').trim().replace(/[.,;:!?)\]>'"”’]+$/,''),w=(p.get('w')||'').trim();
   if(!/^[A-Za-z0-9_-]{24,80}$/.test(code))return null;
   let u;try{u=new URL(w)}catch{return null}
   if(!/^https?:$/.test(u.protocol))return null;
   return {code,url:u.href}}
 const inviteLink=code=>{const b=acctBase();return location.origin+location.pathname+'#invite='+code+'&w='+encodeURIComponent(b?b.url:'')};
 function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}if(typeof appWanted==='function')appWanted()}   // (a Back entry that waited for the address to lose the invitation: start.js)
+const hasInviteHash=()=>/(^#|&)invite=/.test(location.hash);
+/* why the last connectFromLink didn't connect, for the place that asked (Settings' and the setup's paste fields say it in a line of
+   their own): 'bad' a link that can't be read (cut short, no server part), 'refused' the server said no (acctWhyMsg: its sentence),
+   'offline' the server couldn't be reached, 'kept' the person kept things as they were. inviteChecking: a link from the address is
+   being checked (the setup and Settings say so instead of offering a field: on a slow connection that took 20 s, silently) */
+let acctWhy='',acctWhyMsg='',inviteChecking=false,acctLinkRun=null;
+const INVITE_BAD='That invitation link didn’t work. Check that you copied all of it, or ask for a new one.';
+const INVITE_OFFLINE='Couldn’t reach the server: you may be offline. Try again when you’re back online.';
+function acctFailText(){return acctWhy==='bad'?INVITE_BAD:acctWhy==='refused'?(acctWhyMsg||'That invitation link didn’t work. Ask for a new one.'):acctWhy==='offline'?INVITE_OFFLINE:''}
+/* what shows the connection's state is drawn again: Settings' Connection, the setup's Connection and All set steps, Add's note */
+function acctLinkDrawn(){try{if(typeof renderConnUI==='function')renderConnUI();if(typeof settingsSummaries==='function')settingsSummaries();
+  if(typeof setupShown==='function'&&setupShown()&&typeof setupDraw==='function'&&/^(connect|done)$/.test(SETUP_STEPS[setup.at]))setupDraw();
+  if(typeof renderAdd==='function'&&document.querySelector('#add')&&!document.querySelector('#add').hidden)renderAdd()}catch(e){console.warn(e)}}
 /* connect from an invitation link -> true when the server accepted the code. Only then are the address and the code stored (a
    link that doesn't work leaves an existing connection alone); the #invite part is dropped from the address bar either way,
-   except when the server couldn't be reached, so opening the app again tries once more. */
-async function connectFromLink(text){const p=inviteParts(text);
-  if(!p){dropInviteHash();return false}
-  const r=await acctCall('me',{},{url:p.url.replace(/\/*$/,'/'),tok:p.code});
-  if(r.status===0){acctToast('Couldn’t reach the server. Open the invitation link again when you’re online.',5000);return false}
+   except when the server couldn't be reached, so the link is tried again when the phone is back online or the app is opened again.
+   opt.address: the link is the page's own address (start-up, a link opened in the open tab): the outcome is a toast; from a paste
+   field the field says it (acctFailText). One link at a time: a second call while one runs waits for it. */
+async function connectFromLink(text,opt={}){
+  while(acctLinkRun)await acctLinkRun.catch(()=>{});
+  const run=acctConnect(text,opt);acctLinkRun=run;try{return await run}finally{if(acctLinkRun===run)acctLinkRun=null}}
+async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t,5000)};acctWhy='';acctWhyMsg='';
+  const p=inviteParts(text);
+  if(!p){acctWhy='bad';dropInviteHash();say(INVITE_BAD);return false}   // (a mangled link opened from mail used to do nothing and say nothing)
+  if(opt.address){inviteChecking=true;acctLinkDrawn()}
+  let r;try{r=await acctCall('me',{},{url:p.url.replace(/\/*$/,'/'),tok:p.code})}finally{inviteChecking=false}
+  if(r.status===0){acctWhy='offline';say('Couldn’t reach the server. Your invitation is tried again when you’re back online.');acctLinkDrawn();return false}
   dropInviteHash();
-  if(r.status!==200||!r.j||!r.j.id){acctToast(r.j&&r.j.message||'That invitation link didn’t work. Ask for a new one.',5000);return false}
-  // already connected with another code: the wardrobe on this phone belongs to that account. Merging it into the new one (what
-  // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
-  const cur=acctBase();
+  if(r.status!==200||!r.j||!r.j.id){acctWhy='refused';acctWhyMsg=r.j&&r.j.message||'';say(acctFailText());acctLinkDrawn();return false}
+  // what this phone holds decides what happens next, so its storage is read first: the connection put back where the browser lost
+  // it, and the wardrobe counted in the database. At start-up the link is checked before the wardrobe is read into memory; counted
+  // from memory the phone looked empty, it switched without asking and the next sync copied its wardrobe into the other account
+  if(typeof connRestored!=='undefined')await connRestored.catch(()=>{});
+  const cur=acctBase(),local=await acctLocal();
   if(cur&&cur.tok&&cur.tok!==p.code){
-    if(acctHasLocal()){
-      if(!await askConfirm(`Switch this phone to ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThis phone is connected to another wardrobe. To switch, its wardrobe is cleared from this phone first; its backup on the server stays as it is.`,{ok:'Clear and switch',danger:true})){acctToast('Kept the current connection.');return false}
+    // the server no longer knew the old code (sync.js inviteEnded marks invite_lost on 403 'forbidden token': its storage was lost, or the
+    // account deleted): the wardrobe on this phone has no other copy, so the new invitation takes it and backs it up instead of clearing it
+    // (2026-11-15, the audit)
+    const lost=localStorage.getItem('invite_lost')===cur.tok;
+    if(lost&&local.any&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThe server no longer knew your old invitation. Your wardrobe stays on this phone and is backed up with the new one.`,{ok:'Back it up'})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
+    if(lost)localStorage.removeItem('invite_lost');
+    // already connected with another code: the wardrobe on this phone belongs to that account. Merging it into the new one (what
+    // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
+    else if(local.any){
+      if(!await askConfirm(`Switch this phone to ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThis phone is connected to another wardrobe. To switch, its wardrobe is cleared from this phone first; its backup on the server stays as it is.`,{ok:'Clear and switch',danger:true})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
       if(typeof wipeDevice==='function')await wipeDevice();
       localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
       try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note','Connected as '+(r.j.name||'a tester'))}catch{}
       location.reload();return true}
     for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k);   // what the old account's syncs left
-  }
-  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');if(typeof connKeep==='function')connKeep();
+  }else if(local.sample&&!(cur&&cur.tok===p.code)){
+    // the sample wardrobe isn't the person's: connected, it would be backed up into their wardrobe and show on their other phones
+    if(!await askConfirm(`Remove the sample wardrobe first?\n\nOnce connected, what is on this phone is backed up to your wardrobe and shows on your other phones too. The ${local.sample} sample pieces aren’t yours, so they are removed before connecting; your own pieces stay.`,{ok:'Remove the sample and connect'})){
+      acctWhy='kept';acctToast('Not connected: the sample wardrobe stays. Open your invitation link again when you’re ready.',6000);acctLinkDrawn();return false}
+    await acctStarted();if(typeof kitSampleRemove==='function')await kitSampleRemove(true)}
+  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended','list_pause'])localStorage.removeItem(k);if(typeof connKeep==='function')connKeep();
   acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
   acctToast('Connected as '+(r.j.name||'a tester'));
-  if(typeof settingsSummaries==='function')settingsSummaries();
-  renderAccountUI();
-  if(typeof renderAdd==='function'&&document.querySelector('#add')&&!document.querySelector('#add').hidden)renderAdd();
+  renderAccountUI();acctLinkDrawn();
   if(window.syncNow)syncNow();
   if(r.j.role==='tester'&&iosInSafari())setTimeout(homeScreenGuide,1200);
   return true}
-/* anything of its own on this phone: items, or days with a record */
-function acctHasLocal(){try{return (typeof items!=='undefined'&&items.length>0)||(typeof dayRecs!=='undefined'&&Object.keys(dayRecs).length>0)}catch{return false}}
+/* what this phone holds, read from the database (and memory: an item saved a moment ago) -> {items, days, sample, any} */
+async function acctLocal(){let n=0,d=0,s=0;
+  try{const all=await tx('readonly',st=>st.getAll());n=all.length;s=all.filter(i=>i&&i.sample).length;d=await txs('days','readonly',st=>st.count())}catch(e){console.warn('wardrobe not counted',e)}
+  try{n=Math.max(n,items.length);s=Math.max(s,items.filter(i=>i.sample).length);d=Math.max(d,Object.keys(dayRecs).length)}catch{}
+  return {items:n,days:d,sample:s,any:n>0||d>0}}
+/* the start-up chain has read the wardrobe into memory (removing the sample works on `items`) */
+const acctStarted=()=>new Promise(res=>{const t0=Date.now(),go=()=>window.appReady||Date.now()-t0>20000?res():setTimeout(go,100);go()});
 /* ---- iPhone: an invitation opens in Safari, but a Home Screen app keeps storage of its own, so it starts unconnected. Testers are
    told to add the app to the Home Screen and paste their link there; the link can be copied from Connection any time. ---- */
 const iosDevice=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -64,8 +102,9 @@ const myInviteLink=()=>{const b=acctBase();return b&&b.tok?location.origin+locat
 async function copyInviteLink(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);acctToast('Your invitation link is copied.');return true}
   catch{const f=document.querySelector('#acct-mylink');if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
-async function homeScreenGuide(){
-  if(await askConfirm('Put Daily Wardrobe on your Home Screen\n\n1. Tap Copy link below.\n2. Tap Share, then “Add to Home Screen”.\n3. Open Daily Wardrobe from your Home Screen and paste the link when it asks.\n\nThe app on your Home Screen keeps its own copy of everything, so it needs the link once. In Safari, iPhone can clear the app’s data after a week without a visit.',{ok:'Copy link',cancel:'Later'}))copyInviteLink()}
+/* (audit 2026-11-15, H12) one explanation, kit.js's (with Copy my invitation link): never over the setup, which has its own Home Screen step */
+function homeScreenGuide(){if(typeof setupShown==='function'&&setupShown())return;if(typeof kit!=='undefined'&&kit)return;
+  if(typeof homeOpen==='function')homeOpen()}
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
 function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}if(typeof applyRole==='function')applyRole()}
@@ -84,11 +123,12 @@ function limitNote(message){acctToast(message,6000);
   setTimeout(()=>{const e=document.querySelector('#toast');if(e&&!(e.classList.contains('on')&&e.textContent===message))acctToast(message,6000)},1500)}
 /* ask the server who this is (and, for the owner, the invitations), then draw */
 async function loadAccount(){const b=acctBase();
-  if(!b){acct={...acct,me:null,state:'',invites:null};renderAccountUI();return}
+  if(!b||inviteOver()){acct={...acct,me:null,state:'',invites:null};renderAccountUI();return}
   if(Date.now()-acct.at<3000)return;acct.at=Date.now();   // Settings redraws its extras more than once in a row
   if(!acct.me){acct.state='wait';renderAccountUI()}
   const r=await acctCall('me');
   if(r.status===200&&r.j&&r.j.id){acct.me=r.j;acct.state='ok';rememberRole(r.j)}
+  else if(typeof endedAnswer==='function'&&endedAnswer(r.status,r.j)){acct.me=null;acct.state='';acct.at=0;inviteEnded(b.tok,r.j);renderAccountUI();return}   // switched off, or the account deleted (sync.js)
   else{acct.me=null;acct.msg=r.j&&r.j.message||'';acct.state=r.status===0?'off':r.status===404||r.status===405?'old':'no'}
   if(acct.me&&acct.me.role==='owner'){const l=await acctCall('invites');if(l.status===200&&Array.isArray(l.j.invites))acct.invites=l.j.invites}
   acct.at=0;renderAccountUI();applyRole()}
@@ -96,7 +136,8 @@ const acctUse=(used,caps)=>ACCT_CAPS.map(([k,name])=>`<div class="acct-use"><spa
 function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)return;
   const m=acct.me,typed=el.querySelector('#acct-name')?el.querySelector('#acct-name').value:'';let h='';
   if(acct.state==='wait')h='<p class="shelp">Checking the connection…</p>';
-  else if(acct.state==='no')h=`<p class="shelp acct-bad">${acctEsc(acct.msg||'The server didn’t accept this connection. Check the address and the code above.')}</p>`;
+  else if(inviteOver())h='';   // said in the box above (ui.js renderConnUI)
+  else if(acct.state==='no')h=`<p class="shelp acct-bad">${acctEsc(acct.msg||(isTester()?'The server didn’t accept your invitation. Ask the person who invited you for a new link.':'The server didn’t accept this connection. Check the server address and the code under Advanced, below.'))}</p>`;
   else if(acct.state==='off')h='<p class="shelp">Couldn’t reach the server just now.</p>';
   else if(m&&m.role==='tester')h=`<div class="slabel">Connected as ${acctEsc(m.name||'a tester')}</div>
     <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.${m.firstUntil&&m.firstUntil>Date.now()?` Your first week has twice the usual limits, until ${new Date(m.firstUntil).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}.`:''}</p>
@@ -140,6 +181,14 @@ async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(
 function acctStart(){applyRole();
   if(typeof renderSettingsExtras==='function'&&!renderSettingsExtras.acct){const draw=renderSettingsExtras;renderSettingsExtras=function(){draw();if(typeof settingsOpen==='function'&&!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
       renderAccountUI();loadAccount()};renderSettingsExtras.acct=1}
-  if(/(^#|&)invite=/.test(location.hash)){const go=()=>connectFromLink(location.href);document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
-  else if(acctBase()&&!acctRole())setTimeout(()=>{if(!acctRole())loadAccount()},4000)}   // connected before roles were remembered: ask once
+  if(hasInviteHash()){const go=()=>connectFromLink(location.href,{address:true});document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
+  else if(acctBase()&&!acctRole())setTimeout(()=>{if(!acctRole())loadAccount()},4000);   // connected before roles were remembered: ask once
+  // a link opened or pasted in the tab that already shows the app changes only the # part: no new page load, so nothing read it
+  addEventListener('hashchange',()=>{if(hasInviteHash())connectFromLink(location.href,{address:true})});
+  // a link opened while the server couldn't be reached stays in the address: tried again once the phone is online or back in front
+  addEventListener('online',acctRetryLink);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')acctRetryLink()})}
+function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)connectFromLink(location.href,{address:true})}
+/* the invitation has ended (switched off, or the account deleted; sync.js inviteEnded): what said "Connected" is drawn again */
+function acctEndedUI(){acct={...acct,me:null,state:'',invites:null};try{applyRole();renderAccountUI();acctLinkDrawn();if(typeof addGate==='function')addGate()}catch(e){console.warn(e)}}
 acctStart();

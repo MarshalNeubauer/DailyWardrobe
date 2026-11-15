@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         vestOpt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='Matching vest')),
         suitPats:PATS_BY.suit.includes(queue[0].pattern),tiny:queue[4].photo.length>100}});
     ok(mixed.cards==='suit:navy:pinstripe:white,suit:charcoal:solid:,blazer:navy:solid:,pants:grey:solid:,pants:lightblue:solid:','suits, blazer and trousers each get their own card with the right type, colour and pattern');
-    ok(/Found 5 items \(2 suits, 1 blazer, 2 trousers\)/.test(mixed.status),`the summary counts each kind (${mixed.status})`);
+    ok(/Found 5 items \(2 suits, 1 blazer, 2 pairs of trousers\)/.test(mixed.status),`the summary counts each kind, trousers in pairs (${mixed.status})`);
     ok(mixed.suitPats&&mixed.vestOpt,'suit cards use the suiting patterns and offer the vest option');
     ok(mixed.cards.includes('pants:lightblue'),'a shirt colour tagged on trousers moves to the closest trouser colour (lavender → light blue)');
     ok(mixed.tiny,'even a sliver-sized box gives a usable crop');
@@ -82,7 +82,28 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/No clothing items were found/.test(await p.textContent('#multi-status')),'a photo with nothing found says so');
     await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',r=>r.fulfill({status:405,contentType:'application/json',body:'{"error":"method not allowed"}'}));
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})],true)});
-    ok(/needs an update/.test(await p.textContent('#multi-status')),'an old worker is explained');
+    ok(/needs an update/.test(await p.textContent('#queue')),'an old worker is explained');
+    await p.evaluate(()=>{queue=[];renderAdd()});
+    // a reading that fails keeps the photo on its card, in plain words, with Try again and Dismiss (audit 2026-11-15: "Couldn't find the
+    // items: mock", "Couldn't read that photo: Load failed", and the photo was dropped)
+    const bad=()=>p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));await addFiles([new File([b],'x.png',{type:'image/png'})],true);
+      const t=document.querySelector('#queue').textContent;return {t,n:queue.length,file:!!(queue[0]&&queue[0].file),again:[...document.querySelectorAll('#queue button')].map(b=>b.textContent).join('|')}});
+    await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',r=>r.fulfill({status:503,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"error":"mock","message":"The server had a problem just now."}'}));
+    let f=await bad();
+    ok(f.n===1&&f.file&&/The server had a problem just now\./.test(f.t)&&!/mock/.test(f.t)&&f.again==='Try again|Dismiss',`a server error shows its own sentence, never its code, and keeps the photo (${f.t} · ${f.again})`);
+    await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',r=>r.abort('failed'));
+    await p.evaluate(()=>{queue=[];renderAdd()});f=await bad();
+    ok(f.n===1&&/offline|couldn’t be reached/.test(f.t)&&!/Load failed|Failed to fetch/.test(f.t),`no connection: said plainly, the photo kept (${f.t})`);
+    await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',r=>r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({model:'m',items:[{type:'tie',primaryColor:'navy',pattern:'solid',box:{x:0,y:0,w:500,h:500},confidence:'high'},{type:'shoes',primaryColor:'brown',box:{x:500,y:500,w:500,h:500},confidence:'high'}]})}));
+    await p.click('#queue .btns button.pri');await p.waitForFunction(()=>queue.length===2&&!queue.some(q=>q.busy));
+    ok(/Found 2 items \(1 tie, 1 pair of shoes\)/.test(await p.textContent('#multi-status')),`Try again reads the same photo, no picking again (${await p.textContent('#multi-status')})`);
+    // Cancel while it is being read
+    await p.evaluate(()=>{queue=[];renderAdd()});
+    await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',async r=>{await new Promise(z=>setTimeout(z,1500));r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"items":[]}'}).catch(()=>{})});
+    await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));window._m=addFiles([new File([b],'x.png',{type:'image/png'})],true)});
+    await p.waitForFunction(()=>queue[0]&&queue[0].multiBusy&&/Cancel/.test(document.querySelector('#queue').textContent));
+    await p.click('#queue .card button');await p.evaluate(()=>window._m);
+    ok(await p.evaluate(()=>queue.length===0),'"Finding every item" has Cancel, which takes the photo off Add');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
