@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	668a75b9f0c38cf364f5
+# tested	2abdbae88cccdaca5f3e
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd	shadeRow
@@ -15,7 +15,7 @@ a11yfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 a11yfix.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 a11yfix.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 a11yfix.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-a11yfix.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dayChanged	dropLearn	firstReal	fitOf	fitTag	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	openPicker	pickPic	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
+a11yfix.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dayChanged	dropLearn	firstReal	fitOf	fitTag	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	openPicker	pickPic	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
 a11yfix.test.js	index.html	<loaded>
 a11yfix.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemShown	noMotion	openItem	paperCloth	paperHint	paperLine	paperSteps	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
 a11yfix.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
@@ -321,7 +321,7 @@ asmahead.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 asmahead.test.js	detect.js	<loaded>	@	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 asmahead.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmahead.test.js	dress.js	<loaded>	migrateVests
-asmahead.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+asmahead.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 asmahead.test.js	icon-192.png	<loaded>
 asmahead.test.js	icon-512.png	<loaded>
 asmahead.test.js	index.html	<loaded>
@@ -582,7 +582,7 @@ asmcolor.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 asmcolor.test.js	detect.js	<loaded>	@	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 asmcolor.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg
 asmcolor.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-asmcolor.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	keyDate	lockUpcoming	missedCard	missedOpen	recordDays	renderReplanUI	replanCount	resetCard	scoreCard	whenPulled
+asmcolor.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	keyDate	lockPast	lockSpan	lockUpcoming	missedCard	missedOpen	recordDays	renderReplanUI	replanCount	resetCard	scoreCard	whenPulled
 asmcolor.test.js	index.html	<loaded>
 asmcolor.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
 asmcolor.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
@@ -904,7 +904,7 @@ asmprebuild.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 asmprebuild.test.js	detect.js	<loaded>	@	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 asmprebuild.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 asmprebuild.test.js	dress.js	<loaded>	migrateVests
-asmprebuild.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+asmprebuild.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 asmprebuild.test.js	index.html	<loaded>
 asmprebuild.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 asmprebuild.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
@@ -1426,7 +1426,7 @@ backzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 backzoom.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 backzoom.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 backzoom.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-backzoom.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dayChanged	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	openPicker	pickPic	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	whenPulled
+backzoom.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dayChanged	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	openPicker	pickPic	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	whenPulled
 backzoom.test.js	icon-192.png	<loaded>
 backzoom.test.js	icon-512.png	<loaded>
 backzoom.test.js	index.html	<any>	<loaded>
@@ -1478,7 +1478,7 @@ beltswap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 beltswap.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 beltswap.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 beltswap.test.js	dress.js	<loaded>	migrateVests
-beltswap.test.js	history.js	<loaded>	adviceFor	beltless	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
+beltswap.test.js	history.js	<loaded>	adviceFor	beltless	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
 beltswap.test.js	icon-192.png	<loaded>
 beltswap.test.js	icon-512.png	<loaded>
 beltswap.test.js	index.html	<loaded>
@@ -1529,7 +1529,7 @@ boxfold.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 boxfold.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 boxfold.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 boxfold.test.js	dress.js	<loaded>	migrateVests
-boxfold.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
+boxfold.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 boxfold.test.js	icon-192.png	<loaded>
 boxfold.test.js	icon-512.png	<loaded>
 boxfold.test.js	index.html	<loaded>
@@ -1581,7 +1581,7 @@ care.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 care.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 care.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 care.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-care.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	whenPulled
+care.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	slotPool	whenPulled
 care.test.js	icon-192.png	<loaded>
 care.test.js	icon-512.png	<loaded>
 care.test.js	index.html	<loaded>
@@ -2480,7 +2480,7 @@ daypieces.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 daypieces.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 daypieces.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 daypieces.test.js	dress.js	<loaded>	migrateVests
-daypieces.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedSpan	missedTell	openPicker	pickNext	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
+daypieces.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedSpan	missedTell	openPicker	pickNext	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
 daypieces.test.js	icon-192.png	<loaded>
 daypieces.test.js	icon-512.png	<loaded>
 daypieces.test.js	index.html	<loaded>
@@ -2532,7 +2532,7 @@ daysoff.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 daysoff.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 daysoff.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 daysoff.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-daysoff.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+daysoff.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 daysoff.test.js	icon-192.png	<loaded>
 daysoff.test.js	icon-512.png	<loaded>
 daysoff.test.js	index.html	<loaded>
@@ -2582,7 +2582,7 @@ dblost.test.js	apple-touch-icon.png	<loaded>
 dblost.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
 dblost.test.js	asm-gl.js	<loaded>
 dblost.test.js	asm-watch.js	<loaded>
-dblost.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
+dblost.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave
 dblost.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow
 dblost.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 dblost.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
@@ -2707,7 +2707,7 @@ deltasync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 deltasync.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	usableSett
 deltasync.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figStripeLift	figureSvg	swatchSVG
 deltasync.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-deltasync.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+deltasync.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 deltasync.test.js	icon-192.png	<loaded>
 deltasync.test.js	icon-512.png	<loaded>
 deltasync.test.js	index.html	<loaded>
@@ -2785,7 +2785,7 @@ display.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 display.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 display.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
 display.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-display.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
+display.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 display.test.js	icon-192.png	<loaded>
 display.test.js	icon-512.png	<loaded>
 display.test.js	index.html	<loaded>
@@ -2909,7 +2909,7 @@ dress.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 dress.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 dress.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 dress.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	dressSynced	dressWhyUnused	legacyVest	migrateVests	newSuitVest	renderDressUI	setDress
-dress.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+dress.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 dress.test.js	icon-192.png	<loaded>
 dress.test.js	icon-512.png	<loaded>
 dress.test.js	index.html	<loaded>
@@ -3113,7 +3113,7 @@ figure.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 figure.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 figure.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 figure.test.js	dress.js	<loaded>	migrateVests
-figure.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+figure.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 figure.test.js	icon-192.png	<loaded>
 figure.test.js	icon-512.png	<loaded>
 figure.test.js	index.html	<loaded>
@@ -3217,7 +3217,7 @@ foldtap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 foldtap.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 foldtap.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 foldtap.test.js	dress.js	<loaded>	migrateVests
-foldtap.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	openPicker	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
+foldtap.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	openPicker	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
 foldtap.test.js	icon-192.png	<loaded>
 foldtap.test.js	icon-512.png	<loaded>
 foldtap.test.js	index.html	<loaded>
@@ -3491,7 +3491,7 @@ history.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 history.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 history.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 history.test.js	dress.js	<loaded>	migrateVests
-history.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	openPicker	pickNext	pickPic	recordDays	resetCard	resetDay	saveDay	scoreCard	setWorn	slotPool	swapSlot	unlockClash	whenPulled
+history.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	openPicker	pickNext	pickPic	recordDays	resetCard	resetDay	saveDay	scoreCard	setWorn	slotPool	swapSlot	unlockClash	whenPulled
 history.test.js	icon-192.png	<loaded>
 history.test.js	icon-512.png	<loaded>
 history.test.js	index.html	<loaded>
@@ -3651,7 +3651,7 @@ inlineswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 inlineswatch.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 inlineswatch.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	swatchSVG
 inlineswatch.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-inlineswatch.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+inlineswatch.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 inlineswatch.test.js	index.html	<loaded>
 inlineswatch.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	phSigOf	renderItem	smallPhotos
 inlineswatch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
@@ -3711,7 +3711,7 @@ invitefix.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 invitefix.test.js	detect.js	<any>	<loaded>	@	usableSett
 invitefix.test.js	draw.js	<any>	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	swatchSVG
 invitefix.test.js	dress.js	<any>	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-invitefix.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+invitefix.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 invitefix.test.js	icon-192.png	<loaded>
 invitefix.test.js	icon-512.png	<loaded>
 invitefix.test.js	index.html	<loaded>
@@ -3855,7 +3855,7 @@ itemfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 itemfix.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 itemfix.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 itemfix.test.js	dress.js	<loaded>	legacyVest	migrateVests
-itemfix.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+itemfix.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 itemfix.test.js	icon-192.png	<loaded>
 itemfix.test.js	icon-512.png	<loaded>
 itemfix.test.js	index.html	<loaded>
@@ -4134,7 +4134,7 @@ kit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@const
 kit.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kit.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 kit.test.js	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-kit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+kit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 kit.test.js	icon-192.png	<loaded>
 kit.test.js	icon-512.png	<loaded>
 kit.test.js	index.html	<loaded>
@@ -4186,7 +4186,7 @@ kitfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 kitfix.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kitfix.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 kitfix.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-kitfix.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedSpan	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+kitfix.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedSpan	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 kitfix.test.js	icon-192.png	<loaded>
 kitfix.test.js	icon-512.png	<loaded>
 kitfix.test.js	index.html	<loaded>
@@ -4237,7 +4237,7 @@ kvlimit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 kvlimit.test.js	detect.js	<loaded>	@	usableSett
 kvlimit.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	swatchSVG
 kvlimit.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-kvlimit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+kvlimit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 kvlimit.test.js	index.html	<loaded>
 kvlimit.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
 kvlimit.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
@@ -4305,7 +4305,7 @@ listphoto.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 listphoto.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 listphoto.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 listphoto.test.js	dress.js	<loaded>	migrateVests
-listphoto.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	openPicker	pickNext	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
+listphoto.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	foldEdge	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	openPicker	pickNext	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
 listphoto.test.js	icon-192.png	<loaded>
 listphoto.test.js	icon-512.png	<loaded>
 listphoto.test.js	index.html	<loaded>
@@ -4357,7 +4357,7 @@ mannequin.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 mannequin.test.js	detect.js	<loaded>	@	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 mannequin.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 mannequin.test.js	dress.js	<loaded>	migrateVests
-mannequin.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+mannequin.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 mannequin.test.js	icon-192.png	<loaded>
 mannequin.test.js	icon-512.png	<loaded>
 mannequin.test.js	index.html	<any>	<loaded>
@@ -4603,7 +4603,7 @@ month.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 month.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 month.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 month.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-month.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+month.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 month.test.js	icon-192.png	<loaded>
 month.test.js	icon-512.png	<loaded>
 month.test.js	index.html	<loaded>
@@ -4660,7 +4660,7 @@ monthswipe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 monthswipe.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 monthswipe.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 monthswipe.test.js	dress.js	<loaded>	migrateVests
-monthswipe.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
+monthswipe.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 monthswipe.test.js	icon-192.png	<loaded>
 monthswipe.test.js	icon-512.png	<loaded>
 monthswipe.test.js	index.html	<loaded>
@@ -4712,7 +4712,7 @@ monthunfold.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 monthunfold.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 monthunfold.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 monthunfold.test.js	dress.js	<loaded>	migrateVests
-monthunfold.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+monthunfold.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 monthunfold.test.js	icon-192.png	<loaded>
 monthunfold.test.js	icon-512.png	<loaded>
 monthunfold.test.js	index.html	<loaded>
@@ -4830,7 +4830,7 @@ moveoutfit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 moveoutfit.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 moveoutfit.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 moveoutfit.test.js	dress.js	<loaded>	migrateVests
-moveoutfit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+moveoutfit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 moveoutfit.test.js	icon-192.png	<loaded>
 moveoutfit.test.js	icon-512.png	<loaded>
 moveoutfit.test.js	index.html	<loaded>
@@ -5043,7 +5043,7 @@ navfit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 navfit.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 navfit.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 navfit.test.js	dress.js	<loaded>	migrateVests
-navfit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+navfit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 navfit.test.js	icon-192.png	<loaded>
 navfit.test.js	icon-512.png	<loaded>
 navfit.test.js	index.html	<loaded>
@@ -5147,7 +5147,7 @@ newuserplan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 newuserplan.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 newuserplan.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 newuserplan.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	newSuitVest	renderDressUI	setDress
-newuserplan.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNotWorn	missedNote	missedOpen	missedPut	missedSpan	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
+newuserplan.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNotWorn	missedNote	missedOpen	missedPut	missedSpan	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
 newuserplan.test.js	icon-192.png	<loaded>
 newuserplan.test.js	icon-512.png	<loaded>
 newuserplan.test.js	index.html	<loaded>
@@ -5247,7 +5247,7 @@ nu2fix3.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 nu2fix3.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nu2fix3.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 nu2fix3.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests
-nu2fix3.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+nu2fix3.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 nu2fix3.test.js	icon-192.png	<loaded>
 nu2fix3.test.js	icon-512.png	<loaded>
 nu2fix3.test.js	index.html	<loaded>
@@ -5303,7 +5303,7 @@ nu2fix7.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 nu2fix7.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nu2fix7.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 nu2fix7.test.js	dress.js	<loaded>	migrateVests
-nu2fix7.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedSpan	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+nu2fix7.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedSpan	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 nu2fix7.test.js	icon-192.png	<loaded>
 nu2fix7.test.js	icon-512.png	<loaded>
 nu2fix7.test.js	index.html	<loaded>
@@ -5354,7 +5354,7 @@ nu2plan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 nu2plan.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nu2plan.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 nu2plan.test.js	dress.js	<loaded>	migrateVests
-nu2plan.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedCardNo	missedCardOk	missedNotWorn	missedNote	missedOpen	missedPut	missedSpan	missedTell	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	unlockClash	whenPulled
+nu2plan.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedCardNo	missedCardOk	missedNotWorn	missedNote	missedOpen	missedPut	missedSpan	missedTell	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	unlockClash	whenPulled
 nu2plan.test.js	icon-192.png	<loaded>
 nu2plan.test.js	icon-512.png	<loaded>
 nu2plan.test.js	index.html	<loaded>
@@ -5405,7 +5405,7 @@ nufix7.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 nufix7.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nufix7.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG
 nufix7.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-nufix7.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+nufix7.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 nufix7.test.js	icon-192.png	<loaded>
 nufix7.test.js	icon-512.png	<loaded>
 nufix7.test.js	index.html	<loaded>
@@ -5456,7 +5456,7 @@ nufix8.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 nufix8.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	usableSett
 nufix8.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	swatchSVG
 nufix8.test.js	dress.js	<loaded>	dressOn	legacyVest	migrateVests	renderDressUI
-nufix8.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+nufix8.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 nufix8.test.js	icon-192.png	<loaded>
 nufix8.test.js	index.html	<loaded>
 nufix8.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
@@ -5501,7 +5501,7 @@ nufix9.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 nufix9.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nufix9.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 nufix9.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-nufix9.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+nufix9.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 nufix9.test.js	icon-192.png	<loaded>
 nufix9.test.js	icon-512.png	<loaded>
 nufix9.test.js	index.html	<any>	<loaded>
@@ -5604,7 +5604,7 @@ occasions.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 occasions.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 occasions.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 occasions.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-occasions.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	setOccasion	slotPool	swapSlot	unlockClash	whenPulled
+occasions.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	setOccasion	slotPool	swapSlot	unlockClash	whenPulled
 occasions.test.js	icon-192.png	<loaded>
 occasions.test.js	icon-512.png	<loaded>
 occasions.test.js	index.html	<loaded>
@@ -5759,7 +5759,7 @@ pack.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 pack.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 pack.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 pack.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-pack.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+pack.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 pack.test.js	icon-192.png	<loaded>
 pack.test.js	icon-512.png	<loaded>
 pack.test.js	index.html	<loaded>
@@ -5810,7 +5810,7 @@ pagescroll.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 pagescroll.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 pagescroll.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 pagescroll.test.js	dress.js	<loaded>	migrateVests
-pagescroll.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
+pagescroll.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 pagescroll.test.js	icon-192.png	<loaded>
 pagescroll.test.js	icon-512.png	<loaded>
 pagescroll.test.js	index.html	<loaded>
@@ -6127,7 +6127,7 @@ picfold.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 picfold.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 picfold.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 picfold.test.js	dress.js	<loaded>	migrateVests
-picfold.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+picfold.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 picfold.test.js	icon-192.png	<loaded>
 picfold.test.js	icon-512.png	<loaded>
 picfold.test.js	index.html	<loaded>
@@ -6179,7 +6179,7 @@ picker.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 picker.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 picker.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 picker.test.js	dress.js	<loaded>	migrateVests
-picker.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	checkPlanRules	closePicker	correctPast	dayActions	dropLearn	firstReal	fitOf	fitTag	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	openPicker	pickItem	pickNext	pickPic	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	togglePastEdit	unlockClash	whenPulled
+picker.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	checkPlanRules	closePicker	correctPast	dayActions	dropLearn	firstReal	fitOf	fitTag	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	openPicker	pickItem	pickNext	pickPic	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	togglePastEdit	unlockClash	whenPulled
 picker.test.js	icon-192.png	<loaded>
 picker.test.js	icon-512.png	<loaded>
 picker.test.js	index.html	<loaded>
@@ -6804,7 +6804,7 @@ reveal.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 reveal.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 reveal.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	swatchSVG
 reveal.test.js	dress.js	<loaded>	migrateVests
-reveal.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
+reveal.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 reveal.test.js	icon-192.png	<loaded>
 reveal.test.js	icon-512.png	<loaded>
 reveal.test.js	index.html	<loaded>
@@ -6856,7 +6856,7 @@ reviewfixes.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 reviewfixes.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 reviewfixes.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 reviewfixes.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-reviewfixes.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+reviewfixes.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 reviewfixes.test.js	icon-192.png	<loaded>
 reviewfixes.test.js	icon-512.png	<loaded>
 reviewfixes.test.js	index.html	<loaded>
@@ -6906,7 +6906,7 @@ rollback.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 rollback.test.js	detect.js	<loaded>	@
 rollback.test.js	draw.js	<loaded>
 rollback.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-rollback.test.js	history.js	<loaded>	checkPlanRules	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
+rollback.test.js	history.js	<loaded>	checkPlanRules	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 rollback.test.js	index.html	<loaded>
 rollback.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
 rollback.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
@@ -6953,7 +6953,7 @@ rollbackwhere.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 rollbackwhere.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 rollbackwhere.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	swatchSVG
 rollbackwhere.test.js	dress.js	<loaded>	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI
-rollbackwhere.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+rollbackwhere.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 rollbackwhere.test.js	index.html	<loaded>
 rollbackwhere.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
 rollbackwhere.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
@@ -7002,7 +7002,7 @@ rotation-pause.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 rotation-pause.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 rotation-pause.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 rotation-pause.test.js	dress.js	<loaded>	migrateVests
-rotation-pause.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
+rotation-pause.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
 rotation-pause.test.js	icon-192.png	<loaded>
 rotation-pause.test.js	icon-512.png	<loaded>
 rotation-pause.test.js	index.html	<loaded>
@@ -7161,7 +7161,7 @@ run.js: add an item without a photo; it persists	core.js	$	<loaded>	@PATS_BY{con
 run.js: add an item without a photo; it persists	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 run.js: add an item without a photo; it persists	draw.js	<loaded>	drawBelt	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
 run.js: add an item without a photo; it persists	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-run.js: add an item without a photo; it persists	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+run.js: add an item without a photo; it persists	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 run.js: add an item without a photo; it persists	icon-192.png	<loaded>
 run.js: add an item without a photo; it persists	icon-512.png	<loaded>
 run.js: add an item without a photo; it persists	index.html	<loaded>
@@ -7522,7 +7522,7 @@ run.js: swipe edge cases and month crossing	core.js	$	<loaded>	@PATS_BY{constsui
 run.js: swipe edge cases and month crossing	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 run.js: swipe edge cases and month crossing	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 run.js: swipe edge cases and month crossing	dress.js	<loaded>	migrateVests
-run.js: swipe edge cases and month crossing	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+run.js: swipe edge cases and month crossing	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 run.js: swipe edge cases and month crossing	icon-192.png	<loaded>
 run.js: swipe edge cases and month crossing	icon-512.png	<loaded>
 run.js: swipe edge cases and month crossing	index.html	<loaded>
@@ -7574,7 +7574,7 @@ run.js: swipe moves only the outfit, across viewports	core.js	$	<loaded>	@PATS_B
 run.js: swipe moves only the outfit, across viewports	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 run.js: swipe moves only the outfit, across viewports	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 run.js: swipe moves only the outfit, across viewports	dress.js	<loaded>	migrateVests
-run.js: swipe moves only the outfit, across viewports	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+run.js: swipe moves only the outfit, across viewports	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 run.js: swipe moves only the outfit, across viewports	icon-192.png	<loaded>
 run.js: swipe moves only the outfit, across viewports	icon-512.png	<loaded>
 run.js: swipe moves only the outfit, across viewports	index.html	<loaded>
@@ -7626,7 +7626,7 @@ safety.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 safety.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 safety.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
 safety.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
-safety.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+safety.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 safety.test.js	icon-192.png	<loaded>
 safety.test.js	icon-512.png	<loaded>
 safety.test.js	index.html	<loaded>
@@ -7733,7 +7733,7 @@ scoreanim.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 scoreanim.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 scoreanim.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 scoreanim.test.js	dress.js	<loaded>	migrateVests
-scoreanim.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
+scoreanim.test.js	history.js	<loaded>	adviceFor	boxFold	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	toggleScore	whenPulled
 scoreanim.test.js	icon-192.png	<loaded>
 scoreanim.test.js	icon-512.png	<loaded>
 scoreanim.test.js	index.html	<loaded>
@@ -7784,7 +7784,7 @@ scorefix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 scorefix.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 scorefix.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 scorefix.test.js	dress.js	<loaded>	migrateVests
-scorefix.test.js	history.js	<loaded>	adviceFor	applyFix	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	foldEdge	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	toggleScore	unlockClash	whenPulled
+scorefix.test.js	history.js	<loaded>	adviceFor	applyFix	boxFold	boxStop	boxUnfold	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	foldEdge	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	pickItem	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	toggleScore	unlockClash	whenPulled
 scorefix.test.js	icon-192.png	<loaded>
 scorefix.test.js	icon-512.png	<loaded>
 scorefix.test.js	index.html	<loaded>
@@ -8093,7 +8093,7 @@ setup.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 setup.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 setup.test.js	draw.js	<loaded>	drawOxfordSide	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 setup.test.js	dress.js	<loaded>	dressOn	dressSummary	legacyVest	migrateVests	renderDressUI
-setup.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+setup.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 setup.test.js	icon-192.png	<loaded>
 setup.test.js	icon-512.png	<loaded>
 setup.test.js	index.html	<loaded>
@@ -8145,7 +8145,7 @@ setupfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 setupfix.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 setupfix.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 setupfix.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	legacyVest	migrateVests	renderDressUI
-setupfix.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+setupfix.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 setupfix.test.js	icon-192.png	<loaded>
 setupfix.test.js	icon-512.png	<loaded>
 setupfix.test.js	index.html	<loaded>
@@ -8640,7 +8640,7 @@ snapshots.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 snapshots.test.js	detect.js	<loaded>	@	texPat
 snapshots.test.js	draw.js	<loaded>
 snapshots.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-snapshots.test.js	history.js	<loaded>	checkPlanRules	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
+snapshots.test.js	history.js	<loaded>	checkPlanRules	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 snapshots.test.js	icon-192.png	<loaded>
 snapshots.test.js	icon-512.png	<loaded>
 snapshots.test.js	index.html	<loaded>
@@ -8752,7 +8752,7 @@ speed.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 speed.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 speed.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 speed.test.js	dress.js	<loaded>	legacyVest	migrateVests
-speed.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+speed.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 speed.test.js	icon-192.png	<loaded>
 speed.test.js	icon-512.png	<loaded>
 speed.test.js	index.html	<loaded>
@@ -8803,7 +8803,7 @@ staledevice.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 staledevice.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 staledevice.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 staledevice.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-staledevice.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+staledevice.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 staledevice.test.js	icon-192.png	<loaded>
 staledevice.test.js	icon-512.png	<loaded>
 staledevice.test.js	index.html	<loaded>
@@ -8860,7 +8860,7 @@ stats.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 stats.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 stats.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 stats.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-stats.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedOpen	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+stats.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedOpen	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
 stats.test.js	icon-192.png	<loaded>
 stats.test.js	icon-512.png	<loaded>
 stats.test.js	index.html	<loaded>
@@ -8911,7 +8911,7 @@ subback.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 subback.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 subback.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 subback.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-subback.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+subback.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 subback.test.js	icon-192.png	<loaded>
 subback.test.js	icon-512.png	<loaded>
 subback.test.js	index.html	<loaded>
@@ -9018,7 +9018,7 @@ swatchzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 swatchzoom.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 swatchzoom.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	swatchSVG
 swatchzoom.test.js	dress.js	<loaded>	migrateVests
-swatchzoom.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
+swatchzoom.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 swatchzoom.test.js	icon-192.png	<loaded>
 swatchzoom.test.js	icon-512.png	<loaded>
 swatchzoom.test.js	index.html	<loaded>
@@ -9070,7 +9070,7 @@ sync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 sync.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 sync.test.js	draw.js	<loaded>	drawBelt	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 sync.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-sync.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+sync.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 sync.test.js	icon-192.png	<loaded>
 sync.test.js	icon-512.png	<loaded>
 sync.test.js	index.html	<loaded>
@@ -9289,7 +9289,7 @@ takeoff.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 takeoff.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 takeoff.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG
 takeoff.test.js	dress.js	<loaded>	migrateVests
-takeoff.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	resetDay	saveDay	scoreCard	setWorn	slotPool	whenPulled
+takeoff.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	resetDay	saveDay	scoreCard	setWorn	slotPool	whenPulled
 takeoff.test.js	icon-192.png	<loaded>
 takeoff.test.js	icon-512.png	<loaded>
 takeoff.test.js	index.html	<loaded>
@@ -9768,7 +9768,7 @@ todaycards.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 todaycards.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 todaycards.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 todaycards.test.js	dress.js	<loaded>	migrateVests
-todaycards.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
+todaycards.test.js	history.js	<loaded>	adviceFor	boxStop	boxUnfold	checkPlanRules	dayActions	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	toggleScore	whenPulled
 todaycards.test.js	icon-192.png	<loaded>
 todaycards.test.js	icon-512.png	<loaded>
 todaycards.test.js	index.html	<loaded>
@@ -9872,7 +9872,7 @@ todaytight.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 todaytight.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 todaytight.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 todaytight.test.js	dress.js	<loaded>	migrateVests
-todaytight.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	resetCard	saveDay	scoreCard	setWorn	whenPulled
+todaytight.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	resetCard	saveDay	scoreCard	setWorn	whenPulled
 todaytight.test.js	icon-192.png	<loaded>
 todaytight.test.js	icon-512.png	<loaded>
 todaytight.test.js	index.html	<loaded>
@@ -10026,7 +10026,7 @@ ui.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 ui.test.js	detect.js	<any>	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 ui.test.js	draw.js	<any>	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 ui.test.js	dress.js	<any>	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-ui.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+ui.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	dropLearn	firstReal	foldEdge	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 ui.test.js	icon-192.png	<loaded>
 ui.test.js	icon-512.png	<loaded>
 ui.test.js	index.html	<any>	<loaded>
@@ -10079,7 +10079,7 @@ uipages.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 uipages.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 uipages.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 uipages.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	newSuitVest	renderDressUI
-uipages.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+uipages.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 uipages.test.js	icon-192.png	<loaded>
 uipages.test.js	icon-512.png	<loaded>
 uipages.test.js	index.html	<loaded>
@@ -10132,7 +10132,7 @@ vest.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 vest.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 vest.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 vest.test.js	dress.js	<loaded>	migrateVests
-vest.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	setVest	slotPool	whenPulled
+vest.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	setVest	slotPool	whenPulled
 vest.test.js	icon-192.png	<loaded>
 vest.test.js	icon-512.png	<loaded>
 vest.test.js	index.html	<loaded>
@@ -10288,7 +10288,7 @@ wardrobe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 wardrobe.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 wardrobe.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardrobe.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests	newSuitVest
-wardrobe.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	openPicker	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	whenPulled
+wardrobe.test.js	history.js	<loaded>	adviceFor	checkPlanRules	closePicker	dayActions	dropLearn	firstReal	fitOf	fitTag	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell	openPicker	pickPic	recordDays	resetCard	saveDay	scoreCard	slotPool	whenPulled
 wardrobe.test.js	icon-192.png	<loaded>
 wardrobe.test.js	icon-512.png	<loaded>
 wardrobe.test.js	index.html	<loaded>
@@ -10506,7 +10506,7 @@ weather.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 weather.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 weather.test.js	draw.js	<loaded>	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	swatchSVG
 weather.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-weather.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	setFormal	setOccasion	slotPool	whenPulled
+weather.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	dayChanged	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedTell	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	setFormal	setOccasion	slotPool	whenPulled
 weather.test.js	icon-192.png	<loaded>
 weather.test.js	icon-512.png	<loaded>
 weather.test.js	index.html	<loaded>
@@ -10552,7 +10552,7 @@ weeklock.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 weeklock.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 weeklock.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 weeklock.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-weeklock.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	closePicker	dayActions	dayChanged	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	pickItem	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
+weeklock.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	closePicker	dayActions	dayChanged	dropLearn	firstReal	idsOf	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	pickItem	planRulesCheck	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	scoreCard	slotPool	swapSlot	unlockClash	whenPulled
 weeklock.test.js	icon-192.png	<loaded>
 weeklock.test.js	icon-512.png	<loaded>
 weeklock.test.js	index.html	<loaded>
@@ -10587,6 +10587,58 @@ weeklock.test.js	watch/shirt-open.png	<loaded>
 weeklock.test.js	watch/shirt-tie.png	<loaded>
 weeklock.test.js	watch/suit.png	<loaded>
 weeklock.test.js	watch/vest.png	<loaded>
+weeklockdays.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+weeklockdays.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
+weeklockdays.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
+weeklockdays.test.js	analysis.js	<loaded>
+weeklockdays.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	busyLabelFor	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+weeklockdays.test.js	apple-touch-icon.png	<loaded>
+weeklockdays.test.js	asm-color.js	<loaded>
+weeklockdays.test.js	asm-gl.js	<loaded>
+weeklockdays.test.js	asm-watch.js	<loaded>
+weeklockdays.test.js	assemble.js	<loaded>	@
+weeklockdays.test.js	care.js	<loaded>	careShow
+weeklockdays.test.js	colpick.js	<loaded>
+weeklockdays.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	dayClimate	di	hasVest	inRotation	isWorkday	isoKey	key	keySettings	metalWord	occOf	offDays	offName	setHash	setKeys	takeSettings	todayDate
+weeklockdays.test.js	detect.js	<loaded>	@
+weeklockdays.test.js	draw.js	<loaded>
+weeklockdays.test.js	dress.js	<loaded>	migrateVests
+weeklockdays.test.js	history.js	<loaded>	checkPlanRules	dropLearn	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	saveDay	whenPulled
+weeklockdays.test.js	icon-192.png	<loaded>
+weeklockdays.test.js	icon-512.png	<loaded>
+weeklockdays.test.js	index.html	<loaded>
+weeklockdays.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
+weeklockdays.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+weeklockdays.test.js	manifest.webmanifest	<loaded>
+weeklockdays.test.js	mannequin.js	<loaded>	@{}
+weeklockdays.test.js	month.js	<loaded>
+weeklockdays.test.js	mq/shirt-open.js	<loaded>
+weeklockdays.test.js	mq/shirt-tie.js	<loaded>
+weeklockdays.test.js	mq/suit-open.js	<loaded>
+weeklockdays.test.js	mq/suit.js	<loaded>
+weeklockdays.test.js	mq/vest.js	<loaded>
+weeklockdays.test.js	pack.js	<loaded>	packShow
+weeklockdays.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders
+weeklockdays.test.js	planner.js	<loaded>
+weeklockdays.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+weeklockdays.test.js	safety.js	<loaded>	db.then.dbDown	pruneTagImgs	safetyStart
+weeklockdays.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen
+weeklockdays.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
+weeklockdays.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+weeklockdays.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	pageIn	show
+weeklockdays.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+weeklockdays.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .firstrun	.wxc.wxlk	.wxl	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,#ward-add,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,#ward-add::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
+weeklockdays.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncNeedsPull	syncUrl
+weeklockdays.test.js	tagging.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
+weeklockdays.test.js	tests/fixedplan.js	<any>
+weeklockdays.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxFit	wxPreload	zoomTarget
+weeklockdays.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+weeklockdays.test.js	wardrobe.js	<loaded>	wardPendingRestore
+weeklockdays.test.js	watch/leather.jpg	<loaded>
+weeklockdays.test.js	watch/shirt-open.png	<loaded>
+weeklockdays.test.js	watch/shirt-tie.png	<loaded>
+weeklockdays.test.js	watch/suit.png	<loaded>
+weeklockdays.test.js	watch/vest.png	<loaded>
 workerfix.test.js	.github/workflows/deploy-worker.yml	<any>
 workerfix.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	ITEM_BG	ITEM_PROMPT	RENDER_PROMPT	ROUTES.* /sync	ROUTES.GET /fetch	RenderHub	allCaps	arrOf	b64u	capOf	cleanCaps	cleanCustom	cleanPattern	cleanTag	convertSnaps	correctionsText	corsFor	countWrites	customText	dataUrlToBlob	delRender	dropFail	dropParts	dueDay	failFor	failJob	fetch	fetchLinked	firstWeek	gcDue	gcKey	gcSpace	getRender	handleFetchImage	handleInvites	handleMe	handlePattern	handlePush	handleRender	handleSync	handleTagMany	hasWatch	hubOf	isParted	isPhoto	isPv	itemPhoto	jobClaim	jobMsg	jobOp	keepMade	keepSnapshots	kvFull	kvMeta	lightText	limitBody	listAll	liteSig	localNow	measuredText	mergeLite	msgNs	nextRevs	orNull	outfitPhoto	ownerOnly	phCollect	phHash	phKey	phThere	photoCap	photoGc	plainFor	prune	publicHost	pushReady	pushTo	putPhotos	putRender	putStored	pvMeta	pvText	queue	queueRender	readCapped	refsIn	refsOf	refundJob	renderId	renderItem	renderTtl	runRenderJob	sameText	scheduled	sendReminders	serve	sget	sha256Hex	sleep	smallBody	spend	spendEach	spendUpTo	splitPhotos	sput	stampOf	storePhotos	storedVersion	subId	syncLitePost	syncVersion	tagSchema	tagWithClaude	tagWithWorkersAi	tellHub	txt	unb64u	unspend	useCount	usedOf	utcDay	vapidAuth	waitForRenders	wbOf	whoIs	writeBudget
 workerfix.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	isPhotoOld	keepSnapshots	kvMeta	liteSig	mergeLite	nextRevs	phCollect	phHash	putStored	splitPhotos	stampOf	storedVersion	syncLitePost	syncVersion	writeBudget
