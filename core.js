@@ -77,15 +77,25 @@ const colBase=c=>CUSTOM_COL[c]?CUSTOM_COL[c].base:c,patBase=p=>CUSTOM_PAT[p]?CUS
 const planCol=i=>colBase(primaryCol(i)),patOf=i=>i?patBase(i.pattern):undefined;
 const ownColKey=name=>'own'+String(name||'').toLowerCase().replace(/[^a-z]/g,'').slice(0,28);
 const ownPatKey=name=>'own-'+String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,28);
+/* what an own colour's or pattern's name may contain (2026-11-15, the re-audit's N4: a name like `<img src=x onerror=…>` went into the page
+   as HTML, ran, and synced to every device): letters of any script, digits, spaces and - ’ . , ( ) / +; a straight apostrophe becomes ’ and
+   & "and". ownNameBad refuses a typed name with anything else; ownNameClean is applied to every name shown (applyCustom: one arriving by
+   sync or saved before this rule too), so no own name can carry < > " ' & or a backtick into the page */
+const OWN_NAME_OK=/^[\p{L}\p{M}\p{N} ’.,()\/+-]*$/u;
+const ownNameTidy=s=>String(s==null?'':s).normalize('NFC').replace(/['‘`´]/g,'’').replace(/\s*&\s*/g,' and ').replace(/\s+/g,' ').trim();
+const ownNameBad=s=>!OWN_NAME_OK.test(ownNameTidy(s));
+const ownNameClean=(s,max=28)=>ownNameTidy(s).replace(/[^\p{L}\p{M}\p{N} ’.,()\/+-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,max);
+const ownDescClean=s=>String(s==null?'':s).replace(/[<>"'`&]/g,' ').replace(/\s+/g,' ').trim().slice(0,150);
 function applyCustom(cu){
   for(const k of Object.keys(CUSTOM_COL)){delete COLORS[k];delete COLOR_NAMES[k];delete LUMS[k]}
   for(const t of Object.values(COLS_BY)){t.p=t.p.filter(c=>!CUSTOM_COL[c]);t.a=t.a.filter(c=>!CUSTOM_COL[c])}
   for(const t of Object.keys(PATS_BY))PATS_BY[t]=PATS_BY[t].filter(p=>!CUSTOM_PAT[p]);
   CUSTOM_COL={};CUSTOM_PAT={};cu=cu||{};
-  for(const c of cu.colors||[]){if(!/^own[a-z]{1,28}$/.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
-    CUSTOM_COL[c.key]=c;COLORS[c.key]=c.hex.toLowerCase();COLOR_NAMES[c.key]=String(c.name||c.key.slice(3)).toLowerCase();
+  for(let c of cu.colors||[]){if(!/^own[a-z]{1,28}$/.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
+    const name=ownNameClean(c.name)||c.key.slice(3);c={...c,name};
+    CUSTOM_COL[c.key]=c;COLORS[c.key]=c.hex.toLowerCase();COLOR_NAMES[c.key]=name.toLowerCase();
     for(const t of c.types||[])if(COLS_BY[t]){COLS_BY[t].p.push(c.key);if(c.accent)COLS_BY[t].a.push(c.key)}}
-  for(const p of cu.patterns||[]){if(!/^own-[a-z0-9-]{1,28}$/.test(p.key))continue;
+  for(let p of cu.patterns||[]){if(!/^own-[a-z0-9-]{1,28}$/.test(p.key))continue;p={...p,name:ownNameClean(p.name)||p.key.slice(4).replace(/-/g,' '),desc:ownDescClean(p.desc)};
     for(const t of p.types||[])if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}
   COLOR_NAME_RE=null}
 const patName=p=>CUSTOM_PAT[p]?String(CUSTOM_PAT[p].name).toLowerCase():patLabel(p);
