@@ -22,8 +22,11 @@ const setupShown=()=>setup.at>=0;
 /* start-up, once the wardrobe, history and settings are read: a new install (nothing in the wardrobe, no day ever recorded,
    setup never finished) gets the setup; someone with items is marked as done without a word (kept with the next settings change:
    saving here would count as a change on the device and make the next sync a full one) */
-function setupStart(){const r=setupResume(),gate=()=>!setupNo&&setupAuto()&&!settingsOpen()&&!!$('#today')&&!$('#today').hidden;
-  if(r&&r.again&&settings.setupDone){if(gate())setupOpen(true,r);return}   // a "Run setup again" cut off by iOS: back where it was, Cancel still undoes it
+function setupStart(){const r=setupResume(),open=()=>setupAuto()&&!settingsOpen()&&!!$('#today')&&!$('#today').hidden,gate=()=>!setupNo&&open();
+  // a "Run setup again" cut off by iOS: back where it was, Cancel still undoes it. (fix round 2) Not held back by setupNo, which is about a
+  // setup opening by itself (start-up's show('today') sets it whenever there are items, so it never came back for anyone with a wardrobe);
+  // a record that isn't taken up now is dropped, so it can't open by itself later and its Cancel undo settings changed since
+  if(r&&r.again){if(settings.setupDone&&open()){setupOpen(true,r);return}setupKeep(null)}
   if(settings.setupDone){setupKeep(null);return}
   if(items.length){settings.setupDone=Date.now();setupKeep(null);return}
   if(!gate()||Object.keys(dayRecs).length)return;
@@ -75,12 +78,14 @@ function setupCancel(e){setupTapGuard(e);const b=setup.before||{},changed=SETUP_
   setupClose();if(!changed.length)return;
   for(const k of changed){if(k==='location')continue;if(b[k]===null||b[k]===undefined)delete settings[k];else settings[k]=b[k]}
   if(changed.includes('location'))setLocation(b.location||null);
-  clearLocks().then(saveUserSettings);todayStale=false;renderToday();tell('Setup cancelled: your answers are as they were.')}
+  saveUserSettings().then(clearLocks);todayStale=false;renderToday();tell('Setup cancelled: your answers are as they were.')}
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
 function setupFinish(toAdd,e){setupTapGuard(e);
   if(setup.first&&!setupVestChosen())settings.vestMode='never';
-  const first=setup.first;settings.setupDone=Date.now();setupClose();saveUserSettings().then(()=>{if(first)setupHolidays()});
+  // (fix round 2) the time zone's country is stored with setupDone, its list to come (fetched 0): swiped away right after, the setup was
+  // done with no holidays and nothing tried again; now the next start's refreshHolidays fetches it
+  const first=setup.first;if(first)setupHolCountry();settings.setupDone=Date.now();setupClose();saveUserSettings().then(()=>{if(first)setupHolidays()});
   if(toAdd&&!items.length){const go=()=>{show('wardrobe');openAdd()};if(first&&typeof tourOpen==='function'&&!tourSeen())tourOpen(go,'Add my first item');else go()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
 }
 /* the public holidays of the country the phone's time zone is in, chosen for a new person (audit 2026-11-13: the work week was set,
@@ -91,7 +96,8 @@ const TZ_CC={'Asia/Kuwait':'KW','Asia/Riyadh':'SA','Asia/Dubai':'AE','Asia/Qatar
   'America/New_York':'US','America/Chicago':'US','America/Denver':'US','America/Phoenix':'US','America/Los_Angeles':'US','America/Anchorage':'US','Pacific/Honolulu':'US','America/Toronto':'CA','America/Vancouver':'CA','America/Mexico_City':'MX','America/Sao_Paulo':'BR','America/Argentina/Buenos_Aires':'AR','Africa/Johannesburg':'ZA','Africa/Lagos':'NG','Africa/Nairobi':'KE'};
 function tzCountry(){let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch{}
   if(TZ_CC[tz])return TZ_CC[tz];const m=/-([A-Z]{2})$/.exec(navigator.language||'');return m&&typeof COUNTRY_CODES!=='undefined'&&COUNTRY_CODES.includes(m[1])?m[1]:null}
-async function setupHolidays(){if(settings.holidays&&settings.holidays.country)return;const cc=tzCountry();if(!cc)return;
+function setupHolCountry(){if(settings.holidays&&settings.holidays.country)return;const cc=tzCountry();if(cc)settings.holidays={country:cc,list:[],skip:[],fetched:0}}
+async function setupHolidays(){const h=settings.holidays;if(h&&h.country&&(h.fetched||(h.list||[]).length))return;const cc=h&&h.country||tzCountry();if(!cc)return;
   try{await setHolidayCountry(cc,true)}catch(e){console.warn('holidays not loaded',e)}
   if(!(settings.holidays&&settings.holidays.country)){settings.holidays={country:cc,list:[],skip:[],fetched:0};await saveUserSettings()}}
 /* the app is being driven past a setup that opened by itself (items came in from a sync or a restore, another page was
@@ -107,7 +113,14 @@ function setupYield(t){
 /* a city search left unfinished (typed, searching, or results not picked) is said once before Next leaves the Weather step: a new
    user tapped Next on "Searching…" and had no location (audit 2026-11-13); a second Next goes on */
 function setupCityOpen(){return SETUP_STEPS[setup.at]==='weather'&&!setup.cityWarned&&(!!(setup.q||'').trim()||!!(setup.cities&&setup.cities.length)||setup.cityMsg==='Searching…')}
-function setupGo(n,e){if(n>0&&setupCityOpen()){setup.cityWarned=true;
+/* (fix round 2) a double tap on Get started / Next / Back moved two steps (the button is drawn again under the finger): a tap at the spot of
+   the last step's tap within SETUP_TAP_MS is dropped, as Skip's (setupTapGuard). Only real taps (e.detail); calls from code always step */
+let setupGoTap=null;
+function setupGoDouble(e){if(!e||!e.detail)return false;const g=setupGoTap,now=Date.now();
+  if(g&&now-g.t<SETUP_TAP_MS&&Math.abs(e.clientX-g.x)<44&&Math.abs(e.clientY-g.y)<44)return true;
+  setupGoTap={x:e.clientX,y:e.clientY,t:now};return false}
+function setupGo(n,e){if(setupGoDouble(e))return;
+  if(n>0&&setupCityOpen()){setup.cityWarned=true;
     setup.cityMsg=settings.location?`That city wasn’t picked: the weather stays ${settings.location.name}. Pick a result, or tap Next again to go on.`:'You haven’t picked a city yet: pick one of the results, or tap Next again to go on without a location.';
     setupDraw();const f=$('#su-city');if(f)f.focus({preventScroll:true});return}
   const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true,e);return}
@@ -131,7 +144,7 @@ function setupStep(k){const d=setupDress();
     return `<div class="su-group"><div class="su-label">Where you are</div><p class="su-help" id="su-loc">${loc?`<span class="su-tick" aria-hidden="true">✓</span> Weather for ${esc(loc.name)}.`:'With a location, outfits follow the forecast: lighter cloth on hot days, no suede in the rain. Without one they follow the calendar season.'}</p>
 <div class="su-acts"><button type="button" id="su-geo" onclick="setupLocate()">Use my location</button></div>
 <div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" oninput="setup.q=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();setupSearch()}"><button type="button" id="su-find" onclick="setupSearch()">Search</button></div>
-<div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
+<div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
 <div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
   if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>${setup.joined&&items.length?`<p class="su-help" id="su-came">Your wardrobe came across: ${items.length} item${items.length===1?'':'s'}. The answers are your account’s.</p>`:''}${setupHomeLink()}`
     :setupLinkChecking()?'<p class="su-ok" id="su-conn" role="status"><span class="spin" aria-hidden="true"></span> Checking your invitation…</p><p class="su-help">This can take a moment on a slow connection. You can carry on with Next meanwhile.</p>'
@@ -159,17 +172,17 @@ function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SET
   setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${!setup.first?`<button type="button" class="su-skip" id="su-cancel" onclick="setupCancel(event)">Cancel</button>`:last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false,event)">Skip</button>`}</div>
 <div class="su-prog" aria-hidden="true">${SETUP_STEPS.map((s,i)=>`<i class="${i<=setup.at?'on':''}"></i>`).join('')}</div>
 <div class="su-body"><div class="su-in" id="su-step" data-step="${k}">${setupStep(k)}</div></div>
-<div class="su-bar">${setup.at?`<button type="button" id="su-back" onclick="setupGo(-1)">Back</button>`:''}<button type="button" class="pri" id="su-next" onclick="setupGo(1,event)">${last?(items.length?'Done':'Add my first item'):setup.at?'Next':'Get started'}</button></div>`;
+<div class="su-bar">${setup.at?`<button type="button" id="su-back" onclick="setupGo(-1,event)">Back</button>`:''}<button type="button" class="pri" id="su-next" onclick="setupGo(1,event)">${last?(items.length?'Done':'Add my first item'):setup.at?'Next':'Get started'}</button></div>`;
 }
 
 /* ---- what the steps store (all through the app's own settings functions) ---- */
 function setupDay(kind,i){toggleDay(kind==='workdays'?'#cfg-workdays':'#cfg-blazer',i);setupDraw()}
 /* the rest of the dress code stays (audit 2026-11-15: "Run setup again" erased "Jeans with a blazer") */
-function setupSetDress(k){const d=setupDress();d[k]=!d[k];settings.dress={...(settings.dress||{}),...d};clearLocks().then(saveUserSettings);setupDraw();const b=$('#su-sw-'+k);if(b)b.focus({preventScroll:true})}
+function setupSetDress(k){const d=setupDress();d[k]=!d[k];settings.dress={...(settings.dress||{}),...d};saveUserSettings().then(clearLocks);setupDraw();const b=$('#su-sw-'+k);if(b)b.focus({preventScroll:true})}   // saved first (fix round 2: swiped away at once, it was lost)
 function setupVest(v){setup.vestSet=true;setVestMode(v);setupSave()}
 function setupUnits(v){setUnits(v);setupDraw()}
 /* the city search is the Settings one (findCity reads Settings' own field and keeps its answers in window._cities) */
-async function setupSearch(){const q=(setup.q||'').trim();if(!q||!$('#cfg-city'))return;
+async function setupSearch(){const q=(setup.q||'').trim();if(!q&&(setup.cities||setup.cityMsg)){setup.cities=null;setup.cityMsg='';setupDraw();return}if(!q||!$('#cfg-city'))return;
   $('#cfg-city').value=q;window._cities=null;setup.cities=null;setup.cityMsg='Searching…';setupDraw();
   await findCity();if($('#city-results'))$('#city-results').innerHTML='';$('#cfg-city').value='';
   const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches.';setupDraw()}

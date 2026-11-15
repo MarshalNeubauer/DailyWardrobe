@@ -44,7 +44,8 @@ module.exports=async({ok,chromium,url})=>{
     await p.route('https://date.nager.at/**',r=>r.fulfill({status:404,body:''}));
     const su=await p.evaluate(async()=>{settings.holidays=null;settings.location=null;setupOpen();setup.at=SETUP_STEPS.indexOf('weather');setupDraw();setup.q='Kuwait';setupSearch();await new Promise(r=>setTimeout(r,50));
       setupGo(1);const a={at:SETUP_STEPS[setup.at],msg:document.querySelector('#su-step').textContent};await new Promise(r=>setTimeout(r,1800));setupGo(1);a.after=SETUP_STEPS[setup.at];
-      setupFinish(false);for(let i=0;i<40&&!(settings.holidays&&settings.holidays.country);i++)await new Promise(r=>setTimeout(r,50));a.cc=settings.holidays&&settings.holidays.country;a.tz=tzCountry();return a});
+      setupFinish(false);for(let i=0;i<40&&!(settings.holidays&&(settings.holidays.list||[]).length);i++)   // (the country is stored at once, its list a moment later: fix round 2)
+await new Promise(r=>setTimeout(r,50));a.cc=settings.holidays&&settings.holidays.country;a.tz=tzCountry();return a});
     ok(su.at==='weather'&&/haven’t picked a city/.test(su.msg)&&su.after==='connect',`Next on an unfinished city search says so first, and a second Next goes on (${su.at} → ${su.after})`);
     ok(su.tz==='KW'&&su.cc==='KW',`the setup picks the holidays of the time zone's country (${su.cc})`);
     const ho=await p.evaluate(()=>{openSettings('daysoff');const t=document.querySelector('#holiday-list').textContent;closeSettings();return t});
