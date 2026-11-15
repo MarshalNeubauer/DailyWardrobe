@@ -21,10 +21,23 @@ let subFrom=null;
    (Done, a tab, the ‹ to Today) the entry is taken away with a history.back() of our own (appPend) that the popstate below lets pass;
    appKeep holds it while subBack moves from the page to Settings. (The item sheet keeps its own entry the same way: histPush.) */
 const SUBS=['add','pack','care'];let appHist=false,appKind='',appPend=false,appKeep=false;
-function appPush(kind){if(appHist){appKind=kind;return}if(appPend||itemBack)return;try{history.pushState({app:kind},'');appHist=true;appKind=kind}catch{}}
-function appDrop(kind){if(!appHist||appKeep||appKind!==kind)return;appHist=false;appPend=true;try{history.back()}catch{appPend=false}}
-addEventListener('popstate',()=>{if(appPend){appPend=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
-  if(!appHist)return;appHist=false;
+/* the setup, the piece picker and What to buy take the entry too (kinds 'setup', 'pick', 'shop'; audit 2026-11-14: Back left the app
+   from all three): Back steps the setup back one step (on its first step it stays), and closes the picker or What to buy.
+   An entry asked for while a step back of ours is on its way, or while the address still holds an invitation (#invite: the entry
+   would keep it, and Back would land on it again), waits in appWant and is made once that is over (appWanted). */
+let appWant='';
+const inviteInUrl=()=>/(^#|&)invite=/.test(location.hash);
+function appPush(kind){if(appHist){appKind=kind;return}if(appPend||itemBack||inviteInUrl()){appWant=kind;return}try{history.pushState({app:kind},'');appHist=true;appKind=kind;appWant=''}catch{}}
+function appDrop(kind){if(appWant===kind)appWant='';if(!appHist||appKeep||appKind!==kind)return;appHist=false;appPend=true;try{history.back()}catch{appPend=false}}
+function appWanted(){const k=appWant;appWant='';if(k)appPush(k)}
+function appSheetBack(kind){
+  if(kind==='setup'){if(typeof setupShown==='function'&&setupShown()){if(setup.at>0)setupGo(-1);appPush('setup')}return true}   // the setup stays open: Back is its ‹ Back
+  if(kind==='pick'){if(typeof closePicker==='function')closePicker();return true}
+  if(kind==='shop'){if(typeof closeShop==='function')closeShop();return true}
+  return false}
+addEventListener('popstate',()=>{if(appPend){appPend=false;if(editing)histPush();appWanted();return}   // our own step back; an item opened meanwhile gets its entry now
+  if(!appHist){if(appWant&&!itemBack)appWanted();return}appHist=false;
+  if(appSheetBack(appKind))return;
   if(appKind==='sub'&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))subBack();else if(settingsOpen())saveSettings()});
 function subOpen(){appPush('sub');
   const m=$('#settings-modal');let page=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden})||'today';

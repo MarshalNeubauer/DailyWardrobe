@@ -5,12 +5,15 @@
 <!-- The app has its own dark theme; tell dark-mode extensions not to recolour it (they invert the mannequin's colours). -->
 <meta name="color-scheme" content="light dark"><meta name="darkreader-lock">
 <script>/* apply the saved theme before first paint (in its own function: a global t would clash with a later script's) */(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}})()</script>
+<script>/* iPhone Larger Text (Settings → Accessibility → Display & Text Size): text is sized in rem, and the root follows the system body
+   size as a ratio of its default 17px (--tscale; styles.css html), so the default look stays as it was; kept between .85 and 1.5,
+   measured again on coming back to the app (the setting can change meanwhile). Other browsers have no -apple-system-body: 1. */(function(){var d=document.documentElement;function ts(){try{if(!(window.CSS&&CSS.supports&&CSS.supports("font","-apple-system-body")))return;var p=document.createElement("span");p.style.cssText="font:-apple-system-body;position:absolute;visibility:hidden";d.appendChild(p);var px=parseFloat(getComputedStyle(p).fontSize);d.removeChild(p);if(px>0)d.style.setProperty("--tscale",String(Math.round(Math.min(1.5,Math.max(.85,px/17))*1000)/1000))}catch(e){}}ts();addEventListener("pageshow",ts);document.addEventListener("visibilitychange",function(){if(!document.hidden)ts()})})()</script>
 <title>Daily Wardrobe</title>
 <link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Wardrobe"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head><body>
-<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe" hidden>↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings">⚙</button></div></header>
+<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe" hidden>↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings" title="Settings"><svg class="hgear" viewBox="0 0 24 24" aria-hidden="true"><mask id="hgear-hole"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="12" r="3.3" fill="#000"/></mask><g fill="currentColor" mask="url(#hgear-hole)"><circle cx="12" cy="12" r="7.4"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(45 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(90 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(135 12 12)"/></g></svg></button></div></header>
 <main>
 <section id="today"></section>
 <section id="wardrobe" hidden></section>

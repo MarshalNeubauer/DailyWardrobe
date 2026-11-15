@@ -21,7 +21,7 @@ function inviteParts(text){const s=String(text||'').trim().replace(/[.,;:!?)\]>'
   if(!/^https?:$/.test(u.protocol))return null;
   return {code,url:u.href}}
 const inviteLink=code=>{const b=acctBase();return location.origin+location.pathname+'#invite='+code+'&w='+encodeURIComponent(b?b.url:'')};
-function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}}
+function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}if(typeof appWanted==='function')appWanted()}   // (a Back entry that waited for the address to lose the invitation: start.js)
 const hasInviteHash=()=>/(^#|&)invite=/.test(location.hash);
 /* why the last connectFromLink didn't connect, for the place that asked (Settings' and the setup's paste fields say it in a line of
    their own): 'bad' a link that can't be read (cut short, no server part), 'refused' the server said no (acctWhyMsg: its sentence),
