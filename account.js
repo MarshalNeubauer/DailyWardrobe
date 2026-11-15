@@ -57,9 +57,15 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
   if(typeof connRestored!=='undefined')await connRestored.catch(()=>{});
   const cur=acctBase(),local=await acctLocal();
   if(cur&&cur.tok&&cur.tok!==p.code){
+    // the server no longer knew the old code (sync.js inviteEnded marks invite_lost on 403 'forbidden token': its storage was lost, or the
+    // account deleted): the wardrobe on this phone has no other copy, so the new invitation takes it and backs it up instead of clearing it
+    // (2026-11-15, the audit)
+    const lost=localStorage.getItem('invite_lost')===cur.tok;
+    if(lost&&local.any&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThe server no longer knew your old invitation. Your wardrobe stays on this phone and is backed up with the new one.`,{ok:'Back it up'})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
+    if(lost)localStorage.removeItem('invite_lost');
     // already connected with another code: the wardrobe on this phone belongs to that account. Merging it into the new one (what
     // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
-    if(local.any){
+    else if(local.any){
       if(!await askConfirm(`Switch this phone to ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThis phone is connected to another wardrobe. To switch, its wardrobe is cleared from this phone first; its backup on the server stays as it is.`,{ok:'Clear and switch',danger:true})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
       if(typeof wipeDevice==='function')await wipeDevice();
       localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
@@ -122,7 +128,7 @@ async function loadAccount(){const b=acctBase();
   if(!acct.me){acct.state='wait';renderAccountUI()}
   const r=await acctCall('me');
   if(r.status===200&&r.j&&r.j.id){acct.me=r.j;acct.state='ok';rememberRole(r.j)}
-  else if(typeof endedAnswer==='function'&&endedAnswer(r.status,r.j)){acct.me=null;acct.state='';acct.at=0;inviteEnded(b.tok);renderAccountUI();return}   // switched off, or the account deleted (sync.js)
+  else if(typeof endedAnswer==='function'&&endedAnswer(r.status,r.j)){acct.me=null;acct.state='';acct.at=0;inviteEnded(b.tok,r.j);renderAccountUI();return}   // switched off, or the account deleted (sync.js)
   else{acct.me=null;acct.msg=r.j&&r.j.message||'';acct.state=r.status===0?'off':r.status===404||r.status===405?'old':'no'}
   if(acct.me&&acct.me.role==='owner'){const l=await acctCall('invites');if(l.status===200&&Array.isArray(l.j.invites))acct.invites=l.j.invites}
   acct.at=0;renderAccountUI();applyRole()}

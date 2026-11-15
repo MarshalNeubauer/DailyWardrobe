@@ -15,8 +15,11 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
   const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
+  // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
+  if((+localStorage.getItem('sync_pause')||0)>Date.now())return last?`Paused until tomorrow · last saved ${when(last)}`:'Paused until tomorrow: not backed up yet';
+  if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
-  return last?`Backed up ${when(last)}`:'Not backed up yet'}
+  return last?`Backed up ${when(last)}`+(localStorage.getItem('sync_wait')&&!/^Syncing/.test(st)?' · newer changes waiting':''):'Not backed up yet'}
 function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};if(typeof applyRole==='function')applyRole();if(typeof remindSoon==='function')remindSoon();
   // the days from the week's first one: the first day (Sunday first) whose day before isn't one of them, so Sun–Thu reads "Sun–Thu"
   // (sorted from Monday it read "Mon, Tue, Wed, Thu, Sun", audit 2026-11-13)
@@ -175,7 +178,7 @@ async function refreshHolidays(){const due=()=>{const h=settings.holidays;return
   if(!due())return;
   if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
     if(!await syncNow())return;
-    const st=await metaGet('settings');if(st){settings={...settings,...st};keySettings(settings)}if(!due())return}
+    const st=await metaGet('settings');if(st)settings=takeSettings(settings,st);if(!due())return}
   return setHolidayCountry(settings.holidays.country,true)}
 /* testers have daily limits instead of costs: no "about 7¢" for them (account.js knows who is connected) */
 const showCost=()=>!(typeof isTester==='function'&&isTester());
@@ -302,7 +305,7 @@ async function refreshAll(){
     if(window.syncNow&&localStorage.getItem('worker_url')&&localStorage.getItem('app_token')){
       const ok=await syncNow();if(!ok)msg=localStorage.getItem('sync_status')||'Sync failed.'}
     const [r,d,st]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')]);
-    items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st){settings={...settings,...st};keySettings(settings)}cache={};
+    items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings=takeSettings(settings,st);cache={};
     await loadWeather(true);
     if(typeof renderTried!=='undefined')renderTried.clear();remoteKeys=null;
     const v=['today','wardrobe','add','stats','pack','care'].find(t=>$('#'+t)&&!$('#'+t).hidden)||'today';show(v);

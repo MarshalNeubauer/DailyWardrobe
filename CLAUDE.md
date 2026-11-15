@@ -874,6 +874,16 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 #### Daily backups
 - before the first PUT of each day the worker keeps the backup as `snap:<YYYY-MM-DD>` (30 days) and `snap:<YYYY-MM>` (400 days); `GET /sync?snaps=1` lists, `?snap=<id>` returns one
 - "Roll back" (`loadSnapshots`/`rollBack`/`rollBackState`) restamps the snapshot's records and tombstones the rest, so it wins on every device; the PUT carries `reason:'restore'` and the worker keeps `snap:before-restore`
+- a roll-back's upload is marked in localStorage before the phone's copy changes (`sync_restore` = the code; `restoreWanted`/`restoreDone`): every upload until one goes through carries `reason:'restore'`, so a kill or reload mid-roll-back still gets "Before the last roll-back" kept at the next start (2026-11-15, the new-user audit: it was memory only and 24 pieces were lost for good); `tests/rollback.test.js`
+- settings a synced copy marks removed (`kh` '-': a roll-back, a removal elsewhere) leave memory too (`takeSettings` in core.js, used wherever stored or downloaded settings are taken: start.js, safety.js, settings.js): a roll-back's removed day off and holidays stayed in memory and the next change stamped them back on every phone
+
+#### Messages
+- a sync that brings changes while Settings is open redraws its controls (`syncSettingsRedraw`: `renderSettingsExtras`; while a text field in it is focused, once it is left)
+- a backup that never reached the server says so in words (`syncNetText`: "Not backed up: you’re offline…" / "…the server couldn’t be reached…", `syncWaiting`), with the last backup's time; the `online` event backs up again; `netErr` (ui.js) turns "Load failed" / "Failed to fetch" into plain words inside `plainErr` for everyone (picture batch, Several items, roll-back and backup lists)
+- the Backup summary (`backupSummary`, kept current by `showSyncStatus`): "Paused until tomorrow" while `sync_pause`, "Waiting for a connection", "Not backed up: ask for a new invitation link", and "Backed up today · newer changes waiting" while `sync_wait` (set by `scheduleSync`, cleared by `synced`)
+- a tester's code the server no longer knows (403 `forbidden token`: storage lost, account deleted) ends the invitation (`endedAnswer`, `inviteEnded(token, answer)`) and is also marked `localStorage.invite_lost`: a new invitation link then asks "Back up this phone’s wardrobe…" and keeps the wardrobe instead of "Clear and switch" (account.js `connectFromLink`; 2026-11-15)
+- the write ceiling is worded by the app (`backupFullMsg`: `pr.write`, `pr.all` → "everyone’s backups"), without the server's photo count
+- feedback refused shows the server's `message` (or an `error` that is a sentence), never a code like `kv-limit` (about.js `sendFeedback`)
 
 #### Redraws
 - a sync's redraw waits while the item sheet or piece picker is open (`syncRedraw` → `syncLater`; `syncLaterRun` on `itemShown(false)` or `closePicker`)

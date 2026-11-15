@@ -61,7 +61,12 @@ window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
    2026-11-13). Only the owner (acctRole 'owner', account.js) sees the technical sentence, which says what to set up. ---- */
 const TECH_RE=/\bAPI key\b|\bsecret\b|\bbinding\b|\bworker\b|Workers AI|Cloudflare|\btoken\b/i,TECH_NAMES=/[A-Z]+_API_KEY|\bKV\b|\bWARDROBE\b|APP_TOKEN|RENDER_QUEUE|RENDER_HUB|VAPID/;   // (the names case-sensitive: "your wardrobe" is plain English)
 const ownerHere=()=>typeof acctRole==='function'&&acctRole()==='owner';
-function plainErr(m){m=String(m==null?'':m);if(!(TECH_RE.test(m)||TECH_NAMES.test(m))||ownerHere())return m;
+/* the browser's own words for a request that never reached the server (Safari "Load failed", Chrome "Failed to fetch", Firefox
+   "NetworkError…") -> a plain sentence for everyone, or null (2026-11-15, the audit: "Backup failed: Load failed", "4 failed (Load failed)") */
+const NET_RE=/^(TypeError: )?(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|Network request failed|The network connection was lost\.?|The Internet connection appears to be offline\.?)$/i;
+const netErr=m=>NET_RE.test(String(m==null?'':m).trim())?(navigator.onLine===false?'you’re offline. Try again when you’re back online':'the server couldn’t be reached. Try again in a moment'):null;
+function plainErr(m){m=String(m==null?'':m);const n=netErr(m);if(n)return n;
+  if(!(TECH_RE.test(m)||TECH_NAMES.test(m))||ownerHere())return m;
   if(/ANTHROPIC|Claude|Several items|pattern|\bAI\b|tagg/i.test(m))return 'Reading photos isn’t available on this server yet.';
   if(/OPENAI|photo|render|image|picture/i.test(m))return 'Outfit pictures aren’t available on this server yet.';
   if(/KV|WARDROBE|backup|sync/i.test(m))return 'Backups aren’t available on this server yet.';
