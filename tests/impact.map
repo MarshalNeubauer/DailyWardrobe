@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	056d5064002b6354bca9
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -259,9 +260,9 @@ addsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoad
 addsheet.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
 addsheet.test.js	asm-gl.js	<loaded>
 addsheet.test.js	asm-watch.js	<loaded>
-addsheet.test.js	assemble.js	<loaded>	@
+addsheet.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 addsheet.test.js	care.js	<loaded>	careBadge	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState
-addsheet.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	sheetSwipe
+addsheet.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 addsheet.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts
 addsheet.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 addsheet.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -307,7 +308,7 @@ aiverdict.test.js	asm-gl.js	<loaded>
 aiverdict.test.js	asm-watch.js	<loaded>
 aiverdict.test.js	assemble.js	<loaded>	@
 aiverdict.test.js	care.js	<loaded>	careShow
-aiverdict.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	sheetSwipe
+aiverdict.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 aiverdict.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	lum	metalWord	mix	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	todayDate	watchOpts
 aiverdict.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 aiverdict.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
@@ -1364,7 +1365,7 @@ auditfix.test.js	asm-gl.js	<loaded>
 auditfix.test.js	asm-watch.js	<loaded>
 auditfix.test.js	assemble.js	<loaded>	@	renderAsmUI
 auditfix.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
-auditfix.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	sheetSwipe
+auditfix.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 auditfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	lum	metalWord	mix	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	prettyCols	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	stampSettings	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
 auditfix.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	usableSett
 auditfix.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG
@@ -1416,7 +1417,7 @@ backgesture.test.js	asm-gl.js	<loaded>
 backgesture.test.js	asm-watch.js	<loaded>
 backgesture.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
 backgesture.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careLists	careNote	careShow	careState	careWashed	careWord	careWornLine	laundryDays	openCare	renderCare	renderCareUI
-backgesture.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnDrawn	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdBack	rdBar	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPreview	rdRefresh	rdRender	rdRetakeHtml	rdRun	rdStart	renderColNew	renderColPick	renderPatNew	renderPatPick	sheetSwipe
+backgesture.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnDrawn	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdBack	rdBar	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPreview	rdRefresh	rdRender	rdRetakeHtml	rdRun	rdStart	renderColNew	renderColPick	renderPatNew	renderPatPick
 backgesture.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	avgText	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	labHex	labOf	leatherWord	lum	lumCol	metalWord	mix	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	seasonFit	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 backgesture.test.js	detect.js	<loaded>	@	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 backgesture.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -1677,7 +1678,7 @@ casual.test.js	asm-gl.js	<loaded>
 casual.test.js	asm-watch.js	<loaded>
 casual.test.js	assemble.js	<loaded>	@
 casual.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState
-casual.test.js	colpick.js	<loaded>	EC	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdEditorBtn	rdOff	sheetSwipe
+casual.test.js	colpick.js	<loaded>	EC	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdEditorBtn	rdOff
 casual.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasVest	hexRgb	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	labOf	leatherLabel	leatherWord	leathersFor	lum	lumCol	metalWord	mix	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	primaryCol	pw	rgbHex	seasonFit	sentence	setHash	setKeys	shadeName	shoeStyle	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 casual.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 casual.test.js	draw.js	<loaded>	drawOxfordSide	drawShoePair	drawShoeSide	drawSneakerPair	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
@@ -1900,7 +1901,7 @@ closeupread.test.js	asm-gl.js	<loaded>
 closeupread.test.js	asm-watch.js	<loaded>
 closeupread.test.js	assemble.js	<loaded>	@
 closeupread.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-closeupread.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	cnColBase	cnDWord	cnHex	cnLeft	cnPatBase	colBtn	colFieldLabel	colHas	colLetters	colNameTaken	colRows	colShows	patBtn	patChoices	patTitle	patVar	rdActName	rdAddBtn	rdAddCol	rdAddPat	rdAfter	rdBar	rdBoth	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneCard	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdKeep	rdLightNote	rdNaCard	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdStart	rdUndo	rdUndoAll	rdUse	rdWithClose	sheetSwipe
+closeupread.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	cnColBase	cnDWord	cnHex	cnLeft	cnPatBase	colBtn	colFieldLabel	colHas	colLetters	colNameTaken	colRows	colShows	cpSheetSwipe	patBtn	patChoices	patTitle	patVar	rdActName	rdAddBtn	rdAddCol	rdAddPat	rdAfter	rdBar	rdBoth	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneCard	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdKeep	rdLightNote	rdNaCard	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdStart	rdUndo	rdUndoAll	rdUse	rdWithClose
 closeupread.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labHex	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	titleCls	todayDate	watchOpts
 closeupread.test.js	detect.js	<loaded>	@	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 closeupread.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
@@ -1947,7 +1948,7 @@ closeupsheet.test.js	asm-gl.js	<loaded>
 closeupsheet.test.js	asm-watch.js	<loaded>
 closeupsheet.test.js	assemble.js	<loaded>	@
 closeupsheet.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-closeupsheet.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnRetake	cnRetakeHtml	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	sheetSwipe
+closeupsheet.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnRetake	cnRetakeHtml	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick
 closeupsheet.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labHex	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate	watchOpts
 closeupsheet.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 closeupsheet.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
@@ -2122,7 +2123,7 @@ colnew.test.js	asm-gl.js	<loaded>
 colnew.test.js	asm-watch.js	<loaded>
 colnew.test.js	assemble.js	<loaded>	@	renderAsmUI
 colnew.test.js	care.js	<loaded>	careBadge	careCounts	careLimit	careShow	careState	laundryDays	renderCareUI
-colnew.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnDone	cnDrag	cnDrawn	cnErrCard	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHexIn	cnHsv	cnHueDown	cnKeyUp	cnKindCard	cnLeft	cnLightNote	cnLive	cnName	cnPaperDefault	cnPaperLine	cnPatBase	cnRetake	cnRetakeHtml	cnSetHsv	cnSetType	cnSqDown	cnSqKey	cnSwitch	cnToggleClose	cnUseExisting	cnWithPat	colAskHtml	colChoices	colFamily	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colSwipe	colTarget	cpFig	cpSeg	cpViews	describeAsk	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patChoices	patGroupOf	patNewFor	patTitle	patVar	renderColNew	renderColPick	renderPatNew	renderPatPick	sheetSwipe	useColPick
+colnew.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnDone	cnDrag	cnDrawn	cnErrCard	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHexIn	cnHsv	cnHueDown	cnKeyUp	cnKindCard	cnLeft	cnLightNote	cnLive	cnName	cnPaperDefault	cnPaperLine	cnPatBase	cnRetake	cnRetakeHtml	cnSetHsv	cnSetType	cnSqDown	cnSqKey	cnSwitch	cnToggleClose	cnUseExisting	cnWithPat	colAskHtml	colChoices	colFamily	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	describeAsk	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patChoices	patGroupOf	patNewFor	patTitle	patVar	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 colnew.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labHex	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	patOf	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	stampSettings	takeSettings	thirdOf	titleCls	todayDate	wearsJacket	wearsTie
 colnew.test.js	detect.js	<loaded>	@	lookOf	lookSett	ownSett	settToTag	usableSett
 colnew.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	fabricDef	figEyes	itemThumb	suitFabric	suitMarks	swatchSVG	texTileUrl	texTones	tieFabric	tieMarks
@@ -2168,7 +2169,7 @@ colouraudit.test.js	asm-gl.js	<loaded>
 colouraudit.test.js	asm-watch.js	<loaded>
 colouraudit.test.js	assemble.js	<loaded>	@
 colouraudit.test.js	care.js	<loaded>	careShow
-colouraudit.test.js	colpick.js	<loaded>	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	renderColPick	sheetSwipe
+colouraudit.test.js	colpick.js	<loaded>	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	renderColPick
 colouraudit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	clipMetal	colName	colOf	colsFor	dayClimate	di	fitCol	hexRgb	isWorkday	isoKey	key	keySettings	labOf	lum	metalWord	mix	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	setHash	setKeys	shadeName	takeSettings	thirdOf	todayDate	trouserKind	watchOpts
 colouraudit.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 colouraudit.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
@@ -2225,7 +2226,7 @@ colours.test.js	asm-gl.js	<loaded>
 colours.test.js	asm-watch.js	<loaded>
 colours.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 colours.test.js	care.js	<loaded>	careBadge	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState
-colours.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	sheetSwipe
+colours.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 colours.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	lumCol	metalWord	mix	nm	normCol	normPat	occOf	offDays	offName	patBase	patLabel	patName	planCol	prettyCols	primaryCol	pw	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts
 colours.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 colours.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
@@ -2277,7 +2278,7 @@ colpick.test.js	asm-gl.js	<loaded>
 colpick.test.js	asm-watch.js	<loaded>
 colpick.test.js	assemble.js	<loaded>	@
 colpick.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-colpick.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EC	EP	closeColPick	colAddNew	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colLetters	colNameTaken	colNear	colNewFor	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	sheetSwipe	useColPick
+colpick.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EC	EP	closeColPick	colAddNew	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colLetters	colNameTaken	colNear	colNewFor	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	useColPick
 colpick.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labHex	labOf	lum	mergeState	metalWord	mix	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	shoeStyle	stamp	stampSettings	stateSig	takeSettings	thirdOf	titleCls	todayDate	trouserKind
 colpick.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 colpick.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawShoePair	drawShoeSide	fabricDef	figEyes	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -2328,7 +2329,7 @@ colpicklive.test.js	asm-gl.js	<loaded>
 colpicklive.test.js	asm-watch.js	<loaded>
 colpicklive.test.js	assemble.js	<loaded>	@
 colpicklive.test.js	care.js	<loaded>	careShow
-colpicklive.test.js	colpick.js	<loaded>	cnAskBox	cnColBase	cnCost	cnDrag	cnDrawn	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHexIn	cnHsv	cnHueDown	cnLive	cnPaperDefault	cnSetHsv	cnSqDown	colAskHtml	colChoices	colFamily	colNear	colNewFor	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColNew	openColPick	renderColNew	renderColPick	sheetSwipe
+colpicklive.test.js	colpick.js	<loaded>	cnAskBox	cnColBase	cnCost	cnDrag	cnDrawn	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHexIn	cnHsv	cnHueDown	cnLive	cnPaperDefault	cnSetHsv	cnSqDown	colAskHtml	colChoices	colFamily	colNear	colNewFor	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	renderColNew	renderColPick
 colpicklive.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colBaseFor	colName	colOf	colsFor	dE00	dayClimate	di	hexRgb	isWorkday	isoKey	key	keySettings	labOf	lum	metalWord	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	rgbLab	setHash	setKeys	takeSettings	thirdOf	todayDate
 colpicklive.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	usableSett
 colpicklive.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks
@@ -2372,7 +2373,7 @@ compare.test.js	asm-gl.js	<loaded>
 compare.test.js	asm-watch.js	<loaded>
 compare.test.js	assemble.js	<loaded>	@
 compare.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-compare.test.js	colpick.js	<loaded>	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	sheetSwipe	useColPick
+compare.test.js	colpick.js	<loaded>	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
 compare.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate	trouserKind
 compare.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 compare.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
@@ -2592,7 +2593,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -3004,7 +3005,7 @@ editorrework.test.js	asm-gl.js	<loaded>
 editorrework.test.js	asm-watch.js	<loaded>
 editorrework.test.js	assemble.js	<loaded>	@
 editorrework.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-editorrework.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrag	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHsv	cnLive	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnSetHsv	cnSqDown	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdClose	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdOff	rdOpen	rdPaperHtml	rdRefresh	rdRender	renderColNew	renderColPick	renderPatNew	renderPatPick	sheetSwipe
+editorrework.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrag	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHsv	cnLive	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnSetHsv	cnSqDown	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdClose	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdOff	rdOpen	rdPaperHtml	rdRefresh	rdRender	renderColNew	renderColPick	renderPatNew	renderPatPick
 editorrework.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate
 editorrework.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 editorrework.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
@@ -3941,7 +3942,7 @@ itemfix.test.js	asm-gl.js	<loaded>
 itemfix.test.js	asm-watch.js	<loaded>
 itemfix.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 itemfix.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careTimes	careWashed	careWord	careWornLine
-itemfix.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnDrawn	cnFigLive	cnHasClose	cnHex	cnHexIn	cnHsv	cnLive	cnName	cnPaperDefault	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	sheetSwipe	useColPick
+itemfix.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnDrawn	cnFigLive	cnHasClose	cnHex	cnHexIn	cnHsv	cnLive	cnName	cnPaperDefault	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	useColPick
 itemfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	clipMetal	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	leatherLabel	leatherWord	leathersFor	linkFace	lum	metalWord	mix	nm	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownNameBad	ownNameClean	ownNameTidy	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	stampSettings	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts
 itemfix.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 itemfix.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -4220,7 +4221,7 @@ kit.test.js	asm-gl.js	<loaded>
 kit.test.js	asm-watch.js	<loaded>
 kit.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 kit.test.js	care.js	<loaded>	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careWashed	careWord	careWornLine
-kit.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	sheetSwipe
+kit.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
 kit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	arriveN	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	needsTie	nm	normCol	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
 kit.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kit.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -4272,7 +4273,7 @@ kitfix.test.js	asm-gl.js	<loaded>
 kitfix.test.js	asm-watch.js	<loaded>
 kitfix.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 kitfix.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careWashed	careWord	careWornLine
-kitfix.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	sheetSwipe
+kitfix.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
 kitfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	leatherWord	leathersFor	lum	metalWord	mix	needsJacket	needsTie	nm	normCol	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	setStampOf	shadeName	shoeStyle	sockToe	stampSettings	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 kitfix.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kitfix.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
@@ -4633,7 +4634,7 @@ measure.test.js	asm-gl.js	<loaded>
 measure.test.js	asm-watch.js	<loaded>
 measure.test.js	assemble.js	<loaded>	@
 measure.test.js	care.js	<loaded>	careShow
-measure.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	sheetSwipe
+measure.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 measure.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hexRgb	isWorkday	isoKey	key	keySettings	labHex	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	todayDate	watchOpts
 measure.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 measure.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
@@ -5233,7 +5234,7 @@ newuserplan.test.js	asm-gl.js	<loaded>
 newuserplan.test.js	asm-watch.js	<loaded>
 newuserplan.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
 newuserplan.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	laundryDays	renderCareUI
-newuserplan.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	sheetSwipe
+newuserplan.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 newuserplan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	leatherWord	lum	lumCol	metalWord	mix	needsJacket	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	setHash	setKeys	shadeName	shoeStyle	stampSettings	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 newuserplan.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 newuserplan.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -5284,7 +5285,7 @@ nu2fix2.test.js	asm-gl.js	<loaded>
 nu2fix2.test.js	asm-watch.js	<loaded>
 nu2fix2.test.js	assemble.js	<loaded>	@	renderAsmUI
 nu2fix2.test.js	care.js	<loaded>	careLimit	careShow	laundryDays	renderCareUI
-nu2fix2.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	sheetSwipe
+nu2fix2.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff
 nu2fix2.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	DIAL_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hexRgb	isWorkday	isoKey	itemName	key	keySettings	labHex	labOf	lum	metalWord	mix	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	sockToe	stampSettings	takeSettings	thirdOf	todayDate	watchOpts	wearsJacket	wearsTie
 nu2fix2.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nu2fix2.test.js	draw.js	<loaded>	drawSock	drawWatchTraced	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -5333,7 +5334,7 @@ nu2fix3.test.js	asm-gl.js	<loaded>
 nu2fix3.test.js	asm-watch.js	<loaded>
 nu2fix3.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 nu2fix3.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careWashed	careWord	careWornLine
-nu2fix3.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	colBtn	colFieldLabel	colHas	colRows	colShows	rdEditorBtn	sheetSwipe
+nu2fix3.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	colBtn	colFieldLabel	colHas	colRows	colShows	rdEditorBtn
 nu2fix3.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	arriveN	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayWins	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	leatherLabel	leatherWord	leathersFor	lum	lumCol	mergeSettings	mergeState	metalWord	mix	needsJacket	needsTie	nm	occOf	offDays	offName	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	setHash	setKeys	setStampOf	shadeName	shoeStyle	sockToe	stamp	stampAllSettings	stampSettings	stateSig	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 nu2fix3.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nu2fix3.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
@@ -5587,7 +5588,7 @@ nufix9.test.js	asm-gl.js	<loaded>
 nufix9.test.js	asm-watch.js	<loaded>
 nufix9.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
 nufix9.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careTimes	careWashed	careWord	careWornLine	laundryDays	renderCareUI
-nufix9.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	sheetSwipe
+nufix9.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick
 nufix9.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	leatherWord	lum	metalWord	mix	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 nufix9.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 nufix9.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -5741,7 +5742,7 @@ onorder.test.js	asm-gl.js	<loaded>
 onorder.test.js	asm-watch.js	<loaded>
 onorder.test.js	assemble.js	<loaded>	@
 onorder.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-onorder.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	sheetSwipe
+onorder.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
 onorder.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	SLOT_TYPE	accentOf	applyCustom	arriveN	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	trouserKind	watchOpts
 onorder.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 onorder.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
@@ -5793,7 +5794,7 @@ ownnames.test.js	asm-gl.js	<loaded>
 ownnames.test.js	asm-watch.js	<loaded>
 ownnames.test.js	assemble.js	<loaded>	@	renderAsmUI
 ownnames.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine	laundryDays	renderCareUI
-ownnames.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrawn	cnHasClose	cnHex	cnHsv	cnPaperDefault	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColNew	openColPick	openCustomNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatPick	sheetSwipe
+ownnames.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrawn	cnHasClose	cnHex	cnHsv	cnPaperDefault	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	openCustomNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatPick
 ownnames.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	titleCls	todayDate	watchOpts	wearsJacket	wearsTie
 ownnames.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 ownnames.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
@@ -7010,7 +7011,7 @@ rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
 rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	workerBase
-rollback.test.js	planner.js	<loaded>
+rollback.test.js	planner.js	<loaded>	lockStale
 rollback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errList	errReport	pruneTagImgs	safetyStart
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst	yearDate
@@ -7712,7 +7713,7 @@ safety.test.js	asm-gl.js	<loaded>
 safety.test.js	asm-watch.js	<loaded>
 safety.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 safety.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow
-safety.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff	sheetSwipe
+safety.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 safety.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	lum	metalWord	mix	needsJacket	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
 safety.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 safety.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
@@ -8283,7 +8284,7 @@ shade.test.js	asm-gl.js	<loaded>
 shade.test.js	asm-watch.js	<loaded>
 shade.test.js	assemble.js	<loaded>	@
 shade.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-shade.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	sheetSwipe
+shade.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
 shade.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labHex	labOf	lum	lumCol	metalWord	mix	normPat	occOf	offDays	offName	patBase	patLabel	patName	planCol	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeFor	shadeHex	shadeName	takeSettings	thirdOf	titleCls	todayDate	trouserKind	watchOpts
 shade.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 shade.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
@@ -8503,7 +8504,7 @@ shirts.test.js	asm-gl.js	<loaded>
 shirts.test.js	asm-watch.js	<loaded>
 shirts.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 shirts.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-shirts.test.js	colpick.js	<loaded>	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	sheetSwipe
+shirts.test.js	colpick.js	<loaded>	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSheetSwipe	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick
 shirts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	desc	di	fitCol	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	lum	lumCol	metalWord	mix	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord
 shirts.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 shirts.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	shirtFabric	shirtMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
@@ -9265,7 +9266,7 @@ tagging.test.js	asm-gl.js	<loaded>
 tagging.test.js	asm-watch.js	<loaded>
 tagging.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	renderAsmUI
 tagging.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
-tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	sheetSwipe	useColPick
+tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	avgText	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	labHex	labOf	lum	lumCol	metalWord	mix	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	seasonFit	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
 tagging.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 tagging.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figKind	figLiftK	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	swatchSVG
@@ -9323,7 +9324,7 @@ tagswatch.test.js	asm-gl.js	<loaded>
 tagswatch.test.js	asm-watch.js	<loaded>
 tagswatch.test.js	assemble.js	<loaded>	@
 tagswatch.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-tagswatch.test.js	colpick.js	<loaded>	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	sheetSwipe	useColPick
+tagswatch.test.js	colpick.js	<loaded>	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	useColPick
 tagswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	lum	metalWord	mix	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate	trouserKind
 tagswatch.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 tagswatch.test.js	draw.js	<loaded>	fabricDef	itemThumb	pantsFabric	pantsMarks	swatchSVG	trouserMarks
@@ -10165,7 +10166,7 @@ uipages.test.js	asm-gl.js	<loaded>
 uipages.test.js	asm-watch.js	<loaded>
 uipages.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	renderAsmUI
 uipages.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careTimes	careWashed	careWord	careWornLine	laundryDays	renderCareUI
-uipages.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	sheetSwipe
+uipages.test.js	colpick.js	<loaded>	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
 uipages.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	accentOf	applyCustom	avgText	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	leatherWord	lum	lumCol	metalWord	mix	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	stampSettings	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 uipages.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 uipages.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
@@ -10426,7 +10427,7 @@ wardrobe.test.js	asm-gl.js	<loaded>
 wardrobe.test.js	asm-watch.js	<loaded>
 wardrobe.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 wardrobe.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careTimes	careWashed	careWord	careWornLine
-wardrobe.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	sheetSwipe
+wardrobe.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EC	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
 wardrobe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	DIAL_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	arriveN	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	dayWins	desc	di	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	labHex	leatherLabel	leatherWord	leathersFor	lum	lumCol	mergeSettings	mergeState	metalWord	mix	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	seasonFit	sentence	setHash	setKeys	setStampOf	shadeHex	shadeName	shoeStyle	sockToe	stamp	stampSettings	stateSig	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsTie
 wardrobe.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 wardrobe.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatch	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
@@ -10483,7 +10484,7 @@ wardrobetap.test.js	asm-gl.js	<loaded>
 wardrobetap.test.js	asm-watch.js	<loaded>
 wardrobetap.test.js	assemble.js	<loaded>	@
 wardrobetap.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
-wardrobetap.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	sheetSwipe	useColPick
+wardrobetap.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EC	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSheetSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
 wardrobetap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labOf	lum	metalWord	mix	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord
 wardrobetap.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 wardrobetap.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG	tieFabric	tieMarks	trouserMarks
