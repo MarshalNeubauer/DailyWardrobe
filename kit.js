@@ -29,8 +29,10 @@ ${n>1?`<div class="su-prog kit-prog" aria-hidden="true">${kit.cards.map((x,i)=>`
 addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefault();kitClose()}else if(e.key==='ArrowRight')kitGo(1);else if(e.key==='ArrowLeft')kitGo(-1)});
 
 /* the pictures: drawn, in the app's own colours (no photos to download) */
+/* the tour speaks of what this person wears (audit 2026-11-15: ties and suits to someone who wears neither) */
+const kitWears=k=>k==='tie'?typeof wearsTie!=='function'||wearsTie():typeof wearsJacket!=='function'||wearsJacket();
 const kitScorePic=()=>`<svg viewBox="0 0 300 150"><rect x="20" y="22" width="260" height="62" rx="14" class="kp-card"/><rect x="34" y="34" width="70" height="38" rx="10" class="kp-good"/><text x="69" y="60" class="kp-num">96</text><text x="118" y="50" class="kp-t">Excellent</text><text x="118" y="70" class="kp-s">Outfit score · tap for why</text>
-<rect x="20" y="96" width="260" height="38" rx="10" class="kp-card"/><text x="34" y="120" class="kp-s">−2</text><text x="62" y="120" class="kp-t2">The same tie colour as yesterday</text></svg>`;
+<rect x="20" y="96" width="260" height="38" rx="10" class="kp-card"/><text x="34" y="120" class="kp-s">−2</text><text x="62" y="120" class="kp-t2">The same ${kitWears('tie')?'tie':'shirt'} colour as yesterday</text></svg>`;
 const kitClothPic=(paper=true,box=true)=>`<svg viewBox="0 0 200 260"><defs><pattern id="kp-weave" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#3b4256"/><path d="M0 8L8 0M-2 2L2 -2M6 10L10 6" stroke="#4b5370" stroke-width="1.6"/></pattern></defs>
 <rect x="10" y="10" width="180" height="240" rx="12" fill="url(#kp-weave)"/>${paper?`<path d="M10 204 H190 V238 A12 12 0 0 1 178 250 H22 A12 12 0 0 1 10 238 Z" fill="#f4f3ef"/>`:''}
 ${box?`<rect x="37" y="46" width="126" height="148" rx="3" fill="none" stroke="#efb446" stroke-width="2.4" stroke-dasharray="7 5"/>`:''}</svg>`;
@@ -43,12 +45,15 @@ const kitPatternPic=()=>`<svg viewBox="0 0 300 150"><defs><pattern id="kp-gen" w
 
 /* ---- the quick tour ---- */
 const TOUR_CARDS=[
-  {key:'score',title:'The score',pic:kitScorePic,body:`<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the suit, a colour worn two days running, socks lighter than the trousers.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`},
+  {key:'score',title:'The score',pic:kitScorePic,get body(){return `<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the ${kitWears('jacket')?'suit':'trousers'}, a colour worn two days running, socks lighter than the trousers.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`}},
   {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true colour and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light: tap the paper on the camera screen before you take the picture.</p><p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">How to take a good close-up</button></p>`},
   {key:'shade',title:'Shade',pic:kitShadePic,body:`<p>If a piece is drawn lighter or darker than the real thing, Shade nudges it, up to six steps either way.</p><p><b>Match close-up</b> sets it from your close-up for you.</p><p class="kit-tip">Shade changes only the drawing. The colour the planner matches stays the one you tagged.</p>`},
   {key:'patterns',title:'Patterns',pic:kitPatternPic,body:`<p>Stripes, checks and weaves are read too.</p><p>With a close-up the app measures the stripes' widths and colours, so the drawing and the outfit pictures show your cloth, not a generic one.</p><p class="kit-tip">If a reading looks wrong, tap <b>Use the simple pattern</b> on the card, or <b>Read pattern from photo</b> on the item later.</p>`}];
 /* then: what happens after the last card (the setup's "Add my first item" goes on to Add) */
 function tourOpen(then,lastLabel){kitOpen(TOUR_CARDS,then);if(lastLabel){kit.lastLabel=lastLabel;kitDraw()}}
+/* Settings → About's "Take the tour" and "Add to Home Screen": closing the sheet goes back to About, not to Today (audit 2026-11-15) */
+function tourAgain(){closeSettings();tourOpen(()=>openSettings('about'))}
+function homeAgain(){closeSettings();kitOpen([HOME_CARD],()=>openSettings('about'))}
 
 /* ---- the close-up guide ---- */
 const GUIDE_CARD={key:'guide',title:'A good close-up',pic:()=>kitClothPic(true,true),last:'Got it',body:`<ol class="kit-list">
@@ -180,7 +185,7 @@ function kitSampleBanner(){if(!kitHasSample())return '';const own=items.filter(i
   return `<div class="kit-banner" id="kit-sample"><b>You're trying a sample wardrobe</b><small>${own?`Your ${own} own piece${own===1?' is':'s are'} mixed in. `:''}Swipe through the days, tap the score, try a swap. Add your own clothes whenever you like.</small>
 <div class="btns"><button type="button" onclick="openAdd()">Add my own</button><button type="button" onclick="kitSampleRemove()">Remove the sample</button></div></div>`}
 /* the setup's last step, Today's checklist and the empty Wardrobe: the ways in for a new user */
-const kitStartRow=()=>`<div class="kit-start"><button type="button" class="linkbtn" id="kit-tour-link" onclick="tourOpen()">Take the 1-minute tour</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" id="kit-sample-link" onclick="kitSampleLoad()">Try a sample wardrobe</button></div>`;
+const kitStartRow=inSetup=>`<div class="kit-start"><button type="button" class="linkbtn" id="kit-tour-link" onclick="tourOpen()">Take the 1-minute tour</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" id="kit-sample-link" onclick="${inSetup?'setupSample(event)':'kitSampleLoad()'}">Try a sample wardrobe</button></div>`;
 
 /* ---- Add to Home Screen (2026-11-14, the owner: show a new person on an iPhone how to add it as a web app) ----
    iPhone and iPad only, in a browser tab (homeNeeded): the setup's Home Screen step (setup.js) and Settings → About (#home-again). The app
@@ -217,13 +222,27 @@ function homeStepsAndroid(inSetup){
     '<li><span class="home-n">2</span><span>Tap <b>Install app</b> or <b>Add to Home screen</b>.</span></li>'+
     '<li><span class="home-n">3</span><span>Tap <b>Install</b>, then open Daily Wardrobe from its new icon.</span></li></ol></div>'+
     (inSetup?'<p class="su-note home-note">Everything you set up here comes with it.</p><p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
-function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);const where=homeIPad()?'at the top of Safari':'at the bottom of Safari';
-  return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Put Daily Wardrobe on your Home Screen: it opens full screen like an app, and it is the only way your '+(homeIPad()?'iPad':'iPhone')+' lets it send the morning reminder.</p>'+
-    '<ol class="home-steps"><li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' '+where+'.<small>If you see ⋯ there instead, tap ⋯, then Share.</small></span></li>'+
-    '<li><span class="home-n">2</span><span>Scroll down and tap <b>Add to Home Screen</b> '+HOME_ADD+'.</span></li>'+
-    '<li><span class="home-n">3</span><span>Tap <b>Add</b>, then open Daily Wardrobe from its new icon.</span></li></ol>'+
-    (inSetup?'<p class="su-note home-note"><b>Do this before you set anything up.</b> The Home Screen app keeps its own copy, so what you set up here in Safari stays in Safari. With an invite link, your wardrobe comes across by itself once you connect.</p><p class="su-help">Or tap Next to carry on here.</p>'
-      :'<p class="kit-tip">The Home Screen app keeps its own copy of the app\'s data. If you are connected with an invite link, connect there too and your wardrobe comes across.</p>')+'</div>'}
+/* (audit 2026-11-15, H12) the one explanation of the Home Screen app on an iPhone: the setup's step, About's button and the sheet a tester
+   gets after connecting from a link (account.js homeScreenGuide) all show this. iOS 26's Safari shows ⋯ at the bottom (Share is in its
+   menu); the Home Screen app keeps its own storage and starts unconnected, so a tester copies the invitation link here to paste there */
+const homeTester=()=>typeof isTester==='function'&&isTester()&&typeof myInviteLink==='function'&&!!myInviteLink();
+const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home-copy" onclick="homeCopy()">Copy my invitation link</button></p><input type="text" class="home-mylink" readonly hidden aria-label="Your invitation link">';
+async function homeCopy(){const l=typeof myInviteLink==='function'?myInviteLink():'';if(!l)return false;
+  try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
+  catch{document.querySelectorAll('.home-mylink').forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
+function homeNote(){const conn=typeof isConnected==='function'?isConnected():false;
+  if(homeTester())return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
+  if(conn)return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s: connect it too, in its Settings → Connection.</p>';
+  if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in Safari.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
+  return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from Safari\'s: if you add it now, set it up there rather than here.</p>'}
+function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);const pad=homeIPad(),t=homeTester();
+  return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Put Daily Wardrobe on your Home Screen: it opens full screen like an app, and it is the only way your '+(pad?'iPad':'iPhone')+' lets it send the morning reminder.</p>'+
+    '<ol class="home-steps">'+(pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
+      :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>')+
+    '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap View More.</small></span></li>'+
+    '<li><span class="home-n">3</span><span>Leave <b>Open as Web App</b> on and tap <b>Add</b>.</span></li>'+
+    '<li><span class="home-n">4</span><span>Open Daily Wardrobe from its new icon'+(t?' and paste your invitation link at the setup\'s Connection step.':'.')+'</span></li></ol>'+
+    (t?homeCopyBtn():'')+homeNote()+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
 const homeLabel=()=>homeAndroid()?'Install the app':'Add to Home Screen';
 const HOME_CARD={key:'home',get title(){return homeLabel()},pic:()=>'',last:'Got it',get body(){return homeSteps(false)}};
 function homeOpen(){kitOpen([HOME_CARD])}
