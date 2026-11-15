@@ -294,6 +294,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `analysis.js`
 
 - "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker): `runAnalysis(list, T, weeks, progress, onCat)` → `{v:2, base, cats:[{key, title, verdict, own, notes, recs}], top, occasions}`
+- `horizonKeys(T,weeks)`: the workdays from tomorrow to `weeks`×7 days ahead (today is left out, as on Insights, which counts the same days: stats.js `plannedDays`)
 - `evalPlan(list,T,weeks)` plans the next `SHOP_WEEKS` (26) with the real `dayRecs` (history, occasions) and measures it: score, problem notes, jacket rest, colour/tie/look repeats, shoes worn two days running, first-choice shoe days, pieces never planned, points lost per check
 - `shopList` counts pieces on the way and pieces away being cleaned (`item.away`) as owned; pieces out of rotation don't count
 - suits, blazers, trousers, shirts and ties: candidates are every colour in `SHOP_COLS` × pattern class (`clothesCandidates`), ranked without simulating (`rankClothes`)
@@ -730,6 +731,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a missing piece's row offers "Add one" (`.addone` → `openAdd()`); nothing says "Add tab" (there is none: `ADD_HINT` "Add one with + Add in the Wardrobe")
 - quick swipes in a row each count (`fly` in today.js: a swipe during the last one's fly-out is added to it, and the day is drawn only when no finger is down: drawing removes the element a touch started on and its moves stop coming); `stepDay(n, from, times)`
 - the picture's pill says "This look last worn …" (`wornBar`): it is the jacket, shirt colour and tie together (`lastWorn`), not the suit's own last wear
+- while the checklist shows (`wardShort()`: a `setupNeeds` row not ticked), a half-outfit is drawn but gets no score card, no "This look last worn" and no outfit count on the month card ("pieces still missing"); after removing the sample a suit and a shirt showed a red "50 Incomplete" (re-audit 2026-11-15)
+- the date bar's weather line with the worn pill stays the centred three-column grid until the weather or "Set location" would be cut (Larger Text, page zoom: it read "Set loc…", then nothing; re-audit 2026-11-15): `wxFit()` (after each `renderToday`, and from a ResizeObserver on `#today` it installs the first time) then adds `.wxwrap`, the text takes the line alone and the pill goes under it at the right
+- the "Set location" link (`.wxl`, its span `.wxlk`) is padded out to about 46 px of tap height with a matching negative margin, so nothing moves; the pill (`z-index:2`) stays above the link's padding
 
 #### The pieces list and photos
 
@@ -1131,6 +1135,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `whyUnused` reads every jacket's best outfit overall and per shirt and tie from one table built once per page (`fitMemo`, reset in `buildStats`); searching again per unused piece took 94 s at 250 items
 - `whyUnused`: a paused item was taken out of rotation; an item on the way says so, with its arrival date if there is one; a piece away says "It's at the cleaner's" / "It's in the laundry", with the date it joins the outfits again; a dress-code exclusion says so ("Your dress code leaves out ties…")
 - `whyUnused` never says a suiting tie, shirt or pair of trousers "comes up later than six months" (it can't know that); it says the others suit a little better or have rested longer, so it isn't in the next six months' plan
+- Wear counts: a type the dress code leaves out (`dressOut`: blazers and suits with Jackets off) says "left out by your dress code", never "N never worn" (re-audit 2026-11-15); `tests/nu2fix7.test.js`
+- `plannedDays()` takes What to buy's days (`statsDays` = analysis.js `horizonKeys(today, SHOP_WEEKS)`: the workdays of 26 weeks from tomorrow), so Insights' "outfits planned" and What to buy's "workdays" are the same number (they were 122 and 126); `statsMonths` reaches the horizon's last day
+- a wardrobe that can't dress a day yet (`statsShort`: setup.js `setupNeeds` rows not ticked, as Today's checklist) gets no plan numbers: the tiles keep items and days worn, a "Not a full outfit yet" card (`#st-short`) names what is missing, and Never worn, Small deductions, Colour balance, Pairings and the plan's average are left out (it said "121 outfits planned … 50.0 average" for a suit and a shirt)
 
 ### `pack.js`
 

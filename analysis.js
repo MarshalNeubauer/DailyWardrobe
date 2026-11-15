@@ -12,8 +12,10 @@
    4. Formal, wedding, funeral and no-jacket days are dressed once each to see what is missing. */
 const SHOP_WEEKS=26,SHOP_PER_CAT=5,SHOP_TOP=10;
 const keyDate2=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
-function horizonKeys(T,weeks){const out=[],end=new Date(T);end.setDate(end.getDate()+weeks*7);
-  for(const d=new Date(T);d<end;d.setDate(d.getDate()+1))if(isWorkday(d))out.push(key(d));return out}
+/* the workdays of the next `weeks` weeks, from tomorrow (today is worn or about to be: it isn't "the next 6 months"). Insights counts
+   the same days (stats.js plannedDays), so both say the same number of outfits (they said 122 and 126, re-audit 2026-11-15) */
+function horizonKeys(T,weeks){const out=[],end=new Date(T.getFullYear(),T.getMonth(),T.getDate()+weeks*7);
+  for(const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+1);d<=end;d.setDate(d.getDate()+1))if(isWorkday(d))out.push(key(d));return out}
 
 /* what kind of problem a planner note describes */
 function noteKind(n){

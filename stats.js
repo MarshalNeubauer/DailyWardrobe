@@ -13,11 +13,15 @@ function wornDays(){const T=todayDate(),out=[];
     if(+d===+T&&r.worn!==true)continue;                            // today counts once it is marked worn
     out.push({date:r.date,d,ids:r.ids,suitDay:!!r.suitDay,vestOn:!!r.vestOn})}
   return out.sort((a,b)=>a.d-b.d)}
-/* the planned outfits from tomorrow for STATS_MONTHS months: [[key, outfit]] */
-function plannedDays(){const T=todayDate(),end=new Date(T.getFullYear(),T.getMonth()+STATS_MONTHS,T.getDate()),out=[];
-  for(let y=T.getFullYear(),m=T.getMonth();new Date(y,m,1)<=end;m===11?(m=0,y++):m++){const p=planMonth(y,m);
-    for(const [k,o] of Object.entries(p)){const d=keyDate(k);if(d.getMonth()!==m||d.getFullYear()!==y||d<=T||d>end||!hasOutfit(o))continue;out.push([k,o])}}
-  return out.sort((a,b)=>keyDate(a[0])-keyDate(b[0]))}
+/* the planned outfits of the next six months: [[key, outfit]]. The same workdays What to buy measures (analysis.js horizonKeys:
+   SHOP_WEEKS weeks from tomorrow), so the two count the same outfits; they counted 122 and 126 (re-audit 2026-11-15) */
+const statsDays=()=>horizonKeys(todayDate(),SHOP_WEEKS);
+function plannedDays(){const out=[];
+  for(const k of statsDays()){const d=keyDate(k),o=planMonth(d.getFullYear(),d.getMonth())[k];if(hasOutfit(o))out.push([k,o])}
+  return out}
+/* the wardrobe can't dress a day yet (Today shows the "Get your first outfit" checklist, setup.js setupNeeds): the plan's numbers would
+   score half-outfits ("121 outfits planned, 50.0 average", re-audit 2026-11-15), so Insights leaves them out and says what is missing */
+const statsShort=()=>typeof setupNeeds==='function'?setupNeeds().filter(r=>!r.ok).map(r=>r.short):[];
 /* why a piece is never worn, in a sentence (by the planner's own rules) */
 function whyUnused(i){
   if(i.paused&&i.away)return (i.away.why==='laundry'?'It\'s in the laundry':'It\'s at the cleaner\'s')+(i.away.back?`: it joins your outfits again after ${fmtDay(i.away.back)}.`:': it joins your outfits again once you mark it back.');
@@ -54,7 +58,7 @@ function whyUnused(i){
   return 'The planner never needs it.'}
 let fitMemo=null;
 function buildStats(){fitMemo=null;
-  const worn=wornDays(),plan=plannedDays(),W={},P={},last={},next={};
+  const short=statsShort(),worn=wornDays(),plan=short.length?[]:plannedDays(),W={},P={},last={},next={};
   for(const w of worn)for(const s of SLOTS){const id=w.ids[s];if(!id||(s==='bot'&&w.suitDay))continue;W[id]=(W[id]||0)+1;last[id]=w.d}
   for(const [k,o] of plan)for(const s of SLOTS){const it=o[s];if(!it||(s==='bot'&&o.suitDay))continue;P[it.id]=(P[it.id]||0)+1;if(!next[it.id])next[it.id]=keyDate(k)}
   const rows=items.map(i=>({i,worn:W[i.id]||0,planned:P[i.id]||0,last:last[i.id]||null,next:next[i.id]||null}));
@@ -79,7 +83,7 @@ function buildStats(){fitMemo=null;
   const s0=planStartDay();if(s0)while(trend.length>1&&!trend[0].n&&new Date(trend[0].from.getFullYear(),trend[0].from.getMonth(),trend[0].from.getDate()+6)<s0)trend.shift();
   const tn=trend.reduce((a,t)=>a+t.n,0),wornAvg=tn?Math.round(trend.reduce((a,t)=>a+t.sum,0)/tn):null,wornHard=trend.reduce((a,t)=>a+t.hard,0);
   const planHard=rates.filter(x=>x[2].hard.length).length;
-  return {worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned&&!dressOut(r.i.type))}}
+  return {short,worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned&&!dressOut(r.i.type))}}
 /* a piece as Insights names it: its own name exactly as typed, else its description (Insights showed "Charcoal pinstripe" for the owner's
    "My charcoal pinstripe", audit 2026-11-14) */
 const statName=i=>itemName(i)||sentence(desc(i)||nm(i)),statName1=i=>itemName(i)||sentence(nm(i)),statName2=i=>itemName(i)||nm(i);   // (statName1/2: with the type, "Navy suit"; statName2 later in a line, not capitalised)
@@ -99,9 +103,10 @@ function renderStats(){
   // wear counts, one foldable section per type
   const types=Object.keys(TYPES).filter(t=>items.some(i=>i.type===t));
   const sect=t=>{const rs=S.rows.filter(r=>r.i.type===t).sort((a,b)=>(b.worn+b.planned)-(a.worn+a.planned)||(a.i.id<b.i.id?-1:1)),max=Math.max(1,...rs.map(r=>Math.max(r.worn,r.planned))),open=statsOpen[t]??(statsOpen[t]=t==='suit');
-    const idle=rs.filter(r=>!r.worn&&!r.planned).length;
+    // a type the dress code leaves out (blazers with jackets off) isn't "never worn": it isn't asked for (re-audit 2026-11-15)
+    const out=dressOut(t),idle=out||S.short.length?0:rs.filter(r=>!r.worn&&!r.planned).length;
     // a folded section holds no rows (and so none of its photos) until it is opened
-    return `<details class="st-type" data-type="${t}"${open?' open':''} ontoggle="statsToggle(this)"><summary><b>${TYPES[t]}${rs.length>1&&!/s$/.test(TYPES[t])?'s':''}</b><small class="mut">${rs.length} · ${idle?`${idle} never worn`:'all in use'}</small></summary>
+    return `<details class="st-type" data-type="${t}"${open?' open':''} ontoggle="statsToggle(this)"><summary><b>${TYPES[t]}${rs.length>1&&!/s$/.test(TYPES[t])?'s':''}</b><small class="mut">${rs.length} · ${out?'left out by your dress code':S.short.length?'nothing planned yet':idle?`${idle} never worn`:'all in use'}</small></summary>
       <div class="st-rows">${!open?'':rs.map(r=>`<div class="st-row${!r.worn&&!r.planned?' idle':''}">${statPic(r.i)}<div class="st-main"><span class="${titleCls(r.i)} st-nm">${esc(statName(r.i))}</span>
         <span class="st-bars">${bar(r.worn,max,'w')}${bar(r.planned,max,'p')}</span>
         <small class="mut">${r.worn?`worn ${r.worn}×${r.last?' · last '+statDate(r.last):''}`:'not worn yet'} · ${r.planned?`planned ${r.planned}×${r.next?' · next '+statDate(r.next):''}`:'not planned'}</small></div></div>`).join('')}</div></details>`};
@@ -109,23 +114,25 @@ function renderStats(){
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
   const L=settings.learn||{},lp=Object.entries(L.p||{}),li=Object.entries(L.i||{}),byId=id=>items.find(i=>i.id===id);
   const learned=[...lp.map(([k,v])=>{const [a,b]=k.split('|').map(byId);return a&&b?{k,kind:'p',v,txt:`${statName1(a)} with ${statName2(b)}`}:null}),...li.map(([k,v])=>{const a=byId(k);return a?{k,kind:'i',v,txt:statName1(a)}:null})].filter(Boolean).sort((a,b)=>a.v-b.v);
+  const planLine=S.short.length?'':` The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.`;
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}
-  <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)}${tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)}${tile(nPlan?avgText(S.avg):'–','average outfit score')}${tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
+  <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${S.short.length?'':tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)+tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)+tile(nPlan?avgText(S.avg):'–','average outfit score')+tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
+  ${S.short.length?`<section class="card st-card" id="st-short"><h3>Not a full outfit yet</h3><p class="mut"><small>Your wardrobe still needs ${listAnd(S.short)} for a complete outfit. The plan for the next ${STATS_MONTHS} months, its scores and what is never worn show here once Today can dress a workday.</small></p><div class="btns"><button type="button" class="pri" onclick="openAdd()">Add an item</button></div></section>`:`
 
   <section class="card st-card" id="st-unused"><h3>Never worn</h3>
   ${S.unused.length?`<p class="mut"><small>Not worn so far and not in any outfit for the next ${STATS_MONTHS} months, with the reason.</small></p>${S.unused.map(r=>`<div class="st-row">${statPic(r.i)}<div class="st-main"><span class="st-nm">${TYPES[r.i.type]}: <span class="${titleCls(r.i)}">${esc(statName(r.i))}</span></span><small class="mut">${prettyCols(whyUnused(r.i))}</small></div></div>`).join('')}`
-    :`<p class="mut"><small>Every item is worn or planned in the next ${STATS_MONTHS} months.</small></p>`}</section>
+    :`<p class="mut"><small>Every item is worn or planned in the next ${STATS_MONTHS} months.</small></p>`}</section>`}
 
   <section class="card st-card" id="st-trend"><h3>Your scores</h3>
   ${S.trendDays?`<p class="mut"><small>What you really wore, week by week: the average outfit score of each ${S.trend.length===1?'week':'of the last '+S.trend.length+' weeks'}.</small></p>
     <div class="st-trend" role="img" aria-label="Average score of the outfits worn in each ${S.trend.length===1?'week':'of the last '+S.trend.length+' weeks'}: ${S.trend.map(t=>t.n?Math.round(t.sum/t.n):'none').join(', ')}">${S.trend.map(t=>{const a=t.n?Math.round(t.sum/t.n):0;
       return `<div class="st-wk${t.n?'':' none'}"><b>${t.n?a:'–'}</b><span class="st-col"><i class="${t.hard?'low':a>=80?'good':'ok'}" style="height:${t.n?Math.max(6,a):0}%"></i></span><small>${statDate(t.from)}</small></div>`}).join('')}</div>
-    <p class="mut"><small>Average ${S.wornAvg} over ${S.trendDays} day${S.trendDays===1?'':'s'}${S.wornHard?`; ${S.wornHard} had a real mistake (a score of ${HARD_CAP} or less)`:'; none had a real mistake'}. The plan for the next ${STATS_MONTHS} months averages ${avgText(S.avg)}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.</small></p>`
-    :`<p class="mut"><small>Nothing worn in the last ${TREND_WEEKS} weeks yet. The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.</small></p>`}</section>
+    <p class="mut"><small>Average ${S.wornAvg} over ${S.trendDays} day${S.trendDays===1?'':'s'}${S.wornHard?`; ${S.wornHard} had a real mistake (a score of ${HARD_CAP} or less)`:'; none had a real mistake'}.${planLine}</small></p>`
+    :`<p class="mut"><small>Nothing worn in the last ${TREND_WEEKS} weeks yet.${planLine}</small></p>`}</section>
 
   <section class="card st-card" id="st-wear"><h3>Wear counts</h3>
   <p class="mut"><small><span class="st-key w"></span>worn so far <span class="st-key p"></span>planned for the next ${STATS_MONTHS} months</small></p>${types.map(sect).join('')}</section>
-
+${S.short.length?'':`
   <section class="card st-card" id="st-points"><h3>Small deductions</h3>
   ${missList.length?`<p class="mut"><small>Over the ${nPlan} planned outfits: where the score is marked down most, and the usual reason.</small></p>${missList.map(([l,m])=>{const why=Object.entries(m.why).sort((a,b)=>b[1]-a[1])[0];
       return `<div class="st-miss"><b>${l}</b><span class="mut">${m.n} of ${nPlan} days</span>${bar(m.n,nPlan)}${why?`<small class="mut">Mostly: ${why[0]}.</small>`:''}</div>`}).join('')}`:'<p class="mut"><small>Nothing: every planned outfit scores full marks.</small></p>'}
@@ -136,7 +143,7 @@ function renderStats(){
 
   <section class="card st-card" id="st-pairs"><h3>Pairings and rest</h3>
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${esc(statName1(p.a))} · ${esc(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
-  <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that colour would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>
+  <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that colour would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>`}
 
   ${typeof tagStatsCard==='function'?tagStatsCard():''}
 
@@ -158,7 +165,7 @@ function openStats(){closeSettings();show('stats');scrollTo({top:0})}   // Insig
    the tab is usually ready. renderStats() called directly still works it out at once (the tests, a change made on the page). ---- */
 const STATS_SLICE=7;   // days planned per idle slice
 let statsWarm=null;
-function statsMonths(){const T=todayDate(),end=new Date(T.getFullYear(),T.getMonth()+STATS_MONTHS,T.getDate()),out=[];
+function statsMonths(){const T=todayDate(),end=new Date(T.getFullYear(),T.getMonth(),T.getDate()+SHOP_WEEKS*7),out=[];   // (the months statsDays reaches)
   for(let y=T.getFullYear(),m=T.getMonth();new Date(y,m,1)<=end;m===11?(m=0,y++):m++)out.push([y,m]);return out}
 const statsPlanned=()=>!!window.TEST_PLAN||statsMonths().every(([y,m])=>cache[y+'-'+m]);
 function statsPlan(){if(statsWarm)return statsWarm;if(statsPlanned())return Promise.resolve();
