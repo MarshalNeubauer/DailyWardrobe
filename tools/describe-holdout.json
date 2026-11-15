@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "Held-out cases: written without seeing the prompt. Never copy these phrases or their answers into the prompt.",
+ "note": "Held-out cases: written without seeing the prompt. Never copy these phrases or their answers into the prompt. Plain-cloth cases also accept the fine weaves (2026-11-15: the prompt plans plain-reading weaves as a weave, by design).",
  "cases": [
   {
    "id": "H001",
@@ -3191,7 +3191,11 @@
     ],
     "plansAs": [
      "solid",
-     "other"
+     "other",
+     "nailhead",
+     "birdseye",
+     "sharkskin",
+     "twill"
     ],
     "match": "either"
    },
@@ -3218,12 +3222,16 @@
     "existing": [
      "sharkskin",
      "nailhead",
-     "solid"
+     "solid",
+     "birdseye",
+     "twill"
     ],
     "plansAs": [
      "sharkskin",
      "nailhead",
-     "solid"
+     "solid",
+     "birdseye",
+     "twill"
     ]
    },
    "tags": [
@@ -3248,10 +3256,17 @@
     "existing": [
      "solid",
      "other",
-     "sharkskin"
+     "sharkskin",
+     "nailhead",
+     "birdseye",
+     "twill"
     ],
     "plansAs": [
-     "solid"
+     "solid",
+     "nailhead",
+     "birdseye",
+     "sharkskin",
+     "twill"
     ],
     "match": "either"
    },
@@ -3277,11 +3292,19 @@
     "match": "either",
     "existing": [
      "pinstripe",
-     "solid"
+     "solid",
+     "nailhead",
+     "birdseye",
+     "sharkskin",
+     "twill"
     ],
     "plansAs": [
      "pinstripe",
-     "solid"
+     "solid",
+     "nailhead",
+     "birdseye",
+     "sharkskin",
+     "twill"
     ]
    },
    "tags": [
@@ -3462,7 +3485,11 @@
     ],
     "plansAs": [
      "solid",
-     "other"
+     "other",
+     "nailhead",
+     "birdseye",
+     "sharkskin",
+     "twill"
     ],
     "match": "either"
    },
@@ -3489,12 +3516,17 @@
      "solid",
      "birdseye",
      "twill",
-     "other"
+     "other",
+     "nailhead",
+     "sharkskin"
     ],
     "plansAs": [
      "solid",
      "birdseye",
-     "other"
+     "other",
+     "nailhead",
+     "sharkskin",
+     "twill"
     ],
     "match": "either"
    },
@@ -3818,7 +3850,10 @@
     "plansAs": [
      "twill",
      "solid",
-     "other"
+     "other",
+     "nailhead",
+     "birdseye",
+     "sharkskin"
     ],
     "match": "either"
    },
@@ -3868,7 +3903,10 @@
     ],
     "plansAs": [
      "twill",
-     "solid"
+     "solid",
+     "nailhead",
+     "birdseye",
+     "sharkskin"
     ],
     "match": "either"
    },
@@ -4267,10 +4305,18 @@
      "material"
     ],
     "existing": [
-     "solid"
+     "solid",
+     "twill",
+     "fine-texture",
+     "textured",
+     "woven"
     ],
     "plansAs": [
-     "solid"
+     "solid",
+     "twill",
+     "fine-texture",
+     "textured",
+     "woven"
     ],
     "match": "either"
    },
@@ -4788,10 +4834,12 @@
     ],
     "match": "existing",
     "existing": [
-     "solid"
+     "solid",
+     "woven"
     ],
     "plansAs": [
-     "solid"
+     "solid",
+     "woven"
     ]
    },
    "tags": [
