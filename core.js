@@ -89,6 +89,21 @@ function applyCustom(cu){
     for(const t of p.types||[])if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}
   COLOR_NAME_RE=null}
 const patName=p=>CUSTOM_PAT[p]?String(CUSTOM_PAT[p].name).toLowerCase():patLabel(p);
+/* the built-in colour an own shade behaves like (its base), when Claude didn't give one: from the item type's own list (main or
+   stripe/motif colours), by colour family before distance (2026-11-15, the new-colour design: by ΔE alone over every key, petrol blue
+   planned as charcoal, cognac as rust, neon green as stone, smoky lavender as light grey). A colourful shade takes the list's colours of
+   a hue within BASE_HUE degrees (else BASE_HUE2), a near-neutral one the list's neutrals; of those, the ones within BASE_L of its lightness;
+   then the nearest by ΔE00. worker/describe.js baseFor is the same rule for Claude's answers */
+const BASE_HUE=45,BASE_HUE2=80,BASE_L=25,BASE_GREY=9;
+function colBaseFor(hex,type,accent){const lab=rgbLab(...hexRgb(hex)),lch=l=>[Math.hypot(l[1],l[2]),(Math.atan2(l[2],l[1])*180/Math.PI+360)%360],[C,h]=lch(lab);
+  const hd=(a,b)=>{const d=Math.abs(a-b)%360;return d>180?360-d:d},typed=!!(type&&COLS_BY[type]);
+  const cand=(typed?colsFor(type,accent):Object.keys(COLORS)).filter(c=>COLORS[c]&&!CUSTOM_COL[c]&&(typed||!SHIRT_ONLY.includes(c))).map(k=>{const l=labOf(k),[c2,h2]=lch(l);return {k,l,c2,h2,d:dE00(lab,l)}});
+  if(!cand.length)return null;
+  let pool=C<BASE_GREY?cand.filter(x=>x.c2<Math.max(5,C+3)):cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=BASE_HUE);
+  if(!pool.length&&C>=BASE_GREY)pool=cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=BASE_HUE2);
+  if(!pool.length)pool=cand;
+  const near=pool.filter(x=>Math.abs(x.l[0]-lab[0])<=BASE_L);if(near.length)pool=near;
+  return pool.sort((a,b)=>a.d-b.d)[0].k}
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
 let items=[];
 /* outfit history (one record per date, see planner.js) and the current date (overridable in tests) */

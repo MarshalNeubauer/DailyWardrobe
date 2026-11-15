@@ -67,14 +67,15 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(ref.meas.ref&&ref.meas.lab[2]<12&&ref.meas.lab[0]>40,`the paper corrects the warm cast and the exposure of the close-up (Lab ${ref.meas.lab})`);
     // a new colour and a new pattern
     await p.evaluate(()=>{queue[0].newColor={name:'mushroom',why:''};renderAdd()});
-    await p.click('#queue .offer:not(.measalt) .chipbtn');
-    await p.evaluate(()=>{const f=queue[0].colForm;f.base='taupe';});await p.click('#queue .newform button.pri');await p.waitForFunction(()=>queue[0].primaryColor==='ownmushroom');
+    await p.click('#queue .offer:not(.measalt) .chipbtn');   // the offer opens the "+ New colour" sheet, Claude's name filled in (the inline form is gone)
+    ok(await p.evaluate(()=>!!(colPick&&colPick.newc)&&document.querySelector('#cn-name').value==='Mushroom'&&!document.querySelector('#queue .newform')),'the new-colour offer opens the New colour sheet with Claude\'s name');
+    await p.selectOption('#cn-base','taupe');await p.click('#cn-add');await p.waitForFunction(()=>queue[0].primaryColor==='ownmushroom');
     const nc=await p.evaluate(()=>({cu:settings.custom.colors,col:queue[0].primaryColor,list:COLS_BY.suit.p.includes('ownmushroom'),blazer:COLS_BY.blazer.p.includes('ownmushroom'),shirt:COLS_BY.shirt.p.includes('ownmushroom'),
       opt:(()=>{document.querySelector('#queue .colbtn[data-k="primaryColor"]').click();const t=[...document.querySelectorAll('#col-sheet .cptile .cpnm')].some(e=>e.textContent==='Mushroom');closeColPick();return t})()}));
     ok(nc.cu.length===1&&nc.cu[0].key==='ownmushroom'&&nc.cu[0].base==='taupe'&&nc.col==='ownmushroom','Add as a new colour saves it (with what it behaves like) and the card takes it');
     ok(nc.list&&nc.blazer&&!nc.shirt&&nc.opt,'it is offered for suits, blazers and trousers (the default group), not shirts');
     await p.evaluate(()=>{queue[0].newPattern={name:'seersucker',why:'puckered stripes'};renderAdd()});
-    await p.click('#queue .offer .chipbtn:has-text("Add this pattern")');await p.evaluate(()=>{queue[0].patForm.base='twill'});await p.click('#queue .newform button.pri');await p.waitForFunction(()=>queue[0].pattern==='own-seersucker');
+    await p.click('#queue .offer .chipbtn:has-text("Add this pattern")');await p.selectOption('#cn-base','twill');await p.click('#cn-add');await p.waitForFunction(()=>queue[0].pattern==='own-seersucker');
     const np=await p.evaluate(()=>({pat:queue[0].pattern,list:PATS_BY.suit.includes('own-seersucker'),name:patName('own-seersucker'),base:patBase('own-seersucker')}));
     ok(np.pat==='own-seersucker'&&np.list&&np.name==='seersucker'&&np.base==='twill','Add this pattern saves it, drawn like the pattern you chose');
     const dup=await p.evaluate(async()=>{try{await addCustomColor({name:'Mushroom',hex:'#111111',base:'grey',types:['suit']});return 'added'}catch(e){return e.message}});
@@ -103,7 +104,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p.evaluate(()=>addCustomColor({name:'Sage',hex:'#9caf88',base:'olive',types:['tie']}));
     await p.evaluate(()=>openSettings('tagging'));
     const cl=await p.evaluate(()=>[...document.querySelectorAll('#custom-list .custrow')].map(r=>r.textContent));
-    ok(cl.length===3&&/mushroom.*1 item/.test(cl[0])&&!/Remove/.test(cl[0])&&/Sage.*Remove/.test(cl[1])&&/seersucker/.test(cl[2])&&!/Remove/.test(cl[2]),'Settings lists them; ones in use can\'t be removed');
+    ok(cl.length===3&&/mushroom.*1 item/i.test(cl[0])&&!/Remove/.test(cl[0])&&/Sage.*Remove/.test(cl[1])&&/seersucker/i.test(cl[2])&&!/Remove/.test(cl[2]),'Settings lists them; ones in use can\'t be removed ('+cl.join(' | ')+')');
     await p.click('#custom-list .custrow:has-text("Sage") button');await p.waitForFunction(()=>!COLORS.ownsage);
     ok(await p.evaluate(()=>!COLORS.ownsage&&settings.custom.colors.length===1),'an unused one can be removed');
     // calibration: two measured items of a colour set that colour's reference

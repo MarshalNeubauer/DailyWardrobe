@@ -14,6 +14,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const app=await p.evaluate(()=>({by:Object.fromEntries(Object.entries(COLS_BY).map(([t,v])=>[t,[v.p,v.a]])),dial:DIAL_COLS,types:Object.keys(TYPES),cols:Object.keys(COLORS)}));
     ok(JSON.stringify(wTable)===JSON.stringify(app.by)&&dial===app.dial.join(', '),'the tagger is given exactly the app\'s per-type lists');
+    // POST /describe (worker/describe.js) tells Claude the shades and the per-type lists: the worker's own copies must be the app's
+    const T=await import(pathToFileURL(path.join(ROOT,'worker/tag.js')).href),D=await import(pathToFileURL(path.join(ROOT,'worker/describe.js')).href);
+    const appX=await p.evaluate(()=>({hex:Object.fromEntries(Object.keys(COLORS).sort().map(k=>[k,COLORS[k]])),pats:PATS_BY}));
+    ok(JSON.stringify(Object.fromEntries(Object.keys(T.COLOR_HEX).sort().map(k=>[k,T.COLOR_HEX[k]])))===JSON.stringify(appX.hex),'the worker\'s COLOR_HEX is the app\'s COLORS, shade for shade');
+    ok(JSON.stringify(T.PATTERN_BY_TYPE)===JSON.stringify(appX.pats),'the worker\'s PATTERN_BY_TYPE is the app\'s PATS_BY');
+    {const dt={};for(const m of D.descTables().colour.matchAll(/^(\w+): ([a-z, ]+) \| ([a-z, ]+)$/gm))dt[m[1]]=[m[2].split(', '),m[3].split(', ')];
+      ok(JSON.stringify(dt)===JSON.stringify(app.by),'the colour lookups\' table lists exactly the app\'s per-type colours')}
     ok(app.types.every(t=>app.by[t])&&Object.values(app.by).flat(2).every(c=>app.cols.includes(c)),'every type has a list, and every listed colour exists');
     ok(JSON.stringify(schema.properties.dial.anyOf[0].enum)===JSON.stringify(app.dial),'watch dials have their own list in the schema');
     const r=await p.evaluate(()=>{const o=t=>COLOR_OPTS(t).map(x=>x[0]);return {
@@ -38,7 +45,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(miss.length===0,'every colour in the current wardrobe is still on its type\'s list ('+miss.join()+')');
     // the Add form uses the type's list
     const add=await p.evaluate(()=>{show('add');addManual();const q=queue[0];setq(0,'type','tieclip');document.querySelector('#queue .colbtn[data-k="primaryColor"]').click();
-      const l=[...document.querySelectorAll('#col-sheet .cpgrid:not(.cpnear) .cptile')].map(b=>b.dataset.c);closeColPick();
+      const l=[...document.querySelectorAll('#col-sheet .cpgrid:not(.cpnear):not(.cnown) .cptile')].map(b=>b.dataset.c);closeColPick();
       return l.length===new Set(l).size&&l.slice().sort().join()===colChoices(queue[0],'primaryColor').slice().sort().join()?colChoices(queue[0],'primaryColor').join():l.join()});
     ok(add==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','the Add form shows a tie clip its finishes');
     const nm=await p.evaluate(()=>{show('add');const q=queue[0];return {metal:document.querySelectorAll('#queue select[onchange*="\'metal\'"]').length,word:colName(primaryCol({type:'tieclip',primaryColor:'rosegold'})),

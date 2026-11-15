@@ -394,36 +394,23 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colo
   if(mp&&(patBase(q.pattern)||'solid')==='solid'&&!(q.edited&&q.edited.pattern))out.push(`<div class="offer measpat"><small>The close-up shows ${/check|pane/.test(mp)?'a check':'stripes'}: <b>${esc(patName(mp))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'pattern','${mp}')">Use ${esc(patName(mp))}</button></div>`);
   if(m&&m.src==='closeup'&&m.sharp!=null&&m.sharp<BLUR_SHARP&&TEXTURE_TYPES.includes(q.type))out.push(`<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>`);
   if(FABRIC.includes(q.type)||COLS_BY[q.type]){const pv=(q.measV||[]).find(v=>v.f==='primaryColor'),far=m&&m.src==='closeup'&&!(m.sharp!=null&&m.sharp<BLUR_SHARP)&&pv&&pv.d>FAR_DE;   // (a blurry or photo-only measurement is no reason to add a colour)
-    if(q.colForm)out.push(newColForm(q,i));
-    else if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colours quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured colour is far from every colour for this item.'}</small><button type="button" class="chipbtn" onclick="openColForm(${i})">Add as a new colour</button></div>`)}
-  if(PATS_BY[q.type]){if(q.patForm)out.push(newPatForm(q,i));
-    else if(q.newPattern)out.push(`<div class="offer"><small>No listed pattern fits: Claude calls it <b>${esc(q.newPattern.name)}</b>${q.newPattern.why?`: ${esc(q.newPattern.why)}`:''}.</small><button type="button" class="chipbtn" onclick="openPatForm(${i})">Add this pattern</button></div>`)}
+    if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colours quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured colour is far from every colour for this item.'}</small><button type="button" class="chipbtn" onclick="openColForm(${i})">Add as a new colour</button></div>`)}
+  if(PATS_BY[q.type]){if(q.newPattern)out.push(`<div class="offer"><small>No listed pattern fits: Claude calls it <b>${esc(q.newPattern.name)}</b>${q.newPattern.why?`: ${esc(q.newPattern.why)}`:''}.</small><button type="button" class="chipbtn" onclick="openPatForm(${i})">Add this pattern</button></div>`)}
   return out.join('')}
 
 /* ---- adding a colour or a pattern (settings.custom, synced; see applyCustom in core.js) ---- */
 const COL_GROUPS=[['suit','blazer','pants'],['overcoat','raincoat'],['shirt'],['tie'],['socks'],['shoes','belt']];
 const groupOf=t=>COL_GROUPS.find(g=>g.includes(t))||[t];
-function openColForm(i){const q=queue[i];q.colForm={name:q.newColor?q.newColor.name:'',hex:q.meas?q.meas.hex:COLORS[q.primaryColor]||'#888888',types:groupOf(q.type),accent:false};
-  const lab=rgbLab(...hexRgb(q.colForm.hex));q.colForm.base=Object.keys(COLORS).filter(c=>!CUSTOM_COL[c]&&!SHIRT_ONLY.includes(c)).sort((a,b)=>dE00(lab,labOf(a))-dE00(lab,labOf(b)))[0];renderAdd()}
-function newColForm(q,i){const f=q.colForm,bases=Object.keys(COLORS).filter(c=>!CUSTOM_COL[c]&&!SHIRT_ONLY.includes(c)).sort();
-  return `<div class="newform"><b>New colour</b>
-  <label>Name <input type="text" maxlength="24" value="${esc(f.name)}" oninput="queue[${i}].colForm.name=this.value"></label>
-  <label>Shade <input type="color" value="${f.hex}" oninput="queue[${i}].colForm.hex=this.value"></label>
-  <label>Behaves like <select onchange="queue[${i}].colForm.base=this.value">${bases.map(c=>`<option value="${c}"${c===f.base?' selected':''}>${esc(colName(c))}</option>`).join('')}</select></label>
-  <small class="mut">The outfit rules treat it like this colour; it keeps its own shade in the drawings.</small>
-  <div class="typechecks">${Object.keys(COLS_BY).map(t=>`<label><input type="checkbox" ${f.types.includes(t)?'checked':''} onchange="colFormType(${i},'${t}',this.checked)"> ${TYPES[t]}</label>`).join('')}</div>
-  <label><input type="checkbox" ${f.accent?'checked':''} onchange="queue[${i}].colForm.accent=this.checked"> Also offer it for stripes and motifs</label>
-  <p class="mut formerr" id="colerr-${i}"></p>
-  <div class="btns"><button type="button" class="pri" onclick="saveColForm(${i})">Add colour</button><button type="button" onclick="queue[${i}].colForm=null;renderAdd()">Cancel</button></div></div>`}
-function colFormType(i,t,on){const f=queue[i].colForm;f.types=on?[...new Set([...f.types,t])]:f.types.filter(x=>x!==t)}
+/* the Add card's offer of a new colour (Claude's newColor, or a close-up measured over FAR_DE from every listed colour) opens the
+   "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline
+   forms (newColForm / newPatForm) were removed 2026-11-15: one way to add, the same everywhere */
+function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:q.meas&&q.meas.hex||COLORS[q.primaryColor]})}
 async function addCustomColor({name,hex,base,types,accent}){name=String(name||'').trim();const key=ownColKey(name);
   if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a colour with that name.');
   if(!/^#[0-9a-f]{6}$/i.test(hex))throw new Error('Pick a shade.');if(!COLORS[base]||CUSTOM_COL[base])throw new Error('Choose what it behaves like.');
-  if(!types.length)throw new Error('Tick at least one kind of item.');
+  if(!types||!types.length)throw new Error('Choose at least one kind of item.');
   const cu=settings.custom||{};settings.custom={...cu,colors:[...(cu.colors||[]),{key,name,hex:hex.toLowerCase(),base,types,accent:!!accent}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
-async function saveColForm(i){const q=queue[i];try{const key=await addCustomColor(q.colForm);q.colForm=null;q.newColor=null;q.primaryColor=key;q.edited={...q.edited,primaryColor:true};
-  if(q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);renderAdd();toast(`${colName(key)} added to your colours.`)}catch(e){const el=$('#colerr-'+i);if(el)el.textContent=e.message}}
 /* a new pattern's "drawn like" from the words in its name and description (2026-11-13: the owner's "fine worsted twill" and "melange
    twill" were left drawn like solid, so the outfit pictures painted them plain): the longest listed pattern named in them, a few
    other words for one, else what the card was tagged */
@@ -433,34 +420,27 @@ function guessPatBase(name,desc,type,fallback){const t=`${name||''} ${desc||''}`
   for(const p of list)if(new RegExp('\\b'+p.replace(/-/g,'[- ]?')+'\\b','i').test(t))return p;
   for(const [re,p] of PAT_WORDS)if(re.test(t)&&ok(p))return p;
   return fallback}
-function openPatForm(i){const q=queue[i],name=q.newPattern?q.newPattern.name:'',desc=q.newPattern?q.newPattern.why:'';
-  q.patForm={name,desc,base:guessPatBase(name,desc,q.type,q.pattern&&!CUSTOM_PAT[q.pattern]?q.pattern:'solid'),types:[q.type]};renderAdd()}
-/* while the base was not picked by hand, it follows the name and description as they are typed */
-function patFormText(i,field,v){const q=queue[i],f=q.patForm;f[field]=v;if(f.baseSet)return;const b=guessPatBase(f.name,f.desc,q.type,null);
-  if(b&&b!==f.base){f.base=b;const s=document.querySelector(`#patbase-${i}`);if(s)s.value=b}}
-function newPatForm(q,i){const f=q.patForm,bases=(PATS_BY[q.type]||['solid']).filter(p=>!CUSTOM_PAT[p]);
-  return `<div class="newform"><b>New pattern</b>
-  <label>Name <input type="text" maxlength="24" value="${esc(f.name)}" oninput="patFormText(${i},'name',this.value)"></label>
-  <label>How it looks <input type="text" maxlength="150" value="${esc(f.desc)}" oninput="patFormText(${i},'desc',this.value)"></label>
-  <label>Drawn like <select id="patbase-${i}" onchange="queue[${i}].patForm.base=this.value;queue[${i}].patForm.baseSet=true">${bases.map(p=>`<option value="${p}"${p===f.base?' selected':''}>${esc(patLabel(p))}</option>`).join('')}</select></label>
-  <small class="mut">The drawings and the outfit rules use this pattern for it; your close-up shows the real thing.</small>
-  <div class="typechecks">${Object.keys(PATS_BY).map(t=>`<label><input type="checkbox" ${f.types.includes(t)?'checked':''} onchange="patFormType(${i},'${t}',this.checked)"> ${TYPES[t]}</label>`).join('')}</div>
-  <p class="mut formerr" id="paterr-${i}"></p>
-  <div class="btns"><button type="button" class="pri" onclick="savePatForm(${i})">Add pattern</button><button type="button" onclick="queue[${i}].patForm=null;renderAdd()">Cancel</button></div></div>`}
-function patFormType(i,t,on){const f=queue[i].patForm;f.types=on?[...new Set([...f.types,t])]:f.types.filter(x=>x!==t)}
-async function addCustomPattern({name,desc,base,types}){name=String(name||'').trim();const key=ownPatKey(name);
+/* the Add card's offer of a new pattern (Claude's newPattern) opens the "+ New pattern or texture" sheet with Claude's name and words, its
+   "drawn like" guessed from them (guessPatBase) */
+function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.newPattern.name:'',why=q.newPattern?q.newPattern.why:'';
+  openColPick('q',i,'pattern');openPatNew({from:'add',name,desc:[name,why].filter(Boolean).join(': ').slice(0,120),base:guessPatBase(name,why,q.type,null)})}
+/* look: the drawing recipe from "+ New pattern" (worker /describe: {layout, tr, tex | across (+ along) | motif}, roles not colours),
+   kept with the pattern (synced) and drawn by detect.js lookSett in each item's colours, the painter too */
+const cleanLookApp=l=>l&&typeof l==='object'&&['texture','stripes','check','windowpane','plaid','motif'].includes(l.layout)&&(Array.isArray(l.tex&&l.tex.grid)||Array.isArray(l.across)||l.motif&&Array.isArray(l.motif.figs))?JSON.parse(JSON.stringify(l)):null;
+async function addCustomPattern({name,desc,base,types,look}){name=String(name||'').trim();const key=ownPatKey(name);
   if(key.length<6)throw new Error('Give it a name of at least two letters.');if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key)))throw new Error('There is already a pattern with that name.');
-  types=types.filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Tick at least one kind of item that has the "drawn like" pattern.');
-  const cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:String(desc||'').trim().slice(0,150),base,types}]};
+  types=(types||[]).filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Choose at least one kind of item that has the "drawn like" pattern.');
+  const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:String(desc||'').trim().slice(0,150),base,types,...(lk?{look:lk}:{})}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
-async function savePatForm(i){const q=queue[i];try{const key=await addCustomPattern(q.patForm);q.patForm=null;q.newPattern=null;q.pattern=key;q.edited={...q.edited,pattern:true};renderAdd();toast(`${patName(key)} added to your patterns.`)}
-  catch(e){const el=$('#paterr-'+i);if(el)el.textContent=e.message}}
 /* Settings: the colours and patterns you added; one no item uses can be removed */
 function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},cols=cu.colors||[],pats=cu.patterns||[];
   const used=(k,f)=>items.filter(i=>f(i,k)).length;
-  el.innerHTML=!cols.length&&!pats.length?'<p class="mut"><small>None yet. When a photo shows a colour or pattern the lists lack, the Add card offers to add it; any colour list has “A colour of my own” too.</small></p>':
+  // a pattern's swatch is drawn with its look, on a sample item of its first kind (navy, a white shirt)
+  const patSw=p=>{const t=(p.types||[])[0]||'suit';try{return swatchSVG({type:t,primaryColor:t==='shirt'?'white':'navy',pattern:p.key},true)}catch(e){return ''}};
+  el.innerHTML=(!cols.length&&!pats.length?'<p class="mut"><small>None yet. Add one below, or from any colour or pattern list (“+ New”); the Add card offers one when a photo shows a colour or pattern the lists lack.</small></p>':
     [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${c.hex}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${c.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('colors','${c.key}')">Remove</button>`}</div>`}),
-     ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">▦</span><span><b>${esc(p.name)}</b><br><small class="mut">drawn like ${esc(patLabel(p.base))} · ${p.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('patterns','${p.key}')">Remove</button>`}</div>`})].join('')}
+     ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${p.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('patterns','${p.key}')">Remove</button>`}</div>`})].join(''))
+    +`<div class="custadd"><button type="button" id="cust-newcol" onclick="openCustomNew('colour')">+ New colour</button><button type="button" id="cust-newpat" onclick="openCustomNew('pattern')">+ New pattern</button></div>`}
 async function removeCustom(kind,key){const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}
 
 /* ---- what the tagger learns from: when an AI-tagged card is saved with a field changed, the change is kept (the latest 60)
@@ -487,6 +467,11 @@ const visTok=(w,h)=>{const s=Math.min(1,2576/Math.max(w,h));w*=s;h*=s;const t=Ma
 /* (2026-11-14) at the sizes really sent: the sharp photo (TAG_MAX, a phone's 4:3) and the sharp close-up (CLOSE_MAX); it assumed 1024 and
    half a 640 close-up, about 30% low (the audit) */
 function benchEstimate(n,{img=[TAG_MAX,TAG_MAX*.75],close=[CLOSE_MAX,CLOSE_MAX*.75]}={}){const per=(visTok(...img)+(close?visTok(...close):0)+4000)*PRICE_IN/1e6+2500*PRICE_OUT/1e6;return n*per}
+/* one "Describe it to Claude" lookup (worker /describe, Claude Sonnet 5.5 unless the owner sets CLAUDE_DESCRIBE_MODEL): the fixed text and
+   tables (about 2,300 tokens, counted uncached), the owner's lists and the words (about 300), the answer with its thinking (a colour about
+   700 tokens, a pattern about 1,500), and the close-up when it is sent (CLOSE_MAX, 4:3) */
+const DESC_PRICE_IN=2,DESC_PRICE_OUT=10;   // Claude Sonnet 5.5, $ per million tokens
+function describeEstimate(what,withClose){return (2600+(withClose?visTok(CLOSE_MAX,CLOSE_MAX*.75):0))*DESC_PRICE_IN/1e6+(what==='pattern'?1500:700)*DESC_PRICE_OUT/1e6}
 
 /* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's

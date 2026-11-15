@@ -55,12 +55,12 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok((await call('POST','invites',A.code,{name:'x'})).status===403&&(await call('GET','invites',A.code)).status===403&&(await call('DELETE','invites?id='+B.id,A.code)).status===403&&(await call('POST','invites',O,{name:''})).status===400,'invitations are the owner\'s: a tester can\'t make, list or revoke them; a name is needed');
     // a new invitation's first week has twice the limits; the testers below are made a week older so the usual limits apply
     {me=await J(await call('GET','me',A.code));
-      ok(JSON.stringify(me.caps)===JSON.stringify({tag:80,pattern:20,item:40})&&me.firstUntil>Date.now()+6.9*86400000,`a tester's first week: twice every daily limit, and /me says until when (${JSON.stringify(me.caps)})`);
+      ok(JSON.stringify(me.caps)===JSON.stringify({tag:80,pattern:20,item:40,describe:80})&&me.firstUntil>Date.now()+6.9*86400000,`a tester's first week: twice every daily limit, and /me says until when (${JSON.stringify(me.caps)})`);
       for(const x of [A,B]){const k='invite:'+sha(x.code),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec))}}
     me=await J(await call('GET','me',B.code));
     ok(!me.firstUntil&&me.id===B.id&&me.name==='Bo'&&me.role==='tester'&&me.caps.item===3&&me.caps.tag===2&&me.caps.pattern===1&&!('photo' in me.caps),'GET /me: a tester with the caps of their invitation (an old outfit-photo cap in it is ignored)');
     me=await J(await call('GET','me',A.code));
-    ok(JSON.stringify(me.caps)===JSON.stringify({tag:40,pattern:10,item:20}),'an invitation without caps gets the defaults: 40 readings, 10 patterns, 20 item pictures');
+    ok(JSON.stringify(me.caps)===JSON.stringify({tag:40,pattern:10,item:20,describe:40}),'an invitation without caps gets the defaults: 40 readings, 10 patterns, 20 item pictures, 40 colour and pattern lookups');
     // ---- sync and snapshots, each to their own
     const put=(tok,data,day)=>call('PUT','sync',tok,{baseRev:0,data,day});
     ok((await put(O,{who:'owner'},'2026-03-01')).status===200&&(await put(A.code,{who:'tess'},'2026-03-01')).status===200&&(await put(B.code,{who:'bo'},'2026-03-01')).status===200,'three people save a backup, each from revision 0');
@@ -106,7 +106,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await call('POST','pattern',B.code,{image:PNG,type:'tie'});r=await J(await call('POST','pattern',B.code,{image:PNG,type:'tie'}));
     ok(r.s===429&&r.what==='pattern'&&r.cap===1,'/pattern has its own cap');
     me=await J(await call('GET','me',B.code));
-    ok(JSON.stringify(me.used)===JSON.stringify({tag:2,pattern:1,item:3}),`GET /me shows today's use (${JSON.stringify(me.used)})`);
+    ok(JSON.stringify(me.used)===JSON.stringify({tag:2,pattern:1,item:3,describe:0}),`GET /me shows today's use (${JSON.stringify(me.used)})`);
     r=await J(await call('GET','invites',O));const iB=r.invites.find(v=>v.id===B.id),iA=r.invites.find(v=>v.id===A.id);
     ok(r.invites.length===2&&iB.name==='Bo'&&iB.used.item===3&&iB.caps.item===3&&iA.used.item===1&&iA.caps.item===20&&!JSON.stringify(r).includes(sha(B.code)),'GET /invites lists the testers with today\'s use, and no hashes');
     ok(!keysOf('use:').length&&[...store.keys()].every(k=>!/use:/.test(k))&&hubOf('renders:'+B.ns).st.get('use').n.item===3&&!hubs.has('renders'),'the counting is in the tester\'s Durable Object: no KV key is written for it, and the owner is not counted');

@@ -17,7 +17,29 @@ const texPat=(t,p)=>t==='shirt'&&TEXTURE_PATS.includes(patBase(p)||'');
 /* a tie tagged woven or tonal check: read by Claude only (tagging.js claudeOnly), and it keeps whatever Claude finds: small figures (motif),
    stripes or checks (bands), or the weave itself (tex: a tonal tie's raised grid, drawn a little lighter or darker than the ground) */
 const TIE_WEAVES=['woven','tonal-check'],tieWeave=(t,p)=>t==='tie'&&TIE_WEAVES.includes(patBase(p)||'');
-const usableSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PATS.includes(p)&&!s.motif))return null;return tieWeave(i.type,i.pattern)?s:texPat(i.type,i.pattern)?(s.tex||s.motif?s:null):(s.tex?null:s)};   // a weave pattern takes a texture or a figure (motif) reading
+const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PATS.includes(p)&&!s.motif))return null;return tieWeave(i.type,i.pattern)?s:texPat(i.type,i.pattern)?(s.tex||s.motif?s:null):(s.tex?null:s)};   // a weave pattern takes a texture or a figure (motif) reading
+/* the item's own reading; without one, its own pattern's look (an owner pattern added through "+ New pattern or texture" with Claude's
+   drawing recipe, settings.custom.patterns[].look), on any kind of item: so the drawings, the swatches and the painted pictures all
+   draw a new pattern as described, in the item's own colours (2026-11-15; the rule "texture readings only on shirts and ties" is for
+   readings, not for an own pattern's look) */
+const usableSett=i=>ownSett(i)||lookOf(i);
+const lookOf=i=>{const p=i&&i.pattern,c=p&&typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[p];return c&&c.look&&c.look.layout&&c.look.layout!=='none'?lookSett(i,c.look):null};
+/* a look as a reading (the shapes texFromSpec, the band reader and motifFromSpec make), its roles turned into this item's colours: main =
+   its drawn colour (colOf), second and third = its second and third colours (else a step lighter or darker), lighter and darker = main
+   ±LOOK_STEP L*; tr = repeats across the item, cr = repeats a close-up would show; look = a short signature of the recipe (the painter's
+   key, asmLookTag). Kept per colours and recipe (lookMemo): usableSett is asked often */
+const LOOK_REL={faint:.05,subtle:.1,clear:.18},LOOK_STEP=9,lookMemo=new Map();
+function lookSett(i,look){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),key=JSON.stringify([i.type,main,sec,th,look]);
+  if(lookMemo.has(key))return lookMemo.get(key);
+  const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]),other=step(lab[0]>60?-LOOK_STEP:LOOK_STEP);
+  const role=r=>r==='second'?sec||other:r==='third'?th||sec||other:r==='lighter'?step(LOOK_STEP):r==='darker'?step(-LOOK_STEP):main;
+  let h=5381;const js=JSON.stringify(look);for(let k=0;k<js.length;k++)h=(Math.imul(h,33)+js.charCodeAt(k))>>>0;
+  const tr=Math.max(.2,+look.tr||10),sig='l'+h.toString(36),cr=Math.max(1,80*tr/550);   // (80 mm a close-up, 550 mm across a jacket or shirt: assemble.js ASM_CLOSEUP_MM, ASM_SHIRT_MM)
+  let s=null;
+  if(look.tex&&Array.isArray(look.tex.grid))s={v:4,tex:{kind:look.tex.kind||'other',grid:look.tex.grid,aspect:look.tex.aspect||1,lighter:look.tex.lighter!==false,contrast:look.tex.contrast||'subtle',rel:LOOK_REL[look.tex.contrast]||LOOK_REL.subtle},a:0,cr:8,tr,look:sig};
+  else if(Array.isArray(look.across))s={v:2,a:i.type==='tie'?45:0,bands:look.across.map(([r,w])=>[role(r),w]),...(Array.isArray(look.along)?{cross:{d:90,r:1,bands:look.along.map(([r,w])=>[r==='main'?null:role(r),w])}}:{}),cr:2,tr,look:sig};
+  else if(look.motif&&Array.isArray(look.motif.figs))s={v:3,motif:{grid:look.motif.grid==='diagonal'?'diagonal':'straight',ground:main,figs:look.motif.figs.map(f=>({shape:f.shape,place:f.place,size:f.size,cols:[role(f.colour)],...(f.bmp?{bmp:f.bmp}:{})})),aspect:look.motif.aspect||1,off:!!look.motif.off},a:look.motif.grid==='diagonal'?45:0,cr,tr,look:sig};
+  if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
 /* what a pattern reading looks like, for photo keys: the band colours, or the motif's ground, figures and colours */
 const settSig=s=>!s?'':s.tex?'t'+s.tex.grid.join('')+Math.round(s.tex.rel*100)+'/'+(s.tex.aspect||''):s.motif?'m'+[s.motif.grid,s.motif.ground,s.motif.aspect||1,s.motif.off||0,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||'',(f.bmp||[]).join('/')].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
 
