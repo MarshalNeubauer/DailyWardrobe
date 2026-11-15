@@ -1044,8 +1044,10 @@ header button::after{inset:-2px}
 /* the title never pushes the header taller (it wrapped at 150% zoom) */
 header h1{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Today's pieces: where the row has too little room for the name (it went one letter per line), the slot's name goes above the row */
-#today .list{container-type:inline-size}
-@container (max-width:15rem){#today .row{flex-wrap:wrap;row-gap:2px}#today .row>.mut:first-child{flex:0 0 100%;width:auto}}
+/* (a wrapping row whose label takes the whole first line in a row under 15rem, not a container query: a container on the list broke the
+   unfolding list's scroll on WebKit) */
+#today .row{flex-wrap:wrap;row-gap:2px}
+#today .row>.mut:first-child{flex:0 0 clamp(4.25rem,calc((15rem - 100%) * 999),100%)}
 /* Settings' day buttons: two rows (4 + 3) where seven don't fit their names ("Mon" was cut to "Mor") */
 #settings-modal .sgroup:has(>.days){container-type:inline-size}
 @container (max-width:16.5rem){#settings-modal .days{grid-template-columns:repeat(4,minmax(0,1fr))}}
