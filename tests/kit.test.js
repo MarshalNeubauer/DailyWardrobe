@@ -22,8 +22,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('main').inert&&tourSeen()),'Escape closes it, the page usable again, and it is marked seen');
     /* ---- the close-up guide, from the Add card's close-up step ---- */
     await p.evaluate(()=>{openAdd();addManual()});
-    ok(await p.evaluate(()=>{const c=document.querySelector('#queue .texslot .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#queue .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
-    await p.click('#queue .wbstcard');
+    ok(await p.evaluate(()=>{const c=document.querySelector('#nps-q .texslot .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#nps-q .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
+    await p.click('#nps-q .wbstcard');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),'the card opens the short white-paper tip');
     await p.click('#kitsheet .kit-body .linkbtn');await p.waitForFunction(()=>document.querySelector('#kit-title').textContent==='A good close-up');
     const g=await p.evaluate(()=>({title:document.querySelector('#kit-title').textContent,txt:document.querySelector('.kit-body').textContent,prog:!!document.querySelector('.kit-prog')}));
@@ -39,7 +39,8 @@ module.exports=async({ok,chromium,url})=>{
     const u2=await p.evaluate(async id=>({gone:!items.some(i=>i.id===id),card:queue[0].id===id&&queue[0].name==='Undo me',inDb:!!(await tx('readonly',s=>s.get(id))),tomb:true,shown:!!document.querySelector('#queue .card')}),u.id);
     ok(u2.gone&&!u2.inDb&&u2.card&&u2.shown,'Undo takes it out of the wardrobe and the store and puts its card back on Add, as it was');
     /* cards saved together are one Undo */
-    const u3=await p.evaluate(async()=>{queue.length=0;addManual();addManual();queue[0].type='shirt';queue[1].type='tie';const n0=items.length;await save(0);await save(0);
+    const u3=await p.evaluate(async()=>{queue.length=0;addManual();queue.unshift({id:'k2',err:'open'});errToHand('k2');queue[0].type='shirt';queue[1].type='tie';   // (a second card: one filled in by hand from a photo that couldn't be opened; "Add without a photo" holds one card at a time)
+const n0=items.length;await save(0);await save(0);
       return {n:items.length-n0,toast:document.querySelector('#toast').textContent}});
     ok(u3.n===2&&/Saved 2 items/.test(u3.toast),'two cards saved one after the other: "Saved 2 items" with one Undo');
     await p.click('#toast button');await p.waitForFunction(()=>queue.length===2);ok(true,'and Undo puts both back');

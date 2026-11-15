@@ -133,9 +133,9 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     e=await p.evaluate(()=>{queue.length=0;show('add');addManual();const q=queue[0];
       const tag=m=>normTag({type:'blazer',primaryColor:'navy',pattern:'solid',material:m},'claude-x');
       q.type='blazer';takeExtras(q,tag({key:'tweed',confidence:'high',why:'Flecked, rough wool.'}));renderAdd();
-      const card=document.querySelector('#queue .card'),r1={m:q.material,note:(card.querySelector('.matai')||{}).textContent||'',sel:card.querySelector('.wmat').value};
+      const card=document.querySelector(`.qcard[data-q="${q.id}"]`),r1={m:q.material,note:(card.querySelector('.matai')||{}).textContent||'',sel:card.querySelector('.wmat').value};
       takeExtras(q,tag({key:'flannel',confidence:'medium',why:''}));const r2=q.material;   // a later reading replaces its own suggestion
-      setQField(0,'material','hopsack');takeExtras(q,tag({key:'tweed',confidence:'high',why:''}));const r3={m:q.material,note:!!document.querySelector('#queue .matai')};
+      setQField(0,'material','hopsack');takeExtras(q,tag({key:'tweed',confidence:'high',why:''}));const r3={m:q.material,note:!!document.querySelector(`.qcard[data-q="${q.id}"] .matai`)};
       const q2={type:'suit'};takeExtras(q2,tag({key:'linen',confidence:'low',why:''}));const q3={type:'suit',material:'wool'};takeExtras(q3,normTag({type:'suit',primaryColor:'navy',pattern:'solid',material:{key:'linen',confidence:'high',why:''}},'m'));
       const q4={type:'shirt'};takeExtras(q4,normTag({type:'shirt',primaryColor:'white',pattern:'solid',material:{key:'oxford',confidence:'high',why:''}},'m'));
       return {r1,r2,r3,low:q2.material||'',hand:q3.material,off:q4.material||''}});

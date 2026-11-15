@@ -19,11 +19,11 @@ function kitInert(on){for(const el of document.querySelectorAll('body>header,mai
 /* the phone's Back closes the sheet (fix round 2, 2026-11-15: it left the app from the tour and the Home Screen sheet, and closed Add
    under the import sheet): the sheet takes a history entry (start.js kind 'kit'), or borrows Add's (kitHist keeps whose it was) */
 function kitHist(){if(kit&&kit.hist===undefined&&typeof appBorrow==='function')kit.hist=appBorrow('kit')}
-function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
+function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
   const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function kitClose(fromBack){if(kitImpBusy){if(fromBack&&typeof appPush==='function')appPush('kit');return}   // (the import is being written: a moment, then the sheet closes itself; Back keeps it, with its entry made again)
-  const e=$('#kitsheet');if(e){e.classList.remove('on');e.innerHTML=''}const k=kit;kit=null;kitInert(false);
+  const e=$('#kitsheet');if(e){const bs=e.classList.contains('kbs');e.classList.remove('on');if(bs)kitBsAway(e);else e.innerHTML=''}const k=kit;kit=null;kitInert(false);
   if(k&&k.hist!==undefined&&typeof appGiveBack==='function'){if(!fromBack)appGiveBack('kit',k.hist);else if(k.hist)appPush(k.hist)}   // the entry goes, or back to Add; after Back, Add gets a new one
   if(k&&k.cards===TOUR_CARDS){try{localStorage.setItem(KIT_TOUR,'1')}catch{}}
   if(k&&k.then)k.then();else if(k&&k.from&&k.from.isConnected)try{k.from.focus({preventScroll:true})}catch{}}
@@ -262,8 +262,19 @@ function kitLastImp(){try{const l=JSON.parse(localStorage.getItem(KIT_IMP_LAST)|
   const ids=its.filter(i=>!ch(i)).map(i=>i.id);return ids.length?{ids,kept:its.length-ids.length,at:l.at}:null}catch{return null}}
 function kitLastRow(){const l=kitLastImp();if(!l)return '';const when=new Date(l.at).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   return `<p class="kit-last" id="kit-last">Your last import (${when}): ${l.ids.length} item${l.ids.length===1?'':'s'} in your wardrobe${l.kept?` you haven't changed since`:''}. <button type="button" class="linkbtn" onclick="kitUnimport()">Take ${l.ids.length===1?'it':'them'} out</button></p>`}
-function kitImportOpen(){kitImp=null;const e=kitEl(),prev=kit?kit.hist:undefined;kit={cards:[],at:0,then:null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;
-  e.innerHTML=`<div class="kit-head"><div><h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
+/* the import is a bottom sheet over Add (2026-11-15, the owner's choice from add-page-mockups): grabber, the table icon, the backdrop,
+   a swipe down closes it as ✕ (add.js sheetSwipe), at most 640 px wide; its content is as before */
+const KIT_TABLE='<svg class="kit-hic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg>';
+let kitBsT=0,kitSwipeOn=false;
+function kitBd(){let b=$('#kit-backdrop');if(!b){b=document.createElement('div');b.id='kit-backdrop';b.onclick=()=>{if(kit&&!kitImpBusy)kitClose()};document.body.appendChild(b)}return b}
+function kitBs(on){const e=kitEl();clearTimeout(kitBsT);e.classList.remove('going');e.inert=false;e.style.transform='';e.classList.toggle('kbs',!!on);const b=$('#kit-backdrop');if(on)kitBd().classList.add('on');else if(b)b.classList.remove('on')}
+/* the import sheet slides away, then is emptied */
+function kitBsAway(e){const b=$('#kit-backdrop');if(b)b.classList.remove('on');e.inert=true;e.classList.add('going');clearTimeout(kitBsT);
+  kitBsT=setTimeout(()=>{if(e.classList.contains('on'))return;e.classList.remove('going','kbs');e.inert=false;e.innerHTML=''},typeof noMotion==='function'&&noMotion()?0:320)}
+function kitImportSwipe(){if(kitSwipeOn||typeof sheetSwipe!=='function')return;kitSwipeOn=true;const e=kitEl();
+  sheetSwipe(e,{head:'.kit-head',body:()=>e.querySelector('.kit-body'),backdrop:()=>$('#kit-backdrop'),live:()=>!!kit&&e.classList.contains('kbs')&&!kitImpBusy,close:()=>kitClose()})}
+function kitImportOpen(){kitImp=null;const e=kitEl(),prev=kit?kit.hist:undefined;kit={cards:[],at:0,then:null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(true);kitImportSwipe();
+  e.innerHTML=`<div class="kit-head"><span class="kit-grab" aria-hidden="true"></span><div class="kit-ht">${KIT_TABLE}<h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
 <div class="kit-body" data-card="import"><p>One row per piece. The first row names the columns; only <b>Type</b> and <b>Color</b> are needed. From Numbers, Excel or Google Sheets, export the sheet as CSV, or copy the rows and paste them below.</p>
 ${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">Download a template</button><label class="btn">Choose a CSV file<input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" class="vfile" onchange="kitImportFile(this.files[0]);this.value=''"></label></div>
 <label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Color, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
