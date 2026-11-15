@@ -57,15 +57,20 @@ function missedCard(){if(typeof homeDay!=='function'||isoKey(sel)!==isoKey(homeD
     `<div class="missbtns"><button class="linkbtn" onclick="missedCardNo()">I didn’t wear ${n===1?'it':'them'}</button><button class="linkbtn" onclick="missedCardOk()">Keep as worn</button></div></section>`}
 function missedCardNo(){const ks=missedOpen();if(ks.length)missedNotWorn(ks)}
 function missedCardOk(){const ks=missedOpen();if(ks.length){try{localStorage.setItem('missed_ok',ks[ks.length-1])}catch{}}missedPut()}
-/* ---- the coming week stays as shown ----
-   Each workday from today to LOCK_DAYS-1 days on gets rec.lock, the pieces the plan showed for it (not the coat: that follows the
-   forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not worn or
-   adding an item re-plans only the days after the lock, not tomorrow's outfit. A change made by hand on a day (a swap, a pick, an
-   occasion, Reset, a move) drops that day's lock: the day is planned again around the change and locked as it then shows. */
-const LOCK_DAYS=7,lockIds=o=>{const l=idsOf(o);delete l.coat;return l};
+/* ---- the current week stays as shown ----
+   Each workday from today through the coming Friday (lockSpan) gets rec.lock, the pieces the plan showed for it (not the coat: that
+   follows the forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not
+   worn or adding an item re-plans only the days after the lock, not tomorrow's outfit. A change made by hand on a day (a swap, a pick,
+   an occasion, Reset, a move) drops that day's lock: the day is planned again around the change and locked as it then shows. */
+const lockIds=o=>{const l=idsOf(o);delete l.coat;return l};
+/* the lock runs through Friday, not seven days (the owner, 2026-11-15: "only lock today through Friday ... a current week lock"): on a
+   Saturday that is next week's Friday (the next Sunday to Friday), on a Friday today alone. Only workdays among them are locked, so a
+   Sunday-Thursday week and a Monday-Friday week both get the rest of their work week; the days after are planned afresh each time */
+const LOCK_LAST=5;   // Friday (getDay)
+const lockSpan=T=>(LOCK_LAST-T.getDay()+7)%7+1;   // the days from today through the coming Friday, today counted
 async function lockUpcoming(){
-  if(!items.length)return;const T=todayDate(),mine=dayRecs;let n=0;
-  for(let g=0;g<LOCK_DAYS;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(!isWorkday(d))continue;
+  if(!items.length)return;const T=todayDate(),mine=dayRecs,span=lockSpan(T);let n=0;
+  for(let g=0;g<span;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(!isWorkday(d))continue;
     if(dayRecs!==mine)break;   // the history was replaced meanwhile (sync, restore)
     // the plan is read afresh for each day (it is cached; a change made while an earlier lock was being saved has reset it), and the lock
     // is put on the record before the write is awaited, so a lock never comes from a plan that is no longer the one on screen
@@ -74,7 +79,15 @@ async function lockUpcoming(){
     // (lockAt: when it was made, so a lock made while the wardrobe had too few of a type lets go once more come in: planner.js lockStale)
     const rec={...(r||{date:k}),lock:l,lockAt:Date.now(),updated:Date.now(),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
     await txs('days','readwrite',s=>s.put(rec))}
+  n+=await lockPast(di(T)+span-1,mine);
   if(n&&window.scheduleSync)scheduleSync()}
+/* the week's locks on days after the window (end: its last day number) let go: those made when the lock ran seven days, or by a phone
+   still on that version. Only rec.lock goes: the owner's own picks (force, skip, the vest, kind, off), a kept trip's lock (pack.js
+   rec.trip) and a day marked worn stay. Done after the window is locked, so its days keep what was shown; day numbers, not dates */
+async function lockPast(end,mine){let n=0;
+  for(const r of Object.values(dayRecs)){if(dayRecs!==mine)break;
+    if(r.lock&&!r.trip&&r.worn!==true&&di(keyDate(r.date))>end){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}}
+  return n}
 /* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
 async function clearLocks(){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs))if(r.lock&&!r.trip&&keyDate(r.date)>T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}   // (lockOnly: core.js dayWins; a kept trip, pack.js rec.trip, stays: its suitcase may be packed, audit 2026-11-14)
