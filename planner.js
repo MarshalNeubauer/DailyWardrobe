@@ -205,7 +205,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=14;   // 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+const PLAN_RULES=15;   // 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -607,7 +607,7 @@ function scoreAdvice(o,pool){
 function frozenOutfit(rec,n,last){
   const o={suitDay:!!rec.suitDay,frozen:true,worn:rec.worn,formal:!!rec.formal,occasion:occOf(rec),notes:[]};
   for(const s of SLOTS){const id=rec.ids[s],it=id&&items.find(i=>i.id===id);o[s]=it?{...it,rest:Math.min(n-(last[it.id]??-1e5),60)}:null;
-    if(id&&!it)(o.gone||(o.gone={}))[s]=true}   // a piece deleted since: the day is rated without it (rateOutfit), not as "Incomplete"
+    if((id&&!it)||(rec.gone&&rec.gone[s]))(o.gone||(o.gone={}))[s]=true}   // a piece deleted since: the day is rated without it (rateOutfit), not as "Incomplete" (rec.gone: a removed sample piece's slot, kit.js kitSampleDay)
   o.vest=!!(rec.vestOn&&o.suitDay&&hasVest(o.top));
   // a piece taken off that day (rec.off, see takeOff): the record already holds the outfit without it
   if(rec.off&&(rec.off.top||rec.off.tie)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot?'suit':'blazer'}
@@ -653,6 +653,7 @@ for(const E=di(end);di(d)<=E;d.setDate(d.getDate()+1)){const w=d.getDay();   // 
   const k=key(d);let rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false&&(plan[k].top||!wearsJacket())){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k])}continue}   // (a day without a jacket leaves the jacket history alone; a day marked "Not worn" is not the previous workday for repeats either)
   if(W0&&d<W0&&d<T)continue;   // before the wardrobe began (wardStart): nothing was worn then
+  if(rec&&rec.noOutfit&&d<T)continue;   // a past day dressed only from the sample wardrobe, since removed (kit.js kitSampleDay): no outfit recorded
   if(rec&&rec.lock&&!lockOf(rec,di(d))){rec={...rec};delete rec.lock}
   const occ=occOf(rec),formal=occ==='formal',lt=rec&&rec.lock&&!(rec.force&&rec.force.top)&&rec.lock.top&&items.find(i=>i.id===rec.lock.top),o=outfit(lt&&!rec.kind&&!(occ==='casual')?lt.type==='suit':rec&&rec.kind?rec.kind==='suit':!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,prev3,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;o.ctx={prev,prev3,n:di(d)};plan[k]=o;if(o.top||!wearsJacket()){prev3=prev[1]||null;prev=[sumUp(o,di(d)),prev[0]];remember(o)}}
 return plan};

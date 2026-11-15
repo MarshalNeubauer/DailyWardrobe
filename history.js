@@ -17,7 +17,8 @@ async function recordDays(p){
     if(!SLOTS.some(s=>o[s])||o.frozen)continue;const d=keyDate(k);
     // a past day with no pieces recorded: none at all, or only the week's lock (lockUpcoming), as on a day the app was not opened;
     // recorded with what the record already has, else it never became history (no wear counts, an outfit that could still change)
-    if(d<T&&!(dayRecs[k]&&dayRecs[k].ids)){await saveDay({...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},true);changed=true;missedNote(k)}
+    // (noOutfit: a past day dressed only from the sample wardrobe, since removed, kept with no outfit: kit.js kitSampleDay)
+    if(d<T&&!(dayRecs[k]&&(dayRecs[k].ids||dayRecs[k].noOutfit))){await saveDay({...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},true);changed=true;missedNote(k)}
     else if(k===tk){const r=dayRecs[k],ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){await saveDay({...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest},true);changed=true}}
   }
   if(changed&&window.scheduleSync)scheduleSync();

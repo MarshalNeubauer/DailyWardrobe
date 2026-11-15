@@ -23,7 +23,9 @@ const comboKeyV1=o=>'c'+fnv64(comboSigV1(o));
 /* photos saved before combinations were used were keyed by date with this signature; they are moved over on first use */
 const legacySig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,i.primaryColor,i.secondaryColor,i.tertiaryColor,i.pattern,i.metal,i.updated||0].join('/'):'-'}).join('|');
 async function keepRender(ck,rec,share){renders[ck]=rec;await metaPut('render:'+ck,rec);if(share)shareRender(ck,rec)}
-const workerBase=()=>{const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');return w&&tok?{url:new URL('render',w.replace(/\/*$/,'/')).href,tok}:null};
+// (an ended invitation: null, so nothing is asked with the dead code: the photo list, item and outfit pictures, the masters, holiday lists.
+// Every open sent 12-45 refused requests; re-audit 2026-11-15)
+const workerBase=()=>{const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');return w&&tok&&!(typeof inviteOver==='function'&&inviteOver())?{url:new URL('render',w.replace(/\/*$/,'/')).href,tok}:null};
 function shareRender(ck,rec){const W=workerBase();if(W)fetch(W.url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({key:ck,rec})}).catch(()=>{})}
 // assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
 // called while they are off, so a change there selects only the tests that use them
@@ -74,15 +76,19 @@ const planOf=planMonth;
    once. Offline or unreachable: not asked again for LIST_RETRY_MS. Resolves to the Set of keys, or null when there is none */
 const LIST_MS=10*60e3;
 const LIST_RETRY_MS=60e3;
-let listKeys=null,listAt=0,listP=null,listOf='',listFailAt=0;
+let listKeys=null,listAt=0,listP=null,listOf='',listFailAt=0,listRefused='';
 const listNextDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
-function listPaused(W){try{const p=JSON.parse(localStorage.getItem('list_pause')||'null');return !!p&&p.w===W.url&&Date.now()<p.until}catch{return false}}
+function listPaused(W){if(listRefused&&listRefused===W.url+'|'+W.tok)return true;try{const p=JSON.parse(localStorage.getItem('list_pause')||'null');return !!p&&p.w===W.url&&Date.now()<p.until}catch{return false}}
 function workerList(force){const W=workerBase();if(!W)return Promise.resolve(null);
   const of=W.url+'|'+W.tok;if(of!==listOf){listOf=of;listKeys=null;listAt=0;listFailAt=0}   // another server or account: nothing of the last one's
   if(listP)return listP;
   if(!force&&(listKeys&&Date.now()-listAt<LIST_MS||listPaused(W)||Date.now()-listFailAt<LIST_RETRY_MS))return Promise.resolve(listKeys);
   listP=(async()=>{try{const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'});
       if(r.status===429||r.status===503){try{localStorage.setItem('list_pause',JSON.stringify({w:W.url,until:listNextDay()}))}catch{}return listKeys}
+      // the code refused (401/403): an ended invitation is said and kept as such (sync.js), so workerBase gives nothing from now on; any
+      // other refusal (the owner's mistyped code) holds every picture request for this code until it changes
+      if(r.status===401||r.status===403){const j=await r.json().catch(()=>null);listRefused=of;
+        if(typeof endedAnswer==='function'&&endedAnswer(r.status,j)&&typeof inviteEnded==='function')inviteEnded(W.tok,j);return listKeys}
       const j=r.ok?await r.json().catch(()=>null):null;
       if(j&&Array.isArray(j.keys)){listKeys=new Set(j.keys);listAt=Date.now();listFailAt=0;try{localStorage.removeItem('list_pause')}catch{}}else listFailAt=Date.now()}
     catch(e){listFailAt=Date.now();console.warn('no list',e)}
@@ -208,11 +214,20 @@ async function shareLocalPics(){const W=workerBase();if(!W)return 0;let n=0;
       if(!r.ok)break;await keepRender(k,clean,false);n++}catch{break}}
   return n}
 const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type)||i.sample)return false;/* (not the sample wardrobe's pieces: not his) */const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
+/* the question names a tester's daily limit (account.js acct.me: caps.item, used.item from /me; the owner has none): "You can make 18
+   more today, of your 40." and, when fewer are left than asked for, which are made (2026-11-15, the re-audit: the question didn't say) */
+const itemPicsUsed=m=>m.day&&m.day!==new Date().toISOString().slice(0,10)?0:+(m.used&&m.used.item)||0;   // (counts from another UTC day start again)
+function itemPicLimitText(n){const m=typeof acct!=='undefined'&&acct&&acct.me;const cap=m&&m.caps&&+m.caps.item;if(!cap)return '';
+  const left=Math.max(0,cap-itemPicsUsed(m));
+  if(!left)return '';   // (startItemPics says so instead of asking)
+  return `\n\nYou can make ${left} more today, of your daily ${cap}.${left<n?` The first ${left} are made now; the rest can be made after midnight UTC.`:''}`}
+const itemPicsUsedUp=()=>{const m=typeof acct!=='undefined'&&acct&&acct.me;const cap=m&&m.caps&&+m.caps.item;return cap&&itemPicsUsed(m)>=cap?cap:0};
 let itemBatch=false;
 function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
   b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt, sock, trousers, coat and watch has a picture';b.disabled=!n;if(typeof needConn==='function')needConn(b)}
 async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();if(!todo.length)return;
-  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, trousers, coats and watches.${showCost()?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}`,{ok:'Generate'}))return;
+  {const cap=itemPicsUsedUp();if(cap){const st=$('#itempic-status');const t=`Today’s ${cap} item pictures are used up. They start again at midnight UTC.`;if(st)st.textContent=t;else if(typeof toast==='function')toast(t);return}}
+  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, trousers, coats and watches.${showCost()?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}${itemPicLimitText(todo.length)}`,{ok:'Generate'}))return;
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='',kept=false;
   await shareLocalPics();
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;

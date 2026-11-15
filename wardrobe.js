@@ -113,7 +113,8 @@ function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${i.id}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */
 async function setItemField(id,k,v){
   const it=items.find(x=>x.id===id);if(!it||!WARD_FIELDS.includes(k))return;v=String(v??'').trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;
-  if(v)it[k]=v;else delete it[k];await put(it);
+  if(v)it[k]=v;else delete it[k];if(it.sample)it.sampleMine=1;   // his edit (also when typed text is saved after the sheet closed: kit.js kitEdited)
+  await put(it);
   if(k==='material')return renderWardrobe();   // Other shows or hides its field
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
 /* the Add card: name, brand and notes behind "More details", folded until asked for (the Material is out with the other fields, above it); each keystroke is kept on the card (nothing is redrawn) */

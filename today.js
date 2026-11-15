@@ -345,6 +345,7 @@ function renderToday(){
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
     :`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`);   // the checklist comes first on every day, above the figure or the day's note
   else if(items.length&&!p[key(sel)]&&preWardrobe(sel))stage=first+`<p class="mut empty" id="prewd">No outfit: your wardrobe starts on ${planStartDay().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}.</p>`;   // (it used to show a red "0 · Incomplete" and an empty figure)
+  else if(items.length&&!p[key(sel)]&&sel<todayDate()&&dayRecs[key(sel)]&&dayRecs[key(sel)].noOutfit)stage=first+`<p class="mut empty" id="nooutfit">No outfit recorded: this day was dressed from the sample wardrobe, which you removed.</p>`;   // (kit.js kitSampleDay)
   else if(!items.length||(first&&!hasOutfit(o)))stage=first||`<p class="mut empty">Your wardrobe is empty. ${ADD_HINT} to get an outfit.</p>`;
   else{stage=first+figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
