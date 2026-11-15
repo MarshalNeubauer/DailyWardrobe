@@ -406,3 +406,191 @@ ${nc.err?`<p class="mut formerr" id="cn-error" role="alert">${esc(nc.err)}</p>`:
 /* (the phone's Back with this sheet up closes only the sheet: colBackFirst in itemsheet.js, registered before the pages' own listeners) */
 window.addEventListener('keydown',e=>{if(!colPick)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(colPick.newc)colNewBack();else closeColPick()}
   else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true);
+
+/* ---- "Read color and texture from close-up" (2026-11-15, the owner's variant A of C:\code\audit-2026-11-13\custom-colour-texture\
+   closeup-reading-mockups\, with his changes): one tap has Claude read the close-up's color and weave (worker POST /describe
+   what:'both', the two lookups side by side) and shows two proposals in a bottom sheet (#rd-sheet): a color card and a pattern &
+   texture card, each with Keep / Use, "Use both" pinned at the bottom and the item drawn with both at the top. Nothing changes until a
+   tap; a new color or pattern is added as the New color / New pattern sheets add it (addCustomColor / addCustomPattern), one the owner
+   has is just set. Undo on the card left on the page and in the toast. In the item editor the button sits under Edit photos (styled
+   like it); on the Add card it is "Add close-up and read texture/color" beside Add close-up (its close-up skips the automatic re-tag:
+   addTexture(i,f,true)), or "Read color and texture" beside Replace close-up. A tester's press is 2 lookups (the owner's decision). */
+let rd=null;      // the sheet: {src:'q'|'e', id, run, state:'busy'|'result'|'err'|'limit', c, p (the halves), sent:{wb,warm}, ac}
+let rdLast=null;  // what the last reading set, for Undo: {src, id, run, c:{prev, added, name, kind} | null, p: …}
+const RD_LOOKUPS=2;
+const RD_COLF=['primaryColor','color','shade','newColor'];
+const RD_PATF=['pattern','sett','stripes','patternSpec','weave','newPattern'];
+const rdItem=(src,id)=>src==='q'?queue.find(x=>x&&x.id===id):items.find(x=>x.id===id);
+/* why the button can't read now ('' when it can): no connection, or a tester with fewer than 2 lookups left */
+function rdOff(){if(!isConnected())return NEED_CONN;const l=!showCost()?cnLeft():null;if(!l||l.left>=RD_LOOKUPS)return '';
+  return l.left?'Reading color and texture takes 2 lookups and you have 1 left today. They start again at midnight UTC.':`Today’s ${l.cap} color and pattern lookups are used up. They start again at midnight UTC.`}
+/* the cost: the owner the cents (readEstimate, tagging.js), a tester "2 lookups · N of M left today" (no cents for testers) */
+function rdCost(){if(!isConnected())return 'Connect in ⚙ Settings first.';
+  if(!showCost()){const l=cnLeft();return l?`2 lookups · ${l.left} of ${l.cap} left today`:'2 lookups'}
+  return `About ${Math.max(1,Math.round(readEstimate()*100))}¢`}
+const rdCostLine=()=>`<small class="rdcost">${esc(rdCost())}</small>`;
+/* the item editor's button: under Edit photos, the same full-width button, its label and no icon (the owner's ask) */
+function rdEditorBtn(i){if(!TEXTURE_TYPES.includes(i.type))return '';const off=rdOff();
+  return `<div class="ivrd"><button type="button" class="ivrdbtn" id="iv-read" onclick="rdStart('e','${i.id}')"${off?' aria-disabled="true"':''}>Read color and texture from close-up</button>${rdCostLine()}</div>${rdDoneHtml('e',i.id,i)}`}
+/* the Add card's second button, beside Add close-up / Replace close-up (same shape, the plain weight beside the filled Add close-up) */
+const rdAddBtn=(q,label)=>`<button type="button" class="btn rdgo" onclick="rdStart('q','${esc(q.id)}')"${rdOff()?' aria-disabled="true"':''}>${label}</button>`;
+/* a tap: with no close-up the close-up chooser first (mode 'read'; the file window without touch), then the reading */
+function rdStart(src,id){const it=rdItem(src,id);if(!it)return;const off=rdOff();if(off){tell(off);return}
+  if(it.texture){rdRun(src,id);return}
+  const file=f=>rdWithClose(src,id,f);
+  if(cuTouch()){closeupPick({mode:'read',cloth:paperCloth(it),file});return}
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(f)file(f)};inp.click()}
+/* the close-up chosen (or retaken): kept as the Add card / editor keep one (on the Add card without the automatic re-tag), then read */
+async function rdWithClose(src,id,f){if(!f)return;const was=(rdItem(src,id)||{}).texture||'';
+  if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;await addTexture(i,f,true)}else await replaceTexture(id,f);
+  const it=rdItem(src,id);if(it&&it.texture&&it.texture!==was)rdRun(src,id)}
+function rdRetake(f){const me=rd;if(me)rdWithClose(me.src,me.id,f)}
+/* ask: {what:'both'} with the close-up as the New color sheet sends it (paperCopy: white-balanced from the paper, wb true; as taken, wb false) */
+async function rdRun(src,id){const it=rdItem(src,id);if(!it||!it.texture)return;if(rd&&rd.ac)try{rd.ac.abort()}catch{}
+  const me=rd={src,id,run:Date.now()+Math.random(),state:'busy',c:null,p:null,sent:null,ac:typeof AbortController==='function'?new AbortController():null};
+  rdOpen();rdRender();
+  const body={what:'both',type:it.type,colours:{main:primaryCol(it),second:it.secondaryColor||null,third:it.tertiaryColor||null},pattern:normPat(it.type,it.pattern),custom:settings.custom||{}};
+  await paperOf(it);const cp=await paperCopy(it),pr=paperNow(it);body.closeup=cp.closeup;body.wb=cp.wb;me.sent={wb:cp.wb,warm:!cp.wb&&!!(pr&&pr.warm)};
+  if(rd!==me)return;
+  const w=localStorage.getItem('worker_url')||'';let r=null,j={};
+  try{r=await fetch(new URL('describe',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},body:JSON.stringify(body),...(me.ac?{signal:me.ac.signal}:{})});j=await r.json().catch(()=>({}))}catch(e){r=null}
+  if(rd!==me)return;   // closed or Stopped meanwhile: nothing changes
+  if(r&&r.ok&&typeof acct==='object'&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
+  if(r&&r.status===429){me.state='limit';me.limit=j.message||'Today’s color and pattern lookups are used up. They start again at midnight UTC.'}
+  else if(!r||!r.ok||!j.colour||!j.pattern){me.state='err';me.detail=showCost()&&(j.detail||j.message)||''}
+  else{const now=rdItem(src,id)||it;me.state='result';me.c=rdColOf(j.colour);me.p=rdPatOf(now,j.pattern)}
+  rdRender(true);rdRefresh(src,id)}
+/* the halves, as the New color / New pattern sheets read them: {na} when it failed or isn't cloth */
+function rdColOf(c){if(!c||c.error)return {na:'fail'};if(c.kind!=='colour'&&c.kind!=='several')return {na:c.kind==='not-clothing'?'cloth':'fail'};
+  const hex=cnHex(c.hex);if(!hex)return {na:'fail'};const ex=c.existing&&COLORS[c.existing]?c.existing:null,d=+c.dE||0;
+  return {r:c,hex,name:cap1(String(c.name||'').trim())||cap1(colName(c.plansAs||'grey'))+' tone',ex,d,dup:!!ex&&d<=3,done:null}}
+function rdPatOf(it,p){if(!p||p.error)return {na:'fail'};if(p.kind!=='pattern')return {na:p.kind==='not-clothing'?'cloth':'fail'};
+  const ex=p.existing&&patChoices(it).includes(p.existing)?p.existing:null,look=p.look&&p.look.layout&&p.look.layout!=='none'?p.look:null;
+  return {r:p,name:cap1(String(p.name||'').trim())||cap1(patName(p.plansAs||'solid')),look,ex,reuse:!!ex&&p.match==='existing',done:null}}
+const rdColBase=(it,x)=>cnColBase(it,{base:null,res:x.r,hex:x.hex,accent:false});
+const rdPatBase=(it,x)=>cnPatBase(it,{base:null,res:x.r});
+/* each card's main action: Claude's new one, or the one already had when it is the same to the eye (ΔE00 ≤ 3, as the New color sheet), null when that is the item's already */
+const rdColMain=(it,x)=>x.dup?(x.ex===primaryCol(it)?null:'existing'):'new';
+const rdPatMain=(it,x)=>x.reuse?(x.ex===normPat(it.type,it.pattern)?null:'existing'):'new';
+const rdActName=(it,me,[h,a])=>h==='c'?(a==='existing'?cap1(colName(me.c.ex)):me.c.name):(a==='existing'?cap1(patName(me.p.ex)):me.p.name);
+/* the item drawn in a shade and/or pattern not added yet (stand-in keys, as cnDrawn / cnWithPat), taken out again */
+function rdDraw(it,o,sw){const P='cnprev',PP='own-cnprev';let x={...it,photo:undefined,texture:undefined,swatch:undefined,swSrc:undefined};
+  try{if(o.hex){COLORS[P]=o.hex;delete LUMS[P];x={...x,primaryColor:P,color:undefined,shade:0}}else if(o.col)x={...x,primaryColor:o.col,color:undefined,shade:0};
+    if(o.look){CUSTOM_PAT[PP]={key:PP,name:o.name||'new pattern',base:o.base||'solid',look:o.look,types:[]};x=patVar(x,PP)}else if(o.pat)x=patVar(x,o.pat);
+    return sw?swatchSVG(x,true):itemThumb(x)}
+  finally{delete COLORS[P];delete LUMS[P];delete CUSTOM_PAT[PP]}}
+/* what "Use both" would give, for the drawing at the top */
+function rdPreview(it,me){const o={},c=me.c,p=me.p;
+  if(c&&!c.na&&!c.done){const a=rdColMain(it,c);if(a==='new')o.hex=c.hex;else if(a==='existing')o.col=c.ex}
+  if(p&&!p.na&&!p.done){const a=rdPatMain(it,p);if(a==='existing')o.pat=p.ex;else if(a==='new'){if(p.look){o.look=p.look;o.base=rdPatBase(it,p);o.name=p.name}else o.pat=rdPatBase(it,p)}}
+  return o}
+function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySelector('#rd-sheet');
+  if(!s){b=document.createElement('div');b.id='rd-backdrop';b.onclick=()=>rdClose();
+    s=document.createElement('div');s.id='rd-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','rd-title');s.tabIndex=-1;document.body.append(b,s);
+    window.addEventListener('keydown',e=>{if(!rd||cuOpen||!document.querySelector('#rd-sheet.on'))return;   // Escape closes it (ahead of the item sheet's)
+      if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();rdClose()}else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true)}
+  return {b,s}}
+/* the phone's Back closes it as × does (the Back audit, 2026-11-15: Back closed the item sheet or Add under it and left the sheet up):
+   it borrows the Back entry of the page under it, or makes its own (start.js appBorrow 'rd', kept in rdHist while it is up; a reading
+   run again in the open sheet keeps it); × gives it back, and closed by Back the page under it gets its entry again (as the chooser) */
+let rdHist;
+function rdOpen(){const {b,s}=rdEls();b.classList.add('on');s.classList.add('on');s.scrollTop=0;layerOpen(s);
+  if(rdHist===undefined)rdHist=typeof appBorrow==='function'?appBorrow('rd'):''}
+function rdClose(fromBack){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)try{me.ac.abort()}catch{}
+  const {b,s}=rdEls();b.classList.remove('on');s.classList.remove('on');layerClose(s);
+  const h=rdHist;rdHist=undefined;if(h!==undefined&&typeof appGiveBack==='function'){if(!fromBack)appGiveBack('rd',h);else if(h)appPush(h)}
+  if(me)rdRefresh(me.src,me.id)}
+function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
+/* the page under it, redrawn (the done card, the cost line) */
+function rdRefresh(src,id){if(src==='q'){if(typeof renderAdd==='function')renderAdd()}else if(typeof editing!=='undefined'&&editing===id)renderWardrobe()}
+const rdPaperHtml=pr=>!pr?'':pr.ref?'<span class="rdpaper ok" id="rd-paper">✓ White paper found: true color</span>':`<span class="rdpaper no" id="rd-paper">! No white paper${pr.warm?', warm light':''}</span>`;
+const rdRetakeHtml=it=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:'f=>rdRetake(f)',cloth:paperCloth(it)});
+function rdLightNote(it,me){const s=me.sent;if(!s||s.wb!==false)return '';
+  return s.warm?`<div class="cnwarm" id="rd-warm" role="note"><span aria-hidden="true">☀︎</span><span>Taken in warm light — the color may be yellower than the cloth; add white paper for a truer color.<br>${rdRetakeHtml(it)}</span></div>`
+    :`<p class="cnwhy cnnopaper" id="rd-warm">No white paper in the close-up, so this shade is Claude’s best guess from the photo as taken. ${rdRetakeHtml(it)}</p>`}
+function rdNaCard(it,h,x){const what=h==='c'?'color':'weave';
+  return `<div class="rdcard na" id="${h==='c'?'rd-col':'rd-pat'}"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><p class="cnwhy">${x.na==='cloth'?`That doesn’t look like a close-up of cloth. ${rdRetakeHtml(it)}`:`Claude couldn’t read the ${what} this time.`}</p></div>`}
+function rdDoneCard(it,h,x){const id=h==='c'?'rd-col':'rd-pat',cur=h==='c'?cap1(colName(primaryCol(it))):cap1(patName(normPat(it.type,it.pattern)));
+  const sw=h==='c'?`<span class="cnresw rdsm" style="background:${COLORS[primaryCol(it)]||'transparent'}"></span>`:`<span class="cnresw cnresp rdsm">${swatchSVG(it,true)}</span>`;
+  return `<div class="rdcard done" id="${id}">${sw}<span class="rddtx"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><b>${x.done==='keep'?`Kept ${esc(cur)}`:`${esc(x.usedName||cur)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('${h}')">Change</button>`:`<button type="button" class="rdlink" id="${id}-undo" onclick="rdUndo('${h}')">Undo</button>`}</div>`}
+function rdColCard(it,me){const x=me.c;if(x.na)return rdNaCard(it,'c',x);if(x.done)return rdDoneCard(it,'c',x);
+  const cur=primaryCol(it),curN=cap1(colName(cur)),ex=x.ex,exN=ex?cap1(colName(ex)):'',d=x.d,word=cnDWord(d),r=x.r,why=r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:'';
+  const keep=`<button type="button" class="cpaskbtn ghost" id="rd-ckeep" onclick="rdKeep('c')">Keep ${esc(curN)}</button>`;
+  if(x.dup)return `<div class="rdcard" id="rd-col"><div class="cnreshd"><span class="cnresw" style="background:${COLORS[ex]}"></span><span><span class="cneyebrow">Color <span class="rdtag have">You have it</span></span><b>That’s your ${esc(exN)}</b><small>Claude’s ${esc(x.name)} (${x.hex.toUpperCase()}) is ${d.toFixed(1)} ΔE from ${esc(exN)}: ${word}.</small></span></div>
+<ul class="cnfacts"><li><span>Now</span><span class="cnch" style="background:${COLORS[cur]||'transparent'}"></span><span>${esc(curN)}</span></li><li><span>In outfits</span><span class="cnch" style="background:${COLORS[r.plansAs]||COLORS[ex]}"></span><span>behaves like <b>${esc(cap1(colName(COLORS[r.plansAs]?r.plansAs:ex)))}</b></span></li></ul>${rdLightNote(it,me)}${why}
+<div class="rdbtns">${ex===cur?keep:`${keep}<button type="button" class="cpaskbtn" id="rd-cuse" onclick="rdUse([['c','existing']])">Use ${esc(exN)}</button>`}</div><button type="button" class="rdalt" id="rd-calt" onclick="rdUse([['c','new']])">Add ${esc(x.name)} as a new color instead</button></div>`;
+  return `<div class="rdcard" id="rd-col"><div class="cnreshd"><span class="cnresw" style="background:${x.hex}"></span><span><span class="cneyebrow">Color <span class="rdtag">New</span></span><b>${esc(x.name)}</b><small>${x.hex.toUpperCase()} · ${esc(r.confidence||'medium')} confidence</small></span></div>
+<ul class="cnfacts"><li><span>Now</span><span class="cnch" style="background:${COLORS[cur]||'transparent'}"></span><span>${esc(curN)}</span>${ex===cur?`<span class="cnde">${word} · ΔE ${d.toFixed(1)}</span>`:''}</li>
+<li><span>In outfits</span><span class="cnch" style="background:${COLORS[r.plansAs]||'transparent'}"></span><span>behaves like <b>${esc(cap1(colName(rdColBase(it,x))))}</b></span></li>
+${ex&&ex!==cur?`<li><span>Nearest yours</span><span class="cnch" style="background:${COLORS[ex]}"></span><span>${esc(exN)}</span><span class="cnde">${word} · ΔE ${d.toFixed(1)}</span></li>`:''}</ul>${rdLightNote(it,me)}
+${r.fitsType===false?`<p class="cnwhy">Unusual for ${esc((TYPES[it.type]||'this item').toLowerCase())}, but you can still use it.</p>`:''}${why}
+<div class="rdbtns">${keep}<button type="button" class="cpaskbtn" id="rd-cuse" onclick="rdUse([['c','new']])">Use ${esc(x.name)}</button></div>
+${ex&&ex!==cur&&d<=6?`<button type="button" class="rdalt" id="rd-calt" onclick="rdUse([['c','existing']])">Use ${esc(exN)} instead</button>`:`<p class="rdfoot">Use adds ${esc(x.name)} to your colors.</p>`}</div>`}
+function rdPatCard(it,me){const x=me.p;if(x.na)return rdNaCard(it,'p',x);if(x.done)return rdDoneCard(it,'p',x);
+  const cur=normPat(it.type,it.pattern),curN=cap1(patName(cur)),r=x.r,ex=x.ex,have=x.reuse,base=have?ex:rdPatBase(it,x),col=me.c&&!me.c.na&&!me.c.done?rdPreview(it,{c:me.c}):{};
+  const sw=rdDraw(it,{...col,...(have?{pat:ex}:x.look?{look:x.look,base,name:x.name}:{pat:base})},true),g=!have&&x.look&&x.look.tex&&x.look.tex.grid;
+  const plain=[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS,'houndstooth','paisley','tonal-check'].includes(patBase(base))?'counts as a pattern':'counts as plain';
+  const from=have||!x.look?`the ${esc(patName(base))} drawing, in your colors`:g?'Claude’s weave map, in your colors':x.look.motif?'Claude’s figure, in your colors':x.look.layout==='stripes'?'Claude’s stripes, in your colors':'Claude’s check, in your colors';
+  const bmp=g?`<span class="cnde"><span class="cnbmp" aria-hidden="true" style="grid-template-columns:repeat(${g[0].length},7px)">${g.join('').split('').map(c=>`<i class="${c==='1'?'on':''}"></i>`).join('')}</span></span>`:'';
+  const keep=`<button type="button" class="cpaskbtn ghost" id="rd-pkeep" onclick="rdKeep('p')">Keep ${esc(curN)}</button>`,nm=have?cap1(patName(ex)):x.name;
+  const btns=have&&ex===cur?keep:`${keep}<button type="button" class="cpaskbtn" id="rd-puse" onclick="rdUse([['p','${have?'existing':'new'}']])">Use ${esc(nm)}</button>`;
+  const alt=!have&&ex&&ex!==cur?`<button type="button" class="rdalt" id="rd-palt" onclick="rdUse([['p','existing']])">Use ${esc(cap1(patName(ex)))} instead</button>`:have?'':`<p class="rdfoot">Use adds ${esc(x.name)} to your patterns.</p>`;
+  return `<div class="rdcard" id="rd-pat"><div class="cnreshd"><span class="cnresw cnresp">${sw}</span><span><span class="cneyebrow">Pattern &amp; texture ${have?'<span class="rdtag have">You have it</span>':'<span class="rdtag">New</span>'}</span><b>${have?`That’s ${esc(nm)}`:esc(nm)}</b>${r.description?`<small>${esc(r.description)}</small>`:''}</span></div>
+<ul class="cnfacts"><li><span>Now</span><span>${esc(curN)}</span></li><li><span>In outfits</span><span>planned like <b>${esc(cap1(patName(base)))}</b> <span class="cntag">${plain}</span></span></li><li><span>Drawn from</span><span>${from}</span>${bmp}</li></ul>
+${me.sent&&me.sent.wb===false?'<p class="cnwhy">No white paper needed for this: the weave reads fine without it.</p>':''}${r.colourHint?`<p class="cnwhy">${esc(r.colourHint)}</p>`:''}${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}
+<div class="rdbtns">${btns}</div>${alt}</div>`}
+function rdBar(it,me){const left=['c','p'].filter(h=>me[h]&&!me[h].na&&!me[h].done),acts=left.map(h=>[h,h==='c'?rdColMain(it,me.c):rdPatMain(it,me.p)]).filter(a=>a[1]);
+  const lab=acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,acts[0]))}`:left.length?'Keep as it is':'Done';
+  return `<div class="rdbar"><button type="button" class="pri" id="rd-both" onclick="rdBoth()"${me.applying?' disabled':''}>${lab}</button>${left.length?'<small>Nothing changes until you tap. You can undo it after.</small>':''}</div>`}
+function rdRender(top){const me=rd;if(!me)return;const {s}=rdEls(),it=rdItem(me.src,me.id);if(!it){rdClose();return}
+  const y=s.scrollTop,pr=paperNow(it),res=me.state==='result';
+  const head=`<div class="rdtop"><span class="rdgrab" aria-hidden="true"></span><div class="rdhead"><b id="rd-title">Claude’s reading</b><button type="button" class="rdx" onclick="rdClose()" aria-label="Close">×</button></div>
+<div class="rdsrc"><figure><img src="${it.texture}" alt="Your close-up"><figcaption>Close-up</figcaption></figure><figure><div class="rddraw">${rdDraw(it,res?rdPreview(it,me):{})}</div><figcaption>${res?'With both':'Now'}</figcaption></figure>
+<div class="rdmeta"><b>${me.state==='busy'?'Reading your close-up':'Read from your close-up'}</b>${me.state==='busy'?'Two lookups side by side: the color and the weave.':'Claude gives a color and a weave. Pick either, or both.'}<br>${rdPaperHtml(pr)}</div></div></div>`;
+  let body='';
+  if(me.state==='busy')body=`<div class="rdbusy" role="status"><span class="spin" aria-hidden="true"></span><span><b>Claude is reading the color and the weave…</b><small>About 15 seconds. Nothing changes until you choose.</small></span></div>
+<div class="rdbar"><button type="button" class="ghost" id="rd-stop" onclick="rdClose()">Stop</button><small>Stopping changes nothing. · <span id="rd-cost">${esc(rdCost())}</span></small></div>`;
+  else if(me.state==='limit')body=`<div class="cnlim" id="rd-limit" role="status"><span aria-hidden="true">⏳</span><span><b>${esc(me.limit)}</b>You can still set the color and pattern yourself.</span></div><div class="rdbar"><button type="button" class="pri" onclick="rdClose()">Close</button></div>`;
+  else if(me.state==='err')body=`<div class="cnres cnerr" id="rd-err"><div class="cpasktx"><b>Claude couldn’t answer</b><small>The color and weave couldn’t be read just now. Try again later, or set them yourself.${me.detail?` (${esc(me.detail)})`:''}</small></div><div class="cnbtns"><button type="button" class="cpaskbtn" onclick="rdRun(rd.src,rd.id)">Try again</button></div></div><div class="rdbar"><button type="button" class="ghost" onclick="rdClose()">Close</button></div>`;
+  else body=rdColCard(it,me)+rdPatCard(it,me)+rdBar(it,me);
+  s.innerHTML=head+body;s.scrollTop=top?0:y}
+function rdKeep(h){const me=rd;if(!me||!me[h])return;me[h].done='keep';rdAfter()}
+function rdChange(h){const me=rd;if(!me||!me[h])return;me[h].done=null;rdRender()}
+/* Use: a new color or pattern is added (synced) as the New sheets add it, then set; one the owner has is only set */
+async function rdAddCol(it,x){const base=rdColBase(it,x);
+  for(const n of [x.name,`${x.name} tone`]){const k=ownColKey(ownNameClean(n));if(CUSTOM_COL[k])return {key:k,added:false};if(COLORS[k]||colNameTaken(n))continue;
+    return {key:await addCustomColor({name:n,hex:x.hex,base,types:groupOf(it.type),accent:false}),added:true}}
+  throw new Error('That color’s name is taken: add it from the color sheet with a name of your own.')}
+async function rdAddPat(it,x){const base=rdPatBase(it,x),types=CN_SUITING.includes(it.type)?CN_SUITING.slice():[it.type];
+  for(const n of [x.name,`${x.name} weave`]){const k=ownPatKey(ownNameClean(n));if(CUSTOM_PAT[k])return {key:k,added:false};if(Object.values(PATS_BY).some(l=>l.includes(k)))continue;
+    return {key:await addCustomPattern({name:n,desc:x.r.description||'',base,types,look:x.look||null}),added:true}}
+  throw new Error('That pattern’s name is taken: add it from the pattern sheet with a name of your own.')}
+const rdPick=(it,fields)=>Object.fromEntries(fields.map(k=>[k,it[k]==null?it[k]:JSON.parse(JSON.stringify(it[k]))]));
+async function rdSet(src,id,k,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;const q=queue[i];if(k==='primaryColor')q.newColor=null;else q.newPattern=null;setq(i,k,v)}else await sete(id,k,v)}
+async function rdUse(parts){const me=rd;if(!me||me.state!=='result'||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;me.applying=true;
+  try{for(const [h,how] of parts){const x=me[h];if(!x||x.na||x.done)continue;const now=rdItem(me.src,me.id)||it,prev=rdPick(now,h==='c'?RD_COLF:RD_PATF);let v,added=false,name;
+      if(how==='existing'){v=x.ex;name=h==='c'?cap1(colName(v)):cap1(patName(v))}else{const a=h==='c'?await rdAddCol(now,x):await rdAddPat(now,x);v=a.key;added=a.added;name=x.name}
+      await rdSet(me.src,me.id,h==='c'?'primaryColor':'pattern',v);x.done='used';x.usedName=name;
+      if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':'patterns'}}}
+  catch(e){me.applying=false;toast(e.message||'That could not be set.');rdRender();return}
+  me.applying=false;rdAfter()}
+async function rdBoth(){const me=rd;if(!me||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;
+  const acts=['c','p'].filter(h=>me[h]&&!me[h].na&&!me[h].done).map(h=>[h,h==='c'?rdColMain(it,me.c):rdPatMain(it,me.p)]);
+  for(const [h,a] of acts)if(!a)me[h].done='keep';const use=acts.filter(a=>a[1]);if(use.length)await rdUse(use);else rdAfter()}
+/* after a tap: both cards decided closes the sheet (the toast says what changed, with Undo); otherwise the sheet shows what is left */
+function rdAfter(){const me=rd;if(!me)return;const left=['c','p'].filter(h=>me[h]&&!me[h].na&&!me[h].done);
+  if(left.length){rdRender();rdRefresh(me.src,me.id);return}
+  const L=rdLast&&rdLast.run===me.run?rdLast:null;rdClose();
+  if(L&&(L.c||L.p))toast(L.c&&L.p?'Color and texture updated.':L.c?'Color updated.':'Texture updated.',4000,{label:'Undo',fn:rdUndoAll})}
+/* Undo: the fields as they were, and a color or pattern this reading added taken out again when nothing else uses it */
+async function rdRestore(src,id,half){const it=rdItem(src,id);
+  if(it){for(const [k,v] of Object.entries(half.prev)){if(v===undefined)delete it[k];else it[k]=v}
+    if(src==='q'){if(it.texCanvas)generateSwatch(it);if(typeof addKeep==='function')queueMicrotask(addKeep)}else{if(it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={}}}
+  if(half.added&&![...items,...queue].some(x=>x&&[x.primaryColor,x.secondaryColor,x.tertiaryColor,x.pattern].includes(half.added)))await removeCustom(half.kind,half.added)}
+async function rdUndo(h){const L=rdLast;if(!L||!L[h])return;const half=L[h];L[h]=null;await rdRestore(L.src,L.id,half);
+  if(rd&&rd.run===L.run&&rd[h])rd[h].done=null;if(!L.c&&!L.p&&rdLast===L)rdLast=null;rdRefresh(L.src,L.id);if(rd)rdRender()}
+async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['p','c'])if(L[h])await rdUndo(h);toast('Put back as it was.')}
+/* the card left on the page after a reading set something: the new drawing, what changed, Undo */
+function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
+  const names=[L.c&&L.c.name,L.p&&L.p.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns'].filter(Boolean);
+  return `<div class="rddone" id="rd-done" role="status"><span class="rddraw" aria-hidden="true">${itemThumb({...it,photo:undefined})}</span><span class="rddtx"><b>${esc(names.join(' and '))} set</b>${add.length?`<small>Added to your ${add.join(' and ')}.</small>`:''}</span><button type="button" class="rdlink" id="rd-undo" onclick="rdUndoAll()">Undo</button></div>`}

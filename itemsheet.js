@@ -127,7 +127,7 @@ function itemBody(i){
   const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
   const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
   ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
-  return `<div class="ivin">${hero}${phEdit.crop?'':paperLine(i)}${photos}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
+  return `<div class="ivin">${hero}${phEdit.crop?'':paperLine(i)}${photos}${phEdit.crop?'':rdEditorBtn(i)}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -203,7 +203,7 @@ function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history
    of the item sheet's and start.js's: a capturing one on window still ran after them in Chromium), stops them, closes the sheet (‹ first on
    a "New" sheet opened from the list, as its own ‹ does) and puts that entry back, so their flags still hold and the next Back closes the
    page. A step back of the app's own (itemBack, appPend) passes untouched. */
-function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof cuOpen!=='undefined'&&cuOpen)||(typeof appPend!=='undefined'&&appPend))return;
+function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof cuOpen!=='undefined'&&cuOpen)||(typeof rdHist!=='undefined'&&rdHist!==undefined)||(typeof appPend!=='undefined'&&appPend))return;
   e.stopImmediatePropagation();const had=itemHist||(typeof appHist!=='undefined'&&appHist);
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();
   if(had)try{history.pushState({cp:1},'')}catch{}}
@@ -211,6 +211,7 @@ addEventListener('popstate',colBackFirst);
 addEventListener('popstate',e=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
   if(appPend||appHist&&appTop)return;   // a step back of start.js's own, or its entry over the sheet (a question, the close-up guide): start.js's listener takes it
+  if(itemHist&&editing&&phEdit.crop){e.dwItem=true;phEdit.crop=null;renderWardrobe();try{history.pushState({item:1},'')}catch{itemHist=false}return}   // Back in the crop frame leaves the crop, as Esc and Cancel do, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet)
   if(itemHist){itemHist=false;e.dwItem=true;if(editing)closeItem(true)}});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');

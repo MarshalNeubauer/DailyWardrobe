@@ -1121,6 +1121,61 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cnask .wbst .ic{width:18px;height:18px;margin-top:1px;font-size:0.625rem}
 .cnwarm{display:flex;gap:8px;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--acc) 15%,transparent);font-size:0.8125rem;line-height:1.4;color:var(--ink)}
 .cnwarm .wbretake{display:inline-block;margin-top:4px}
+/* ---- "Read color and texture from close-up" (colpick.js rd*; closeup-reading-mockups variant A, 2026-11-15) ---- */
+/* the editor's button under Edit photos: the same full-width page button (the design system's), its label only */
+.ivrd{margin:8px 0 0}.ivrd .ivrdbtn{width:100%;gap:8px}
+.ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]{opacity:.55}
+.rdcost{display:block;margin:6px 2px 0;font-size:0.75rem;line-height:1.35;color:var(--mut);text-align:center}
+.texslot .rdcost{text-align:left}
+/* the Add card: Add close-up (filled) and the read button (plain) side by side, the read button's words on two lines when narrow */
+#add .rdpair{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#add .rdpair>.btn{align-self:center;margin:0;flex:0 0 auto;white-space:nowrap}
+#add .rdpair .rdgo{flex:1 1 9.5rem;min-width:0;padding:0 10px;white-space:normal;font-size:0.84375rem;line-height:1.2;text-align:center}
+/* the sheet: a bottom sheet like the color sheet, over it and under the close-up chooser */
+#rd-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1205;display:none}#rd-backdrop.on{display:block}
+#rd-sheet{--rd-ok:#2f7d4a;position:fixed;left:0;right:0;bottom:0;z-index:1206;max-width:640px;margin:0 auto;max-height:92vh;overflow:auto;box-sizing:border-box;padding:0 14px;background:var(--card);color:var(--ink);
+  border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;box-shadow:0 -10px 30px rgba(0,0,0,.35);font-size:0.9375rem;outline:0;overscroll-behavior:contain;
+  transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+#rd-sheet.on{transform:none;visibility:visible}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) #rd-sheet{--rd-ok:#6cc38a}}
+:root[data-theme=dark] #rd-sheet{--rd-ok:#6cc38a}
+@media(prefers-reduced-motion:reduce){#rd-sheet{transition:none}}
+#rd-sheet p{margin:0}
+.rdtop{position:sticky;top:0;z-index:2;background:var(--card);padding:10px 0 10px;border-bottom:1px solid var(--line)}
+.rdgrab{display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px}
+.rdhead{display:flex;align-items:center;gap:8px}.rdhead b{flex:1;font-size:1.0625rem}
+.rdx{width:44px;height:44px;margin:-8px -8px -8px 0;padding:0;border:0;background:none;color:var(--mut);font:inherit;font-size:1.5rem;cursor:pointer}
+.rdsrc{display:flex;align-items:center;gap:12px;margin-top:8px}
+.rdsrc figure{margin:0;flex:none;text-align:center}
+.rdsrc figure>img,.rdsrc figure>.rddraw{display:block;width:62px;height:62px;border-radius:12px;border:1px solid var(--swatch-edge);object-fit:cover;overflow:hidden;background:var(--bg);box-sizing:border-box}
+.rdsrc figcaption{font-size:0.6875rem;color:var(--mut);margin-top:3px}
+.rddraw svg{width:100%;height:100%;display:block}.rddraw .ph.thumb{width:100%;height:100%;margin:0;padding:0;background:none;border:0}
+.rdmeta{flex:1;min-width:0;font-size:0.8125rem;line-height:1.4;color:var(--mut)}.rdmeta b{display:block;color:var(--ink);font-size:0.875rem}
+.rdpaper{display:inline-block;margin-top:4px;font-size:0.75rem;font-weight:600}.rdpaper.ok{color:var(--rd-ok)}.rdpaper.no{color:var(--acc-ink)}
+.rdcard{margin:12px 0 0;padding:12px;border:1px solid var(--acc);border-radius:14px;background:var(--card)}
+.rdcard .cnreshd{align-items:flex-start}.rdcard .cnresw{width:60px;height:60px}.rdcard .cnfacts li>span:first-child{width:92px}
+.rdcard.na{border-color:var(--line)}.rdcard.na .cnwhy{margin-top:4px}
+.rdcard.done{display:flex;align-items:center;gap:12px;border-color:var(--line);background:var(--bg)}
+.rdcard.done .cnresw.rdsm{width:40px;height:40px;border-radius:10px}.rdcard.done b{display:block;font-size:0.9375rem}
+.rddtx{flex:1;min-width:0}.rddtx .cneyebrow{margin-bottom:0}
+.rdtag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;font-size:0.65625rem;font-weight:700;letter-spacing:.03em;vertical-align:1px;background:color-mix(in srgb,var(--acc) 22%,transparent);color:var(--acc-ink)}
+.rdtag.have{background:color-mix(in srgb,var(--rd-ok) 18%,transparent);color:var(--rd-ok)}
+.rdbtns{display:flex;gap:8px;margin:12px 0 0}.rdbtns .cpaskbtn{flex:1 1 0;min-width:0;min-height:44px;padding:4px 10px;line-height:1.25}
+.rdalt{display:block;width:100%;min-height:44px;margin:4px 0 0;padding:0;border:0;background:none;color:var(--acc-ink);font:inherit;font-size:0.8125rem;font-weight:600;text-decoration:underline;cursor:pointer}
+.rdfoot{margin:8px 0 0!important;font-size:0.75rem;color:var(--mut)}
+.rdbar{position:sticky;bottom:0;z-index:2;background:var(--card);padding:10px 0 calc(12px + env(safe-area-inset-bottom));margin-top:14px;border-top:1px solid var(--line)}
+.rdbar button{display:block;width:100%;min-height:50px;margin:0;border-radius:12px;font:inherit;font-size:1rem;font-weight:700;cursor:pointer}
+.rdbar .pri{border:1px solid var(--ink);background:var(--ink);color:var(--bg)}.rdbar .ghost{border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:600}
+.rdbar small{display:block;text-align:center;margin-top:6px;font-size:0.75rem;color:var(--mut)}
+.rdbusy{display:flex;gap:12px;align-items:center;margin:14px 0 0;padding:14px 12px;border:1px solid var(--acc);border-radius:14px;background:color-mix(in srgb,var(--acc) 8%,var(--card))}
+.rdbusy b{display:block;font-size:0.9375rem}.rdbusy small{display:block;margin-top:2px;font-size:0.78125rem;color:var(--mut)}
+#rd-sheet .cnwhy .wbretake,#rd-sheet .cnwarm .wbretake{display:inline-block;min-height:0}
+/* after a reading set something: the card left on the page (the new drawing, what changed, Undo) */
+.rddone{display:flex;align-items:center;gap:10px;margin:8px 0 0;padding:8px 10px;border-radius:14px;border:1px solid var(--acc);background:var(--bg);font-size:0.8125rem;line-height:1.35}
+.rddone .rddraw{flex:none;width:52px;height:62px;border-radius:10px;border:1px solid var(--swatch-edge);background:var(--card);overflow:hidden}
+.rddone b{display:block;font-size:0.875rem}.rddone small{display:block;color:var(--mut)}
+.rdlink{flex:none;min-height:44px;margin:0;padding:0 8px;border:0;background:none;color:var(--acc-ink);font:inherit;font-size:0.875rem;font-weight:700;text-decoration:underline;cursor:pointer}
+:is(#item-view,#add) .rdlink{min-height:44px;padding:0 8px;border:0;background:none;color:var(--acc-ink)}
 /* ---- accessibility (audit 2026-11-13) ---- */
 /* a file picker's input is in the label, visually hidden but focusable (with `hidden` the label was out of reach of the keyboard) */
 .vfile{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;opacity:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
