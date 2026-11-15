@@ -29,7 +29,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(()=>saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady&&!!climate,null,{timeout:8000});
     ok(calls===1,'the climate history is kept on the device (no second download after a reload)');
     await p.evaluate(()=>openSettings('weather'));
-    ok(/usual weather there/.test(await p.textContent('#wx-loc'))&&/66°.*115°/.test(await p.textContent('#wx-loc')),`Settings says days beyond the forecast use the usual weather (${await p.textContent('#wx-loc')})`);
+    ok(/usual weather there/.test(await p.textContent('#wx-loc'))&&(await p.evaluate(()=>unit())==='F'?/66°.*115°/:/19°.*46°/).test(await p.textContent('#wx-loc')),`Settings says days beyond the forecast use the usual weather (${await p.textContent('#wx-loc')})`);
     // another location: fetched again for the new place
     await p.evaluate(()=>setLocation({lat:51.5,lon:-0.12,name:'London'}));for(let t=0;t<250&&calls<2;t++)await p.waitForTimeout(20);
     await p.waitForFunction(()=>Array.isArray(climate)&&climate.length===12,null,{timeout:5000}).catch(()=>{});   // the request is made before its answer fills the climate in

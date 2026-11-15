@@ -46,6 +46,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>!document.querySelector('#su-vest')&&document.querySelector('#su-sw-jacket').getAttribute('aria-checked')==='false'),'with jackets off the vest choice is gone');
     await p.click('#su-sw-tie');await p.click('#su-sw-jacket');
     ok(await stored(p,`s=>s.dress&&s.dress.jacket===true&&s.dress.tie===false`),'jackets back on and ties off: {jacket:true, tie:false}');
+    ok(await p.evaluate(()=>!document.querySelector('#su-vest')),'with ties off the vest choice is gone too (a waistcoat only with a tie, as Settings)');
+    await p.click('#su-sw-tie');await p.waitForSelector('#su-vest');
     await p.selectOption('#su-vest','always');
     ok(await stored(p,`s=>s.vestMode==='always'`),'choosing a vest stores settings.vestMode');
     await p.click('#su-back');await p.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='week');
@@ -58,7 +60,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(/Weather for Testville/.test(await p.textContent('#su-loc')),'and the step says which place the weather is for');
     await p.click('#su-geo');
     ok(await stored(p,`s=>s.location&&s.location.lat===1.234&&s.location.lon===5.678`),'"Use my location" stores the device\'s position');
-    await p.waitForFunction(()=>/your current location/.test(document.querySelector('#su-loc').textContent));
+    await p.waitForFunction(()=>/your location \(1\.23° N, 5\.68° E\)/.test(document.querySelector('#su-loc').textContent));
     ok(true,'and the step is drawn again with it');
     const other=await p.evaluate(()=>unit()==='F'?'C':'F');
     await p.click(`#su-units .su-day:has-text("°${other}")`);
@@ -76,7 +78,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://server.example.test/api'&&localStorage.getItem('app_token')==='abc123'),'an invite link is read without connectFromLink: its server address and code are stored');
     ok(/✓/.test(await p.textContent('#su-conn'))&&/Connected/.test(await p.textContent('#su-conn')),'and the step shows Connected with a tick');
     await next(p,'done');
-    ok(await p.evaluate(()=>!document.querySelector('#su-skip')&&/Add my first item/.test(document.querySelector('#su-next').textContent)&&/no ties/.test(document.querySelector('.su-sum').textContent)&&/connected/.test(document.querySelector('.su-sum').textContent)),'the last step sums up the answers and offers to add the first item');
+    ok(await p.evaluate(()=>!document.querySelector('#su-skip')&&/Add my first item/.test(document.querySelector('#su-next').textContent)&&/a vest every suit day/.test(document.querySelector('.su-sum').textContent)&&/Blazer days/.test(document.querySelector('.su-sum').textContent)&&/connected/.test(document.querySelector('.su-sum').textContent)),'the last step sums up the answers and offers to add the first item');
     const sum=await p.evaluate(()=>{const d=setupDress(),li=[...document.querySelectorAll('.su-sum li')].find(l=>/Workdays/.test(l.textContent));
       return {days:li.querySelector('b').textContent,want:[...settings.workdays].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '),jacket:d.jacket,help:document.querySelector('#su-step .su-help').textContent}});
     ok(sum.days===sum.want,'the summary lists the workdays in the Week step\'s order, Sunday first: '+sum.days);
@@ -85,6 +87,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.click('#su-next');
     /* a first-time person going on to Add gets the quick tour first (kit.js), its last button going on to Add */
     await p.waitForFunction(()=>!document.querySelector('#setup.on')&&!!document.querySelector('#kitsheet.on'));
+    await p.waitForTimeout(400);   // (a tap at the same spot right after the setup closed is a double tap and is dropped: setupTapGuard)
     for(let k=0;k<3;k++)await p.click('#kit-next');
     ok(/Add my first item/.test(await p.textContent('#kit-next')),'the tour comes between the setup and Add, its last button "Add my first item"');
     await p.click('#kit-next');

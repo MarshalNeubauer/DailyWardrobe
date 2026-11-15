@@ -40,18 +40,19 @@ module.exports=async({ok,chromium,url})=>{
     const IOS='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
     const I=await page({userAgent:IOS,permissions:['clipboard-read','clipboard-write']});
     await I.p.goto(url+link(A));await I.p.reload();await I.p.waitForFunction(()=>window.appReady);
-    await I.p.waitForSelector('#ask-ok',{state:'visible',timeout:10000});
-    const guide=await I.p.textContent('#ask-sheet');await I.p.click('#ask-ok');
+    await I.p.waitForSelector('#kitsheet.on .home-copy',{state:'visible',timeout:10000});   // the one explanation (kit.js homeSteps), not a question sheet (audit 2026-11-15, H12)
+    const guide=await I.p.textContent('#kitsheet');await I.p.click('#kitsheet .home-copy');
     await I.p.waitForFunction(()=>/copied/.test(document.querySelector('#toast').textContent));
     const clip=await I.p.evaluate(()=>navigator.clipboard.readText());
-    ok(/Home Screen/.test(guide)&&/paste the link/.test(guide)&&clip.includes('#invite='+A)&&clip.includes('w='+encodeURIComponent(HOST)),`a tester connected in Safari on an iPhone is shown how to add the app to the Home Screen, and Copy link copies their link`);
+    ok(/Home Screen/.test(guide)&&/paste your invitation link/.test(guide)&&/Safari is connected already/.test(guide)&&clip.includes('#invite='+A)&&clip.includes('w='+encodeURIComponent(HOST)),`a tester connected in Safari on an iPhone is shown how to add the app to the Home Screen, and Copy my invitation link copies their link`);
+    await I.p.click('#kit-next');await I.p.waitForFunction(()=>!document.querySelector('#kitsheet.on'));
     await I.p.evaluate(()=>{openSettings('connection');loadAccount()});await I.p.waitForSelector('#acct-box .acct-ios');
     const box=await I.p.textContent('#acct-box');
     ok(/Copy my invitation link/.test(box)&&/Home Screen/.test(box),'Connection says so too, with a button to copy the link');
     ok(I.errs.length===0,'no page errors ('+I.errs.join('; ')+')');
     // on a computer the guide doesn't show
     const D=await page();await D.p.goto(url+link(A));await D.p.reload();await D.p.waitForFunction(()=>window.appReady&&localStorage.getItem('app_token'));await D.p.waitForTimeout(1500);
-    ok(await D.p.evaluate(()=>!(document.querySelector('#ask-ok')&&document.querySelector('#ask-ok').offsetParent)),'not on a computer');
+    ok(await D.p.evaluate(()=>!(document.querySelector('#ask-ok')&&document.querySelector('#ask-ok').offsetParent)&&!document.querySelector('#kitsheet.on')),'not on a computer');
     // ---- the owner deletes a switched-off tester's data
     const log=[],Ow=await page({},log);
     await Ow.p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner')},HOST);
