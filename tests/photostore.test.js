@@ -26,7 +26,7 @@ module.exports=async({ok,ROOT})=>{
   const kb=n=>(n/1e3).toFixed(1)+' KB';
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
   const T0=Date.now()-86400000;
-  const seed=()=>({items:Array.from({length:24},(_,i)=>({id:'it'+i,type:['suit','shirt','tie','pants'][i%4],primaryColor:'navy',pattern:'solid',added:T0+i,photo:pic(60e3),texture:pic(60e3),swatch:pic(8e3),swSrc:'tex'})),
+  const seed=()=>({items:Array.from({length:24},(_,i)=>({id:'it'+i,type:['suit','shirt','tie','pants'][i%4],primaryColor:'navy',pattern:'solid',added:T0+i,photo:pic(60e3),texture:pic(60e3),swatch:pic(38e3),swSrc:'tex'})),   // (a PNG swatch from before 2026-11-15, over PH_MIN; a JPEG one stays inline: inlineswatch.test.js)
     days:Array.from({length:20},(_,i)=>({date:`2026-10-${String(i+1).padStart(2,'0')}`,ids:['it0','it1','it2'],worn:true,updated:T0})),tombstones:{},settings:{workdays:[1,2,3,4,5],setupDone:1,updated:T0}});
   const S=seed();S.items[23].photo=S.items[22].photo;   // two items with one photo
   const photoCount=new Set(S.items.flatMap(i=>[i.photo,i.texture,i.swatch])).size;
