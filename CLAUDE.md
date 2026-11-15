@@ -47,7 +47,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - markup and script tags
 - the tabs are Today, Wardrobe and Insights (`TABS` in start.js; `#n-stats` shows the `#stats` page, titled Insights, with no ‹)
-- Add is a page of the Wardrobe (`openAdd` in add.js: the Wardrobe header's "+ Add" `#ward-add`, the setup's buttons, a pasted photo), with a ‹ back to where it was opened (`SUBS` has `add`; `subOpen`/`subBack`)
+- Add is a page of the Wardrobe (`openAdd` in start.js: the Wardrobe's round + `#ward-add`, the setup's buttons, a pasted photo), with a ‹ back to where it was opened (`SUBS` has `add`; `subOpen`/`subBack`)
+- the Wardrobe's + (`#ward-add`, 2026-11-15, the owner's ask; it replaced the header row's small "+ Add"): a 56px ink circle with a drawn + (`aria-label` "Add to wardrobe"), in index.html's main after the pages (not inside `#wardrobe`, whose page-in animation transforms it), fixed `16px` above the tab bar (`--navh`) at the right edge of the content column (main's 560px, or 1080px from 600px, centered, less its 16px padding; the screen's right edge less 16px on a phone and the Duo unfolded); shown by `#wardrobe:not([hidden]) ~ #ward-add`, hidden under every layer (`main[inert]`: Settings, the sheets, the setup; `body.iv-on`: the item sheet); pops in only under `prefers-reduced-motion: no-preference`; `#wardrobe` has 76px bottom padding so the last row scrolls clear of it; bottom right, not top right: thumb reach; `tests/wardfab.test.js`
 - Insights starts with "What to buy" (`shopButton()`), then the stats
 - What to buy waits for a wardrobe big enough to judge (`shopGate`, `SHOP_MIN` in shop.js: 3 jackets, or 3 pairs of trousers when the dress code has no jackets; 5 shirts; 4 ties when ties are worn; 2 pairs of shoes, all in rotation): until then the card says what to add and doesn't open (`openShop` returns)
 - the page links (Packing list, Laundry & cleaning) are one card (`.slinks`) under a "Your wardrobe" heading, each with a short line
@@ -127,7 +128,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - tap targets (the `/* ---- accessibility ... */` block at the end): Today's day arrows, a piece's ⇄ and − and the Wardrobe's type chips keep their look and take taps over 44px (a `::after` past the box, counted from inside the 1px border); `.linkbtn` has 4px padding above and below (26px)
 - text sizes are in rem (16px = 1rem; `font-size` and `font` shorthands, converted 2026-11-15) so the look at the default size is unchanged; SVG labels (`.kp-*`, `.hp-label`, rules with `fill:`) keep px; Today's slot labels are 4.25rem wide and the worn pill's `--wp` 4.25rem; `tests/backzoom.test.js` refuses a px text size
 - `html{font-size:calc(var(--tscale,1) * 100%)}`: index.html's head sets `--tscale` from the iPhone's Larger Text (`-apple-system-body` size / 17, its default; kept .85–1.5; measured again on `pageshow` and coming back), 1 elsewhere; to try a size, set `--tscale` on `<html>`
-- the block `/* ---- larger text, page zoom, tap targets … */` (new-user audit 2026-11-14): 44px hit areas past the box (`::after`) for the header's buttons, `#ward-add`, `.linkbtn` (9px above and below), a toast's Undo and Settings' day buttons
+- the block `/* ---- larger text, page zoom, tap targets … */` (new-user audit 2026-11-14): 44px hit areas past the box (`::after`) for the header's buttons, `.linkbtn` (9px above and below), a toast's Undo and Settings' day buttons
 - narrow screens (Safari's page zoom: 150% = 268 CSS px on an iPhone 17 Pro) and large text: in a Today pieces row under 15rem the slot name takes the first line and the piece goes under it (`#today .row` wraps, the label's flex-basis `clamp(4.25rem, (15rem - 100%) * 999, 100%)`; names went one letter per line; a container query on the list broke the unfolding list's scroll on WebKit, `reveal`/`pagescroll`); Settings' day buttons go 4 + 3 below 16.5rem (`.sgroup:has(>.days)` container); category titles wrap; the item sheet's and Add card's fields are `max(58%, min(8.5rem, 72%))` wide; `.pick-nm` breaks a long word; the header title stays one line with an ellipsis
 - dark theme: the empty checklist rings (`.fr-tick`) are `--mut` (they were `--line`, about 1.3:1)
 - a phone on its side (`orientation:landscape` and height up to 500px): the picker takes the screen's height and shows six pieces across
@@ -697,7 +698,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - swiping the grid or ←/→ steps through the type filters in chip order, skipping empty types (`stepType`/`wardTypes`)
 - Wardrobe boxes are one tap target (photo, type eyebrow `.gtype`, name) with no buttons; Delete (`.danger`) is in the item sheet; Add and the editor use one set of labels (Type, Colour, Second colour, Third colour) and dropdown labels start with a capital (`cap1`, app.js)
-- `renderWardrobe` draws the header count (`#wcount`), `wardBar()` above the chips and the grid through `wardGrid(wardFresh())` (wardrobe.js)
+- `renderWardrobe` draws no header row (2026-11-15, the owner: the title and count weren't needed): a visually hidden `h2` "Wardrobe" and item count (`.vh`; `#wcount`, `role=status`) for screen readers, then `wardBar()` at the top of the page, the chips and the grid through `wardGrid(wardFresh())` (wardrobe.js)
 - an empty Wardrobe shows only its empty card: no search field, sort or type chips
 
 ### `history.js`
@@ -752,7 +753,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a Settings change that moves the home day (a workday or day off taken away) moves Today with it when Settings closes (`keepHome`, from `closeSettings` before the redraw)
 - a day before the wardrobe existed (`preWardrobe`: before `planStartDay()`, trimmed from the plan) says "No outfit: your wardrobe starts on …" (`#prewd`), with no score or figure (it showed a red "0 · Incomplete")
 - a past day whose piece was deleted since (`o.gone`) says so under the cards (`goneNote`, `.gonenote`): the drawing can't show it
-- a missing piece's row offers "Add one" (`.addone` → `openAdd()`); nothing says "Add tab" (there is none: `ADD_HINT` "Add one with + Add in the Wardrobe")
+- a missing piece's row offers "Add one" (`.addone` → `openAdd()`); nothing says "Add tab" (there is none: `ADD_HINT` "Add one with the + in the Wardrobe")
 - quick swipes in a row each count (`fly` in today.js: a swipe during the last one's fly-out is added to it, and the day is drawn only when no finger is down: drawing removes the element a touch started on and its moves stop coming); `stepDay(n, from, times)`
 - the picture's pill says "This look last worn …" (`wornBar`): it is the jacket, shirt colour and tie together (`lastWorn`), not the suit's own last wear
 - while the checklist shows (`wardShort()`: a `setupNeeds` row not ticked), a half-outfit is drawn but gets no score card, no "This look last worn" and no outfit count on the month card ("pieces still missing"); after removing the sample a suit and a shirt showed a red "50 Incomplete" (re-audit 2026-11-15)
@@ -1202,7 +1203,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a grid box's accessible name ends with its tag (`giTag`/`giNote`: Sample, Out of rotation, On the way, at the cleaner's, due for cleaning): the `aria-label` hid the visible tag (re-audit 2026-11-15)
 - search: a field above the type chips (`wardBar`, `#wsearch`, `wardQ`); every word typed must be in the item's name, brand, notes, material, type, colour names or pattern (`wardHay`, `wardMatch`; case and accents ignored); it combines with the type chip and stays when the chip changes
 - typing redraws only the grid and the count (`wardSearch` → `wardRefresh`: `#wslide`, `#wcount`, `#wclear`), never the field, so the focus and the keyboard stay; a full `renderWardrobe` while the field is in use (a sync arriving) puts the focus and the caret back (`wardKeep`/`wardBack`)
-- the header count reads "n items", or "n of m items" when a chip or the search narrows the list (`wardCount`); × in the field clears it (`wardClear`, also Escape)
+- the (screen-reader) count reads "n items", or "n of m items" when a chip or the search narrows the list (`wardCount`); × in the field clears it (`wardClear`, also Escape)
 - nothing matches: `#wnone` (`wardGrid`) says so, with "Clear search" and, when a chip is on and other types match, how many and "Search all types"
 - sort: the dropdown beside the search field (`#wsort`, `WARD_SORTS`, `setWardSort`), remembered in `localStorage.ward_sort`: By type, Newest first, Most worn, Longest since worn (never worn first), Colour, A to Z (by the title shown)
 - By type follows the type chips' order (`Object.keys(TYPES)`, suits first), newest first within a type
