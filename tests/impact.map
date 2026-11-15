@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	492efb6b10cd61b78a00
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd	shadeRow
@@ -1734,7 +1733,7 @@ claude.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.
 claude.test.js	worker/links.js	<loaded>	readCapped
 claude.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	unspend	utcDay	whoIs
 claude.test.js	worker/photostore.js	<loaded>	handleSync
-claude.test.js	worker/tag.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	measuredText	orNull	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
+claude.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
 claudepattern.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 claudepattern.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
@@ -1794,7 +1793,7 @@ claudepattern.test.js	watch/vest.png	<loaded>
 claudepattern.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanPattern	corsFor	fetch	handlePattern	lightText	orNull	sameText	serve	sha256Hex	spend	tagWithClaude	txt	utcDay	wbOf	whoIs
 claudepattern.test.js	worker/pattern.js	<loaded>	cleanPattern	handlePattern
 claudepattern.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-claudepattern.test.js	worker/tag.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	lightText	orNull	tagWithClaude	txt	wbOf
+claudepattern.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	lightText	orNull	tagWithClaude	txt	wbOf
 climate.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 climate.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 climate.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
@@ -2764,11 +2763,11 @@ deploy.test.js	worker/tag.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTY
 deploy.test.js	wrangler.toml	<any>
 describe.test.js	tools/describe-eval.js	<any>
 describe.test.js	worker.js	<loaded>	corsFor	fetch	serve
-describe.test.js	worker/describe.js	<loaded>	askOf	bandsOf	baseFor	bitmapOf	cleanDesc	cleanDescribeColour	cleanDescribePattern	cleanLook	colWord	colourSchema	dE00	descTables	describeBoth	guessBase	handleDescribe	hexRgb	labHex	num	ownLists	ownerText	patternSchema	perCall	rgbLab	say
+describe.test.js	worker/describe.js	<loaded>	askOf	bandsOf	baseFor	bitmapOf	cleanDesc	cleanDescribeColour	cleanDescribePattern	cleanLook	colWord	colourSchema	dE00	descTables	describeBoth	guessBase	handleDescribe	hexRgb	labHex	num	ownLists	ownerText	patternSchema	patternSchemaOf	perCall	rgbLab	say
 describe.test.js	worker/links.js	<loaded>	readCapped
 describe.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	firstWeek	handleInvites	handleMe	limitBody	ownerOnly	plainFor	plainKind	sameText	sha256Hex	smallBody	spend	unspend	useCount	usedOf	utcDay	whoIs
 describe.test.js	worker/render.js	<loaded>	RenderHub	fetch	hubOf	sget	sput
-describe.test.js	worker/tag.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	lightText	orNull	sleep	txt	wbOf
+describe.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanMaterial	lightText	matCap	materialSchema	orNull	sleep	txt	wbOf
 display.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 display.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 display.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	needType	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	texSlot	unreadNote	wbNote
@@ -9221,6 +9220,10 @@ tagging.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameT
 tagging.test.js	worker/photostore.js	<loaded>	handleSync
 tagging.test.js	worker/records.js	<loaded>	getRender
 tagging.test.js	worker/tag.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	handleTagMany	lightText	measuredText	orNull	tagSchema	tagWithClaude	txt	wbOf
+tagmaterial.test.js	worker.js	<loaded>	corsFor	fetch	serve
+tagmaterial.test.js	worker/links.js	<loaded>	readCapped
+tagmaterial.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
+tagmaterial.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanMaterial	cleanTag	correctionsText	customText	lightText	matCap	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
 tagswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagswatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 tagswatch.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	checkArrivals	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
