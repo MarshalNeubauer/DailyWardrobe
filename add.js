@@ -81,7 +81,7 @@ function patternAgain(i){const q=queue[i];if(!q)return;if(!(typeof isConnected==
    the same spot is let go */
 const ADD_CALM=450;let addCalm=null;
 document.addEventListener('click',e=>{const t=e.target&&e.target.closest?e.target:null;if(!t||!t.closest('#add'))return;
-  if(addCalm&&e.isTrusted&&Date.now()-addCalm.t<ADD_CALM&&Math.hypot(e.clientX-addCalm.x,e.clientY-addCalm.y)<40){e.preventDefault();e.stopPropagation();return}
+  if(addCalm&&addCalm.ok&&e.isTrusted&&Date.now()-addCalm.t<ADD_CALM&&Math.hypot(e.clientX-addCalm.x,e.clientY-addCalm.y)<40){e.preventDefault();e.stopPropagation();return}
   if(e.isTrusted)addCalm=t.closest('[id^="qconf-"]')?{t:Date.now(),x:e.clientX,y:e.clientY}:null},true);   // (any other tap ends it)
 /* a new card is brought into view (it used to land below the One item / Several items buttons, out of sight under the tab bar) */
 function addShowCard(id){requestAnimationFrame(()=>{const a=$('#add'),el=document.querySelector(`#queue [data-q="${id}"]`);if(!a||a.hidden||!el)return;
@@ -338,7 +338,7 @@ async function saveCard(q){
   const all=[it,...copies],at=Date.now();for(const x of all)x.updated=at;
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
   items.push(...all);
-  const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);renderAdd();
+  const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;renderAdd();   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
   if(typeof kitSaved==='function')kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)keepTagImg(it.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>keepCloseImg(it.id,u,it.texture)).catch(()=>{});   // the sharp close-up for later readings (tagging.js)

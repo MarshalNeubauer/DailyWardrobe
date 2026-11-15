@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url})=>{
     mode='slow';await p.evaluate(`(async()=>{const f=await ${pic(600,600,'#1d2b4b')};addTexture(0,f)})()`);
     await p.waitForFunction(()=>queue[0].refining);
     ok(await kept(p,async()=>{const r=await metaGet('addq');return !!(r&&r[0]&&r[0].refineCut&&!('refining' in r[0]))}),'a close-up being read is kept as cut off, not as still reading');
-    await restart(p);mode='ok';
+    await restart(p);mode='ok';await p.waitForFunction(()=>queue.length>0,null,{timeout:20000}).catch(()=>{});   // (slow under load)
     let s=await p.evaluate(()=>({n:queue.length,reading:queue.some(cardReading),tex:!!queue[0].texture,cut:!!document.querySelector('#queue .refcut'),stuck:/Tagging again/.test(document.querySelector('#queue').textContent),conf:!document.querySelector('#qconf-0').disabled}));
     ok(s.n===1&&!s.reading&&s.tex&&s.cut&&!s.stuck&&s.conf,`it comes back saying the reading was cut off, Confirm on (${JSON.stringify(s)})`);
     await p.evaluate(()=>{addManual();setq(0,'type','tie')});
