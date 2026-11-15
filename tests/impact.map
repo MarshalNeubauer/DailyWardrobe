@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	12d7e979744eaeb740d2
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	addKeep	addKeepSoon	addRestore	checkArrivals	renderAdd	shadeRow
@@ -3441,7 +3440,7 @@ inlineswatch.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	ap
 inlineswatch.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
 inlineswatch.test.js	analysis.js	<loaded>
 inlineswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	stillCur	texSwatches	tx	txFail	txs	window.fetch
-inlineswatch.test.js	asm-color.js	<loaded>	asmCmKind	asmCmRoute	asmWtWants
+inlineswatch.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
 inlineswatch.test.js	asm-gl.js	<loaded>
 inlineswatch.test.js	asm-watch.js	<loaded>
 inlineswatch.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
@@ -3456,14 +3455,14 @@ inlineswatch.test.js	index.html	<loaded>
 inlineswatch.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	phSigOf	renderItem	smallPhotos
 inlineswatch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
 inlineswatch.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
-inlineswatch.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	planOn	shortRest	shortTop	stackSVG
+inlineswatch.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG
 inlineswatch.test.js	mq/shirt-open.js	<loaded>
 inlineswatch.test.js	mq/shirt-tie.js	<loaded>
 inlineswatch.test.js	mq/suit-open.js	<loaded>
 inlineswatch.test.js	mq/suit.js	<loaded>
 inlineswatch.test.js	mq/vest.js	<loaded>
 inlineswatch.test.js	pack.js	<loaded>	packShow
-inlineswatch.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	lastWorn	listPaused	loadRenders	lookSig	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	workerBase	workerList
+inlineswatch.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	lastWorn	listPaused	loadRenders	lookSig	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
 inlineswatch.test.js	planner.js	<loaded>	lockStale
 inlineswatch.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 inlineswatch.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
@@ -3481,9 +3480,18 @@ inlineswatch.test.js	today.js	<loaded>	@document.addEventListenervisibilitychang
 inlineswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 inlineswatch.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	wardFlush	wardPendingRestore
 inlineswatch.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	serve
-inlineswatch.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	isPhotoOld	keepSnapshots	kvMeta	liteSig	mergeLite	nextRevs	phCollect	phHash	putStored	readText	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncPhotos	syncVersion	writeBudget
-inlineswatch.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	utcDay	whoIs
-inlineswatch.test.js	worker/photostore.js	<loaded>	asText	gcKey	handleSync	isPv	loadAny	nsOf	phKey	phThere	putPhotos	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
+inlineswatch.test.js	worker/backup.js	<any>	<loaded>	arrOf	dropParts	isParted	isPhoto	isPhotoOld	keepSnapshots	kvMeta	liteSig	mergeLite	nextRevs	phCollect	phHash	putStored	readText	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncPhotos	syncVersion	writeBudget
+inlineswatch.test.js	worker/describe.js	<any>	<loaded>
+inlineswatch.test.js	worker/holidays.js	<any>	<loaded>
+inlineswatch.test.js	worker/items.js	<any>	<loaded>
+inlineswatch.test.js	worker/links.js	<any>	<loaded>
+inlineswatch.test.js	worker/pattern.js	<any>	<loaded>
+inlineswatch.test.js	worker/people.js	<any>	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	utcDay	whoIs
+inlineswatch.test.js	worker/photostore.js	<any>	<loaded>	asText	gcKey	handleSync	isPv	loadAny	nsOf	phKey	phThere	putPhotos	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
+inlineswatch.test.js	worker/records.js	<any>	<loaded>
+inlineswatch.test.js	worker/remind.js	<any>	<loaded>
+inlineswatch.test.js	worker/render.js	<any>	<loaded>
+inlineswatch.test.js	worker/tag.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
 invitefix.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutOwnKey	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	askDelete	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 invitefix.test.js	account.js	<any>	<loaded>	acctBase	acctCall	acctConnect	acctEndedUI	acctEsc	acctFailText	acctLinkDrawn	acctLocal	acctRetryLink	acctRole	acctStart	acctStarted	acctToast	acctUse	applyRole	connectFromLink	dropInviteHash	hasInviteHash	inviteParts	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 invitefix.test.js	add.js	<any>	<loaded>	addKeep	addKeepSoon	addRestore	checkArrivals	renderAdd

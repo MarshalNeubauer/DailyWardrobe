@@ -4,7 +4,7 @@
 // Chromium; an older app's save is played by posting what it sends.
 const path=require('path'),crypto=require('crypto'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
-  const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
+  let worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const store=new Map(),meta=new Map(),writes=[];
   const KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,getWithMetadata:async k=>({value:store.has(k)?store.get(k):null,metadata:meta.get(k)||null}),
     put:async(k,v,o)=>{writes.push(k);store.set(k,v);meta.set(k,o&&o.metadata)},delete:async k=>{store.delete(k);meta.delete(k)},
@@ -52,6 +52,18 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // the full backup an older app downloads has both inline
     const full=JSON.parse(await (await worker.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
     ok(full.data.items.find(i=>i.id==='it2').swatch===oldSw&&full.data.items.find(i=>i.id==='new1').swatch===sw.s,'an older app\'s whole download carries both swatches inline');
+    // the worker from before (this worker with PH_MIN 256, as main had it), as between the app's deploy and the worker's: it splits the
+    // inline swatch out itself, so the save goes through (no 400 missing) and another device still gets it
+    {const fs=require('fs'),os=require('os'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'dw-ph256-'));fs.mkdirSync(path.join(dir,'worker'));
+      fs.copyFileSync(path.join(ROOT,'worker.js'),path.join(dir,'worker.js'));
+      for(const n of fs.readdirSync(path.join(ROOT,'worker')))if(n.endsWith('.js')){let s=fs.readFileSync(path.join(ROOT,'worker',n),'utf8');if(n==='backup.js')s=s.replace('const PH_MIN = 16384,','const PH_MIN = 256,');fs.writeFileSync(path.join(dir,'worker',n),s)}
+      ok(/const PH_MIN = 256,/.test(fs.readFileSync(path.join(dir,'worker','backup.js'),'utf8')),'(the worker from before: PH_MIN 256)');
+      const Old=(await import(pathToFileURL(path.join(dir,'worker.js')).href)).default;const cur=worker;worker=Old;
+      const sw2=sw.s.replace(/.$/,c=>c==='A'?'B':'A'),np2=pic(50e3);writes.length=0;
+      await A.p.evaluate(async([sw,np])=>{const it={id:'new2',type:'shirt',primaryColor:'white',pattern:'solid',added:Date.now(),photo:np,swatch:sw,swSrc:'photo'};await put(it);items=[...items,it]},[sw2,np2]);
+      const okA=await A.p.evaluate(()=>syncNow()),st=await A.p.evaluate(()=>localStorage.getItem('sync_status'));
+      const C=await device();const okC=await C.p.evaluate(()=>syncNow());const got=await itemOf(C,'new2');worker=cur;try{fs.rmSync(dir,{recursive:true,force:true})}catch{}
+      ok(okA&&!st&&store.has('ph:'+hashOf(sw2))&&okC&&got&&got.swatch===sw2&&got.photo===np2,`against the worker from before, a new inline swatch is saved (stored separately by it, as before) and read back on another device (${writes.join(', ')})`);}
     ok([A,B].every(d=>!d.errs.length),'no page errors ('+[A,B].flatMap(d=>d.errs).join('; ')+')');
   }finally{await browser.close()}
 };
