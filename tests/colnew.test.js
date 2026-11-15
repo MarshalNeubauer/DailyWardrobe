@@ -126,6 +126,58 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(/^data:image\//.test(bodies.at(-1).closeup||'')&&s.bar==='Use Windowpane'&&/Add a new pattern anyway/.test(s.text),'the close-up is sent; a reuse answer offers "Use Windowpane" first');
     await p.click('#col-sheet .cpbar button');await settle(p,100);
     ok(await p.evaluate(()=>items.find(x=>x.id==='b2').pattern==='windowpane'),'"Use Windowpane" sets windowpane');
+    ok(bodies.at(-1).wb===false,'the pattern request now says whether the close-up was corrected (no paper: wb false)');
+    // ---- white paper in the close-up (photo-wb-mockups 07-10): the mink suit's close-up with a band of white paper drawn on, plain, or
+    // warm-tinted with paper; a photo with a warm cast
+    const F=await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+      const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
+      const cv=(im,k,f)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);if(f)f(c,x);return c};
+      const paper=(c,x)=>{x.fillStyle='#f4f3ef';x.fillRect(0,c.height*.8,c.width,c.height*.2)};
+      const warm=(c,x)=>{const D=x.getImageData(0,0,c.width,c.height),d=D.data;for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*1.12);d[i+1]=Math.min(255,d[i+1]*1.02);d[i+2]=d[i+2]*.78}x.putImageData(D,0,0)};
+      const J=c=>c.toDataURL('image/jpeg',.9),f={plain:J(cv(ci,3)),paper:J(cv(ci,3,paper)),warmPaper:J(cv(ci,3,(c,x)=>{paper(c,x);warm(c,x)})),photo:J(cv(pi,1)),warmPhoto:J(cv(pi,1,warm))};
+      const S=(id,texture,photo)=>({id,type:'suit',primaryColor:'deeptaupe',pattern:'solid',texture,photo,added:9});
+      items.push(S('mp',f.paper,f.photo),S('mw',f.plain,f.warmPhoto),S('mx',f.warmPaper,f.photo),S('mn',f.plain,f.photo));return f});
+    const colSheet=async id=>{await p.evaluate(id=>{closeColPick();openColPick('e',id,'primaryColor')},id);await p.click('#cn-open');await p.waitForSelector('#cn-paper')};
+    const pbox=()=>p.evaluate(()=>{const b=document.querySelector('#cn-close,#pn-close'),l=document.querySelector('#cn-paper');return {on:b&&b.getAttribute('aria-checked')==='true',line:l&&l.textContent,cls:l&&l.className,retake:!!(l&&l.querySelector('.wbretake input[type=file]')),cost:document.querySelector('#cn-cost').textContent}});
+    const askCol=async(words,res=COL)=>{reply=()=>[200,res];const n=bodies.length;await p.fill('#cn-text',words);await p.click('#cn-ask');await p.waitForFunction(n=>colPick.newc&&colPick.newc.state!=='busy'&&!!document.querySelector('#cn-res'),n);return bodies.at(-1)};
+    await colSheet('mp');e=await pbox();
+    ok(e.on&&/\bok\b/.test(e.cls)&&e.line==='✓White paper found: Claude sees the true color.'&&/with the close-up/.test(e.cost),`a close-up with paper: the New colour sheet's "Also show Claude my close-up" starts ticked, "White paper found" under it (${JSON.stringify(e)})`);
+    let b=await askCol('mink, a greyish brown');
+    ok(/^data:image\/jpeg;base64,/.test(b.closeup||'')&&b.wb===true&&b.what==='colour','the colour request carries the close-up and wb:true');
+    ok(await p.evaluate(()=>!document.querySelector('#cn-warm')),'no light note on the answer when the close-up had paper');
+    await colSheet('mx');b=await askCol('mink');
+    e=await p.evaluate(async([sent,id])=>{const it=items.find(x=>x.id===id),m=async u=>{const c=await urlCanvas(u),d=c.getContext('2d').getImageData(0,0,c.width,Math.round(c.height*.7)).data;let r=0,bb=0;for(let i=0;i<d.length;i+=4){r+=d[i];bb+=d[i+2]}return bb/r};
+      return {same:sent===it.texture,stored:+(await m(it.texture)).toFixed(3),sent:+(await m(sent)).toFixed(3)}},[b.closeup,'mx']);
+    ok(b.wb===true&&!e.same&&e.sent>e.stored*1.1,`with paper the copy sent is white-balanced from it (the cloth's blue/red ${e.stored} stored → ${e.sent} sent), not the close-up as stored`);
+    await colSheet('mw');e=await pbox();
+    ok(!e.on&&/\bno\b/.test(e.cls)&&/^!No white paper, and the light looks warm: Claude may see it yellower\. Retake close-up$/.test(e.line)&&e.retake&&!/with the close-up/.test(e.cost),`no paper and a warm photo: the box starts unticked, the warm line with Retake close-up (${e.line})`);
+    b=await askCol('mink');
+    ok(!('closeup' in b)&&!('wb' in b),'box off: neither closeup nor wb is sent');
+    ok(await p.evaluate(()=>!document.querySelector('#cn-warm')),'no light note when the close-up wasn\'t shown');
+    await p.click('#cn-close');ok((await pbox()).on,'the box can be ticked');b=await askCol('mink');
+    ok(/^data:image\//.test(b.closeup||'')&&b.wb===false,'ticked with no paper: the close-up goes as taken with wb:false');
+    e=await p.evaluate(()=>{const w=document.querySelector('#cn-res .cnwarm');return w&&{t:w.textContent,retake:!!w.querySelector('.wbretake input')}});
+    ok(e&&/Taken in warm light — the color may be yellower than the cloth; add white paper for a truer color\./.test(e.t)&&e.retake,'Claude\'s colour carries the warm-light note with Retake close-up');
+    await colSheet('mn');e=await pbox();
+    ok(!e.on&&/^!No white paper in this close-up: the color may be off\. Retake close-up$/.test(e.line),'no paper, light not warm: the plain "No white paper" line, nothing said about the light');
+    await p.click('#cn-close');b=await askCol('mink');
+    ok(b.wb===false&&await p.evaluate(()=>/No white paper in the close-up, so this shade is Claude’s best guess from the photo as taken\./.test(document.querySelector('#cn-warm').textContent)&&!document.querySelector('#cn-res .cnwarm')),'the answer then says the shade is Claude\'s best guess from the photo as taken');
+    // Retake close-up from the sheet: the new close-up has paper, the box ticks itself and the line turns
+    const buf=Buffer.from(F.paper.split(',')[1],'base64');await (await p.$('#cn-paper .wbretake input')).setInputFiles({name:'paper.jpg',mimeType:'image/jpeg',buffer:buf});
+    await p.waitForFunction(()=>/White paper found/.test((document.querySelector('#cn-paper')||{}).textContent||''));
+    ok((await pbox()).on,'Retake close-up on the sheet: the new close-up with paper ticks the box and says "White paper found"');
+    // the pattern sheet shows the same reading; its box still starts unticked
+    await p.evaluate(()=>{closeColPick();openColPick('e','mw','pattern')});await p.click('#pn-open');await p.waitForSelector('#cn-paper');e=await pbox();
+    ok(!e.on&&e.line==='!No white paper: the weave reads fine, the colors may be off.','the pattern sheet\'s close-up option shows "No white paper: the weave reads fine, the colors may be off."');
+    await p.click('#pn-close');b=await askCol('a fine twill',HOP);ok(/^data:image\//.test(b.closeup||'')&&b.wb===false,'the pattern request sends wb:false with a close-up without paper');
+    await p.evaluate(()=>{closeColPick();openColPick('e','mp','pattern')});await p.click('#pn-open');await p.waitForSelector('#cn-paper');e=await pbox();
+    ok(e.line==='✓White paper found: Claude sees the true colors.','with paper: "White paper found: Claude sees the true colors."');
+    await p.click('#pn-close');b=await askCol('a fine twill',HOP);ok(b.wb===true,'and sends wb:true');
+    for(const theme of ['light','dark']){await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await colSheet('mw');await p.click('#cn-close');await askCol('mink');
+      e=await p.evaluate(()=>{const s=document.querySelector('#col-sheet'),small=[...s.querySelectorAll('button,input:not(.vfile),select,textarea')].filter(b=>b.offsetParent&&b.getBoundingClientRect().height<43.5).map(b=>b.id||b.className||b.tagName);
+        return {w:s.scrollWidth<=s.clientWidth+1&&document.documentElement.scrollWidth<=390,small,warm:getComputedStyle(document.querySelector('.cnwarm')).backgroundColor}});
+      ok(e.w&&!e.small.length&&e.warm!=='rgba(0, 0, 0, 0)',`${theme}: the box, the paper line and the warm note fit 390 px (${JSON.stringify(e)})`)}
+    await p.evaluate(()=>{delete document.documentElement.dataset.theme;closeColPick()});
     // ---- Settings: the two buttons, a "For" choice, a colour by hand
     await p.evaluate(()=>openSettings('tagging'));
     ok(await p.evaluate(()=>!!document.querySelector('#custom-list #cust-newcol')&&!!document.querySelector('#custom-list #cust-newpat')&&!!document.querySelector('#custom-list .msw.pat svg')),'Settings → Your colors & patterns has "+ New color" and "+ New pattern", and draws each pattern with its look');

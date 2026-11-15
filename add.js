@@ -32,11 +32,12 @@ async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
 function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
-  const inp=`<input type="file" accept="image/*" class="vfile" onchange="addTexture(${i},this.files[0]);this.value=''">`;
+  // the close-up chooser on a touch screen (ui.js closeupBtn): Take close-up, Choose from photos, Remove close-up (Remove a button of its own without touch)
+  const cloth=paperCloth(q),pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${i},f)`,remove:mode==='replace'?`dropTexture(${i})`:'',cloth});
   // a card typed in by hand has no photo and so no split swatch, and no tagging notes (tagNotes): what the close-up did, and a blurry one, are said here
   const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
-  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the color as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
-    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true color fill the frame. It makes the pictures and colors match the cloth better. Optional.</small><small class="mut texpaper">Lay white paper along one edge, then tap the paper on the camera screen before you take the picture, to set the exposure.</small><button type="button" class="linkbtn texguide" onclick="kitCloseupGuide()">Tips for a good close-up</button><label class="btn pri">Add close-up${inp}</label></div>`}
+  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the color as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" onclick="dropTexture(${i})">Remove</button>`}</div></div>`
+    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true color fill the frame. It makes the pictures and colors match the cloth better. Optional.</small>${paperSteps(cloth)}${pick('Add close-up','btn pri','add')}</div>`}
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
@@ -362,7 +363,7 @@ function renderAdd(){
   if(typeof addGate==='function')addGate();
   addKeepSoon();
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):
-`<div class="card" data-q="${esc(q.id)}">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
+`<div class="card qcard" data-q="${esc(q.id)}"><button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
 ${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">

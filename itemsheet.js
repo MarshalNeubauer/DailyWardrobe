@@ -18,10 +18,31 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
 async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
   return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
-    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" class="vfile" onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
+    (tex?closeupBtn({label:i.texture?'Replace close-up':'Add fabric close-up',cls:'btn',mode:i.texture?'replace':'add',file:`f=>replaceTexture('${i.id}',f)`,remove:i.texture?`setTexture('${i.id}',null,'Close-up removed.')`:'',cloth:paperCloth(i)}):'')+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
-    (tex&&i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+
-    (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
+    (tex&&i.texture&&!cuTouch()?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+   // on a touch screen Remove is in the close-up chooser (ui.js)
+    (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`+(tex?paperHint(i):'')}
+/* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
+   under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
+   tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
+   is added or replaced here, a line under the photos says whether paper was found (paperOf in tagging.js), with Retake close-up. ---- */
+/* the hint as "3 tiny steps" (2026-11-15, paper-hint-proposals A, the owner's choice; it was a sentence and a "Tips for a good close-up"
+   link): "True color in 3 steps", Paper on an edge › Tap the paper › Take the photo, each with a small drawing (the owner's, at 40 px).
+   The whole card is one button that opens the short tip (paperTip; its last line opens the full guide). Also in the Add card's Step 2. */
+const paperCloth=i=>{try{return COLORS[primaryCol(i)]?colOf(i):'#5d6478'}catch{return '#5d6478'}};
+const PAPER_CAM='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
+const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--cloth:${cloth}"><i></i></span>`;
+  return `<div class="wbsteps"><button type="button" class="wbstcard" onclick="paperTip()" aria-label="True color in 3 steps: lay white paper along one edge, tap the paper on screen, take the photo. Open tips.">
+<span class="hd" aria-hidden="true"><span class="eb">True color in 3 steps</span><span class="more">Tips ›</span></span>
+<span class="ol" aria-hidden="true"><span class="li"><span class="n"><b>1</b>${pic('nobox noring')}</span>Paper on an edge</span><span class="arr">›</span>
+<span class="li"><span class="n"><b>2</b>${pic('')}<span class="tap"></span></span>Tap the paper</span><span class="arr">›</span>
+<span class="li"><span class="n"><b>3</b><span class="cam">${PAPER_CAM}</span></span>Take the photo</span></span></button></div>`};
+const paperHint=i=>paperSteps(paperCloth(i));
+function paperTip(){if(typeof kitOpen==='function')kitOpen([PAPER_CARD])}
+const paperRetake=(id,fn)=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:`f=>${fn}('${id}',f)`,cloth:paperCloth(items.find(x=>x.id===id)||{})});
+function paperLine(i){if(!i.texture||!TEXTURE_TYPES.includes(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
+  return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
+    :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${paperRetake(i.id,'replaceTexture')}</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
   if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
@@ -30,8 +51,9 @@ const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=
 /* a close-up under TEX_MIN_PX on its short side is refused, as on the Add card (2026-11-15, the re-audit: the editor took a 40×40 one) */
 async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
   if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
-  const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q);
-  await setTexture(id,shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),'Close-up added.');   // (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
+  const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q),tex=shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),cur=items.find(x=>x.id===id);
+  if(cur){await paperOf({texture:tex,photo:cur.photo,photoSm:cur.photoSm,phSig:cur.phSig});if(phEdit.id===id)phEdit.paper=texSig(tex)}   // the paper line under the photos (paperLine)
+  await setTexture(id,tex,'Close-up added.');   // (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
   const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);if(it)delete it.pbox;   // the pattern's box was on the old picture
@@ -105,7 +127,7 @@ function itemBody(i){
   const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
   const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
   ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
-  return `<div class="ivin">${hero}${photos}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
+  return `<div class="ivin">${hero}${phEdit.crop?'':paperLine(i)}${photos}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -181,7 +203,7 @@ function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history
    of the item sheet's and start.js's: a capturing one on window still ran after them in Chromium), stops them, closes the sheet (‹ first on
    a "New" sheet opened from the list, as its own ‹ does) and puts that entry back, so their flags still hold and the next Back closes the
    page. A step back of the app's own (itemBack, appPend) passes untouched. */
-function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof appPend!=='undefined'&&appPend))return;
+function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof cuOpen!=='undefined'&&cuOpen)||(typeof appPend!=='undefined'&&appPend))return;
   e.stopImmediatePropagation();const had=itemHist||(typeof appHist!=='undefined'&&appHist);
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();
   if(had)try{history.pushState({cp:1},'')}catch{}}
@@ -229,23 +251,38 @@ function dropItem(){editing=null;itemFrom=null;histDrop();for(const el of [$('#i
 /* swiping the sheet down closes it. The header is a handle at any time; the content is one only while it is scrolled to the
    top (further down, a downward swipe scrolls it back up, as it must). The choice is made on the first move of a touch, before
    the browser starts scrolling. The sheet follows the finger and the Wardrobe behind brightens; let go past a quarter of the
-   sheet's height, or with a flick, and it closes, else it springs back. Not while cropping (the crop frame is dragged). */
+   sheet's height, or with a flick, and it closes, else it springs back. Not while cropping (the crop frame is dragged).
+   A mouse, trackpad or Pencil (Pointer Events, not touches) drags it by the header the same way; a finger's pointer events are
+   left to the touch listeners. (2026-11-15, the owner's Duo unfolded: the centred panel sat at 4vh, under the status bar, and a
+   pull on its grabber went to iOS; the panel now starts below the status bar, `--ivtop` in styles.css.) */
 let ivDrag=false;
 (()=>{const v=$('#item-view'),b=$('#ivbody'),bd=$('#item-backdrop');if(!v||!b)return;let st=null;
   const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
-  v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.ivhead');
-    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:e.timeStamp,vy:0}},{passive:true});
+  const can=(el,head)=>!(!editing||v.classList.contains('closing')||phEdit.crop||el.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0));
+  const begin=(x,y,ts)=>({x,y,t:Date.now(),on:false,d:0,ly:y,lt:ts,vy:0});
+  // false: not a pull (upward or sideways), let go of it; true: the sheet follows
+  const move=(x,y,ts)=>{const dx=x-st.x,dy=y-st.y;
+    if(!st.on&&st.pid!==undefined&&Math.abs(dx)<4&&Math.abs(dy)<4)return false;   // a mouse reports every pixel: decide after a few
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return false}}   // downward: ours; anything else is a scroll or a sideways swipe
+    // the speed from when each move happened (e.timeStamp), not when it was handled, as in shop.js: on a busy phone a flick handled late read as a slow pull
+    if(ts>st.lt){st.vy=(y-st.ly)/(ts-st.lt);st.ly=y;st.lt=ts}
+    st.d=Math.max(0,dy);put(st.d);return true};
+  v.addEventListener('touchstart',e=>{const t=e.touches[0];
+    st=e.touches.length>1||!can(e.target,!!e.target.closest('.ivhead'))?null:begin(t.clientX,t.clientY,e.timeStamp)},{passive:true});
   v.addEventListener('touchmove',e=>{
-    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
-    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return}}   // downward: ours; anything else is a scroll or a sideways swipe
-    // the speed from when each touch happened (e.timeStamp), not when it was handled, as in shop.js: on a busy phone a flick handled late read as a slow pull
-    e.preventDefault();const now=e.timeStamp;if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
-    st.d=Math.max(0,dy);put(st.d)},{passive:false});
+    if(!st||st.pid!==undefined)return;const t=e.touches[0];if(move(t.clientX,t.clientY,e.timeStamp))e.preventDefault()},{passive:false});
   const end=()=>{
     if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;ivDrag=false;v.style.transition='';
     if(d>v.offsetHeight*.25||(vy>.5&&d>30)){closeItem(false,d);return}
     put(0);if(!noMotion()){v.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:220,easing:WARD_EASE});if(bd)bd.animate([{opacity:Math.max(.15,1-d/v.offsetHeight)},{opacity:1}],{duration:220})}};
-  v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true});
+  v.addEventListener('touchend',e=>{if(st&&st.pid===undefined)end()},{passive:true});v.addEventListener('touchcancel',e=>{if(st&&st.pid===undefined)end()},{passive:true});
+  // mouse, trackpad, Pencil: by the header only (the content is scrolled and its text selected with them)
+  const h=$('#ivhead');if(!h||!window.PointerEvent)return;
+  h.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.button!==0||st||!can(e.target,true))return;
+    st=begin(e.clientX,e.clientY,e.timeStamp);st.pid=e.pointerId;try{h.setPointerCapture(e.pointerId)}catch{}});
+  h.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
+  const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{h.releasePointerCapture(e.pointerId)}catch{}end()};
+  h.addEventListener('pointerup',pend);h.addEventListener('pointercancel',pend);
 })();
 /* the previous / next item of the list on screen; the new one slides in from the side it lies on */
 function stepItem(n,from){
