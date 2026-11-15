@@ -125,12 +125,15 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - colours, types, item helpers (no DOM; also loaded by background workers)
 - `isWorkday(d)` = a weekday in `settings.workdays` that is not a day off (`offName(d)`: a public holiday in `settings.holidays` `{country, list:[{d,n}], skip}` that is not skipped, or one of the user's own `settings.daysOff` `[{d,n}]`; dates as `YYYY-MM-DD`, `isoKey`)
 - the planner skips days off like weekends
+- `itemSeason`: the item's own season (one set in the item sheet, 'all' too, wins), else tweed pattern, else its material (`MAT_SEASON`: flannel, tweed, corduroy, velvet cold; linen, linen blend, seersucker warm; season types only) (2026-11-15)
+- `dayClimate` with no location: the holiday country (set from the time zone at setup) gives a Gulf climate's usual highs (`CC_TMAX`: KW SA AE QA BH OM IQ; a Kuwait December is mild, no overcoat) or the southern hemisphere (`SOUTH_CC`); not the phone's time zone itself, so tests stay the same on any machine
 - `inRotation(i)`: false for an item the user took out of rotation (`item.paused`, synced with the item); it stays in the wardrobe and in past outfits
 - bought, on the way: `item.order` with `item.paused`, optionally `item.arrives` (YYYY-MM-DD); `inRotation(i, n)` is true for day number `n` (`di`) after the arrival date (`arriveN`), so the plan includes it from then on
 - `inRotation(i, n)` / `arriveN` serve pieces away being cleaned too: `item.arrives` holds `item.away.back`
 - `item.shade` (−6…+6 steps of `SHADE_STEP` 4 L*, `shadeHex`/`shadeFor`/`shadeName`): the owner's darker/lighter for the drawn main colour (`colOf`); the tag, the planner (`planCol`, `lumOf`) and photo keys keep the tagged colour
 - shade is set on the Add card and in the editor (`shadeRow`, `stepShadeQ`/`matchShadeQ`, `stepShadeE`/`matchShadeE` in add.js); "Match close-up" uses the close-up's measured lightness
 - `desc(i)` names a metal only for `METAL_TYPES` (watch, belt, cufflinks): an Add card carries `metal` 'silver' for every type, and a suit's or shoes' caption read "· silver"
+- `desc(i)` names cufflinks by colour and metal ("light blue · gunmetal"; silver or gold links only their metal, `linkFace`), says "gunmetal" for the metal 'other' (`metalWord`), a sneaker's leather "leather" (`leatherWord`), and a season only for `SEASON_TYPES` (2026-11-15, the new-user audit: "Saved: Other.", "calf" sneakers)
 - `MATERIALS_BY`: the materials offered per item type for `item.material` (suit, blazer, pants, shirt, tie, socks, overcoat, raincoat; lower-case names, shown with `cap1`); shoes and belts (their `leather`), watches (band and metal), cufflinks and tie clips have no list
 - a shoe's material by style (`leathersFor`): a sneaker in leather (stored `calf`, shown "Leather"), suede, canvas or knit (`SHOE_TEXTILES`, textured in draw.js `leatherLayers`, finish `textile`); a boot in calf, suede, the grains or cordovan; a loafer in calf, suede, patent or cordovan; oxfords, derbies and belts in every leather
 - the Add card and the item sheet label it "Material" on every pair of shoes, right under Style and above More details / Notes (`leatherLabel`; belts keep "Leather"); a style change to one that can't be in the material makes it plain leather
@@ -166,7 +169,15 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - an enamel tie clip (black, red, blue, navy: `clipMetal` null) is chosen by the tie (`enamelPref` in planner.js, 2026-11-14, the owner: 7 of his 9 clips were never planned, an enamel clip scored 0 against a silver watch-and-buckle match's 9): picking up the tie's second or third colour (by family) `ENAMEL_ACCENT` 11, beating silver; the tie's own colour or a near one (red with burgundy, blue with navy) `ENAMEL_TONE` 8, just under, so it comes round when silver has been worn; anything else `ENAMEL_CLASH` -5; gold, rose gold and gunmetal stay off against a silver watch and buckle (the owner: "keep gold off"); no clip on a waistcoat day, as before; on his wardrobe over six months: blue 5, navy 2, black 2, red 1, silver 5, grey 6, gold/rose gold/gunmetal 0, scores unchanged (99.77); `tests/enamelclip.test.js` (realPlanner)
 
 - outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM)
-- `PLAN_RULES` (13) is bumped to release the week's locks once (picks kept); a bump also clears swaps on future days, so changes that protect picks (`fixedAhead`, `TIE_GAP`) were made without one
+- the new-user audit's planner fixes (2026-11-15, Fixer 6; `tests/newuserplan.test.js`):
+- trousers or a suit with no shoes in the day's pool that suit them (`shoeOk`: not patent, `shoeScore` > -50) cost `NO_SHOES` (40) in the trousers' shortlist, the outfit window and the jacket choice (`noShoes`): stone chinos with only black shoes were planned every other day at 69 while charcoal trousers were free; with nothing else they are still planned, with the note
+- the jacket worn on the previous workday costs `JKT_AGAIN` (30; `sumUp.jid`): a wedding took the suit locked for the day before; a funeral's black suit or a formal day's dark one still wins; the score's Variety takes 2 for "the same suit as the workday before"; the dress test's small wardrobe now alternates its two suits (GOLD small e9ea9c35, scores 97.14 → 97.18)
+- the simulation doesn't plan the days before the wardrobe began (`wardStart`: the first item's `added`, null when an item has none): no made-up rest ("This suit was worn 1 day ago" on a new wardrobe) or Variety from them; only wardrobes younger than `planStart` change
+- the week's locks carry `rec.lockAt`; a lock made while a type in `LOCK_TYPES` (suit, blazer, trousers, shirt, tie, shoes, belt) had fewer than `LOCK_THIN` (3) in rotation is let go once one is added after it (`lockStale`, used by `planSim` and `fixedAhead` through `lockOf`, and by `lockUpcoming`, which relocks it): a new user's first week stayed on his one suit, its blazer day too; old locks (no `lockAt`) and wardrobes with three of each keep theirs
+- every shirt in the wash: `washed` takes the one washed longest ago, not yesterday's white
+- a funeral tie with a motif (dots, paisley, foulard) loses 6 more, so a navy stripe goes before navy dots; a patterned stand-in's note says a plain black tie is right
+- `beltWait(shoes)`: the belt a pair waits for when belts are owned and none matches it ("black smooth leather belt"); named in the Variety line's "same shoes as yesterday", Insights' never-worn reason and its shoes-two-days-running line (stats.js, dress.js)
+- `PLAN_RULES` (14, for the new-user audit's planner fixes, 2026-11-15) is bumped to release the week's locks once (picks kept); a bump also clears swaps on future days, so changes that protect picks (`fixedAhead`, `TIE_GAP`) were made without one
 - **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js
 - on the next start a bump releases only the week's locks and the app's own recorded pieces on days after today (`checkPlanRules()` → `replanFuture(true)` in history.js); the owner's swaps, skips and vest choices stay, so there is no reason to skip a bump; Settings' "Re-plan upcoming days" also clears them, on demand
 
@@ -363,6 +374,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a tie's read stripes (`v:2` bands) and figures (motif) have no white sheen line: one per repeat, turned with the pattern, it lay almost level and showed as light grey bands across the item sheet's swatch
 - a motif `sett` is drawn as a 2×2-cell tile (two colours alternate like a checkerboard; `corner` figures where four cells meet; `alternate-cells` in every other cell), turned 45° for a diagonal grid; swatch scale from `cr` (cells in the close-up), figure scale from `tr` (cells across the item)
 - a `figure` is drawn from its bitmap, its rows' runs of 1 as rects, at the figure's own proportions; cells are `T` wide and `T*aspect` tall, offset rows shift half a cell, and a figure crossing the tile's edge is drawn again on the other side
+- a plain wool (suit, blazer, trousers with no pattern) on Today's figure (`'fig'`) and in small swatches (`'dot'`) has a fine, faint grain (`FINE_TWILL`: a 1.25 / 1.6 unit tile at .045 / .05), and no grain under a stripe or check there (2026-11-15, the new-user audit: the generic grain, a line every 4.5 units on the figure, read as a diagonal stripe; three testers took a plain navy suit for a striped one; chosen to keep texture below a pattern, as the owner did with the painter's twill ribs and the suit drawing's cloth scale); the drawings and the item sheet's swatch keep the generic grain
+- a windowpane's or a jacket check's small swatch (`'dot'`) is a 7 / 8 unit tile, about two panes across the 16 unit square (at 18 one pane filled it and read as plain)
+- cufflinks with a colour that isn't silver or gold are drawn with an enamel face in it in a metal rim (`.link-face`); a tie clip's swatch is its colour, shiny when it is a metal colour (`swatchSVG`: it read `i.metal`, which clips don't have, so it was always silver)
 - `texTileSmooth` (Today's shirt swatch, the owner's choice "Smooth + thread grain"): 24 px a cell, a wrapping Gaussian (`TEX_SMOOTH_SIG` .32 of a cell) and a narrow smoothstep, so the figures have rounded anti-aliased outlines, plus a faint diagonal thread grain (`TEX_GRAIN` ±3.5%); herringbone and twill readings and every other swatch are unchanged
 
 #### Traced drawings (no photo)
@@ -396,6 +410,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the dress code's Settings switches and the waistcoat default (loaded after app.js)
 - Settings → Schedule → Dress code (`renderDressUI`, `#cfg-dress`, rows from `DRESS_ROWS`): two switches (`.dress-sw`, `role="switch"`, 56×44px), "Jackets (suits and blazers)" and "Ties", each with one line of help
 - `setDress(k, on)` saves `settings.dress`, releases the locked week (`clearLocks`) and re-plans Today when Settings closes
+- `setDress` redraws the switch and saves before releasing the locks (2026-11-15: a tap then a swipe away lost it)
+- `newSuitVest()`: a new suit's Vest row (Add card) is "Matching vest" when `vestMode` is 'always' and jackets and ties are worn, else "No vest"
 - with jackets off the Blazer days group and the Suit vest row are hidden (`#blazer-group`, `#vest-row`, class `dress-hide`) and a note says so
 - `dressSummary()` gives the Schedule category's summary ("no ties", "no jackets", "no jackets or ties")
 - `dressWhyUnused(i)`: why trousers, a shirt or shoes are never worn in a wardrobe without jackets (stats.js `whyUnused`)
@@ -580,6 +596,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `startCrop` scrolls the item sheet to the top, where the crop frame replaces the picture
 - an item with a photo and a close-up gets a tappable pair (`#ivpair`, class `cmpable`): a tap on the split swatch splits them up (`toggleCompare`, `phEdit.cmp`, class `cmp`): a copy of the drawing (`.cmpdraw`, hidden on the swatch's drawn half) slides over the photo's square and the close-up's clip opens to its whole square; a tap on either square puts them back; the captions switch to "As tagged" / "Close-up"; `tests/compare.test.js`
 - out of rotation: the Rotation card has "Take out of rotation" / "Put back in rotation" (`togglePause`); taking it out releases upcoming days it was pinned to (`force`), the picker and "Suggest another" leave it out (`slotPool`/`swapSlot` in history.js; correcting a past day still offers it), and its grid box is dimmed with an "Out of rotation" tag (`.gi.paused`, `.pausetag`)
+- a type change drops what the new type has no field for (`typeTidy`, `TYPE_FIELDS`; 2026-11-15, the new-user audit: a raincoat made cufflinks was titled "· warm weather"): season, metal, leather, cuffs, vest, kind, style, the watch's options, a material not in its list (a typed Other stays where the type has a list), a pattern reading on a type without patterns, and a colour it can't show (`colTidy`); a new metal type gets silver
+- "Read pattern from photo" is offered only with a photo or close-up; without one the sheet says "Add a photo above to read its pattern from it." (`.nopatpic`), and the Outfit pictures note (`asmGapNote`) says to add a photo first
+- a belt's metal is "Buckle" here as on the Add card; the metal 'other' reads "Gunmetal" in the dropdowns (`METAL_OPTS`, core.js)
+- adding a close-up toasts "Close-up added." (the realistic photos it promised are no longer made)
 
 #### The Wardrobe grid
 
@@ -611,6 +631,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a new `PLAN_RULES` calls `replanFuture(true)` (the planner audit, 2026-11-14): only what the app chose goes, the week's locks (`rec.lock`) and pieces it recorded by itself (`rec.auto`); the owner's own picks (force, skip, the vest, `kind`, `off`) stay; the toast says "Your own picks were kept"; `tests/replan.test.js`
 - Settings' Re-plan upcoming days (`replanFuture()`) clears the locks and the picks too, without counting them as days reset
 - `checkPlanRules()` stores `settings.planRules` with `metaPut` and no new stamp (not `saveUserSettings`): the stamp made a fresh install's defaults newer than the backup's settings, and on an existing device it could undo a setting changed on another device since its last sync
+- a swap or pick whose new piece is held by a lock on the next workdays (its tie on any of the next three, its shirt or jacket on the next) lets go of every lock after that day (`unlockClash`, 2026-11-15): two ties, today's swapped, and the next two locked days kept that tie; no clash, nothing changes
+- past workdays recorded because the app wasn't opened on them (after the first day used for real) are said once in a toast with "I didn't wear them" (`missedNote`/`missedTell`/`missedNotWorn`, 2026-11-15, the audit's week away); `tests/newuserplan.test.js`
 - a past day whose record has no pieces (`ids`) is recorded by `recordDays` with what the record already has: a day the app was not opened on kept only its week lock, so it never became history (no wear counts in `wornDays`, an outfit that could still change); `tests/weeklock.test.js`
 
 #### Worn, picks, learning and past days
@@ -733,6 +755,16 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - weather: a 16-day forecast; beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in localStorage `wx_norm`, so `dayClimate()` does not fall back to a temperate calendar
 - the city search's results (`findCity`) are escaped (names from Open-Meteo went into the page as HTML)
 - `refreshAll`'s list of pages includes `pack` and `'care'`, so Refresh stays on the Packing list and Laundry & cleaning
+- (audit 2026-11-15) dates are in the app's language: `appLocale()` makes every `Date#toLocale…String(undefined, …)` use `APP_LOC` (the phone's language when English, else `en-GB`): an Arabic-language iPhone showed Arabic dates and digits; pass a locale to opt out
+- units without a choice follow the country (`unit`, `unitCC`, `F_CC`): the location's `cc` (kept by the city search) or the `, XX` at the end of its name, else `tzCountry()`, else the phone's language; a Kuwait phone in English (US) got °F
+- `weekFirst()`: the work week's first day (Sun–Thu → Sunday, Mon–Fri → Monday); the Schedule summary and the month grid (month.js) start there
+- the Schedule summary's dress part is `scheduleWear`: blazer days whenever jackets are worn, the vest only with ties
+- the last workday can't be unticked and toasts why (`toggleDay`)
+- holidays: Nager's regional holidays count when they cover at least half the regions the year's list names (`nagerKeep`; the UK lost New Year's Day, Easter Monday, Summer bank holiday); English-speaking countries (`HOL_EN`) use the local name
+- Kuwait's holidays are worked out on the phone when the server gives none or the app isn't connected (`builtinHolidays`, `HOL_FIXED`, `HOL_HIJRI`; Islamic days from Intl's `islamic-umalqura` calendar, can be a day off the announced one); such a country isn't asked of Nager (a 404 each start)
+- a country whose list can't load becomes the country anyway, with an empty list and `fetched` 0 (retried at the next start), and the message names it; the Days off summary then reads "XX: no holiday list"
+- holiday and day-off dates outside this year show the year (`yearDate`); a past day off is refused, a range starting in the past is added from today (`addDayOff`)
+- city search: asks in the script's language (`cityLang`: Arabic text → `language=ar`), lines that read the same get their district and repeats go (`cityList`), Enter in `#cfg-city` searches; "Use my location" is named by its coordinates (`geoName`)
 
 ### `start.js`
 
@@ -853,6 +885,15 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today's checklist (`setupToday`, rows from `setupNeeds`): suit or blazer, shirt, tie, trousers ("If no suit" with jackets on and no suit), shoes; goes in place of the picture, above the score card or under the note depending on how dressed the day is
 - empty Wardrobe: `setupWardEmpty()` (`#wempty`)
 - `tests/setup.test.js` covers the flow, both connection paths, stepping aside, both checklist kinds, and layout at 320/390/626px
+- (audit 2026-11-15) the step on screen is kept in `localStorage.setup_at` (`setupKeep`/`setupResume`: `{k, again, before, vestSet}`), so a setup iOS cut off opens again on that step; removed by `setupClose`
+- the new-person "No vest" applies only when the vest has no stamp (`setupVestChosen`: `setStampOf(settings,'vestMode')`), so a choice made before a kill, or the account's from another phone, stays
+- the vest row shows only with jackets and ties (as Settings); the dress switches keep other `settings.dress` keys (jeans)
+- "Run setup again" has Cancel instead of Skip (`setupCancel`): it puts back `SETUP_UNDO` (workdays, blazer days, dress, vest, units, location) as they were at open (`setup.before`, kept with the step)
+- a tap at the spot of the tap that closed the setup within `SETUP_TAP_MS` (350) is dropped (`setupTapGuard`): a double tap on Skip opened Settings, one on "Add my first item" skipped the tour's first card; tests wait past it
+- connected at the setup's own Connection step (`setup.joined`, or while `setup.busy`), items arriving don't close it: it goes on to All set with the account's answers (adoptBackupSettings) and says the wardrobe came across
+- All set lists the blazer days and the vest; its "Try a sample wardrobe" (`setupSample`) finishes the setup first (holidays, vest)
+- `setupOpen` closes a Home Screen kit sheet (one explanation)
+- `tests/setupfix.test.js` covers these and the Settings fixes of the same audit
 
 ### `kit.js`
 
@@ -876,6 +917,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the sample wardrobe (`kitSampleLoad`, `KIT_SAMPLE`: 24 pieces, three suits, two blazers, two trousers, five shirts, five ties, shoes, belts, socks, a watch): saved with `item.sample` (`save` copies `q.sample`), asks first when the wardrobe already has pieces, jumps to the next workday (`goToday`); offered on the setup's last step, Today's checklist and the empty Wardrobe
 - Add to Home Screen (2026-11-14, the owner: show a new iPhone user how to add it as a web app): on an iPhone or iPad in a browser tab (`homeNeeded` in kit.js: `homeIOS` and not `homeStandalone`; `window.DW_IOS` / `DW_STANDALONE` for tests) the setup's steps are worked out when it opens (`SETUP_STEPS = setupStepsNow()`, from `SETUP_BASE`) with a Home Screen step right after Welcome (`homeSteps(true)`): the reason (full screen, the only way iOS lets it send the morning reminder), three taps with the Share and Add icons (Share at the bottom of Safari, at the top on an iPad), and "do this before you set anything up": the Home Screen app keeps its own storage, apart from Safari's; Next carries on in Safari; Settings → About's "Add to Home Screen" (`#home-again`, `homeOpen`, the same instructions as a kit sheet) shows only there (`homeAbout`, set once at start; `#home-again[hidden]{display:none}`: the Settings buttons' display rule outranked the attribute); elsewhere the setup is as before (6 steps); `tests/homescreen.test.js`
 - Android install (2026-11-14, the owner: "the same thing for android with an install button"): on Android in a browser tab (`homeAndroid`, `window.DW_ANDROID` for tests) the setup's step after Welcome is "Install the app" (`homeStepsAndroid`; `SETUP_TITLES.home` is a getter): the browser's own offer is held (`beforeinstallprompt` → `homeEvt`, its banner prevented) and an Install button (`.home-install`, `homeInstall`: `prompt()` once, then the offer is gone) shows in place of the menu steps (`.home-manual`: ⋮ → Install app / Add to Home screen) only while there is an offer, updated in place (`homeSync`; the offer can come after the step is drawn); `appinstalled` toasts; no "set up first" warning (the installed app shares the browser's storage); About's button reads "Install the app" (`homeLabel`); `[hidden]` on them needs `display:none!important` (the setup's button rule outranks it); `tests/homescreen.test.js` fakes the offer
+- (audit 2026-11-15, H12) one Home Screen explanation (`homeSteps`, iPhone): ⋯ then Share (Share at the top right on an iPad), Add to Home Screen (or View More), Open as Web App on, Add, open it; a connected tester gets "Copy my invitation link" (`homeCopy`, `homeTester`) and is told to paste it at the Home Screen app's Connection step; the note (`homeNote`) says what applies: connected, not connected with a wardrobe (it stays in Safari: Download backup / Restore file), or not connected and empty (set it up there)
+- account.js's `homeScreenGuide` opens that sheet (never over the setup); About's buttons call `tourAgain`/`homeAgain`, which go back to Settings → About on close
+- the tour's score card speaks of shirts and trousers without ties or jackets (`kitWears`)
 - Today shows "You're trying a sample wardrobe" (`kitSampleBanner`, `#kit-sample`) with Add my own and Remove the sample (`kitSampleRemove`: asks, deletes every sample piece, releases locks)
 
 ### `remind.js`
@@ -964,6 +1008,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - why that survives a sync: the tombstone stays, and in `mergeState` a tombstone only wins over an item whose stamp is not newer; so the restored item wins on every device, also on one that had already taken the deletion; a delete that is not undone propagates as before
 - `tests/wardrobe.test.js`: search by each field and with a chip, each sort order, the sheet stepping through the filtered list, the fields (sheet, Add card, two synced devices, backup file restored on an empty device), the name in its four places, materials by type, delete / Undo with and without a sync in between, sizes and no sideways scroll at 320 / 390 / 626px in both themes
 - Material (`matRow`, types in `MATERIALS_BY`) sits on the Add card above "More details" and at the end of the item sheet's Details
+- a text field's typing is also kept in `localStorage.ward_pending` `{id,k,v,was,at}` at each keystroke and saved at once on `pagehide` / the page hidden (`wardFlush`; 2026-11-15: a name typed then Safari swiped away within 0.6 s was lost on a kill, a hidden page's timers stop); `wardPendingRestore` (from `safetyStart`, after the first pull) puts a copy left by a kill back when that field still holds `was` (another device's change since wins), and drops it otherwise
+- Delete and Duplicate ignore a second tap while the first runs (`wardOnce`, `wardBusy`, 400 ms after; `wardDelete` → `wardDeleteNow`, `wardDuplicate` → kit.js `kitDuplicate`, one key for Duplicate since the sheet moves to the copy)
 
 ### `colpick.js`
 
@@ -987,6 +1033,12 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - "Add <name> to your colours and use it" (`colAddNew`): `addCustomColor` (synced, `settings.custom`) for the item's type group (`groupOf`), behaving like the nearest built-in colour (`colBaseFor`, as `openColForm`), an accent colour too when it was a second or third colour; then set like any colour
 - "Use both colours" / "Use all N colours" (`colAskUseAll`, `.cpall`): shown whenever Claude named more than one colour and any field, the open one included, would change (`colAllDiff`); it takes every colour Claude named, its new ones too (`colAllOf`: each added through `colAddNew`; one already added is the owner's colour of that name), on the Add card and in the editor; the owner wanted to accept all of Claude's colours at once
 - `tests/colpick.test.js`
+- which colour fields show (`colShows`, `colRows`, `colFieldLabel`; 2026-11-15, the new-user audit): the main colour always but on a watch on a metal bracelet (on a leather strap "Strap colour"); a second colour for patterned cloth, socks ("Toe cap") and sneakers ("Sole"); a third only for patterned cloth; in the item sheet a field already holding a colour stays so it can be cleared; the Shade row hides with the main colour
+- `colTidy(it)` drops a second or third colour the type can't show, at Confirm (`saveCard`) and on a type change (`typeTidy`, itemsheet.js)
+- "+ A colour of my own" at the end of every colour list (`colOwnHtml`, `colOwnOpen`, `colOwnSave`, `colPick.own`): name, shade, behaves like (nearest built-in to start); `addCustomColor` for the type's group, an accent when it is a second or third colour, then used like a pick
+- a name already a colour's (built-in or own, by key or as shown, letters only: "Navy", "light blue", "Very dark navy") is refused (`colNameTaken`, checked in `addCustomColor`)
+- no Ask Claude block for a type without a close-up (shoes, belts, watches, socks, coats, clips, links: it said to add a fabric close-up that can't be added)
+- `tests/itemfix.test.js`
 
 ### `care.js`
 
