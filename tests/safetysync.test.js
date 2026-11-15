@@ -20,14 +20,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const connect=p=>p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
   const sync=p=>p.evaluate(()=>syncNow());
   const backup=()=>JSON.parse(store.get('wardrobe:v1')).data.settings||{};
-  const mine=s=>JSON.stringify([s.workdays,s.location&&s.location.name,s.holidays&&s.holidays.country,(s.daysOff||[]).length,s.custom&&s.custom.colors&&s.custom.colors.length,s.learn&&s.learn.i&&s.learn.i.tie1]);
-  const WANT=JSON.stringify([[0,1,2,3],'Testville','XX',1,1,2]);
+  const mine=s=>JSON.stringify([s.workdays,s.location&&s.location.name,s.holidays&&s.holidays.country,(s.daysOff||[]).length,s.custom&&s.custom.colors&&s.custom.colors.length]);
+  const WANT=JSON.stringify([[0,1,2,3],'Testville','XX',1,1]);
 
   // device A: the owner's settings, backed up
   const A=await device();
   await A.p.evaluate(async()=>{settings.workdays=[0,1,2,3];settings.location={name:'Testville',lat:1,lon:2};
     settings.holidays={country:'XX',list:[{d:'2026-12-25',n:'A holiday'}],skip:[],fetched:Date.now()};settings.daysOff=[{d:'2026-11-20',n:'Trip'}];
-    settings.custom={colors:[{key:'ownmoss',name:'moss',hex:'#556b2f',base:'olive'}],patterns:[]};settings.learn={p:{},i:{tie1:2}};await saveUserSettings()});
+    settings.custom={colors:[{key:'ownmoss',name:'moss',hex:'#556b2f',base:'olive'}],patterns:[]};await saveUserSettings()});
   ok(await sync(A.p)&&mine(backup())===WANT,'device A backs up its settings');
 
   // device B: a fresh install connected to that backup

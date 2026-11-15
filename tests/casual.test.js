@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const W=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('blazer','grey'),I('pants','grey'),I('pants','khaki',{trouserKind:'chinos'}),I('pants','stone',{trouserKind:'chinos'}),I('pants','denim',{trouserKind:'jeans'}),I('pants','black',{trouserKind:'jeans'}),
         I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('tie','burgundy'),I('tie','navy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf',shoeStyle:'loafer'}),I('shoes','white',{leather:'calf',shoeStyle:'sneaker'}),I('shoes','brown',{leather:'suede',shoeStyle:'boot'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      const run=(dress,recs={})=>{items=W;settings={...settings,workdays:[0,1,2,3,4],blazerDays:[1,3],dress,laundryDays:1,learn:null,holidays:null,daysOff:[]};weather={};climate=null;
+      const run=(dress,recs={})=>{items=W;settings={...settings,workdays:[0,1,2,3,4],blazerDays:[1,3],dress,laundryDays:1,holidays:null,daysOff:[]};weather={};climate=null;
         TODAY_OVERRIDE='2026-11-08T12:00:00';dayRecs=recs;cache={};const P=buildPlan(2026,10),days=Object.values(P).filter(o=>o&&(o.top||o.shirt));
         const kindOf=o=>o.bot&&o.bot.type==='pants'?trouserKind(o.bot):o.suitDay?'suit':'-';
         return {n:days.length,blazer:[...new Set(days.filter(o=>o.top&&!o.suitDay).map(kindOf))].sort().join(),suitShoes:[...new Set(days.filter(o=>o.suitDay).map(o=>shoeStyle(o.shoes)))].sort().join(),

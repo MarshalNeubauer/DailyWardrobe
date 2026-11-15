@@ -355,8 +355,6 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .st-mix{margin:8px 0 12px}.st-mixrow{display:grid;grid-template-columns:14px 110px 1fr 38px;gap:8px;align-items:center;padding:3px 0;font-size:.875rem}.st-mixrow small{text-align:right}
 .st-dot{width:14px;height:14px;border-radius:4px;border:1px solid var(--line)}
 .st-pair{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.st-pair .dot svg{width:22px;height:22px;border-radius:5px;display:block}.st-pair .st-nm{flex:1}
-.st-learn{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.st-learn .st-nm{flex:1;white-space:normal}.st-learn button{margin:0;padding:6px 10px;font-size:.8125rem}
-.st-tag{flex:none;font-size:.7188rem;font-weight:700;border-radius:6px;padding:2px 6px;color:#fff}.st-tag.down{background:#b4532a}.st-tag.up{background:#2f8a57}
 @media(min-width:700px){.st-tiles{grid-template-columns:repeat(6,1fr)}}
 /* the day bar: just tall enough for the date, the weather and the arrows */
 .nav.day{margin:2px 0 6px}.nav.day>button{padding:0;width:40px;height:40px;flex:none}.day h2{line-height:1.2}
@@ -615,7 +613,6 @@ left:50%;width:min(600px,94vw);margin-left:calc(min(600px,94vw)/-2);border-radiu
 #stats .st-tile{border:1px solid var(--line);border-radius:12px;padding:12px 8px}
 #stats .card{padding:14px;margin:0 0 12px}
 #stats .st-card h3{font-size:1rem;margin:0 0 4px}
-#stats .st-learn button{min-height:34px!important;padding:0 12px!important;font-size:.8125rem!important}
 #settings-modal .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}#settings-modal .dtog{min-width:0;padding:0}
 #settings-modal .occadd{flex-wrap:nowrap}#settings-modal .occadd input[type=date]{flex:1 1 0}#settings-modal .occadd select{flex:1 1 0}#settings-modal .occadd button{flex:none}
 #settings-modal .offadd input[type=date]{flex:1 1 0}#settings-modal .offadd input[type=text]{flex:1 1 60%}
