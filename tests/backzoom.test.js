@@ -57,9 +57,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // ---- text size: rem, following --tscale
     await p.evaluate(()=>show('today'));await settle(p,200);
     const fsz=()=>p.evaluate(()=>[getComputedStyle(document.body).fontSize,getComputedStyle(document.querySelector('nav button')).fontSize,getComputedStyle(document.querySelector('header h1')).fontSize]);
-    ok(JSON.stringify(await fsz())==='["16px","15px","21px"]','default text sizes as before (16, 15, 21 px)');
+    ok(JSON.stringify(await fsz())==='["16px","17px","21px"]','default text sizes (16, 17, 21 px; the tab labels 17 px since 2026-11-15, the owner found 15 hard to read)');
     await p.evaluate(()=>document.documentElement.style.setProperty('--tscale','1.5'));
-    ok(JSON.stringify(await fsz())==='["24px","22.5px","31.5px"]','with Larger Text at 150% every text grows by half');
+    ok(JSON.stringify(await fsz())==='["24px","25.5px","31.5px"]','with Larger Text at 150% every text grows by half');
     ok(await p.evaluate(()=>{const h=document.querySelector('header');return h.getBoundingClientRect().height<80&&document.documentElement.scrollWidth<=innerWidth}),'at 150% the header stays one line and nothing scrolls sideways');
     await p.evaluate(()=>document.documentElement.style.removeProperty('--tscale'));
     // ---- tap targets and the gear
