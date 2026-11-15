@@ -92,7 +92,7 @@ async function fetchPhoto(link){
   try{const r=await fetch(url.href,{mode:'cors',credentials:'omit'});
     if(r.ok){const b=await r.blob();if(/^image\//.test(b.type))return b}}catch(e){/* blocked by the site (no CORS): use the worker */}
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok)throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
+  if(!w||!tok||(typeof inviteOver==='function'&&inviteOver()))throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
   let r;try{r=await fetch(new URL('fetch',w.replace(/\/*$/,'/')).href+'?url='+encodeURIComponent(url.href),{headers:{'x-app-token':tok}})}
   catch{throw new Error('Couldn’t reach the server to fetch the photo.')}
   if(!r.ok){let m='';try{m=(await r.json()).error}catch{}
@@ -160,7 +160,7 @@ function multiFail(status,j,e){if(!status){const off=navigator.onLine===false;
   return pe&&/\s/.test(pe)?String(pe).trim().replace(/([^.!?])$/,'$1.'):'The photo couldn’t be read just now. Try again in a moment.'}
 async function addMulti(f,agg,again){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token')||'';
-  if(!w){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
+  if(!w||(typeof inviteOver==='function'&&inviteOver())){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
   // the photo's card while it is read: it has Cancel, and if the reading fails it stays with the reason, Try again and Dismiss (the
   // photo was dropped: it had to be picked again)
   const holder=again||{id:crypto.randomUUID()};Object.assign(holder,{busy:1,multiBusy:1,file:f});delete holder.multiErr;if(!again){queue.unshift(holder);addShowCard(holder.id)}
@@ -315,7 +315,7 @@ function renderAdd(){
   closeSettings();
   const workerSet = typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
   // (no model name: a tester read "Last photo read by Claude (claude-…)")
-  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || 'Photos are read automatically: the type, colours and pattern are filled in for you.';
+  if($('#note')) $('#note').textContent = !workerSet&&typeof inviteChecking!=='undefined'&&inviteChecking ? 'Checking your invitation… Photos added meanwhile can be read once it is accepted.' : !workerSet&&typeof inviteOver==='function'&&inviteOver() ? 'Your invitation has ended, so photos aren’t read automatically: add items by hand, or paste a new invitation link in Settings → Connection.' : !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || 'Photos are read automatically: the type, colours and pattern are filled in for you.';
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
   addKeepSoon();
@@ -345,13 +345,13 @@ ${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderR
 const busyCard=q=>`<div class="card" data-q="${esc(q.id)}"><span class="spin" aria-hidden="true"></span>${q.multiBusy?`Finding every item in the photo… (this can take up to a minute) <button type="button" onclick="skipCard('${esc(q.id)}')">Cancel</button>`:'Reading the photo…'}</div>`;
 const multiErrCard=q=>`<div class="card" data-q="${esc(q.id)}"><div class="tagfail" role="alert"><p><b>The items in this photo weren’t found.</b> ${esc(q.multiErr)}</p></div><div class="btns"><button type="button" class="pri" onclick="multiAgain('${esc(q.id)}')">Try again</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
 const errCard=q=>`<div class="card" data-q="${esc(q.id)}" role="alert"><p>${q.err==='small'?`This picture is too small to read (${(q.errWh||[]).join('×')} pixels). Use a larger photo of the item.`:'That photo couldn’t be opened. Try a JPEG or PNG, or fill the item in by hand.'}</p><div class="btns"><button type="button" onclick="errToHand('${esc(q.id)}')">Fill it in by hand</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
-function typeCard(q,i){const none=!localStorage.getItem('worker_url');
+function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected():!localStorage.getItem('worker_url');   // (an ended invitation reads nothing either)
   return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
 <p class="typeq">${none&&!q.tagErr?'<b>What is it?</b> Photos aren’t read automatically here: pick the type and the colour is measured from the photo.':'<b>What is it?</b> Pick the type, then check the colours.'}</p>
 <label>Type <select onchange="setq(${i},'type',this.value)" aria-label="Type"><option value="" selected disabled>Choose…</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
 <div class="btns"><button onclick="skipCard('${esc(q.id)}')">Skip</button></div></div>`}
 /* a photo added while the app wasn't connected yet (an invitation still being checked): once it is, the card offers the reading */
-const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&localStorage.getItem('worker_url')?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Read it now</button></div>`:'';
+const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Read it now</button></div>`:'';
 
 /* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
    and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each

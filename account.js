@@ -57,16 +57,22 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
   if(typeof connRestored!=='undefined')await connRestored.catch(()=>{});
   const cur=acctBase(),local=await acctLocal();
   if(cur&&cur.tok&&cur.tok!==p.code){
-    // the server no longer knew the old code (sync.js inviteEnded marks invite_lost on 403 'forbidden token': its storage was lost, or the
-    // account deleted): the wardrobe on this phone has no other copy, so the new invitation takes it and backs it up instead of clearing it
-    // (2026-11-15, the audit)
-    const lost=localStorage.getItem('invite_lost')===cur.tok;
-    if(lost&&local.any&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThe server no longer knew your old invitation. Your wardrobe stays on this phone and is backed up with the new one.`,{ok:'Back it up'})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
+    // the old code is over: the server no longer knew it (sync.js inviteEnded marks invite_lost on 403 'forbidden token': its storage
+    // was lost, or the account deleted), or it was switched off (invite_ended, 403 'invite off'), after which the app stops syncing and
+    // never hears of a later deletion either. Either way the person can't reach that backup any more, and what changed since the switch-off
+    // is nowhere else: the wardrobe on this phone stays and is backed up with the new invitation instead of being cleared (2026-11-15, the
+    // re-audit's N1: a re-invited tester was offered only "Clear and switch", which wiped 25 pieces)
+    const lost=localStorage.getItem('invite_lost')===cur.tok||localStorage.getItem('invite_ended')===cur.tok;
+    if(lost&&local.any&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'the new'} invitation?\n\nYour old invitation has ended, so its backup on the server can’t be reached any more. Your wardrobe, day history and settings stay on this phone as they are, changes since the invitation ended included, and are backed up with the new invitation.`,{ok:'Keep it and back it up'})){acctWhy='kept';acctToast('Nothing changed: your wardrobe stays on this phone.');acctLinkDrawn();return false}
     if(lost)localStorage.removeItem('invite_lost');
     // already connected with another code: the wardrobe on this phone belongs to that account. Merging it into the new one (what
     // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
     else if(local.any){
-      if(!await askConfirm(`Switch this phone to ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThis phone is connected to another wardrobe. To switch, its wardrobe is cleared from this phone first; its backup on the server stays as it is.`,{ok:'Clear and switch',danger:true})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
+      // what no backup has taken yet is backed up first; what still can't be is said plainly before anything is cleared (2026-11-15, the
+      // re-audit: a tie added while the day's backups were used up was wiped under "its backup on the server stays as it is")
+      let pend=await acctPending();
+      if(pend&&typeof syncNow==='function'){acctToast('Backing up this phone’s changes first…',4000);pend=await acctBackUpFirst()}
+      if(!await askConfirm(acctSwitchText(r.j.name,pend),{ok:pend?'Clear, losing those changes':'Clear and switch',danger:true})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
       if(typeof wipeDevice==='function')await wipeDevice();
       localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
       try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note','Connected as '+(r.j.name||'a tester'))}catch{}
@@ -86,6 +92,26 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
   if(window.syncNow)syncNow();
   if(r.j.role==='tester'&&iosInSafari())setTimeout(homeScreenGuide,1200);
   return true}
+/* changes on this phone that no backup has taken (sync.js: the wardrobe's fingerprint differs from the one the last backup agreed on,
+   or there was none) -> true/false */
+async function acctPending(){try{if(typeof syncMark!=='function'||typeof stateSig!=='function'||typeof localState!=='function')return false;
+  const m=syncMark();return !m||m.sig!==stateSig(mergeState(await localState(),{}))}catch(e){console.warn('backup state not read',e);return true}}
+/* back up before a switch -> whether changes are still waiting. A backup's first pull lets the start-up writers run (the day's record, the
+   week's locks: sync.js afterPull), which are changes of their own, so it backs up again, up to ACCT_SYNC_TRIES times, while the server
+   takes them; within ACCT_SYNC_MS, so a slow connection still gets its question (it then says what isn't backed up) */
+const ACCT_SYNC_TRIES=3;
+const ACCT_SYNC_MS=20000;
+async function acctBackUpFirst(){const t0=Date.now();let pend=true;
+  for(let k=0;k<ACCT_SYNC_TRIES&&pend;k++){const left=ACCT_SYNC_MS-(Date.now()-t0);if(left<=0)break;
+    let to;const ok=await Promise.race([Promise.resolve().then(()=>syncNow()).catch(()=>false),new Promise(r=>{to=setTimeout(()=>r('slow'),left)})]);clearTimeout(to);
+    pend=await acctPending();if(ok!==true)break}
+  return pend}
+/* the "Clear and switch" question: what is cleared (the setup's answers too, since the new account starts afresh), where the old
+   wardrobe stays, and, with changes no backup has taken (pend), that they would be lost */
+function acctSwitchText(name,pend){const last=+localStorage.getItem('last_sync')||0;
+  const when=last?` (the last backup was ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})})`:'';
+  return `Switch this phone to ${name?name+'’s':'the new'} invitation?\n\nTo switch, everything on this phone is cleared first: the wardrobe, its day history and the settings (workdays, what you wear, holidays). The setup then starts again for the new invitation. The wardrobe of the invitation this phone uses now stays in its backup on the server: open that invitation’s link again to get it back.`+
+    (pend?`\n\nSome changes on this phone aren’t backed up yet${when}, so clearing it loses them. Cancel keeps them here; switch once they are backed up.`:'')}
 /* what this phone holds, read from the database (and memory: an item saved a moment ago) -> {items, days, sample, any} */
 async function acctLocal(){let n=0,d=0,s=0;
   try{const all=await tx('readonly',st=>st.getAll());n=all.length;s=all.filter(i=>i&&i.sample).length;d=await txs('days','readonly',st=>st.count())}catch(e){console.warn('wardrobe not counted',e)}

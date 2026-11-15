@@ -105,9 +105,10 @@ function tagFailText(status,j,e){tagNetLast=false;
   return `Photo tagging failed: ${why}. Fill in the details below.`}
 /* the Add note was about the connection (cleared once back online) */
 const tagNetText=t=>/offline|couldn’t be reached/.test(t||'');
-function tagFailed(q){if(localStorage.getItem('worker_url')){q.tagErr=tagWhy||'No answer came back.';if(tagNetLast)q.tagNet=1;else delete q.tagNet}}
+// (an ended invitation: no "Try again" that can't work; re-audit 2026-11-15)
+function tagFailed(q){if(localStorage.getItem('worker_url')&&!(typeof inviteOver==='function'&&inviteOver())){q.tagErr=tagWhy||'No answer came back.';if(tagNetLast)q.tagNet=1;else delete q.tagNet}}
 /* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
-const tagFailNote=(q,i)=>q.tagErr?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
+const tagFailNote=(q,i)=>q.tagErr&&!(typeof inviteOver==='function'&&inviteOver())?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn(e)}
   q.busy=0;if(ai){delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}else tagFailed(q);
