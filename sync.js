@@ -127,9 +127,14 @@ const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeStr
    (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,
    with the photos the backup lacks. A day marked worn is a few hundred bytes each way, where the whole backup (photos and all) was
    16 MB. An older worker ignores lite and since and answers as before (the whole backup, or same), and then the old way runs. ---- */
-const PH_MIN=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
+/* (2026-11-15, the owner's option A for the server's writes) a data string of PH_MIN characters or more is a photo, sent and kept as its
+   own server value; a shorter one (the 128 px JPEG swatch, a few KB) stays inline in the record, so an item added costs one write less.
+   Strings from PH_OLD (the rule before) may still be references in records saved by an older app or worker (a PNG swatch): they are
+   still matched to this device's copy and taken when downloaded. worker/backup.js has the same two numbers */
+const PH_MIN=16384,PH_OLD=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
 const SYNC_LITE=!self.SYNC_OLD;   // (window.SYNC_OLD: sync the whole backup every time, as before; a test plays an older app with it)
 const isPh=s=>typeof s==='string'&&s.length>=PH_MIN&&s.startsWith('data:');
+const isPhOld=s=>typeof s==='string'&&s.length>=PH_OLD&&s.startsWith('data:');
 const phMemo=new Map();
 async function phHash(s){let h=phMemo.get(s);if(h)return h;
   const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));h=[...d.subarray(0,10)].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -141,10 +146,10 @@ function phMap(x,f){if(typeof x==='string')return f(x);if(Array.isArray(x))retur
 async function phIn(recs,local,url,token){
   const refs=[...phStrings(recs,s=>PH_RE.test(s))].map(s=>s.slice(5));if(!refs.length)return recs;
   const ids=new Set((recs.items||[]).map(i=>i.id)),known=new Map();
-  for(const s of phStrings([local.items.filter(i=>ids.has(i.id)),local.days,local.settings],isPh))known.set(await phHash(s),s);
+  for(const s of phStrings([local.items.filter(i=>ids.has(i.id)),local.days,local.settings],isPhOld))known.set(await phHash(s),s);
   const need=refs.filter(h=>!known.has(h));
   for(let i=0;i<need.length;i+=PH_BATCH){const r=await fetch(url+'?ph='+need.slice(i,i+PH_BATCH).join(','),{headers:{'x-app-token':localStorage.getItem('app_token')||token},cache:'no-store'}),j=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);for(const [h,s] of Object.entries(j.photos||{}))if(isPh(s))known.set(h,s)}
+    if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);for(const [h,s] of Object.entries(j.photos||{}))if(isPhOld(s))known.set(h,s)}
   if(refs.some(h=>!known.has(h)))throw new Error('a photo is missing from the backup');
   return phMap(recs,s=>PH_RE.test(s)?known.get(s.slice(5)):s)}
 /* records to send: photos as references, and the photos the backup doesn't have (have: its hashes) */

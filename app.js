@@ -70,7 +70,11 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 function cropSwatch(canvas,zoom=1,cx=.5,cy=.5,light){
   const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/(Number(zoom)||1)),o=document.createElement('canvas');o.width=o.height=128;
   const sx=Math.max(0,Math.min(canvas.width-sampleSize,(Number(cx)||.5)*canvas.width-sampleSize/2)),sy=Math.max(0,Math.min(canvas.height-sampleSize,(Number(cy)||.5)*canvas.height-sampleSize/2));
-  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(light)matchLight(o,light);return o.toDataURL('image/png')}
+  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(light)matchLight(o,light);return o.toDataURL('image/jpeg',SW_Q)}
+/* a small JPEG (2026-11-15, the owner's option A for the server's writes): a 128 px PNG of cloth was about 38 KB, too big to keep in
+   the backup's own text, so every new item cost one more server write for its swatch; as a JPEG it is a few KB, under sync.js PH_MIN,
+   and rides inside the backup. Swatches saved before as PNG stay as they are (still shown, still synced by reference) */
+const SW_Q=.8;
 /* a close-up's exposure says little (a white shirt shot in dim light reads grey): the swatch's lightness is set from the tagged colour,
    keeping the close-up's texture (each pixel's lightness above or below the cloth's median) and its hue. Near white, the texture's
    swing is narrowed so the lightest threads stay under paper white instead of clipping. */
