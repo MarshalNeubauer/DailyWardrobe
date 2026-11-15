@@ -46,11 +46,12 @@ let appLand=[];
 const appSettled=()=>appPend?new Promise(r=>{appLand.push(r);setTimeout(r,400)}):null;
 function appWanted(){const k=appWant;appWant='';if(k)appPush(k)}
 function appSheetBack(kind){
-  if(kind==='setup'){if(typeof setupShown==='function'&&setupShown()){if(setup.at>0)setupGo(-1);appPush('setup')}return true}   // the setup stays open: Back is its ‹ Back
+  if(kind==='setup'){if(typeof setupShown==='function'&&setupShown()){if(setup.at>0){setupGo(-1);appPush('setup')}else if(!setup.first&&typeof setupCancel==='function')setupCancel();else appPush('setup')}return true}   // Back is its ‹ Back; on the first step a first setup stays open, "Run setup again" closes as its Cancel (the Back audit, 2026-11-15: Back did nothing there)
   if(kind==='pick'){if(typeof closePicker==='function')closePicker();return true}
   if(kind==='shop'){if(typeof closeShop==='function')closeShop();return true}
   if(kind==='ask'){if(typeof askBack==='function')askBack();return true}   // a question closes as Cancel (ui.js), the page under it stays
   if(kind==='cu'){if(typeof closeupBack==='function')closeupBack();return true}   // the close-up chooser closes as Cancel (ui.js)
+  if(kind==='rd'){if(typeof rdBack==='function')rdBack();return true}   // the reading sheet closes as its × (colpick.js; a reading under way is called off, as Stop)
   if(kind==='kit'){if(typeof kit!=='undefined'&&kit)kitClose(true);return true}   // the tour, the guides, the Home Screen sheet, the import sheet (kit.js)
   return false}
 addEventListener('popstate',e=>{if(appPend){appPend=false;if(editing)histPush();appWanted();for(const f of appLand.splice(0))f();return}   // our own step back; an item opened meanwhile gets its entry now

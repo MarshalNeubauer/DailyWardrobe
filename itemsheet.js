@@ -203,7 +203,7 @@ function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history
    of the item sheet's and start.js's: a capturing one on window still ran after them in Chromium), stops them, closes the sheet (‹ first on
    a "New" sheet opened from the list, as its own ‹ does) and puts that entry back, so their flags still hold and the next Back closes the
    page. A step back of the app's own (itemBack, appPend) passes untouched. */
-function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof cuOpen!=='undefined'&&cuOpen)||(typeof appPend!=='undefined'&&appPend))return;
+function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof cuOpen!=='undefined'&&cuOpen)||(typeof rdHist!=='undefined'&&rdHist!==undefined)||(typeof appPend!=='undefined'&&appPend))return;
   e.stopImmediatePropagation();const had=itemHist||(typeof appHist!=='undefined'&&appHist);
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();
   if(had)try{history.pushState({cp:1},'')}catch{}}
@@ -211,6 +211,7 @@ addEventListener('popstate',colBackFirst);
 addEventListener('popstate',e=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
   if(appPend||appHist&&appTop)return;   // a step back of start.js's own, or its entry over the sheet (a question, the close-up guide): start.js's listener takes it
+  if(itemHist&&editing&&phEdit.crop){e.dwItem=true;phEdit.crop=null;renderWardrobe();try{history.pushState({item:1},'')}catch{itemHist=false}return}   // Back in the crop frame leaves the crop, as Esc and Cancel do, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet)
   if(itemHist){itemHist=false;e.dwItem=true;if(editing)closeItem(true)}});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');

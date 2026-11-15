@@ -490,9 +490,17 @@ function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySe
     window.addEventListener('keydown',e=>{if(!rd||cuOpen||!document.querySelector('#rd-sheet.on'))return;   // Escape closes it (ahead of the item sheet's)
       if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();rdClose()}else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true)}
   return {b,s}}
-function rdOpen(){const {b,s}=rdEls();b.classList.add('on');s.classList.add('on');s.scrollTop=0;layerOpen(s)}
-function rdClose(){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)try{me.ac.abort()}catch{}
-  const {b,s}=rdEls();b.classList.remove('on');s.classList.remove('on');layerClose(s);if(me)rdRefresh(me.src,me.id)}
+/* the phone's Back closes it as × does (the Back audit, 2026-11-15: Back closed the item sheet or Add under it and left the sheet up):
+   it borrows the Back entry of the page under it, or makes its own (start.js appBorrow 'rd', kept in rdHist while it is up; a reading
+   run again in the open sheet keeps it); × gives it back, and closed by Back the page under it gets its entry again (as the chooser) */
+let rdHist;
+function rdOpen(){const {b,s}=rdEls();b.classList.add('on');s.classList.add('on');s.scrollTop=0;layerOpen(s);
+  if(rdHist===undefined)rdHist=typeof appBorrow==='function'?appBorrow('rd'):''}
+function rdClose(fromBack){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)try{me.ac.abort()}catch{}
+  const {b,s}=rdEls();b.classList.remove('on');s.classList.remove('on');layerClose(s);
+  const h=rdHist;rdHist=undefined;if(h!==undefined&&typeof appGiveBack==='function'){if(!fromBack)appGiveBack('rd',h);else if(h)appPush(h)}
+  if(me)rdRefresh(me.src,me.id)}
+function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
 /* the page under it, redrawn (the done card, the cost line) */
 function rdRefresh(src,id){if(src==='q'){if(typeof renderAdd==='function')renderAdd()}else if(typeof editing!=='undefined'&&editing===id)renderWardrobe()}
 const rdPaperHtml=pr=>!pr?'':pr.ref?'<span class="rdpaper ok" id="rd-paper">✓ White paper found: true color</span>':`<span class="rdpaper no" id="rd-paper">! No white paper${pr.warm?', warm light':''}</span>`;
