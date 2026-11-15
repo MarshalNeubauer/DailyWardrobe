@@ -235,6 +235,9 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 @media (max-width:340px){.dayact{gap:6px}.dayact .seg button,.dayact .tog{font-size:.875rem;padding:9px 7px}.ftag{font-size:.75rem;padding:5px 7px}.ftag .fx{display:none}}
 .resetbox .month-link{justify-content:center;gap:10px;font-size:1.0625rem;color:var(--ink)}.resetbox .rsicon{font-size:1.375rem;line-height:1;color:var(--mut)}
 .resetbox .month-link:active{transform:scale(.99)}
+/* the days the app counted as worn while it wasn't opened (missedCard, history.js) */
+.missbox{padding:12px 14px}.missbox .misstxt{margin:0 0 6px;font-size:.9375rem;line-height:1.35;color:var(--ink)}
+.missbox .missbtns{display:flex;flex-wrap:wrap;gap:4px 18px}.missbox .linkbtn{min-height:44px}
 .reset{flex:0 0 40px;margin:0 0 0 auto;width:40px;height:40px;padding:0;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--mut);font-size:1.125rem}
 
 .ftag{font-size:.8125rem;font-weight:600;color:#fff;background:#1b2a4a;border-radius:8px;padding:5px 9px;white-space:nowrap}
