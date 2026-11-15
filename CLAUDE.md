@@ -125,6 +125,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - colours, types, item helpers (no DOM; also loaded by background workers)
 - `isWorkday(d)` = a weekday in `settings.workdays` that is not a day off (`offName(d)`: a public holiday in `settings.holidays` `{country, list:[{d,n}], skip}` that is not skipped, or one of the user's own `settings.daysOff` `[{d,n}]`; dates as `YYYY-MM-DD`, `isoKey`)
 - the planner skips days off like weekends
+- `itemSeason`: the item's own season (one set in the item sheet, 'all' too, wins), else tweed pattern, else its material (`MAT_SEASON`: flannel, tweed, corduroy, velvet cold; linen, linen blend, seersucker warm; season types only) (2026-11-15)
+- `dayClimate` with no location: the holiday country (set from the time zone at setup) gives a Gulf climate's usual highs (`CC_TMAX`: KW SA AE QA BH OM IQ; a Kuwait December is mild, no overcoat) or the southern hemisphere (`SOUTH_CC`); not the phone's time zone itself, so tests stay the same on any machine
 - `inRotation(i)`: false for an item the user took out of rotation (`item.paused`, synced with the item); it stays in the wardrobe and in past outfits
 - bought, on the way: `item.order` with `item.paused`, optionally `item.arrives` (YYYY-MM-DD); `inRotation(i, n)` is true for day number `n` (`di`) after the arrival date (`arriveN`), so the plan includes it from then on
 - `inRotation(i, n)` / `arriveN` serve pieces away being cleaned too: `item.arrives` holds `item.away.back`
@@ -166,6 +168,14 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - an enamel tie clip (black, red, blue, navy: `clipMetal` null) is chosen by the tie (`enamelPref` in planner.js, 2026-11-14, the owner: 7 of his 9 clips were never planned, an enamel clip scored 0 against a silver watch-and-buckle match's 9): picking up the tie's second or third colour (by family) `ENAMEL_ACCENT` 11, beating silver; the tie's own colour or a near one (red with burgundy, blue with navy) `ENAMEL_TONE` 8, just under, so it comes round when silver has been worn; anything else `ENAMEL_CLASH` -5; gold, rose gold and gunmetal stay off against a silver watch and buckle (the owner: "keep gold off"); no clip on a waistcoat day, as before; on his wardrobe over six months: blue 5, navy 2, black 2, red 1, silver 5, grey 6, gold/rose gold/gunmetal 0, scores unchanged (99.77); `tests/enamelclip.test.js` (realPlanner)
 
 - outfit rules, `outfit()` / `buildPlan()`, `rateOutfit()` (no DOM)
+- the new-user audit's planner fixes (2026-11-15, Fixer 6; `tests/newuserplan.test.js`):
+- trousers or a suit with no shoes in the day's pool that suit them (`shoeOk`: not patent, `shoeScore` > -50) cost `NO_SHOES` (40) in the trousers' shortlist, the outfit window and the jacket choice (`noShoes`): stone chinos with only black shoes were planned every other day at 69 while charcoal trousers were free; with nothing else they are still planned, with the note
+- the jacket worn on the previous workday costs `JKT_AGAIN` (30; `sumUp.jid`): a wedding took the suit locked for the day before; a funeral's black suit or a formal day's dark one still wins; the score's Variety takes 2 for "the same suit as the workday before"; the dress test's small wardrobe now alternates its two suits (GOLD small e9ea9c35, scores 97.14 → 97.18)
+- the simulation doesn't plan the days before the wardrobe began (`wardStart`: the first item's `added`, null when an item has none): no made-up rest ("This suit was worn 1 day ago" on a new wardrobe) or Variety from them; only wardrobes younger than `planStart` change
+- the week's locks carry `rec.lockAt`; a lock made while a type in `LOCK_TYPES` (suit, blazer, trousers, shirt, tie, shoes, belt) had fewer than `LOCK_THIN` (3) in rotation is let go once one is added after it (`lockStale`, used by `planSim` and `fixedAhead` through `lockOf`, and by `lockUpcoming`, which relocks it): a new user's first week stayed on his one suit, its blazer day too; old locks (no `lockAt`) and wardrobes with three of each keep theirs
+- every shirt in the wash: `washed` takes the one washed longest ago, not yesterday's white
+- a funeral tie with a motif (dots, paisley, foulard) loses 6 more, so a navy stripe goes before navy dots; a patterned stand-in's note says a plain black tie is right
+- `beltWait(shoes)`: the belt a pair waits for when belts are owned and none matches it ("black smooth leather belt"); named in the Variety line's "same shoes as yesterday", Insights' never-worn reason and its shoes-two-days-running line (stats.js, dress.js)
 - `PLAN_RULES` (13) is bumped to release the week's locks once (picks kept); a bump also clears swaps on future days, so changes that protect picks (`fixedAhead`, `TIE_GAP`) were made without one
 - **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js
 - on the next start a bump releases only the week's locks and the app's own recorded pieces on days after today (`checkPlanRules()` → `replanFuture(true)` in history.js); the owner's swaps, skips and vest choices stay, so there is no reason to skip a bump; Settings' "Re-plan upcoming days" also clears them, on demand
@@ -396,6 +406,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the dress code's Settings switches and the waistcoat default (loaded after app.js)
 - Settings → Schedule → Dress code (`renderDressUI`, `#cfg-dress`, rows from `DRESS_ROWS`): two switches (`.dress-sw`, `role="switch"`, 56×44px), "Jackets (suits and blazers)" and "Ties", each with one line of help
 - `setDress(k, on)` saves `settings.dress`, releases the locked week (`clearLocks`) and re-plans Today when Settings closes
+- `setDress` redraws the switch and saves before releasing the locks (2026-11-15: a tap then a swipe away lost it)
+- `newSuitVest()`: a new suit's Vest row (Add card) is "Matching vest" when `vestMode` is 'always' and jackets and ties are worn, else "No vest"
 - with jackets off the Blazer days group and the Suit vest row are hidden (`#blazer-group`, `#vest-row`, class `dress-hide`) and a note says so
 - `dressSummary()` gives the Schedule category's summary ("no ties", "no jackets", "no jackets or ties")
 - `dressWhyUnused(i)`: why trousers, a shirt or shoes are never worn in a wardrobe without jackets (stats.js `whyUnused`)
@@ -611,6 +623,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a new `PLAN_RULES` calls `replanFuture(true)` (the planner audit, 2026-11-14): only what the app chose goes, the week's locks (`rec.lock`) and pieces it recorded by itself (`rec.auto`); the owner's own picks (force, skip, the vest, `kind`, `off`) stay; the toast says "Your own picks were kept"; `tests/replan.test.js`
 - Settings' Re-plan upcoming days (`replanFuture()`) clears the locks and the picks too, without counting them as days reset
 - `checkPlanRules()` stores `settings.planRules` with `metaPut` and no new stamp (not `saveUserSettings`): the stamp made a fresh install's defaults newer than the backup's settings, and on an existing device it could undo a setting changed on another device since its last sync
+- a swap or pick whose new piece is held by a lock on the next workdays (its tie on any of the next three, its shirt or jacket on the next) lets go of every lock after that day (`unlockClash`, 2026-11-15): two ties, today's swapped, and the next two locked days kept that tie; no clash, nothing changes
+- past workdays recorded because the app wasn't opened on them (after the first day used for real) are said once in a toast with "I didn't wear them" (`missedNote`/`missedTell`/`missedNotWorn`, 2026-11-15, the audit's week away); `tests/newuserplan.test.js`
 - a past day whose record has no pieces (`ids`) is recorded by `recordDays` with what the record already has: a day the app was not opened on kept only its week lock, so it never became history (no wear counts in `wornDays`, an outfit that could still change); `tests/weeklock.test.js`
 
 #### Worn, picks, learning and past days
