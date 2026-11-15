@@ -6,7 +6,7 @@
    change of the waistcoat default. */
 
 /* ---- Settings → Schedule → Dress code: two switches ---- */
-const DRESS_ROWS=[['jacket','Jackets (suits and blazers)','Off if you don\'t wear a suit or blazer to work: workdays are planned as a shirt and trousers.'],
+const DRESS_ROWS=[['jacket','Jackets (suits and blazers)','Off if you don\'t wear a suit or blazer to work: workdays are planned as a shirt and pants.'],
   ['tie','Ties','Off if you don\'t wear a tie: outfits get an open collar and no tie clip.'],
   ['jeans','Jeans with a blazer','On if jeans are fine at work under a blazer. Without a jacket, jeans are always fine.']];
 /* settings.dress.jeans: off unless switched on (jeans are planned only on days without a jacket); shown while jackets are worn */
@@ -14,7 +14,7 @@ const dressOn=k=>k==='jacket'?wearsJacket():k==='tie'?wearsTie():!!(settings.dre
 function renderDressUI(){const el=$('#cfg-dress');if(!el)return;const j=wearsJacket(),t=wearsTie();
   el.innerHTML=DRESS_ROWS.filter(([k])=>k!=='jeans'||j).map(([k,label,help])=>{const on=dressOn(k);
     return `<div class="dress-row"><span class="dress-txt"><b id="dress-l-${k}">${label}</b><small id="dress-h-${k}">${help}</small></span><button type="button" class="dress-sw${on?' on':''}" id="dress-${k}" role="switch" aria-checked="${on}" aria-labelledby="dress-l-${k}" aria-describedby="dress-h-${k}" onclick="setDress('${k}',${!on})"><i></i></button></div>`}).join('')
-    +(j?t?'':'<p class="shelp dress-note">The suit vest is hidden: a waistcoat is only worn with a tie.</p>':'<p class="shelp dress-note">Blazer days and the suit vest don\'t apply without jackets, so they are hidden. A day you mark as formal, a wedding or a funeral is still dressed in full from what you own.</p>');
+    +(j?t?'':'<p class="shelp dress-note">The suit vest is hidden: a vest is only worn with a tie.</p>':'<p class="shelp dress-note">Blazer days and the suit vest don\'t apply without jackets, so they are hidden. A day you mark as formal, a wedding or a funeral is still dressed in full from what you own.</p>');
   // (2026-11-13) the suit vest also hides without ties: no waistcoat is ever planned without a tie (planner.js outfit)
   const e=$('#blazer-group');if(e)e.classList.toggle('dress-hide',!j);const v=$('#vest-row');if(v)v.classList.toggle('dress-hide',!j||!t)}
 /* a change re-plans the coming week too (clearLocks), like the other planner settings. The setting is saved and the switch redrawn
@@ -29,10 +29,10 @@ const newSuitVest=()=>settings.vestMode==='always'&&wearsJacket()&&wearsTie()?'y
 function dressSummary(){const j=wearsJacket(),t=wearsTie();return j&&t?'':j?'no ties':t?'no jackets':'no jackets or ties'}
 /* why a piece is never worn, for a wardrobe without jackets (stats.js whyUnused; null = its usual answer) */
 function dressWhyUnused(i){
-  if(i.type==='pants')return 'Your other trousers go better with your shirts, or have rested longer.';
-  if(i.type==='shirt')return 'Your other shirts go better with your trousers, or have rested longer.';
+  if(i.type==='pants')return 'Your other pants go better with your shirts, or have rested longer.';
+  if(i.type==='shirt')return 'Your other shirts go better with your pants, or have rested longer.';
   if(i.type==='shoes'){const ok=items.some(b=>b.type==='pants'&&shoeScore(null,b,i)>-50);
-    return !ok?`${colName(primaryCol(i))} shoes don't suit any of your trousers.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:'Another pair always suits the outfit better.'}
+    return !ok?`${colName(primaryCol(i))} shoes don't suit any of your pants.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:'Another pair always suits the outfit better.'}
   return null}
 
 /* ---- waistcoats: a suit has one only when it says so ----

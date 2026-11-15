@@ -70,7 +70,7 @@ const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of th
 const offOn=o=>!o.frozen&&o.occasion!=='casual';
 const offBtn=(s,o)=>offOn(o)&&o[s]&&(s==='top'||s==='tie')?`<button class="swap offb" onclick="setOff('${s}',true)" aria-label="Take off the ${s==='top'?(o.suitDay?'suit jacket':'blazer'):'tie'}" title="Take off for the day">−</button>`:'';
 const offRow=(s,o)=>{const l=s==='top'?(o.offKind==='suit'?'Suit':'Blazer'):'Tie',w=s==='top'?(o.offKind==='suit'?'suit jacket':'blazer'):'tie';
-  return `<div class="ritem off-row" id="ri-${s}"><div class="row"><span class="mut">${l}</span><span class="mut none">Taken off${s==='top'&&o.suitBot?': the trousers stay':''}</span>${o.frozen?'':`<button class="swap" onclick="setOff('${s}',false)" aria-label="Put the ${w} back on" title="Put it back on">+</button>`}</div></div>`};
+  return `<div class="ritem off-row" id="ri-${s}"><div class="row"><span class="mut">${l}</span><span class="mut none">Taken off${s==='top'&&o.suitBot?': the pants stay':''}</span>${o.frozen?'':`<button class="swap" onclick="setOff('${s}',false)" aria-label="Put the ${w} back on" title="Put it back on">+</button>`}</div></div>`};
 async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||(slot!=='top'&&slot!=='tie'))return;
   const r={...(dayRecs[k]||{date:k})},off={...(r.off||{})};
   if(on){if(!o[slot])return;
@@ -79,7 +79,7 @@ async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||
     if(o.top)r.kind=o.suitDay?'suit':'blazer';r.force=force;off[slot]=true}
   else delete off[slot];
   if(off.top||off.tie)r.off=off;else delete r.off;delete r.lock;swapMsg='';await saveDay(r);renderToday()}
-const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Trousers',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
+const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
   .filter(([l,i,s])=>!(s==='clip'&&!i&&!(o.frozen&&pastEdit===key(sel))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn)
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie')&&!i&&o.off&&o.off[s])return offRow(s,o);const open=!!i&&openRow===s;
@@ -141,7 +141,7 @@ function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
 /* a tile under the figure unfolds the item's photo below the tiles, like the pieces list; tap it again (or the photo) to fold it */
 let belowOpen=null;
-const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Trousers',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
+const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Pants',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks'})[s]||s;
 const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen];if(!i)belowOpen=null;
   return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" onclick="pickPiece(belowOpen)">${i?rowPanel(i):''}</div></div></div>`};
 /* did you wear it: ✗ and ✓ over the picture's bottom corners (today and past days); tapping the chosen one again clears it.
@@ -330,7 +330,7 @@ const ADD_HINT='Add one with + Add in the Wardrobe';
 /* a day before the wardrobe existed (planTrim leaves it out of the month): no outfit, and the page says why */
 const preWardrobe=d=>{const s=planStartDay();return !!s&&d<s&&d<todayDate()};
 /* a past day whose piece was deleted since (planner.js frozenOutfit, o.gone): the drawing can't show it, so the page says so */
-const GONE_WORD={top:'jacket',bot:'trousers',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tie clip',links:'cufflinks',coat:'coat'};
+const GONE_WORD={top:'jacket',bot:'pants',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tie clip',links:'cufflinks',coat:'coat'};
 const goneNote=o=>{const g=Object.keys(o.gone||{}).filter(s=>o.gone[s]&&GONE_WORD[s]&&!(s==='bot'&&o.gone.top&&o.suitDay!==false));if(!g.length)return '';const w=g.map(s=>s==='top'&&o.suitDay!==false?'suit':GONE_WORD[s]),l=w.length>1?w.slice(0,-1).join(', ')+' and '+w[w.length-1]:w[0];
   return `<p class="mut gonenote">The ${l} worn this day ${w.length>1||/s$/.test(l)?'are':'is'} no longer in your wardrobe, so the picture can’t show ${w.length>1||/s$/.test(l)?'them':'it'}.</p>`};
 function goToday(){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false;show('today');scrollTo({top:0,behavior:'smooth'})}

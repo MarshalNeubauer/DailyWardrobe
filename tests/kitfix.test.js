@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url})=>{
     const mk=await p.evaluate(()=>{show('wardrobe');renderWardrobe();const tags=document.querySelectorAll('#wardrobe .sampletag').length;const it=items.find(i=>i.type==='pants'&&i.trouserKind==='chinos');
       const gt=document.querySelector('#gi-'+it.id+' .gtype').textContent;openItem(items[0].id);return {tags,gt,note:!!document.querySelector('#item-view .ivsample #iv-keep')}});
     ok(mk.tags===24&&mk.note,'every sample piece is tagged "Sample" in the grid, and its item sheet says so with "Keep it as mine"');
-    ok(mk.gt==='Chinos','chinos are called Chinos in the grid, not Trousers');
+    ok(mk.gt==='Chinos','chinos are called Chinos in the grid, not Pants');
     await p.click('#iv-keep');await p.waitForFunction(()=>!items[0].sample&&/yours now/.test(document.querySelector('#toast').textContent)).catch(()=>{});
     const kp=await p.evaluate(()=>({note:!!document.querySelector('#item-view .ivsample'),tag:!!document.querySelector('#gi-'+items[0].id+' .sampletag'),grid:!!document.querySelector('#gi-'+items[0].id),ward:!document.querySelector('#wardrobe').hidden,ed:editing}));
     ok(!kp.note&&!kp.tag,'"Keep it as mine" makes it his: the note and the tag go '+JSON.stringify(kp));
@@ -66,7 +66,7 @@ module.exports=async({ok,chromium,url})=>{
     /* ---- the sample follows the dress code ---- */
     const d=await open();
     const dc=await d.evaluate(async()=>{settings.dress={jacket:false,tie:false};await kitSampleLoad();const c={};for(const i of items)c[i.type]=(c[i.type]||0)+1;return c});
-    ok(!dc.suit&&!dc.blazer&&!dc.tie&&dc.pants===4&&dc.shirt===5,`without jackets and ties the sample has no suits, blazers or ties, and four pairs of trousers (${JSON.stringify(dc)})`);
+    ok(!dc.suit&&!dc.blazer&&!dc.tie&&dc.pants===4&&dc.shirt===5,`without jackets and ties the sample has no suits, blazers or ties, and four pairs of pants (${JSON.stringify(dc)})`);
     await d.context().close();
     /* ---- import ---- */
     const m=await open();
@@ -77,12 +77,12 @@ module.exports=async({ok,chromium,url})=>{
         mat:R('Type,Colour,Material,Kind,Pattern\nSuit,Navy,Wool,,Striped\nShirt,White,Poplin,,Bengal stripe\nTie,Navy,SILK,,Repp\nShoes,Brown,Suede,,\nBelt,Black,Leather,,\nTrousers,Stone,,chinos,\nWatch,Silver,Steel,,\n'),
         empty:R('Type,Colour\n,Navy\nSuit,\n')}});
     ok(rd.col.slice(0,9).every(x=>!/^bad/.test(x))&&rd.col[0].startsWith('shirt:charcoal')&&rd.col[3].startsWith('shirt:lightblue')&&rd.col[4].startsWith('shirt:lightblue')&&rd.col[5].startsWith('tie:burgundy')&&rd.col[8].startsWith('shirt:lightblue:')&&/read as/.test(rd.col[4]),
-      'everyday colours are read as the app\'s and the preview says so: '+rd.col.join(' | '));
+      'everyday colors are read as the app\'s and the preview says so: '+rd.col.join(' | '));
     ok(rd.typ.slice(0,9).map(x=>x.split(':')[0]).join()==='blazer,blazer,belt,watch,tieclip,overcoat,raincoat,shirt,cufflinks'&&/isn't a type the app plans\. It plans suits/.test(rd.typ[9]),'plural and everyday type names are read; an unknown type lists what the app plans: '+rd.typ.join(' | '));
-    ok(!/pink/.test(rd.fit[0].split(':')[1])&&/pink isn't one of the shoes colours: read as/.test(rd.fit[0])&&!/pink/.test(rd.fit[1].split(':')[1])&&rd.fit[2].split(':')[1]!=='red','a colour a type isn\'t offered in moves to its nearest one, and the preview says so: '+rd.fit.join(' | '));
+    ok(!/pink/.test(rd.fit[0].split(':')[1])&&/pink isn't one of the shoes colors: read as/.test(rd.fit[0])&&!/pink/.test(rd.fit[1].split(':')[1])&&rd.fit[2].split(':')[1]!=='red','a color a type isn\'t offered in moves to its nearest one, and the preview says so: '+rd.fit.join(' | '));
     ok(rd.mat[0]==='suit:navy:pinstripe::wool:'&&rd.mat[1].startsWith('shirt:white:stripe::poplin')&&rd.mat[2].startsWith('tie:navy:stripe::silk')&&rd.mat[3].startsWith('shoes:brown:solid:oxford:suede')&&rd.mat[4].startsWith('belt:black:solid::calf')&&rd.mat[5].startsWith('pants:stone:solid:chinos')&&/material “Steel” left out/.test(rd.mat[6]),
       'materials match the app\'s list in any case, shoes and belts take theirs as leather, Kind is read, Striped/Bengal stripe/Repp are patterns: '+rd.mat.join(' | '));
-    ok(rd.empty[0]==='bad:Type is empty'&&rd.empty[1]==='bad:Colour is empty','an empty cell says which: '+rd.empty.join(' | '));
+    ok(rd.empty[0]==='bad:Type is empty'&&rd.empty[1]==='bad:Color is empty','an empty cell says which: '+rd.empty.join(' | '));
     /* files: Windows-1252 and an empty file; the template is a data link */
     const fl=await m.evaluate(async()=>{kitImportOpen();const b=new Uint8Array([...new TextEncoder().encode('Type,Colour,Name\nSuit,Navy,Costume bleu fonc'),0xE9,10]);
       await kitImportFile(new File([b],'x.csv'));const n1=kitImp&&kitImp.rows[0].card.name;await kitImportFile(new File([''],'e.csv'));const e=document.querySelector('#kit-prev').textContent;

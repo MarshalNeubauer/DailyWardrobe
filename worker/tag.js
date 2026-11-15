@@ -35,26 +35,26 @@ type — one of:
   suit (suit jacket, or a jacket and trousers of the same cloth), blazer (odd jacket / sport coat), pants (dress trousers),
   shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks, cufflinks, overcoat (wool topcoat), raincoat (trench or mac)
 
-primaryColor — the dominant colour of the main fabric (the leather for shoes and belts, the strap or bracelet for watches, the metal
-  for tie clips). Use only a colour from the item type's own list (main colours, before the |):
+primaryColor — the dominant color of the main fabric (the leather for shoes and belts, the strap or bracelet for watches, the metal
+  for tie clips). Use only a color from the item type's own list (main colors, before the |):
 ${TYPE_COLOR_TEXT}
-  (charcoal is near-black grey; darkgrey sits between charcoal and grey; midgrey is a medium grey, between grey and lightgrey;
-  lightgrey is pale grey; steelblue is a dusty, greyed mid blue (denim-like); deepblue is a rich, saturated dark blue, brighter
-  than navy; darknavy is navy so dark it is almost black; slate is a dark blue-grey, greyer than navy and bluer than charcoal;
-  wine is a red-leaning burgundy; oxblood is a deep brownish red, the colour of cordovan "color 8" shoes, darker and browner
+  (charcoal is near-black gray; darkgrey sits between charcoal and grey; midgrey is a medium gray, between grey and lightgrey;
+  lightgrey is pale gray; steelblue is a dusty, grayed mid blue (denim-like); deepblue is a rich, saturated dark blue, brighter
+  than navy; darknavy is navy so dark it is almost black; slate is a dark blue-gray, grayer than navy and bluer than charcoal;
+  wine is a red-leaning burgundy; oxblood is a deep brownish red, the color of cordovan "color 8" shoes, darker and browner
   than burgundy; khaki is the light sandy beige of classic chinos and cotton dress trousers, lighter and greener than tan,
-  which is a warmer, deeper camel brown; stone is the pale grey-beige of stone chinos, greyer and lighter than khaki;
+  which is a warmer, deeper camel brown; stone is the pale gray-beige of stone chinos, grayer and lighter than khaki;
   denim is the indigo blue of jeans (trousers only; a faded light-blue pair is lightblue);
-  taupe is a greyish brown, between grey and tan;
-  deeptaupe is a dark taupe, a deep greyish brown, darker and greyer than brown and much darker than taupe (a mink or
-    espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown; brown is a clearly warm, coloured brown); rust is a burnt orange-brown;
+  taupe is a grayish brown, between grey and tan;
+  deeptaupe is a dark taupe, a deep grayish brown, darker and grayer than brown and much darker than taupe (a mink or
+    espresso-gray suit whose brown is so muted it reads almost gray is deeptaupe, not brown; brown is a clearly warm, colored brown); rust is a burnt orange-brown;
   ivory is a warm off-white, between white and cream; beige is a pale sandy tan; mint is a pale green; periwinkle is a soft
-  blue with a violet cast, between lightblue and blue; grey for cufflinks means gunmetal; a tie clip's colour is its finish: silver, gold, rosegold, gunmetal, or an enamel colour)
+  blue with a violet cast, between lightblue and blue; grey for cufflinks means gunmetal; a tie clip's color is its finish: silver, gold, rosegold, gunmetal, or an enamel color)
 
-secondaryColor — the colour of the stripe, check line, dot or motif, from the type's line colours (after the |). "none" if plain.
-  Socks: the colour of a contrasting toe cap (the knitted tip over the toes, often a light heather grey on a dark sock), or "none"
-  if the toe is the same colour as the rest of the sock. A small logo or a heel in the same colour as the sock does not count.
-tertiaryColor — a third distinct colour in the pattern (e.g. the second line colour of a tattersall), from the same, or "none".
+secondaryColor — the color of the stripe, check line, dot or motif, from the type's line colors (after the |). "none" if plain.
+  Socks: the color of a contrasting toe cap (the knitted tip over the toes, often a light heather gray on a dark sock), or "none"
+  if the toe is the same color as the rest of the sock. A small logo or a heel in the same color as the sock does not count.
+tertiaryColor — a third distinct color in the pattern (e.g. the second line color of a tattersall), from the same, or "none".
 
 pattern — pick the closest value from the list for the item's type:
   suit, blazer, pants:
@@ -62,33 +62,33 @@ pattern — pick the closest value from the list for the item's type:
     pinstripe    very thin, crisp, evenly spaced lines (about 1 cm apart)
     chalk-stripe soft, fuzzy, wider lines spaced further apart than pinstripe
     herringbone  columns of small V / zigzag shapes in the weave
-    birdseye     tiny repeating dots with a light centre, like a bird's eye
+    birdseye     tiny repeating dots with a light center, like a bird's eye
     nailhead     tiny pinpoint dots in an even grid
     sharkskin    fine two-tone diagonal weave with a slight sheen
     houndstooth  small broken, jagged, four-pointed checks
-    glen-check   Prince of Wales: blocks of small check alternating with larger check, often with a coloured overcheck
+    glen-check   Prince of Wales: blocks of small check alternating with larger check, often with a colored overcheck
     windowpane   thin lines forming large squares on a plain ground
     tweed        rough, flecked, multi-tone wool
-    twill        plain colour with a visible diagonal rib
+    twill        plain color with a visible diagonal rib
     other
   shirt:
     solid (smooth poplin or broadcloth), stripe (bold or bengal stripe), pinstripe (thin lines), fine-stripe (hairline stripes, very
-    close together, reads almost solid), gingham (even two-colour checks), tattersall (thin lines of two alternating colours forming
+    close together, reads almost solid), gingham (even two-color checks), tattersall (thin lines of two alternating colors forming
     checks), check (any other check or plaid), houndstooth (tiny broken checks), herringbone, oxford (basket-weave texture),
     pinpoint (very fine oxford weave), royal-oxford (pronounced, shiny basket weave), twill (fine diagonal rib), end-on-end
-    (fil-a-fil: white and coloured threads alternate, a fine heathered two-tone look), chambray (coloured warp with white weft,
+    (fil-a-fil: white and colored threads alternate, a fine heathered two-tone look), chambray (colored warp with white weft,
     slightly faded look), dobby (small repeating woven motif, tone on tone), woven (visible small cross-weave), textured (uneven,
     slubbed surface), fine-texture (barely visible texture up close), other
   tie:
-    solid, woven (a textured solid: a fine basket/oxford weave or micro-check that reads as one colour from a step away, often two-tone
-    threads; put the second thread colour in secondaryColor), stripe (diagonal/regimental), polka-dot, paisley, check (a visible check),
-    tonal-check (a check or glen check woven in two close shades of one colour,
+    solid, woven (a textured solid: a fine basket/oxford weave or micro-check that reads as one color from a step away, often two-tone
+    threads; put the second thread color in secondaryColor), stripe (diagonal/regimental), polka-dot, paisley, check (a visible check),
+    tonal-check (a check or glen check woven in two close shades of one color,
     e.g. black on charcoal: subtle, but clearly not a solid; put the lighter shade in secondaryColor), foulard (small repeating geometric motif), knit, other
   tieclip, watch, shoes, belt, socks, cufflinks, overcoat, raincoat: solid
 
 Use "solid" for suits, blazers and trousers whose weave is only visible up close and does not match a listed pattern.
 
-metal — for watch, cufflinks and belt (the buckle; a tie clip has none: its colour says it): gold, silver or other (the case and bracelet metal for watches). Otherwise null.
+metal — for watch, cufflinks and belt (the buckle; a tie clip has none: its color says it): gold, silver or other (the case and bracelet metal for watches). Otherwise null.
 
 trouserKind — trousers (pants) only, otherwise null: dress (pressed wool or cotton dress trousers with a crease), chinos (casual
   cotton twill trousers, no crease, often with patch or slanted pockets), jeans (denim with rivets and five pockets).
@@ -102,7 +102,7 @@ leather — shoes and belts: calf (smooth, moderate shine), cordovan (dense, dee
   cotton) or knit (a knitted textile upper); a smooth leather sneaker is calf. Otherwise null.
 
 dial, band, bezel — watches only, otherwise null:
-  dial: the dial colour, from the watch dial list above.
+  dial: the dial color, from the watch dial list above.
   band: bracelet (metal links) or leather (strap).
   bezel: fluted (finely ridged ring around the crystal) or smooth.`;
 
@@ -115,9 +115,9 @@ const TAG_INTRO = 'Identify the single clothing item in the first photo.\n\n';
    camera took them, absent (an older app) = not known. "Photos are white-balanced" in the system prompt and "judge as in daylight"
    in the rules said both at once (2026-11-13 audit) */
 function lightText(wb) {
-  if (wb === true) return 'The app white-balanced these photos from a white reference in the frame: take their colours as shown and do not shift them for warm or cool light; only allow for shadows, sheen and folds.';
-  if (wb === false) return 'These photos are as the camera took them (the app found no white reference, so it did not correct them): judge the colours as they would look in neutral daylight, allowing for the light\'s cast (warm indoor light makes white look ivory and grey look beige) as well as for shadows, sheen and folds.';
-  return 'These photos may or may not have been white-balanced. Judge the colours as they would look in neutral daylight: allow for a warm or cool cast only where the photo clearly has one (whites and greys look tinted), and for shadows, sheen and folds.';
+  if (wb === true) return 'The app white-balanced these photos from a white reference in the frame: take their colors as shown and do not shift them for warm or cool light; only allow for shadows, sheen and folds.';
+  if (wb === false) return 'These photos are as the camera took them (the app found no white reference, so it did not correct them): judge the colors as they would look in neutral daylight, allowing for the light\'s cast (warm indoor light makes white look ivory and gray look beige) as well as for shadows, sheen and folds.';
+  return 'These photos may or may not have been white-balanced. Judge the colors as they would look in neutral daylight: allow for a warm or cool cast only where the photo clearly has one (whites and grays look tinted), and for shadows, sheen and folds.';
 }
 const wbOf = body => (body && typeof body.wb === 'boolean' ? body.wb : undefined);
 
@@ -199,10 +199,10 @@ const FREE_COL = { type: 'object', additionalProperties: false, required: ['name
 const OWN_COLORS = { type: 'object', additionalProperties: false, required: ['primary', 'secondary', 'tertiary'],
   properties: { primary: FREE_COL, secondary: { anyOf: [FREE_COL, { type: 'null' }] }, tertiary: { anyOf: [FREE_COL, { type: 'null' }] } } };
 const FREE_EXTRA = `
-ownColors — your own reading of each colour as you actually see it, NOT limited to the lists above: for primary, secondary and
-  tertiary (the same roles as primaryColor, secondaryColor, tertiaryColor; null where those are "none"), a short colour name a
+ownColors — your own reading of each color as you actually see it, NOT limited to the lists above: for primary, secondary and
+  tertiary (the same roles as primaryColor, secondaryColor, tertiaryColor; null where those are "none"), a short color name a
   tailor would use (e.g. "mushroom", "bottle green", "ink navy"; plain lower-case words) and its sRGB hex as the cloth looks in
-  even daylight, judged mainly from the close-up. If a listed colour is truly right, you may give its name.`;
+  even daylight, judged mainly from the close-up. If a listed color is truly right, you may give its name.`;
 /* freePattern (the app's pattern picker, "Ask Claude"): Claude's own name for the pattern or weave, not limited to the list */
 const OWN_PATTERN = { type: 'object', additionalProperties: false, required: ['name', 'description', 'fits'],
   properties: { name: { type: 'string' }, description: { type: 'string' }, fits: { type: 'boolean' } } };
@@ -210,7 +210,7 @@ const FREE_PAT_EXTRA = `
 ownPattern — the pattern or weave in your own precise words, NOT limited to the list above, judged mainly from the close-up:
   name: what a tailor or cloth merchant would call it, short and lower-case (e.g. "broken twill", "shepherd's check",
   "prince of wales check with overcheck", "basketweave", "micro houndstooth", "twill with a faint windowpane");
-  description: one sentence on how it looks (structure, scale, colours, how strong), for drawing it and for a photo generator;
+  description: one sentence on how it looks (structure, scale, colors, how strong), for drawing it and for a photo generator;
   fits: true only when the listed pattern you put in "pattern" already names it fully, false when your name says more.`;
 function tagSchema(custom, single, free, freePat) {
   const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...PATTERN_LIST, ...custom.patterns.map(p => p.key)];
@@ -230,8 +230,8 @@ function tagSchema(custom, single, free, freePat) {
 }
 function customText(custom) {
   let t = '';
-  if (custom.colors.length) t += `\n\nColours the owner added (answer with the key, like any listed colour, for the item types shown):\n`
-    + custom.colors.map(c => `  ${c.key} = ${c.name} (${c.hex}), for ${c.types.join(', ') || 'any type'}${c.accent ? ', also as a stripe or motif colour' : ''}`).join('\n');
+  if (custom.colors.length) t += `\n\nColours the owner added (answer with the key, like any listed color, for the item types shown):\n`
+    + custom.colors.map(c => `  ${c.key} = ${c.name} (${c.hex}), for ${c.types.join(', ') || 'any type'}${c.accent ? ', also as a stripe or motif color' : ''}`).join('\n');
   if (custom.patterns.length) t += `\n\nPatterns the owner added (answer with the key, for the item types shown):\n`
     + custom.patterns.map(p => `  ${p.key} = ${p.name}: ${p.desc || 'no description'} (${p.types.join(', ') || 'any type'})`).join('\n');
   return t;
@@ -240,41 +240,41 @@ const SINGLE_EXTRA = `
 
 Also give:
 confidence — for type, primaryColor and pattern: high (clearly visible), medium, or low (guessing).
-altColor, altPattern — your second choice for the main colour and the pattern, or "none" if nothing else is plausible.
-newColor — when NONE of the colours allowed for this type (the owner's included) is a good match for the main colour, give
-  {"name": a short common name for the real colour, "why": one line on how it differs from the closest listed one}; otherwise null.
-  Still put the closest allowed colour in primaryColor.
+altColor, altPattern — your second choice for the main color and the pattern, or "none" if nothing else is plausible.
+newColor — when NONE of the colors allowed for this type (the owner's included) is a good match for the main color, give
+  {"name": a short common name for the real color, "why": one line on how it differs from the closest listed one}; otherwise null.
+  Still put the closest allowed color in primaryColor.
 newPattern — the same for the pattern or weave: when no listed pattern fits (you would answer "other"), give {"name", "why": one
   line describing how it looks}; otherwise null. Still put the closest listed pattern in pattern.
 clothBox — a rectangle on a plain, evenly lit area of the main cloth in the FIRST photo (no folds, shadows, buttons, labels,
   lining or background), in thousandths of that photo (x, y = top-left corner, w, h = size, all 0-1000), so the app can measure
-  its colour; null if there is no such area.
+  its color; null if there is no such area.
 patternBox — for a striped, checked or plaid item, or one with a small figure repeated all over (a neat or foulard, dots): the largest rectangle of the FIRST photo that lies entirely on the patterned
   cloth (no background, knot, collar or edges; on a jacket the front panel beside the buttons, clear of lapels and pockets; on a
-  shirt the body, clear of the collar and placket), in thousandths like clothBox, so the app can read the pattern's colours; null otherwise.
+  shirt the body, clear of the collar and placket), in thousandths like clothBox, so the app can read the pattern's colors; null otherwise.
 weave — for a striped, checked or plaid item (null for solids and fine weaves): its pattern as precisely as you can, from the
   close-up when there is one:
   layout: stripes, stripes-with-crossing-lines (stripes with finer lines running the other way), check, plaid, or other;
   direction: which way the main stripes run in the photo, as the viewer sees them (look carefully: follow one stripe from where it
     enters the tie to where it leaves);
-  repeatsAcross: how many times the whole colour sequence repeats across the item's widest part (0.5 if one repeat is twice as wide;
+  repeatsAcross: how many times the whole color sequence repeats across the item's widest part (0.5 if one repeat is twice as wide;
     for a pinstripe or chalk-stripe jacket, the number of stripes across its front, often 20 to 40);
   colours: one full repeat of the stripe sequence in order, each band with a plain name, an sRGB hex as seen, and its width
-    (a pinstripe suit: the ground, then the stripe as a hairline; a gingham: the two colours);
-  crossing: the lines that run the other way (colours, how fine, how far apart), or "" if none;
-  description: one or two sentences describing the pattern for a photo-realistic image generator: the order and colours of the
-  bands, which colour dominates, their widths, the crossing lines, and the cloth's sheen or weave. Leave out the direction (the app
+    (a pinstripe suit: the ground, then the stripe as a hairline; a gingham: the two colors);
+  crossing: the lines that run the other way (colors, how fine, how far apart), or "" if none;
+  description: one or two sentences describing the pattern for a photo-realistic image generator: the order and colors of the
+  bands, which color dominates, their widths, the crossing lines, and the cloth's sheen or weave. Leave out the direction (the app
   measures it).`;
 /* what the app measured (Lab after white balance), to weigh against what is seen */
 function measuredText(m) {
   if (!m || !Array.isArray(m.lab) || m.lab.length !== 3) return '';
   const lab = m.lab.map(v => Math.round(+v || 0)), near = (Array.isArray(m.near) ? m.near : []).slice(0, 3)
     .filter(n => n && /^[a-z]{2,32}$/.test(n.c)).map(n => `${n.c} (ΔE ${(+n.d || 0).toFixed(1)})`);
-  return `\n\nThe app measured the cloth's colour ${m.src === 'closeup' ? 'in the close-up' : 'in the photo'} after white balance: CIELAB L*${lab[0]} a*${lab[1]} b*${lab[2]}`
-    + (HEX_RE.test(m.hex || '') ? ` (${m.hex})` : '') + (near.length ? `; nearest of the owner's colours: ${near.join(', ')}` : '') + '. '
+  return `\n\nThe app measured the cloth's color ${m.src === 'closeup' ? 'in the close-up' : 'in the photo'} after white balance: CIELAB L*${lab[0]} a*${lab[1]} b*${lab[2]}`
+    + (HEX_RE.test(m.hex || '') ? ` (${m.hex})` : '') + (near.length ? `; nearest of the owner's colors: ${near.join(', ')}` : '') + '. '
     + (m.ref ? 'A white reference was in the frame, so its lightness is reliable.' : 'There was no white reference, so its lightness may be off by the camera\'s exposure; hue and saturation are more reliable.')
     + ' Use it together with what you see.'
-    + (near.length ? ' How colourful a cloth is (its a* and b*) is hard to judge by eye, and a muted colour easily passes for its more saturated neighbour, so weigh the measured hue and saturation. If you choose a primaryColor other than the nearest measured one, give the nearest measured one as altColor.' : '');
+    + (near.length ? ' How colorful a cloth is (its a* and b*) is hard to judge by eye, and a muted color easily passes for its more saturated neighbor, so weigh the measured hue and saturation. If you choose a primaryColor other than the nearest measured one, give the nearest measured one as altColor.' : '');
 }
 /* the owner's earlier corrections of the tagger (AI said -> owner chose), to lean the same way */
 const FIX_FIELDS = ['type', 'primaryColor', 'secondaryColor', 'pattern'];
@@ -285,7 +285,7 @@ function correctionsText(list) {
     + l.map(f => `  ${f.type} ${f.field}: ${f.from} -> ${f.to}`).join('\n') : '';
 }
 
-const CLAUDE_SYSTEM = 'You are a menswear expert who labels clothing photos for a wardrobe app.';
+const CLAUDE_SYSTEM = 'You are a menswear expert who labels clothing photos for a wardrobe app.\nWrite every word the owner reads (name, why, ask, hints) in American English.';
 /* each call to Claude: at most 3 minutes an attempt; one retry after 2 s, or the API's retry-after up to 20 s */
 const CLAUDE_MS = 180000, CLAUDE_RETRY_MS = 2000, CLAUDE_RETRY_MAX = 20000;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -301,7 +301,7 @@ async function tagWithClaude(env, image, opts = {}) {
     schema: opts.schema || TAG_SCHEMA, content: [
       { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
       ...(opts.closeup ? [{ type: 'image', source: { type: 'base64', media_type: opts.closeup[1], data: opts.closeup[2] } }] : []),
-      { type: 'text', text: [opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.' : '', lightText(opts.wb), (opts.text || '').trim()].filter(Boolean).join('\n\n') },
+      { type: 'text', text: [opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact color.' : '', lightText(opts.wb), (opts.text || '').trim()].filter(Boolean).join('\n\n') },
     ] });
 }
 /* one call to Claude (tagWithClaude's photos, worker/describe.js's words): opts {model, system (the fixed text, first cache point),
@@ -404,13 +404,13 @@ const MULTI_PROMPT = `This photo shows several clothing items, for example dress
 hangers, or trousers hanging or folded. List every distinct item you can see, from left to right.
 
 Rules:
-- Each physical item is listed once. Count sleeves, collars and hangers to separate neighbouring items; items that overlap
-  or are partly hidden still count if you can see enough of them to tell their colour.
+- Each physical item is listed once. Count sleeves, collars and hangers to separate neighboring items; items that overlap
+  or are partly hidden still count if you can see enough of them to tell their color.
 - A suit jacket hanging together with trousers of the same cloth is ONE item of type suit, not a suit and pants.
 - A jacket hanging on its own is a blazer, unless it is clearly a suit jacket (smooth worsted suiting, or its matching
   trousers are visible); when you cannot tell, choose blazer and confidence medium or low.
 - Trousers hanging or folded on their own are type pants. Each pair is one item.
-- confidence: high when the colour, type and pattern are clearly visible; medium when part of the item is hidden or the
+- confidence: high when the color, type and pattern are clearly visible; medium when part of the item is hidden or the
   texture is hard to see; low when you are guessing.
 - box: the approximate rectangle around the visible part of the item, in thousandths of the image size: x and y are the
   top-left corner (0-1000 from the left and top edges), w and h the width and height (0-1000).

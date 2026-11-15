@@ -38,6 +38,11 @@
 
 Static app served from `main` by GitHub Pages (no build step): classic scripts loaded in index.html's order, sharing one global scope; Web Workers (asm-worker.js, analysis-worker.js) `importScripts` some of them. The server is a Cloudflare Worker (worker.js and its ES modules in worker/), deployed with Wrangler. The sections below go by file, in load order; a long section groups related facts under #### headings. Each bullet is one current fact; when something changes, add a bullet under the file's heading (or replace the fact when you are sure it is superseded) rather than appending "(replaces … above)" notes. (Rewritten 2026-11-14 from the bullets as they stood: superseded history removed, each fact stated once.)
 
+- **American English** (the owner, 2026-11-15): every word a person reads (UI text, toasts, errors, the manifest, worker messages, what Claude writes for the owner) is American: color, gray, pants (not trousers), vest (not waistcoat), check (not tick), canceled; dates fall back to `en-US` (settings.js `APP_LOC`)
+- machine names stay as they were, British included, since saved wardrobes, sync, the worker API and caches use them: color keys (`grey`, `lightgrey`, `darkgrey`, `midgrey`), the describe kind and request `what` `'colour'`, `colourHint`, band/figure `colour`, pattern.js `colours`/`centre`, the weave's `colours`, localStorage keys (`spec_recolour`), ids (`st-colours`), identifiers (`COLOUR_RULES`, `colourSchema`); a key shown to people goes through a display map (core.js `COLOR_NAMES`: `grey` → gray, `lightgrey` → light gray, `slate` → dark slate blue-gray; the type `pants` is "Pants" in `TYPES`)
+- the Claude prompts (worker/tag.js `CLAUDE_SYSTEM`, worker/describe.js `DESCRIBE_SYSTEM`) end with "Write every word the owner reads (name, why, ask, hints) in American English."; their prose says color/gray, but a sentence naming a color key keeps the key ("between charcoal and grey"), and tailoring words in the prompts stay (trousers, mac, trainers as a synonym)
+- the spreadsheet import (kit.js) still reads British headers and words (Colour, Second colour, trousers, waistcoat, trainers, grey)
+
 ### `index.html`
 
 - markup and script tags
@@ -790,6 +795,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `photos.js`
 
+- item picture prompts name colors through `picCol` (`PIC_COL`: grey, light grey, dark grey, mid grey, dark slate blue-grey), not `colName`: `itemKey` hashes `itemDesc`, so the American names would have orphaned every generated picture of a gray piece (and asked to pay again); `watchText(w, cn)` takes the namer for the same reason
 - a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`)
 - "Last worn" (`lastWorn`) counts only days marked ✓; the stats still count unmarked past days as worn
 
@@ -1165,6 +1171,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `wardrobe.js`
 
+- search still finds the British words: "grey" matches the gray pieces and "trousers" the pants (`wardHay` appends them)
 - the Wardrobe tab's search and sort, the item fields `name` / `brand` / `material` / `notes`, and Delete with Undo (loaded after stats.js; called from `renderWardrobe`, `wardList`, `itemBody` and `rm` in itemsheet.js and `save` in add.js)
 - a grid box's accessible name ends with its tag (`giTag`/`giNote`: Sample, Out of rotation, On the way, at the cleaner's, due for cleaning): the `aria-label` hid the visible tag (re-audit 2026-11-15)
 - search: a field above the type chips (`wardBar`, `#wsearch`, `wardQ`); every word typed must be in the item's name, brand, notes, material, type, colour names or pattern (`wardHay`, `wardMatch`; case and accents ignored); it combines with the type chip and stays when the chip changes

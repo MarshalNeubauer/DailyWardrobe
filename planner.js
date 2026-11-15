@@ -444,7 +444,7 @@ if(shirt&&tie&&darkShirt(shirt)&&tieLum(tie)-LUM(shirt)<25)notes.push(`The ${nm(
 if(shirt&&tie&&!darkShirt(shirt)&&LUM(shirt)-LUM(tie)<25)notes.push(`The ${nm(tie)} isn't darker than the ${nm(shirt)}; no darker tie suited this outfit. A darker tie would look sharper.`);
 if(top&&shirt&&!darkUnderLight(top,shirt)&&LUM(shirt)<LUM(top)+20)notes.push(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
 if([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']].filter(([i,r])=>patInfo(i,r)).length>=3)notes.push('Three bold patterns today; there was no quieter combination. A solid shirt or tie would calm it down.');
-if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50)notes.push(`None of your shoes suit ${planCol(bot)} trousers.`);
+if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50)notes.push(`None of your shoes suit ${planCol(bot)} pants.`);
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(planCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
 if(watch&&belt&&metalOf(watch)!==metalOf(belt))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
@@ -454,7 +454,7 @@ if(needCoat&&!coat)notes.push(clim.rain?'Rain is forecast and there is no rainco
 if(day.occ==='funeral'&&tie&&pcol(tie)!=='black')notes.push(patInfo(tie,'tie')?'No black tie in your wardrobe for a funeral: the most sober one you have was chosen. A plain black tie is right for a funeral.':'No black tie in your wardrobe for a funeral: the darkest, plainest one was chosen.');
 if(day.occ==='funeral'&&top&&occ.top(top)<18)notes.push('No black, charcoal or navy suit for a funeral: the darkest one was chosen.');
 if(day.occ==='wedding'&&top&&pcol(top)==='black')notes.push('Only a black suit was available: black is usually avoided at a daytime wedding.');
-if(noJ&&!bot)notes.push('No separate trousers in your wardrobe for a day without a jacket. Add a pair of trousers.');
+if(noJ&&!bot)notes.push('No separate pants in your wardrobe for a day without a jacket. Add a pair of pants.');
 if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
 // no waistcoat without a tie (the owner, 2026-11-13: "No one should ever wear a vest and no tie"): a day planned without a tie (the dress
 // code, a casual day) has none, whatever the vest setting or the day's own choice
@@ -488,23 +488,23 @@ function rateOutfit(o){
   const {top,shirt,tie,shoes,belt,socks,watch,clip}=o,bot=o.suitDay?null:o.bot,trousers=o.bot||top,casual=o.occasion==='casual';
   // a piece is missing: not a styling fault, but not an outfit either
   // (o.gone: a past day's piece deleted from the wardrobe since; it was worn, so it isn't missing)
-  {const miss=[],G=o.gone||{};if(!shirt&&!G.shirt)miss.push('shirt');if(!trousers&&!G.bot&&!(o.suitDay&&G.top))miss.push('trousers');if(!top&&!G.top&&needsJacket(o))miss.push('jacket');if(!tie&&!G.tie&&needsTie(o))miss.push('tie');if(!shoes&&!G.shoes)miss.push('shoes');
+  {const miss=[],G=o.gone||{};if(!shirt&&!G.shirt)miss.push('shirt');if(!trousers&&!G.bot&&!(o.suitDay&&G.top))miss.push('pants');if(!top&&!G.top&&needsJacket(o))miss.push('jacket');if(!tie&&!G.tie&&needsTie(o))miss.push('tie');if(!shoes&&!G.shoes)miss.push('shoes');
     if(miss.length)add('Complete outfit',0,10,'no '+miss.join(', no ')+' for this day',true)}
   if(shirt){const raw=planCol(shirt);let v=10,why='',hard=false;
     if(darkUnderLight(top,shirt)){}
-    else if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same colour as the jacket';hard=true}
+    else if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same color as the jacket';hard=true}
     else if(top&&darkShirt(shirt)){v=2;why='a dark shirt wants a clearly lighter jacket';hard=true}
     else if(top&&LUM(shirt)<LUM(top)+20){v=5;why='shirt is darker than the jacket'}
-    else if(!QUIET_SHIRTS.includes(raw)&&!darkShirt(shirt)){v=5;why=`a ${raw} shirt is a strong colour for business`}
+    else if(!QUIET_SHIRTS.includes(raw)&&!darkShirt(shirt)){v=5;why=`a ${raw} shirt is a strong color for business`}
     if(shirt.cuff==='french'&&!o.links){v-=5;why=(why?why+'; ':'')+'French cuffs without cufflinks'}
     add('Shirt',v,10,why,hard)}
   if(shirt&&tie){const raw=planCol(shirt),d=LUM(shirt)-LUM(tie);let v=0,why=[],flat=false;
     if(darkShirt(shirt)){if(tieLum(tie)-LUM(shirt)>=25)v+=8;else{flat=true;why.push('tie is not lighter than the dark shirt')}}
     else if(d>=25)v+=8;else{flat=true;why.push('tie is not darker than the shirt')}
-    const same=pcol(tie)===pcol(shirt);if(!same)v+=2;else why.push('tie and shirt are the same colour');
+    const same=pcol(tie)===pcol(shirt);if(!same)v+=2;else why.push('tie and shirt are the same color');
     const ts=darkShirt(shirt)?null:TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[pcol(shirt)];
     if(raw==='pink'&&['red','pink'].includes(pcol(tie))){why.push(`a ${planCol(tie)} tie clashes with a pink shirt`)}
-    else if(raw==='white'||!ts||ts.includes(pcol(tie)))v+=5;else{v+=1;why.push(`${planCol(tie)} is an unusual tie colour on a ${raw} shirt`)}
+    else if(raw==='white'||!ts||ts.includes(pcol(tie)))v+=5;else{v+=1;why.push(`${planCol(tie)} is an unusual tie color on a ${raw} shirt`)}
     add('Tie and shirt',v,15,why.join('; '),flat&&same)}   // the same colour and no contrast: the tie disappears
   if(tie&&top){const tc=pcol(top),xc=pcol(tie);let v,why='',hard=false;
     if(o.occasion==='funeral'&&xc==='black')v=10;   // a black tie is right at a funeral, whatever the suit
@@ -516,12 +516,12 @@ function rateOutfit(o){
     else if(P.length===2&&P[0].type===P[1].type){if(P[0].scale!==P[1].scale){v=8;why='two patterns of the same type (different scale)'}else{v=3;why='two patterns of the same type and scale';hard=true}}
     if(top||shirt||tie)add('Patterns',v,10,why,hard)}
   if(bot&&top){const list=BLAZER_TROUSERS[pcol(top)];let v=10,why='',hard=false;const k=list?list.indexOf(pcol(bot)):-1;
-    if(pcol(bot)===pcol(top)){v=0;why='jacket and trousers are the same colour: neither a suit nor a contrast';hard=true}
-    else{if(k<0){v=4;why=`${planCol(bot)} trousers are not a classic match for a ${planCol(top)} jacket`}
-      if(Math.abs(LUM(top)-LUM(bot))<35){v-=4;why=(why?why+'; ':'')+'jacket and trousers lack contrast'}}
-    add('Trousers',v,10,why,hard)}
+    if(pcol(bot)===pcol(top)){v=0;why='jacket and pants are the same color: neither a suit nor a contrast';hard=true}
+    else{if(k<0){v=4;why=`${planCol(bot)} pants are not a classic match for a ${planCol(top)} jacket`}
+      if(Math.abs(LUM(top)-LUM(bot))<35){v-=4;why=(why?why+'; ':'')+'jacket and pants lack contrast'}}
+    add('Pants',v,10,why,hard)}
   if(shoes&&trousers){const s=shoeScore(top,trousers,shoes),k=(SH[pcol(trousers)]||['black','brown']).indexOf(pcol(shoes));
-    add('Shoes',s<=-50?0:10,10,k<0?`${planCol(shoes)} shoes don't suit ${planCol(trousers)} trousers`:top&&pcol(top)==='black'?'a black suit needs black shoes':`black shoes don't suit a ${top?planCol(top):''} jacket`,true)}
+    add('Shoes',s<=-50?0:10,10,k<0?`${planCol(shoes)} shoes don't suit ${planCol(trousers)} pants`:top&&pcol(top)==='black'?'a black suit needs black shoes':`black shoes don't suit a ${top?planCol(top):''} jacket`,true)}
   if(shoes&&items.some(i=>i.type==='belt'&&inRotation(i))){const f=belt?beltFit(shoes,belt):null;
     add('Belt',!belt?0:f===null?0:f>0?10:8,10,!belt?'no belt matches the shoes':f===null?'belt does not match the shoes':'belt finish differs slightly from the shoes',!!belt&&f===null)}
   if(shoes){const f=finish(shoes.leather);let v=5,why='';
@@ -532,13 +532,13 @@ function rateOutfit(o){
   if(watch&&shoes&&watchOpts(watch).band==='leather'){const g=leatherGroup(planCol(watch)),sg=leatherGroup(planCol(shoes));
     add('Watch strap',g===sg?5:2,5,`a ${planCol(watch)} leather strap with ${planCol(shoes)} shoes`)}
   if(socks&&trousers){const v0=sockScore(trousers,shoes,socks,sockEcho(shirt,tie))-(patOf(socks)==='solid'?2:0);let v,why='',hard=false;
-    if(['white','cream','pink','lightblue'].includes(planCol(socks))&&LUM(trousers)<120){v=0;why='light socks with dark trousers';hard=true}
+    if(['white','cream','pink','lightblue'].includes(planCol(socks))&&LUM(trousers)<120){v=0;why='light socks with dark pants';hard=true}
     else if(v0>=8||(shoes&&pcol(socks)===pcol(shoes)))v=5;
-    else if(v0>=3){v=4;why=v0>=4?'socks pick up the shirt or tie rather than the trousers':'socks are a neutral, not the trousers\' colour'}
-    else{v=2;why='socks don\'t match the trousers'}
+    else if(v0>=3){v=4;why=v0>=4?'socks pick up the shirt or tie rather than the pants':'socks are a neutral, not the pants\' color'}
+    else{v=2;why='socks don\'t match the pants'}
     add('Socks',v,5,why,hard)}
   {const main=[top,bot,shirt,tie].filter(Boolean).map(pcol),n=new Set(main).size;let v=5,why='',hard=false;
-    if(top&&shirt&&tie&&pcol(top)===pcol(shirt)&&pcol(shirt)===pcol(tie)){v=0;why='jacket, shirt and tie are all one colour';hard=true}else if(n>4){v=2;why='more than four main colours'}
+    if(top&&shirt&&tie&&pcol(top)===pcol(shirt)&&pcol(shirt)===pcol(tie)){v=0;why='jacket, shirt and tie are all one color';hard=true}else if(n>4){v=2;why='more than four main colors'}
     if(main.length)add('Overall harmony',v,5,why,hard)}
   if(o.formal){let v=0;const why=[];
     if(top&&formalTop(top)>=25)v+=3;else why.push('a darker solid suit is more formal');
@@ -547,9 +547,9 @@ function rateOutfit(o){
     if(shoes&&leatherGroup(planCol(shoes))==='black'&&finish(shoes.leather)==='smooth')v+=2;else why.push('black smooth-leather shoes are the formal choice');
     add('Formality',v,10,why.join('; '))}
   if(!top&&!needsJacket(o)&&shirt&&o.bot){let v=10,why=[];
-    if(pcol(shirt)===pcol(o.bot)){v-=6;why.push('shirt and trousers are the same colour')}
-    if(Math.abs(LUM(shirt)-LUM(o.bot))<35){v-=3;why.push('shirt and trousers lack contrast')}
-    add('Shirt and trousers',v,10,why.join('; '))}
+    if(pcol(shirt)===pcol(o.bot)){v-=6;why.push('shirt and pants are the same color')}
+    if(Math.abs(LUM(shirt)-LUM(o.bot))<35){v-=3;why.push('shirt and pants lack contrast')}
+    add('Shirt and pants',v,10,why.join('; '))}
   if(o.occasion==='funeral'){let v=0;const why=[];
     if(top&&OCC.funeral.top(top)>=18)v+=3;else why.push('a black, charcoal or navy plain suit is right for a funeral');
     if(shirt&&planCol(shirt)==='white')v+=3;else why.push('a white shirt is right for a funeral');
@@ -572,8 +572,8 @@ function rateOutfit(o){
   // variety: against the last two workdays (and yesterday's shoes)
   if(o.ctx&&o.ctx.prev&&o.ctx.prev[0]){const P=o.ctx.prev.filter(Boolean),ago=p=>{const w=o.ctx.prev.indexOf(p);return w?'two workdays ago':'the workday before'};let v=5;const why=[];
     const jg=top?jacketGroup(top):null,sl=shirtLook(shirt),tl=tieLook(tie),look=top&&P.find(p=>p.jg===jg&&p.sl===sl&&p.tl===tl);
-    if(look){v-=3;why.push(`the same look as ${ago(look)} (jacket colour, shirt and tie)`)}
-    const st=tie&&P.find(p=>p.tid===tie.id);if(st){v-=2;why.push(`the same tie as ${ago(st)}`)}else if(tie&&o.ctx.prev3&&o.ctx.prev3.tid===tie.id){v-=1;why.push('the same tie as three workdays ago')}else if(tie&&P[0]===o.ctx.prev[0]&&P[0].tg===tieGroup(tie)&&!look){v-=1;why.push('the same tie colour as the workday before')}
+    if(look){v-=3;why.push(`the same look as ${ago(look)} (jacket color, shirt and tie)`)}
+    const st=tie&&P.find(p=>p.tid===tie.id);if(st){v-=2;why.push(`the same tie as ${ago(st)}`)}else if(tie&&o.ctx.prev3&&o.ctx.prev3.tid===tie.id){v-=1;why.push('the same tie as three workdays ago')}else if(tie&&P[0]===o.ctx.prev[0]&&P[0].tg===tieGroup(tie)&&!look){v-=1;why.push('the same tie color as the workday before')}
     const ss=shirt&&P.find(p=>p.sid===shirt.id);if(ss){v-=2;why.push(`the same shirt as ${ago(ss)}`)}
     if(top&&o.ctx.prev[0].jid===top.id){v-=2;why.push(`the same ${top.type==='suit'?'suit':'blazer'} as the workday before`)}
     if(shoes&&o.ctx.prev[0].sh===shoes.id&&o.ctx.n-o.ctx.prev[0].n===1){v-=1;const w=items.find(x=>x.type==='shoes'&&x.id!==shoes.id&&beltWait(x));

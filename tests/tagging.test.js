@@ -13,7 +13,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const textOf=b=>[...(b.system||[]).map(s=>s.text),...b.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n');   // the fixed rules and the owner's own are in system (cached), the rest after the photos
   try{
     // ---- worker: the request
-    reply=()=>({...base,...extra,newColor:{name:'Mushroom<script>',why:'greyer than taupe'},clothBox:{x:900,y:-5,w:400,h:2000}});
+    reply=()=>({...base,...extra,newColor:{name:'Mushroom<script>',why:'grayer than taupe'},clothBox:{x:900,y:-5,w:400,h:2000}});
     const custom={colors:[{key:'ownmushroom',name:'mushroom',hex:'#8a7f72',types:['suit'],accent:false},{key:'navy',name:'bad',hex:'#000000',types:['suit']},{key:'own<x>',name:'x',hex:'#123456'}],
       patterns:[{key:'own-seersucker',name:'seersucker',types:['suit'],desc:'puckered stripes'}]};
     let r=await (await call('',{image:IMG,closeup:IMG,custom,measured:{lab:[42.4,3.1,8.9],hex:'#6b5f52',ref:true,src:'closeup',near:[{c:'taupe',d:4.2},{c:'bad c',d:1}]},
@@ -22,15 +22,15 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(b.messages[0].content.filter(c=>c.type==='image').length===2&&/The first photo is the whole item\. The second is a close-up/.test(t),'with a close-up, both photos go to Claude, the second named as the close-up');
     ok(b.output_config.effort==='medium'&&b.max_tokens>=12000,'single items are tagged at medium effort');
     const sysT=(b.system||[]).map(s=>s.text).join('\n');
-    ok(!/white-balanced/.test(sysT)&&!/Judge shirt colours as in daylight/.test(t)&&/may or may not have been white-balanced/.test(t),'without the app\'s wb flag Claude gets the neutral wording once (no "already white-balanced" against "judge as in daylight")');
-    ok(sch.properties.primaryColor.enum.includes('ownmushroom')&&!sch.properties.primaryColor.enum.includes('own<x>')&&sch.properties.pattern.enum.includes('own-seersucker'),'the owner\'s colours and patterns join the allowed answers; malformed ones are dropped');
+    ok(!/white-balanced/.test(sysT)&&!/Judge shirt colors as in daylight/.test(t)&&/may or may not have been white-balanced/.test(t),'without the app\'s wb flag Claude gets the neutral wording once (no "already white-balanced" against "judge as in daylight")');
+    ok(sch.properties.primaryColor.enum.includes('ownmushroom')&&!sch.properties.primaryColor.enum.includes('own<x>')&&sch.properties.pattern.enum.includes('own-seersucker'),'the owner\'s colors and patterns join the allowed answers; malformed ones are dropped');
     ok(/ownmushroom = mushroom \(#8a7f72\), for suit/.test(t)&&/own-seersucker = seersucker: puckered stripes/.test(t)&&!/= bad/.test(t),'the prompt describes them');
-    ok(/CIELAB L\*42 a\*3 b\*9 \(#6b5f52\); nearest of the owner's colours: taupe \(ΔE 4\.2\)\. A white reference was in the frame/.test(t)&&!/bad c/.test(t),'the measured colour goes along, with the white-reference note');
+    ok(/CIELAB L\*42 a\*3 b\*9 \(#6b5f52\); nearest of the owner's colors: taupe \(ΔE 4\.2\)\. A white reference was in the frame/.test(t)&&!/bad c/.test(t),'the measured color goes along, with the white-reference note');
     ok(/suit primaryColor: steelblue -> slate/.test(t)&&!/evil/.test(t),'past corrections go along; anything malformed is dropped');
     ok(/clothBox/.test(t)&&/newColor/.test(t)&&sch.required.includes('clothBox')&&sch.required.includes('altColor'),'Claude also gives confidence, a runner-up, suggestions and a plain-cloth box');
     ok(r.newColor&&r.newColor.name==='Mushroomscript'&&r.clothBox.x===900&&r.clothBox.w===100&&r.clothBox.y===0&&r.clothBox.h===1000,`suggestions are tidied and the box kept inside the photo (${JSON.stringify(r.clothBox)})`);
     reply=()=>({items:[]});await call('tag-many',{image:IMG,custom});
-    ok(sent.at(-1).output_config.format.schema.properties.items.items.properties.primaryColor.enum.includes('ownmushroom'),'a group photo can be tagged with the owner\'s colours too');
+    ok(sent.at(-1).output_config.format.schema.properties.items.items.properties.primaryColor.enum.includes('ownmushroom'),'a group photo can be tagged with the owner\'s colors too');
 
     // ---- app
     const browser=await chromium.launch();const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
@@ -42,16 +42,16 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{items=[];show('add')});
     // a 3000x2000 photo: a taupe-ish suit on a white wall
-    reply=()=>({...base,...extra,newColor:{name:'mushroom',why:'greyer than taupe'}});
+    reply=()=>({...base,...extra,newColor:{name:'mushroom',why:'grayer than taupe'}});
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=3000;c.height=2000;const x=c.getContext('2d');x.fillStyle='#f0f0ee';x.fillRect(0,0,3000,2000);x.fillStyle='rgb(128,116,104)';x.fillRect(800,300,1400,1700);
       const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.95));await addFiles([new File([b],'s.jpg',{type:'image/jpeg'})])});
     const dims=await p.evaluate(async src=>{const im=new Image();im.src=src;await im.decode();return [im.width,im.height]},bodies.at(-1).image);
     ok(dims[0]===2048&&dims[1]===1365,`the tagger gets a sharp copy, 2048px on the long side (${dims})`);
     const card=await p.evaluate(()=>({q:{conf:queue[0].conf,alt:queue[0].altColor,meas:queue[0].meas},txt:document.querySelector('#queue').textContent}));
-    ok(/colour: medium confidence · pattern: low confidence/.test(card.txt)&&/or deep taupe/.test(card.txt)&&/or twill/.test(card.txt),'the card shows how sure Claude was and its runner-ups');
-    ok(card.q.meas&&card.q.meas.src==='photo'&&/Measured in the photo: closest/.test(card.txt),`the cloth colour is measured inside the box Claude pointed at (${card.q.meas&&card.q.meas.hex})`);
-    ok(Math.abs(card.q.meas.lab[0]-50.5)<4,`… and comes out at the suit's colour (L* ${card.q.meas.lab[0]})`);
-    ok(/None of your colours quite fit: Claude calls it mushroom/.test(card.txt),'when nothing fits, the card offers to add the colour Claude names');
+    ok(/color: medium confidence · pattern: low confidence/.test(card.txt)&&/or deep taupe/.test(card.txt)&&/or twill/.test(card.txt),'the card shows how sure Claude was and its runner-ups');
+    ok(card.q.meas&&card.q.meas.src==='photo'&&/Measured in the photo: closest/.test(card.txt),`the cloth color is measured inside the box Claude pointed at (${card.q.meas&&card.q.meas.hex})`);
+    ok(Math.abs(card.q.meas.lab[0]-50.5)<4,`… and comes out at the suit's color (L* ${card.q.meas.lab[0]})`);
+    ok(/None of your colors quite fit: Claude calls it mushroom/.test(card.txt),'when nothing fits, the card offers to add the color Claude names');
     await p.click('#queue .chipbtn:has-text("or deep taupe")');
     ok(await p.evaluate(()=>queue[0].primaryColor==='deeptaupe'&&queue[0].edited.primaryColor),'one tap takes the runner-up (and counts as your choice)');
     // the close-up, with a corner of white paper under warm light: its own reference sets white balance and exposure
@@ -63,27 +63,27 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const rb=bodies.at(-1);
     ok(!!rb.closeup&&rb.measured&&rb.measured.ref===true&&rb.measured.src==='closeup','adding the close-up tags again with both photos and the measurement (white reference found)');
     ok(/Updated from the close-up: pattern solid → birdseye/.test(ref.note)&&ref.pat==='birdseye','fields you have not touched take the new answer, and the card says what changed');
-    ok(ref.col==='deeptaupe'&&!/colour/.test(ref.note),'a field you set yourself stays');
+    ok(ref.col==='deeptaupe'&&!/color/.test(ref.note),'a field you set yourself stays');
     ok(ref.meas.ref&&ref.meas.lab[2]<12&&ref.meas.lab[0]>40,`the paper corrects the warm cast and the exposure of the close-up (Lab ${ref.meas.lab})`);
     // a new colour and a new pattern
     await p.evaluate(()=>{queue[0].newColor={name:'mushroom',why:''};renderAdd()});
     await p.click('#queue .offer:not(.measalt) .chipbtn');   // the offer opens the "+ New colour" sheet, Claude's name filled in (the inline form is gone)
-    ok(await p.evaluate(()=>!!(colPick&&colPick.newc)&&document.querySelector('#cn-name').value==='Mushroom'&&!document.querySelector('#queue .newform')),'the new-colour offer opens the New colour sheet with Claude\'s name');
+    ok(await p.evaluate(()=>!!(colPick&&colPick.newc)&&document.querySelector('#cn-name').value==='Mushroom'&&!document.querySelector('#queue .newform')),'the new-colour offer opens the New color sheet with Claude\'s name');
     await p.selectOption('#cn-base','taupe');await p.click('#cn-add');await p.waitForFunction(()=>queue[0].primaryColor==='ownmushroom');
     const nc=await p.evaluate(()=>({cu:settings.custom.colors,col:queue[0].primaryColor,list:COLS_BY.suit.p.includes('ownmushroom'),blazer:COLS_BY.blazer.p.includes('ownmushroom'),shirt:COLS_BY.shirt.p.includes('ownmushroom'),
       opt:(()=>{document.querySelector('#queue .colbtn[data-k="primaryColor"]').click();const t=[...document.querySelectorAll('#col-sheet .cptile .cpnm')].some(e=>e.textContent==='Mushroom');closeColPick();return t})()}));
-    ok(nc.cu.length===1&&nc.cu[0].key==='ownmushroom'&&nc.cu[0].base==='taupe'&&nc.col==='ownmushroom','Add as a new colour saves it (with what it behaves like) and the card takes it');
-    ok(nc.list&&nc.blazer&&!nc.shirt&&nc.opt,'it is offered for suits, blazers and trousers (the default group), not shirts');
+    ok(nc.cu.length===1&&nc.cu[0].key==='ownmushroom'&&nc.cu[0].base==='taupe'&&nc.col==='ownmushroom','Add as a new color saves it (with what it behaves like) and the card takes it');
+    ok(nc.list&&nc.blazer&&!nc.shirt&&nc.opt,'it is offered for suits, blazers and pants (the default group), not shirts');
     await p.evaluate(()=>{queue[0].newPattern={name:'seersucker',why:'puckered stripes'};renderAdd()});
     await p.click('#queue .offer .chipbtn:has-text("Add this pattern")');await p.selectOption('#cn-base','twill');await p.click('#cn-add');await p.waitForFunction(()=>queue[0].pattern==='own-seersucker');
     const np=await p.evaluate(()=>({pat:queue[0].pattern,list:PATS_BY.suit.includes('own-seersucker'),name:patName('own-seersucker'),base:patBase('own-seersucker')}));
     ok(np.pat==='own-seersucker'&&np.list&&np.name==='seersucker'&&np.base==='twill','Add this pattern saves it, drawn like the pattern you chose');
     const dup=await p.evaluate(async()=>{try{await addCustomColor({name:'Mushroom',hex:'#111111',base:'grey',types:['suit']});return 'added'}catch(e){return e.message}});
-    ok(/already a colour/.test(dup),'a second colour with the same name is refused');
+    ok(/already a color/.test(dup),'a second color with the same name is refused');
     // save: the measurement, the correction and the sharp copy are kept
     await p.evaluate(()=>save(0));await p.waitForFunction(()=>settings.tagStats&&settings.tagStats.n===1);
     const sv=await p.evaluate(async()=>{const it=items[0];return {meas:it.meas,fixes:settings.tagFixes,st:settings.tagStats,copy:await (async()=>{for(let k=0;k<100;k++){if(await tagImgOf(it.id))return true;await new Promise(r=>setTimeout(r,50))}return false})(),desc:desc(it)}});   // (the copy is written after the save returns)
-    ok(sv.meas&&sv.meas.ref&&sv.meas.src==='closeup','the item keeps its measured colour (it calibrates later measurements)');
+    ok(sv.meas&&sv.meas.ref&&sv.meas.src==='closeup','the item keeps its measured color (it calibrates later measurements)');
     ok(sv.fixes.some(f=>f.field==='primaryColor'&&f.from==='taupe'&&f.to==='ownmushroom')&&sv.fixes.some(f=>f.field==='pattern'&&f.from==='birdseye'&&f.to==='own-seersucker')&&sv.st.wrong.primaryColor===1,'what you changed from the tagger\'s answer is recorded');
     ok(sv.copy,'the sharp copy is kept on this device for the benchmark');
     ok(/mushroom/.test(sv.desc)&&/seersucker/.test(sv.desc),`the item reads with your names (${sv.desc})`);
@@ -95,11 +95,11 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     reply=()=>({...base,...extra});
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=400;c.getContext('2d').fillRect(0,0,400,400);const b=await new Promise(r=>c.toBlob(r));await addFiles([new File([b],'x.png',{type:'image/png'})])});
     const nb=bodies.at(-1);
-    ok(nb.custom&&nb.custom.colors[0].key==='ownmushroom'&&nb.corrections.some(f=>f.to==='ownmushroom')&&!('id' in nb.corrections[0]),'later tagging requests carry your colours, patterns and corrections');
+    ok(nb.custom&&nb.custom.colors[0].key==='ownmushroom'&&nb.corrections.some(f=>f.to==='ownmushroom')&&!('id' in nb.corrections[0]),'later tagging requests carry your colors, patterns and corrections');
     await p.evaluate(()=>{queue.splice(0,1);renderAdd()});
     // after a reload they are still there
     await p.reload();await p.waitForFunction(()=>window.appReady);
-    ok(await p.evaluate(()=>COLORS.ownmushroom===settings.custom.colors[0].hex&&PATS_BY.suit.includes('own-seersucker')),'your colours and patterns are back after a restart');
+    ok(await p.evaluate(()=>COLORS.ownmushroom===settings.custom.colors[0].hex&&PATS_BY.suit.includes('own-seersucker')),'your colors and patterns are back after a restart');
     // Settings: listed; one in use cannot be removed, an unused one can
     await p.evaluate(()=>addCustomColor({name:'Sage',hex:'#9caf88',base:'olive',types:['tie']}));
     await p.evaluate(()=>openSettings('tagging'));
@@ -121,7 +121,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // stats page
     await p.evaluate(()=>{closeSettings();show('stats')});
     const st=await p.textContent('#st-tagging');
-    ok(/Photo tagging/.test(st)&&/Colour\d+%right/.test(st.replace(/\s/g,''))&&!/accuracy check/.test(st),'the stats page shows how often each tag was right (no accuracy check line: it was removed): '+st.replace(/\s+/g,' ').slice(0,160));
+    ok(/Photo tagging/.test(st)&&/Color\d+%right/.test(st.replace(/\s/g,''))&&!/accuracy check/.test(st),'the stats page shows how often each tag was right (no accuracy check line: it was removed): '+st.replace(/\s+/g,' ').slice(0,160));
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await browser.close();
   }finally{globalThis.fetch=realFetch}

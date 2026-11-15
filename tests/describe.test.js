@@ -19,7 +19,7 @@ module.exports=async({ok,ROOT})=>{
   const env={APP_TOKEN:'owner',ANTHROPIC_API_KEY:'k',CLAUDE_RETRY_MS:'0',WARDROBE:KV,RENDER_HUB:HUB};
   const call=(body,tok='owner',e=env,method='POST',p='describe')=>worker.fetch(new Request('https://w.test/'+p,{method,headers:{'content-type':'application/json','x-app-token':tok},body:method==='GET'?undefined:JSON.stringify(body)}),e);
   const J=async r=>({s:r.status,...(await r.json().catch(()=>({})))});
-  const COL={kind:'colour',match:'new',existing:'wine',name:'Faded Burgundy',hex:'#7A3B47',plansAs:'wine',fitsType:true,confidence:'high',why:'A greyed, softer burgundy.',ask:null};
+  const COL={kind:'colour',match:'new',existing:'wine',name:'Faded Burgundy',hex:'#7A3B47',plansAs:'wine',fitsType:true,confidence:'high',why:'A grayed, softer burgundy.',ask:null};
   const PAT={kind:'pattern',match:'new',existing:'nailhead',name:'Hopsack',description:'A small basketweave, two over two.',plansAs:'nailhead',
     look:{layout:'texture',texture:{kind:'basket',grid:['1100','1100','0011','0011'],aspect:1,lighter:true,contrast:'subtle'},across:null,along:null,motif:null,repeatsAcrossItem:70},colourHint:null,confidence:'high',why:'A basket weave.',ask:null};
   const custom={colors:[{key:'ownmoss',name:'Moss',hex:'#5a6b3a',base:'olive',types:['tie'],accent:false}],patterns:[{key:'own-grenadine-fina',name:'Grenadine fina',base:'woven',types:['tie'],desc:'a fine gauze weave'}]};
@@ -29,14 +29,14 @@ module.exports=async({ok,ROOT})=>{
     let r=await J(await call({what:'colour',text:'  faded <burgundy> like old wine ',type:'tie',field:'primary',colours:{main:'burgundy'},custom}));
     const q=sent[0].body,u=q.messages[0].content.map(c=>c.text||'').join('\n');
     ok(r.s===200&&q.model==='claude-sonnet-5-5','the model is Claude Sonnet 5.5 by default');
-    ok(q.output_config.effort==='low'&&q.max_tokens===4000&&!('thinking' in q)&&!('temperature' in q),'a colour runs at effort low, max_tokens 4000, no thinking or sampling parameters (Sonnet 5.5 refuses "disabled")');
-    ok(q.system.length===2&&q.system.every(s=>s.cache_control&&s.cache_control.type==='ephemeral')&&/menswear cloth expert/.test(q.system[0].text)&&/Colour keys/.test(q.system[0].text)&&/ownmoss = Moss \(#5a6b3a\), behaves like olive/.test(q.system[1].text),'system: the fixed rules and tables first, then the owner\'s colours with their bases, both cached');
-    ok(/<description>faded burgundy like old wine<\/description>/.test(u)&&!/<burgundy>/.test(u)&&/Kind of item: tie/.test(u)&&/colour now: burgundy \(#6d1f2c\)/.test(u),'the description is wrapped, < and > removed, after the item\'s kind and colour');
+    ok(q.output_config.effort==='low'&&q.max_tokens===4000&&!('thinking' in q)&&!('temperature' in q),'a color runs at effort low, max_tokens 4000, no thinking or sampling parameters (Sonnet 5.5 refuses "disabled")');
+    ok(q.system.length===2&&q.system.every(s=>s.cache_control&&s.cache_control.type==='ephemeral')&&/menswear cloth expert/.test(q.system[0].text)&&/Color keys/.test(q.system[0].text)&&/ownmoss = Moss \(#5a6b3a\), behaves like olive/.test(q.system[1].text),'system: the fixed rules and tables first, then the owner\'s colors with their bases, both cached');
+    ok(/<description>faded burgundy like old wine<\/description>/.test(u)&&!/<burgundy>/.test(u)&&/Kind of item: tie/.test(u)&&/color now: burgundy \(#6d1f2c\)/.test(u),'the description is wrapped, < and > removed, after the item\'s kind and color');
     ok(q.fallbacks==='default'&&sent[0].headers['anthropic-beta']==='server-side-fallback-2026-07-01','the refusal fallback is on for Sonnet 5.5');
-    ok(q.output_config.format.type==='json_schema'&&q.output_config.format.schema.properties.existing.enum.includes('ownmoss')&&!q.output_config.format.schema.properties.plansAs.enum.includes('ownmoss'),'strict JSON: existing may be an own colour, plansAs never');
+    ok(q.output_config.format.type==='json_schema'&&q.output_config.format.schema.properties.existing.enum.includes('ownmoss')&&!q.output_config.format.schema.properties.plansAs.enum.includes('ownmoss'),'strict JSON: existing may be an own color, plansAs never');
     sent=[];await call({what:'colour',text:'petrol blue',type:'suit',custom:{}});await call({what:'colour',text:'ink',type:'shirt',field:'accent',custom});
-    ok(sent[0].body.system[0].text===sent[1].body.system[0].text&&sent[0].body.system.length===1,'the fixed block is byte-identical across descriptions and items (the cache prefix holds); no owner block without own colours');
-    ok(/stripe or motif colour/.test(sent[1].body.messages[0].content[0].text),'an accent field asks for a stripe or motif colour');
+    ok(sent[0].body.system[0].text===sent[1].body.system[0].text&&sent[0].body.system.length===1,'the fixed block is byte-identical across descriptions and items (the cache prefix holds); no owner block without own colors');
+    ok(/stripe or motif color/.test(sent[1].body.messages[0].content[0].text),'an accent field asks for a stripe or motif color');
     sent=[];await call({what:'colour',text:'x',type:'tie'},'owner',{...env,CLAUDE_DESCRIBE_MODEL:'claude-haiku-5-5'});
     ok(sent[0].body.model==='claude-haiku-5-5'&&!('fallbacks' in sent[0].body),'CLAUDE_DESCRIBE_MODEL changes the model (photo tagging keeps CLAUDE_MODEL)');
     // ---- the input
@@ -47,14 +47,14 @@ module.exports=async({ok,ROOT})=>{
     ok((await call({what:'colour',text:'x'.repeat(120),type:'tie'})).status===200,'120 characters are accepted');
     // ---- the colour cleaner
     r=await J(await call({what:'colour',text:'faded burgundy',type:'tie'}));
-    ok(r.hex==='#7a3b47'&&r.name==='faded burgundy'&&r.plansAs==='wine'&&r.existing==='wine'&&r.dE>4&&r.dE<7&&r.kind==='colour'&&r.ask===null,`a colour answer: hex lower-cased, name tidied, plansAs and existing kept, ΔE00 given (${r.dE})`);
+    ok(r.hex==='#7a3b47'&&r.name==='faded burgundy'&&r.plansAs==='wine'&&r.existing==='wine'&&r.dE>4&&r.dE<7&&r.kind==='colour'&&r.ask===null,`a color answer: hex lower-cased, name tidied, plansAs and existing kept, ΔE00 given (${r.dE})`);
     reply=()=>[200,{...COL,hex:'#1d4b5a',plansAs:'stone',existing:'nope'}];
     r=await J(await call({what:'colour',text:'petrol blue',type:'tie'}));
     ok(['steelblue','slate','deepblue'].includes(r.plansAs)&&D.baseFor('#1d4b5a',['charcoal','steelblue','lightblue','slate'])==='steelblue','a plansAs outside the tie\'s list is replaced by the same family, never charcoal (petrol blue -> '+r.plansAs+')');
     ok(r.existing&&r.existing!=='nope'&&typeof r.dE==='number','an existing outside the lists is snapped to the nearest by ΔE00');
     reply=()=>[200,{...COL,plansAs:'ownmoss',existing:'ownmoss',hex:'#5b6c3b'}];
     r=await J(await call({what:'colour',text:'moss',type:'tie',custom}));
-    ok(r.existing==='ownmoss'&&r.dE<1&&r.plansAs!=='ownmoss','an own colour can be the existing one, never plansAs');
+    ok(r.existing==='ownmoss'&&r.dE<1&&r.plansAs!=='ownmoss','an own color can be the existing one, never plansAs');
     reply=()=>[200,{...COL,hex:'#123456'}];
     r=await J(await call({what:'colour',text:'olive drab #4a5d23',type:'pants'}));
     ok(r.hex==='#4a5d23','a hex in the description wins over Claude\'s');
@@ -68,7 +68,7 @@ module.exports=async({ok,ROOT})=>{
     reply=()=>[200,PAT];sent=[];
     r=await J(await call({what:'pattern',text:'a small basketweave like a hopsack',type:'blazer',colours:{main:'navy'},pattern:'solid',custom}));
     ok(sent[0].body.output_config.effort==='medium'&&sent[0].body.max_tokens===8000&&/Pattern keys/.test(sent[0].body.system[0].text)&&/own-grenadine-fina = Grenadine fina/.test(sent[0].body.system[1].text),'a pattern runs at effort medium, max_tokens 8000, with the pattern table and the owner\'s patterns');
-    ok(/main very dark navy|main navy \(#1b2a4a\)/.test(sent[0].body.messages[0].content[0].text)&&/The pattern now: solid/.test(sent[0].body.messages[0].content[0].text),'the item\'s colours and pattern go in the per-call text');
+    ok(/main very dark navy|main navy \(#1b2a4a\)/.test(sent[0].body.messages[0].content[0].text)&&/The pattern now: solid/.test(sent[0].body.messages[0].content[0].text),'the item\'s colors and pattern go in the per-call text');
     ok(r.s===200&&r.plansAs==='nailhead'&&r.look.layout==='texture'&&r.look.tex.grid.join()==='1100,1100,0011,0011'&&r.look.tr===70&&r.look.tex.contrast==='subtle'&&r.name==='hopsack','a texture look: the grid kept, repeats across, the name tidied');
     reply=()=>[200,{...PAT,plansAs:'solid'}];
     r=await J(await call({what:'pattern',text:'hopsack',type:'suit'}));
@@ -98,7 +98,7 @@ module.exports=async({ok,ROOT})=>{
     r=await J(await call({what:'colour',text:'faded burgundy',type:'tie'},inv.code));
     me=await J(await call(null,inv.code,env,'GET','me'));
     ok(r.s===502&&me.used.describe===3,'a failed lookup gives its count back');
-    ok(r.message==='The colour or pattern couldn’t be looked up just now. Try again later.'&&!/Claude|API/.test(r.detail||''),'a tester reads plain words (PLAIN.describe): '+(r.detail||r.message));
+    ok(r.message==='The color or pattern couldn’t be looked up just now. Try again later.'&&!/Claude|API/.test(r.detail||''),'a tester reads plain words (PLAIN.describe): '+(r.detail||r.message));
     reply=()=>[200,{...COL,hex:'nope'}];
     await call({what:'colour',text:'x',type:'tie'},inv.code);me=await J(await call(null,inv.code,env,'GET','me'));
     ok(me.used.describe===3,'a 422 gives its count back too');
@@ -108,7 +108,7 @@ module.exports=async({ok,ROOT})=>{
     {const T=await J(await call({name:'Low',caps:{describe:4}},'owner',env,'POST','invites'));const k='invite:'+sha(T.code),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec));
       reply=()=>[200,COL];for(let i=0;i<4;i++)await call({what:'colour',text:'a',type:'tie'},T.code);sent=[];
       r=await J(await call({what:'colour',text:'a',type:'tie'},T.code));
-      ok(r.s===429&&r.what==='describe'&&r.message==='Today’s limit of 4 colour and pattern lookups is used up. It starts again at midnight UTC.'&&sent.length===0,'over the cap: 429 in plain words, before Claude ('+r.message+')')}
+      ok(r.s===429&&r.what==='describe'&&r.message==='Today’s limit of 4 color and pattern lookups is used up. It starts again at midnight UTC.'&&sent.length===0,'over the cap: 429 in plain words, before Claude ('+r.message+')')}
     {const e2={...env,TESTER_DAILY_TOTAL:JSON.stringify({describe:8})};reply=()=>[200,COL];sent=[];
       const T=await J(await call({name:'All'},'owner',e2,'POST','invites'));let last;for(let i=0;i<4;i++)last=await J(await call({what:'colour',text:'a',type:'tie'},T.code,e2));
       ok(last.s===429&&last.all===true&&/for everyone testing the app/.test(last.message),'the all-testers total stops lookups when used up ('+last.message+')')}

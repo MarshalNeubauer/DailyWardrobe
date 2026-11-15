@@ -38,10 +38,12 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await finds('merino',['so1'],'material on another type');
     await finds('blazer',['bl1'],'type');
     await finds('dress shirt',['sh1','sh2'],'the type\'s full name');
-    await finds('light blue',['sh2'],'colour name as shown');
-    await finds('burgundy',['ti1'],'colour');
+    await finds('light blue',['sh2'],'color name as shown');
+    await finds('burgundy',['ti1'],'color');
+    await finds('light gray',['su3'],'the American color name shown');
+    await finds('light grey',['su3'],'the British spelling too');
     await finds('pinstripe',['su2'],'pattern');
-    await finds('NAVY',['su1','ti1','ti2'],'colour, any case, second colours too');
+    await finds('NAVY',['su1','ti1','ti2'],'color, any case, second colors too');
     await finds('navy tie',['ti1','ti2'],'several words, all of which must match');
     ok((await count())==='2 of 12 items'&&await p.evaluate(()=>!document.querySelector('#wclear').hidden),'the count reads "n of m items" and the clear button shows');
     // typing keeps the field, its focus and the caret
@@ -93,7 +95,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(await p.evaluate(()=>/Last worn/.test(document.querySelector('#gi-sx1 .wwear').textContent)),'each box says when it was last worn');
     const sCol=await sortBy('colour');
     const kc=x=>sCol.indexOf(x);
-    ok(kc('sh1')<kc('su3')&&kc('su3')<kc('su2')&&kc('su2')<kc('sx1')&&kc('sx1')<kc('sh2')&&kc('sh2')<kc('su1')&&kc('su1')<kc('bl1')&&kc('bl1')<kc('ti1'),`Colour: families together, light to dark within each (${sCol.join(' ')})`);
+    ok(kc('sh1')<kc('su3')&&kc('su3')<kc('su2')&&kc('su2')<kc('sx1')&&kc('sx1')<kc('sh2')&&kc('sh2')<kc('su1')&&kc('su1')<kc('bl1')&&kc('bl1')<kc('ti1'),`Color: families together, light to dark within each (${sCol.join(' ')})`);
     const sAz=await sortBy('az');
     const names=await p.evaluate(()=>[...document.querySelectorAll('#wardrobe .gi .gimeta b')].map(b=>b.textContent.toLowerCase()));
     ok(names.join('|')===names.slice().sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base',numeric:true})).join('|')&&names.includes('wedding suit')&&sAz.length===12,`A to Z by the title shown, a name included (…${names.slice(-2).join(', ')})`);
@@ -149,13 +151,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(pk.includes('Wedding suit')&&pk.some(t=>/charcoal|navy/i.test(t)),`the piece picker shows the name, and the description for unnamed pieces (${pk.join(' | ')})`);
     await p.evaluate(()=>closePicker());
     const texts=await p.evaluate(()=>{const o=planFor()[key(sel)],it=items.find(i=>i.id===window.__top);return {d:desc(it),nm:nm(it),r:JSON.stringify(rateOutfit(o).checks.map(c=>c.why))}});
-    ok(/^(navy|charcoal)$/.test(texts.d)&&/^(navy|charcoal) suit$/.test(texts.nm)&&!/Wedding/.test(texts.r),'the planner\'s rule texts and descriptions keep using the colour description');
+    ok(/^(navy|charcoal)$/.test(texts.d)&&/^(navy|charcoal) suit$/.test(texts.nm)&&!/Wedding/.test(texts.r),'the planner\'s rule texts and descriptions keep using the color description');
 
     // ---- the Add card: More details, folded
     await p.evaluate(()=>{show('add');addManual();setq(0,'type','tie')});
     const add0=await p.evaluate(()=>({btn:(document.querySelector('#queue .morebtn')||{}).textContent,exp:document.querySelector('#queue .morebtn').getAttribute('aria-expanded'),open:!!document.querySelector('#queue .morein'),
       labs:[...document.querySelectorAll('#queue .card>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join()}));
-    ok(/^More details/.test(add0.btn)&&add0.exp==='false'&&!add0.open&&add0.labs==='Type,Colour,Second colour,Third colour','the Add card has "More details" folded away, after the tags');
+    ok(/^More details/.test(add0.btn)&&add0.exp==='false'&&!add0.open&&add0.labs==='Type,Color,Second color,Third color','the Add card has "More details" folded away, after the tags');
     const h0=await p.evaluate(()=>document.querySelector('#queue .card').getBoundingClientRect().height);
     await p.click('#queue .morebtn');await p.waitForSelector('#queue .morein');
     const addM=await p.evaluate(()=>({opts:[...document.querySelector('#queue .wmat').options].map(o=>o.textContent),out:!document.querySelector('#queue .wmat').closest('.morefold'),above:!!(document.querySelector('#queue .wmat').compareDocumentPosition(document.querySelector('#queue .morefold'))&Node.DOCUMENT_POSITION_FOLLOWING),inside:!!document.querySelector('#queue .morein .wmat')}));

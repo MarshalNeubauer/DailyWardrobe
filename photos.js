@@ -146,18 +146,22 @@ function lastWorn(o){
    Generated once per look (OpenAI, through the worker), kept like outfit photos and shared between devices. ---- */
 const ITEM_PIC_TYPES=['shoes','belt','socks','pants','overcoat','raincoat','watch'];
 const aAn=w=>(/^[aeiou]/i.test(w)?'an ':'a ')+w;
-function itemDesc(i){const c=colName(primaryCol(i)),lea=patLabel(i.leather||'calf'),pat=i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?patLabel(i.pattern)+' ':'';
+/* the picture prompts keep the color names they were first written with (British, before the app's text went American): itemKey
+   hashes the description, so a respelt name would orphan every generated picture of a gray piece and ask to pay for it again */
+const PIC_COL={grey:'grey',lightgrey:'light grey',darkgrey:'dark grey',midgrey:'mid grey',slate:'dark slate blue-grey'};
+const picCol=c=>PIC_COL[c]||colName(c);
+function itemDesc(i){const c=picCol(primaryCol(i)),lea=patLabel(i.leather||'calf'),pat=i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?patLabel(i.pattern)+' ':'';
   switch(i.type){
     case 'shoes':{const st=shoeStyle(i);   // (an oxford's description is the one from before styles, so its picture is kept)
-      if(st==='sneaker'){const m=i.leather==='canvas'?'canvas':i.leather==='knit'?'knit':i.leather==='suede'?'suede':'leather',sole=i.secondaryColor&&i.secondaryColor!=='none'?colName(i.secondaryColor):'white';
+      if(st==='sneaker'){const m=i.leather==='canvas'?'canvas':i.leather==='knit'?'knit':i.leather==='suede'?'suede':'leather',sole=i.secondaryColor&&i.secondaryColor!=='none'?picCol(i.secondaryColor):'white';
         return `a pair of ${c} ${m} low-top sneakers with ${aAn(sole)} rubber cupsole, side three-quarter view`}
       return st==='oxford'?`a pair of ${c} ${lea} leather cap-toe oxford dress shoes, side three-quarter view`:`a pair of ${c} ${lea} leather ${({derby:'derby dress shoes',loafer:'penny loafers',boot:'chelsea boots'})[st]}, side three-quarter view`}
     case 'belt':return `${aAn(c)} ${lea} leather dress belt, loosely coiled, with a polished ${i.metal==='gold'?'gold':i.metal==='other'?'gunmetal':'silver'} buckle`;
-    case 'socks':{const t=sockToe(i);return `a single ${c} ${pat}fine-knit mid-calf dress sock in side profile, as if on an invisible leg: the cuff at the top, the leg straight down, the heel at the lower left and the foot pointing to the right, smooth fine gauge with a soft sheen${t?`, with a ${colName(t)} knitted toe cap over the toes (only the toe, the heel stays ${c})`:', the toe and heel the same colour as the rest'}`}
+    case 'socks':{const t=sockToe(i);return `a single ${c} ${pat}fine-knit mid-calf dress sock in side profile, as if on an invisible leg: the cuff at the top, the leg straight down, the heel at the lower left and the foot pointing to the right, smooth fine gauge with a soft sheen${t?`, with a ${picCol(t)} knitted toe cap over the toes (only the toe, the heel stays ${c})`:', the toe and heel the same colour as the rest'}`}
     case 'pants':{const k=trouserKind(i);return k==='jeans'?`a pair of ${c} denim jeans, neatly folded`:k==='chinos'?`a pair of ${c} ${pat}cotton chinos, neatly folded`:`a pair of ${c} ${pat}${primaryCol(i)==='khaki'?'cotton twill':'wool'} dress trousers, neatly folded`}
     case 'overcoat':return `${aAn(c)} wool overcoat on an invisible mannequin`;
     case 'raincoat':return `${aAn(c)} trench coat on an invisible mannequin`;
-    case 'watch':return `${watchText(i)}, three-quarter view, standing upright on a display cushion, the bracelet closed`}
+    case 'watch':return `${watchText(i,picCol)}, three-quarter view, standing upright on a display cushion, the bracelet closed`}
   return ''}
 const itemKey=i=>'c'+fnv64('item|'+itemDesc(i));
 const itemPic=i=>i&&ITEM_PIC_TYPES.includes(i.type)&&renders[itemKey(i)]||null;
@@ -224,10 +228,10 @@ function itemPicLimitText(n){const m=typeof acct!=='undefined'&&acct&&acct.me;co
 const itemPicsUsedUp=()=>{const m=typeof acct!=='undefined'&&acct&&acct.me;const cap=m&&m.caps&&+m.caps.item;return cap&&itemPicsUsed(m)>=cap?cap:0};
 let itemBatch=false;
 function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
-  b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt, sock, trousers, coat and watch has a picture';b.disabled=!n;if(typeof needConn==='function')needConn(b)}
+  b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt, sock, pants, coat and watch has a picture';b.disabled=!n;if(typeof needConn==='function')needConn(b)}
 async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();if(!todo.length)return;
   {const cap=itemPicsUsedUp();if(cap){const st=$('#itempic-status');const t=`Today’s ${cap} item pictures are used up. They start again at midnight UTC.`;if(st)st.textContent=t;else if(typeof toast==='function')toast(t);return}}
-  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, trousers, coats and watches.${showCost()?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}${itemPicLimitText(todo.length)}`,{ok:'Generate'}))return;
+  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, pants, coats and watches.${showCost()?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}${itemPicLimitText(todo.length)}`,{ok:'Generate'}))return;
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='',kept=false;
   await shareLocalPics();
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;

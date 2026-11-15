@@ -24,12 +24,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   ok(secs<60,`the check finished in ${secs.toFixed(1)}s`);
   ok(await p.evaluate(()=>performance.getEntriesByType('resource').some(e=>e.name.includes('analysis-worker.js'))),'it ran in a background Web Worker');
   ok(recs.length>=12&&top.length>5,`far more than three ideas (${recs.length} in ${r.cats.length} sections, ${top.length} top picks; ${r.checked} possible purchases compared)`);
-  ok(['suit','blazer','pants','shirt','tie','shoes','extra'].every(k=>cat(k)),'sections: suits, blazers, trousers, shirts, ties, shoes and belts, socks and accessories');
+  ok(['suit','blazer','pants','shirt','tie','shoes','extra'].every(k=>cat(k)),'sections: suits, blazers, pants, shirts, ties, shoes and belts, socks and accessories');
   ok(recs.every(x=>x.why.length>=2&&x.name&&x.items.length),'every idea has a name and says why');
   // ties: colour and pattern or texture
   const ties=cat('tie').recs;
   ok(ties.length>=3&&ties.every(x=>/tie$/.test(x.name)&&x.detail)&&new Set(ties.map(x=>x.items[0].primaryColor)).size>=2&&new Set(ties.map(x=>x.items[0].pattern)).size>=2,
-    `tie ideas name a colour and a pattern or texture (${ties.map(x=>x.name).join(', ')})`);
+    `tie ideas name a color and a pattern or texture (${ties.map(x=>x.name).join(', ')})`);
   ok(ties.some(x=>x.tier==='gap'&&/navy/.test(x.name)&&/staple/.test(x.why.join(' '))),'a plain navy tie is a staple gap: the only navy tie is striped');
   ok(cat('tie').own.n===4&&cat('tie').own.none.includes('dotted or figured'),'the section says what is owned and which patterns are missing');
   // suits: colour and texture, and the rest problem
@@ -40,10 +40,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   ok(top.slice(0,3).some(x=>x.type==='suit')&&top.filter(x=>x.type==='suit'&&x.tier==='fix').length===1,`one suit is among the first top picks, not five alternatives (${top.slice(0,3).map(x=>x.name).join(', ')})`);
   // shoes: the pair that is never worn for want of a belt, and the load on the one pair in use
   const shoes=cat('shoes');
-  ok(shoes.notes.some(n=>/first-choice colour/.test(n))&&shoes.notes.some(n=>/two days running/.test(n)),`the shoe section says what the plan leans on (${shoes.notes.join(' ')})`);
+  ok(shoes.notes.some(n=>/first-choice color/.test(n))&&shoes.notes.some(n=>/two days running/.test(n)),`the shoe section says what the plan leans on (${shoes.notes.join(' ')})`);
   ok(shoes.recs[0].type==='belt'&&/brown/.test(shoes.recs[0].name)&&/never planned/.test(shoes.recs[0].why[0])&&!shoes.recs.some(x=>x.type==='shoes'&&x.items[0].primaryColor==='brown'&&x.items[0].leather==='calf'),
     'brown shoes without a belt: the belt is the idea, not a second brown pair');
-  ok(shoes.recs.some(x=>x.type==='shoes'&&/rest between wears|colour you don't have/.test(x.why[0])),'and another pair so the shoes can rest');
+  ok(shoes.recs.some(x=>x.type==='shoes'&&/rest between wears|color you don't have/.test(x.why[0])),'and another pair so the shoes can rest');
   // coats: one fix, not two for the same days
   const coats=cat('extra').recs.filter(x=>['overcoat','raincoat'].includes(x.type));
   ok(coats.length===1&&coats[0].tier==='fix'&&/cold with no overcoat/.test(coats[0].why[0]),`no double counting: one coat is credited with the cold days (${coats.map(x=>x.name).join(', ')})`);
@@ -59,7 +59,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   ok(ui.top<=40&&ui.bottom===0,`the sheet comes up from the bottom over the whole page (top at ${Math.round(ui.top)}px)`);
   ok(ui.rows===recs.length&&ui.tops===top.length&&ui.cats>=9,`every idea is listed (${ui.rows}), with ${ui.tops} top picks and the occasions`);
   ok(ui.tags.includes('Optional')&&ui.tags.includes('Fixes a problem')&&ui.tags.includes('Fills a gap'),`ideas are tagged by how much they matter, optional ones as Optional (${ui.tags.join(', ')})`);
-  ok(!/lightblue|lightgrey|darkgrey|undefined|NaN/.test(ui.text),'no run-together colour names or blanks in the sheet');
+  ok(!/lightblue|lightgrey|darkgrey|undefined|NaN/.test(ui.text),'no run-together color names or blanks in the sheet');
   // a top pick opens its idea: reasons, sample outfits drawn from the owner's pieces
   const firstSuit=top.find(x=>x.type==='suit');
   await p.evaluate(k=>shopGo(k),firstSuit.key);await settle(p,700);

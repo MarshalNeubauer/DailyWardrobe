@@ -16,7 +16,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       watch:fills.length>3&&fills.every(x=>G.watch.some(b=>b.c===x)),hot:c.querySelectorAll('.hot').length,skin:!!svg.querySelector('.fig-skin'),useInClip:!!svg.querySelector('clipPath use'),
       clipOnTie:(()=>{const k=svg.querySelector('.fig-clip').getBoundingClientRect(),t=svg.querySelector('use[href="#fig-bladeP"]').getBoundingClientRect();return k.left<t.right&&k.right>t.left&&k.top>=t.top-8&&k.bottom<=t.bottom})()}});
   ok(f.fig&&f.kind==='suit'&&f.vb==='0 0 390 390'&&f.role==='img'&&/navy/.test(f.label),'a suit day shows the suit pose\'s traced mannequin (390x390, role=img, labelled with the outfit)');
-  ok(f.noImg&&f.suitHex,'fabrics are drawn from the tagged colours, not photo crops');
+  ok(f.noImg&&f.suitHex,'fabrics are drawn from the tagged colors, not photo crops');
   ok(f.lapel,'lapel weave is turned to follow the traced lapel');
   ok(f.tieDots,'a polka-dot tie shows dots');
   ok(f.clip&&f.clipGold&&f.clipOnTie,'the tie clip is drawn in its metal (gold), on the tie\'s blade where the painter puts it');
@@ -40,7 +40,7 @@ module.exports=async({ok,chromium,url,settle})=>{
   // blazer day: trousers tile; no tie => no tie or clip drawn
   const bz=await p.evaluate(()=>{sel=new Date(2026,10,19);renderToday();const t=[...document.querySelectorAll('.below .tile small')].map(x=>x.textContent).join();
     const o=planFor()[key(sel)];return {t,blazer:!o.suitDay}});
-  ok(bz.blazer&&bz.t.startsWith('Trousers'),'on a blazer day the trousers are a tile');
+  ok(bz.blazer&&bz.t.startsWith('Pants'),'on a blazer day the pants are a tile');
   const nt=await p.evaluate(()=>{const o={...planFor()[key(sel)],tie:null,clip:null,watch:null};const d=document.createElement('div');d.innerHTML=figureSvg(o,'x-');
     return {tie:!!d.querySelector('use[href="#x-bladeP"]'),clip:!!d.querySelector('.fig-clip'),watch:!!d.querySelector('.fig-watch')}});
   ok(!nt.tie&&!nt.clip,'without a tie or clip, neither is drawn');

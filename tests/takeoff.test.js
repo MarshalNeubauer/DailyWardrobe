@@ -20,9 +20,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     // the jacket off: the suit's trousers stay, the waistcoat goes too, the rest is unchanged
     await tap('#ibox button[aria-label="Take off the suit jacket"]');
     const b=await st();
-    ok(!b.ids.top&&b.ids.bot===a.ids.top&&b.suitBot&&!b.suitDay&&!b.vest&&b.off&&b.off.top&&b.offKind==='suit',`the jacket and waistcoat come off and the suit's trousers stay (${JSON.stringify(b.ids)})`);
+    ok(!b.ids.top&&b.ids.bot===a.ids.top&&b.suitBot&&!b.suitDay&&!b.vest&&b.off&&b.off.top&&b.offKind==='suit',`the jacket and waistcoat come off and the suit's pants stay (${JSON.stringify(b.ids)})`);
     ok(['shirt','tie','shoes','belt','socks','watch'].every(s=>b.ids[s]===a.ids[s]),'the shirt, tie, shoes, belt, socks and watch stay as shown');
-    ok(b.rows.some(t=>/^SuitTaken off: the trousers stay/.test(t))&&b.rows.some(t=>/^Trousers\S/.test(t))&&b.btns.includes('Put the suit jacket back on')&&!b.btns.includes('Change trousers'),`the list says the jacket is off, shows the suit's trousers (not swappable) and offers + (${b.rows.slice(0,3).join(' | ')})`);
+    ok(b.rows.some(t=>/^SuitTaken off: the pants stay/.test(t))&&b.rows.some(t=>/^Pants\S/.test(t))&&b.btns.includes('Put the suit jacket back on')&&!b.btns.includes('Change pants'),`the list says the jacket is off, shows the suit's pants (not swappable) and offers + (${b.rows.slice(0,3).join(' | ')})`);
     ok(!b.hard.length,`no penalty for the missing jacket (${b.hard.join(', ')})`);
     ok(b.kind==='shirt-tie',`the picture moves to the shirt-and-tie master (${b.kind})`);
     // only the tie off, on a waistcoat day: the waistcoat goes with it (no one wears a waistcoat without a tie)
@@ -49,14 +49,14 @@ module.exports=async({ok,chromium,url,settle})=>{
     const g0=await st();
     await tap('#ibox button[aria-label="Take off the blazer"]');
     const g=await st();
-    ok(!g0.suitDay&&g0.ids.top&&!g.ids.top&&g.ids.bot===g0.ids.bot&&g.offKind==='blazer'&&!g.suitBot&&g.kind==='shirt-tie',`a blazer comes off and the odd trousers stay (${g.kind})`);
+    ok(!g0.suitDay&&g0.ids.top&&!g.ids.top&&g.ids.bot===g0.ids.bot&&g.offKind==='blazer'&&!g.suitBot&&g.kind==='shirt-tie',`a blazer comes off and the odd pants stay (${g.kind})`);
     const rest=await p.evaluate(id=>{const s=planSim(new Date(2026,10,1));s.upTo(new Date(2026,10,30));const p2=s.plan;return Object.entries(p2).filter(([k,o])=>o.top&&o.top.id===id).map(([k])=>k)},g0.ids.top);
     ok(!rest.includes('2026-11-11'),`the blazer taken off is not counted as worn that day (${rest.join(', ')})`);
     // the painter: a suit's read stripes paint its trousers with the jacket's own cloth, at the shirt master's scale
     const r=await p.evaluate(()=>{const s={...items[0],sett:{v:2,a:0,bands:[['#1b2440',8],['#e8e8e8',1]],cr:4,tr:30}};
       return {how:asmCmRoute(s,'trousers').how,pants:asmCmRoute({...items[3],sett:s.sett},'trousers').how,tag:asmCmTrSc('trousers',s),jtag:asmCmTrSc('jacket',s),
         z:Object.keys(asmCmItems({shirt:items[4],bot:s,belt:items[11],tie:items[6]},'shirt-tie')).sort().join(),zo:Object.keys(asmCmItems({shirt:items[4],top:s,vest:true},'vest-open')).sort().join()}});
-    ok(r.how==='bands'&&r.pants==='tile'&&/^\/sc\/lg\d+$/.test(r.tag)&&r.jtag==='',`a suit's trousers are painted with its jacket's cloth (${r.how}; odd trousers keep ${r.pants}), and such looks get a new key`);
+    ok(r.how==='bands'&&r.pants==='tile'&&/^\/sc\/lg\d+$/.test(r.tag)&&r.jtag==='',`a suit's pants are painted with its jacket's cloth (${r.how}; odd pants keep ${r.pants}), and such looks get a new key`);
     ok(r.z==='belt,shirt,tie,trousers'&&r.zo==='jacket,shirt,waistcoat',`the masters' garments: ${r.z} / ${r.zo}`);
     // the trousers' lines follow the legs (asmLegsPrep/asmLegsAt): a synthetic pair, hips above the crotch at row 120, two legs below
     const lg=await p.evaluate(()=>{const S=256,N=S*S,T=new Uint8Array(N),SH=new Uint16Array(N).fill(30000),sk=new Uint8Array(N);

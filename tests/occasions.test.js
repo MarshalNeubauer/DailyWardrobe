@@ -33,16 +33,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.fun.every(o=>o.prevTop!=='black'),'the black suit is kept back on the day before the funeral');
     ok(r.fun.every(o=>o.checks.Funeral==='10/10'&&o.checks['Tie and jacket']==='10/10'&&o.score>=90),`a black tie on a black suit scores full marks at a funeral (${r.fun[0].score}); on other days it is marked down`);
     ok(r.wed.every(o=>o.kind==='suit'&&o.top!=='black'&&['white','lightblue','pink'].includes(o.shirt)&&o.tie!=='black'&&!/suede/.test(o.shoes)&&o.checks.Wedding==='10/10'),`a wedding gets a suit that is not black, a light shirt, a tie that is not black, smooth shoes (${r.wed.map(o=>o.top+'/'+o.shirt+'/'+o.tie).join(' | ')})`);
-    ok(r.wed.filter(o=>['navy','lightgrey'].includes(o.top)).length>=5&&r.wed.some(o=>['silver','pink'].includes(o.tie))&&r.wed.every(o=>o.vest),`it favours navy or light grey with a lively tie, and wears the vest (${r.wed.map(o=>o.tie).join()})`);
-    ok(r.cas.every(o=>o.top===null&&o.tie===null&&!o.clip&&!o.vest&&o.bot==='pants'&&o.shirt&&o.suitDay===false&&o.occ==='casual'&&o.score>=85),`a no-jacket day is trousers and a shirt: no jacket, tie, clip or vest (score ${r.cas.map(o=>o.score).join()})`);
-    ok(r.cas.every(o=>!('Tie and shirt' in o.checks)&&'Shirt and trousers' in o.checks),'its score judges the shirt against the trousers instead of the tie and jacket');
+    ok(r.wed.filter(o=>['navy','lightgrey'].includes(o.top)).length>=5&&r.wed.some(o=>['silver','pink'].includes(o.tie))&&r.wed.every(o=>o.vest),`it favours navy or light gray with a lively tie, and wears the vest (${r.wed.map(o=>o.tie).join()})`);
+    ok(r.cas.every(o=>o.top===null&&o.tie===null&&!o.clip&&!o.vest&&o.bot==='pants'&&o.shirt&&o.suitDay===false&&o.occ==='casual'&&o.score>=85),`a no-jacket day is pants and a shirt: no jacket, tie, clip or vest (score ${r.cas.map(o=>o.score).join()})`);
+    ok(r.cas.every(o=>!('Tie and shirt' in o.checks)&&'Shirt and pants' in o.checks),'its score judges the shirt against the pants instead of the tie and jacket');
     ok(r.formal.formal&&r.formal.occ==='formal'&&['navy','charcoal','black'].includes(r.formal.top)&&r.formal.shirt==='white'&&r.formal.shoes==='black calf','a formal day still works as before');
     ok(r.plain.occ===null&&r.plain.kind==='blazer','a day without an occasion is unchanged');
     const gaps=await p.evaluate(()=>{const keep=items;items=items.filter(i=>!(i.type==='tie'&&i.primaryColor==='black')&&!(i.type==='suit'&&['black','navy','charcoal'].includes(i.primaryColor)));dayRecs={'2026-11-12':{date:'2026-11-12',occasion:'funeral'}};cache={};
       const o=planMonth(2026,10)['2026-11-12'];items=keep.filter(i=>i.type!=='pants');dayRecs={'2026-11-12':{date:'2026-11-12',occasion:'casual'}};cache={};const c=planMonth(2026,10)['2026-11-12'];items=keep;dayRecs={};cache={};
       return {notes:o.notes.join(' / '),tie:o.tie.primaryColor,casual:c.notes.join(' / '),cshirt:!!c.shirt}});
     ok(/No black tie/.test(gaps.notes)&&/No black, charcoal or navy suit/.test(gaps.notes)&&gaps.tie==='navy',`without a black tie or dark suit it picks the darkest and says so (${gaps.tie})`);
-    ok(/No separate trousers/.test(gaps.casual)&&gaps.cshirt,'a no-jacket day without odd trousers says so');
+    ok(/No separate pants/.test(gaps.casual)&&gaps.cshirt,'a no-jacket day without odd pants says so');
     // ---- Settings → Occasions ----
     await p.evaluate(()=>openSettings('daysoff'));
     ok((await p.locator('#cfg-occasion option').allTextContents()).join()==='Formal,Wedding,Funeral,No jacket or tie','Settings offers the four occasions');
@@ -60,9 +60,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o=planFor()['2026-11-18'],o2={...o,bot:items.find(i=>i.type==='pants'&&i.id!==o.bot.id)};
       return {w,c,f,cellCls:cell.className,cellLabel:cell.getAttribute('aria-label'),stack:!!cell.querySelector('svg.stack'),keyDiff:comboKey(o)!==comboKey(o2)}});
     ok(t.w.tag==='Wedding'&&t.f.tag==='Funeral'&&t.c.tag==='No jacket','Today shows the day\'s occasion');
-    ok(!t.c.lapels&&t.w.lapels&&/no jacket/.test(t.c.label)&&!/Suit|Blazer|Tie/.test(t.c.rows)&&/Trousers,Shirt/.test(t.c.rows)&&/trousers/i.test(t.c.sum),`the no-jacket day is drawn in shirt sleeves and lists no jacket or tie (${t.c.rows})`);
+    ok(!t.c.lapels&&t.w.lapels&&/no jacket/.test(t.c.label)&&!/Suit|Blazer|Tie/.test(t.c.rows)&&/Pants,Shirt/.test(t.c.rows)&&/pants/i.test(t.c.sum),`the no-jacket day is drawn in shirt sleeves and lists no jacket or tie (${t.c.rows})`);
     ok(/planned/.test(t.cellCls)&&t.stack&&/No jacket/.test(t.cellLabel),`the month shows it as an outfit (${t.cellLabel})`);
-    ok(t.keyDiff,'without a jacket the trousers are part of the look (its photo key)');
+    ok(t.keyDiff,'without a jacket the pants are part of the look (its photo key)');
     // re-planning keeps the occasions; × makes a day regular again
     const keep=await p.evaluate(async()=>{await swapSlot('shirt');await replanFuture();cache={};return [17,18,19].map(d=>occOf(dayRecs['2026-11-'+d])).join()});
     ok(keep==='wedding,casual,funeral','re-planning upcoming days keeps their occasions');

@@ -48,9 +48,9 @@ module.exports=async({ok,chromium,url})=>{
       items=[I('blazer','navy',{pattern:'hopsack'}),I('pants','stone',{trouserKind:'chinos'}),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','green',{pattern:'knit'}),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'})];cache={};
       const b=months(2);items=items.filter(i=>!(i.type==='pants'&&i.primaryColor==='grey'));cache={};const c=months(1);
       return {noJ:hard(a),noJn:a.length,blazer:hard(b),blazerN:b.length,only:c.length>0&&c.every(([k,o])=>o.bot&&o.bot.primaryColor==='stone'),onlyNote:c.length&&c[0][1].notes.join(' ')}});
-    ok(h7.noJ===0&&h7.noJn>20,`without jackets, stone trousers are not worn with the only (black) shoes while charcoal ones are free (${h7.noJ} of ${h7.noJn} days with a hard Shoes check)`);
-    ok(h7.blazer===0&&h7.blazerN>20,`blazer days: chinos that no shoes suit are left for the grey trousers (${h7.blazer} of ${h7.blazerN} days with a hard Shoes check)`);
-    ok(h7.only&&/None of your shoes suit stone trousers/.test(h7.onlyNote),'with nothing else they are still planned, with the note');
+    ok(h7.noJ===0&&h7.noJn>20,`without jackets, stone pants are not worn with the only (black) shoes while charcoal ones are free (${h7.noJ} of ${h7.noJn} days with a hard Shoes check)`);
+    ok(h7.blazer===0&&h7.blazerN>20,`blazer days: chinos that no shoes suit are left for the gray pants (${h7.blazer} of ${h7.blazerN} days with a hard Shoes check)`);
+    ok(h7.only&&/None of your shoes suit stone pants/.test(h7.onlyNote),'with nothing else they are still planned, with the note');
 
     // ---- black shoes waiting for a belt are named
     const bw=await p.evaluate(()=>{fresh();items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','brown',{leather:'calf'}),I('shoes','black',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'})];

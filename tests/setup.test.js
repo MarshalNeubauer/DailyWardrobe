@@ -82,7 +82,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const sum=await p.evaluate(()=>{const d=setupDress(),li=[...document.querySelectorAll('.su-sum li')].find(l=>/Workdays/.test(l.textContent));
       return {days:li.querySelector('b').textContent,want:[...settings.workdays].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '),jacket:d.jacket,help:document.querySelector('#su-step .su-help').textContent}});
     ok(sum.days===sum.want,'the summary lists the workdays in the Week step\'s order, Sunday first: '+sum.days);
-    ok(sum.jacket?/a suit or blazer, .* and shoes, plus trousers if you wear a blazer rather than a suit\.$/.test(sum.help):/trousers/.test(sum.help)&&!/plus trousers/.test(sum.help),'the last step asks for trousers only as needed (not with a suit): '+sum.help);
+    ok(sum.jacket?/a suit or blazer, .* and shoes, plus pants if you wear a blazer rather than a suit\.$/.test(sum.help):/pants/.test(sum.help)&&!/plus pants/.test(sum.help),'the last step asks for pants only as needed (not with a suit): '+sum.help);
     ok(await p.evaluate(()=>!!document.querySelector('#su-step #kit-tour-link')&&!!document.querySelector('#su-step #kit-sample-link')),'the last step offers the tour and a sample wardrobe (kit.js)');
     await p.waitForTimeout(400);await p.click('#su-next');
     /* a first-time person going on to Add gets the quick tour first (kit.js), its last button going on to Add */
@@ -121,25 +121,25 @@ module.exports=async({ok,chromium,url,settle})=>{
     const rows=()=>s.evaluate(()=>[...document.querySelectorAll('#firstrun .fr-it')].map(e=>e.dataset.need+(e.classList.contains('done')?'+':'-')).join(' '));
     const add=(...its)=>s.evaluate(`(()=>{const I=${I};items.push(${its.map(a=>`I(${a.map(x=>JSON.stringify(x)).join(',')})`).join(',')});cache={};show('today')})()`);
     await s.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';settings.workdays=[1,2,3,4,5];settings.blazerDays=[];delete settings.dress;dayRecs={};cache={};sel=new Date(2026,10,11);view={y:2026,m:10};show('today')});
-    ok(await rows()==='jacket- shirt- tie- pants- shoes-'&&/Get your first outfit/.test(await s.textContent('#firstrun h3')),'suit-and-tie person, empty wardrobe: "Get your first outfit" lists a jacket, shirt, tie, trousers and shoes');
-    ok(await s.evaluate(()=>!document.querySelector('.fig')&&!/wardrobe is empty/i.test(document.querySelector('#today').textContent)),'in place of the grey sentence');
+    ok(await rows()==='jacket- shirt- tie- pants- shoes-'&&/Get your first outfit/.test(await s.textContent('#firstrun h3')),'suit-and-tie person, empty wardrobe: "Get your first outfit" lists a jacket, shirt, tie, pants and shoes');
+    ok(await s.evaluate(()=>!document.querySelector('.fig')&&!/wardrobe is empty/i.test(document.querySelector('#today').textContent)),'in place of the gray sentence');
     await add(['sh1','shirt','white']);
     ok(await rows()==='jacket- shirt+ tie- pants- shoes-','adding a shirt ticks it; the card stays');
     await add(['su1','suit','navy']);
-    ok(await rows()==='jacket+ shirt+ tie- shoes-','a suit ticks the jacket, and trousers are no longer asked for');
+    ok(await rows()==='jacket+ shirt+ tie- shoes-','a suit ticks the jacket, and pants are no longer asked for');
     await add(['t1','tie','burgundy']);
     ok(await rows()==='jacket+ shirt+ tie+ shoes-'&&/3 of 4 added/.test(await s.textContent('#firstrun .fr-sub')),'a tie: three of four');
     await add(['bs','shoes','black',{leather:'calf'}]);
     ok(await s.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('.fig')),'with shoes a day can be planned: the checklist is gone and the outfit shows');
     // a blazer needs trousers
     await s.evaluate(`(()=>{const I=${I};items=[I('bz','blazer','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf'})];cache={};show('today')})()`);
-    ok(await rows()==='jacket+ shirt+ tie+ pants- shoes+','a blazer and no suit: trousers are still needed');
+    ok(await rows()==='jacket+ shirt+ tie+ pants- shoes+','a blazer and no suit: pants are still needed');
     // an item out of rotation doesn't count
     await s.evaluate(`(()=>{const I=${I};items=[I('su1','suit','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf',paused:true})];cache={};show('today')})()`);
     ok(await rows()==='jacket+ shirt+ tie+ shoes-','shoes taken out of rotation don\'t tick the row');
     // no jackets, no ties
     await s.evaluate(()=>{items=[];settings.dress={jacket:false,tie:false};cache={};show('today')});
-    ok(await rows()==='shirt- pants- shoes-','no-jacket, no-tie person: only a shirt, trousers and shoes are asked for');
+    ok(await rows()==='shirt- pants- shoes-','no-jacket, no-tie person: only a shirt, pants and shoes are asked for');
     await add(['sh1','shirt','white']);await add(['p1','pants','grey']);
     ok(await rows()==='shirt+ pants+ shoes-','ticking as they are added');
     await add(['bs','shoes','brown',{leather:'calf'}]);

@@ -42,7 +42,7 @@ addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefa
 /* the tour speaks of what this person wears (audit 2026-11-15: ties and suits to someone who wears neither) */
 const kitWears=k=>k==='tie'?typeof wearsTie!=='function'||wearsTie():typeof wearsJacket!=='function'||wearsJacket();
 const kitScorePic=()=>`<svg viewBox="0 0 300 150"><rect x="20" y="22" width="260" height="62" rx="14" class="kp-card"/><rect x="34" y="34" width="70" height="38" rx="10" class="kp-good"/><text x="69" y="60" class="kp-num">96</text><text x="118" y="50" class="kp-t">Excellent</text><text x="118" y="70" class="kp-s">Outfit score · tap for why</text>
-<rect x="20" y="96" width="260" height="38" rx="10" class="kp-card"/><text x="34" y="120" class="kp-s">−2</text><text x="62" y="120" class="kp-t2">The same ${kitWears('tie')?'tie':'shirt'} colour as yesterday</text></svg>`;
+<rect x="20" y="96" width="260" height="38" rx="10" class="kp-card"/><text x="34" y="120" class="kp-s">−2</text><text x="62" y="120" class="kp-t2">The same ${kitWears('tie')?'tie':'shirt'} color as yesterday</text></svg>`;
 const kitClothPic=(paper=true,box=true)=>`<svg viewBox="0 0 200 260"><defs><pattern id="kp-weave" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#3b4256"/><path d="M0 8L8 0M-2 2L2 -2M6 10L10 6" stroke="#4b5370" stroke-width="1.6"/></pattern></defs>
 <rect x="10" y="10" width="180" height="240" rx="12" fill="url(#kp-weave)"/>${paper?`<path d="M10 204 H190 V238 A12 12 0 0 1 178 250 H22 A12 12 0 0 1 10 238 Z" fill="#f4f3ef"/>`:''}
 ${box?`<rect x="37" y="46" width="126" height="148" rx="3" fill="none" stroke="#efb446" stroke-width="2.4" stroke-dasharray="7 5"/>`:''}</svg>`;
@@ -55,10 +55,10 @@ const kitPatternPic=()=>`<svg viewBox="0 0 300 150"><defs><pattern id="kp-gen" w
 
 /* ---- the quick tour ---- */
 const TOUR_CARDS=[
-  {key:'score',title:'The score',pic:kitScorePic,get body(){return `<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the ${kitWears('jacket')?'suit':'trousers'}, a colour worn two days running, socks lighter than the trousers.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`}},
-  {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true colour and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light: tap the paper on the camera screen before you take the picture.</p><p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">How to take a good close-up</button></p>`},
-  {key:'shade',title:'Shade',pic:kitShadePic,body:`<p>If a piece is drawn lighter or darker than the real thing, Shade nudges it, up to six steps either way.</p><p><b>Match close-up</b> sets it from your close-up for you.</p><p class="kit-tip">Shade changes only the drawing. The colour the planner matches stays the one you tagged.</p>`},
-  {key:'patterns',title:'Patterns',pic:kitPatternPic,body:`<p>Stripes, checks and weaves are read too.</p><p>With a close-up the app measures the stripes' widths and colours, so the drawing and the outfit pictures show your cloth, not a generic one.</p><p class="kit-tip">If a reading looks wrong, tap <b>Use the simple pattern</b> on the card, or <b>Read pattern from photo</b> on the item later.</p>`}];
+  {key:'score',title:'The score',pic:kitScorePic,get body(){return `<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the ${kitWears('jacket')?'suit':'trousers'}, a color worn two days running, socks lighter than the pants.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`}},
+  {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true color and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light: tap the paper on the camera screen before you take the picture.</p><p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">How to take a good close-up</button></p>`},
+  {key:'shade',title:'Shade',pic:kitShadePic,body:`<p>If a piece is drawn lighter or darker than the real thing, Shade nudges it, up to six steps either way.</p><p><b>Match close-up</b> sets it from your close-up for you.</p><p class="kit-tip">Shade changes only the drawing. The color the planner matches stays the one you tagged.</p>`},
+  {key:'patterns',title:'Patterns',pic:kitPatternPic,body:`<p>Stripes, checks and weaves are read too.</p><p>With a close-up the app measures the stripes' widths and colors, so the drawing and the outfit pictures show your cloth, not a generic one.</p><p class="kit-tip">If a reading looks wrong, tap <b>Use the simple pattern</b> on the card, or <b>Read pattern from photo</b> on the item later.</p>`}];
 /* then: what happens after the last card (the setup's "Add my first item" goes on to Add) */
 function tourOpen(then,lastLabel){kitOpen(TOUR_CARDS,then);if(lastLabel){kit.lastLabel=lastLabel;kitDraw()}}
 /* Settings → About's "Take the tour" and "Add to Home Screen": closing the sheet goes back to About, not to Today (audit 2026-11-15) */
@@ -68,10 +68,10 @@ function homeAgain(){closeSettings();kitOpen([HOME_CARD],()=>openSettings('about
 /* ---- the close-up guide ---- */
 const GUIDE_CARD={key:'guide',title:'A good close-up',pic:()=>kitClothPic(true,true),last:'Got it',body:`<ol class="kit-list">
 <li><b>Fill the screen with cloth.</b> Hold the phone a hand's width away, straight down, so the weave is sharp.</li>
-<li><b>Lay plain white paper along one edge</b>, about a fifth of the picture, on the cloth or right beside it. Keep it out of the middle: the middle (dashed) is where the colour is measured.</li>
+<li><b>Lay plain white paper along one edge</b>, about a fifth of the picture, on the cloth or right beside it. Keep it out of the middle: the middle (dashed) is where the color is measured.</li>
 <li><b>Same light on both.</b> Daylight or room light; no flash, no patch of sun, no shadow of your phone across the paper.</li>
 <li><b>Tap the paper on the camera screen</b> before you take the picture. The phone sets its exposure there, so the paper comes out white instead of glowing, and the app can read the light from it.</li></ol>
-<p class="kit-tip">No paper? It still works: the colour is then corrected like the main photo, and lightness counts for less.</p>`};
+<p class="kit-tip">No paper? It still works: the color is then corrected like the main photo, and lightness counts for less.</p>`};
 function kitCloseupGuide(){kitOpen([GUIDE_CARD])}
 
 /* ---- Undo after Confirm (app.js save calls this for each card saved) ----
@@ -154,7 +154,7 @@ function kitMetal(word){const w=kitNorm(word).replace(/-/g,' ');if(!w)return nul
 const KIT_TYPE_WORDS={suit:['suit','suits','two-piece','three-piece','suit jacket'],blazer:['blazer','sport coat','sports coat','sportcoat','jacket','sport jacket'],pants:['trousers','trouser','pants','slacks','chinos','jeans','dress trousers','dress pants'],
   shirt:['shirt','dress shirt','shirts','oxford shirt'],tie:['tie','necktie','ties'],tieclip:['tie clip','tie bar','tieclip','tie pin'],watch:['watch','wristwatch'],shoes:['shoes','shoe','oxfords','oxford','derbies','derby','loafers','loafer','boots','boot','sneakers','trainers'],
   belt:['belt'],socks:['socks','sock'],cufflinks:['cufflinks','cuff links','cufflink','cuff link'],overcoat:['overcoat','coat','topcoat','top coat','wool coat'],raincoat:['raincoat','trench','trench coat','mac']};
-const KIT_PLANS='suits, blazers, trousers, shirts, ties, tie clips, shoes, belts, socks, watches, cufflinks and coats';
+const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, shoes, belts, socks, watches, cufflinks and coats';
 const kitNorm=s=>String(s??'').trim().toLowerCase().replace(/[_\s]+/g,' ').replace(/grey|gray/g,'grey');
 function kitSplit(text){text=String(text||'').replace(/^﻿/,'').replace(/\r\n?/g,'\n');const first=text.split('\n',1)[0];
   const d=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');const rows=[];let row=[],f='',q=false;
@@ -190,7 +190,7 @@ function kitMaterial(card,word){const m=kitNorm(word);if(!m)return null;const li
   return `material “${String(word).trim()}” left out`}
 function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'Nothing to read.'};
   const head=rows[0].map(kitNorm),col={};for(const [k,names] of Object.entries(KIT_COLS)){const j=head.findIndex(h=>names.includes(h));if(j>=0)col[k]=j}
-  if(col.type==null||col.primaryColor==null)return {err:'The first row must name the columns, with at least “Type” and “Colour”. Download the template to see how.'};
+  if(col.type==null||col.primaryColor==null)return {err:'The first row must name the columns, with at least “Type” and “Color”. Download the template to see how.'};
   const out=[];
   rows.slice(1).forEach((r,n)=>{const v=k=>col[k]==null?'':String(r[col[k]]??'').trim(),line=n+2,probs=[];
     const tw=kitNorm(v('type'));if(!tw){out.push({line,ok:false,raw:'(empty)',why:'Type is empty'});return}
@@ -203,12 +203,12 @@ function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'No
     // a watch's or cufflinks' metal named as the colour ("Watch, Gold", "Cufflinks, Rose gold"): the metal (they imported as silver)
     const mtl=(type==='watch'||type==='cufflinks')&&kitMetal(pw);
     const m=mtl?{k:mtl.k==='gold'?'gold':'silver'}:kitColour(pw);
-    if(!m){out.push({line,ok:false,raw:v('type'),why:m===null?'Colour is empty':`“${v('primaryColor')}” isn't a colour the app knows. ${TYPES[type]} colours: ${kitColList(type)}.`});return}
+    if(!m){out.push({line,ok:false,raw:v('type'),why:m===null?'Color is empty':`“${v('primaryColor')}” isn't a color the app knows. ${TYPES[type]} colors: ${kitColList(type)}.`});return}
     const c=fitCol(type,m.k)||m.k;
     if(mtl){if(mtl.read)probs.push(`“${pw}” read as ${metalWord(mtl.k)}`)}
-    else if(c!==m.k)probs.push(`${colName(m.k).toLowerCase()} isn't one of the ${TYPES[type].toLowerCase()} colours: read as ${colName(c).toLowerCase()}`);
+    else if(c!==m.k)probs.push(`${colName(m.k).toLowerCase()} isn't one of the ${TYPES[type].toLowerCase()} colors: read as ${colName(c).toLowerCase()}`);
     else if(m.read)probs.push(`“${pw}” read as ${colName(c).toLowerCase()}`);
-    const acc=k=>{const w=more[k]||v(k),x=kitColour(w);if(x===undefined){probs.push(`${k==='secondaryColor'?'second':'third'} colour “${w}” left out`);return null}return x?fitCol(type,x.k,true)||x.k:null};
+    const acc=k=>{const w=more[k]||v(k),x=kitColour(w);if(x===undefined){probs.push(`${k==='secondaryColor'?'second':'third'} color “${w}” left out`);return null}return x?fitCol(type,x.k,true)||x.k:null};
     const c2=acc('secondaryColor'),c3=acc('tertiaryColor');
     let pattern='solid';if(FABRIC.includes(type)){const p=kitPattern(v('pattern'),type);if(p===undefined)probs.push(`pattern “${v('pattern')}” read as plain`);else pattern=p}
     const card={id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2||null,tertiaryColor:c3||null,pattern,metal:mtl?mtl.k:'silver',leather:'calf'};
@@ -225,7 +225,7 @@ function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'No
     if(v('material')&&!(v('leather')&&(type==='shoes'||type==='belt'))){const p=kitMaterial(card,v('material'));if(p)probs.push(p)}
     out.push({line,ok:true,card,probs})});
   return {rows:out}}
-const KIT_TEMPLATE='Type,Colour,Second colour,Pattern,Name,Brand,Material,Notes,Vest\nSuit,Navy,,Pinstripe,Navy pinstripe,,Wool,,Yes\nDress shirt,Light blue,,Solid,,,Poplin,,\nTie,Burgundy,Navy,Stripe,,,Silk,Repp stripe,\nShoes,Black,,,Black oxfords,,Calf,,\nTrousers,Mid grey,,Solid,,,Flannel,,\n';
+const KIT_TEMPLATE='Type,Color,Second color,Pattern,Name,Brand,Material,Notes,Vest\nSuit,Navy,,Pinstripe,Navy pinstripe,,Wool,,Yes\nDress shirt,Light blue,,Solid,,,Poplin,,\nTie,Burgundy,Navy,Stripe,,,Silk,Repp stripe,\nShoes,Black,,,Black oxfords,,Calf,,\nTrousers,Mid gray,,Solid,,,Flannel,,\n';
 /* the template as a data link: nothing to revoke (a blob link revoked a second after the tap can fail on an iPhone, where Safari first
    asks whether to download) */
 function kitTemplate(){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(KIT_TEMPLATE);a.download='wardrobe-template.csv';document.body.appendChild(a);a.click();a.remove()}
@@ -247,9 +247,9 @@ function kitLastRow(){const l=kitLastImp();if(!l)return '';const when=new Date(l
   return `<p class="kit-last" id="kit-last">Your last import (${when}): ${l.ids.length} item${l.ids.length===1?'':'s'} in your wardrobe${l.kept?` you haven't changed since`:''}. <button type="button" class="linkbtn" onclick="kitUnimport()">Take ${l.ids.length===1?'it':'them'} out</button></p>`}
 function kitImportOpen(){kitImp=null;const e=kitEl(),prev=kit?kit.hist:undefined;kit={cards:[],at:0,then:null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;
   e.innerHTML=`<div class="kit-head"><div><h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
-<div class="kit-body" data-card="import"><p>One row per piece. The first row names the columns; only <b>Type</b> and <b>Colour</b> are needed. From Numbers, Excel or Google Sheets, export the sheet as CSV, or copy the rows and paste them below.</p>
+<div class="kit-body" data-card="import"><p>One row per piece. The first row names the columns; only <b>Type</b> and <b>Color</b> are needed. From Numbers, Excel or Google Sheets, export the sheet as CSV, or copy the rows and paste them below.</p>
 ${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">Download a template</button><label class="btn">Choose a CSV file<input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" class="vfile" onchange="kitImportFile(this.files[0]);this.value=''"></label></div>
-<label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Colour, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
+<label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Color, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
 <div id="kit-prev" aria-live="polite"></div></div>
 <div class="kit-bar"><button type="button" id="kit-cancel" onclick="kitClose()">Cancel</button><button type="button" class="pri" id="kit-imp" disabled onclick="kitImportGo()">Add items</button></div>`;
   e.classList.add('on');kitInert(true);kitHist()}
@@ -272,7 +272,7 @@ function kitImportText(t,file){const r=kitRead(t),el=$('#kit-prev');if(!el)retur
 function kitPrevDraw(){const r=kitImp,el=$('#kit-prev');if(!r||!el)return;const good=r.rows.filter(x=>x.ok),bad=r.rows.filter(x=>!x.ok),dup=good.filter(x=>x.dup).length;
   const row=(x,n)=>{const t=sentence(itemTitle(x.card)),info=[TYPES[x.card.type],x.card.name?sentence(desc(x.card)):'',x.dup?'already in your wardrobe':'',...x.probs].filter(Boolean).join(' · ');
     return `<li class="ok${x.dup?' dup':''}"><label class="kit-row"><input type="checkbox" class="kit-tick" ${x.on?'checked':''} onchange="kitImpTick(${n},this.checked)"><span class="kit-dot">${swatchSVG(x.card,true)}</span><span><b>${esc(t)}</b><small>${esc(info)}</small></span></label></li>`};
-  el.innerHTML=`<p class="kit-sum"><b>${good.length} item${good.length===1?'':'s'} ready</b>${bad.length?`, ${bad.length} row${bad.length===1?'':'s'} left out`:''}${dup?`. ${dup===1?'One is':dup+' are'} already in your wardrobe: tick ${dup===1?'it':'them'} to add another`:''}</p>
+  el.innerHTML=`<p class="kit-sum"><b>${good.length} item${good.length===1?'':'s'} ready</b>${bad.length?`, ${bad.length} row${bad.length===1?'':'s'} left out`:''}${dup?`. ${dup===1?'One is':dup+' are'} already in your wardrobe: check ${dup===1?'it':'them'} to add another`:''}</p>
 <ul class="kit-rows">${bad.map(x=>`<li class="bad"><span class="kit-dot kit-no" aria-hidden="true">!</span><span><b>Row ${x.line}</b><small>${esc(x.why)}</small></span></li>`).join('')}${r.rows.map((x,n)=>x.ok?row(x,n):'').join('')}</ul>`;
   kitImpBtn()}
 function kitImpTick(n,on){const x=kitImp&&kitImp.rows[n];if(x)x.on=!!on;kitImpBtn()}

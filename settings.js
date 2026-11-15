@@ -32,7 +32,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
   set('photos',picsDrawn()?'Drawing only':typeof isConnected==='function'&&!isConnected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
-  set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'}`);
+  set('tagging',`${own?own+' color'+(own===1?'':'s')+' & patterns of your own':'Your own colors & patterns'}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
   set('backup',backupSummary(w));set('connection',typeof connSummary==='function'?connSummary():host||'Not connected')}
 /* the week's first day: the first workday (Sunday first) whose day before isn't one, so Sun–Thu starts on Sunday and Mon–Fri on Monday;
@@ -90,8 +90,8 @@ function saveSettings(){
 
 
 /* dates in the app's language (audit 2026-11-15: an Arabic-language iPhone showed "الأحد، ١٥ نوفمبر" inside the English app): every
-   toLocale…String(undefined, …) uses the phone's language when it is English, else British English (day before month, Latin digits) */
-const APP_LOC=/^en\b/i.test(navigator.language||'en')?navigator.language:'en-GB';
+   toLocale…String(undefined, …) uses the phone's language when it is English, else American English (the app's language; Latin digits) */
+const APP_LOC=/^en\b/i.test(navigator.language||'en')?navigator.language:'en-US';
 function appLocale(){if(Date.prototype._dwLoc)return;for(const m of ['toLocaleDateString','toLocaleString','toLocaleTimeString']){const f=Date.prototype[m];
   Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}
 appLocale();
@@ -217,7 +217,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(isoToDate(x.d)-isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
   if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?yearDate(isoToDate(r.from)):`${yearDate(isoToDate(r.from))} – ${yearDate(isoToDate(r.to))}`;
     return `<span class="fchip">${l}${r.n&&r.n!=='Day off'?' · '+esc(r.n):''}<button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
-  const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Untick any you work.`:'');
+  const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Uncheck any you work.`:'');
   const f=$('#cfg-off-from');if(f)f.min=tk;
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
 async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI()}

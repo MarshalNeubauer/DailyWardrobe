@@ -1274,7 +1274,7 @@ async function asmCmStatus(){const el=$('#cm-status');if(!el)return;const run=++
   if(run!==asmCmStatusRun||!$('#cm-status'))return;
   const n=seen.size,built=L?[...seen.keys()].filter(k=>L.has(k)).length:0,here=[...seen.values()].filter(o=>asmFor(o)).length;
   const mins=Math.round((Date.now()-asmListAt)/6e4),ago=mins<1?'just now':mins===1?'a minute ago':mins+' minutes ago';
-  el.textContent=!n?`None of the workdays in the next ${ASM_AHEAD} days is painted on a colour-coded master.`:
+  el.textContent=!n?`None of the workdays in the next ${ASM_AHEAD} days is painted on a color-coded master.`:
     !L?`The next ${ASM_AHEAD} days have ${n} look${n===1?'':'s'} to paint; ${here} on this phone. The server couldn’t list its pictures just now, so how many the computer has built isn’t known.`:
     `Next ${ASM_AHEAD} days: ${built} of ${n} look${n===1?'':'s'} built on the computer${built<n?` (the other ${n-built} are painted on this phone when needed)`:''}; ${here} on this phone. Checked ${ago}.`}
 /* "Painted plain": every garment in rotation whose pattern the pictures don't show yet, why, and one tap to read the readable ones

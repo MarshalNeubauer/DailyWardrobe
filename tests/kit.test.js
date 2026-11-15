@@ -58,8 +58,8 @@ module.exports=async({ok,chromium,url})=>{
         tab:b.rows&&b.rows[0].card.primaryColor,err:c.err,quote:q.rows[0].card.notes}});
     ok(r.rows[0]==='suit:navy:pinstripe:yes:Office'&&r.rows[1]==='pants:midgrey:solid:dress:'&&r.rows[2]==='pants:stone:solid:chinos:'&&r.rows[3]==='shoes:brown:solid:loafer:'&&r.rows[4]==='tie:burgundy:check::',
       'rows are read with any column order, ; separators, common words (navy blue, pin stripe, gray, chinos, loafers, necktie, checks): '+r.rows.slice(0,5).join(' | '));
-    ok(/^bad:7:.*Scarf/.test(r.rows[5])&&/^bad:8:.*Mauve-ish/.test(r.rows[6]),'an unknown type or colour is left out, saying which row and why');
-    ok(r.tab==='lightblue'&&/Type.*Colour/.test(r.err)&&r.quote==='Silk, "repp" stripe','rows pasted from a spreadsheet (tabs) read too; without Type and Colour columns it says so; quoted commas and quotes are kept');
+    ok(/^bad:7:.*Scarf/.test(r.rows[5])&&/^bad:8:.*Mauve-ish/.test(r.rows[6]),'an unknown type or color is left out, saying which row and why');
+    ok(r.tab==='lightblue'&&/Type.*Color/.test(r.err)&&r.quote==='Silk, "repp" stripe','rows pasted from a spreadsheet (tabs) read too; without Type and Color columns it says so; quoted commas and quotes are kept');
     await p.evaluate(()=>{openAdd()});await p.waitForFunction(()=>!document.querySelector('#add').hidden);
     const vis=await p.evaluate(()=>{const e=document.querySelector('#add-import'),r=e.getBoundingClientRect();let x=e,h=[];while(x){const c=getComputedStyle(x);if(c.display==='none'||c.visibility==='hidden'||x.hidden)h.push(x.id||x.className||x.tagName);x=x.parentElement}return JSON.stringify({r,h})});
     if(!/"height":[1-9]/.test(vis))console.log('add-import',vis);

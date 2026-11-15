@@ -125,7 +125,7 @@ module.exports=async({ok,chromium,url})=>{
       {id:'w1',type:'tie',primaryColor:'navy',pattern:'solid',ai:true,photo:'data:image/png;base64,iVBORw0KGgo=',wbWas:1}];renderAdd()});
     s=await p.evaluate(()=>({h:document.querySelector('#queue [data-q="h1"]').textContent,w:document.querySelector('#queue [data-q="w1"]').textContent}));
     ok(!/right half/.test(s.h)&&/too blurry/.test(s.h),`a hand card's close-up doesn't mention a swatch it lacks, and a blurry one is flagged (${s.h.slice(0,120)})`);
-    ok(/Colours corrected for the light/.test(s.w)&&!/Show original/.test(s.w),'a restored card still says its colours were corrected');
+    ok(/Colors corrected for the light/.test(s.w)&&!/Show original/.test(s.w),'a restored card still says its colors were corrected');
     s=await p.evaluate(()=>{localStorage.removeItem('worker_url');inviteChecking=true;const a=addNoteText();inviteChecking=false;const b=addNoteText();return {a,b}});
     ok(/Checking your invitation/.test(s.a)&&!/won’t be read/.test(s.a)&&/won’t be read/.test(s.b),`while the invitation is checked Add says so (${s.a})`);
     ok(await p.evaluate(()=>countWord('watch',4)==='4 watches'&&countWord('tie',2)==='2 ties'&&countWord('shoes',2)==='2 pairs of shoes'),'plurals: watches, ties, pairs of shoes');

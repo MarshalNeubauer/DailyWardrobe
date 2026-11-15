@@ -20,8 +20,8 @@ function horizonKeys(T,weeks){const out=[],end=new Date(T.getFullYear(),T.getMon
 /* what kind of problem a planner note describes */
 function noteKind(n){
   const k=[['belts match','no matching belt'],['cufflinks','French cuffs without cufflinks'],['no raincoat','rain with no raincoat'],['no overcoat','cold with no overcoat'],
-    ["isn't darker",'no tie darker than the shirt'],["isn't lighter",'no tie lighter than the dark shirt'],['darker than the jacket','shirt darker than the jacket'],['patterns','too many patterns'],['shoes suit','no shoes that suit the trousers'],
-    ['patent','only patent shoes'],['different metals','mismatched metals'],['suede','suede in the rain'],['weather piece','out-of-season suit'],['separate trousers','no trousers for a day without a jacket']];
+    ["isn't darker",'no tie darker than the shirt'],["isn't lighter",'no tie lighter than the dark shirt'],['darker than the jacket','shirt darker than the jacket'],['patterns','too many patterns'],['shoes suit','no shoes that suit the pants'],
+    ['patent','only patent shoes'],['different metals','mismatched metals'],['suede','suede in the rain'],['weather piece','out-of-season suit'],['separate pants','no pants for a day without a jacket'],['separate trousers','no pants for a day without a jacket']];
   for(const [m,label] of k)if(n.includes(m))return label;return 'other';
 }
 /* bought and on its way: owned, as far as the next purchase goes */
@@ -61,13 +61,13 @@ const tClass=i=>{const p=patInfo(i,'tie');return p?p.type:patOf(i)==='knit'?'kni
 const shopClass=i=>i.type==='tie'?tClass(i):i.type==='shirt'?sClass(i):i.type==='shoes'||i.type==='belt'?finish(i.leather):jClass(i);
 const shopGroup=i=>i.type==='tie'?tieGroup(i):i.type==='shirt'?shirtGroup(i):i.type==='shoes'||i.type==='belt'?leatherGroup(planCol(i)):jacketGroup(i);
 const CLASS_NAMES={plain:'plain',tex:'woven',knit:'knit',stripe:'striped',check:'checked',motif:'dotted or figured',smooth:'smooth leather',suede:'suede',grain:'grain leather',patent:'patent',textile:'canvas or knit'};
-const GROUP_LABELS={tie:{black:'black / charcoal',grey:'grey / silver',red:'burgundy / red',purple:'purple',brown:'brown / tan'},shirt:{lightblue:'light blue',purple:'lavender',yellow:'pale yellow',green:'mint',red:'burgundy',white:'white / cream'},
+const GROUP_LABELS={tie:{black:'black / charcoal',grey:'gray / silver',red:'burgundy / red',purple:'purple',brown:'brown / tan'},shirt:{lightblue:'light blue',purple:'lavender',yellow:'pale yellow',green:'mint',red:'burgundy',white:'white / cream'},
   jacket:{red:'burgundy',charcoal:'slate',tan:'tan / khaki',green:'green / olive',brown:'brown / taupe'},leather:{burgundy:'oxblood / burgundy'}};
 const GROUP_HEX={red:'burgundy',lightblue:'lightblue',yellow:'paleyellow',beige:'beige',charcoal:'slate',gold:'gold',cream:'cream'};
 const groupKind=t=>t==='tie'||t==='shirt'?t:t==='shoes'||t==='belt'?'leather':'jacket';
 const groupLabel=(t,g)=>(GROUP_LABELS[groupKind(t)]||{})[g]||colName(g);
 const groupHex=(t,g)=>COLORS[t==='shirt'&&g==='green'?'mint':t==='shirt'&&g==='purple'?'lavender':GROUP_HEX[g]||g]||'#8b8f96';
-const TYPE_WORD={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['trousers','trousers'],shirt:['shirt','shirts'],tie:['tie','ties'],shoes:['shoes','shoes'],belt:['belt','belts'],socks:['socks','socks'],
+const TYPE_WORD={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pants','pants'],shirt:['shirt','shirts'],tie:['tie','ties'],shoes:['shoes','shoes'],belt:['belt','belts'],socks:['socks','socks'],
   tieclip:['tie clip','tie clips'],cufflinks:['cufflinks','cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats']};
 const several=(n,t)=>`${n} ${TYPE_WORD[t][n===1?0:1]}`;
 const listAnd=a=>(a=[...new Set(a)]).length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
@@ -209,7 +209,7 @@ function runAnalysis0(list,T,weeks,progress,onCat){
     worn:f.worn,ownAvg:f.ownAvg==null?null:Math.round(f.ownAvg),samples:f.samples,...x,why:x.why.map(prettyCols)});
 
   /* suits, blazers, trousers, shirts, ties */
-  const TITLES={suit:'Suits',blazer:'Blazers',pants:'Trousers',shirt:'Shirts',tie:'Ties'};
+  const TITLES={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties'};
   for(const cat of CLOTHES){const R=ranked[cat],recs=[],idle=idleOf(cat),W=TYPE_WORD[cat],per=R.own.length?R.own.reduce((a,i)=>a+(base.use[i.id]||0),0)/R.own.length:0;
     // enough of them already: two or more never come up, or each comes up less than once in five weeks
     const covered=idle.length>=2||(R.own.length>1&&per<D/25);
@@ -224,7 +224,7 @@ function runAnalysis0(list,T,weeks,progress,onCat){
       const why=fix?fixWhy(f):[],k=x.k,gl=groupLabel(cat,x.g),cn=CLASS_NAMES[x.cl],n=R.gc[x.g]||0;
       if(x.staple){const f=pcol(x.it),same=R.own.filter(o=>pcol(o)===f),fn=colName(f);
         why.push(`A staple you don't have: ${same.length?`your ${same.length===1?'one':same.length} ${fn} ${W[same.length===1?0:1]} ${same.length===1&&cat!=='pants'?'is':'are'} ${listAnd(same.map(o=>CLASS_NAMES[shopClass(o)]))}`:`no ${fn} ${W[0]}`}.`)}
-      else if(x.newG)why.push(`A colour you don't have: no ${gl} ${W[1]} now.`);
+      else if(x.newG)why.push(`A color you don't have: no ${gl} ${W[1]} now.`);
       else if(x.newCell)why.push(`You have ${several(n,cat)} in ${gl}, none ${cn}.`);
       else why.push(`You have ${several(R.cell[x.g+':'+x.cl],cat)} like it; another spreads the wear.`);
       const nJ=B.jackets.length,nS=B.by('shirt').length,nT=B.by('tie').length,nP=B.by('pants').length,ties=wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:'';
@@ -236,7 +236,7 @@ function runAnalysis0(list,T,weeks,progress,onCat){
       else if(cat==='pants')why.push(`Pairs with ${listAnd(k.J.map(nmOf))}.`);
       else{const it=x.c.items[0],wantS=SH[pcol(it)]||['black','brown'],sampShoe=(f.samples||[]).map(s=>s.ids&&s.ids.shoes&&inRot('shoes').find(i=>i.id===s.ids.shoes)).find(Boolean),   // the pair its sample outfits wear (it named another, audit 2026-11-14)
           shoe=cat==='suit'?sampShoe||wantS.map(w=>inRot('shoes').find(s=>pcol(s)===w&&shoeScore(it,it,s)>-50)).find(Boolean):null;
-        why.push(`Dresses well with ${k.Sh.length} of your ${plural(nS,'shirt')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}`+(cat==='blazer'&&k.Pt.length?`; trousers: ${listAnd(k.Pt.map(nmOf))}`:'')
+        why.push(`Dresses well with ${k.Sh.length} of your ${plural(nS,'shirt')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}`+(cat==='blazer'&&k.Pt.length?`; pants: ${listAnd(k.Pt.map(nmOf))}`:'')
           +(cat==='suit'?(shoe?`; shoes: your ${nm(shoe)}`:`; it needs ${wantS[0]} shoes, which you don't have`):'')+'.')}
       if(x.idle.length)why.push(`Pairs with ${x.idle.length===1?'a piece':plural(x.idle.length,'piece')} you own that ${x.idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months: ${listAnd(x.idle.slice(0,3).map(nmOf))}${x.idle.length>3?' and more':''}.`);
       why.push(`Planned on ${f.worn} of the next ${D} workdays${f.ownAvg!=null?`; those outfits score ${Math.round(f.ownAvg)} on average (your ${cat==='suit'?'suit days':odd?'blazer days':'outfits'} now: ${Math.round(usual||base.avg)})`:''}.`);
@@ -257,16 +257,16 @@ function runAnalysis0(list,T,weeks,progress,onCat){
       else{
       if(!fix&&(f.worn<Math.max(2,D*.05)||need<2)&&!c.newFinish)continue;if(!fix&&f.worn<2)continue;
       if(c.newFinish)why.push(`Your first ${CLASS_NAMES[finish(it.leather)]} pair: a more relaxed shoe for blazer days.`);
-      else if(inRot('shoes').some(s=>shopGroup(s)===shopGroup(it)))why.push(`A second ${g} pair lets each rest between wears.`);else why.push(`A colour you don't have: no ${g} shoes now.`);
-      if(f.dFirst>0)why.push(`The first-choice shoe colour on ${plural(f.dFirst,'more day')} (now ${base.first} of ${D}).`);
+      else if(inRot('shoes').some(s=>shopGroup(s)===shopGroup(it)))why.push(`A second ${g} pair lets each rest between wears.`);else why.push(`A color you don't have: no ${g} shoes now.`);
+      if(f.dFirst>0)why.push(`The first-choice shoe color on ${plural(f.dFirst,'more day')} (now ${base.first} of ${D}).`);
       if(f.dB2B>0)why.push(base.b2b-f.dB2B<=0?`No pair is worn two days running (${plural(base.b2b,'time')} now).`:`A pair is worn two days running ${plural(f.dB2B,'time')} less often.`);
       if(c.items[1])why.push('It needs its own belt: none of yours matches it.')}
-      if(t==='belt'){if(f.dFirst>0)why.push(`The first-choice shoe colour on ${plural(f.dFirst,'more day')} (now ${base.first} of ${D}).`);if(f.dB2B>0)why.push(`A pair of shoes is worn two days running ${plural(f.dB2B,'time')} less often.`)}
+      if(t==='belt'){if(f.dFirst>0)why.push(`The first-choice shoe color on ${plural(f.dFirst,'more day')} (now ${base.first} of ${D}).`);if(f.dB2B>0)why.push(`A pair of shoes is worn two days running ${plural(f.dB2B,'time')} less often.`)}
       why.push(`Planned on ${f.worn} of the next ${D} workdays.`);
       tier=fix?'fix':need>=Math.max(6,D*.06)?'better':'optional';rank=fix?8*f.dProb:need+(c.newFinish?1:0)}
     else{const days=t==='socks'?(base.marked.Socks||0)-(f.marked.Socks||0):t==='tieclip'||t==='belt'?(base.marked.Metals||0)-(f.marked.Metals||0):0;
       if(!fix&&f.pts<Math.max(4,D*.04))continue;
-      if(t==='socks')why.push(`Matches your ${c.forFam} trousers: your socks are marked down there on ${plural(days,'day')} now.`);
+      if(t==='socks')why.push(`Matches your ${c.forFam} pants: your socks are marked down there on ${plural(days,'day')} now.`);
       else if(t==='tieclip')why.push(`Matches your watch and belt buckles: the metals are marked down on ${plural(days,'day')} now.`);
       if(!fix||f.worn)why.push(`Planned on ${f.worn} of the next ${D} workdays.`);
       tier=fix?'fix':'better';rank=fix?8*f.dProb:f.pts}
@@ -331,8 +331,8 @@ function shoeNotes(L,B,base){
   out.push(sh.map(s=>`${nm(s).replace(/ shoes$/,'')} ${base.use[s.id]||0}`).join(', ')+` of the next ${D} workdays.`);
   const w=Object.entries(base.want).sort((a,b)=>b[1].want-a[1].want)[0];
   if(w){const [g,x]=w,n=sh.filter(s=>pcol(s)===g).length;
-    out.push(n?`${colName(g).replace(/^./,c=>c.toUpperCase())} is the first-choice colour on ${x.want} of those days; your ${n===1?'one pair':n+' pairs'} can take ${x.got} of them${x.want-x.got>0?' (a pair rests a day between wears)':''}.`
-      :`${colName(g).replace(/^./,c=>c.toUpperCase())} is the first-choice colour on ${x.want} of those days, and you have none.`)}
+    out.push(n?`${colName(g).replace(/^./,c=>c.toUpperCase())} is the first-choice color on ${x.want} of those days; your ${n===1?'one pair':n+' pairs'} can take ${x.got} of them${x.want-x.got>0?' (a pair rests a day between wears)':''}.`
+      :`${colName(g).replace(/^./,c=>c.toUpperCase())} is the first-choice color on ${x.want} of those days, and you have none.`)}
   if(base.b2b)out.push(`A pair is worn two days running ${plural(base.b2b,'time')}.`);
   const fins=new Set(sh.map(s=>finish(s.leather)));if(fins.size===1&&sh.length>1)out.push(`All ${sh.length} pairs are ${CLASS_NAMES[[...fins][0]]}.`);
   return out.map(prettyCols);
