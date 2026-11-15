@@ -6,6 +6,7 @@ const path=require('path'),crypto=require('crypto'),{pathToFileURL}=require('url
 module.exports=async({ok,ROOT})=>{
   const mod=await import(pathToFileURL(path.join(ROOT,'worker.js')).href),worker=mod.default;
   const D=await import(pathToFileURL(path.join(ROOT,'worker/describe.js')).href);
+  const MAT=(await import(pathToFileURL(path.join(ROOT,'worker/tag.js')).href)).MATERIALS_BY;
   const realFetch=globalThis.fetch;let sent=[],reply=null;
   globalThis.fetch=async(href,init)=>{if(String(href)!=='https://api.anthropic.com/v1/messages')return new Response('',{status:404});
     const body=JSON.parse(init.body);sent.push({headers:init.headers,body});const [st,b]=reply(body);
@@ -131,6 +132,28 @@ module.exports=async({ok,ROOT})=>{
       ok(!/wrote no description/.test(tx(sent[0]))&&/<description>faded burgundy<\/description>/.test(tx(sent[0])),'a single colour lookup is unchanged (no stand-in line)');
       sent=[];r=await J(await call(both({text:'mink twill'})));
       ok(sent.every(s=>/<description>mink twill<\/description>/.test(tx(s))&&!/wrote no description/.test(tx(s))),'both with words: the words go to each half');
+      // ---- the material (2026-11-15): the pattern half's own field, no third call; held to the audit's tiers
+      sent=[];reply=q=>[200,isCol(q)?COL:{...PAT,material:{key:'flannel',confidence:'high',why:'A fuzzy nap hides the weave.'}}];r=await J(await call(both()));
+      {const pq2=sent.find(s=>!isCol(s.body)),cq2=sent.find(s=>isCol(s.body)),ms=pq2.body.output_config.format.schema.properties.material;
+        ok(sent.length===2&&ms&&pq2.body.output_config.format.schema.required.includes('material')&&ms.properties.key.enum.join()===[...MAT.suit,'none'].join()&&!cq2.body.output_config.format.schema.properties.material,'both: the pattern half asks for the material from the suit\'s own list plus "none"; the colour half doesn\'t (still 2 calls)');
+        ok(/Materials per type:/.test(pq2.body.system[0].text)&&/Never give the pattern or weave as the material/.test(pq2.body.system[0].text)&&/"none" is always allowed/.test(pq2.body.system[0].text),'both: the material rules (tiers, never the pattern, "none" allowed) are in the cached text');
+        ok(r.pattern.material&&r.pattern.material.key==='flannel'&&r.pattern.material.confidence==='high'&&r.pattern.material.why==='A fuzzy nap hides the weave.','a cloth plain to see (flannel) keeps high confidence')}
+      const matOf=async(m,x={})=>{reply=q=>[200,isCol(q)?COL:{...PAT,material:m}];return (await J(await call(both(x)))).pattern.material};
+      let mm=await matOf({key:'cashmere',confidence:'high',why:'soft'});ok(mm.key==='cashmere'&&mm.confidence==='low','a fiber-only call (cashmere) is held to low');
+      mm=await matOf({key:'wool blend',confidence:'medium',why:''});ok(mm.confidence==='low','wool blend is held to low');
+      mm=await matOf({key:'tropical wool',confidence:'high',why:''});ok(mm.confidence==='medium','a good bet (tropical wool) is medium at most with a close-up');
+      mm=await matOf({key:'tropical wool',confidence:'high',why:''},{closeup:undefined,text:'grainy open weave'});ok(mm.confidence==='low','without a close-up a fiber call is low');
+      mm=await matOf({key:'tweed',confidence:'high',why:''},{pattern:'tweed'});ok(mm.key==='none','a material that only repeats the pattern (tweed on a tweed) is none');
+      mm=await matOf({key:'twill',confidence:'high',why:''},{type:'shirt'});ok(mm.key==='none','a weave off the list (twill on a shirt) is none');
+      mm=await matOf({key:'none',confidence:'high',why:'cannot tell'});ok(mm.key==='none'&&mm.confidence==='low','"none" comes back as none');
+      mm=await matOf({key:'merino wool',confidence:'high',why:''},{type:'tie'});ok(mm.key==='none','a key from another type\'s list is none');
+      sent=[];await call({what:'pattern',text:'hopsack',type:'suit'});
+      ok(!sent[0].body.output_config.format.schema.properties.material&&!/Materials per type/.test(sent[0].body.system[0].text),'a single pattern lookup keeps its schema and cached text (no material)');
+      // the grammar's size: the material adds one small object (the suit list's 16 names + none), no anyOf; the whole stays well under the colour and pattern schemas together (which once failed to compile)
+      {const P0=JSON.stringify(D.patternSchema([])),P1s=Object.keys(MAT).map(t=>JSON.stringify(D.patternSchema([],MAT[t]))),C0=JSON.stringify(D.colourSchema([]));
+        const big=Math.max(...P1s.map(s=>s.length)),any=s=>(s.match(/anyOf/g)||[]).length;
+        ok(big-P0.length<900&&P1s.every(s=>any(s)===any(P0))&&Object.values(MAT).every(l=>l.length<=20)&&big<P0.length+C0.length*.5,`the reader's schema grows ${big-P0.length} characters at most (pattern ${P0.length}, colour ${C0.length}); no anyOf added; every list 20 names or fewer`)}
+      reply=q=>[200,isCol(q)?COL:PAT];
       sent=[];
       for(const [x,why] of [[{closeup:undefined},'no words and no close-up'],[{type:'shoes'},'a type without patterns'],[{type:'hat'},'an unknown type']]){r=await J(await call(both(x)));ok(r.s===400,'both refused before Claude: '+why)}
       ok(sent.length===0,'nothing sent for a refused both');

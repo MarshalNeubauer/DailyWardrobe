@@ -20,7 +20,7 @@
 // Pattern lists must stay in sync with PATS_BY in core.js.
 // The routes live in worker/*.js (ES modules; Wrangler bundles them on deploy). This file is the entry: the route table, serve,
 // CORS and the Worker's handlers (fetch, queue, scheduled). Split into modules on 2026-11-14.
-import { FREE_EXTRA, FREE_PAT_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, wbOf } from './worker/tag.js';
+import { FREE_EXTRA, FREE_PAT_EXTRA, MATERIAL_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, wbOf } from './worker/tag.js';
 import { handlePattern } from './worker/pattern.js';
 import { handleDescribe } from './worker/describe.js';
 import { handleFetchImage, readCapped } from './worker/links.js';
@@ -108,10 +108,11 @@ async function serve(req, env, cors, allowed, origin) {
     const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
     // fixed (cached): the rules and the single-item extras; the owner's own (cached next): colours, patterns, corrections; per call:
     // the picker's extras and the measurement
-    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA,
+    // the plain single tag also suggests the material (its rules cached with the others: MATERIAL_EXTRA); the picker's calls don't
+    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA + (free || freePat ? '' : MATERIAL_EXTRA),
       owner: customText(custom) + correctionsText(body.corrections), text: (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured),
       closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 12000, signal: req.signal });
-    if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
+    if (c.status === 200) c.body = cleanTag(c.body, { closeup: !!cm }); else await unspend(env, who, 'tag');
     return json(c.body, c.status);
   }
   // Workers AI: any answer that is not a tag gives the tester's count back

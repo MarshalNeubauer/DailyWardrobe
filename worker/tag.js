@@ -142,6 +142,59 @@ const SUIT_PATS = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','
 const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
   shirt: ['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','other'],
   tie: ['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'] };
+/* what each item type is made of: must match MATERIALS_BY in core.js (tests/materials.test.js) */
+const MATERIALS_BY = {
+  suit: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
+  blazer: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','camel hair','hopsack','silk blend','jersey','corduroy','velvet','polyester blend'],
+  pants: ['wool','wool blend','tropical wool','flannel','gabardine','cotton','cotton twill','denim','stretch denim','linen','linen blend','seersucker','moleskin','corduroy','tweed','polyester blend'],
+  shirt: ['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker'],
+  tie: ['silk','grenadine','shantung','wool','wool blend','cashmere','linen','cotton','polyester'],
+  socks: ['cotton','mercerized cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
+  overcoat: ['wool','wool blend','melton','cashmere','cashmere blend','tweed','camel hair','loden','alpaca','cotton'],
+  raincoat: ['cotton gabardine','waxed cotton','rubberized cotton','nylon','polyester','waterproof shell'] };
+/* how well Claude can tell a material from a photo (the materials audit's tiers, 2026-11-15): a cloth plain to see may be high; a good
+   bet from the look medium at most, and low without a close-up; a fiber the eye can't tell (wool vs blends, cashmere, cotton vs a
+   blend, polyester) low at most; socks always low. The cleaner holds every answer to its tier, whatever Claude said */
+const MAT_SEES = ['linen','seersucker','corduroy','velvet','tweed','flannel','denim','stretch denim','jersey','grenadine','knitted silk','waxed cotton','hopsack'];
+const MAT_LIKELY = ['tropical wool','gabardine','cotton gabardine','mohair blend','silk blend','camel hair','melton','moleskin','cotton','cotton twill','poplin','performance stretch','linen blend','shantung','rubberized cotton','loden'];
+const MAT_LIKELY_BY = { tie: ['silk','wool','cashmere','cotton'] };
+const CONF_RANK = { low: 0, medium: 1, high: 2 }, CONF_NAME = ['low', 'medium', 'high'];
+const matCap = (key, type, closeup) => type === 'socks' ? 0 : MAT_SEES.includes(key) ? 2 : (MAT_LIKELY.includes(key) || (MAT_LIKELY_BY[type] || []).includes(key)) ? (closeup ? 1 : 0) : 0;
+/* Claude's material answer -> {key, confidence, why} (key one of the type's materials or 'none'), or null when the type has no list or
+   there is no answer. A key off the list, or one that only repeats the pattern (an end-on-end shirt "made of" end-on-end), is 'none' */
+function cleanMaterial(m, type, pats, closeup) {
+  const list = MATERIALS_BY[type];
+  if (!list || !m || typeof m !== 'object') return null;
+  const why = String(m.why ?? '').replace(/[<>\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+  let key = String(m.key ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const same = (Array.isArray(pats) ? pats : [pats]).filter(Boolean).map(p => String(p).toLowerCase().replace(/-/g, ' '));
+  if (!list.includes(key) || same.includes(key)) key = 'none';
+  if (key === 'none') return { key, confidence: 'low', why };
+  const asked = CONF_RANK[m.confidence] ?? 0;
+  return { key, confidence: CONF_NAME[Math.min(asked, matCap(key, type, !!closeup))], why };
+}
+/* the material's rules for Claude (the photo tagger's single item and the close-up reader's pattern half) */
+const MATERIAL_RULES = `material — what the item is made of, from its type's material list below, or "none":
+  key: one material from the list for the item's type, or "none". "none" is always allowed, and it is the right answer when no listed
+    material clearly fits or you cannot tell: never force the nearest one.
+  confidence:
+    high only for a cloth that is plain to see: linen (slubs, sharp creases), seersucker (puckered stripes), corduroy (wale ribs),
+      velvet (pile sheen), tweed, flannel (fuzzy nap, blurred weave), denim, jersey (knit loops), grenadine (open gauze), waxed cotton,
+      hopsack (basket weave);
+    medium at most for a good bet from the look, and only with a close-up: tropical wool (open, grainy weave), gabardine, mohair (dry,
+      glassy sheen), silk blend (sheen, slubs), camel hair, melton (smooth felted face), moleskin, cotton, poplin, a silk tie,
+      performance stretch (sheen, cling);
+    low for a fiber the eye cannot tell: wool vs wool blend vs polyester blend, cashmere vs wool, cotton vs cotton blend, every sock
+      fiber, mercerized cotton, alpaca. Without a close-up, any fiber is low.
+  Never give the pattern or weave as the material: a herringbone, twill, oxford, pinpoint, end-on-end, chambray or dobby look is the
+    pattern; the material is the fiber or cloth it is woven in.
+  why: one short line for the owner on what you saw.
+  Materials per type:
+${Object.entries(MATERIALS_BY).map(([t, l]) => `    ${t}: ${l.join(', ')}`).join('\n')}`;
+/* the schema's part: key a plain string for the tagger (one schema for every type: an enum of every type's materials would grow the
+   grammar), the type's own list for the reader (its type is known) */
+const materialSchema = list => ({ type: 'object', additionalProperties: false, required: ['key', 'confidence', 'why'],
+  properties: { key: list ? { type: 'string', enum: [...list, 'none'] } : { type: 'string' }, confidence: { type: 'string', enum: ['high', 'medium', 'low'] }, why: { type: 'string' } } });
 const orNull = values => ({ anyOf: [{ type: 'string', enum: values }, { type: 'null' }] });
 // Structured output: the reply is guaranteed to be JSON matching this schema.
 const TAG_SCHEMA = {
@@ -226,8 +279,16 @@ function tagSchema(custom, single, free, freePat) {
   });
   if (free) props.ownColors = OWN_COLORS;
   if (freePat) props.ownPattern = OWN_PATTERN;
-  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : [])] };
+  // the material (2026-11-15, the Add card's suggestion): only on the plain single tag, never with the picker's extras (the schema
+  // with ownColors is near what the API compiles)
+  const mat = !free && !freePat;
+  if (mat) props.material = materialSchema(null);
+  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : []), ...(mat ? ['material'] : [])] };
 }
+/* the single tag's material rules, in the cached prompt after SINGLE_EXTRA (a tag with the picker's extras has no material) */
+const MATERIAL_EXTRA = `
+${MATERIAL_RULES}
+  (For shoes, belts, watches, cufflinks and tie clips the material is always "none": their leather, band and metal have their own fields.)`;
 function customText(custom) {
   let t = '';
   if (custom.colors.length) t += `\n\nColors the owner added (answer with the key, like any listed color, for the item types shown):\n`
@@ -362,7 +423,7 @@ async function claudeCall(env, opts) {
 }
 
 /* the extra single-item fields, tidied: suggestion text kept short and plain, the cloth box inside the photo */
-function cleanTag(t) {
+function cleanTag(t, opts = {}) {
   const sug = v => v && typeof v === 'object' && txt(v.name, 30) ? { name: txt(v.name, 30), why: txt(v.why, 200) } : null;
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
   let box = null;
@@ -382,7 +443,9 @@ function cleanTag(t) {
   const op = t.ownPattern;
   const ownPattern = op && typeof op === 'object' && /[a-z]{2}/i.test(txt(op.name, 60))
     ? { name: txt(op.name, 60).toLowerCase(), description: txt(op.description, 300), fits: op.fits === true } : undefined;
-  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern };
+  // the material held to its tier (cleanMaterial: a fiber is low, and low without a close-up), never only the pattern again
+  const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup) || undefined : undefined;
+  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,
@@ -471,4 +534,4 @@ async function tagWithWorkersAi(env, image) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, materialSchema, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
