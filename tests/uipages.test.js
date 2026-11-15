@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>{closeSettings();openSettings('weather')});await settle(p,300);
     const w=await p.evaluate(()=>({open:[...document.querySelectorAll('#settings-modal .scat.open')].map(c=>c.id),top:document.querySelector('#sc-weather').getBoundingClientRect().top}));
     ok(w.open.join()==='sc-weather'&&w.top<200,`openSettings('weather') opens just Weather, scrolled into view (top ${Math.round(w.top)}px)`);
-    await p.evaluate(()=>openSettings('connection'));await p.click('#adv-connection .adv-head');await p.fill('#cfg-url','https://new.example.dev/');await p.click('.shead .sdone');
+    await p.evaluate(()=>openSettings('connection'));await p.click('#conn-own button');await p.fill('#cfg-url','https://new.example.dev/');await p.click('.shead .sdone');
     ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://new.example.dev/'&&!settingsOpen()),'Done saves the connection and closes Settings');
     // ---- Wardrobe
     await p.evaluate(()=>show('wardrobe'));

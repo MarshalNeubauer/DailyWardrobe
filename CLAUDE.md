@@ -773,6 +773,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - background redraws of Today (photos arriving, weather, the start-up plan check, the queue) go through `refreshToday()`: while Settings is open they set `todayStale` and wait for it to close, since `renderToday` closes Settings (it snapped shut when opened right after launch)
 - a sync that brings changes redraws the tab on screen through `syncRedraw` (sync.js): while Settings is open it only marks it (`todayStale`, `viewStale` for the Wardrobe or stats page) and `closeSettings` redraws it
 - only `saveUserSettings()` stamps the settings, and only something the user did should call it
+- `saveUserSettings` announces each save to the app's other tabs (BroadcastChannel `dw-settings`, `setChan`); a tab that heard of a newer save (`setOther`) merges the stored copy in first (`setSeen`: the stamp it last read or wrote, set at start-up and in `onSyncedData`; `mergeSettings` setting by setting): a second tab (an invitation link tapped twice) wrote its stale copy whole over the other tab's setup choices (2026-11-15)
+- without word from another tab the save is written at once: a read before every write delayed it, and on WebKit a reload right after Skip lost it (`tests/setup.test.js`)
 - workdays, blazer days, the vest and units set `todayStale` too (`toggleDay`, `setVestMode`, `setUnits`), so Today follows when Settings closes; `setUnits` redraws the location line at once (`renderWxLoc`; it kept °F under °C)
 - `toastDrop()` takes away a toast with a button; leaving Add (start.js `show`) drops its "Saved … Undo" (it lay over Today's month card)
 - occasions (`setOccasion` in history.js, `addFormalDay`, `renderFormalUI`)
@@ -814,6 +816,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `addGate()` hides "Several items" while not connected and shows `#add-group-off`
 - `applyRole()` (account.js) sets `body.owner`/`tester`/`nocon`: Advanced folds are owner-only; Connection's address and code hidden from testers
 - `renderConnUI`/`connPaste`/`connSummary` draw Settings → Connection; `advToggle`/`advClose` the Advanced folds
+- an ended invitation (`inviteOver()`: `invite_ended` holds the stored code) is not connected: `isConnected()` is false, so Add, Several items, item pictures and the server-only sections act as not connected; Connection's summary is "Invitation ended" and its box says so above the paste field; the Backup summary and line say nothing backs up (settings.js `backupSummary`, sync.js `showSyncStatus`); it said "Connected", "✓ … backed up" and "Backed up today" (2026-11-15)
+- not connected, Connection's "Advanced · For the person who runs the server" fold is hidden until "I run the server: connect with its address and code" (`#conn-own`, `connOwn` → `body.srv-open`; styles.css `body.nocon:not(.srv-open) #adv-connection`): a new tester was invited to type into "Code"; tests click `#conn-own button` before the fold
 - `plainErr(message)` turns server set-up errors (`TECH_RE`) into plain words unless the owner is connected; used by `tagFailText`, Several items, the picture batch and a tester's `setSyncStatus` (a raw OPENAI_API_KEY message once reached a new user)
 - dialogs call `layerOpen`/`layerClose` (Settings, picker, What to buy); `layerInert` keeps the page behind inert and returns focus; `layerUp` traps Tab and handles Escape
 - `tests/a11yfix.test.js` covers dialogs, waiting redraws, storage failures, labels, contrast, motion, tap targets
@@ -864,6 +868,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the worker's daily KV writes used up (Cloudflare free plan: 1,000 a day, reset 00:00 UTC; the PC's picture uploads once used them up): 429 `{error:'kv-limit'}` (`kvFull`, worker.js), the same pause, and "Today's backups are used up on the server…" (`backupFullMsg`); `tests/kvlimit.test.js`
 - `npm run assemble` stops at the first KV refusal, keeps the pause (`upload-pause.json`), skips --watch cycles until then, and plans 14 days ahead by default
 - an invitation switched off (403 `invite off`): said once (`inviteEnded`, `localStorage.invite_ended`) and syncing stops
+- `endedAnswer(status, j)`: 403 'invite off', or 403 'forbidden token' on a tester's phone (the account was deleted on another phone or by the owner), is an ended invitation for the sync, the daily backups list, Feedback and `loadAccount`; it said "Backups aren’t available on this server yet" and kept trying (2026-11-15)
 - sync errors show the server's `message` before its `error`
 
 #### Daily backups
@@ -880,7 +885,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - who the app is connected as (after sync.js); `acct` holds `GET /me`
 - invite link `<app url>#invite=<code>&w=<server>`; `connectFromLink` stores `worker_url`/`app_token` only when `/me` accepts; `acctStart()` runs it for `#invite=` at start-up
 - a refused link changes nothing; `#invite` is dropped from the address unless the server was unreachable
-- a link on a phone connected with another code: with a local wardrobe (`acctHasLocal`) it asks, wipes (`wipeDevice`) and reloads; else it switches and drops `sync_mark`, `last_sync`, `sync_status` (a sync once merged the owner's wardrobe into a tester's)
+- a link on a phone connected with another code: with a local wardrobe (`acctLocal`, read from the database) it asks, wipes (`wipeDevice`) and reloads; else it switches and drops `sync_mark`, `last_sync`, `sync_status` (a sync once merged the owner's wardrobe into a tester's)
 - Connection's `#acct-box`: `renderAccountUI`, `loadAccount` (at most once in 3 s); testers see use against caps (`ACCT_CAPS`: item pictures, photo readings, pattern readings; `acctUse`), the owner invites (`createInvite`, `copyInvite`, `revokeInvite`, `purgeInvite`)
 - `acctStart()` wraps `renderSettingsExtras` (settings.js); an old server (404/405 on `/me`) leaves the box empty
 - the role is remembered per code (`rememberRole`, `acct_role`, `acctRole()`, `isTester()`)
@@ -889,6 +894,13 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - testers see no costs (`showCost()` in settings.js)
 - About's Feedback line (`#fb-help`) says where feedback goes to testers only
 - tests: `tests/accounts.test.js`, `tests/testerview.test.js`, `tests/invitelink.test.js`
+- `connectFromLink` decides only after storage is read (2026-11-15, the new-user audit's Critical): it awaits `connRestored` and counts the wardrobe in the database (`acctLocal`: items, day records, sample pieces); at start-up the link was checked before `items` was loaded, the phone looked empty, it switched without asking and the next sync copied its wardrobe into the other account; `acctHasLocal` is gone; `tests/invitefix.test.js` holds the database's first reads back 1.5 s to reproduce it
+- one link at a time (`acctLinkRun`); `opt.address` (the page's own address) says the outcome in a toast, the paste fields (Settings `connPaste`, setup `setupConnect`) say it in their own line from `acctWhy` ('bad', 'refused' with `acctWhyMsg`, 'offline', 'kept') via `acctFailText()`: offline is no longer "check that you copied all of it"
+- a `#invite=` link that can't be read says "That invitation link didn’t work…" (`INVITE_BAD`); a full stop, comma or bracket after the link is ignored (`inviteParts`)
+- a link opened or pasted in the tab already showing the app is read (`hashchange`); a link the server couldn't be reached for stays in the address and is tried again on `online` and on coming to the front (`acctRetryLink`); Settings' Connection and the setup's Connection step say so, with the link in the field
+- while a link from the address is checked (`inviteChecking`) Connection, its summary and the setup's Connection and All set steps say "Checking your invitation…"; `acctLinkDrawn()` redraws them, Settings' summaries and Add when the check ends
+- connecting (not switching) with sample pieces on the phone asks "Remove the sample wardrobe first?" and removes them (`kitSampleRemove(true)`, after `acctStarted()`) before anything is stored; Cancel connects nothing; the sample was uploaded into the person's wardrobe and showed on his other phones
+- a successful link clears `invite_ended`; `loadAccount` marks an ended invitation (`endedAnswer`, sync.js) instead of showing "The server didn’t accept this connection" to a tester; `acctEndedUI()` redraws what said Connected
 
 ### `setup.js`
 
@@ -983,6 +995,11 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the after-restart message goes in `sessionStorage.about_note` (`ABOUT_NOTE`), shown by `aboutStart()`
 - the privacy note (`.about-fold`) names everyone who gets something: the server's owner, Cloudflare and GitHub Pages, Anthropic, OpenAI, Open-Meteo, Nager.Date / Google
 - `tests/about.test.js` mocks `/me`, `/feedback`, `/account`
+- refusals are said with the server's `message`, or an older server's sentence in `error`, never a code (`aboutErrText`, `ABOUT_CODES`: "invite off", "forbidden token", "kv-limit" reached testers); Feedback after an ended invitation says so and Send is off (`aboutLive`: `isConnected()`)
+- a tester's "Delete everything" says it ends the invitation (the server deletes `invite:<hash>` first, so the link stops working on every phone)
+- "Delete everything" keeps `del_pending` ({w, t}) and clears the connection's database copy (`connKeep`) before `DELETE /account` (`aboutDeleteAccount`); a phone killed before the answer finishes it at the next start (`aboutResumeDelete`, from `aboutStart`; app.js `connRestored` restores nothing while it is set), or, the server unreachable, puts the connection back and says so; killed there it used to reopen with the whole wardrobe and "Connected"
+- a 403 'forbidden token' to "Delete everything" (the account already deleted on another phone) clears the device and says the server's data was already deleted
+- `ABOUT_KEYS` has `tour_seen`, `tex_up`, `photo_up`, `asm_gl` (kept through constants, which `tests/about.test.js` didn't see; `tests/invitefix.test.js` resolves `const X='key'`) and `del_pending`
 
 ### `stats.js`
 

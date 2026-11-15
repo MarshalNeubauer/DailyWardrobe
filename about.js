@@ -81,6 +81,14 @@ const aboutConn=()=>{const w=(localStorage.getItem('worker_url')||'').trim(),tok
   try{const base=new URL(w.replace(/\/*$/,'/'));return {tok,at:p=>new URL(p,base).href,head:{'content-type':'application/json','x-app-token':tok}}}catch{return null}};
 const aboutEsc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const aboutSay=(id,t,bad)=>{const e=$(id);if(e){e.textContent=t;e.classList.toggle('about-bad',!!bad)}};
+/* connected and the invitation still on (ui.js isConnected: not an ended invitation) */
+const aboutLive=()=>!!aboutConn()&&(typeof isConnected!=='function'||isConnected());
+/* a refusal in words: the server's own sentence (`message`), never its code ("invite off", "forbidden token", "kv-limit" reached testers) */
+const ABOUT_CODES=/^(invite off|forbidden token|forbidden origin|kv-limit|limit|empty|too long|confirm)$|[_-]/i;
+const aboutErrText=(status,j,lead)=>{const m=j&&typeof j.message==='string'&&j.message.trim(),e=j&&typeof j.error==='string'&&j.error.trim();
+  if(m)return `${lead} ${m}`;
+  if(e&&/\s/.test(e)&&!ABOUT_CODES.test(e)){const p=typeof plainErr==='function'?plainErr(e):e;return `${lead.replace(/\.$/,':')} ${p}${/[.!?]$/.test(p)?'':'.'}`}   // a sentence of an older server's
+  return `${lead} The server had a problem (${status}). Try again later.`};
 
 /* ---- feedback ---- */
 // the phone's recent problems go along (safety.js errReport), within the server's 4,000 characters; cleared once sent
@@ -88,14 +96,15 @@ const fbWithErrs=t=>{const r=typeof errReport==='function'?errReport():'';return
 async function sendFeedback(){
   const el=$('#fb-text'),b=$('#fb-send'),text=(el&&el.value||'').trim();
   if(!text){aboutSay('#fb-status','Write something first.',true);return}
-  const c=aboutConn();if(!c){aboutSay('#fb-status','Feedback needs a connection. Connect first, under Connection.',true);return}
+  const c=aboutConn();if(!c||!aboutLive()){aboutSay('#fb-status',aboutLive()||!c?'Feedback needs a connection. Connect first, under Connection.':ENDED,true);return}
   if(b)b.disabled=true;aboutSay('#fb-status','Sending…');
   try{
     let r;try{r=await fetch(c.at('feedback'),{method:'POST',headers:c.head,body:JSON.stringify({text:fbWithErrs(text),version:appVersion(),where:'settings'})})}
     catch{aboutSay('#fb-status','Couldn’t send it: the server didn’t answer. Check your connection and try again.',true);return}
     const j=await r.json().catch(()=>({}));
     if(r.status===404)aboutSay('#fb-status','Feedback isn’t available yet. Please try again in a few days.',true);
-    else if(!r.ok)aboutSay('#fb-status','Couldn’t send it: '+(j&&j.error?j.error:'the server answered '+r.status)+'.',true);
+    else if(typeof endedAnswer==='function'&&endedAnswer(r.status,j)){inviteEnded(c.tok);aboutSay('#fb-status',ENDED,true)}
+    else if(!r.ok)aboutSay('#fb-status',aboutErrText(r.status,j,'Couldn’t send it.'),true);
     else{el.value='';try{localStorage.removeItem('err_log')}catch{}aboutSay('#fb-status','Thank you. Your feedback was sent.');loadFeedback()}
   }finally{if(b)b.disabled=false}}
 /* the owner also sees what was sent in (GET /me says who this is; anything but a clear "owner" shows nothing) */
@@ -118,14 +127,16 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','remind','remind_sent','care_told','black_bd','err_log','setup_at'];
+const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));
 let aboutDeleting=false;
 function askDelete(){
   const box=$('#del-confirm');if(!box)return;const c=aboutConn();aboutSay('#del-status','');
-  box.innerHTML=`<p><b>This can’t be undone.</b> It deletes:</p><ul><li>your wardrobe, outfit history and settings on this device</li><li>the photos kept on this device</li>${c?'<li>your backup, its daily copies and your photos on the server</li>':''}</ul>`+
+  // a tester's "everything" ends the invitation too: the server deletes it first, and its link stops working on every phone
+  const t=c&&typeof isTester==='function'&&isTester();
+  box.innerHTML=`<p><b>This can’t be undone.</b> It deletes:</p><ul><li>your wardrobe, outfit history and settings on this device</li><li>the photos kept on this device</li>${c?'<li>your backup, its daily copies and your photos on the server</li>':''}${t?'<li>your invitation: “Delete everything” ends it, so its link stops working, also on your other phones; to use the app with the server again you need a new link</li>':''}</ul>`+
     (c?'<p class="shelp">“This device only” leaves the server’s copy as it is: connect again to get it back.</p>':'<p class="shelp">This device isn’t connected, so there is nothing on a server to delete.</p>')+
     `<div class="sactions">${c?'<button type="button" class="danger" id="del-all" onclick="deleteMyData(true)">Delete everything</button>':''}<button type="button" class="danger" id="del-device" onclick="deleteMyData(false)">Delete from this device only</button><button type="button" id="del-cancel" onclick="cancelDelete()">Cancel</button></div>`;
   box.hidden=false;if(box.scrollIntoView)box.scrollIntoView({block:'nearest'})}
@@ -151,30 +162,51 @@ async function deleteMyData(server){
   const stop=t=>{aboutDeleting=false;for(const b of document.querySelectorAll('#del-confirm button'))b.disabled=false;aboutSay('#del-status',t,true)};
   if(server&&c){
     const keep={w:localStorage.getItem('worker_url'),t:localStorage.getItem('app_token')};
-    const back=()=>{try{localStorage.setItem('worker_url',keep.w);localStorage.setItem('app_token',keep.t)}catch{}};
     if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
-    try{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')}catch{}   // no backup may start (and bring the data back) from here on
-    let r;try{r=await fetch(c.at('account'),{method:'DELETE',headers:c.head,body:JSON.stringify({confirm:'delete'})})}
-    catch{back();stop('The server didn’t answer, so nothing was deleted. Try again, or delete from this device only.');return}
-    if(r.status===404)note='This device was cleared. The server couldn’t delete your backup yet: ask the person who invited you to remove it.';
-    else if(!r.ok){const j=await r.json().catch(()=>({}));back();stop(`The server didn’t delete your data (${j&&j.error?j.error:'it answered '+r.status}), so nothing was deleted. Try again, or delete from this device only.`);return}
-    else note='Your data was deleted from this device and from the server.';
+    // no backup may start (and bring the data back) from here on: the connection goes, its database copy too (app.js connKeep), and
+    // del_pending remembers the request, so a phone killed before the answer finishes the job when it opens again (aboutResumeDelete);
+    // killed there, it came back with the whole wardrobe and "Connected", the server's copy already gone (audit 2026-11-14)
+    try{localStorage.setItem('del_pending',JSON.stringify(keep));localStorage.removeItem('worker_url');localStorage.removeItem('app_token')}catch{}
+    if(typeof connKeep==='function')await connKeep();
+    const res=await aboutDeleteAccount(keep);
+    if(res.fail){stop(res.fail);return}
+    note=res.note;
   }else if(c)note='This device was cleared. Your backup on the server was kept.';
   await wipeDevice();
   try{sessionStorage.setItem(ABOUT_NOTE,note)}catch{}
   location.reload()}
+/* DELETE /account with the kept connection -> {note} (the device is to be cleared) or {fail} (the connection was put back, nothing deleted) */
+async function aboutDeleteAccount(keep){
+  const back=async()=>{try{localStorage.setItem('worker_url',keep.w);localStorage.setItem('app_token',keep.t);localStorage.removeItem('del_pending')}catch{}if(typeof connKeep==='function')await connKeep()};
+  let r;try{r=await fetch(new URL('account',String(keep.w||'').trim().replace(/\/*$/,'/')).href,{method:'DELETE',headers:{'content-type':'application/json','x-app-token':keep.t||''},body:JSON.stringify({confirm:'delete'})})}
+  catch{await back();return {fail:'The server didn’t answer, so nothing was deleted. Try again, or delete from this device only.'}}
+  const j=await r.json().catch(()=>({}));
+  if(r.ok)return {note:'Your data was deleted from this device and from the server.'};
+  if(r.status===404)return {note:'This device was cleared. The server couldn’t delete your backup yet: ask the person who invited you to remove it.'};
+  // the code is unknown to the server: the account was already deleted (on another phone, or by the owner), so there is nothing left to delete there
+  if(r.status===403&&j&&j.error==='forbidden token'&&(typeof isTester!=='function'||isTester()||localStorage.getItem('invite_ended')===keep.t))return {note:'This device was cleared. Your data on the server had already been deleted.'};
+  const why=j&&typeof j.message==='string'&&j.message.trim()||(j&&typeof j.error==='string'&&/\s/.test(j.error)&&!ABOUT_CODES.test(j.error.trim())?j.error.trim():'');   // never a code ("forbidden token")
+  await back();return {fail:`The server didn’t delete your data${why?' ('+why.replace(/[.!]$/,'')+')':''}, so nothing was deleted. Try again, or delete from this device only.`}}
+/* start-up: a "Delete everything" the app was closed in the middle of is finished (or, the server unreachable, undone and said) */
+async function aboutResumeDelete(){let keep=null;try{keep=JSON.parse(localStorage.getItem('del_pending')||'null')}catch{}
+  if(!keep||!keep.w||!keep.t){try{localStorage.removeItem('del_pending')}catch{}return}
+  aboutDeleting=true;if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
+  const res=await aboutDeleteAccount(keep);
+  if(res.fail){aboutDeleting=false;if(typeof toast==='function')toast('“Delete everything” didn’t finish. '+res.fail.replace(/delete from this device only\./,'delete from this device only, in Settings → About.'),9000);if(window.syncNow)syncNow();return}
+  await wipeDevice();try{sessionStorage.setItem(ABOUT_NOTE,res.note)}catch{}location.reload()}
 
 /* ---- the page ---- */
 function renderAbout(){aboutShow();if(typeof homeAbout==='function')homeAbout();   // "Add to Home Screen", on an iPhone or iPad in a browser tab (kit.js)
   // the owner reads the feedback (below it) rather than sending it to someone: no "goes to the person who invited you"
   if($('#fb-help'))$('#fb-help').textContent='What works, what doesn’t, what is missing'+(typeof acctRole==='function'&&acctRole()==='owner'?'.':': it goes to the person who invited you.');
-  if($('#fb-send'))$('#fb-send').disabled=!aboutConn();   // no connection: the button is off, with the reason under it
-  if(!aboutConn()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status','Feedback needs a connection: paste your invite link under Connection, above.');
+  if($('#fb-send'))$('#fb-send').disabled=!aboutLive();   // no connection: the button is off, with the reason under it
+  if(!aboutLive()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status',aboutConn()?'Feedback needs a connection: your invitation has ended. Paste a new invite link under Connection, above.':'Feedback needs a connection: paste your invite link under Connection, above.');
   loadFeedback()}
 let aboutStarted=false;
 function aboutStart(){
   if(aboutStarted)return;aboutStarted=true;
   try{const n=sessionStorage.getItem(ABOUT_NOTE);if(n){sessionStorage.removeItem(ABOUT_NOTE);if(typeof toast==='function')toast(n,8000)}}catch{}
+  try{if(localStorage.getItem('del_pending'))(typeof connRestored!=='undefined'?connRestored:Promise.resolve()).then(aboutResumeDelete)}catch{}
   aboutReadVersion().then(()=>checkForUpdate());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-aboutLast>ABOUT_FRONT_MS)checkForUpdate()});
   setInterval(()=>{if(document.visibilityState==='visible')checkForUpdate()},ABOUT_CHECK_MS)}

@@ -289,15 +289,17 @@ function kitSampleDone(){if(typeof setupShown==='function'&&setupShown()&&typeof
   cache={};todayStale=true;show('today');if(typeof goToday==='function')goToday()}   // on a weekend, the next workday's outfit
 /* Remove the sample: every sample piece the owner didn't change goes, with what the days recorded of them (worn days, locks, picks;
    occasions stay), in one transaction; a changed one stays as his */
-async function kitSampleRemove(){if(kitSampling)return;const s=items.filter(i=>i.sample);if(!s.length)return;
+async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already asked (account.js, connecting with the sample loaded)
+  const s=items.filter(i=>i.sample);if(!s.length)return;
   const keep=s.filter(kitEdited),gone=s.filter(i=>!kitEdited(i)),kn=keep.length;
   const also=kn?`, and so ${kn===1?'does the sample piece':`do the ${kn} sample pieces`} you changed: ${kn===1?'it is':'they are'} yours now`:'';
-  if(gone.length&&!await askConfirm(`Remove the ${gone.length} sample piece${gone.length===1?'':'s'}?\n\nYour own clothes stay${also}.`,{ok:'Remove',danger:true}))return;
-  kitSampling=true;kitSampleBusy(true);toast('Removing the sample…',8000);
+  if(!quiet&&gone.length&&!await askConfirm(`Remove the ${gone.length} sample piece${gone.length===1?'':'s'}?\n\nYour own clothes stay${also}.`,{ok:'Remove',danger:true}))return;
+  kitSampling=true;kitSampleBusy(true);if(!quiet)toast('Removing the sample…',8000);
   try{const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;return c});
     const days=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id))).map(r=>{const c={date:r.date};if(r.formal)c.formal=true;if(r.occasion)c.occasion=r.occasion;return c});
     await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks()}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
+  if(quiet){cache={};todayStale=true;if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
   show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',3500)}
 /* a sample piece kept as the owner's own (the item sheet) */
 async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;await put(it);cache={};todayStale=true;

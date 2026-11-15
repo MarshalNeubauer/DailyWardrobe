@@ -43,7 +43,8 @@ const CONN_KEEP=['worker_url','app_token','remind'];
 let connReady=false;
 async function connKeep(){if(!connReady)return;try{const v={};for(const k of CONN_KEEP){const x=localStorage.getItem(k);if(x!=null)v[k]=x}await metaPut('conn',v)}catch(e){console.warn('connection copy not kept',e)}}
 const connRestored=db.then(async()=>{let n=0;
-  try{const v=await metaGet('conn');if(v)for(const k of CONN_KEEP)if(v[k]&&!localStorage.getItem(k)){localStorage.setItem(k,v[k]);n++}}catch(e){console.warn('connection copy not read',e)}
+  // (not during a "Delete everything" that was cut off: about.js aboutResumeDelete)
+  try{const v=localStorage.getItem('del_pending')?null:await metaGet('conn');if(v)for(const k of CONN_KEEP)if(v[k]&&!localStorage.getItem(k)){localStorage.setItem(k,v[k]);n++}}catch(e){console.warn('connection copy not read',e)}
   connReady=true;await connKeep();if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep()});
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */

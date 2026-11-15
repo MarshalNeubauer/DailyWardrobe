@@ -13,7 +13,10 @@ let setupNo=false;   // the app was already driven somewhere before start-up loo
 
 /* the dress code (the planner reads the same object): a missing object or key means yes */
 const setupDress=()=>({jacket:!(settings.dress&&settings.dress.jacket===false),tie:!(settings.dress&&settings.dress.tie===false)});
-const setupConnected=()=>!!(localStorage.getItem('worker_url')&&localStorage.getItem('app_token'));
+const setupConnected=()=>typeof isConnected==='function'?isConnected():!!(localStorage.getItem('worker_url')&&localStorage.getItem('app_token'));
+/* an invitation link from the address being checked (account.js), or one the server couldn't be reached for (it stays in the address) */
+const setupLinkChecking=()=>typeof inviteChecking!=='undefined'&&inviteChecking;
+const setupLinkWaiting=()=>typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
 const setupShown=()=>setup.at>=0;
 
 /* start-up, once the wardrobe, history and settings are read: a new install (nothing in the wardrobe, no day ever recorded,
@@ -128,8 +131,9 @@ function setupStep(k){const d=setupDress();
 <div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
 <div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
   if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>${setup.joined&&items.length?`<p class="su-help" id="su-came">Your wardrobe came across: ${items.length} item${items.length===1?'':'s'}. The answers are your account’s.</p>`:''}${setupHomeLink()}`
-    :`<p class="su-help">If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup.</p>
-<div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
+    :setupLinkChecking()?'<p class="su-ok" id="su-conn" role="status"><span class="spin" aria-hidden="true"></span> Checking your invitation…</p><p class="su-help">This can take a moment on a slow connection. You can carry on with Next meanwhile.</p>'
+    :`<p class="su-help">${setupLinkWaiting()?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you’re back online, or tap Connect.':'If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup.'}</p>
+<div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link"${setupLinkWaiting()?` value="${esc(location.href)}"`:''} autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
 ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
 <p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colours yourself: no automatic photo reading and no item pictures. You can connect later in Settings.</p>`;
   /* in the Week step's order (Sunday first, as Settings shows them) */
@@ -141,7 +145,7 @@ ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
   const wear=[d.jacket?'jackets':'no jackets',d.tie?'ties':'no ties',...(d.jacket&&d.tie?[vest]:[])].join(', ');
   const bl=settings.blazerDays.filter(x=>settings.workdays.includes(x));
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
-<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':'not connected'}</b></li></ul>
+<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':'not connected'}</b></li></ul>
 ${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus trousers if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow(true):''}`}`;
 }
 /* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
@@ -179,7 +183,9 @@ function setupParseLink(t){const c=/[#&?]invite=([^&#\s]+)/.exec(t),w=/[#&?]w=([
 async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim();if(!t||setup.busy)return;
   setup.busy=true;setup.msg='';setupDraw();if($('#su-link'))$('#su-link').value=t;let ok=false;
   try{ok=typeof connectFromLink==='function'?!!(await connectFromLink(t)):setupParseLink(t)}catch(e){ok=false}
-  setup.busy=false;if(ok)setup.joined=true;setup.msg=ok?'':'That link didn’t work. Check that you copied all of it, or carry on without it.';
+  // why, in the setup's words: offline is not a wrong link (it said "check that you copied all of it" while offline)
+  const why=typeof acctWhy!=='undefined'?acctWhy:'';
+  setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'&&typeof acctFailText==='function'?acctFailText()+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';
   if(!setupShown())return;setupDraw();if(!ok&&$('#su-link'))$('#su-link').value=t}
 
 /* ---- Today with an empty or too-small wardrobe: what is still needed for a first outfit ---- */

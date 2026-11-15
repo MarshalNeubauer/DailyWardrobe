@@ -313,7 +313,7 @@ async function saveCard(q){
 
 function renderAdd(){
   closeSettings();
-  const workerSet = !!localStorage.getItem('worker_url');
+  const workerSet = typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
   // (no model name: a tester read "Last photo read by Claude (claude-…)")
   if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || 'Photos are read automatically: the type, colours and pattern are filled in for you.';
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';

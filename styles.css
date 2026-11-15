@@ -911,6 +911,7 @@ span.pk-tick{cursor:default}
    server are hidden and one line at the top of their section says what connecting turns on (.conn-off-note) */
 body:not(.owner) #adv-photos{display:none}
 body.tester #adv-connection{display:none}
+body.nocon:not(.srv-open) #adv-connection{display:none}   /* not connected: only after "I run the server" (ui.js connOwn) */
 body.nocon .conn-only,.connhide{display:none!important}
 .conn-off-note:empty{display:none}
 .conn-off-note .linkbtn{margin-left:4px}
