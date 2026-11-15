@@ -22,7 +22,25 @@ const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PA
    drawing recipe, settings.custom.patterns[].look), on any kind of item: so the drawings, the swatches and the painted pictures all
    draw a new pattern as described, in the item's own colours (2026-11-15; the rule "texture readings only on shirts and ties" is for
    readings, not for an own pattern's look) */
-const usableSett=i=>ownSett(i)||lookOf(i);
+const usableSett=i=>settToTag(i,ownSett(i))||lookOf(i);
+/* a jacket's or pants' band reading whose ground is far from the selected color is drawn in the selected color (2026-11-15, the owner's
+   checkered blue pants: tagged Heathered navy #27344f, the reading's ground #616870 and lines #93a1b2 from a lifted close-up, drawn mean
+   L* 50 against 22, ΔE00 26, "washed out"): when the widest band is over SETT_TAG_DE from colOf, it becomes colOf and every other band
+   keeps its relation to the ground, its luminance the same multiple of the ground's (linear light) and its a*b* the same offset, so a
+   light line stays that much lighter and a red line stays red. Only suits, blazers and pants (the cloth's color is its ground; a striped
+   shirt or tie may be tagged by a stripe); a reading near the tag keeps its measured colors. Kept per reading and color (settTagMemo).
+   Every drawing goes through it (fabricDef: the item sheet's swatch, the pickers, the mannequin; the painter's tile and suit cloth;
+   Today's swatches), and the painter's look key follows (settSig of usableSett). */
+const SETT_TAG_DE=12,SETT_TAG_TYPES=['suit','blazer','pants'],settTagMemo=new WeakMap();
+function settToTag(i,s){if(!s||s.v!==2||!Array.isArray(s.bands)||s.bands.length<2||!SETT_TAG_TYPES.includes(i.type))return s;
+  const tag=colOf(i);let m=settTagMemo.get(s);if(!m)settTagMemo.set(s,m=new Map());if(m.has(tag))return m.get(tag);
+  const ok=h=>/^#[0-9a-f]{6}$/i.test(String(h)),wid={};for(const [h,w] of s.bands)if(ok(h))wid[h.toLowerCase()]=(wid[h.toLowerCase()]||0)+(+w||0);
+  const g=Object.keys(wid).sort((a,b)=>wid[b]-wid[a])[0];let out=s;
+  if(g&&ok(tag)){const gl=rgbLab(...hexRgb(g)),tl=rgbLab(...hexRgb(tag));
+    if(dE00(gl,tl)>SETT_TAG_DE){const Y=L=>{const f=(L+16)/116;return f**3>.008856?f**3:(L/903.3)},Lof=y=>y>.008856?116*Math.cbrt(y)-16:903.3*y,k=Y(tl[0])/Math.max(1e-4,Y(gl[0]));
+      const map=h=>{if(!ok(h))return h;if(h.toLowerCase()===g)return tag;const l=rgbLab(...hexRgb(h));return labHex([Math.max(0,Math.min(100,Lof(Math.min(1,Y(l[0])*k)))),tl[1]+l[1]-gl[1],tl[2]+l[2]-gl[2]])};
+      out={...s,bands:s.bands.map(([h,w])=>[map(h),w]),...(s.cross&&Array.isArray(s.cross.bands)?{cross:{...s.cross,bands:s.cross.bands.map(([h,w])=>[h?map(h):h,w])}}:{})}}}
+  if(m.size>8)m.clear();m.set(tag,out);return out}
 const lookOf=i=>{const p=i&&i.pattern,c=p&&typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[p];return c&&c.look&&c.look.layout&&c.look.layout!=='none'?lookSett(i,c.look):null};
 /* a look as a reading (the shapes texFromSpec, the band reader and motifFromSpec make), its roles turned into this item's colours: main =
    its drawn colour (colOf), second and third = its second and third colours (else a step lighter or darker), lighter and darker = main

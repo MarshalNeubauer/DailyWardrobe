@@ -325,8 +325,8 @@ function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||
 const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
 /* (2026-11-14, the owner) no "↩ Today" / "↩ Next outfit" button in the date bar on other days: the Today tab does it (goToday) */
 const todayBtn=()=>'';
-/* where to add a piece (there is no Add tab: Add is "+ Add" in the Wardrobe's header) */
-const ADD_HINT='Add one with + Add in the Wardrobe';
+/* where to add a piece (there is no Add tab: Add is the round + on the Wardrobe) */
+const ADD_HINT='Add one with the + in the Wardrobe';
 /* a day before the wardrobe existed (planTrim leaves it out of the month): no outfit, and the page says why */
 const preWardrobe=d=>{const s=planStartDay();return !!s&&d<s&&d<todayDate()};
 /* a past day whose piece was deleted since (planner.js frozenOutfit, o.gone): the drawing can't show it, so the page says so */

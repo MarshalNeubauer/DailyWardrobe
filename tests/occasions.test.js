@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         I('tie','black'),I('tie','burgundy'),I('tie','navy'),I('tie','silver',{pattern:'paisley',secondaryColor:'lightblue'}),I('tie','pink'),I('tie','green'),I('tieclip','silver',{metal:'silver'}),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('shoes','brown',{leather:'suede'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'suede',metal:'silver'}),
         I('socks','navy'),I('socks','charcoal'),I('socks','black'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';settings.learn=null;dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
     // ---- the planner ----
     const r=await p.evaluate(()=>{const day=(k,occ)=>{dayRecs={};if(occ)dayRecs[k]=occ==='formal'?{date:k,formal:true}:{date:k,occasion:occ};cache={};const pl=planMonth(2026,10),o=pl[k],ra=rateOutfit(o);
         const prevK=Object.keys(pl).filter(x=>keyDate(x)<keyDate(k)).pop();

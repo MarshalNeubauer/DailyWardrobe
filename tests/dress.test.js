@@ -19,7 +19,7 @@ const WARD=`(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toSt
   small:[I('suit','navy'),I('suit','brown',{pattern:'chalk-stripe',secondaryColor:'white'}),I('blazer','grey',{pattern:'glen-check'}),I('pants','grey'),I('pants','navy'),I('shirt','white'),I('shirt','lightblue',{pattern:'stripe',secondaryColor:'white'}),I('shirt','pink'),
    I('tie','navy'),I('tie','red',{pattern:'stripe',secondaryColor:'gold'}),I('tie','silver'),...common()]}})()`;
 /* the plan of three months as one signature: every day's pieces, vest, score, label and number of notes */
-const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',darkShirts:'some',learn:null,holidays:null,daysOff:[]};weather={};climate=null;
+const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',darkShirts:'some',holidays:null,daysOff:[]};weather={};climate=null;
   TODAY_OVERRIDE='2026-11-08T12:00:00';dayRecs={'2026-11-12':{date:'2026-11-12',formal:true},'2026-11-18':{date:'2026-11-18',occasion:'casual'},'2026-11-24':{date:'2026-11-24',occasion:'wedding'},'2026-12-2':{date:'2026-12-2',occasion:'funeral'},
     '2026-11-16':{date:'2026-11-16',force:{tie:items.find(i=>i.type==='tie').id}},'2026-11-17':{date:'2026-11-17',vest:false}};cache={};
   const lines=[];for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=buildPlan(y,m);for(const k of Object.keys(P).sort()){if(!k.startsWith(y+'-'+(m+1)+'-'))continue;const o=P[k],r=rateOutfit(o);

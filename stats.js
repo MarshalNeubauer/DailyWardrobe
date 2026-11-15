@@ -2,7 +2,7 @@
    Two sources: what was really worn (the day history from the first day the wardrobe existed; days marked "Not worn" and
    the planner's warm-up days are left out) and what is planned for the next six months. From them: wear counts per item,
    the pieces that never get worn and why, what costs outfits points, the colour balance, the most-worn pairings, rest
-   between wears, and what the planner has learned from the user's changes (each can be forgotten). */
+   between wears. */
 const STATS_MONTHS=6,TREND_WEEKS=8;
 let statsOpen={};   // which item-type sections are unfolded
 /* the workdays really worn so far: [{date, d, ids, suitDay, vestOn}] */
@@ -112,8 +112,6 @@ function renderStats(){
         <small class="mut">${r.worn?`worn ${r.worn}×${r.last?' · last '+statDate(r.last):''}`:'not worn yet'} · ${r.planned?`planned ${r.planned}×${r.next?' · next '+statDate(r.next):''}`:'not planned'}</small></div></div>`).join('')}</div></details>`};
   const mix=(title,list)=>!list.length?'':`<div class="st-mix"><small class="mut">${title}</small>${list.slice(0,7).map(([g,n])=>`<div class="st-mixrow"><span class="st-dot" style="background:${groupCol(g)}"></span><span class="st-mixnm">${groupName(g)}</span>${bar(n,list[0][1])}<small class="mut">${Math.round(100*n/nPlan)}%</small></div>`).join('')}</div>`;
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
-  const L=settings.learn||{},lp=Object.entries(L.p||{}),li=Object.entries(L.i||{}),byId=id=>items.find(i=>i.id===id);
-  const learned=[...lp.map(([k,v])=>{const [a,b]=k.split('|').map(byId);return a&&b?{k,kind:'p',v,txt:`${statName1(a)} with ${statName2(b)}`}:null}),...li.map(([k,v])=>{const a=byId(k);return a?{k,kind:'i',v,txt:statName1(a)}:null})].filter(Boolean).sort((a,b)=>a.v-b.v);
   const planLine=S.short.length?'':` The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.`;
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}
   <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${S.short.length?'':tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)+tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)+tile(nPlan?avgText(S.avg):'–','average outfit score')+tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
@@ -145,18 +143,8 @@ ${S.short.length?'':`
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${esc(statName1(p.a))} · ${esc(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
   <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that color would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>`}
 
-  ${typeof tagStatsCard==='function'?tagStatsCard():''}
-
-  <section class="card st-card" id="st-learn"><h3>What the planner has learned</h3>
-  ${learned.length?`<p class="mut"><small>From your swaps, picks and corrections. Forget one and the planner goes back to its own judgment.</small></p>${learned.map(x=>`<div class="st-learn"><span class="st-tag ${x.v<0?'down':'up'}">${x.v<0?(x.kind==='p'?'Avoids':'Wears less'):(x.kind==='p'?'Prefers':'Wears more')}</span><span class="st-nm">${esc(x.txt)}</span><button type="button" onclick="forgetLearned('${x.kind}','${x.k}')" aria-label="Forget: ${esc(x.txt)}">Forget</button></div>`).join('')}
-    <div class="btns"><button type="button" onclick="forgetLearned()">Forget everything</button></div>`
-    :'<p class="mut"><small>Nothing yet. When you swap a piece away or choose one yourself, the planner remembers the pairing.</small></p>'}</section>`;
+  ${typeof tagStatsCard==='function'?tagStatsCard():''}`;
 }
-async function forgetLearned(kind,k){
-  if(!kind){const was=settings.learn;settings.learn=null;await saveUserSettings();renderStats();   // done at once, with Undo (ui pass: no question first)
-    toast('Forgot what the planner learned.',6000,{label:'Undo',fn:async()=>{settings.learn=was;await saveUserSettings();cache={};if(!$('#stats').hidden)renderStats()}});cache={};return}
-  else{const L={p:{...(settings.learn&&settings.learn.p)},i:{...(settings.learn&&settings.learn.i)}};delete L[kind][k];settings.learn=L}
-  await saveUserSettings();renderStats()}
 function statsToggle(d){const t=d.dataset.type;if(statsOpen[t]===d.open)return;statsOpen[t]=d.open;if(d.open&&!d.querySelector('.st-row')){const y=scrollY;renderStats();scrollTo(0,y)}}
 function openStats(){closeSettings();show('stats');scrollTo({top:0})}   // Insights is a tab now (it was a page opened from Settings)
 /* ---- the next six months are planned a week at a time while the phone is idle (statsPlan), not all at once when Insights opens: that

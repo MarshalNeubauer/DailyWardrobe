@@ -124,7 +124,7 @@ function guardUnsaved(){if(guardOn)return;guardOn=true;
 
 /* ---- a device's first contact with a backup (it has never finished a sync): the backup's settings win, key by key, whatever
    the stamps say. A new device has only defaults, or what first-run setup saved, and those must not replace the holidays,
-   days off, own colours and learned preferences in the backup. What only this device has (a key the backup lacks) stays.
+   days off and own colours in the backup. What only this device has (a key the backup lacks) stays.
    Called by syncOnce (sync.js) with the local snapshot and the downloaded one, before they are merged. ---- */
 async function adoptBackupSettings(local,data){
   if(localStorage.getItem('last_sync')||!data||!data.settings||!local||!local.settings)return false;
