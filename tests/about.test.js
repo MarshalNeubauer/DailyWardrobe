@@ -44,11 +44,11 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(again===0,'the prompt is raised once for a version, however often it is checked');
       await about(p);
       ok(await p.evaluate(()=>window.__same===1&&appVersion()<aboutNew&&!$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
-      // unsaved Add cards: asked first
-      await p.evaluate(()=>{queue=[{},{}]});
+      // photos still being read on Add: asked first (cards that are only waiting come back after the restart: no question for them)
+      await p.evaluate(()=>{queue=[{busy:1},{busy:1},{manual:true}]});
       await p.click('#about-update');await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));const asked=await text(p,'#ask-sheet');   // the app's own question (ui.js), not a browser dialog
       await p.click('#ask-cancel');await p.waitForFunction(()=>!aboutUpdating&&!document.querySelector('#ask-sheet.on'));
-      ok(/2 unsaved cards on the Add page/.test(asked)&&await p.evaluate(()=>window.__same===1),'with unsaved Add cards Update asks first, and No leaves the page as it is');
+      ok(/2 photos on the Add page are still being read/.test(asked)&&!/will be lost/.test(asked)&&await p.evaluate(()=>window.__same===1),'with photos still being read on Add, Update asks first, and No leaves the page as it is');
       await p.evaluate(()=>{queue=[]});
       await Promise.all([p.waitForFunction(()=>window.__same===undefined&&window.appReady,null,{timeout:20000}),p.click('#about-update')]);
       ok(true,'Update reloads the page');

@@ -119,7 +119,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.waitForSelector('#ask-ok',{state:'visible'});const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');const okc=await res;
     await p.waitForFunction(()=>!localStorage.getItem('sync_status')||/^Backed/.test(localStorage.getItem('sync_status')),null,{timeout:8000}).catch(()=>{});
     const after=await p.evaluate(()=>({tok:localStorage.getItem('app_token'),n:items.length,flag:localStorage.getItem('invite_lost')}));
-    ok(okc===true&&/no longer knew/.test(ask)&&after.tok===CB&&after.n===1&&!after.flag&&posts.some(b=>JSON.stringify(b).includes('mine1')),`a new invitation then keeps this phone's wardrobe and backs it up there (${JSON.stringify(after)}, ${posts.length} upload(s))`);
+    ok(okc===true&&/old invitation has ended/.test(ask)&&after.tok===CB&&after.n===1&&!after.flag&&posts.some(b=>JSON.stringify(b).includes('mine1')),`a new invitation then keeps this phone's wardrobe and backs it up there (${JSON.stringify(after)}, ${posts.length} upload(s))`);
     // feedback refused for a daily limit: the server's sentence, not its code
     const fb=await p.evaluate(async()=>{openSettings('about');$('#fb-text').value='hello';await sendFeedback();return {s:$('#fb-status').textContent,t:$('#fb-text').value}});
     ok(/limit of 20 messages is used up/.test(fb.s)&&!/: limit\./.test(fb.s)&&fb.t==='hello',`feedback over the day's limit says so in words and keeps the text ("${fb.s}")`);

@@ -614,6 +614,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the Saved toast names the item (`savedTitle`: its name, else its colours with the type, "Saved: Grey suit."); Undo of a Save all clears the "Saved N items" line (kit.js `kitUnsave`)
 - "Bought, on the way" refuses a past Arrives date (`setArrives`); the close-up step says to tap the paper on the camera screen before taking the picture; a belt's metal is "Buckle" on the card and in the item sheet
 
+- (re-audit 2026-11-15) Add's note says "Checking your invitation…" while a link is checked (`inviteChecking`) and names an ended invitation; with the invitation ended a card gets no Try again (safety.js `tagFailed`, `tagFailNote`) and no "Read it now" (`unreadNote`, `typeCard` use `isConnected()`)
 ### `itemsheet.js`
 
 #### Photos
@@ -901,6 +902,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the worker's daily KV writes used up (Cloudflare free plan: 1,000 a day, reset 00:00 UTC; the PC's picture uploads once used them up): 429 `{error:'kv-limit'}` (`kvFull`, worker.js), the same pause, and "Today's backups are used up on the server…" (`backupFullMsg`); `tests/kvlimit.test.js`
 - `npm run assemble` stops at the first KV refusal, keeps the pause (`upload-pause.json`), skips --watch cycles until then, and plans 14 days ahead by default
 - an invitation switched off (403 `invite off`): said once (`inviteEnded`, `localStorage.invite_ended`) and syncing stops
+- nothing more is asked with an ended code: photos.js `workerBase()` is null while `inviteOver()` (the photo list, item and outfit pictures, the masters, holiday lists), app.js `ask()` sends no photo, tagging.js `claudePattern` and add.js `addMulti`/`fetchPhoto` don't call; a photo answered 403 'invite off' marks the invitation ended (`endedAnswer` → `inviteEnded`); the first open after an end still sends what runs before the sync learns of it (re-audit 2026-11-15: 12–45 refused requests per open)
 - `endedAnswer(status, j)`: 403 'invite off', or 403 'forbidden token' on a tester's phone (the account was deleted on another phone or by the owner), is an ended invitation for the sync, the daily backups list, Feedback and `loadAccount`; it said "Backups aren’t available on this server yet" and kept trying (2026-11-15)
 - sync errors show the server's `message` before its `error`
 
@@ -945,6 +947,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - while a link from the address is checked (`inviteChecking`) Connection, its summary and the setup's Connection and All set steps say "Checking your invitation…"; `acctLinkDrawn()` redraws them, Settings' summaries and Add when the check ends
 - connecting (not switching) with sample pieces on the phone asks "Remove the sample wardrobe first?" and removes them (`kitSampleRemove(true)`, after `acctStarted()`) before anything is stored; Cancel connects nothing; the sample was uploaded into the person's wardrobe and showed on his other phones
 - a successful link clears `invite_ended`; `loadAccount` marks an ended invitation (`endedAnswer`, sync.js) instead of showing "The server didn’t accept this connection" to a tester; `acctEndedUI()` redraws what said Connected
+- (re-audit 2026-11-15, N1) a new link on a phone whose code has ended, switched off (`invite_ended`) as well as lost (`invite_lost`), asks "Back up this phone’s wardrobe with …’s invitation?" ("Keep it and back it up") and keeps the wardrobe, changes since the end included, instead of "Clear and switch": the old backup can't be reached, and after a switch-off the app stops syncing so it never hears of a later deletion; `tests/inviteswitch.test.js`
+- "Clear and switch" first backs up what no backup took (`acctPending`: `syncMark().sig` against the wardrobe's `stateSig`, then `syncNow()`); still pending (backups paused, server refusing), the question says the changes would be lost and its button reads "Clear, losing those changes" (`acctSwitchText`); it also says the settings go and the setup starts again
+- a link the server couldn't be reached for while the phone is online says "just now … when you next open the app", not "when you’re back online"
 
 ### `setup.js`
 
@@ -977,6 +982,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - All set lists the blazer days and the vest; its "Try a sample wardrobe" (`setupSample`) finishes the setup first (holidays, vest)
 - `setupOpen` closes a Home Screen kit sheet (one explanation)
 - `tests/setupfix.test.js` covers these and the Settings fixes of the same audit
+- an ended invitation: the Connection step says so ("Your invitation has ended, so the link you used no longer works…") and All set reads "invitation ended"
 
 ### `kit.js`
 
@@ -1028,7 +1034,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Settings → About (`SET_CATS` ends with `about`, `#sc-about`, `renderAbout`): version and updates, feedback, deleting one's data, the privacy note; loaded last
 - `appVersion()`: the `CACHE` number in the cached `sw.js` (`swVersionOf`, `aboutReadVersion`), so the version running, not the newest
 - `checkForUpdate` (start-up, foreground after `ABOUT_FRONT_MS`, every `ABOUT_CHECK_MS`, the button): `aboutLatest` fetches `sw.js` with `cache:'no-store'`; a higher number downloads it and offers Update once per version (`aboutToasted`, `aboutShow`); never reloads by itself
-- `updateNow()`: asks first if Add has unsaved cards, sends the waiting worker `{type:'skipWaiting'}` and reloads on `controllerchange`; gives up after `ABOUT_INSTALL_MS` (45 s) without reloading
+- `updateNow()`: asks first only if a photo on Add is still being read (below), sends the waiting worker `{type:'skipWaiting'}` and reloads on `controllerchange`; gives up after `ABOUT_INSTALL_MS` (45 s) without reloading
 - `aboutAdopt()`: a waiting worker of the version already running takes over without a reload (`aboutAsk`)
 - feedback (`sendFeedback`): `POST /feedback` with `x-app-token` (`aboutConn`); `loadFeedback` lists it in `#fb-list` for the owner only
 - delete my data: `askDelete` (`#del-confirm`), `deleteMyData(server)` → `wipeDevice()` → reload
@@ -1039,6 +1045,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the after-restart message goes in `sessionStorage.about_note` (`ABOUT_NOTE`), shown by `aboutStart()`
 - the privacy note (`.about-fold`) names everyone who gets something: the server's owner, Cloudflare and GitHub Pages, Anthropic, OpenAI, Open-Meteo, Nager.Date / Google
 - `tests/about.test.js` mocks `/me`, `/feedback`, `/account`
+- `updateNow` asks only while a photo on Add is still being read (`busy`/`multiBusy`); other cards come back after the restart (add.js `addKeep`, called before it), so "they will be lost" is gone (re-audit 2026-11-15)
+- Feedback: one send at a time (`fbSending`), and an empty tap within `FB_AGAIN_MS` (3 s) of a send keeps "Thank you" (a double tap read "Write something first."); the day's saves used up (429 `kv-limit`) says to send it again after the reset (`aboutResetAt`), not the backup sentence "kept on this device"
+- an ended invitation's Delete card lists this device only, says the server is out of reach and offers only "Delete from this device"; its note doesn't say the server's backup was kept
+- a 403 'forbidden token' to a resumed "Delete everything" (`aboutDeleteAccount(keep, true)`), or for a code remembered as a tester's (`aboutKeptTester`: `acct_role.tok` = the kept code), is the deletion having gone through: at start-up the connection is already removed, so `isTester()` said no and a phone killed mid-delete reopened with "nothing was deleted" (re-audit 2026-11-15, agent8 #5)
 - refusals are said with the server's `message`, or an older server's sentence in `error`, never a code (`aboutErrText`, `ABOUT_CODES`: "invite off", "forbidden token", "kv-limit" reached testers); Feedback after an ended invitation says so and Send is off (`aboutLive`: `isConnected()`)
 - a tester's "Delete everything" says it ends the invitation (the server deletes `invite:<hash>` first, so the link stops working on every phone)
 - "Delete everything" keeps `del_pending` ({w, t}) and clears the connection's database copy (`connKeep`) before `DELETE /account` (`aboutDeleteAccount`); a phone killed before the answer finishes it at the next start (`aboutResumeDelete`, from `aboutStart`; app.js `connRestored` restores nothing while it is set), or, the server unreachable, puts the connection back and says so; killed there it used to reopen with the whole wardrobe and "Connected"
