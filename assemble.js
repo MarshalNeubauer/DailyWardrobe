@@ -102,18 +102,15 @@ const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const
   // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the computer's pictures
   if(asmCmHeld(k))await asmCmBgGet()};
 const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(asmCmHeld);
-/* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB), refreshed after ASM_LIST_MS: which looks the
-   computer has built (npm run assemble) and which colour-coded masters are there. Asked for once per refresh, by everything that needs
-   it at once; null when the worker can't list (the daily listing allowance): then a look is asked for by itself, as before */
-let asmList=null,asmListAt=0,asmListing=null;const ASM_LIST_MS=5*60e3;
-function asmListGet(force){const W=workerBase();if(!W)return Promise.resolve(null);if(asmListing)return asmListing;
-  if(asmList&&!force&&Date.now()-asmListAt<ASM_LIST_MS)return Promise.resolve(asmList);
-  asmListing=(async()=>{try{const r=await fetch(W.url+'?list=1',{headers:{'x-app-token':W.tok},cache:'no-store'}),j=r.ok?await r.json().catch(()=>null):null;
-      if(j&&Array.isArray(j.keys)){asmList=new Set(j.keys);asmListAt=Date.now();
-        if(typeof ASM_CM_KINDS!=='undefined'){asmCmListed=new Set(Object.keys(ASM_CM_KINDS).map(k=>asmCmKey(k,'master')).filter(m=>asmList.has(m)));try{localStorage.setItem('asm_cm_listed',JSON.stringify([...asmCmListed]))}catch{}}}}
-    catch(e){console.warn('no list',e)}
-    finally{asmListing=null}return asmList})();
-  return asmListing}
+/* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB): which looks the computer has built (npm run
+   assemble) and which colour-coded masters are there. It is photos.js's one shared list (workerList: one request for the outfit photos
+   and for these, kept LIST_MS, not asked again until the next UTC day once refused); null when the worker can't list: then a look is
+   asked for by itself, as before */
+let asmList=null,asmListAt=0;
+function asmListGet(force){if(!workerBase())return Promise.resolve(null);
+  return workerList(force).then(L=>{if(L&&L!==asmList){asmList=L;asmListAt=listAt;
+      if(typeof ASM_CM_KINDS!=='undefined'){asmCmListed=new Set(Object.keys(ASM_CM_KINDS).map(k=>asmCmKey(k,'master')).filter(m=>asmList.has(m)));try{localStorage.setItem('asm_cm_listed',JSON.stringify([...asmCmListed]))}catch{}}}
+    return asmList})}
 /* a figured shirt (a small figure on a grid, read from its close-up: the owner's grey chevron dobby, his lavender micro-print neat) is
    painted too, in colour: one repeat of the app's own drawing of the reading (two cells each way), each pixel as its colour over the
    reading's ground, so the ground becomes the tagged colour and the figures keep their contrast to it (a dim close-up read the white
