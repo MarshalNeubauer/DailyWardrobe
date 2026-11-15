@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
-      window.fresh=()=>{settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;settings.learn=null;dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-11T12:00:00';cache={}};
+      window.fresh=()=>{settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-11T12:00:00';cache={}};
       window.months=n=>{const T=todayDate(),pl=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(new Date(T.getFullYear(),T.getMonth()+n,0));return Object.entries(pl).filter(([k,o])=>keyDate(k)>=T)};
       window.uses=(pl,slot)=>{const u={};for(const [k,o] of pl)if(o[slot]&&!(slot==='bot'&&o.suitDay))u[o[slot].id]=(u[o[slot].id]||0)+1;return u}});
     // ---- rule tables
