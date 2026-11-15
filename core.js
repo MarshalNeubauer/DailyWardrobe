@@ -141,7 +141,7 @@ const MATERIALS_BY={
   suit:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','corduroy','velvet','polyester blend'],
   blazer:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','hopsack','corduroy','velvet','polyester blend'],
   pants:['wool','wool blend','flannel','cotton','cotton twill','denim','stretch denim','linen','linen blend','corduroy','tweed','polyester blend'],
-  shirt:['poplin','twill','oxford','pinpoint oxford','end-on-end','chambray','linen','linen blend','flannel','cotton blend'],
+  shirt:['poplin','twill','oxford','pinpoint oxford','end-on-end','chambray','linen','linen blend','flannel','cotton blend','nylon'],
   tie:['silk','knitted silk','grenadine','wool','wool blend','cashmere','linen','cotton','polyester'],
   socks:['cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
   overcoat:['wool','wool blend','cashmere','cashmere blend','tweed','camel hair','cotton'],
