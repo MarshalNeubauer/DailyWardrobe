@@ -171,8 +171,8 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
     await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo!==window._ph0);await settle(p,300);
     e=await ev(()=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),undo:phEdit.undo.length}));
     ok(!e.crop&&e.item==='m1'&&!e.frame&&e.undo===1,T+`Back in a zoomed crop frame keeps the crop and leaves the frame; the item sheet stays open (${JSON.stringify(e)})`);
-    await ev(()=>undoPhoto('m1'));await settle(p,200);
-    ok(await ev(()=>items.find(x=>x.id==='m1').photo===window._ph0),T+'…and Undo puts the photo back');
+    await ev(()=>[...document.querySelectorAll('#toast.on button')].find(b=>b.textContent==='Undo').click());await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo===window._ph0,null,{timeout:4000}).catch(()=>{});await settle(p,200);
+    ok(await ev(()=>items.find(x=>x.id==='m1').photo===window._ph0&&!phEdit.undo.length),T+'…and the toast’s Undo ("Crop saved.") puts the photo back through the editor’s Undo');
     await back();ok(!await ev(()=>editing),T+'…and the next Back closes the item sheet')});
 
   await home();

@@ -3,7 +3,7 @@
 let editing=null;
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':k==='tertiaryColor'?'Third color':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select onchange="sete('${id}','${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
-   and the item itself stay, so the plan and the outfit history are untouched. Undo works until the editor is closed. ---- */
+   and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
 let phEdit={id:null,undo:[],crop:null};
 const PH_MAX=1536;   // the item photo (2026-11-13, the owner: "upgrade the main photo size stored as well"; it was 720, before that 360)
 /* the photo's small copy for grids and lists (the wardrobe, stats, the piece picker): PH_SM px, kept on the item with the photo's signature
@@ -16,12 +16,21 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
   try{const im=await imgOf(it.photo);it.photoSm=Math.max(im.naturalWidth,im.naturalHeight)<=PH_SM?it.photo:shrink(im,PH_SM).toDataURL('image/jpeg',.82);it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
 async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
-function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
-  return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
-    (tex?closeupBtn({label:i.texture?'Replace close-up':'Add fabric close-up',cls:'btn',mode:i.texture?'replace':'add',file:`f=>replaceTexture('${i.id}',f)`,remove:i.texture?`setTexture('${i.id}',null,'Close-up removed.')`:'',cloth:paperCloth(i)}):'')+
-    (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
-    (tex&&i.texture&&!cuTouch()?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+   // on a touch screen Remove is in the close-up chooser (ui.js)
-    (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}   // ("True color in 3 steps" is under Read color and texture: itemBody)
+/* ---- the photo tools (2026-11-15, edit-photos-mockups option B, the owner's choice; they were folded under "Edit photos"): one row of
+   icon-and-label buttons right under the pictures, Replace (the photo's file window), Rotate, Crop (zoom & crop) and Close-up (on a touch
+   screen the close-up chooser: Take / Choose / Remove / Cancel; without touch the file window itself, with Remove close-up under the row).
+   Each change says so in a toast with Undo (picUndo); the row's own Undo button went with the fold. With no photo: Add photo. The close-up's
+   reading lives in the "Color & texture" card under the row (itemBody). ---- */
+const PT_ICON={replace:'<path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/>',
+  rotate:'<path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>',crop:'<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/>',
+  closeup:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/><path d="M8 9l6 4M8 13l6-4" opacity=".6"/>'};
+const ptIcon=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${PT_ICON[k]}</svg>`;
+function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type),id=i.id;
+  const rm=tex&&i.texture?`setTexture('${id}',null,'Close-up removed.')`:'';
+  return `<div class="phtools" role="group" aria-label="Photo tools"><label class="btn ptbtn pt-replace">${ptIcon('replace')}<span>${i.photo?'Replace':'Add photo'}</span><input type="file" accept="image/*" class="vfile" aria-label="${i.photo?'Replace photo':'Add photo'}" onchange="replacePhoto('${id}',this.files[0]);this.value=''"></label>`+
+    (i.photo?`<button type="button" class="ptbtn pt-rotate" onclick="rotatePhoto('${id}')" aria-label="Rotate the photo a quarter turn clockwise">${ptIcon('rotate')}<span>Rotate</span></button><button type="button" class="ptbtn pt-crop" onclick="startCrop('${id}')" aria-label="Zoom and crop the photo">${ptIcon('crop')}<span>Crop</span></button>`:'')+
+    (tex?closeupBtn({label:`${ptIcon('closeup')}<span>Close-up</span>`,cls:'btn ptbtn pt-closeup',mode:i.texture?'replace':'add',aria:i.texture?'Replace close-up':'Add fabric close-up',file:`f=>replaceTexture('${id}',f)`,remove:rm,cloth:paperCloth(i)}):'')+`</div>`+
+    (rm&&!cuTouch()?`<div class="ptmore"><button type="button" class="ptrm" onclick="${rm}">Remove close-up</button></div>`:'')}   // on a touch screen Remove is in the close-up chooser (ui.js)
 /* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
    under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
    tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
@@ -44,9 +53,16 @@ function paperLine(i){if(!i.texture||!TEXTURE_TYPES.includes(i.type)||phEdit.pap
   return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
     :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${paperRetake(i.id,'replaceTexture')}</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
-/* (msg: a toast's text, or toast()'s arguments; the editor's Undo only for the item it is open on: a crop kept as the sheet closed lands later) */
-async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;if(phEdit.id===id||!phEdit.id){phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift()}
-  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();if(msg)Array.isArray(msg)?toast(...msg):toast(msg)}
+/* (msg: a toast's text, which gets Undo (picUndo), or toast()'s arguments; the editor's Undo only for the item it is open on: a crop kept as
+   the sheet closed lands later) */
+async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;const prev=it[k]||null;if(phEdit.id===id||!phEdit.id){phEdit.undo.push({k,v:prev});if(phEdit.undo.length>10)phEdit.undo.shift()}
+  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();
+  if(msg)Array.isArray(msg)?toast(...msg):toast(msg,4000,{label:'Undo',fn:()=>picUndo(id,k,prev)})}
+/* a toast's Undo: the editor's own Undo while the sheet is still on this item and that change is the last one, else the picture as it was
+   (the sheet may be closed or on another item by then) */
+async function picUndo(id,k,prev){const it=items.find(x=>x.id===id);if(!it)return;const top=phEdit.undo[phEdit.undo.length-1];
+  if(editing===id&&phEdit.id===id&&top&&top.k===k&&top.v===(prev||null)){await undoPhoto(id);return}
+  if(prev)it[k]=prev;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
 /* a close-up under TEX_MIN_PX on its short side is refused, as on the Add card (2026-11-15, the re-audit: the editor took a 40×40 one) */
@@ -57,15 +73,19 @@ async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
   await setTexture(id,tex,'Close-up added.');   // (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
   const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);if(it)delete it.pbox;   // the pattern's box was on the old picture
-  await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.');const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tagging.js), signed with the new photo
+/* the toast's Undo after Replace or Rotate: the photo back, with the sharp copy and the pattern's box it had (when Undo put the photo back) */
+const photoUndoAct=(id,prev,sharp,pbox)=>({label:'Undo',fn:async()=>{await picUndo(id,'photo',prev);const it=items.find(x=>x.id===id);if(!it||!prev||it.photo!==prev)return;
+  if(pbox){it.pbox=pbox;await put(it)}if(sharp)await keepTagImg(id,sharp,prev)}});
+async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);
+  const prev=it&&it.photo||null,pbox=it&&it.pbox,old=prev&&typeof tagImgOf==='function'?await tagImgOf(id,it):null;if(it)delete it.pbox;   // the pattern's box was on the old picture
+  await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),['Photo replaced. The item’s tags and your plan are unchanged.',4000,photoUndoAct(id,prev,old,pbox)]);const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tagging.js), signed with the new photo
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
+async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const prev=it.photo,im=await imgOf(it.photo),c=document.createElement('canvas');
   c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);
   // the kept sharp copy turns with it, and the pattern's box (thousandths of the picture) with the copy
   const sharp=typeof tagImgOf==='function'?await tagImgOf(id,it):null,b=it.pbox;
   if(b)it.pbox={x:1000-(b.y+b.h),y:b.x,w:b.h,h:b.w};
-  await setPhoto(id,c.toDataURL('image/jpeg',.9));
+  await setPhoto(id,c.toDataURL('image/jpeg',.9),['Photo rotated.',4000,photoUndoAct(id,prev,sharp,b)]);
   if(sharp)try{const si=await imgOf(sharp),sc=document.createElement('canvas');sc.width=si.naturalHeight;sc.height=si.naturalWidth;const sx=sc.getContext('2d');sx.translate(sc.width,0);sx.rotate(Math.PI/2);sx.drawImage(si,0,0);await keepTagImg(id,sc.toDataURL('image/jpeg',TAG_Q),it.photo)}catch(e){console.warn('sharp copy not turned',e)}}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
   if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
@@ -99,9 +119,7 @@ function cropDiscard(){phEdit.crop=null;renderWardrobe()}
 /* the crop left without Apply: kept when changed (applyCrop measures the frame at once, so the sheet may close or redraw right after) */
 function cropKeep(){if(!phEdit.crop)return null;const id=phEdit.id;if(!cropDirty()){phEdit.crop=null;return null}return applyCrop(id,true)}
 /* the toast's Undo: the editor's own Undo while the sheet is still on this item, else the photo as it was; the sharp copy is the same picture again */
-async function cropUndo(id,prev){const it=items.find(x=>x.id===id);if(!it||!prev)return;
-  if(editing===id&&phEdit.id===id&&phEdit.undo.length&&phEdit.undo[phEdit.undo.length-1].v===prev)await undoPhoto(id);
-  else{it.photo=prev;await makeSmall(it);await put(it);cache={};renderWardrobe()}
+async function cropUndo(id,prev){const it=items.find(x=>x.id===id);if(!it||!prev)return;await picUndo(id,'photo',prev);
   if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}
 function cropGeom(){const c=phEdit.crop,box=$('#cropbox');if(!c||!box)return null;const V=box.clientWidth,s=V/Math.min(c.w,c.h)*c.z,W=c.w*s,H=c.h*s;
   // keep the frame inside the picture
@@ -116,12 +134,11 @@ function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const b
 async function applyCrop(id,left){const it=items.find(x=>x.id===id),g=cropGeom(),cr=phEdit.crop;if(!it||!g||!cr)return;phEdit.crop=null;const prev=it.photo;
   const im=await cropSource(it),f=(im.naturalWidth||im.width)/cr.w;   // the frame is measured on the photo; f scales it to the source
   const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
-  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);await setPhoto(id,c.toDataURL('image/jpeg',.9),left?['Crop saved.',4000,{label:'Undo',fn:()=>cropUndo(id,prev)}]:undefined);
+  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);await setPhoto(id,c.toDataURL('image/jpeg',.9),[left?'Crop saved.':'Photo cropped.',4000,{label:'Undo',fn:()=>cropUndo(id,prev)}]);
   if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
-/* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with its tools folded under it, then a
-   card for the tags, one for rotation, and Delete on its own at the very end */
+/* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with the row of photo tools under it, the
+   "Color & texture" card (fabrics), then a card for the tags, one for rotation, and Delete on its own at the very end */
 function toggleCompare(closeOnly){const el=$('#ivpair');if(!el||(closeOnly&&!phEdit.cmp))return;phEdit.cmp=!phEdit.cmp;el.classList.toggle('cmp',!!phEdit.cmp);el.querySelector('.tagsw').setAttribute('aria-pressed',!!phEdit.cmp)}
-function togglePhotoTools(){phEdit.open=!phEdit.open;const el=$('#ivph');if(!el)return;el.classList.toggle('open',!!phEdit.open);el.querySelector('.ivphbtn').setAttribute('aria-expanded',!!phEdit.open)}
 function itemBody(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
   const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)],pic=i.photo||wardPic(i);
@@ -137,13 +154,15 @@ function itemBody(i){
   ${i.type==='pants'?E(i.id,'trouserKind',TROUSER_KINDS,trouserKind(i)):''}${i.type==='shoes'?E(i.id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):''}${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):''}
   ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
   ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div></div>`:''}${typeof asmGapNote==='function'?asmGapNote(i):''}${wardFieldsEnd(i)}</section>`;
-  // the photo tools stay beside the photos: one row when there is nothing to edit yet, else folded under "Edit photos"
-  const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
+  // the photo tools right under the photos, always shown (option B: the "Edit photos" fold is gone)
+  const photos=phEdit.crop?'':photoTools(i);
+  // "Color & texture" (option B): the paper line after a close-up, then "True color in 3 steps" ABOVE Read color and texture and its cost
+  // (2026-11-15, the owner: "The user needs to see it before they tap the read color and texture button"; B's mockup had Read first), then
+  // the reading's done card (rdDoneHtml, inside rdEditorBtn)
+  const ct=phEdit.crop||!TEXTURE_TYPES.includes(i.type)?'':`<section class="card ivsec ivct" id="ivct" aria-labelledby="ivct-h"><h3 id="ivct-h">Color &amp; texture</h3><p class="shelp">Claude reads them from your close-up.</p>${paperLine(i)}${paperHint(i)}${rdEditorBtn(i)}</section>`;
   const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
   ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
-  // "True color in 3 steps" right under Read color and texture, not folded in Edit photos (2026-11-15, the owner: "The user needs to see it
-  // before they tap the read color and texture button")
-  return `<div class="ivin">${hero}${phEdit.crop?'':paperLine(i)}${photos}${phEdit.crop?'':rdEditorBtn(i,TEXTURE_TYPES.includes(i.type)?paperHint(i):'')}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
+  return `<div class="ivin">${hero}${photos}${ct}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;

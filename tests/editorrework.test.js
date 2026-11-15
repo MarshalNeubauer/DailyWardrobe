@@ -1,6 +1,6 @@
 // The item editor and the color / pattern sheets reworked (2026-11-15, the owner's four asks), in Chromium and WebKit on a touch
 // screen with the worker stubbed (no paid call), the items seeded from tests/fixtures:
-// 1. "True color in 3 steps" sits right under "Read color and texture from close-up", seen without opening Edit photos.
+// 1. "True color in 3 steps" is seen before "Read color and texture from close-up" (since Edit photos option B: right above it).
 // 2. The color / pattern sheet (its New color / New pattern states too) and the reading sheet close on a downward swipe as the item sheet
 //    does: the top (grabber, title, photos) at any time, the content while scrolled to the top, following the finger, springing back on a
 //    short pull, a mouse / trackpad by the top; never from the New color shade square; their top below a stand-in 59px status bar.
@@ -40,15 +40,13 @@ async function run(eng,browser,{ok,url,settle}){
     const mouse=async(x,y0,y1,at,n=10)=>{let mid;await p.mouse.move(x,y0);await p.mouse.down();for(let k=1;k<=n;k++){await p.mouse.move(x,y0+(y1-y0)*k/n);await p.waitForTimeout(30);if(k===n&&at)mid=await at()}await p.mouse.up();await settle(p,450);return mid};
     const openItem1=async(id='m1')=>{await ev(()=>{if(colPick)closeColPick();if(rd)rdClose();phEdit.crop=null;if(editing)closeItem()});await settle(p,450);await ev(id=>openItem(id),id);await settle(p,500)};
 
-    // ---- 1. "True color in 3 steps" under Read color and texture, before the tap
+    // ---- 1. "True color in 3 steps" seen before the Read tap: since Edit photos option B it sits right ABOVE Read color and texture, in
+    //         the Color & texture card (tests/editphotosb.test.js has the rest of B)
     if(phone){await openItem1();
       const r=await ev(()=>{const rd=document.querySelector('#item-view .ivrd'),st=document.querySelector('#item-view .wbsteps'),tg=document.querySelector('#item-view .ivtags');if(!rd||!st)return null;
         const a=rd.getBoundingClientRect(),b=st.getBoundingClientRect();
-        return {next:rd.nextElementSibling===st,inFold:!!st.closest('#ivphp'),below:b.top>=a.bottom,seen:b.height>40&&getComputedStyle(st).visibility==='visible',beforeTags:!!(st.compareDocumentPosition(tg)&Node.DOCUMENT_POSITION_FOLLOWING),open:!!phEdit.open,read:!!rd.querySelector('#iv-read')}});
-      ok(r&&r.next&&!r.inFold&&r.below&&r.seen&&r.beforeTags&&!r.open&&r.read,T+`"True color in 3 steps" is right under Read color and texture (and its cost line), shown with Edit photos closed, before Details (${JSON.stringify(r)})`);
-      await ev(()=>togglePhotoTools());await settle(p,400);
-      ok(await ev(()=>!document.querySelector('#ivphp .wbsteps')&&document.querySelectorAll('#item-view .wbsteps').length===1),T+'Edit photos opened holds the photo tools only (the 3-step card is not in it, and shows once)');
-      await ev(()=>togglePhotoTools())}
+        return {next:st.nextElementSibling===rd,card:!!st.closest('#ivct')&&!!rd.closest('#ivct'),above:b.bottom<=a.top,seen:b.height>40&&getComputedStyle(st).visibility==='visible',beforeTags:!!(st.compareDocumentPosition(tg)&Node.DOCUMENT_POSITION_FOLLOWING),fold:!!document.querySelector('#ivph,.ivphbtn'),read:!!rd.querySelector('#iv-read'),n:document.querySelectorAll('#item-view .wbsteps').length}});
+      ok(r&&r.next&&r.card&&r.above&&r.seen&&r.beforeTags&&!r.fold&&r.read&&r.n===1,T+`"True color in 3 steps" is right above Read color and texture in the Color & texture card, shown once, before Details, no Edit photos fold (${JSON.stringify(r)})`)}
 
     // ---- 3. Ask Claude right under the Close-up / Whole photo / Drawing buttons, then Your colors / Your patterns
     if(phone)for(const [k,own] of [['primaryColor','Your colors'],['pattern','Your patterns']]){await openItem1();
@@ -131,9 +129,9 @@ async function run(eng,browser,{ok,url,settle}){
       await p.mouse.click(w/2,8);sv=await saved();ok(sv&&!await ev(()=>editing),T+'zoomed, then a tap on the strip above the sheet: the crop is saved');
       // Esc: kept and left, the sheet stays; the editor's Undo
       await crop();await p.keyboard.press('Escape');sv=await saved();await settle(p,300);
-      let e=await ev(()=>({crop:!!phEdit.crop,ed:editing,frame:!!document.querySelector('#cropbox'),undo:[...document.querySelectorAll('#item-view .phtools button')].some(b=>b.textContent==='Undo')}));
-      ok(sv&&!e.crop&&e.ed==='m1'&&!e.frame&&e.undo,T+`zoomed, then Esc: the crop is saved and the frame left, the sheet stays with Undo in Edit photos (${JSON.stringify(e)})`);
-      await ev(()=>undoPhoto('m1'));await settle(p,300);ok(await photo()===await ev(()=>PH0),T+'…and the editor’s Undo puts the photo back');
+      let e=await ev(()=>({crop:!!phEdit.crop,ed:editing,frame:!!document.querySelector('#cropbox'),undo:phEdit.undo.length,toast:(document.querySelector('#toast.on')||{}).textContent||''}));
+      ok(sv&&!e.crop&&e.ed==='m1'&&!e.frame&&e.undo===1&&/Crop saved\..*Undo/.test(e.toast),T+`zoomed, then Esc: the crop is saved and the frame left, the sheet stays, "Crop saved." with Undo in the toast (${JSON.stringify(e)})`);
+      await ev(()=>undoPhoto('m1'));await settle(p,300);ok(await photo()===await ev(()=>PH0),T+'…and the editor’s Undo (phEdit.undo) still puts the photo back');
       // ‹ ›: the next item; the crop kept for the one it was on
       await crop();await p.click('#iv-next');sv=await saved();await settle(p,300);
       ok(sv&&await ev(()=>editing==='m2'&&items.find(x=>x.id==='m2').photo===PH0),T+'zoomed, then › to the next item: the crop is kept for the item it was on, the next item untouched');
@@ -144,9 +142,9 @@ async function run(eng,browser,{ok,url,settle}){
       // a frame left as it opened changes nothing
       await crop(null);await ev(()=>{document.querySelector('#toast').classList.remove('on')});await p.click('#item-view .ivdone');await settle(p,600);
       ok(await photo()===await ev(()=>PH0)&&!/Crop saved/.test(await toastNow())&&!await ev(()=>editing),T+'a crop frame left as it opened, then Done: nothing changes and nothing is said');
-      // Apply still applies, with no toast of its own
+      // Apply still applies, with "Photo cropped." and Undo (option B: the editor's Undo button moved into the toasts)
       await crop();await p.click('#item-view .cropwrap button.pri');sv=await saved();await settle(p,300);
-      ok(sv&&await ev(()=>editing==='m1'&&!phEdit.crop),T+'Apply still applies the crop and leaves the frame');
+      ok(sv&&await ev(()=>editing==='m1'&&!phEdit.crop)&&/Photo cropped\..*Undo/.test(await toastNow()),T+`Apply still applies the crop and leaves the frame, "Photo cropped." with Undo (${await toastNow()})`);
       await ev(()=>{items.find(x=>x.id==='m1').photo=PH0})}
     ok(!errs.length,T+'no page errors ('+errs.join(' | ')+')');
     await ctx.close()}

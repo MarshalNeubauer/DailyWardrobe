@@ -102,9 +102,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok((await view()).ed==='s4','closing one item and opening another straight away keeps the second open');
     await p.goBack();await settle(p,500);ok((await view()).ed===null,'and Back still closes it');
     // editing keeps the page and its scroll position
-    await p.tap('#gi-s3 .giopen');await settle(p,500);await p.evaluate(()=>document.querySelector('#ivbody').scrollTo(0,160));
+    // (scrolled so the Color button is in view: since the Color & texture card it sits lower than 160 px; a click on it scrolled the page)
+    await p.tap('#gi-s3 .giopen');await settle(p,500);const yS=await p.evaluate(()=>{const b=document.querySelector('#ivbody'),c=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');b.scrollTo(0,Math.max(160,Math.round(c.getBoundingClientRect().top-b.getBoundingClientRect().top+b.scrollTop-200)));return b.scrollTop});
     await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile[data-c="pink"] >> nth=-1');await p.click('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(i=>i.id==='s3').primaryColor==='pink'&&/pink/i.test(document.querySelector('#iv-title').textContent));v=await view();   // (the sheet is redrawn a moment after the item is saved)
-    ok(v.ed==='s3'&&v.on&&v.top===160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title})`);
+    ok(v.ed==='s3'&&v.on&&v.top===yS&&yS>=160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title}, ${v.top} of ${yS})`);
     ok(/pink/i.test(await p.textContent('#gi-s3')),'and the box in the grid behind is up to date');
     // while cropping, Esc leaves the crop first
     await p.evaluate(()=>startCrop('s3'));await p.waitForSelector('#item-view #cropbox');
