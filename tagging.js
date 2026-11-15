@@ -346,12 +346,13 @@ function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?
 function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
   q.aiTag={...aiFields(ai)};readSett(q)}
-async function closeTagImg(q){const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
+async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
+  const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);
-  if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();return}
-  q.refining=1;renderAdd();
+  if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();if(typeof addKeep==='function')addKeep();return}
+  q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
   const hint=measHint(q.meas),ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)});const k=queue.indexOf(q);q.refining=0;
-  if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0)renderAdd();return}
+  if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0){renderAdd();if(typeof addKeep==='function')addKeep()}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
   // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
   // are read for the card's own type
@@ -363,6 +364,7 @@ async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)r
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
+  if(typeof addKeep==='function')addKeep();   // kept at once (add.js): a kill in the next moment lost the paid reading
   readPatternWithClaude(q)}
 /* Claude's new colour against the close-up's measurement: the measured colour is clearly nearer the colour the card has (a white shirt
    whose close-up measured cream was turned navy) */
@@ -374,9 +376,13 @@ function undoRefine(i){const q=queue[i];if(!q||!q.refineUndo)return;for(const [k
 /* ---- the card's tagging notes: how sure Claude was, its runner-up (one tap to take it), the measured colour, and an offer to
    add a colour or pattern when none of the listed ones fits ---- */
 const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]&&c[k]!=='high').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';
+const tagLive=()=>typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation: no button to read again)
 function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');
+  // a reading cut off when the app was closed (add.js addRevive): said, with a tap to read it again; nothing is read by itself
+  else if(q.refineCut)out.push(`<div class="tagfail refcut"><p>The app was closed while the close-up was being read, so the first tags stay.</p>${tagLive()?`<button type="button" class="tagfail-btn" onclick="refineAgain(${i})">Read the close-up again</button>`:''}</div>`);
   else if(q.refineNote)out.push(`<p class="tagnote refnote"><small>${esc(q.refineNote)}</small>${q.refineUndo?`<button type="button" class="chipbtn" onclick="undoRefine(${i})">Undo</button>`:''}</p>`);
+  if(q.patternCut&&!q.refineCut&&!q.refining&&!q.patternReading)out.push(`<div class="tagfail patcut"><p>The app was closed while the pattern was being read.</p>${tagLive()?`<button type="button" class="tagfail-btn" onclick="patternAgain(${i})">Read the pattern again</button>`:''}</div>`);
   if(!q.refining&&q.refineType&&q.refineType!==q.type&&TYPES[q.refineType])out.push(`<div class="offer reftype"><small>From the close-up Claude read it as: ${esc(TYPES[q.refineType].toLowerCase())}. A close-up can’t show what the item is, so the type is left as it was.</small><button type="button" class="chipbtn" onclick="setq(${i},'type','${q.refineType}')">Make it ${esc(TYPES[q.refineType].toLowerCase())}</button></div>`);
   if(!q.refining&&q.refineKept&&COLORS[q.refineKept.c]&&q.refineKept.c!==q.primaryColor)out.push(`<div class="offer refkept"><small>From the close-up Claude said ${esc(colName(q.refineKept.c))}, but the close-up measures much nearer ${esc(colName(q.primaryColor))}: kept ${esc(colName(q.primaryColor))}.</small><button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.refineKept.c}')">Use ${esc(colName(q.refineKept.c))}</button></div>`);
   const ct=confTxt(q.conf),alts=[q.altColor&&q.altColor!==q.primaryColor&&colsFor(q.type).includes(q.altColor)?`<button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.altColor}')">or ${esc(colName(q.altColor))}</button>`:'',
@@ -405,7 +411,8 @@ const groupOf=t=>COL_GROUPS.find(g=>g.includes(t))||[t];
    "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline
    forms (newColForm / newPatForm) were removed 2026-11-15: one way to add, the same everywhere */
 function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:q.meas&&q.meas.hex||COLORS[q.primaryColor]})}
-async function addCustomColor({name,hex,base,types,accent}){name=String(name||'').trim();const key=ownColKey(name);
+const OWN_NAME_MSG='Use only letters, numbers, spaces and - ’ . , ( ) / + in the name.';
+async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownColKey(name);
   if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a colour with that name.');
   if(!/^#[0-9a-f]{6}$/i.test(hex))throw new Error('Pick a shade.');if(!COLORS[base]||CUSTOM_COL[base])throw new Error('Choose what it behaves like.');
   if(!types||!types.length)throw new Error('Choose at least one kind of item.');
@@ -427,10 +434,10 @@ function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.
 /* look: the drawing recipe from "+ New pattern" (worker /describe: {layout, tr, tex | across (+ along) | motif}, roles not colours),
    kept with the pattern (synced) and drawn by detect.js lookSett in each item's colours, the painter too */
 const cleanLookApp=l=>l&&typeof l==='object'&&['texture','stripes','check','windowpane','plaid','motif'].includes(l.layout)&&(Array.isArray(l.tex&&l.tex.grid)||Array.isArray(l.across)||l.motif&&Array.isArray(l.motif.figs))?JSON.parse(JSON.stringify(l)):null;
-async function addCustomPattern({name,desc,base,types,look}){name=String(name||'').trim();const key=ownPatKey(name);
+async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownPatKey(name);
   if(key.length<6)throw new Error('Give it a name of at least two letters.');if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key)))throw new Error('There is already a pattern with that name.');
   types=(types||[]).filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Choose at least one kind of item that has the "drawn like" pattern.');
-  const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:String(desc||'').trim().slice(0,150),base,types,...(lk?{look:lk}:{})}]};
+  const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:ownDescClean(desc),base,types,...(lk?{look:lk}:{})}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
 /* Settings: the colours and patterns you added; one no item uses can be removed */
 function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},cols=cu.colors||[],pats=cu.patterns||[];
@@ -585,7 +592,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
    close-up's exposure is matched to the item photo's (which has a white wall to set it), and where a thread's pixels read grey
    though Claude sees a colour (a light-blue line woven into khaki linen), the pixels keep the lightness and Claude the hue.
    Without the worker, or when Claude finds no pattern, the pixel reader (settFrom) is used. ---- */
-async function claudePattern({image,closeup,type,wb}){const w=localStorage.getItem('worker_url');if(!w||!image)return null;
+async function claudePattern({image,closeup,type,wb}){const w=localStorage.getItem('worker_url');if(!w||!image||(typeof inviteOver==='function'&&inviteOver()))return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})})});   // wb: both pictures white-balanced (worker.js)
     const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
@@ -640,7 +647,7 @@ async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.ra
   q.patternReading=1;renderAdd();const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
   const spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)});q.patternReading=0;   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
   if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
-  readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q))renderAdd()}
+  readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}
 
 /* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
    pixels. A band reader can't draw these: it turns a checkerboard of mini squares into a diagonal plaid. Claude gives the grid,

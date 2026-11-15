@@ -83,8 +83,11 @@ function kitSaved(it,q,i,copies){if(kitQuiet)return;const now=Date.now(),more=(c
   toast(n===1?`Saved: ${t}.`:b.qs.length===1?`Saved ${n}: ${t}.`:`Saved ${n} items.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave(b)})}
 async function kitUnsave(b){if(!b)return;
   if(b.its.length>30)toast(`Taking out ${b.its.length} items…`,15000);   // (an import's Undo: said at once, done in one go)
-  await kitDelMany(b.its);
-  for(const {q,i} of b.qs.slice().reverse()){if(!q)continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q)}
+  // the cards go back on Add and are kept (add.js addKeep) BEFORE the items are deleted: deleted first, a kill within the keep's timer
+  // lost the item from both (audit 2026-11-15 re-run); a kill between the two leaves the items, and the kept cards of saved items are dropped
+  const back=[];for(const {q,i} of b.qs.slice().reverse()){if(!q||queue.includes(q))continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q);back.push(q)}
+  if(back.length&&typeof addKeep==='function')await addKeep();
+  try{await kitDelMany(b.its)}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length&&typeof addKeep==='function')addKeep();throw e}
   if(kitBatch===b)kitBatch=null;cache={};todayStale=true;if(b.qs.length&&typeof multiMsg==='function')multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
   if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   toast(b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}

@@ -45,6 +45,16 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await inApp()===url&&!await asked()&&await p.evaluate(()=>!!editing&&window._ans===false),'Back over the item sheet closes only the question');
     await back();
     ok(await inApp()===url&&await p.evaluate(()=>!editing),'the next Back closes the item sheet');
+    // ---- with the colour sheet (colpick.js, colBackFirst in itemsheet.js): Back closes it first; a question over it closes before it
+    await p.evaluate(()=>{show('wardrobe');openItem(items[0].id)});await settle(p,400);
+    await p.evaluate(id=>openColPick('e',id,'primaryColor'),await p.evaluate(()=>items[0].id));await settle(p,300);
+    await ask();await settle(p,200);
+    await back();
+    ok(await inApp()===url&&!await asked()&&await p.evaluate(()=>!!colPick&&!!editing),'Back with a question over the colour sheet closes only the question');
+    await back();
+    ok(await inApp()===url&&await p.evaluate(()=>!colPick&&!!editing),'the next Back closes the colour sheet, the item sheet stays');
+    await back();
+    ok(await inApp()===url&&await p.evaluate(()=>!editing),'and the next one the item sheet');
     // ---- the double tap's second tap doesn't cancel; a later tap outside does
     await p.evaluate(()=>show('today'));await settle(p,300);
     await ask();await p.mouse.click(195,120);await settle(p,100);

@@ -26,7 +26,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.waitForSelector('#ask-ok',{state:'visible'});
     const ask=await p.textContent('#ask-sheet');
     await p.click('#ask-cancel');res=await res;
-    ok(/another wardrobe/.test(ask)&&res===false&&await p.evaluate(a=>localStorage.getItem('app_token')===a&&items.some(i=>i.id==='mine1'),A),`a phone connected to another wardrobe asks first; Cancel keeps everything as it was ("${ask.replace(/\s+/g,' ').slice(0,90)}…")`);
+    ok(/Switch this phone to Bea/.test(ask)&&/everything on this phone is cleared first/.test(ask)&&/setup then starts again/.test(ask)&&!/aren’t backed up/.test(ask)&&res===false&&await p.evaluate(a=>localStorage.getItem('app_token')===a&&items.some(i=>i.id==='mine1'),A),`a phone connected to another wardrobe asks first; Cancel keeps everything as it was ("${ask.replace(/\s+/g,' ').slice(0,90)}…")`);
     const nav=p.waitForEvent('load');p.evaluate(l=>connectFromLink(l),link(B)).catch(()=>{});
     await p.waitForSelector('#ask-ok',{state:'visible'});await p.click('#ask-ok');await nav;await p.waitForFunction(()=>window.appReady);
     const after=await p.evaluate(async()=>({tok:localStorage.getItem('app_token'),n:items.length,stored:(await tx('readonly',s=>s.getAll())).length,last:localStorage.getItem('last_sync')}));

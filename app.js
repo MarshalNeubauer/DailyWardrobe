@@ -152,16 +152,21 @@ const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMConte
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
 async function ask(c,extra){
+  const {signal,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
+    if(typeof inviteOver==='function'&&inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
     const dataUrl=typeof c==='string'?c:c.toDataURL('image/jpeg',TAG_Q);
     const res=await fetch(workerUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
-      body:JSON.stringify({image:dataUrl,appToken:localStorage.getItem('app_token')||'',...tagExtras(extra)})
+      body:JSON.stringify({image:dataUrl,appToken:localStorage.getItem('app_token')||'',...tagExtras(ex)}),
+      ...(signal?{signal}:{})
     });
-    if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}aiError=tagFailText(res.status,j,e);return null}
+    if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
+      if(typeof endedAnswer==='function'&&endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
+      aiError=tagFailText(res.status,j,e);return null}
     aiError='';
     const result=await res.json();aiModel=result.model||'';
     let parsed;
@@ -173,6 +178,7 @@ async function ask(c,extra){
     }
     return normTag(parsed,result.model);
   } catch(e) {
+    if(e&&e.name==='AbortError')return null;   // stopped on purpose: no failure to report
     aiError=tagFailText(0,null,e);return null;
   }
 }

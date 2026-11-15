@@ -27,7 +27,10 @@ async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)ret
   if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
-async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q);
+/* a close-up under TEX_MIN_PX on its short side is refused, as on the Add card (2026-11-15, the re-audit: the editor took a 40×40 one) */
+async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
+  if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
+  const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q);
   await setTexture(id,shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),'Close-up added.');   // (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
   const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
@@ -171,6 +174,17 @@ try{history.scrollRestoration='manual'}catch{}   // stepping back must not move 
 function histPush(){if(itemHist||itemBack||appPend)return;   // (appPend: a step back that drops Settings' or a stats/packing/care page's entry is on its way; the item gets its entry once it lands)
 try{history.pushState({item:1},'');itemHist=true;if(typeof appTop!=='undefined')appTop=false}catch{}}
 function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
+/* the phone's Back with the colour or pattern sheet up (colpick.js) closes the sheet only (2026-11-15, the re-audit: Back closed the Add page
+   or the item sheet underneath and left the sheet up, and "Use" then changed an item no longer on screen). The step back took the entry of
+   the page under it (the item sheet's itemHist, Settings' or Add's appHist, start.js); this listener is registered before theirs (here, ahead
+   of the item sheet's and start.js's: a capturing one on window still ran after them in Chromium), stops them, closes the sheet (‹ first on
+   a "New" sheet opened from the list, as its own ‹ does) and puts that entry back, so their flags still hold and the next Back closes the
+   page. A step back of the app's own (itemBack, appPend) passes untouched. */
+function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof appPend!=='undefined'&&appPend))return;
+  e.stopImmediatePropagation();const had=itemHist||(typeof appHist!=='undefined'&&appHist);
+  if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();
+  if(had)try{history.pushState({cp:1},'')}catch{}}
+addEventListener('popstate',colBackFirst);
 addEventListener('popstate',e=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
   if(appPend||appHist&&appTop)return;   // a step back of start.js's own, or its entry over the sheet (a question, the close-up guide): start.js's listener takes it
