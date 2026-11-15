@@ -22,8 +22,10 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('main').inert&&tourSeen()),'Escape closes it, the page usable again, and it is marked seen');
     /* ---- the close-up guide, from the Add card's close-up step ---- */
     await p.evaluate(()=>{openAdd();addManual()});
-    ok(await p.evaluate(()=>!!document.querySelector('#queue .texguide')&&/white paper along one edge, then tap the paper on the camera screen before you take the picture/.test(document.querySelector('#queue .texslot').textContent)),'the close-up step says to lay white paper along one edge and tap it, and has "Tips for a good close-up"');
-    await p.click('#queue .texguide');
+    ok(await p.evaluate(()=>{const c=document.querySelector('#queue .texslot .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#queue .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
+    await p.click('#queue .wbstcard');
+    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colours'),'the card opens the short white-paper tip');
+    await p.click('#kitsheet .kit-body .linkbtn');await p.waitForFunction(()=>document.querySelector('#kit-title').textContent==='A good close-up');
     const g=await p.evaluate(()=>({title:document.querySelector('#kit-title').textContent,txt:document.querySelector('.kit-body').textContent,prog:!!document.querySelector('.kit-prog')}));
     ok(g.title==='A good close-up'&&/white paper along one edge/i.test(g.txt)&&/middle/.test(g.txt)&&/no flash/i.test(g.txt)&&/tap the paper on the camera screen/i.test(g.txt)&&/exposure/.test(g.txt)&&!g.prog,'it opens the guide: paper along one edge, out of the middle, no flash, tap the paper to set the exposure');
     await p.click('#kit-next');ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')),'"Got it" closes it');

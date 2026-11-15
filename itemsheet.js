@@ -18,18 +18,28 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
 async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
   return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
-    (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" class="vfile" onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
+    (tex?closeupBtn({label:i.texture?'Replace close-up':'Add fabric close-up',cls:'btn',mode:i.texture?'replace':'add',file:`f=>replaceTexture('${i.id}',f)`,remove:i.texture?`setTexture('${i.id}',null,'Close-up removed.')`:'',cloth:paperCloth(i)}):'')+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
-    (tex&&i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+
+    (tex&&i.texture&&!cuTouch()?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+   // on a touch screen Remove is in the close-up chooser (ui.js)
     (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`+(tex?paperHint(i):'')}
 /* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
    under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
    tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
    is added or replaced here, a line under the photos says whether paper was found (paperOf in tagging.js), with Retake close-up. ---- */
-const paperPic=i=>`<button type="button" class="wbpic" style="--cloth:${COLORS[primaryCol(i)]?colOf(i):'#5d6478'}" onclick="paperTip()" aria-label="How to use white paper for true colours"><i aria-hidden="true"></i></button>`;
-const paperHint=i=>`<div class="wbhint">${paperPic(i)}<p>For true colours, lay white paper along one edge of the close-up and tap the paper on the screen before you take it. <button type="button" class="linkbtn" onclick="kitCloseupGuide()">Tips for a good close-up</button></p></div>`;
+/* the hint as "3 tiny steps" (2026-11-15, paper-hint-proposals A, the owner's choice; it was a sentence and a "Tips for a good close-up"
+   link): "True color in 3 steps", Paper on an edge › Tap the paper › Take the photo, each with a small drawing (the owner's, at 40 px).
+   The whole card is one button that opens the short tip (paperTip; its last line opens the full guide). Also in the Add card's Step 2. */
+const paperCloth=i=>{try{return COLORS[primaryCol(i)]?colOf(i):'#5d6478'}catch{return '#5d6478'}};
+const PAPER_CAM='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
+const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--cloth:${cloth}"><i></i></span>`;
+  return `<div class="wbsteps"><button type="button" class="wbstcard" onclick="paperTip()" aria-label="True color in 3 steps: lay white paper along one edge, tap the paper on screen, take the photo. Open tips.">
+<span class="hd" aria-hidden="true"><span class="eb">True color in 3 steps</span><span class="more">Tips ›</span></span>
+<span class="ol" aria-hidden="true"><span class="li"><span class="n"><b>1</b>${pic('nobox noring')}</span>Paper on an edge</span><span class="arr">›</span>
+<span class="li"><span class="n"><b>2</b>${pic('')}<span class="tap"></span></span>Tap the paper</span><span class="arr">›</span>
+<span class="li"><span class="n"><b>3</b><span class="cam">${PAPER_CAM}</span></span>Take the photo</span></span></button></div>`};
+const paperHint=i=>paperSteps(paperCloth(i));
 function paperTip(){if(typeof kitOpen==='function')kitOpen([PAPER_CARD])}
-const paperRetake=(id,fn)=>`<label class="linkbtn wbretake">Retake close-up<input type="file" accept="image/*" class="vfile" onchange="${fn}('${id}',this.files[0]);this.value=''"></label>`;
+const paperRetake=(id,fn)=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:`f=>${fn}('${id}',f)`,cloth:paperCloth(items.find(x=>x.id===id)||{})});
 function paperLine(i){if(!i.texture||!TEXTURE_TYPES.includes(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
   return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colours set from it.</small></span></div>`
     :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colours may come out yellower than the cloth.</small>':'No white paper<small>Colours may be off.</small>'}</span>${paperRetake(i.id,'replaceTexture')}</div>`}
@@ -193,7 +203,7 @@ function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history
    of the item sheet's and start.js's: a capturing one on window still ran after them in Chromium), stops them, closes the sheet (‹ first on
    a "New" sheet opened from the list, as its own ‹ does) and puts that entry back, so their flags still hold and the next Back closes the
    page. A step back of the app's own (itemBack, appPend) passes untouched. */
-function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof appPend!=='undefined'&&appPend))return;
+function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof cuOpen!=='undefined'&&cuOpen)||(typeof appPend!=='undefined'&&appPend))return;
   e.stopImmediatePropagation();const had=itemHist||(typeof appHist!=='undefined'&&appHist);
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();
   if(had)try{history.pushState({cp:1},'')}catch{}}

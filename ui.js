@@ -33,6 +33,51 @@ function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)as
 <div class="ask-btns">${o.cancel?`<button type="button" id="ask-cancel" onclick="askAnswer(false)">${uiEsc(o.cancel)}</button>`:''}<button type="button" id="ask-ok" class="${o.danger?'ask-danger':'pri'}" onclick="askAnswer(true)">${uiEsc(o.ok)}</button></div>`;
   return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:typeof appBorrow==='function'?appBorrow('ask'):''};b.classList.add('on');s.classList.add('on');
     const f=s.querySelector(o.danger&&o.cancel?'#ask-cancel':'#ask-ok');if(f)f.focus({preventScroll:true})})}
+/* ---- the close-up chooser (2026-11-15, closeup-chooser-mockups variant A, the owner's choice): a close-up button went straight to the
+   phone's own picture picker, with no clear way back out. On a touch screen it now opens a sheet from the bottom in the questions' style:
+   the cloth-and-white-paper drawing, Take close-up (the camera: capture="environment"), Choose from photos, Remove close-up (a quiet red
+   line, when there is one) and Cancel. Its two choices are labels around their file inputs, so the person's own tap opens the camera or the
+   photos (iPhone needs a tap; a click from code can be blocked). Cancel, a tap outside (not in the first ASK_SETTLE ms), Escape and the
+   phone's Back close it with nothing changed. Without a touch screen (pointer: fine) capture does nothing, so the button stays today's file
+   window, and Remove stays a button of its own.
+   closeupBtn({label, cls, mode:'add'|'replace'|'retake', file:'f=>…', remove:'…'|'', cloth}) -> the button's HTML (file and remove are
+   code, run when chosen, as the inline handlers around them) ---- */
+const CU_COPY={add:['Fabric close-up','Hold the camera close so the weave fills the frame.'],
+  replace:['Replace close-up','The new close-up takes the place of the one you have.'],
+  retake:['Retake close-up','Lay white paper along one edge this time, so the colors come out true.']};
+const CU_CAM='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
+const CU_LIB='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M20.5 16l-5-5L6 19.5"/></svg>';
+const cuTouch=()=>{try{return matchMedia('(pointer: coarse)').matches}catch{return false}};
+let cuOpen=null;   // the chooser on screen: {o, at, last (what had the focus), was (whose Back entry it borrowed)}
+function closeupBtn(o){
+  if(!cuTouch())return `<label class="${o.cls}">${o.label}<input type="file" accept="image/*" class="vfile" onchange="(${o.file})(this.files[0]);this.value=''"></label>`;
+  return `<button type="button" class="${o.cls} cubtn" aria-haspopup="dialog" onclick="closeupPick({mode:'${o.mode}',cloth:'${o.cloth||''}',file:${o.file}${o.remove?`,remove:()=>{${o.remove}}`:''}})">${o.label}</button>`}
+function cuEls(){let b=document.querySelector('#cu-backdrop'),s=document.querySelector('#cu-sheet');
+  if(!s){b=document.createElement('div');b.id='cu-backdrop';b.onclick=e=>{if(e.isTrusted&&cuOpen&&performance.now()-cuOpen.at<ASK_SETTLE)return;closeupClose()};
+    s=document.createElement('div');s.id='cu-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','cu-title');s.setAttribute('aria-describedby','cu-sub');s.tabIndex=-1;
+    document.body.append(b,s)}
+  return {b,s}}
+function closeupPick(o){if(cuOpen)closeupClose();const c=CU_COPY[o.mode]||CU_COPY.add,{b,s}=cuEls(),cloth=/^#[0-9a-f]{3,8}$/i.test(o.cloth||'')?o.cloth:'#5d6478';
+  s.innerHTML=`<div class="cu-head"><span class="wbpic cu-pic" style="--cloth:${cloth}" aria-hidden="true"><i></i></span><div><p class="cu-title" id="cu-title">${c[0]}</p><p class="cu-sub" id="cu-sub">${c[1]}</p></div></div>
+<label class="cu-btn pri">${CU_CAM}<span>Take close-up</span><input type="file" accept="image/*" capture="environment" class="vfile" id="cu-take"></label>
+${o.mode==='retake'?'':'<p class="cu-tip">Lay white paper along one edge, then tap the paper on screen.</p>'}<label class="cu-btn">${CU_LIB}<span>Choose from photos</span><input type="file" accept="image/*" class="vfile" id="cu-lib"></label>
+${o.remove?'<button type="button" class="cu-rm" id="cu-rm">Remove close-up</button>':''}<button type="button" class="cu-cancel" id="cu-cancel">Cancel</button>`;
+  for(const inp of s.querySelectorAll('input[type=file]'))inp.onchange=()=>{const f=inp.files&&inp.files[0];inp.value='';closeupClose();if(f&&o.file)o.file(f)};   // the same handler the button had (addTexture, replaceTexture, cnRetake)
+  const rm=s.querySelector('#cu-rm');if(rm)rm.onclick=()=>{closeupClose();o.remove()};
+  s.querySelector('#cu-cancel').onclick=()=>closeupClose();
+  cuOpen={o,at:performance.now(),last:document.activeElement,was:typeof appBorrow==='function'?appBorrow('cu'):''};b.classList.add('on');s.classList.add('on');layerInert();
+  try{s.querySelector('#cu-take').focus({preventScroll:true})}catch{}}
+/* fromBack: the phone's Back closed it: its history entry is gone already (as askAnswer) */
+function closeupClose(fromBack){const a=cuOpen;if(!a)return;cuOpen=null;const {b,s}=cuEls();b.classList.remove('on');s.classList.remove('on');layerInert();
+  if(typeof appGiveBack==='function'){if(!fromBack)appGiveBack('cu',a.was);else if(a.was)appPush(a.was)}
+  try{if(a.last&&a.last.isConnected&&!a.last.closest('[inert]'))a.last.focus({preventScroll:true})}catch{}}
+function closeupBack(){if(cuOpen)closeupClose(true)}
+/* Escape closes it; Tab stays inside it (ahead of the item sheet's and the colour sheet's own keys) */
+window.addEventListener('keydown',e=>{if(!cuOpen||(e.key!=='Escape'&&e.key!=='Tab'))return;e.preventDefault();e.stopImmediatePropagation();
+  if(e.key==='Escape'){closeupClose();return}
+  const f=[...document.querySelectorAll('#cu-sheet input,#cu-sheet button')],at=f.indexOf(document.activeElement);if(!f.length)return;
+  f[e.shiftKey?(at<=0?f.length-1:at-1):(at<0||at===f.length-1?0:at+1)].focus()},true);
+
 /* a notice: nothing to answer, so a toast, kept up long enough to read (about 15 characters a second, 4 to 9 seconds) */
 function tell(message,ms){if(typeof toast==='function')toast(String(message),ms||Math.min(9000,Math.max(4000,String(message).length*70)))}
 
@@ -42,7 +87,7 @@ function tell(message,ms){if(typeof toast==='function')toast(String(message),ms|
    Shift+Tab go round inside the top one; Escape closes Settings and the picker (What to buy, the item sheet, the colour sheet and a
    question have their own) ---- */
 const layerFrom=new Map();   // dialog -> what had the focus when it opened
-const LAYER_Q='#ask-sheet.on,#col-sheet.on,#pick-sheet.on,#shop-sheet.on';
+const LAYER_Q='#ask-sheet.on,#cu-sheet.on,#col-sheet.on,#pick-sheet.on,#shop-sheet.on';
 function layerUp(){const l=[...document.querySelectorAll(LAYER_Q)];if(typeof settingsOpen==='function'&&settingsOpen())l.push(document.querySelector('#settings-modal'));
   const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}   // the top one first (by z-index: questions, colour sheet, sheets, Settings, item sheet)
 function layerInert(){const on=layerUp().length>0||!!document.querySelector('#setup.on,#nostore');

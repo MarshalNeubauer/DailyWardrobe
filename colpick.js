@@ -243,7 +243,7 @@ const cnHasClose=it=>!!(colPick&&colPick.src!=='s'&&it&&it.texture);
 function cnPaperDefault(nc){const it=colTarget();if(!cnHasClose(it))return;const set=r=>{if(!nc.closeSet&&nc.kind==='colour')nc.closeOn=!!(r&&r.ref)};const r=paperNow(it);
   if(r){set(r);return}paperOf(it).then(r=>{if(!colPick||colPick.newc!==nc||!r)return;set(r);renderColPick(true)})}
 function cnToggleClose(){const nc=colPick&&colPick.newc;if(!nc)return;nc.closeOn=!nc.closeOn;nc.closeSet=true;renderColPick(true)}
-const cnRetakeHtml=()=>colPick&&colPick.src==='e'?` <label class="linkbtn wbretake">Retake close-up<input type="file" accept="image/*" class="vfile" onchange="cnRetake(this.files[0]);this.value=''"></label>`:'';
+const cnRetakeHtml=()=>colPick&&colPick.src==='e'?' '+closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:'f=>cnRetake(f)',cloth:paperCloth(colTarget()||{})}):'';   // the close-up chooser on a touch screen (ui.js)
 async function cnRetake(f){const nc=colPick&&colPick.newc;if(!nc||colPick.src!=='e'||!f)return;const id=colPick.ref;await replaceTexture(id,f);
   if(!colPick||colPick.newc!==nc)return;nc.closeSet=false;await paperOf(colTarget());if(!colPick||colPick.newc!==nc)return;cnPaperDefault(nc);renderColPick(true)}
 function cnPaperLine(kind){const it=colTarget();if(!cnHasClose(it))return '';const r=paperNow(it);if(!r)return '';

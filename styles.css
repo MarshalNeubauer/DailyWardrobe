@@ -1064,11 +1064,44 @@ body.nocon .conn-only,.connhide{display:none!important}
 .custadd{display:flex;gap:8px;margin:10px 0 0}.custadd button{flex:1;min-height:44px;border-radius:12px;border:1px dashed var(--mut);background:transparent;color:var(--acc-ink);font:inherit;font-weight:600;font-size:0.875rem}
 .custrow .msw.pat{overflow:hidden}.custrow .msw.pat svg{width:100%;height:100%;display:block}
 /* ---- white paper in the close-up (itemsheet.js paperHint/paperLine, colpick.js cnPaperLine/cnLightNote; photo-wb-mockups A + 04-10, 2026-11-15) ---- */
-.wbhint{display:flex;align-items:flex-start;gap:12px;margin:12px 2px 2px}
-.wbhint p{flex:1 1 0;min-width:0;margin:0;font-size:0.78125rem;line-height:1.4;color:var(--mut)}.wbhint p .linkbtn{display:block;min-height:44px;margin:-8px 0 -10px;font-size:0.78125rem;text-align:left;color:var(--acc-ink)}
 /* the drawing: the item's cloth (--cloth) with a twill's diagonal, the dashed middle where the colour is measured, white paper along the bottom edge and the tap on it */
-:is(#item-view,.wbhint) .wbpic{flex:none;position:relative;width:44px;height:44px;min-height:0;margin:0;padding:0;border:1px solid var(--swatch-edge);border-radius:11px;overflow:hidden;cursor:pointer;
+:is(#item-view,.wbsteps,#cu-sheet) .wbpic{flex:none;position:relative;display:block;width:44px;height:44px;min-height:0;margin:0;padding:0;border:1px solid var(--swatch-edge);border-radius:11px;overflow:hidden;box-sizing:border-box;
   background:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 1.5px,transparent 1.5px 5px),repeating-linear-gradient(45deg,rgba(0,0,0,.10) 0 1px,transparent 1px 6px),var(--cloth,#5d6478)}
+/* the hint as "3 tiny steps" (itemsheet.js paperSteps; paper-hint-proposals A, 2026-11-15): one button, as tall as its content (about 108 px) */
+.wbsteps{margin:12px 0 2px}.texslot .wbsteps{margin:2px 0 4px}
+:is(#item-view,#add) .wbstcard{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;min-height:44px;margin:0;padding:10px 12px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);
+  font:inherit;font-size:0.8125rem;font-weight:400;line-height:1.35;text-align:left;justify-content:flex-start;cursor:pointer;box-sizing:border-box}
+.wbstcard .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.wbstcard .eb{font-size:0.71875rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--acc-ink)}
+.wbstcard .more{flex:none;font-size:0.78125rem;font-weight:600;color:var(--acc-ink)}
+.wbstcard .ol{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:start}
+.wbstcard .li{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;text-align:center;font-size:0.75rem;line-height:1.2;color:var(--ink)}
+.wbstcard .arr{align-self:center;margin-top:-18px;color:var(--mut);font-size:1rem}
+.wbstcard .n{position:relative}
+.wbstcard .n b{position:absolute;z-index:2;left:-7px;top:-7px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:0.6875rem;line-height:18px;text-align:center;font-weight:700}
+:is(#item-view,#add) .wbstcard .wbpic{width:40px;height:40px;border-radius:10px}
+.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i{display:none}
+.wbstcard .tap{position:absolute;z-index:2;left:50%;bottom:calc(14% - 8px);width:16px;height:16px;margin-left:-8px;box-sizing:border-box;border-radius:50%;background:rgba(255,255,255,.55);border:1.5px solid rgba(16,24,32,.55)}
+.wbstcard .cam{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--ink);color:var(--bg)}
+/* the close-up chooser (ui.js closeupPick; closeup-chooser-mockups variant A, 2026-11-15): the questions' sheet (#ask-sheet), under a question and the toast, over the colour sheet */
+#cu-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2010;display:none}#cu-backdrop.on{display:block}
+#cu-sheet{position:fixed;left:0;right:0;bottom:0;z-index:2011;background:var(--card);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;box-sizing:border-box;
+  max-height:86vh;overflow:auto;padding:20px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.35);transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);visibility:hidden;max-width:520px;margin:0 auto;outline:0;overscroll-behavior:contain;font-size:0.9375rem}
+#cu-sheet.on{transform:none;visibility:visible}
+#cu-sheet p{margin:0}
+.cu-head{display:flex;align-items:center;gap:12px;margin:0 0 16px}
+#cu-sheet .wbpic.cu-pic{width:52px;height:52px;border-radius:12px}
+.cu-title{font-size:1.125rem;font-weight:700;line-height:1.3}
+#cu-sheet .cu-sub{margin-top:3px;font-size:0.875rem;line-height:1.45;color:var(--mut)}
+.cu-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin:0 0 8px;padding:0 16px;box-sizing:border-box;
+  border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1rem;font-weight:600;cursor:pointer}
+.cu-btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink);margin-bottom:6px}
+.cu-btn svg{flex:none}
+#cu-sheet .cu-tip{margin:0 2px 14px;font-size:0.8125rem;line-height:1.4;color:var(--mut);text-align:center}
+.cu-rm{display:block;width:100%;min-height:44px;margin:2px 0 2px;padding:0;border:0;background:none;color:var(--danger);font:inherit;font-size:0.9375rem;font-weight:600;cursor:pointer}
+.cu-cancel{display:block;width:100%;min-height:50px;margin:8px 0 0;padding:0;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:1rem;font-weight:600;cursor:pointer}
+.cu-rm+.cu-cancel{margin-top:2px}
+@media(prefers-reduced-motion:reduce){#cu-sheet{transition:none}}
 .wbpic::before{content:'';position:absolute;left:21%;right:21%;top:12%;height:44%;border:1.5px dashed #efb446;border-radius:2px}
 .wbpic::after{content:'';position:absolute;left:0;right:0;bottom:0;height:28%;background:#f6f5f1;box-shadow:0 -1px 0 rgba(0,0,0,.2)}
 .wbpic i{position:absolute;z-index:1;left:50%;bottom:14%;width:10px;height:10px;margin:0 0 -5px -5px;border:2px solid var(--acc);border-radius:50%;box-shadow:0 0 0 2px rgba(239,180,70,.28)}
@@ -1077,7 +1110,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .wbst.ok .ic{background:#2f7d4f;color:#fff}.wbst.no .ic{border:1.5px solid var(--acc);color:var(--acc-ink)}
 .wbst .tx{flex:1 1 12rem;min-width:0}.wbst .tx small{display:block;margin-top:1px;font-size:0.75rem;color:var(--mut)}
 .wbst .wbretake{font-size:0.8125rem;color:var(--acc-ink)}
-.wbretake::after{content:'';position:absolute;inset:-9px -4px}
+.wbretake{position:relative}.wbretake::after{content:'';position:absolute;inset:-9px -4px}
 .cnask .wbst{align-items:flex-start;flex-wrap:nowrap;margin:0 0 6px;padding:0 0 0 32px;border:0;background:none;font-size:0.78125rem;color:var(--mut)}
 .cnask .wbst .ic{width:18px;height:18px;margin-top:1px;font-size:0.625rem}
 .cnwarm{display:flex;gap:8px;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--acc) 15%,transparent);font-size:0.8125rem;line-height:1.4;color:var(--ink)}

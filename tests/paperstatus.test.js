@@ -27,20 +27,20 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(F=>{rememberRole({role:'owner'});items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:F.photo,texture:F.plain,added:1,name:'Mink suit'},
       {id:'k1',type:'shoes',primaryColor:'black',leather:'calf',photo:F.photo,added:2}];flt='all';editing=null;show('wardrobe');openItem('m1')},F);await settle(p,400);
     await p.click('#item-view .ivphbtn');await settle(p,300);
-    // ---- the hint and its drawing
-    e=await p.evaluate(()=>{const h=document.querySelector('#item-view .wbhint'),b=h&&h.querySelector('.wbpic'),r=b&&b.getBoundingClientRect();
-      return {text:h&&h.textContent,w:r&&Math.round(r.width),h:r&&Math.round(r.height),cloth:b&&b.style.getPropertyValue('--cloth'),tips:!!(h&&h.querySelector('.linkbtn')),line:!!document.querySelector('#ivwb')}});
-    ok(/For true colours, lay white paper along one edge of the close-up and tap the paper on the screen before you take it\./.test(e.text)&&e.tips&&/Tips for a good close-up/.test(e.text),'under the close-up buttons: the one-line hint and "Tips for a good close-up"');
-    ok(e.w>=40&&e.w<=56&&e.h===e.w&&/^#/.test(e.cloth),`beside it a small drawing of the cloth in the item's colour (${e.w}×${e.h}, ${e.cloth})`);
+    // ---- the hint: "True color in 3 steps", one button with three small drawings
+    e=await p.evaluate(()=>{const h=document.querySelector('#item-view .wbstcard'),b=h&&h.querySelector('.wbpic'),r=b&&b.getBoundingClientRect(),cr=h&&h.getBoundingClientRect();
+      return {tag:h&&h.tagName,text:h&&[...h.querySelectorAll('.eb,.more,.li,.arr')].map(x=>x.textContent.replace(/\s+/g,' ').trim()).join(' '),hh:cr&&Math.round(cr.height),pics:h&&h.querySelectorAll('.wbpic').length,cam:!!(h&&h.querySelector('.cam svg')),tap:!!(h&&h.querySelector('.tap')),
+        w:r&&Math.round(r.width),h:r&&Math.round(r.height),cloth:b&&b.style.getPropertyValue('--cloth'),old:!!document.querySelector('#item-view .wbhint'),line:!!document.querySelector('#ivwb')}});
+    ok(e.tag==='BUTTON'&&/^True color in 3 steps Tips › 1Paper on an edge › 2Tap the paper › 3Take the photo$/.test(e.text)&&e.hh>=44&&e.hh<=130&&!e.old,`under the close-up buttons: the 3-step card, one button (${JSON.stringify(e)})`);
+    ok(e.pics===2&&e.cam&&e.tap&&e.w===40&&e.h===e.w&&/^#/.test(e.cloth),`its drawings: the cloth in the item's colour twice (the second with the tap), then a camera (${e.w}×${e.h}, ${e.cloth})`);
     ok(!e.line,'no paper line before a close-up is taken here');
-    await p.click('#item-view .wbpic');await p.waitForSelector('#kitsheet.on');
+    await p.click('#item-view .wbstcard');await p.waitForSelector('#kitsheet.on');
     e=await p.evaluate(()=>({t:document.querySelector('#kit-title').textContent,b:document.querySelector('#kitsheet .kit-body').textContent,svg:!!document.querySelector('#kitsheet .kit-pic svg')}));
-    ok(e.t==='White paper, true colours'&&/about a fifth of the picture/.test(e.b)&&/even under warm lamps/.test(e.b)&&e.svg,'tapping the drawing opens the short tip with its picture');
+    ok(e.t==='White paper, true colours'&&/about a fifth of the picture/.test(e.b)&&/even under warm lamps/.test(e.b)&&e.svg,'tapping the card opens the short tip with its picture');
+    await p.click('#kitsheet .kit-body .linkbtn');await settle(p,300);await p.waitForSelector('#kitsheet.on');
+    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='A good close-up'),'the tip\'s "Tips for a good close-up" opens the guide');
     await p.click('#kitsheet .kit-x');await settle(p,200);
-    await p.click('#item-view .wbhint .linkbtn');await p.waitForSelector('#kitsheet.on');
-    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='A good close-up'),'"Tips for a good close-up" opens the guide');
-    await p.click('#kitsheet .kit-x');await settle(p,200);
-    ok(await p.evaluate(()=>{openItem('k1');const none=!document.querySelector('#item-view .wbhint');openItem('m1');return none}),'no hint for an item without a close-up (shoes)');
+    ok(await p.evaluate(()=>{openItem('k1');const none=!document.querySelector('#item-view .wbstcard');openItem('m1');return none}),'no hint for an item without a close-up (shoes)');
     await settle(p,300);if(!await p.evaluate(()=>phEdit.open))await p.click('#item-view .ivphbtn');
     // ---- after Replace close-up
     const replace=async(name,u,sel='#item-view .phtools label:has(.vfile[onchange*=replaceTexture]) input')=>{const h=await p.$(sel);await p.evaluate(()=>{const l=document.querySelector('#ivwb');if(l)l.remove();phEdit.paper=null});
@@ -62,9 +62,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- 390 px, both themes
     for(const theme of ['light','dark']){
       await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await replace('t-'+theme+'.jpg',F.plain);
-      e=await p.evaluate(()=>{const v=document.querySelector('#item-view'),b=document.querySelector('#item-view .wbpic'),l=document.querySelector('#ivwb'),cs=getComputedStyle(b),ls=getComputedStyle(l),hint=getComputedStyle(document.querySelector('#item-view .wbhint p'));
-        return {fit:document.documentElement.scrollWidth<=390&&v.scrollWidth<=v.clientWidth+1,img:/gradient/.test(cs.backgroundImage),edge:cs.borderTopColor,lineBg:ls.backgroundColor,card:getComputedStyle(document.querySelector('#item-view .ivtags')).backgroundColor,mut:hint.color,vis:b.offsetWidth>0&&l.offsetHeight>0}});
-      ok(e.fit&&e.img&&e.vis&&e.lineBg===e.card,`${theme}: the hint, its drawing and the paper line show at 390 px without sideways scroll (${JSON.stringify(e)})`)}
+      e=await p.evaluate(()=>{const v=document.querySelector('#item-view'),b=document.querySelector('#item-view .wbstcard .wbpic'),l=document.querySelector('#ivwb'),cs=getComputedStyle(b),ls=getComputedStyle(l),c=document.querySelector('#item-view .wbstcard'),cr=c.getBoundingClientRect(),
+        eb=getComputedStyle(c.querySelector('.eb')),cam=getComputedStyle(c.querySelector('.cam'));
+        return {fit:document.documentElement.scrollWidth<=390&&v.scrollWidth<=v.clientWidth+1&&cr.right<=390,img:/gradient/.test(cs.backgroundImage),lineBg:ls.backgroundColor,stBg:getComputedStyle(c).backgroundColor,card:getComputedStyle(document.querySelector('#item-view .ivtags')).backgroundColor,
+          eb:eb.color,camBg:cam.backgroundColor,camInk:cam.color,vis:b.offsetWidth>0&&l.offsetHeight>0&&cr.height>=44}});
+      ok(e.fit&&e.img&&e.vis&&e.lineBg===e.card&&e.stBg===e.card&&e.camBg!==e.camInk,`${theme}: the 3-step card, its drawings and the paper line show at 390 px without sideways scroll (${JSON.stringify(e)})`)}
     await p.evaluate(()=>{delete document.documentElement.dataset.theme});
     ok(!errs.length,'no page errors ('+errs.join(' | ')+')');
   }finally{await browser.close()}
