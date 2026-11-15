@@ -10,7 +10,7 @@
    (An ES module of worker.js, the entry.) */
 import { COLOR_HEX, COLOR_LIST, HEX_RE, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, lightText, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
-import { spend, unspend } from './people.js';
+import { plainFor, spend, unspend, utcDay } from './people.js';
 
 const DESCRIBE_MODEL = 'claude-sonnet-5-5';
 const DESC_MAX = 120, DESC_BODY_MAX = 16e6;   // the description's characters; the body (an optional close-up up to 15 MB)
@@ -276,7 +276,10 @@ function ownerText(what, own) {
 /* the owner's words: trimmed, no < or > (they can't close the wrapper), spaces collapsed; '' when empty or over DESC_MAX */
 const cleanDesc = t => { const s = String(t ?? '').replace(/[<>]/g, ' ').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim(); return s && s.length <= DESC_MAX ? s : ''; };
 const colWord = (k, own) => { const o = own.colors.find(c => c.key === k); return o ? `${o.name} (${o.hex})` : COLOR_HEX[k] ? `${DISPLAY[k] || k} (${COLOR_HEX[k]})` : null; };
-function perCall(b, own, desc, closeup) {
+/* what:'both' with no words (the app's "Read color and texture from close-up"): each half reads the close-up itself */
+const NO_TEXT = 'the cloth in the close-up';
+const NO_TEXT_LINE = 'The owner wrote no description: read it from the close-up itself (the description below only stands in for the words).';
+function perCall(b, own, desc, closeup, noText) {
   const t = TYPE_LIST.includes(b.type) ? b.type : 'suit', cols = b.colours && typeof b.colours === 'object' ? b.colours : {};
   const lines = [];
   if (b.what === 'colour') {
@@ -289,6 +292,7 @@ function perCall(b, own, desc, closeup) {
   }
   if (closeup) lines.unshift(b.what === 'colour' ? 'The photo is a close-up of this item\'s cloth. Use it to judge the shade; the description says which color in it is meant.' : 'The photo is a close-up of this item\'s cloth. Draw the look from it; the description says what the owner calls it.');
   if (closeup) lines.push(lightText(wbOf(b)));
+  if (noText) lines.push(NO_TEXT_LINE);
   lines.push(`<description>${desc}</description>`);
   return lines.join('\n');
 }
@@ -369,7 +373,7 @@ function cleanDescribePattern(a, b, own) {
     why: say(a.why, 200), ask: null } };
 }
 
-/* POST /describe {what:'colour'|'pattern', text, type, field?, colours?, pattern?, custom?, closeup?, wb?} */
+/* POST /describe {what:'colour'|'pattern'|'both', text, type, field?, colours?, pattern?, custom?, closeup?, wb?} */
 async function handleDescribe(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Describing a color or pattern needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
   if (+(req.headers.get('content-length') || 0) > DESC_BODY_MAX) return json({ error: 'too large', detail: 'That close-up is too large (over 15 MB).' }, 413);
@@ -377,12 +381,13 @@ async function handleDescribe(req, env, json, who) {
   if (got.over) return json({ error: 'too large', detail: 'That close-up is too large (over 15 MB).' }, 413);
   let b; try { b = JSON.parse(new TextDecoder().decode(got.bytes)); } catch { return json({ error: 'bad json' }, 400); }
   if (!b || typeof b !== 'object') return json({ error: 'bad json' }, 400);
-  if (b.what !== 'colour' && b.what !== 'pattern') return json({ error: 'bad request', detail: 'Say whether a color or a pattern is described.' }, 400);
+  if (b.what !== 'colour' && b.what !== 'pattern' && b.what !== 'both') return json({ error: 'bad request', detail: 'Say whether a color or a pattern is described.' }, 400);
   if (!TYPE_LIST.includes(b.type)) return json({ error: 'bad request', detail: 'Unknown kind of item.' }, 400);
-  if (b.what === 'pattern' && !PATTERN_BY_TYPE[b.type]) return json({ error: 'bad request', detail: 'That kind of item has no patterns.' }, 400);
+  if (b.what !== 'colour' && !PATTERN_BY_TYPE[b.type]) return json({ error: 'bad request', detail: 'That kind of item has no patterns.' }, 400);
+  const cm = String(b.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
+  if (b.what === 'both') return describeBoth(req, env, json, who, b, cm);
   const desc = cleanDesc(b.text);
   if (!desc) return json({ error: 'bad request', detail: `Describe it in 1 to ${DESC_MAX} characters.` }, 400);
-  const cm = String(b.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   const own = ownLists(b.custom);
   const over = await spend(env, who, 'describe'); if (over) return json(over.body, over.status);
   const colour = b.what === 'colour', T = descTables();
@@ -395,6 +400,43 @@ async function handleDescribe(req, env, json, who) {
   if (out.status !== 200) await unspend(env, who, 'describe');
   console.log(`described a ${b.what}: ${desc.length} characters, ${out.body.kind || out.status}`);
   return json(out.status === 200 ? { ...out.body, model: c.body.model } : out.body, out.status);
+}
+
+/* the "Read color and texture from close-up" message when a tester has fewer than the 2 lookups a 'both' takes */
+const BOTH_SHORT = 'Reading color and texture takes 2 lookups and you have 1 left today. They start again at midnight UTC.';
+/* POST /describe {what:'both', text?, type, colours, pattern, custom, closeup, wb}: the colour and the pattern call side by side,
+   each with its own cleaner, rules and cached prefix -> {colour, pattern, model}, a half that failed as {error, detail, status}.
+   A tester's press counts 2 lookups; each half that fails gives 1 back; both failing answers like a single lookup's failure. */
+async function describeBoth(req, env, json, who, b, cm) {
+  const typed = cleanDesc(b.text);
+  if (!typed && !cm) return json({ error: 'bad request', detail: `Send the close-up, or describe it in 1 to ${DESC_MAX} characters.` }, 400);
+  const desc = typed || NO_TEXT, own = ownLists(b.custom);
+  const over = await spend(env, who, 'describe', utcDay(), 2);
+  if (over) {
+    if (over.status === 429 && !over.body.all && over.body.cap - over.body.used === 1) return json({ ...over.body, message: BOTH_SHORT, detail: BOTH_SHORT, short: true }, 429);
+    return json(over.body, over.status);
+  }
+  const T = descTables(), img = cm ? [{ type: 'image', source: { type: 'base64', media_type: cm[1], data: cm[2] } }] : [];
+  const half = async what => {
+    const colour = what === 'colour', bb = { ...b, what, field: 'primary' };
+    try {
+      const c = await claudeCall(env, { model: env.CLAUDE_DESCRIBE_MODEL || DESCRIBE_MODEL, system: colour ? T.colour : T.pattern, owner: ownerText(what, own),
+        content: [...img, { type: 'text', text: perCall(bb, own, desc, !!cm, !typed) }],
+        schema: colour ? colourSchema(own.colors) : patternSchema(own.patterns), effort: colour ? 'low' : 'medium', maxTokens: colour ? 4000 : 8000,
+        signal: req.signal, what: 'described' });
+      if (c.status !== 200) return { fail: true, status: c.status, body: c.body };
+      const out = colour ? cleanDescribeColour(c.body, bb, own, desc) : cleanDescribePattern(c.body, bb, own);
+      return out.status === 200 ? { body: out.body, model: c.body.model } : { fail: true, status: out.status, body: out.body };
+    } catch (e) { return { fail: true, status: 502, body: { error: 'ai', detail: 'Claude did not answer: ' + String(e && e.message || e).slice(0, 120) } }; }
+  };
+  const [co, pa] = await Promise.all([half('colour'), half('pattern')]);
+  const failed = [co, pa].filter(x => x.fail).length;
+  if (failed) await unspend(env, who, 'describe', utcDay(), failed);
+  console.log(`described both: ${typed ? typed.length + ' characters' : 'no words'}, colour ${co.fail ? co.status : co.body.kind}, pattern ${pa.fail ? pa.status : pa.body.kind}`);
+  if (failed === 2) return json(co.body, co.status);
+  const err = x => { const e = { error: x.body && x.body.error || 'failed', detail: x.body && (x.body.detail || x.body.message) || '', status: x.status };
+    return who.caps ? plainFor(e, '/describe') : e; };
+  return json({ colour: co.fail ? err(co) : co.body, pattern: pa.fail ? err(pa) : pa.body, model: (co.fail ? pa : co).model, lookups: who.caps ? 2 - failed : 0 });
 }
 
 export { DESCRIBE_MODEL, DESC_MAX, baseFor, cleanDescribeColour, cleanDescribePattern, cleanLook, descTables, handleDescribe };

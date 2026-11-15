@@ -115,6 +115,60 @@ module.exports=async({ok,ROOT})=>{
     sent=[];for(let i=0;i<50;i++)await call({what:'colour',text:'a',type:'tie'});
     me=await J(await call(null,'owner',env,'GET','me'));
     ok(sent.length===50&&me.caps===null&&!me.used.describe,'the owner has no cap and is not counted');
+    // ---- what:'both' (the app's "Read color and texture from close-up"): the two calls side by side, 2 lookups for a tester
+    {const CU='data:image/jpeg;base64,'+Buffer.from('cloth').toString('base64'),isCol=q=>q.output_config.effort==='low';
+      const both=(x={})=>({what:'both',type:'suit',colours:{main:'taupe'},pattern:'solid',closeup:CU,wb:true,custom,...x});
+      reply=q=>[200,isCol(q)?COL:PAT];sent=[];
+      r=await J(await call(both()));
+      const cq=sent.find(s=>isCol(s.body)),pq=sent.find(s=>!isCol(s.body)),tx=s=>s.body.messages[0].content.map(c=>c.text||'').join('\n');
+      ok(r.s===200&&sent.length===2&&cq&&pq,'both: one colour call and one pattern call');
+      ok(cq.body.max_tokens===4000&&pq.body.max_tokens===8000&&/Color keys/.test(cq.body.system[0].text)&&/Pattern keys/.test(pq.body.system[0].text),'both: each half keeps its own effort, tokens and cached tables');
+      ok(sent.every(s=>s.body.messages[0].content[0].type==='image'&&s.body.messages[0].content[0].source.data===Buffer.from('cloth').toString('base64')),'both: the close-up goes with each half');
+      ok(sent.every(s=>/<description>the cloth in the close-up<\/description>/.test(tx(s))&&/wrote no description: read it from the close-up itself/.test(tx(s))),'both with no words: a neutral stand-in description and a line to read the close-up itself');
+      ok(/its main color/.test(tx(cq))&&/Its colors: main/.test(tx(pq))&&/The pattern now: solid/.test(tx(pq)),'both: the colour half asks for the main colour, the pattern half gets the colours and pattern');
+      ok(r.colour.hex==='#7a3b47'&&r.colour.dE>0&&r.pattern.look.layout==='texture'&&r.pattern.plansAs==='nailhead'&&r.model==='claude-sonnet-5-5','both: {colour, pattern} cleaned as the single answers are');
+      sent=[];await call({what:'colour',text:'faded burgundy',type:'tie',closeup:CU});
+      ok(!/wrote no description/.test(tx(sent[0]))&&/<description>faded burgundy<\/description>/.test(tx(sent[0])),'a single colour lookup is unchanged (no stand-in line)');
+      sent=[];r=await J(await call(both({text:'mink twill'})));
+      ok(sent.every(s=>/<description>mink twill<\/description>/.test(tx(s))&&!/wrote no description/.test(tx(s))),'both with words: the words go to each half');
+      sent=[];
+      for(const [x,why] of [[{closeup:undefined},'no words and no close-up'],[{type:'shoes'},'a type without patterns'],[{type:'hat'},'an unknown type']]){r=await J(await call(both(x)));ok(r.s===400,'both refused before Claude: '+why)}
+      ok(sent.length===0,'nothing sent for a refused both');
+      reply=q=>isCol(q)?[200,COL]:[500,{type:'error',error:{type:'api_error',message:'Internal error'}}];
+      r=await J(await call(both()));
+      ok(r.s===200&&r.colour.hex==='#7a3b47'&&r.pattern.error&&r.pattern.status===502,'one half failing: the other is still given, the failed one as {error, status}');
+      reply=q=>isCol(q)?[200,{...COL,hex:'nope'}]:[200,PAT];
+      r=await J(await call(both()));
+      ok(r.s===200&&r.colour.status===422&&/no usable shade/.test(r.colour.detail)&&r.pattern.name==='hopsack','a half its cleaner refuses (422) fails alone');
+      reply=()=>[500,{type:'error',error:{type:'api_error',message:'Internal error'}}];
+      r=await J(await call(both()));
+      ok(r.s===502&&!r.colour,'both halves failing answers as one failed lookup');
+      // the tester's count
+      const T=await J(await call({name:'Bo',caps:{describe:5}},'owner',env,'POST','invites'));{const k='invite:'+sha(T.code),rec=JSON.parse(store.get(k));rec.created-=8*86400000;store.set(k,JSON.stringify(rec))}
+      const used=async()=>(await J(await call(null,T.code,env,'GET','me'))).used.describe;
+      reply=q=>[200,isCol(q)?COL:PAT];r=await J(await call(both(),T.code));
+      ok(r.s===200&&r.lookups===2&&await used()===2,'a tester\'s both counts 2 lookups');
+      reply=q=>isCol(q)?[200,COL]:[500,{type:'error',error:{type:'api_error',message:'Internal error'}}];
+      r=await J(await call(both(),T.code));
+      ok(r.s===200&&r.lookups===1&&await used()===3,'one half failing gives 1 back (3 used)');
+      ok(!/Claude|API/.test(r.pattern.detail||'')&&!/Claude|API/.test(r.pattern.error||''),'a tester reads the failed half in plain words: '+r.pattern.detail);
+      reply=()=>[500,{type:'error',error:{type:'api_error',message:'Internal error'}}];
+      r=await J(await call(both(),T.code));
+      ok(r.s===502&&await used()===3,'both failing gives both back');
+      reply=q=>[200,isCol(q)?COL:PAT];await call({what:'colour',text:'a',type:'tie'},T.code);sent=[];
+      r=await J(await call(both(),T.code));
+      ok(r.s===429&&r.short===true&&r.message==='Reading color and texture takes 2 lookups and you have 1 left today. They start again at midnight UTC.'&&sent.length===0&&await used()===4,'a tester with 1 left: a clear 429 before Claude, nothing counted');
+      r=await J(await call({what:'colour',text:'a',type:'tie'},T.code));
+      ok(r.s===200&&await used()===5,'that last lookup still works for a single colour');
+      const hubs3=new Map(),hub3=name=>{if(!hubs3.has(name)){const st=new Map();hubs3.set(name,new mod.RenderHub({storage:{get:async k=>st.get(k),put:async(k,v)=>{st.set(k,v)},deleteAll:async()=>{st.clear()}}},{}))}return hubs3.get(name)};
+      const e3={...env,RENDER_HUB:{idFromName:x=>x,get:name=>({fetch:(u,init)=>hub3(name).fetch(new Request(u,init))})},TESTER_DAILY_TOTAL:JSON.stringify({describe:3})},A=await J(await call({name:'Al'},'owner',e3,'POST','invites'));
+      reply=q=>[200,isCol(q)?COL:PAT];
+      const a1=await J(await call(both(),A.code,e3)),a2=await J(await call(both(),A.code,e3));
+      const au=(await J(await call(null,A.code,e3,'GET','me'))).used.describe;
+      ok(a1.s===200&&a2.s===429&&a2.all===true&&au===2,'the all-testers total counts 2 per both and refuses one that would pass it (tester count back to '+au+')');
+      sent=[];for(let i=0;i<3;i++)await call(both());
+      ok(sent.length===6&&!(await J(await call(null,'owner',env,'GET','me'))).used.describe,'the owner\'s both is never counted or capped');
+    }
     // ---- routing
     ok((await call(null,'owner',env,'GET','describe')).status===405&&(await call({},'owner',env,'POST','describez')).status===404,'GET /describe is 405, /describez 404');
     ok((await call({what:'colour',text:'a',type:'tie'},'owner',{...env,ANTHROPIC_API_KEY:undefined})).status===501,'without the Claude key: 501');
