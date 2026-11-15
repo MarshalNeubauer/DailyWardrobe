@@ -275,6 +275,12 @@ function figureStage(o){
     :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}${ch}</div>`)+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }
+/* the painter's cloth for an item's mannequin is ready (draw.js figCuGet): Today's figure is drawn again with it, only while the day shown
+   still wears that item as its jacket (or trousers with no jacket) and shows the mannequin; with Settings open, once it closes (todayStale) */
+function figCuDone(id){const o=planFor()[key(sel)];if(!o||!((o.top&&o.top.id===id)||(!o.top&&o.bot&&o.bot.id===id)))return;
+  if(settingsOpen()){todayStale=true;return}
+  const t=$('#today'),c=$('#mannequin-container'),svg=c&&c.querySelector(':scope > svg');if(!t||t.hidden||!svg||c.classList.contains('photo'))return;
+  svg.outerHTML=figureSvg(o);applyZoom(false)}
 
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 /* a new calendar day (the app brought back from the background, or left open past midnight): Today moves on to the new day's outfit (or the
