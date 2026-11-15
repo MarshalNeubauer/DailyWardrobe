@@ -287,7 +287,7 @@ const ASM_CM_BG_SHADOW=.22;   // the figure's soft shadow on the wall behind (mo
 /* the masters' manifest (2026-11-14 audit: a master, mask or background uploaded again never reached a device that held it, since a
    photo is downloaded once and kept). `npm run cm-upload` writes one small record, asmCmMfKey(), signed 'asm/cm-manifest {"keys":
    {<key>: <record date>}}', listing every colour-coded record's date. A device reads it once per worker list (asmListGet: every
-   ASM_LIST_MS while the app is open) or once a session without a list; a photo it holds that is older than the manifest says is
+   LIST_MS while the app is open, photos.js workerList) or once a session without a list; a photo it holds that is older than the manifest says is
    dropped and downloaded again, and the dates of a master's records go into its looks' keys (asmCmRev), so the phones and the computer's
    pre-build agree on a look's key whatever copies they hold. Remembered in localStorage.asm_cm_mf, so a restart finds its kept pictures
    before the manifest is read again. No manifest on the worker: the keys are as before and nothing is dropped. */

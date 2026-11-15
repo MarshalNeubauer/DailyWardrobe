@@ -23,6 +23,7 @@ import { FREE_EXTRA, FREE_PAT_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCu
 import { handlePattern } from './worker/pattern.js';
 import { handleFetchImage, readCapped } from './worker/links.js';
 import { handleRender } from './worker/render.js';
+import { noteKvFull } from './worker/items.js';
 import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
@@ -106,7 +107,7 @@ async function serve(req, env, cors, allowed, origin) {
     // the picker's extras and the measurement
     const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA,
       owner: customText(custom) + correctionsText(body.corrections), text: (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured),
-      closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 12000 });
+      closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 12000, signal: req.signal });
     if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
     return json(c.body, c.status);
   }
@@ -143,6 +144,7 @@ export default {
     try { return await serve(req, env, cors, allowed, origin); }
     catch (e) {
       console.log('uncaught error', req.method, new URL(req.url).pathname, e && (e.stack || e.message));
+      if (kvFull(e)) noteKvFull(env);   // item pictures stop before paying for one that can't be kept (worker/items.js)
       if (kvFull(e)) return new Response(JSON.stringify({ error: 'kv-limit', what: new URL(req.url).pathname.endsWith('/sync') ? 'backup' : 'write', message: KV_FULL }), { status: 429, headers: { ...cors, 'content-type': 'application/json' } });
       return new Response(JSON.stringify({ error: 'server', message: SERVER_DOWN, detail: SERVER_DOWN }), { status: 503, headers: { ...cors, 'content-type': 'application/json' } });
     }
