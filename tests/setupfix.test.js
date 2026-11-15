@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     if(init)await p.addInitScript(init);
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return p};
   const step=p=>p.evaluate(()=>{const e=document.querySelector('#su-step');return e?e.dataset.step:null});
-  const next=async(p,want)=>{await p.click('#su-next');await p.waitForFunction(w=>{const e=document.querySelector('#su-step');return e&&e.dataset.step===w},want)};
+  const next=async(p,want)=>{await p.waitForTimeout(400);await p.click('#su-next');await p.waitForFunction(w=>{const e=document.querySelector('#su-step');return e&&e.dataset.step===w},want)};   // (the wait: past setupGoDouble's guard on the last tap)
   const stored=(p,f)=>p.waitForFunction(`(async()=>{const s=await metaGet('settings');return !!s&&(${f})(s)})()`,null,{timeout:10000}).then(()=>true,()=>false);
   try{
     /* ---- iOS cuts the setup off: it comes back on the step it was on, with a vest already chosen kept ---- */

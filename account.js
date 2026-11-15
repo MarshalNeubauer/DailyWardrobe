@@ -86,7 +86,8 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
   acctToast('Connected as '+(r.j.name||'a tester'));
   renderAccountUI();acctLinkDrawn();
   if(window.syncNow)syncNow();
-  if(r.j.role==='tester'&&iosInSafari())setTimeout(homeScreenGuide,1200);
+  // once per phone, not when it was already connected with this code (fix round 2: it covered the app every time a tester tapped his link)
+  if(r.j.role==='tester'&&iosInSafari()&&!(cur&&cur.tok===p.code)&&!homeTold())setTimeout(homeScreenGuide,1200);
   return true}
 /* changes on this phone that no backup has taken (sync.js: the wardrobe's fingerprint differs from the one the last backup agreed on,
    or there was none) -> true/false */
@@ -126,7 +127,9 @@ async function copyInviteLink(){const l=myInviteLink();if(!l)return false;
   catch{const f=document.querySelector('#acct-mylink');if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
 /* (audit 2026-11-15, H12) one explanation, kit.js's (with Copy my invitation link): never over the setup, which has its own Home Screen step */
 function homeScreenGuide(){if(typeof setupShown==='function'&&setupShown())return;if(typeof kit!=='undefined'&&kit)return;
-  if(typeof homeOpen==='function')homeOpen()}
+  if(typeof homeOpen==='function'){homeTold(true);homeOpen()}}
+/* the Home Screen sheet was shown after a link on this phone (localStorage.home_told); About's button still opens it any time */
+function homeTold(set){try{if(set)localStorage.setItem('home_told','1');return localStorage.getItem('home_told')==='1'}catch{return false}}
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
 function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}if(typeof applyRole==='function')applyRole()}

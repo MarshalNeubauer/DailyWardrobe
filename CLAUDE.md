@@ -840,6 +840,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a country whose list can't load becomes the country anyway, with an empty list and `fetched` 0 (retried at the next start), and the message names it; the Days off summary then reads "XX: no holiday list"
 - holiday and day-off dates outside this year show the year (`yearDate`); a past day off is refused, a range starting in the past is added from today (`addDayOff`)
 - city search: asks in the script's language (`cityLang`: Arabic text → `language=ar`), lines that read the same get their district and repeats go (`cityList`), Enter in `#cfg-city` searches; "Use my location" is named by its coordinates (`geoName`)
+- (fix round 2) the holiday list asks Nager.Date for every calendar year of its window (`holYears`, a month back to 13 months ahead): in December and January the window spans three years, and asking only the first and last left out the whole coming year (N6: Sydney planned New Year's Day 2027); `tests/nufix8.test.js`
+- (fix round 2) a country picked in Days off is stored at once with no list (`fetched` 0) before its list is fetched, so a swipe away keeps it and the next start fetches it; while loading the list area is empty under "Loading the public holidays of …"
+- (fix round 2) `toggleDay`, `setDarkShirts` (and setup.js `setupSetDress`, `setupCancel`) save the settings before releasing the week's locks (`clearLocks`), as dress.js `setDress`: tapped then swiped away within ~100 ms, the change was lost
+- (fix round 2) an empty city search clears the last results; a search in another language asks each result again by id in English (`cityEnglish`: Open-Meteo `/v1/get?id=&language=en`), so the stored name is English, with the name typed shown beside it on the button (`alt`, dropped by `setLocation`)
 
 ### `start.js`
 
@@ -966,6 +970,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a link opened or pasted in the tab already showing the app is read (`hashchange`); a link the server couldn't be reached for stays in the address and is tried again on `online` and on coming to the front (`acctRetryLink`); Settings' Connection and the setup's Connection step say so, with the link in the field
 - while a link from the address is checked (`inviteChecking`) Connection, its summary and the setup's Connection and All set steps say "Checking your invitation…"; `acctLinkDrawn()` redraws them, Settings' summaries and Add when the check ends
 - connecting (not switching) with sample pieces on the phone asks nothing and keeps them (re-audit 2026-11-15): the sample is never backed up (sync.js `syncShare`), so it can't reach the person's wardrobe or his other phones; it used to ask "Remove the sample wardrobe first?"
+- (fix round 2) the Home Screen sheet after a link (`homeScreenGuide`) shows once per phone (`homeTold`, `localStorage.home_told`) and never when the phone was already connected with that code: it covered the app every time a tester tapped his link; About's button still opens it
 - a successful link clears `invite_ended`; `loadAccount` marks an ended invitation (`endedAnswer`, sync.js) instead of showing "The server didn’t accept this connection" to a tester; `acctEndedUI()` redraws what said Connected
 - (re-audit 2026-11-15, N1) a new link on a phone whose code has ended, switched off (`invite_ended`) as well as lost (`invite_lost`), asks "Back up this phone’s wardrobe with …’s invitation?" ("Keep it and back it up") and keeps the wardrobe, changes since the end included, instead of "Clear and switch": the old backup can't be reached, and after a switch-off the app stops syncing so it never hears of a later deletion; `tests/inviteswitch.test.js`
 - "Clear and switch" first backs up what no backup took (`acctPending`: `syncMark().sig` against the wardrobe's `stateSig`, then `syncNow()`); still pending (backups paused, server refusing), the question says the changes would be lost and its button reads "Clear, losing those changes" (`acctSwitchText`); it also says the settings go and the setup starts again
@@ -1002,6 +1007,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - All set lists the blazer days and the vest; its "Try a sample wardrobe" (`setupSample`) finishes the setup first (holidays, vest)
 - `setupOpen` closes a Home Screen kit sheet (one explanation)
 - `tests/setupfix.test.js` covers these and the Settings fixes of the same audit
+- (fix round 2) a cut-off "Run setup again" (`setup_at` with `again`) opens again at start-up whatever `setupNo` says (start-up's `show('today')` sets it whenever there are items, so it never came back for anyone with a wardrobe); one that can't be opened then (no `setupDone`, Settings open, a test without `SETUP_AUTO`) is dropped, so it never opens by itself later with a Cancel that would undo settings changed since
+- (fix round 2) a double tap on Get started / Next / Back steps once (`setupGoDouble`: a real tap within `SETUP_TAP_MS` at the last step tap's spot is dropped; calls from code always step); tests wait 400 ms between taps on the same button
+- (fix round 2) the first setup's finish stores the time zone's country (`setupHolCountry`: list empty, `fetched` 0) with `setupDone`, before `setupHolidays` fetches it; `setupHolidays` also fetches for a country kept with no list; swiped away right after finishing, the next start's `refreshHolidays` fetches it
+- (fix round 2) the setup's city search clears its results on an empty search and shows a non-English find's English name with the typed one beside it
 - an ended invitation: the Connection step says so ("Your invitation has ended, so the link you used no longer works…") and All set reads "invitation ended"
 
 ### `kit.js`

@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(h.title==='Home Screen'&&h.share&&h.add&&h.webapp&&h.n===4&&h.icons>=2&&h.pic,'it shows the taps as iOS 26 Safari has them (⋯ then Share, Add to Home Screen, Open as Web App on, Add) with the Share and Add icons');
     ok(h.before&&!h.copy,'not connected: the Home Screen app keeps its own storage, so set it up there; no invitation link to copy');
     ok(h.fit,'it fits the phone');
-    await p.click('#su-next');ok(await step(p)==='week','Next carries on with the setup in Safari');
+    await p.waitForTimeout(400);await p.click('#su-next');ok(await step(p)==='week','Next carries on with the setup in Safari');
     // Settings → About
     await p.evaluate(()=>{setupClose();openSettings('about')});
     const a=await p.waitForFunction(()=>(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})(),null,{timeout:5000}).then(()=>true,()=>false);   // (displayed, not only the attribute)
