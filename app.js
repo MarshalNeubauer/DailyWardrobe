@@ -147,7 +147,7 @@ addEventListener('resize',fitNavSoon);
 const afterScripts=f=>document.readyState==='complete'?f():addEventListener('load',()=>f(),{once:true});
 // once every script of the page has run (DOMContentLoaded comes after the last one, and unlike load it doesn't wait for pictures)
 const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
-const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':!q.model?'Tagged by AI.':/^claude/.test(q.model)?`Tagged by Claude (${q.model}).`:`Tagged by AI (${q.model.replace(/^@cf\//,'')}).`;
+const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
 async function ask(c,extra){
   try {

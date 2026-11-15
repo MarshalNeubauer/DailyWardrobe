@@ -101,7 +101,7 @@ async function setItemField(id,k,v){
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
 /* the Add card: name, brand and notes behind "More details", folded until asked for (the Material is out with the other fields, above it); each keystroke is kept on the card (nothing is redrawn) */
 function toggleMore(i){const q=queue[i];if(!q)return;q.more=!q.more;renderAdd()}
-function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];if(k==='material')renderAdd()}
+function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];if(typeof addKeepSoon==='function')addKeepSoon();if(k==='material')renderAdd()}
 function moreRow(q,i){
   const n=WARD_FIELDS.filter(k=>k!=='material'&&q[k]&&String(q[k]).trim()).length,on=k=>`oninput="setQField(${i},'${k}',this.value)"`;
   return `<div class="morefold${q.more?' open':''}"><button type="button" class="morebtn" aria-expanded="${!!q.more}" onclick="toggleMore(${i})"><span>More details${n?` <small class="mut">· ${n} filled in</small>`:''}</span><svg class="morechev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`+

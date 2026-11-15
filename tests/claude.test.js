@@ -48,16 +48,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
     reply=()=>[401,{type:'error',error:{type:'authentication_error',message:'invalid x-api-key'}}];
     const p=await ctx.newPage();await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(async src=>{show('add');const blob=await (await fetch(src)).blob();await addFiles([new File([blob],'x.png',{type:'image/png'})])},IMG);
+    const pic=`(async()=>{const c=document.createElement('canvas');c.width=c.height=200;c.getContext('2d').fillRect(0,0,200,200);return new File([await new Promise(r=>c.toBlob(r,'image/png'))],'x.png',{type:'image/png'})})()`;   // (large enough to read: add.js ADD_MIN_PX)
+    await p.evaluate(`(async()=>{show('add');await addFiles([await ${pic}])})()`);
     ok(/Photo tagging failed: Reading photos isn’t available on this server yet/.test(await p.textContent('#note')),'the Add screen shows why tagging failed, in plain words (a connection whose role is not known yet: ui.js plainErr)');
     ok(await p.evaluate(()=>{rememberRole({role:'owner'});return /ANTHROPIC_API_KEY/.test(tagFailText(500,{},'invalid x-api-key: add an ANTHROPIC_API_KEY secret'))}),'the owner reads the technical reason');
     reply=()=>[200,{model:'claude-opus-5-5',stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1},content:[{type:'text',text:JSON.stringify(answer)}]}];
     await ctx.unroute('https://w.test/**');
     await ctx.route('https://w.test/**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.postData()}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
-    await p.evaluate(async src=>{const blob=await (await fetch(src)).blob();await addFiles([new File([blob],'x.png',{type:'image/png'})])},IMG);
-    ok((await p.textContent('#queue')).includes('Tagged by Claude (claude-opus-5-5).')&&!(await p.textContent('#queue')).includes('Cloudflare AI'),'each photo card says which model tagged it');
-    ok(/read by Claude \(claude-opus-5-5\)/.test(await p.textContent('#note')),`the Add screen says which model tagged the photo ("${await p.textContent('#note')}")`);
+    await p.evaluate(`(async()=>{await addFiles([await ${pic}])})()`);
+    ok((await p.textContent('#queue')).includes('Tagged by Claude.')&&!/claude-|Cloudflare AI/.test(await p.textContent('#queue')),'each photo card says Claude tagged it, without the model\'s name (audit 2026-11-15)');
+    ok(!/claude-/.test(await p.textContent('#note'))&&/read automatically/.test(await p.textContent('#note')),`the Add screen names no model ("${await p.textContent('#note')}")`);
     await b.close();
     // freeColors (the colour picker's Ask Claude): Claude's own colour names and shades, outside the list, tidied
     const free={...answer,confidence:{type:'high',primaryColor:'low',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null,clothBox:null,patternBox:null,weave:null,

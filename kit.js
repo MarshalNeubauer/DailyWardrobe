@@ -67,11 +67,12 @@ const KIT_UNDO_MS=8000;
 function kitSaved(it,q,i,copies){if(kitQuiet)return;const now=Date.now(),more=(copies||[]).map(c=>c.id);
   if(!kitBatch||now-kitBatch.at>1500)kitBatch={its:[],qs:[],at:now};kitBatch.its.push(it.id,...more);kitBatch.qs.push({q,i});kitBatch.at=now;const b=kitBatch,n=b.its.length;
   // one card with copies (add.js qtyRow): "Saved 3: White."
-  toast(n===1?`Saved: ${sentence(itemTitle(it))}.`:b.qs.length===1?`Saved ${n}: ${sentence(itemTitle(it))}.`:`Saved ${n} items.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave(b)})}
+  const t=typeof savedTitle==='function'?savedTitle(it):sentence(itemTitle(it));   // "Saved: Grey suit." (it said "Saved: Grey.": add.js)
+  toast(n===1?`Saved: ${t}.`:b.qs.length===1?`Saved ${n}: ${t}.`:`Saved ${n} items.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave(b)})}
 async function kitUnsave(b){if(!b)return;
   for(const id of b.its){await del(id);items=items.filter(x=>x.id!==id)}
   for(const {q,i} of b.qs.slice().reverse()){if(!q)continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q)}
-  if(kitBatch===b)kitBatch=null;cache={};todayStale=true;
+  if(kitBatch===b)kitBatch=null;cache={};todayStale=true;if(b.qs.length&&typeof multiMsg==='function')multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
   if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   toast(b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}
 
