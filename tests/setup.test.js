@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return p};
   const shown=p=>p.evaluate(()=>!!document.querySelector('#setup.on'));
   const step=p=>p.evaluate(()=>{const e=document.querySelector('#su-step');return e?e.dataset.step:null});
-  const next=async(p,want)=>{await p.click('#su-next');await p.waitForFunction(w=>{const e=document.querySelector('#su-step');return e&&e.dataset.step===w},want)};
+  const next=async(p,want)=>{await p.waitForTimeout(400);await p.click('#su-next');await p.waitForFunction(w=>{const e=document.querySelector('#su-step');return e&&e.dataset.step===w},want)};   // (the wait: past setupGoDouble's guard on the last tap)
   const stored=(p,f,arg)=>p.waitForFunction(`(async()=>{const s=await metaGet('settings');return !!s&&(${f})(s)})()`,arg,{timeout:10000}).then(()=>true,()=>false);
   const noSide=p=>p.evaluate(()=>{const d=document.documentElement,b=document.querySelector('#setup .su-body');
     const out=[...document.querySelectorAll('#setup.on button,#setup.on input,#setup.on select,#firstrun,#firstrun *,#wempty,#wempty *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&(r.left<-0.5||r.right>innerWidth+0.5)});
@@ -84,7 +84,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(sum.days===sum.want,'the summary lists the workdays in the Week step\'s order, Sunday first: '+sum.days);
     ok(sum.jacket?/a suit or blazer, .* and shoes, plus trousers if you wear a blazer rather than a suit\.$/.test(sum.help):/trousers/.test(sum.help)&&!/plus trousers/.test(sum.help),'the last step asks for trousers only as needed (not with a suit): '+sum.help);
     ok(await p.evaluate(()=>!!document.querySelector('#su-step #kit-tour-link')&&!!document.querySelector('#su-step #kit-sample-link')),'the last step offers the tour and a sample wardrobe (kit.js)');
-    await p.click('#su-next');
+    await p.waitForTimeout(400);await p.click('#su-next');
     /* a first-time person going on to Add gets the quick tour first (kit.js), its last button going on to Add */
     await p.waitForFunction(()=>!document.querySelector('#setup.on')&&!!document.querySelector('#kitsheet.on'));
     await p.waitForTimeout(400);   // (a tap at the same spot right after the setup closed is a double tap and is dropped: setupTapGuard)
@@ -167,7 +167,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await h.evaluate(()=>document.querySelector('#su-vest').value===(settings.vestMode||'auto')),'run again, the vest choice shows the stored one');
     await next(h,'weather');await next(h,'connect');await next(h,'done');
     ok(/^Done$/.test((await h.textContent('#su-next')).trim()),'with items in the wardrobe the last button is Done');
-    await h.click('#su-next');await h.waitForFunction(()=>!document.querySelector('#setup.on'));
+    await h.waitForTimeout(400);await h.click('#su-next');await h.waitForFunction(()=>!document.querySelector('#setup.on'));
     ok(await h.evaluate(()=>!document.querySelector('#today').hidden&&(settings.vestMode||'auto')==='auto'),'which goes to Today and leaves the vest setting alone');
     await h.context().close();
 
@@ -216,7 +216,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         return {dark:m[0]+m[1]+m[2]<200,h:b.height,inside:b.bottom<=innerHeight+0.5&&r.left>=0&&r.right<=innerWidth+0.5,w:r.width}});
       ok(!bad.length,`${width}px ${scheme}: no step of the setup scrolls sideways${bad.length?' (but: '+bad.join(', ')+')':''}`);
       ok(look.dark===(scheme==='dark')&&look.h>=44&&look.inside&&(width<600?look.w===width:look.w<width),`${width}px ${scheme}: the setup takes the theme, its buttons are 44px and on screen${width<600?'':' (a centred panel)'}`);
-      await v.click('#su-next');await v.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));   // the quick tour first (kit.js)
+      await v.waitForTimeout(400);await v.click('#su-next');await v.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));   // the quick tour first (kit.js); the wait: past setupGoDouble's guard
       ok(await v.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&[...document.querySelectorAll('#kitsheet button')].every(b=>{const r=b.getBoundingClientRect();return r.left>=-0.5&&r.right<=innerWidth+0.5})),`${width}px ${scheme}: the tour fits`);
       await v.keyboard.press('Escape');await v.waitForFunction(()=>!document.querySelector('#setup.on')&&!document.querySelector('#add').hidden);
       await v.evaluate(()=>show('today'));await settle(v,200);const t=await noSide(v)&&await v.evaluate(()=>!!document.querySelector('#firstrun'));

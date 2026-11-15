@@ -16,7 +16,7 @@ function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);const 
   if(sharp)q.tagImg=sharp.toDataURL('image/jpeg',TAG_Q);   // the sharp copy the tagger sees
   if(q.raw.tex){q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85)}generateSwatch(q)}
 /* a close-up with its own white reference (a corner of white paper) is corrected from that; otherwise like its item photo */
-function texGains(q){const r=closeRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}
+function texGains(q){if(q.texDone)return null;const r=closeRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}   // (texDone: a card brought back after a kill, its close-up already corrected)
 function toggleWb(i){const q=queue[i];if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
 /* a picture too small to read (an 8×8 thumbnail was sent to Claude and became the item's photo: audit 2026-11-15): refused before any reading */
 const ADD_MIN_PX=32;
@@ -26,16 +26,19 @@ const TEX_MAX=1536;   // the synced close-up (2026-11-13, the owner: "the zoom-i
 async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
   try{const img=await loadImg(f);
     if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
-    q.raw=q.raw||{};q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
+    q.raw=q.raw||{};delete q.texDone;delete q.refineCut;delete q.patternCut;q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
+function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
   const inp=`<input type="file" accept="image/*" class="vfile" onchange="addTexture(${i},this.files[0]);this.value=''">`;
-  return q.texture?`<div class="texslot done"><small class="mut">Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.</small><div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
+  // a card typed in by hand has no photo and so no split swatch, and no tagging notes (tagNotes): what the close-up did, and a blurry one, are said here
+  const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
+  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
     :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the pictures and colours match the cloth better. Optional.</small><small class="mut texpaper">Lay white paper along one edge, then tap the paper on the camera screen before you take the picture, to set the exposure.</small><button type="button" class="linkbtn texguide" onclick="kitCloseupGuide()">Tips for a good close-up</button><label class="btn pri">Add close-up${inp}</label></div>`}
-const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`:'';
+const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`
+  :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colours corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
   addWatch();
@@ -52,15 +55,34 @@ async function addFiles(files,multi){
     // with Try again (a failed request used to land in the same catch as a broken file: "That image couldn't be read", photo gone)
     try{
       q.raw={big:shrink(img,800),full:shrink(img,TAG_MAX)};q.wb=wbGains(q.raw.big);cardPics(q);if(addRestoreState==='done')addKeep();   // tagged from the corrected, sharp copy; kept on the phone at once, before the reading
-      const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)});   // wb: whether the photo was white-balanced (the tagger is told)
-      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q)}
+      // Stop on the card ends the wait (a stalled connection kept "Reading the photo…" with no button for about 75 s): the photo stays, to fill in by hand or try again
+      const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;if(ac)renderAdd();
+      const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),...(ac?{signal:ac.signal}:{})});q.abort=null;   // wb: whether the photo was white-balanced (the tagger is told)
+      if(q.stopped){delete q.stopped;fill(q,null);q.unread=1;q.tagErr=STOPPED}
+      else{fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q)}}
     }catch(e){console.warn('photo card',e);if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
-    q.busy=0;
+    q.busy=0;q.abort=null;
+    addKeep();   // the reading kept at once: a kill in the next moment brought the card back as "closed before it was read", and Try again paid again
     renderAdd();if(q===cards[0][0])addShowCard(q.id);   // (the small "Reading" card fitted; the full one grows below the screen)
   };
   let k=0;await Promise.all(Array.from({length:Math.min(ADD_PAR,cards.length)},async()=>{while(k<cards.length)await one(cards[k++])}));
 }
 const ADD_PAR=3;
+const STOPPED='You stopped the reading.';
+/* Stop on a card being read (one item, or Try again): the request is called off and the card keeps its photo */
+function stopRead(id){const q=queue.find(x=>x.id===id);if(!q||!q.abort||q.multiBusy)return;q.stopped=1;try{q.abort.abort()}catch{}}
+/* a reading cut off by a kill (addRevive: refineCut, patternCut), read again on a tap */
+function refineAgain(i){const q=queue[i];if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
+  delete q.refineCut;delete q.patternCut;refineFromCloseup(i)}
+function patternAgain(i){const q=queue[i];if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
+  delete q.patternCut;readPatternWithClaude(q)}
+/* a double tap on Confirm: the card saves once, then the list closes up under the finger and the second tap landed on what moved
+   there (the last card's: "Import from a spreadsheet", whose sheet then covered Add). A tap within ADD_CALM ms of a Confirm and near
+   the same spot is let go */
+const ADD_CALM=450;let addCalm=null;
+document.addEventListener('click',e=>{const t=e.target&&e.target.closest?e.target:null;if(!t||!t.closest('#add'))return;
+  if(addCalm&&addCalm.ok&&e.isTrusted&&Date.now()-addCalm.t<ADD_CALM&&Math.hypot(e.clientX-addCalm.x,e.clientY-addCalm.y)<40){e.preventDefault();e.stopPropagation();return}
+  if(e.isTrusted)addCalm=t.closest('[id^="qconf-"]')?{t:Date.now(),x:e.clientX,y:e.clientY}:null},true);   // (any other tap ends it)
 /* a new card is brought into view (it used to land below the One item / Several items buttons, out of sight under the tab bar) */
 function addShowCard(id){requestAnimationFrame(()=>{const a=$('#add'),el=document.querySelector(`#queue [data-q="${id}"]`);if(!a||a.hidden||!el)return;
   el.scrollIntoView({behavior:typeof noMotion==='function'&&noMotion()?'auto':'smooth',block:'start'})})}
@@ -74,7 +96,9 @@ function measureGuess(q){if(!q||!q.raw||!q.raw.big||(q.edited&&q.edited.primaryC
 function errToHand(id){const q=queue.find(x=>x.id===id);if(!q)return;const wo=watchOpts({});
   for(const k of ['err','errWh','busy'])delete q[k];Object.assign(q,{manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});renderAdd()}
 /* Skip, Cancel and Dismiss find their card by its id: by its place, a double tap skipped the next card too */
-function skipCard(id){const k=queue.findIndex(q=>q.id===id);if(k<0)return;const q=queue[k];if(q.abort)try{q.abort.abort()}catch{}queue.splice(k,1);renderAdd()}
+function skipCard(id){const k=queue.findIndex(q=>q.id===id);if(k<0)return;const q=queue[k];if(q.abort)try{q.abort.abort()}catch{}queue.splice(k,1);
+  if((q.multiBusy||q.multiErr)&&!queue.some(x=>x.multi||x.multiBusy||x.multiErr))multiNote(false);   // "Each item in the photo gets its own card…" stayed over no card
+  renderAdd()}
 
 /* ---- pasted photos, photo links and drag & drop ---- */
 const pasteMsg=t=>{const e=$('#paste-status');if(e)e.textContent=t||''};
@@ -92,7 +116,7 @@ async function fetchPhoto(link){
   try{const r=await fetch(url.href,{mode:'cors',credentials:'omit'});
     if(r.ok){const b=await r.blob();if(/^image\//.test(b.type))return b}}catch(e){/* blocked by the site (no CORS): use the worker */}
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok)throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
+  if(!w||!tok||(typeof inviteOver==='function'&&inviteOver()))throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
   let r;try{r=await fetch(new URL('fetch',w.replace(/\/*$/,'/')).href+'?url='+encodeURIComponent(url.href),{headers:{'x-app-token':tok}})}
   catch{throw new Error('Couldn’t reach the server to fetch the photo.')}
   if(!r.ok){let m='';try{m=(await r.json()).error}catch{}
@@ -149,33 +173,43 @@ function cropBox(img,box,max){
 }
 /* "1 pair of shoes", "2 dress shirts", "1 trousers" no more */
 const PAIR_TYPES=['pants','shoes','socks','cufflinks'];
-function countWord(t,c){const n=(TYPES[t]||'item').toLowerCase();if(PAIR_TYPES.includes(t))return `${c} pair${c===1?'':'s'} of ${n}`;return `${c} ${n}${c===1?'':'s'}`}
+function countWord(t,c){const n=(TYPES[t]||'item').toLowerCase();if(PAIR_TYPES.includes(t))return `${c} pair${c===1?'':'s'} of ${n}`;return `${c} ${n}${c===1?'':/(s|x|ch|sh)$/.test(n)?'es':'s'}`}   // "4 watches" ("4 watchs")
 /* the most items one photo gives (worker/tag.js keeps the first 40) */
 const MULTI_CAP=40;
 /* why "Several items" didn't work, in plain words: offline, the server's own sentence (its message), or a plain fallback; never a code */
 function multiFail(status,j,e){if(!status){const off=navigator.onLine===false;
-    return off||e instanceof TypeError?'You’re offline, or the server couldn’t be reached. The photo is kept: try again once you’re connected.':'Something went wrong while reading the photo. Try again.'}
+    return off||e instanceof TypeError?MULTI_NET:'Something went wrong while reading the photo. Try again.'}
   if(status===404||status===405)return 'The server doesn’t support several items yet: it needs an update.';
   const m=j&&(typeof j.message==='string'&&j.message.trim()||j.detail)||'',pe=m&&typeof plainErr==='function'?plainErr(m):m;
-  return pe&&/\s/.test(pe)?String(pe).trim().replace(/([^.!?])$/,'$1.'):'The photo couldn’t be read just now. Try again in a moment.'}
+  // the server's "Try again later, or add the item by hand." is left out, as on a one-item card: the card has Try again right there
+  const t=pe&&/\s/.test(pe)?String(pe).trim().replace(/\s*Try again later\b[^.]*\.?\s*$/i,'').trim():'';
+  return t&&/\s/.test(t)?t.replace(/([^.!?])$/,'$1.'):'The photo couldn’t be read just now. Try again in a moment.'}
+const MULTI_NET='You’re offline, or the server couldn’t be reached. The photo is kept: it is read again once you’re connected.';
+/* a type the app doesn't plan (a hat) is left out: normTag made it a suit, and Save all saved a black suit */
+const oddWord=list=>[...new Set(list.map(it=>String(it.type||'').toLowerCase().replace(/[^a-z -]/g,'').trim().slice(0,20)).filter(Boolean))].slice(0,3).join(', ');
 async function addMulti(f,agg,again){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token')||'';
-  if(!w){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
+  if(!w||(typeof inviteOver==='function'&&inviteOver())){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
   // the photo's card while it is read: it has Cancel, and if the reading fails it stays with the reason, Try again and Dismiss (the
   // photo was dropped: it had to be picked again)
-  const holder=again||{id:crypto.randomUUID()};Object.assign(holder,{busy:1,multiBusy:1,file:f});delete holder.multiErr;if(!again){queue.unshift(holder);addShowCard(holder.id)}
+  const holder=again||{id:crypto.randomUUID()};Object.assign(holder,{busy:1,multiBusy:1,file:f});delete holder.multiErr;delete holder.multiNet;delete holder.multiCut;if(!again){queue.unshift(holder);addShowCard(holder.id)}
   const ac=typeof AbortController==='function'?new AbortController():null;holder.abort=ac;renderAdd();
-  const fail=t=>{delete holder.busy;delete holder.multiBusy;holder.abort=null;holder.multiErr=t;if(queue.includes(holder))renderAdd()};
-  let raw,wb,img;try{raw=shrink(await loadImg(f),2576);wb=wbGains(raw);img=applyWb(raw,wb)}   // one light reading for the whole photo; Claude reads up to 2576px
+  const fail=(t,net)=>{delete holder.busy;delete holder.multiBusy;holder.abort=null;holder.multiErr=t;if(net)holder.multiNet=1;addKeep();if(queue.includes(holder))renderAdd()};
+  let raw,wb,img;try{raw=shrink(await (typeof f==='string'?imgOf(f):loadImg(f)),2576);wb=wbGains(raw);img=applyWb(raw,wb)}   // one light reading for the whole photo; Claude reads up to 2576px
   catch(e){console.warn('photo not opened',e);fail('That photo couldn’t be opened. Try a JPEG or PNG.');return}
+  // the photo is kept on the phone before the reading, like a one-item card's (multiPic, addKeep): a kill while it was read, or while it
+  // waited for Try again, lost it with no word, though the card said "The photo is kept"
+  if(!holder.multiPic)try{holder.multiPic=raw.toDataURL('image/jpeg',.9);holder.file=holder.multiPic}catch(e){console.warn('photo not kept',e)}
+  addKeep();
   let r,j;try{r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
       body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes(),wb:!!wb}),...(ac?{signal:ac.signal}:{})});
     j=await r.json().catch(()=>({}))}
-  catch(e){if(!queue.includes(holder))return;console.warn('several items',e);fail(multiFail(0,null,e));return}   // (Cancel took it off Add: nothing more to say)
+  catch(e){if(!queue.includes(holder))return;console.warn('several items',e);fail(multiFail(0,null,e),navigator.onLine===false||e instanceof TypeError);return}   // (Cancel took it off Add: nothing more to say)
   if(!queue.includes(holder))return;   // cancelled while the answer came
   if(!r.ok){fail(multiFail(r.status,j));return}
-  const list=j.items||[],at=queue.indexOf(holder);queue.splice(at,1);
-  if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
+  const all=j.items||[],list=all.filter(it=>it&&TYPES[it.type]),odd=all.filter(it=>it&&!TYPES[it.type]),at=queue.indexOf(holder);queue.splice(at,1);
+  const oddTxt=odd.length?` ${odd.length===1?'One thing':odd.length+' things'} the app doesn’t plan (${oddWord(odd)}) ${odd.length===1?'was':'were'} left out.`:'';
+  if(!list.length){multiMsg('No clothing items were found in that photo.'+oddTxt);renderAdd();return}
   const made=list.map((it,n)=>{
     const q={id:crypto.randomUUID(),multi:{n:n+1,of:list.length,confidence:it.confidence||'medium'}};
     q.raw={big:cropBox(raw,it.box,800),full:cropBox(raw,it.box,TAG_MAX)};q.wb=wb;cardPics(q);
@@ -185,11 +219,11 @@ async function addMulti(f,agg,again){
   // two photos picked at once: one summary for both (the second photo's line replaced the first's)
   agg=agg||{n:0,counts:{},capped:false};agg.n+=list.length;if(list.length>=MULTI_CAP)agg.capped=true;
   for(const it of list){const t=TYPES[it.type]?it.type:'item';agg.counts[t]=(agg.counts[t]||0)+1}
-  multiMsg(`Found ${agg.n} item${agg.n===1?'':'s'} (${Object.entries(agg.counts).map(([t,c])=>countWord(t,c)).join(', ')}).${agg.capped?` One photo gives at most ${MULTI_CAP}: if there are more, take another photo of the rest.`:''} Check each card, then Save all or confirm them one by one.`);
-  renderAdd();addKeepSoon();addShowCard(made[0].id);
+  multiMsg(`Found ${agg.n} item${agg.n===1?'':'s'} (${Object.entries(agg.counts).map(([t,c])=>countWord(t,c)).join(', ')}).${oddTxt}${agg.capped?` One photo gives at most ${MULTI_CAP}: if there are more, take another photo of the rest.`:''} Check each card, then Save all or confirm them one by one.`);
+  renderAdd();addKeep();addShowCard(made[0].id);
 }
 /* Try again on a "Several items" photo that couldn't be read: the same photo, no picking again */
-function multiAgain(id){const q=queue.find(x=>x.id===id);if(!q||!q.file||q.busy)return;addMulti(q.file,null,q)}
+function multiAgain(id){const q=queue.find(x=>x.id===id);if(!q||!q.file||q.busy)return;multiNote(true);addMulti(q.file,null,q)}
 /* save every finished card in the queue (Skip the ones you don't want first) */
 /* a card Claude is still reading (tagging again with the close-up, or its pattern) can't be saved yet: saved meanwhile it kept the
    weaker reading and the pattern call was paid for anyway (audit 2026-11-13); Confirm and Save all wait for it */
@@ -205,7 +239,7 @@ async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=
   const left=queue.filter(needType).length;
   if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=queue[i];if(!q)return;const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};addKeepSoon();
+const setq=(i,k,v)=>{const q=queue[i];if(!q)return;const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};queueMicrotask(addKeep);
   if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);renderAdd();return}   /* the type asked for (needType): the colour measured, the full card */
 if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
@@ -240,7 +274,7 @@ const qtyLabel=q=>{const n=qtyOf(q);return n>1?'Confirm '+n:'Confirm'};
 function qtyRow(q,i){if(!QTY_TYPES.includes(q.type))return '';const n=qtyOf(q);
   return `<div class="qtyrow" role="group" aria-label="How many to add"><span class="qtyl">How many<small class="mut">${q.type==='socks'?'Identical pairs':'Identical shirts'}, each its own item</small></span><span class="qty"><button type="button" class="qtyb" id="qty-m-${i}" aria-label="One fewer" onclick="stepQty(${i},-1)"${n<=1?' disabled':''}>−</button><output id="qty-n-${i}" aria-live="polite">${n}</output><button type="button" class="qtyb" id="qty-p-${i}" aria-label="One more" onclick="stepQty(${i},1)"${n>=QTY_MAX?' disabled':''}>+</button></span></div>`}
 /* the number, its buttons and Confirm change in place (no redraw: the card would jump) */
-function stepQty(i,d){const q=queue[i];if(!q)return;q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;addKeepSoon();
+function stepQty(i,d){const q=queue[i];if(!q)return;q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;queueMicrotask(addKeep);
   const o=$('#qty-n-'+i),m=$('#qty-m-'+i),p=$('#qty-p-'+i),c=$('#qconf-'+i);if(o)o.textContent=n;if(m)m.disabled=n<=1;if(p)p.disabled=n>=QTY_MAX;if(c)c.textContent=qtyLabel(q)}
 function orderRow(q,i){return `<div class="ordrow"><button type="button" class="rotbtn${q.order?' on':''}" aria-pressed="${!!q.order}" onclick="setOrder(${i},${!q.order})">${q.order?'✓ ':''}Bought, on the way</button>${q.order?`<label class="ordate">Arrives (optional) <input type="date" value="${q.arrives||''}" min="${isoKey(todayDate())}" onchange="setArrives(${i},this.value)"></label><small class="mut ordhint">${orderHint(q.arrives)}</small>`:''}</div>`}
 function setOrder(i,on){const q=queue[i];if(!q)return;q.order=!!on;if(!on)delete q.arrives;renderAdd()}
@@ -266,6 +300,7 @@ const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
 async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return false;
   if(needType(q)){toast('Choose what it is first: pick its Type.',4000);return false}
   q.saving=1;const b=$('#qconf-'+queue.indexOf(q));if(b)b.disabled=true;
+  if(!saveAllOn)await addKeep();   // the card as it is now (a kill right after Confirm brought back How many one lower: the last + waited for the timer)
   try{return await saveCard(q)}catch(e){console.warn('save failed',e);
     if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
   finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)renderAdd()}}
@@ -303,7 +338,7 @@ async function saveCard(q){
   const all=[it,...copies],at=Date.now();for(const x of all)x.updated=at;
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
   items.push(...all);
-  const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);renderAdd();
+  const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;renderAdd();   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
   if(typeof kitSaved==='function')kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)keepTagImg(it.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>keepCloseImg(it.id,u,it.texture)).catch(()=>{});   // the sharp close-up for later readings (tagging.js)
@@ -311,11 +346,18 @@ async function saveCard(q){
   return true;
 }
 
-function renderAdd(){
-  closeSettings();
-  const workerSet = typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
+/* Add's note while not connected: an invitation still being checked (or waiting to be, offline) is not "won't be read" */
+function addNoteText(){const workerSet=typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
   // (no model name: a tester read "Last photo read by Claude (claude-…)")
-  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || 'Photos are read automatically: the type, colours and pattern are filled in for you.';
+  if(workerSet)return aiError||'Photos are read automatically: the type, colours and pattern are filled in for you.';
+  if(typeof inviteChecking!=='undefined'&&inviteChecking)return 'Checking your invitation… Photos you add meanwhile can be read once it’s done.';
+  if(typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash())return 'Your invitation is checked once you’re back online. Photos you add meanwhile can be read then.';
+  if(typeof inviteOver==='function'&&inviteOver())return 'Your invitation has ended, so photos aren’t read automatically: add items by hand, or paste a new invitation link in Settings → Connection.';
+  return 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.'}
+/* (it no longer closes Settings: a reading coming back or the connection returning redrew Add and shut Settings mid-use; the pages
+   that open Add close it themselves, show() and saveSettings) */
+function renderAdd(){
+  if($('#note')) $('#note').textContent = addNoteText();
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
   addKeepSoon();
@@ -342,16 +384,16 @@ ${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderR
 }
 /* the cards that are not (yet) a form: being read, a "Several items" photo that couldn't be read, a file that couldn't be opened,
    and a photo nobody read, which asks for its type first */
-const busyCard=q=>`<div class="card" data-q="${esc(q.id)}"><span class="spin" aria-hidden="true"></span>${q.multiBusy?`Finding every item in the photo… (this can take up to a minute) <button type="button" onclick="skipCard('${esc(q.id)}')">Cancel</button>`:'Reading the photo…'}</div>`;
-const multiErrCard=q=>`<div class="card" data-q="${esc(q.id)}"><div class="tagfail" role="alert"><p><b>The items in this photo weren’t found.</b> ${esc(q.multiErr)}</p></div><div class="btns"><button type="button" class="pri" onclick="multiAgain('${esc(q.id)}')">Try again</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
+const busyCard=q=>`<div class="card" data-q="${esc(q.id)}"><span class="spin" aria-hidden="true"></span>${q.multiBusy?`Finding every item in the photo… (this can take up to a minute) <button type="button" onclick="skipCard('${esc(q.id)}')">Cancel</button>`:`Reading the photo…${q.abort?` <button type="button" class="stopread" onclick="stopRead('${esc(q.id)}')">Stop</button>`:''}`}</div>`;
+const multiErrCard=q=>`<div class="card" data-q="${esc(q.id)}"><div class="tagfail" role="alert"><p><b>${q.multiCut?'This photo wasn’t read.':'The items in this photo weren’t found.'}</b> ${esc(q.multiErr)}</p></div><div class="btns">${typeof inviteOver==='function'&&inviteOver()?'':`<button type="button" class="pri" onclick="multiAgain('${esc(q.id)}')">Try again</button>`}<button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
 const errCard=q=>`<div class="card" data-q="${esc(q.id)}" role="alert"><p>${q.err==='small'?`This picture is too small to read (${(q.errWh||[]).join('×')} pixels). Use a larger photo of the item.`:'That photo couldn’t be opened. Try a JPEG or PNG, or fill the item in by hand.'}</p><div class="btns"><button type="button" onclick="errToHand('${esc(q.id)}')">Fill it in by hand</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
-function typeCard(q,i){const none=!localStorage.getItem('worker_url');
+function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected():!localStorage.getItem('worker_url');   // (an ended invitation reads nothing either)
   return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
 <p class="typeq">${none&&!q.tagErr?'<b>What is it?</b> Photos aren’t read automatically here: pick the type and the colour is measured from the photo.':'<b>What is it?</b> Pick the type, then check the colours.'}</p>
 <label>Type <select onchange="setq(${i},'type',this.value)" aria-label="Type"><option value="" selected disabled>Choose…</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
 <div class="btns"><button onclick="skipCard('${esc(q.id)}')">Skip</button></div></div>`}
 /* a photo added while the app wasn't connected yet (an invitation still being checked): once it is, the card offers the reading */
-const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&localStorage.getItem('worker_url')?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Read it now</button></div>`:'';
+const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Read it now</button></div>`:'';
 
 /* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
    and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each
@@ -359,12 +401,17 @@ const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&localSto
    goes to the background. At the next start they come back as they were, readings and all; a card whose reading was cut off says so,
    with Try again. A card already saved (its id in the wardrobe) is not brought back. ---- */
 const ADDQ_KEY='addq',ADDPIC='addpic:';
-const ADDQ_SKIP=['raw','big','texCanvas','busy','multiBusy','multiErr','saving','file','abort','missed','measV'];   // canvases, the photo file, what is in flight
-const ADDQ_PICS=['photo','tagImg','texture'];
+/* what is in flight is never kept as it is (audit 2026-11-15 re-run, N3: a card killed while its close-up was read came back with
+   `refining` set, "Tagging again with the close-up…" for good, Confirm off and Save all off for every card): a reading cut off is kept as
+   cut (busy -> cut, refining -> refineCut, patternReading -> patternCut) and comes back saying so, with a button to read it again */
+const ADDQ_SKIP=['raw','big','texCanvas','busy','multiBusy','saving','file','abort','stopped','missed','measV','refining','patternReading','texDone'];   // canvases, the photo file, what is in flight
+const ADDQ_PICS=['photo','tagImg','texture','multiPic'];   // (multiPic: a "Several items" photo, kept before it is read)
+const ADDQ_SOON=100;   // ms after a change (it was 400: a reload or a crash in that window lost the last change, How many one lower)
 let addKeepT=0,addKeptPics=new Map(),addRestoreState='';
-function addKeepSoon(){if(addRestoreState!=='done')return;clearTimeout(addKeepT);addKeepT=setTimeout(addKeep,400)}
-const addKeepable=q=>!!q&&!q.err&&!q.multiBusy&&!q.multiErr&&(q.manual||!!q.photo);
+function addKeepSoon(){if(addRestoreState!=='done')return;clearTimeout(addKeepT);addKeepT=setTimeout(addKeep,ADDQ_SOON)}
+const addKeepable=q=>!!q&&!q.err&&(q.manual||!!q.photo||!!q.multiPic);
 function addCardRec(q){const o={};for(const [k,v] of Object.entries(q))if(!ADDQ_SKIP.includes(k)&&!ADDQ_PICS.includes(k))o[k]=v;if(q.busy)o.cut=1;
+  if(q.refining)o.refineCut=1;if(q.patternReading)o.patternCut=1;if(q.wb&&!q.wbOff)o.wbWas=1;
   return JSON.parse(JSON.stringify(o,(k,v)=>typeof HTMLCanvasElement!=='undefined'&&v instanceof HTMLCanvasElement?undefined:v))}
 async function addKeep(){clearTimeout(addKeepT);if(addRestoreState!=='done')return;
   if(typeof kitQuiet!=='undefined'&&kitQuiet){addKeepSoon();return}   // the sample or an import passes its cards through Add one by one: not kept
@@ -375,9 +422,13 @@ async function addKeep(){clearTimeout(addKeepT);if(addRestoreState!=='done')retu
   catch(e){console.warn('Add cards not kept',e)}}
 /* the card's canvases again from its kept pictures (already corrected for the light: no Show original on a card brought back) */
 async function addRevive(q){
+  // a reading of the close-up or the pattern cut off by the kill (records kept before the N3 fix still carry the in-flight flags)
+  if(q.refining){delete q.refining;q.refineCut=1}if(q.patternReading){delete q.patternReading;q.patternCut=1}
+  // a "Several items" photo: back as a card with Try again (read again by itself once online when it failed for want of a connection)
+  if(q.multiPic){q.file=q.multiPic;if(q.cut||!q.multiErr){q.multiErr='The app was closed before this photo was read.';q.multiCut=1}delete q.cut;delete q.busy;return}
   try{if(q.tagImg){const im=await imgOf(q.tagImg);q.raw={big:shrink(im,800),full:shrink(im,TAG_MAX)};q.big=q.raw.big}}catch(e){console.warn('card photo not reopened',e)}
-  try{if(q.texture){const im=await imgOf(q.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);q.texCanvas=c}}catch(e){console.warn('close-up not reopened',e)}
-  delete q.wb;delete q.wbOff;
+  try{if(q.texture){const im=await imgOf(q.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);q.texCanvas=c;q.raw=q.raw||{};q.raw.tex=c;q.texDone=1}}catch(e){console.warn('close-up not reopened',e)}   // (raw.tex: the close-up can be read again; texDone: already corrected)
+  if(q.wb&&!q.wbOff)q.wbWas=1;delete q.wb;delete q.wbOff;   // (wbWas: the card says its colours were corrected, without Show original)
   if(q.cut){delete q.cut;if(!q.ai&&!q.manual)q.tagErr='The app was closed before this photo was read.'}
   if(!q.type&&!q.manual){fill(q,null);q.unread=1;if(q.texCanvas||q.big)generateSwatch(q)}}   // (the fields a card gets when nothing was read)
 /* at start-up (safety.js safetyStart): the cards kept last time, back on Add */
@@ -406,5 +457,6 @@ function addWatch(){if(addWatchOn)return;addWatchOn=true;if(typeof guardUnsaved=
   addEventListener('online',addBackOnline)}
 function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))aiError='';
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
+  for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)
   const a=$('#add');if(a&&!a.hidden)renderAdd()}
 

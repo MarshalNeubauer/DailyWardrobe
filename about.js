@@ -61,8 +61,11 @@ function checkForUpdate(manual){
    page reloads once that worker controls it, so the reload gets one whole version. */
 async function updateNow(){
   if(aboutUpdating)return;
-  const n=typeof queue!=='undefined'&&queue?queue.length:0;
-  if(n&&!await askConfirm(`Update now?\n\nYou have ${n} unsaved card${n===1?'':'s'} on the Add page. Updating restarts the app and ${n===1?'it':'they'} will be lost.`,{ok:'Update'}))return;
+  // the cards waiting on Add come back after the restart (add.js addKeep / addRestore), so they need no question; only a photo still
+  // being read is stopped by it (re-audit 2026-11-15: "they will be lost" put people off a safe update)
+  const n=typeof queue!=='undefined'&&queue?queue.filter(q=>q&&(q.busy||q.multiBusy)).length:0;
+  if(n&&!await askConfirm(`Update now?\n\n${n===1?'A photo on the Add page is':`${n} photos on the Add page are`} still being read. Updating restarts the app and stops ${n===1?'that reading':'those readings'}, so ${n===1?'it has':'they have'} to be read again. Your other cards on Add come back as they are.`,{ok:'Update'}))return;
+  if(typeof addKeep==='function')try{await addKeep()}catch{}   // the cards as they are now, before the restart
   aboutUpdating=true;aboutMsg='Updating…';aboutShow();
   let done=false;const reload=()=>{if(done)return;done=true;location.reload()};
   const fail=t=>{if(done)return;done=true;aboutUpdating=false;aboutMsg=t;aboutShow();if(typeof toast==='function')toast(t,5000)};
@@ -93,20 +96,30 @@ const aboutErrText=(status,j,lead)=>{const m=j&&typeof j.message==='string'&&j.m
 /* ---- feedback ---- */
 // the phone's recent problems go along (safety.js errReport), within the server's 4,000 characters; cleared once sent
 const fbWithErrs=t=>{const r=typeof errReport==='function'?errReport():'';return r?(t+'\n\n— Problems noted on this phone —\n'+r).slice(0,4000):t};
+// one send at a time, and a tap right after one went through (the field already emptied) leaves its "Thank you" in place: a double tap
+// read "Write something first." after sending (re-audit 2026-11-15)
+let fbSending=false,fbSentAt=0;
+const FB_AGAIN_MS=3000;
 async function sendFeedback(){
   const el=$('#fb-text'),b=$('#fb-send'),text=(el&&el.value||'').trim();
-  if(!text){aboutSay('#fb-status','Write something first.',true);return}
+  if(fbSending)return;
+  if(!text){if(Date.now()-fbSentAt<FB_AGAIN_MS)return;aboutSay('#fb-status','Write something first.',true);return}
   const c=aboutConn();if(!c||!aboutLive()){aboutSay('#fb-status',aboutLive()||!c?'Feedback needs a connection. Connect first, under Connection.':ENDED,true);return}
-  if(b)b.disabled=true;aboutSay('#fb-status','Sending…');
+  if(b)b.disabled=true;aboutSay('#fb-status','Sending…');fbSending=true;
   try{
     let r;try{r=await fetch(c.at('feedback'),{method:'POST',headers:c.head,body:JSON.stringify({text:fbWithErrs(text),version:appVersion(),where:'settings'})})}
     catch{aboutSay('#fb-status','Couldn’t send it: the server didn’t answer. Check your connection and try again.',true);return}
     const j=await r.json().catch(()=>({}));
     if(r.status===404)aboutSay('#fb-status','Feedback isn’t available yet. Please try again in a few days.',true);
     else if(typeof endedAnswer==='function'&&endedAnswer(r.status,j)){inviteEnded(c.tok,j);aboutSay('#fb-status',ENDED,true)}
+    // the server's saves for the day used up: its sentence is about backups ("kept on this device and saved after the reset"), but feedback
+    // isn't kept anywhere: said as it is (re-audit 2026-11-15)
+    else if(r.status===429&&j&&j.error==='kv-limit')aboutSay('#fb-status',`Couldn’t send it: the server can’t save anything more today. Send it again after ${aboutResetAt()}; your text stays in the box until the app is closed.`,true);
     else if(!r.ok)aboutSay('#fb-status',aboutErrText(r.status,j,'Couldn’t send it.'),true);
-    else{el.value='';try{localStorage.removeItem('err_log')}catch{}aboutSay('#fb-status','Thank you. Your feedback was sent.');loadFeedback()}
-  }finally{if(b)b.disabled=false}}
+    else{el.value='';fbSentAt=Date.now();try{localStorage.removeItem('err_log')}catch{}aboutSay('#fb-status','Thank you. Your feedback was sent.');loadFeedback()}
+  }finally{fbSending=false;if(b)b.disabled=false}}
+/* the local time of the next 00:00 UTC, when the server's daily allowances start again */
+function aboutResetAt(){const d=new Date();try{return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return 'midnight UTC'}}
 /* the owner also sees what was sent in (GET /me says who this is; anything but a clear "owner" shows nothing) */
 const fbWhen=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,d=new Date(n);return isNaN(d)?'':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})};
 const fbTime=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,x=+new Date(n);return isNaN(x)?0:x};
@@ -127,13 +140,20 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','invite_lost','sync_wait','sync_restore','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending'];
+const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','invite_lost','sync_wait','sync_restore','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','home_told','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));
 let aboutDeleting=false;
 function askDelete(){
-  const box=$('#del-confirm');if(!box)return;const c=aboutConn();aboutSay('#del-status','');
+  const box=$('#del-confirm');if(!box)return;aboutSay('#del-status','');
+  // an ended invitation reaches nothing on the server any more (switched off, or already deleted): the card speaks of this device only
+  // (re-audit 2026-11-15: it still listed the server's backup and "connect again to get it back")
+  if(typeof inviteOver==='function'&&inviteOver()){
+    box.innerHTML=`<p><b>This can’t be undone.</b> It deletes:</p><ul><li>your wardrobe, outfit history and settings on this device</li><li>the photos kept on this device</li></ul><p class="shelp">Your invitation has ended, so this phone can’t reach the server any more. Anything still kept there under that invitation is up to the person who invited you: ask them if you want it removed.</p>`+
+      `<div class="sactions"><button type="button" class="danger" id="del-device" onclick="deleteMyData(false)">Delete from this device</button><button type="button" id="del-cancel" onclick="cancelDelete()">Cancel</button></div>`;
+    box.hidden=false;if(box.scrollIntoView)box.scrollIntoView({block:'nearest'});return}
+  const c=aboutConn();
   // a tester's "everything" ends the invitation too: the server deletes it first, and its link stops working on every phone
   const t=c&&typeof isTester==='function'&&isTester();
   box.innerHTML=`<p><b>This can’t be undone.</b> It deletes:</p><ul><li>your wardrobe, outfit history and settings on this device</li><li>the photos kept on this device</li>${c?'<li>your backup, its daily copies and your photos on the server</li>':''}${t?'<li>your invitation: “Delete everything” ends it, so its link stops working, also on your other phones; to use the app with the server again you need a new link</li>':''}</ul>`+
@@ -171,12 +191,12 @@ async function deleteMyData(server){
     const res=await aboutDeleteAccount(keep);
     if(res.fail){stop(res.fail);return}
     note=res.note;
-  }else if(c)note='This device was cleared. Your backup on the server was kept.';
+  }else if(c&&!(typeof inviteOver==='function'&&inviteOver()))note='This device was cleared. Your backup on the server was kept.';
   await wipeDevice();
   try{sessionStorage.setItem(ABOUT_NOTE,note)}catch{}
   location.reload()}
 /* DELETE /account with the kept connection -> {note} (the device is to be cleared) or {fail} (the connection was put back, nothing deleted) */
-async function aboutDeleteAccount(keep){
+async function aboutDeleteAccount(keep,resumed){
   const back=async()=>{try{localStorage.setItem('worker_url',keep.w);localStorage.setItem('app_token',keep.t);localStorage.removeItem('del_pending')}catch{}if(typeof connKeep==='function')await connKeep()};
   let r;try{r=await fetch(new URL('account',String(keep.w||'').trim().replace(/\/*$/,'/')).href,{method:'DELETE',headers:{'content-type':'application/json','x-app-token':keep.t||''},body:JSON.stringify({confirm:'delete'})})}
   catch{await back();return {fail:'The server didn’t answer, so nothing was deleted. Try again, or delete from this device only.'}}
@@ -184,14 +204,19 @@ async function aboutDeleteAccount(keep){
   if(r.ok)return {note:'Your data was deleted from this device and from the server.'};
   if(r.status===404)return {note:'This device was cleared. The server couldn’t delete your backup yet: ask the person who invited you to remove it.'};
   // the code is unknown to the server: the account was already deleted (on another phone, or by the owner), so there is nothing left to delete there
-  if(r.status===403&&j&&j.error==='forbidden token'&&(typeof isTester!=='function'||isTester()||localStorage.getItem('invite_ended')===keep.t))return {note:'This device was cleared. Your data on the server had already been deleted.'};
+  // (who the kept code belonged to is read from what was remembered for it: at start-up the connection is already gone, so isTester() said
+  // no; and a "Delete everything" resumed after a kill was sent before with that code, which the server knew then, so an unknown code now is
+  // that request having gone through. Both read "nothing was deleted" after a kill on a slow server: re-audit 2026-11-15, agent8 #5)
+  if(r.status===403&&j&&j.error==='forbidden token'&&(resumed||aboutKeptTester(keep.t)||(typeof isTester!=='function'||isTester())||localStorage.getItem('invite_ended')===keep.t))return {note:'This device was cleared. Your data on the server had already been deleted.'};
   const why=j&&typeof j.message==='string'&&j.message.trim()||(j&&typeof j.error==='string'&&/\s/.test(j.error)&&!ABOUT_CODES.test(j.error.trim())?j.error.trim():'');   // never a code ("forbidden token")
   await back();return {fail:`The server didn’t delete your data${why?' ('+why.replace(/[.!]$/,'')+')':''}, so nothing was deleted. Try again, or delete from this device only.`}}
+/* the code was a tester's, by what account.js remembered for it (acct_role: {tok, role}) */
+function aboutKeptTester(tok){try{const r=JSON.parse(localStorage.getItem('acct_role')||'null');return !!r&&!!tok&&r.tok===tok&&r.role==='tester'}catch{return false}}
 /* start-up: a "Delete everything" the app was closed in the middle of is finished (or, the server unreachable, undone and said) */
 async function aboutResumeDelete(){let keep=null;try{keep=JSON.parse(localStorage.getItem('del_pending')||'null')}catch{}
   if(!keep||!keep.w||!keep.t){try{localStorage.removeItem('del_pending')}catch{}return}
   aboutDeleting=true;if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
-  const res=await aboutDeleteAccount(keep);
+  const res=await aboutDeleteAccount(keep,true);
   if(res.fail){aboutDeleting=false;if(typeof toast==='function')toast('“Delete everything” didn’t finish. '+res.fail.replace(/delete from this device only\./,'delete from this device only, in Settings → About.'),9000);if(window.syncNow)syncNow();return}
   await wipeDevice();try{sessionStorage.setItem(ABOUT_NOTE,res.note)}catch{}location.reload()}
 

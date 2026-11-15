@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.waitForFunction(()=>queue.length===0&&!saveAllOn);
     s=await p.evaluate(async()=>{const ids=items.map(i=>i.id);return {n:ids.length,uniq:new Set(ids).size,disk:(await tx('readonly',st=>st.getAll())).length,msg:document.querySelector('#multi-status').textContent}});
     ok(s.n===s.uniq&&s.n===4&&s.disk===4,`a double tap on Save all saves each card once (${JSON.stringify(s)})`);
-    await p.click('#toast button');await p.waitForFunction(()=>queue.length===3);
+    await p.click('#toast button');await p.waitForFunction(()=>queue.length===3&&items.length===1);await p.waitForTimeout(50);   // (Undo keeps the cards first, then takes the items out: kit.js kitUnsave)
     ok(await p.evaluate(()=>document.querySelector('#multi-status').textContent===''),'Undo after Save all clears "Saved 3 items to your wardrobe."');
     await p.evaluate(()=>{queue=[];renderAdd()});
     // ---- How many: the item and its copies in one transaction

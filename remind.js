@@ -63,7 +63,7 @@ async function remindRefresh(){const p=remindPrefs();if(!remindAny(p)||!remindCa
 /* Settings → Schedule */
 function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)return;const p=remindPrefs(),ios=typeof iosInSafari==='function'&&iosInSafari(),care=remindCareOn(p);
   let body;
-  if(ios)body='<p class="shelp">On an iPhone, reminders come to the app on your Home Screen: add it there (Share, then “Add to Home Screen”), open it and switch this on.</p>';
+  if(ios)body='<p class="shelp">On an iPhone, reminders come to the app on your Home Screen: add it there (tap ⋯, then Share, then “Add to Home Screen”), open it and switch this on.</p>';
   else if(!remindCan())body='<p class="shelp">This browser can’t show reminders from the app.</p>';
   else body=`<div class="dress-row"><span class="dress-txt"><b id="remind-l">Remind me</b><small id="remind-h">A notification with the day’s outfit, on workdays</small></span><button type="button" class="dress-sw${p.on?' on':''}" id="remind-sw" role="switch" aria-checked="${p.on}" aria-labelledby="remind-l" aria-describedby="remind-h"${remindBusy?' disabled':''} onclick="${p.on?'remindOff()':'remindOn()'}"><i></i></button></div>
     <div class="dress-row"><span class="dress-txt"><b id="care-rem-l">Cleaning reminders</b><small id="care-rem-h">A notification when a suit or blazer is on its last wear or due for the cleaner</small></span><button type="button" class="dress-sw${care?' on':''}" id="care-rem-sw" role="switch" aria-checked="${care}" aria-labelledby="care-rem-l" aria-describedby="care-rem-h"${remindBusy?' disabled':''} onclick="${care?'careRemindOff()':'careRemindOn()'}"><i></i></button></div>
