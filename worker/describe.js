@@ -62,7 +62,7 @@ as a main colour and as a stripe or motif colour. The owner may also have colour
    existing - the key, from THIS item's list (main or stripe/motif, as asked) or the owner's own colours for this kind
               of item, that is closest to your hex to the eye.
    match    - "existing" when that colour already IS what the owner described: the same colour name or a usual
-              synonym (navy blue = navy, sky blue = lightblue, ink = darknavy, mushroom = taupe, mustard = gold,
+              synonym (navy blue = navy, sky blue = lightblue, ink, ink navy, ink blue and midnight navy = darknavy, not navy, mushroom = taupe, mustard = gold,
               butter = paleyellow, camel = tan), or a shade a person would not tell apart from it on cloth. Otherwise
               "new". A new colour must be worth having: if the owner's words only restate a listed colour, choose
               existing even when your hex differs a little.
@@ -101,11 +101,15 @@ pattern's STRUCTURE with colour ROLES, never with fixed colours. Your job:
 2. Reuse before inventing (existing, match):
    existing - the key from THIS item's pattern list, or the owner's own patterns for this kind of item, that names it
               best.
-   match    - "existing" when that pattern already names what was described: the same name or a usual synonym
-              (pin-point = pinpoint, plaid = check, grenadine = woven on a tie, fil-a-fil = end-on-end, Prince of Wales
-              = glen-check, a tie's "pin dot" stays new only if the owner says pin dot). "new" when the words name a
-              distinct cloth or a variant a tailor would name separately (hopsack, Bengal stripe, tonal windowpane,
-              Macclesfield neat, Donegal tweed).
+   match    - "existing" only when that pattern already names what was described: the same name or a usual synonym
+              (pin-point = pinpoint, plaid = check, grenadine = woven on a tie, fil-a-fil = end-on-end, a plain
+              "Prince of Wales check" = glen-check). Words about scale, strength or colours alone do not make it new
+              ("faint chalk stripe" = chalk-stripe, "tattersall in navy and red" = tattersall).
+              "new" when the words name a variant or a distinct cloth a tailor would name separately, even when an
+              existing pattern is its family: hopsack, Bengal stripe, tonal windowpane, Macclesfield neat, Donegal
+              tweed (tweed with coloured flecks), pin dot or pin dots (smaller than polka-dot), and a check with an
+              added overcheck ("Prince of Wales with a blue overcheck"). Then existing is that family and plansAs
+              plans it like the family. If your why says a tailor would name it separately, match is "new".
 
 3. name - a short name a tailor or cloth merchant would use, plain lower-case words, at most 4 words and 28 letters.
    description - one sentence on how it looks: structure, scale, contrast (no colours unless they are part of the

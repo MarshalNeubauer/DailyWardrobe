@@ -85,7 +85,7 @@ async function main(){
     const env={APP_TOKEN:'eval',ANTHROPIC_API_KEY:process.env.ANTHROPIC_API_KEY,...(arg('model')?{CLAUDE_DESCRIBE_MODEL:arg('model')}:{})};
     send=async b=>{const r=await worker.fetch(new Request('https://eval.local/describe',{method:'POST',headers:{'content-type':'application/json','x-app-token':'eval'},body:JSON.stringify(b)}),env);return [r.status,await r.json()]}}
   else{const W=process.env.DW_WORKER,T=process.env.DW_TOKEN;if(!W||!T){console.error('Set DW_WORKER and DW_TOKEN (the owner\'s code), or use --direct with ANTHROPIC_API_KEY. Every case is a paid call. Nothing was sent.');process.exit(2)}
-    send=async b=>{const r=await fetch(new URL('describe',W.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':T},body:JSON.stringify(b)});return [r.status,await r.json().catch(()=>({}))]}}
+    send=async b=>{const r=await fetch(new URL('describe',W.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':T,origin:new URL(arg('origin','https://marshalneubauer.github.io/')).origin},body:JSON.stringify(b)});return [r.status,await r.json().catch(()=>({}))]}}
   const out=[],score={ck:0,cn:0,cp:0,cpn:0,pk:0,pn:0,must:{}};
   for(const c of list)for(let run=1;run<=RUNS;run++){
     const b={what:c.what,text:c.text,type:c.type,field:c.field,custom:{},colours:c.colours||{}};
