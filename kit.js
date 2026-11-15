@@ -124,7 +124,7 @@ async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=Da
   for(const r of days)dayRecs[r.date]=r;cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
 
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
-const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleBase'];
+const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
   c.id=crypto.randomUUID();c.added=Date.now();await put(c);items.push(c);cache={};todayStale=true;
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
@@ -300,10 +300,13 @@ const KIT_SAMPLE=[
 const KIT_SAMPLE_NOJKT=[['pants','navy',null,'solid',{}],['pants','charcoal',null,'solid',{}]];   // without jackets: trousers enough to judge (shop.js SHOP_MIN)
 const KIT_EDIT_MS=3000;
 const kitHasSample=()=>items.some(i=>i.sample);
-/* a sample piece changed since it was added (any edit stamps it): it is the owner's now */
-/* (sampleBase: taking it out of rotation or back stamps it without making it his, itemsheet.js togglePause; re-audit 2026-11-15: paused
-   sample shoes stayed after Remove the sample, as "the piece you changed") */
-const kitEdited=i=>!!i.sample&&(i.updated||0)-Math.max(i.added||0,i.sampleBase||0)>KIT_EDIT_MS;
+/* a sample piece he changed is his now. Only an edit he makes in the item sheet makes it his: app.js put sets item.sampleMine while the item sheet is open on it (kitUserEdit);
+   a new stamp alone doesn't (re-audit 2026-11-15: a roll back or a start-up fix-up such as migrateVests or checkArrivals restamped an
+   untouched sample piece, which was then uploaded and kept on Remove the sample), nor does out of rotation (itemsheet.js togglePause sets
+   kitNoMine around its save: paused sample shoes stayed after Remove the sample) */
+let kitNoMine=false;
+const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&typeof editing!=='undefined'&&editing===i.id)i.sampleMine=1};
+const kitEdited=i=>!!i.sample&&!!i.sampleMine;
 const kitSampleSig=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',i.cuff==='french'?'f':''].join('|');
 function kitSampleCards(){const l=KIT_SAMPLE.filter(x=>!dressOut(x[0]));if(!wearsJacket())l.push(...KIT_SAMPLE_NOJKT);
   return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:FABRIC.includes(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}))}
@@ -336,7 +339,7 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
   if(!quiet&&gone.length&&!await askConfirm(`Remove the ${gone.length} sample piece${gone.length===1?'':'s'}?\n\nYour own clothes stay${also}.`,{ok:'Remove',danger:true}))return;
   kitSampling=true;kitSampleBusy(true);if(!quiet)toast('Removing the sample…',8000);
   try{if(typeof recordRun!=='undefined'&&recordRun)await Promise.resolve(recordRun).catch(()=>{});   // (a recording of today from the plan with the sample, still running, would write its pieces back after)
-    const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleBase;return c}),T=todayDate();
+    const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleMine;return c}),T=todayDate();
     const days=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id))).map(r=>kitSampleDay(r,ids,T));
     await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks()}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
@@ -359,7 +362,7 @@ function kitSampleDay(r,ids,T){const c=JSON.parse(JSON.stringify(r)),hit=o=>!!o&
     else for(const k of ['ids','suitDay','vestOn','auto'])delete c[k]}
   return c}
 /* a sample piece kept as the owner's own (the item sheet) */
-async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleBase;await put(it);cache={};todayStale=true;
+async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleMine;await put(it);cache={};todayStale=true;
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';

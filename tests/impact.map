@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	df517dc359538fa9f1cf
-# tested	044a3a47facfea7f4eeb
+# tested	47f83d29a84fb3af8496
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd	shadeRow
@@ -68,7 +67,7 @@ about.test.js	icon-192.png	<loaded>
 about.test.js	icon-512.png	<loaded>
 about.test.js	index.html	<loaded>
 about.test.js	itemsheet.js	<any>	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-about.test.js	kit.js	<any>	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+about.test.js	kit.js	<any>	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 about.test.js	manifest.webmanifest	<loaded>
 about.test.js	mannequin.js	<any>	<loaded>	@{}
 about.test.js	month.js	<any>	<loaded>	nextWorkday
@@ -1535,7 +1534,7 @@ care.test.js	icon-192.png	<loaded>
 care.test.js	icon-512.png	<loaded>
 care.test.js	index.html	<loaded>
 care.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	dropItem	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-care.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+care.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 care.test.js	manifest.webmanifest	<loaded>
 care.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 care.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -1705,7 +1704,7 @@ claudepattern.test.js	icon-192.png	<loaded>
 claudepattern.test.js	icon-512.png	<loaded>
 claudepattern.test.js	index.html	<loaded>
 claudepattern.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	phSigOf	phSm	renderItem	renderWardrobe	smallPhotos	wardPic
-claudepattern.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
+claudepattern.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow	kitUserEdit
 claudepattern.test.js	manifest.webmanifest	<loaded>
 claudepattern.test.js	mannequin.js	<loaded>	@{}
 claudepattern.test.js	month.js	<loaded>	nextWorkday
@@ -1941,7 +1940,7 @@ colnew.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
 colnew.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 colnew.test.js	index.html	<loaded>
 colnew.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	renderWardrobe	sete	wardPic
-colnew.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+colnew.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 colnew.test.js	mannequin.js	<loaded>	@{}
 colnew.test.js	month.js	<loaded>	nextWorkday
 colnew.test.js	mq/shirt-open.js	<loaded>
@@ -2096,7 +2095,7 @@ colpick.test.js	icon-192.png	<loaded>
 colpick.test.js	icon-512.png	<loaded>
 colpick.test.js	index.html	<loaded>
 colpick.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	imgOf	itemBody	itemShown	noMotion	phSm	photoTools	renderItem	renderWardrobe	sete	smallPhotos	wardList	wardPic
-colpick.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+colpick.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 colpick.test.js	manifest.webmanifest	<loaded>
 colpick.test.js	mannequin.js	<loaded>	@{}
 colpick.test.js	month.js	<loaded>	nextWorkday
@@ -2148,7 +2147,7 @@ compare.test.js	icon-192.png	<loaded>
 compare.test.js	icon-512.png	<loaded>
 compare.test.js	index.html	<loaded>
 compare.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	@{constv$itemviewb$ivbodybd$itemba}	@{constv$itemviewb$ivbodybd$itemba}>@v.addEventListenertouchstart	@{constv$itemviewb$ivbodybd$itemba}>end	E	histPush	itemBody	itemShown	noMotion	openItem	patSummary	phSm	photoTools	renderItem	renderWardrobe	sete	sheetSlides	smallPhotos	stepItem	toggleCompare	wardList	wardPic
-compare.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+compare.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 compare.test.js	manifest.webmanifest	<loaded>
 compare.test.js	mannequin.js	<loaded>	@{}
 compare.test.js	month.js	<loaded>	nextWorkday
@@ -2358,7 +2357,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>	lockStale
+daysoff.test.js	planner.js	<loaded>
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -2522,7 +2521,7 @@ deltasync.test.js	icon-192.png	<loaded>
 deltasync.test.js	icon-512.png	<loaded>
 deltasync.test.js	index.html	<loaded>
 deltasync.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	phSigOf	renderItem	smallPhotos
-deltasync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+deltasync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 deltasync.test.js	manifest.webmanifest	<loaded>
 deltasync.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 deltasync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -2724,7 +2723,7 @@ dress.test.js	icon-192.png	<loaded>
 dress.test.js	icon-512.png	<loaded>
 dress.test.js	index.html	<loaded>
 dress.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-dress.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow
+dress.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 dress.test.js	manifest.webmanifest	<loaded>
 dress.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 dress.test.js	month.js	<loaded>	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
@@ -3423,7 +3422,7 @@ invitefix.test.js	dress.js	<any>	<loaded>	dressOn	dressSummary	dressSynced	legac
 invitefix.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 invitefix.test.js	index.html	<loaded>
 invitefix.test.js	itemsheet.js	<any>	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	imgOf	itemShown	makeSmall	noMotion	phSigOf	renderItem	smallPhotos
-invitefix.test.js	kit.js	<any>	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitEdited	kitHasSample	kitSampleBanner	kitSampleBusy	kitSampleRemove	kitStartRow	kitTombs	kitTx
+invitefix.test.js	kit.js	<any>	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitEdited	kitHasSample	kitSampleBanner	kitSampleBusy	kitSampleRemove	kitStartRow	kitTombs	kitTx	kitUserEdit
 invitefix.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 invitefix.test.js	month.js	<any>	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn
 invitefix.test.js	mq/shirt-open.js	<loaded>
@@ -3515,7 +3514,7 @@ inviteswitch.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
 inviteswitch.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 inviteswitch.test.js	index.html	<loaded>
 inviteswitch.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-inviteswitch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+inviteswitch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 inviteswitch.test.js	mannequin.js	<loaded>	@{}
 inviteswitch.test.js	month.js	<loaded>	nextWorkday
 inviteswitch.test.js	mq/shirt-open.js	<loaded>
@@ -3561,7 +3560,7 @@ itemfix.test.js	icon-192.png	<loaded>
 itemfix.test.js	icon-512.png	<loaded>
 itemfix.test.js	index.html	<loaded>
 itemfix.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	colBackFirst	dropItem	histDrop	histPush	itemBody	itemShown	metal	noMotion	openItem	patSummary	photoTools	renderItem	renderWardrobe	rm	season	sete	sheetSlides	smallPhotos	typeTidy	wardList	wardPic
-itemfix.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+itemfix.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 itemfix.test.js	manifest.webmanifest	<loaded>
 itemfix.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 itemfix.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -3840,7 +3839,7 @@ kit.test.js	icon-192.png	<loaded>
 kit.test.js	icon-512.png	<loaded>
 kit.test.js	index.html	<loaded>
 kit.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemShown	noMotion	openItem	patSummary	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitDelMany	kitDraw	kitDupKey	kitDupMark	kitDuplicate	kitEdited	kitEl	kitGo	kitHasSample	kitImpBtn	kitImportGo	kitImportOpen	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitNorm	kitOpen	kitPattern	kitPatternPic	kitPrevDraw	kitRead	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleNote	kitSampleRemove	kitSampleSig	kitSaved	kitScorePic	kitShadePic	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType	kitUnsave	kitWears	pic	tourOpen	tourSeen
+kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitDelMany	kitDraw	kitDupKey	kitDupMark	kitDuplicate	kitEdited	kitEl	kitGo	kitHasSample	kitImpBtn	kitImportGo	kitImportOpen	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitNorm	kitOpen	kitPattern	kitPatternPic	kitPrevDraw	kitRead	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleNote	kitSampleRemove	kitSampleSig	kitSaved	kitScorePic	kitShadePic	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType	kitUnsave	kitUserEdit	kitWears	pic	tourOpen	tourSeen
 kit.test.js	manifest.webmanifest	<loaded>
 kit.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 kit.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -3892,7 +3891,7 @@ kitfix.test.js	icon-192.png	<loaded>
 kitfix.test.js	icon-512.png	<loaded>
 kitfix.test.js	index.html	<loaded>
 kitfix.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-kitfix.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitClose	kitColour	kitDecode	kitDelMany	kitDupKey	kitDupMark	kitEdited	kitEl	kitFail	kitHasSample	kitImpBtn	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportText	kitInert	kitItem	kitKeepSample	kitLastImp	kitLastRow	kitMaterial	kitMetal	kitNorm	kitPattern	kitPrevDraw	kitRead	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSplit	kitStartRow	kitStore	kitTemplate	kitTombs	kitTx	kitType	kitUnimport	kitUnsave
+kitfix.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitClose	kitColour	kitDecode	kitDelMany	kitDupKey	kitDupMark	kitEdited	kitEl	kitFail	kitHasSample	kitImpBtn	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportText	kitInert	kitItem	kitKeepSample	kitLastImp	kitLastRow	kitMaterial	kitMetal	kitNorm	kitPattern	kitPrevDraw	kitRead	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSplit	kitStartRow	kitStore	kitTemplate	kitTombs	kitTx	kitType	kitUnimport	kitUnsave	kitUserEdit
 kitfix.test.js	manifest.webmanifest	<loaded>
 kitfix.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 kitfix.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -3917,7 +3916,7 @@ kitfix.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	readabl
 kitfix.test.js	tests/fixedplan.js	<any>
 kitfix.test.js	today.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	applyZoom	belowBox	canPick	figureStage	goToday	goneNote	hasOutfit	homeDay	keepHome	mvSig	offBtn	offOn	piecesBox	planFor	planMonth	planSnapSoon	planSnapUse	renderToday	slotLabel	slots	swApply	vestRow	wornBar	wornMarks	wornPill	wxPreload	zoomTarget
 kitfix.test.js	ui.js	<loaded>	askAnswer	askConfirm	askEls	inviteOver	isConnected	layerInert	layerUp	uiEsc
-kitfix.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
+kitfix.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	notesRow	setItemField	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardRefresh	wardSaveFields	wardSort	wardView
 kitfix.test.js	watch/leather.jpg	<loaded>
 kitfix.test.js	watch/shirt-open.png	<loaded>
 kitfix.test.js	watch/shirt-tie.png	<loaded>
@@ -3941,7 +3940,7 @@ kvlimit.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	mi
 kvlimit.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 kvlimit.test.js	index.html	<loaded>
 kvlimit.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-kvlimit.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+kvlimit.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 kvlimit.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 kvlimit.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn
 kvlimit.test.js	mq/shirt-open.js	<loaded>
@@ -4451,7 +4450,7 @@ motif.test.js	icon-192.png	<loaded>
 motif.test.js	icon-512.png	<loaded>
 motif.test.js	index.html	<loaded>
 motif.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	patSummary	phSigOf	phSm	renderItem	renderWardrobe	smallPhotos	wardPic
-motif.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
+motif.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow	kitUserEdit
 motif.test.js	manifest.webmanifest	<loaded>
 motif.test.js	mannequin.js	<loaded>	@{}
 motif.test.js	month.js	<loaded>	nextWorkday
@@ -4865,62 +4864,6 @@ newuserplan.test.js	watch/shirt-open.png	<loaded>
 newuserplan.test.js	watch/shirt-tie.png	<loaded>
 newuserplan.test.js	watch/suit.png	<loaded>
 newuserplan.test.js	watch/vest.png	<loaded>
-nu2fix3.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
-nu2fix3.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-nu2fix3.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
-nu2fix3.test.js	analysis.js	<loaded>
-nu2fix3.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
-nu2fix3.test.js	apple-touch-icon.png	<loaded>
-nu2fix3.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
-nu2fix3.test.js	asm-gl.js	<loaded>
-nu2fix3.test.js	asm-watch.js	<loaded>
-nu2fix3.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
-nu2fix3.test.js	care.js	<loaded>	careBadge	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState
-nu2fix3.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown
-nu2fix3.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	applyCustom	arriveN	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayWins	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	leatherWord	lum	lumCol	mergeSettings	mergeState	metalWord	mix	needsJacket	needsTie	nm	occOf	offDays	offName	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	setHash	setKeys	setStampOf	shoeStyle	sockToe	stamp	stampSettings	stateSig	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
-nu2fix3.test.js	detect.js	<loaded>	@	lookOf	ownSett	texPat	tieWeave	usableSett
-nu2fix3.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
-nu2fix3.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests
-nu2fix3.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
-nu2fix3.test.js	icon-192.png	<loaded>
-nu2fix3.test.js	icon-512.png	<loaded>
-nu2fix3.test.js	index.html	<loaded>
-nu2fix3.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	togglePause	wardPic
-nu2fix3.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitClose	kitColour	kitDelMany	kitDupKey	kitDupMark	kitEdited	kitEl	kitHasSample	kitImpBtn	kitImportGo	kitImportOpen	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitMetal	kitNorm	kitPattern	kitPrevDraw	kitRead	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleRemove	kitSampleSig	kitSampleTag	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType
-nu2fix3.test.js	manifest.webmanifest	<loaded>
-nu2fix3.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
-nu2fix3.test.js	month.js	<loaded>	monthFillSoon	monthLink	piecesLine	planOn	shirtWords	stackSVG
-nu2fix3.test.js	mq/shirt-open.js	<loaded>
-nu2fix3.test.js	mq/shirt-tie.js	<loaded>
-nu2fix3.test.js	mq/suit-open.js	<loaded>
-nu2fix3.test.js	mq/suit.js	<loaded>
-nu2fix3.test.js	mq/vest.js	<loaded>
-nu2fix3.test.js	pack.js	<loaded>	packShow
-nu2fix3.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-nu2fix3.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	beltWait	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lockStale	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	topGw	wardStart	watchFit	withColRun
-nu2fix3.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
-nu2fix3.test.js	safety.js	<loaded>	@addEventListenerkeydown	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errTell	pruneTagImgs	safetyStart	storeFailure
-nu2fix3.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	builtinHolidays	closeSettings	countryName	fetchHolidays	isoToDate	loadWeather	locCC	refreshHolidays	refreshToday	renderDaysOffUI	saveUserSettings	setHolidayCountry	setLock	settingsOpen	toast	unit	unitCC	yearDate
-nu2fix3.test.js	setup.js	<loaded>	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolidays	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupYield	tzCountry
-nu2fix3.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	closeShop
-nu2fix3.test.js	start.js	<loaded>	@.catch	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@addEventListenerpopstate	@connRestored.then	appDrop	appPush	appWanted	inviteInUrl	onSyncedData	pageIn	show
-nu2fix3.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
-nu2fix3.test.js	styles.css	#add	#ask-backdrop	#ask-backdrop.on	#ask-sheet	#ask-sheet.on	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#kitsheet	#kitsheet .btns	#kitsheet .kit-x	#kitsheet .vfile	#kitsheet button.pri	#kitsheet button:not(.linkbtn),#kitsheet label.btn	#kitsheet.on	#mannequin-container	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#setup	#setup .kit-start	#setup .kit-start .linkbtn	#setup .kit-start>span	#setup .su-skip	#setup button	#setup button.pri	#setup button[disabled]	#setup.on	#shop-backdrop	#shop-sheet	#spanel .mpanel-in	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#today	#today .row	#today .row .dot	#today .row>.mut:first-child	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.ask-btns	.ask-btns button	.ask-btns button.pri	.ask-q	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.cap	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.daygrid	.daygrid .side	.daygrid .stage	.dot	.dot svg	.fig	.fig .lastworn	.fig .wornbar	.fig .wornbar .lastworn:only-child	.fig .wornbar>*	.fig>svg	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-banner	.kit-banner .btns	.kit-banner b	.kit-banner button	.kit-banner small	.kit-bar	.kit-bar .pri	.kit-body	.kit-body p	.kit-dot	.kit-dot svg	.kit-head	.kit-head h2	.kit-paste	.kit-paste textarea	.kit-row	.kit-row>span:last-child	.kit-rows	.kit-rows li	.kit-rows li:first-child	.kit-rows small	.kit-start	.kit-sum	.kit-tick	.linkbtn	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pchip.vest	.pri	.pstrip	.resetbox .month-link	.resetbox .rsicon	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.row:last-child	.rowtap	.rowtap .cap	.rowtap .named,.gimeta .named	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score .scap	.score li	.score li small	.score li.hard .sbar i	.score li.hard span:first-child	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.sfix	.sfix>small	.sfixbtn	.sfixbtn .dot	.sfixbtn .sfixnm	.sfixbtn b	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slide	.stack	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-sum	.su-sum b	.su-sum li	.su-sum li:first-child	.su-sum span	.su-ttl	.su-ttl h2	.su-ttl small	.thumb	.thumb svg	.vfile	.wpill	.wpill.yes	.wpill::after	:root	<loaded>	body	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,#ward-add,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,#ward-add::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	label:has(>.vfile)	main	nav	nav button	nav button.on	nav::before
-nu2fix3.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	endedAnswer	isPh	localState	phIn	phOut	phStrings	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncOwn	syncRedraw	syncSettingsRedraw	syncShare	syncUrl	syncWaiting	synced
-nu2fix3.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
-nu2fix3.test.js	tests/fixedplan.js	<any>
-nu2fix3.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	belowBox	canPick	figureStage	foldAll	goToday	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	planFor	planMonth	planSnapSoon	planSnapUse	planStartDay	planTrim	preWardrobe	renderToday	slotLabel	slots	stepDay	swApply	swClose	vestRow	wornBar	wornMarks	wornPill	wxPreload	zoomOut	zoomTarget
-nu2fix3.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	askAnswer	askConfirm	askEls	inviteOver	isConnected	layerInert	layerUp	uiEsc
-nu2fix3.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	wardBack	wardBar	wardCount	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
-nu2fix3.test.js	watch/leather.jpg	<loaded>
-nu2fix3.test.js	watch/shirt-open.png	<loaded>
-nu2fix3.test.js	watch/shirt-tie.png	<loaded>
-nu2fix3.test.js	watch/suit.png	<loaded>
-nu2fix3.test.js	watch/vest.png	<loaded>
-nu2fix3.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	serve
-nu2fix3.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	mergeLite	nextRevs	phCollect	putStored	readText	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
-nu2fix3.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	utcDay	whoIs
-nu2fix3.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
 nu2fix2.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 nu2fix2.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRetryLink	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 nu2fix2.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addMulti	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	countWord	cropBox	multiAgain	multiErrCard	multiFail	multiMsg	multiNote	needType	oddWord	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	refineAgain	renderAdd	save	saveCard	savedTitle	setq	shadeRow	shirtColFix	skipCard	stepQty	stopRead	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
@@ -4964,6 +4907,62 @@ nu2fix2.test.js	tests/fixedplan.js	<any>
 nu2fix2.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxPreload	zoomTarget
 nu2fix2.test.js	ui.js	<loaded>	addGate	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	plainErr	renderConnUI
 nu2fix2.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	matRow	moreRow	setQField	wardFlush	wardPendingRestore	wardSaveFields
+nu2fix3.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
+nu2fix3.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
+nu2fix3.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addRestore	checkArrivals	shadeRow
+nu2fix3.test.js	analysis.js	<loaded>
+nu2fix3.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
+nu2fix3.test.js	apple-touch-icon.png	<loaded>
+nu2fix3.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmWtWants
+nu2fix3.test.js	asm-gl.js	<loaded>
+nu2fix3.test.js	asm-watch.js	<loaded>
+nu2fix3.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
+nu2fix3.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careWashed	careWord	careWornLine
+nu2fix3.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	colBtn	colFieldLabel	colHas	colRows	colShows
+nu2fix3.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	arriveN	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayWins	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	leatherLabel	leatherWord	leathersFor	lum	lumCol	mergeSettings	mergeState	metalWord	mix	needsJacket	needsTie	nm	occOf	offDays	offName	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	setHash	setKeys	setStampOf	shadeName	shoeStyle	sockToe	stamp	stampAllSettings	stampSettings	stateSig	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
+nu2fix3.test.js	detect.js	<loaded>	@	lookOf	ownSett	texPat	tieWeave	usableSett
+nu2fix3.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
+nu2fix3.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests
+nu2fix3.test.js	history.js	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	planRulesCheck	recordDays	replanFuture	resetCard	saveDay	scoreCard	slotPool	whenPulled
+nu2fix3.test.js	icon-192.png	<loaded>
+nu2fix3.test.js	icon-512.png	<loaded>
+nu2fix3.test.js	index.html	<loaded>
+nu2fix3.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sete	sheetSlides	smallPhotos	togglePause	wardList	wardPic
+nu2fix3.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitClose	kitColour	kitDelMany	kitDupKey	kitDupMark	kitEdited	kitEl	kitHasSample	kitImpBtn	kitImportGo	kitImportOpen	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitMetal	kitNorm	kitPattern	kitPrevDraw	kitRead	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType	kitUserEdit
+nu2fix3.test.js	manifest.webmanifest	<loaded>
+nu2fix3.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
+nu2fix3.test.js	month.js	<loaded>	monthFillSoon	monthLink	piecesLine	planOn	shirtWords	stackSVG
+nu2fix3.test.js	mq/shirt-open.js	<loaded>
+nu2fix3.test.js	mq/shirt-tie.js	<loaded>
+nu2fix3.test.js	mq/suit-open.js	<loaded>
+nu2fix3.test.js	mq/suit.js	<loaded>
+nu2fix3.test.js	mq/vest.js	<loaded>
+nu2fix3.test.js	pack.js	<loaded>	packShow
+nu2fix3.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
+nu2fix3.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	beltWait	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	frozenOutfit	groupsNear	itemVote	jacketGroup	leatherGroup	lockStale	lookRepeat	metalOf	nearCost	outfit	outfitScore	pairDown	pairScore	pairUp	pairVote	patInfo	patternScore	pcol	planSim	planStart	rateOutfit	scoreAdvice	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	topGw	wardStart	watchFit	withColRun
+nu2fix3.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+nu2fix3.test.js	safety.js	<loaded>	@addEventListenerkeydown	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errTell	pruneTagImgs	safetyStart	storeFailure
+nu2fix3.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	builtinHolidays	closeSettings	countryName	fetchHolidays	isoToDate	loadWeather	locCC	refreshHolidays	refreshToday	renderDaysOffUI	saveUserSettings	setHolidayCountry	setLock	settingsOpen	toast	unit	unitCC	yearDate
+nu2fix3.test.js	setup.js	<loaded>	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolidays	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupYield	tzCountry
+nu2fix3.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	closeShop
+nu2fix3.test.js	start.js	<loaded>	@.catch	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@addEventListenerpopstate	@connRestored.then	appDrop	appPush	appWanted	inviteInUrl	onSyncedData	pageIn	show
+nu2fix3.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
+nu2fix3.test.js	styles.css	#add	#add #queue .card>label select,#item-view .card>label select	#add #queue .card>label select,#item-view .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .card>label,#item-view .card>label	#ask-backdrop	#ask-backdrop.on	#ask-sheet	#ask-sheet.on	#col-backdrop	#col-sheet	#item-backdrop	#item-backdrop.closing	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .card.ivsec	#item-view .phtools	#item-view .phtools :is(button,.btn)	#item-view .phtools>:last-child:nth-child(odd)	#item-view.closing	#item-view.on,#item-view.closing	#kitsheet	#kitsheet .btns	#kitsheet .kit-x	#kitsheet .vfile	#kitsheet button.pri	#kitsheet button:not(.linkbtn),#kitsheet label.btn	#kitsheet button[disabled]	#kitsheet.on	#mannequin-container	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#setup	#setup .kit-start	#setup .kit-start .linkbtn	#setup .kit-start>span	#setup .su-skip	#setup button	#setup button.pri	#setup button[disabled]	#setup.on	#shop-backdrop	#shop-sheet	#spanel .mpanel-in	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#today	#today .row	#today .row .dot	#today .row>.mut:first-child	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.ask-btns	.ask-btns button	.ask-btns button.pri	.ask-q	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.cap	.card label	.colbtn	.colchev	.colchip	.colchip.none,.cpsw.none,.cpbig.none	.colnm	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.daygrid	.daygrid .side	.daygrid .stage	.dot	.dot svg	.fig	.fig .lastworn	.fig .wornbar	.fig .wornbar .lastworn:only-child	.fig .wornbar>*	.fig>svg	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi,.card	.hbtns	.hgear	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbody	.ivcare .btns button	.ivcare .carecount	.ivchev	.ivdel	.ivdel button	.ivdraw	.ivdraw .thumb	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivph	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivt	.ivt .gtype	.ivt h2	.ivtags .shaderow	.kit-banner	.kit-banner .btns	.kit-banner b	.kit-banner button	.kit-banner small	.kit-bar	.kit-bar .pri	.kit-body	.kit-body p	.kit-dot	.kit-dot svg	.kit-head	.kit-head h2	.kit-paste	.kit-paste textarea	.kit-row	.kit-row>span:last-child	.kit-rows	.kit-rows li	.kit-rows li:first-child	.kit-rows small	.kit-start	.kit-sum	.kit-tick	.linkbtn	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.mltxt small	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pchip.vest	.phtools	.phtools button,.phtools .btn	.pri	.pstrip	.resetbox .month-link	.resetbox .rsicon	.rotbtn.on	.rotnote	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.row:last-child	.rowtap	.rowtap .cap	.rowtap .named,.gimeta .named	.rpanel	.rpanel-in	.sbar	.sbar i	.score	.score .chev,.month-link .chev	.score .lbl	.score .lbl b,.mltxt b	.score .lbl small	.score .lbl small,.mltxt small	.score .lbl,.mltxt	.score .lim	.score .month-link	.score .num	.score .num,.mlstrip,.pstrip	.score .pts	.score .scap	.score li	.score li small	.score li.hard .sbar i	.score li.hard span:first-child	.score li.miss .sbar i	.score li.miss span:first-child	.score li:first-child	.score summary,.month-link	.score ul	.score.good .num,.sc.good	.score.low .num,.sc.low	.sfix	.sfix>small	.sfixbtn	.sfixbtn .dot	.sfixbtn .sfixnm	.sfixbtn b	.shaderow	.shctl	.shctl .shbtn	.shctl .shval	.shelp	.shlab	.side>.mbox:last-child	.side>.score,.side>.mbox	.side>:first-child	.slide	.stack	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-sum	.su-sum b	.su-sum li	.su-sum li:first-child	.su-sum span	.su-ttl	.su-ttl h2	.su-ttl small	.thumb	.thumb svg	.vfile	.wpill	.wpill.yes	.wpill::after	:is(#item-view,#add) .wfld	:is(#item-view,#add) .wnotes textarea	:is(#item-view,#add) label.wnotes	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	:root	<loaded>	body	body.iv-on #toast,body.iv-on #busy	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,#ward-add,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,#ward-add::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	label:has(>.vfile)	main	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
+nu2fix3.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	endedAnswer	isPh	localState	phIn	phOut	phStrings	pullDone	pulledYet	restoreDone	restoreWanted	rollBackState	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	snapPreSetup	syncLaterRun	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncOwn	syncRedraw	syncSettingsRedraw	syncShare	syncUrl	syncWaiting	synced
+nu2fix3.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
+nu2fix3.test.js	tests/fixedplan.js	<any>
+nu2fix3.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	belowBox	canPick	figureStage	foldAll	goToday	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	planFor	planMonth	planSnapSoon	planSnapUse	planStartDay	planTrim	preWardrobe	renderToday	slotLabel	slots	stepDay	swApply	swClose	vestRow	wornBar	wornMarks	wornPill	wxPreload	zoomOut	zoomTarget
+nu2fix3.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	askAnswer	askConfirm	askEls	inviteOver	isConnected	layerInert	layerUp	uiEsc
+nu2fix3.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	fldRow	ivOn	matRow	notesRow	setItemField	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardRefresh	wardSaveFields	wardSort	wardView
+nu2fix3.test.js	watch/leather.jpg	<loaded>
+nu2fix3.test.js	watch/shirt-open.png	<loaded>
+nu2fix3.test.js	watch/shirt-tie.png	<loaded>
+nu2fix3.test.js	watch/suit.png	<loaded>
+nu2fix3.test.js	watch/vest.png	<loaded>
+nu2fix3.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	serve
+nu2fix3.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	mergeLite	nextRevs	phCollect	putStored	readText	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
+nu2fix3.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	utcDay	whoIs
+nu2fix3.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
 nufix7.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 nufix7.test.js	account.js	<loaded>	acctBase	acctRetryLink	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 nufix7.test.js	add.js	<loaded>	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd
@@ -5139,7 +5138,7 @@ onorder.test.js	icon-192.png	<loaded>
 onorder.test.js	icon-512.png	<loaded>
 onorder.test.js	index.html	<loaded>
 onorder.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	colBackFirst	dropItem	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	togglePause	wardList	wardPic
-onorder.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow
+onorder.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 onorder.test.js	manifest.webmanifest	<loaded>
 onorder.test.js	mannequin.js	<loaded>	@{}
 onorder.test.js	month.js	<loaded>	nextWorkday
@@ -5454,7 +5453,7 @@ photobackdrop.test.js	icon-192.png	<loaded>
 photobackdrop.test.js	icon-512.png	<loaded>
 photobackdrop.test.js	index.html	<loaded>
 photobackdrop.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	phSigOf	renderItem	smallPhotos
-photobackdrop.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+photobackdrop.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 photobackdrop.test.js	manifest.webmanifest	<loaded>
 photobackdrop.test.js	mannequin.js	<loaded>	@{}
 photobackdrop.test.js	month.js	<loaded>	nextWorkday
@@ -5506,7 +5505,7 @@ photoedit.test.js	icon-192.png	<loaded>
 photoedit.test.js	icon-512.png	<loaded>
 photoedit.test.js	index.html	<loaded>
 photoedit.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	applyCrop	cropDrag	cropEditor	cropGeom	cropSource	imgOf	itemBody	itemShown	layoutCrop	makeSmall	noMotion	phSigOf	phSm	photoTools	renderItem	renderWardrobe	replacePhoto	rotatePhoto	setPhoto	setPic	smallPhotos	startCrop	togglePhotoTools	undoPhoto	wardList	wardPic
-photoedit.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+photoedit.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 photoedit.test.js	manifest.webmanifest	<loaded>
 photoedit.test.js	mannequin.js	<loaded>	@{}
 photoedit.test.js	month.js	<loaded>	nextWorkday
@@ -5983,7 +5982,7 @@ refresh.test.js	icon-192.png	<loaded>
 refresh.test.js	icon-512.png	<loaded>
 refresh.test.js	index.html	<loaded>
 refresh.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
-refresh.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+refresh.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 refresh.test.js	manifest.webmanifest	<loaded>
 refresh.test.js	mannequin.js	<loaded>	@{}
 refresh.test.js	month.js	<loaded>	nextWorkday
@@ -6343,7 +6342,7 @@ rollback.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	m
 rollback.test.js	history.js	<loaded>	checkPlanRules	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 rollback.test.js	index.html	<loaded>
 rollback.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
-rollback.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+rollback.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 rollback.test.js	mannequin.js	<loaded>	@{}
 rollback.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn
 rollback.test.js	mq/shirt-open.js	<loaded>
@@ -6390,7 +6389,7 @@ rollbackwhere.test.js	dress.js	<loaded>	dressOn	dressSynced	legacyVest	migrateVe
 rollbackwhere.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 rollbackwhere.test.js	index.html	<loaded>
 rollbackwhere.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
-rollbackwhere.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+rollbackwhere.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 rollbackwhere.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 rollbackwhere.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 rollbackwhere.test.js	mq/shirt-open.js	<loaded>
@@ -6441,7 +6440,7 @@ rotation-pause.test.js	icon-192.png	<loaded>
 rotation-pause.test.js	icon-512.png	<loaded>
 rotation-pause.test.js	index.html	<loaded>
 rotation-pause.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemShown	noMotion	openItem	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	togglePause	wardList	wardPic
-rotation-pause.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+rotation-pause.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 rotation-pause.test.js	manifest.webmanifest	<loaded>
 rotation-pause.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 rotation-pause.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -6846,7 +6845,7 @@ run.js: planner: shoes, belts, leather and metals	apple-touch-icon.png	<loaded>
 run.js: planner: shoes, belts, leather and metals	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
 run.js: planner: shoes, belts, leather and metals	asm-gl.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	asm-watch.js	<loaded>
-run.js: planner: shoes, belts, leather and metals	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
+run.js: planner: shoes, belts, leather and metals	assemble.js	<loaded>	@
 run.js: planner: shoes, belts, leather and metals	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow
 run.js: planner: shoes, belts, leather and metals	colpick.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	applyCustom	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	leatherWord	lum	lumCol	metalWord	mix	needsTie	nm	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	setHash	setKeys	shoeStyle	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	wearsJacket	wearsTie
@@ -7137,8 +7136,7 @@ safetysync.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 safetysync.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	onSyncedData	pageIn	show
 safetysync.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
 safetysync.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#setup	#setup .su-skip	#setup button	#setup button.pri	#setup.on	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gotoday	.gotoday::after	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.side>.firstrun	.side>:first-child	.slide	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,#ward-add,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,#ward-add::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
-safetysync.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	endedAnswer	isPh	localState	phIn	phOut	phStrings	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSettingsRedraw	syncShare	syncUrl	syncWaiting	synced
-safetysync.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	endedAnswer	isPh	localState	phIn	phOut	phStrings	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNetText	syncNow	syncOnce	syncRedraw	syncSettingsRedraw	syncUrl	syncWaiting	synced
+safetysync.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	endedAnswer	isPh	localState	phIn	phOut	phStrings	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncLite	syncMark	syncNeedsPull	syncNetText	syncNow	syncOnce	syncRedraw	syncSettingsRedraw	syncShare	syncUrl	syncWaiting	synced
 safetysync.test.js	tagging.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 safetysync.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	planStartDay	planTrim	renderToday	swApply	todayBtn	wornPill	wxPreload	zoomTarget
 safetysync.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp	needConn	netErr
@@ -7275,7 +7273,7 @@ sett.test.js	icon-192.png	<loaded>
 sett.test.js	icon-512.png	<loaded>
 sett.test.js	index.html	<loaded>
 sett.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	histPush	imgOf	itemBody	itemShown	makeSmall	noMotion	openItem	patSummary	phSigOf	phSm	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-sett.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow
+sett.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 sett.test.js	manifest.webmanifest	<loaded>
 sett.test.js	mannequin.js	<loaded>	@{}
 sett.test.js	month.js	<loaded>	nextWorkday
@@ -7481,7 +7479,7 @@ setup.test.js	icon-192.png	<loaded>
 setup.test.js	icon-512.png	<loaded>
 setup.test.js	index.html	<loaded>
 setup.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos
-setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitClose	kitClothPic	kitDraw	kitEl	kitGo	kitHasSample	kitInert	kitOpen	kitPatternPic	kitSampleBanner	kitScorePic	kitShadePic	kitStartRow	kitWears	pic	tourOpen	tourSeen
+setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitClose	kitClothPic	kitDraw	kitEl	kitGo	kitHasSample	kitInert	kitOpen	kitPatternPic	kitSampleBanner	kitScorePic	kitShadePic	kitStartRow	kitUserEdit	kitWears	pic	tourOpen	tourSeen
 setup.test.js	manifest.webmanifest	<loaded>
 setup.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 setup.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG
@@ -7585,7 +7583,7 @@ shade.test.js	icon-192.png	<loaded>
 shade.test.js	icon-512.png	<loaded>
 shade.test.js	index.html	<loaded>
 shade.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	histPush	imgOf	itemBody	itemShown	makeSmall	noMotion	openItem	phSigOf	phSm	photoTools	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-shade.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow
+shade.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 shade.test.js	manifest.webmanifest	<loaded>
 shade.test.js	mannequin.js	<loaded>	@{}
 shade.test.js	month.js	<loaded>	nextWorkday
@@ -7701,7 +7699,7 @@ sharpclose.test.js	icon-192.png	<loaded>
 sharpclose.test.js	icon-512.png	<loaded>
 sharpclose.test.js	index.html	<loaded>
 sharpclose.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	imgOf	itemBody	itemShown	noMotion	patSummary	phSm	photoTools	renderItem	renderWardrobe	replaceTexture	setPic	setTexture	smallPhotos	undoPhoto	wardList	wardPic
-sharpclose.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+sharpclose.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 sharpclose.test.js	manifest.webmanifest	<loaded>
 sharpclose.test.js	mannequin.js	<loaded>	@{}
 sharpclose.test.js	month.js	<loaded>	nextWorkday
@@ -7753,7 +7751,7 @@ shirts.test.js	icon-192.png	<loaded>
 shirts.test.js	icon-512.png	<loaded>
 shirts.test.js	index.html	<loaded>
 shirts.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	histDrop	itemBody	itemShown	noMotion	patSummary	photoTools	renderItem	renderWardrobe	sete	sheetSlides	smallPhotos	typeTidy	wardList	wardPic
-shirts.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+shirts.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 shirts.test.js	manifest.webmanifest	<loaded>
 shirts.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 shirts.test.js	month.js	<loaded>	nextWorkday
@@ -7819,7 +7817,7 @@ shirtweave.test.js	icon-192.png	<loaded>
 shirtweave.test.js	icon-512.png	<loaded>
 shirtweave.test.js	index.html	<loaded>
 shirtweave.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	phSigOf	phSm	renderItem	renderWardrobe	smallPhotos	wardPic
-shirtweave.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
+shirtweave.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow	kitUserEdit
 shirtweave.test.js	manifest.webmanifest	<loaded>
 shirtweave.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 shirtweave.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	shirtWords	stackSVG
@@ -7872,7 +7870,7 @@ shop.test.js	icon-192.png	<loaded>
 shop.test.js	icon-512.png	<loaded>
 shop.test.js	index.html	<loaded>
 shop.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
-shop.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+shop.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 shop.test.js	manifest.webmanifest	<loaded>
 shop.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 shop.test.js	month.js	<loaded>	monthFillSoon	monthLink	nextWorkday	piecesLine	planOn	shirtWords	stackSVG
@@ -7976,7 +7974,7 @@ snapshots.test.js	icon-192.png	<loaded>
 snapshots.test.js	icon-512.png	<loaded>
 snapshots.test.js	index.html	<loaded>
 snapshots.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-snapshots.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+snapshots.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 snapshots.test.js	manifest.webmanifest	<loaded>
 snapshots.test.js	mannequin.js	<loaded>	@{}
 snapshots.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn
@@ -8088,7 +8086,7 @@ speed.test.js	icon-192.png	<loaded>
 speed.test.js	icon-512.png	<loaded>
 speed.test.js	index.html	<loaded>
 speed.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
-speed.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+speed.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 speed.test.js	manifest.webmanifest	<any>	<loaded>
 speed.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 speed.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -8139,7 +8137,7 @@ staledevice.test.js	icon-192.png	<loaded>
 staledevice.test.js	icon-512.png	<loaded>
 staledevice.test.js	index.html	<loaded>
 staledevice.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	cropSource	imgOf	itemShown	makeSmall	phSigOf	renderItem	smallPhotos
-staledevice.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+staledevice.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 staledevice.test.js	manifest.webmanifest	<loaded>
 staledevice.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 staledevice.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -8406,7 +8404,7 @@ sync.test.js	icon-192.png	<loaded>
 sync.test.js	icon-512.png	<loaded>
 sync.test.js	index.html	<loaded>
 sync.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
-sync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+sync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 sync.test.js	manifest.webmanifest	<loaded>
 sync.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 sync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -8573,7 +8571,7 @@ tagswatch.test.js	icon-192.png	<loaded>
 tagswatch.test.js	icon-512.png	<loaded>
 tagswatch.test.js	index.html	<loaded>
 tagswatch.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	dropItem	histDrop	itemBody	itemShown	noMotion	patSummary	phSm	photoTools	renderItem	renderWardrobe	sete	smallPhotos	wardList	wardPic
-tagswatch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+tagswatch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 tagswatch.test.js	manifest.webmanifest	<loaded>
 tagswatch.test.js	mannequin.js	<loaded>	@{}
 tagswatch.test.js	month.js	<loaded>	nextWorkday
@@ -8674,7 +8672,7 @@ testersync.test.js	dress.js	<loaded>	dressSummary	migrateVests
 testersync.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 testersync.test.js	index.html	<loaded>
 testersync.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-testersync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+testersync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 testersync.test.js	mannequin.js	<loaded>	@{}
 testersync.test.js	month.js	<loaded>	nextWorkday
 testersync.test.js	mq/shirt-open.js	<loaded>
@@ -8772,7 +8770,7 @@ texswatch.test.js	icon-192.png	<loaded>
 texswatch.test.js	icon-512.png	<loaded>
 texswatch.test.js	index.html	<loaded>
 texswatch.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	phSigOf	phSm	renderItem	renderWardrobe	setPic	setTexture	smallPhotos	undoPhoto	wardPic
-texswatch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
+texswatch.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow	kitUserEdit
 texswatch.test.js	manifest.webmanifest	<loaded>
 texswatch.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 texswatch.test.js	month.js	<loaded>	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -8827,7 +8825,7 @@ texture.test.js	icon-192.png	<loaded>
 texture.test.js	icon-512.png	<loaded>
 texture.test.js	index.html	<loaded>
 texture.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	histPush	imgOf	itemBody	itemShown	makeSmall	noMotion	openItem	phSigOf	phSm	photoTools	renderItem	renderWardrobe	replaceTexture	setPic	setTexture	sheetSlides	smallPhotos	undoPhoto	wardList	wardPic
-texture.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow
+texture.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 texture.test.js	manifest.webmanifest	<loaded>
 texture.test.js	mannequin.js	<loaded>	@{}
 texture.test.js	month.js	<loaded>	nextWorkday
@@ -9520,7 +9518,7 @@ wardgrid.test.js	icon-192.png	<loaded>
 wardgrid.test.js	icon-512.png	<loaded>
 wardgrid.test.js	index.html	<loaded>
 wardgrid.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	phSm	renderItem	renderWardrobe	smallPhotos	wardPic
-wardgrid.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+wardgrid.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 wardgrid.test.js	manifest.webmanifest	<loaded>
 wardgrid.test.js	mannequin.js	<loaded>	@{}
 wardgrid.test.js	month.js	<loaded>	nextWorkday
@@ -9624,7 +9622,7 @@ wardrobe.test.js	icon-192.png	<loaded>
 wardrobe.test.js	icon-512.png	<loaded>
 wardrobe.test.js	index.html	<loaded>
 wardrobe.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	dropItem	histDrop	histPush	itemBody	itemShown	noMotion	openItem	patSummary	phSm	photoTools	renderItem	renderWardrobe	rm	sheetSlides	smallPhotos	stepItem	wardList	wardPic
-wardrobe.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow
+wardrobe.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 wardrobe.test.js	manifest.webmanifest	<loaded>
 wardrobe.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>mqHas	@{}>outfitMannequinSvg	@{}>pattern
 wardrobe.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -9681,7 +9679,7 @@ wardrobetap.test.js	icon-192.png	<loaded>
 wardrobetap.test.js	icon-512.png	<loaded>
 wardrobetap.test.js	index.html	<loaded>
 wardrobetap.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	@{constv$itemviewb$ivbodybd$itemba}	@{constv$itemviewb$ivbodybd$itemba}>@v.addEventListenertouchmove	@{constv$itemviewb$ivbodybd$itemba}>@v.addEventListenertouchstart	@{constv$itemviewb$ivbodybd$itemba}>end	@{constv$itemviewb$ivbodybd$itemba}>put	E	closeItem	colBackFirst	cropEditor	cropGeom	dropItem	histDrop	histPush	imgOf	itemBody	itemShown	layoutCrop	noMotion	openItem	phSm	photoTools	renderItem	renderWardrobe	rm	sete	sheetSlides	smallPhotos	startCrop	stepItem	wardList	wardPic
-wardrobetap.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+wardrobetap.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 wardrobetap.test.js	manifest.webmanifest	<loaded>
 wardrobetap.test.js	mannequin.js	<loaded>	@{}
 wardrobetap.test.js	month.js	<loaded>	nextWorkday
@@ -9785,7 +9783,7 @@ watchmatch.test.js	icon-192.png	<loaded>
 watchmatch.test.js	icon-512.png	<loaded>
 watchmatch.test.js	index.html	<loaded>
 watchmatch.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constv$itemviewb$ivbodybd$itemba}	E	itemBody	itemShown	noMotion	photoTools	renderItem	renderWardrobe	sete	smallPhotos	wardList	wardPic
-watchmatch.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow
+watchmatch.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 watchmatch.test.js	manifest.webmanifest	<loaded>
 watchmatch.test.js	mannequin.js	<loaded>	@{}
 watchmatch.test.js	month.js	<loaded>	nextWorkday

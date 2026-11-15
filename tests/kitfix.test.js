@@ -37,7 +37,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>missingItemPics().every(i=>!i.sample)&&missingItemPics().length<=1),'"Generate item pictures" offers none of the sample\'s pieces');
     /* ---- removing the sample: day records, a piece he changed, one write ---- */
     const rm=await p.evaluate(async()=>{const s=items.filter(i=>i.sample),shirt=s.find(i=>i.type==='shirt');
-      shirt.name='My white shirt';shirt.added=Date.now()-60000;await put(shirt);   // changed after it was added
+      openItem(shirt.id);await setItemField(shirt.id,'name','My white shirt');closeItem();   // renamed in the item sheet
       const suit=s.find(i=>i.type==='suit');
       await saveDay({date:'2026-11-10',ids:{top:suit.id,shirt:shirt.id},suitDay:true,worn:true});
       await saveDay({date:'2026-11-12',ids:{top:suit.id},occasion:'wedding',force:{top:suit.id}});

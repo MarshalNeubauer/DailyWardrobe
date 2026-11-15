@@ -148,12 +148,12 @@ async function redetect(id){
 async function setItemArrives(id,v){const it=items.find(x=>x.id===id);if(!it)return;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))it.arrives=v;else delete it.arrives;await put(it);cache={};
   if(await checkArrivals())return renderWardrobe();renderWardrobe()}
 async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;it.paused=!it.paused;if(!it.paused){delete it.paused;delete it.order;delete it.arrives}
-  if(it.sample&&typeof kitEdited==='function'&&!kitEdited(it))it.sampleBase=Date.now();   // out of rotation doesn't make a sample piece his (kit.js kitEdited)
   let n=0;if(it.paused){const T=todayDate();
     for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
       if(hit){const nr={...r,force:f};if(!Object.keys(f).length)delete nr.force;delete nr.ids;await saveDay(nr,true);n++}}}
-  await put(it);cache={};renderWardrobe();
+  // out of rotation doesn't make a sample piece his (kit.js kitNoMine; put reads it at once)
+  const kn=typeof kitNoMine!=='undefined';if(kn)kitNoMine=true;const pw=put(it);if(kn)kitNoMine=false;await pw;cache={};renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);cache={};renderWardrobe()}
 async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast (wardrobe.js)

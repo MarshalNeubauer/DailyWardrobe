@@ -56,6 +56,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       'gold, rose gold and gunmetal watches and cufflinks get their metal, and a Metal column is read: '+im.metal.join(' | '));
     ok(/^shirt:lightblue:white::/.test(im.multi[0])&&/^shirt:blue:white::/.test(im.multi[1])&&/^tie:navy:burgundy:white:/.test(im.multi[2]),'several colours in one cell fill the second and third colours: '+im.multi.join(' | '));
     ok(im.words.map(x=>x.split(':').slice(0,2).join(':')).slice(0,4).join()==='pants:grey,shirt:white,shoes:black,suit:navy'&&!/^bad/.test(im.words[4])&&!/^bad/.test(im.words[5]),'Trouser, Oxford shirt, "Shoes - Oxford", Suit jacket, Mauve and Fuchsia are read: '+im.words.join(' | '));
+    /* only his edits in the item sheet make a sample piece his: not a roll back, a start-up fix-up or out of rotation (Fixer 4's review) */
+    const mine=await p.evaluate(async()=>{const S=t=>items.filter(i=>i.sample&&i.type===t);
+      const fix=S('tie')[0];fix.added=Date.now()-60000;await put(fix);   // a start-up fix-up's save (migrateVests, texSwatches): a new stamp, no item sheet
+      const arr=S('shoes')[0];arr.paused=true;arr.order=true;arr.arrives=isoKey(new Date(Date.now()-3*864e5));arr.added=Date.now()-60000;await put(arr);await checkArrivals();
+      const local=await localState(),snap={items:local.items.map(i=>({...i})),days:local.days,tombstones:local.tombstones,settings:local.settings};
+      await applyMerged(mergeState(local,rollBackState(local,snap,Date.now()+60000)),local);   // a roll back restamps every piece
+      const after=items.filter(i=>i.sample),mine0=after.filter(kitEdited).length;
+      const pz=S('belt')[0];openItem(pz.id);await togglePause(pz.id);const paused=kitEdited(items.find(i=>i.id===pz.id));
+      const ed=S('socks')[0];openItem(ed.id);await sete(ed.id,'primaryColor','charcoal');const edited=kitEdited(items.find(i=>i.id===ed.id));closeItem();
+      const nm=S('suit')[0];await setItemField(nm.id,'name','My suit');   // (typed text saved after the sheet closed)
+      return {n:after.length,mine:mine0,arrived:!items.find(i=>i.id===arr.id).paused,fixUp:kitEdited(items.find(i=>i.id===fix.id)),
+        share:syncShare({items,days:[]}).items.filter(i=>i.sample).map(i=>i.type).sort().join(),paused,edited,named:kitEdited(items.find(i=>i.id===nm.id))}});
+    ok(mine.n===24&&mine.mine===0&&!mine.fixUp&&mine.arrived,`a start-up fix-up, an arrival and a roll back restamp sample pieces without making them his (${JSON.stringify(mine)})`);
+    ok(!mine.paused&&mine.edited&&mine.named&&mine.share==='socks,suit','out of rotation in the item sheet doesn\'t make one his; a colour or name changed there does, and only those are backed up: '+mine.share);
     /* the arrow keys in the import sheet */
     const ar=await p.evaluate(()=>{kitImportOpen();const ta=document.querySelector('#kit-paste');ta.value='Type,Colour\nTie,Navy';kitImportText(ta.value);ta.focus();
       for(const k of ['ArrowRight','ArrowLeft','ArrowRight'])ta.dispatchEvent(new KeyboardEvent('keydown',{key:k,bubbles:true}));
