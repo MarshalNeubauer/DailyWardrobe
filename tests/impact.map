@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	4b079fcc7810761248aa
+# tested	d1697cb5250a10d851ec
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	addKeep	addKeepSoon	addRestore	checkArrivals	renderAdd	shadeRow
@@ -7520,7 +7520,7 @@ shirts.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	readabl
 shirts.test.js	tests/fixedplan.js	<any>
 shirts.test.js	tests/workersrc.js	<any>
 shirts.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	todayBtn	wornPill	wxPreload	zoomTarget
-shirts.test.js	ui.js	<loaded>	connNote	isConnected	layerInert	layerUp
+shirts.test.js	ui.js	<loaded>	connNote	inviteOver	isConnected	layerInert	layerUp
 shirts.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 shirts.test.js	watch/leather.jpg	<loaded>
 shirts.test.js	watch/shirt-open.png	<loaded>
