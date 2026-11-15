@@ -207,7 +207,7 @@ async function shareLocalPics(){const W=workerBase();if(!W)return 0;let n=0;
     try{const r=await fetch(W.url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({key:k,rec:clean})});
       if(!r.ok)break;await keepRender(k,clean,false);n++}catch{break}}
   return n}
-const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type))return false;const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
+const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM_PIC_TYPES.includes(i.type)||i.sample)return false;/* (not the sample wardrobe's pieces: not his) */const k=itemKey(i);if(seen.has(k)||renders[k])return false;seen.add(k);return true})};
 let itemBatch=false;
 function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
   b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt, sock, trousers, coat and watch has a picture';b.disabled=!n;if(typeof needConn==='function')needConn(b)}
