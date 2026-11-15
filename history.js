@@ -128,9 +128,9 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
     ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another ↻</button>`}</div>`:''}
     <div class="pick-grid">${scored.map(card).join('')}</div>`;
   picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
-  if(typeof layerOpen==='function')layerOpen($('#pick-sheet'))}
+  if(typeof layerOpen==='function')layerOpen($('#pick-sheet'));if(typeof appPush==='function')appPush('pick')}   // the phone's Back closes it (start.js)
 function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
-  if(was&&typeof layerClose==='function')layerClose(s);
+  if(was&&typeof layerClose==='function')layerClose(s);if(was&&typeof appDrop==='function')appDrop('pick');
   if(typeof syncLaterRun==='function')syncLaterRun('today')}   // a sync's redraw that waited for the picker (sync.js)
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
 async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
