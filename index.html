@@ -28,6 +28,7 @@
 <button class="addrow" onclick="addManual()"><span>Add without photo</span><small>Pick the type and colors yourself</small><span class="chev" aria-hidden="true">›</span></button><button class="addrow" id="add-import" onclick="kitImportOpen()"><span>Import from a spreadsheet</span><small>Rows pasted from Numbers, Excel or Google Sheets, or a CSV file</small><span class="chev" aria-hidden="true">›</span></button></div>
 <p id="multi-status" class="mut"></p><div id="save-all"></div>
 <div id="queue"></div></section>
+<button type="button" id="ward-add" class="wfab" onclick="openAdd()" aria-label="Add to wardrobe"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></button>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>
 <nav><button id="n-today" onclick="goToday()">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-stats" onclick="show('stats')">Insights</button></nav>

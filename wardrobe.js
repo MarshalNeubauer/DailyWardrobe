@@ -69,7 +69,7 @@ function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way$
 function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();return t?', '+t:''}
   const q=wardNorm(wardQ);
   if(!items.length&&typeof setupWardEmpty==='function')return setupWardEmpty();   // setup.js: the empty Wardrobe's card
-  if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with + Add above.</p>';
+  if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with the + button.</p>';
   const all=flt==='all'?0:items.filter(i=>wardMatch(i,q)).length,tl=(TYPES[flt]||'').toLowerCase();
   return `<div class="wnone" id="wnone"><b>Nothing matches “${esc(wardQ.trim())}”${flt==='all'?'':` in ${esc(tl)}`}</b><p class="mut">${all?`${all} item${all===1?' matches':'s match'} in the rest of your wardrobe.`:'Search looks at names, brands, notes, materials, types, colors and patterns.'}</p>`+
     `<div class="btns">${all?`<button type="button" class="pri" onclick="flt='all';renderWardrobe()">Search all types</button>`:''}<button type="button" onclick="wardClear()">Clear search</button></div></div>`}

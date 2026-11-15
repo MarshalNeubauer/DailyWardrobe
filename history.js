@@ -1,4 +1,4 @@
-/* Daily Wardrobe: the outfit history: past days, the coming week's locks, learning from changes, choosing a piece by hand, correcting a past day,
+/* Daily Wardrobe: the outfit history: past days, the coming week's locks, choosing a piece by hand, correcting a past day,
    occasions and the score card
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
@@ -91,7 +91,7 @@ async function swapSlot(slot){
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   keepOff(force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;
   if(slot==='belt'&&o.belt&&beltless(k,rec)){swapMsg=BELT_STUCK;renderToday();return}
-  swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);await unlockClash(k);renderToday();
+  swapMsg='';await saveDay(rec);await unlockClash(k);renderToday();
 }
 /* after a change by hand on a day: when a lock on the next workdays holds the piece the day now has (its tie on any of the next three
    workdays, its shirt or jacket on the next one), the locks after that day are let go, so the days are planned again in turn around it
@@ -111,20 +111,11 @@ const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],sh
    only matching shoes don't suit the outfit (a black suit wants black shoes, and only the black belt matches them) changes nothing */
 const beltless=(k,rec)=>{const prev=dayRecs[k];dayRecs[k]=rec;cache={};let n=null;try{n=planFor()[k]}finally{if(prev)dayRecs[k]=prev;else delete dayRecs[k];cache={}}return !(n&&n.belt)};
 const BELT_STUCK='Your other belts need shoes that don’t suit this outfit, so the belt stays.';
-/* ---- learning from changes (the votes are read by the planner, see planner.js) ----
-   A piece swapped away votes against its pairing with the pieces that stayed (a shirt with the jacket and the tie, a tie
-   with the jacket and the shirt, trousers or shoes with the jacket); a piece chosen by hand votes for its pairings. Pieces
-   with no partner (a jacket, a belt, socks) get a vote of their own. Kept in the settings, so it syncs. */
-const LEARN_PARTNERS={shirt:['top','tie'],tie:['top','shirt'],bot:['top'],shoes:['top']};
-function learnVote(kind,k,d){const L=settings.learn={p:{...(settings.learn&&settings.learn.p)},i:{...(settings.learn&&settings.learn.i)}},m=L[kind];
-  const v=Math.max(-LEARN_CAP,Math.min(LEARN_CAP,(m[k]||0)+d));if(v)m[k]=v;else delete m[k]}
-function learnFrom(slot,o,oldIt,newIt,picked){
-  const partners=(LEARN_PARTNERS[slot]||[]).map(s=>o[s]).filter(p=>p&&(!oldIt||p.id!==oldIt.id)&&(!newIt||p.id!==newIt.id));let down=false,up=false;
-  if(oldIt&&(!newIt||oldIt.id!==newIt.id)){if(partners.length){for(const p of partners)learnVote('p',pairKey(oldIt,p),-1);down=true}else if(!picked){learnVote('i',oldIt.id,-1);down=true}}
-  if(picked&&newIt){if(partners.length)for(const p of partners)learnVote('p',pairKey(newIt,p),1);else learnVote('i',newIt.id,1);up=true}
-  if(!down&&!up)return '';
-  stampSettings(settings);metaPut('settings',settings);cache={};
-  return up?'Noted: the planner will reach for this choice more often.':'Noted: the planner will suggest that pairing less often.'}
+/* the planner no longer learns from swaps and picks (removed 2026-11-15, the owner's ask): the votes earlier versions kept in the settings
+   (settings.learn) are dropped at start-up, after the first pull, so they stop syncing as dead weight. The removal is stamped like any
+   setting change (stampSettings marks it removed), so it wins on the other devices too; a phone still on an older version may add votes
+   again, which nothing reads, and the next start here drops them */
+async function dropLearn(){if(!settings||!('learn' in settings))return;delete settings.learn;await saveUserSettings()}
 /* ---- choosing a piece by hand: a sheet with every item for the slot, best match for the rest of the outfit first ---- */
 let picker=null,pastEdit=null;
 const slotPool=(slot,o)=>(slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay))).filter(i=>o.frozen||inRotation(i,di(sel)));
@@ -165,7 +156,7 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   force[slot]=id;keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;
   if(slot==='belt'&&beltless(k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';renderToday();return}
-  swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);await unlockClash(k);renderToday()}
+  swapMsg='';await saveDay(rec);await unlockClash(k);renderToday()}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
 async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||pastEdit!==k)return;
@@ -174,7 +165,7 @@ async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k]
   else ids[slot]=it?it.id:null;
   const rec={...r,ids,suitDay,worn:true,edited:true};delete rec.auto;
   if(!suitDay||!hasVest(items.find(i=>i.id===ids.top)))rec.vestOn=false;
-  swapMsg=it?learnFrom(slot,slot==='top'?{...o,top:null}:o,null,it,true)&&'Corrected. The planner counts what you really wore.':'Corrected.';
+  swapMsg='Corrected.';
   await saveDay(rec);renderToday()}
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are

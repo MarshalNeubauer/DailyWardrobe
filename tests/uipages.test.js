@@ -32,9 +32,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://new.example.dev/'&&!settingsOpen()),'Done saves the connection and closes Settings');
     // ---- Wardrobe
     await p.evaluate(()=>show('wardrobe'));
-    const wd=await p.evaluate(()=>({head:document.querySelector('#wardrobe .phead h2').textContent,count:document.querySelector('#wardrobe .phead .pcount').textContent,
+    const wd=await p.evaluate(()=>({head:document.querySelector('#wardrobe h2.vh').textContent,count:document.querySelector('#wardrobe #wcount.vh').textContent,phead:!!document.querySelector('#wardrobe .phead'),
       btns:document.querySelectorAll('#wardrobe .grid .gi .btns').length,tiles:document.querySelectorAll('#wardrobe .grid .giopen').length,type:(document.querySelector('.gimeta .gtype')||{}).textContent}));
-    ok(wd.head==='Wardrobe'&&/^\d+ items$/.test(wd.count)&&wd.btns===0&&wd.tiles>10&&wd.type,'Wardrobe: a page header with the item count; each box is the item, with no Edit/Delete buttons on it');
+    ok(wd.head==='Wardrobe'&&/^\d+ items$/.test(wd.count)&&!wd.phead&&wd.btns===0&&wd.tiles>10&&wd.type,'Wardrobe: no header row (its title and item count are for screen readers); each box is the item, with no Edit/Delete buttons on it');
     const id=await p.evaluate(()=>document.querySelector('#wardrobe .gi').id.slice(3));
     await p.click(`#gi-${id} .giopen`);await settle(p,600);
     const op=await p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),h=[...v.querySelectorAll('.ivsec h3')].map(x=>x.textContent),del=v.querySelector('.ivin > :last-child button');
@@ -59,11 +59,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
       take(document.querySelector('#add'));openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));closeSettings();
-      const titles=[];for(const s of ['wardrobe','add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);
+      const titles=[];for(const s of ['add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);
       return {btn:[...out.btn],inp:[...out.inp],titles}});
     ok(sz.btn.every(h=>h===44),`buttons are 44px tall on Add and in Settings (${sz.btn})`);
     ok(sz.inp.every(h=>h===44),`inputs and dropdowns are 44px too, so a button beside one lines up (${sz.inp})`);
-    ok(new Set(sz.titles).size===1&&sz.titles[0]==='22px','Wardrobe, Add and Stats share one page title style');
+    ok(new Set(sz.titles).size===1&&sz.titles[0]==='22px','Add and Stats share one page title style');
     // ---- nothing scrolls sideways, on a small phone and on the Duo
     for(const w of [320,466,626]){await p.setViewportSize({width:w,height:800});
       const over=await p.evaluate(async()=>{const r={};for(const s of ['wardrobe','add']){show(s);await new Promise(x=>setTimeout(x,50));r[s]=document.documentElement.scrollWidth-innerWidth}

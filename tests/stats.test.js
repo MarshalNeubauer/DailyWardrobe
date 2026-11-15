@@ -1,6 +1,6 @@
 // The stats page (Settings → Wardrobe stats): wear counts from what was really worn and from the next six months' plan,
-// the pieces that never get worn with a reason, what costs points, colour balance, pairings and rest, and what the planner
-// has learned (which can be forgotten).
+// the pieces that never get worn with a reason, what costs points, colour balance, pairings and rest; no learning section, and
+// learning votes an earlier version stored are dropped.
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900},locale:'en-US'})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
   try{
@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url})=>{
         I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'gold'}),I('belt','tan',{leather:'suede',metal:'silver'}),
         I('socks','purple'),I('cufflinks','silver',{metal:'silver'}),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';settings.learn=null;settings.holidays=null;settings.daysOff=null;weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';settings.holidays=null;settings.daysOff=null;weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};
       // history: three real days (one marked not worn), and a planner warm-up day from before the items existed
       const ids=(top,shirt,tie)=>({top,bot:top,shirt,tie,shoes:'shoes14',belt:'belt16',socks:'socks19',watch:'watch21'});
       dayRecs={'2026-9-1':{date:'2026-9-1',ids:ids('suit0','shirt8','tie11'),suitDay:true,auto:true},
@@ -45,19 +45,16 @@ module.exports=async({ok,chromium,url})=>{
     // what costs points, colours, pairings
     const rest=await p.evaluate(()=>({miss:[...document.querySelectorAll('#st-points .st-miss')].map(m=>m.querySelector('b').textContent+': '+m.querySelector('span').textContent+' / '+(m.querySelector('small')||{textContent:''}).textContent),
       mix:[...document.querySelectorAll('#st-colours .st-mix')].map(m=>m.querySelector('small').textContent+'='+[...m.querySelectorAll('.st-mixnm')].map(x=>x.textContent).join('/')).join(' '),
-      pct:[...document.querySelectorAll('#st-colours .st-mix')][0].querySelectorAll('.st-mixrow small').length,pairs:document.querySelectorAll('#st-pairs .st-pair').length,restTxt:document.querySelector('#st-pairs p:last-of-type').textContent,learn:document.querySelector('#st-learn').textContent}));
+      pct:[...document.querySelectorAll('#st-colours .st-mix')][0].querySelectorAll('.st-mixrow small').length,pairs:document.querySelectorAll('#st-pairs .st-pair').length,restTxt:document.querySelector('#st-pairs p:last-of-type').textContent,learn:!document.querySelector('#st-learn')&&document.querySelector('#stats').textContent}));
     ok(rest.miss.length>=2&&/^Socks: \d+ of \d+ days \/ Mostly: socks don't match the pants\./.test(rest.miss[0])&&rest.miss.some(m=>/^Metals/.test(m)),`"What costs you points" ranks the deductions with the usual reason (${rest.miss.slice(0,3).join(' | ')})`);
     ok(/Jackets=.*Navy/.test(rest.mix)&&/Shirts=/.test(rest.mix)&&/Ties=/.test(rest.mix)&&rest.pct>=3,`the color balance covers jackets, shirts and ties (${rest.mix})`);
     ok(rest.pairs>=3&&/A jacket rests at least \d+ workdays/.test(rest.restTxt)&&/shoes/i.test(rest.restTxt),`pairings and rest are shown (${rest.restTxt.trim()})`);
-    ok(/Nothing yet/.test(rest.learn),'with nothing learned yet, it says so');
-    // what the planner learned: listed, forgettable
-    await p.evaluate(async()=>{settings.learn={p:{[pairKey(items[0],items[11])]:-2,[pairKey(items[1],items[12])]:1},i:{[items[3].id]:-1}};await saveUserSettings();renderStats()});
-    const lr=await p.locator('#st-learn .st-learn').allTextContents();
-    ok(lr.length===3&&/Avoids.*Navy suit with burgundy tie/i.test(lr[0])&&lr.some(l=>/Wears less.*Brown suit/i.test(l))&&lr.some(l=>/Prefers.*Charcoal suit with navy tie/i.test(l)),`what the planner learned is listed in words (${lr.map(l=>l.replace(/Forget$/,'')).join(' | ')})`);
-    await p.click('#st-learn .st-learn button');await p.waitForFunction(()=>document.querySelectorAll('#st-learn .st-learn').length===2);
-    ok(await p.evaluate(()=>!settings.learn.p[pairKey(items[0],items[11])]&&Object.keys(settings.learn.p).length===1),'"Forget" removes one thing it learned');
-    await p.click('#st-learn .btns button');await p.waitForFunction(()=>/Nothing yet/.test(document.querySelector('#st-learn').textContent));
-    ok(await p.evaluate(async()=>!settings.learn&&!(await metaGet('settings')).learn),'"Forget everything" clears it (saved)');
+    ok(rest.learn&&!/learned/i.test(rest.learn),'Insights has no "What the planner has learned" section (the planner no longer learns from changes)');
+    // votes an earlier version stored (settings.learn) are dropped once, the removal stamped so it wins over a copy that still has them
+    const dl=await p.evaluate(async()=>{const old=stampSettings({...JSON.parse(JSON.stringify(settings)),learn:{p:{'a|b':-2},i:{}}},Date.now()-5000);   // another device's older copy, votes and all
+      settings.learn={p:{'a|b':-2},i:{}};await saveUserSettings();await dropLearn();const st=await metaGet('settings'),m=mergeSettings(old,JSON.parse(JSON.stringify(settings)));
+      return {mem:'learn' in settings,stored:'learn' in st,mark:st.kh&&st.kh.learn,merged:'learn' in m,again:await dropLearn()===undefined}});
+    ok(!dl.mem&&!dl.stored&&dl.mark==='-'&&!dl.merged&&dl.again,`stored learning votes are removed and saved, marked removed (${dl.mark}), and the removal wins a merge with an older copy that has them`);
     // lowest days link back to Today; back button; an empty wardrobe
     await p.click('#n-today');
     ok(await p.evaluate(()=>!$('#today').hidden&&$('#stats').hidden),'the Today tab returns to Today');

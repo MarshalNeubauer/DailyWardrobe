@@ -4,7 +4,7 @@
 //   the only tie a stripe: the plain suit goes), the clothes window falls back to a clean combination, and shoes that don't suit the
 //   trousers lose to a pair with no matching belt (khaki chinos with black calf shoes while the oxblood loafers suit them)
 // - ties: the very tie of the workday before costs TIE_NEXT more, so three ties don't repeat on consecutive workdays (one in three
-//   before), also with a learned pairing and after a tie swap with the week locked
+//   before), also after a tie swap with the week locked
 // - "I didn't wear them" has a lasting place: a card on Today under the month until the days are marked or kept
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,url})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844},locale:'en-US'})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',added:1,...x});
-      window.fresh=(t='2026-11-15T12:00:00')=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;delete settings.dress;delete settings.location;settings.holidays=null;settings.daysOff=[];settings.laundryDays=1;settings.learn=null;
+      window.fresh=(t='2026-11-15T12:00:00')=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;delete settings.dress;delete settings.location;settings.holidays=null;settings.daysOff=[];settings.laundryDays=1;
         dayRecs={};weather={};climate=null;TODAY_OVERRIDE=t;cache={};sel=todayDate();view={y:sel.getFullYear(),m:sel.getMonth()}};
       // the workdays from today on, each once and in order (planMonth gives the shared simulation's whole plan)
       window.seqOf=n=>{const T=todayDate(),seen=new Set(),out=[];for(let mo=0;mo<n;mo++){const d=new Date(T.getFullYear(),T.getMonth()+mo,1),P=planMonth(d.getFullYear(),d.getMonth());
@@ -50,14 +50,11 @@ module.exports=async({ok,chromium,url})=>{
       items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','lightgrey'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue',{pattern:'stripe',secondaryColor:'white'}),I('shirt','lightblue'),
         I('tie','burgundy',{pattern:'stripe',secondaryColor:'navy'}),I('tie','navy'),I('tie','green',{pattern:'stripe',secondaryColor:'navy'}),I('pants','grey'),I('shoes','brown',{leather:'calf'}),I('shoes','black',{leather:'calf'}),I('belt','brown',{leather:'calf'}),I('socks','navy')];
       const a=seqOf(4),plain=nextRep(a);
-      // a learned liking: the burgundy tie picked by hand with the navy suit and the white shirt
-      settings.learn={p:{[pairKey(items[0],items[6])]:2,[pairKey(items[3],items[6])]:2,[pairKey(items[1],items[8])]:1},i:{}};cache={};const b=seqOf(4),voted=nextRep(b);settings.learn=null;cache={};
       // a tie swap today with the week locked: the next workdays don't take the same tie two days running
       sel=todayDate();view={y:sel.getFullYear(),m:sel.getMonth()};await lockUpcoming();const cur=planFor()[key(sel)].tie.id,other=items.filter(i=>i.type==='tie'&&i.id!==cur)[0].id;
       await pickItem('tie',other);await new Promise(r=>setTimeout(r,300));cache={};const c=seqOf(1).slice(0,6);
-      return {days:a.length,plain,voted,swap:c.map(([k,o])=>o.tie.id).join(','),swapRep:nextRep(c),avg:Math.round(a.reduce((s,[k,o])=>s+rateOutfit(o).score,0)/a.length)}});
+      return {days:a.length,plain,swap:c.map(([k,o])=>o.tie.id).join(','),swapRep:nextRep(c),avg:Math.round(a.reduce((s,[k,o])=>s+rateOutfit(o).score,0)/a.length)}});
     ok(ti.days>60&&ti.plain<=2,`three ties: the same tie on two workdays running ${ti.plain} times in ${ti.days} (about one day in three before)`);
-    ok(ti.voted<=3,`with a learned liking for one tie, still ${ti.voted} next-day repeats in ${ti.days}`);
     ok(ti.swapRep===0,`after a tie swap the next days don't repeat a tie on consecutive workdays (${ti.swap})`);
     ok(ti.avg>=94,`the outfits still score well (average ${ti.avg})`);
 
