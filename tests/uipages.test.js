@@ -40,7 +40,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const op=await p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),h=[...v.querySelectorAll('.ivsec h3')].map(x=>x.textContent),del=v.querySelector('.ivin > :last-child button');
       return {full:v.classList.contains('on')&&r.width>=389&&r.top>0&&r.top<=40&&r.bottom>=843,h,del:del.textContent+(del.classList.contains('danger')?'!':''),rot:v.querySelector('.ivrot .rotbtn').textContent,
         bar:[...v.querySelectorAll('.ivbar button')].map(b=>b.textContent.trim()||b.getAttribute('aria-label')).join('|'),
-        btn:[...new Set([...v.querySelectorAll('button:not(.shbtn):not(.chipbtn),.btn')].filter(b=>b.offsetParent).map(b=>Math.round(b.getBoundingClientRect().height)))],
+        btn:[...new Set([...v.querySelectorAll('button:not(.shbtn):not(.chipbtn):not(.wbstcard),.btn')].filter(b=>b.offsetParent).map(b=>Math.round(b.getBoundingClientRect().height)))],
         inp:[...new Set([...v.querySelectorAll('select,input[type=text],input[type=date]')].map(b=>Math.round(b.getBoundingClientRect().height)))],over:v.querySelector('#ivbody').scrollWidth-v.querySelector('#ivbody').clientWidth}});
     ok(op.full&&/^Details\|Rotation(\|Care)?$/.test(op.h.join('|')),`an item opens in a sheet over the Wardrobe, the full width and nearly the full height, with a Details card and a Rotation card (${op.h.join('|')})`);
     ok(op.rot==='Take out of rotation'&&op.del==='Delete item!','Take out of rotation in its card; Delete (marked as destructive) alone at the very end');
@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(lab==='Type,Colour,Second colour,Third colour','the item card and the Wardrobe editor use the same labels');
     ok(await p.evaluate(()=>[...document.querySelectorAll('#queue select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
     // ---- one size for controls, one style for page titles
-    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
+    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
       take(document.querySelector('#add'));openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));closeSettings();
       const titles=[];for(const s of ['wardrobe','add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);

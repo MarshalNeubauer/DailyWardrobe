@@ -73,6 +73,10 @@ const GUIDE_CARD={key:'guide',title:'A good close-up',pic:()=>kitClothPic(true,t
 <li><b>Tap the paper on the camera screen</b> before you take the picture. The phone sets its exposure there, so the paper comes out white instead of glowing, and the app can read the light from it.</li></ol>
 <p class="kit-tip">No paper? It still works: the colour is then corrected like the main photo, and lightness counts for less.</p>`};
 function kitCloseupGuide(){kitOpen([GUIDE_CARD])}
+/* the short white-paper tip (photo-wb-mockups variant B's words), opened from the drawing beside the item sheet's close-up hint (paperTip) */
+const PAPER_CARD={key:'paper',title:'White paper, true colours',pic:()=>kitClothPic(true,true),last:'Got it',body:`<p>Lay a sheet of plain white paper along one edge of the cloth, about a fifth of the picture.</p>
+<p>Tap the paper on the camera screen, then take the picture. The app reads the light from the paper, so the colour comes out true, even under warm lamps.</p>
+<p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">Tips for a good close-up</button></p>`};
 
 /* ---- Undo after Confirm (app.js save calls this for each card saved) ----
    Cards saved within a moment of each other (Save all, an import) are one Undo. Undo takes the items out (a tombstone each, as Delete

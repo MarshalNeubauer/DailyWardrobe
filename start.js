@@ -50,6 +50,7 @@ function appSheetBack(kind){
   if(kind==='pick'){if(typeof closePicker==='function')closePicker();return true}
   if(kind==='shop'){if(typeof closeShop==='function')closeShop();return true}
   if(kind==='ask'){if(typeof askBack==='function')askBack();return true}   // a question closes as Cancel (ui.js), the page under it stays
+  if(kind==='cu'){if(typeof closeupBack==='function')closeupBack();return true}   // the close-up chooser closes as Cancel (ui.js)
   if(kind==='kit'){if(typeof kit!=='undefined'&&kit)kitClose(true);return true}   // the tour, the guides, the Home Screen sheet, the import sheet (kit.js)
   return false}
 addEventListener('popstate',e=>{if(appPend){appPend=false;if(editing)histPush();appWanted();for(const f of appLand.splice(0))f();return}   // our own step back; an item opened meanwhile gets its entry now

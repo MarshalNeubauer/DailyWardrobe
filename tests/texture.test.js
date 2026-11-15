@@ -39,7 +39,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const before=await p.evaluate(()=>queue[0].photo);await p.click('#queue .wbnote .linkbtn');
   const after=await p.evaluate(()=>({photo:queue[0].photo,txt:document.querySelector('#queue .wbnote').textContent}));
   ok(after.photo!==before&&/Original colours/.test(after.txt),'Show original puts the uncorrected photo back');await p.click('#queue .wbnote .linkbtn');
-  await p.setInputFiles('#queue .texslot input[type=file]',await file('tex.png',200,180,150));
+  await p.click('#queue .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');   // a touch screen: the close-up chooser (ui.js)
+  await p.setInputFiles('#cu-take',await file('tex.png',200,180,150));
   await p.waitForFunction(()=>queue[0].texture);
   const c2=await p.evaluate(async()=>{const q=queue[0],im=new Image();im.src=q.texture;await im.decode();const c=document.createElement('canvas');c.width=c.height=4;const x=c.getContext('2d');x.drawImage(im,0,0,4,4);
     const sw=document.querySelector('#queue .swsplit .swtex');
@@ -63,11 +64,16 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   await p.evaluate(id=>{show('wardrobe');openItem(id)},suitId);await settle(p,500);
   ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swsplit .swtex`),suitId),'an opened item in the Wardrobe shows the split swatch');
   await p.evaluate(id=>openItem(id),tieId);await settle(p,500);
-  const lab=await p.evaluate(id=>[...document.querySelectorAll(`#item-view .phtools label`)].map(l=>l.textContent.trim()),tieId);
+  const lab=await p.evaluate(id=>[...document.querySelectorAll(`#item-view .phtools :is(label,button)`)].map(l=>l.textContent.trim()),tieId);
   ok(lab.includes('Add fabric close-up'),`the editor offers a close-up for a tie (${lab.join(', ')})`);
-  await p.setInputFiles(`#item-view .phtools label:nth-of-type(2) input`,await file('tt.png',130,40,50));
+  // a touch screen: the close-up button opens the close-up chooser (ui.js closeupPick); Choose from photos takes the file
+  if(!await p.evaluate(()=>phEdit.open))await p.click('#item-view .ivphbtn');await settle(p,300);   // Edit photos
+  await p.click('#item-view .phtools .cubtn');await p.waitForSelector('#cu-sheet.on');
+  await p.setInputFiles('#cu-lib',await file('tt.png',130,40,50));
   await p.waitForFunction(id=>items.find(i=>i.id===id).texture&&!!document.querySelector(`#item-view .swtex`),tieId,{timeout:10000}).catch(()=>{});   // the save, then the redraw
-  ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swtex`)&&/Remove close-up/.test(document.querySelector(`#item-view .phtools`).textContent),tieId),'adding one shows it in the swatch, with Remove close-up');
+  await settle(p,350);await p.click('#item-view .phtools .cubtn');await p.waitForSelector('#cu-sheet.on');
+  ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swtex`)&&/Replace close-up/.test(document.querySelector(`#item-view .phtools`).textContent)&&!!document.querySelector('#cu-rm'),tieId),'adding one shows it in the swatch, with Remove close-up in the close-up chooser');
+  await p.click('#cu-cancel');await settle(p,350);
   await p.evaluate(id=>undoPhoto(id),tieId);
   ok(await p.evaluate(id=>!items.find(i=>i.id===id).texture,tieId),'Undo takes the close-up back off');
 
