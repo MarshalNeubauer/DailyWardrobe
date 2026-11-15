@@ -8,6 +8,7 @@
 
    --dry      download and list what would be sent, with an estimated cost; nothing is sent to Claude
    --batch    pick up a batch already sent (its id is in <out>/batch.json) instead of sending a new one
+   --apply <file>   save approved materials ([{id, material}]); with --dry only says what it would save
    Writes <out>/suggestions.json (one row per item) and <out>/report.html (photos, suggestion, confidence, reason). */
 const fs = require('fs'), path = require('path');
 const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i < 0 ? d : (process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d) };
@@ -16,11 +17,11 @@ const WORKER = String(process.env.DW_WORKER || arg('worker', '')).replace(/\/?$/
 const KEY = process.env.ANTHROPIC_API_KEY || '', MODEL = arg('model', 'claude-opus-5-5');
 const OUT = arg('out', ''), DRY = has('dry'), BATCH = arg('batch', ''), ONLY = (arg('only', '') || '').split(',').filter(Boolean);
 const ORIGIN = String(arg('origin', 'https://marshalneubauer.github.io/DailyWardrobe/'));
-if (has('help') || !WORKER.startsWith('http') || !TOKEN || !OUT || (!DRY && !KEY)) {
+if (has('help') || !WORKER.startsWith('http') || !TOKEN || (!arg('apply', '') && (!OUT || (!DRY && !KEY)))) {
   console.log('Usage: DW_WORKER=… DW_TOKEN=… ANTHROPIC_API_KEY=… node tools/fill-material.js --out <folder> [--model m] [--dry] [--batch <id>] [--only shirt,tie]');
   process.exit(has('help') ? 0 : 1);
 }
-fs.mkdirSync(OUT, { recursive: true });
+if (OUT) fs.mkdirSync(OUT, { recursive: true });
 
 /* the app's list of materials per type (core.js MATERIALS_BY): read from the file so the two never drift apart */
 const core = fs.readFileSync(path.join(__dirname, '..', 'core.js'), 'utf8');
@@ -73,7 +74,36 @@ function request(it, ph) {
   };
 }
 
+/* --apply <file>: save approved materials, a JSON list [{id, material}]. Downloads a fresh copy, changes only `material` on those items
+   (an item that already has a material, or is gone, is left alone), stamps `updated`, and POSTs just those items as the app's small
+   sync does (the worker merges by stamp), then reads them back. Settings → Roll back undoes it. */
+async function apply(file) {
+  const want = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const r = await api('sync?lite=1');
+  if (!r.ok) throw new Error('backup: HTTP ' + r.status + ' ' + await r.text());
+  const lite = await r.json(), byId = Object.fromEntries((lite.items || []).map(i => [i.id, i]));
+  const now = Date.now(), changed = [], skipped = [];
+  for (const w of want) {
+    const it = byId[w.id], list = it && MATERIALS_BY[it.type];
+    if (!it || it.deleted) { skipped.push([w.id, 'not in the wardrobe']); continue; }
+    if (it.material) { skipped.push([w.id, 'already has ' + it.material]); continue; }
+    if (!list || !list.includes(w.material)) { skipped.push([w.id, w.material + ' is not offered for ' + it.type]); continue; }
+    changed.push({ ...it, material: w.material, updated: now });
+  }
+  console.log(`${changed.length} to save, ${skipped.length} left alone`); for (const s of skipped) console.log('  skipped', s.join(': '));
+  if (!changed.length || DRY) return;
+  const body = { baseRev: lite.rev, baseSaved: lite.saved, day: new Date().toISOString().slice(0, 10), delta: { items: changed, days: [], tombstones: {} }, photos: {} };
+  const p = await fetch(new URL('sync', WORKER).href, { method: 'POST', headers: { 'x-app-token': TOKEN, origin: new URL(ORIGIN).origin, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const pj = await p.json().catch(() => ({}));
+  if (!p.ok) throw new Error('save: HTTP ' + p.status + ' ' + JSON.stringify(pj));
+  console.log('saved: backup version', lite.rev, '->', pj.rev);
+  const back = await (await api('sync?lite=1')).json(), got = Object.fromEntries((back.items || []).map(i => [i.id, i]));
+  const bad = changed.filter(c => !got[c.id] || got[c.id].material !== c.material);
+  console.log(bad.length ? `read back: ${bad.length} not as saved: ${bad.map(b => b.id).join(', ')}` : `read back: all ${changed.length} saved`);
+}
+
 (async () => {
+  if (arg('apply', '')) return apply(arg('apply', ''));
   const r = await api('sync?lite=1');
   if (!r.ok) throw new Error('backup: HTTP ' + r.status + ' ' + await r.text());
   const lite = await r.json(), items = (lite.items || []).filter(i => i && !i.deleted);
