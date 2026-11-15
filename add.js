@@ -23,10 +23,13 @@ const ADD_MIN_PX=32;
 const TEX_MIN_PX=200;
 const TEX_MAX=1536;   // the synced close-up (2026-11-13, the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored one by one on the server and fetched when needed (it was 640)
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
-async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
+/* read: the close-up came through "Add close-up and read texture/color" (colpick.js rdStart), whose reading replaces the automatic
+   re-tag (the owner: no second paid call); the color is still measured from it (measureCard) */
+async function addTexture(i,f,read){const q=queue[i];if(!q||!f)return;
   try{const img=await loadImg(f);
     if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
     q.raw=q.raw||{};delete q.texDone;delete q.refineCut;delete q.patternCut;q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
+    if(read){measureCard(q);renderAdd();if(typeof addKeep==='function')addKeep();return}
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
@@ -36,8 +39,8 @@ function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
   const cloth=paperCloth(q),pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${i},f)`,remove:mode==='replace'?`dropTexture(${i})`:'',cloth});
   // a card typed in by hand has no photo and so no split swatch, and no tagging notes (tagNotes): what the close-up did, and a blurry one, are said here
   const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
-  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the color as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" onclick="dropTexture(${i})">Remove</button>`}</div></div>`
-    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true color fill the frame. It makes the pictures and colors match the cloth better. Optional.</small>${paperSteps(cloth)}${pick('Add close-up','btn pri','add')}</div>`}
+  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the color as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns rdpair">${pick('Replace close-up','btn','replace')}${rdAddBtn(q,'Read color and texture')}${cuTouch()?'':`<button type="button" onclick="dropTexture(${i})">Remove</button>`}</div>${rdCostLine()}${rdDoneHtml('q',q.id,q)}</div>`
+    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true color fill the frame. It makes the pictures and colors match the cloth better. Optional.</small>${paperSteps(cloth)}<div class="rdpair">${pick('Add close-up','btn pri','add')}${rdAddBtn(q,'Add close-up and read texture/color')}</div>${rdCostLine()}</div>`}
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */

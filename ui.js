@@ -44,6 +44,7 @@ function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)as
    code, run when chosen, as the inline handlers around them) ---- */
 const CU_COPY={add:['Fabric close-up','Hold the camera close so the weave fills the frame.'],
   replace:['Replace close-up','The new close-up takes the place of the one you have.'],
+  read:['Close-up for Claude','Claude reads the color and the weave from it. Hold the camera close so the weave fills the frame.'],
   retake:['Retake close-up','Lay white paper along one edge this time, so the colors come out true.']};
 const CU_CAM='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
 const CU_LIB='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M20.5 16l-5-5L6 19.5"/></svg>';
@@ -87,7 +88,7 @@ function tell(message,ms){if(typeof toast==='function')toast(String(message),ms|
    Shift+Tab go round inside the top one; Escape closes Settings and the picker (What to buy, the item sheet, the colour sheet and a
    question have their own) ---- */
 const layerFrom=new Map();   // dialog -> what had the focus when it opened
-const LAYER_Q='#ask-sheet.on,#cu-sheet.on,#col-sheet.on,#pick-sheet.on,#shop-sheet.on';
+const LAYER_Q='#ask-sheet.on,#cu-sheet.on,#rd-sheet.on,#col-sheet.on,#pick-sheet.on,#shop-sheet.on';
 function layerUp(){const l=[...document.querySelectorAll(LAYER_Q)];if(typeof settingsOpen==='function'&&settingsOpen())l.push(document.querySelector('#settings-modal'));
   const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}   // the top one first (by z-index: questions, colour sheet, sheets, Settings, item sheet)
 function layerInert(){const on=layerUp().length>0||!!document.querySelector('#setup.on,#nostore');

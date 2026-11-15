@@ -500,6 +500,8 @@ function benchEstimate(n,{img=[TAG_MAX,TAG_MAX*.75],close=[CLOSE_MAX,CLOSE_MAX*.
    700 tokens, a pattern about 1,500), and the close-up when it is sent (CLOSE_MAX, 4:3) */
 const DESC_PRICE_IN=2,DESC_PRICE_OUT=10;   // Claude Sonnet 5.5, $ per million tokens
 function describeEstimate(what,withClose){return (2600+(withClose?visTok(CLOSE_MAX,CLOSE_MAX*.75):0))*DESC_PRICE_IN/1e6+(what==='pattern'?1500:700)*DESC_PRICE_OUT/1e6}
+/* "Read color and texture from close-up" (colpick.js rdRun): the color and the pattern lookup, both with the close-up (about 4¢) */
+const readEstimate=()=>describeEstimate('colour',true)+describeEstimate('pattern',true);
 
 /* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
