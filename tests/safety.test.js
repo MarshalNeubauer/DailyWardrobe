@@ -20,10 +20,10 @@ module.exports=async({ok,chromium,url,settle})=>{
   await p.evaluate(()=>{show('add');addManual();window.realPut=IDBObjectStore.prototype.put;
     IDBObjectStore.prototype.put=function(){const r=window.realPut.apply(this,arguments),t=this.transaction;Object.defineProperty(t,'error',{get:()=>new DOMException('The quota has been exceeded.','QuotaExceededError')});t.abort();return r}});
   ok(await p.evaluate(()=>window.persistCalls)===0,'nothing is asked of the browser before an item is saved');
-  await p.click('#queue .card button.pri');await saveToast(p);
+  await p.click('#nps-bar .pri');await saveToast(p);
   const full=await toastText(p);
   ok(/Couldn.t save: your phone.s storage is full/.test(full),`a save that fails for lack of space says so (“${full}”)`);
-  ok(await p.evaluate(()=>queue.length===1&&items.length===0&&!!document.querySelector('#queue .card button.pri')),'the card stays, so it can be saved again');
+  ok(await p.evaluate(()=>queue.length===1&&items.length===0&&!!document.querySelector('#nps-bar .pri')),'the card stays, so it can be saved again');
   // any other rejection with no tap before it stays quiet (one right after a tap says so: errnet.test.js); a storage failure nobody caught is shown
   await p.evaluate(()=>{errTapAt=0;document.querySelector('#toast').classList.remove('on');Promise.reject(new Error('something else'))});
   await p.evaluate(()=>new Promise(r=>setTimeout(r,300)));   // waits to see that nothing appears
@@ -32,13 +32,14 @@ module.exports=async({ok,chromium,url,settle})=>{
   ok(/Couldn.t save/.test(await toastText(p)),'a failed save that nothing caught is still shown');
   // with room again, the same card saves
   await p.evaluate(()=>{IDBObjectStore.prototype.put=window.realPut});
-  await p.click('#queue .card button.pri');await p.waitForFunction(()=>items.length===1&&queue.length===0,null,{timeout:5000}).catch(()=>{});
+  await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.length===1&&queue.length===0,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(async()=>(await tx('readonly',s=>s.getAll())).length===1),'once there is room the card saves');
 
   /* ---- ask the browser to keep the wardrobe, once, after the first item ---- */
   await p.waitForFunction(()=>window.persistCalls>0,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>window.persistCalls)===1,'after the first item is saved the browser is asked to keep the wardrobe');
-  await p.evaluate(()=>addManual());await p.click('#queue .card button.pri');await p.waitForFunction(()=>items.length===2&&queue.length===0,null,{timeout:5000}).catch(()=>{});
+  // (opened by a tap, as a person does: Confirm sits where the last one was, and a tap there right after a save is taken for its double tap, ADD_CALM)
+  await p.click('#add-manual');await settle(p,400);await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.length===2&&queue.length===0,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>window.persistCalls)===1,'and not again for the next item');
   await p.reload();await p.waitForFunction(()=>window.appReady);await settle(p,300);
   ok(await p.evaluate(()=>window.persistCalls)===0&&await p.evaluate(()=>!!localStorage.getItem('persist_asked')),'nor at the next start');

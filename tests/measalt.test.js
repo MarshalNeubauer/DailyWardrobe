@@ -25,15 +25,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(m.near[0].c==='deeptaupe'&&m.near[0].d<=5&&m.brown-m.near[0].d>=4,`the close-up measures closest to deep taupe (ΔE ${m.near[0].d}), far from brown (ΔE ${m.brown}); L* ${m.lab[0]}, a* ${m.lab[1]}, b* ${m.lab[2]}`);
     // the card (2026-11-14: one verdict per colour; not sure enough to change it, the card asks "Measured: deep taupe?")
     const card=await p.evaluate(m=>{show('add');addManual();const q=queue[0];q.manual=false;setq(0,'type','suit');q.primaryColor='brown';q.meas={...m,hex:'#3c3631',ref:false,src:'closeup',sharp:.5,spread:2};renderAdd();
-      const o=document.querySelector('#queue .measalt'),v=q.measV.find(x=>x.f==='primaryColor');return o&&{txt:o.textContent,btn:o.querySelector('button').textContent,v,brown:q.primaryColor}},{lab:m.lab,near:m.near});
+      const o=document.querySelector('#nps-q .measalt'),v=q.measV.find(x=>x.f==='primaryColor');return o&&{txt:o.textContent,btn:o.querySelector('button').textContent,v,brown:q.primaryColor}},{lab:m.lab,near:m.near});
     ok(card&&/Measured: deep taupe\?/.test(card.txt)&&card.btn==='Use deep taupe'&&card.brown==='brown',`the card asks about the measured color and leaves the tag (${card&&card.txt}; confidence ${card&&card.v.conf})`);
-    await p.click('#queue .measalt button');
-    ok(await p.evaluate(()=>queue[0].primaryColor==='deeptaupe'&&!document.querySelector('#queue .measalt')),'one tap takes it, and the offer goes away');
+    await p.click('#nps-q .measalt button');
+    ok(await p.evaluate(()=>queue[0].primaryColor==='deeptaupe'&&!document.querySelector('#nps-q .measalt')),'one tap takes it, and the offer goes away');
     // the photo alone (no close-up, no white reference) is too dark to trust: it measures nearest black, and offers nothing
-    const phNone=await p.evaluate(ph=>{const q=queue[0];q.primaryColor='brown';q.meas={...ph,hex:'#2e2a26',ref:false,src:'photo'};renderAdd();return {best:ph.near[0].c,none:!document.querySelector('#queue .measalt')}},ph);
+    const phNone=await p.evaluate(ph=>{const q=queue[0];q.primaryColor='brown';q.meas={...ph,hex:'#2e2a26',ref:false,src:'photo'};renderAdd();return {best:ph.near[0].c,none:!document.querySelector('#nps-q .measalt')}},ph);
     ok(phNone.best==='black'&&phNone.none,`a photo-only measurement (nearest ${phNone.best} here) offers nothing: only a close-up or a white reference does`);
     // no offer when the tag is about as close as the measurement
-    const none=await p.evaluate(()=>{const q=queue[0];q.primaryColor='charcoal';q.meas={lab:[27,0,-3],hex:'#3e4044',ref:false,src:'closeup',near:[{c:'darkgrey',d:4},{c:'charcoal',d:5.5}]};renderAdd();return !document.querySelector('#queue .measalt')});
+    const none=await p.evaluate(()=>{const q=queue[0];q.primaryColor='charcoal';q.meas={lab:[27,0,-3],hex:'#3e4044',ref:false,src:'closeup',near:[{c:'darkgrey',d:4},{c:'charcoal',d:5.5}]};renderAdd();return !document.querySelector('#nps-q .measalt')});
     ok(none,'no offer when the tagged color is about as close as the measured one');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

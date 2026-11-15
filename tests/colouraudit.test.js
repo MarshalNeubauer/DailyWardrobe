@@ -44,11 +44,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const miss=Object.entries(LIVE).flatMap(([t,{p:pp,a}])=>[...pp.filter(c=>!app.by[t][0].includes(c)).map(c=>t+':'+c),...a.filter(c=>!app.by[t][1].includes(c)).map(c=>t+'/'+c)]);
     ok(miss.length===0,'every colour in the current wardrobe is still on its type\'s list ('+miss.join()+')');
     // the Add form uses the type's list
-    const add=await p.evaluate(()=>{show('add');addManual();const q=queue[0];setq(0,'type','tieclip');document.querySelector('#queue .colbtn[data-k="primaryColor"]').click();
+    const add=await p.evaluate(()=>{show('add');addManual();const q=queue[0];setq(0,'type','tieclip');document.querySelector('#nps-q .colbtn[data-k="primaryColor"]').click();
       const l=[...document.querySelectorAll('#col-sheet .cpgrid:not(.cpnear):not(.cnown) .cptile')].map(b=>b.dataset.c);closeColPick();
       return l.length===new Set(l).size&&l.slice().sort().join()===colChoices(queue[0],'primaryColor').slice().sort().join()?colChoices(queue[0],'primaryColor').join():l.join()});
     ok(add==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','the Add form shows a tie clip its finishes');
-    const nm=await p.evaluate(()=>{show('add');const q=queue[0];return {metal:document.querySelectorAll('#queue select[onchange*="\'metal\'"]').length,word:colName(primaryCol({type:'tieclip',primaryColor:'rosegold'})),
+    const nm=await p.evaluate(()=>{show('add');const q=queue[0];return {metal:document.querySelectorAll('#nps-q select[onchange*="\'metal\'"]').length,word:colName(primaryCol({type:'tieclip',primaryColor:'rosegold'})),
       m:[{type:'tieclip',primaryColor:'rosegold'},{type:'tieclip',primaryColor:'silver',metal:'gold'},{type:'tieclip',primaryColor:'gunmetal'},{type:'tieclip',primaryColor:'red'}].map(metalOf).join()}});
     ok(nm.metal===0&&nm.word==='rose gold'&&nm.m==='gold,silver,other,',`a tie clip has no Metal field: its colour says its metal (rose gold reads as gold, a silver clip tagged gold as silver, red enamel as none: ${nm.m})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

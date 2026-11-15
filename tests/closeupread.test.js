@@ -134,23 +134,23 @@ async function run(eng,browser,{ok,url,settle}){
   // ---- the Add card: the second button to the right of Add close-up; chooser -> reading, with no re-tag
   await p.evaluate(F=>{openAdd();addManual();const q=queue[0];q.type='suit';q.primaryColor='deeptaupe';q.pattern='solid';q.tagImg=F.photo;renderAdd()},F);await settle(p,300);
   for(const theme of ['light','dark']){await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await settle(p,100);
-    e=await p.evaluate(()=>{const s=document.querySelector('#queue .texslot'),a=s.querySelector('.rdpair .cubtn'),b=s.querySelector('.rdpair .rdgo'),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),ca=getComputedStyle(a),cb=getComputedStyle(b);
+    e=await p.evaluate(()=>{const s=document.querySelector('#nps-q .texslot'),a=s.querySelector('.rdpair .cubtn'),b=s.querySelector('.rdpair .rdgo'),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),ca=getComputedStyle(a),cb=getComputedStyle(b);
       return {a:a.textContent,b:b.textContent,right:rb.left>=ra.right-1,overlap:rb.top<ra.bottom&&ra.top<rb.bottom,h:[Math.round(ra.height),Math.round(rb.height)],r:[ca.borderRadius,cb.borderRadius],in:rb.right<=s.getBoundingClientRect().right+1,fit:document.documentElement.scrollWidth<=390,bg:[ca.backgroundColor,cb.backgroundColor],ink:cb.color}});
     ok(e.a==='Add close-up'&&e.b==='Add close-up and read texture/color'&&e.right&&e.overlap&&e.in&&e.fit,T+`${theme}: "Add close-up and read texture/color" sits directly to the right of Add close-up, inside the card at 390 px (${JSON.stringify(e)})`);
     ok(e.h.every(x=>x>=44)&&e.r[0]===e.r[1]&&e.bg[1]!==e.ink,T+`${theme}: both 44 px or taller, the same shape (${e.h.join('/')}, ${e.r.join('/')})`)}
   await p.evaluate(()=>{delete document.documentElement.dataset.theme});
-  S.sent=[];S.other=[];await p.click('#queue .rdpair .rdgo');await p.waitForSelector('#cu-sheet.on');
+  S.sent=[];S.other=[];await p.click('#nps-q .rdpair .rdgo');await p.waitForSelector('#cu-sheet.on');
   ok(await p.evaluate(()=>document.querySelector('#cu-title').textContent==='Close-up for Claude'),T+'the Add card\'s read button opens the chooser first');
   await (await p.$('#cu-take')).setInputFiles(file('add.jpg',F.paper));await result();
   e=await p.evaluate(()=>({tex:!!queue[0].texture,refining:!!queue[0].refining}));
   ok(e.tex&&!e.refining&&S.sent.length===1&&!S.other.length,T+`the close-up is added and read, with no automatic re-tag (other requests: ${S.other.join(',')||'none'})`);
   await p.click('#rd-both');await closed();
-  e=await p.evaluate(()=>({c:queue[0].primaryColor,p:queue[0].pattern,done:(document.querySelector('#queue #rd-done')||{}).textContent||'',read:(document.querySelector('#queue .texslot.done .rdgo')||{}).textContent}));
+  e=await p.evaluate(()=>({c:queue[0].primaryColor,p:queue[0].pattern,done:(document.querySelector('#nps-q #rd-done')||{}).textContent||'',read:(document.querySelector('#nps-q .texslot.done .rdgo')||{}).textContent}));
   ok(/^own/.test(e.c)&&/^own-/.test(e.p)&&/set/.test(e.done)&&e.read==='Read color and texture',T+`Use both on the Add card sets both; the card shows what changed, and offers "Read color and texture" beside Replace (${e.read})`);
-  await p.click('#queue #rd-undo');await p.waitForFunction(()=>queue[0].primaryColor==='deeptaupe');
+  await p.click('#nps-q #rd-undo');await p.waitForFunction(()=>queue[0].primaryColor==='deeptaupe');
   ok(await p.evaluate(()=>queue[0].pattern==='solid'&&!(settings.custom.colors||[]).length),T+'Undo on the Add card puts both back');
   // the plain Replace close-up still re-tags (the control: the skip is only for the read button)
-  S.other=[];await p.click('#queue .texslot.done .cubtn');await p.waitForSelector('#cu-sheet.on');
+  S.other=[];await p.click('#nps-q .texslot.done .cubtn');await p.waitForSelector('#cu-sheet.on');
   await (await p.$('#cu-lib')).setInputFiles(file('rep.jpg',F.plain));await p.waitForFunction(()=>!queue[0].refining);await settle(p,300);
   ok(S.other.length>0,T+`Replace close-up (not the read button) still asks for the re-tag (${S.other.join(',')})`);
   ok(!errs.length,T+'no page errors ('+errs.join(' | ')+')');

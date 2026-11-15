@@ -38,8 +38,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return [shoeScore(suit,suit,s({})),shoeScore(suit,suit,s({shoeStyle:'sneaker'})),shoeScore(null,jeans,s({shoeStyle:'sneaker'}))-shoeScore(null,jeans,s({}))]});
     ok(sc[1]<=-50&&sc[2]===0,`a sneaker with a suit scores as shoes that don't suit (${sc[1]}), with jeans as well as an oxford`);
     // the Add card and the editor
-    const ui=await p.evaluate(()=>{items=[];cache={};openAdd();addManual();const i=queue.length-1;setq(i,'type','pants');renderAdd();const kind=!!document.querySelector('#queue select[onchange*="\'trouserKind\'"]');
-      setq(i,'trouserKind','jeans');setq(i,'primaryColor','denim');setq(i,'type','shoes');renderAdd();const style=!!document.querySelector('#queue select[onchange*="\'shoeStyle\'"]');setq(i,'type','pants');return {kind,style}});
+    const ui=await p.evaluate(()=>{items=[];cache={};openAdd();addManual();const i=queue.length-1;setq(i,'type','pants');renderAdd();const kind=!!document.querySelector('#nps-q select[onchange*="\'trouserKind\'"]');
+      setq(i,'trouserKind','jeans');setq(i,'primaryColor','denim');setq(i,'type','shoes');renderAdd();const style=!!document.querySelector('#nps-q select[onchange*="\'shoeStyle\'"]');setq(i,'type','pants');return {kind,style}});
     ok(ui.kind&&ui.style,'the Add card has Kind for pants and Style for shoes');
     // each is drawn as what it is
     const dr=await p.evaluate(()=>{const sh=(st,x={})=>itemThumb({id:'d',type:'shoes',primaryColor:'brown',pattern:'solid',leather:'calf',...(st?{shoeStyle:st}:{}),...x});
@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(dr.jeans&&dr.chinos&&dr.dress,'jeans are drawn as denim with gold stitching and a rivet, chinos as a cotton twill, dress pants as before');
     // materials by style: a sneaker in leather, suede, canvas or knit
     const mat=await p.evaluate(()=>{openAdd();addManual();const i=queue.length-1;setq(i,'type','shoes');setq(i,'shoeStyle','loafer');setq(i,'leather','cordovan');setq(i,'shoeStyle','sneaker');renderAdd();
-      const card=document.querySelectorAll('#queue .card')[i],lab=[...card.querySelectorAll('label')].find(l=>l.querySelector('select[onchange*="\'leather\'"]'));
+      const card=document.querySelectorAll('#nps-q .card')[i],lab=[...card.querySelectorAll('label')].find(l=>l.querySelector('select[onchange*="\'leather\'"]'));
       return {label:lab&&lab.firstChild.textContent.trim(),opts:lab?[...lab.querySelectorAll('option')].map(o=>o.textContent).join():'',leather:queue[i].leather,
         boots:leathersFor({type:'shoes',shoeStyle:'boot'}).join(),belt:leathersFor({type:'belt'}).includes('canvas')}});
     ok(mat.label==='Material'&&mat.opts==='Leather,Suede,Canvas,Knit'&&mat.leather==='calf',`a sneaker has Material: ${mat.opts}; switching a cordovan loafer to a sneaker makes it leather (${mat.leather})`);
