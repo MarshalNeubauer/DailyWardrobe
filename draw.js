@@ -1057,6 +1057,91 @@ function figureSvg(o,prefix='fig-'){
   // a banded stripe (a pinstripe) at 1.6x figFabric's scale gives about the painter's stripe count; checks (a windowpane: about 7
   // panes across, as painted), twills and solids stay at 1x
   const k=i=>{const s=i&&usableSett(i);return s&&s.bands&&s.bands.length>1&&STRIPE_PATS.includes(patBase(i.pattern))?1.6:1};
-  return outfitMannequinSvg({kind,suit:top?figFabric(top,'top'):shirt,shirt,tie:figFabric(o.tie,'tie'),bot:bot?figFabric(bot,'bot'):{color:'#4A4E55'},
-    beltColor:o.belt?colOf(o.belt):'#3A2A22',vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):FIG_NO_SHIRT.color,bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:k(top),shirt:1,tie:1,bot:k(bot)}});
+  // a plain or fine-weave jacket or trousers in the painter's own cloth, a dark one lifted (figCloth); null: the drawn tile as before
+  const P=String(prefix).replace(/[^A-Za-z0-9_-]/g,''),tc=top&&figCloth(top,'jacket',kind,P,'T'),bc=bot&&figCloth(bot,'trousers',kind,P,'B');
+  return outfitMannequinSvg({kind,suit:top?tc||figFabric(top,'top'):shirt,shirt,tie:figFabric(o.tie,'tie'),bot:bot?bc||figFabric(bot,'bot'):{color:'#4A4E55'},
+    beltColor:o.belt?colOf(o.belt):'#3A2A22',vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):FIG_NO_SHIRT.color,bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:tc?1:k(top),shirt:1,tie:1,bot:bc?1:k(bot)}});
 }
+/* ---------- the painter's own cloth on the mannequin (2026-11-15, the owner approved the mockups in
+   C:\code\audit-2026-11-13\mannequin-closeup\ and its fix-2\) ----------
+   A plain or fine-weave jacket, waistcoat or trousers whose painter route takes the close-up block (asm-color.js asmCuWants: route flat,
+   twill, plain or herringbone, a close-up, not near-black) is filled with that very block (asmCuTile) at the painter's repeat (tile mm x
+   ASM_PX_MM x the master's pxmm, mapped from 2048 into the 390 frame); a herringbone with a close-up gets a clean drawn herringbone at the
+   painter's column width and rib pitch with only the close-up's yarn on it (H2, FIG_HB: the raw x3 block read streaky, almost denim, under
+   the mannequin's flat shading); a near-black worsted the painter paints with asmWorstedTile (B2) gets that tile. Any non-striped cloth
+   darker than the painter's dark-cloth threshold (FIG_DARK, its ASM_CM_LOOK.dark) has its tile's mean held at k x the tagged colour
+   (FIG_LIFT, calibrated on the Black, Grey Herringbone and Darkest Brown painted jackets), as the painter's dark-cloth look lifts it.
+   Striped, checked and figured cloth, shirts and ties keep their drawn tiles. Making a block takes about 0.6 s at 4x CPU, so it never
+   holds the drawing up: the drawn tile (lifted when dark) shows at once, the block is made when the page is idle, kept (FIG_CU), and
+   Today's figure is drawn again with it (today.js figCuDone). Only the item's own close-up is read (a data URL): nothing is fetched. */
+const FIG_DARK=.035;
+const FIG_LIFT=[[.008,2.6],[.023,1.5],[.030,1.35],[.035,1]];   // [tagged luminance, k], linear between; none from FIG_DARK
+const FIG_HB={ncol:24,nrib:48,amp:.8,yarn:.35,damp:.3,R:12};   // H2: columns and ribs a tile, rib swing, the close-up's yarn share, its slubs kept, their radius
+const FIG_CUV=1;   // the blocks' maker (in their key)
+const FIG_CU=new Map();
+const figLin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};
+const figGam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
+const figY=(r,g,b)=>.2126*r+.7152*g+.0722*b;
+const figLum=i=>{const h=String(colOf(i)).replace('#','');return figY(...[0,2,4].map(k=>figLin(parseInt(h.slice(k,k+2),16)||0)))};
+function figLiftK(y){const L=FIG_LIFT;if(!(y<FIG_DARK))return 1;if(y<=L[0][0])return L[0][1];
+  for(let j=1;j<L.length;j++)if(y<=L[j][0]){const [a,ka]=L[j-1],[b,kb]=L[j];return ka+(kb-ka)*(y-a)/(b-a)}return 1}
+/* which fill a jacket's or trousers' cloth gets: drawn (as before), lift (the drawn tile, lifted), block (asmCuTile), hb (H2), wt (B2) */
+function figWay(i,z){if(!i||typeof asmCmRoute!=='function')return {way:'drawn',k:1};
+  const how=asmCmRoute(i,z).how,s=usableSett(i),b=patBase(i.pattern)||'solid';
+  if(how==='bands'||how==='tile'||(s&&(s.bands||s.motif||s.figure))||STRIPE_PATS.includes(b)||CHECK_PATS.includes(b))return {way:'drawn',k:1,how};
+  const k=figLiftK(figLum(i)),own=/^(data|blob):/.test(String(i.texture||''));
+  if(own&&asmCuWants(i,how))return {way:asmSuitWeave(i)==='herringbone'?'hb':'block',k,how};
+  if(k>1&&asmWtWants(i,z)&&!asmCuWants(i,'twill'))return {way:'wt',k,how};
+  return {way:k>1?'lift':'drawn',k,how}}
+/* the drawn tile with every colour lifted k times in linear light (black and white stay) */
+const figLiftHex=(p,k)=>p.replace(/((?:fill|stroke|stop-color)=")#([0-9a-fA-F]{6})"/g,(m,a,h)=>a+'#'+[0,2,4].map(q=>Math.round(figGam(Math.min(1,figLin(parseInt(h.slice(q,q+2),16))*k))).toString(16).padStart(2,'0')).join('')+'"');
+function figLifted(i,role,k){const f=figFabric(i,role);return {def:(id,rot)=>figLiftHex(f.def(id,rot),k)}}
+/* the device pixels of one viewBox unit on Today's figure (the Duo upright's is 688 css px, not 390), in quarters */
+function figScale(){const st=typeof document!=='undefined'&&document.getElementById('stage'),w=(st&&st.clientWidth)||Math.min(self.innerWidth||390,688);
+  return Math.round(Math.min(688,Math.max(200,w))/390*Math.min(3,Math.max(1,self.devicePixelRatio||1))*4)/4}
+const figCuKey=(i,way,k,kp,sc)=>JSON.stringify([i.id,colOf(i),i.shade||0,(i.texture||'').length,(i.texture||'').slice(-12),typeof ASM_CU!=='undefined'?ASM_CU.v:0,way==='wt'?[ASM_WT.v,i.secondaryColor||'']:0,way,+k.toFixed(3),kp,sc,FIG_CUV]);
+/* a tile's mean held at k x its colour */
+function figNorm(T,k){const n=T.TW*T.TH,c=T.c,t=new Float32Array(T.t);let s=0;for(let j=0;j<n;j++)s+=figY(t[3*j],t[3*j+1],t[3*j+2]);
+  const f=figY(c[0],c[1],c[2])*k/(s/n||1e-6);for(let j=0;j<3*n;j++)t[j]*=f;return {...T,t,c:new Float32Array([c[0]*k,c[1]*k,c[2]*k])}}
+/* a box blur that wraps round the tile */
+function figWrapBlur(a,S,R){const t=new Float32Array(S*S),o=new Float32Array(S*S),w=2*R+1,m=v=>((v%S)+S)%S;
+  for(let y=0;y<S;y++){let s=0;for(let q=-R;q<=R;q++)s+=a[y*S+m(q)];for(let x=0;x<S;x++){t[y*S+x]=s/w;s+=a[y*S+m(x+R+1)]-a[y*S+m(x-R)]}}
+  for(let x=0;x<S;x++){let s=0;for(let q=-R;q<=R;q++)s+=t[m(q)*S+x];for(let y=0;y<S;y++){o[y*S+x]=s/w;s+=t[m(y+R+1)*S+x]-t[m(y-R)*S+x]}}return o}
+/* H2: a clean herringbone (FIG_HB.ncol columns, FIG_HB.nrib ribs a tile) in the tile's colour, the close-up's yarn (luminance only, its
+   slubs damped) on it, the mean held at k x the colour */
+function figHbTile(T,k){const o=FIG_HB,S=T.TW,n=S*S,c=T.c,y0=figY(c[0],c[1],c[2])||1e-6,rel=new Float32Array(n);
+  for(let j=0;j<n;j++)rel[j]=figY(T.t[3*j],T.t[3*j+1],T.t[3*j+2])/y0;
+  const L=figWrapBlur(rel,S,o.R),t=new Float32Array(3*n),cw=S/o.ncol,pitch=S/o.nrib;
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){const j=y*S+x,col=Math.floor(x/cw),xl=x-col*cw,sg=col%2?-1:1;
+    const p=y/pitch+sg*(sg>0?xl:xl-cw)/pitch,r=p-Math.floor(p),ridge=Math.pow(Math.sin(Math.PI*r),.7);
+    const v=Math.max(0,(1+o.amp*(ridge-.62)/.5)*(1+o.yarn*((rel[j]-L[j])+o.damp*(L[j]-1))));for(let q=0;q<3;q++)t[3*j+q]=c[q]*v}
+  return figNorm({...T,t},k)}
+/* one repeat as a JPEG data URL of N x N pixels (wrapping area average; slv pulls toward the tile's colour, a herringbone's sleeves) */
+function figTileUrl(T,N,slv){const S=T.TW,f=S/N,c=T.c,cv=document.createElement('canvas');cv.width=cv.height=N;const g=cv.getContext('2d'),d=g.createImageData(N,N);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const x0=x*f,x1=x0+f,y0=y*f,y1=y0+f,s=[0,0,0];let w=0;
+    for(let yy=Math.floor(y0);yy<Math.ceil(y1);yy++){const wy=Math.min(y1,yy+1)-Math.max(y0,yy);if(wy<=0)continue;
+      for(let xx=Math.floor(x0);xx<Math.ceil(x1);xx++){const wx=Math.min(x1,xx+1)-Math.max(x0,xx);if(wx<=0)continue;const j=3*((yy%S)*S+xx%S),ww=wx*wy;s[0]+=ww*T.t[j];s[1]+=ww*T.t[j+1];s[2]+=ww*T.t[j+2];w+=ww}}
+    for(let q=0;q<3;q++){let v=s[q]/w;if(slv!=null)v=c[q]+slv*(v-c[q]);d.data[4*(y*N+x)+q]=figGam(Math.max(0,Math.min(1,v)))}d.data[4*(y*N+x)+3]=255}
+  g.putImageData(d,0,0);return cv.toDataURL('image/jpeg',.9)}
+async function figCuMake(i,way,k,kp,sc){let T=way==='wt'?asmWorstedTile(i):await asmCuTile(i);if(!T||!T.t)return null;
+  T=way==='hb'?figHbTile(T,k):k!==1?figNorm(T,k):T;
+  const W=T.mm*ASM_PX_MM*kp*390/2048,N=Math.max(16,Math.min(T.TW,Math.round(W*sc)));
+  return {W,N,way,k,url:figTileUrl(T,N),sleeveUrl:T.slv?figTileUrl(T,N,T.slv):null}}
+/* the block for an item, if made; else it is made when the page is idle (Today's figure is then drawn again, figCuDone) */
+function figCuGet(i,way,k,kind){if(typeof document==='undefined')return null;const kp=((typeof ASM_CM_KINDS!=='undefined'&&ASM_CM_KINDS[kind])||{}).pxmm||1,sc=figScale(),key=figCuKey(i,way,k,kp,sc);
+  let e=FIG_CU.get(key);if(e)return e.blk;
+  e={blk:null};FIG_CU.set(key,e);if(FIG_CU.size>24)FIG_CU.delete(FIG_CU.keys().next().value);
+  const idle=self.requestIdleCallback||(f=>setTimeout(f,60));
+  e.p=new Promise(res=>idle(res,{timeout:1500})).then(()=>figCuMake(i,way,k,kp,sc)).then(b=>{e.blk=b;if(b&&typeof figCuDone==='function')figCuDone(i.id)},err=>console.warn('mannequin cloth not made',err));
+  return null}
+/* a figFabric-like spec whose patterns all inherit one base <pattern> holding the block (pattern href inheritance, which WebKit renders:
+   the image is written once per figure, twice for a herringbone, whose sleeves have their own image) */
+function figCuSpec(P,role,blk,kind){const G=mqData(kind)||{parts:[]},done={};
+  const base=sl=>{const id=`${P}cu${role}${sl?'s':''}`;if(done[id])return [id,''];done[id]=1;const W=blk.W.toFixed(3);
+    return [id,`<pattern id="${id}" width="${W}" height="${W}" patternUnits="userSpaceOnUse"><image href="${sl?blk.sleeveUrl:blk.url}" width="${W}" height="${W}" preserveAspectRatio="none"/></pattern>`]};
+  return {cu:blk.way,def:(id,rot)=>{const m=/sp(\d+)$/.exec(id),sl=!!(blk.sleeveUrl&&m&&G.parts[+m[1]]&&/^sleeve/.test(G.parts[+m[1]].id)),[bid,bdef]=base(sl);
+    return bdef+`<pattern id="${id}" href="#${bid}" patternTransform="${rot?`rotate(${rot}) `:''}scale(1)"/>`}}}
+/* a jacket's (z 'jacket') or trousers' ('trousers') fill on the mannequin, or null for the drawn tile as before */
+function figCloth(i,z,kind,P,role){const w=figWay(i,z);if(w.way==='drawn')return null;
+  const blk=w.way!=='lift'&&figCuGet(i,w.way,w.k,kind);if(blk)return figCuSpec(P,role,blk,kind);
+  return w.k>1?figLifted(i,z==='jacket'?'top':'bot',w.k):null}
