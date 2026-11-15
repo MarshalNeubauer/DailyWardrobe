@@ -144,18 +144,18 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
     ok(!e.rd&&e.item==='m1'&&e.aborted&&e.c==='deeptaupe',T+`Back while Claude is reading closes the sheet and calls the reading off, the item unchanged and still open (${JSON.stringify(e)})`);
     await ev(()=>{window.fetch=window._fetch})});
   // crop, then Back: leaves the crop first (a frame left as it opened changes nothing), then closes the sheet
-  await step('crop then Back',async()=>{await home();await item();const ph0=await ev(()=>items.find(x=>x.id==='m1').photo);await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');await back();
-    e=await ev(ph0=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),same:items.find(x=>x.id==='m1').photo===ph0}),ph0);
+  await step('crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');await back();
+    e=await ev(()=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),same:items.find(x=>x.id==='m1').photo===window._ph0}));
     await back();const e2=await ev(()=>({item:editing}));
     ok(!e.crop&&e.item==='m1'&&!e.frame&&e.same&&!e2.item,T+`Back in an untouched crop frame leaves the crop (the photo unchanged), the next one closes the item sheet (${JSON.stringify([e,e2])})`)});
   // zoomed, then Back: the crop is kept and left (2026-11-15, the owner: closing the crop saves it), the sheet stays; Undo puts the photo back
-  await step('zoomed crop then Back',async()=>{await home();await item();const ph0=await ev(()=>items.find(x=>x.id==='m1').photo);await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');
+  await step('zoomed crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');
     await ev(()=>{const r=document.querySelector('#item-view .cropzoom input');r.value='2';r.dispatchEvent(new Event('input',{bubbles:true}))});await back();
-    await p.waitForFunction(ph0=>items.find(x=>x.id==='m1').photo!==ph0,ph0);await settle(p,300);
+    await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo!==window._ph0);await settle(p,300);
     e=await ev(()=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),undo:phEdit.undo.length}));
     ok(!e.crop&&e.item==='m1'&&!e.frame&&e.undo===1,T+`Back in a zoomed crop frame keeps the crop and leaves the frame; the item sheet stays open (${JSON.stringify(e)})`);
     await ev(()=>undoPhoto('m1'));await settle(p,200);
-    ok(await ev(ph0=>items.find(x=>x.id==='m1').photo===ph0,ph0),T+'…and Undo puts the photo back');
+    ok(await ev(()=>items.find(x=>x.id==='m1').photo===window._ph0),T+'…and Undo puts the photo back');
     await back();ok(!await ev(()=>editing),T+'…and the next Back closes the item sheet')});
 
   await home();
