@@ -246,7 +246,11 @@ const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer')return ovlCuSuit(i)||ov
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
   return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" onclick="swTap('${s}')" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
-function wornBar(o){
+/* the wardrobe can't dress a day yet (setup.js setupNeeds: the "Get your first outfit" checklist shows): a half-outfit gets no score,
+   no "This look last worn" and no outfit count (after removing the sample a suit and a shirt showed a red "50 Incomplete", "last worn
+   Thu, Nov 19" and "12 outfits", re-audit 2026-11-15) */
+const wardShort=()=>typeof setupNeeds==='function'&&setupNeeds().some(r=>!r.ok);
+function wornBar(o){if(wardShort())return '';
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),can=+d<=+T,lw=lastWorn(o);
   // "This look": the same jacket, shirt colour and tie (lastWorn), not the suit alone; "Last worn" read as the suit's own last wear, beside a
   // cleaning banner about the suit (audit 2026-11-14)
@@ -259,6 +263,17 @@ function wornBar(o){
 function wornPill(o){const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate());if(+d>+T||!isWorkday(sel)||!hasOutfit(o))return '';
   const no=o.worn===false;
   return `<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" onclick="toggleWorn()" aria-label="${no?"Didn't wear this outfit. Tap if you wore it":"Wore this outfit. Tap if you didn't"}">${no?'✕ Didn\'t':'✓ Wore'}</button>`}
+/* the date bar's weather line with the pill: the weather (or "Set location") sits centred between two pill-wide sides, unless that cuts
+   it (Larger Text, page zoom: "Set loc…", then nothing; re-audit 2026-11-15); then it takes the line alone and the pill goes under it
+   (.wxwrap). Measured after each drawing and when Today's size changes (the text size or the zoom changed) */
+let wxFitOn=false,wxFitW=0,wxFitRaf=0;
+function wxFit(){const w=document.querySelector('#today .day h2 .wx.haspill');
+  // (from the observer: in the next frame, and only when the width changed; a class changed inside the observer's own callback was a
+  // "ResizeObserver loop" error)
+  if(!wxFitOn&&typeof ResizeObserver!=='undefined'){wxFitOn=true;new ResizeObserver(es=>{const x=Math.round(es[0].contentRect.width*100)+'|'+getComputedStyle(document.documentElement).fontSize;
+    if(x===wxFitW)return;wxFitW=x;cancelAnimationFrame(wxFitRaf);wxFitRaf=requestAnimationFrame(wxFit)}).observe($('#today'))}
+  if(!w||!w.offsetWidth)return;const s=w.querySelector('.wxc'),c=s&&(s.querySelector('.wxl')||s);w.classList.remove('wxwrap');
+  const cut=!!c&&c.textContent.trim()!==''&&(c.scrollWidth>c.clientWidth+1||c.clientWidth<1);if(cut)w.classList.add('wxwrap')}
 function toggleWorn(){const o=planFor()[key(sel)];if(!o)return;setWorn(o.worn===false?undefined:false)}
 function figureStage(o){
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
@@ -339,7 +354,7 @@ function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
   const p=planFor();
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc">${settings.location?(wxChip(sel)||''):`<a href="#" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||''):`<a href="#" class="wxl" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';const first=(typeof setupToday==='function'?setupToday():'')+(typeof kitSampleBanner==='function'?kitSampleBanner():'');   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
@@ -348,8 +363,8 @@ function renderToday(){
   else if(!items.length||(first&&!hasOutfit(o)))stage=first||`<p class="mut empty">Your wardrobe is empty. ${ADD_HINT} to get an outfit.</p>`;
   else{stage=first+figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
-  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();
+    side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
+  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();wxFit();
   if(cache.snap&&p===cache[cache.snap]){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
   else if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
     else if(!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (drawn again once the backup is merged, and recorded then)

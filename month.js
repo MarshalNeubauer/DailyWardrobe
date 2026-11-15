@@ -147,7 +147,7 @@ function monthLink(){
   if(monthOpen&&!monthPanel)monthPanel={y:view.y,m:view.m};
   if(!monthOpen)monthFillSoon();
   return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" onclick="toggleMonth()" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip">${days.map(([d,o])=>`<span class="mli"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o)}</span>`).join('')}</span>
-    <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${n} outfit${n===1?'':'s'} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${typeof wardShort==='function'&&wardShort()?'pieces still missing':`${n} outfit${n===1?'':'s'}`} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in"${monthOpen?` data-fill="${monthPanel.y+'-'+monthPanel.m+'|'+key(sel)}">${monthGridHtml()}`:' inert>'}</div></div></section>`;
 }
 
