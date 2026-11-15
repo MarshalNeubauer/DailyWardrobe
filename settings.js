@@ -19,18 +19,25 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
 function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};if(typeof applyRole==='function')applyRole();if(typeof remindSoon==='function')remindSoon();
   // the days from the week's first one: the first day (Sunday first) whose day before isn't one of them, so Sun–Thu reads "Sun–Thu"
   // (sorted from Monday it read "Mon, Tue, Wed, Thu, Sun", audit 2026-11-13)
-  const days=l=>{const has=new Set(l),s0=[0,1,2,3,4,5,6].find(d=>has.has(d)&&!has.has((d+6)%7))||0,s=[...has].sort((a,b)=>((a-s0+7)%7)-((b-s0+7)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
+  const days=l=>{const has=new Set(l),s0=weekFirst(l),s=[...has].sort((a,b)=>((a-s0+7)%7)-((b-s0+7)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
     const run=s.length>2&&s.every((d,i)=>!i||(s[i-1]+1)%7===d);return run?`${n(s[0])}–${n(s[s.length-1])}`:s.map(n).join(', ')};
-  const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
-  set('schedule',`${days(settings.workdays)} · ${typeof dressSummary==='function'&&dressSummary()||`${bl.length?'blazers '+days(bl):'suits every day'} · vest ${({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']}`}`);
+  set('schedule',`${days(settings.workdays)} · ${scheduleWear(days)}`);
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
-  set('daysoff',[h&&h.country?`${h.country} holidays`:'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
+  set('daysoff',[h&&h.country?((h.list||[]).length?`${h.country} holidays`:`${h.country}: no holiday list`):'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
   set('photos',picsDrawn()?'Drawing only':typeof isConnected==='function'&&!isConnected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
   set('tagging',`${own?own+' colour'+(own===1?'':'s')+' & patterns of your own':'Your own colours & patterns'}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
   set('backup',backupSummary(w));set('connection',typeof connSummary==='function'?connSummary():host||'Not connected')}
+/* the week's first day: the first workday (Sunday first) whose day before isn't one, so Sun–Thu starts on Sunday and Mon–Fri on Monday;
+   the Schedule summary and the month's grid (month.js) both start there */
+const weekFirst=(l=settings.workdays)=>{const has=new Set(l||[]);return [0,1,2,3,4,5,6].find(d=>has.has(d)&&!has.has((d+6)%7))||0};
+/* the Schedule summary's dress part (audit 2026-11-15: with ties off it dropped the blazer days): blazer days whenever jackets are worn,
+   the vest only with ties, as Settings shows them */
+function scheduleWear(days){const j=typeof wearsJacket!=='function'||wearsJacket(),t=typeof wearsTie!=='function'||wearsTie();
+  if(!j)return typeof dressSummary==='function'?dressSummary():'no jackets';const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
+  return [bl.length?'blazers '+days(bl):'suits every day',t?'vest '+({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']:'no ties'].join(' · ')}
 function openSettings(section){
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
@@ -77,8 +84,19 @@ function saveSettings(){
 }
 
 
+/* dates in the app's language (audit 2026-11-15: an Arabic-language iPhone showed "الأحد، ١٥ نوفمبر" inside the English app): every
+   toLocale…String(undefined, …) uses the phone's language when it is English, else British English (day before month, Latin digits) */
+const APP_LOC=/^en\b/i.test(navigator.language||'en')?navigator.language:'en-GB';
+function appLocale(){if(Date.prototype._dwLoc)return;for(const m of ['toLocaleDateString','toLocaleString','toLocaleTimeString']){const f=Date.prototype[m];
+  Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}
+appLocale();
 /* ---- settings: schedule, weather location, units ---- */
-const unit=()=>settings.units||(/^en-(US|LR|MM)/.test(navigator.language||'')?'F':'C');
+/* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the
+   time zone's (setup.js tzCountry, which falls back on the phone's region), else the phone's language as before */
+const F_CC=['US','LR','MM','PR','GU','VI','AS','MP','BS','KY','PW','FM','MH'];
+const locCC=l=>l&&(l.cc||(/,\s*([A-Z]{2})$/.exec(l.name||'')||[])[1])||'';
+const unitCC=()=>locCC(settings.location)||(typeof tzCountry==='function'&&tzCountry())||'';
+const unit=()=>{if(settings.units)return settings.units;const cc=unitCC();return cc?(F_CC.includes(cc)?'F':'C'):/^en-(US|LR|MM)/.test(navigator.language||'')?'F':'C'};
 const temp=c=>Math.round(unit()==='F'?c*9/5+32:c);
 const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
@@ -91,15 +109,37 @@ const countryName=cc=>{try{return new Intl.DisplayNames(['en'],{type:'region'}).
 let holidayMsg='';
 /* public holidays of a country for about the next 13 months -> [{d:'YYYY-MM-DD', n:name}]. Nager.Date first (free, no key,
    most countries); the worker's /holidays (Google's public holiday calendars) for the ones it lacks, e.g. the Gulf states */
+/* Nager.Date's holidays that count (audit 2026-11-15: the UK lost New Year's Day, Easter Monday and the Summer bank holiday, listed for
+   England, Wales and Northern Ireland rather than "global"): a regional holiday counts when it covers at least half of the regions the
+   year's list names (a single state's or nation's day doesn't); the English name, except in English-speaking countries, whose own name
+   it is ("Boxing Day", "Labor Day") */
+const HOL_EN=['US','GB','IE','AU','NZ','CA','ZA','NG','KE','GH','JM','SG','IN','PK','PH','MT','BS','BB','TT','BZ','GY','UG','ZM','ZW','BW','NA'];
+function nagerKeep(list,cc){const regs=new Set();for(const h of list)for(const c of h.counties||[])regs.add(c);
+  return list.filter(h=>(!h.types||h.types.includes('Public'))&&(h.global!==false||(regs.size&&(h.counties||[]).length*2>=regs.size)))
+    .map(h=>({d:h.date,n:(HOL_EN.includes(cc)?h.localName||h.name:h.name||h.localName)}))}
+/* countries whose list the phone works out itself when the server can't give one (audit 2026-11-15: Kuwait, the app's home, had none
+   without a connection): fixed days, and Islamic days from the Umm al-Qura calendar, which can be a day off the announced date */
+const HOL_FIXED={KW:[['01-01','New Year’s Day'],['02-25','National Day'],['02-26','Liberation Day']]};
+const HOL_HIJRI={KW:[[7,27,'Isra and Mi’raj'],[10,1,'Eid al-Fitr'],[10,2,'Eid al-Fitr'],[10,3,'Eid al-Fitr'],[12,9,'Arafat Day'],[12,10,'Eid al-Adha'],[12,11,'Eid al-Adha'],[12,12,'Eid al-Adha'],[1,1,'Islamic New Year'],[3,12,'The Prophet’s Birthday']]};
+function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return null;let f=null;
+  try{f=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{day:'numeric',month:'numeric',timeZone:'UTC'})}catch{f=null}
+  const out=[];for(const d=isoToDate(from);isoKey(d)<=to;d.setDate(d.getDate()+1)){const k=isoKey(d);
+    for(const [md,n] of HOL_FIXED[cc]||[])if(k.slice(5)===md)out.push({d:k,n});
+    if(f&&HOL_HIJRI[cc]){const p=f.formatToParts(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),12))),v=t=>+((p.find(x=>x.type===t)||{}).value);
+      for(const [hm,hd,n] of HOL_HIJRI[cc])if(hm===v('month')&&hd===v('day'))out.push({d:k,n})}}
+  return out}
 async function fetchHolidays(cc){
   const T=todayDate(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
   const tidy=l=>{const m={};for(const x of l)if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n;return Object.entries(m).sort().map(([d,n])=>({d,n}))};
-  try{const out=[];for(const y of new Set([+from.slice(0,4),+to.slice(0,4)])){const r=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/${cc}`);if(r.status!==200)continue;
-      for(const h of await r.json())if(h.global!==false&&(!h.types||h.types.includes('Public')))out.push({d:h.date,n:h.name||h.localName})}
+  const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
+  // (a country with its own list isn't in Nager.Date: not asked, which logged a 404 on every start)
+  if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])try{const out=[];for(const y of new Set([+from.slice(0,4),+to.slice(0,4)])){const r=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/${cc}`);if(r.status!==200)continue;
+      out.push(...nagerKeep(await r.json(),cc))}
     if(out.length)return tidy(out)}catch(e){/* unreachable or unknown country: try the worker */}
-  const W=workerBase();if(!W)throw new Error(`No holiday list for ${countryName(cc)} until the app is connected: paste your invite link under Connection.`);
-  let r;try{r=await fetch(new URL('holidays',W.url).href+'?country='+cc,{headers:{'x-app-token':W.tok},cache:'no-store'})}catch{throw new Error('Couldn’t reach your worker for the holiday list.')}
+  const W=workerBase();if(!W){const l=own();if(l)return l;throw new Error(`No holiday list for ${countryName(cc)} until the app is connected: paste your invite link under Connection.`)}
+  let r;try{r=await fetch(new URL('holidays',W.url).href+'?country='+cc,{headers:{'x-app-token':W.tok},cache:'no-store'})}catch{const l=own();if(l)return l;throw new Error('Couldn’t reach the server for the holiday list.')}
   const j=await r.json().catch(()=>({}));
+  if(!r.ok||!(j.holidays||[]).length){const l=own();if(l)return l}
   if(!r.ok)throw new Error(j.holidaysError||(r.status===404||r.status===405?'The server doesn’t have holiday lists yet: it needs an update.':j.error||`HTTP ${r.status}`));
   return tidy((j.holidays||[]).map(h=>({d:h.date,n:h.name})))}
 async function setHolidayCountry(cc,quiet){
@@ -108,7 +148,11 @@ async function setHolidayCountry(cc,quiet){
   try{const list=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
     settings.holidays={country:cc,list,skip:old.filter(d=>list.some(x=>x.d===d)),fetched:Date.now()};
     holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayStale=true}
-  catch(e){if(quiet)return;holidayMsg=e.message||'Couldn’t load the holiday list.'}
+  catch(e){if(quiet)return;
+    // (audit 2026-11-15) the country picked is the one that counts, even without a list: the old country's holidays went on counting under
+    // a "that country" message; tried again at the next start (fetched 0, refreshHolidays)
+    if(!(settings.holidays&&settings.holidays.country===cc&&(settings.holidays.list||[]).length)){settings.holidays={country:cc,list:[],skip:[],fetched:0};await saveUserSettings();todayStale=true}
+    const m=e.message||'couldn’t load the holiday list.';holidayMsg=`${countryName(cc)}: ${m}${/days off/.test(m)?'':' Add its holidays as your own days off below if you need them.'}`}
   renderDaysOffUI()}
 /* the list goes stale (new year, tentative dates confirmed): fetched again once a month, keeping the days you unticked */
 /* the monthly refetch saves the settings with a new stamp, and the newest settings win a sync: on a device that had been away
@@ -127,8 +171,10 @@ async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const 
 const isoToDate=v=>{const [y,m,d]=String(v).split('-').map(Number);return new Date(y,m-1,d)};
 async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=(($('#cfg-off-name')||{}).value||'').trim();
   const say=m=>{holidayMsg=m;renderDaysOffUI()};if(!f)return say('Pick a date first.');
-  const a=isoToDate(f),b=isoToDate(t);if(b<a)return say('The last day is before the first.');if((b-a)/864e5>92)return say('That is more than three months: add it in parts.');
-  const cur=new Map((settings.daysOff||[]).map(x=>[x.d,x]));let k=0;for(const d=new Date(a);d<=b;d.setDate(d.getDate()+1)){cur.set(isoKey(d),{d:isoKey(d),n:n||'Day off'});k++}
+  const a=isoToDate(f),b=isoToDate(t),T=todayDate();if(b<a)return say('The last day is before the first.');if((b-a)/864e5>92)return say('That is more than three months: add it in parts.');
+  // a typed date isn't held back by the field's min (audit 2026-11-15: "1 day off added." for a past day that never showed)
+  if(b<T)return say(`${yearDate(b)} has passed: only days from today on can be added.`);
+  const cur=new Map((settings.daysOff||[]).map(x=>[x.d,x]));let k=0;for(const d=new Date(a<T?T:a);d<=b;d.setDate(d.getDate()+1)){cur.set(isoKey(d),{d:isoKey(d),n:n||'Day off'});k++}
   settings.daysOff=[...cur.values()].sort((x,y)=>x.d<y.d?-1:1);holidayMsg=`${k} day${k===1?'':'s'} off added.`;
   for(const id of ['#cfg-off-from','#cfg-off-to','#cfg-off-name'])if($(id))$(id).value='';
   await saveUserSettings();todayStale=true;renderDaysOffUI()}
@@ -138,13 +184,13 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   box.value=cc;
   const tk=isoKey(todayDate()),skip=new Set(h&&h.skip||[]),up=(h&&h.list||[]).filter(x=>x.d>=tk);
   list.innerHTML=!cc?'':up.length?up.map(x=>{const d=isoToDate(x.d),wk=!settings.workdays.includes(d.getDay());
-    return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} onchange="toggleHoliday('${x.d}',this.checked)"><span class="hd">${shortDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
-    :h&&!h.fetched?`<small class="mut">The public holidays of ${esc(countryName(cc))} are loaded once the app is connected (chosen from this phone’s time zone).</small>`   // (setup.js setupHolidays)
+    return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} onchange="toggleHoliday('${x.d}',this.checked)"><span class="hd">${yearDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
+    :h&&!h.fetched?`<small class="mut">${workerBase()?`No public holiday list for ${esc(countryName(cc))} yet: the app tries again at its next start.`:`The public holidays of ${esc(countryName(cc))} are loaded once the app is connected.`}</small>`   // (setup.js setupHolidays)
     :'<small class="mut">No public holidays in the next year.</small>';
   const own=(settings.daysOff||[]).filter(x=>x.d>=tk),ol=$('#off-list');
   // consecutive days with one name are shown as one range
   const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(isoToDate(x.d)-isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
-  if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?shortDate(isoToDate(r.from)):`${shortDate(isoToDate(r.from))} – ${shortDate(isoToDate(r.to))}`;
+  if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?yearDate(isoToDate(r.from)):`${yearDate(isoToDate(r.from))} – ${yearDate(isoToDate(r.to))}`;
     return `<span class="fchip">${l}${r.n&&r.n!=='Day off'?' · '+esc(r.n):''}<button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Untick any you work.`:'');
   const f=$('#cfg-off-from');if(f)f.min=tk;
@@ -152,6 +198,8 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
 async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI()}
 /* ---- Settings: formal days (any upcoming workday) ---- */
 const shortDate=d=>d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+/* with the year when it isn't this year's (the holiday list showed two "Thu, Nov 26 Thanksgiving Day" a year apart) */
+const yearDate=d=>d.getFullYear()===todayDate().getFullYear()?shortDate(d):d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
 const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-date');if(!list)return;
   const T=todayDate();if(inp){inp.min=isoDate(T);if(!inp.value)inp.value=isoDate(nextWorkday?nextWorkday(T):T)}
@@ -201,15 +249,23 @@ function setVestMode(v){settings.vestMode=v;saveUserSettings();settingsSummaries
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
 async function setDarkShirts(v){settings.darkShirts=v;await clearLocks();await saveUserSettings();todayStale=true;settingsSummaries()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
-  if(k==='workdays'&&l.size===0)return;settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
+  if(k==='workdays'&&l.size===0){tell('At least one workday is needed: tick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   renderSettingsExtras();clearLocks().then(saveUserSettings)}
 function setUnits(v){settings.units=v;saveUserSettings();settingsSummaries()}
 function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
 function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
-  navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:'your current location'}),()=>tell('Location permission was denied. Search for your city instead.'))}
+  navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:geoName(p.coords.latitude,p.coords.longitude)}),()=>tell('Location permission was denied. Search for your city instead.'))}
+/* "Use my location" has no place name (Open-Meteo can't look one up): the spot itself, so it doesn't read "your current location" after a trip */
+const geoName=(la,lo)=>`your location (${Math.abs(la).toFixed(2)}° ${la<0?'S':'N'}, ${Math.abs(lo).toFixed(2)}° ${lo<0?'W':'E'})`;
+/* the language the city search asks in: a name typed in Arabic (or another script) is looked up in that language, English otherwise */
+function cityLang(q){const s=[[/[؀-ۿ]/,'ar'],[/[֐-׿]/,'he'],[/[Ѐ-ӿ]/,'ru'],[/[Ͱ-Ͽ]/,'el'],[/[฀-๿]/,'th'],[/[가-힯]/,'ko'],[/[぀-ヿ]/,'ja'],[/[一-鿿]/,/^ja/i.test(navigator.language||'')?'ja':'zh']].find(([r])=>r.test(q));return s?s[1]:'en'}
+/* results that read the same ("Dubai, Uttar Pradesh, IN" three times) get their district, and true repeats are dropped */
+function cityList(results){const res=(results||[]).map(c=>({lat:c.latitude,lon:c.longitude,cc:c.country_code||'',name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', '),a2:c.admin2||c.admin3||''}));
+  const cnt={};for(const c of res)cnt[c.name]=(cnt[c.name]||0)+1;for(const c of res)if(cnt[c.name]>1&&c.a2)c.name=[c.name.split(', ')[0],c.a2,...c.name.split(', ').slice(1)].join(', ');
+  const seen=new Set();return res.filter(c=>{const k=c.name;if(seen.has(k))return false;seen.add(k);return true}).map(c=>{delete c.a2;return c})}
 async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();if(!q)return;
-  try{const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=5&language=en&name='+encodeURIComponent(q));const j=await r.json();
-    const res=(j.results||[]).map(c=>({lat:c.latitude,lon:c.longitude,name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', ')}));
+  try{const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+cityLang(q)+'&name='+encodeURIComponent(q));const j=await r.json();
+    const res=cityList(j.results).slice(0,5);
     window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}</button>`).join(''):'<small class="mut">No matches.</small>'}
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */

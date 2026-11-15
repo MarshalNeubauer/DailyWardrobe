@@ -729,6 +729,16 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - weather: a 16-day forecast; beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in localStorage `wx_norm`, so `dayClimate()` does not fall back to a temperate calendar
 - the city search's results (`findCity`) are escaped (names from Open-Meteo went into the page as HTML)
 - `refreshAll`'s list of pages includes `pack` and `'care'`, so Refresh stays on the Packing list and Laundry & cleaning
+- (audit 2026-11-15) dates are in the app's language: `appLocale()` makes every `Date#toLocale…String(undefined, …)` use `APP_LOC` (the phone's language when English, else `en-GB`): an Arabic-language iPhone showed Arabic dates and digits; pass a locale to opt out
+- units without a choice follow the country (`unit`, `unitCC`, `F_CC`): the location's `cc` (kept by the city search) or the `, XX` at the end of its name, else `tzCountry()`, else the phone's language; a Kuwait phone in English (US) got °F
+- `weekFirst()`: the work week's first day (Sun–Thu → Sunday, Mon–Fri → Monday); the Schedule summary and the month grid (month.js) start there
+- the Schedule summary's dress part is `scheduleWear`: blazer days whenever jackets are worn, the vest only with ties
+- the last workday can't be unticked and toasts why (`toggleDay`)
+- holidays: Nager's regional holidays count when they cover at least half the regions the year's list names (`nagerKeep`; the UK lost New Year's Day, Easter Monday, Summer bank holiday); English-speaking countries (`HOL_EN`) use the local name
+- Kuwait's holidays are worked out on the phone when the server gives none or the app isn't connected (`builtinHolidays`, `HOL_FIXED`, `HOL_HIJRI`; Islamic days from Intl's `islamic-umalqura` calendar, can be a day off the announced one); such a country isn't asked of Nager (a 404 each start)
+- a country whose list can't load becomes the country anyway, with an empty list and `fetched` 0 (retried at the next start), and the message names it; the Days off summary then reads "XX: no holiday list"
+- holiday and day-off dates outside this year show the year (`yearDate`); a past day off is refused, a range starting in the past is added from today (`addDayOff`)
+- city search: asks in the script's language (`cityLang`: Arabic text → `language=ar`), lines that read the same get their district and repeats go (`cityList`), Enter in `#cfg-city` searches; "Use my location" is named by its coordinates (`geoName`)
 
 ### `start.js`
 
@@ -849,6 +859,15 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today's checklist (`setupToday`, rows from `setupNeeds`): suit or blazer, shirt, tie, trousers ("If no suit" with jackets on and no suit), shoes; goes in place of the picture, above the score card or under the note depending on how dressed the day is
 - empty Wardrobe: `setupWardEmpty()` (`#wempty`)
 - `tests/setup.test.js` covers the flow, both connection paths, stepping aside, both checklist kinds, and layout at 320/390/626px
+- (audit 2026-11-15) the step on screen is kept in `localStorage.setup_at` (`setupKeep`/`setupResume`: `{k, again, before, vestSet}`), so a setup iOS cut off opens again on that step; removed by `setupClose`
+- the new-person "No vest" applies only when the vest has no stamp (`setupVestChosen`: `setStampOf(settings,'vestMode')`), so a choice made before a kill, or the account's from another phone, stays
+- the vest row shows only with jackets and ties (as Settings); the dress switches keep other `settings.dress` keys (jeans)
+- "Run setup again" has Cancel instead of Skip (`setupCancel`): it puts back `SETUP_UNDO` (workdays, blazer days, dress, vest, units, location) as they were at open (`setup.before`, kept with the step)
+- a tap at the spot of the tap that closed the setup within `SETUP_TAP_MS` (350) is dropped (`setupTapGuard`): a double tap on Skip opened Settings, one on "Add my first item" skipped the tour's first card; tests wait past it
+- connected at the setup's own Connection step (`setup.joined`, or while `setup.busy`), items arriving don't close it: it goes on to All set with the account's answers (adoptBackupSettings) and says the wardrobe came across
+- All set lists the blazer days and the vest; its "Try a sample wardrobe" (`setupSample`) finishes the setup first (holidays, vest)
+- `setupOpen` closes a Home Screen kit sheet (one explanation)
+- `tests/setupfix.test.js` covers these and the Settings fixes of the same audit
 
 ### `kit.js`
 
@@ -872,6 +891,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the sample wardrobe (`kitSampleLoad`, `KIT_SAMPLE`: 24 pieces, three suits, two blazers, two trousers, five shirts, five ties, shoes, belts, socks, a watch): saved with `item.sample` (`save` copies `q.sample`), asks first when the wardrobe already has pieces, jumps to the next workday (`goToday`); offered on the setup's last step, Today's checklist and the empty Wardrobe
 - Add to Home Screen (2026-11-14, the owner: show a new iPhone user how to add it as a web app): on an iPhone or iPad in a browser tab (`homeNeeded` in kit.js: `homeIOS` and not `homeStandalone`; `window.DW_IOS` / `DW_STANDALONE` for tests) the setup's steps are worked out when it opens (`SETUP_STEPS = setupStepsNow()`, from `SETUP_BASE`) with a Home Screen step right after Welcome (`homeSteps(true)`): the reason (full screen, the only way iOS lets it send the morning reminder), three taps with the Share and Add icons (Share at the bottom of Safari, at the top on an iPad), and "do this before you set anything up": the Home Screen app keeps its own storage, apart from Safari's; Next carries on in Safari; Settings → About's "Add to Home Screen" (`#home-again`, `homeOpen`, the same instructions as a kit sheet) shows only there (`homeAbout`, set once at start; `#home-again[hidden]{display:none}`: the Settings buttons' display rule outranked the attribute); elsewhere the setup is as before (6 steps); `tests/homescreen.test.js`
 - Android install (2026-11-14, the owner: "the same thing for android with an install button"): on Android in a browser tab (`homeAndroid`, `window.DW_ANDROID` for tests) the setup's step after Welcome is "Install the app" (`homeStepsAndroid`; `SETUP_TITLES.home` is a getter): the browser's own offer is held (`beforeinstallprompt` → `homeEvt`, its banner prevented) and an Install button (`.home-install`, `homeInstall`: `prompt()` once, then the offer is gone) shows in place of the menu steps (`.home-manual`: ⋮ → Install app / Add to Home screen) only while there is an offer, updated in place (`homeSync`; the offer can come after the step is drawn); `appinstalled` toasts; no "set up first" warning (the installed app shares the browser's storage); About's button reads "Install the app" (`homeLabel`); `[hidden]` on them needs `display:none!important` (the setup's button rule outranks it); `tests/homescreen.test.js` fakes the offer
+- (audit 2026-11-15, H12) one Home Screen explanation (`homeSteps`, iPhone): ⋯ then Share (Share at the top right on an iPad), Add to Home Screen (or View More), Open as Web App on, Add, open it; a connected tester gets "Copy my invitation link" (`homeCopy`, `homeTester`) and is told to paste it at the Home Screen app's Connection step; the note (`homeNote`) says what applies: connected, not connected with a wardrobe (it stays in Safari: Download backup / Restore file), or not connected and empty (set it up there)
+- account.js's `homeScreenGuide` opens that sheet (never over the setup); About's buttons call `tourAgain`/`homeAgain`, which go back to Settings → About on close
+- the tour's score card speaks of shirts and trousers without ties or jackets (`kitWears`)
 - Today shows "You're trying a sample wardrobe" (`kitSampleBanner`, `#kit-sample`) with Add my own and Remove the sample (`kitSampleRemove`: asks, deletes every sample piece, releases locks)
 
 ### `remind.js`
