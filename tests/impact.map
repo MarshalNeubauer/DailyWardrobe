@@ -2404,7 +2404,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate

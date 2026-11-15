@@ -7,7 +7,7 @@
 /* text sizes are in rem: the root follows the iPhone's Larger Text (--tscale, set in index.html's head; 1 = the default look) */
 html{font-size:calc(var(--tscale,1) * 100%)}
 *{box-sizing:border-box}
-/* the bottom tab bar: compact buttons, and it reaches into the home-indicator zone (only 16px of the inset kept clear below it) */
+/* the bottom tab bar (labels 17 px, never under 16 px even with a smaller iPhone text size: the owner found 15 hard to read): compact buttons, and it reaches into the home-indicator zone (only 16px of the inset kept clear below it) */
 :root{--navpad:max(0px, calc(env(safe-area-inset-bottom) - 18px));--navx:0px;--navh:calc(44px + var(--navx) + var(--navpad))}   /* --navx: the tab bar grown to meet Today's tiles (fitNav in app.js) */
 body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(var(--navh) + 12px)}
 header{display:flex;justify-content:space-between;align-items:center;padding:calc(6px + env(safe-area-inset-top)) 12px 6px 16px;background:#101820 repeating-linear-gradient(90deg,transparent 0 11px,#ffffff14 11px 12px);color:#f2f0e8}
@@ -21,7 +21,7 @@ header button{background:none;border:0;color:inherit;font-size:1.375rem;line-hei
 .pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn{display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid var(--line);cursor:pointer;margin:10px 0}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--navpad);z-index:900}
-nav button{flex:1;border:0;border-radius:0;background:none;padding:0;height:calc(44px + var(--navx));transition:height .2s ease;font-size:.9375rem;line-height:calc(44px + var(--navx));font-weight:600;color:var(--mut)}
+nav button{flex:1;border:0;border-radius:0;background:none;padding:0;height:calc(44px + var(--navx));transition:height .2s ease;font-size:max(16px,1.0625rem);line-height:calc(44px + var(--navx));font-weight:600;color:var(--mut)}
 nav button.on{color:var(--ink)}
 /* the marker over the tab that is showing slides from tab to tab (app.js pageIn sets --ti; .tab-none: a page that isn't a tab) */
 nav::before{content:"";position:absolute;top:0;left:0;width:calc(100% / 3);height:3px;background:var(--acc);transform:translateX(calc(var(--ti,0) * 100%));transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .2s;pointer-events:none}
