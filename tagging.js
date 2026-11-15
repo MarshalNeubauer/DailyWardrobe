@@ -153,6 +153,27 @@ function wbSolidOk(s){
   return !(s.core<WB_CORE||s.gap<WB_GAP||s.trans>WB_TRANS)}
 /* the light reading of a close-up: strict about what counts as white paper */
 const closeRead=c=>wbRead(c,{strict:true});
+/* ---- white paper in the close-up (2026-11-15, the owner's choice from mockups, photo-wb-mockups option A + 04-10): whether the
+   item's close-up has white paper (closeRead), and, when it hasn't, whether the item photo's looser light reading (wbRead, a white
+   wall or shirt) shows a warm cast (blue gain at least PAPER_WARM times the red). The app can't tell dim light (the phone brightens
+   every picture): that only ever shows as "no paper". Kept in memory by the close-up's and photo's signatures; nothing is stored. ---- */
+const PAPER_WARM=1.08,PAPER={};
+const paperKey=it=>it&&it.texture?texSig(it.texture)+'|'+texSig(it.photo||''):'';
+async function urlCanvas(u){const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+  const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}
+async function paperOf(it){const k=paperKey(it);if(!k)return null;if(PAPER[k])return PAPER[k].then?await PAPER[k]:PAPER[k];
+  const job=(async()=>{try{const r=closeRead(await urlCanvas(it.texture));let warm=false;
+    if(!r.ref&&it.photo)try{const g=wbRead(await urlCanvas(typeof phSm==='function'?phSm(it):it.photo)).gains;warm=!!g&&g.b>=PAPER_WARM*g.r}catch{}
+    return {ref:!!r.ref,warm}}catch{return null}})();
+  PAPER[k]=job;const v=await job;if(v)PAPER[k]=v;else delete PAPER[k];return v}
+const paperNow=it=>{const v=PAPER[paperKey(it)];return v&&!v.then?v:null};
+/* the close-up sent to Claude (/describe): a close-up added in the item sheet is stored as taken (replaceTexture) and the sharp copy is
+   never corrected, so with paper in it the copy is white-balanced from the paper here (applyWb, closeRead's gains) and goes with wb:true
+   ("already corrected, don't adjust"); without paper it goes as taken with wb:false (worker/tag.js wbOf, lightText). Correcting an
+   already corrected picture changes nothing (no gains under a 2% cast). */
+async function paperCopy(it){const u=(typeof sharpCloseOf==='function'?await sharpCloseOf(it):null)||it.texture;
+  try{const cv=await urlCanvas(u),r=closeRead(cv);if(!r.ref)return {closeup:u,wb:false};
+    return {closeup:r.gains?applyWb(cv,r.gains).toDataURL('image/jpeg',TAG_Q):u,wb:true}}catch{return {closeup:u,wb:false}}}
 
 /* ---- measuring the cloth: the median CIELAB colour of a region (a box in thousandths, or the middle of the picture), after
    the white-balance gains; with a white reference (paper in the close-up) the exposure is also set from it, so lightness is

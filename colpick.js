@@ -235,11 +235,28 @@ function cnCost(kind,close){if(!isConnected())return NEED_CONN;
 function openColNew(o={}){if(!colPick)return;const it=colTarget();if(!it)return;
   const accent=colPick.src==='s'?!!o.accent:colPick.k!=='primaryColor',m=it.meas&&cnHex(it.meas.hex),sel=colPick.sel;
   const hex=cnHex(o.hex)||(sel&&sel!=='none'&&sel!==NEW_COL&&COLORS[sel]?COLORS[sel]:null)||m||'#7a3b47',[h,s,v]=cnHsv(hex);
-  colPick.newc={kind:'colour',from:o.from||'pick',hex,h,s,v,name:o.name?cap1(o.name):'',desc:o.desc||'',state:'idle',res:null,base:null,types:groupOf(it.type),accent,err:''};
-  renderColPick();const el=$('#col-sheet');if(el)el.scrollTop=0;const b=$('#col-sheet .cnback');if(b)b.focus({preventScroll:true})}
+  colPick.newc={kind:'colour',from:o.from||'pick',hex,h,s,v,name:o.name?cap1(o.name):'',desc:o.desc||'',state:'idle',res:null,base:null,types:groupOf(it.type),accent,err:'',closeOn:false,closeSet:false};
+  cnPaperDefault(colPick.newc);renderColPick();const el=$('#col-sheet');if(el)el.scrollTop=0;const b=$('#col-sheet .cnback');if(b)b.focus({preventScroll:true})}
+/* white paper in the close-up (2026-11-15, photo-wb-mockups 07-10): the colour sheet's "Also show Claude my close-up" starts ticked when the
+   close-up has white paper and unticked when not (until the owner taps it: closeSet); the paper line under both sheets' boxes */
+const cnHasClose=it=>!!(colPick&&colPick.src!=='s'&&it&&it.texture);
+function cnPaperDefault(nc){const it=colTarget();if(!cnHasClose(it))return;const set=r=>{if(!nc.closeSet&&nc.kind==='colour')nc.closeOn=!!(r&&r.ref)};const r=paperNow(it);
+  if(r){set(r);return}paperOf(it).then(r=>{if(!colPick||colPick.newc!==nc||!r)return;set(r);renderColPick(true)})}
+function cnToggleClose(){const nc=colPick&&colPick.newc;if(!nc)return;nc.closeOn=!nc.closeOn;nc.closeSet=true;renderColPick(true)}
+const cnRetakeHtml=()=>colPick&&colPick.src==='e'?` <label class="linkbtn wbretake">Retake close-up<input type="file" accept="image/*" class="vfile" onchange="cnRetake(this.files[0]);this.value=''"></label>`:'';
+async function cnRetake(f){const nc=colPick&&colPick.newc;if(!nc||colPick.src!=='e'||!f)return;const id=colPick.ref;await replaceTexture(id,f);
+  if(!colPick||colPick.newc!==nc)return;nc.closeSet=false;await paperOf(colTarget());if(!colPick||colPick.newc!==nc)return;cnPaperDefault(nc);renderColPick(true)}
+function cnPaperLine(kind){const it=colTarget();if(!cnHasClose(it))return '';const r=paperNow(it);if(!r)return '';
+  const ok=t=>`<p class="wbst ok" id="cn-paper"><span class="ic" aria-hidden="true">✓</span><span class="tx">${t}</span></p>`,no=t=>`<p class="wbst no" id="cn-paper"><span class="ic" aria-hidden="true">!</span><span class="tx">${t}</span></p>`;
+  if(kind==='pattern')return r.ref?ok('White paper found: Claude sees the true colours.'):no('No white paper: the weave reads fine, the colours may be off.');
+  return r.ref?ok('White paper found: Claude sees the true colour.'):no((r.warm?'No white paper, and the light looks warm: Claude may see it yellower.':'No white paper in this close-up: the colour may be off.')+cnRetakeHtml())}
+/* on Claude's colour: what the light did to the close-up it was shown (nc.sent, set when asked) */
+function cnLightNote(nc){const s=nc.sent;if(!s||s.wb!==false)return '';
+  return s.warm?`<div class="cnwarm" id="cn-warm" role="note"><span aria-hidden="true">☀︎</span><span>Taken in warm light — the colour may be yellower than the cloth; add white paper for a truer colour.${cnRetakeHtml()?'<br>'+cnRetakeHtml():''}</span></div>`
+    :`<p class="cnwhy cnnopaper" id="cn-warm">No white paper in the close-up, so this shade is Claude’s best guess from the photo as taken.</p>`}
 function openPatNew(o={}){if(!colPick)return;const it=colTarget();if(!it)return;
   colPick.newc={kind:'pattern',from:o.from||'pick',name:o.name?cap1(o.name):'',desc:o.desc||'',state:'idle',res:null,base:o.base||null,look:null,types:CN_SUITING.includes(it.type)?CN_SUITING.slice():[it.type],closeOn:false,err:''};
-  renderColPick();const el=$('#col-sheet');if(el)el.scrollTop=0;const b=$('#col-sheet .cnback');if(b)b.focus({preventScroll:true})}
+  cnPaperDefault(colPick.newc);renderColPick();const el=$('#col-sheet');if(el)el.scrollTop=0;const b=$('#col-sheet .cnback');if(b)b.focus({preventScroll:true})}
 /* Settings → Your colours & patterns: the sheet with no item, a "For" choice in its place */
 function openCustomNew(kind){const t=kind==='pattern'?'suit':'tie';
   colPick={src:'s',ref:null,k:kind==='pattern'?'pattern':'primaryColor',fake:{id:'_cn',type:t,primaryColor:CN_SAMPLE[t],pattern:'solid'},cur:'none',sel:'none',view:'draw'};
@@ -274,15 +291,17 @@ async function describeAsk(){const nc=colPick&&colPick.newc,it=colTarget();if(!n
   if(!text){nc.err='Describe it first, in a few words.';renderColPick(true);return}
   const pat=nc.kind==='pattern',body={what:pat?'pattern':'colour',text,type:it.type,field:!pat&&nc.accent?'accent':'primary',
     colours:{main:primaryCol(it),second:it.secondaryColor||null,third:it.tertiaryColor||null},pattern:normPat(it.type,it.pattern),custom:settings.custom||{}};
-  if(pat&&nc.closeOn&&it.texture&&colPick.src!=='s'){try{body.closeup=(typeof sharpCloseOf==='function'?await sharpCloseOf(it):null)||it.texture}catch(e){body.closeup=it.texture}}
   nc.state='busy';nc.err='';renderColPick(true);
+  // the close-up when ticked, white-balanced from its paper (wb true) or as taken (wb false); no close-up, no wb (paperCopy, tagging.js)
+  let sent=null;if(nc.closeOn&&cnHasClose(it)){const c=await paperCopy(it),r=paperNow(it);body.closeup=c.closeup;body.wb=c.wb;sent={wb:c.wb,warm:!c.wb&&!!(r&&r.warm)}}
+  if(!colPick||colPick.newc!==nc)return;
   const w=localStorage.getItem('worker_url')||'';let r=null,j={};
   try{r=await fetch(new URL('describe',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},body:JSON.stringify(body)});j=await r.json().catch(()=>({}))}catch(e){r=null}
   if(!colPick||colPick.newc!==nc)return;   // closed meanwhile
   if(r&&r.ok&&typeof acct==='object'&&acct&&acct.me&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+1;
   if(r&&r.status===429){nc.state='limit';nc.limit=j.message||'Today’s colour and pattern lookups are used up. They start again at midnight UTC.'}
   else if(!r||!r.ok){nc.state='err';nc.detail=showCost()&&(j.detail||j.message)||''}
-  else if(pat?j.kind==='pattern':j.kind==='colour'||j.kind==='several'){nc.res=j;nc.base=null;
+  else if(pat?j.kind==='pattern':j.kind==='colour'||j.kind==='several'){nc.res=j;nc.base=null;nc.sent=sent;
     if(pat){nc.name=cap1(j.name||nc.name);nc.look=j.look&&j.look.layout&&j.look.layout!=='none'?j.look:null;nc.state=j.match==='existing'&&patChoices(it).includes(j.existing)&&j.existing!==NEW_COL?'reuse':'result'}
     else{nc.hex=cnHex(j.hex)||nc.hex;[nc.h,nc.s,nc.v]=cnHsv(nc.hex);nc.name=cap1(j.name||nc.name);nc.state=+j.dE<=3&&COLORS[j.existing]?'dup':'result'}}
   else{nc.state='kind';nc.answer=j.kind;nc.ask=j.ask||'';nc.res=null}
@@ -290,9 +309,9 @@ async function describeAsk(){const nc=colPick&&colPick.newc,it=colTarget();if(!n
 /* "Describe it to Claude": the box, the cost or what is left, Ask; the limit and connection notes */
 function cnAskBox(nc,kind,hint,ph){const on=isConnected(),busy=nc.state==='busy',l=!showCost()?cnLeft():null,spent=l&&l.left<=0;
   const lim=nc.state==='limit'||spent?`<div class="cnlim" role="status"><span aria-hidden="true">⏳</span><span><b>${esc(nc.state==='limit'?nc.limit:`Today’s limit of ${l.cap} colour and pattern lookups is used up.`)}</b>${nc.state==='limit'?'':'It starts again at midnight UTC. '}You can still ${kind==='pattern'?'set it yourself':'pick the shade yourself'} below.</span></div>`:'';
-  const close=kind==='pattern'&&colPick.src!=='s'&&colTarget().texture?`<button type="button" class="cnchk" id="pn-close" role="checkbox" aria-checked="${!!nc.closeOn}" onclick="colPick.newc.closeOn=!colPick.newc.closeOn;renderColPick(true)"><i class="${nc.closeOn?'on':''}" aria-hidden="true"></i><span>Also show Claude my close-up</span></button>`:'';
+  const close=cnHasClose(colTarget())?`<button type="button" class="cnchk" id="${kind==='pattern'?'pn':'cn'}-close" role="checkbox" aria-checked="${!!nc.closeOn}" onclick="cnToggleClose()"${busy?' disabled':''}><i class="${nc.closeOn?'on':''}" aria-hidden="true"></i><span>Also show Claude my close-up</span></button>${cnPaperLine(kind)}`:'';
   const row=busy?`<div class="cnaskrow" role="status"><span class="spin" aria-hidden="true"></span><small><b class="cnbusy">${kind==='pattern'?'Claude is working out the weave…':'Claude is finding the shade…'}</b><br>A few seconds.</small></div>`
-    :`<div class="cnaskrow"><small id="cn-cost">${esc(cnCost(kind,kind==='pattern'&&!!nc.closeOn&&!!close))}</small><button type="button" class="cpaskbtn${nc.res?' ghost':''}" id="cn-ask" onclick="describeAsk()"${on&&nc.state!=='limit'&&!spent?'':' disabled'}>${nc.res?'Ask again':'Ask Claude'}</button></div>`;
+    :`<div class="cnaskrow"><small id="cn-cost">${esc(cnCost(kind,!!nc.closeOn&&!!close))}</small><button type="button" class="cpaskbtn${nc.res?' ghost':''}" id="cn-ask" onclick="describeAsk()"${on&&nc.state!=='limit'&&!spent?'':' disabled'}>${nc.res?'Ask again':'Ask Claude'}</button></div>`;
   return `<div class="cpask cnask"><div class="cpasktx"><b>Describe it to Claude</b><small>${hint}</small></div>
 <textarea class="cntext" id="cn-text" rows="2" maxlength="${CN_DESC_MAX}" aria-label="Describe it to Claude" placeholder="${ph}"${nc.state==='limit'||spent||busy?' disabled':''} oninput="colPick.newc.desc=this.value" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();describeAsk()}">${esc(nc.desc||'')}</textarea>${close}${row}${lim}</div>`}
 /* an answer that isn't what this sheet adds (a pattern described on the colour sheet, a material, unclear words) */
@@ -309,11 +328,11 @@ function renderColNew(keep){const el=$('#col-sheet'),it=colTarget(),nc=colPick&&
   const fig=pic?`<img src="${pic}" alt="Your close-up">`:`<div class="cpdraw">${cnDrawn(it,hex,src==='s'?'primaryColor':colPick.k)}</div>`;
   let res='';
   if((nc.state==='result'||nc.state==='dup')&&r){const d=+r.dE||0;
-    res=nc.state==='dup'?`<div class="cnres" id="cn-res"><div class="cnreshd"><span class="cnresw" style="background:${COLORS[ex]}"></span><span><span class="cneyebrow">You already have it</span><b>That’s your ${esc(colName(ex))}</b><small>${esc(cap1(r.name||'It'))} is ${d.toFixed(1)} ΔE from ${esc(colName(ex))}: ${cnDWord(d)}.</small></span></div>
+    res=nc.state==='dup'?`<div class="cnres" id="cn-res"><div class="cnreshd"><span class="cnresw" style="background:${COLORS[ex]}"></span><span><span class="cneyebrow">You already have it</span><b>That’s your ${esc(colName(ex))}</b><small>${esc(cap1(r.name||'It'))} is ${d.toFixed(1)} ΔE from ${esc(colName(ex))}: ${cnDWord(d)}.</small></span></div>${cnLightNote(nc)}
 ${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}<div class="cnbtns"><button type="button" class="cpaskbtn ghost" id="cn-anyway" onclick="colNewAdd()"${name?'':' disabled'}>Add ${esc(name||'it')} anyway</button></div></div>`
     :`<div class="cnres" id="cn-res"><div class="cnreshd"><span class="cnresw" style="background:${r.hex}"></span><span><span class="cneyebrow">Claude’s colour</span><b>${esc(cap1(r.name||'')||r.hex.toUpperCase())}</b><small>${r.hex.toUpperCase()} · ${esc(r.confidence||'medium')} confidence</small></span></div>
 <ul class="cnfacts"><li><span>In outfits</span><span class="cnch" style="background:${COLORS[r.plansAs]||'transparent'}"></span><span>behaves like <b>${esc(colName(r.plansAs))}</b></span></li>
-${ex?`<li><span>Nearest yours</span><span class="cnch" style="background:${COLORS[ex]}"></span><span>${esc(exName)}</span><span class="cnde">${cnDWord(d)} · ΔE ${d.toFixed(1)}</span></li>`:''}</ul>
+${ex?`<li><span>Nearest yours</span><span class="cnch" style="background:${COLORS[ex]}"></span><span>${esc(exName)}</span><span class="cnde">${cnDWord(d)} · ΔE ${d.toFixed(1)}</span></li>`:''}</ul>${cnLightNote(nc)}
 ${r.fitsType===false?`<p class="cnwhy">Unusual for ${esc((TYPES[it.type]||'this item').toLowerCase())}, but you can still add it.</p>`:''}${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}${r.ask?`<p class="cnwhy">${esc(r.ask)}</p>`:''}
 ${ex?`<div class="cnbtns">${prefer==='existing'?`<button type="button" class="cpaskbtn ghost" id="cn-anyway" onclick="colNewAdd()"${name?'':' disabled'}>Add ${esc(name||'it')} anyway</button>`:`<button type="button" class="cpaskbtn ghost" id="cn-use" onclick="cnUseExisting()">Use ${esc(exName)} instead</button>`}</div>`:''}</div>`}
   if(nc.state==='err')res=cnErrCard(nc,'colour');if(nc.state==='kind')res=cnKindCard(nc);

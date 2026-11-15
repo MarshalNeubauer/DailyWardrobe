@@ -1063,6 +1063,25 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cntag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;border:1px solid var(--line);font-size:0.6875rem;font-weight:600;color:var(--mut);vertical-align:2px}
 .custadd{display:flex;gap:8px;margin:10px 0 0}.custadd button{flex:1;min-height:44px;border-radius:12px;border:1px dashed var(--mut);background:transparent;color:var(--acc-ink);font:inherit;font-weight:600;font-size:0.875rem}
 .custrow .msw.pat{overflow:hidden}.custrow .msw.pat svg{width:100%;height:100%;display:block}
+/* ---- white paper in the close-up (itemsheet.js paperHint/paperLine, colpick.js cnPaperLine/cnLightNote; photo-wb-mockups A + 04-10, 2026-11-15) ---- */
+.wbhint{display:flex;align-items:flex-start;gap:12px;margin:12px 2px 2px}
+.wbhint p{flex:1 1 0;min-width:0;margin:0;font-size:0.78125rem;line-height:1.4;color:var(--mut)}.wbhint p .linkbtn{display:block;min-height:44px;margin:-8px 0 -10px;font-size:0.78125rem;text-align:left;color:var(--acc-ink)}
+/* the drawing: the item's cloth (--cloth) with a twill's diagonal, the dashed middle where the colour is measured, white paper along the bottom edge and the tap on it */
+:is(#item-view,.wbhint) .wbpic{flex:none;position:relative;width:44px;height:44px;min-height:0;margin:0;padding:0;border:1px solid var(--swatch-edge);border-radius:11px;overflow:hidden;cursor:pointer;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 1.5px,transparent 1.5px 5px),repeating-linear-gradient(45deg,rgba(0,0,0,.10) 0 1px,transparent 1px 6px),var(--cloth,#5d6478)}
+.wbpic::before{content:'';position:absolute;left:21%;right:21%;top:12%;height:44%;border:1.5px dashed #efb446;border-radius:2px}
+.wbpic::after{content:'';position:absolute;left:0;right:0;bottom:0;height:28%;background:#f6f5f1;box-shadow:0 -1px 0 rgba(0,0,0,.2)}
+.wbpic i{position:absolute;z-index:1;left:50%;bottom:14%;width:10px;height:10px;margin:0 0 -5px -5px;border:2px solid var(--acc);border-radius:50%;box-shadow:0 0 0 2px rgba(239,180,70,.28)}
+.wbst{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:10px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:0.8125rem;line-height:1.35;color:var(--ink)}
+.wbst .ic{flex:none;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:0.75rem;font-weight:700;line-height:1}
+.wbst.ok .ic{background:#2f7d4f;color:#fff}.wbst.no .ic{border:1.5px solid var(--acc);color:var(--acc-ink)}
+.wbst .tx{flex:1 1 12rem;min-width:0}.wbst .tx small{display:block;margin-top:1px;font-size:0.75rem;color:var(--mut)}
+.wbst .wbretake{font-size:0.8125rem;color:var(--acc-ink)}
+.wbretake::after{content:'';position:absolute;inset:-9px -4px}
+.cnask .wbst{align-items:flex-start;flex-wrap:nowrap;margin:0 0 6px;padding:0 0 0 32px;border:0;background:none;font-size:0.78125rem;color:var(--mut)}
+.cnask .wbst .ic{width:18px;height:18px;margin-top:1px;font-size:0.625rem}
+.cnwarm{display:flex;gap:8px;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--acc) 15%,transparent);font-size:0.8125rem;line-height:1.4;color:var(--ink)}
+.cnwarm .wbretake{display:inline-block;margin-top:4px}
 /* ---- accessibility (audit 2026-11-13) ---- */
 /* a file picker's input is in the label, visually hidden but focusable (with `hidden` the label was out of reach of the keyboard) */
 .vfile{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;opacity:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}

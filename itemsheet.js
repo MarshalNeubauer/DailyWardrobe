@@ -21,7 +21,18 @@ function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes
     (tex?`<label class="btn">${i.texture?'Replace close-up':'Add fabric close-up'}<input type="file" accept="image/*" class="vfile" onchange="replaceTexture('${i.id}',this.files[0]);this.value=''"></label>`:'')+
     (i.photo?`<button type="button" onclick="rotatePhoto('${i.id}')" aria-label="Rotate the photo a quarter turn clockwise">Rotate ↻</button><button type="button" onclick="startCrop('${i.id}')">Zoom &amp; crop</button>`:'')+
     (tex&&i.texture?`<button type="button" onclick="setTexture('${i.id}',null,'Close-up removed.')">Remove close-up</button>`:'')+
-    (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`}
+    (phEdit.undo.length?`<button type="button" onclick="undoPhoto('${i.id}')">Undo</button>`:'')+`</div>`+(tex?paperHint(i):'')}
+/* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
+   under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
+   tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
+   is added or replaced here, a line under the photos says whether paper was found (paperOf in tagging.js), with Retake close-up. ---- */
+const paperPic=i=>`<button type="button" class="wbpic" style="--cloth:${COLORS[primaryCol(i)]?colOf(i):'#5d6478'}" onclick="paperTip()" aria-label="How to use white paper for true colours"><i aria-hidden="true"></i></button>`;
+const paperHint=i=>`<div class="wbhint">${paperPic(i)}<p>For true colours, lay white paper along one edge of the close-up and tap the paper on the screen before you take it. <button type="button" class="linkbtn" onclick="kitCloseupGuide()">Tips for a good close-up</button></p></div>`;
+function paperTip(){if(typeof kitOpen==='function')kitOpen([PAPER_CARD])}
+const paperRetake=(id,fn)=>`<label class="linkbtn wbretake">Retake close-up<input type="file" accept="image/*" class="vfile" onchange="${fn}('${id}',this.files[0]);this.value=''"></label>`;
+function paperLine(i){if(!i.texture||!TEXTURE_TYPES.includes(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
+  return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colours set from it.</small></span></div>`
+    :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colours may come out yellower than the cloth.</small>':'No white paper<small>Colours may be off.</small>'}</span>${paperRetake(i.id,'replaceTexture')}</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
   if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
@@ -30,8 +41,9 @@ const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=
 /* a close-up under TEX_MIN_PX on its short side is refused, as on the Add card (2026-11-15, the re-audit: the editor took a 40×40 one) */
 async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
   if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
-  const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q);
-  await setTexture(id,shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),'Close-up added.');   // (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
+  const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q),tex=shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),cur=items.find(x=>x.id===id);
+  if(cur){await paperOf({texture:tex,photo:cur.photo,photoSm:cur.photoSm,phSig:cur.phSig});if(phEdit.id===id)phEdit.paper=texSig(tex)}   // the paper line under the photos (paperLine)
+  await setTexture(id,tex,'Close-up added.');   // (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
   const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);if(it)delete it.pbox;   // the pattern's box was on the old picture
@@ -105,7 +117,7 @@ function itemBody(i){
   const photos=phEdit.crop?'':i.photo||i.texture?`<div class="ivph${phEdit.open?' open':''}" id="ivph"><button type="button" class="ivphbtn" onclick="togglePhotoTools()" aria-expanded="${!!phEdit.open}" aria-controls="ivphp">Edit photos<svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ivphp" id="ivphp"><div>${photoTools(i)}</div></div></div>`:`<div class="ivph bare">${photoTools(i)}</div>`;
   const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
   ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
-  return `<div class="ivin">${hero}${photos}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
+  return `<div class="ivin">${hero}${phEdit.crop?'':paperLine(i)}${photos}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
