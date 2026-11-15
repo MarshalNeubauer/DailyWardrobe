@@ -332,7 +332,8 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
   const also=kn?`, and so ${kn===1?'does the sample piece':`do the ${kn} sample pieces`} you changed: ${kn===1?'it is':'they are'} yours now`:'';
   if(!quiet&&gone.length&&!await askConfirm(`Remove the ${gone.length} sample piece${gone.length===1?'':'s'}?\n\nYour own clothes stay${also}.`,{ok:'Remove',danger:true}))return;
   kitSampling=true;kitSampleBusy(true);if(!quiet)toast('Removing the sample…',8000);
-  try{const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleBase;return c}),T=todayDate();
+  try{if(typeof recordRun!=='undefined'&&recordRun)await Promise.resolve(recordRun).catch(()=>{});   // (a recording of today from the plan with the sample, still running, would write its pieces back after)
+    const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleBase;return c}),T=todayDate();
     const days=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id))).map(r=>kitSampleDay(r,ids,T));
     await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks()}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
