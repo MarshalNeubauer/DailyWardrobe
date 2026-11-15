@@ -265,14 +265,19 @@ function cnSetType(t){const nc=colPick&&colPick.newc;if(!nc||colPick.src!=='s')r
   nc.types=nc.kind==='pattern'?(CN_SUITING.includes(t)?CN_SUITING.slice():[t]):groupOf(t);nc.base=null;renderColPick(true)}
 function colNewBack(){const nc=colPick&&colPick.newc;if(!nc)return;if(nc.from==='pick'){colPick.newc=null;renderColPick();const el=$('#col-sheet');if(el)el.scrollTop=0}else closeColPick()}
 /* the shade picked by hand: the square (saturation across, brightness down), the hue bar and the hex field, kept in step; while a finger
-   moves only the thumbs, the swatches and the field change (cnLive), and the sheet is drawn again when it lifts */
+   moves only the thumbs, the swatches, the field and the drawn item change (cnLive, cnFigLive), and the sheet is drawn again when it lifts */
+/* the drawn item follows the finger and the hex being typed (the owner's ask, 2026-11-15): only the figure is redrawn, at most once a
+   frame (requestAnimationFrame); about 3-4 ms in Chromium at 4× CPU throttling, 1 ms in WebKit (tests/colpicklive.test.js) */
+let cnFigRaf=0;
+function cnFigLive(){if(cnFigRaf)return;cnFigRaf=requestAnimationFrame(()=>{cnFigRaf=0;const nc=colPick&&colPick.newc,it=nc&&nc.kind==='colour'&&colTarget();
+  const d=it&&document.querySelector('#col-sheet .cpph.cpfig .cpdraw');if(!d||d.dataset.hex===nc.hex)return;d.dataset.hex=nc.hex;d.innerHTML=cnDrawn(it,nc.hex,colPick.src==='s'?'primaryColor':colPick.k)})}
 function cnLive(){const nc=colPick&&colPick.newc;if(!nc)return;const hx=nc.hex,q=s=>document.querySelector('#col-sheet '+s);
   const sq=q('#cn-sq'),th=q('#cn-sq .cnthumb'),hu=q('#cn-hue i'),hi=q('#cn-hex'),big=q('.cpbig');
   if(sq){sq.style.setProperty('--h',Math.round(nc.h));sq.setAttribute('aria-valuetext',hx.toUpperCase())}if(th){th.style.left=nc.s.toFixed(1)+'%';th.style.top=(100-nc.v).toFixed(1)+'%';th.style.background=hx}
   if(hu){hu.style.left=(nc.h/360*100).toFixed(1)+'%';hu.style.background=`hsl(${Math.round(nc.h)},100%,50%)`;hu.parentNode.setAttribute('aria-valuenow',Math.round(nc.h))}
   if(hi&&document.activeElement!==hi)hi.value=hx.toUpperCase();document.querySelectorAll('#col-sheet [data-cnsw]').forEach(e=>{e.style.background=hx});
-  if(big){big.style.background=hx;const c=big.querySelector('figcaption');if(c&&!nc.name.trim())c.textContent=hx.toUpperCase()}}
-function cnSetHsv(h,s,v,redraw){const nc=colPick&&colPick.newc;if(!nc)return;nc.h=Math.max(0,Math.min(359.9,h));nc.s=Math.max(0,Math.min(100,s));nc.v=Math.max(0,Math.min(100,v));nc.hex=cnFromHsv(nc.h,nc.s,nc.v);cnLive();if(redraw)renderColPick(true)}
+  if(big){big.style.background=hx;const c=big.querySelector('figcaption');if(c&&!nc.name.trim())c.textContent=hx.toUpperCase()}cnFigLive()}
+function cnSetHsv(h,s,v,redraw){const nc=colPick&&colPick.newc;if(!nc)return;nc.h=Math.max(0,Math.min(359.9,h));nc.s=Math.max(0,Math.min(100,s));nc.v=Math.max(0,Math.min(100,v));nc.hex=cnFromHsv(nc.h,nc.s,nc.v);cnLive();if(redraw){cancelAnimationFrame(cnFigRaf);cnFigRaf=0;renderColPick(true)}}
 function cnDrag(e,el,at){e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(x){}const r=el.getBoundingClientRect(),mv=ev=>at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,false);mv(e);
   const up=ev=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,true)};
   el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}
