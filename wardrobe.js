@@ -60,10 +60,10 @@ function wardBar(){
 function wardGrid(list){
   if(list.length){const m=wardMemo&&wardMemo.list===list?wardMemo:null,w=m&&m.wear,
       wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
-    return `<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${phSm(i)}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away&&typeof careTag==='function'?careTag(i):'Out of rotation'}</span>`:typeof careBadge==='function'?careBadge(i):''}</button></div>`).join('')}</div>`}
+    return `<div class="grid">${list.map(i=>`<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${phSm(i)}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away&&typeof careTag==='function'?careTag(i):'Out of rotation'}</span>`:i.sample&&typeof kitSampleTag==='function'?kitSampleTag(i):typeof careBadge==='function'?careBadge(i):''}</button></div>`).join('')}</div>`}
   const q=wardNorm(wardQ);
   if(!items.length&&typeof setupWardEmpty==='function')return setupWardEmpty();   // setup.js: the empty Wardrobe's card
-  if(!q||!items.length)return '<p class="mut">Nothing here yet. Add photos on the Add tab.</p>';
+  if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with + Add above.</p>';
   const all=flt==='all'?0:items.filter(i=>wardMatch(i,q)).length,tl=(TYPES[flt]||'').toLowerCase();
   return `<div class="wnone" id="wnone"><b>Nothing matches “${esc(wardQ.trim())}”${flt==='all'?'':` in ${esc(tl)}`}</b><p class="mut">${all?`${all} item${all===1?' matches':'s match'} in the rest of your wardrobe.`:'Search looks at names, brands, notes, materials, types, colours and patterns.'}</p>`+
     `<div class="btns">${all?`<button type="button" class="pri" onclick="flt='all';renderWardrobe()">Search all types</button>`:''}<button type="button" onclick="wardClear()">Clear search</button></div></div>`}
@@ -88,14 +88,26 @@ const fldRow=(k,lab,v,on,ph)=>`<label>${lab} <input type="text" class="wfld wf-$
 const notesRow=(v,on)=>`<label class="wnotes">Notes <textarea class="wf-notes" rows="2" maxlength="${WARD_MAX.notes}" placeholder="Size, where it came from, how it fits…" ${on('notes')}>${esc(v||'').replace(/>/g,'&gt;')}</textarea></label>`;
 /* the item sheet's Details card: name and brand at its top, material and notes at its end. A text field saves when it is left,
    and a moment after the last keystroke too (a sheet swiped away never tells a field it was left) */
-/* the waiting save runs at once when the app goes to the background or the page goes (2026-11-15, the audit: a name typed and Safari
-   swiped away within 0.6 s was lost, since iOS stops a hidden page's timers and may then kill it) */
-let wardTypeT=null,wardTypeP=null;
-function itemFieldSoon(id,k,v){clearTimeout(wardTypeT);wardTypeP=[id,k,v];wardTypeT=setTimeout(itemFieldNow,400)}
-function itemFieldNow(){clearTimeout(wardTypeT);const p=wardTypeP;wardTypeP=null;if(p)return setItemField(...p)}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')itemFieldNow()});
-addEventListener('pagehide',()=>itemFieldNow());
-const ivOn=id=>k=>`oninput="itemFieldSoon('${id}','${k}',this.value)" onchange="clearTimeout(wardTypeT);wardTypeP=null;setItemField('${id}','${k}',this.value)"`;
+/* what is typed is also kept at once in localStorage (ward_pending {id,k,v,at}) until it is saved, and saved straight away when the page goes
+   to the background or is closed (2026-11-15, the new-user audit: a name typed and Safari swiped away within 0.6 s was lost when iOS later
+   killed it: a hidden page's timers stop). A copy left by a kill is put back at the next start (wardPendingRestore, from safetyStart) when
+   that field still holds what it held before the typing began (was; another device's change since wins) */
+let wardTypeT=null,wardPend=null;
+const WARD_PEND='ward_pending';
+function wardPendSet(p){wardPend=p;try{if(p)localStorage.setItem(WARD_PEND,JSON.stringify(p));else localStorage.removeItem(WARD_PEND)}catch{}}
+function itemFieldSoon(id,k,v){clearTimeout(wardTypeT);const it=items.find(x=>x.id===id),was=wardPend&&wardPend.id===id&&wardPend.k===k?wardPend.was:String(it&&it[k]||'');   // was: the field before this typing began
+  wardPendSet({id,k,v:String(v??'').slice(0,WARD_MAX[k]||500),was,at:Date.now()});wardTypeT=setTimeout(wardFlush,600)}
+// (the kept copy is not cleared here: a write begun as the page closes can be cut off after it reported success; the next start finds
+// the item stamped after the copy and drops it)
+function wardFlush(){clearTimeout(wardTypeT);wardTypeT=null;const p=wardPend;if(!p)return;wardPend=null;return setItemField(p.id,p.k,p.v)}
+function itemFieldNow(id,k,v){clearTimeout(wardTypeT);wardPend=null;return setItemField(id,k,v)}
+addEventListener('pagehide',()=>wardFlush());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)wardFlush()});
+async function wardPendingRestore(){let p=null;try{p=JSON.parse(localStorage.getItem(WARD_PEND)||'null')}catch{}if(!p||!p.id||!WARD_FIELDS.includes(p.k)||wardPend)return false;
+  const it=items.find(x=>x.id===p.id),cur=String(it&&it[p.k]||'');wardPendSet(null);
+  if(!it||cur===String(p.v).trim()||cur!==String(p.was??''))return false;   // saved already, or changed since (on another device): left alone
+  await setItemField(p.id,p.k,p.v);return true}
+const ivOn=id=>k=>`oninput="itemFieldSoon('${id}','${k}',this.value)" onchange="itemFieldNow('${id}','${k}',this.value)"`;
 function wardFieldsTop(i){return fldRow('name','Name',i.name,ivOn(i.id),'Optional')+fldRow('brand','Brand',i.brand,ivOn(i.id),'Optional')}
 function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${i.id}','material',`)+notesRow(i.notes,ivOn(i.id))}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */
@@ -106,7 +118,7 @@ async function setItemField(id,k,v){
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
 /* the Add card: name, brand and notes behind "More details", folded until asked for (the Material is out with the other fields, above it); each keystroke is kept on the card (nothing is redrawn) */
 function toggleMore(i){const q=queue[i];if(!q)return;q.more=!q.more;renderAdd()}
-function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];if(k==='material')renderAdd()}
+function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];if(typeof addKeepSoon==='function')addKeepSoon();if(k==='material')renderAdd()}
 function moreRow(q,i){
   const n=WARD_FIELDS.filter(k=>k!=='material'&&q[k]&&String(q[k]).trim()).length,on=k=>`oninput="setQField(${i},'${k}',this.value)"`;
   return `<div class="morefold${q.more?' open':''}"><button type="button" class="morebtn" aria-expanded="${!!q.more}" onclick="toggleMore(${i})"><span>More details${n?` <small class="mut">· ${n} filled in</small>`:''}</span><svg class="morechev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`+
@@ -119,7 +131,11 @@ function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=String(q[k]??'
    item back as it was under a stamp newer than its tombstone: in a merge the newest of the two wins (mergeState in core.js), so
    it comes back on every device, including one that had already taken the deletion. */
 const WARD_UNDO_MS=8000;
-async function wardDelete(id){
+const wardBusy=new Set();   // an item being deleted or duplicated: a second tap meanwhile does nothing (2026-11-15: a double tap made two toasts, two copies)
+async function wardOnce(key,f){if(wardBusy.has(key))return;wardBusy.add(key);try{return await f()}finally{setTimeout(()=>wardBusy.delete(key),400)}}
+const wardDuplicate=id=>wardOnce('dup',()=>kitDuplicate(id));   // (one key: the sheet moves to the copy, whose Duplicate the second tap would hit)
+const wardDelete=id=>wardOnce('del:'+id,()=>wardDeleteNow(id));
+async function wardDeleteNow(id){
   const k=items.findIndex(i=>i.id===id);if(k<0)return;const it=items[k],snap=JSON.parse(JSON.stringify(it));
   const days=Object.values(dayRecs).filter(r=>JSON.stringify(r).includes(id)).map(r=>JSON.parse(JSON.stringify(r)));   // the days that refer to it, as they are now
   await del(id);const at=Date.now();items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe();

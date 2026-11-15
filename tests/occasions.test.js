@@ -60,7 +60,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o=planFor()['2026-11-18'],o2={...o,bot:items.find(i=>i.type==='pants'&&i.id!==o.bot.id)};
       return {w,c,f,cellCls:cell.className,cellLabel:cell.getAttribute('aria-label'),stack:!!cell.querySelector('svg.stack'),keyDiff:comboKey(o)!==comboKey(o2)}});
     ok(t.w.tag==='Wedding'&&t.f.tag==='Funeral'&&t.c.tag==='No jacket','Today shows the day\'s occasion');
-    ok(!t.c.lapels&&t.w.lapels&&/no jacket/.test(t.c.label)&&!/Suit|Blazer|Tie/.test(t.c.rows)&&/Pants,Shirt/.test(t.c.rows)&&/trousers/i.test(t.c.sum),`the no-jacket day is drawn in shirt sleeves and lists no jacket or tie (${t.c.rows})`);
+    ok(!t.c.lapels&&t.w.lapels&&/no jacket/.test(t.c.label)&&!/Suit|Blazer|Tie/.test(t.c.rows)&&/Trousers,Shirt/.test(t.c.rows)&&/trousers/i.test(t.c.sum),`the no-jacket day is drawn in shirt sleeves and lists no jacket or tie (${t.c.rows})`);
     ok(/planned/.test(t.cellCls)&&t.stack&&/No jacket/.test(t.cellLabel),`the month shows it as an outfit (${t.cellLabel})`);
     ok(t.keyDiff,'without a jacket the trousers are part of the look (its photo key)');
     // re-planning keeps the occasions; × makes a day regular again

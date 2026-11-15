@@ -13,18 +13,35 @@ let setupNo=false;   // the app was already driven somewhere before start-up loo
 
 /* the dress code (the planner reads the same object): a missing object or key means yes */
 const setupDress=()=>({jacket:!(settings.dress&&settings.dress.jacket===false),tie:!(settings.dress&&settings.dress.tie===false)});
-const setupConnected=()=>!!(localStorage.getItem('worker_url')&&localStorage.getItem('app_token'));
+const setupConnected=()=>typeof isConnected==='function'?isConnected():!!(localStorage.getItem('worker_url')&&localStorage.getItem('app_token'));
+/* an invitation link from the address being checked (account.js), or one the server couldn't be reached for (it stays in the address) */
+const setupLinkChecking=()=>typeof inviteChecking!=='undefined'&&inviteChecking;
+const setupLinkWaiting=()=>typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
 const setupShown=()=>setup.at>=0;
 
 /* start-up, once the wardrobe, history and settings are read: a new install (nothing in the wardrobe, no day ever recorded,
    setup never finished) gets the setup; someone with items is marked as done without a word (kept with the next settings change:
    saving here would count as a change on the device and make the next sync a full one) */
-function setupStart(){
-  if(settings.setupDone)return;
-  if(items.length){settings.setupDone=Date.now();return}
-  if(setupNo||!setupAuto()||Object.keys(dayRecs).length||settingsOpen()||!$('#today')||$('#today').hidden)return;
-  setupOpen(false);
+function setupStart(){const r=setupResume(),gate=()=>!setupNo&&setupAuto()&&!settingsOpen()&&!!$('#today')&&!$('#today').hidden;
+  if(r&&r.again&&settings.setupDone){if(gate())setupOpen(true,r);return}   // a "Run setup again" cut off by iOS: back where it was, Cancel still undoes it
+  if(settings.setupDone){setupKeep(null);return}
+  if(items.length){settings.setupDone=Date.now();setupKeep(null);return}
+  if(!gate()||Object.keys(dayRecs).length)return;
+  setupOpen(false,r&&!r.again?r:null);
 }
+/* (audit 2026-11-15) the step on screen is kept (localStorage.setup_at: {k, again, before}), so a setup cut off by iOS opens again where
+   it was, not at Welcome; removed when the setup closes */
+const SETUP_KEY='setup_at';
+function setupResume(){try{const r=JSON.parse(localStorage.getItem(SETUP_KEY)||'null');return r&&typeof r.k==='string'?r:null}catch{return null}}
+function setupKeep(r){try{r?localStorage.setItem(SETUP_KEY,JSON.stringify(r)):localStorage.removeItem(SETUP_KEY)}catch{}}
+const setupSave=()=>{if(setupShown())setupKeep({k:SETUP_STEPS[setup.at],again:!setup.first,before:setup.before||null,vestSet:setup.vestSet})};
+/* what "Run setup again" can change, as it was when it opened: Cancel puts it back (audit 2026-11-15: each tap is stored at once, and an
+   abandoned run kept whatever was tapped) */
+const SETUP_UNDO=['workdays','blazerDays','dress','vestMode','units','location'];
+const setupBefore=()=>JSON.parse(JSON.stringify(Object.fromEntries(SETUP_UNDO.map(k=>[k,settings[k]===undefined?null:settings[k]]))));
+/* a person who never chose a vest: no stamp on it (core.js setStampOf; a choice made before iOS cut the setup off, or the account's from
+   another phone, has one) */
+const setupVestChosen=()=>setup.vestSet||(typeof setStampOf==='function'&&setStampOf(settings,'vestMode')>0);
 /* a browser driven by a test program (navigator.webdriver) starts like a new install every time, and nearly every test then
    works on the page straight away: there the setup opens by itself only when the test asks (window.SETUP_AUTO, set before load) */
 const setupAuto=()=>!navigator.webdriver||window.SETUP_AUTO===true;
@@ -33,22 +50,34 @@ function setupEl(){let e=$('#setup');
   return e}
 function setupInert(on){if(!on&&typeof layerInert==='function')return layerInert();   // closing: the page stays inert while Settings or a sheet is up (ui.js)
   for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
-function setupOpen(again){
+function setupOpen(again,resume){
   closeSettings();
-  setup={at:0,first:!again,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};SETUP_STEPS=setupStepsNow();
-  setupInert(true);setupEl().classList.add('on');setupDraw();setupEl().focus({preventScroll:true});
+  if(typeof kit!=='undefined'&&kit&&typeof HOME_CARD!=='undefined'&&kit.cards[0]===HOME_CARD)kitClose();   // the setup has its own Home Screen step (one explanation)
+  setup={at:0,first:!again,vestSet:!!(resume&&resume.vestSet),q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null,before:again?(resume&&resume.before)||setupBefore():null};SETUP_STEPS=setupStepsNow();
+  if(resume){const i=SETUP_STEPS.indexOf(resume.k);if(i>0)setup.at=i}
+  setupInert(true);setupEl().classList.add('on');setupDraw();setupSave();setupEl().focus({preventScroll:true});
 }
 function setupClose(){
-  if(setup.watch)clearInterval(setup.watch);setup.watch=null;setup.at=-1;
+  if(setup.watch)clearInterval(setup.watch);setup.watch=null;setup.at=-1;setupKeep(null);
   const e=$('#setup');if(e){e.classList.remove('on');e.innerHTML=''}setupInert(false);
 }
+/* a double tap on Skip or "Add my first item": the second tap landed on what the setup uncovered (Settings' ⚙ under Skip, the tour's Next
+   under "Add my first item"; audit 2026-11-15). A tap at the same spot within SETUP_TAP_MS of the one that closed the setup is dropped */
+const SETUP_TAP_MS=350;
+let setupTap=null,setupTapOn=false;
+function setupTapGuard(e){if(!e||!e.detail)return;setupTap={x:e.clientX,y:e.clientY,t:Date.now()};if(setupTapOn)return;setupTapOn=true;
+  document.addEventListener('click',ev=>{const g=setupTap;if(!g||Date.now()-g.t>SETUP_TAP_MS)return;
+    if(Math.abs(ev.clientX-g.x)<44&&Math.abs(ev.clientY-g.y)<44){ev.preventDefault();ev.stopImmediatePropagation()}},true)}
+/* Cancel on "Run setup again": what it changed goes back as it was */
+function setupCancel(e){setupTapGuard(e);const b=setup.before||{},changed=SETUP_UNDO.filter(k=>JSON.stringify(settings[k]===undefined?null:settings[k])!==JSON.stringify(b[k]===undefined?null:b[k]));
+  setupClose();if(!changed.length)return;
+  for(const k of changed){if(k==='location')continue;if(b[k]===null||b[k]===undefined)delete settings[k];else settings[k]=b[k]}
+  if(changed.includes('location'))setLocation(b.location||null);
+  clearLocks().then(saveUserSettings);todayStale=false;renderToday();tell('Setup cancelled: your answers are as they were.')}
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
-/* (only while the vest is still the app's default: a second phone's setup showed and then replaced the account's choice that came in
-   with the backup, on every phone; 2026-11-15, the audit) */
-const setupVestFree=()=>setup.first&&!setup.vestSet&&!(settings.ks&&settings.ks.vestMode>0);
-function setupFinish(toAdd){
-  if(setupVestFree())settings.vestMode='never';
+function setupFinish(toAdd,e){setupTapGuard(e);
+  if(setup.first&&!setupVestChosen())settings.vestMode='never';
   const first=setup.first;settings.setupDone=Date.now();setupClose();saveUserSettings().then(()=>{if(first)setupHolidays()});
   if(toAdd&&!items.length){const go=()=>{show('wardrobe');openAdd()};if(first&&typeof tourOpen==='function'&&!tourSeen())tourOpen(go,'Add my first item');else go()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
 }
@@ -67,17 +96,21 @@ async function setupHolidays(){if(settings.holidays&&settings.holidays.country)r
    opened): it steps aside without being marked as done. One the user started from Settings stays. */
 function setupYield(t){
   if(!setupShown()){if(items.length||(t&&t!=='today'))setupNo=true;return}
-  if(setup.first&&(items.length||(t&&t!=='today')))setupClose();
+  if(!setup.first)return;
+  if(t&&t!=='today'){setupClose();return}
+  // (audit 2026-11-15) connected from the setup's own Connection step (the Home Screen app): the wardrobe that comes across doesn't end the
+  // setup mid-flow; it goes on with the account's answers, to "All set"
+  if(items.length){if(setup.joined||setup.busy){if(['connect','done'].includes(SETUP_STEPS[setup.at]))setupDraw();return}setupClose()}
 }
 /* a city search left unfinished (typed, searching, or results not picked) is said once before Next leaves the Weather step: a new
    user tapped Next on "Searching…" and had no location (audit 2026-11-13); a second Next goes on */
 function setupCityOpen(){return SETUP_STEPS[setup.at]==='weather'&&!setup.cityWarned&&(!!(setup.q||'').trim()||!!(setup.cities&&setup.cities.length)||setup.cityMsg==='Searching…')}
-function setupGo(n){if(n>0&&setupCityOpen()){setup.cityWarned=true;
+function setupGo(n,e){if(n>0&&setupCityOpen()){setup.cityWarned=true;
     setup.cityMsg=settings.location?`That city wasn’t picked: the weather stays ${settings.location.name}. Pick a result, or tap Next again to go on.`:'You haven’t picked a city yet: pick one of the results, or tap Next again to go on without a location.';
     setupDraw();const f=$('#su-city');if(f)f.focus({preventScroll:true});return}
-  const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true);return}
+  const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true,e);return}
   if(setup.watch){clearInterval(setup.watch);setup.watch=null}
-  setup.at=at;setup.msg='';setupDraw();const b=$('#setup .su-body');if(b)b.scrollTop=0}
+  setup.at=at;setup.msg='';setupDraw();setupSave();const b=$('#setup .su-body');if(b)b.scrollTop=0}
 
 /* ---- the steps ---- */
 const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;
@@ -87,40 +120,50 @@ function setupStep(k){const d=setupDress();
   if(k==='home')return typeof homeSteps==='function'?homeSteps(true):'';
   if(k==='week')return `<div class="su-group"><div class="su-label">Workdays</div><p class="su-help">You get an outfit on these days.</p>${setupDays('workdays',settings.workdays,[0,1,2,3,4,5,6])}</div>`+
     (d.jacket?`<div class="su-group"><div class="su-label">Blazer days</div><p class="su-help">Business-casual days get a blazer and trousers; other workdays get a suit. Leave them all off for a suit every day.</p>${setupDays('blazer',settings.blazerDays,settings.workdays)}</div>`:'');
-  if(k==='wear'){const v=setupVestFree()?'never':(settings.vestMode||'auto');
+  if(k==='wear'){const v=setup.first&&!setupVestChosen()?'never':(settings.vestMode||'auto');
+    // the vest only with ties, as Settings (a waistcoat is never planned without a tie; audit 2026-11-15)
     return `<p class="su-help">Outfits are planned around what you actually wear to work.</p>${setupSwitch('jacket',d.jacket,'Jackets','A suit or a blazer on workdays')}${setupSwitch('tie',d.tie,'Ties','A tie with every outfit')}`+
-    (d.jacket?`<label class="su-row">Suit vest <select id="su-vest" onchange="setupVest(this.value)">${[['never','No vest'],['auto','On cooler suit days'],['always','Every suit day']].map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${o[1]}</option>`).join('')}</select></label>`:'')}
+    (d.jacket&&d.tie?`<label class="su-row">Suit vest <select id="su-vest" onchange="setupVest(this.value)">${[['never','No vest'],['auto','On cooler suit days'],['always','Every suit day']].map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${o[1]}</option>`).join('')}</select></label>`:'')}
   if(k==='weather'){const u=unit(),loc=settings.location;
     return `<div class="su-group"><div class="su-label">Where you are</div><p class="su-help" id="su-loc">${loc?`<span class="su-tick" aria-hidden="true">✓</span> Weather for ${esc(loc.name)}.`:'With a location, outfits follow the forecast: lighter cloth on hot days, no suede in the rain. Without one they follow the calendar season.'}</p>
 <div class="su-acts"><button type="button" id="su-geo" onclick="setupLocate()">Use my location</button></div>
 <div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" oninput="setup.q=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();setupSearch()}"><button type="button" id="su-find" onclick="setupSearch()">Search</button></div>
 <div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
 <div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
-  if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`
-    :`<p class="su-help">If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup.</p>
-<div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
+  if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>${setup.joined&&items.length?`<p class="su-help" id="su-came">Your wardrobe came across: ${items.length} item${items.length===1?'':'s'}. The answers are your account’s.</p>`:''}${setupHomeLink()}`
+    :setupLinkChecking()?'<p class="su-ok" id="su-conn" role="status"><span class="spin" aria-hidden="true"></span> Checking your invitation…</p><p class="su-help">This can take a moment on a slow connection. You can carry on with Next meanwhile.</p>'
+    :`<p class="su-help">${setupLinkWaiting()?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you’re back online, or tap Connect.':'If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup.'}</p>
+<div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link"${setupLinkWaiting()?` value="${esc(location.href)}"`:''} autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
 ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
 <p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colours yourself: no automatic photo reading and no item pictures. You can connect later in Settings.</p>`;
   /* in the Week step's order (Sunday first, as Settings shows them) */
   const days=l=>l.length?[...l].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '):'none';
   /* trousers are needed only without a suit (the Today checklist says "not needed with a suit"): said as a condition, not as a must */
   const nd=setupNeeds(),opt=nd.find(n=>n.k==='pants'&&n.sub),must=nd.filter(n=>n!==opt).map(n=>n.short).join(', ').replace(/, ([^,]*)$/,' and $1');
-  const wear=[d.jacket?'jackets':'no jackets',d.tie?'ties':'no ties'].join(', ');
+  // the blazer days and the vest too (audit 2026-11-15: the pre-selected Thursday decided a whole day's outfit and wasn't listed)
+  const vest=({never:'no vest',auto:'a vest on cooler suit days',always:'a vest every suit day'})[setup.first&&!setupVestChosen()?'never':(settings.vestMode||'auto')];
+  const wear=[d.jacket?'jackets':'no jackets',d.tie?'ties':'no ties',...(d.jacket&&d.tie?[vest]:[])].join(', ');
+  const bl=settings.blazerDays.filter(x=>settings.workdays.includes(x));
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
-<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li><li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':'not connected'}</b></li></ul>
-${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus trousers if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow():''}`}`;
+<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':'not connected'}</b></li></ul>
+${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus trousers if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow(true):''}`}`;
 }
+/* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
+const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&homeTester()?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${homeCopyBtn()}`:'';
+/* "Try a sample wardrobe" on the last step finishes the setup first (holidays, the vest), then loads it (audit 2026-11-15) */
+function setupSample(e){setupFinish(false,e);if(typeof kitSampleLoad==='function')kitSampleLoad()}
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
-  setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false)">Skip</button>`}</div>
+  setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${!setup.first?`<button type="button" class="su-skip" id="su-cancel" onclick="setupCancel(event)">Cancel</button>`:last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false,event)">Skip</button>`}</div>
 <div class="su-prog" aria-hidden="true">${SETUP_STEPS.map((s,i)=>`<i class="${i<=setup.at?'on':''}"></i>`).join('')}</div>
 <div class="su-body"><div class="su-in" id="su-step" data-step="${k}">${setupStep(k)}</div></div>
-<div class="su-bar">${setup.at?`<button type="button" id="su-back" onclick="setupGo(-1)">Back</button>`:''}<button type="button" class="pri" id="su-next" onclick="setupGo(1)">${last?(items.length?'Done':'Add my first item'):setup.at?'Next':'Get started'}</button></div>`;
+<div class="su-bar">${setup.at?`<button type="button" id="su-back" onclick="setupGo(-1)">Back</button>`:''}<button type="button" class="pri" id="su-next" onclick="setupGo(1,event)">${last?(items.length?'Done':'Add my first item'):setup.at?'Next':'Get started'}</button></div>`;
 }
 
 /* ---- what the steps store (all through the app's own settings functions) ---- */
 function setupDay(kind,i){toggleDay(kind==='workdays'?'#cfg-workdays':'#cfg-blazer',i);setupDraw()}
-function setupSetDress(k){const d=setupDress();d[k]=!d[k];settings.dress=d;clearLocks().then(saveUserSettings);setupDraw();const b=$('#su-sw-'+k);if(b)b.focus({preventScroll:true})}
-function setupVest(v){setup.vestSet=true;setVestMode(v)}
+/* the rest of the dress code stays (audit 2026-11-15: "Run setup again" erased "Jeans with a blazer") */
+function setupSetDress(k){const d=setupDress();d[k]=!d[k];settings.dress={...(settings.dress||{}),...d};clearLocks().then(saveUserSettings);setupDraw();const b=$('#su-sw-'+k);if(b)b.focus({preventScroll:true})}
+function setupVest(v){setup.vestSet=true;setVestMode(v);setupSave()}
 function setupUnits(v){setUnits(v);setupDraw()}
 /* the city search is the Settings one (findCity reads Settings' own field and keeps its answers in window._cities) */
 async function setupSearch(){const q=(setup.q||'').trim();if(!q||!$('#cfg-city'))return;
@@ -140,7 +183,9 @@ function setupParseLink(t){const c=/[#&?]invite=([^&#\s]+)/.exec(t),w=/[#&?]w=([
 async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim();if(!t||setup.busy)return;
   setup.busy=true;setup.msg='';setupDraw();if($('#su-link'))$('#su-link').value=t;let ok=false;
   try{ok=typeof connectFromLink==='function'?!!(await connectFromLink(t)):setupParseLink(t)}catch(e){ok=false}
-  setup.busy=false;setup.msg=ok?'':'That link didn’t work. Check that you copied all of it, or carry on without it.';
+  // why, in the setup's words: offline is not a wrong link (it said "check that you copied all of it" while offline)
+  const why=typeof acctWhy!=='undefined'?acctWhy:'';
+  setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'&&typeof acctFailText==='function'?acctFailText()+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';
   if(!setupShown())return;setupDraw();if(!ok&&$('#su-link'))$('#su-link').value=t}
 
 /* ---- Today with an empty or too-small wardrobe: what is still needed for a first outfit ---- */

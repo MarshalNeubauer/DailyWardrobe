@@ -16,15 +16,36 @@ Recreate it faithfully, detail for detail: the same case or shape, proportions, 
 markings, numerals, hands and printing, the same bracelet, strap or links. Do not redesign, simplify or add anything.
 Show it on its own, off the wrist: ${ITEM_BG().replace(/^P/, 'p')}, soft even daylight, centred and in frame, sharp focus,
 catalogue style. No hands, no person, no props, no added text or watermark.`;
+/* KV's daily writes used up (Cloudflare's free plan: 1,000 a day, reset 00:00 UTC). A picture made then could not be kept, so once a
+   write has been refused this isolate makes no more until the reset (kvFullUntil; worker.js calls noteKvFull for any route's refused
+   write too; another isolate may still try one, and an isolate lasts minutes to hours): the audit of 2026-11-14 saw a batch of 5 pictures each paid for and then thrown away */
+const kvFullUntil = new WeakMap();   // per KV binding (as records.js keeps cm:shared), so each test's mocked KV starts afresh
+const nextUtcDay = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1); };
+const noteKvFull = env => { if (env && env.WARDROBE) kvFullUntil.set(env.WARDROBE, nextUtcDay()); };
+const kvIsFull = env => !!(env && env.WARDROBE) && Date.now() < (kvFullUntil.get(env.WARDROBE) || 0);
+const kvLimit = e => /limit exceeded/i.test(String(e && e.message || e));
+const ITEM_FULL = 'Today’s saves on the server are used up, so no item pictures can be made until the daily reset (00:00 UTC).';
+const ITEM_LOCAL = 'Today’s saves on the server are used up: the last picture is kept on this phone only, and no more are made until the daily reset (00:00 UTC).';
 async function renderItem(body, env, json, who) {
   const ns = who.ns;
   const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 1500);
   if (!item) return json({ error: 'no item description' }, 400);
+  if (kvIsFull(env)) return json({ error: 'kv-limit', what: 'write', message: ITEM_FULL }, 429);   // before paying
   const over = await spendEach(env, who, [['item', 1], ['write', 1]]); if (over) return json(over.body, over.status);
   const r = await itemPhoto({ item, ref: body.ref }, env);
   if (!r.ok) { await unspend(env, who, 'item'); await unspend(env, who, 'write'); return json({ error: r.error }, r.status); }
   const id = renderId(body);
-  if (env.WARDROBE && id) await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify(r.rec), renderTtl(id));
+  // the picture is paid for now: if the server can't keep it, the phone gets it anyway (stored:false) and keeps it, and nothing was
+  // written, so the write count goes back; the item count stays (the picture exists, on that phone)
+  if (env.WARDROBE && id) {
+    try { await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify(r.rec), renderTtl(id)); }
+    catch (e) {
+      if (!kvLimit(e)) throw e;
+      noteKvFull(env); console.log('item picture made but not kept: KV writes used up');
+      await unspend(env, who, 'write');
+      return json({ image: r.rec.img, model: r.rec.model, stored: false, message: ITEM_LOCAL });
+    }
+  }
   return json({ image: r.rec.img, model: r.rec.model });
 }
 /* one product picture: from the item's own photo by image edit when there is one, otherwise from the description */
@@ -52,4 +73,4 @@ async function itemPhoto({ item, ref: refUrl }, env) {
   return { ok: true, rec: { sig: 'item|' + item, img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() } };
 }
 
-export { itemPhoto, renderItem };
+export { itemPhoto, renderItem, noteKvFull };

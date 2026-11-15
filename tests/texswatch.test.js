@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- Add: the item photo first, then the close-up
     await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});
     await p.waitForFunction(()=>queue[0]&&!queue[0].busy&&queue[0].swatch,null,{timeout:20000});
-    const a=await p.evaluate(()=>{const q=queue[0];q.type='suit';renderAdd();return {src:q.swSrc,sw:q.swatch,note:/From the fabric close-up/.test(document.querySelector('#queue').textContent)}});
+    const a=await p.evaluate(()=>{const q=queue[0];setq(0,'type','suit');return {src:q.swSrc,sw:q.swatch,note:/From the fabric close-up/.test(document.querySelector('#queue').textContent)}});
     ok(a.src==='photo'&&/^data:image\/png/.test(a.sw)&&!a.note,'without a close-up the precision swatch is cut from the item photo');
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].swSrc==='tex',null,{timeout:20000});
@@ -70,7 +70,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(lt.raw.med<70&&Math.abs(lt.w.med-lt.white)<4,`the white shirt's swatch is white, not the close-up's grey (median L* ${lt.w.med.toFixed(0)} for white ${lt.white.toFixed(0)}; the close-up as shot ${lt.raw.med.toFixed(0)})`);
     ok(lt.w.swing>1.5&&lt.w.top<=100,`its weave still shows (a ${lt.w.swing.toFixed(1)} L* swing), the lightest threads under paper white`);
     ok(Math.abs(lt.lb.med-lt.lbL)<4,`tagged another colour, the swatch takes that colour's lightness (L* ${lt.lb.med.toFixed(0)} for ${lt.lbL.toFixed(0)})`);
-    const card=await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})]);
+    const card=await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})]);setq(0,'type','blazer');
       const q=queue[0];const c=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([c],'c.jpg',{type:'image/jpeg'}));
       const before=q.swatch;setq(0,'primaryColor','navy');return {changed:q.swatch!==before,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q))}});
     ok(card.changed&&card.same,'changing the colour on the Add card re-cuts the close-up swatch to match');

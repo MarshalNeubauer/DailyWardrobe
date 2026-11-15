@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url})=>{
     const n0=await p.evaluate(()=>items.length);await p.click('#qconf-0');await p.waitForFunction(n=>items.length===n+3,n0);
     const sv=await p.evaluate(n=>{const add=items.slice(n),db=Promise.all(add.map(i=>tx('readonly',s=>s.get(i.id))));return db.then(d=>({ids:new Set(add.map(i=>i.id)).size,same:add.every(i=>i.type==='shirt'&&i.primaryColor==='white'&&i.cuff===add[0].cuff),stored:d.every(Boolean),toast:document.querySelector('#toast').textContent}))},n0);
     ok(sv.ids===3&&sv.same&&sv.stored,'Confirm 3 saves three white shirts, each its own item, all stored');
-    ok(/^Saved 3: White\./.test(sv.toast),`the toast says so with Undo (${sv.toast})`);
+    ok(/^Saved 3: White dress shirt\./.test(sv.toast),`the toast says so with Undo (${sv.toast})`);
     await p.click('#toast button');await p.waitForFunction(n=>items.length===n&&queue.length===1,n0);
     ok(await p.evaluate(()=>queue[0].qty===3&&document.querySelector('#qty-n-0').textContent==='3'),'Undo takes all three back and the card returns with its 3');
     // the top: 12

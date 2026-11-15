@@ -65,7 +65,7 @@ const ownerHere=()=>typeof acctRole==='function'&&acctRole()==='owner';
    "NetworkError…") -> a plain sentence for everyone, or null (2026-11-15, the audit: "Backup failed: Load failed", "4 failed (Load failed)") */
 const NET_RE=/^(TypeError: )?(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|Network request failed|The network connection was lost\.?|The Internet connection appears to be offline\.?)$/i;
 const netErr=m=>NET_RE.test(String(m==null?'':m).trim())?(navigator.onLine===false?'you’re offline. Try again when you’re back online':'the server couldn’t be reached. Try again in a moment'):null;
-function plainErr(m){m=String(m==null?'':m);const n=netErr(m);if(n)return n;if(/^forbidden token$/i.test(m.trim())&&!ownerHere())return typeof LOST==='string'?LOST:'The server doesn’t recognise your invitation any more.';
+function plainErr(m){m=String(m==null?'':m);const n=netErr(m);if(n)return n;
   if(!(TECH_RE.test(m)||TECH_NAMES.test(m))||ownerHere())return m;
   if(/ANTHROPIC|Claude|Several items|pattern|\bAI\b|tagg/i.test(m))return 'Reading photos isn’t available on this server yet.';
   if(/OPENAI|photo|render|image|picture/i.test(m))return 'Outfit pictures aren’t available on this server yet.';
@@ -74,7 +74,11 @@ function plainErr(m){m=String(m==null?'':m);const n=netErr(m);if(n)return n;if(/
 
 /* ---- connection ---- */
 const NEED_CONN='Needs a connection (Settings → Connection).';
-const isConnected=()=>!!((localStorage.getItem('worker_url')||'').trim()&&(localStorage.getItem('app_token')||'').trim());
+/* the stored code's invitation has ended (switched off, or the account deleted: sync.js inviteEnded keeps that code in invite_ended).
+   The address and code stay stored (a new link replaces them), but the app is not connected: it said "Connected", "backed up" and
+   "Photos are read automatically" while nothing worked (audit 2026-11-14) */
+const inviteOver=()=>{const t=(localStorage.getItem('app_token')||'').trim();return !!t&&localStorage.getItem('invite_ended')===t};
+const isConnected=()=>!!((localStorage.getItem('worker_url')||'').trim()&&(localStorage.getItem('app_token')||'').trim())&&!inviteOver();
 /* a button that needs the server: its row is hidden while the app is not connected -> true when it was hidden. A switched-off
    button with "Needs a connection" under it made the app look broken to someone who had not connected yet; the sections that
    only work connected say once, at their top, what connecting turns on (renderConnUI, body.nocon in styles.css). */
@@ -86,17 +90,26 @@ function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.clo
 const connNote=()=>isConnected()?'':`<p class="connnote">${NEED_CONN}</p>`;
 /* Settings → Connection: its one-line summary, and the box at its top. Not connected: what a connection adds, and a field for the
    invite link (the address and the code themselves are under Advanced). Who is connected is the account box under it (account.js). */
-function connSummary(){if(!isConnected())return 'Not connected';const m=typeof acct!=='undefined'&&acct&&acct.me;
+function connSummary(){if(typeof inviteChecking!=='undefined'&&inviteChecking)return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=typeof acct!=='undefined'&&acct&&acct.me;
   return m?(m.role==='owner'?'Connected as the owner':'Connected as '+(m.name||'a tester')):'Connected'}
 let connMsg='',connBusy=false;
 function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?el.querySelector('#conn-link').value:'';
-  el.innerHTML=isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`
-   :`<p class="shelp" id="conn-state">The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>
+  const checking=typeof inviteChecking!=='undefined'&&inviteChecking,waiting=!checking&&typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
+  el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
+   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`
+   :`<p class="shelp" id="conn-state">${inviteOver()?'Your invitation has ended, so photos aren’t read automatically and nothing is backed up. Your wardrobe stays on this phone, and the app keeps working without a connection. If you were given a new invitation link, paste it here.'
+     :waiting?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you’re back online, or tap Connect.'
+     :'The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.'}</p>
 <div class="sform"><input type="text" id="conn-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();connPaste()}"><button type="button" class="pri" id="conn-go" onclick="connPaste()"${connBusy?' disabled':''}>${connBusy?'Connecting…':'Connect'}</button></div>
-<p class="shelp conn-msg" id="conn-msg" role="status">${uiEsc(connMsg)}</p>`;
-  if(typed&&el.querySelector('#conn-link'))el.querySelector('#conn-link').value=typed;
+<p class="shelp conn-msg" id="conn-msg" role="status">${uiEsc(connMsg)}</p>
+<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" onclick="connOwn()">I run the server: connect with its address and code</button></p>`;
+  const f=el.querySelector('#conn-link');if(f)f.value=typed||(waiting?location.href:'');
   for(const ph of document.querySelectorAll('.conn-off-note'))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" onclick="goConnect()">Connect</button>`;
   if(typeof applyRole==='function')applyRole()}
+/* not connected, the owner's fold (the server's address and code) stays out of sight until asked for: a new tester was invited to type
+   into "Code" (audit 2026-11-14). The owner connecting a new phone taps this line (styles.css: body.nocon:not(.srv-open)) */
+function connOwn(){document.body.classList.add('srv-open');const f=document.querySelector('#adv-connection');if(f&&!f.classList.contains('open')){const b=f.querySelector('.adv-head');if(b)advToggle(b)}
+  const o=document.querySelector('#conn-own');if(o)o.hidden=true}
 /* from a section that needs the server: open Connection and put the cursor in the invite-link field */
 function goConnect(){if(typeof toggleCat!=='function')return;const c=document.querySelector('#sc-connection');if(c&&!c.classList.contains('open'))toggleCat('connection');
   setTimeout(()=>{const f=document.querySelector('#conn-link');if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.focus({preventScroll:true})}},350)}
@@ -110,7 +123,8 @@ function addGate(){const l=document.querySelector('#add-group'),s=document.query
 async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp&&inp.value||'').trim();if(!t||connBusy)return;
   connBusy=true;connMsg='';renderConnUI();let ok=false;
   try{ok=typeof connectFromLink==='function'&&!!(await connectFromLink(t))}catch(e){ok=false}
-  connBusy=false;connMsg=ok?'':'That link didn’t work. Check that you copied all of it.';renderConnUI();
+  // why it didn't connect, in this line (offline isn't a wrong link; a kept connection was said by its toast)
+  connBusy=false;connMsg=ok?'':typeof acctFailText==='function'?acctFailText():'That link didn’t work. Check that you copied all of it.';renderConnUI();
   if(ok&&typeof renderSettingsExtras==='function')renderSettingsExtras()}
 
 /* ---- Settings: what only the owner needs sits in an "Advanced" fold inside its category, closed until tapped ---- */

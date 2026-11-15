@@ -3,7 +3,7 @@
 //   after the next change (they came back for good: the removal mark lost to the stale value in memory);
 // - a roll-back whose upload never arrived (Safari killed) is still uploaded as a restore at the next start, so "Before the last roll-back"
 //   is kept (sync_restore);
-// - open Settings is redrawn when a sync brings changes; offline backups say so in words; a code the server lost is said plainly and a new
+// - open Settings is redrawn when a sync brings changes; offline backups say so in words; a code the server lost ends the invitation and a new
 //   invitation keeps the phone's wardrobe; the write ceiling and feedback limits in words; the item sheet's name saved when the page goes;
 //   a second phone's setup keeps the account's vest choice.
 const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
@@ -99,6 +99,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   }finally{await browser.close()}
 
   /* ---- a tester whose code the server lost, feedback limits, the item sheet's name, the setup's vest (mocked server) ---- */
+  const ENDED_TXT='Your invitation has ended. Your wardrobe stays on this phone, and the app keeps working without a connection.';
   const CA='a'.repeat(32),CB='b'.repeat(32),who={[CB]:{id:'bbbbbbbbbb',name:'Bea',role:'tester'}};
   const b2=await chromium.launch();
   try{const ctx=await b2.newContext({viewport:{width:390,height:844}});let posts=[];
@@ -111,8 +112,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(async([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()-864e5));rememberRole({role:'tester'});
       const it={id:'mine1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};await put(it);items.push(it)},[HOST,CA]);
-    const lost=await p.evaluate(async()=>{const r=await syncNow();settingsSummaries();return {r,st:localStorage.getItem('sync_status'),line:(openSettings('backup'),$('#sync-status').textContent),sum:$('#sum-backup').textContent,plain:plainErr('forbidden token'),toast:$('#toast').textContent,flag:localStorage.getItem('invite_lost')}});
-    ok(!lost.r&&/doesn’t recognise your invitation/.test(lost.st)&&/doesn’t recognise/.test(lost.line)&&/ask for a new invitation link/.test(lost.sum)&&lost.plain===lost.st&&/doesn’t recognise/.test(lost.toast),`a code the server lost: one plain sentence everywhere, not "Backups aren’t available on this server yet" (${JSON.stringify(lost).slice(0,260)})`);
+    const lost=await p.evaluate(async()=>{const r=await syncNow();settingsSummaries();return {r,st:localStorage.getItem('sync_status'),line:(openSettings('backup'),$('#sync-status').textContent),sum:$('#sum-backup').textContent,toast:$('#toast').textContent,flag:localStorage.getItem('invite_lost'),tok:localStorage.getItem('app_token')}});
+    ok(!lost.r&&lost.st===ENDED_TXT&&lost.line===ENDED_TXT&&/invitation has ended/.test(lost.sum)&&lost.toast===ENDED_TXT&&lost.flag===lost.tok,`a code the server lost: the invitation-ended sentence everywhere, marked as lost so a new link can keep the wardrobe (${JSON.stringify(lost).slice(0,260)})`);
     await p.evaluate(()=>closeSettings());
     const res=p.evaluate(l=>connectFromLink(l),'#invite='+CB+'&w='+encodeURIComponent(HOST));
     await p.waitForSelector('#ask-ok',{state:'visible'});const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');const okc=await res;
@@ -128,8 +129,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(nm==='My lucky tie','a name typed just before the page goes is saved when it goes, not 0.6 s later');
     // a second phone's setup: the account's vest choice (stamped) is kept; a new install's default still becomes "No vest"
     const vs=await p.evaluate(()=>{const was=JSON.stringify(settings),s0=setup;setup={...setup,first:true,vestSet:false};
-      settings=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',updated:0});const fresh=setupVestFree();
-      settings.vestMode='always';stampSettings(settings);const chosen=setupVestFree();setup=s0;settings=JSON.parse(was);return {fresh,chosen}});
+      settings=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',updated:0});const fresh=!setupVestChosen();
+      settings.vestMode='always';stampSettings(settings);const chosen=!setupVestChosen();setup=s0;settings=JSON.parse(was);return {fresh,chosen}});
     ok(vs.fresh===true&&vs.chosen===false,`the setup sets "No vest" only while the vest is still the app's default (${JSON.stringify(vs)})`);
     ok(!errs.length,'no page errors: '+errs.join(' | '))}
   finally{await b2.close()}

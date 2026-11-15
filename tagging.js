@@ -352,19 +352,33 @@ async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)r
   q.refining=1;renderAdd();
   const hint=measHint(q.meas),ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)});const k=queue.indexOf(q);q.refining=0;
   if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0)renderAdd();return}
-  const f=aiFields(ai),changes=[];
-  for(const key of TAG_FIELDS)if(!(q.edited&&q.edited[key])&&f[key]!==q[key]){changes.push(`${fieldLabel[key]} ${valName(key,q[key])} → ${valName(key,f[key])}`);q[key]=f[key]}
-  if(changes.some(c=>c.startsWith('item ')))q.pattern=normPat(q.type,q.pattern);
+  const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
+  // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
+  // are read for the card's own type
+  if(f.type&&f.type!==q.type&&!(q.edited&&q.edited.type))q.refineType=f.type;
+  f.pattern=normPat(q.type,f.pattern);for(const c of ['primaryColor','secondaryColor','tertiaryColor'])if(f[c])f[c]=normColFor(q.type,f[c],c!=='primaryColor')||(c==='primaryColor'?q[c]:null);
+  for(const key of TAG_FIELDS){if(key==='type'||(q.edited&&q.edited[key])||f[key]===q[key])continue;
+    if(key==='primaryColor'&&refineContradicts(q,f[key])){q.refineKept={c:f[key]};continue}   // the close-up's own measurement says otherwise: kept, and said
+    prev[key]=q[key];changes.push(`${fieldLabel[key]} ${valName(key,q[key])} → ${valName(key,f[key])}`);q[key]=f[key]}
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
+  q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
   readPatternWithClaude(q)}
+/* Claude's new colour against the close-up's measurement: the measured colour is clearly nearer the colour the card has (a white shirt
+   whose close-up measured cream was turned navy) */
+function refineContradicts(q,to){const m=q.meas;if(!m||!m.lab||m.src!=='closeup'||!COLORS[to]||!COLORS[q.primaryColor])return false;const kL=measKL(m);
+  const dOld=dE00(m.lab,colRef(q.primaryColor,q.type,q.id),kL),dNew=dE00(m.lab,colRef(to,q.type,q.id),kL);return dOld<=FAR_DE&&dNew-dOld>=2*MEAS_GAP}
+function undoRefine(i){const q=queue[i];if(!q||!q.refineUndo)return;for(const [k,v] of Object.entries(q.refineUndo)){q[k]=v;q.edited={...q.edited,[k]:true}}
+  q.refineUndo=null;q.refineNote='The first tags are back.';if(q.texCanvas&&typeof generateSwatch==='function')generateSwatch(q);if(q.meas)measureAndApply(q);renderAdd()}
 
 /* ---- the card's tagging notes: how sure Claude was, its runner-up (one tap to take it), the measured colour, and an offer to
    add a colour or pattern when none of the listed ones fits ---- */
 const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]&&c[k]!=='high').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';
 function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');
-  else if(q.refineNote)out.push(`<p class="tagnote"><small>${esc(q.refineNote)}</small></p>`);
+  else if(q.refineNote)out.push(`<p class="tagnote refnote"><small>${esc(q.refineNote)}</small>${q.refineUndo?`<button type="button" class="chipbtn" onclick="undoRefine(${i})">Undo</button>`:''}</p>`);
+  if(!q.refining&&q.refineType&&q.refineType!==q.type&&TYPES[q.refineType])out.push(`<div class="offer reftype"><small>From the close-up Claude read it as: ${esc(TYPES[q.refineType].toLowerCase())}. A close-up can’t show what the item is, so the type is left as it was.</small><button type="button" class="chipbtn" onclick="setq(${i},'type','${q.refineType}')">Make it ${esc(TYPES[q.refineType].toLowerCase())}</button></div>`);
+  if(!q.refining&&q.refineKept&&COLORS[q.refineKept.c]&&q.refineKept.c!==q.primaryColor)out.push(`<div class="offer refkept"><small>From the close-up Claude said ${esc(colName(q.refineKept.c))}, but the close-up measures much nearer ${esc(colName(q.primaryColor))}: kept ${esc(colName(q.primaryColor))}.</small><button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.refineKept.c}')">Use ${esc(colName(q.refineKept.c))}</button></div>`);
   const ct=confTxt(q.conf),alts=[q.altColor&&q.altColor!==q.primaryColor&&colsFor(q.type).includes(q.altColor)?`<button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.altColor}')">or ${esc(colName(q.altColor))}</button>`:'',
     q.altPattern&&q.altPattern!==q.pattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?`<button type="button" class="chipbtn" onclick="setq(${i},'pattern','${q.altPattern}')">or ${esc(patName(q.altPattern))}</button>`:''].join('');
   if(ct||alts)out.push(`<p class="tagnote mut"><small>${ct}</small>${alts}</p>`);
@@ -403,7 +417,7 @@ function newColForm(q,i){const f=q.colForm,bases=Object.keys(COLORS).filter(c=>!
   <div class="btns"><button type="button" class="pri" onclick="saveColForm(${i})">Add colour</button><button type="button" onclick="queue[${i}].colForm=null;renderAdd()">Cancel</button></div></div>`}
 function colFormType(i,t,on){const f=queue[i].colForm;f.types=on?[...new Set([...f.types,t])]:f.types.filter(x=>x!==t)}
 async function addCustomColor({name,hex,base,types,accent}){name=String(name||'').trim();const key=ownColKey(name);
-  if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key])throw new Error('There is already a colour with that name.');
+  if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a colour with that name.');
   if(!/^#[0-9a-f]{6}$/i.test(hex))throw new Error('Pick a shade.');if(!COLORS[base]||CUSTOM_COL[base])throw new Error('Choose what it behaves like.');
   if(!types.length)throw new Error('Tick at least one kind of item.');
   const cu=settings.custom||{};settings.custom={...cu,colors:[...(cu.colors||[]),{key,name,hex:hex.toLowerCase(),base,types,accent:!!accent}]};
@@ -444,7 +458,7 @@ async function savePatForm(i){const q=queue[i];try{const key=await addCustomPatt
 /* Settings: the colours and patterns you added; one no item uses can be removed */
 function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},cols=cu.colors||[],pats=cu.patterns||[];
   const used=(k,f)=>items.filter(i=>f(i,k)).length;
-  el.innerHTML=!cols.length&&!pats.length?'<p class="mut"><small>None yet. When a photo shows a colour or pattern the lists lack, the Add card offers to add it.</small></p>':
+  el.innerHTML=!cols.length&&!pats.length?'<p class="mut"><small>None yet. When a photo shows a colour or pattern the lists lack, the Add card offers to add it; any colour list has “A colour of my own” too.</small></p>':
     [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${c.hex}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${c.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('colors','${c.key}')">Remove</button>`}</div>`}),
      ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">▦</span><span><b>${esc(p.name)}</b><br><small class="mut">drawn like ${esc(patLabel(p.base))} · ${p.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('patterns','${p.key}')">Remove</button>`}</div>`})].join('')}
 async function removeCustom(kind,key){const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}

@@ -151,6 +151,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .mc.today{box-shadow:inset 0 0 0 2px var(--acc)}.mc.sel:not(.today){box-shadow:inset 0 0 0 2px var(--mut)}
 .mc .dn{font-size:12px;font-weight:600;line-height:1}
 .mc.rest{background:none;box-shadow:none}
+.mc.skip .stack{opacity:.3}.mc.skip .dn{text-decoration:line-through;color:var(--mut)}   /* a past day marked "✕ Didn't" (month.js) */
 .stack{display:block;width:100%;flex:1;min-height:0;border-radius:3px}
 .stack.rest{box-sizing:border-box;border:1.5px dashed var(--mut);opacity:.6;border-radius:6px}
 .mlegend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 2px 0;font-size:12px;color:var(--mut)}
@@ -910,6 +911,7 @@ span.pk-tick{cursor:default}
    server are hidden and one line at the top of their section says what connecting turns on (.conn-off-note) */
 body:not(.owner) #adv-photos{display:none}
 body.tester #adv-connection{display:none}
+body.nocon:not(.srv-open) #adv-connection{display:none}   /* not connected: only after "I run the server" (ui.js connOwn) */
 body.nocon .conn-only,.connhide{display:none!important}
 .conn-off-note:empty{display:none}
 .conn-off-note .linkbtn{margin-left:4px}
@@ -1056,6 +1058,10 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 .kit-rows li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}.kit-rows li:first-child{border-top:0}
 .kit-rows li>span:last-child{display:flex;flex-direction:column;min-width:0}.kit-rows small{color:var(--mut);font-size:12.5px}
 .kit-dot{flex:none;width:30px;height:30px;border-radius:7px;overflow:hidden;border:1px solid var(--swatch-edge,var(--line))}.kit-dot svg{width:100%;height:100%;display:block}
+.kit-row{display:flex;align-items:center;gap:10px;flex:1;min-width:0;min-height:44px;cursor:pointer}.kit-row>span:last-child{display:flex;flex-direction:column;min-width:0}
+.kit-tick{flex:none;width:22px;height:22px;margin:0;accent-color:var(--acc)}
+.kit-rows li.dup b{color:var(--mut)}
+.kit-last{font-size:14px;margin:0 0 12px}
 .kit-no{display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--danger);border-color:var(--danger)}
 .kit-start{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 8px;margin-top:10px;color:var(--mut)}
 .texguide{display:block;margin:2px 0 6px;padding-left:0}
@@ -1119,3 +1125,6 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 .home-note{margin-top:4px}
 .home-cta{margin:4px 0 14px}.home-install{width:100%;min-height:48px;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px}.home-install .home-ico{color:inherit}
 .home-install[hidden],.home-manual[hidden]{display:none!important}   /* (the setup's and the sheet's button rules outrank the attribute) */
+/* the setup's last step: the tour and sample links one under the other, as links (audit 2026-11-15: an orphan · and bordered buttons with underlined text) */
+#setup .kit-start{flex-direction:column;gap:0}#setup .kit-start>span{display:none}
+#setup .kit-start .linkbtn{border:0;background:none;min-height:44px;padding:0 8px;font-weight:600;font-size:15px;color:var(--acc-ink,var(--acc))}
