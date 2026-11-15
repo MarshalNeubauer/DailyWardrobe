@@ -1183,7 +1183,15 @@ header h1{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .day h2 .wx.haspill{display:grid;grid-template-columns:minmax(var(--wp),1fr) minmax(0,max-content) minmax(var(--wp),1fr);--wp:4.25rem;gap:4px;justify-content:stretch}
 .day h2 .wx .wxc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .day h2 .wx.haspill .wxc{grid-column:2}
-.wpill{grid-column:3;justify-self:end;width:var(--wp);white-space:nowrap;margin:0;padding:2px 0;min-height:24px;line-height:1.2;border-radius:14px;font-size:.8125rem;font-weight:600;position:relative;cursor:pointer}
+/* when the weather or "Set location" would be cut between the two pill-wide sides (Larger Text, page zoom: "Set loc…", then nothing;
+   re-audit 2026-11-15), it takes the line alone and the pill goes under it at the right (today.js wxFit adds .wxwrap) */
+.day h2 .wx.haspill.wxwrap{grid-template-columns:minmax(0,1fr);row-gap:2px}
+.day h2 .wx.haspill.wxwrap .wxc,.day h2 .wx.haspill.wxwrap .wpill{grid-column:1}
+/* the date bar's "Set location" link takes taps over 44 px (it was 17 px tall): padding out, the same negative margin back, on the link and
+   on the span that clips it, so nothing moves; the pill stays above the link's padding when it wraps under it */
+.wxc.wxlk{padding:15px 0;margin:-15px 0}
+.wxl{display:block;position:relative;z-index:1;padding:15px 0;margin:-15px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wpill{grid-column:3;justify-self:end;flex:none;z-index:2;width:var(--wp);white-space:nowrap;margin:0;padding:2px 0;min-height:24px;line-height:1.2;border-radius:14px;font-size:.8125rem;font-weight:600;position:relative;cursor:pointer}
 .wpill::after{content:"";position:absolute;inset:-10px -6px}
 .wpill.yes{background:var(--acc);border:1px solid var(--acc);color:#1a1405}
 .wpill.no{background:var(--card);border:1px solid var(--line);color:var(--mut)}
