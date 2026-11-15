@@ -74,8 +74,9 @@ function request(it, ph) {
   };
 }
 
-/* --apply <file>: save approved materials, a JSON list [{id, material}]. Downloads a fresh copy, changes only `material` on those items
-   (an item that already has a material, or is gone, is left alone), stamps `updated`, and POSTs just those items as the app's small
+/* --apply <file>: save approved materials, a JSON list [{id, material, other?, replace?}]. Downloads a fresh copy, changes only `material`
+   on those items (an item that already has a material is left alone unless it is exactly `replace`; one that is gone is skipped; `other`
+   allows a typed material outside the type's list), stamps `updated`, and POSTs just those items as the app's small
    sync does (the worker merges by stamp), then reads them back. Settings → Roll back undoes it. */
 async function apply(file) {
   const want = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -86,8 +87,9 @@ async function apply(file) {
   for (const w of want) {
     const it = byId[w.id], list = it && MATERIALS_BY[it.type];
     if (!it || it.deleted) { skipped.push([w.id, 'not in the wardrobe']); continue; }
-    if (it.material) { skipped.push([w.id, 'already has ' + it.material]); continue; }
-    if (!list || !list.includes(w.material)) { skipped.push([w.id, w.material + ' is not offered for ' + it.type]); continue; }
+    if (it.material && !(w.replace && it.material === w.replace)) { skipped.push([w.id, 'already has ' + it.material]); continue; }
+    // w.other: a material typed in, as the app's "Other" does (at most 40 characters, wardrobe.js WARD_MAX)
+    if (!list || !(list.includes(w.material) || (w.other && typeof w.material === 'string' && w.material.trim() && w.material.length <= 40))) { skipped.push([w.id, w.material + ' is not offered for ' + it.type]); continue; }
     changed.push({ ...it, material: w.material, updated: now });
   }
   console.log(`${changed.length} to save, ${skipped.length} left alone`); for (const s of skipped) console.log('  skipped', s.join(': '));
