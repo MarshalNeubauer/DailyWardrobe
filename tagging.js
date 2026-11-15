@@ -346,12 +346,13 @@ function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?
 function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
   q.aiTag={...aiFields(ai)};readSett(q)}
-async function closeTagImg(q){const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
+async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
+  const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);
-  if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();return}
-  q.refining=1;renderAdd();
+  if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();if(typeof addKeep==='function')addKeep();return}
+  q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
   const hint=measHint(q.meas),ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)});const k=queue.indexOf(q);q.refining=0;
-  if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0)renderAdd();return}
+  if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0){renderAdd();if(typeof addKeep==='function')addKeep()}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
   // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
   // are read for the card's own type
@@ -363,6 +364,7 @@ async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)r
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
+  if(typeof addKeep==='function')addKeep();   // kept at once (add.js): a kill in the next moment lost the paid reading
   readPatternWithClaude(q)}
 /* Claude's new colour against the close-up's measurement: the measured colour is clearly nearer the colour the card has (a white shirt
    whose close-up measured cream was turned navy) */
@@ -376,7 +378,10 @@ function undoRefine(i){const q=queue[i];if(!q||!q.refineUndo)return;for(const [k
 const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]&&c[k]!=='high').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';
 function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');
+  // a reading cut off when the app was closed (add.js addRevive): said, with a tap to read it again; nothing is read by itself
+  else if(q.refineCut)out.push(`<div class="tagfail refcut"><p>The app was closed while the close-up was being read, so the first tags stay.</p><button type="button" class="tagfail-btn" onclick="refineAgain(${i})">Read the close-up again</button></div>`);
   else if(q.refineNote)out.push(`<p class="tagnote refnote"><small>${esc(q.refineNote)}</small>${q.refineUndo?`<button type="button" class="chipbtn" onclick="undoRefine(${i})">Undo</button>`:''}</p>`);
+  if(q.patternCut&&!q.refineCut&&!q.refining&&!q.patternReading)out.push(`<div class="tagfail patcut"><p>The app was closed while the pattern was being read.</p><button type="button" class="tagfail-btn" onclick="patternAgain(${i})">Read the pattern again</button></div>`);
   if(!q.refining&&q.refineType&&q.refineType!==q.type&&TYPES[q.refineType])out.push(`<div class="offer reftype"><small>From the close-up Claude read it as: ${esc(TYPES[q.refineType].toLowerCase())}. A close-up can’t show what the item is, so the type is left as it was.</small><button type="button" class="chipbtn" onclick="setq(${i},'type','${q.refineType}')">Make it ${esc(TYPES[q.refineType].toLowerCase())}</button></div>`);
   if(!q.refining&&q.refineKept&&COLORS[q.refineKept.c]&&q.refineKept.c!==q.primaryColor)out.push(`<div class="offer refkept"><small>From the close-up Claude said ${esc(colName(q.refineKept.c))}, but the close-up measures much nearer ${esc(colName(q.primaryColor))}: kept ${esc(colName(q.primaryColor))}.</small><button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.refineKept.c}')">Use ${esc(colName(q.refineKept.c))}</button></div>`);
   const ct=confTxt(q.conf),alts=[q.altColor&&q.altColor!==q.primaryColor&&colsFor(q.type).includes(q.altColor)?`<button type="button" class="chipbtn" onclick="setq(${i},'primaryColor','${q.altColor}')">or ${esc(colName(q.altColor))}</button>`:'',
@@ -640,7 +645,7 @@ async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.ra
   q.patternReading=1;renderAdd();const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
   const spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)});q.patternReading=0;   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
   if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
-  readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q))renderAdd()}
+  readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}
 
 /* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
    pixels. A band reader can't draw these: it turns a checkerboard of mini squares into a diagonal plaid. Claude gives the grid,
