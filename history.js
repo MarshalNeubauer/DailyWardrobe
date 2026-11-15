@@ -17,11 +17,22 @@ async function recordDays(p){
     if(!SLOTS.some(s=>o[s])||o.frozen)continue;const d=keyDate(k);
     // a past day with no pieces recorded: none at all, or only the week's lock (lockUpcoming), as on a day the app was not opened;
     // recorded with what the record already has, else it never became history (no wear counts, an outfit that could still change)
-    if(d<T&&!(dayRecs[k]&&dayRecs[k].ids)){await saveDay({...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},true);changed=true}
+    if(d<T&&!(dayRecs[k]&&dayRecs[k].ids)){await saveDay({...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},true);changed=true;missedNote(k)}
     else if(k===tk){const r=dayRecs[k],ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){await saveDay({...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest},true);changed=true}}
   }
   if(changed&&window.scheduleSync)scheduleSync();
 }
+/* past workdays the app was not opened on are recorded as planned and count as worn: say so once, with a way to mark them not worn
+   (2026-11-15, the audit: back after a week away, every missed workday was silently counted as worn, toward the cleaning counts too) */
+let missedDays=[],missedT=0;
+function missedNote(k){missedDays.push(k);clearTimeout(missedT);missedT=setTimeout(missedTell,400)}
+function missedTell(){const real=Object.values(dayRecs).filter(r=>r.ids&&!r.auto).map(r=>+keyDate(r.date)),first=real.length?Math.min(...real):Infinity;
+  // only days after the app was first used for real (not the first plan of past days)
+  const ks=[...new Set(missedDays)].filter(k=>+keyDate(k)>first).sort((a,b)=>keyDate(a)-keyDate(b));missedDays=[];if(!ks.length||typeof toast!=='function')return;
+  const n=ks.length,f=d=>shortDate(keyDate(d)),span=n===1?f(ks[0]):`${f(ks[0])} – ${f(ks[n-1])}`;
+  toast(`${n===1?'A past workday':n+' past workdays'} you didn’t open the app (${span}) ${n===1?'was':'were'} counted as worn, as planned.`,12000,{label:`I didn’t wear ${n===1?'it':'them'}`,fn:()=>missedNotWorn(ks)})}
+async function missedNotWorn(ks){for(const k of ks){const r=dayRecs[k];if(r&&r.ids&&r.worn!==false)await saveDay({...r,worn:false},true)}
+  if(window.scheduleSync)scheduleSync();toast(`Marked as not worn: ${ks.length===1?'that day':'those days'} no longer count${ks.length===1?'s':''} toward rest and cleaning.`,4000);if(typeof refreshToday==='function')refreshToday()}
 /* ---- the coming week stays as shown ----
    Each workday from today to LOCK_DAYS-1 days on gets rec.lock, the pieces the plan showed for it (not the coat: that follows the
    forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not worn or
@@ -35,8 +46,9 @@ async function lockUpcoming(){
     // the plan is read afresh for each day (it is cached; a change made while an earlier lock was being saved has reset it), and the lock
     // is put on the record before the write is awaited, so a lock never comes from a plan that is no longer the one on screen
     const k=key(d),o=planMonth(d.getFullYear(),d.getMonth())[k];if(!o||o.frozen||!SLOTS.some(s=>o[s]))continue;
-    const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l))continue;
-    const rec={...(r||{date:k}),lock:l,updated:Date.now(),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
+    const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l)&&!lockStale(r,t=>items.filter(i=>i.type===t&&inRotation(i,di(d)))))continue;
+    // (lockAt: when it was made, so a lock made while the wardrobe had too few of a type lets go once more come in: planner.js lockStale)
+    const rec={...(r||{date:k}),lock:l,lockAt:Date.now(),updated:Date.now(),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
     await txs('days','readwrite',s=>s.put(rec))}
   if(n&&window.scheduleSync)scheduleSync()}
 /* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
@@ -55,8 +67,19 @@ async function swapSlot(slot){
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   keepOff(force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;
   if(slot==='belt'&&o.belt&&beltless(k,rec)){swapMsg=BELT_STUCK;renderToday();return}
-  swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);renderToday();
+  swapMsg=learnFrom(slot,o,o[slot],null,false);await saveDay(rec);await unlockClash(k);renderToday();
 }
+/* after a change by hand on a day: when a lock on the next workdays holds the piece the day now has (its tie on any of the next three
+   workdays, its shirt or jacket on the next one), the locks after that day are let go, so the days are planned again in turn around it
+   (2026-11-15, the audit: two ties, today's swapped, and the next two locked days kept that same tie: three workdays running; letting
+   go of the clashing days alone left the next lock's tie to tie with it). No clash, nothing changes */
+async function unlockClash(k){const o=planFor()[k];if(!o||o.frozen)return 0;const x=keyDate(k),T=todayDate();let w=0,clash=false;
+  for(let g=0;g<10&&w<3&&!clash;g++){x.setDate(x.getDate()+1);if(!isWorkday(x))continue;const r=dayRecs[key(x)],l=r&&r.lock;
+    if(l&&r.worn!==true&&((o.tie&&l.tie===o.tie.id)||(!w&&o.shirt&&l.shirt===o.shirt.id)||(!w&&o.top&&l.top===o.top.id)))clash=true;
+    w++}
+  if(!clash)return 0;const from=keyDate(k);let n=0;
+  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>from&&keyDate(r.date)>=T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}
+  if(n&&window.scheduleSync)scheduleSync();return n}
 /* a piece taken off (rec.off) stays pinned through a swap or a pick of another piece, so putting it back brings the same one */
 const keepOff=(force,k,slot)=>{const r=dayRecs[k];if(!r||!r.off||!r.force)return;for(const s of ['top','tie','clip'])if(s!==slot&&r.off[s==='clip'?'tie':s]&&r.force[s])force[s]=r.force[s]};
 const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip'],shoes:['belt','socks'],belt:['shoes','socks']};   // (a belt swap brings shoes that match it, as a shoe swap brings a belt: the owner's ask, 2026-11-14)
@@ -118,7 +141,7 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   force[slot]=id;keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;
   if(slot==='belt'&&beltless(k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';renderToday();return}
-  swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);renderToday()}
+  swapMsg=learnFrom(slot,o,o[slot],it,true);await saveDay(rec);await unlockClash(k);renderToday()}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
 async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||pastEdit!==k)return;

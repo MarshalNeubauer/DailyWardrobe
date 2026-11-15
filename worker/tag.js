@@ -277,6 +277,7 @@ const CLAUDE_SYSTEM = 'You are a menswear expert who labels clothing photos for 
 /* each call to Claude: at most 3 minutes an attempt; one retry after 2 s, or the API's retry-after up to 20 s */
 const CLAUDE_MS = 180000, CLAUDE_RETRY_MS = 2000, CLAUDE_RETRY_MAX = 20000;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const CLIENT_GONE = { status: 499, body: { error: 'gone', detail: 'The app closed before the answer came.' } };
 async function tagWithClaude(env, image, opts = {}) {
   const m = image.match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   if (!m) return { status: 400, body: { error: 'no image' } };
@@ -304,9 +305,15 @@ async function tagWithClaude(env, image, opts = {}) {
   let r, out;
   // one automatic retry on an overloaded or failing API (429, 529, 5xx, a dropped connection), after its retry-after or a short
   // pause; every attempt has a time limit (CLAUDE_MS)
+  // opts.signal: the app's request (req.signal). An app closed mid-reading drops its connection: the reading stops there, and the
+  // handler, seeing a status other than 200, gives the count back (the audit of 2026-11-14: a reading killed mid-way was still counted)
+  const gone = () => !!(opts.signal && opts.signal.aborted);
   for (let attempt = 1; ; attempt++) {
-    try { r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: sent, signal: AbortSignal.timeout(CLAUDE_MS) }); }
+    if (gone()) return CLIENT_GONE;
+    const limit = AbortSignal.timeout(CLAUDE_MS), signal = opts.signal && AbortSignal.any ? AbortSignal.any([limit, opts.signal]) : limit;
+    try { r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: sent, signal }); }
     catch (e) {
+      if (gone()) return CLIENT_GONE;
       if (e && e.name === 'TimeoutError') return { status: 504, body: { error: 'ai', detail: `Claude took over ${CLAUDE_MS / 60000} minutes to answer. Try again.` } };
       if (attempt < 2) { await sleep(pause); continue; }
       return { status: 502, body: { error: 'ai', detail: 'Could not reach the Claude API: ' + String(e && e.message) } };
@@ -400,7 +407,7 @@ async function handleTagMany(req, env, json, who) {
   const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
     properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium' });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium', signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {

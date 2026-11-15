@@ -44,7 +44,7 @@ function whyUnused(i){
     case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for colour variety.';
     case 'blazer':return !blazerDays?'You have no blazer days set in Settings.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other blazers take every blazer day first.';
     case 'shoes':{const ok=jackets.some(j=>(j.type==='suit'?[j]:by('pants')).some(b=>shoeScore(j,b,i)>-50));
-      return !ok?`${colName(primaryCol(i))} shoes don't suit any of your suits or trousers.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':finish(i.leather)==='suede'&&!blazerDays?'Suede is kept for blazer days, and you have none.':'Another pair always suits the outfit better.'}
+      return !ok?`${colName(primaryCol(i))} shoes don't suit any of your suits or trousers.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:finish(i.leather)==='suede'&&!blazerDays?'Suede is kept for blazer days, and you have none.':'Another pair always suits the outfit better.'}
     case 'belt':return by('shoes').some(s=>beltFit(s,i)!==null)?'Another belt matches the shoes better each time.':'None of your shoes match it in colour and finish.';
     case 'socks':return 'Your other socks match your trousers better every day.';
     case 'cufflinks':return by('shirt').some(s=>s.cuff==='french')?'Another pair matches your watch and buckle better.':'You have no French-cuff shirt to wear them with.';
@@ -136,7 +136,7 @@ function renderStats(){
 
   <section class="card st-card" id="st-pairs"><h3>Pairings and rest</h3>
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${esc(statName1(p.a))} · ${esc(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
-  <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: another pair in that colour would give them a rest.`:'Shoes always get a day off between wears.'}</small></p></section>
+  <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that colour would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>
 
   ${typeof tagStatsCard==='function'?tagStatsCard():''}
 
