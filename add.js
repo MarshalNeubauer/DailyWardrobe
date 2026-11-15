@@ -363,7 +363,7 @@ function renderAdd(){
   if(typeof addGate==='function')addGate();
   addKeepSoon();
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):
-`<div class="card" data-q="${esc(q.id)}">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
+`<div class="card qcard" data-q="${esc(q.id)}"><button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
 ${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
