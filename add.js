@@ -18,10 +18,15 @@ function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);const 
 /* a close-up with its own white reference (a corner of white paper) is corrected from that; otherwise like its item photo */
 function texGains(q){const r=closeRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}
 function toggleWb(i){const q=queue[i];if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
+/* a picture too small to read (an 8×8 thumbnail was sent to Claude and became the item's photo: audit 2026-11-15): refused before any reading */
+const ADD_MIN_PX=32;
+const TEX_MIN_PX=200;
 const TEX_MAX=1536;   // the synced close-up (2026-11-13, the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored one by one on the server and fetched when needed (it was 640)
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
 async function addTexture(i,f){const q=queue[i];if(!q||!f)return;
-  try{const img=await loadImg(f);q.raw=q.raw||{};q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
+  try{const img=await loadImg(f);
+    if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
+    q.raw=q.raw||{};q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
@@ -29,27 +34,47 @@ function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.
 function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
   const inp=`<input type="file" accept="image/*" class="vfile" onchange="addTexture(${i},this.files[0]);this.value=''">`;
   return q.texture?`<div class="texslot done"><small class="mut">Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.</small><div class="btns"><label class="btn">Replace close-up${inp}</label><button type="button" onclick="dropTexture(${i})">Remove</button></div></div>`
-    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the realistic photos match better. Optional.</small><small class="mut texpaper">Lay white paper along one edge and tap it on the screen to set the exposure.</small><button type="button" class="linkbtn texguide" onclick="kitCloseupGuide()">Tips for a good close-up</button><label class="btn pri">Add close-up${inp}</label></div>`}
+    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the pictures and colours match the cloth better. Optional.</small><small class="mut texpaper">Lay white paper along one edge, then tap the paper on the camera screen before you take the picture, to set the exposure.</small><button type="button" class="linkbtn texguide" onclick="kitCloseupGuide()">Tips for a good close-up</button><label class="btn pri">Add close-up${inp}</label></div>`}
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`:'';
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
-  guardUnsaved();
-  if(multi){multiNote(true);for(const f of files)await addMulti(f);return}
-  // every photo gets its card at once, and ADD_PAR are tagged at a time (one after another, five photos were five waits in a row)
-  const cards=[...files].map(f=>{const q={id:crypto.randomUUID(),busy:1};queue.push(q);return [q,f]});renderAdd();
+  addWatch();
+  if(multi){multiNote(true);const agg={n:0,counts:{},capped:false};for(const f of files)await addMulti(f,agg);return}
+  // every photo gets its card at once, at the top in the order picked (where a card typed in by hand goes too), and ADD_PAR are tagged
+  // at a time (one after another, five photos were five waits in a row)
+  const cards=[...files].map(f=>[{id:crypto.randomUUID(),busy:1},f]);queue.unshift(...cards.map(c=>c[0]));renderAdd();if(cards.length)addShowCard(cards[0][0].id);
   const one=async([q,f])=>{
+    // the picture itself: only a file that can't be opened, or is too small to read, is refused (nothing is asked for it)
+    let img=null;try{img=await loadImg(f)}catch(e){console.warn('photo not opened',e);q.err='open'}
+    if(img&&Math.min(img.width,img.height)<ADD_MIN_PX){q.err='small';q.errWh=[img.width,img.height]}
+    if(q.err){q.busy=0;renderAdd();return}
+    // from here the card keeps its photo whatever happens: no connection, a dropped one or a server error leave it to fill in by hand,
+    // with Try again (a failed request used to land in the same catch as a broken file: "That image couldn't be read", photo gone)
     try{
-      const img=await loadImg(f);
-      q.raw={big:shrink(img,800),full:shrink(img,TAG_MAX)};q.wb=wbGains(q.raw.big);cardPics(q);   // tagged from the corrected, sharp copy
+      q.raw={big:shrink(img,800),full:shrink(img,TAG_MAX)};q.wb=wbGains(q.raw.big);cardPics(q);if(addRestoreState==='done')addKeep();   // tagged from the corrected, sharp copy; kept on the phone at once, before the reading
       const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff)});   // wb: whether the photo was white-balanced (the tagger is told)
-      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else tagFailed(q)
-    }catch(e){q.err=1}
+      fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q)}
+    }catch(e){console.warn('photo card',e);if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
     q.busy=0;
-    renderAdd();
+    renderAdd();if(q===cards[0][0])addShowCard(q.id);   // (the small "Reading" card fitted; the full one grows below the screen)
   };
   let k=0;await Promise.all(Array.from({length:Math.min(ADD_PAR,cards.length)},async()=>{while(k<cards.length)await one(cards[k++])}));
 }
 const ADD_PAR=3;
+/* a new card is brought into view (it used to land below the One item / Several items buttons, out of sight under the tab bar) */
+function addShowCard(id){requestAnimationFrame(()=>{const a=$('#add'),el=document.querySelector(`#queue [data-q="${id}"]`);if(!a||a.hidden||!el)return;
+  el.scrollIntoView({behavior:typeof noMotion==='function'&&noMotion()?'auto':'smooth',block:'start'})})}
+/* a card not read by Claude (not connected, or the reading failed) doesn't pretend to know the type: it asks for it first (it said
+   "Suit · Grey" for a photo of a white shirt, and Confirm saved a grey suit); a type chosen by hand ends it */
+const needType=q=>!!q&&!!q.unread&&!q.manual&&!q.ai&&!q.busy&&!q.err&&!q.multiBusy&&!q.multiErr&&!(q.edited&&q.edited.type);
+/* the colour is then measured from the middle of the photo (measureCloth, tagging.js) once the type is known */
+function measureGuess(q){if(!q||!q.raw||!q.raw.big||(q.edited&&q.edited.primaryColor)||typeof measureCloth!=='function')return;
+  try{const m=measureCloth(q.raw.big,q.clothBox||null,{gains:q.wbOff?null:q.wb}),n=nearestCols(q.type,m.lab,false)[0];if(n&&COLORS[n.c])q.primaryColor=n.c}catch(e){console.warn('colour not measured',e)}}
+/* an image that couldn't be opened can still be added by hand */
+function errToHand(id){const q=queue.find(x=>x.id===id);if(!q)return;const wo=watchOpts({});
+  for(const k of ['err','errWh','busy'])delete q[k];Object.assign(q,{manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});renderAdd()}
+/* Skip, Cancel and Dismiss find their card by its id: by its place, a double tap skipped the next card too */
+function skipCard(id){const k=queue.findIndex(q=>q.id===id);if(k<0)return;const q=queue[k];if(q.abort)try{q.abort.abort()}catch{}queue.splice(k,1);renderAdd()}
 
 /* ---- pasted photos, photo links and drag & drop ---- */
 const pasteMsg=t=>{const e=$('#paste-status');if(e)e.textContent=t||''};
@@ -122,38 +147,67 @@ function cropBox(img,box,max){
   const k=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));
   c.getContext('2d').drawImage(img,x,y,w,h,0,0,c.width,c.height);return c;
 }
-async function addMulti(f){
+/* "1 pair of shoes", "2 dress shirts", "1 trousers" no more */
+const PAIR_TYPES=['pants','shoes','socks','cufflinks'];
+function countWord(t,c){const n=(TYPES[t]||'item').toLowerCase();if(PAIR_TYPES.includes(t))return `${c} pair${c===1?'':'s'} of ${n}`;return `${c} ${n}${c===1?'':'s'}`}
+/* the most items one photo gives (worker/tag.js keeps the first 40) */
+const MULTI_CAP=40;
+/* why "Several items" didn't work, in plain words: offline, the server's own sentence (its message), or a plain fallback; never a code */
+function multiFail(status,j,e){if(!status){const off=navigator.onLine===false;
+    return off||e instanceof TypeError?'You’re offline, or the server couldn’t be reached. The photo is kept: try again once you’re connected.':'Something went wrong while reading the photo. Try again.'}
+  if(status===404||status===405)return 'The server doesn’t support several items yet: it needs an update.';
+  const m=j&&(typeof j.message==='string'&&j.message.trim()||j.detail)||'',pe=m&&typeof plainErr==='function'?plainErr(m):m;
+  return pe&&/\s/.test(pe)?String(pe).trim().replace(/([^.!?])$/,'$1.'):'The photo couldn’t be read just now. Try again in a moment.'}
+async function addMulti(f,agg,again){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token')||'';
   if(!w){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
-  const holder={id:crypto.randomUUID(),busy:1,multiBusy:1};queue.push(holder);renderAdd();
-  try{
-    const raw=shrink(await loadImg(f),2576),wb=wbGains(raw),img=applyWb(raw,wb);   // one light reading for the whole photo; Claude reads up to 2576px
-    const r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
-      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes(),wb:!!wb})});
-    const j=await r.json().catch(()=>({}));
-    queue.splice(queue.indexOf(holder),1);
-    if(!r.ok){multiMsg(r.status===404||r.status===405?'The server doesn’t support several items yet: it needs an update.':`Couldn’t find the items: ${typeof plainErr==='function'?plainErr(j.detail||j.error||'HTTP '+r.status):j.detail||j.error||'HTTP '+r.status}`);renderAdd();return}
-    const list=j.items||[];
-    if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
-    list.forEach((it,n)=>{
-      const q={id:crypto.randomUUID(),multi:{n:n+1,of:list.length,confidence:it.confidence||'medium'}};
-      q.raw={big:cropBox(raw,it.box,800),full:cropBox(raw,it.box,TAG_MAX)};q.wb=wb;cardPics(q);
-      const tg=normTag(it,j.model);fill(q,tg);q.aiTag={...aiFields(tg)};q.tagAI=aiSignals({...tg,confidence:it.confidence},false);queue.push(q);
-    });
-    aiModel=j.model||aiModel;aiError='';
-    const counts={};for(const it of list){const t=TYPES[it.type]?it.type:'item';counts[t]=(counts[t]||0)+1}
-    multiMsg(`Found ${list.length} item${list.length===1?'':'s'} (${Object.entries(counts).map(([t,c])=>{const n=(TYPES[t]||'item').toLowerCase();return `${c} ${n}${c>1&&!n.endsWith('s')?'s':''}`}).join(', ')}). Check each card, then Save all or confirm them one by one.`);
-  }catch(e){const k=queue.indexOf(holder);if(k>=0)queue.splice(k,1);multiMsg('Couldn’t read that photo: '+(e.message||e))}
-  renderAdd();
+  // the photo's card while it is read: it has Cancel, and if the reading fails it stays with the reason, Try again and Dismiss (the
+  // photo was dropped: it had to be picked again)
+  const holder=again||{id:crypto.randomUUID()};Object.assign(holder,{busy:1,multiBusy:1,file:f});delete holder.multiErr;if(!again){queue.unshift(holder);addShowCard(holder.id)}
+  const ac=typeof AbortController==='function'?new AbortController():null;holder.abort=ac;renderAdd();
+  const fail=t=>{delete holder.busy;delete holder.multiBusy;holder.abort=null;holder.multiErr=t;if(queue.includes(holder))renderAdd()};
+  let raw,wb,img;try{raw=shrink(await loadImg(f),2576);wb=wbGains(raw);img=applyWb(raw,wb)}   // one light reading for the whole photo; Claude reads up to 2576px
+  catch(e){console.warn('photo not opened',e);fail('That photo couldn’t be opened. Try a JPEG or PNG.');return}
+  let r,j;try{r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
+      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes(),wb:!!wb}),...(ac?{signal:ac.signal}:{})});
+    j=await r.json().catch(()=>({}))}
+  catch(e){if(!queue.includes(holder))return;console.warn('several items',e);fail(multiFail(0,null,e));return}   // (Cancel took it off Add: nothing more to say)
+  if(!queue.includes(holder))return;   // cancelled while the answer came
+  if(!r.ok){fail(multiFail(r.status,j));return}
+  const list=j.items||[],at=queue.indexOf(holder);queue.splice(at,1);
+  if(!list.length){multiMsg('No clothing items were found in that photo.');renderAdd();return}
+  const made=list.map((it,n)=>{
+    const q={id:crypto.randomUUID(),multi:{n:n+1,of:list.length,confidence:it.confidence||'medium'}};
+    q.raw={big:cropBox(raw,it.box,800),full:cropBox(raw,it.box,TAG_MAX)};q.wb=wb;cardPics(q);
+    const tg=normTag(it,j.model);fill(q,tg);q.aiTag={...aiFields(tg)};q.tagAI=aiSignals({...tg,confidence:it.confidence},false);return q});
+  queue.splice(at,0,...made);   // where the photo's card was
+  aiModel=j.model||aiModel;aiError='';
+  // two photos picked at once: one summary for both (the second photo's line replaced the first's)
+  agg=agg||{n:0,counts:{},capped:false};agg.n+=list.length;if(list.length>=MULTI_CAP)agg.capped=true;
+  for(const it of list){const t=TYPES[it.type]?it.type:'item';agg.counts[t]=(agg.counts[t]||0)+1}
+  multiMsg(`Found ${agg.n} item${agg.n===1?'':'s'} (${Object.entries(agg.counts).map(([t,c])=>countWord(t,c)).join(', ')}).${agg.capped?` One photo gives at most ${MULTI_CAP}: if there are more, take another photo of the rest.`:''} Check each card, then Save all or confirm them one by one.`);
+  renderAdd();addKeepSoon();addShowCard(made[0].id);
 }
+/* Try again on a "Several items" photo that couldn't be read: the same photo, no picking again */
+function multiAgain(id){const q=queue.find(x=>x.id===id);if(!q||!q.file||q.busy)return;addMulti(q.file,null,q)}
 /* save every finished card in the queue (Skip the ones you don't want first) */
 /* a card Claude is still reading (tagging again with the close-up, or its pattern) can't be saved yet: saved meanwhile it kept the
    weaker reading and the pattern call was paid for anyway (audit 2026-11-13); Confirm and Save all wait for it */
 const cardReading=q=>!!(q&&(q.refining||q.patternReading));
-async function saveAll(){if(queue.some(cardReading))return;const n=queue.filter(q=>!q.busy&&!q.err).length;for(let i=queue.length-1;i>=0;i--){const q=queue[i];if(!q.busy&&!q.err)await save(i)}
-  multiMsg(`Saved ${n} item${n===1?'':'s'} to your wardrobe.`);renderAdd()}
+/* a card that can be saved now (Save all and its count) */
+const cardReady=q=>!!q&&!q.busy&&!q.err&&!q.multiErr&&!q.saving&&!needType(q);
+/* one Save all at a time: a double tap ran two loops over the same cards, and the Wardrobe showed every piece twice (deleting the
+   "copy" deleted the only real one); each card is saved by its id, last first, so Undo puts them back in their places */
+let saveAllOn=false;
+async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=true;renderAdd();let n=0;
+  try{const cards=queue.filter(cardReady);for(let k=cards.length-1;k>=0;k--){const q=cards[k];if(queue.includes(q)&&await save(q.id)===true)n++}}
+  finally{saveAllOn=false}
+  const left=queue.filter(needType).length;
+  if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
+const setq=(i,k,v)=>{const q=queue[i];if(!q)return;const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};addKeepSoon();
+  if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);renderAdd();return}   /* the type asked for (needType): the colour measured, the full card */
+if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${i.texture}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${sentence(desc(i))||TYPES[i.type]||''}</b></figcaption>`;
@@ -165,13 +219,13 @@ async function stepShadeE(id,d){const it=items.find(x=>x.id===id);if(!it)return;
 async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
   if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
   if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);cache={};renderWardrobe();toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
-const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure><figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure></div>`;
+const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure>${needType(i)?'':`<figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure>`}</div>`;
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 function addManual(){
-  guardUnsaved();
-  const wo=watchOpts({});
-  queue.unshift({id:crypto.randomUUID(),manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});
-  renderAdd();
+  addWatch();
+  const wo=watchOpts({}),id=crypto.randomUUID();
+  queue.unshift({id,manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});
+  renderAdd();addShowCard(id);
 }
 /* bought but not here yet: the item goes into the wardrobe out of rotation; with an arrival date it joins the outfits from the day
    after (inRotation in core.js), and once that day comes it is put back in rotation for good (checkArrivals) */
@@ -186,28 +240,45 @@ const qtyLabel=q=>{const n=qtyOf(q);return n>1?'Confirm '+n:'Confirm'};
 function qtyRow(q,i){if(!QTY_TYPES.includes(q.type))return '';const n=qtyOf(q);
   return `<div class="qtyrow" role="group" aria-label="How many to add"><span class="qtyl">How many<small class="mut">${q.type==='socks'?'Identical pairs':'Identical shirts'}, each its own item</small></span><span class="qty"><button type="button" class="qtyb" id="qty-m-${i}" aria-label="One fewer" onclick="stepQty(${i},-1)"${n<=1?' disabled':''}>−</button><output id="qty-n-${i}" aria-live="polite">${n}</output><button type="button" class="qtyb" id="qty-p-${i}" aria-label="One more" onclick="stepQty(${i},1)"${n>=QTY_MAX?' disabled':''}>+</button></span></div>`}
 /* the number, its buttons and Confirm change in place (no redraw: the card would jump) */
-function stepQty(i,d){const q=queue[i];if(!q)return;q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;
+function stepQty(i,d){const q=queue[i];if(!q)return;q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;addKeepSoon();
   const o=$('#qty-n-'+i),m=$('#qty-m-'+i),p=$('#qty-p-'+i),c=$('#qconf-'+i);if(o)o.textContent=n;if(m)m.disabled=n<=1;if(p)p.disabled=n>=QTY_MAX;if(c)c.textContent=qtyLabel(q)}
 function orderRow(q,i){return `<div class="ordrow"><button type="button" class="rotbtn${q.order?' on':''}" aria-pressed="${!!q.order}" onclick="setOrder(${i},${!q.order})">${q.order?'✓ ':''}Bought, on the way</button>${q.order?`<label class="ordate">Arrives (optional) <input type="date" value="${q.arrives||''}" min="${isoKey(todayDate())}" onchange="setArrives(${i},this.value)"></label><small class="mut ordhint">${orderHint(q.arrives)}</small>`:''}</div>`}
 function setOrder(i,on){const q=queue[i];if(!q)return;q.order=!!on;if(!on)delete q.arrives;renderAdd()}
-function setArrives(i,v){const q=queue[i];if(!q)return;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))q.arrives=v;else delete q.arrives;renderAdd()}
+/* a day already gone isn't an arrival date (the date field's min only limits its picker: 2020-01-01 typed in read "joins your outfits
+   from the day after Jan 1") */
+function setArrives(i,v){const q=queue[i];if(!q)return;const ok=/^\d{4}-\d{2}-\d{2}$/.test(v||'');
+  if(ok&&v<isoKey(todayDate())){delete q.arrives;renderAdd();toast('That day has passed. Pick today or a later day, or leave it empty.',4500);return}
+  if(ok)q.arrives=v;else delete q.arrives;renderAdd()}
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){cache={};toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
-async function save(i){try{return await saveCard(i)}catch(e){console.warn('save failed',e);
-  if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}}
-async function saveCard(i){
-  if(cardReading(queue[i]))return;
-  const q=queue[i],f=FABRIC.includes(q.type);
+/* what the Saved toast calls the item: its own name, else its colours with what it is ("Grey suit", "Navy tie", "Gold watch · white dial
+   · bracelet"; it said "Saved: Grey." for a suit and "Saved: Navy." for a tie and for socks) */
+function savedTitle(it){const nm=itemName(it);if(nm)return nm;const d=String(desc(it)||'').trim(),t=(TYPES[it.type]||'item').toLowerCase();
+  if(!d)return sentence(t);const k=d.indexOf(' · ');return sentence(k<0?`${d} ${t}`:`${d.slice(0,k)} ${t}${d.slice(k)}`)}
+/* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
+const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
+/* one save per card (audit 2026-11-15, C2: a double tap on Confirm saved the card twice and, the list having moved up, threw away the
+   next card unsaved): the card is found by its id, marked while it saves (a second tap does nothing) and its Confirm switched off;
+   -> true once saved, false when it couldn't be */
+async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return false;
+  if(needType(q)){toast('Choose what it is first: pick its Type.',4000);return false}
+  q.saving=1;const b=$('#qconf-'+queue.indexOf(q));if(b)b.disabled=true;
+  try{return await saveCard(q)}catch(e){console.warn('save failed',e);
+    if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
+  finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)renderAdd()}}
+async function saveCard(q){
+  if(!q||cardReading(q))return false;
+  const f=FABRIC.includes(q.type);
   generateSwatch(q);
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
   if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
-  if(q.type==='suit')it.vest=q.vest==='yes'?'yes':'no';if(typeof dressNewItem==='function')dressNewItem();
+  if(q.type==='suit')it.vest=(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no';if(typeof dressNewItem==='function')dressNewItem();
   if(SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all')it.season=q.season;
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
@@ -224,25 +295,33 @@ async function saveCard(i){
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (tagging.js)
   // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
   if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
+  colTidy(it);   // no second or third colour its type can't show (colpick.js)
   if(q.sample)it.sample=true;   // the sample wardrobe (kit.js kitSampleLoad)
-  await put(it);items.push(it);
-  const copies=[];for(let k=1;k<qtyOf(q);k++){const c=JSON.parse(JSON.stringify(it));c.id=crypto.randomUUID();await put(c);items.push(c);copies.push(c)}   // the same shirt or pair again (qtyRow)
-  cache={};queue.splice(i,1);renderAdd();
-  if(typeof kitSaved==='function')kitSaved(it,q,i,copies);   // Saved, with Undo for all of them (kit.js)
+  // the item and its copies (the same shirt or pair again, qtyRow) in one transaction: all of them or none (a kill right after
+  // "Confirm 12" saved 3, and the card was gone)
+  const copies=[];for(let k=1;k<qtyOf(q);k++){const c=JSON.parse(JSON.stringify(it));c.id=crypto.randomUUID();copies.push(c)}
+  const all=[it,...copies],at=Date.now();for(const x of all)x.updated=at;
+  await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
+  items.push(...all);
+  const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);renderAdd();
+  if(typeof kitSaved==='function')kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)keepTagImg(it.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>keepCloseImg(it.id,u,it.texture)).catch(()=>{});   // the sharp close-up for later readings (tagging.js)
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
+  return true;
 }
 
 function renderAdd(){
   closeSettings();
   const workerSet = typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
-  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || (aiModel?`Last photo read by ${/^claude/.test(aiModel)?'Claude':'AI'} (${aiModel}).`:'Photos are read automatically: the type, colours and pattern are filled in for you.');
-  const ready=queue.filter(q=>!q.busy&&!q.err).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading?' disabled title="Claude is still reading a card"':''}>Save all ${ready} items</button>`:'';
+  // (no model name: a tester read "Last photo read by Claude (claude-…)")
+  if($('#note')) $('#note').textContent = !workerSet ? 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.' : aiError || 'Photos are read automatically: the type, colours and pattern are filled in for you.';
+  const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
-  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
-`<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
-${tagFailNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
+  addKeepSoon();
+  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):
+`<div class="card" data-q="${esc(q.id)}">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
+${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
   <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
@@ -254,13 +333,78 @@ ${FABRIC.includes(q.type)&&q.big?`
   </div>
 </div>`:''}
 <label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>
-<label class="colrow">Colour ${colBtn('q',i,'primaryColor',q.primaryColor)}</label>
-<label class="colrow">${q.type==='socks'?'Toe cap':'Second colour'} ${colBtn('q',i,'secondaryColor',q.secondaryColor||'none')}</label>
-${q.type==='socks'?'':`<label class="colrow">Third colour ${colBtn('q',i,'tertiaryColor',q.tertiaryColor||'none')}</label>`}
-${FABRIC.includes(q.type)?`<label class="colrow">Pattern ${patBtn('q',i,q)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
-${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='yes'?'yes':'no','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
+${colRows('q',i,q)}
+${FABRIC.includes(q.type)?`<label class="colrow">Pattern ${patBtn('q',i,q)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(METAL_OPTS,q.metal,'metal',i)}</label>`:''}
+${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:''}${q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:''}${q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
-${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderRow(q,i)}${qtyRow(q,i)}<div class="btns"><button class="pri" id="qconf-${i}" onclick="save(${i})"${cardReading(q)?' disabled title="Claude is still reading this item"':''}>${qtyLabel(q)}</button><button onclick="queue.splice(${i},1);renderAdd()">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
+${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderRow(q,i)}${qtyRow(q,i)}<div class="btns"><button class="pri" id="qconf-${i}" onclick="save('${esc(q.id)}')"${cardReading(q)?' disabled title="Claude is still reading this item"':q.saving||saveAllOn?' disabled':''}>${qtyLabel(q)}</button><button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
 }
+/* the cards that are not (yet) a form: being read, a "Several items" photo that couldn't be read, a file that couldn't be opened,
+   and a photo nobody read, which asks for its type first */
+const busyCard=q=>`<div class="card" data-q="${esc(q.id)}"><span class="spin" aria-hidden="true"></span>${q.multiBusy?`Finding every item in the photo… (this can take up to a minute) <button type="button" onclick="skipCard('${esc(q.id)}')">Cancel</button>`:'Reading the photo…'}</div>`;
+const multiErrCard=q=>`<div class="card" data-q="${esc(q.id)}"><div class="tagfail" role="alert"><p><b>The items in this photo weren’t found.</b> ${esc(q.multiErr)}</p></div><div class="btns"><button type="button" class="pri" onclick="multiAgain('${esc(q.id)}')">Try again</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
+const errCard=q=>`<div class="card" data-q="${esc(q.id)}" role="alert"><p>${q.err==='small'?`This picture is too small to read (${(q.errWh||[]).join('×')} pixels). Use a larger photo of the item.`:'That photo couldn’t be opened. Try a JPEG or PNG, or fill the item in by hand.'}</p><div class="btns"><button type="button" onclick="errToHand('${esc(q.id)}')">Fill it in by hand</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
+function typeCard(q,i){const none=!localStorage.getItem('worker_url');
+  return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
+<p class="typeq">${none&&!q.tagErr?'<b>What is it?</b> Photos aren’t read automatically here: pick the type and the colour is measured from the photo.':'<b>What is it?</b> Pick the type, then check the colours.'}</p>
+<label>Type <select onchange="setq(${i},'type',this.value)" aria-label="Type"><option value="" selected disabled>Choose…</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
+<div class="btns"><button onclick="skipCard('${esc(q.id)}')">Skip</button></div></div>`}
+/* a photo added while the app wasn't connected yet (an invitation still being checked): once it is, the card offers the reading */
+const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&localStorage.getItem('worker_url')?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Read it now</button></div>`:'';
+
+/* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
+   and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each
+   card's pictures (photo, sharp tagging copy, close-up) once as `addpic:<id>`, written a moment after a change and whenever the app
+   goes to the background. At the next start they come back as they were, readings and all; a card whose reading was cut off says so,
+   with Try again. A card already saved (its id in the wardrobe) is not brought back. ---- */
+const ADDQ_KEY='addq',ADDPIC='addpic:';
+const ADDQ_SKIP=['raw','big','texCanvas','busy','multiBusy','multiErr','saving','file','abort','missed','measV'];   // canvases, the photo file, what is in flight
+const ADDQ_PICS=['photo','tagImg','texture'];
+let addKeepT=0,addKeptPics=new Map(),addRestoreState='';
+function addKeepSoon(){if(addRestoreState!=='done')return;clearTimeout(addKeepT);addKeepT=setTimeout(addKeep,400)}
+const addKeepable=q=>!!q&&!q.err&&!q.multiBusy&&!q.multiErr&&(q.manual||!!q.photo);
+function addCardRec(q){const o={};for(const [k,v] of Object.entries(q))if(!ADDQ_SKIP.includes(k)&&!ADDQ_PICS.includes(k))o[k]=v;if(q.busy)o.cut=1;
+  return JSON.parse(JSON.stringify(o,(k,v)=>typeof HTMLCanvasElement!=='undefined'&&v instanceof HTMLCanvasElement?undefined:v))}
+async function addKeep(){clearTimeout(addKeepT);if(addRestoreState!=='done')return;
+  if(typeof kitQuiet!=='undefined'&&kitQuiet){addKeepSoon();return}   // the sample or an import passes its cards through Add one by one: not kept
+  try{const cards=queue.filter(addKeepable),recs=cards.map(addCardRec),pics=[],ids=new Set(cards.map(q=>q.id)),gone=[...addKeptPics.keys()].filter(id=>!ids.has(id));
+    for(const q of cards){const was=addKeptPics.get(q.id)||{},p={};let ch=false;for(const k of ADDQ_PICS){p[k]=q[k]||null;if(p[k]!==(was[k]||null))ch=true}if(ch)pics.push([q.id,p])}
+    await txs('meta','readwrite',s=>{for(const [id,p] of pics)s.put({k:ADDPIC+id,v:p});for(const id of gone)s.delete(ADDPIC+id);return s.put({k:ADDQ_KEY,v:recs})});
+    for(const [id,p] of pics)addKeptPics.set(id,p);for(const id of gone)addKeptPics.delete(id)}
+  catch(e){console.warn('Add cards not kept',e)}}
+/* the card's canvases again from its kept pictures (already corrected for the light: no Show original on a card brought back) */
+async function addRevive(q){
+  try{if(q.tagImg){const im=await imgOf(q.tagImg);q.raw={big:shrink(im,800),full:shrink(im,TAG_MAX)};q.big=q.raw.big}}catch(e){console.warn('card photo not reopened',e)}
+  try{if(q.texture){const im=await imgOf(q.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);q.texCanvas=c}}catch(e){console.warn('close-up not reopened',e)}
+  delete q.wb;delete q.wbOff;
+  if(q.cut){delete q.cut;if(!q.ai&&!q.manual)q.tagErr='The app was closed before this photo was read.'}
+  if(!q.type&&!q.manual){fill(q,null);q.unread=1;if(q.texCanvas||q.big)generateSwatch(q)}}   // (the fields a card gets when nothing was read)
+/* at start-up (safety.js safetyStart): the cards kept last time, back on Add */
+async function addRestore(){if(addRestoreState)return;addRestoreState='busy';let n=0;
+  try{const recs=await metaGet(ADDQ_KEY);
+    if(Array.isArray(recs)&&recs.length){const have=new Set(queue.map(q=>q.id)),saved=new Set(items.map(i=>i.id));
+      for(const o of recs){if(!o||!o.id||have.has(o.id)||saved.has(o.id))continue;
+        const p=await metaGet(ADDPIC+o.id).catch(()=>null)||{};const q={...o};for(const k of ADDQ_PICS)if(p[k])q[k]=p[k];
+        addKeptPics.set(o.id,p);await addRevive(q);queue.push(q);n++}}
+    // the pictures of cards saved or dropped since (a kill between the save and the next keep) go
+    const old=(await txs('meta','readonly',s=>s.getAllKeys(IDBKeyRange.bound(ADDPIC,'addpic;',false,true))))||[],drop=old.filter(k=>!addKeptPics.has(String(k).slice(ADDPIC.length)));
+    if(drop.length)await txs('meta','readwrite',s=>{let r;for(const k of drop)r=s.delete(k);return r})}
+  catch(e){console.warn('Add cards not read back',e)}
+  addRestoreState='done';
+  if(!n){addKeep();return 0}
+  addWatch();addKeepSoon();
+  const a=$('#add');if(a&&!a.hidden)renderAdd();
+  toast(n===1?'The card you hadn’t saved is back on Add.':`The ${n} cards you hadn’t saved are back on Add.`,8000,a&&!a.hidden?null:{label:'Open',fn:()=>openAdd()});
+  return n}
+/* installed with the first card: keep the cards when the app goes to the background (iOS may close it there), ask before a desktop
+   tab closes (safety.js guardUnsaved), and read again, once back online, the photos that failed for want of a connection */
+let addWatchOn=false;
+function addWatch(){if(addWatchOn)return;addWatchOn=true;if(typeof guardUnsaved==='function')guardUnsaved();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')addKeep()});
+  addEventListener('pagehide',()=>addKeep());
+  addEventListener('online',addBackOnline)}
+function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))aiError='';
+  for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
+  const a=$('#add');if(a&&!a.hidden)renderAdd()}
 

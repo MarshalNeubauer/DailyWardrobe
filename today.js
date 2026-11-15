@@ -79,11 +79,11 @@ async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||
     if(o.top)r.kind=o.suitDay?'suit':'blazer';r.force=force;off[slot]=true}
   else delete off[slot];
   if(off.top||off.tie)r.off=off;else delete r.off;delete r.lock;swapMsg='';await saveDay(r);renderToday()}
-const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[[o.suitBot?'Trousers':'Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
+const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Trousers',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
   .filter(([l,i,s])=>!(s==='clip'&&!i&&!(o.frozen&&pastEdit===key(sel))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn)
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie')&&!i&&o.off&&o.off[s])return offRow(s,o);const open=!!i&&openRow===s;
-  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)&&!(s==='bot'&&o.suitBot)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':'Add one on the Add tab'}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)&&!(s==='bot'&&o.suitBot)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd()" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
     (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
@@ -248,7 +248,9 @@ function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.ti
   return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" onclick="swTap('${s}')" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
 function wornBar(o){
   const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),can=+d<=+T,lw=lastWorn(o);
-  const pill=lw?`<small class="lastworn">Last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
+  // "This look": the same jacket, shirt colour and tie (lastWorn), not the suit alone; "Last worn" read as the suit's own last wear, beside a
+  // cleaning banner about the suit (audit 2026-11-14)
+  const pill=lw?`<small class="lastworn">This look last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
   // (2026-11-14, the owner) no ✕ / ✓ circles on the picture any more: worn or not is the pill in the date bar (wornPill); only "Last worn"
   return pill?`<div class="wornbar">${pill}</div>`:''}
 /* the date bar's pill, at the right end of the weather line, on today and past workdays with an outfit (the owner's design, 2026-11-14):
@@ -275,13 +277,22 @@ function figureStage(o){
 }
 
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
+/* a new calendar day (the app brought back from the background, or left open past midnight): Today moves on to the new day's outfit (or the
+   next workday's) when it was showing the old one, or a day that is now past. It used to move only when the day shown was the home day,
+   and a weekend or day off shown as the calendar day never counted: opened on Friday, it still showed Friday on Sunday morning (audit
+   2026-11-14, H8). A coming day the user stepped to stays. */
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
   if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};cache={};checkArrivals().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
-  if(home){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false}
+  const h=homeDay();if(home||isoKey(sel)<=isoKey(h)){sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false}
   if(!$('#today').hidden)refreshToday()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
   newDayCheck();try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(settings.location&&(!c||Date.now()-c.t>3*3600e3))loadWeather()}catch{}
   remoteKeys=null;schedulePrefetch()});   // photos made on another device meanwhile
+setInterval(()=>{if(document.visibilityState==='visible'&&window.appReady)newDayCheck()},60e3);   // left open across midnight: no visibility event comes
+/* Today showing the home day (today, or the next workday) when a Settings change moves it (a workday or day off taken away): it follows
+   (closeSettings, before Today is drawn again) */
+function keepHome(){if(!dayShown||!dayShown.home||dayShown.k!==key(todayDate()))return;const h=homeDay();if(key(h)===key(sel))return;
+  sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false}
 function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||!o[s])return;const opening=belowOpen!==s,was=el.classList.contains('open');
   belowOpen=opening?s:null;
   document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('onclick')===`pickPiece('${s}')`;t.setAttribute('aria-expanded',on);
@@ -293,6 +304,14 @@ function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||
 const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
 /* (2026-11-14, the owner) no "↩ Today" / "↩ Next outfit" button in the date bar on other days: the Today tab does it (goToday) */
 const todayBtn=()=>'';
+/* where to add a piece (there is no Add tab: Add is "+ Add" in the Wardrobe's header) */
+const ADD_HINT='Add one with + Add in the Wardrobe';
+/* a day before the wardrobe existed (planTrim leaves it out of the month): no outfit, and the page says why */
+const preWardrobe=d=>{const s=planStartDay();return !!s&&d<s&&d<todayDate()};
+/* a past day whose piece was deleted since (planner.js frozenOutfit, o.gone): the drawing can't show it, so the page says so */
+const GONE_WORD={top:'jacket',bot:'trousers',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tie clip',links:'cufflinks',coat:'coat'};
+const goneNote=o=>{const g=Object.keys(o.gone||{}).filter(s=>o.gone[s]&&GONE_WORD[s]&&!(s==='bot'&&o.gone.top&&o.suitDay!==false));if(!g.length)return '';const w=g.map(s=>s==='top'&&o.suitDay!==false?'suit':GONE_WORD[s]),l=w.length>1?w.slice(0,-1).join(', ')+' and '+w[w.length-1]:w[0];
+  return `<p class="mut gonenote">The ${l} worn this day ${w.length>1||/s$/.test(l)?'are':'is'} no longer in your wardrobe, so the picture can’t show ${w.length>1||/s$/.test(l)?'them':'it'}.</p>`};
 function goToday(){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false;show('today');scrollTo({top:0,behavior:'smooth'})}
 /* ---- the day's pieces: a folded box (a strip of fabric chips, like the month box) that unfolds into the full list ---- */
 let listOpen=false;
@@ -319,10 +338,11 @@ function renderToday(){
   let stage='',side='';const first=(typeof setupToday==='function'?setupToday():'')+(typeof kitSampleBanner==='function'?kitSampleBanner():'');   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
     :`<p class="mut empty">${DAY_NAMES[sel.getDay()]} isn't a workday. You can change your workdays in Settings.</p>`);   // the checklist comes first on every day, above the figure or the day's note
-  else if(!items.length||(first&&!hasOutfit(o)))stage=first||'<p class="mut empty">Your wardrobe is empty. Add photos on the Add tab to get an outfit.</p>';
+  else if(items.length&&!p[key(sel)]&&preWardrobe(sel))stage=first+`<p class="mut empty" id="prewd">No outfit: your wardrobe starts on ${planStartDay().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}.</p>`;   // (it used to show a red "0 · Incomplete" and an empty figure)
+  else if(!items.length||(first&&!hasOutfit(o)))stage=first||`<p class="mut empty">Your wardrobe is empty. ${ADD_HINT} to get an outfit.</p>`;
   else{stage=first+figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
+    side=`${scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();
   if(cache.snap&&p===cache[cache.snap]){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
   else if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
@@ -396,9 +416,9 @@ $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.clos
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed */
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed.
    from: where the new day's outfit slides in from (px, sign = side); 0 = no animation */
-function stepDay(n,from){
+function stepDay(n,from,times=1){
   const d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate());
-  let g=0;do d.setDate(d.getDate()+n);while(!isWorkday(d)&&++g<7);
+  for(let k=0;k<times;k++){let g=0;do d.setDate(d.getDate()+n);while(!isWorkday(d)&&++g<7)}
   foldAll();sel=d;view={y:d.getFullYear(),m:d.getMonth()};renderToday();
   const sl=$('#slide');if(!sl)return;
   const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x||noMotion())return;   // reduced motion: the new day just shows
@@ -406,6 +426,11 @@ function stepDay(n,from){
   void sl.offsetWidth;
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';
 }
+/* fast swipes one after another (audit 2026-11-14: five quick swipes moved three days): a swipe made while the last one's fly-out is still
+   running is added to it (fly.n), and the day is drawn only once no finger is down: drawing Today removes the element a touch started on,
+   and the browser then stops sending that touch's moves and its end, so the swipe under way was lost */
+const fly={n:0,t:null,wait:false,from:0};
+function flyGo(){clearTimeout(fly.t);fly.t=null;fly.wait=false;const n=fly.n;fly.n=0;if(n)stepDay(Math.sign(n),fly.from,Math.abs(n))}
 (()=>{const el=$('#today');let st=null;
   const slide=()=>$('#slide');
   el.addEventListener('touchstart',e=>{
@@ -425,14 +450,17 @@ function stepDay(n,from){
     st.dx=dx;const sl=slide();if(sl){sl.style.transition='none';sl.style.transform=`translateX(${dx}px)`;sl.style.opacity=String(1-Math.min(.5,Math.abs(dx)/innerWidth))}
   },{passive:false});
   const end=()=>{
-    if(!st)return;const {lock,dx,t,month}=st;st=null;if(month){if(lock==='x')monthRelease(dx,Date.now()-t);return}const sl=slide();if(lock!=='x'||!sl)return;
+    if(!st)return;const {lock,dx,t,month}=st;st=null;
+    try{if(month){if(lock==='x')monthRelease(dx,Date.now()-t);return}const sl=slide();if(lock!=='x'||!sl)return;
     const fast=Math.abs(dx)/Math.max(1,Date.now()-t)>.5;
     if(Math.abs(dx)>70||(fast&&Math.abs(dx)>30)){
       const n=dx<0?1:-1,w=sl.offsetWidth||innerWidth;
-      if(noMotion()){stepDay(n,0);return}   // reduced motion: no fly-out and slide-in
+      if(noMotion()){fly.n+=n;fly.from=0;fly.wait=true;return}   // reduced motion: no fly-out and slide-in (drawn below)
       sl.style.transition='transform .16s ease-in,opacity .16s';sl.style.transform=`translateX(${dx<0?-w:w}px)`;sl.style.opacity='0';
-      setTimeout(()=>stepDay(n,(dx<0?1:-1)*w*.6),160);
-    }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}
+      fly.n+=n;fly.from=(dx<0?1:-1)*w*.6;fly.wait=false;clearTimeout(fly.t);
+      fly.t=setTimeout(()=>{fly.t=null;if(st)fly.wait=true;else flyGo()},160);   // a finger down again: drawn when it lifts
+    }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}}
+    finally{if(fly.wait&&!fly.t)flyGo()}
   };
   el.addEventListener('touchend',end,{passive:true});el.addEventListener('touchcancel',end,{passive:true});
   // a mouse drag inside the open month does the same on a computer; the click that ends a drag doesn't open a day
@@ -459,7 +487,7 @@ function moveRecs(src,dst,plan){const o=(plan||planFor())[src];if(!o)return null
   const s=keep(dayRecs[src]);if(Object.keys(s).filter(k=>k!=='date'&&k!=='updated').length)recs[src]={...s,date:src};else delete recs[src];
   return recs}
 /* the month as it would be planned with these records (the real ones and the cache stay as they are) */
-function planWith(recs,y,m){const keep=dayRecs;dayRecs=recs;try{return buildPlan(y,m)}finally{dayRecs=keep}}
+function planWith(recs,y,m){const keep=dayRecs;dayRecs=recs;try{return planTrim(buildPlan(y,m))}finally{dayRecs=keep}}   // (trimmed like the month: the days before the wardrobe existed flashed invented outfits during a drag)
 /* put a plan into the grid: a cell whose outfit changed gets its new stack, sliding in from the cell that showed it before */
 function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.mdow)');if(!grid)return;
   const cells=[...grid.querySelectorAll('.mc[data-k]')],was=new Map(),ease='cubic-bezier(.2,.8,.2,1)',still=matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -32,7 +32,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // last worn: the same look a week earlier (a day counts unless marked "Didn't")
     const lw=await p.evaluate(()=>{const o=planFor()[key(sel)];dayRecs['2026-11-3']={date:'2026-11-3',ids:idsOf(o),suitDay:true,vestOn:!!o.vest};renderToday();
       const pill=document.querySelector('.wornbar .lastworn'),f=document.querySelector('#mannequin-container').getBoundingClientRect(),b=pill&&pill.getBoundingClientRect();return {t:pill&&pill.textContent,right:b&&f.right-b.right<=16}});
-    ok(/^Last worn \w{3}, \w{3} \d+$/.test(lw.t)&&lw.right,`a look worn before (not marked either way) shows "Last worn" at the picture's bottom right (${lw.t})`);
+    ok(/^This look last worn \w{3}, \w{3} \d+$/.test(lw.t)&&lw.right,`a look worn before (not marked either way) shows "Last worn" at the picture's bottom right (${lw.t})`);
     const lw2=await p.evaluate(()=>{for(const r of Object.values(dayRecs))if(r.ids&&keyDate(r.date)<sel)r.worn=false;renderToday();return !document.querySelector('.lastworn')});   // (every earlier day, the week's locks recorded too: each counts unless marked)
     ok(lw2,'a day marked "Didn\'t" is not a last wear');
     // a future day: no pill (it can't have been worn yet), the weather centred

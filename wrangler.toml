@@ -4,6 +4,9 @@
 name = "wardrobevision"
 main = "worker.js"
 compatibility_date = "2026-10-01"
+# request.signal fires when the app drops its connection (the default from the 2026-11-17 compatibility date): a photo reading the app
+# closed on stops and its count goes back (worker/tag.js tagWithClaude, opts.signal)
+compatibility_flags = ["enable_request_signal"]
 workers_dev = true
 # no per-version public preview links
 preview_urls = false

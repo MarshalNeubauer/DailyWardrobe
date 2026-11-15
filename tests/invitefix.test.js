@@ -73,7 +73,7 @@ module.exports=async({ok,chromium,url})=>{
       ok(/Checking your invitation/.test(c.box)&&/Checking/.test(c.sum),`while the link is checked, Connection says so (${c.box})`)}
     // ---- the sample: connecting asks to remove it first; own pieces stay
     {const {p}=await page();
-      await p.evaluate(async()=>{for(const [id,s] of [['s1',true],['s2',true],['mine',false]]){const it={id,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:1,...(s?{sample:true}:{})};await put(it);items.push(it)}});
+      await p.evaluate(async()=>{for(const [id,s] of [['s1',true],['s2',true],['mine',false]]){const it={id,type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),updated:Date.now(),...(s?{sample:true}:{})};await put(it);items.push(it)}});
       const r=p.evaluate(l=>connectFromLink(l),link(A));await p.waitForSelector('#ask-ok',{state:'visible'});const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');
       const res=await r;const s=await p.evaluate(async()=>({ids:items.map(i=>i.id).join(),stored:(await tx('readonly',x=>x.getAll())).map(i=>i.id).join(),tok:localStorage.getItem('app_token')}));
       ok(/sample wardrobe/.test(ask)&&res===true&&s.ids==='mine'&&s.stored==='mine'&&s.tok===A,`connecting with the sample loaded asks first and removes it before anything is backed up (${JSON.stringify(s)})`)}

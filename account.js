@@ -71,7 +71,7 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
     if(!await askConfirm(`Remove the sample wardrobe first?\n\nOnce connected, what is on this phone is backed up to your wardrobe and shows on your other phones too. The ${local.sample} sample pieces aren’t yours, so they are removed before connecting; your own pieces stay.`,{ok:'Remove the sample and connect'})){
       acctWhy='kept';acctToast('Not connected: the sample wardrobe stays. Open your invitation link again when you’re ready.',6000);acctLinkDrawn();return false}
     await acctStarted();if(typeof kitSampleRemove==='function')await kitSampleRemove(true)}
-  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended'])localStorage.removeItem(k);if(typeof connKeep==='function')connKeep();
+  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended','list_pause'])localStorage.removeItem(k);if(typeof connKeep==='function')connKeep();
   acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
@@ -96,8 +96,9 @@ const myInviteLink=()=>{const b=acctBase();return b&&b.tok?location.origin+locat
 async function copyInviteLink(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);acctToast('Your invitation link is copied.');return true}
   catch{const f=document.querySelector('#acct-mylink');if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
-async function homeScreenGuide(){
-  if(await askConfirm('Put Daily Wardrobe on your Home Screen\n\n1. Tap Copy link below.\n2. Tap Share, then “Add to Home Screen”.\n3. Open Daily Wardrobe from your Home Screen and paste the link when it asks.\n\nThe app on your Home Screen keeps its own copy of everything, so it needs the link once. In Safari, iPhone can clear the app’s data after a week without a visit.',{ok:'Copy link',cancel:'Later'}))copyInviteLink()}
+/* (audit 2026-11-15, H12) one explanation, kit.js's (with Copy my invitation link): never over the setup, which has its own Home Screen step */
+function homeScreenGuide(){if(typeof setupShown==='function'&&setupShown())return;if(typeof kit!=='undefined'&&kit)return;
+  if(typeof homeOpen==='function')homeOpen()}
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
 function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}if(typeof applyRole==='function')applyRole()}

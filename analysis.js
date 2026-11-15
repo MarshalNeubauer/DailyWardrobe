@@ -232,7 +232,8 @@ function runAnalysis0(list,T,weeks,progress,onCat){
       else if(cat==='tie')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')} and ${k.Sh.length} of your ${plural(nS,'shirt')}.`);
       else if(cat==='shirt')why.push(`Works with ${k.J.length} of your ${plural(nJ,'jacket')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}.`);
       else if(cat==='pants')why.push(`Pairs with ${listAnd(k.J.map(nmOf))}.`);
-      else{const it=x.c.items[0],wantS=SH[pcol(it)]||['black','brown'],shoe=cat==='suit'?wantS.map(w=>inRot('shoes').find(s=>pcol(s)===w&&shoeScore(it,it,s)>-50)).find(Boolean):null;
+      else{const it=x.c.items[0],wantS=SH[pcol(it)]||['black','brown'],sampShoe=(f.samples||[]).map(s=>s.ids&&s.ids.shoes&&inRot('shoes').find(i=>i.id===s.ids.shoes)).find(Boolean),   // the pair its sample outfits wear (it named another, audit 2026-11-14)
+          shoe=cat==='suit'?sampShoe||wantS.map(w=>inRot('shoes').find(s=>pcol(s)===w&&shoeScore(it,it,s)>-50)).find(Boolean):null;
         why.push(`Dresses well with ${k.Sh.length} of your ${plural(nS,'shirt')}${wearsTie()?` and ${k.Ti.length} of your ${plural(nT,'tie')}`:''}`+(cat==='blazer'&&k.Pt.length?`; trousers: ${listAnd(k.Pt.map(nmOf))}`:'')
           +(cat==='suit'?(shoe?`; shoes: your ${nm(shoe)}`:`; it needs ${wantS[0]} shoes, which you don't have`):'')+'.')}
       if(x.idle.length)why.push(`Pairs with ${x.idle.length===1?'a piece':plural(x.idle.length,'piece')} you own that ${x.idle.length===1?"isn't":"aren't"} planned at all in the next ${Math.round(weeks/4.33)} months: ${listAnd(x.idle.slice(0,3).map(nmOf))}${x.idle.length>3?' and more':''}.`);
