@@ -153,8 +153,9 @@ ${items.length?'':`<p class="su-help">Today shows your first outfit once you hav
 }
 /* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
 const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&homeTester()?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${homeCopyBtn()}`:'';
-/* "Try a sample wardrobe" on the last step finishes the setup first (holidays, the vest), then loads it (audit 2026-11-15) */
-function setupSample(e){setupFinish(false,e);if(typeof kitSampleLoad==='function')kitSampleLoad()}
+/* "Try a sample wardrobe" on the last step loads it, and the setup finishes (holidays, the vest) once it is stored (kit.js kitSampleDone;
+   audit 2026-11-15); finished first, a kill before the sample was stored left the setup done and no sample (re-audit 2026-11-15) */
+function setupSample(e){setupTapGuard(e);if(typeof kitSampleLoad==='function')kitSampleLoad();else setupFinish(false,e)}
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
   setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${!setup.first?`<button type="button" class="su-skip" id="su-cancel" onclick="setupCancel(event)">Cancel</button>`:last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false,event)">Skip</button>`}</div>
 <div class="su-prog" aria-hidden="true">${SETUP_STEPS.map((s,i)=>`<i class="${i<=setup.at?'on':''}"></i>`).join('')}</div>

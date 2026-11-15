@@ -37,7 +37,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>missingItemPics().every(i=>!i.sample)&&missingItemPics().length<=1),'"Generate item pictures" offers none of the sample\'s pieces');
     /* ---- removing the sample: day records, a piece he changed, one write ---- */
     const rm=await p.evaluate(async()=>{const s=items.filter(i=>i.sample),shirt=s.find(i=>i.type==='shirt');
-      shirt.name='My white shirt';shirt.added=Date.now()-60000;await put(shirt);   // changed after it was added
+      openItem(shirt.id);await setItemField(shirt.id,'name','My white shirt');closeItem();   // renamed in the item sheet
       const suit=s.find(i=>i.type==='suit');
       await saveDay({date:'2026-11-10',ids:{top:suit.id,shirt:shirt.id},suitDay:true,worn:true});
       await saveDay({date:'2026-11-12',ids:{top:suit.id},occasion:'wedding',force:{top:suit.id}});
@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url})=>{
       const left=JSON.stringify(days)+JSON.stringify(dayRecs);
       return {refs:gone.filter(id=>left.includes(id)).length,n:st.length,ids:st.map(i=>i.id).sort().join(),want:[kept,mine].sort().join(),flag:st.some(i=>i.sample),d10:d('2026-11-10'),d12:d('2026-11-12'),d13:d('2026-11-13'),mem:JSON.stringify(dayRecs['2026-11-10']),tombs:Object.keys(tomb||{}).length}},rm);
     ok(r.n===2&&r.ids===r.want&&!r.flag,'Remove the sample takes the 22 out; the piece he changed and the one he kept stay, no longer sample');
-    ok(r.refs===0&&r.d10.worn!==true&&!r.d12.force&&r.d12.occasion==='wedding','the days that recorded sample pieces lose them (worn days, picks, locks), an occasion stays '+JSON.stringify([r.d10,r.d12,r.d13,r.mem]));
+    ok(r.refs===0&&r.d10.worn===true&&r.d10.ids&&r.d10.ids.shirt===rm.kept&&r.d10.gone&&r.d10.gone.top&&!r.d12.force&&r.d12.occasion==='wedding'&&!r.d13.lock,'the days that recorded sample pieces lose them (worn days, picks, locks) and keep the rest: worn, his own piece, an occasion '+JSON.stringify([r.d10,r.d12,r.d13,r.mem]));
     ok(r.tombs>=22,'each removed piece leaves a tombstone, so it goes from every device');
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));await p.context().close();
     /* ---- the sample from the setup's last step finishes the setup ---- */
