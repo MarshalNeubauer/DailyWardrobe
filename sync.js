@@ -151,6 +151,14 @@ async function phIn(recs,local,url,token){
 async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(),photos={};
   for(const s of strs){const h=await phHash(s);by.set(s,h);if(!have.has(h))photos[h]=s}
   return {recs:by.size?phMap(recs,s=>by.has(s)?'dwph:'+by.get(s):s):recs,photos}}
+/* the sample wardrobe stays on this phone (re-audit 2026-11-15, N7: loaded while connected, it was backed up into the person's real
+   wardrobe and showed on his other phones): uploads leave out the sample pieces he hasn't made his (kit.js kitEdited) and the day records
+   naming one; Remove the sample rewrites those records (kit.js kitSampleDay) with a new stamp, and they go up then. Applied to what is
+   sent only: the merge and this phone's copy are unchanged */
+const syncOwn=i=>!(i&&i.sample)||(typeof kitEdited==='function'&&kitEdited(i));
+function syncShare(st){const off=new Set((st.items||[]).filter(i=>!syncOwn(i)).map(i=>i.id));if(!off.size)return st;
+  const names=r=>[r.ids,r.lock,r.force].some(o=>o&&Object.values(o).some(v=>off.has(v)));
+  return {...st,items:st.items.filter(i=>!off.has(i.id)),days:(st.days||[]).filter(d=>!names(d))}}
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
   const got=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token);
@@ -165,7 +173,8 @@ async function syncLite(remote,local,url,token,inline){
   if(lacks&&!remote.all)return {again:{all:true}};
   pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
-  const up={items:now.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:now.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
+  const share=syncShare(now);   // (not the sample wardrobe)
+  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
@@ -208,10 +217,10 @@ async function syncOnce(){
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(merged,local),remote.data||{});pullDone();
-      if(remote.data&&stateSig(now)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
+      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=syncShare(now);pullDone();   // (out: what is sent, without the sample wardrobe)
+      if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
       if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
-      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),data:now})});   // data last: the server reads a large backup's few leading fields without parsing the whole
+      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));
       if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
@@ -255,37 +264,55 @@ async function restoreBackup(file){
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
 const snapLabel=s=>{const t=new Date(s.saved).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   return s.id==='before-restore'?`Before the last roll-back (${t})`:/^\d{4}-\d{2}$/.test(s.id)?`Start of ${new Date(s.id+'-02').toLocaleDateString(undefined,{month:'long',year:'numeric'})} (${t})`:t};
-async function loadSnapshots(){const sel=$('#snap-list'),st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';if(!sel||sel.dataset.loaded)return;
+/* the list is read when Settings' Backup opens (settings.js setCatOpen), not only when the dropdown is focused: on an iPhone the tap
+   that focuses it opens the picker at once, showing only "Choose a day…" while the list was still on its way (re-audit 2026-11-15).
+   Once per page life (each list is a counted server call); one request at a time (snapLoading), and the chosen day is kept */
+let snapLoading=null;
+function loadSnapshots(){const sel=$('#snap-list');if(!sel||sel.dataset.loaded)return Promise.resolve();if(snapLoading)return snapLoading;const p=snapsRead().catch(e=>console.warn('daily backups not listed',e)).finally(()=>{if(snapLoading===p)snapLoading=null});snapLoading=p;return p}
+async function snapsRead(){const sel=$('#snap-list'),st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';if(!sel||sel.dataset.loaded)return;
   if(!url||!token){st.textContent=NEED_CONN;return}
   if(typeof inviteOver==='function'&&inviteOver()){st.textContent=ENDED;return}
   try{const r=await fetch(url+'?snaps=1',{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));
     if(endedAnswer(r.status,j)){inviteEnded(token,j);st.textContent=ENDED;return}   // not "Could not list the daily backups: invite off"
+    if(r.status===429&&j.what==='list'){st.textContent=SNAP_CAP;return}   // the server's words name "photo list checks", which a tester can't connect with this list
     if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);
-    sel.dataset.loaded=1;const list=j.snaps||[];
+    sel.dataset.loaded=1;const list=j.snaps||[],was=sel.value;
     sel.innerHTML=`<option value="">${list.length?'Choose a day…':'No daily backups yet'}</option>`+list.map(s=>`<option value="${s.id}">${snapLabel(s)}</option>`).join('');
+    if(was&&list.some(s=>s.id===was))sel.value=was;
     st.textContent=list.length?`${list.length} kept. Each is the wardrobe before that day's first change.`:'The first one is kept the next time something changes.'}
   catch(e){st.textContent='Could not list the daily backups: '+errWords(e)}}
+const SNAP_CAP='The daily backups can’t be listed again today: today’s limit of lists on the server is used up. They are still kept. Try again tomorrow.';
 /* an error's text for the backup lines: the browser's network words and server set-up words made plain (ui.js plainErr) */
 const errWords=e=>{const m=String(e&&e.message||e||'');return typeof plainErr==='function'?plainErr(m):m};
 /* the wardrobe exactly as in snapshot s, made to win the merge everywhere: its items, days and settings get a new stamp, and
    anything not in it gets a tombstone (days after it are kept: they hold no wardrobe, and there is no deleting a day) */
+/* a copy from before the setup (a first day's backup: no setupDone, no items) brings back no settings: they were only the defaults, and taken
+   they sent a new user back to Welcome with his workdays and location gone (re-audit 2026-11-15). The phone's settings stay */
+const snapPreSetup=(local,snap)=>!!(local&&local.settings&&local.settings.setupDone)&&!!snap&&!(snap.settings&&snap.settings.setupDone)&&!(snap.items||[]).length;
 function rollBackState(local,snap,now=Date.now()){
   const items=(snap.items||[]).map(i=>({...i,updated:now})),keep=new Set(items.map(i=>i.id)),tombstones={...(snap.tombstones||{})};
   for(const id of Object.keys(tombstones))if(keep.has(id))delete tombstones[id];
   for(const i of local.items||[])if(!keep.has(i.id))tombstones[i.id]=now;
   // settings: every one stamped now (core.js stampAllSettings), and one the snapshot lacks marked removed now, so it goes on every device too
-  let settings=null;if(snap.settings){settings=stampAllSettings({...snap.settings},now);for(const k of setKeys(local.settings))if(!(k in settings)){settings.ks[k]=now;settings.kh[k]='-'}}
+  let settings=null;if(snap.settings&&!snapPreSetup(local,snap)){settings=stampAllSettings({...snap.settings},now);for(const k of setKeys(local.settings))if(!(k in settings)){settings.ks[k]=now;settings.kh[k]='-'}}
   return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:now})),settings}}
-async function rollBack(){const id=$('#snap-list')&&$('#snap-list').value,st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';
-  if(!id){st.textContent='Choose a day first.';return}
-  if(!await askConfirm(`Roll back to ${$('#snap-list').selectedOptions[0].textContent}?\n\nThe wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`,{ok:'Roll back',danger:true}))return;
-  try{st.textContent='Rolling back…';await syncNow();
+/* what a roll-back says goes to Settings' line and, when Settings isn't open (closed under its question, or the toast's Undo), to a
+   toast as well: written only to the closed Settings page, the wardrobe vanished from Today with no word (re-audit 2026-11-15) */
+function rollSay(t,ms,act){const st=$('#snap-status');if(st)st.textContent=t;if(!(typeof settingsOpen==='function'&&settingsOpen())&&typeof toast==='function')toast(t,ms||6000,act)}
+/* pick: {id, label} rolls back to that copy (the toast's Undo: "Before the last roll-back"); else the day chosen in the list */
+async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&sel.value,url=syncUrl(),token=localStorage.getItem('app_token')||'';
+  if(!id){rollSay('Choose a day first.');return}
+  const label=pick&&pick.label||sel.selectedOptions[0].textContent;
+  if(!await askConfirm(`Roll back to ${label}?\n\nThe wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`,{ok:'Roll back',danger:true}))return;
+  try{rollSay('Rolling back…',2500);await syncNow();
     const r=await fetch(url+'?snap='+encodeURIComponent(id),{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);
     if(!j.data||!Array.isArray(j.data.items))throw new Error('that backup is empty');
-    const local=await localState(),next=rollBackState(local,j.data);
+    const local=await localState(),pre=snapPreSetup(local,j.data),next=rollBackState(local,j.data);
     restoring=true;localStorage.setItem('sync_restore',token);   // before the phone's copy changes: a kill from here on still uploads it as a restore
     await applyMerged(mergeState(local,next),local);
-    const ok=await syncNow();delete $('#snap-list').dataset.loaded;
-    st.textContent=ok?`Rolled back. The wardrobe has ${items.length} item${items.length===1?'':'s'}.`:`Rolled back on this device (${items.length} item${items.length===1?'':'s'}), but the backup could not be updated yet: ${localStorage.getItem('sync_status')||''} It is sent, with “Before the last roll-back” kept, at the next backup.`}
-  catch(e){st.textContent='Roll back failed: '+errWords(e)}}
+    const ok=await syncNow();if(sel)delete sel.dataset.loaded;
+    const n=`${items.length} item${items.length===1?'':'s'}`,kept=pre?' Your settings were kept: that copy is from before the setup.':'';
+    if(ok)rollSay(`Rolled back. The wardrobe has ${n}.${kept}`,8000,id==='before-restore'?null:{label:'Undo',fn:()=>rollBack({id:'before-restore',label:'Before the last roll-back'})});
+    else rollSay(`Rolled back on this device (${n}), but the backup could not be updated yet: ${localStorage.getItem('sync_status')||''} It is sent, with “Before the last roll-back” kept, at the next backup.${kept}`,8000)}
+  catch(e){rollSay('Roll back failed: '+errWords(e))}}
 connRestored.then(()=>setTimeout(syncNow,300));   // (after the connection is put back where storage lost it: app.js)
