@@ -249,7 +249,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
     const mk=typeof asmMicroKind==='function'?asmMicroKind(i):'';if(mk&&!(s&&s.bands))return {how:mk,gap:'',why:''};   // houndstooth, sharkskin, birdseye, nailhead
     if(b==='solid')return {how:'flat',gap:'',why:''};
     if([...STRIPE_PATS,...CHECK_PATS].includes(b))return needs();
-    return plain('painter',`no painter for ${pn} ${z==='trousers'?'trousers':'jackets'} yet`)}
+    return plain('painter',`no painter for ${pn} ${z==='trousers'?'pants':'jackets'} yet`)}
   if(z==='shirt'){if(b==='solid'&&!s)return {how:'flat',gap:'',why:''};
     return s?{how:'tile',gap:'',why:''}:{how:'tile',gap:canRead?'reading':'',why:canRead?`its ${pn} is a generic drawing until its pattern is read (Read pattern from photo)`:''}}
   if(z==='tie'){if(s&&(s.bands||s.motif||s.tex))return {how:'tie',gap:'',why:''};if(b==='solid')return {how:'flat',gap:'',why:''};

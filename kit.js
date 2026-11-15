@@ -55,7 +55,7 @@ const kitPatternPic=()=>`<svg viewBox="0 0 300 150"><defs><pattern id="kp-gen" w
 
 /* ---- the quick tour ---- */
 const TOUR_CARDS=[
-  {key:'score',title:'The score',pic:kitScorePic,get body(){return `<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the ${kitWears('jacket')?'suit':'trousers'}, a color worn two days running, socks lighter than the pants.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`}},
+  {key:'score',title:'The score',pic:kitScorePic,get body(){return `<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the ${kitWears('jacket')?'suit':'pants'}, a color worn two days running, socks lighter than the pants.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`}},
   {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true color and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light: tap the paper on the camera screen before you take the picture.</p><p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">How to take a good close-up</button></p>`},
   {key:'shade',title:'Shade',pic:kitShadePic,body:`<p>If a piece is drawn lighter or darker than the real thing, Shade nudges it, up to six steps either way.</p><p><b>Match close-up</b> sets it from your close-up for you.</p><p class="kit-tip">Shade changes only the drawing. The color the planner matches stays the one you tagged.</p>`},
   {key:'patterns',title:'Patterns',pic:kitPatternPic,body:`<p>Stripes, checks and weaves are read too.</p><p>With a close-up the app measures the stripes' widths and colors, so the drawing and the outfit pictures show your cloth, not a generic one.</p><p class="kit-tip">If a reading looks wrong, tap <b>Use the simple pattern</b> on the card, or <b>Read pattern from photo</b> on the item later.</p>`}];
@@ -225,7 +225,7 @@ function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'No
     if(v('material')&&!(v('leather')&&(type==='shoes'||type==='belt'))){const p=kitMaterial(card,v('material'));if(p)probs.push(p)}
     out.push({line,ok:true,card,probs})});
   return {rows:out}}
-const KIT_TEMPLATE='Type,Color,Second color,Pattern,Name,Brand,Material,Notes,Vest\nSuit,Navy,,Pinstripe,Navy pinstripe,,Wool,,Yes\nDress shirt,Light blue,,Solid,,,Poplin,,\nTie,Burgundy,Navy,Stripe,,,Silk,Repp stripe,\nShoes,Black,,,Black oxfords,,Calf,,\nTrousers,Mid gray,,Solid,,,Flannel,,\n';
+const KIT_TEMPLATE='Type,Color,Second color,Pattern,Name,Brand,Material,Notes,Vest\nSuit,Navy,,Pinstripe,Navy pinstripe,,Wool,,Yes\nDress shirt,Light blue,,Solid,,,Poplin,,\nTie,Burgundy,Navy,Stripe,,,Silk,Repp stripe,\nShoes,Black,,,Black oxfords,,Calf,,\nPants,Mid gray,,Solid,,,Flannel,,\n';
 /* the template as a data link: nothing to revoke (a blob link revoked a second after the tap can fail on an iPhone, where Safari first
    asks whether to download) */
 function kitTemplate(){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(KIT_TEMPLATE);a.download='wardrobe-template.csv';document.body.appendChild(a);a.click();a.remove()}

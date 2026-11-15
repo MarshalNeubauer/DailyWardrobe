@@ -279,7 +279,7 @@ function setVestMode(v){settings.vestMode=v;saveUserSettings();todayStale=true;s
 /* (fix round 2) saved before the week's locks are released, as setDress (dress.js): tapped then swiped away within ~100 ms, the change was lost */
 async function setDarkShirts(v){settings.darkShirts=v;todayStale=true;settingsSummaries();await saveUserSettings();await clearLocks()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
-  if(k==='workdays'&&l.size===0){tell('At least one workday is needed: tick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
+  if(k==='workdays'&&l.size===0){tell('At least one workday is needed: pick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   cache={};todayStale=true;renderSettingsExtras();return saveUserSettings().then(clearLocks)}
 function setUnits(v){settings.units=v;saveUserSettings();todayStale=true;renderWxLoc();settingsSummaries()}
 function setLocation(loc){if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}

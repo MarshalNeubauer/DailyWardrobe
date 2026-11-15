@@ -80,7 +80,7 @@ as a main color and as a stripe or motif color. The owner may also have colors o
 4. How the app's outfit rules treat it (plansAs): the built-in key from THIS item's list whose color family and role
    in an outfit it shares. Choose by what the color IS, not by the nearest number: a blue that is dark is still a blue
    (petrol blue plans as steelblue or slate, never charcoal); a brown leather is brown or tan, never rust; a gray with
-   "a hint of brown" is grey; a vivid color the list has no near shade for takes the list's color of the same hue
+   "a hint of brown" is the grey; a vivid color the list has no near shade for takes the list's color of the same hue
    (bright green on a suit plans as green); a metal plans as the list's metal it looks like (pewter and steel as
    silver or gunmetal), never a cloth gray. Never an "own..." key.
 

@@ -230,7 +230,7 @@ function tagSchema(custom, single, free, freePat) {
 }
 function customText(custom) {
   let t = '';
-  if (custom.colors.length) t += `\n\nColours the owner added (answer with the key, like any listed color, for the item types shown):\n`
+  if (custom.colors.length) t += `\n\nColors the owner added (answer with the key, like any listed color, for the item types shown):\n`
     + custom.colors.map(c => `  ${c.key} = ${c.name} (${c.hex}), for ${c.types.join(', ') || 'any type'}${c.accent ? ', also as a stripe or motif color' : ''}`).join('\n');
   if (custom.patterns.length) t += `\n\nPatterns the owner added (answer with the key, for the item types shown):\n`
     + custom.patterns.map(p => `  ${p.key} = ${p.name}: ${p.desc || 'no description'} (${p.types.join(', ') || 'any type'})`).join('\n');
