@@ -61,7 +61,7 @@ function closeColPick(){colPick=null;const s=$('#col-sheet'),b=$('#col-backdrop'
    listeners. Never from a field, a slider (the New color square and hue bar) or the bottom bar.
    o: {head: the top's selector, backdrop: its selector, skip: more selectors to leave alone, on(): the sheet is up, close()} ---- */
 const SW_GRAB='<span class="cpgrab" aria-hidden="true"></span>';
-function sheetSwipe(s,o){if(!s||s.dataset.swipe)return;s.dataset.swipe='1';let st=null;
+function cpSheetSwipe(s,o){if(!s||s.dataset.swipe)return;s.dataset.swipe='1';let st=null;
   const bd=()=>document.querySelector(o.backdrop),dim=d=>String(Math.max(.15,1-d/s.offsetHeight));
   const put=d=>{s.style.transform=d?`translateY(${d}px)`:'';const b=bd();if(b)b.style.opacity=d?dim(d):''};
   const can=(el,head)=>o.on()&&!s.classList.contains('cpgoing')&&!el.closest('input,textarea,select,[role=slider],.cpbar,.rdbar'+(o.skip?','+o.skip:''))&&(head||s.scrollTop<=0);
@@ -87,7 +87,7 @@ function sheetSwipe(s,o){if(!s||s.dataset.swipe)return;s.dataset.swipe='1';let s
   s.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
   const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{s.releasePointerCapture(e.pointerId)}catch{}end()};
   s.addEventListener('pointerup',pend);s.addEventListener('pointercancel',pend);s.addEventListener('dragstart',e=>{if(st&&st.pid!==undefined)e.preventDefault()})}   // (a photo in the top would be dragged off as a picture)
-function colSwipe(){const s=$('#col-sheet');sheetSwipe(s,{head:'.cptop',backdrop:'#col-backdrop',on:()=>!!colPick&&s.classList.contains('on'),close:closeColPick})}
+function colSwipe(){const s=$('#col-sheet');cpSheetSwipe(s,{head:'.cptop',backdrop:'#col-backdrop',on:()=>!!colPick&&s.classList.contains('on'),close:closeColPick})}
 function colPickSel(c){if(!colPick)return;colPick.sel=c;renderColPick(true)}
 function colPickView(v){if(!colPick)return;colPick.view=v;renderColPick(true)}
 async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick,it=colTarget();let v=sel;
@@ -528,7 +528,7 @@ function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySe
     s=document.createElement('div');s.id='rd-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','rd-title');s.tabIndex=-1;document.body.append(b,s);
     window.addEventListener('keydown',e=>{if(!rd||cuOpen||!document.querySelector('#rd-sheet.on'))return;   // Escape closes it (ahead of the item sheet's)
       if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();rdClose()}else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true);
-    sheetSwipe(s,{head:'.rdtop',backdrop:'#rd-backdrop',on:()=>!!rd&&s.classList.contains('on'),close:()=>rdClose()})}   // swiped down it closes as × does
+    cpSheetSwipe(s,{head:'.rdtop',backdrop:'#rd-backdrop',on:()=>!!rd&&s.classList.contains('on'),close:()=>rdClose()})}   // swiped down it closes as × does
   return {b,s}}
 /* the phone's Back closes it as × does (the Back audit, 2026-11-15: Back closed the item sheet or Add under it and left the sheet up):
    it borrows the Back entry of the page under it, or makes its own (start.js appBorrow 'rd', kept in rdHist while it is up; a reading
