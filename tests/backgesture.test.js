@@ -97,13 +97,12 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
   await layer('the color sheet over an Add card',{base:addCard,open:()=>tap('#add .colbtn[data-k="primaryColor"]'),on:()=>!!colPick,x:()=>tap('#col-sheet .pick-x'),under:addUp});
   await layer('the reading sheet over an Add card',{base:addCard,open:()=>ev(()=>rdRun('q',queue[0].id)),on:()=>!!document.querySelector('#rd-sheet.on'),x:()=>tap('#rd-sheet .rdx'),under:addUp});
   // "Add without a photo" (2026-11-15): its sheet over Add, the color sheet and the discard question over it
-  const addOn=()=>!document.querySelector('#add').hidden;
-  const npsUp=()=>!!npsId&&!!document.querySelector('#nps-sheet.on');
+  // (on/under run in the page: each names only the page's own globals)
   const nps=async(change)=>{await ev(()=>{show('wardrobe');openAdd();queue.length=0;renderAdd()});await settle(p,300);await tap('#add-manual');
     if(change)await ev(()=>{setq(0,'type','tie')})};
-  await layer('the "Add without a photo" sheet over Add',{base:()=>ev(()=>{show('wardrobe');openAdd();queue.length=0;renderAdd()}),open:()=>tap('#add-manual'),on:npsUp,x:()=>tap('#nps-sheet .nps-x'),under:()=>addOn()&&!npsUp()&&!queue.length});
-  await layer('the color sheet over the "Add without a photo" sheet',{base:()=>nps(false),open:()=>tap('#nps-q .colbtn[data-k="primaryColor"]'),on:()=>!!colPick,x:()=>tap('#col-sheet .pick-x'),under:()=>npsUp()&&addOn()});
-  await layer('"Discard this item?" over the "Add without a photo" sheet',{base:()=>nps(true),open:()=>tap('#nps-sheet .nps-x'),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:()=>npsUp()&&addOn()&&queue[0].type==='tie'});
+  await layer('the "Add without a photo" sheet over Add',{base:()=>ev(()=>{show('wardrobe');openAdd();queue.length=0;renderAdd()}),open:()=>tap('#add-manual'),on:()=>!!npsId&&!!document.querySelector('#nps-sheet.on'),x:()=>tap('#nps-sheet .nps-x'),under:()=>!document.querySelector('#add').hidden&&!npsId&&!queue.length});
+  await layer('the color sheet over the "Add without a photo" sheet',{base:()=>nps(false),open:()=>tap('#nps-q .colbtn[data-k="primaryColor"]'),on:()=>!!colPick,x:()=>tap('#col-sheet .pick-x'),under:()=>!!npsId&&!!document.querySelector('#nps-sheet.on')&&!document.querySelector('#add').hidden});
+  await layer('"Discard this item?" over the "Add without a photo" sheet',{base:()=>nps(true),open:()=>tap('#nps-sheet .nps-x'),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:()=>!!npsId&&!!document.querySelector('#nps-sheet.on')&&!document.querySelector('#add').hidden&&queue[0].type==='tie'});
   await step('question > no-photo sheet > Add',async()=>{await home();await nps(true);
     const stack=()=>ev(()=>[asking?'question':'',npsId?'nophoto':'',!document.querySelector('#add').hidden?'add':''].filter(Boolean).join(' > ')||'none');
     await tap('#nps-sheet .nps-x');const seen=[await stack()];
