@@ -1,7 +1,7 @@
 // Accounts and invitations after the 2026-11-14 new-user audit (account.js, ui.js, about.js): a second invitation opened on a
 // connected phone asks before switching even at a cold start (the wardrobe wasn't read yet, so the phone looked empty and its
 // wardrobe was merged into the other account); a link opened in the open tab connects; a mangled link says so; offline is not a
-// wrong link, and an unreachable link is tried again once online; a slow check is said; the sample isn't uploaded without asking;
+// wrong link, and an unreachable link is tried again once online; a slow check is said; the sample stays on the phone, never uploaded;
 // an ended invitation (switched off, or the account deleted) no longer says Connected / backed up; Delete everything says it ends
 // the invitation and finishes after a kill; Delete clears every key; the owner's fold stays away from a new tester; two tabs don't
 // overwrite each other's settings.
@@ -71,12 +71,11 @@ module.exports=async({ok,chromium,url})=>{
       await p.evaluate(()=>openSettings('connection'));const c=await p.evaluate(()=>({box:document.querySelector('#conn-state').textContent,sum:document.querySelector('#sum-connection').textContent}));
       free();st.hold=null;await p.waitForFunction(a=>localStorage.getItem('app_token')===a,A,{timeout:8000});
       ok(/Checking your invitation/.test(c.box)&&/Checking/.test(c.sum),`while the link is checked, Connection says so (${c.box})`)}
-    // ---- the sample: connecting asks to remove it first; own pieces stay
+    // ---- the sample: connecting keeps it on the phone, never backed up (sync.js syncShare; re-audit 2026-11-15)
     {const {p}=await page();
       await p.evaluate(async()=>{for(const [id,s] of [['s1',true],['s2',true],['mine',false]]){const it={id,type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),updated:Date.now(),...(s?{sample:true}:{})};await put(it);items.push(it)}});
-      const r=p.evaluate(l=>connectFromLink(l),link(A));await p.waitForSelector('#ask-ok',{state:'visible'});const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');
-      const res=await r;const s=await p.evaluate(async()=>({ids:items.map(i=>i.id).join(),stored:(await tx('readonly',x=>x.getAll())).map(i=>i.id).join(),tok:localStorage.getItem('app_token')}));
-      ok(/sample wardrobe/.test(ask)&&res===true&&s.ids==='mine'&&s.stored==='mine'&&s.tok===A,`connecting with the sample loaded asks first and removes it before anything is backed up (${JSON.stringify(s)})`)}
+      const res=await p.evaluate(l=>connectFromLink(l),link(A));const s=await p.evaluate(async()=>({ask:!!document.querySelector('#ask-sheet.on'),ids:items.map(i=>i.id).sort().join(),stored:(await tx('readonly',x=>x.getAll())).map(i=>i.id).sort().join(),tok:localStorage.getItem('app_token'),share:syncShare({items,days:[]}).items.map(i=>i.id).join()}));
+      ok(!s.ask&&res===true&&s.ids==='mine,s1,s2'&&s.stored==='mine,s1,s2'&&s.tok===A&&s.share==='mine',`connecting with the sample loaded asks nothing and keeps it on the phone; only his own pieces are ever backed up (${JSON.stringify(s)})`)}
     // ---- an ended invitation: nothing says Connected or backed up; a deleted account (forbidden token) counts as ended for a tester
     {const {p,st,errs}=await page();
       await p.evaluate(([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()));rememberRole({role:'tester'})},[HOST,A]);

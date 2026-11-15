@@ -11,7 +11,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});
     await p.waitForFunction(()=>queue[0]&&!queue[0].busy&&queue[0].swatch,null,{timeout:20000});
     const a=await p.evaluate(()=>{const q=queue[0];setq(0,'type','suit');return {src:q.swSrc,sw:q.swatch,note:/From the fabric close-up/.test(document.querySelector('#queue').textContent)}});
-    ok(a.src==='photo'&&/^data:image\/png/.test(a.sw)&&!a.note,'without a close-up the precision swatch is cut from the item photo');
+    ok(a.src==='photo'&&/^data:image\/jpeg/.test(a.sw)&&!a.note,'without a close-up the precision swatch is cut from the item photo (a small JPEG: option A, 2026-11-15)');
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].swSrc==='tex',null,{timeout:20000});
     const b=await p.evaluate(()=>{const q=queue[0],el=document.querySelector('#swatch-img-0');return {src:q.swSrc,changed:q.swatch,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q)),
@@ -25,9 +25,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].swSrc==='tex',null,{timeout:20000});
     await p.evaluate(()=>save(0));
-    const it=await p.evaluate(()=>{const i=items.find(x=>x.texture);return {id:i.id,src:i.swSrc,sw:/^data:image\/png/.test(i.swatch),svg:swatchSVG(i)}});
+    const it=await p.evaluate(()=>{const i=items.find(x=>x.texture);return {id:i.id,src:i.swSrc,sw:/^data:image\/jpeg/.test(i.swatch),svg:swatchSVG(i)}});
     ok(it.src==='tex'&&it.sw,'the saved item keeps the close-up swatch');
-    ok(/<image href="data:image\/png/.test(it.svg),'its small fabric square across the app is the close-up swatch');
+    ok(/<image href="data:image\/jpeg/.test(it.svg),'its small fabric square across the app is the close-up swatch');
     const plain=await p.evaluate(()=>swatchSVG({id:'x',type:'suit',primaryColor:'navy',pattern:'solid',swatch:'data:image/png;base64,AA',swSrc:'photo'}));
     ok(!/<image/.test(plain)&&/<pattern/.test(plain),'an item without a close-up stays drawn (never cut from its photo)');
     // Today's pieces list shows it

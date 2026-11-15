@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url})=>{
       return {saved,toast:t.textContent,btn:!!btn,id:q.id}});
     ok(u.saved&&/Saved: Undo me/.test(u.toast)&&u.btn,'Confirm saves the item and the toast says so with an Undo button ('+u.toast+')');
     await p.click('#toast button');
-    await p.waitForFunction(()=>queue.length===1);
+    await p.waitForFunction(()=>queue.length===1&&!!document.querySelector('#queue .card'));   // (the card is kept first, then the item taken out and Add drawn: kitUnsave)
     const u2=await p.evaluate(async id=>({gone:!items.some(i=>i.id===id),card:queue[0].id===id&&queue[0].name==='Undo me',inDb:!!(await tx('readonly',s=>s.get(id))),tomb:true,shown:!!document.querySelector('#queue .card')}),u.id);
     ok(u2.gone&&!u2.inDb&&u2.card&&u2.shown,'Undo takes it out of the wardrobe and the store and puts its card back on Add, as it was');
     /* cards saved together are one Undo */

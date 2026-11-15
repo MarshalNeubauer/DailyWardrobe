@@ -144,8 +144,13 @@ async function putParted(env, json, cors, who, all) {
    the photos it lacks from GET /sync?ph=<hash>,…, and sends only what changed with POST /sync {baseRev, day, reason?, delta, photos}
    (an older worker answers POST 405, so it is never sent one). The worker builds the new backup from the index, the stored photos'
    text and the new photos, without parsing the photos: one KV write a save, as before. ---- */
-const PH_MIN = 256, PH_REF = 'dwph:', PH_HEX = /^[0-9a-f]{20}$/, PH_TOKEN = /"dwph:([0-9a-f]{20})"/g;
+/* (2026-11-15, the owner's option A for KV writes) PH_MIN was 256: every data string, the 128 px swatch too, became its own ph: value, a
+   write per item. A string under PH_MIN (the app's JPEG swatch, a few KB) now stays inline in the backup's small value. PH_OLD: an older
+   app still sends its smaller photos (a PNG swatch) by reference in body.photos; they are taken and stored as before, and references
+   already in backups stay readable (they are resolved by hash, whatever the length). sync.js has the same two numbers */
+const PH_MIN = 16384, PH_OLD = 256, PH_REF = 'dwph:', PH_HEX = /^[0-9a-f]{20}$/, PH_TOKEN = /"dwph:([0-9a-f]{20})"/g;
 const isPhoto = s => typeof s === 'string' && s.length >= PH_MIN && s.startsWith('data:');
+const isPhotoOld = s => typeof s === 'string' && s.length >= PH_OLD && s.startsWith('data:');
 const phHash = async s => (await sha256Hex(s)).slice(0, 20);
 const arrOf = a => Array.isArray(a) ? a : [];
 const stampOf = i => i && (i.updated || i.added) || 0;
@@ -317,7 +322,7 @@ async function syncLitePost(req, env, json, cors, who) {
   if (!src) return give(json({ error: 'legacy' }, 422));
   const photos = new Map();
   for (const [h, s] of Object.entries(body.photos || {})) {
-    if (!PH_HEX.test(h) || !isPhoto(s) || await phHash(s) !== h) return give(json({ error: 'a photo does not match its name' }, 400));
+    if (!PH_HEX.test(h) || !isPhotoOld(s) || await phHash(s) !== h) return give(json({ error: 'a photo does not match its name' }, 400));
     photos.set(h, s);
   }
   const { refs: delta } = await splitPhotos(body.delta, photos), cur = src.lite.data || {}, next = mergeLite(cur, delta);

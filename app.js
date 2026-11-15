@@ -59,7 +59,8 @@ const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
 const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
-const put=i=>{i.updated=Date.now();const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
+const put=i=>{i.updated=Date.now();if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
+const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
 
@@ -69,7 +70,11 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 function cropSwatch(canvas,zoom=1,cx=.5,cy=.5,light){
   const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/(Number(zoom)||1)),o=document.createElement('canvas');o.width=o.height=128;
   const sx=Math.max(0,Math.min(canvas.width-sampleSize,(Number(cx)||.5)*canvas.width-sampleSize/2)),sy=Math.max(0,Math.min(canvas.height-sampleSize,(Number(cy)||.5)*canvas.height-sampleSize/2));
-  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(light)matchLight(o,light);return o.toDataURL('image/png')}
+  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(light)matchLight(o,light);return o.toDataURL('image/jpeg',SW_Q)}
+/* a small JPEG (2026-11-15, the owner's option A for the server's writes): a 128 px PNG of cloth was about 38 KB, too big to keep in
+   the backup's own text, so every new item cost one more server write for its swatch; as a JPEG it is a few KB, under sync.js PH_MIN,
+   and rides inside the backup. Swatches saved before as PNG stay as they are (still shown, still synced by reference) */
+const SW_Q=.8;
 /* a close-up's exposure says little (a white shirt shot in dim light reads grey): the swatch's lightness is set from the tagged colour,
    keeping the close-up's texture (each pixel's lightness above or below the cloth's median) and its hue. Near white, the texture's
    swing is narrowed so the lightest threads stay under paper white instead of clipping. */
@@ -152,16 +157,21 @@ const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMConte
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
 async function ask(c,extra){
+  const {signal,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
+    if(typeof inviteOver==='function'&&inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
     const dataUrl=typeof c==='string'?c:c.toDataURL('image/jpeg',TAG_Q);
     const res=await fetch(workerUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
-      body:JSON.stringify({image:dataUrl,appToken:localStorage.getItem('app_token')||'',...tagExtras(extra)})
+      body:JSON.stringify({image:dataUrl,appToken:localStorage.getItem('app_token')||'',...tagExtras(ex)}),
+      ...(signal?{signal}:{})
     });
-    if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}aiError=tagFailText(res.status,j,e);return null}
+    if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
+      if(typeof endedAnswer==='function'&&endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
+      aiError=tagFailText(res.status,j,e);return null}
     aiError='';
     const result=await res.json();aiModel=result.model||'';
     let parsed;
@@ -173,6 +183,7 @@ async function ask(c,extra){
     }
     return normTag(parsed,result.model);
   } catch(e) {
+    if(e&&e.name==='AbortError')return null;   // stopped on purpose: no failure to report
     aiError=tagFailText(0,null,e);return null;
   }
 }

@@ -33,6 +33,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(h.first&&h.fig&&!h.score&&!h.last,`a suit and a shirt: the checklist and the drawing, but no score and no "This look last worn" (score ${h.score}, last worn ${h.last})`);
     ok(/pieces still missing/.test(h.month)&&!/\d+ outfits?/.test(h.month),`the month card doesn't count half-outfits (${h.month.trim()})`);
     ok(/a tie and shoes/.test(h.short)&&!/outfits? planned|average outfit score/.test(h.tiles)&&!/averages|can.t get right|Small deductions/.test(h.stats),`Insights says what is missing and shows no plan numbers (${h.short.slice(0,80)})`);
+    // one own piece left (Fixer 3's case after removing the sample): the checklist, no "69 Incomplete"
+    const one=await p.evaluate(()=>{items=items.filter(i=>i.id==='suit0');cache={};renderToday();return {first:!!$('#firstrun'),score:!!$('#sbox')}});
+    await quiet();
+    ok(one.first&&!one.score,`one piece left: the checklist and no score (score ${one.score})`);
     // ---- complete again: the score and the counts come back
     await full();await quiet();
     ok(await p.evaluate(()=>!!$('#sbox')&&!$('#firstrun')&&/\d+ outfits/.test($('#mbox .mltxt').textContent)),'with a complete wardrobe the score and the month\'s count are back');

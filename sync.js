@@ -127,9 +127,14 @@ const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeStr
    (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,
    with the photos the backup lacks. A day marked worn is a few hundred bytes each way, where the whole backup (photos and all) was
    16 MB. An older worker ignores lite and since and answers as before (the whole backup, or same), and then the old way runs. ---- */
-const PH_MIN=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
+/* (2026-11-15, the owner's option A for the server's writes) a data string of PH_MIN characters or more is a photo, sent and kept as its
+   own server value; a shorter one (the 128 px JPEG swatch, a few KB) stays inline in the record, so an item added costs one write less.
+   Strings from PH_OLD (the rule before) may still be references in records saved by an older app or worker (a PNG swatch): they are
+   still matched to this device's copy and taken when downloaded. worker/backup.js has the same two numbers */
+const PH_MIN=16384,PH_OLD=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
 const SYNC_LITE=!self.SYNC_OLD;   // (window.SYNC_OLD: sync the whole backup every time, as before; a test plays an older app with it)
 const isPh=s=>typeof s==='string'&&s.length>=PH_MIN&&s.startsWith('data:');
+const isPhOld=s=>typeof s==='string'&&s.length>=PH_OLD&&s.startsWith('data:');
 const phMemo=new Map();
 async function phHash(s){let h=phMemo.get(s);if(h)return h;
   const d=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));h=[...d.subarray(0,10)].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -141,16 +146,24 @@ function phMap(x,f){if(typeof x==='string')return f(x);if(Array.isArray(x))retur
 async function phIn(recs,local,url,token){
   const refs=[...phStrings(recs,s=>PH_RE.test(s))].map(s=>s.slice(5));if(!refs.length)return recs;
   const ids=new Set((recs.items||[]).map(i=>i.id)),known=new Map();
-  for(const s of phStrings([local.items.filter(i=>ids.has(i.id)),local.days,local.settings],isPh))known.set(await phHash(s),s);
+  for(const s of phStrings([local.items.filter(i=>ids.has(i.id)),local.days,local.settings],isPhOld))known.set(await phHash(s),s);
   const need=refs.filter(h=>!known.has(h));
   for(let i=0;i<need.length;i+=PH_BATCH){const r=await fetch(url+'?ph='+need.slice(i,i+PH_BATCH).join(','),{headers:{'x-app-token':localStorage.getItem('app_token')||token},cache:'no-store'}),j=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);for(const [h,s] of Object.entries(j.photos||{}))if(isPh(s))known.set(h,s)}
+    if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);for(const [h,s] of Object.entries(j.photos||{}))if(isPhOld(s))known.set(h,s)}
   if(refs.some(h=>!known.has(h)))throw new Error('a photo is missing from the backup');
   return phMap(recs,s=>PH_RE.test(s)?known.get(s.slice(5)):s)}
 /* records to send: photos as references, and the photos the backup doesn't have (have: its hashes) */
 async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(),photos={};
   for(const s of strs){const h=await phHash(s);by.set(s,h);if(!have.has(h))photos[h]=s}
   return {recs:by.size?phMap(recs,s=>by.has(s)?'dwph:'+by.get(s):s):recs,photos}}
+/* the sample wardrobe stays on this phone (re-audit 2026-11-15, N7: loaded while connected, it was backed up into the person's real
+   wardrobe and showed on his other phones): uploads leave out the sample pieces he hasn't made his (kit.js kitEdited) and the day records
+   naming one; Remove the sample rewrites those records (kit.js kitSampleDay) with a new stamp, and they go up then. Applied to what is
+   sent only: the merge and this phone's copy are unchanged */
+const syncOwn=i=>!(i&&i.sample)||(typeof kitEdited==='function'&&kitEdited(i));
+function syncShare(st){const off=new Set((st.items||[]).filter(i=>!syncOwn(i)).map(i=>i.id));if(!off.size)return st;
+  const names=r=>[r.ids,r.lock,r.force].some(o=>o&&Object.values(o).some(v=>off.has(v)));
+  return {...st,items:st.items.filter(i=>!off.has(i.id)),days:(st.days||[]).filter(d=>!names(d))}}
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
   const got=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token);
@@ -165,7 +178,8 @@ async function syncLite(remote,local,url,token,inline){
   if(lacks&&!remote.all)return {again:{all:true}};
   pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
-  const up={items:now.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:now.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
+  const share=syncShare(now);   // (not the sample wardrobe)
+  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
@@ -208,10 +222,10 @@ async function syncOnce(){
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(merged,local),remote.data||{});pullDone();
-      if(remote.data&&stateSig(now)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
+      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=syncShare(now);pullDone();   // (out: what is sent, without the sample wardrobe)
+      if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
       if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
-      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),data:now})});   // data last: the server reads a large backup's few leading fields without parsing the whole
+      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));
       if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}

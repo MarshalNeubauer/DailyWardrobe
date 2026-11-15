@@ -205,7 +205,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=14;   // 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+const PLAN_RULES=15;   // 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -280,8 +280,12 @@ const shirtRepeat=(sh,prev)=>{if(!sh||!prev)return 0;const g=shirtGroup(sh),l=sh
 /* the same tie within three workdays costs as much as the day before's (the owner's choice, 2026-11-13: one tie on Dec 6 and Dec 8, two
    workdays apart, cost only 4); third: the summary of the workday three back. Tie colours keep their two-day rule */
 const TIE_GAP=18;   // the same tie on any of the last three workdays (the day before included)
+/* the very tie of the workday before costs TIE_NEXT more (the re-audit, 2026-11-15: with three ties every tie is within three workdays,
+   all cost TIE_GAP alike and rest (under 2 points) decided, so the day before's tie came back on 33 of 101 workdays; a learned pairing
+   (up to 9) made it worse). Two and three back keep TIE_GAP (the owner's choice) */
+const TIE_NEXT=20;   // measured on the tester's 3 ties over 101 workdays: next-day repeats 33 → 1, average score 95.9 either way (12 left 3)
 const tieRepeat=(x,prev,third)=>{if(!x||!prev)return 0;const g=tieGroup(x),l=tieLook(x);let v=0;
-  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.tid===x.id)v+=TIE_GAP;else if(p.tg===g)v+=n?2:15;else if(l==='mono'&&p.tl==='mono')v+=n?1:8});if(third&&third.tid===x.id)v+=TIE_GAP;return v};
+  prev.slice(0,2).forEach((p,n)=>{if(!p)return;if(p.tid===x.id)v+=TIE_GAP+(n?0:TIE_NEXT);else if(p.tg===g)v+=n?2:15;else if(l==='mono'&&p.tl==='mono')v+=n?1:8});if(third&&third.tid===x.id)v+=TIE_GAP;return v};
 /* the ties and shirts already fixed on the next 3 workdays (fixedAhead's fx: picked, moved there, worn or locked as shown; w = 0, 1, 2
    workdays ahead, n its day number) are avoided as the last three workdays are: the next one as the day before, then as two and
    three back. NEXT_SHIRT: the very shirt fixed for a day within the wash cycle (settings.laundryDays calendar days; the next
@@ -305,6 +309,20 @@ const LEARN_CAP=3,pairKey=(a,b)=>a.id<b.id?a.id+'|'+b.id:b.id+'|'+a.id;
 const pairVote=(a,b)=>{const L=settings.learn;return a&&b&&L&&L.p?+L.p[pairKey(a,b)]||0:0};   // (+: a vote stored as text would be added as text)
 const itemVote=i=>{const L=settings.learn;return i&&L&&L.i?+L.i[i.id]||0:0};
 const pairDown=(a,b)=>{const v=pairVote(a,b);return v<0?6*v:0},pairUp=(a,b)=>{const v=pairVote(a,b);return v>0?3*v:0};
+/* the clothes make a real mistake: the hard checks of rateOutfit that the jacket, trousers, shirt and tie decide (three bold patterns or
+   two of one type and scale; the shirt the jacket's colour, or a dark shirt under a dark jacket; a tie the shirt's colour with no
+   contrast; a black tie on a black suit, except at a funeral; trousers the odd jacket's colour; jacket, shirt and tie one colour), and
+   trousers with no shoes of the day that suit them (shoeOk from outfit). Keep in step with rateOutfit */
+function clothesHard(t,b,sh,x,sd,day,shoeOk){
+  const P=[[t,'top'],[sd?null:b,'bot'],[sh,'shirt'],[x,'tie']].map(([i,r])=>patInfo(i,r)).filter(Boolean);
+  if(P.length>=3||(P.length===2&&P[0].type===P[1].type&&P[0].scale===P[1].scale))return true;
+  if(t&&sh&&!darkUnderLight(t,sh)&&(pcol(sh)===pcol(t)||darkShirt(sh)))return true;
+  if(sh&&x&&pcol(x)===pcol(sh)&&(darkShirt(sh)?tieLum(x)-LUM(sh)<25:LUM(sh)-LUM(x)<25))return true;
+  if(t&&x&&pcol(t)==='black'&&pcol(x)==='black'&&!(day&&day.occ==='funeral'))return true;
+  if(!sd&&t&&b&&pcol(b)===pcol(t))return true;
+  if(t&&sh&&x&&pcol(t)===pcol(sh)&&pcol(sh)===pcol(x))return true;
+  if(shoeOk&&(b||t)&&!shoeOk(t,sd?t:b))return true;
+  return false}
 function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};
 const casual=day.occ==='casual',occ=OCC[day.occ];if(casual)suitDay=false;   // no jacket and no tie: trousers and a shirt
 // the dress code (settings.dress): without jackets every workday is planned like that occasion, with a tie if ties are worn; without
@@ -353,7 +371,15 @@ const S=pool('shoes','shoes'),shoeOk=(t,b)=>!S.length||S.some(s=>finish(s.leathe
 const noShoes=i=>{if(i.type==='suit')return !shoeOk(i,i);const P=pool('pants','bot');return P.length>0&&!P.some(pt=>shoeOk(i,pt))};
 const againJ=i=>day.prev&&day.prev[0]&&day.prev[0].jid===i.id?JKT_AGAIN:0;
 const tpl=noJ?[]:pool(suitDay?'suit':'blazer','top'),tgw=topGw(tpl);
-const top=noJ?null:best(tpl,i=>-(noShoes(i)?NO_SHOES:0)-againJ(i)+Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+over(i,60)*.2-offSeason(i)-(shoeBound(i)?10:0)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)+(occ?occ.top(i,day.clim.season)*3:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&{g:p.jg,c:p.jc}),day.ahead&&day.ahead.next,tgw)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft,tgw)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0)+4*itemVote(i));
+// a real mistake in the clothes (clothesHard) is not planned while another jacket avoids it (H7, the re-audit: a pinstripe suit with
+// the only clean shirt a stripe and the only tie a stripe, the plain suit free): the jacket rotation would choose takes its turn
+// only when some trousers, shirt and tie of the day make a clean outfit with it (jacketClean, stopping at the first one found)
+const Tday=noT?[null]:pool('tie','tie'),Shday=pool('shirt','shirt');
+const jacketClean=j=>{const P=suitDay?[j]:pool('pants','bot');for(const b of P.length?P:[null])for(const sh of Shday.length?Shday:[null])for(const x of Tday.length?Tday:[null])if(!clothesHard(j,b,sh,x,suitDay,day,shoeOk))return true;return false};
+const jscore=i=>-(noShoes(i)?NO_SHOES:0)-againJ(i)+Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+over(i,60)*.2-offSeason(i)-(shoeBound(i)?10:0)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)+(occ?occ.top(i,day.clim.season)*3:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&{g:p.jg,c:p.jc}),day.ahead&&day.ahead.next,tgw)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft,tgw)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0)+4*itemVote(i);
+const argBest=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return b};
+let tcands=tpl;if(tpl.length>1&&!jacketClean(argBest(tpl,jscore))){const ok=tpl.filter(jacketClean);if(ok.length)tcands=ok}
+const top=noJ?null:best(tcands,jscore);
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
 const vm=settings.vestMode||'auto',vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
 const vest=!!(suitDay&&hasVest(top)&&(vov!==null?vov:vm==='always'||(vm==='auto'&&(day.formal||day.occ==='wedding'||day.clim.season!=='warm'))));
@@ -379,15 +405,21 @@ for(const P of PP)for(const S of SS)for(const X of XX){const {pt}=P,{sh}=S,{x}=X
   cands.push({q,pt,sh,x,P,S,X});
 }
 const rOf=({pt,sh,x,P,S,X})=>S.pu+X.pu+pairUp(sh,x)+P.pu+2*(S.iv+X.iv+P.iv)+1.5*(P.rb+X.r10)+P.pr+X.r30+S.rs-S.rep-X.rep-(day.ahead?S.ah+X.ah:0)-lookRepeat(top,sh,x,day.prev)-comboRepeat(sh,x,hk);
-let qmax=-Infinity;for(const c of cands)if(c.q>qmax)qmax=c.q;
-const win=cands.filter(c=>c.q>=qmax-(day.formal||day.occ==='funeral'?FORMAL_QWIN:QWIN));for(const c of win)c.r=rOf(c);
-const pick1=win.sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0];
+const choose=cs=>{let qmax=-Infinity;for(const c of cs)if(c.q>qmax)qmax=c.q;
+  const win=cs.filter(c=>c.q>=qmax-(day.formal||day.occ==='funeral'?FORMAL_QWIN:QWIN));for(const c of win)c.r=rOf(c);
+  return win.sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0]};
+const hardC=c=>clothesHard(top,suitDay?top:c.pt,c.sh,c.x,suitDay,day,shoeOk);
+let pick1=choose(cands);
+// the best outfit for this jacket is a real mistake: the best clean one, if there is any, however far down (H7)
+if(hardC(pick1)){const clean=cands.filter(c=>!hardC(c));if(clean.length)pick1=choose(clean)}
 const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
 // shoes, belt and watch are chosen together so the belt always matches the shoes and the metals agree
 const B=pool('belt','belt'),W=pool('watch','watch');let pick=null;
 for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.length?W:[null]){
   let t=0;
-  if(s){t+=shoeScore(top,bot,s)+shoeFormality(s,suitDay)+rb(s)-(rest(s)<=1&&!day.formal&&day.occ!=='funeral'?7:0)+pairDown(top,s)+pairUp(top,s)+2*itemVote(s);   // leather shoes want a day to dry: not yesterday's pair when another suits
+  // shoes that don't suit (a real mistake) cost NO_SHOES more, so they lose to a pair with no matching belt (30, not a mistake): the
+  // re-audit's blazer day, khaki chinos and black calf shoes at 69 while the oxblood loafers suited them
+  if(s){const ss=shoeScore(top,bot,s);t+=ss-(ss<=-50?NO_SHOES:0)+shoeFormality(s,suitDay)+rb(s)-(rest(s)<=1&&!day.formal&&day.occ!=='funeral'?7:0)+pairDown(top,s)+pairUp(top,s)+2*itemVote(s);   // leather shoes want a day to dry: not yesterday's pair when another suits
     if(day.clim.rain&&finish(s.leather)==='suede')t-=25;             // suede and rain don't mix
     if(day.formal||day.occ==='funeral'){const g=leatherGroup(planCol(s)),f=finish(s.leather);t+=(f==='suede'||f==='grain')?-20:g==='black'?(day.occ==='funeral'?20:8):g==='burgundy'?3:-4}
     if(day.occ==='wedding'&&finish(s.leather)==='suede')t-=15}
@@ -575,7 +607,7 @@ function scoreAdvice(o,pool){
 function frozenOutfit(rec,n,last){
   const o={suitDay:!!rec.suitDay,frozen:true,worn:rec.worn,formal:!!rec.formal,occasion:occOf(rec),notes:[]};
   for(const s of SLOTS){const id=rec.ids[s],it=id&&items.find(i=>i.id===id);o[s]=it?{...it,rest:Math.min(n-(last[it.id]??-1e5),60)}:null;
-    if(id&&!it)(o.gone||(o.gone={}))[s]=true}   // a piece deleted since: the day is rated without it (rateOutfit), not as "Incomplete"
+    if((id&&!it)||(rec.gone&&rec.gone[s]))(o.gone||(o.gone={}))[s]=true}   // a piece deleted since: the day is rated without it (rateOutfit), not as "Incomplete" (rec.gone: a removed sample piece's slot, kit.js kitSampleDay)
   o.vest=!!(rec.vestOn&&o.suitDay&&hasVest(o.top));
   // a piece taken off that day (rec.off, see takeOff): the record already holds the outfit without it
   if(rec.off&&(rec.off.top||rec.off.tie)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot?'suit':'blazer'}
@@ -621,6 +653,7 @@ for(const E=di(end);di(d)<=E;d.setDate(d.getDate()+1)){const w=d.getDay();   // 
   const k=key(d);let rec=dayRecs[k];
   if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false&&(plan[k].top||!wearsJacket())){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k])}continue}   // (a day without a jacket leaves the jacket history alone; a day marked "Not worn" is not the previous workday for repeats either)
   if(W0&&d<W0&&d<T)continue;   // before the wardrobe began (wardStart): nothing was worn then
+  if(rec&&rec.noOutfit&&d<T)continue;   // a past day dressed only from the sample wardrobe, since removed (kit.js kitSampleDay): no outfit recorded
   if(rec&&rec.lock&&!lockOf(rec,di(d))){rec={...rec};delete rec.lock}
   const occ=occOf(rec),formal=occ==='formal',lt=rec&&rec.lock&&!(rec.force&&rec.force.top)&&rec.lock.top&&items.find(i=>i.id===rec.lock.top),o=outfit(lt&&!rec.kind&&!(occ==='casual')?lt.type==='suit':rec&&rec.kind?rec.kind==='suit':!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,prev3,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;o.ctx={prev,prev3,n:di(d)};plan[k]=o;if(o.top||!wearsJacket()){prev3=prev[1]||null;prev=[sumUp(o,di(d)),prev[0]];remember(o)}}
 return plan};
