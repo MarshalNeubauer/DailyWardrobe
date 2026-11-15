@@ -78,12 +78,12 @@ module.exports=async({ok,chromium,url,settle})=>{
       return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({type:'shirt',primaryColor:'white',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',model:'claude-test'})})});
     const q=await c2.newPage();const e2=[];q.on('pageerror',e=>e2.push(e.message));
     await q.goto(url);await q.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await q.reload();await q.waitForFunction(()=>window.appReady);
-    await q.evaluate(b64=>{show('add');addFiles([new File([Uint8Array.from(atob(b64),c=>c.charCodeAt(0))],'a.png',{type:'image/png'})])},PNG);
+    await q.evaluate(async()=>{show('add');const c=document.createElement('canvas');c.width=c.height=200;c.getContext('2d').fillRect(0,0,200,200);const b=await new Promise(r=>c.toBlob(r,'image/png'));addFiles([new File([b],'a.png',{type:'image/png'})])});   // (a picture large enough to read: ADD_MIN_PX)
     await q.waitForFunction(()=>queue.length===1&&!queue[0].busy,null,{timeout:10000}).catch(()=>{});
     const card=()=>q.evaluate(()=>{const f=document.querySelector('#queue .tagfail');return {why:f?f.textContent:'',again:!!(f&&[...f.querySelectorAll('button')].some(b=>/Try again/.test(b.textContent))),type:queue[0]&&queue[0].type,ai:queue[0]&&queue[0].ai}});
     let c=await card();
     ok(/couldn.t be reached|connection/i.test(c.why)&&c.again,`a photo that couldn't be tagged says why on its card and offers Try again (“${c.why}”)`);
-    ok(await q.evaluate(()=>!!document.querySelector('#queue .card button.pri')),'the card can still be filled in and saved by hand');
+    ok(await q.evaluate(()=>!!document.querySelector('#queue .card select')),'the card can still be filled in by hand: it asks for the type first');
     mode='limit';const n=posts;if(c.again)await q.click('#queue .tagfail button');
     await q.waitForFunction(()=>queue.length===1&&!queue[0].busy&&/photo readings/.test(document.querySelector('#queue .tagfail')?.textContent||''),null,{timeout:10000}).catch(()=>{});
     c=await card();

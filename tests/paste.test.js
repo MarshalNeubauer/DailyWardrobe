@@ -2,7 +2,7 @@
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
-  const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC','base64');
+  const PNG=require('fs').readFileSync(require('path').join(__dirname,'fixtures','shirt-chevron-closeup.png'));   // (a picture large enough to read: add.js ADD_MIN_PX)
   // the outside web as the worker sees it
   const web={'https://shop.test/product/42':{type:'text/html',body:'<html><head><meta property="og:image" content="/img/tie.png?x=1&amp;y=2"></head></html>'},
     'https://shop.test/img/tie.png?x=1&y=2':{type:'image/png',body:PNG},'https://nocors.test/a.png':{type:'image/png',body:PNG},
@@ -67,7 +67,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await ctx.unroute(HOST+'fetch**');
 
   // the Paste button reads the clipboard
-  await p.evaluate(()=>{pasteMsg('');navigator.clipboard.read=async()=>[{types:['image/png'],getType:async()=>new Blob([Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC'),c=>c.charCodeAt(0))],{type:'image/png'})}]});
+  await p.evaluate(b=>{window.__png=b},PNG.toString('base64'));
+  await p.evaluate(()=>{pasteMsg('');navigator.clipboard.read=async()=>[{types:['image/png'],getType:async()=>new Blob([Uint8Array.from(atob(window.__png),c=>c.charCodeAt(0))],{type:'image/png'})}]});
   await p.click('.paste-box >> text=Paste');await settle(5);
   ok((await photos())===5,'the Paste button adds an image from the clipboard');
   await p.evaluate(()=>{navigator.clipboard.read=async()=>{throw new Error('denied')}});await p.click('.paste-box >> text=Paste');
@@ -84,7 +85,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok(!(await p.evaluate(()=>window.__def)),'pasting a link into another text field is not hijacked');
   // a queued pasted photo saves like an uploaded one
   const n0=await p.evaluate(()=>items.length);
-  await p.evaluate(async()=>{const i=queue.findIndex(q=>q.photo&&!q.busy);await save(i)});
+  await p.evaluate(async()=>{const i=queue.findIndex(q=>q.photo&&!q.busy);setq(i,'type','tie');await save(i)   /* (an unread photo asks for its type first: add.js needType) */});
   ok((await p.evaluate(()=>items.length))===n0+1&&(await p.evaluate(()=>!!items[items.length-1].photo)),'a pasted photo saves to the wardrobe with its photo');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
 
