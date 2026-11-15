@@ -48,7 +48,7 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
   if(!p){acctWhy='bad';dropInviteHash();say(INVITE_BAD);return false}   // (a mangled link opened from mail used to do nothing and say nothing)
   if(opt.address){inviteChecking=true;acctLinkDrawn()}
   let r;try{r=await acctCall('me',{},{url:p.url.replace(/\/*$/,'/'),tok:p.code})}finally{inviteChecking=false}
-  if(r.status===0){acctWhy='offline';say('Couldn’t reach the server. Your invitation is tried again when you’re back online.');acctLinkDrawn();return false}
+  if(r.status===0){acctWhy='offline';say('Couldn’t reach the server just now. Your invitation is tried again when you come back to the app or your connection returns.');acctLinkDrawn();return false}
   dropInviteHash();
   if(r.status!==200||!r.j||!r.j.id){acctWhy='refused';acctWhyMsg=r.j&&r.j.message||'';say(acctFailText());acctLinkDrawn();return false}
   // what this phone holds decides what happens next, so its storage is read first: the connection put back where the browser lost

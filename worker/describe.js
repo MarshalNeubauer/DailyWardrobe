@@ -65,7 +65,9 @@ as a main colour and as a stripe or motif colour. The owner may also have colour
               synonym (navy blue = navy, sky blue = lightblue, ink, ink navy, ink blue and midnight navy = darknavy, not navy, mushroom = taupe, mustard = gold,
               butter = paleyellow, camel = tan), or a shade a person would not tell apart from it on cloth. Otherwise
               "new". A new colour must be worth having: if the owner's words only restate a listed colour, choose
-              existing even when your hex differs a little.
+              existing even when your hex differs a little. But when the owner names a cast or tint on a listed colour
+              ("charcoal with a hint of brown", "grey with a green cast"), they want that cast: match is "new" and
+              your hex shows the cast plainly enough to see on cloth (plansAs stays the listed colour).
 
 4. How the app's outfit rules treat it (plansAs): the built-in key from THIS item's list whose colour family and role
    in an outfit it shares. Choose by what the colour IS, not by the nearest number: a blue that is dark is still a blue
