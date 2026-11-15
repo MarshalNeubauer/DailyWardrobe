@@ -164,6 +164,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - colours always come from the item's tagged colours, matched by brightness rank, never from the photo, except an item's `sett`: it is read from the white-balanced sharp photo or close-up at the user's request, so its bands keep their measured colours
 - `PATS_BY` must stay in sync with the worker's prompt (worker/tag.js), and so must the per-type colour lists (`COLS_BY` / `DIAL_COLS` here = `TYPE_COLORS` / `DIAL_COLS` in worker/tag.js; `tests/colouraudit.test.js` checks it)
 - `colBaseFor(hex, type, accent)` (moved here from colpick.js, 2026-11-15): an own shade's base when Claude gave none, from the type's own list by colour family (`BASE_HUE` 45°, else `BASE_HUE2` 80°; a near-neutral the list's neutrals), then within `BASE_L` of its lightness, then ΔE00; by ΔE alone over every key petrol blue planned as charcoal and cognac as rust; worker/describe.js `baseFor` is the same rule
+- what an own colour's or pattern's name may contain (2026-11-15, the re-audit's N4): letters of any script, digits, spaces and - ’ . , ( ) / + (`OWN_NAME_OK`); a straight apostrophe becomes ’ and & "and" (`ownNameTidy`); `addCustomColor`/`addCustomPattern` (tagging.js) refuse a typed name with anything else ("Use only letters, numbers, spaces and - ’ . , ( ) / + in the name.", `ownNameBad`) and store it cleaned; `applyCustom` cleans every name it applies (`ownNameClean`, a pattern's desc with `ownDescClean`), so a name arriving by sync or saved before can't carry < > " ' & or a backtick into the page; `CUSTOM_COL`/`CUSTOM_PAT` hold cleaned copies, `settings.custom` stays as synced; Claude's suggested names are cleaned before they are added (colpick.js `colAddNew`/`patAddNew`)
 - each item type offers only colours it really comes in; an off-list tag moves to the closest allowed colour (`fitCol`), and a colour an existing item already has stays selectable for it
 - settings merge setting by setting (2026-11-14, the audit's "settings sync as one block": phone A's workdays and phone B's city, the later save dropped the other): each setting has its own stamp `settings.ks[k]` and the fingerprint of the value it was stamped with `settings.kh[k]`; `keySettings` runs where settings are read (start.js start-up and `onSyncedData`, settings.js, safety.js) and gives a copy from before every setting its one stamp, and a setting only the defaults filled in stamp 0; `stampSettings` (in `saveUserSettings` and the learn votes, history.js) stamps only settings whose value changed; `mergeSettings` (in `mergeState`) takes each setting from the newer stamp, ties to the newer copy, and makes the result's `updated` one above both when it took anything from the older copy, so the phone holding it uploads it (sync.js sends settings newer than the server's); two copies without `ks` merge whole as before; a roll-back stamps every setting (`stampAllSettings` in sync.js `rollBackState`) and marks ones the snapshot lacks removed; worker/backup.js `mergeSettingsLite` is the same rule in `mergeLite`; `tests/settingsmerge.test.js`
 
@@ -614,6 +615,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the Saved toast names the item (`savedTitle`: its name, else its colours with the type, "Saved: Grey suit."); Undo of a Save all clears the "Saved N items" line (kit.js `kitUnsave`)
 - "Bought, on the way" refuses a past Arrives date (`setArrives`); the close-up step says to tap the paper on the camera screen before taking the picture; a belt's metal is "Buckle" on the card and in the item sheet
 
+- (re-audit 2026-11-15) Add's note says "Checking your invitation…" while a link is checked (`inviteChecking`) and names an ended invitation; with the invitation ended a card gets no Try again (safety.js `tagFailed`, `tagFailNote`) and no "Read it now" (`unreadNote`, `typeCard` use `isConnected()`)
 ### `itemsheet.js`
 
 #### Photos
@@ -625,6 +627,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - zoom & crop cuts from the best copy (`cropSource`): the sharp copy kept on this device when the photo was read (`tagImgOf`, up to 2048px), turned to match the photo, when it is the same picture (same shape, mean grey difference at 24x24 up to `CROP_MATCH` 12); else from the photo; the output is still at most `PH_MAX`
 - a replaced or already cropped photo no longer matches the sharp copy, so it is cropped from itself; Replace photo does not renew the sharp copy, since the pattern re-read (`rereadSett`) reads it together with the pattern box (`pbox`) measured on the original
 - the editor adds, replaces and removes the fabric close-up (`replaceTexture`/`setTexture`, undo per field via `setPic`)
+- the editor refuses a close-up under `TEX_MIN_PX` (200, add.js) on its short side with the Add card's message (2026-11-15, the re-audit: it took 40×40); `tests/ownnames.test.js`
+- the phone's Back with the colour or pattern sheet up closes only that sheet (`colBackFirst`, 2026-11-15, the re-audit: Back closed Add or the item sheet underneath and left the sheet up, and "Use" changed a hidden item): a popstate listener registered here, before the item sheet's and start.js's (a capturing one on window still ran after them in Chromium), stops theirs, closes the sheet (a "New" sheet opened from the list goes ‹ back to the list first) and pushes the entry back, so `itemHist`/`appHist` still hold and the next Back closes the page; the app's own steps back (`itemBack`, `appPend`) pass; works on Add, the item sheet and Settings' "+ New"; `tests/ownnames.test.js`
 
 #### The item sheet
 
@@ -901,6 +905,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the worker's daily KV writes used up (Cloudflare free plan: 1,000 a day, reset 00:00 UTC; the PC's picture uploads once used them up): 429 `{error:'kv-limit'}` (`kvFull`, worker.js), the same pause, and "Today's backups are used up on the server…" (`backupFullMsg`); `tests/kvlimit.test.js`
 - `npm run assemble` stops at the first KV refusal, keeps the pause (`upload-pause.json`), skips --watch cycles until then, and plans 14 days ahead by default
 - an invitation switched off (403 `invite off`): said once (`inviteEnded`, `localStorage.invite_ended`) and syncing stops
+- nothing more is asked with an ended code: photos.js `workerBase()` is null while `inviteOver()` (the photo list, item and outfit pictures, the masters, holiday lists), app.js `ask()` sends no photo, tagging.js `claudePattern` and add.js `addMulti`/`fetchPhoto` don't call; a photo answered 403 'invite off' marks the invitation ended (`endedAnswer` → `inviteEnded`); the first open after an end still sends what runs before the sync learns of it (re-audit 2026-11-15: 12–45 refused requests per open)
 - `endedAnswer(status, j)`: 403 'invite off', or 403 'forbidden token' on a tester's phone (the account was deleted on another phone or by the owner), is an ended invitation for the sync, the daily backups list, Feedback and `loadAccount`; it said "Backups aren’t available on this server yet" and kept trying (2026-11-15)
 - sync errors show the server's `message` before its `error`
 
@@ -949,6 +954,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - while a link from the address is checked (`inviteChecking`) Connection, its summary and the setup's Connection and All set steps say "Checking your invitation…"; `acctLinkDrawn()` redraws them, Settings' summaries and Add when the check ends
 - connecting (not switching) with sample pieces on the phone asks "Remove the sample wardrobe first?" and removes them (`kitSampleRemove(true)`, after `acctStarted()`) before anything is stored; Cancel connects nothing; the sample was uploaded into the person's wardrobe and showed on his other phones
 - a successful link clears `invite_ended`; `loadAccount` marks an ended invitation (`endedAnswer`, sync.js) instead of showing "The server didn’t accept this connection" to a tester; `acctEndedUI()` redraws what said Connected
+- (re-audit 2026-11-15, N1) a new link on a phone whose code has ended, switched off (`invite_ended`) as well as lost (`invite_lost`), asks "Back up this phone’s wardrobe with …’s invitation?" ("Keep it and back it up") and keeps the wardrobe, changes since the end included, instead of "Clear and switch": the old backup can't be reached, and after a switch-off the app stops syncing so it never hears of a later deletion; `tests/inviteswitch.test.js`
+- "Clear and switch" first backs up what no backup took (`acctPending`: `syncMark().sig` against the wardrobe's `stateSig`, then `syncNow()`); still pending (backups paused, server refusing), the question says the changes would be lost and its button reads "Clear, losing those changes" (`acctSwitchText`); it also says the settings go and the setup starts again
+- the backup before a switch (`acctBackUpFirst`) runs up to `ACCT_SYNC_TRIES` (3) times while the server takes it, since its first pull lets the start-up writers save the day's record, and gives up after `ACCT_SYNC_MS` (20 s), so a slow connection still gets the question
 
 ### `setup.js`
 
@@ -981,6 +989,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - All set lists the blazer days and the vest; its "Try a sample wardrobe" (`setupSample`) finishes the setup first (holidays, vest)
 - `setupOpen` closes a Home Screen kit sheet (one explanation)
 - `tests/setupfix.test.js` covers these and the Settings fixes of the same audit
+- an ended invitation: the Connection step says so ("Your invitation has ended, so the link you used no longer works…") and All set reads "invitation ended"
 
 ### `kit.js`
 
@@ -1044,7 +1053,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Settings → About (`SET_CATS` ends with `about`, `#sc-about`, `renderAbout`): version and updates, feedback, deleting one's data, the privacy note; loaded last
 - `appVersion()`: the `CACHE` number in the cached `sw.js` (`swVersionOf`, `aboutReadVersion`), so the version running, not the newest
 - `checkForUpdate` (start-up, foreground after `ABOUT_FRONT_MS`, every `ABOUT_CHECK_MS`, the button): `aboutLatest` fetches `sw.js` with `cache:'no-store'`; a higher number downloads it and offers Update once per version (`aboutToasted`, `aboutShow`); never reloads by itself
-- `updateNow()`: asks first if Add has unsaved cards, sends the waiting worker `{type:'skipWaiting'}` and reloads on `controllerchange`; gives up after `ABOUT_INSTALL_MS` (45 s) without reloading
+- `updateNow()`: asks first only if a photo on Add is still being read (below), sends the waiting worker `{type:'skipWaiting'}` and reloads on `controllerchange`; gives up after `ABOUT_INSTALL_MS` (45 s) without reloading
 - `aboutAdopt()`: a waiting worker of the version already running takes over without a reload (`aboutAsk`)
 - feedback (`sendFeedback`): `POST /feedback` with `x-app-token` (`aboutConn`); `loadFeedback` lists it in `#fb-list` for the owner only
 - delete my data: `askDelete` (`#del-confirm`), `deleteMyData(server)` → `wipeDevice()` → reload
@@ -1055,6 +1064,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the after-restart message goes in `sessionStorage.about_note` (`ABOUT_NOTE`), shown by `aboutStart()`
 - the privacy note (`.about-fold`) names everyone who gets something: the server's owner, Cloudflare and GitHub Pages, Anthropic, OpenAI, Open-Meteo, Nager.Date / Google
 - `tests/about.test.js` mocks `/me`, `/feedback`, `/account`
+- `updateNow` asks only while a photo on Add is still being read (`busy`/`multiBusy`); other cards come back after the restart (add.js `addKeep`, called before it), so "they will be lost" is gone (re-audit 2026-11-15)
+- Feedback: one send at a time (`fbSending`), and an empty tap within `FB_AGAIN_MS` (3 s) of a send keeps "Thank you" (a double tap read "Write something first."); the day's saves used up (429 `kv-limit`) says to send it again after the reset (`aboutResetAt`), not the backup sentence "kept on this device"
+- an ended invitation's Delete card lists this device only, says the server is out of reach and offers only "Delete from this device"; its note doesn't say the server's backup was kept
+- a 403 'forbidden token' to a resumed "Delete everything" (`aboutDeleteAccount(keep, true)`), or for a code remembered as a tester's (`aboutKeptTester`: `acct_role.tok` = the kept code), is the deletion having gone through: at start-up the connection is already removed, so `isTester()` said no and a phone killed mid-delete reopened with "nothing was deleted" (re-audit 2026-11-15, agent8 #5)
 - refusals are said with the server's `message`, or an older server's sentence in `error`, never a code (`aboutErrText`, `ABOUT_CODES`: "invite off", "forbidden token", "kv-limit" reached testers); Feedback after an ended invitation says so and Send is off (`aboutLive`: `isConnected()`)
 - a tester's "Delete everything" says it ends the invitation (the server deletes `invite:<hash>` first, so the link stops working on every phone)
 - "Delete everything" keeps `del_pending` ({w, t}) and clears the connection's database copy (`connKeep`) before `DELETE /account` (`aboutDeleteAccount`); a phone killed before the answer finishes it at the next start (`aboutResumeDelete`, from `aboutStart`; app.js `connRestored` restores nothing while it is set), or, the server unreachable, puts the connection back and says so; killed there it used to reopen with the whole wardrobe and "Connected"
@@ -1167,6 +1180,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a name already a colour's (built-in or own, by key or as shown, letters only: "Navy", "light blue", "Very dark navy") is refused (`colNameTaken`, checked in `addCustomColor`)
 - no Ask Claude block for a type without a close-up (shoes, belts, watches, socks, coats, clips, links: it said to add a fabric close-up that can't be added)
 - `tests/itemfix.test.js`
+- a grey spelled another way ("Gray", "Dark gray", "Light gray", "Mid gray": a name whose letters with gray→grey are a colour key or a grey in `COL_ALIAS`) is taken too (`colNameTaken`, 2026-11-15, the re-audit); other aliases ("Cognac", "Teal") stay free for an own shade
+- own colour and pattern names are text, never HTML (2026-11-15, the re-audit's N4: `<img src=x onerror=…>` as a name ran in the colour button, the picker's tiles and the pattern button, and synced): the colour button, tiles, big swatch's caption, the Use/Keep button and the pattern button escape it (`esc`), on top of the names being cleaned (core.js `ownNameClean`); `tests/ownnames.test.js`
 
 ### `care.js`
 

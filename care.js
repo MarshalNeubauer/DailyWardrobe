@@ -186,7 +186,7 @@ function renderCareUI(){const el=$('#care-limits');
   const s=$('#cfg-laundry');if(s){const d=laundryDays(),opts=[...new Set([...LAUNDRY_OPTS,d])].sort((a,b)=>a-b);
     s.innerHTML=opts.map(n=>`<option value="${n}"${n===d?' selected':''}>${n?`${n} day${n===1?'':'s'}`:'Not at all'}</option>`).join('')}
   const sum=$('#sum-care');if(sum){const lim=t=>{const v=careLimit(t);return v?`${CARE_PLURAL[t].toLowerCase()} after ${v} wear${v===1?'':'s'}`:''},parts=[lim('suit'),lim('blazer')].filter(Boolean);
-    const d=laundryDays();sum.textContent=cap1((parts.length?parts.join(', '):'no wear limits')+` · a worn shirt waits ${d?d+' day'+(d===1?'':'s'):'no time'}`)}}
+    const d=laundryDays();sum.textContent=cap1((parts.length?parts.join(', '):'no wear limits')+` · ${d?'a worn shirt waits '+d+' day'+(d===1?'':'s'):'worn shirts aren’t held back'}`)}}
 async function setCareLimit(t,v){if(!CARE_TYPES.includes(t))return;settings.care={...(settings.care||{}),[t]:Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};await saveUserSettings();todayStale=true;renderCareUI()}
 /* the shirt rule changes the plan: the days shown for the coming week are planned again with it */
 async function setLaundryDays(v){settings.laundryDays=Math.max(0,Math.min(14,Math.round(+v)||0));await clearLocks();await saveUserSettings();todayStale=true;renderCareUI()}

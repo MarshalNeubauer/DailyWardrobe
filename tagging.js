@@ -405,7 +405,8 @@ const groupOf=t=>COL_GROUPS.find(g=>g.includes(t))||[t];
    "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline
    forms (newColForm / newPatForm) were removed 2026-11-15: one way to add, the same everywhere */
 function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:q.meas&&q.meas.hex||COLORS[q.primaryColor]})}
-async function addCustomColor({name,hex,base,types,accent}){name=String(name||'').trim();const key=ownColKey(name);
+const OWN_NAME_MSG='Use only letters, numbers, spaces and - ’ . , ( ) / + in the name.';
+async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownColKey(name);
   if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a colour with that name.');
   if(!/^#[0-9a-f]{6}$/i.test(hex))throw new Error('Pick a shade.');if(!COLORS[base]||CUSTOM_COL[base])throw new Error('Choose what it behaves like.');
   if(!types||!types.length)throw new Error('Choose at least one kind of item.');
@@ -427,10 +428,10 @@ function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.
 /* look: the drawing recipe from "+ New pattern" (worker /describe: {layout, tr, tex | across (+ along) | motif}, roles not colours),
    kept with the pattern (synced) and drawn by detect.js lookSett in each item's colours, the painter too */
 const cleanLookApp=l=>l&&typeof l==='object'&&['texture','stripes','check','windowpane','plaid','motif'].includes(l.layout)&&(Array.isArray(l.tex&&l.tex.grid)||Array.isArray(l.across)||l.motif&&Array.isArray(l.motif.figs))?JSON.parse(JSON.stringify(l)):null;
-async function addCustomPattern({name,desc,base,types,look}){name=String(name||'').trim();const key=ownPatKey(name);
+async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownPatKey(name);
   if(key.length<6)throw new Error('Give it a name of at least two letters.');if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key)))throw new Error('There is already a pattern with that name.');
   types=(types||[]).filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Choose at least one kind of item that has the "drawn like" pattern.');
-  const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:String(desc||'').trim().slice(0,150),base,types,...(lk?{look:lk}:{})}]};
+  const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:ownDescClean(desc),base,types,...(lk?{look:lk}:{})}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
 /* Settings: the colours and patterns you added; one no item uses can be removed */
 function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},cols=cu.colors||[],pats=cu.patterns||[];
@@ -585,7 +586,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
    close-up's exposure is matched to the item photo's (which has a white wall to set it), and where a thread's pixels read grey
    though Claude sees a colour (a light-blue line woven into khaki linen), the pixels keep the lightness and Claude the hue.
    Without the worker, or when Claude finds no pattern, the pixel reader (settFrom) is used. ---- */
-async function claudePattern({image,closeup,type,wb}){const w=localStorage.getItem('worker_url');if(!w||!image)return null;
+async function claudePattern({image,closeup,type,wb}){const w=localStorage.getItem('worker_url');if(!w||!image||(typeof inviteOver==='function'&&inviteOver()))return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})})});   // wb: both pictures white-balanced (worker.js)
     const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
