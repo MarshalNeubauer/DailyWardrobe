@@ -953,6 +953,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a successful link clears `invite_ended`; `loadAccount` marks an ended invitation (`endedAnswer`, sync.js) instead of showing "The server didn’t accept this connection" to a tester; `acctEndedUI()` redraws what said Connected
 - (re-audit 2026-11-15, N1) a new link on a phone whose code has ended, switched off (`invite_ended`) as well as lost (`invite_lost`), asks "Back up this phone’s wardrobe with …’s invitation?" ("Keep it and back it up") and keeps the wardrobe, changes since the end included, instead of "Clear and switch": the old backup can't be reached, and after a switch-off the app stops syncing so it never hears of a later deletion; `tests/inviteswitch.test.js`
 - "Clear and switch" first backs up what no backup took (`acctPending`: `syncMark().sig` against the wardrobe's `stateSig`, then `syncNow()`); still pending (backups paused, server refusing), the question says the changes would be lost and its button reads "Clear, losing those changes" (`acctSwitchText`); it also says the settings go and the setup starts again
+- the backup before a switch (`acctBackUpFirst`) runs up to `ACCT_SYNC_TRIES` (3) times while the server takes it, since its first pull lets the start-up writers save the day's record, and gives up after `ACCT_SYNC_MS` (20 s), so a slow connection still gets the question
 
 ### `setup.js`
 

@@ -71,7 +71,7 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
       // what no backup has taken yet is backed up first; what still can't be is said plainly before anything is cleared (2026-11-15, the
       // re-audit: a tie added while the day's backups were used up was wiped under "its backup on the server stays as it is")
       let pend=await acctPending();
-      if(pend&&typeof syncNow==='function'){acctToast('Backing up this phone’s changes first…',4000);try{await syncNow()}catch{}pend=await acctPending()}
+      if(pend&&typeof syncNow==='function'){acctToast('Backing up this phone’s changes first…',4000);pend=await acctBackUpFirst()}
       if(!await askConfirm(acctSwitchText(r.j.name,pend),{ok:pend?'Clear, losing those changes':'Clear and switch',danger:true})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
       if(typeof wipeDevice==='function')await wipeDevice();
       localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
@@ -96,6 +96,16 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
    or there was none) -> true/false */
 async function acctPending(){try{if(typeof syncMark!=='function'||typeof stateSig!=='function'||typeof localState!=='function')return false;
   const m=syncMark();return !m||m.sig!==stateSig(mergeState(await localState(),{}))}catch(e){console.warn('backup state not read',e);return true}}
+/* back up before a switch -> whether changes are still waiting. A backup's first pull lets the start-up writers run (the day's record, the
+   week's locks: sync.js afterPull), which are changes of their own, so it backs up again, up to ACCT_SYNC_TRIES times, while the server
+   takes them; within ACCT_SYNC_MS, so a slow connection still gets its question (it then says what isn't backed up) */
+const ACCT_SYNC_TRIES=3;
+const ACCT_SYNC_MS=20000;
+async function acctBackUpFirst(){const t0=Date.now();let pend=true;
+  for(let k=0;k<ACCT_SYNC_TRIES&&pend;k++){const left=ACCT_SYNC_MS-(Date.now()-t0);if(left<=0)break;
+    let to;const ok=await Promise.race([Promise.resolve().then(()=>syncNow()).catch(()=>false),new Promise(r=>{to=setTimeout(()=>r('slow'),left)})]);clearTimeout(to);
+    pend=await acctPending();if(ok!==true)break}
+  return pend}
 /* the "Clear and switch" question: what is cleared (the setup's answers too, since the new account starts afresh), where the old
    wardrobe stays, and, with changes no backup has taken (pend), that they would be lost */
 function acctSwitchText(name,pend){const last=+localStorage.getItem('last_sync')||0;
