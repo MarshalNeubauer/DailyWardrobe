@@ -67,7 +67,7 @@ function subOpen(){appPush('sub');
 function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
   appKeep=!!f.set;try{show(f.page)}finally{appKeep=false}scrollTo(0,f.y);   // back to Settings: the entry stays, for Settings now
   if(!f.set)return;openSettings();for(const k of f.set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=f.set.top}
-/* Add is a page of the Wardrobe (its + Add button), with a ‹ back to where it was opened from (subBack) */
+/* Add is a page of the Wardrobe (its round + button, #ward-add), with a ‹ back to where it was opened from (subBack) */
 function openAdd(){subOpen();show('add');scrollTo({top:0})}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
