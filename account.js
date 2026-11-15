@@ -78,11 +78,7 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
       try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note','Connected as '+(r.j.name||'a tester'))}catch{}
       location.reload();return true}
     for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k);   // what the old account's syncs left
-  }else if(local.sample&&!(cur&&cur.tok===p.code)){
-    // the sample wardrobe isn't the person's: connected, it would be backed up into their wardrobe and show on their other phones
-    if(!await askConfirm(`Remove the sample wardrobe first?\n\nOnce connected, what is on this phone is backed up to your wardrobe and shows on your other phones too. The ${local.sample} sample pieces aren’t yours, so they are removed before connecting; your own pieces stay.`,{ok:'Remove the sample and connect'})){
-      acctWhy='kept';acctToast('Not connected: the sample wardrobe stays. Open your invitation link again when you’re ready.',6000);acctLinkDrawn();return false}
-    await acctStarted();if(typeof kitSampleRemove==='function')await kitSampleRemove(true)}
+  }   // (the sample wardrobe needs no question: it stays on this phone and is never backed up, sync.js syncShare; re-audit 2026-11-15)
   localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended','list_pause'])localStorage.removeItem(k);if(typeof connKeep==='function')connKeep();
   acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
