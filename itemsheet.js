@@ -229,23 +229,38 @@ function dropItem(){editing=null;itemFrom=null;histDrop();for(const el of [$('#i
 /* swiping the sheet down closes it. The header is a handle at any time; the content is one only while it is scrolled to the
    top (further down, a downward swipe scrolls it back up, as it must). The choice is made on the first move of a touch, before
    the browser starts scrolling. The sheet follows the finger and the Wardrobe behind brightens; let go past a quarter of the
-   sheet's height, or with a flick, and it closes, else it springs back. Not while cropping (the crop frame is dragged). */
+   sheet's height, or with a flick, and it closes, else it springs back. Not while cropping (the crop frame is dragged).
+   A mouse, trackpad or Pencil (Pointer Events, not touches) drags it by the header the same way; a finger's pointer events are
+   left to the touch listeners. (2026-11-15, the owner's Duo unfolded: the centred panel sat at 4vh, under the status bar, and a
+   pull on its grabber went to iOS; the panel now starts below the status bar, `--ivtop` in styles.css.) */
 let ivDrag=false;
 (()=>{const v=$('#item-view'),b=$('#ivbody'),bd=$('#item-backdrop');if(!v||!b)return;let st=null;
   const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
-  v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest('.ivhead');
-    st=!editing||e.touches.length>1||v.classList.contains('closing')||phEdit.crop||e.target.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0)?null:{x:t.clientX,y:t.clientY,t:Date.now(),on:false,d:0,ly:t.clientY,lt:e.timeStamp,vy:0}},{passive:true});
+  const can=(el,head)=>!(!editing||v.classList.contains('closing')||phEdit.crop||el.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0));
+  const begin=(x,y,ts)=>({x,y,t:Date.now(),on:false,d:0,ly:y,lt:ts,vy:0});
+  // false: not a pull (upward or sideways), let go of it; true: the sheet follows
+  const move=(x,y,ts)=>{const dx=x-st.x,dy=y-st.y;
+    if(!st.on&&st.pid!==undefined&&Math.abs(dx)<4&&Math.abs(dy)<4)return false;   // a mouse reports every pixel: decide after a few
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return false}}   // downward: ours; anything else is a scroll or a sideways swipe
+    // the speed from when each move happened (e.timeStamp), not when it was handled, as in shop.js: on a busy phone a flick handled late read as a slow pull
+    if(ts>st.lt){st.vy=(y-st.ly)/(ts-st.lt);st.ly=y;st.lt=ts}
+    st.d=Math.max(0,dy);put(st.d);return true};
+  v.addEventListener('touchstart',e=>{const t=e.touches[0];
+    st=e.touches.length>1||!can(e.target,!!e.target.closest('.ivhead'))?null:begin(t.clientX,t.clientY,e.timeStamp)},{passive:true});
   v.addEventListener('touchmove',e=>{
-    if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
-    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return}}   // downward: ours; anything else is a scroll or a sideways swipe
-    // the speed from when each touch happened (e.timeStamp), not when it was handled, as in shop.js: on a busy phone a flick handled late read as a slow pull
-    e.preventDefault();const now=e.timeStamp;if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
-    st.d=Math.max(0,dy);put(st.d)},{passive:false});
+    if(!st||st.pid!==undefined)return;const t=e.touches[0];if(move(t.clientX,t.clientY,e.timeStamp))e.preventDefault()},{passive:false});
   const end=()=>{
     if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;ivDrag=false;v.style.transition='';
     if(d>v.offsetHeight*.25||(vy>.5&&d>30)){closeItem(false,d);return}
     put(0);if(!noMotion()){v.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:220,easing:WARD_EASE});if(bd)bd.animate([{opacity:Math.max(.15,1-d/v.offsetHeight)},{opacity:1}],{duration:220})}};
-  v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true});
+  v.addEventListener('touchend',e=>{if(st&&st.pid===undefined)end()},{passive:true});v.addEventListener('touchcancel',e=>{if(st&&st.pid===undefined)end()},{passive:true});
+  // mouse, trackpad, Pencil: by the header only (the content is scrolled and its text selected with them)
+  const h=$('#ivhead');if(!h||!window.PointerEvent)return;
+  h.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.button!==0||st||!can(e.target,true))return;
+    st=begin(e.clientX,e.clientY,e.timeStamp);st.pid=e.pointerId;try{h.setPointerCapture(e.pointerId)}catch{}});
+  h.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
+  const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{h.releasePointerCapture(e.pointerId)}catch{}end()};
+  h.addEventListener('pointerup',pend);h.addEventListener('pointercancel',pend);
 })();
 /* the previous / next item of the list on screen; the new one slides in from the side it lies on */
 function stepItem(n,from){
