@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	492efb6b10cd61b78a00
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd	shadeRow
@@ -2625,6 +2624,58 @@ dblost.test.js	watch/shirt-open.png	<loaded>
 dblost.test.js	watch/shirt-tie.png	<loaded>
 dblost.test.js	watch/suit.png	<loaded>
 dblost.test.js	watch/vest.png	<loaded>
+deadcanvas.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+deadcanvas.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
+deadcanvas.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addRestore	checkArrivals	shadeRow	tagSwInner
+deadcanvas.test.js	analysis.js	<loaded>
+deadcanvas.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fitNav	fitNavSoon	generateSwatch	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	shrink	texSwatches	tx	txFail	txs	window.fetch
+deadcanvas.test.js	apple-touch-icon.png	<loaded>
+deadcanvas.test.js	asm-color.js	<loaded>	asmGapNote
+deadcanvas.test.js	asm-gl.js	<loaded>
+deadcanvas.test.js	asm-watch.js	<loaded>
+deadcanvas.test.js	assemble.js	<loaded>	@
+deadcanvas.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
+deadcanvas.test.js	colpick.js	<loaded>	EP	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
+deadcanvas.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labHex	lum	metalWord	mix	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	takeSettings	thirdOf	titleCls	todayDate
+deadcanvas.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+deadcanvas.test.js	draw.js	<loaded>	fabricDef	itemThumb	shirtFabric	shirtMarks	swatchSVG	tieFabric	tieMarks
+deadcanvas.test.js	dress.js	<loaded>	migrateVests
+deadcanvas.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+deadcanvas.test.js	icon-192.png	<loaded>
+deadcanvas.test.js	icon-512.png	<loaded>
+deadcanvas.test.js	index.html	<loaded>
+deadcanvas.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	applyCrop	cropEditor	cropGeom	cropSource	imgOf	itemBody	itemShown	layoutCrop	makeSmall	noMotion	paperCloth	paperHint	paperLine	paperSteps	phSigOf	phSm	photoTools	renderItem	renderWardrobe	rotatePhoto	setPhoto	setPic	smallPhotos	startCrop	togglePhotoTools	wardList	wardPic
+deadcanvas.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
+deadcanvas.test.js	manifest.webmanifest	<loaded>
+deadcanvas.test.js	mannequin.js	<loaded>	@{}
+deadcanvas.test.js	month.js	<loaded>
+deadcanvas.test.js	mq/shirt-open.js	<loaded>
+deadcanvas.test.js	mq/shirt-tie.js	<loaded>
+deadcanvas.test.js	mq/suit-open.js	<loaded>
+deadcanvas.test.js	mq/suit.js	<loaded>
+deadcanvas.test.js	mq/vest.js	<loaded>
+deadcanvas.test.js	pack.js	<loaded>	packShow
+deadcanvas.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders
+deadcanvas.test.js	planner.js	<loaded>
+deadcanvas.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
+deadcanvas.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	pruneTagImgs	safetyStart
+deadcanvas.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
+deadcanvas.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
+deadcanvas.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+deadcanvas.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	pageIn	show
+deadcanvas.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
+deadcanvas.test.js	styles.css	#add #queue .card>label select,#item-view .card>label select	#add #queue .card>label select,#item-view .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .card>label,#item-view .card>label	#col-backdrop	#col-sheet	#item-backdrop	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .card.ivsec	#item-view .cropwrap	#item-view .cropwrap .btns .pri	#item-view .phtools	#item-view .phtools :is(button,.btn)	#item-view .phtools>:last-child:nth-child(odd)	#item-view.on,#item-view.closing	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast.on	#today	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wclear[hidden]	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden]) ~ #ward-add	*	.btn	.btns	.cap	.card label	.chip	.chip.on	.chipbtn	.chips	.cmpable .swsplit .swtex	.cmpable .swsplit::after	.cmpable .tagsw,.cmpable.cmp .phfig	.cmpbox	.cmpdraw	.cmpdraw .ph.thumb	.cmpdraw svg	.colbtn	.colchev	.colchip	.colchip.none,.cpsw.none,.cpbig.none	.colnm	.cropbox	.cropbox img	.cropbox::after	.cropwrap	.cropzoom	.cropzoom input	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi img.ph	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbody	.ivcare .btns button	.ivcare .carecount	.ivchev	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivhero .pair	.ivhero .pair img.ph,.ivhero .pair .tagsw .ph.thumb,.ivhero .swsplit .swtex	.ivhero figcaption br,.ivhero figcaption b	.ivin	.ivph	.ivph .ivphbtn	.ivph.open .ivphbtn .ivchev	.ivph.open .ivphp	.ivph.open .ivphp>div	.ivphbtn .ivchev	.ivphp	.ivphp .phtools	.ivphp>div	.ivrd	.ivrd .ivrdbtn	.ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivt	.ivt .gtype	.ivt h2	.ivtags .shaderow	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pair	.pair .c1	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.patchip svg,.cppat svg	.patchip,.cppat	.phtools	.phtools button,.phtools .btn	.pri	.rdcost	.shaderow	.shaderow .chipbtn	.shctl	.shctl .shbtn	.shctl .shval	.shelp	.shlab	.slide	.stage	.stage .firstrun	.swsplit	.swsplit .swtex	.swsplit:has(.swtex)::after	.thumb	.thumb svg	.vfile	.vh	.wbpic i	.wbpic::after	.wbpic::before	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,#add) .wfld	:is(#item-view,#add) .wnotes textarea	:is(#item-view,#add) label.wnotes	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	:root	<loaded>	body	body.iv-on #toast,body.iv-on #busy	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	input[type="range"]	label:has(>.vfile)	main	main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
+deadcanvas.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncUrl	syncWaiting
+deadcanvas.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	recolourSpecSetts	resignTagImg	settable	tagImgOf	texSig	upgradeCloseups	upgradePhotos
+deadcanvas.test.js	tests/fixedplan.js	<any>
+deadcanvas.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxFit	wxPreload	zoomTarget
+deadcanvas.test.js	ui.js	<loaded>	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp
+deadcanvas.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
+deadcanvas.test.js	watch/leather.jpg	<loaded>
+deadcanvas.test.js	watch/shirt-open.png	<loaded>
+deadcanvas.test.js	watch/shirt-tie.png	<loaded>
+deadcanvas.test.js	watch/suit.png	<loaded>
+deadcanvas.test.js	watch/vest.png	<loaded>
 deeptaupe.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 deeptaupe.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 deeptaupe.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
