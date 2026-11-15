@@ -212,7 +212,7 @@ const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitTwill(i)?'tw|'+ASM_TWIL
    at 2048 (widened into the ground beside it), and lines crossing the other way at full strength (fabricDef draws them at half, for a
    swatch); a 2% line on a 5 cm pane was 3 px and read faint. A linen jacket (material, or Claude's description of the cloth) gets a
    linen texture in its shading: threads two pixels wide, each a little lighter or darker, plain-woven, with slubs. */
-const asmSuitBands=i=>{const s=usableSett(i);return !!(s&&s.v===2&&s.bands&&s.bands.length>1&&s.tr>0&&[...CHECK_PATS,...STRIPE_PATS].includes(patBase(i.pattern)))};   // stripes too, since they are drawn at their own width on a herringbone or twill (2026-11-13)
+const asmSuitBands=i=>{const s=usableSett(i);return !!(s&&s.v===2&&s.bands&&s.bands.length>1&&s.tr>0&&(!!s.look||[...CHECK_PATS,...STRIPE_PATS].includes(patBase(i.pattern))))};   // (s.look: an own pattern's stripes or check, detect.js lookSett, whatever it plans as)   // stripes too, since they are drawn at their own width on a herringbone or twill (2026-11-13)
 const asmLinen=i=>!!i&&(/linen/i.test(i.material||'')||/linen/i.test((i.patternSpec&&i.patternSpec.description)||i.patternText||''));
 const ASM_LINE_PX=4;   // the narrowest painted line at 2048 (a windowpane's, a check's)
 const ASM_STRIPE_PX=3;   // a stripe's: a pinstripe is about a millimetre (3 px), and at 4 the owner's navy pinstripe read heavy and white

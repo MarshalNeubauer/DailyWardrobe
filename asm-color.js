@@ -239,6 +239,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
   const plain=(gap,why)=>({how:'plain',gap,why}),needs=()=>plain('reading',`its ${pn} is painted once its pattern is read (Read pattern from photo)`);
   if(z==='belt')return {how:'flat',gap:'',why:''};
   if(z==='jacket'||z==='waistcoat'||z==='trousers'){
+    if(s&&s.look&&(s.tex||s.motif))return {how:'look',gap:'',why:''};   // an own pattern's weave or figure (its look, detect.js lookSett): asmLookSuit
     if(z!=='trousers'&&asmSuitBands(i))return {how:'bands',gap:'',why:''};
     // a suit's own trousers (its jacket taken off on Today, 2026-11-13): the jacket's cloth, so a pinstripe or check reads as on the jacket
     if(z==='trousers'&&i.type==='suit'&&asmSuitBands(i))return {how:'bands',gap:'',why:''};
@@ -261,10 +262,10 @@ const ASM_CM_ZONE={suit:'jacket',blazer:'jacket',pants:'trousers',shirt:'shirt',
 const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOut(i.type)).map(i=>({i,r:asmCmRoute(i,ASM_CM_ZONE[i.type])})).filter(x=>x.r.gap);
 /* trousers painted with the suit cloth (a suit's own trousers, or a twill, tweed or small woven figure) are drawn at the shirt master's
    own scale since 2026-11-13 (they were at the jacket master's, about 1.5 times too large): marked in only those looks' keys */
-const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc/lg'+ASM_LEGV:h==='tile'?'/lg'+ASM_LEGV:''};   // (/lg: the lines follow the legs, asmLegsPrep)
+const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='look'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc/lg'+ASM_LEGV:h==='tile'?'/lg'+ASM_LEGV:''};   // (/lg: the lines follow the legs, asmLegsPrep)
 const ASM_LEGV=1;
 function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV+'.'+asmCmCodeSig()],rev=asmCmRev(k);if(rev)s.push('mf:'+rev);   // the painter's code and the master's record dates (asmCmCode, asmCmRev)
-  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i)+asmCrTag(z,i)+asmWtTag(z,i))}
+  for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i)+asmCrTag(z,i)+asmWtTag(z,i)+asmLookTag(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
   if(typeof asmWatchPaints==='function'&&asmWatchPaints(o.watch))s.push('watch:'+asmWatchSig(o.watch));   // another watch than the master's (asm-watch.js)
   if(ASM_CM_BTN[k])s.push('btn'+ASM_CM_BTNV);   // the masters whose shirt buttons are drawn: a new look of them paints those looks again
@@ -558,6 +559,25 @@ async function asmCuTile1(i){const L=ASM_LIN,h=String(colOf(i)).replace('#',''),
   lo.sort((a,b)=>a-b);const shown=lo[Math.floor(lo.length*.95)]-lo[Math.floor(lo.length*.05)],gain=asmSuitWeave(i)==='herringbone'?ASM_CU.hb:asmCuFine(i)&&shown>ASM_CU.fine?ASM_CU.fine/shown:Math.max(1,Math.min(ASM_CU.kmax,ASM_CU.show/Math.max(1e-4,shown)));
   const t=new Float32Array(3*n);for(let k=0;k<n;k++)for(let q=0;q<3;q++)t[3*k+q]=Math.max(0,base[q]*(1+gain*(rel[q][k]-1)));
   return {t,c:new Float32Array(base),TW:T,TH:T,mm,linen:false,cloth:null,...(asmSuitWeave(i)==='herringbone'?{slv:ASM_CU.hbs/ASM_CU.hb}:{}),cu:{x:p.x0,y:p.y0,side:p.P,of:W,even:+p.sd.toFixed(3),line:+p.e.toFixed(3),usual:+p.med.toFixed(3),sharp:+(p.sharp/(p.f90||1)).toFixed(2),swing:+swing.toFixed(3),shown:+shown.toFixed(3),gain:+gain.toFixed(2)}}}
+/* an own pattern's look on a jacket, waistcoat or trousers (2026-11-15, the owner: a new pattern the user adds must be painted): its weave
+   map (a texture look) as the suit cloth: one repeat, each cell ASM_LOOK.px texels, softened over ASM_LOOK.soft of a cell (threads, not
+   pixel squares), its raised cells lighter (or darker) by ASM_LOOK.amp[contrast] of the item's colour around it, one repeat
+   ASM_SHIRT_MM / its repeats across; a figure look (motif) is the app's drawing of it (asmCmTile). Stripes and checks go through the band
+   painter (asmSuitBands takes a look's bands whatever it plans as); shirts and ties take a look as a reading (their tile and tie painters).
+   The look's signature and repeats are in the look's key (asmLookTag) -> a suit tile {t, c, TW, TH, mm, linen, cloth} */
+const ASM_LOOK={px:12,soft:.35,amp:{faint:.07,subtle:.13,clear:.22},v:1};
+async function asmLookSuit(i){const s=usableSett(i);if(!s||!s.look)return null;const L=ASM_LIN,h=String(colOf(i)).replace('#',''),base=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]);
+  const mm=ASM_SHIRT_MM/Math.max(.2,+s.tr||10);
+  if(s.tex){const g=s.tex.grid,M=g[0].length,N=g.length,P=ASM_LOOK.px,TW=M*P,TH=Math.max(2,Math.round(TW*(+s.tex.aspect||N/M))),ch=TH/N,r=Math.max(1,Math.round(P*ASM_LOOK.soft));
+    const on=(x,y)=>g[((Math.floor(y/ch)%N)+N)%N][((Math.floor(x/P)%M)+M)%M]==='1'?1:0,v=new Float32Array(TW*TH);let lo=1,hi=0,m=0;
+    for(let y=0;y<TH;y++)for(let x=0;x<TW;x++){let a=0,n=0;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){a+=on(x+dx,y+dy);n++}const w=a/n;v[y*TW+x]=w;m+=w;if(w<lo)lo=w;if(w>hi)hi=w}
+    m/=TW*TH;const amp=(ASM_LOOK.amp[s.tex.contrast]||ASM_LOOK.amp.subtle)*(s.tex.lighter===false?-1:1)/Math.max(1e-3,hi-lo),t=new Float32Array(3*TW*TH);
+    for(let k=0;k<TW*TH;k++){const f=1+amp*(v[k]-m);for(let q=0;q<3;q++)t[3*k+q]=Math.max(0,Math.min(1,base[q]*f))}
+    return {t,c:new Float32Array(base),TW,TH,mm,linen:asmLinen(i),cloth:null}}
+  const T=await asmCmTile(i,'top');return T?{t:T.t,c:new Float32Array(base),TW:T.TW,TH:T.TH,mm:T.mm,linen:asmLinen(i),cloth:null}:null}
+/* the look's part of a garment's key: its recipe's signature and repeats, so a re-described pattern repaints (an item changed to an own
+   pattern already has a new key by its pattern) */
+const asmLookTag=(z,i)=>{if(!i||!['jacket','waistcoat','trousers','shirt','tie'].includes(z))return '';const s=typeof usableSett==='function'?usableSett(i):null;return s&&s.look?'/lk'+ASM_LOOK.v+s.look+'x'+s.tr:''};
 /* a worsted twill (2026-11-14, the owner's pick "strong" from mockups on his Black suit): the generated twill (asmTwillTex) read as a
    woven crosshatch, a faint check over the whole jacket, which a plain black twill doesn't have. asmWorstedTile(item): rounded ribs with a
    narrow groove between them, rising about 60 degrees to the right (ASM_WT.k: whole rib cycles across the tile each way), each rib a
@@ -591,7 +611,8 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
   for(const [z,i] of Object.entries(it)){if(!i)continue;const c={hex:colOf(i)},how=asmCmRoute(i,z).how;
     try{
       if(how==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
-      else if(how==='bands')c.suit=await asmSuitTex(i);   // a jacket's read stripes or checks: the app's suit cloth
+      else if(how==='bands')c.suit=await asmSuitTex(i);
+      else if(how==='look')c.suit=await asmLookSuit(i);   // an own pattern's weave or figure on a jacket, waistcoat or trousers   // a jacket's read stripes or checks: the app's suit cloth
       else if(how==='twill'&&asmWtWants(i,z))c.suit=asmWorstedTile(i);   // a worsted twill's ribs (asmWorstedTile)
       else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
       else if(how==='tweed')c.suit=asmTweedTex(i);
@@ -872,7 +893,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_WT,asmWtMem,asmWtWants,asmWorstedTile,ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_LOOK,asmLookSuit,asmLookTag,ASM_WT,asmWtMem,asmWtWants,asmWorstedTile,ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,

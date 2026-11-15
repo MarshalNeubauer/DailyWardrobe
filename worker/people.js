@@ -45,10 +45,11 @@ const PLAIN = {
   photo: 'The photo service had a problem. Try again later.',
   tag: 'The photo couldn’t be read just now. Try again later, or add the item by hand.',
   pattern: 'The pattern couldn’t be read just now. Try again later.',
+  describe: 'The colour or pattern couldn’t be looked up just now. Try again later.',
   sync: 'The backup couldn’t be reached just now. Your wardrobe is safe on this phone; it will try again.',
   other: 'Something went wrong on the server. Try again later.',
 };
-const plainKind = p => (p === '/render' ? 'photo' : p === '/pattern' ? 'pattern' : p === '' || p === '/tag-many' ? 'tag' : p === '/sync' ? 'sync' : 'other');
+const plainKind = p => (p === '/render' ? 'photo' : p === '/pattern' ? 'pattern' : p === '/describe' ? 'describe' : p === '' || p === '/tag-many' ? 'tag' : p === '/sync' ? 'sync' : 'other');
 function plainFor(body, p) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return body;
   let changed = false; const out = { ...body };
@@ -63,7 +64,7 @@ function plainFor(body, p) {
    (PUT /render) and feedback messages.
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
-const DEFAULT_CAPS = { tag: 40, pattern: 10, item: 20 };
+const DEFAULT_CAPS = { tag: 40, pattern: 10, item: 20, describe: 40 };   // describe: POST /describe, a colour or pattern described in words (2026-11-15, the owner: 40 a day)
 const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30 };
 /* write: every KV write a tester causes (each new photo a backup stores, the backup itself and its daily copies, uploads, deletes,
    feedback, reminders, item pictures), so no one tester can use up the free plan's 1,000 writes a day; a backup whose
@@ -73,8 +74,8 @@ const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200,
 /* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
-const USE_RE = /^(tag|pattern|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const CAP_WORDS = { describe: 'colour and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
+const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
@@ -105,7 +106,7 @@ async function useCount(env, id, what, n, cap, day) {
    {"item":20}) changes any of them. */
 /* write: 450 of the free plan's 1,000 KV writes a day for every tester together, so the owner (backups, the PC's picture uploads,
    the reminders, the clean-up) always has more than half; list: 150 of its 1,000 lists */
-const ALL_CAPS = { tag: 150, pattern: 40, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150 }, ALL_ID = 'all';
+const ALL_CAPS = { tag: 150, pattern: 40, describe: 150, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };

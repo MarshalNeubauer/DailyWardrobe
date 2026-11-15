@@ -3,6 +3,7 @@
 // Bindings / variables (Worker > Settings):
 //   ANTHROPIC_API_KEY  secret; your Claude API key from platform.claude.com. When set, photos are tagged by Claude.
 //   CLAUDE_MODEL    optional, defaults to claude-opus-5-5 (e.g. claude-sonnet-5-5 or claude-haiku-5-5 cost less)
+//   CLAUDE_DESCRIBE_MODEL optional, the model of POST /describe (a colour or pattern described in words), defaults to claude-sonnet-5-5
 //   AI              Workers AI binding, variable name "AI"   (used only when ANTHROPIC_API_KEY is not set)
 //   APP_TOKEN       secret; the owner's token, the App Token in the app's settings. Required: without it every route refuses.
 //                   Invited testers connect with a code of their own (POST /invites), each with their own storage and daily caps.
@@ -21,6 +22,7 @@
 // CORS and the Worker's handlers (fetch, queue, scheduled). Split into modules on 2026-11-14.
 import { FREE_EXTRA, FREE_PAT_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, wbOf } from './worker/tag.js';
 import { handlePattern } from './worker/pattern.js';
+import { handleDescribe } from './worker/describe.js';
 import { handleFetchImage, readCapped } from './worker/links.js';
 import { handleRender } from './worker/render.js';
 import { noteKvFull } from './worker/items.js';
@@ -39,6 +41,7 @@ const ROUTES = {
   'GET /holidays': [handleHolidays, 'Set an APP_TOKEN secret on the worker to load holiday lists.'],
   'POST /tag-many': [handleTagMany, UNSET],
   'POST /pattern': [handlePattern, UNSET],
+  'POST /describe': [handleDescribe, UNSET],
   'POST /render': [handleRender, 'Set an APP_TOKEN secret on the worker to generate item pictures.'],
   'GET /render': [getRender],
   'PUT /render': [putRender],

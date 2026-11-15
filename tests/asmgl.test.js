@@ -17,6 +17,12 @@ const HBP={v:2,a:0,bands:[['#3b3d42',.47],['#b8b8b4',.06],['#3b3d42',.47]],cross
 const STT={v:2,a:-45,bands:[['#16151d',.85],['#e090a0',.15]],cross:null,cr:2.75,tr:3.6,src:'claude+pixels'};
 // the owner's pink herringbone shirt (tests/herringbone.test.js)
 const HBS={v:4,tex:{kind:'herringbone',grid:['1000000110','0100001010','0010010010','0001100010'],aspect:.3,lighter:true,contrast:'subtle',rel:.179},a:0,cr:13,tr:45};
+// own patterns with a look (2026-11-15, "+ New pattern or texture": Claude's recipe in colour roles, detect.js lookSett), painted on every garment
+const OWN_HOP={key:'own-hopsack',name:'Hopsack',base:'nailhead',types:['suit','blazer','pants'],look:{layout:'texture',tr:70,tex:{kind:'basket',grid:['1100','1100','0011','0011'],aspect:1,lighter:true,contrast:'subtle'}}};
+const OWN_PANE={key:'own-tonal-windowpane',name:'Tonal windowpane',base:'windowpane',types:['suit','blazer','pants'],look:{layout:'windowpane',tr:5,across:[['main',.95],['lighter',.05]],along:[['main',.95],['lighter',.05]]}};
+const OWN_NEAT={key:'own-neat',name:'Neat',base:'other',types:['blazer'],look:{layout:'motif',tr:40,motif:{grid:'straight',figs:[{shape:'diamond',place:'cell',colour:'second',size:.3}],aspect:1,off:false}}};
+const OWN_BENGAL={key:'own-bengal',name:'Bengal stripe',base:'stripe',types:['tie','shirt'],look:{layout:'stripes',tr:6,across:[['main',.5],['second',.5]]}};
+const OWN_TONAL={key:'own-tonal-stripe',name:'Tonal stripe',base:'dobby',types:['shirt'],look:{layout:'texture',tr:60,tex:{kind:'other',grid:['1100','1100','1100','1100'],aspect:1,lighter:true,contrast:'subtle'}}};
 const LOOKS=[
   {name:'plain navy',top:['suit','navy'],shirt:'pink',tie:'burgundy',gl:true},
   {name:'plain mid grey',top:['suit','midgrey'],shirt:'white',tie:'navy',gl:true},
@@ -111,6 +117,15 @@ const LOOKS=[
   {name:'shirt-open: blue stripe shirt, solved positions',bot:['pants','navy'],belt:'brown',shirt:['white',{pattern:'stripe',secondaryColor:'blue'}],tie:null,geo:true,gl:true,has:'shirt-tile,m-shirt-open,gs,legs,belt,buckle'},
   {name:'shirt-open: gingham shirt, tan belt',bot:['pants','khaki',{trouserKind:'chinos',pattern:'twill'}],belt:'tan',shirt:['lightblue',{pattern:'gingham'}],tie:null,gl:true,has:'twill,shirt-tile,m-shirt-open,gs,legs,belt,buckle'},
   {name:'shirt-open: jacket and tie taken off, suit trousers in pinstripe',bot:['suit','navy',{pattern:'pinstripe',sett:PIN}],suitBot:true,belt:'black',shirt:'white',tie:null,gl:true,has:'tile,k,m-shirt-open,gs,legs,belt,buckle,suitbot'},
+  // own patterns' looks (detect.js lookSett; asm-color.js asmLookSuit for a jacket's, waistcoat's or trousers' weave or figure, the band
+  // painter for stripes and checks, the tie and shirt painters as readings): painted the same on both
+  {name:'own hopsack blazer (its weave map)',top:['blazer','navy',{pattern:'own-hopsack'}],shirt:'white',tie:'burgundy',gl:true,has:'tile',own:[OWN_HOP]},
+  {name:'own hopsack suit, solved positions',top:['suit','grey',{pattern:'own-hopsack'}],shirt:'lightblue',tie:'navy',geo:true,gl:true,has:'tile',own:[OWN_HOP]},
+  {name:'own tonal windowpane suit (bands in its colour)',top:['suit','charcoal',{pattern:'own-tonal-windowpane'}],shirt:'white',tie:'burgundy',gl:true,has:'tile',own:[OWN_PANE]},
+  {name:'own neat blazer (a figure look)',top:['blazer','navy',{pattern:'own-neat',secondaryColor:'gold'}],shirt:'white',tie:'navy',gl:true,has:'tile',own:[OWN_NEAT]},
+  {name:'own bengal tie, own tonal stripe shirt',top:['suit','navy'],shirt:['white',{pattern:'own-tonal-stripe'}],tie:['navy',{pattern:'own-bengal',secondaryColor:'white'}],gl:true,has:'tie-bands,shirt-tile,fine',own:[OWN_BENGAL,OWN_TONAL]},
+  {name:'vest: own hopsack suit',top:['suit','navy',{pattern:'own-hopsack'}],vest:true,shirt:'white',tie:'burgundy',gl:true,has:'tile,m-vest,wc',own:[OWN_HOP]},
+  {name:'shirt-tie: own hopsack trousers, own bengal shirt',bot:['pants','charcoal',{pattern:'own-hopsack'}],belt:'black',shirt:['white',{pattern:'own-bengal',secondaryColor:'blue'}],tie:'navy',gl:true,has:'tile,shirt-tile,m-shirt-tie,gs,legs,belt,buckle',own:[OWN_HOP,OWN_BENGAL]},
   // not covered: the CPU paints it (the cloth look off; since stage 5 no other look a phone paints is left to the CPU on any master)
   {name:'cloth look off',top:['suit','navy'],shirt:['lightblue',{pattern:'gingham'}],tie:'burgundy',jx:{look:false},gl:false,why:/cloth look off/},
 ].filter(L=>!process.env.ASMGL_ONLY||new RegExp(process.env.ASMGL_ONLY).test(L.name));
@@ -165,6 +180,7 @@ module.exports=async({ok,chromium,url})=>{
       const id=x.getImageData(0,0,512,512);let s=7;for(let k=0;k<id.data.length;k+=4){s=(Math.imul(s,1103515245)+12345)>>>0;const v=(s/4294967296-.5)*6;id.data[k]+=v;id.data[k+1]+=v;id.data[k+2]+=v}x.putImageData(id,0,0);
       const b=document.createElement('canvas');b.width=b.height=512;const bx=b.getContext('2d');bx.filter='blur(3px)';bx.drawImage(c,0,0);
       renders[asmCmBgKey()]={img:b.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
+      {const own=[];for(const L of LOOKS)for(const q of L.own||[])if(!own.some(x=>x.key===q.key))own.push(q);if(own.length)applyCustom({patterns:own})}   // (own patterns with a look)
       let n=0;const I=(type,c,x={})=>({id:type+(n++),type,primaryColor:c,pattern:'solid',...x}),watch=I('watch','silver',{metal:'silver'});items=[watch];
       window.__jobs=[];window.__its=[];for(const L of LOOKS){const it=([t,c,x])=>I(t,c,x||{}),top=L.top?it(L.top):null,bot=L.bot?it(L.bot):null,belt=L.belt?I('belt',L.belt):null;
         const sh=Array.isArray(L.shirt)?I('shirt',L.shirt[0],L.shirt[1]):I('shirt',L.shirt),tie=L.tie==null?null:Array.isArray(L.tie)?I('tie',L.tie[0],L.tie[1]):I('tie',L.tie);
@@ -222,6 +238,14 @@ module.exports=async({ok,chromium,url})=>{
       if(L.gl){ok(r.cpu===false&&r.gl===true,`${L.name}: the graphics chip paints it (switch on), the CPU with the switch off (${r.why||'covered'})`);
         ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at ${SIZE}; tiles ${r.tkb} KB; textures ${r.mb} MB, ${r.cm})`)}
       else ok(r.gl===false&&L.why.test(r.why)&&r.max===0,`${L.name}: not covered (${r.why}): painted on the CPU either way, the same picture`)}
+    // an own pattern's look in the look's key: changing an item to it, or re-describing it, gives a new key (phones and the PC repaint)
+    const ks=await p.evaluate(async()=>{const w=items[0],sh={id:'k1',type:'shirt',primaryColor:'white',pattern:'solid'},tie={id:'k2',type:'tie',primaryColor:'navy',pattern:'solid'},top={id:'k3',type:'blazer',primaryColor:'navy',pattern:'nailhead'};
+      const o=()=>({top,shirt:sh,tie,watch:w}),k0=asmCmSig(o());top.pattern='own-hopsack';const k1=asmCmSig(o()),route=asmCmRoute(top,'jacket').how,j=await asmCmJob(o()),T=j.cloth.jacket.suit;
+      let lo=1,hi=0;for(let k=0;k<T.t.length;k+=3){lo=Math.min(lo,T.t[k]);hi=Math.max(hi,T.t[k])}
+      const all=Object.values(CUSTOM_PAT),was=CUSTOM_PAT['own-hopsack'];applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?{...q,look:{...q.look,tr:40}}:q)});const k2=asmCmSig(o()),mm2=(await asmCmJob(o())).cloth.jacket.suit.mm;
+      applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?was:q)});return {k0,k1,k2,route,tw:T.TW,swing:(hi-lo)/T.c[0],mm:T.mm,mm2,lk:/\/lk1l/.test(k1)}});
+    ok(ks.k0!==ks.k1&&ks.k1!==ks.k2&&ks.lk,'an item changed to an own pattern, and the pattern re-described, each give the look a new key (/lk…)');
+    ok(ks.route==='look'&&ks.tw===48&&ks.swing>.08&&ks.swing<.2&&Math.abs(ks.mm-550/70)<.01&&Math.abs(ks.mm2-550/40)<.01,`the jacket is painted from the look's weave map: one 4x4 repeat, 550 mm / its repeats across (${ks.mm.toFixed(2)} mm, swing ${ks.swing.toFixed(3)} of its colour)`);
     // fallbacks: no WebGL2 at all, then a lost context, then the retry
     const fb=await p.evaluate(async()=>{const i=0,out={};
       const oc=OffscreenCanvas.prototype.getContext,hc=HTMLCanvasElement.prototype.getContext;

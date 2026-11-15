@@ -130,6 +130,18 @@ const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoe
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
   'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','tonal-check'];
+/* each colour key's sRGB hex: must match COLORS in core.js (tests/colouraudit.test.js); worker/describe.js tells Claude the shades */
+const COLOR_HEX = { black: '#16161a', charcoal: '#3b3f46', darkgrey: '#5e6269', grey: '#8b8f96', midgrey: '#a2a4a8', lightgrey: '#babdc2', white: '#f6f6f3',
+  cream: '#efe4c8', lightblue: '#a9c7e4', blue: '#3f6fb5', steelblue: '#56657f', deepblue: '#26326a', navy: '#1b2a4a', darknavy: '#1c1f2b', slate: '#3a3f4c',
+  brown: '#5a3a22', tan: '#b8946a', khaki: '#c3b091', taupe: '#8b7d6b', deeptaupe: '#5f5449', rust: '#a4502a', olive: '#5b5d36', green: '#2f6b4a',
+  burgundy: '#6d1f2c', wine: '#7d2438', oxblood: '#4a1a1e', red: '#b3262e', purple: '#5d3a7a', pink: '#e3a5b4', gold: '#c9a227', silver: '#c3c6cb',
+  rosegold: '#c98f7a', gunmetal: '#55595f', paleyellow: '#f1e6ac', ivory: '#f4efde', beige: '#dccbb0', lavender: '#c9bfe2', periwinkle: '#9ea8d4',
+  mint: '#cfe6d4', stone: '#cbbfa3', denim: '#3e5c86' };
+/* the patterns each item type offers: must match PATS_BY in core.js (tests/colouraudit.test.js) */
+const SUIT_PATS = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','other'];
+const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
+  shirt: ['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','other'],
+  tie: ['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'] };
 const orNull = values => ({ anyOf: [{ type: 'string', enum: values }, { type: 'null' }] });
 // Structured output: the reply is guaranteed to be JSON matching this schema.
 const TAG_SCHEMA = {
@@ -281,23 +293,30 @@ const CLIENT_GONE = { status: 499, body: { error: 'gone', detail: 'The app close
 async function tagWithClaude(env, image, opts = {}) {
   const m = image.match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   if (!m) return { status: 400, body: { error: 'no image' } };
-  const model = env.CLAUDE_MODEL || CLAUDE_DEFAULT;
-  const headers = { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
   /* The order is the cache's: the system prompt holds the fixed instructions (opts.prompt, the same for every call of a kind) with
      the first cache point, then the owner's colours, patterns and corrections (opts.owner, the same from call to call) with the
      second; the photos and what changes with each call (opts.text: the close-up note, the light, the measurement) come last.
      The fixed text used to follow the photos, so nothing could be cached. A prefix under the model's minimum is simply not cached */
+  return claudeCall(env, { ...opts, model: env.CLAUDE_MODEL || CLAUDE_DEFAULT, system: CLAUDE_SYSTEM + '\n\n' + (opts.prompt || TAG_INTRO + TAG_RULES),
+    schema: opts.schema || TAG_SCHEMA, content: [
+      { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
+      ...(opts.closeup ? [{ type: 'image', source: { type: 'base64', media_type: opts.closeup[1], data: opts.closeup[2] } }] : []),
+      { type: 'text', text: [opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.' : '', lightText(opts.wb), (opts.text || '').trim()].filter(Boolean).join('\n\n') },
+    ] });
+}
+/* one call to Claude (tagWithClaude's photos, worker/describe.js's words): opts {model, system (the fixed text, first cache point),
+   owner (the owner's own lists, second cache point), content (the user message's blocks: what changes per call), schema, effort,
+   maxTokens, signal, what (the log's word)} -> {status, body}; the headers, refusal fallback, retry, time limit, stop reasons, token log */
+async function claudeCall(env, opts) {
+  const model = opts.model || CLAUDE_DEFAULT;
+  const headers = { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
   const cached = t => ({ type: 'text', text: t, cache_control: { type: 'ephemeral' } });
   const body = {
     model,
     max_tokens: opts.maxTokens || 4000,    // thinking counts toward this; a single item's JSON is ~100 tokens
-    output_config: { effort: opts.effort || 'low', format: { type: 'json_schema', schema: opts.schema || TAG_SCHEMA } },
-    system: [cached(CLAUDE_SYSTEM + '\n\n' + (opts.prompt || TAG_INTRO + TAG_RULES)), ...(opts.owner ? [cached(opts.owner.trim())] : [])],
-    messages: [{ role: 'user', content: [
-      { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
-      ...(opts.closeup ? [{ type: 'image', source: { type: 'base64', media_type: opts.closeup[1], data: opts.closeup[2] } }] : []),
-      { type: 'text', text: [opts.closeup ? 'The first photo is the whole item. The second is a close-up of its cloth: use it for the weave, the pattern and the exact colour.' : '', lightText(opts.wb), (opts.text || '').trim()].filter(Boolean).join('\n\n') },
-    ] }],
+    output_config: { effort: opts.effort || 'low', format: { type: 'json_schema', schema: opts.schema } },
+    system: [cached(opts.system), ...(opts.owner && opts.owner.trim() ? [cached(opts.owner.trim())] : [])],
+    messages: [{ role: 'user', content: opts.content }],
   };
   // If a safety classifier declines (very unlikely for clothing photos), let the API retry on its recommended model.
   if (/opus|fable|sonnet-5-5/.test(model)) { body.fallbacks = 'default'; headers['anthropic-beta'] = 'server-side-fallback-2026-07-01'; }
@@ -333,11 +352,11 @@ async function tagWithClaude(env, image, opts = {}) {
     return { status: 502, body: { error: 'ai', detail: `Claude API: ${msg}${hint}` } };
   }
   if (!out) return { status: 502, body: { error: 'ai', detail: 'Claude API: an answer that was not JSON' } };
-  if (out.stop_reason === 'refusal') return { status: 502, body: { error: 'ai', detail: 'Claude declined to label this photo.' } };
+  if (out.stop_reason === 'refusal') return { status: 502, body: { error: 'ai', detail: opts.what === 'described' ? 'Claude declined to answer this description.' : 'Claude declined to label this photo.' } };
   if (out.stop_reason === 'max_tokens') return { status: 502, body: { error: 'ai', detail: 'Claude ran out of tokens before answering.' } };
   const text = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   const u = out.usage || {};
-  console.log(`tagged by Claude (${out.model}); tokens in ${u.input_tokens}, cache read ${u.cache_read_input_tokens || 0}, cache written ${u.cache_creation_input_tokens || 0}, out ${u.output_tokens}`);
+  console.log(`${opts.what || 'tagged'} by Claude (${out.model}); tokens in ${u.input_tokens}, cache read ${u.cache_read_input_tokens || 0}, cache written ${u.cache_creation_input_tokens || 0}, out ${u.output_tokens}`);
   try { return { status: 200, body: { ...JSON.parse(text), model: out.model } }; }
   catch { return { status: 502, body: { error: 'unparseable model output', detail: text.slice(0, 300) } }; }
 }
@@ -452,4 +471,4 @@ async function tagWithWorkersAi(env, image) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, TYPE_LIST, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
