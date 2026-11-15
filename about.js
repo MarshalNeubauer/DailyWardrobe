@@ -95,7 +95,9 @@ async function sendFeedback(){
     catch{aboutSay('#fb-status','Couldn’t send it: the server didn’t answer. Check your connection and try again.',true);return}
     const j=await r.json().catch(()=>({}));
     if(r.status===404)aboutSay('#fb-status','Feedback isn’t available yet. Please try again in a few days.',true);
-    else if(!r.ok)aboutSay('#fb-status','Couldn’t send it: '+(j&&j.error?j.error:'the server answered '+r.status)+'.',true);
+    // the server's own sentence (a daily limit, its saves used up), never its code: "Couldn't send it: kv-limit." (2026-11-15, the audit)
+    else if(!r.ok){const why=j&&j.message||(j&&/\s/.test(j.error||'')?j.error:'');   // (an error with no space is a code: kv-limit, limit)
+      aboutSay('#fb-status',why?'Couldn’t send it: '+why.replace(/\.?$/,'.')+' What you wrote is kept here.':'Couldn’t send it: the server had a problem just now. Try again in a while; what you wrote is kept here.',true)}
     else{el.value='';try{localStorage.removeItem('err_log')}catch{}aboutSay('#fb-status','Thank you. Your feedback was sent.');loadFeedback()}
   }finally{if(b)b.disabled=false}}
 /* the owner also sees what was sent in (GET /me says who this is; anything but a clear "owner" shows nothing) */
@@ -118,7 +120,7 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','remind','remind_sent','care_told','black_bd','err_log'];
+const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','invite_lost','sync_wait','sync_restore','remind','remind_sent','care_told','black_bd','err_log'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));

@@ -34,7 +34,12 @@ async function connectFromLink(text){const p=inviteParts(text);
   // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
   const cur=acctBase();
   if(cur&&cur.tok&&cur.tok!==p.code){
-    if(acctHasLocal()){
+    // the server no longer knew the old code (sync.js inviteLost: its storage was lost, or the account deleted elsewhere): the wardrobe on
+    // this phone has no other copy, so the new invitation takes it and backs it up instead of clearing it (2026-11-15, the audit)
+    const lost=localStorage.getItem('invite_lost')===cur.tok;
+    if(lost&&acctHasLocal()&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThe server no longer knew your old invitation. Your wardrobe stays on this phone and is backed up with the new one.`,{ok:'Back it up'})){acctToast('Kept the current connection.');return false}
+    if(lost)localStorage.removeItem('invite_lost');
+    else if(acctHasLocal()){
       if(!await askConfirm(`Switch this phone to ${r.j.name?r.j.name+'’s':'this'} invitation?\n\nThis phone is connected to another wardrobe. To switch, its wardrobe is cleared from this phone first; its backup on the server stays as it is.`,{ok:'Clear and switch',danger:true})){acctToast('Kept the current connection.');return false}
       if(typeof wipeDevice==='function')await wipeDevice();
       localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);

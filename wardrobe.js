@@ -88,9 +88,14 @@ const fldRow=(k,lab,v,on,ph)=>`<label>${lab} <input type="text" class="wfld wf-$
 const notesRow=(v,on)=>`<label class="wnotes">Notes <textarea class="wf-notes" rows="2" maxlength="${WARD_MAX.notes}" placeholder="Size, where it came from, how it fits…" ${on('notes')}>${esc(v||'').replace(/>/g,'&gt;')}</textarea></label>`;
 /* the item sheet's Details card: name and brand at its top, material and notes at its end. A text field saves when it is left,
    and a moment after the last keystroke too (a sheet swiped away never tells a field it was left) */
-let wardTypeT=null;
-function itemFieldSoon(id,k,v){clearTimeout(wardTypeT);wardTypeT=setTimeout(()=>setItemField(id,k,v),600)}
-const ivOn=id=>k=>`oninput="itemFieldSoon('${id}','${k}',this.value)" onchange="clearTimeout(wardTypeT);setItemField('${id}','${k}',this.value)"`;
+/* the waiting save runs at once when the app goes to the background or the page goes (2026-11-15, the audit: a name typed and Safari
+   swiped away within 0.6 s was lost, since iOS stops a hidden page's timers and may then kill it) */
+let wardTypeT=null,wardTypeP=null;
+function itemFieldSoon(id,k,v){clearTimeout(wardTypeT);wardTypeP=[id,k,v];wardTypeT=setTimeout(itemFieldNow,400)}
+function itemFieldNow(){clearTimeout(wardTypeT);const p=wardTypeP;wardTypeP=null;if(p)return setItemField(...p)}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')itemFieldNow()});
+addEventListener('pagehide',()=>itemFieldNow());
+const ivOn=id=>k=>`oninput="itemFieldSoon('${id}','${k}',this.value)" onchange="clearTimeout(wardTypeT);wardTypeP=null;setItemField('${id}','${k}',this.value)"`;
 function wardFieldsTop(i){return fldRow('name','Name',i.name,ivOn(i.id),'Optional')+fldRow('brand','Brand',i.brand,ivOn(i.id),'Optional')}
 function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${i.id}','material',`)+notesRow(i.notes,ivOn(i.id))}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */

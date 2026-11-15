@@ -126,6 +126,7 @@ const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather'
 /* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
    temperature units and the weather location */
 let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'auto',updated:0};
+const SET_DEFAULTS=JSON.parse(JSON.stringify(settings));   // the app's own defaults, for a setting a synced copy marks removed (takeSettings)
 /* three-piece suits: a suit may have a matching vest (hasVest). vestMode: 'auto' (suit days that aren't hot, and
    formal days), 'always' (every suit day) or 'never'; a day can override it. A vest means no tie clip. */
 const VESTS=[['yes','Matching vest'],['no','No vest']],VEST_MODES=[['auto','Suit days, except hot ones'],['always','Every suit day'],['never','Never']];
@@ -297,6 +298,16 @@ function stampSettings(s,t){t=t||Date.now();if(!s)return s;
   if(!s.ks||!s.kh)keySettings(s);
   for(const k of new Set([...setKeys(s),...Object.keys(s.kh)])){const h=k in s?setHash(s[k]):'-';if(s.kh[k]!==h){s.kh[k]=h;s.ks[k]=t}}
   s.updated=Math.max(t,(s.updated||0)+1);return s}
+/* stored or downloaded settings (st) taken over the ones in memory (cur) -> the new in-memory settings, keyed. Spread over them, except
+   a setting st marks removed (kh '-': a roll-back to a copy without it, or a removal on another device): it goes from memory too, or, when
+   the app has a default for it, back to that default with stamp 0, so it never wins over the removal (2026-11-15, the audit: a roll-back's
+   removed day off and holidays stayed in memory, and the next change on that phone stamped them back for every device) */
+function takeSettings(cur,st){const s={...cur,...st};
+  if(st&&st.kh){let ks=null,kh=null;
+    for(const k of Object.keys(st.kh))if(st.kh[k]==='-'&&!(k in st)&&!SET_META.includes(k)){
+      if(k in SET_DEFAULTS){if(!ks){ks={...st.ks};kh={...st.kh}}s[k]=JSON.parse(JSON.stringify(SET_DEFAULTS[k]));ks[k]=0;kh[k]=setHash(s[k])}else delete s[k]}
+    if(ks){s.ks=ks;s.kh=kh}}
+  return keySettings(s)}
 /* every setting stamped t (a roll-back or restore: the restored copy wins every setting on every device) */
 function stampAllSettings(s,t){if(!s)return s;s.ks={};s.kh={};for(const k of setKeys(s)){s.ks[k]=t;s.kh[k]=setHash(s[k])}s.updated=t;return s}
 const setStampOf=(s,k)=>s.ks?(s.ks[k]||0):(s.updated||0);

@@ -806,6 +806,16 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 #### Daily backups
 - before the first PUT of each day the worker keeps the backup as `snap:<YYYY-MM-DD>` (30 days) and `snap:<YYYY-MM>` (400 days); `GET /sync?snaps=1` lists, `?snap=<id>` returns one
 - "Roll back" (`loadSnapshots`/`rollBack`/`rollBackState`) restamps the snapshot's records and tombstones the rest, so it wins on every device; the PUT carries `reason:'restore'` and the worker keeps `snap:before-restore`
+- a roll-back's upload is marked in localStorage before the phone's copy changes (`sync_restore` = the code; `restoreWanted`/`restoreDone`): every upload until one goes through carries `reason:'restore'`, so a kill or reload mid-roll-back still gets "Before the last roll-back" kept at the next start (2026-11-15, the new-user audit: it was memory only and 24 pieces were lost for good); `tests/rollback.test.js`
+- settings a synced copy marks removed (`kh` '-': a roll-back, a removal elsewhere) leave memory too (`takeSettings` in core.js, used wherever stored or downloaded settings are taken: start.js, safety.js, settings.js): a roll-back's removed day off and holidays stayed in memory and the next change stamped them back on every phone
+
+#### Messages
+- a sync that brings changes while Settings is open redraws its controls (`syncSettingsRedraw`: `renderSettingsExtras`; while a text field in it is focused, once it is left)
+- a backup that never reached the server says so in words (`syncNetText`: "Not backed up: you’re offline…" / "…the server couldn’t be reached…", `syncWaiting`), with the last backup's time; the `online` event backs up again; `netErr` (ui.js) turns "Load failed" / "Failed to fetch" into plain words inside `plainErr` for everyone (picture batch, Several items, roll-back and backup lists)
+- the Backup summary (`backupSummary`, kept current by `showSyncStatus`): "Paused until tomorrow" while `sync_pause`, "Waiting for a connection", "Not backed up: ask for a new invitation link", and "Backed up today · newer changes waiting" while `sync_wait` (set by `scheduleSync`, cleared by `synced`)
+- a tester's code the server no longer knows (403 `forbidden token`: storage lost, account deleted elsewhere) is `LOST` everywhere (`inviteLost`, `localStorage.invite_lost`; `plainErr('forbidden token')`), start-up writers go ahead; a new invitation link then asks "Back up this phone’s wardrobe…" and keeps the wardrobe instead of "Clear and switch" (account.js `connectFromLink`)
+- the write ceiling is worded by the app (`backupFullMsg`: `pr.write`, `pr.all` → "everyone’s backups"), without the server's photo count
+- feedback refused shows the server's `message` (or an `error` that is a sentence), never a code like `kv-limit` (about.js `sendFeedback`)
 
 #### Redraws
 - a sync's redraw waits while the item sheet or piece picker is open (`syncRedraw` → `syncLater`; `syncLaterRun` on `itemShown(false)` or `closePicker`)
@@ -831,6 +841,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - first-run setup and empty states (loaded last): `#setup`, built by `setupEl()`, not in index.html
 - `setupStart()` (start.js chain) opens it for an empty wardrobe with no recorded day and no `settings.setupDone`
+- the self-opened setup's "No vest" applies only while the vest is still the app's default (`setupVestFree`: `settings.ks.vestMode` 0): a second phone's setup replaced the account's choice that came with the backup (2026-11-15)
 - with items it never shows: `setupDone` is set in memory only and stored with the next settings change (storing it at once would force a full sync)
 - steps `SETUP_STEPS` (welcome, week, wear, weather, connect, done) via `setupStep`, `setupGo`, `setupDraw`; Skip finishes at once
 - steps store through the app's own functions (`toggleDay`, `setUnits`, `setVestMode`, `setLocation`, `useMyLocation`, `findCity`)
@@ -938,6 +949,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `wardrobe.js`
 
 - the Wardrobe tab's search and sort, the item fields `name` / `brand` / `material` / `notes`, and Delete with Undo (loaded after stats.js; called from `renderWardrobe`, `wardList`, `itemBody` and `rm` in itemsheet.js and `save` in add.js)
+- a text field's waiting save (`itemFieldSoon`, 400 ms) runs at once when the app goes to the background or the page goes (`itemFieldNow` on `visibilitychange` hidden / `pagehide`): a name typed and Safari swiped away was lost (2026-11-15)
 - search: a field above the type chips (`wardBar`, `#wsearch`, `wardQ`); every word typed must be in the item's name, brand, notes, material, type, colour names or pattern (`wardHay`, `wardMatch`; case and accents ignored); it combines with the type chip and stays when the chip changes
 - typing redraws only the grid and the count (`wardSearch` → `wardRefresh`: `#wslide`, `#wcount`, `#wclear`), never the field, so the focus and the keyboard stay; a full `renderWardrobe` while the field is in use (a sync arriving) puts the focus and the caret back (`wardKeep`/`wardBack`)
 - the header count reads "n items", or "n of m items" when a chip or the search narrows the list (`wardCount`); × in the field clears it (`wardClear`, also Escape)

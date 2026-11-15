@@ -44,8 +44,11 @@ function setupClose(){
 }
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
+/* (only while the vest is still the app's default: a second phone's setup showed and then replaced the account's choice that came in
+   with the backup, on every phone; 2026-11-15, the audit) */
+const setupVestFree=()=>setup.first&&!setup.vestSet&&!(settings.ks&&settings.ks.vestMode>0);
 function setupFinish(toAdd){
-  if(setup.first&&!setup.vestSet)settings.vestMode='never';
+  if(setupVestFree())settings.vestMode='never';
   const first=setup.first;settings.setupDone=Date.now();setupClose();saveUserSettings().then(()=>{if(first)setupHolidays()});
   if(toAdd&&!items.length){const go=()=>{show('wardrobe');openAdd()};if(first&&typeof tourOpen==='function'&&!tourSeen())tourOpen(go,'Add my first item');else go()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
 }
@@ -84,7 +87,7 @@ function setupStep(k){const d=setupDress();
   if(k==='home')return typeof homeSteps==='function'?homeSteps(true):'';
   if(k==='week')return `<div class="su-group"><div class="su-label">Workdays</div><p class="su-help">You get an outfit on these days.</p>${setupDays('workdays',settings.workdays,[0,1,2,3,4,5,6])}</div>`+
     (d.jacket?`<div class="su-group"><div class="su-label">Blazer days</div><p class="su-help">Business-casual days get a blazer and trousers; other workdays get a suit. Leave them all off for a suit every day.</p>${setupDays('blazer',settings.blazerDays,settings.workdays)}</div>`:'');
-  if(k==='wear'){const v=setup.first&&!setup.vestSet?'never':(settings.vestMode||'auto');
+  if(k==='wear'){const v=setupVestFree()?'never':(settings.vestMode||'auto');
     return `<p class="su-help">Outfits are planned around what you actually wear to work.</p>${setupSwitch('jacket',d.jacket,'Jackets','A suit or a blazer on workdays')}${setupSwitch('tie',d.tie,'Ties','A tie with every outfit')}`+
     (d.jacket?`<label class="su-row">Suit vest <select id="su-vest" onchange="setupVest(this.value)">${[['never','No vest'],['auto','On cooler suit days'],['always','Every suit day']].map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${o[1]}</option>`).join('')}</select></label>`:'')}
   if(k==='weather'){const u=unit(),loc=settings.location;

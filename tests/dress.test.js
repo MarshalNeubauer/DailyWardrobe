@@ -219,7 +219,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       await A.q.evaluate(async()=>{await putRaw({id:'s1',type:'suit',primaryColor:'charcoal',pattern:'solid',added:1000,updated:Date.now()-60000});await metaPut('settings',{workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',units:'F',planRules:PLAN_RULES,updated:Date.now()-60000})});
       store.set('wardrobe:v1',JSON.stringify({rev:1,saved:Date.now()-50000,data:await A.q.evaluate(()=>localState())}));meta.set('wardrobe:v1',{rev:1,saved:Date.now()-50000});
       // B opens first, with the backup out of reach: nothing is changed, and its suits still read as three-piece
-      online=false;await connect(B.q);await B.q.reload();await B.q.waitForFunction(()=>window.appReady);await B.q.waitForFunction(()=>!syncing&&!vestMigrating&&/failed/i.test(localStorage.getItem('sync_status')||''),null,{timeout:15000});
+      online=false;await connect(B.q);await B.q.reload();await B.q.waitForFunction(()=>window.appReady);await B.q.waitForFunction(()=>!syncing&&!vestMigrating&&/failed|^Not backed up:/i.test(localStorage.getItem('sync_status')||''),null,{timeout:15000});
       const b0=await state(B.q);
       ok(b0.suits==='s1:navy:undefined,s2:grey:undefined'&&!b0.flag&&b0.has==='true,true',`a device that can't reach the backup changes nothing yet, and its suits stay three-piece (${b0.suits})`);
       // back online: it takes the other device's newer suit and settings first, then gives the suits their value
