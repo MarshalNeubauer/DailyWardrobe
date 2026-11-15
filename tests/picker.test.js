@@ -1,4 +1,4 @@
-// Choosing a piece by hand (the sheet behind ⇄), the planner learning from changes, and correcting a past day.
+// Choosing a piece by hand (the sheet behind ⇄), that changes teach the planner nothing, and correcting a past day.
 module.exports=async({ok,chromium,url,settle:settleFor})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   const settle=()=>settleFor(p,350);
@@ -8,7 +8,7 @@ module.exports=async({ok,chromium,url,settle:settleFor})=>{
       items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('suit','brown'),I('blazer','navy'),I('pants','grey'),I('pants','tan'),
         I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','lavender'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','gold'),I('tie','purple'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),I('socks','charcoal'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';settings.learn=null;dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};
       sel=new Date(2026,10,17);view={y:2026,m:10};listOpen=true;show('today')});
     await settle();
     // ---- the sheet ----
@@ -24,7 +24,7 @@ module.exports=async({ok,chromium,url,settle:settleFor})=>{
     const after=await p.evaluate(()=>({ids:idsOf(planFor()[key(sel)]),open:document.querySelector('#pick-sheet').classList.contains('on'),msg:document.querySelector('#today').textContent,over:planFor()[key(sel)].overrides}));
     ok(after.ids.tie===want&&!after.open&&after.over,'tapping a tie wears exactly that one and closes the sheet');
     ok(['top','shirt','shoes','belt','socks','watch'].every(s=>after.ids[s]===before[s]),'the rest of the outfit stays');
-    ok(/Noted: the planner will reach for this choice more often/.test(after.msg),'it says the choice was noted');
+    ok(!/Noted|the planner will/.test(after.msg)&&await p.evaluate(()=>!('learn' in settings)),'nothing is noted or learned from the choice (the planner no longer learns from changes)');
     // "Suggest another" still cycles
     await p.click('#ri-shirt .swap');await p.click('#pick-next');await settle();
     const cyc=await p.evaluate(()=>idsOf(planFor()[key(sel)]));
@@ -37,30 +37,17 @@ module.exports=async({ok,chromium,url,settle:settleFor})=>{
     ok(tp.top===topWant&&tp.shoes==='brown'&&tp.score>=75,`choosing a suit re-picks the pieces that follow it (brown suit → ${tp.shoes} shoes, score ${tp.score})`);
     await p.click('#ri-tie .swap');await p.click('.pick-x');await settle();
     ok(await p.evaluate(()=>!document.querySelector('#pick-sheet').classList.contains('on')&&planFor()[key(sel)].top.id)===topWant,'closing the sheet changes nothing');
-    // ---- learning ----
-    const learn=await p.evaluate(async()=>{settings.learn=null;dayRecs={};cache={};sel=new Date(2026,10,17);view={y:2026,m:10};renderToday();
-      const days=()=>Object.entries(planMonth(2027,1)).filter(([k])=>keyDate(k)>todayDate()).map(([,o])=>o);
-      const navy=items.find(i=>i.type==='suit'&&i.primaryColor==='navy'),count=(t,x)=>days().filter(o=>o.top.id===t.id&&o.tie.id===x.id).length;
-      // the tie the navy suit wears most
-      const tally={};days().filter(o=>o.top.id===navy.id).forEach(o=>tally[o.tie.id]=(tally[o.tie.id]||0)+1);const fav=items.find(i=>i.id===Object.entries(tally).sort((a,b)=>b[1]-a[1])[0][0]);
-      const n0=count(navy,fav);
-      // swap that tie away from the navy suit twice (two different days)
-      const navyDays=[];for(let n=0;n<2;n++){const hit=Object.entries(planMonth(2027,0)).find(([k,o])=>keyDate(k)>todayDate()&&o.top.id===navy.id&&o.tie.id===fav.id&&!navyDays.includes(k));if(!hit)break;
-        navyDays.push(hit[0]);sel=keyDate(hit[0]);view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await swapSlot('tie')}
-      const votes=settings.learn.p[pairKey(navy,fav)],n1=count(navy,fav),stillWorn=days().some(o=>o.tie.id===fav.id);
-      // pick a tie by hand for the charcoal suit: that pairing is preferred afterwards
-      const ch=items.find(i=>i.type==='suit'&&i.primaryColor==='charcoal'),gold=items.find(i=>i.type==='tie'&&i.primaryColor==='gold'),long=()=>[1,2,3].flatMap(m=>Object.values(planMonth(2027,m))),countL=(t,x)=>long().filter(o=>o.top&&o.top.id===t.id&&o.tie&&o.tie.id===x.id).length,g0=countL(ch,gold);   // Feb-Apr: over one month the mild nudge could be lost in the rotation (3 -> 3 when another planner change shifted November's ties, 2026-11-13)
-      const chDay=Object.entries(planMonth(2026,11)).find(([k,o])=>keyDate(k)>todayDate()&&o.top.id===ch.id&&o.tie.id!==gold.id)[0];
-      sel=keyDate(chDay);view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await pickItem('tie',gold.id);
-      const g1=countL(ch,gold),up=settings.learn.p[pairKey(ch,gold)];
-      const saved=(await metaGet('settings')).learn;
-      return {n0,n1,votes,stillWorn,g0,g1,up,saved:!!saved&&saved.p[pairKey(navy,fav)]===votes,navyDays:navyDays.length,min:Math.min(...days().map(o=>rateOutfit(o).score))}});
-    ok(learn.navyDays===2&&learn.votes===-2,`swapping a tie away from a suit votes against that pairing (${learn.votes} after two swaps)`);
-    ok(learn.n0>=2&&learn.n1===0&&learn.stillWorn,`after two swaps the planner stops pairing them (${learn.n0} → ${learn.n1} days) but still wears the tie with other suits`);
-    ok(learn.up>=1&&learn.g1>learn.g0,`a tie chosen by hand for a suit comes up with it more often (${learn.g0} → ${learn.g1} days)`);
-    ok(learn.saved&&learn.min>=80,`what was learned is saved with the settings, and outfits stay good (lowest score ${learn.min})`);
+    // ---- no learning: a swap and a hand pick change only their own day, and record nothing in the settings ----
+    const nl=await p.evaluate(async()=>{dayRecs={};cache={};sel=new Date(2026,10,17);view={y:2026,m:10};renderToday();
+      const st0=JSON.stringify((await metaGet('settings'))||{});
+      await swapSlot('tie');const ch=items.find(i=>i.type==='tie'&&i.id!==planFor()[key(sel)].tie.id);
+      const k2=Object.keys(planMonth(2026,11)).find(k=>keyDate(k)>todayDate());sel=keyDate(k2);view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await pickItem('tie',ch.id);
+      const st1=(await metaGet('settings'))||{};
+      return {msg:document.querySelector('#today').textContent,learn:'learn' in settings||'learn' in st1,settings:JSON.stringify(st1)===st0,picked:planFor()[k2].tie.id===ch.id}});
+    ok(!nl.learn&&nl.settings&&!/Noted|the planner will/.test(nl.msg),'a swap and a hand pick record no votes and leave the stored settings as they were');
+    ok(nl.picked,'the pick holds on its day');
     // ---- correcting a past day ----
-    const past=await p.evaluate(async()=>{settings.learn=null;dayRecs={};cache={};TODAY_OVERRIDE='2026-11-10T12:00:00';sel=new Date(2026,10,10);view={y:2026,m:10};pastEdit=null;renderToday();await new Promise(r=>setTimeout(r,400));
+    const past=await p.evaluate(async()=>{dayRecs={};cache={};TODAY_OVERRIDE='2026-11-10T12:00:00';sel=new Date(2026,10,10);view={y:2026,m:10};pastEdit=null;renderToday();await new Promise(r=>setTimeout(r,400));
       sel=new Date(2026,10,9);renderToday();const o=planFor()[key(sel)];return {frozen:!!o.frozen,btn:!!document.querySelector('.pastedit'),swaps:document.querySelectorAll('#ibox .swap').length,top:o.top.id,tie:o.tie.id,shirt:o.shirt.id,future:JSON.stringify(idsOf(planFor()['2026-11-11']))}});
     ok(past.frozen&&past.btn&&past.swaps===0,'a past day has a "Correct this day" button and no change buttons until it is pressed');
     await p.click('.pastedit');await settle();
@@ -81,8 +68,8 @@ module.exports=async({ok,chromium,url,settle:settleFor})=>{
     ok(fixed.tie===wore&&fixed.top===blz&&fixed.bot===pt&&fixed.socks===null&&fixed.suitDay===false&&fixed.worn===true&&fixed.edited&&!fixed.auto&&fixed.shown===wore,'the day now records what was really worn: another tie, a blazer with trousers, no socks');
     const eff=await p.evaluate(past=>{const fut=planMonth(2026,10),blz=dayRecs['2026-11-9'].ids.top,suit=past.top;
       const nextBlz=Object.entries(fut).find(([k,o])=>keyDate(k)>keyDate('2026-11-9')&&o.top&&o.top.id===blz),nextSuit=Object.entries(fut).find(([k,o])=>keyDate(k)>keyDate('2026-11-9')&&o.top&&o.top.id===suit);
-      return {suitRest:nextSuit?nextSuit[1].top.rest:null,changed:JSON.stringify(idsOf(fut['2026-11-11']))!==past.future,learned:!!(settings.learn&&Object.keys({...settings.learn.p,...settings.learn.i}).length)}},past);
-    ok(eff.suitRest>=2&&eff.learned,`rest is counted from what was worn: the suit that wasn't worn is free again (rest ${eff.suitRest}), and the planner notes the choices`);
+      return {suitRest:nextSuit?nextSuit[1].top.rest:null,changed:JSON.stringify(idsOf(fut['2026-11-11']))!==past.future,learned:'learn' in settings,msg:document.querySelector('#today').textContent}},past);
+    ok(eff.suitRest>=2&&!eff.learned&&/Corrected\./.test(eff.msg)&&!/counts what you really wore/.test(eff.msg),`rest is counted from what was worn: the suit that wasn't worn is free again (rest ${eff.suitRest}); it says "Corrected." and learns nothing`);
     await p.click('.pastedit');await settle();
     ok(await p.evaluate(()=>pastEdit===null&&document.querySelectorAll('#ibox .swap').length===0),'"Done" locks the day again');
     // moving to another day leaves correction mode

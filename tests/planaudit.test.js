@@ -4,14 +4,14 @@
 // - ties' rest creeps (capped, TIE_CREEP_MAX): on a 40-tie wardrobe 9 ties were never planned in a year; no tie comes back within 3 workdays
 // - a formal day takes the white shirt (FORMAL_SHIRT_K, FORMAL_QWIN): 3 of 20 took light blue
 // - a day marked "Not worn" is not the previous workday for repeats; a past day whose piece was deleted is rated without it, not "Incomplete"
-// - learned votes stored as text count as numbers; the what-to-buy signature follows the settings the planner reads
+// - the what-to-buy signature follows the settings the planner reads
 module.exports=async({ok,chromium,url,WARDROBES})=>{
   const browser=await chromium.launch();
   try{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(`(()=>{const W=${WARDROBES};const kd=k=>keyDate(k);
-      const base=()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.daysOff=[];settings.holidays=null;settings.learn=null;delete settings.laundryDays;delete settings.darkShirts;delete settings.dress;weather={};climate=null;TODAY_OVERRIDE='2026-11-13T12:00:00';dayRecs={};cache={}};
+      const base=()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.daysOff=[];settings.holidays=null;delete settings.laundryDays;delete settings.darkShirts;delete settings.dress;weather={};climate=null;TODAY_OVERRIDE='2026-11-13T12:00:00';dayRecs={};cache={}};
       const plan=()=>{cache={};return {...planMonth(2026,10),...planMonth(2026,11),...planMonth(2027,0)}};
       const out={};
       // 1. a tie pinned 2 or 3 workdays ahead, a shirt pinned 2 days ahead with laundry 3
@@ -45,11 +45,10 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
       dayRecs={'2026-11-16':{date:'2026-11-16',ids,suitDay:true,worn:false},'2026-11-17':{date:'2026-11-17',ids:{...ids,tie:'gone-tie'},suitDay:true,worn:true}};cache={};
       const N=planMonth(2026,10);out.notWornPrev=N['2026-11-17'].ctx.prev.some(p=>p&&p.n===di(new Date(2026,10,16)));
       const R=rateOutfit(N['2026-11-17']);out.goneLabel=R.label;out.goneHard=R.hard.join();
-      // 5. a vote stored as text; the what-to-buy signature
-      settings.learn={i:{[tie.id]:'2'},p:{}};out.vote=itemVote(tie);
-      const s0=shopSig();settings.laundryDays=3;const s1=shopSig();settings.darkShirts='often';const s2=shopSig();settings.learn={i:{},p:{[tie.id+'|zz']:-1}};const s3=shopSig();
+      // 5. the what-to-buy signature
+      const s0=shopSig();settings.laundryDays=3;const s1=shopSig();settings.darkShirts='often';const s2=shopSig();
       dayRecs['2026-12-1']={date:'2026-12-1',occasion:'wedding'};const s4=shopSig();settings.daysOff=[{d:'2026-12-3',n:'x'}];const s5=shopSig();settings.dress={jeans:true};const s6=shopSig();
-      out.sigs=new Set([s0,s1,s2,s3,s4,s5,s6]).size;
+      out.sigs=new Set([s0,s1,s2,s4,s5,s6]).size;
       base();return out})()`);
     ok(r.tie2===0&&r.tie3===0,`a tie fixed two or three workdays ahead is not planned the day before (${r.tie2} and ${r.tie3} of 10; before 20 of 20 each)`);
     ok(r.nShirt>0&&r.shirt2===0,`with laundry 3, a shirt fixed two days ahead is kept for that day (${r.shirt2} of ${r.nShirt}; before 12 of 12)`);
@@ -58,8 +57,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(r.notWhite===0,`formal days take a white shirt (${r.notWhite} of 20 did not; before 3)`);
     ok(!r.notWornPrev,'a day marked "Not worn" is not the previous workday for repeats');
     ok(r.goneLabel!=='Incomplete'&&!r.goneHard,`a past day whose tie was deleted since is rated without it (${r.goneLabel}${r.goneHard?', hard: '+r.goneHard:''})`);
-    ok(r.vote===2,'a learned vote stored as text counts as a number');
-    ok(r.sigs===7,`What to buy checks again after laundry days, dark shirts, what was learned, an occasion, a day off or jeans change (${r.sigs} of 7 signatures differ)`);
+    ok(r.sigs===6,`What to buy checks again after laundry days, dark shirts, an occasion, a day off or jeans change (${r.sigs} of 6 signatures differ)`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };
