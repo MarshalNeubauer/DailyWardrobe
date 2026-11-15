@@ -169,11 +169,12 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
 let itemHist=false,itemBack=false;
 try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
 function histPush(){if(itemHist||itemBack||appPend)return;   // (appPend: a step back that drops Settings' or a stats/packing/care page's entry is on its way; the item gets its entry once it lands)
-try{history.pushState({item:1},'');itemHist=true}catch{}}
+try{history.pushState({item:1},'');itemHist=true;if(typeof appTop!=='undefined')appTop=false}catch{}}
 function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
-addEventListener('popstate',()=>{
+addEventListener('popstate',e=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
-  if(itemHist){itemHist=false;if(editing)closeItem(true)}});
+  if(appPend||appHist&&appTop)return;   // a step back of start.js's own, or its entry over the sheet (a question, the close-up guide): start.js's listener takes it
+  if(itemHist){itemHist=false;e.dwItem=true;if(editing)closeItem(true)}});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);

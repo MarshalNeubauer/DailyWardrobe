@@ -4,10 +4,11 @@
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
    - advFold(): the "Advanced" folds in Settings */
 const ASK_NONE={ok:'OK',cancel:'Cancel',danger:false};
+const ASK_SETTLE=450;   // ms after a question opens in which a real tap outside it doesn't cancel it: it is the double tap's second tap (re-audit 2026-11-15)
 let asking=null;   // the question on screen: {done(answer), last (what had the focus)}
 const uiEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 function askEls(){let b=document.querySelector('#ask-backdrop'),s=document.querySelector('#ask-sheet');
-  if(!s){b=document.createElement('div');b.id='ask-backdrop';b.onclick=()=>askAnswer(false);
+  if(!s){b=document.createElement('div');b.id='ask-backdrop';b.onclick=e=>{if(e.isTrusted&&asking&&performance.now()-asking.at<ASK_SETTLE)return;askAnswer(false)};   // (the second tap of a double tap on the button that asked)
     s=document.createElement('div');s.id='ask-sheet';s.setAttribute('role','alertdialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','ask-title');s.tabIndex=-1;
     s.addEventListener('keydown',askKey);document.body.append(b,s)}
   return {b,s}}
@@ -16,15 +17,21 @@ function askKey(e){if(!asking)return;
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();askAnswer(false);return}
   if(e.key!=='Tab')return;const f=[...document.querySelectorAll('#ask-sheet button')];if(!f.length)return;
   const at=f.indexOf(document.activeElement),to=e.shiftKey?(at<=0?f.length-1:at-1):(at===f.length-1?0:at+1);e.preventDefault();f[to].focus()}
-function askAnswer(v){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');
+/* fromBack: the phone's Back closed it (askBack): its history entry is gone already */
+function askAnswer(v,fromBack){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');
+  if(typeof appGiveBack==='function'){if(!fromBack)appGiveBack('ask',a.was);else if(a.was)appPush(a.was)}   // the entry goes, or goes back to the page under the question; after Back the page gets a new one
   try{if(a.last&&a.last.isConnected)a.last.focus({preventScroll:true})}catch{}
-  a.done(!!v)}
+  const w=typeof appSettled==='function'&&appSettled();if(w)w.then(()=>a.done(!!v));else a.done(!!v)}   // (after the question's own step back has landed)
+/* the phone's Back with a question up answers it no, as Cancel, Escape and a tap outside do (fix round 2, 2026-11-15: Back closed
+   Settings under "Roll back to …?", the question stayed over Today, and "Roll back" then emptied the wardrobe with no message; with
+   nothing under it Back left the app). The question takes a history entry (start.js appBorrow: its own, or the page's under it). */
+function askBack(){if(asking)askAnswer(false,true)}
 /* the first paragraph of the message is the question (bold), the rest the explanation; a question asked while another is up answers that one no */
 function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)askAnswer(false);
   const parts=String(message).split(/\n\s*\n/),{b,s}=askEls();
   s.innerHTML=`<p class="ask-q" id="ask-title">${uiEsc(parts[0])}</p>${parts.slice(1).map(t=>`<p class="ask-more">${uiEsc(t)}</p>`).join('')}
 <div class="ask-btns">${o.cancel?`<button type="button" id="ask-cancel" onclick="askAnswer(false)">${uiEsc(o.cancel)}</button>`:''}<button type="button" id="ask-ok" class="${o.danger?'ask-danger':'pri'}" onclick="askAnswer(true)">${uiEsc(o.ok)}</button></div>`;
-  return new Promise(done=>{asking={done,last:document.activeElement};b.classList.add('on');s.classList.add('on');
+  return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:typeof appBorrow==='function'?appBorrow('ask'):''};b.classList.add('on');s.classList.add('on');
     const f=s.querySelector(o.danger&&o.cancel?'#ask-cancel':'#ask-ok');if(f)f.focus({preventScroll:true})})}
 /* a notice: nothing to answer, so a toast, kept up long enough to read (about 15 characters a second, 4 to 9 seconds) */
 function tell(message,ms){if(typeof toast==='function')toast(String(message),ms||Math.min(9000,Math.max(4000,String(message).length*70)))}

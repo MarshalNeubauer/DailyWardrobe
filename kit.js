@@ -16,10 +16,15 @@ const KIT_TOUR='tour_seen';
 const tourSeen=()=>{try{return localStorage.getItem(KIT_TOUR)==='1'}catch{return false}};
 function kitEl(){let e=$('#kitsheet');if(!e){e=document.createElement('div');e.id='kitsheet';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','kit-title');document.body.appendChild(e)}return e}
 function kitInert(on){for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;if(!on&&typeof layerInert==='function')layerInert()}
-function kitOpen(cards,then){kit={cards,at:0,then:then||null,from:document.activeElement};kitDraw();kitEl().classList.add('on');kitInert(true);
+/* the phone's Back closes the sheet (fix round 2, 2026-11-15: it left the app from the tour and the Home Screen sheet, and closed Add
+   under the import sheet): the sheet takes a history entry (start.js kind 'kit'), or borrows Add's (kitHist keeps whose it was) */
+function kitHist(){if(kit&&kit.hist===undefined&&typeof appBorrow==='function')kit.hist=appBorrow('kit')}
+function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
   const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
-function kitClose(){if(kitImpBusy)return;   // (the import is being written: a moment, then the sheet closes itself)
+/* fromBack: the phone's Back did it (its entry is gone already) */
+function kitClose(fromBack){if(kitImpBusy){if(fromBack&&typeof appPush==='function')appPush('kit');return}   // (the import is being written: a moment, then the sheet closes itself; Back keeps it, with its entry made again)
   const e=$('#kitsheet');if(e){e.classList.remove('on');e.innerHTML=''}const k=kit;kit=null;kitInert(false);
+  if(k&&k.hist!==undefined&&typeof appGiveBack==='function'){if(!fromBack)appGiveBack('kit',k.hist);else if(k.hist)appPush(k.hist)}   // the entry goes, or back to Add; after Back, Add gets a new one
   if(k&&k.cards===TOUR_CARDS){try{localStorage.setItem(KIT_TOUR,'1')}catch{}}
   if(k&&k.then)k.then();else if(k&&k.from&&k.from.isConnected)try{k.from.focus({preventScroll:true})}catch{}}
 function kitGo(n){if(!kit)return;const at=kit.at+n;if(at>=kit.cards.length)return kitClose();if(at<0)return;kit.at=at;kitDraw();const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
@@ -211,14 +216,18 @@ const KIT_IMP_UNDO_MS=20000;
 function kitLastImp(){try{const l=JSON.parse(localStorage.getItem(KIT_IMP_LAST)||'null');if(!l||!Array.isArray(l.ids))return null;const ids=l.ids.filter(id=>items.some(i=>i.id===id));return ids.length?{ids,at:l.at}:null}catch{return null}}
 function kitLastRow(){const l=kitLastImp();if(!l)return '';const when=new Date(l.at).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   return `<p class="kit-last" id="kit-last">Your last import (${when}): ${l.ids.length} item${l.ids.length===1?'':'s'} in your wardrobe. <button type="button" class="linkbtn" onclick="kitUnimport()">Take ${l.ids.length===1?'it':'them'} out</button></p>`}
-function kitImportOpen(){kitImp=null;const e=kitEl();kit={cards:[],at:0,then:null,from:document.activeElement};
+function kitImportOpen(){kitImp=null;const e=kitEl(),prev=kit?kit.hist:undefined;kit={cards:[],at:0,then:null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;
   e.innerHTML=`<div class="kit-head"><div><h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
 <div class="kit-body" data-card="import"><p>One row per piece. The first row names the columns; only <b>Type</b> and <b>Colour</b> are needed. From Numbers, Excel or Google Sheets, export the sheet as CSV, or copy the rows and paste them below.</p>
 ${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">Download a template</button><label class="btn">Choose a CSV file<input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" class="vfile" onchange="kitImportFile(this.files[0]);this.value=''"></label></div>
-<label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" placeholder="Type, Colour, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
+<label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Colour, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
 <div id="kit-prev" aria-live="polite"></div></div>
 <div class="kit-bar"><button type="button" id="kit-cancel" onclick="kitClose()">Cancel</button><button type="button" class="pri" id="kit-imp" disabled onclick="kitImportGo()">Add items</button></div>`;
-  e.classList.add('on');kitInert(true)}
+  e.classList.add('on');kitInert(true);kitHist()}
+/* the paste field comes into view below the sheet's header once the keyboard is up (re-audit 2026-11-15: with the preview scrolled it
+   stayed under the header) */
+function kitPasteShow(t){setTimeout(()=>{if(!t.isConnected)return;const b=t.closest('.kit-body');if(!b)return;const r=t.getBoundingClientRect(),br=b.getBoundingClientRect(),vh=window.visualViewport?visualViewport.height:innerHeight;
+  if(r.top<br.top+8||r.top>vh-60)b.scrollTop+=r.top-br.top-8},350)}
 async function kitImportFile(f){if(!f)return;let t='';try{t=kitDecode(await f.arrayBuffer())}catch{t=await f.text()}const ta=$('#kit-paste');if(ta)ta.value='';kitImportText(t,true)}
 const kitDupKey=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',kitNorm(i.name||'')].join('|');
 /* rows matching pieces already in the wardrobe (type, colours, pattern, name) start unticked: importing the same sheet again doubled it */

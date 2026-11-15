@@ -26,17 +26,36 @@ const SUBS=['add','pack','care'];let appHist=false,appKind='',appPend=false,appK
    An entry asked for while a step back of ours is on its way, or while the address still holds an invitation (#invite: the entry
    would keep it, and Back would land on it again), waits in appWant and is made once that is over (appWanted). */
 let appWant='';
+/* a layer over a page that already holds the entry (a question over Settings, the import sheet over Add) borrows it: appBorrow
+   gives it the entry and says whose it was; appGiveBack hands it back when the layer closes by a tap. Closed by Back, the entry is
+   gone, so the layer makes it again for the page under it (appPush of the kind it borrowed from; fix round 2, 2026-11-15: Back closed
+   Settings under a question and left the question up, and closed Add under the import sheet).
+   appTop: the latest entry is ours, not the item sheet's (a question or the close-up guide over the item sheet): its listener then
+   leaves that Back to this one. */
+let appTop=false;
 const inviteInUrl=()=>/(^#|&)invite=/.test(location.hash);
-function appPush(kind){if(appHist){appKind=kind;return}if(appPend||itemBack||inviteInUrl()){appWant=kind;return}try{history.pushState({app:kind},'');appHist=true;appKind=kind;appWant=''}catch{}}
+function appPush(kind){if(appHist){appKind=kind;return}if(appPend||itemBack||inviteInUrl()){appWant=kind;return}try{history.pushState({app:kind},'');appHist=true;appKind=kind;appWant='';appTop=true}catch{}}
+function appBorrow(kind){if(appHist&&appKind!==kind){const was=appKind;appKind=kind;return was}
+  if(!appHist&&appWant&&appWant!==kind){const was=appWant;appWant=kind;return was}   // the page's entry is still to be made (a step back of ours is on its way): the layer's takes its place
+  appPush(kind);return ''}
+function appGiveBack(kind,was){if(appWant===kind){appWant=was||'';return}if(!was)return appDrop(kind);if(appHist&&appKind===kind)appKind=was}
 function appDrop(kind){if(appWant===kind)appWant='';if(!appHist||appKeep||appKind!==kind)return;appHist=false;appPend=true;try{history.back()}catch{appPend=false}}
+/* waits for a step back of ours to land (or 400 ms): a question's answer runs after it, so what the answer does (a reload on
+   Clear and switch, another entry) never races the step back (WebKit applied the step back to the reloaded page) */
+let appLand=[];
+const appSettled=()=>appPend?new Promise(r=>{appLand.push(r);setTimeout(r,400)}):null;
 function appWanted(){const k=appWant;appWant='';if(k)appPush(k)}
 function appSheetBack(kind){
   if(kind==='setup'){if(typeof setupShown==='function'&&setupShown()){if(setup.at>0)setupGo(-1);appPush('setup')}return true}   // the setup stays open: Back is its ‹ Back
   if(kind==='pick'){if(typeof closePicker==='function')closePicker();return true}
   if(kind==='shop'){if(typeof closeShop==='function')closeShop();return true}
+  if(kind==='ask'){if(typeof askBack==='function')askBack();return true}   // a question closes as Cancel (ui.js), the page under it stays
+  if(kind==='kit'){if(typeof kit!=='undefined'&&kit)kitClose(true);return true}   // the tour, the guides, the Home Screen sheet, the import sheet (kit.js)
   return false}
-addEventListener('popstate',()=>{if(appPend){appPend=false;if(editing)histPush();appWanted();return}   // our own step back; an item opened meanwhile gets its entry now
-  if(!appHist){if(appWant&&!itemBack)appWanted();return}appHist=false;
+addEventListener('popstate',e=>{if(appPend){appPend=false;if(editing)histPush();appWanted();for(const f of appLand.splice(0))f();return}   // our own step back; an item opened meanwhile gets its entry now
+  if(!appHist){if(appWant&&!itemBack)appWanted();return}
+  if(e.dwItem)return;   // it was the item sheet's entry (the latest): its listener, which runs first, closed it (itemsheet.js)
+  appHist=false;
   if(appSheetBack(appKind))return;
   if(appKind==='sub'&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))subBack();else if(settingsOpen())saveSettings()});
 function subOpen(){appPush('sub');
