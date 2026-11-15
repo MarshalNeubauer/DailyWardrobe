@@ -175,8 +175,9 @@ const ovlDrawn=i=>{if(i.type==='tie')return false;if(i.type==='shirt')return tru
    over them, and the cloth's grain (ovlGrain: twill ribs, herringbone columns, linen slubs, else a fine plain weave) at OVL_GRAIN times
    the mockup's base strength; a suit with a stripe, check or figure but no band reading keeps the drawn tile. A PNG, cached. */
 const OVL_PX=260,OVL_GRAIN=2.2,OVL_CROSS=.06,OVL_CROSS_A=.75,OVL_SUITS=new Map();
-const ovlGrain=i=>{const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||'');
-  return /linen/i.test(t)?'linen':/herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':'plain'};
+/* (2026-11-15, the materials audit) corduroy's wales, seersucker's puckered stripe and velvet's soft pile, from the material */
+const ovlGrain=i=>{const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||''),m=String(i.material||'');
+  return /linen/i.test(t)?'linen':/corduroy/i.test(m)?'cord':/seersucker/i.test(m)?'sucker':/velvet/i.test(m)?'velvet':/herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':'plain'};
 function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlItem(i),s=usableSett(o),bands=s&&s.v===2&&s.bands&&s.bands.length>1?s.bands:null;
   if(!bands&&(s&&s.motif||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')))return null;
   const kind=ovlGrain(i),cx=bands&&s.cross&&s.cross.bands&&Math.abs(Math.abs(s.cross.d)-90)<=20?s.cross:null,flip=bands&&Math.abs(Math.abs(s.a||0)-90)<20;
@@ -193,6 +194,9 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
     if(kind==='twill')g=1+m*(.055*Math.sin(2*Math.PI*(x+y)/7)+.03*(hash(x+y,(y-x)>>2)-.5));
     else if(kind==='herringbone'){const k=Math.floor(x/26),d=k%2?x+y:x-y;g=1+m*(.07*Math.sin(2*Math.PI*d/7)+.03*(hash(d,k)-.5))}
     else if(kind==='linen')g=1+m*(.05*(hash(x>>1,7)-.5)+.05*(hash(13,y>>1)-.5)+.03*(hash(x,y)-.5));
+    else if(kind==='cord'){const u=flip?y:x;g=1+m*(.09*Math.pow(Math.sin(Math.PI*u/10),2)-.045+.025*(hash(u,(flip?x:y)>>3)-.5))}   // the wales run with the stripes
+    else if(kind==='sucker'){const u=flip?y:x,pk=Math.floor(u/14)%2;g=1+m*(pk?.05*(hash(u>>2,(flip?x:y)>>2)-.5)+.03*Math.sin((flip?x:y)/2.5):.02*(hash(x,y)-.5)+.012)}
+    else if(kind==='velvet')g=1+m*(.04*(hash(x>>4,y>>4)-.5)+.03*(hash(x>>2,y>>2)-.5)+.012*(hash(x,y)-.5));
     else g=1+m*(.025*Math.sin(Math.PI*x/2)*Math.sin(Math.PI*y/2)+.035*(hash(x,y)-.5));
     const k=4*(y*S+x);for(let j=0;j<3;j++)D.data[k+j]=Math.max(0,Math.min(255,Math.round(px[j]*g)));D.data[k+3]=255}
   X.putImageData(D,0,0);const url=c.toDataURL('image/png');if(OVL_SUITS.size>12)OVL_SUITS.clear();OVL_SUITS.set(key,url);return url}

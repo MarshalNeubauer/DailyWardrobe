@@ -18,7 +18,7 @@ const EC=(id,k,v,lab)=>`<label class="colrow">${lab||colLabel(k)} ${colBtn('e',i
    sneakers (the sole); a third only for patterned cloth. A field that already holds a colour stays, so it can be cleared. */
 const colHas=v=>!!v&&v!=='none';
 const colShows=(it,k)=>{const t=it&&it.type;if(!t)return true;
-  if(k==='primaryColor')return t!=='watch'||watchOpts(it).band==='leather';
+  if(k==='primaryColor')return t!=='watch'||strapBand(it);
   if(colHas(it[k]))return true;
   if(k==='secondaryColor')return FABRIC.includes(t)||t==='socks'||(t==='shoes'&&shoeStyle(it)==='sneaker');
   return FABRIC.includes(t)};
@@ -458,8 +458,14 @@ async function rdRun(src,id){const it=rdItem(src,id);if(!it||!it.texture)return;
   if(r&&r.ok&&typeof acct==='object'&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
   if(r&&r.status===429){me.state='limit';me.limit=j.message||'Today’s color and pattern lookups are used up. They start again at midnight UTC.'}
   else if(!r||!r.ok||!j.colour||!j.pattern){me.state='err';me.detail=showCost()&&(j.detail||j.message)||''}
-  else{const now=rdItem(src,id)||it;me.state='result';me.c=rdColOf(j.colour);me.p=rdPatOf(now,j.pattern)}
+  else{const now=rdItem(src,id)||it;me.state='result';me.c=rdColOf(j.colour);me.p=rdPatOf(now,j.pattern);me.m=rdMatOf(now,j.pattern&&j.pattern.material)}
   rdRender(true);rdRefresh(src,id)}
+/* the material (2026-11-15, the materials audit; the worker's pattern half gives it, held to its tier): a third card only when Claude is
+   high or medium on one of the type's materials that the item doesn't already have; null otherwise (low, "none", an older worker) */
+function rdMatOf(it,m){const l=MATERIALS_BY[it.type];if(!m||m.error||!l||!l.includes(m.key)||(m.confidence!=='high'&&m.confidence!=='medium'))return null;
+  const cur=String(it.material||'').trim();if(cur.toLowerCase()===m.key)return null;return {r:m,key:m.key,name:cap1(m.key),cur:cur==='other'?'':cur,done:null}}
+/* its action for "Use all": set it when the item has no material; one the owner set is never changed by Use all (the card's own Use does) */
+const rdMatMain=(it,x)=>x.cur?null:'use';
 /* the halves, as the New color / New pattern sheets read them: {na} when it failed or isn't cloth */
 function rdColOf(c){if(!c||c.error)return {na:'fail'};if(c.kind!=='colour'&&c.kind!=='several')return {na:c.kind==='not-clothing'?'cloth':'fail'};
   const hex=cnHex(c.hex);if(!hex)return {na:'fail'};const ex=c.existing&&COLORS[c.existing]?c.existing:null,d=+c.dE||0;
@@ -472,7 +478,7 @@ const rdPatBase=(it,x)=>cnPatBase(it,{base:null,res:x.r});
 /* each card's main action: Claude's new one, or the one already had when it is the same to the eye (ΔE00 ≤ 3, as the New color sheet), null when that is the item's already */
 const rdColMain=(it,x)=>x.dup?(x.ex===primaryCol(it)?null:'existing'):'new';
 const rdPatMain=(it,x)=>x.reuse?(x.ex===normPat(it.type,it.pattern)?null:'existing'):'new';
-const rdActName=(it,me,[h,a])=>h==='c'?(a==='existing'?cap1(colName(me.c.ex)):me.c.name):(a==='existing'?cap1(patName(me.p.ex)):me.p.name);
+const rdActName=(it,me,[h,a])=>h==='m'?me.m.name:h==='c'?(a==='existing'?cap1(colName(me.c.ex)):me.c.name):(a==='existing'?cap1(patName(me.p.ex)):me.p.name);
 /* the item drawn in a shade and/or pattern not added yet (stand-in keys, as cnDrawn / cnWithPat), taken out again */
 function rdDraw(it,o,sw){const P='cnprev',PP='own-cnprev';let x={...it,photo:undefined,texture:undefined,swatch:undefined,swSrc:undefined};
   try{if(o.hex){COLORS[P]=o.hex;delete LUMS[P];x={...x,primaryColor:P,color:undefined,shade:0}}else if(o.col)x={...x,primaryColor:o.col,color:undefined,shade:0};
@@ -539,20 +545,29 @@ function rdPatCard(it,me){const x=me.p;if(x.na)return rdNaCard(it,'p',x);if(x.do
 <ul class="cnfacts"><li><span>Now</span><span>${esc(curN)}</span></li><li><span>In outfits</span><span>planned like <b>${esc(cap1(patName(base)))}</b> <span class="cntag">${plain}</span></span></li><li><span>Drawn from</span><span>${from}</span>${bmp}</li></ul>
 ${me.sent&&me.sent.wb===false?'<p class="cnwhy">No white paper needed for this: the weave reads fine without it.</p>':''}${r.colourHint?`<p class="cnwhy">${esc(r.colourHint)}</p>`:''}${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}
 <div class="rdbtns">${btns}</div>${alt}</div>`}
-function rdBar(it,me){const left=['c','p'].filter(h=>me[h]&&!me[h].na&&!me[h].done),acts=left.map(h=>[h,h==='c'?rdColMain(it,me.c):rdPatMain(it,me.p)]).filter(a=>a[1]);
-  const lab=acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,acts[0]))}`:left.length?'Keep as it is':'Done';
+/* the material card: "Material: Flannel" with Keep / Use and Claude's line; when the item already has another material, "Yours: Wool ·
+   Claude: Flannel" (Use switches it; Use all leaves it) */
+function rdMatCard(it,me){const x=me.m;if(!x)return '';
+  if(x.done){const cur=String(it.material||'').trim();return `<div class="rdcard done" id="rd-mat"><span class="rddtx"><span class="cneyebrow">Material</span><b>${x.done==='keep'?(cur?`Kept ${esc(cap1(cur))}`:'Left blank'):`${esc(x.name)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('m')">Change</button>`:`<button type="button" class="rdlink" id="rd-mat-undo" onclick="rdUndo('m')">Undo</button>`}</div>`}
+  const why=x.r.why?`<p class="cnwhy">“${esc(x.r.why)}”</p>`:'',yours=x.cur?cap1(x.cur):'';
+  return `<div class="rdcard" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">${esc(x.r.confidence)} confidence</span></span><b>${yours?`Yours: ${esc(yours)} · Claude: ${esc(x.name)}`:`Material: ${esc(x.name)}`}</b>${yours?'<small>Use switches it to Claude’s; Use all keeps yours.</small>':''}</span></div>${why}
+<div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-mkeep" onclick="rdKeep('m')">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button><button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','use']])">Use ${esc(x.name)}</button></div></div>`}
+const RD_HALVES=['c','p','m'];
+const rdMain=(it,me,h)=>h==='c'?rdColMain(it,me.c):h==='p'?rdPatMain(it,me.p):rdMatMain(it,me.m);
+function rdBar(it,me){const left=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done),acts=left.map(h=>[h,rdMain(it,me,h)]).filter(a=>a[1]);
+  const lab=acts.length===3?'Use all':acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,acts[0]))}`:left.length?'Keep as it is':'Done';
   return `<div class="rdbar"><button type="button" class="pri" id="rd-both" onclick="rdBoth()"${me.applying?' disabled':''}>${lab}</button>${left.length?'<small>Nothing changes until you tap. You can undo it after.</small>':''}</div>`}
 function rdRender(top){const me=rd;if(!me)return;const {s}=rdEls(),it=rdItem(me.src,me.id);if(!it){rdClose();return}
   const y=s.scrollTop,pr=paperNow(it),res=me.state==='result';
   const head=`<div class="rdtop"><span class="rdgrab" aria-hidden="true"></span><div class="rdhead"><b id="rd-title">Claude’s reading</b><button type="button" class="rdx" onclick="rdClose()" aria-label="Close">×</button></div>
 <div class="rdsrc"><figure><img src="${it.texture}" alt="Your close-up"><figcaption>Close-up</figcaption></figure><figure><div class="rddraw">${rdDraw(it,res?rdPreview(it,me):{})}</div><figcaption>${res?'With both':'Now'}</figcaption></figure>
-<div class="rdmeta"><b>${me.state==='busy'?'Reading your close-up':'Read from your close-up'}</b>${me.state==='busy'?'Two lookups side by side: the color and the weave.':'Claude gives a color and a weave. Pick either, or both.'}<br>${rdPaperHtml(pr)}</div></div></div>`;
+<div class="rdmeta"><b>${me.state==='busy'?'Reading your close-up':'Read from your close-up'}</b>${me.state==='busy'?'Two lookups side by side: the color and the weave.':me.m?'Claude gives a color, a weave and the material. Pick any of them.':'Claude gives a color and a weave. Pick either, or both.'}<br>${rdPaperHtml(pr)}</div></div></div>`;
   let body='';
   if(me.state==='busy')body=`<div class="rdbusy" role="status"><span class="spin" aria-hidden="true"></span><span><b>Claude is reading the color and the weave…</b><small>About 15 seconds. Nothing changes until you choose.</small></span></div>
 <div class="rdbar"><button type="button" class="ghost" id="rd-stop" onclick="rdClose()">Stop</button><small>Stopping changes nothing. · <span id="rd-cost">${esc(rdCost())}</span></small></div>`;
   else if(me.state==='limit')body=`<div class="cnlim" id="rd-limit" role="status"><span aria-hidden="true">⏳</span><span><b>${esc(me.limit)}</b>You can still set the color and pattern yourself.</span></div><div class="rdbar"><button type="button" class="pri" onclick="rdClose()">Close</button></div>`;
   else if(me.state==='err')body=`<div class="cnres cnerr" id="rd-err"><div class="cpasktx"><b>Claude couldn’t answer</b><small>The color and weave couldn’t be read just now. Try again later, or set them yourself.${me.detail?` (${esc(me.detail)})`:''}</small></div><div class="cnbtns"><button type="button" class="cpaskbtn" onclick="rdRun(rd.src,rd.id)">Try again</button></div></div><div class="rdbar"><button type="button" class="ghost" onclick="rdClose()">Close</button></div>`;
-  else body=rdColCard(it,me)+rdPatCard(it,me)+rdBar(it,me);
+  else body=rdColCard(it,me)+rdPatCard(it,me)+rdMatCard(it,me)+rdBar(it,me);
   s.innerHTML=head+body;s.scrollTop=top?0:y}
 function rdKeep(h){const me=rd;if(!me||!me[h])return;me[h].done='keep';rdAfter()}
 function rdChange(h){const me=rd;if(!me||!me[h])return;me[h].done=null;rdRender()}
@@ -568,29 +583,35 @@ async function rdAddPat(it,x){const base=rdPatBase(it,x),types=CN_SUITING.includ
 const rdPick=(it,fields)=>Object.fromEntries(fields.map(k=>[k,it[k]==null?it[k]:JSON.parse(JSON.stringify(it[k]))]));
 async function rdSet(src,id,k,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;const q=queue[i];if(k==='primaryColor')q.newColor=null;else q.newPattern=null;setq(i,k,v)}else await sete(id,k,v)}
 async function rdUse(parts){const me=rd;if(!me||me.state!=='result'||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;me.applying=true;
-  try{for(const [h,how] of parts){const x=me[h];if(!x||x.na||x.done)continue;const now=rdItem(me.src,me.id)||it,prev=rdPick(now,h==='c'?RD_COLF:RD_PATF);let v,added=false,name;
-      if(how==='existing'){v=x.ex;name=h==='c'?cap1(colName(v)):cap1(patName(v))}else{const a=h==='c'?await rdAddCol(now,x):await rdAddPat(now,x);v=a.key;added=a.added;name=x.name}
-      await rdSet(me.src,me.id,h==='c'?'primaryColor':'pattern',v);x.done='used';x.usedName=name;
-      if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':'patterns'}}}
+  try{for(const [h,how] of parts){const x=me[h];if(!x||x.na||x.done)continue;const now=rdItem(me.src,me.id)||it,prev=rdPick(now,h==='c'?RD_COLF:h==='m'?['material']:RD_PATF);let v,added=false,name;
+      if(h==='m'){v=x.key;name=x.name;await rdSetMat(me.src,me.id,v)}
+      else{if(how==='existing'){v=x.ex;name=h==='c'?cap1(colName(v)):cap1(patName(v))}else{const a=h==='c'?await rdAddCol(now,x):await rdAddPat(now,x);v=a.key;added=a.added;name=x.name}
+        await rdSet(me.src,me.id,h==='c'?'primaryColor':'pattern',v)}
+      x.done='used';x.usedName=name;
+      if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null,m:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':'patterns'}}}
   catch(e){me.applying=false;toast(e.message||'That could not be set.');rdRender();return}
   me.applying=false;rdAfter()}
+/* the material set by the reading: the Add card's field (setQField: it then counts as chosen) or the item's (setItemField) */
+async function rdSetMat(src,id,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i>=0)setQField(i,'material',v)}else await setItemField(id,'material',v)}
+/* "Use both" / "Use all": every card's main action; a card with none (the item's own already, a material the owner set) is kept */
 async function rdBoth(){const me=rd;if(!me||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;
-  const acts=['c','p'].filter(h=>me[h]&&!me[h].na&&!me[h].done).map(h=>[h,h==='c'?rdColMain(it,me.c):rdPatMain(it,me.p)]);
+  const acts=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done).map(h=>[h,rdMain(it,me,h)]);
   for(const [h,a] of acts)if(!a)me[h].done='keep';const use=acts.filter(a=>a[1]);if(use.length)await rdUse(use);else rdAfter()}
-/* after a tap: both cards decided closes the sheet (the toast says what changed, with Undo); otherwise the sheet shows what is left */
-function rdAfter(){const me=rd;if(!me)return;const left=['c','p'].filter(h=>me[h]&&!me[h].na&&!me[h].done);
+/* after a tap: every card decided closes the sheet (the toast says what changed, with Undo); otherwise the sheet shows what is left */
+function rdAfter(){const me=rd;if(!me)return;const left=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done);
   if(left.length){rdRender();rdRefresh(me.src,me.id);return}
   const L=rdLast&&rdLast.run===me.run?rdLast:null;rdClose();
-  if(L&&(L.c||L.p))toast(L.c&&L.p?'Color and texture updated.':L.c?'Color updated.':'Texture updated.',4000,{label:'Undo',fn:rdUndoAll})}
+  const ch=L?[L.c&&'color',L.p&&'texture',L.m&&'material'].filter(Boolean):[];
+  if(ch.length)toast(cap1(ch.length>1?ch.slice(0,-1).join(', ')+' and '+ch.at(-1):ch[0])+' updated.',4000,{label:'Undo',fn:rdUndoAll})}
 /* Undo: the fields as they were, and a color or pattern this reading added taken out again when nothing else uses it */
 async function rdRestore(src,id,half){const it=rdItem(src,id);
   if(it){for(const [k,v] of Object.entries(half.prev)){if(v===undefined)delete it[k];else it[k]=v}
     if(src==='q'){if(it.texCanvas)generateSwatch(it);if(typeof addKeep==='function')queueMicrotask(addKeep)}else{if(it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={}}}
   if(half.added&&![...items,...queue].some(x=>x&&[x.primaryColor,x.secondaryColor,x.tertiaryColor,x.pattern].includes(half.added)))await removeCustom(half.kind,half.added)}
 async function rdUndo(h){const L=rdLast;if(!L||!L[h])return;const half=L[h];L[h]=null;await rdRestore(L.src,L.id,half);
-  if(rd&&rd.run===L.run&&rd[h])rd[h].done=null;if(!L.c&&!L.p&&rdLast===L)rdLast=null;rdRefresh(L.src,L.id);if(rd)rdRender()}
-async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['p','c'])if(L[h])await rdUndo(h);toast('Put back as it was.')}
+  if(rd&&rd.run===L.run&&rd[h])rd[h].done=null;if(!L.c&&!L.p&&!L.m&&rdLast===L)rdLast=null;rdRefresh(L.src,L.id);if(rd)rdRender()}
+async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['m','p','c'])if(L[h])await rdUndo(h);toast('Put back as it was.')}
 /* the card left on the page after a reading set something: the new drawing, what changed, Undo */
-function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
-  const names=[L.c&&L.c.name,L.p&&L.p.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns'].filter(Boolean);
+function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p&&!L.m)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
+  const names=[L.c&&L.c.name,L.p&&L.p.name,L.m&&L.m.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns'].filter(Boolean);
   return `<div class="rddone" id="rd-done" role="status"><span class="rddraw" aria-hidden="true">${itemThumb({...it,photo:undefined})}</span><span class="rddtx"><b>${esc(names.join(' and '))} set</b>${add.length?`<small>Added to your ${add.join(' and ')}.</small>`:''}</span><button type="button" class="rdlink" id="rd-undo" onclick="rdUndoAll()">Undo</button></div>`}

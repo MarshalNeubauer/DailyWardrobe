@@ -366,7 +366,13 @@ function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?
   tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:normPat(ai.type,ai.pattern)}}
 function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
-  q.aiTag={...aiFields(ai)};readSett(q)}
+  q.aiTag={...aiFields(ai)};takeMaterial(q,ai);readSett(q)}
+/* Claude's material (2026-11-15, app.js matTag: high or medium, on the type's list): it fills the card's Material only when that is empty, or
+   still holds Claude's own earlier suggestion (tagging again from the close-up), never one chosen by hand (q.matSet); the field shows it as
+   Claude's suggestion (q.matAI, wardrobe.js matRow) until the owner changes it */
+function takeMaterial(q,ai){const m=ai&&ai.material,l=MATERIALS_BY[q.type];if(!m||!l||!l.includes(m.key)||q.matSet)return;
+  if(q.material&&!(q.matAI&&q.material===q.matAI.key))return;
+  q.material=m.key;q.matAI={key:m.key,conf:m.conf,why:m.why||''}}
 async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
   const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);

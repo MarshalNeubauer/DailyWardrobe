@@ -133,7 +133,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.selectOption('#item-view .wmat','wool');await p.waitForFunction(()=>items.find(i=>i.id==='su1').material==='wool');
     // material options differ by type
     const per={};for(const id of ['sh1','ti1','so1','co1','sx1','wa1']){await p.evaluate(i=>openItem(i),id);per[id]=await mats()}
-    ok(per.sh1.includes('Poplin')&&per.sh1.includes('Oxford')&&!per.sh1.includes('Tweed')&&per.ti1.includes('Silk')&&per.ti1.includes('Grenadine')&&!per.ti1.includes('Poplin')&&per.so1.includes('Merino wool')&&per.co1.includes('Cashmere'),'shirts, ties, socks and coats each offer their own materials');
+    ok(per.sh1.includes('Poplin')&&per.sh1.includes('Performance stretch')&&!per.sh1.includes('Oxford')&&!per.sh1.includes('Twill')&&!per.sh1.includes('Tweed')&&per.ti1.includes('Silk')&&per.ti1.includes('Grenadine')&&!per.ti1.includes('Knitted silk')&&!per.ti1.includes('Poplin')&&per.so1.includes('Merino wool')&&per.co1.includes('Cashmere'),'shirts (fabric only: no weaves), ties (no knitted silk), socks and coats each offer their own materials');
     ok(per.sx1===null&&per.wa1===null&&await p.evaluate(()=>!!document.querySelector('#item-view .wf-name')&&!!document.querySelector('#item-view .wf-notes')),'shoes and watches (leather, band and metal) have no material list, but a name, brand and notes');
     const lists=await p.evaluate(()=>Object.entries(MATERIALS_BY).map(([t,l])=>[t,l.length,new Set(l).size===l.length&&l.every(m=>m===m.toLowerCase()&&m.length<=40),!!TYPES[t]]));
     ok(lists.length>=8&&lists.every(l=>l[1]>=5&&l[2]&&l[3])&&!lists.some(l=>['shoes','belt','watch'].includes(l[0])),`MATERIALS_BY lists materials for ${lists.map(l=>l[0]).join(', ')}`);
@@ -161,15 +161,15 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const h0=await p.evaluate(()=>document.querySelector('#queue .card').getBoundingClientRect().height);
     await p.click('#queue .morebtn');await p.waitForSelector('#queue .morein');
     const addM=await p.evaluate(()=>({opts:[...document.querySelector('#queue .wmat').options].map(o=>o.textContent),out:!document.querySelector('#queue .wmat').closest('.morefold'),above:!!(document.querySelector('#queue .wmat').compareDocumentPosition(document.querySelector('#queue .morefold'))&Node.DOCUMENT_POSITION_FOLLOWING),inside:!!document.querySelector('#queue .morein .wmat')}));
-    ok(addM.opts.includes('Knitted silk')&&!addM.opts.includes('Poplin')&&addM.out&&addM.above&&!addM.inside&&await p.evaluate(h=>document.querySelector('#queue .card').getBoundingClientRect().height>h+100,h0),'Material (a tie\'s) is out with the other fields, above More details; unfolded it has Name, Brand and Notes');
-    await p.fill('#queue .wf-name','Club tie');await p.fill('#queue .wf-brand','Marlowe');await p.fill('#queue .wf-notes','A gift');await p.selectOption('#queue .wmat','knitted silk');
-    await p.waitForFunction(()=>queue[0].material==='knitted silk'&&queue[0].name==='Club tie');
+    ok(addM.opts.includes('Shantung')&&!addM.opts.includes('Knitted silk')&&!addM.opts.includes('Poplin')&&addM.out&&addM.above&&!addM.inside&&await p.evaluate(h=>document.querySelector('#queue .card').getBoundingClientRect().height>h+100,h0),'Material (a tie\'s) is out with the other fields, above More details; unfolded it has Name, Brand and Notes');
+    await p.fill('#queue .wf-name','Club tie');await p.fill('#queue .wf-brand','Marlowe');await p.fill('#queue .wf-notes','A gift');await p.selectOption('#queue .wmat','shantung');
+    await p.waitForFunction(()=>queue[0].material==='shantung'&&queue[0].name==='Club tie');
     ok(await p.evaluate(()=>document.querySelector('#queue .wf-name').value==='Club tie'&&document.querySelector('#queue .wf-notes').value==='A gift'),'what was typed stays when the card redraws');
     await p.click('#queue .morebtn');await p.waitForFunction(()=>!document.querySelector('#queue .morein'));
     ok(/3 filled in/.test(await p.textContent('#queue .morebtn')),'folded again, it says how many of its own are filled in');
     await p.click('#queue .card .btns .pri');await p.waitForFunction(()=>items.some(i=>i.name==='Club tie'));
     const saved=await p.evaluate(()=>{const i=items.find(x=>x.name==='Club tie');return [i.type,i.brand,i.material,i.notes].join('|')});
-    ok(saved==='tie|Marlowe|knitted silk|A gift',`Confirm saves them with the item (${saved})`);
+    ok(saved==='tie|Marlowe|shantung|A gift',`Confirm saves them with the item (${saved})`);
     await p.evaluate(()=>{addManual();setq(0,'type','shoes');toggleMore(0)});
     ok(await p.evaluate(()=>!document.querySelector('#queue .wmat')&&!!document.querySelector('#queue .wf-name')),'the Add card offers no material for shoes');
     await p.evaluate(()=>{queue.length=0;renderAdd()});
