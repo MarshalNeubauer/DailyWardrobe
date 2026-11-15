@@ -15,13 +15,14 @@ module.exports=async({ok,chromium,url})=>{
       const q={raw:{big:shrink(c,800),full:shrink(c,TAG_MAX)},wb:null};cardPics(q);const im=new Image();im.src=q.photo;await im.decode();return [im.width,im.height,PH_MAX]});
     ok(dims[0]===dims[2]&&dims[1]===1024,`a new item's photo is ${dims[2]} px across, not the 800 px measuring copy (${dims[0]}×${dims[1]})`);
     // Confirm and Save all wait for Claude
-    const r=await p.evaluate(async()=>{show('add');addManual();addManual();queue[0].refining=1;renderAdd();
-      const conf=[...document.querySelectorAll('#add .btns button.pri')].map(b=>b.disabled),all=document.querySelector('#save-all button');
+    // (the first card is in the "Add without a photo" sheet, its Confirm in the sheet's bar; the second a card of the list)
+    const r=await p.evaluate(async()=>{show('add');addManual();queue.push({id:'h1',err:'open'});errToHand('h1');queue[0].refining=1;renderAdd();
+      const conf=['#nps-bar .pri','#queue .btns button.pri'].map(s=>document.querySelector(s).disabled),all=document.querySelector('#save-all button');
       const before=items.length;await save(0);await saveAll();const kept=queue.length,after=items.length;
       let called=0;const was=window.claudePattern;window.claudePattern=async()=>{called++;return null};
       const q={...queue[1],raw:{tex:document.createElement('canvas')},tagImg:'data:x',type:'tie',pattern:'stripe'};localStorage.setItem('worker_url','https://w.test/');
       await readPatternWithClaude(q);window.claudePattern=was;localStorage.removeItem('worker_url');
-      queue[0].refining=0;renderAdd();const conf2=document.querySelector('#add .btns button.pri').disabled;queue.length=0;renderAdd();
+      queue[0].refining=0;renderAdd();const conf2=document.querySelector('#nps-bar .pri').disabled;queue.length=0;renderAdd();
       return {conf,all:all&&all.disabled,before,after,kept,called,conf2}});
     ok(r.conf[0]===true&&r.conf[1]===false&&r.all===true,`while Claude reads a card its Confirm and Save all are switched off, the other card's Confirm not (${JSON.stringify(r)})`);
     ok(r.before===r.after&&r.kept===2&&r.conf2===false,'save() and saveAll() save nothing meanwhile, and Confirm comes back once the reading is in');

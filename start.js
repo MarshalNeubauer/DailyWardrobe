@@ -53,6 +53,7 @@ function appSheetBack(kind){
   if(kind==='cu'){if(typeof closeupBack==='function')closeupBack();return true}   // the close-up chooser closes as Cancel (ui.js)
   if(kind==='rd'){if(typeof rdBack==='function')rdBack();return true}   // the reading sheet closes as its × (colpick.js; a reading under way is called off, as Stop)
   if(kind==='kit'){if(typeof kit!=='undefined'&&kit)kitClose(true);return true}   // the tour, the guides, the Home Screen sheet, the import sheet (kit.js)
+  if(kind==='nps'){if(typeof npsBack==='function')npsBack();return true}   // the "Add without a photo" sheet closes as its × (add.js; asks first when the card was changed), Add stays
   return false}
 addEventListener('popstate',e=>{if(appPend){appPend=false;if(editing)histPush();appWanted();for(const f of appLand.splice(0))f();return}   // our own step back; an item opened meanwhile gets its entry now
   if(!appHist){if(appWant&&!itemBack)appWanted();return}
@@ -71,6 +72,7 @@ function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
 function openAdd(){subOpen();show('add');scrollTo({top:0})}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
+  if(from==='add'&&t!=='add'&&typeof npsLeave==='function')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add.js)
   if(!SUBS.includes(t))appDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
   if(from==='add'&&t!=='add'&&typeof toastDrop==='function')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
   if(typeof setupYield==='function')setupYield(t);

@@ -259,12 +259,77 @@ async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;l
   if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);cache={};renderWardrobe();toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure>${needType(i)?'':`<figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure>`}</div>`;
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
+/* "Add without a photo" (2026-11-15, the owner's choice: variant A of add-page-mockups) opens the card in a sheet from the bottom over Add,
+   not in the list; a second call while the sheet holds a card shows that card again */
 function addManual(){
   addWatch();
+  if(npsId&&queue.some(q=>q.id===npsId)){npsOpen(npsId);return}
   const wo=watchOpts({}),id=crypto.randomUUID();
   queue.unshift({id,manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});
-  renderAdd();addShowCard(id);
+  npsOpen(id);
 }
+/* ---- the "Add without a photo" sheet (#nps-sheet, in #add so the card keeps Add's styles): grabber, the title with the hanger icon, ×
+   in the header (the card's own × is left out), the card in the middle, Confirm and Cancel pinned at the bottom (#nps-bar). The card stays
+   in `queue` (its place there is its index, as for every card); only its drawing moves (renderAdd → npsDraw).
+   Closing without saving (×, Cancel, a swipe down, the backdrop, Escape, the phone's Back) drops the card; once anything on it was
+   changed it asks "Discard this item?" first. Confirm saves it, and the sheet closes when the card leaves the queue (npsDraw).
+   Back: the sheet borrows Add's history entry (start.js appBorrow('nps'), kept in npsWas); closed by a tap it hands it back. ---- */
+let npsId=null,npsWas,npsSnap='',npsAsking=false,npsFrom=null,npsSwipeOn=false;
+/* what the card holds, to tell whether anything was changed (its form as kept, its close-up) */
+const npsSig=q=>{if(!q)return '';const o=addCardRec(q);delete o.swatch;delete o.swSrc;return JSON.stringify(o)+'|'+(q.texture?q.texture.length:0)};
+const npsCard=()=>npsId?queue.find(q=>q.id===npsId):null;
+function npsOpen(id){const s=$('#nps-sheet'),b=$('#nps-backdrop');if(!s)return;const again=!!npsId;npsId=id;
+  if(!again){npsFrom=document.activeElement;npsWas=typeof appBorrow==='function'?appBorrow('nps'):'';}
+  renderAdd();npsSnap=npsSig(npsCard());npsSwipe();
+  s.classList.add('on');b.classList.add('on');document.body.classList.add('nps-on');npsInert(true);
+  const body=$('#nps-q');if(body&&!again)body.scrollTop=0;
+  if(!again)try{s.focus({preventScroll:true})}catch{}}
+/* the page under the sheet (header, the tab bar, the rest of Add) can't be reached while it is up */
+function npsInert(on){for(const el of document.querySelectorAll('body>header,body>nav'))el.inert=on;const a=$('#add');if(!a)return;
+  for(const el of a.children)if(el.id!=='nps-sheet'&&el.id!=='nps-backdrop')el.inert=on}
+/* the card and its bar; the card gone (saved, or taken away) closes the sheet */
+function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsClose();return}const i=queue.indexOf(q),body=$('#nps-q'),bar=$('#nps-bar');
+  if(body){const y=body.scrollTop;body.innerHTML=formCard(q,i,true);body.scrollTop=y}
+  if(bar)bar.innerHTML=`${confBtn(q,i)}<button type="button" id="nps-cancel" onclick="npsCancel()">Cancel</button>`}
+/* fromBack: the phone's Back did it (its entry is gone already) */
+function npsClose(fromBack){if(!npsId&&npsWas===undefined)return;const s=$('#nps-sheet'),b=$('#nps-backdrop');npsId=null;npsAsking=false;
+  if(s)s.classList.remove('on');if(b)b.classList.remove('on');document.body.classList.remove('nps-on');npsInert(false);if(typeof layerInert==='function')layerInert();
+  const was=npsWas;npsWas=undefined;if(typeof appGiveBack==='function'){if(!fromBack)appGiveBack('nps',was);else if(was)appPush(was)}
+  const f=npsFrom;npsFrom=null;const to=f&&f.isConnected&&!f.closest('[inert]')&&f!==document.body?f:$('#add-manual');
+  if(to&&$('#add')&&!$('#add').hidden)try{to.focus({preventScroll:true})}catch{}
+  setTimeout(()=>{if(!npsId){const body=$('#nps-q'),bar=$('#nps-bar');if(body)body.innerHTML='';if(bar)bar.innerHTML=''}},320)}   // (emptied once it has slid away)
+/* ×, Cancel, a swipe, the backdrop, Escape, Back: asks first when the card was changed; -> whether it closed */
+async function npsCancel(fromBack){const q=npsCard();if(!npsId||npsAsking)return false;
+  if(q&&(q.saving||cardReading(q))){if(fromBack&&typeof appPush==='function')appPush('nps');return false}   // (being saved or read: it stays, and Back's entry is made again)
+  if(q&&npsSig(q)!==npsSnap){if(fromBack&&typeof appPush==='function')appPush('nps');   // the sheet stays while it asks: its entry again, for the question to borrow
+    npsAsking=true;const go=await askConfirm('Discard this item?\n\nWhat you picked on it is not saved.',{ok:'Discard',cancel:'Keep editing',danger:true});npsAsking=false;
+    if(!go||npsCard()!==q)return false;npsClose();skipCard(q.id);return true}
+  const id=npsId;npsClose(fromBack);if(q)skipCard(id);return true}
+function npsBack(){if(npsId)npsCancel(true)}
+/* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
+   untouched one goes */
+function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==npsSnap;if(npsAsking&&typeof asking!=='undefined'&&asking)askAnswer(false);
+  npsClose();if(q&&!changed)skipCard(q.id)}
+/* swiping the sheet down closes it, as What to buy and the item sheet: its header is a handle at any time, the card only while it is
+   scrolled to the top; past a quarter of its height or a flick it closes (asking first when changed), else it springs back */
+function npsSwipe(){if(npsSwipeOn)return;const s=$('#nps-sheet');if(!s)return;npsSwipeOn=true;
+  sheetSwipe(s,{head:'.nps-head',body:()=>$('#nps-q'),backdrop:()=>$('#nps-backdrop'),live:()=>!!npsId&&!npsAsking,close:()=>npsCancel()});
+  s.addEventListener('keydown',e=>{if(e.key==='Escape'&&npsId&&!npsAsking){e.preventDefault();e.stopPropagation();npsCancel()}})}
+/* the swipe-down of a bottom sheet (the no-photo sheet, the import sheet): o.head is the handle's selector, o.body() the scrolling part,
+   o.live() whether it may start, o.close() what letting go past the line does; the sheet follows the finger by its own transform */
+function sheetSwipe(v,o){let st=null;
+  const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';const bd=o.backdrop&&o.backdrop();if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
+  const held=on=>{const bd=o.backdrop&&o.backdrop();for(const el of [v,bd])if(el)el.style.transition=on?'none':''};
+  v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest(o.head),b=o.body();
+    st=!o.live()||e.touches.length>1||e.target.closest('input,textarea')||(!head&&b&&b.scrollTop>0)||(!head&&!(b&&b.contains(e.target)))?null:{x:t.clientX,y:t.clientY,on:false,d:0,ly:t.clientY,lt:e.timeStamp,vy:0}},{passive:true});
+  v.addEventListener('touchmove',e=>{if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=true;held(true)}else{st=null;return}}
+    e.preventDefault();const now=e.timeStamp;if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
+    st.d=Math.max(0,dy);put(st.d)},{passive:false});
+  const end=()=>{if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;held(false);
+    if(d>v.offsetHeight*.25||(vy>.5&&d>30))o.close();
+    put(0)};
+  v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true})}
 /* bought but not here yet: the item goes into the wardrobe out of rotation; with an arrival date it joins the outfits from the day
    after (inRotation in core.js), and once that day comes it is put back in rotation for good (checkArrivals) */
 const fmtDay=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'})};
@@ -365,8 +430,12 @@ function renderAdd(){
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
   addKeepSoon();
-  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):
-`<div class="card qcard" data-q="${esc(q.id)}"><button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
+  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i)).join('');
+  if(npsId)npsDraw();
+}
+/* an item card's form (a photo's card in the list, or the "Add without a photo" sheet's card: inSheet leaves out the card's own × and its
+   Confirm / Cancel, which the sheet has in its header and its pinned bar) */
+function formCard(q,i,inSheet){return `<div class="card qcard" data-q="${esc(q.id)}">${inSheet?'':`<button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>`}${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
 ${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
@@ -384,8 +453,8 @@ ${FABRIC.includes(q.type)?`<label class="colrow">Pattern ${patBtn('q',i,q)}</lab
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:''}${q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:''}${q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
-${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderRow(q,i)}${qtyRow(q,i)}<div class="btns"><button class="pri" id="qconf-${i}" onclick="save('${esc(q.id)}')"${cardReading(q)?' disabled title="Claude is still reading this item"':q.saving||saveAllOn?' disabled':''}>${qtyLabel(q)}</button><button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div>${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`).join('');
-}
+${matRow(q.type,q.material,`setQField(${i},'material',`)}${moreRow(q,i)}${orderRow(q,i)}${qtyRow(q,i)}${inSheet?'':`<div class="btns">${confBtn(q,i)}<button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div>`}${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`}
+const confBtn=(q,i)=>`<button class="pri" id="qconf-${i}" onclick="save('${esc(q.id)}')"${cardReading(q)?' disabled title="Claude is still reading this item"':q.saving||saveAllOn?' disabled':''}>${qtyLabel(q)}</button>`;
 /* the cards that are not (yet) a form: being read, a "Several items" photo that couldn't be read, a file that couldn't be opened,
    and a photo nobody read, which asks for its type first */
 const busyCard=q=>`<div class="card" data-q="${esc(q.id)}"><span class="spin" aria-hidden="true"></span>${q.multiBusy?`Finding every item in the photo… (this can take up to a minute) <button type="button" onclick="skipCard('${esc(q.id)}')">Cancel</button>`:`Reading the photo…${q.abort?` <button type="button" class="stopread" onclick="stopRead('${esc(q.id)}')">Stop</button>`:''}`}</div>`;

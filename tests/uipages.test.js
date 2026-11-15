@@ -52,9 +52,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       more:!!document.querySelector('#add .addmore #photo-url')&&!!document.querySelector('#add .addmore .addrow')}));
     ok(ad.head==='Add to wardrobe'&&ad.picks.join()==='One item,Several items'&&ad.more,'Add: a page header, the two ways in, and the other ways in one card');
     await p.evaluate(()=>{addManual();setq(0,'type','suit')});
-    const lab=await p.evaluate(()=>[...document.querySelectorAll('#queue .card>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join(','));
+    const lab=await p.evaluate(()=>[...document.querySelectorAll('#nps-q .card>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join(','));
     ok(lab==='Type,Color,Second color,Third color','the item card and the Wardrobe editor use the same labels');
-    ok(await p.evaluate(()=>[...document.querySelectorAll('#queue select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
+    ok(await p.evaluate(()=>[...document.querySelectorAll('#nps-q select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
     // ---- one size for controls, one style for page titles
     const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
