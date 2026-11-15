@@ -105,7 +105,7 @@ async function run(eng,browser,{ok,url,settle}){
       ok(e&&e.h>=44&&e.right<=390&&e.fit&&e.bg!==e.ink&&/True color in 3 steps/i.test(e.text),T+`${theme}: the editor shows the 3-step card (${JSON.stringify(e)})`)}
     await p.evaluate(()=>{delete document.documentElement.dataset.theme});
     await p.click('#item-view .wbstcard');await p.waitForSelector('#kitsheet.on');
-    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colours'),T+'the editor\'s card opens the white-paper tip');
+    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),T+'the editor\'s card opens the white-paper tip');
     await p.click('#kitsheet .kit-x');await settle(p,200);
     // ---- the New color sheet's Retake close-up
     await p.evaluate(F=>{items.find(x=>x.id==='m1').texture=F.plain;delete items.find(x=>x.id==='m1').texSm},F);
@@ -130,7 +130,7 @@ async function run(eng,browser,{ok,url,settle}){
       ok(e&&e.h>=44&&e.right<=390&&e.fit&&!e.old&&e.bg!==e.ink&&/True color in 3 steps/i.test(e.text),T+`${theme}: the Add card's Step 2 shows the 3-step card, not the old sentence and link (${JSON.stringify(e)})`)}
     await p.evaluate(()=>{delete document.documentElement.dataset.theme});
     await p.click('#queue .wbstcard');await p.waitForSelector('#kitsheet.on');
-    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colours'),T+'the Add card\'s card opens the white-paper tip');
+    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),T+'the Add card\'s card opens the white-paper tip');
     await p.click('#kitsheet .kit-x');await settle(p,200);
     e=await p.evaluate(()=>{const b=document.querySelector('#queue .texslot .cubtn');return {t:b&&b.textContent,file:!!document.querySelector('#queue .texslot input[type=file]')}});
     ok(e.t==='Add close-up'&&!e.file,T+'the Add card\'s "Add close-up" is a plain button');

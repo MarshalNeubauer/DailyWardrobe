@@ -23,9 +23,10 @@ const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],bl
   TODAY_OVERRIDE='2026-11-08T12:00:00';dayRecs={'2026-11-12':{date:'2026-11-12',formal:true},'2026-11-18':{date:'2026-11-18',occasion:'casual'},'2026-11-24':{date:'2026-11-24',occasion:'wedding'},'2026-12-2':{date:'2026-12-2',occasion:'funeral'},
     '2026-11-16':{date:'2026-11-16',force:{tie:items.find(i=>i.type==='tie').id}},'2026-11-17':{date:'2026-11-17',vest:false}};cache={};
   const lines=[];for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=buildPlan(y,m);for(const k of Object.keys(P).sort()){if(!k.startsWith(y+'-'+(m+1)+'-'))continue;const o=P[k],r=rateOutfit(o);
-    lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>c.label[0]+c.pts).join('')+' '+o.notes.length)}}
+    lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>(c.label==='Pants'?'T':c.label[0])+c.pts).join('')+' '+o.notes.length)}}
   let h=0x811c9dc5;for(const c of lines.join('\\n'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return {n:lines.length,h:h.toString(16),first:lines[0]}}`;
-/* recorded from the app before the dress code (commit 671db36), with the same two strings */
+/* recorded from the app before the dress code (commit 671db36), with the same two strings (the check "Pants" was "Trousers" then: PLAN_SIG
+   counts it as T, so the American wording, 2026-11-15, keeps the signatures) */
 const GOLD={full:'91c49caa',small:'31867b3e'};   // small: recorded again 2026-11-15 (fix round 2) for the day before's tie (planner.js TIE_NEXT) and clean outfits first (clothesHard): its first days swap two ties, scores 97.18 -> 97.17 on average, the lowest 92 -> 93; next-day tie repeats stay 16 (its patterned jackets and striped shirt leave the plain navy tie the only clean one), no hard checks before or after (was e9ea9c35)
 //   // small: recorded again 2026-11-15 for the jacket worn the workday before (planner.js JKT_AGAIN; was 10040aba): its two suits alternate instead of the brown one running two days, scores 97.14 -> 97.18 on average, the lowest 91 -> 92
 //   // recorded again 2026-11-14 for the clip rule (planner.js clipAllowed: the test wardrobe's gold clip is no longer drawn in by its gold watch, its buckles being silver; with the rule off the signatures are the previous 2e6c164 / b2a7db53)   // both recorded again after the planner audit's fixes (2026-11-14: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' white shirt; were a8483609 and f91f12be)
@@ -55,9 +56,9 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
           whole:plain.every(k=>P[k].shirt&&P[k].shoes&&P[k].socks&&P[k].belt&&P[k].watch&&(P[k].top||P[k].bot)&&(P[k].suitDay||P[k].bot)),
           incomplete:ks.filter(k=>R(k).label==='Incomplete'||R(k).checks.some(c=>c.label==='Complete outfit')).length,
           min:Math.min(...plain.map(k=>R(k).score)),hard:plain.filter(k=>R(k).hard.length).length,
-          tieChecks:plain.filter(k=>R(k).checks.some(c=>/^Tie/.test(c.label))).length,shirtTr:plain.filter(k=>R(k).checks.some(c=>c.label==='Shirt and trousers')).length,
+          tieChecks:plain.filter(k=>R(k).checks.some(c=>/^Tie/.test(c.label))).length,shirtTr:plain.filter(k=>R(k).checks.some(c=>c.label==='Shirt and pants')).length,
           variety:plain.filter(k=>R(k).checks.some(c=>c.label==='Variety')).length,
-          tieNotes:plain.filter(k=>P[k].notes.some(n=>/\\btie\\b/i.test(n))).length,trNotes:plain.filter(k=>P[k].notes.some(n=>/separate trousers/.test(n))).length,
+          tieNotes:plain.filter(k=>P[k].notes.some(n=>/\\btie\\b/i.test(n))).length,trNotes:plain.filter(k=>P[k].notes.some(n=>/separate pants/.test(n))).length,
           shirts:new Set(sh).size,shRep:sh.filter((s,n)=>n&&s===sh[n-1]).length,tieRep:ti.filter((s,n)=>n&&s&&s===ti[n-1]&&plain[n]!=='2026-11-16').length,trousers:new Set(plain.map(k=>P[k].bot&&P[k].bot.id)).size,
           formal:['2026-11-12','2026-11-24','2026-12-2'].map(k=>(P[k].top?'J':'-')+(P[k].tie?'T':'-')+(P[k].suitDay?'S':'')).join(),casual:(P['2026-11-18'].top?'J':'-')+(P['2026-11-18'].tie?'T':'-'),
           forced:!!P['2026-11-16'].tie}}
@@ -65,8 +66,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const c=combos,say=x=>JSON.stringify(x);
     ok(c.JT.jackets===c.JT.days&&c.JT.ties===c.JT.days&&c.JT.vests>0&&c.JT.clips>0&&c.JT.incomplete===0,`jackets and ties: every day has both (${say(c.JT)})`);
     ok(c['J-'].jackets===c['J-'].days&&c['J-'].ties===0&&c['J-'].clips===0&&c['J-'].tieChecks===0&&c['J-'].tieNotes===0&&!c['J-'].forced,`jackets, no ties: a jacket every day, never a tie or a tie clip, no tie rule applied, a pinned tie ignored (${say(c['J-'])})`);
-    ok(c['-T'].jackets===0&&c['-T'].ties===c['-T'].days&&c['-T'].vests===0&&c['-T'].shirtTr===c['-T'].days,`ties, no jackets: trousers, a shirt and a tie every day, the shirt judged against the trousers (${say(c['-T'])})`);
-    ok(c['--'].jackets===0&&c['--'].ties===0&&c['--'].clips===0&&c['--'].vests===0&&c['--'].shirtTr===c['--'].days,`no jackets, no ties: trousers and a shirt (${say(c['--'])})`);
+    ok(c['-T'].jackets===0&&c['-T'].ties===c['-T'].days&&c['-T'].vests===0&&c['-T'].shirtTr===c['-T'].days,`ties, no jackets: pants, a shirt and a tie every day, the shirt judged against the pants (${say(c['-T'])})`);
+    ok(c['--'].jackets===0&&c['--'].ties===0&&c['--'].clips===0&&c['--'].vests===0&&c['--'].shirtTr===c['--'].days,`no jackets, no ties: pants and a shirt (${say(c['--'])})`);
     for(const k of ['JT','J-','-T','--'])ok(c[k].whole&&c[k].incomplete===0&&c[k].min>=85&&c[k].hard===0&&c[k].trNotes===0,`${k}: every outfit is complete, none reads Incomplete, and they score ${c[k].min} or more with no real mistake`);
     for(const k of ['-T','--'])ok(c[k].shirts>=6&&c[k].shRep===0&&c[k].trousers>=4&&c[k].variety>=c[k].days-1&&c[k].tieRep===0,`${k}: without jackets the shirts and trousers still rotate (${c[k].shirts} shirts, ${c[k].trousers} trousers, the same shirt two workdays running ${c[k].shRep} times)`);
     ok(['J-','-T','--'].every(k=>c[k].formal==='JTS,JTS,JTS'),`a formal day, a wedding and a funeral get a suit and a tie whatever the dress code (${c['--'].formal})`);
@@ -96,9 +97,9 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/Tie,Tie clip|Tie,/.test(tD.rows)&&!tD.open&&tD.blade,'by default Today lists the tie and draws it');
     ok(/^Suit/.test(tJ.rows)&&!/Tie/.test(tJ.rows)&&!/Add one/.test(tJ.none)&&!/Tie/.test(tJ.chips)&&!/\btie\b/i.test(tJ.sum)&&!/tie/.test(tJ.fixes)&&!/Tie/.test(tJ.stuck),`without ties Today has no tie row, prompt, chip or advice (${tJ.rows})`);
     ok(tJ.open&&!tJ.blade&&!tJ.clip&&tJ.lapels&&/open collar/.test(tJ.label)&&tJ.ids&&!tJ.use,'the jacket is drawn over an open collar with a placket, no tie or clip; the pattern ids stay');
-    ok(!/Suit|Blazer|Tie/.test(tN.rows)&&/^Trousers,Shirt/.test(tN.rows)&&!/Add one/.test(tN.none)&&tN.open&&!tN.lapels&&!tN.blade&&/no jacket, open collar/.test(tN.label)&&tN.ids,`without jackets or ties Today lists trousers and a shirt and draws shirt sleeves with an open collar (${tN.rows})`);
-    ok(/^Trousers,Shirt,Tie/.test(tT.rows)&&!tT.open&&tT.blade&&!tT.lapels,`without jackets but with ties: shirt sleeves and a tie (${tT.rows})`);
-    ok(!/No jacket/.test(tN.cell)&&/trousers/i.test(tN.cell)&&tN.stackRects===2&&tJ.stackRects===2&&tD.stackRects===3,`the month's stacks show only what is worn (${tN.cell})`);
+    ok(!/Suit|Blazer|Tie/.test(tN.rows)&&/^Pants,Shirt/.test(tN.rows)&&!/Add one/.test(tN.none)&&tN.open&&!tN.lapels&&!tN.blade&&/no jacket, open collar/.test(tN.label)&&tN.ids,`without jackets or ties Today lists pants and a shirt and draws shirt sleeves with an open collar (${tN.rows})`);
+    ok(/^Pants,Shirt,Tie/.test(tT.rows)&&!tT.open&&tT.blade&&!tT.lapels,`without jackets but with ties: shirt sleeves and a tie (${tT.rows})`);
+    ok(!/No jacket/.test(tN.cell)&&/pants/i.test(tN.cell)&&tN.stackRects===2&&tJ.stackRects===2&&tD.stackRects===3,`the month's stacks show only what is worn (${tN.cell})`);
     ok(!/Incomplete/.test(tJ.text)&&!/Incomplete/.test(tN.text)&&!/Incomplete/.test(tT.text),'no day reads Incomplete on Today');
     ok(tJ.key!==tJ.keyTie&&/\|-\|/.test(tJ.sig)&&!tJ.nojacket,`a jacket without a tie has its own photo key (${tJ.sig})`);
     ok(tN.nojacket&&tN.key!==tN.keyTie,'shirt sleeves without a tie likewise');
@@ -117,8 +118,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/tie/.test(shop.def.cats)&&/suit/.test(shop.def.cats)&&!/nojacket|notie/.test(shop.def.sig),`by default the what-to-buy check covers suits and ties (${shop.def.cats})`);
     ok(!/\btie\b/.test(shop.noTie.cats)&&!/tie/.test(shop.noTie.types)&&!/\bties?\b|tie clip/.test(shop.noTie.why)&&!/tie/.test(shop.noTie.idle)&&/suit/.test(shop.noTie.cats)&&/shirt/.test(shop.noTie.types)&&/notie/.test(shop.noTie.sig),`without ties it suggests no tie or tie clip and names none in its reasons (${shop.noTie.types})`);
     ok(!/suit|blazer|\btie\b/.test(shop.none.cats)&&!/suit|blazer|tie/.test(shop.none.types)&&!/suit|blazer|tie/.test(shop.none.idle)&&shop.none.avg>=85&&/nojacket\|notie/.test(shop.none.sig),`without jackets it suggests no suit or blazer, and checks again (${shop.none.cats}; ${shop.none.types||'no ideas'})`);
-    ok(/shirt/.test(shop.none.types)&&/pants/.test(shop.none.cats)&&/of your \d+ trousers/.test(shop.none.why)&&!/nojacket/.test(shop.none.why),`without jackets shirts and trousers still get ideas, judged against each other (${shop.none.types}; ${shop.none.cats})`);
-    ok(/shirt/.test(shop.noJacket.types)&&/tie/.test(shop.noJacket.cats)&&/pants/.test(shop.noJacket.cats)&&!/suit|blazer/.test(shop.noJacket.types),`without jackets but with ties: shirts, ties and trousers (${shop.noJacket.types}; ${shop.noJacket.cats})`);
+    ok(/shirt/.test(shop.none.types)&&/pants/.test(shop.none.cats)&&/of your \d+ pants/.test(shop.none.why)&&!/nojacket/.test(shop.none.why),`without jackets shirts and pants still get ideas, judged against each other (${shop.none.types}; ${shop.none.cats})`);
+    ok(/shirt/.test(shop.noJacket.types)&&/tie/.test(shop.noJacket.cats)&&/pants/.test(shop.noJacket.cats)&&!/suit|blazer/.test(shop.noJacket.types),`without jackets but with ties: shirts, ties and pants (${shop.noJacket.types}; ${shop.noJacket.cats})`);
 
     // ---- 6. Settings ----
     await p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');dayRecs={};delete settings.dress;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);

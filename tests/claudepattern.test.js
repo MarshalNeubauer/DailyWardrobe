@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),sch=sent.output_config.format.schema;
     ok(r.status===200&&sent.messages[0].content.filter(c=>c.type==='image').length===2&&sent.output_config.effort==='high','POST /pattern sends the photo and the close-up to Claude at high effort');
     ok(/as it was WOVEN, stripping away everything that is not the/.test(t)&&/seams and the pattern shift across them/.test(t)&&/The item is a blazer/.test(t)&&sch.required.includes('across')&&sch.required.includes('paneAspect'),'the prompt asks for the woven pattern without the noise, band by band each way');
-    ok(j.across.bands.length===6&&Math.abs(j.across.bands.reduce((a,b)=>a+b.w,0)-1)<1e-3&&j.across.bands[0].w>.9&&j.repeatsInCloseup===3.5,'bands are tidied (a bad colour dropped) and their widths made shares of the repeat');
+    ok(j.across.bands.length===6&&Math.abs(j.across.bands.reduce((a,b)=>a+b.w,0)-1)<1e-3&&j.across.bands[0].w>.9&&j.repeatsInCloseup===3.5,'bands are tidied (a bad color dropped) and their widths made shares of the repeat');
     ok((await call({image:IMG},'nope')).status===403,'it needs the app token');
     reply=()=>({...SPEC,layout:'none',across:{bands:[]},along:null});
     ok((await call({image:IMG})).status===422,'no pattern found is reported, not drawn');
@@ -45,7 +45,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {s,ground:gl,groundClose:gc,blue,blueC:C(blue),white,tieA:tie.a}},SPEC);
     ok(sp.s.src==='claude+pixels'&&sp.s.bands.length===6&&sp.s.cross&&sp.s.cross.bands.filter(b=>b[0]).length===3&&sp.s.cross.r===1.1&&sp.s.cr===3.5&&sp.s.tr===9,'the windowpane is drawn from Claude\'s bands: the white-blue-white group both ways, the pane shape, 3.5 panes in the close-up and 9 across the jacket');
     ok(Math.abs(sp.ground[0]-71)<4&&sp.ground[0]>sp.groundClose[0]+5,`the close-up's exposure is matched to the jacket photo's (ground L* ${sp.ground[0].toFixed(0)}, the close-up alone ${sp.groundClose[0].toFixed(0)})`);
-    ok(sp.blue[2]<-5&&sp.blueC>8,`the light-blue line stays light blue though its pixels read grey (b* ${sp.blue[2].toFixed(0)}, chroma ${sp.blueC.toFixed(0)})`);
+    ok(sp.blue[2]<-5&&sp.blueC>8,`the light-blue line stays light blue though its pixels read gray (b* ${sp.blue[2].toFixed(0)}, chroma ${sp.blueC.toFixed(0)})`);
     ok(sp.white[0]>80&&sp.white[0]<95,`the white line reads cream-white, its threads crossing the khaki (L* ${sp.white[0].toFixed(0)})`);
     ok(sp.tieA===-45,'a tie\'s stripes take Claude\'s direction');
     // the user's navy pinstripe suit: no pattern box saved, and the item photo is mostly wall and the next jackets
@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         sett:{v:2,a:0,bands:spec.across.bands.map(b=>['#808080',b.w]),cross:{d:90,bands:spec.along.bands.map(b=>[b.role==='ground'?null:'#808080',b.w]),r:1.1},cr:3.5,tr:9,src:'claude+pixels'}};
       items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts();items.splice(items.indexOf(it),1);
       return {n,grey:it.sett.bands.filter(b=>b[0]==='#808080').length}},SPEC);
-    ok(bx.n===1&&bx.grey===0,`a reading with a pattern box is recoloured once too (${bx.n} recoloured, ${bx.grey} bands left grey)`);
+    ok(bx.n===1&&bx.grey===0,`a reading with a pattern box is recoloured once too (${bx.n} recoloured, ${bx.grey} bands left gray)`);
     // a tie of equal navy and blue stripes, and one with thin white edging beside a grey band (the owner's, 2026-11-12): the ground
     // is measured from the pixels nearest Claude's ground (the whole close-up's median landed between navy and blue), a tie's
     // stripes get none of the ground mixed in, and a thin line's colour comes from its pixels furthest from the ground
@@ -82,8 +82,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const spec2={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#1f2d4e',w:.69},{role:'line',name:'white',hex:'#e4e4e2',w:.04},{role:'line',name:'grey',hex:'#9a9ea7',w:.23},{role:'line',name:'white',hex:'#e4e4e2',w:.04}]},along:null,stripeDirection:'vertical',repeatsInCloseup:4,repeatsAcrossItem:2.5,paneAspect:1};
       const s2=settFromSpec(spec2,{tex:w,type:'tie'});
       return {navy:dE00(L(s.bands[0][0]),L('#24243e')),blue:dE00(L(s.bands[1][0]),L('#5387c2')),white:L(s2.bands[1][0])[0],grey:L(s2.bands[2][0])[0]}});
-    ok(eq.navy<2&&eq.blue<2,`a half-navy, half-blue tie keeps both colours (ΔE00 ${eq.navy.toFixed(1)} and ${eq.blue.toFixed(1)} from the cloth)`);
-    ok(eq.white>82&&eq.grey>62&&eq.white>eq.grey+12,`a tie's thin white edging stays lighter than the grey band it borders (L* ${eq.white.toFixed(0)} against ${eq.grey.toFixed(0)})`);
+    ok(eq.navy<2&&eq.blue<2,`a half-navy, half-blue tie keeps both colors (ΔE00 ${eq.navy.toFixed(1)} and ${eq.blue.toFixed(1)} from the cloth)`);
+    ok(eq.white>82&&eq.grey>62&&eq.white>eq.grey+12,`a tie's thin white edging stays lighter than the gray band it borders (L* ${eq.white.toFixed(0)} against ${eq.grey.toFixed(0)})`);
     // a tie's read stripes and figures are drawn without the faint white sheen line: turned with the pattern it showed as light bands
     const sh=await p.evaluate(()=>{const band={id:'sb',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',sett:{v:2,a:-45,bands:[['#141e33',.69],['#c0c3c1',.04],['#8b8d93',.23],['#c0c3c1',.04]],cross:null,cr:3.5,tr:2.5,src:'claude+pixels'}};
       const mot={id:'sm',type:'tie',primaryColor:'navy',pattern:'foulard',sett:{v:3,motif:{grid:'diagonal',ground:'#313363',figs:[{shape:'square',place:'cell',size:.9,cols:['#755ea0']}]},a:45,cr:17,tr:20,src:'claude+pixels'}};
@@ -94,7 +94,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].sett&&queue[0].sett.src==='claude+pixels',null,{timeout:20000});
     const card=await p.evaluate(()=>({txt:document.querySelector('#queue').textContent}));
-    ok(calls.length===1&&calls[0].closeup&&calls[0].type==='blazer'&&/read by Claude with the colours from the photo/.test(card.txt),'adding the close-up asks Claude for the pattern, and the card says so');
+    ok(calls.length===1&&calls[0].closeup&&calls[0].type==='blazer'&&/read by Claude with the colors from the photo/.test(card.txt),'adding the close-up asks Claude for the pattern, and the card says so');
     await p.evaluate(()=>save(0));
     const sv=await p.evaluate(()=>({spec:!!items[0].patternSpec,text:items[0].patternText}));
     ok(sv.spec&&/Large windowpane on sand khaki linen/.test(sv.text),'the item keeps Claude\'s reading and its description');

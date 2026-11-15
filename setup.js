@@ -78,7 +78,7 @@ function setupCancel(e){setupTapGuard(e);const b=setup.before||{},changed=SETUP_
   setupClose();if(!changed.length)return;
   for(const k of changed){if(k==='location')continue;if(b[k]===null||b[k]===undefined)delete settings[k];else settings[k]=b[k]}
   if(changed.includes('location'))setLocation(b.location||null);
-  saveUserSettings().then(clearLocks);todayStale=false;renderToday();tell('Setup cancelled: your answers are as they were.')}
+  saveUserSettings().then(clearLocks);todayStale=false;renderToday();tell('Setup canceled: your answers are as they were.')}
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
 function setupFinish(toAdd,e){setupTapGuard(e);
@@ -132,10 +132,10 @@ function setupGo(n,e){if(setupGoDouble(e))return;
 const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;
 const setupDays=(kind,list,shown)=>`<div class="su-days" id="su-${kind}">${DAY_NAMES.map((n,i)=>shown.includes(i)?`<button type="button" class="su-day${list.includes(i)?' on':''}" aria-pressed="${list.includes(i)}" onclick="setupDay('${kind}',${i})">${n.slice(0,3)}</button>`:'').join('')}</div>`;
 function setupStep(k){const d=setupDress();
-  if(k==='welcome')return `<p class="su-lead">Daily Wardrobe picks what you wear each workday from the clothes you own.</p><p class="su-lead">It rotates your pieces so nothing is worn out or forgotten, and keeps the colours and patterns working together.</p><p class="su-help">A few short questions first. You can change every answer later in Settings.</p>`;
+  if(k==='welcome')return `<p class="su-lead">Daily Wardrobe picks what you wear each workday from the clothes you own.</p><p class="su-lead">It rotates your pieces so nothing is worn out or forgotten, and keeps the colors and patterns working together.</p><p class="su-help">A few short questions first. You can change every answer later in Settings.</p>`;
   if(k==='home')return typeof homeSteps==='function'?homeSteps(true):'';
   if(k==='week')return `<div class="su-group"><div class="su-label">Workdays</div><p class="su-help">You get an outfit on these days.</p>${setupDays('workdays',settings.workdays,[0,1,2,3,4,5,6])}</div>`+
-    (d.jacket?`<div class="su-group"><div class="su-label">Blazer days</div><p class="su-help">Business-casual days get a blazer and trousers; other workdays get a suit. Leave them all off for a suit every day.</p>${setupDays('blazer',settings.blazerDays,settings.workdays)}</div>`:'');
+    (d.jacket?`<div class="su-group"><div class="su-label">Blazer days</div><p class="su-help">Business-casual days get a blazer and pants; other workdays get a suit. Leave them all off for a suit every day.</p>${setupDays('blazer',settings.blazerDays,settings.workdays)}</div>`:'');
   if(k==='wear'){const v=setup.first&&!setupVestChosen()?'never':(settings.vestMode||'auto');
     // the vest only with ties, as Settings (a waistcoat is never planned without a tie; audit 2026-11-15)
     return `<p class="su-help">Outfits are planned around what you actually wear to work.</p>${setupSwitch('jacket',d.jacket,'Jackets','A suit or a blazer on workdays')}${setupSwitch('tie',d.tie,'Ties','A tie with every outfit')}`+
@@ -151,7 +151,7 @@ function setupStep(k){const d=setupDress();
     :`<p class="su-help">${typeof inviteOver==='function'&&inviteOver()?'Your invitation has ended, so the link you used no longer works: nothing is read or backed up. If you were given a new invitation link, paste it here.':setupLinkWaiting()?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.':'If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup.'}</p>
 <div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link"${setupLinkWaiting()?` value="${esc(location.href)}"`:''} autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
 ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
-<p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colours yourself: no automatic photo reading and no item pictures. You can connect later in Settings.</p>`;
+<p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colors yourself: no automatic photo reading and no item pictures. You can connect later in Settings.</p>`;
   /* in the Week step's order (Sunday first, as Settings shows them) */
   const days=l=>l.length?[...l].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '):'none';
   /* trousers are needed only without a suit (the Today checklist says "not needed with a suit"): said as a condition, not as a must */
@@ -162,7 +162,7 @@ ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
   const bl=settings.blazerDays.filter(x=>settings.workdays.includes(x));
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
 <ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':typeof inviteOver==='function'&&inviteOver()?'invitation ended':'not connected'}</b></li></ul>
-${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus trousers if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow(true):''}`}`;
+${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus pants if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow(true):''}`}`;
 }
 /* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
 const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&homeTester()?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${homeCopyBtn()}`:'';
@@ -210,7 +210,7 @@ function setupNeeds(){const d=setupDress(),has=t=>items.some(i=>i.type===t&&inRo
   if(d.jacket)rows.push({k:'jacket',t:'A suit or a blazer',short:'a suit or blazer',ok:has('suit')||has('blazer')});
   rows.push({k:'shirt',t:'A shirt',short:'a shirt',ok:has('shirt')});
   if(d.tie)rows.push({k:'tie',t:'A tie',short:'a tie',ok:has('tie')});
-  if(!d.jacket||!has('suit'))rows.push({k:'pants',t:'Trousers',short:'trousers',sub:d.jacket?'not needed with a suit':'',ok:has('pants')});
+  if(!d.jacket||!has('suit'))rows.push({k:'pants',t:'Pants',short:'pants',sub:d.jacket?'not needed with a suit':'',ok:has('pants')});
   rows.push({k:'shoes',t:'Shoes',short:'shoes',ok:has('shoes')});
   return rows}
 /* called by renderToday: the checklist card, or '' once an outfit can be planned (every row ticked) */
@@ -224,6 +224,6 @@ function setupToday(){
 /* the Wardrobe tab with nothing in it */
 function setupWardEmpty(){
   return `<div class="card wempty" id="wempty"><svg class="wempty-pic" viewBox="0 0 120 84" aria-hidden="true"><path class="we-rail" d="M8 12h104"/><path class="we-hook" d="M60 12v6a5 5 0 1 0 5 5"/><path class="we-hang" d="M60 30 24 52a4 4 0 0 0 2 7h68a4 4 0 0 0 2-7z"/><path class="we-ghost" d="M26 12v10M94 12v10M20 30l6-8 6 8M88 30l6-8 6 8"/></svg>
-<b class="wempty-t">Your wardrobe is empty</b><p class="wempty-s">Add what you wear to work: a photo of each piece, or pick its type and colours by hand.</p>
+<b class="wempty-t">Your wardrobe is empty</b><p class="wempty-s">Add what you wear to work: a photo of each piece, or pick its type and colors by hand.</p>
 <button type="button" class="pri" id="wempty-add" onclick="openAdd()">Add your first item</button><div class="kit-start"><button type="button" class="linkbtn" onclick="kitImportOpen()">Import from a spreadsheet</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" onclick="kitSampleLoad()">Try a sample wardrobe</button></div></div>`;
 }

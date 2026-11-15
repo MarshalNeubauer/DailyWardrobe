@@ -12,14 +12,14 @@
 const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];   // the types with a wear limit in Settings
 const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks'];   // what can be sent away
 const CARE_DEF={suit:5,blazer:6,pants:4,shirt:1};   // wears before cleaning; a type not listed is never due
-const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Trousers',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks'};
+const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks'};
 const CARE_MAX=10;
 const LAUNDRY_OPTS=[0,1,2,3,5,7];
 const careLimit=t=>{const v=(settings.care||{})[t];return v==null?(CARE_DEF[t]||0):Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};
 const laundryDays=()=>Math.max(0,+(settings.laundryDays??1)||0);
 const careWashed=t=>t==='shirt'||t==='socks';   // washed at home rather than cleaned: the wording, and which way "send" goes
 const careWord=t=>careWashed(t)?'washing':'cleaning';
-const careNoun=i=>i.type==='pants'?'trousers':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
+const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
 const careTimes=n=>n===1?'once':n===2?'twice':n+' times';
 const careName=i=>`${TYPES[i.type]||'Item'}: ${typeof esc==='function'&&String(i.name||'').trim()?esc(String(i.name).trim()):sentence(desc(i)||careNoun(i))}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
@@ -92,7 +92,7 @@ function renderCare(){const el=$('#care');if(!el)return;
   el.innerHTML=head+`<p class="psub">What is due for cleaning, counted from the days you wore each piece. Nothing to log: tap only when something goes out or comes back.</p>`+
     (L.due.length?card('care-due','Due for cleaning',`${L.due.length} piece${L.due.length===1?' has':'s have'} reached ${L.due.length===1?'its':'their'} number of wears.`,L.due.map(x=>row(x.i,acts(x.i))).join('')):'')+
     (L.near.length?card('care-near','Nearly due','One more wear and these are due.',L.near.map(x=>row(x.i,acts(x.i))).join('')):'')+
-    (quiet?card('care-none','Nothing is due','No suit, blazer or pair of trousers has reached its number of wears yet.',''):'')+
+    (quiet?card('care-none','Nothing is due','No suit, blazer or pair of pants has reached its number of wears yet.',''):'')+
     (L.each.length?card('care-each','Washed after every wear','',L.each.map(g=>`<div class="care-row care-group" id="care-each-${g.t}"><div class="care-main"><span class="care-nm">${g.list.length} ${g.list.length===1?careNoun(g.list[0]):(CARE_PLURAL[g.t]||'pieces').toLowerCase()} worn since washing</span><small class="mut">${laundryDays()&&g.t==='shirt'?`A worn shirt is not planned again for ${laundryDays()} day${laundryDays()===1?'':'s'}.`:'Tap when the wash is done, or leave it: nothing depends on it.'}</small></div><div class="care-acts"><button type="button" class="caredone" onclick="careCleanedType('${g.t}')">All washed today</button></div></div>`).join('')):'')+
     (L.away.length?card('care-away','Away now','Out of your outfits until they are back.',L.away.map(x=>row(x,`<button type="button" class="pri careitsback" onclick="careBack('${x.id}')">It's back</button>`)).join('')):'')+
     `<p class="care-foot"><button type="button" class="linkbtn" onclick="openSettings('care')">Change how many wears each piece takes</button></p>`}
@@ -104,7 +104,7 @@ function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return 
   const r=dayRecs[key(sel)],counted=!!(r&&r.worn===true),w=careCounts(),out=[];
   for(const p of o.bot&&o.top&&o.bot.id===o.top.id?[o.top]:[o.top,o.bot]){if(!p||p.type!=='pants')continue;const limit=careLimit(p.type);if(limit<2)continue;   // (suits and blazers: the frame on the picture, careFrame)
     const n=(w[p.id]||0)+(counted?0:1);if(n<limit)continue;
-    out.push(n===limit?`This is the ${careNoun(p)}'s ${n+(n===2?'nd':n===3?'rd':'th')} wear since cleaning: ${p.type==='pants'?'they are':'it is'} due for the cleaner after today.`:`${p.type==='pants'?'These trousers are':'This '+careNoun(p)+' is'} due for the cleaner: worn ${careTimes(n-(counted?0:1))} since cleaning, due after ${limit}.`)}
+    out.push(n===limit?`This is the ${careNoun(p)}'s ${n+(n===2?'nd':n===3?'rd':'th')} wear since cleaning: ${p.type==='pants'?'they are':'it is'} due for the cleaner after today.`:`${p.type==='pants'?'These pants are':'This '+careNoun(p)+' is'} due for the cleaner: worn ${careTimes(n-(counted?0:1))} since cleaning, due after ${limit}.`)}
   return out.length?`<p class="carenote" id="carenote">${out.join(' ')} <a href="#" onclick="openCare();return false">See what is due</a></p>`:''}
 /* ---- the cleaning frame on Today's picture (the owner's design, 2026-11-14) ----
    A suit or blazer one wear short of its cleaning limit has a yellow frame round the picture and a banner along its bottom ("1 wear left ·

@@ -24,7 +24,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(()=>{openAdd();addManual()});
     ok(await p.evaluate(()=>{const c=document.querySelector('#queue .texslot .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#queue .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
     await p.click('#queue .wbstcard');
-    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colours'),'the card opens the short white-paper tip');
+    ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),'the card opens the short white-paper tip');
     await p.click('#kitsheet .kit-body .linkbtn');await p.waitForFunction(()=>document.querySelector('#kit-title').textContent==='A good close-up');
     const g=await p.evaluate(()=>({title:document.querySelector('#kit-title').textContent,txt:document.querySelector('.kit-body').textContent,prog:!!document.querySelector('.kit-prog')}));
     ok(g.title==='A good close-up'&&/white paper along one edge/i.test(g.txt)&&/middle/.test(g.txt)&&/no flash/i.test(g.txt)&&/tap the paper on the camera screen/i.test(g.txt)&&/exposure/.test(g.txt)&&!g.prog,'it opens the guide: paper along one edge, out of the middle, no flash, tap the paper to set the exposure');
@@ -60,8 +60,8 @@ module.exports=async({ok,chromium,url})=>{
         tab:b.rows&&b.rows[0].card.primaryColor,err:c.err,quote:q.rows[0].card.notes}});
     ok(r.rows[0]==='suit:navy:pinstripe:yes:Office'&&r.rows[1]==='pants:midgrey:solid:dress:'&&r.rows[2]==='pants:stone:solid:chinos:'&&r.rows[3]==='shoes:brown:solid:loafer:'&&r.rows[4]==='tie:burgundy:check::',
       'rows are read with any column order, ; separators, common words (navy blue, pin stripe, gray, chinos, loafers, necktie, checks): '+r.rows.slice(0,5).join(' | '));
-    ok(/^bad:7:.*Scarf/.test(r.rows[5])&&/^bad:8:.*Mauve-ish/.test(r.rows[6]),'an unknown type or colour is left out, saying which row and why');
-    ok(r.tab==='lightblue'&&/Type.*Colour/.test(r.err)&&r.quote==='Silk, "repp" stripe','rows pasted from a spreadsheet (tabs) read too; without Type and Colour columns it says so; quoted commas and quotes are kept');
+    ok(/^bad:7:.*Scarf/.test(r.rows[5])&&/^bad:8:.*Mauve-ish/.test(r.rows[6]),'an unknown type or color is left out, saying which row and why');
+    ok(r.tab==='lightblue'&&/Type.*Color/.test(r.err)&&r.quote==='Silk, "repp" stripe','rows pasted from a spreadsheet (tabs) read too; without Type and Color columns it says so; quoted commas and quotes are kept');
     await p.evaluate(()=>{openAdd()});await p.waitForFunction(()=>!document.querySelector('#add').hidden);
     const vis=await p.evaluate(()=>{const e=document.querySelector('#add-import'),r=e.getBoundingClientRect();let x=e,h=[];while(x){const c=getComputedStyle(x);if(c.display==='none'||c.visibility==='hidden'||x.hidden)h.push(x.id||x.className||x.tagName);x=x.parentElement}return JSON.stringify({r,h})});
     if(!/"height":[1-9]/.test(vis))console.log('add-import',vis);

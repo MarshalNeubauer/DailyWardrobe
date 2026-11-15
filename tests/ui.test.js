@@ -55,7 +55,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         links:[...links.querySelectorAll('.slink b')].map(b=>b.textContent).join(),one:links.querySelectorAll('.slink').length===links.children.length,head:first.textContent,
         gaps:[...links.querySelectorAll('.slink')].map(b=>Math.round(b.getBoundingClientRect().height)),radius:getComputedStyle(links).borderTopLeftRadius}});
     ok(!st.hit,`nothing in Settings says worker, Cloudflare, KV, token or benchmark${st.hit?' (“…'+st.hit+'…”)':''}`);
-    ok(st.sums[4]==='Painted pictures · needs a connection'&&/^Your own colours & patterns$/.test(st.sums[5])&&/needs a connection/.test(st.sums[6])&&st.sums[7]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(4,8).join(' | ')})`);
+    ok(st.sums[4]==='Painted pictures · needs a connection'&&/^Your own colors & patterns$/.test(st.sums[5])&&/needs a connection/.test(st.sums[6])&&st.sums[7]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(4,8).join(' | ')})`);
     ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
@@ -109,8 +109,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       return out},theme);
     await p.evaluate(()=>{careShow('care')});
     const cl=await contrast('light'),cd=await contrast('dark');
-    ok(cl.acc<4.5&&Object.keys(cl.els).length>=3&&Object.values(cl.els).every(e=>e.r>=4.5),`light theme: accent-coloured text is at least 4.5:1 on its background (${Object.entries(cl.els).map(([s,e])=>s+' '+e.r).join(', ')}; the fill colour itself is ${cl.acc})`);
-    ok(Object.values(cd.els).every(e=>e.same&&e.r>=4.5),`dark theme: it stays the accent colour (${Object.values(cd.els).map(e=>e.r).join(', ')}:1)`);
+    ok(cl.acc<4.5&&Object.keys(cl.els).length>=3&&Object.values(cl.els).every(e=>e.r>=4.5),`light theme: accent-coloured text is at least 4.5:1 on its background (${Object.entries(cl.els).map(([s,e])=>s+' '+e.r).join(', ')}; the fill color itself is ${cl.acc})`);
+    ok(Object.values(cd.els).every(e=>e.same&&e.r>=4.5),`dark theme: it stays the accent color (${Object.values(cd.els).map(e=>e.r).join(', ')}:1)`);
     await p.evaluate(()=>{document.documentElement.dataset.theme='light';careShow('today')});
 
     /* ---- the checklist comes first with a partial wardrobe ---- */

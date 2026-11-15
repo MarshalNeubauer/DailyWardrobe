@@ -12,11 +12,13 @@ let wardQ='';        // what is typed in the search field
 let wardMemo=null;   // the list on screen, kept until the next redraw (the sheet's swipe asks for it on every touch move)
 const wardNorm=t=>String(t??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
 /* everything a search looks through: name, brand, notes, material, the type, the colours' names and the pattern */
-const wardHay=i=>wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),FABRIC.includes(i.type)?patName(i.pattern||'solid'):''].join(' '));
+/* (2026-11-15, American English) the British words still find what they used to: "grey" finds the gray pieces, "trousers" the pants */
+const wardHay=i=>{const h=wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),FABRIC.includes(i.type)?patName(i.pattern||'solid'):''].join(' '));
+  return h+(h.includes('gray')?' grey':'')+(i.type==='pants'?' trousers':'')};
 const wardMatch=(i,q)=>{const h=wardHay(i);return q.split(' ').every(w=>h.includes(w))};   // every word typed must be there
 
 /* ---- sort ---- */
-const WARD_SORTS=[['type','By type'],['new','Newest first'],['worn','Most worn'],['rest','Longest since worn'],['colour','Colour'],['az','A to Z']];
+const WARD_SORTS=[['type','By type'],['new','Newest first'],['worn','Most worn'],['rest','Longest since worn'],['colour','Color'],['az','A to Z']];
 const wardSort=()=>{try{const s=localStorage.getItem('ward_sort');return WARD_SORTS.some(x=>x[0]===s)?s:'type'}catch{return 'type'}};
 function setWardSort(s){try{localStorage.setItem('ward_sort',s)}catch{}wardRefresh()}
 /* colour families for the Colour order, each shown light to dark */
@@ -69,7 +71,7 @@ function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s
   if(!items.length&&typeof setupWardEmpty==='function')return setupWardEmpty();   // setup.js: the empty Wardrobe's card
   if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with + Add above.</p>';
   const all=flt==='all'?0:items.filter(i=>wardMatch(i,q)).length,tl=(TYPES[flt]||'').toLowerCase();
-  return `<div class="wnone" id="wnone"><b>Nothing matches “${esc(wardQ.trim())}”${flt==='all'?'':` in ${esc(tl)}`}</b><p class="mut">${all?`${all} item${all===1?' matches':'s match'} in the rest of your wardrobe.`:'Search looks at names, brands, notes, materials, types, colours and patterns.'}</p>`+
+  return `<div class="wnone" id="wnone"><b>Nothing matches “${esc(wardQ.trim())}”${flt==='all'?'':` in ${esc(tl)}`}</b><p class="mut">${all?`${all} item${all===1?' matches':'s match'} in the rest of your wardrobe.`:'Search looks at names, brands, notes, materials, types, colors and patterns.'}</p>`+
     `<div class="btns">${all?`<button type="button" class="pri" onclick="flt='all';renderWardrobe()">Search all types</button>`:''}<button type="button" onclick="wardClear()">Clear search</button></div></div>`}
 /* redraws only the grid and the count: the search field is left alone, so typing keeps its focus and the keyboard */
 function wardRefresh(){

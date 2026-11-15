@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#101820">
-<!-- The app has its own dark theme; tell dark-mode extensions not to recolour it (they invert the mannequin's colours). -->
+<!-- The app has its own dark theme; tell dark-mode extensions not to recolor it (they invert the mannequin's colors). -->
 <meta name="color-scheme" content="light dark"><meta name="darkreader-lock">
 <script>/* apply the saved theme before first paint (in its own function: a global t would clash with a later script's) */(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}})()</script>
 <script>/* iPhone Larger Text (Settings → Accessibility → Display & Text Size): text is sized in rem, and the root follows the system body
@@ -25,7 +25,7 @@
 <div class="card addmore"><div class="slabel">Other ways to add</div>
 <div class="paste-box"><input type="url" id="photo-url" aria-label="Photo or link to a photo" inputmode="url" autocomplete="off" placeholder="Photo or link" onkeydown="if(event.key==='Enter'){event.preventDefault();addLink()}"><button class="btn" onclick="pasteFromClipboard()">Paste</button><button class="btn pri" onclick="addLink()">Add</button></div>
 <p id="paste-status" class="mut"></p><p class="mut drop-hint">On a computer you can also drag photos here, or press Ctrl+V / ⌘V anywhere.</p>
-<button class="addrow" onclick="addManual()"><span>Add without photo</span><small>Pick the type and colours yourself</small><span class="chev" aria-hidden="true">›</span></button><button class="addrow" id="add-import" onclick="kitImportOpen()"><span>Import from a spreadsheet</span><small>Rows pasted from Numbers, Excel or Google Sheets, or a CSV file</small><span class="chev" aria-hidden="true">›</span></button></div>
+<button class="addrow" onclick="addManual()"><span>Add without photo</span><small>Pick the type and colors yourself</small><span class="chev" aria-hidden="true">›</span></button><button class="addrow" id="add-import" onclick="kitImportOpen()"><span>Import from a spreadsheet</span><small>Rows pasted from Numbers, Excel or Google Sheets, or a CSV file</small><span class="chev" aria-hidden="true">›</span></button></div>
 <p id="multi-status" class="mut"></p><div id="save-all"></div>
 <div id="queue"></div></section>
 </main>
@@ -58,7 +58,7 @@
 <div class="mpanel" id="sp-schedule"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Workdays</div><div class="days" id="cfg-workdays"></div></div>
 <div class="sgroup" id="dress-group"><div class="slabel">Dress code</div><p class="shelp">What you wear to work. The planner, the score and the pictures follow it.</p><div id="cfg-dress"></div></div>
-<div class="sgroup" id="blazer-group"><div class="slabel">Blazer days</div><p class="shelp">Business-casual days get a blazer and trousers; other workdays get a suit.</p><div class="days" id="cfg-blazer"></div></div>
+<div class="sgroup" id="blazer-group"><div class="slabel">Blazer days</div><p class="shelp">Business-casual days get a blazer and pants; other workdays get a suit.</p><div class="days" id="cfg-blazer"></div></div>
 <label class="srow" id="vest-row">Suit vest <select id="cfg-vest" onchange="setVestMode(this.value)"><option value="auto">Suit days, except hot ones</option><option value="always">Every suit day</option><option value="never">Never</option></select></label>
 <label class="srow">Dark shirts <select id="cfg-dark" onchange="setDarkShirts(this.value)"><option value="some">Sometimes, under a light jacket</option><option value="often">Often, like any other shirt</option><option value="never">Never</option></select></label>
 <div class="sgroup conn-only" id="remind-box"></div>
@@ -66,7 +66,7 @@
 </div></div></section>
 <section class="mbox scat" id="sc-daysoff"><button type="button" class="month-link scat-head" onclick="toggleCat('daysoff')" aria-expanded="false" aria-controls="sp-daysoff"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg></span><span class="mltxt"><b>Days off &amp; occasions</b><small id="sum-daysoff"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-daysoff"><div class="mpanel-in">
-<div class="sgroup"><div class="slabel">Public holidays</div><p class="shelp">Holidays get no outfit and don't count as worn. Tick the ones you have off.</p>
+<div class="sgroup"><div class="slabel">Public holidays</div><p class="shelp">Holidays get no outfit and don't count as worn. Check the ones you have off.</p>
 <label class="srow">Country <select id="cfg-country" onchange="setHolidayCountry(this.value)" aria-label="Country for public holidays"><option value="">No public holidays</option></select></label>
 <p class="shelp" aria-live="polite" id="holiday-msg"></p>
 <div class="hlist" id="holiday-list"></div></div>
@@ -97,12 +97,12 @@
 <section class="mbox scat" id="sc-photos"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Outfit pictures</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-photos"><div class="mpanel-in">
 <p class="shelp conn-off-note" id="photos-conn" data-what="Making item pictures"></p>
-<div class="sgroup conn-only"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product photos of your shoes, belts, socks, trousers, coats and watches. Where a piece has one, Today shows it under the picture instead of its drawing.</p><div class="sactions"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div></div>
+<div class="sgroup conn-only"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product photos of your shoes, belts, socks, pants, coats and watches. Where a piece has one, Today shows it under the picture instead of its drawing.</p><div class="sactions"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div></div>
 <div class="adv" id="adv-photos"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-photos" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-photos"><div class="sgroup" id="asm-group" hidden></div></div></div>
 </div></div></section>
 <section class="mbox scat" id="sc-tagging"><button type="button" class="month-link scat-head" onclick="toggleCat('tagging')" aria-expanded="false" aria-controls="sp-tagging"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span><span class="mltxt"><b>Photo tagging</b><small id="sum-tagging"></small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="mpanel" id="sp-tagging"><div class="mpanel-in">
-<div class="sgroup"><div class="slabel">Your colours &amp; patterns</div><div id="custom-list"></div></div>
+<div class="sgroup"><div class="slabel">Your colors &amp; patterns</div><div id="custom-list"></div></div>
 </div></div></section>
 
 <p class="sgh">Account</p>
@@ -140,7 +140,7 @@
 <div class="sgroup"><details class="about-fold" id="about-privacy"><summary>Privacy</summary>
 <p>Your wardrobe lives on this device and, once you are connected, in your own backup on the server.</p>
 <p>The server is run by the person who invited you. They can see everything kept there: your backup, your photos and the feedback you send, with your name. It runs on Cloudflare, and the app itself is served by GitHub Pages; both keep the usual short logs of visits.</p>
-<p>The photos of your items are sent to Anthropic to be read (type, colour, pattern). Outfit pictures are drawn or painted by the app itself and never go to OpenAI; only when you tap Generate item pictures are an item's photo and description sent to OpenAI to make its product picture.</p>
+<p>The photos of your items are sent to Anthropic to be read (type, color, pattern). Outfit pictures are drawn or painted by the app itself and never go to OpenAI; only when you tap Generate item pictures are an item's photo and description sent to OpenAI to make its product picture.</p>
 <p>Your weather location (the city you search for, or your phone’s position if you use it) is sent to Open-Meteo for the forecast. Public holidays come from Nager.Date, or Google’s holiday calendars for some countries; only the country is sent.</p>
 <p>Nothing else leaves your phone. Delete my data, above, removes it from the server too.</p></details></div>
 </div></div></section>

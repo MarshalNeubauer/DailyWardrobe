@@ -4,7 +4,7 @@
    accepts the code. Settings → Connection then says who is connected: a tester sees today's use against each daily limit, the
    owner gets "Invite testers" (make a link, see each tester's use today, revoke one).
    Server API used here: GET /me, GET/POST/DELETE /invites. An older server answers these 404 or 405: the box then stays empty. */
-const ACCT_CAPS=[['item','Item pictures'],['tag','Photo readings'],['pattern','Pattern readings'],['describe','Colour & pattern lookups']];
+const ACCT_CAPS=[['item','Item pictures'],['tag','Photo readings'],['pattern','Pattern readings'],['describe','Color & pattern lookups']];
 let acct={me:null,state:'',invites:null,link:null,busy:false,msg:'',at:0};   // state: '' not asked, 'wait', 'ok', 'old' (a server without accounts), 'no' (refused), 'off' (unreachable)
 const acctEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 function acctBase(){const w=(localStorage.getItem('worker_url')||'').trim();if(!w)return null;return {url:w.replace(/\/*$/,'/'),tok:localStorage.getItem('app_token')||''}}

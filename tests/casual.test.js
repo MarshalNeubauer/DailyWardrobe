@@ -13,8 +13,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       s:[shoeStyle({type:'shoes'}),shoeStyle({type:'shoes',shoeStyle:'loafer'}),shoeStyle({type:'shoes',shoeStyle:'clog'})].join(),
       w:[typeWord({type:'pants'}),typeWord({type:'pants',trouserKind:'chinos'}),typeWord({type:'shoes'}),typeWord({type:'shoes',shoeStyle:'sneaker'})].join(),
       n:nm({type:'pants',primaryColor:'denim',pattern:'solid',trouserKind:'jeans'}),c:COLS_BY.pants.p.includes('stone')&&COLS_BY.pants.p.includes('denim')}));
-    ok(base.k==='dress,jeans,dress'&&base.s==='oxford,loafer,oxford','without a kind or style an item is dress trousers or oxfords');
-    ok(base.w==='trousers,chinos,shoes,sneakers'&&/denim jeans/.test(base.n)&&base.c,`descriptions name them ("${base.n}"); stone and denim are trouser colours`);
+    ok(base.k==='dress,jeans,dress'&&base.s==='oxford,loafer,oxford','without a kind or style an item is dress pants or oxfords');
+    ok(base.w==='pants,chinos,shoes,sneakers'&&/denim jeans/.test(base.n)&&base.c,`descriptions name them ("${base.n}"); stone and denim are trouser colors`);
     // the planner
     const plan=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       const W=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('blazer','grey'),I('pants','grey'),I('pants','khaki',{trouserKind:'chinos'}),I('pants','stone',{trouserKind:'chinos'}),I('pants','denim',{trouserKind:'jeans'}),I('pants','black',{trouserKind:'jeans'}),
@@ -28,19 +28,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
           casualShoes:[...new Set(days.filter(o=>['chinos','jeans'].includes(kindOf(o))).map(o=>shoeStyle(o.shoes)))].sort().join(),
           formal:(o=>o?kindOf(o):'none')(P['2026-11-12'])}};
       return {plain:run(undefined),jeans:run({jacket:true,tie:true,jeans:true}),noJ:run({jacket:false,tie:true}),formal:run({jacket:false,tie:true},{'2026-11-12':{date:'2026-11-12',formal:true}})}});
-    ok(plan.plain.n>15&&!/jeans/.test(plan.plain.blazer)&&/chinos|dress/.test(plan.plain.blazer),`blazer days take dress trousers or chinos, never jeans (${plan.plain.blazer})`);
+    ok(plan.plain.n>15&&!/jeans/.test(plan.plain.blazer)&&/chinos|dress/.test(plan.plain.blazer),`blazer days take dress pants or chinos, never jeans (${plan.plain.blazer})`);
     ok(/jeans/.test(plan.jeans.blazer),`with "Jeans with a blazer" on, jeans come with a blazer too (${plan.jeans.blazer})`);
     ok(/jeans/.test(plan.noJ.noJ)&&/chinos/.test(plan.noJ.noJ),`without jackets every kind is worn (${plan.noJ.noJ})`);
-    ok(!/boot|sneaker/.test(plan.plain.suitShoes)&&!/sneaker/.test(plan.noJ.dressShoes),`suits never get boots or sneakers (${plan.plain.suitShoes}), dress trousers no sneakers (${plan.noJ.dressShoes})`);
+    ok(!/boot|sneaker/.test(plan.plain.suitShoes)&&!/sneaker/.test(plan.noJ.dressShoes),`suits never get boots or sneakers (${plan.plain.suitShoes}), dress pants no sneakers (${plan.noJ.dressShoes})`);
     ok(/sneaker/.test(plan.noJ.casualShoes),`chinos and jeans get the casual shoes too, sneakers included (${plan.noJ.casualShoes})`);
-    ok(plan.formal.formal==='suit'||plan.formal.formal==='dress',`a formal day, even without jackets, is dressed in full: a suit, or dress trousers, never chinos or jeans (${plan.formal.formal})`);
+    ok(plan.formal.formal==='suit'||plan.formal.formal==='dress',`a formal day, even without jackets, is dressed in full: a suit, or dress pants, never chinos or jeans (${plan.formal.formal})`);
     const sc=await p.evaluate(()=>{const s=x=>({type:'shoes',primaryColor:'black',leather:'calf',...x}),suit={type:'suit',primaryColor:'navy'},jeans={type:'pants',primaryColor:'denim',trouserKind:'jeans'};
       return [shoeScore(suit,suit,s({})),shoeScore(suit,suit,s({shoeStyle:'sneaker'})),shoeScore(null,jeans,s({shoeStyle:'sneaker'}))-shoeScore(null,jeans,s({}))]});
     ok(sc[1]<=-50&&sc[2]===0,`a sneaker with a suit scores as shoes that don't suit (${sc[1]}), with jeans as well as an oxford`);
     // the Add card and the editor
     const ui=await p.evaluate(()=>{items=[];cache={};openAdd();addManual();const i=queue.length-1;setq(i,'type','pants');renderAdd();const kind=!!document.querySelector('#queue select[onchange*="\'trouserKind\'"]');
       setq(i,'trouserKind','jeans');setq(i,'primaryColor','denim');setq(i,'type','shoes');renderAdd();const style=!!document.querySelector('#queue select[onchange*="\'shoeStyle\'"]');setq(i,'type','pants');return {kind,style}});
-    ok(ui.kind&&ui.style,'the Add card has Kind for trousers and Style for shoes');
+    ok(ui.kind&&ui.style,'the Add card has Kind for pants and Style for shoes');
     // each is drawn as what it is
     const dr=await p.evaluate(()=>{const sh=(st,x={})=>itemThumb({id:'d',type:'shoes',primaryColor:'brown',pattern:'solid',leather:'calf',...(st?{shoeStyle:st}:{}),...x});
       const strip=s=>s.replace(/th\d+-/g,'');const svgs=['','derby','loafer','boot','sneaker'].map(st=>strip(sh(st)));
@@ -48,8 +48,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {distinct:new Set(svgs).size,oxfordSame:svgs[0]===strip(sh('oxford')),sneakerSole:/#f4f2ec/.test(svgs[4])&&/#000000/i.test(strip(sh('sneaker',{secondaryColor:'black'})))||/#16161a/.test(strip(sh('sneaker',{secondaryColor:'black'}))),
         canvas:/<pattern[^>]+tx/.test(strip(sh('sneaker',{leather:'canvas'}))),jeans:/#b87333/.test(pt('jeans'))&&/#d9a441/.test(pt('jeans')),chinos:pt('chinos')!==pt('')&&!/#b87333/.test(pt('chinos')),dress:!/tw/.test(pt(''))}});
     ok(dr.distinct===5&&dr.oxfordSame,'oxford, derby, loafer, boot and sneaker each have a drawing of their own (no style is the oxford)');
-    ok(dr.sneakerSole&&dr.canvas,'a sneaker\'s sole takes its second colour (white without one); canvas and knit have a texture');
-    ok(dr.jeans&&dr.chinos&&dr.dress,'jeans are drawn as denim with gold stitching and a rivet, chinos as a cotton twill, dress trousers as before');
+    ok(dr.sneakerSole&&dr.canvas,'a sneaker\'s sole takes its second color (white without one); canvas and knit have a texture');
+    ok(dr.jeans&&dr.chinos&&dr.dress,'jeans are drawn as denim with gold stitching and a rivet, chinos as a cotton twill, dress pants as before');
     // materials by style: a sneaker in leather, suede, canvas or knit
     const mat=await p.evaluate(()=>{openAdd();addManual();const i=queue.length-1;setq(i,'type','shoes');setq(i,'shoeStyle','loafer');setq(i,'leather','cordovan');setq(i,'shoeStyle','sneaker');renderAdd();
       const card=document.querySelectorAll('#queue .card')[i],lab=[...card.querySelectorAll('label')].find(l=>l.querySelector('select[onchange*="\'leather\'"]'));
@@ -72,6 +72,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   try{await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:'data:image/png;base64,iVBORw0KGgo='})}),env)}catch{}
   globalThis.fetch=realFetch;
   const s=JSON.stringify(sent||{});
-  ok(/trouserKind/.test(s)&&/shoeStyle/.test(s)&&/chinos/.test(s)&&/sneaker/.test(s)&&/stone/.test(s),'the photo reader is asked for the kind of trousers and the style of shoes, and knows stone and denim');
+  ok(/trouserKind/.test(s)&&/shoeStyle/.test(s)&&/chinos/.test(s)&&/sneaker/.test(s)&&/stone/.test(s),'the photo reader is asked for the kind of pants and the style of shoes, and knows stone and denim');
   ok(/"canvas","knit"/.test(s)&&/sneakers may also be canvas/.test(s),'and that a sneaker can be canvas or knit');
 };

@@ -54,7 +54,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       r.gone=($('.gonenote')||{}).textContent||'';cache={};listOpen=false;return r});
     await quiet();
     ok(/No outfit: your wardrobe starts on Tuesday, November 10/.test(d.pre)&&!d.score&&d.banner,`a day before the wardrobe existed says so, with no score (${d.pre})`);
-    ok(d.rows.includes('Trousers')&&!d.rows.includes('Pants'),`a blazer day's trousers row says Trousers (${d.rows.join(', ')})`);
+    ok(d.rows.includes('Pants')&&!d.rows.includes('Trousers'),`a blazer day's pants row says Pants (${d.rows.join(', ')})`);
     ok(d.add.length&&d.add.every(a=>/^Add one\|openAdd\(\)/.test(a))&&!/Add tab/.test(d.html),`a missing piece offers "Add one", which opens Add; no "Add tab" (${d.add.join(', ')})`);
     ok(/suit worn this day is no longer in your wardrobe/.test(d.gone),`a past day's deleted suit is named under the picture (${d.gone})`);
     // ---- the month: a day marked not worn; a past workday with no outfit is not "worn"; a striped shirt's name

@@ -8,28 +8,28 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(ph=>{items=[{id:'s1',type:'suit',primaryColor:'black',pattern:'solid',photo:ph,texture:ph,added:1,meas:{src:'closeup',lab:labOf('deeptaupe'),ref:false}}];flt='all';editing='s1';show('wardrobe')},PH);
     const a=await p.evaluate(()=>{const b=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');return {txt:b&&b.textContent,chip:b&&b.querySelector('.colchip').style.background,sel:!!document.querySelector('#item-view select[onchange*="primaryColor"]')}});
-    ok(a.txt==='Black'&&/22, 26|#16161a/i.test(a.chip)&&!a.sel,`the editor's colour is a chip and a name, not a dropdown (${a.txt}, ${a.chip})`);
+    ok(a.txt==='Black'&&/22, 26|#16161a/i.test(a.chip)&&!a.sel,`the editor's color is a chip and a name, not a dropdown (${a.txt}, ${a.chip})`);
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     const b=await p.evaluate(()=>{const s=document.querySelector('#col-sheet');return {on:s.classList.contains('on'),img:!!s.querySelector('.cpph img'),big:s.querySelector('.cpbig figcaption').textContent,
       near:[...s.querySelectorAll('.cpnear .cpnm')].map(e=>e.textContent),heads:[...s.querySelectorAll('.cph')].map(e=>e.textContent),now:s.querySelector('.cpnow')&&s.querySelector('.cpnow').closest('.cptile').textContent,
       seg:s.querySelectorAll('.cpseg button').length,bar:s.querySelector('.cpbar button').textContent}});
-    ok(b.on&&b.img&&b.big==='Black'&&b.seg===3,'the sheet shows the close-up beside the current colour, with a switch to the whole photo and (a suit) the drawing');
-    ok(b.near[0]==='Deep taupe'&&b.heads[0]==='Your colours'&&/Closest to your close-up/.test(b.heads[1])&&b.heads.includes('Blues'),`the measured nearest colours come first, then the families (${b.near}; ${b.heads})`);
-    ok(/^Now/.test(b.now)&&b.bar==='Keep Black','the current colour is marked, and the button keeps it');
+    ok(b.on&&b.img&&b.big==='Black'&&b.seg===3,'the sheet shows the close-up beside the current color, with a switch to the whole photo and (a suit) the drawing');
+    ok(b.near[0]==='Deep taupe'&&b.heads[0]==='Your colors'&&/Closest to your close-up/.test(b.heads[1])&&b.heads.includes('Blues'),`the measured nearest colors come first, then the families (${b.near}; ${b.heads})`);
+    ok(/^Now/.test(b.now)&&b.bar==='Keep Black','the current color is marked, and the button keeps it');
     await p.click('#col-sheet .cpnear .cptile >> nth=0');
     const c=await p.evaluate(()=>({big:document.querySelector('#col-sheet .cpbig figcaption').textContent,bar:document.querySelector('#col-sheet .cpbar button').textContent,saved:items[0].primaryColor}));
-    ok(c.big==='Deep taupe'&&c.bar==='Use Deep taupe'&&c.saved==='black','a tap previews the colour beside the photo without saving it');
+    ok(c.big==='Deep taupe'&&c.bar==='Use Deep taupe'&&c.saved==='black','a tap previews the color beside the photo without saving it');
     await p.click('#col-sheet .cpbar button');await p.waitForTimeout(200);
     const d=await p.evaluate(()=>({saved:items.find(x=>x.id==='s1').primaryColor,open:document.querySelector('#col-sheet').classList.contains('on'),btn:document.querySelector('#item-view .colbtn[data-k="primaryColor"]').textContent}));
-    ok(d.saved==='deeptaupe'&&!d.open&&d.btn==='Deep taupe','"Use" saves it, closes the sheet and the field shows the new colour');
+    ok(d.saved==='deeptaupe'&&!d.open&&d.btn==='Deep taupe','"Use" saves it, closes the sheet and the field shows the new color');
     await p.click('#item-view .colbtn[data-k="secondaryColor"]');await p.keyboard.press('Escape');
-    ok(await p.evaluate(()=>!document.querySelector('#col-sheet').classList.contains('on')&&!!document.querySelector('#item-view.on')),'Escape closes the colour sheet and leaves the item open');
+    ok(await p.evaluate(()=>!document.querySelector('#col-sheet').classList.contains('on')&&!!document.querySelector('#item-view.on')),'Escape closes the color sheet and leaves the item open');
     // an item without a photo: the drawing beside the chip is redrawn in the colour being looked at, nothing saved until "Use"
     const lv=await p.evaluate(()=>{items.push({id:'sh1',type:'shoes',primaryColor:'grey',pattern:'solid',leather:'calf',added:9});openColPick('e','sh1','primaryColor');
       const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),before=draw();document.querySelector('#col-sheet .cptile[data-c="tan"]').click();
       const after=draw(),r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,grey:before.includes(colOf({primaryColor:'grey'})),tan:after.includes(colOf({primaryColor:'tan'}))&&!after.includes(colOf({primaryColor:'grey'})),saved:items.find(x=>x.id==='sh1').primaryColor};
       document.querySelector('#col-sheet .cptile[data-c="grey"]').click();r.back=draw()===before;closeColPick();items=items.filter(x=>x.id!=='sh1');return r});
-    ok(lv.cap==='As drawn'&&lv.grey&&lv.tan&&lv.saved==='grey'&&lv.back,'without a photo the drawing follows the colour tapped (grey to tan and back), and nothing is saved until Use');
+    ok(lv.cap==='As drawn'&&lv.grey&&lv.tan&&lv.saved==='grey'&&lv.back,'without a photo the drawing follows the color tapped (gray to tan and back), and nothing is saved until Use');
     // the pattern sheet too: without a photo the item is drawn (its shape) in the pattern tapped, nothing saved until Use
     const pv=await p.evaluate(()=>{items.push({id:'t8',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'solid',added:9});openColPick('e','t8','pattern');
       const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),strip=s=>{const t=document.createElement('div');t.innerHTML=s;return t.innerHTML.replace(/th\d+-/g,'')},before=draw();document.querySelector('#col-sheet .cptile[data-c="stripe"]').click();
@@ -50,15 +50,15 @@ module.exports=async({ok,chromium,url})=>{
       r.segs=segs.join('|');r.saved=items.find(x=>x.id==='bz1').primaryColor+'/'+items.find(x=>x.id==='bz1').pattern+'/'+items.find(x=>x.id==='bz2').primaryColor;closeColPick();
       openColPick('e','s1','pattern');r.suit=[...document.querySelectorAll('#col-sheet .cpseg button')].some(e=>e.textContent==='Drawing');colPickView('draw');r.suitFig=draw().includes(strip(SUIT_D.out).slice(0,60));closeColPick();
       items=items.filter(x=>!x.id.startsWith('bz'));return r});
-    ok(fg.fig&&fg.col&&fg.seg0===0,'a blazer without a photo is drawn as its traced figure in the colour tapped, with no view switch');
+    ok(fg.fig&&fg.col&&fg.seg0===0,'a blazer without a photo is drawn as its traced figure in the color tapped, with no view switch');
     ok(fg.pat,'the pattern sheet redraws the figure in the pattern tapped');
-    ok(fg.photo&&fg.segs==='Whole photo|Drawing'&&fg.drawn,'with a photo it starts on the photo; "Drawing" shows the figure in the colour tapped ('+fg.segs+')');
+    ok(fg.photo&&fg.segs==='Whole photo|Drawing'&&fg.drawn,'with a photo it starts on the photo; "Drawing" shows the figure in the color tapped ('+fg.segs+')');
     ok(fg.suit&&fg.suitFig,'a suit gets the Drawing view too, drawn as its traced suit');
     ok(fg.saved==='steelblue/solid/steelblue','nothing is saved by looking ('+fg.saved+')');
     // Add card: the second colour offers None
     await p.evaluate(ph=>{editing=null;closeItem&&closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
     await p.click('#queue .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cptile:has-text("None")');await p.click('#col-sheet .cpbar button');
-    ok(await p.evaluate(()=>queue[0].secondaryColor===null&&document.querySelector('#queue .colbtn[data-k="secondaryColor"]').textContent==='None'),'on the Add card a second colour can be set back to None');
+    ok(await p.evaluate(()=>queue[0].secondaryColor===null&&document.querySelector('#queue .colbtn[data-k="secondaryColor"]').textContent==='None'),'on the Add card a second color can be set back to None');
     // Ask Claude: the close-up, the photo and the close-up's measurement go to the tagger; its pick is selected, its colours can all be taken
     const asked=[];
     // only the tagging request is Claude's: the app's own calls to the same fake server (a backup 2.5 s after a save, on a busy
@@ -76,11 +76,11 @@ module.exports=async({ok,chromium,url})=>{
     const e=await p.evaluate(()=>({txt:document.querySelector('#col-sheet .cpask').textContent,ai:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c),sel:colPick.sel,big:document.querySelector('#col-sheet .cpbig figcaption').textContent,all:!!document.querySelector('#col-sheet .cpask .cpaskbtn:not(.ghost)'),cur:items[0].primaryColor}));
     ok(asked.length===1&&!!asked[0].closeup&&!!asked[0].measured&&asked[0].measured.src==='closeup','the request carries the close-up and its measurement');
     ok(/Burgundy and Navy/.test(e.txt)&&/Medium confidence/.test(e.txt)&&e.ai.join()==='burgundy,wine'&&e.sel==='burgundy'&&e.big==='Burgundy',`Claude's pick and runner-up are shown, its pick beside the close-up (${e.txt})`);
-    ok(e.all&&e.cur==='red','nothing is saved until asked; "Use all" is offered since the second colour differs');
+    ok(e.all&&e.cur==='red','nothing is saved until asked; "Use all" is offered since the second color differs');
     await p.click('#col-sheet .cpask .cpaskbtn:not(.ghost)');await p.waitForTimeout(200);
-    ok(await p.evaluate(()=>items[0].primaryColor==='burgundy'&&items[0].secondaryColor==='navy'&&!document.querySelector('#col-sheet').classList.contains('on')),'"Use both colours" saves both');
+    ok(await p.evaluate(()=>items[0].primaryColor==='burgundy'&&items[0].secondaryColor==='navy'&&!document.querySelector('#col-sheet').classList.contains('on')),'"Use both colors" saves both');
     await p.click('#item-view .colbtn[data-k="secondaryColor"]');
-    ok(await p.evaluate(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent)&&colPick.sel==='navy')&&asked.length===1,'the second colour shows the same answer without asking again');
+    ok(await p.evaluate(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent)&&colPick.sel==='navy')&&asked.length===1,'the second color shows the same answer without asking again');
     await p.keyboard.press('Escape');
     // a colour Claude names that the app lacks: a New chip in Claude's shade; picking it adds it to the owner's colours and uses it
     // (unrouteAll waits for a handler still running: the one above answers after 300 ms, and a plain unroute let a busy machine
@@ -93,29 +93,29 @@ module.exports=async({ok,chromium,url})=>{
     await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
     const n=await p.evaluate(()=>({flag:true,said:document.querySelector('#col-sheet .cpask b').textContent,tiles:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c+':'+b.textContent),
       sw:document.querySelector('#col-sheet .cptile[data-c="+new"] .cpsw').style.background,note:(document.querySelector('#col-sheet .cpnewtx')||{}).textContent||''}));
-    ok(asked.at(-1).freeColors===true&&!asked.at(-1).freePattern,'a colour sheet asks for Claude\'s own colours only');
-    ok(/Bottle green and Navy/.test(n.said)&&n.tiles[0].startsWith('+new:Bottle green')&&/New/.test(n.tiles[0])&&/31, 74, 58/.test(n.sw)&&/Closest you have/.test(n.tiles[1]),`Claude's own colour is offered first as a New chip in its shade (${n.said}; ${n.tiles})`);
-    ok(/isn’t one of your colours yet/.test(n.note)&&/behaves like/.test(n.note),'it says it will be added, and what it behaves like');
+    ok(asked.at(-1).freeColors===true&&!asked.at(-1).freePattern,'a color sheet asks for Claude\'s own colors only');
+    ok(/Bottle green and Navy/.test(n.said)&&n.tiles[0].startsWith('+new:Bottle green')&&/New/.test(n.tiles[0])&&/31, 74, 58/.test(n.sw)&&/Closest you have/.test(n.tiles[1]),`Claude's own color is offered first as a New chip in its shade (${n.said}; ${n.tiles})`);
+    ok(/isn’t one of your colors yet/.test(n.note)&&/behaves like/.test(n.note),'it says it will be added, and what it behaves like');
     await p.click('#col-sheet .cptile[data-c="+new"]');
-    ok(await p.evaluate(()=>document.querySelector('#col-sheet .cpbar button').textContent==='Add Bottle green to your colours and use it'&&document.querySelector('#col-sheet .cpbig figcaption').textContent==='Bottle green'),'picked, the button says it will be added');
+    ok(await p.evaluate(()=>document.querySelector('#col-sheet .cpbar button').textContent==='Add Bottle green to your colors and use it'&&document.querySelector('#col-sheet .cpbig figcaption').textContent==='Bottle green'),'picked, the button says it will be added');
     await p.click('#col-sheet .cpbar button');await p.waitForTimeout(250);
     const g=await p.evaluate(()=>({c:items.find(x=>x.id==='t1').primaryColor,cu:(settings.custom.colors||[]).find(x=>x.key==='ownbottlegreen'),hex:COLORS.ownbottlegreen,baseOk:(()=>{const cu=(settings.custom.colors||[]).find(x=>x.key==='ownbottlegreen');return !!(cu&&COLORS[cu.base])})(),btn:document.querySelector('#item-view .colbtn[data-k="primaryColor"]').textContent}));
-    ok(g.c==='ownbottlegreen'&&g.cu&&g.cu.hex==='#1f4a3a'&&g.cu.types.includes('tie')&&!g.cu.accent&&g.baseOk&&g.hex==='#1f4a3a'&&g.btn==='Bottle green',`it is added to your colours (for ties, behaving like ${g.cu&&g.cu.base}) and set on the item`);
+    ok(g.c==='ownbottlegreen'&&g.cu&&g.cu.hex==='#1f4a3a'&&g.cu.types.includes('tie')&&!g.cu.accent&&g.baseOk&&g.hex==='#1f4a3a'&&g.btn==='Bottle green',`it is added to your colors (for ties, behaving like ${g.cu&&g.cu.base}) and set on the item`);
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
-    ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="ownbottlegreen"]')),'once added it is a normal colour in the list, not offered as new again');
+    ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="ownbottlegreen"]')),'once added it is a normal color in the list, not offered as new again');
     await p.keyboard.press('Escape');
     // several colours, two of them new to the app: "Use all" takes every one, adding the new ones to the owner's colours
     await p.unrouteAll({behavior:'wait'});
     await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',response:JSON.stringify({type:'tie',primaryColor:'purple',secondaryColor:'tan',tertiaryColor:'navy',pattern:'solid',
-      confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'none',altPattern:'none',newColor:{name:'smoky plum',why:'greyer than purple'},newPattern:null,
+      confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'none',altPattern:'none',newColor:{name:'smoky plum',why:'grayer than purple'},newPattern:null,
       ownColors:{primary:{name:'smoky plum',hex:'#5a3f55'},secondary:{name:'mushroom',hex:'#a39383'},tertiary:{name:'navy',hex:'#1b2a4a'}}})}})});
     await p.evaluate(()=>{delete colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cpaskbtn');
     await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
-    ok(await p.evaluate(()=>(document.querySelector('#col-sheet .cpall')||{}).textContent==='Use all 3 colours'),'three colours named: "Use all 3 colours" is offered');
+    ok(await p.evaluate(()=>(document.querySelector('#col-sheet .cpall')||{}).textContent==='Use all 3 colors'),'three colors named: "Use all 3 colors" is offered');
     await p.click('#col-sheet .cpall');await p.waitForTimeout(300);
     const m=await p.evaluate(()=>{const t=items.find(x=>x.id==='t1');return {c:[t.primaryColor,t.secondaryColor,t.tertiaryColor].join(),own:(settings.custom.colors||[]).map(x=>x.key).join(),open:document.querySelector('#col-sheet').classList.contains('on'),
       btns:[...document.querySelectorAll('#item-view .colbtn')].slice(0,3).map(b=>b.textContent).join()}});
-    ok(m.c==='ownsmokyplum,ownmushroom,navy'&&/ownsmokyplum/.test(m.own)&&/ownmushroom/.test(m.own)&&!m.open&&m.btns==='Smoky plum,Mushroom,Navy',`"Use all" saves every colour, the new ones added to your colours (${m.c}; ${m.btns})`);
+    ok(m.c==='ownsmokyplum,ownmushroom,navy'&&/ownsmokyplum/.test(m.own)&&/ownmushroom/.test(m.own)&&!m.open&&m.btns==='Smoky plum,Mushroom,Navy',`"Use all" saves every color, the new ones added to your colors (${m.c}; ${m.btns})`);
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cpall')),'with all of them in place it is no longer offered');
     await p.keyboard.press('Escape');

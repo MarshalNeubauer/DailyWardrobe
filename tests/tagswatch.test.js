@@ -9,9 +9,9 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!document.querySelector('#wardrobe .pair')&&!document.querySelector('#item-view.on')),'closed items show just the photo');
     await p.evaluate(()=>{editing='p1';renderWardrobe()});
     const a=await p.evaluate(()=>{const f=document.querySelector('#tagsw-p1');return {pair:!!document.querySelector('#item-view .pair img.ph'),svg:!!(f&&f.querySelector('svg pattern')),cap:f&&f.textContent,html:f&&f.innerHTML}});
-    ok(a.pair&&a.svg&&/As tagged\s*dark grey nailhead/i.test(a.cap),`an opened item shows its photo and the tagged swatch side by side (${a.cap})`);
+    ok(a.pair&&a.svg&&/As tagged\s*dark gray nailhead/i.test(a.cap),`an opened item shows its photo and the tagged swatch side by side (${a.cap})`);
     const hex=await p.evaluate(()=>[COLORS.darkgrey,COLORS.khaki]);
-    ok(a.html.toLowerCase().includes(hex[0]),'the swatch is drawn in the tagged colour');
+    ok(a.html.toLowerCase().includes(hex[0]),'the swatch is drawn in the tagged color');
     const sz=await p.evaluate(()=>{const im=document.querySelector('#item-view .pair img.ph').getBoundingClientRect(),th=document.querySelector('#tagsw-p1 .ph.thumb').getBoundingClientRect(),r=document.querySelector('#tagsw-p1 svg > rect');
       return {w:[Math.round(im.width),Math.round(th.width)],h:[Math.round(im.height),Math.round(th.height)],full:!!r&&r.getAttribute('width')==='100'&&r.getAttribute('height')==='100'&&!r.getAttribute('x')&&!document.querySelector('#tagsw-p1 svg [stroke]')}});
     ok(sz.w[0]===sz.w[1]&&sz.h[0]===sz.h[1]&&sz.full,`the swatch fills a block the same size as the photo, edge to edge with no border (${JSON.stringify(sz)})`);
@@ -24,10 +24,10 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>{editing='p2';renderWardrobe();return !document.querySelector('#item-view .pair')&&!!document.querySelector('#item-view .ivdraw .thumb')}),'an item without a photo keeps its single drawing');
     // Add card with a photo
     await p.evaluate(ph=>{queue.length=0;queue.push({id:'q1',type:'pants',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',photo:ph});show('add')},PH);
-    ok(await p.evaluate(()=>!!document.querySelector('#queue .pair img.ph')&&/As tagged\s*grey/i.test(document.querySelector('#tagsw-q0').textContent)),'an Add card shows the photo and the tagged swatch');
+    ok(await p.evaluate(()=>!!document.querySelector('#queue .pair img.ph')&&/As tagged\s*gray/i.test(document.querySelector('#tagsw-q0').textContent)),'an Add card shows the photo and the tagged swatch');
     await p.click('#queue .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile:has-text("Khaki")');await p.click('#col-sheet .cpbar button');
     await p.click('#queue .patbtn');await p.click('#col-sheet .cptile[data-c="nailhead"]');await p.click('#col-sheet .cpbar button');
-    ok(await p.evaluate(h=>{const f=document.querySelector('#tagsw-q0');return /khaki nailhead/i.test(f.textContent)&&f.innerHTML.toLowerCase().includes(h)},hex[1]),'and it follows the colour and pattern picked on the card');
+    ok(await p.evaluate(h=>{const f=document.querySelector('#tagsw-q0');return /khaki nailhead/i.test(f.textContent)&&f.innerHTML.toLowerCase().includes(h)},hex[1]),'and it follows the color and pattern picked on the card');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

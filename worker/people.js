@@ -45,7 +45,7 @@ const PLAIN = {
   photo: 'The photo service had a problem. Try again later.',
   tag: 'The photo couldn’t be read just now. Try again later, or add the item by hand.',
   pattern: 'The pattern couldn’t be read just now. Try again later.',
-  describe: 'The colour or pattern couldn’t be looked up just now. Try again later.',
+  describe: 'The color or pattern couldn’t be looked up just now. Try again later.',
   sync: 'The backup couldn’t be reached just now. Your wardrobe is safe on this phone; it will try again.',
   other: 'Something went wrong on the server. Try again later.',
 };
@@ -74,7 +74,7 @@ const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200,
 /* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { describe: 'colour and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
+const CAP_WORDS = { describe: 'color and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
 const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {

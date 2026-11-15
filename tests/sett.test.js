@@ -18,9 +18,9 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     reply=()=>({...base,patternBox:{x:293,y:272,w:339,h:543},weave});
     const r=await (await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:IMG})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'})).json();
     const sch=sent.output_config.format.schema,t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n');
-    ok(sch.required.includes('weave')&&sch.required.includes('patternBox')&&sch.properties.weave.anyOf[0].properties.colours,'Claude is asked for the weave (layout, direction, repeats, colours, crossing lines, description) and a box on the patterned cloth');
+    ok(sch.required.includes('weave')&&sch.required.includes('patternBox')&&sch.properties.weave.anyOf[0].properties.colours,'Claude is asked for the weave (layout, direction, repeats, colors, crossing lines, description) and a box on the patterned cloth');
     ok(/description: one or two sentences describing the pattern for a photo-realistic image generator/.test(t)&&/patternBox/.test(t),'the prompt explains both');
-    ok(r.weave.colours.length===3&&r.weave.colours[0].hex==='#6e655a'&&!/</.test(r.weave.description)&&r.patternBox.w===339,'the answer is tidied (bad colours dropped, text cleaned)');
+    ok(r.weave.colours.length===3&&r.weave.colours[0].hex==='#6e655a'&&!/</.test(r.weave.description)&&r.patternBox.w===339,'the answer is tidied (bad colors dropped, text cleaned)');
 
     const ctx=await browser.newContext({viewport:{width:390,height:844}});
     await ctx.route('https://w.test/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({...base,patternBox:{x:293,y:272,w:339,h:543},weave:{...weave,colours:weave.colours.slice(0,3),description:DESC},model:'m'})}));
@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       x.globalAlpha=.5;x.fillStyle='#f3eedf';for(let y=-1400;y<1400;y+=150)x.fillRect(-1400,y,2800,5);x.restore();   // crossing lines, perpendicular
       const s=settFromCanvas(c);const near=(h,w)=>s.bands.some(([b,bw])=>dE00(rgbLab(...hexRgb(b)),rgbLab(...hexRgb(h)))<7&&Math.abs(bw-w)<.05);
       return {s,found:bands.map(([h,w])=>near(h,w)),n:s.bands.length}});
-    ok(syn.found.every(Boolean)&&syn.n<=8,`a known 6-band sett comes back band by band, colours within ΔE 7 and widths within 5% (${syn.n} bands: ${syn.s.bands.map(b=>b[0]).join(' ')})`);
+    ok(syn.found.every(Boolean)&&syn.n<=8,`a known 6-band sett comes back band by band, colors within ΔE 7 and widths within 5% (${syn.n} bands: ${syn.s.bands.map(b=>b[0]).join(' ')})`);
     ok(Math.abs(Math.abs(syn.s.a)-45)<=4,`its direction is read (${syn.s.a}°)`);
     ok(syn.s.cross&&Math.abs(syn.s.cross.d-90)<=6&&syn.s.cross.bands.some(b=>b[0]),`the faint lines crossing the other way are found (${syn.s.cross&&syn.s.cross.d}°)`);
     const plain=await p.evaluate(()=>{const S=900,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');x.save();x.translate(S/2,S/2);x.rotate(-Math.PI/4);
@@ -49,15 +49,15 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const flow=await p.evaluate(async()=>{show('add');const blob=await (await fetch('tests/fixtures/tie-plaid.jpg')).blob();await addFiles([new File([blob],'tie.jpg',{type:'image/jpeg'})]);
       const q=queue[0],s=q.sett,L=s.bands.map(([h])=>rgbLab(...hexRgb(h)));
       return {s,src:s&&s.src,n:s&&s.bands.length,blue:L.some(l=>l[2]<-2&&l[2]<l[1]-1&&l[0]>30),light:L.some(l=>l[0]>68),dark:L.some(l=>l[0]<38),note:document.querySelector('#queue').textContent}});
-    ok(flow.src==='photo'&&flow.n>=10,`the tie's pattern is read from the sharp photo: ${flow.n} colour bands`);
+    ok(flow.src==='photo'&&flow.n>=10,`the tie's pattern is read from the sharp photo: ${flow.n} color bands`);
     ok(flow.blue&&flow.light&&flow.dark,'… including its steel blue, its cream and its dark pinlines');
     ok(flow.s.cross&&Math.abs(flow.s.cross.d-90)<=10,`… and the lines crossing the other way (${flow.s.cross&&flow.s.cross.d}°)`);
     ok(Math.abs(flow.s.a+46)<=6&&Math.abs(flow.s.tr-.61)<.08,`direction and scale from the photo (${flow.s.a}°, ${flow.s.tr} repeats across; a tie's own count beats Claude's estimate of 0.7)`);
-    ok(/Pattern: \d+ colour bands with lines crossing the other way, read from the photo/.test(flow.note),'the card says what was read');
+    ok(/Pattern: \d+ color bands with lines crossing the other way, read from the photo/.test(flow.note),'the card says what was read');
     // drawn: the swatch uses the bands; the figure keeps the repeat's share of the tie's width
     const dr=await p.evaluate(()=>{const q=queue[0],th=itemThumb(q,true),fig=fabricDef('f',q,'tie','fig'),sw=fabricDef('s',q,'tie');const W=d=>+d.match(/width="([\d.]+)"/)[1];
       return {all:q.sett.bands.every(([h])=>th.includes(h)),over:/opacity="\.5"/.test(th),rot:/rotate\(-46\)/.test(th),wf:W(fig),ws:W(sw),tr:q.sett.tr}});
-    ok(dr.all&&dr.over&&dr.rot,'the swatch draws every band in its colour, the crossing lines over them, at the tie\'s angle');
+    ok(dr.all&&dr.over&&dr.rot,'the swatch draws every band in its color, the crossing lines over them, at the tie\'s angle');
     ok(Math.abs(dr.wf-29/dr.tr)<1&&dr.ws>=14&&dr.ws<=110,`one repeat is ${dr.wf.toFixed(0)} units on the figure (the tie is 29 wide, ${dr.tr} repeats across) and ${dr.ws.toFixed(0)} in the swatch`);
     // the simple pattern instead
     await p.click('#queue .chipbtn:has-text("Use the simple pattern")');
@@ -71,7 +71,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(sv.key,'a read pattern gives the look its own photo key');
     await p.evaluate(()=>{show('wardrobe');openItem(items[0].id)});await p.waitForSelector('#item-view');await settle(p,500);
     const ed=await p.textContent('#item-view');
-    ok(/Pattern layout: \d+ colour bands with lines crossing the other way, read from the photo/.test(ed),'the Wardrobe editor shows it');
+    ok(/Pattern layout: \d+ color bands with lines crossing the other way, read from the photo/.test(ed),'the Wardrobe editor shows it');
     await p.evaluate(()=>{delete items[0].sett});await p.click('#item-view button:has-text("Read pattern from photo")');
     await p.waitForFunction(()=>items[0].sett);
     ok(await p.evaluate(()=>items[0].sett.src==='photo'&&items[0].sett.bands.length>=10),'"Read pattern from photo" reads it again from the kept sharp copy');
@@ -79,7 +79,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const fb=await p.evaluate(()=>{const s=settFrom({weave:{direction:'lower-left to upper-right',repeatsAcross:2,colours:[{hex:'#112233',width:'wide'},{hex:'#ddeeff',width:'narrow'}]}});
       const c=document.createElement('canvas');c.width=c.height=400;const x=c.getContext('2d');for(let i=0;i<400;i+=40){x.fillStyle=i%80?'#203040':'#c0b090';x.fillRect(i,0,40,400)}
       const s2=settFrom({tex:c,weave:{direction:'upper-left to lower-right',repeatsAcross:3}});return {s,s2}});
-    ok(fb.s.src==='claude'&&fb.s.a===45&&fb.s.bands.length===2&&fb.s.bands[0][1]>fb.s.bands[1][1],'with nothing readable, Claude\'s colours and widths are drawn');
+    ok(fb.s.src==='claude'&&fb.s.a===45&&fb.s.bands.length===2&&fb.s.bands[0][1]>fb.s.bands[1][1],'with nothing readable, Claude\'s colors and widths are drawn');
     ok(fb.s2.src==='closeup'&&fb.s2.a===-45&&fb.s2.tr===3,'a close-up\'s bands are used with Claude\'s direction and scale');
     // ---- suits and shirts: photographed-like synthetic cloth (soft edges, weave noise, light falloff)
     const sw=await p.evaluate(()=>{
@@ -101,7 +101,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(sw.pin.n===2&&sw.pin.light&&sw.pin.w<.15&&!sw.r.pin.cross&&sw.r.pin.a===0,`a pinstripe suit: the navy ground and a narrow light stripe, upright, nothing crossing (stripe ${(sw.pin.w*100).toFixed(0)}% of the repeat)`);
     ok(sw.chalk.n===2&&sw.chalk.con>8&&!sw.r.chalk.cross,'a chalk stripe: its soft lighter stripe on the ground');
     ok(sw.ging.white>80&&sw.ging.blue&&sw.ging.cross,`a gingham shirt: white stays white (L* ${sw.ging.white.toFixed(0)}, the crossing threads left out), blue bands and blue crossing lines`);
-    ok(sw.tatt.n===4&&sw.tatt.red&&sw.tatt.green&&sw.tatt.xred&&sw.tatt.xgreen,'a tattersall: its red and green lines both ways, kept apart (same lightness, told apart by colour)');
+    ok(sw.tatt.n===4&&sw.tatt.red&&sw.tatt.green&&sw.tatt.xred&&sw.tatt.xgreen,'a tattersall: its red and green lines both ways, kept apart (same lightness, told apart by color)');
     ok(sw.bengal.n===2&&!sw.bengal.cross,'a bengal stripe: two bands, and the light falling off across the photo is not taken for crossing lines');
     // a blurry whole-jacket reading takes the close-up's bands when the close-up shows enough of the pattern
     const comb=await p.evaluate(()=>{const mk=(step,w,S=900)=>{const c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');x.fillStyle='#1f2a44';x.fillRect(0,0,S,S);
@@ -113,7 +113,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       const d=fabricDef('f',it,'top','fig'),sw=fabricDef('s',it,'top');return {w:+d.match(/width="([\d.]+)"/)[1],rot:/patternTransform/.test(d),ws:+sw.match(/width="([\d.]+)"/)[1]}});
     ok(Math.abs(fig.w-200/30)<.1&&!fig.rot&&fig.ws===14,`on the figure a 30-across pinstripe repeats every ${fig.w.toFixed(1)} units, upright (a jacket's stripes snap straight); the swatch shows several`);
     const tp=await p.evaluate(()=>({suit:settable('suit','pinstripe'),chalk:settable('blazer','chalk-stripe'),ging:settable('shirt','gingham'),herr:settable('suit','herringbone'),solid:settable('shirt','solid')}));
-    ok(tp.suit&&tp.chalk&&tp.ging&&!tp.herr&&!tp.solid,'suits, blazers and trousers read their stripes and checks; fine weaves and solids keep the drawn tile');
+    ok(tp.suit&&tp.chalk&&tp.ging&&!tp.herr&&!tp.solid,'suits, blazers and pants read their stripes and checks; fine weaves and solids keep the drawn tile');
     // a patterned shirt gets its own photo key; plain shirts still share theirs by colour
     const sh=await p.evaluate(()=>{const top={id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},tie={id:'t',type:'tie',primaryColor:'burgundy',pattern:'solid'};
       const st={id:'a',type:'shirt',primaryColor:'white',pattern:'stripe',sett:{v:2,a:0,bands:[['#ffffff',.5],['#3f6fb5',.5]],cr:20},patternText:'Bold blue bengal stripes on white'},
@@ -135,7 +135,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(wp.c&&wp.c.blueBand&&wp.c.blueCross&&Math.abs(wp.c.cr-2.36)<.3&&Math.abs(wp.c.r-1)<.1,`a linen windowpane close-up: its light-blue lines both ways, square panes, the right repeat (${JSON.stringify(wp.c)})`);
     ok(wp.j&&wp.j.blueBand&&wp.j.blueCross&&Math.abs(wp.j.cr-8.84)<.5&&wp.j.a===0,`… and from the whole jacket, where the lines are a pixel or two wide (${JSON.stringify(wp.j)})`);
     ok(wp.both&&wp.both.src==='photo+closeup'&&wp.both.blue&&wp.both.tr===9,'with both, the close-up\'s bands and the jacket\'s scale are used');
-    ok(wp.noRef&&wp.both.ground.chroma>.85&&wp.both.ground.hue<6,`a khaki close-up's own light slubs are not taken for a white reference, so the khaki keeps its colour (${Math.round(wp.both.ground.chroma*100)}% of its chroma, hue within ${wp.both.ground.hue.toFixed(1)}°)`);
+    ok(wp.noRef&&wp.both.ground.chroma>.85&&wp.both.ground.hue<6,`a khaki close-up's own light slubs are not taken for a white reference, so the khaki keeps its color (${Math.round(wp.both.ground.chroma*100)}% of its chroma, hue within ${wp.both.ground.hue.toFixed(1)}°)`);
     // the user's own khaki linen windowpane blazer (its synced photo and close-up): the close-up's lines wave with the drape and
     // its panes run 135-175px, which defeated matching the repeat; the lines are found one by one in strips instead
     const real=await p.evaluate(async()=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};

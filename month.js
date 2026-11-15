@@ -11,8 +11,8 @@ function stackSVG(o,cls=''){
 }
 const planOn=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)];
 const nextWorkday=d=>{const x=new Date(d);let g=0;do x.setDate(x.getDate()+1);while(!isWorkday(x)&&++g<7);return x};
-const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: ${colName(primaryCol(o.bot))} trousers`:`${colName(primaryCol(o.bot))} trousers`.replace(/^./,c=>c.toUpperCase())):'No jacket';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patLabel(t.pattern):'',n=colName(primaryCol(t))+p;
-  const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' trousers':''}`};
+const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: ${colName(primaryCol(o.bot))} pants`:`${colName(primaryCol(o.bot))} pants`.replace(/^./,c=>c.toUpperCase())):'No jacket';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patLabel(t.pattern):'',n=colName(primaryCol(t))+p;
+  const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' pants':''}`};
 const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'check',foulard:'foulard',knit:'knit'})[p]||'';
 /* a shirt in a few words: a striped or checked one with its colours and pattern ("white & blue stripe shirt"; "white shirt" under a picture
    of blue stripes read as a mistake, audit 2026-11-14), a plain one by its colour */
@@ -22,7 +22,7 @@ const shortRest=o=>[o.shirt&&shirtWords(o.shirt)+' shirt',o.tie&&[colName(primar
    "navy suit · white shirt · burgundy stripe tie" (sentence() capitalises it where it starts a line) */
 /* the folded pieces box's line: jacket (or trousers), shirt and tie; a piece the owner named is called by its name, exactly as typed (2026-11-14,
    the owner: "Medium Grey suit", not "mid grey worsted suit"), the others by colour */
-const piecesLine=o=>{const nmd=i=>itemName(i);return [o.top?nmd(o.top)||`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&(nmd(o.bot)||`${colName(primaryCol(o.bot))} trousers`),o.shirt&&(nmd(o.shirt)||`${shirtWords(o.shirt)} shirt`),
+const piecesLine=o=>{const nmd=i=>itemName(i);return [o.top?nmd(o.top)||`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&(nmd(o.bot)||`${colName(primaryCol(o.bot))} pants`),o.shirt&&(nmd(o.shirt)||`${shirtWords(o.shirt)} shirt`),
   o.tie&&(nmd(o.tie)||`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`)].filter(Boolean).join(' · ')};/* the month plan unfolds in place from the box on Today (no separate page) */
 let monthOpen=false,monthPanel=null;
 const monthPlan=planMonth;

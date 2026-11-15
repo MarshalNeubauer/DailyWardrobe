@@ -13,7 +13,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const MOTIF={grid:'straight',ground:{name:'white',hex:'#eeeef2'},cellAspect:.82,rowOffset:'none',
     figures:[{shape:'figure',placement:'cell',colours:[{name:'grey',hex:'#6a6870'}],centre:null,sizePct:50,bitmap:CHEV,name:'downward chevron'}]};
   const SPEC={layout:'motif',across:null,along:null,texture:null,motif:MOTIF,stripeDirection:'vertical',repeatsInCloseup:8,repeatsAcrossItem:40,paneAspect:1,ignored:'',
-    description:'A white dobby shirt with small grey chevrons woven in columns.'};
+    description:'A white dobby shirt with small gray chevrons woven in columns.'};
   const env={APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'},call=b=>worker.fetch(new Request('https://w.test/pattern',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify(b)}),env);
   const browser=await chromium.launch();
   try{
@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     reply=()=>({...SPEC,motif:{...MOTIF,figures:[...MOTIF.figures,{shape:'figure',placement:'cell',colours:[{name:'grey',hex:'#6a6870'}],centre:null,sizePct:20,bitmap:['abc'],name:'bad'}]}});
     let r=await call({image:IMG,closeup:IMG,type:'shirt'}),j=await r.json();
     const t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),sch=sent.output_config.format.schema;
-    ok(r.status===200&&/a shirt's figured dobby whose small figures are woven in a second, clearly different colour/.test(t)&&/it is a motif, not a texture/.test(t)&&/figure \(any other small shape: draw it in "bitmap"\)/.test(t),'the pattern prompt sends two-colour figured dobbies to a motif, and asks for any other figure as a bitmap');
+    ok(r.status===200&&/a shirt's figured dobby whose small figures are woven in a second, clearly different color/.test(t)&&/it is a motif, not a texture/.test(t)&&/figure \(any other small shape: draw it in "bitmap"\)/.test(t),'the pattern prompt sends two-colour figured dobbies to a motif, and asks for any other figure as a bitmap');
     ok(sch.properties.motif.anyOf[0].required.includes('cellAspect')&&sch.properties.motif.anyOf[0].required.includes('rowOffset'),'the motif carries the grid\'s cell shape and row offset');
     const f=j.motif.figures;
     ok(f[0].shape==='figure'&&f[0].bitmap.join()===CHEV.join()&&f[0].name==='downward chevron'&&f[1].shape==='other'&&!f[1].bitmap&&j.motif.cellAspect===.82&&j.motif.rowOffset==='none',
@@ -45,7 +45,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         offDiff:off!==def,usable:!!usableSett(it),band:usableSett({...it,sett:{v:2,bands:[['#fff',.5],['#888',.5]]}}),patterned:shirtPatterned(it),
         key:comboKey(o)!==comboKey({...o,shirt:{...it,sett:null}})}},spec);
     ok(m.s.v===3&&m.s.motif.figs[0].bmp.join()===CHEV.join()&&m.s.motif.aspect===.82&&m.s.cr===8&&m.s.tr===40,'the reading keeps the figure\'s bitmap, the cell shape and the scale');
-    ok(m.ground>85&&m.fig>35&&m.fig<65,`colours come from the close-up, at full contrast: white ground L* ${m.ground.toFixed(0)}, grey figures L* ${m.fig.toFixed(0)}`);
+    ok(m.ground>85&&m.fig>35&&m.fig<65,`colors come from the close-up, at full contrast: white ground L* ${m.ground.toFixed(0)}, gray figures L* ${m.fig.toFixed(0)}`);
     ok(m.figCol&&m.rects>=1+4*CHEV.length&&Math.abs(m.ratio-.82)<.01,`the swatch draws the chevrons row by row (${m.rects} rects) on cells 0.82 as tall as wide`);
     ok(m.offDiff,'a half-row offset moves every other row');
     ok(m.usable&&m.band===null,'a dobby shirt takes the figure reading (a band reading still does not apply)');

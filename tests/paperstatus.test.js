@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(!e.line,'no paper line before a close-up is taken here');
     await p.click('#item-view .wbstcard');await p.waitForSelector('#kitsheet.on');
     e=await p.evaluate(()=>({t:document.querySelector('#kit-title').textContent,b:document.querySelector('#kitsheet .kit-body').textContent,svg:!!document.querySelector('#kitsheet .kit-pic svg')}));
-    ok(e.t==='White paper, true colours'&&/about a fifth of the picture/.test(e.b)&&/even under warm lamps/.test(e.b)&&e.svg,'tapping the card opens the short tip with its picture');
+    ok(e.t==='White paper, true colors'&&/about a fifth of the picture/.test(e.b)&&/even under warm lamps/.test(e.b)&&e.svg,'tapping the card opens the short tip with its picture');
     await p.click('#kitsheet .kit-body .linkbtn');await settle(p,300);await p.waitForSelector('#kitsheet.on');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='A good close-up'),'the tip\'s "Tips for a good close-up" opens the guide');
     await p.click('#kitsheet .kit-x');await settle(p,200);
@@ -48,12 +48,12 @@ module.exports=async({ok,chromium,url,settle})=>{
       await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.texture&&phEdit.paper===texSig(it.texture)&&!!document.querySelector('#ivwb')})};
     const line=()=>p.evaluate(()=>{const l=document.querySelector('#ivwb');return {cls:l.className,text:l.textContent,retake:!!l.querySelector('label.wbretake input[type=file]'),under:l.previousElementSibling&&l.previousElementSibling.classList.contains('ivhero')}});
     await replace('paper.jpg',F.paper);e=await line();
-    ok(/\bok\b/.test(e.cls)&&/White paper found/.test(e.text)&&/Colours set from it\./.test(e.text)&&!e.retake&&e.under,'a close-up with paper: "White paper found · Colours set from it." under the photos');
+    ok(/\bok\b/.test(e.cls)&&/White paper found/.test(e.text)&&/Colors set from it\./.test(e.text)&&!e.retake&&e.under,'a close-up with paper: "White paper found · Colors set from it." under the photos');
     await replace('plain.jpg',F.plain);e=await line();
-    ok(/\bno\b/.test(e.cls)&&/^!No white paperColours may be off\./.test(e.text)&&e.retake,`no paper: "No white paper · Colours may be off." with Retake close-up (${e.text})`);
+    ok(/\bno\b/.test(e.cls)&&/^!No white paperColors may be off\./.test(e.text)&&e.retake,`no paper: "No white paper · Colors may be off." with Retake close-up (${e.text})`);
     await p.evaluate(F=>{const it=items.find(x=>x.id==='m1');it.photo=F.warmPhoto;delete it.photoSm;renderWardrobe()},F);
     await replace('plain2.jpg',F.plain);e=await line();
-    ok(/No white paper, and the light looks warm/.test(e.text)&&/Colours may come out yellower than the cloth\./.test(e.text)&&e.retake,'no paper and a warm photo: the warm wording, with Retake close-up');
+    ok(/No white paper, and the light looks warm/.test(e.text)&&/Colors may come out yellower than the cloth\./.test(e.text)&&e.retake,'no paper and a warm photo: the warm wording, with Retake close-up');
     await replace('retake.jpg',F.paper,'#ivwb input[type=file]');e=await line();
     ok(/White paper found/.test(e.text),'Retake close-up from the line takes a new close-up (paper found)');
     ok(await p.evaluate(()=>!items[0].paperRef&&!('paper' in items[0])),'nothing new is stored on the item');

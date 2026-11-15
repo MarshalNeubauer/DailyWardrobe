@@ -4,7 +4,7 @@
 const path=require('path'),fs=require('fs');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const src=require('./workersrc.js')();
-  ok(/mink or\s+espresso-grey suit whose brown is so muted it reads almost grey is deeptaupe, not brown/.test(src),'the tagger is told how a muted, almost grey brown differs from brown');
+  ok(/mink or\s+espresso-gray suit whose brown is so muted it reads almost gray is deeptaupe, not brown/.test(src),'the tagger is told how a muted, almost gray brown differs from brown');
   const worker=(await import(require('url').pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const realFetch=globalThis.fetch;let sent=null;
   globalThis.fetch=async(h,init)=>{sent=JSON.parse(init.body);return new Response(JSON.stringify({stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify({type:'suit',primaryColor:'brown',secondaryColor:'none',tertiaryColor:'none',pattern:'twill',metal:null,leather:null,dial:null,band:null,bezel:null,
@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},
       body:JSON.stringify({image:'data:image/png;base64,iVBORw0KGgo=',measured:{lab:[24,1.5,3.5],hex:'#3c3631',ref:false,src:'closeup',near:[{c:'deeptaupe',d:4},{c:'charcoal',d:10.6},{c:'black',d:10.9}]}})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
     const prompt=JSON.stringify(sent.messages);
-    ok(/nearest of the owner's colours: deeptaupe/.test(prompt)&&/give the nearest measured one as altColor/.test(prompt),'with a measurement, the tagger is asked to give the measured colour as its runner-up when it picks another');
+    ok(/nearest of the owner's colors: deeptaupe/.test(prompt)&&/give the nearest measured one as altColor/.test(prompt),'with a measurement, the tagger is asked to give the measured color as its runner-up when it picks another');
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the user's close-up (tests/fixtures/suit-mink-closeup.png) and photo, measured by the app's own code
@@ -26,7 +26,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // the card (2026-11-14: one verdict per colour; not sure enough to change it, the card asks "Measured: deep taupe?")
     const card=await p.evaluate(m=>{show('add');addManual();const q=queue[0];q.manual=false;setq(0,'type','suit');q.primaryColor='brown';q.meas={...m,hex:'#3c3631',ref:false,src:'closeup',sharp:.5,spread:2};renderAdd();
       const o=document.querySelector('#queue .measalt'),v=q.measV.find(x=>x.f==='primaryColor');return o&&{txt:o.textContent,btn:o.querySelector('button').textContent,v,brown:q.primaryColor}},{lab:m.lab,near:m.near});
-    ok(card&&/Measured: deep taupe\?/.test(card.txt)&&card.btn==='Use deep taupe'&&card.brown==='brown',`the card asks about the measured colour and leaves the tag (${card&&card.txt}; confidence ${card&&card.v.conf})`);
+    ok(card&&/Measured: deep taupe\?/.test(card.txt)&&card.btn==='Use deep taupe'&&card.brown==='brown',`the card asks about the measured color and leaves the tag (${card&&card.txt}; confidence ${card&&card.v.conf})`);
     await p.click('#queue .measalt button');
     ok(await p.evaluate(()=>queue[0].primaryColor==='deeptaupe'&&!document.querySelector('#queue .measalt')),'one tap takes it, and the offer goes away');
     // the photo alone (no close-up, no white reference) is too dark to trust: it measures nearest black, and offers nothing
@@ -34,7 +34,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(phNone.best==='black'&&phNone.none,`a photo-only measurement (nearest ${phNone.best} here) offers nothing: only a close-up or a white reference does`);
     // no offer when the tag is about as close as the measurement
     const none=await p.evaluate(()=>{const q=queue[0];q.primaryColor='charcoal';q.meas={lab:[27,0,-3],hex:'#3e4044',ref:false,src:'closeup',near:[{c:'darkgrey',d:4},{c:'charcoal',d:5.5}]};renderAdd();return !document.querySelector('#queue .measalt')});
-    ok(none,'no offer when the tagged colour is about as close as the measured one');
+    ok(none,'no offer when the tagged color is about as close as the measured one');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

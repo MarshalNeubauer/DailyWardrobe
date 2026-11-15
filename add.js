@@ -36,10 +36,10 @@ function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
   const cloth=paperCloth(q),pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${i},f)`,remove:mode==='replace'?`dropTexture(${i})`:'',cloth});
   // a card typed in by hand has no photo and so no split swatch, and no tagging notes (tagNotes): what the close-up did, and a blurry one, are said here
   const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
-  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the colour as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" onclick="dropTexture(${i})">Remove</button>`}</div></div>`
-    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true colour fill the frame. It makes the pictures and colours match the cloth better. Optional.</small>${paperSteps(cloth)}${pick('Add close-up','btn pri','add')}</div>`}
-const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colours.':'Colours corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`
-  :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colours corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
+  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the color as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" onclick="dropTexture(${i})">Remove</button>`}</div></div>`
+    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true color fill the frame. It makes the pictures and colors match the cloth better. Optional.</small>${paperSteps(cloth)}${pick('Add close-up','btn pri','add')}</div>`}
+const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`
+  :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
   addWatch();
@@ -92,7 +92,7 @@ function addShowCard(id){requestAnimationFrame(()=>{const a=$('#add'),el=documen
 const needType=q=>!!q&&!!q.unread&&!q.manual&&!q.ai&&!q.busy&&!q.err&&!q.multiBusy&&!q.multiErr&&!(q.edited&&q.edited.type);
 /* the colour is then measured from the middle of the photo (measureCloth, tagging.js) once the type is known */
 function measureGuess(q){if(!q||!q.raw||!q.raw.big||(q.edited&&q.edited.primaryColor)||typeof measureCloth!=='function')return;
-  try{const m=measureCloth(q.raw.big,q.clothBox||null,{gains:q.wbOff?null:q.wb}),n=nearestCols(q.type,m.lab,false)[0];if(n&&COLORS[n.c])q.primaryColor=n.c}catch(e){console.warn('colour not measured',e)}}
+  try{const m=measureCloth(q.raw.big,q.clothBox||null,{gains:q.wbOff?null:q.wb}),n=nearestCols(q.type,m.lab,false)[0];if(n&&COLORS[n.c])q.primaryColor=n.c}catch(e){console.warn('color not measured',e)}}
 /* an image that couldn't be opened can still be added by hand */
 function errToHand(id){const q=queue.find(x=>x.id===id);if(!q)return;const wo=watchOpts({});
   for(const k of ['err','errWh','busy'])delete q[k];Object.assign(q,{manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});renderAdd()}
@@ -162,7 +162,7 @@ document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;docum
 
 /* ---- several items in one photo: the worker lists every item with a rough box; each becomes its own card ---- */
 const multiMsg=t=>{const e=$('#multi-status');if(e)e.textContent=t||''};
-function multiNote(on){multiMsg(on?'Each item in the photo gets its own card. Check each card: colours and textures from a rail photo need a look, especially whites.':'')}
+function multiNote(on){multiMsg(on?'Each item in the photo gets its own card. Check each card: colors and textures from a rail photo need a look, especially whites.':'')}
 /* crop the box (thousandths of the image) with a little margin, keeping at least a usable size */
 function cropBox(img,box,max){
   const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height,pad=.04;
@@ -350,7 +350,7 @@ async function saveCard(q){
 /* Add's note while not connected: an invitation still being checked (or waiting to be, offline) is not "won't be read" */
 function addNoteText(){const workerSet=typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
   // (no model name: a tester read "Last photo read by Claude (claude-…)")
-  if(workerSet)return aiError||'Photos are read automatically: the type, colours and pattern are filled in for you.';
+  if(workerSet)return aiError||'Photos are read automatically: the type, colors and pattern are filled in for you.';
   if(typeof inviteChecking!=='undefined'&&inviteChecking)return 'Checking your invitation… Photos you add meanwhile can be read once it’s done.';
   if(typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash())return 'Your invitation is checked once you’re back online. Photos you add meanwhile can be read then.';
   if(typeof inviteOver==='function'&&inviteOver())return 'Your invitation has ended, so photos aren’t read automatically: add items by hand, or paste a new invitation link in Settings → Connection.';
@@ -390,7 +390,7 @@ const multiErrCard=q=>`<div class="card" data-q="${esc(q.id)}"><div class="tagfa
 const errCard=q=>`<div class="card" data-q="${esc(q.id)}" role="alert"><p>${q.err==='small'?`This picture is too small to read (${(q.errWh||[]).join('×')} pixels). Use a larger photo of the item.`:'That photo couldn’t be opened. Try a JPEG or PNG, or fill the item in by hand.'}</p><div class="btns"><button type="button" onclick="errToHand('${esc(q.id)}')">Fill it in by hand</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
 function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected():!localStorage.getItem('worker_url');   // (an ended invitation reads nothing either)
   return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
-<p class="typeq">${none&&!q.tagErr?'<b>What is it?</b> Photos aren’t read automatically here: pick the type and the colour is measured from the photo.':'<b>What is it?</b> Pick the type, then check the colours.'}</p>
+<p class="typeq">${none&&!q.tagErr?'<b>What is it?</b> Photos aren’t read automatically here: pick the type and the color is measured from the photo.':'<b>What is it?</b> Pick the type, then check the colors.'}</p>
 <label>Type <select onchange="setq(${i},'type',this.value)" aria-label="Type"><option value="" selected disabled>Choose…</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
 <div class="btns"><button onclick="skipCard('${esc(q.id)}')">Skip</button></div></div>`}
 /* a photo added while the app wasn't connected yet (an invitation still being checked): once it is, the card offers the reading */

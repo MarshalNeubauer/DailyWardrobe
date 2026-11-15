@@ -39,18 +39,18 @@ function whyUnused(i){
   const gap=(kind,id)=>{const T=table();return Math.min(...jackets.map(j=>T[j.id].all-(T[j.id][kind][id]??-1e9)))};
   const n=v=>Math.round(v),pts=v=>n(v)===1?'1 point':n(v)+' points';
   switch(i.type){
-    case 'pants':{if(!blazerDays)return 'You have no blazer days, so separate trousers are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
+    case 'pants':{if(!blazerDays)return 'You have no blazer days, so separate pants are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
       const g=Math.min(...by('blazer').map(j=>Math.max(...by('pants').map(p=>pairScore(j,p)+patternScore([[j,'top'],[p,'bot']])))-(pairScore(j,i)+patternScore([[j,'top'],[i,'bot']]))));
       return g>QWIN?`They don't suit any of your blazers well enough: ${pts(g)} behind the best pair at the closest.`:'They suit a blazer, but other pairs suit your outfits a little better or have rested longer, so they aren\'t in the next six months\' plan.'}
     case 'shirt':{const g=gap('shirt',i.id);if(g<=QWIN)return 'It works, but your other shirts suit your outfits a little better or have rested longer, so it isn\'t in the next six months\' plan.';
       return darkShirt(i)?`A dark shirt needs a light jacket${wearsTie()?' and a tie lighter than itself':''}; the best such outfit is ${pts(g)} behind your others.`:`With every jacket it is at least ${pts(g)} behind your other shirts.`}
     case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties suit your outfits a little better or have rested longer, so it isn\'t in the next six months\' plan.':`With every jacket and shirt it is at least ${pts(g)} behind your other ties.`}
-    case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for colour variety.';
+    case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for color variety.';
     case 'blazer':return !blazerDays?'You have no blazer days set in Settings.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other blazers take every blazer day first.';
     case 'shoes':{const ok=jackets.some(j=>(j.type==='suit'?[j]:by('pants')).some(b=>shoeScore(j,b,i)>-50));
-      return !ok?`${colName(primaryCol(i))} shoes don't suit any of your suits or trousers.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:finish(i.leather)==='suede'&&!blazerDays?'Suede is kept for blazer days, and you have none.':'Another pair always suits the outfit better.'}
-    case 'belt':return by('shoes').some(s=>beltFit(s,i)!==null)?'Another belt matches the shoes better each time.':'None of your shoes match it in colour and finish.';
-    case 'socks':return 'Your other socks match your trousers better every day.';
+      return !ok?`${colName(primaryCol(i))} shoes don't suit any of your suits or pants.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:finish(i.leather)==='suede'&&!blazerDays?'Suede is kept for blazer days, and you have none.':'Another pair always suits the outfit better.'}
+    case 'belt':return by('shoes').some(s=>beltFit(s,i)!==null)?'Another belt matches the shoes better each time.':'None of your shoes match it in color and finish.';
+    case 'socks':return 'Your other socks match your pants better every day.';
     case 'cufflinks':return by('shirt').some(s=>s.cuff==='french')?'Another pair matches your watch and buckle better.':'You have no French-cuff shirt to wear them with.';
     case 'tieclip':return (settings.vestMode||'auto')==='always'&&!blazerDays?'With a vest on every suit day there is never a tie clip.':'Another clip matches your watch better, or a vest holds the tie.';
     case 'overcoat':case 'raincoat':return i.type==='raincoat'?'No rain in the forecast, and days beyond it are planned without rain.':'No day in the next six months is cold enough for a coat.';
@@ -91,7 +91,7 @@ const statName=i=>itemName(i)||sentence(desc(i)||nm(i)),statName1=i=>itemName(i)
 const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" onclick="openAdd()">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" onclick="kitSampleLoad()">Try a sample wardrobe</button>':''}</div>`;
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
 const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${typeof phSm==='function'?phSm(i):i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true)}</span>`;
-const GROUP_NAMES={grey:'Grey',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
+const GROUP_NAMES={grey:'Gray',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
 const groupName=g=>GROUP_NAMES[g]||colName(g).replace(/^./,c=>c.toUpperCase());
 const groupCol=g=>COLORS[({red:'burgundy',yellow:'paleyellow',beige:'beige',purple:'purple',green:'green'})[g]||g]||'#8b8f96';
 function renderStats(){
@@ -138,17 +138,17 @@ ${S.short.length?'':`
       return `<div class="st-miss"><b>${l}</b><span class="mut">${m.n} of ${nPlan} days</span>${bar(m.n,nPlan)}${why?`<small class="mut">Mostly: ${why[0]}.</small>`:''}</div>`}).join('')}`:'<p class="mut"><small>Nothing: every planned outfit scores full marks.</small></p>'}
   ${S.lowest.length?`<p class="mut" style="margin-top:10px"><small>Lowest-scoring days: ${S.lowest.map(([k,,r])=>`<a href="#" onclick="openDay(${keyDate(k).getTime()});show('today');return false">${statDate(keyDate(k))} (${r.score})</a>`).join(', ')}.</small></p>`:''}</section>
 
-  <section class="card st-card" id="st-colours"><h3>Colour balance</h3><p class="mut"><small>Share of the planned days by colour.</small></p>
+  <section class="card st-card" id="st-colours"><h3>Color balance</h3><p class="mut"><small>Share of the planned days by color.</small></p>
   ${mix('Jackets',S.jackets)}${mix('Shirts',S.shirts)}${mix('Ties',S.ties)}</section>
 
   <section class="card st-card" id="st-pairs"><h3>Pairings and rest</h3>
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${esc(statName1(p.a))} · ${esc(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
-  <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that colour would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>`}
+  <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that color would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>`}
 
   ${typeof tagStatsCard==='function'?tagStatsCard():''}
 
   <section class="card st-card" id="st-learn"><h3>What the planner has learned</h3>
-  ${learned.length?`<p class="mut"><small>From your swaps, picks and corrections. Forget one and the planner goes back to its own judgement.</small></p>${learned.map(x=>`<div class="st-learn"><span class="st-tag ${x.v<0?'down':'up'}">${x.v<0?(x.kind==='p'?'Avoids':'Wears less'):(x.kind==='p'?'Prefers':'Wears more')}</span><span class="st-nm">${esc(x.txt)}</span><button type="button" onclick="forgetLearned('${x.kind}','${x.k}')" aria-label="Forget: ${esc(x.txt)}">Forget</button></div>`).join('')}
+  ${learned.length?`<p class="mut"><small>From your swaps, picks and corrections. Forget one and the planner goes back to its own judgment.</small></p>${learned.map(x=>`<div class="st-learn"><span class="st-tag ${x.v<0?'down':'up'}">${x.v<0?(x.kind==='p'?'Avoids':'Wears less'):(x.kind==='p'?'Prefers':'Wears more')}</span><span class="st-nm">${esc(x.txt)}</span><button type="button" onclick="forgetLearned('${x.kind}','${x.k}')" aria-label="Forget: ${esc(x.txt)}">Forget</button></div>`).join('')}
     <div class="btns"><button type="button" onclick="forgetLearned()">Forget everything</button></div>`
     :'<p class="mut"><small>Nothing yet. When you swap a piece away or choose one yourself, the planner remembers the pairing.</small></p>'}</section>`;
 }

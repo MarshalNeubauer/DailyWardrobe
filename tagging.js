@@ -359,7 +359,7 @@ function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured
 /* ---- tagging again once the close-up is in: both photos and the measurement go to the tagger; fields the owner has set by
    hand stay, the rest take the new answer, and the card says what changed ---- */
 const TAG_FIELDS=['type','primaryColor','secondaryColor','tertiaryColor','pattern'];
-const fieldLabel={type:'item',primaryColor:'colour',secondaryColor:'second colour',tertiaryColor:'third colour',pattern:'pattern'};
+const fieldLabel={type:'item',primaryColor:'color',secondaryColor:'second color',tertiaryColor:'third color',pattern:'pattern'};
 const valName=(k,v)=>!v?'none':k==='type'?(TYPES[v]||v).toLowerCase():k==='pattern'?patName(v):colName(v);
 /* what the tagger answered, as the card's values (the same normalising as a first tag) */
 function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?ai.primaryColor:'grey',secondaryColor:ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null,
@@ -421,7 +421,7 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colo
   if(mp&&(patBase(q.pattern)||'solid')==='solid'&&!(q.edited&&q.edited.pattern))out.push(`<div class="offer measpat"><small>The close-up shows ${/check|pane/.test(mp)?'a check':'stripes'}: <b>${esc(patName(mp))}</b>?</small><button type="button" class="chipbtn" onclick="setq(${i},'pattern','${mp}')">Use ${esc(patName(mp))}</button></div>`);
   if(m&&m.src==='closeup'&&m.sharp!=null&&m.sharp<BLUR_SHARP&&TEXTURE_TYPES.includes(q.type))out.push(`<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>`);
   if(FABRIC.includes(q.type)||COLS_BY[q.type]){const pv=(q.measV||[]).find(v=>v.f==='primaryColor'),far=m&&m.src==='closeup'&&!(m.sharp!=null&&m.sharp<BLUR_SHARP)&&pv&&pv.d>FAR_DE;   // (a blurry or photo-only measurement is no reason to add a colour)
-    if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colours quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured colour is far from every colour for this item.'}</small><button type="button" class="chipbtn" onclick="openColForm(${i})">Add as a new colour</button></div>`)}
+    if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colors quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured color is far from every color for this item.'}</small><button type="button" class="chipbtn" onclick="openColForm(${i})">Add as a new color</button></div>`)}
   if(PATS_BY[q.type]){if(q.newPattern)out.push(`<div class="offer"><small>No listed pattern fits: Claude calls it <b>${esc(q.newPattern.name)}</b>${q.newPattern.why?`: ${esc(q.newPattern.why)}`:''}.</small><button type="button" class="chipbtn" onclick="openPatForm(${i})">Add this pattern</button></div>`)}
   return out.join('')}
 
@@ -434,7 +434,7 @@ const groupOf=t=>COL_GROUPS.find(g=>g.includes(t))||[t];
 function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:q.meas&&q.meas.hex||COLORS[q.primaryColor]})}
 const OWN_NAME_MSG='Use only letters, numbers, spaces and - ’ . , ( ) / + in the name.';
 async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownColKey(name);
-  if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a colour with that name.');
+  if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a color with that name.');
   if(!/^#[0-9a-f]{6}$/i.test(hex))throw new Error('Pick a shade.');if(!COLORS[base]||CUSTOM_COL[base])throw new Error('Choose what it behaves like.');
   if(!types||!types.length)throw new Error('Choose at least one kind of item.');
   const cu=settings.custom||{};settings.custom={...cu,colors:[...(cu.colors||[]),{key,name,hex:hex.toLowerCase(),base,types,accent:!!accent}]};
@@ -465,10 +465,10 @@ function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=sett
   const used=(k,f)=>items.filter(i=>f(i,k)).length;
   // a pattern's swatch is drawn with its look, on a sample item of its first kind (navy, a white shirt)
   const patSw=p=>{const t=(p.types||[])[0]||'suit';try{return swatchSVG({type:t,primaryColor:t==='shirt'?'white':'navy',pattern:p.key},true)}catch(e){return ''}};
-  el.innerHTML=(!cols.length&&!pats.length?'<p class="mut"><small>None yet. Add one below, or from any colour or pattern list (“+ New”); the Add card offers one when a photo shows a colour or pattern the lists lack.</small></p>':
+  el.innerHTML=(!cols.length&&!pats.length?'<p class="mut"><small>None yet. Add one below, or from any color or pattern list (“+ New”); the Add card offers one when a photo shows a color or pattern the lists lack.</small></p>':
     [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${c.hex}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${c.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('colors','${c.key}')">Remove</button>`}</div>`}),
      ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${p.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('patterns','${p.key}')">Remove</button>`}</div>`})].join(''))
-    +`<div class="custadd"><button type="button" id="cust-newcol" onclick="openCustomNew('colour')">+ New colour</button><button type="button" id="cust-newpat" onclick="openCustomNew('pattern')">+ New pattern</button></div>`}
+    +`<div class="custadd"><button type="button" id="cust-newcol" onclick="openCustomNew('colour')">+ New color</button><button type="button" id="cust-newpat" onclick="openCustomNew('pattern')">+ New pattern</button></div>`}
 async function removeCustom(kind,key){const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}
 
 /* ---- what the tagger learns from: when an AI-tagged card is saved with a field changed, the change is kept (the latest 60)
@@ -577,7 +577,7 @@ function missedPattern(q){if(!q||!q.raw||!q.raw.tex||(patBase(q.pattern)||'solid
       if(p&&!(PATS_BY[q.type]||[]).includes(p))p=null}}
   q.missed={c:q.raw.tex,p};return p}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);renderAdd()}
-const settSummary=s=>s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colours from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colours from the photo`:`${s.bands.length} colour band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
+const settSummary=s=>s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;

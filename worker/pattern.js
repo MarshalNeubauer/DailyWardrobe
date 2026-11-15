@@ -42,33 +42,33 @@ pattern: seams and the pattern shift across them, folds, shadows, sheen, moire, 
 stripes made uneven by drape or by the camera's angle (report the regular spacing they were woven at).
 
 layout — stripes (lines one way), check, windowpane (thin lines both ways on a plain ground, large panes), plaid (several
-  colours both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds, and
-  a shirt's figured dobby whose small figures are woven in a second, clearly different colour, e.g. grey chevrons on white),
-  texture (the cloth is one colour, or nearly, and the pattern is in the weave itself: a dress shirt's dobby diamonds,
+  colors both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds, and
+  a shirt's figured dobby whose small figures are woven in a second, clearly different color, e.g. gray chevrons on white),
+  texture (the cloth is one color, or nearly, and the pattern is in the weave itself: a dress shirt's dobby diamonds,
   herringbone, twill, oxford, pinpoint, end-on-end, birdseye, honeycomb), or none. When the figures stand out in their own
-  colour at a glance, it is a motif, not a texture.
+  color at a glance, it is a motif, not a texture.
 across — one full repeat of the main lines, measured across them (for vertical lines from left to right, for a tie's diagonal
-  stripes across the stripes): every band in order, the ground included, each with role (ground or line), a plain colour name,
-  an sRGB hex of how that thread looks in neutral daylight (a light blue line is light blue even where the photo greys it),
+  stripes across the stripes): every band in order, the ground included, each with role (ground or line), a plain color name,
+  an sRGB hex of how that thread looks in neutral daylight (a light blue line is light blue even where the photo grays it),
   and widthPct, its share of the repeat in percent (the bands add up to 100). A line made of several close threads (a blue line
   with a thin white line each side) is listed thread by thread with the ground between them.
 along — the same for the lines running the other way (top to bottom for horizontal lines), or null if there are none.
   For a motif or a texture, across and along are null.
 motif — for a motif only (null otherwise), as woven, one grid cell being one repeat:
   grid: straight (rows and columns run with the item's edges) or diagonal (rows and columns run at 45°, squares stand on a point);
-  ground: the colour that shows between the figures (a plain colour name and an sRGB hex as in "across");
+  ground: the color that shows between the figures (a plain color name and an sRGB hex as in "across");
   figures: each kind of figure, largest first, with
-    shape: square, square-with-dot (a small square with a dot of another colour in its middle), diamond (a square on its point
+    shape: square, square-with-dot (a small square with a dot of another color in its middle), diamond (a square on its point
       in a straight grid), dot, ring, cross, flower, figure (any other small shape: draw it in "bitmap"), or other;
     bitmap: for shape figure, the figure alone as a small bitmap, top row first: each row a string of 1 and 0 of the same
-      length, 3 to 16 each way, 1 where the figure's colour is, 0 where the ground shows, with the figure's own proportions.
+      length, 3 to 16 each way, 1 where the figure's color is, 0 where the ground shows, with the figure's own proportions.
       Copy the figure in the close-up: its real outline and how thick its strokes are, filling the bitmap edge to edge, not an
-      idealised icon (the format only, not a shape to reuse: a small plus sign is ["010","111","010"]); null for the other shapes;
+      idealized icon (the format only, not a shape to reuse: a small plus sign is ["010","111","010"]); null for the other shapes;
     name: what the figure is in a few words (e.g. "downward chevron", "small square with a dot");
     placement: cell (one in every grid cell), corner (one where four cells meet, between the cell figures), or alternate-cells
       (only in every other cell, like the dark squares of a checkerboard);
-    colours: its colour, or two colours when neighbouring figures alternate like a checkerboard (purple and navy squares);
-    centre: the dot's colour for square-with-dot (null otherwise);
+    colours: its color, or two colors when neighboring figures alternate like a checkerboard (purple and navy squares);
+    centre: the dot's color for square-with-dot (null otherwise);
     sizePct: the figure's width as a percentage of the grid spacing (cell figures that nearly touch: 80; a small accent: 30).
   cellAspect: a grid cell's height divided by its width as the cloth hangs (figures stacked closer than the columns are
     apart: under 1, e.g. 0.6; a square grid: 1);
@@ -87,7 +87,7 @@ texture — for a texture only (null otherwise), what the weave looks like up cl
     its columns gives each band its own columns, the same all the way down: all 1 for a shiny satin band, all 0 for a plain one;
   aspect: one repeat's height divided by its width as the cloth hangs, measured in the close-up (diamonds half again as tall
     as they are wide: 1.5; a square repeat: 1);
-  ground and raised: the two tones (a plain colour name and an sRGB hex as in "across"; for a white shirt both are whites);
+  ground and raised: the two tones (a plain color name and an sRGB hex as in "across"; for a white shirt both are whites);
   contrast: faint (only seen up close), subtle, or clear.
   repeatsInCloseup and repeatsAcrossItem then count repeats of the grid, measured along a row.
 stripeDirection — which way the main lines run as the viewer sees them.
@@ -96,7 +96,7 @@ repeatsAcrossItem — how many repeats of "across" fit across the item's widest 
 paneAspect — for checks: a pane's height divided by its width as woven (1 for square panes); 1 otherwise.
 ignored — a few words on what you left out as noise (e.g. "a seam down the middle, moire").
 description — one or two sentences describing the pattern for a photo-realistic image generator: the ground, the lines in
-  order, their colours and widths, the size of the panes, and the cloth's texture. Leave out the direction.`;
+  order, their colors and widths, the size of the panes, and the cloth's texture. Leave out the direction.`;
 function cleanPattern(p) {
   const hex = h => (HEX_RE.test(h || '') ? h.toLowerCase() : null);
   const dir = d => { if (!d || !Array.isArray(d.bands)) return null;

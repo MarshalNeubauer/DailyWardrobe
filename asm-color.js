@@ -249,7 +249,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
     const mk=typeof asmMicroKind==='function'?asmMicroKind(i):'';if(mk&&!(s&&s.bands))return {how:mk,gap:'',why:''};   // houndstooth, sharkskin, birdseye, nailhead
     if(b==='solid')return {how:'flat',gap:'',why:''};
     if([...STRIPE_PATS,...CHECK_PATS].includes(b))return needs();
-    return plain('painter',`no painter for ${pn} ${z==='trousers'?'trousers':'jackets'} yet`)}
+    return plain('painter',`no painter for ${pn} ${z==='trousers'?'pants':'jackets'} yet`)}
   if(z==='shirt'){if(b==='solid'&&!s)return {how:'flat',gap:'',why:''};
     return s?{how:'tile',gap:'',why:''}:{how:'tile',gap:canRead?'reading':'',why:canRead?`its ${pn} is a generic drawing until its pattern is read (Read pattern from photo)`:''}}
   if(z==='tie'){if(s&&(s.bands||s.motif||s.tex))return {how:'tie',gap:'',why:''};if(b==='solid')return {how:'flat',gap:'',why:''};
@@ -1274,7 +1274,7 @@ async function asmCmStatus(){const el=$('#cm-status');if(!el)return;const run=++
   if(run!==asmCmStatusRun||!$('#cm-status'))return;
   const n=seen.size,built=L?[...seen.keys()].filter(k=>L.has(k)).length:0,here=[...seen.values()].filter(o=>asmFor(o)).length;
   const mins=Math.round((Date.now()-asmListAt)/6e4),ago=mins<1?'just now':mins===1?'a minute ago':mins+' minutes ago';
-  el.textContent=!n?`None of the workdays in the next ${ASM_AHEAD} days is painted on a colour-coded master.`:
+  el.textContent=!n?`None of the workdays in the next ${ASM_AHEAD} days is painted on a color-coded master.`:
     !L?`The next ${ASM_AHEAD} days have ${n} look${n===1?'':'s'} to paint; ${here} on this phone. The server couldn’t list its pictures just now, so how many the computer has built isn’t known.`:
     `Next ${ASM_AHEAD} days: ${built} of ${n} look${n===1?'':'s'} built on the computer${built<n?` (the other ${n-built} are painted on this phone when needed)`:''}; ${here} on this phone. Checked ${ago}.`}
 /* "Painted plain": every garment in rotation whose pattern the pictures don't show yet, why, and one tap to read the readable ones

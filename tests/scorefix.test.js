@@ -29,12 +29,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
         varShoes:R({...base,ctx:{n:10,prev:[prev(mk(I('suit','lightgrey'),I('shirt','lightblue'),I('tie','green'),bl,bb,ns),9),null]}}),
         varShoesMon:R({...base,ctx:{n:12,prev:[prev(mk(I('suit','lightgrey'),I('shirt','lightblue'),I('tie','green'),bl,bb,ns),9),null]}})}});
     ok(S.classic.s===100&&S.classic.l==='Excellent','navy suit, white shirt, burgundy tie, black shoes: 100');
-    ok(S.taste.every(t=>t.s===100),`no points off for taste: a pink shirt, a lavender shirt with brown shoes, a silver tie on charcoal, a black shirt under a light grey suit all score 100 (${S.taste.map(t=>t.s).join(', ')})`);
+    ok(S.taste.every(t=>t.s===100),`no points off for taste: a pink shirt, a lavender shirt with brown shoes, a silver tie on charcoal, a black shirt under a light gray suit all score 100 (${S.taste.map(t=>t.s).join(', ')})`);
     const hard=(r,l)=>r.s<=69&&r.hard.split(',').includes(l);
-    ok(hard(S.brownBlack,'Shoes')&&/black shoes don't suit brown trousers/.test(S.brownBlack.why),`a brown suit with black shoes is a real mistake: ${S.brownBlack.s}, ${S.brownBlack.l} (${S.brownBlack.why})`);
-    ok(hard(S.stripes,'Patterns')&&hard(S.sameTr,'Trousers')&&hard(S.belt,'Belt')&&hard(S.darkShirt,'Shirt')&&hard(S.whiteSocks,'Socks')&&hard(S.tweed,'Weather'),
-      `so are three bold patterns (${S.stripes.s}), trousers the jacket's colour (${S.sameTr.s}), a belt that doesn't match the shoes (${S.belt.s}), a dark shirt under a dark suit (${S.darkShirt.s}), white socks (${S.whiteSocks.s}) and tweed on a hot day (${S.tweed.s})`);
-    ok(S.only.l==='Incomplete'&&S.only.s<=69&&/no trousers, no jacket, no tie, no shoes/.test(S.only.why)&&S.noTie.l==='Incomplete'&&S.casual.l!=='Incomplete',`a shirt alone reads Incomplete (${S.only.s}: ${S.only.why}), and so does a suit with no tie; a no-jacket day needs neither`);
+    ok(hard(S.brownBlack,'Shoes')&&/black shoes don't suit brown pants/.test(S.brownBlack.why),`a brown suit with black shoes is a real mistake: ${S.brownBlack.s}, ${S.brownBlack.l} (${S.brownBlack.why})`);
+    ok(hard(S.stripes,'Patterns')&&hard(S.sameTr,'Pants')&&hard(S.belt,'Belt')&&hard(S.darkShirt,'Shirt')&&hard(S.whiteSocks,'Socks')&&hard(S.tweed,'Weather'),
+      `so are three bold patterns (${S.stripes.s}), pants the jacket's color (${S.sameTr.s}), a belt that doesn't match the shoes (${S.belt.s}), a dark shirt under a dark suit (${S.darkShirt.s}), white socks (${S.whiteSocks.s}) and tweed on a hot day (${S.tweed.s})`);
+    ok(S.only.l==='Incomplete'&&S.only.s<=69&&/no pants, no jacket, no tie, no shoes/.test(S.only.why)&&S.noTie.l==='Incomplete'&&S.casual.l!=='Incomplete',`a shirt alone reads Incomplete (${S.only.s}: ${S.only.why}), and so does a suit with no tie; a no-jacket day needs neither`);
     ok(S.strap.lost['Watch strap']==='2/5'&&!S.strapOk.lost['Watch strap'],`a brown leather watch strap with black shoes loses points (${S.strap.lost['Watch strap']}), a black one doesn't`);
     ok(!S.var0.lost.Variety&&S.varTie.lost.Variety==='3/5'&&S.varLook.lost.Variety==='2/5'&&S.varShoes.lost.Variety==='4/5'&&!S.varShoesMon.lost.Variety,
       `variety: the same tie as the workday before ${S.varTie.lost.Variety}, the same look as two workdays ago ${S.varLook.lost.Variety}, yesterday's shoes ${S.varShoes.lost.Variety} (not after a weekend)`);

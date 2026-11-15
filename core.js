@@ -1,5 +1,5 @@
 /* Daily Wardrobe: shared constants and item helpers (no DOM access; also loaded by the analysis worker) */
-const TYPES={suit:'Suit',blazer:'Blazer',pants:'Trousers',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat'};
+const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat'};
 const COLORS={stone:'#cbbfa3',denim:'#3e5c86',black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',midgrey:'#a2a4a8',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',steelblue:'#56657f',deepblue:'#26326a',navy:'#1b2a4a',darknavy:'#1c1f2b',slate:'#3a3f4c',brown:'#5a3a22',tan:'#b8946a',khaki:'#c3b091',taupe:'#8b7d6b',deeptaupe:'#5f5449',rust:'#a4502a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',wine:'#7d2438',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb',rosegold:'#c98f7a',gunmetal:'#55595f'};
 /* colours offered only for dress shirts (the planner maps them to a family for other rules) */
 const SHIRT_COLORS={mint:'#cfe6d4',paleyellow:'#f1e6ac',ivory:'#f4efde',beige:'#dccbb0',lavender:'#c9bfe2',periwinkle:'#9ea8d4'};
@@ -128,7 +128,7 @@ const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip','li
 /* occasions a day can be given (Settings): each changes what the planner picks. 'formal' is stored as rec.formal (as
    before); the others as rec.occasion. 'casual' = no jacket and no tie: a shirt and trousers. */
 const OCCASIONS=[['formal','Formal','dark suit, white shirt, quiet tie'],['wedding','Wedding','a lighter suit, a light shirt and a lively tie, never black'],
-  ['funeral','Funeral','the darkest suit, white shirt, black tie, black shoes'],['casual','No jacket or tie','a shirt and trousers']];
+  ['funeral','Funeral','the darkest suit, white shirt, black tie, black shoes'],['casual','No jacket or tie','a shirt and pants']];
 const occOf=r=>r?(OCCASIONS.some(o=>o[0]===r.occasion)?r.occasion:r.formal?'formal':null):null;
 const occLabel=o=>(OCCASIONS.find(x=>x[0]===o)||[])[1]||'';
 const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip',links:'cufflinks'})[s]||s;
@@ -216,13 +216,13 @@ const primaryCol=i=>i?i.primaryColor||i.color||'grey':'grey';
 /* a tie clip's metal, read from its colour (tie clips have no metal field): silver, gold or 'other' (gunmetal), or null for an
    enamel colour (black, red, blue, navy), which goes with any metal */
 const clipMetal=i=>{const c=i&&i.primaryColor;return c==='gold'||c==='rosegold'?'gold':['silver','white','lightgrey','midgrey','grey'].includes(c)?'silver':['gunmetal','darkgrey','charcoal'].includes(c)?'other':null};
-const COLOR_NAMES={rosegold:'rose gold',paleyellow:'pale yellow',lightblue:'light blue',lightgrey:'light grey',darkgrey:'dark grey',midgrey:'mid grey',steelblue:'steel blue',deepblue:'deep blue',deeptaupe:'deep taupe',darknavy:'very dark navy',slate:'dark slate blue-grey'};
+const COLOR_NAMES={grey:'gray',rosegold:'rose gold',paleyellow:'pale yellow',lightblue:'light blue',lightgrey:'light gray',darkgrey:'dark gray',midgrey:'mid gray',steelblue:'steel blue',deepblue:'deep blue',deeptaupe:'deep taupe',darknavy:'very dark navy',slate:'dark slate blue-gray'};
 const colName=c=>COLOR_NAMES[c]||c;
-// (a key that appears in its own spelled-out name, like slate in 'dark slate blue-grey', is not expanded twice)
+// (a key that appears in its own spelled-out name, like slate in 'dark slate blue-gray', is not expanded twice)
 /* built when first needed and again after the owner's colours change (applyCustom): made once at load it never knew them, and the
    photo generator was told "a owntaupe tie" */
 let COLOR_NAME_RE=null;
-const colourNameRe=()=>COLOR_NAME_RE||(COLOR_NAME_RE=new RegExp('(?<!dark )\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b(?! blue-grey)','g'));
+const colourNameRe=()=>COLOR_NAME_RE||(COLOR_NAME_RE=new RegExp('(?<!dark )\\b('+Object.keys(COLOR_NAMES).join('|')+')\\b(?! blue-gray)','g'));
 const prettyCols=t=>String(t??'').replace(colourNameRe(),m=>COLOR_NAMES[m]);
 /* the dropdown for a type; a colour an existing item already has is always kept in its own list */
 const COLOR_OPTS=(type,cur,accent)=>{const l=colsFor(type,accent);return (cur&&COLORS[cur]&&!l.includes(cur)?[...l,cur]:l).map(c=>[c,colName(c)])},
@@ -242,7 +242,7 @@ const colorDesc = i => {
 const metalWord=m=>m==='other'?'gunmetal':m;
 const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
 const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
-const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
+const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+typeWord(i):'none';
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
@@ -251,7 +251,7 @@ const itemTitle=i=>itemName(i)||sentence(desc(i));
 const titleCls=i=>itemName(i)?'named':'cap';
 /* trousers come in three kinds and shoes in five styles; an item without one is dress trousers or oxfords, which the planner treats
    exactly as before there were kinds and styles (so a wardrobe from before plans the same) */
-const TROUSER_KINDS=[['dress','Dress trousers'],['chinos','Chinos'],['jeans','Jeans']],SHOE_STYLES=[['oxford','Oxford'],['derby','Derby'],['loafer','Loafer'],['boot','Boot'],['sneaker','Sneaker']];
+const TROUSER_KINDS=[['dress','Dress pants'],['chinos','Chinos'],['jeans','Jeans']],SHOE_STYLES=[['oxford','Oxford'],['derby','Derby'],['loafer','Loafer'],['boot','Boot'],['sneaker','Sneaker']];
 const trouserKind=i=>i&&i.type==='pants'&&(i.trouserKind==='chinos'||i.trouserKind==='jeans')?i.trouserKind:'dress';
 const shoeStyle=i=>i&&i.type==='shoes'&&SHOE_STYLES.some(([k])=>k===i.shoeStyle)?i.shoeStyle:'oxford';
 /* the word for the item in descriptions: chinos, jeans, loafers, boots, sneakers, derby shoes; else the type's own */
@@ -297,11 +297,11 @@ const WATCH_STYLES=[['annual-calendar','Dual time + annual calendar'],['chronogr
 const BANDS=[['bracelet','Metal bracelet'],['integrated','Integrated metal bracelet'],['leather','Leather strap']],BEZELS=[['fluted','Fluted'],['smooth','Smooth'],['engraved','Polished, engraved numerals']];
 /* a watch in words, for picture prompts: the options plus the owner's own details. With details the style's stock layout is left out
    (the owner's chronograph tells the time in one large subdial; "three subdials and a date window" got a stock chronograph drawn) */
-const watchText=w=>{const o=watchOpts(w),metal=w.metal==='gold'?'gold':w.metal==='other'?'gunmetal':'stainless steel',det=w.details&&String(w.details).trim();
+const watchText=(w,cn=colName)=>{const o=watchOpts(w),metal=w.metal==='gold'?'gold':w.metal==='other'?'gunmetal':'stainless steel',det=w.details&&String(w.details).trim();
   const style=(det?{'annual-calendar':'dual-time annual-calendar','chronograph':'chronograph','date':'three-hand date','no-date':'three-hand'}:{'annual-calendar':'dual-time annual-calendar','chronograph':'chronograph (three subdials and a date window)','date':'three-hand date','no-date':'three-hand'})[o.style]||'';
   const bezel={fluted:'a fluted bezel',smooth:'a smooth polished bezel',engraved:'a polished bezel engraved with numerals'}[o.bezel]||'';
-  const band=o.band==='leather'?`a ${colName(primaryCol(w))} leather strap`:o.band==='integrated'?`an integrated ${metal} bracelet that flows out of the case`:`a ${metal} link bracelet`;
-  return `a ${metal} ${style} wristwatch with ${bezel}, a ${colName(o.dial)} dial and ${band}`+(det?` (${det})`:'')};
+  const band=o.band==='leather'?`a ${cn(primaryCol(w))} leather strap`:o.band==='integrated'?`an integrated ${metal} bracelet that flows out of the case`:`a ${metal} link bracelet`;
+  return `a ${metal} ${style} wristwatch with ${bezel}, a ${cn(o.dial)} dial and ${band}`+(det?` (${det})`:'')};
 const watchOpts=w=>({dial:w&&w.dial||'white',band:w&&w.band||'bracelet',bezel:w&&w.bezel||'fluted',style:w&&w.watchStyle||'annual-calendar'});
 const METAL_TONES={gold:['#fbefc4','#d4b04a','#8a6d12'],silver:['#f7f8f9','#c4c8cd','#767b82'],other:['#d2d4d7','#868a90','#45494e']};
 

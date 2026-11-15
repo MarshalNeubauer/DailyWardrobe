@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(sent.max_tokens>=16000&&sent.output_config.effort==='medium','enough tokens and effort for a long list');
     const pr=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n');
     ok(/ONE item of type suit/.test(pr)&&/jacket hanging on its own is a blazer/.test(pr)&&/Trousers hanging or folded/.test(pr)&&/left to right/.test(pr),'the prompt covers suits (jacket + trousers = one), blazers, trousers and order');
-    ok(/periwinkle/.test(pr)&&/end-on-end/.test(pr),'the prompt includes the full colour and texture lists');
+    ok(/periwinkle/.test(pr)&&/end-on-end/.test(pr),'the prompt includes the full color and texture lists');
     ok((await call({image:'x'},{})).status===403,'needs the app token');
     ok((await call({image:'x'},{'x-app-token':'t'},{APP_TOKEN:'t'})).status===501,'without a Claude key it says one is needed');
     // ---- app: a shirt rail ----
@@ -49,7 +49,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         heads:[...document.querySelectorAll('#queue .multi-h')].map(e=>e.textContent),status:document.querySelector('#multi-status').textContent,
         saveAll:(document.querySelector('#save-all button')||{}).textContent||''}},SHIRTS);
     ok(rail.n===11&&rail.types.split(',').every(t=>t==='shirt'),'one card per shirt (11)');
-    ok(rail.cols===SHIRTS.map(s=>s[0]).join()&&rail.pats===SHIRTS.map(s=>s[2]).join(),'each card has that shirt\'s colour and texture, including the shirt-only colours');
+    ok(rail.cols===SHIRTS.map(s=>s[0]).join()&&rail.pats===SHIRTS.map(s=>s[2]).join(),'each card has that shirt\'s color and texture, including the shirt-only colors');
     const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),near=(a,b)=>a.every((v,i)=>Math.abs(v-b[i])<=12);
     ok(rail.crops.every((c,k)=>near(c,hex(SHIRTS[k][1]))),'each card\'s photo is cropped to its own shirt');
     ok(rail.heads[0]==='Item 1 of 11 medium confidence'&&rail.heads[7].includes('low confidence'),'cards say which item they are and how confident the tag is');
@@ -69,9 +69,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         vestOpt:[...document.querySelectorAll('#queue select')].some(s=>[...s.options].some(o=>o.textContent==='Matching vest')),
         suitPats:PATS_BY.suit.includes(queue[0].pattern),tiny:queue[4].photo.length>100}});
     ok(mixed.cards==='suit:navy:pinstripe:white,suit:charcoal:solid:,blazer:navy:solid:,pants:grey:solid:,pants:lightblue:solid:','suits, blazer and trousers each get their own card with the right type, colour and pattern');
-    ok(/Found 5 items \(2 suits, 1 blazer, 2 pairs of trousers\)/.test(mixed.status),`the summary counts each kind, trousers in pairs (${mixed.status})`);
+    ok(/Found 5 items \(2 suits, 1 blazer, 2 pairs of pants\)/.test(mixed.status),`the summary counts each kind, pants in pairs (${mixed.status})`);
     ok(mixed.suitPats&&mixed.vestOpt,'suit cards use the suiting patterns and offer the vest option');
-    ok(mixed.cards.includes('pants:lightblue'),'a shirt colour tagged on trousers moves to the closest trouser colour (lavender → light blue)');
+    ok(mixed.cards.includes('pants:lightblue'),'a shirt color tagged on pants moves to the closest trouser color (lavender → light blue)');
     ok(mixed.tiny,'even a sliver-sized box gives a usable crop');
     await p.click('#save-all button');await p.waitForFunction(()=>queue.length===0);
     const s2=await p.evaluate(()=>({suits:items.filter(i=>i.type==='suit').map(i=>hasVest(i)).join(),n:items.length}));

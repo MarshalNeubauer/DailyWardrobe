@@ -38,6 +38,11 @@
 
 Static app served from `main` by GitHub Pages (no build step): classic scripts loaded in index.html's order, sharing one global scope; Web Workers (asm-worker.js, analysis-worker.js) `importScripts` some of them. The server is a Cloudflare Worker (worker.js and its ES modules in worker/), deployed with Wrangler. The sections below go by file, in load order; a long section groups related facts under #### headings. Each bullet is one current fact; when something changes, add a bullet under the file's heading (or replace the fact when you are sure it is superseded) rather than appending "(replaces … above)" notes. (Rewritten 2026-11-14 from the bullets as they stood: superseded history removed, each fact stated once.)
 
+- **American English** (the owner, 2026-11-15): every word a person reads (UI text, toasts, errors, the manifest, worker messages, what Claude writes for the owner) is American: color, gray, pants (not trousers), vest (not waistcoat), check (not tick), canceled; dates fall back to `en-US` (settings.js `APP_LOC`)
+- machine names stay as they were, British included, since saved wardrobes, sync, the worker API and caches use them: color keys (`grey`, `lightgrey`, `darkgrey`, `midgrey`), the describe kind and request `what` `'colour'`, `colourHint`, band/figure `colour`, pattern.js `colours`/`centre`, the weave's `colours`, localStorage keys (`spec_recolour`), ids (`st-colours`), identifiers (`COLOUR_RULES`, `colourSchema`); a key shown to people goes through a display map (core.js `COLOR_NAMES`: `grey` → gray, `lightgrey` → light gray, `slate` → dark slate blue-gray; the type `pants` is "Pants" in `TYPES`)
+- the Claude prompts (worker/tag.js `CLAUDE_SYSTEM`, worker/describe.js `DESCRIBE_SYSTEM`) end with "Write every word the owner reads (name, why, ask, hints) in American English."; their prose says color/gray, but a sentence naming a color key keeps the key ("between charcoal and grey"), and tailoring words in the prompts stay (trousers, mac, trainers as a synonym)
+- the spreadsheet import (kit.js) still reads British headers and words (Colour, Second colour, trousers, waistcoat, trainers, grey)
+
 ### `index.html`
 
 - markup and script tags
@@ -657,7 +662,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - under the close-up buttons (Edit photos) the white-paper hint is "True color in 3 steps" (`paperHint` → `paperSteps(cloth)`, `.wbsteps`/`.wbstcard`; 2026-11-15, the owner's choice A from `C:\code\audit-2026-11-13\custom-colour-texture\paper-hint-proposals\`): Paper on an edge › Tap the paper › Take the photo, each with a 40 px drawing (the item's cloth with white paper along one edge, drawn in CSS: `.wbpic`, `--cloth` from `paperCloth(i)`; step 2 with the yellow ring and a tap, step 3 a camera)
 - the whole 3-step card is one button (about 108 px tall) that opens the short tip (`paperTip` → kit.js `PAPER_CARD`, whose last line "Tips for a good close-up" opens the full guide); the old sentence and its "Tips for a good close-up" link are gone; `tests/paperstatus.test.js`, `tests/closeupsheet.test.js`
 - on a touch screen the editor's close-up buttons (Add fabric close-up / Replace close-up, and Retake close-up in the paper line: `paperRetake`) open the close-up chooser (ui.js `closeupBtn`), and Remove close-up is in that sheet, not a button of its own; without touch they stay the direct file window and Remove close-up stays a button
-- after a close-up is added or replaced in the editor, a line under the photos (`paperLine`, `#ivwb`, `.wbst`; shown while `phEdit.paper` is the close-up's `texSig`, so Undo or another item hides it): "White paper found · Colours set from it.", "No white paper · Colours may be off." or "No white paper, and the light looks warm · Colours may come out yellower than the cloth.", the last two with Retake close-up; `tests/paperstatus.test.js`
+- after a close-up is added or replaced in the editor, a line under the photos (`paperLine`, `#ivwb`, `.wbst`; shown while `phEdit.paper` is the close-up's `texSig`, so Undo or another item hides it): "White paper found · Colors set from it.", "No white paper · Colors may be off." or "No white paper, and the light looks warm · Colors may come out yellower than the cloth.", the last two with Retake close-up; `tests/paperstatus.test.js`
 - the editor refuses a close-up under `TEX_MIN_PX` (200, add.js) on its short side with the Add card's message (2026-11-15, the re-audit: it took 40×40); `tests/ownnames.test.js`
 - the phone's Back with the colour or pattern sheet up closes only that sheet (`colBackFirst`, 2026-11-15, the re-audit: Back closed Add or the item sheet underneath and left the sheet up, and "Use" changed a hidden item): a popstate listener registered here, before the item sheet's and start.js's (a capturing one on window still ran after them in Chromium), stops theirs, closes the sheet (a "New" sheet opened from the list goes ‹ back to the list first) and pushes the entry back, so `itemHist`/`appHist` still hold and the next Back closes the page; the app's own steps back (`itemBack`, `appPend`) pass; works on Add, the item sheet and Settings' "+ New"; `tests/ownnames.test.js`
 
@@ -801,6 +806,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `photos.js`
 
+- item picture prompts name colors through `picCol` (`PIC_COL`: grey, light grey, dark grey, mid grey, dark slate blue-grey), not `colName`: `itemKey` hashes `itemDesc`, so the American names would have orphaned every generated picture of a gray piece (and asked to pay again); `watchText(w, cn)` takes the namer for the same reason
 - a shirt with a read weave texture (`shirtTextured`) gets its own photo key (`/tex/<settSig>` in `comboSig`)
 - "Last worn" (`lastWorn`) counts only days marked ✓; the stats still count unmarked past days as worn
 
@@ -1180,6 +1186,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `wardrobe.js`
 
+- search still finds the British words: "grey" matches the gray pieces and "trousers" the pants (`wardHay` appends them)
 - the Wardrobe tab's search and sort, the item fields `name` / `brand` / `material` / `notes`, and Delete with Undo (loaded after stats.js; called from `renderWardrobe`, `wardList`, `itemBody` and `rm` in itemsheet.js and `save` in add.js)
 - a grid box's accessible name ends with its tag (`giTag`/`giNote`: Sample, Out of rotation, On the way, at the cleaner's, due for cleaning): the `aria-label` hid the visible tag (re-audit 2026-11-15)
 - search: a field above the type chips (`wardBar`, `#wsearch`, `wardQ`); every word typed must be in the item's name, brand, notes, material, type, colour names or pattern (`wardHay`, `wardMatch`; case and accents ignored); it combines with the type chip and stays when the chip changes
@@ -1245,7 +1252,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - testers add colours and patterns too: theirs are in their own `settings.custom`, synced in their namespace
 - `tests/colnew.test.js` (/describe mocked by `page.route`)
 - white paper in the close-up on the sheets (2026-11-15, the owner's choice from `C:\code\audit-2026-11-13\custom-colour-texture\photo-wb-mockups\`, screens 07-10): the colour sheet has "Also show Claude my close-up" too (`#cn-close`; the pattern sheet's is `#pn-close`) whenever the item has a close-up (`cnHasClose`); the colour box starts ticked when the close-up has paper and unticked when not (`cnPaperDefault`, until the owner taps it: `closeSet`); the pattern box still starts unticked
-- under both boxes the paper line (`cnPaperLine`, `#cn-paper`, `.wbst` in `.cnask`): "White paper found: Claude sees the true colour(s)." / "No white paper in this close-up: the colour may be off." / the warm wording, with Retake close-up in the item sheet's editor only (`cnRetake` → `replaceTexture`; not on an Add card, whose Replace re-tags)
+- under both boxes the paper line (`cnPaperLine`, `#cn-paper`, `.wbst` in `.cnask`): "White paper found: Claude sees the true color(s)." / "No white paper in this close-up: the color may be off." / the warm wording, with Retake close-up in the item sheet's editor only (`cnRetake` → `replaceTexture`; not on an Add card, whose Replace re-tags)
 - the request (`describeAsk`): `closeup` + `wb` from `paperCopy` (tagging.js) when the box is ticked, for colours and patterns; no close-up, no `wb` (the worker reads it with `wbOf`/`lightText`); what was sent is kept as `nc.sent` {wb, warm}
 - Claude's colour then carries a note (`cnLightNote`, `#cn-warm`): sent without paper in warm light, "Taken in warm light — …" (`.cnwarm`) with Retake close-up; without paper otherwise, "No white paper in the close-up, so this shade is Claude’s best guess from the photo as taken."
 - the sheets' Retake close-up (`cnRetakeHtml`, in the paper line and the warm-light note) opens the close-up chooser on a touch screen (ui.js `closeupBtn`, mode 'retake'); without touch it is the file window

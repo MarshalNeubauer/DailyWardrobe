@@ -63,7 +63,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     /* ---- the tour without ties or jackets; About's tour goes back to About ---- */
     await v.evaluate(()=>{settings.dress={jacket:false,tie:false};tourOpen()});await v.waitForSelector('#kitsheet.on');
     const tour=await v.textContent('#kitsheet');
-    ok(!/tie/i.test(tour)&&!/the suit/i.test(tour)&&/suit the trousers/.test(tour),'the tour\'s first card speaks of shirts and trousers to someone who wears no tie or jacket');
+    ok(!/tie/i.test(tour)&&!/the suit/i.test(tour)&&/suit the pants/.test(tour),'the tour\'s first card speaks of shirts and pants to someone who wears no tie or jacket');
     await v.evaluate(()=>kitClose());
     await v.evaluate(()=>{openSettings('about')});await v.evaluate(()=>document.querySelector('#tour-again').scrollIntoView());await v.click('#tour-again');await v.waitForSelector('#kitsheet.on');
     await v.keyboard.press('Escape');

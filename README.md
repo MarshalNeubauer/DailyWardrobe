@@ -1,12 +1,12 @@
 # Daily Wardrobe
 
-A phone-first web app that plans what to wear to work. You photograph your suits, blazers, trousers, shirts, ties, shoes and accessories; the app reads each photo, then plans an outfit for every working day: pieces that go together, rotated so nothing is worn too often, adjusted to the weather forecast and to occasions such as a wedding or a formal day.
+A phone-first web app that plans what to wear to work. You photograph your suits, blazers, pants, shirts, ties, shoes and accessories; the app reads each photo, then plans an outfit for every working day: pieces that go together, rotated so nothing is worn too often, adjusted to the weather forecast and to occasions such as a wedding or a formal day.
 
 What it does:
 
 - **Today**: the day's outfit as a picture, its pieces, a score with what could be put right, and the month's plan. Swap any piece, mark the day worn or not, move an outfit to another day.
-- **Wardrobe**: every item with its photo, colour, pattern and fabric close-up; take a piece out of rotation or add one that is on its way.
-- **Add**: one photo per item, or one photo of several items. Colour, pattern and type are read for you and can be corrected.
+- **Wardrobe**: every item with its photo, color, pattern and fabric close-up; take a piece out of rotation or add one that is on its way.
+- **Add**: one photo per item, or one photo of several items. Color, pattern and type are read for you and can be corrected.
 - **What to buy**: what the wardrobe is missing, tested against the next six months of planning.
 - **Stats**: what was really worn, and what never is.
 - **Settings**: working days, days off and occasions, weather, photos, backup and sync, and About (version and updates, feedback, deleting your data, privacy).
@@ -27,9 +27,9 @@ Without an invite the app still runs on its own: outfits are planned and drawn, 
 
 The wardrobe is kept on the device and in the person's own backup on the server (a Cloudflare Worker and its storage). What leaves the device, and where it goes:
 
-- **Anthropic (Claude)**: item photos and close-ups, to read their type, colour and pattern.
+- **Anthropic (Claude)**: item photos and close-ups, to read their type, color and pattern.
 - **Cloudflare Workers AI**: the same photos, only on a server with no Anthropic key (a fallback reader, `@cf/meta/llama-3.2-11b-vision-instruct` unless `MODEL` says otherwise).
-- **OpenAI**: an item's photo and description, only when the person taps Generate item pictures (product pictures of shoes, belts, socks, trousers, coats and watches). Outfit pictures are painted on the device and never go to OpenAI.
+- **OpenAI**: an item's photo and description, only when the person taps Generate item pictures (product pictures of shoes, belts, socks, pants, coats and watches). Outfit pictures are painted on the device and never go to OpenAI.
 - **Open-Meteo**: the place set for the weather (the name typed in its search, then its coordinates), for the forecast and the usual weather by month. Sent from the device, with no account.
 - **Nager.Date**: the country chosen for public holidays, sent from the device; for countries it doesn't cover the server asks **Google**'s public holiday calendar for that country instead.
 - **Apple or Google push services**: with the morning reminder on, the phone's push address goes to the server, which sends an empty push through the phone maker's service (Apple's for an iPhone, Google's for Chrome on Android); the outfit lines stay on the phone.
@@ -67,7 +67,7 @@ The owner connects their own device under Settings → Connection with the serve
 
 ## Pre-building the assembled outfit pictures
 
-An assembled outfit picture is painted on a colour-coded master photo (one per kind of dress), from each garment's colour and pattern. A phone can do that itself, but it takes a few seconds a look. A computer can paint every look ahead of time and upload it, so phones only download the finished picture.
+An assembled outfit picture is painted on a color-coded master photo (one per kind of dress), from each garment's color and pattern. A phone can do that itself, but it takes a few seconds a look. A computer can paint every look ahead of time and upload it, so phones only download the finished picture.
 
 **When:** after the masters are uploaded (`npm run cm-upload`, below), and again after a release that changes how pictures are painted: a look's key carries the painter's code, so changed looks get new keys. The owner's computer runs it in a loop (`--watch`), which does this by itself.
 
@@ -104,11 +104,11 @@ Options go after `--`, e.g. `npm run assemble -- --dry --days 60`:
 - Each upload is one write on the server's storage. The free plan allows 1,000 a day for everything, and this computer uploads at most 300 a day (`tools/upload-budget.js`).
 - The code (`DW_TOKEN`) is only read from the environment: never put it in a file in the repository.
 
-## The colour-coded masters and the master atlas
+## The color-coded masters and the master atlas
 
 Two more scripts for the computer, with `DW_WORKER` and `DW_TOKEN` set as for `npm run assemble`:
 
-- `npm run cm-upload -- --dir <folder>` puts the colour-coded masters (each kind's master, zone masks, sleeve and lapel masks, from the folder `colormaster.js` writes) on the server under the keys the app asks for. `--kinds suit,vest` limits it to some kinds, `--bg <file>` uploads the background behind every master (alone, or with the masters), `--dry` says what would go up. A record already there with the same signature is not written again.
+- `npm run cm-upload -- --dir <folder>` puts the color-coded masters (each kind's master, zone masks, sleeve and lapel masks, from the folder `colormaster.js` writes) on the server under the keys the app asks for. `--kinds suit,vest` limits it to some kinds, `--bg <file>` uploads the background behind every master (alone, or with the masters), `--dry` says what would go up. A record already there with the same signature is not written again.
 - `npm run atlas` measures every pixel of the masters once and writes the full atlas for work on the computer to `--out` (default `./atlas`, which git ignores); it uploads nothing. `--parts <folder>` adds finer SAM part pictures, `--origin` as above. Run it again after a master or a mask is made again. `node tools/atlas.js <folder> list` reads it back.
 
 ## Running the tests

@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const spread=c=>Math.max(...c)-Math.min(...c);
   ok(wb.g&&wb.g.b>1.1&&wb.g.r<1&&spread(wb.wall)<=12,`a warm cast is corrected: the white wall comes out neutral (${wb.wall}; gains ${JSON.stringify(wb.g)})`);
   ok(wb.suit[2]>70&&wb.suit[0]<40,`the suit keeps its navy, slightly bluer once the warm light is taken out (${wb.suit})`);
-  ok(wb.navyOnly===null,'a photo with nothing white or grey in it is left alone (a close-up of navy cloth stays navy)');
+  ok(wb.navyOnly===null,'a photo with nothing white or gray in it is left alone (a close-up of navy cloth stays navy)');
   ok(wb.creamFill===null,'a close-up of light cloth filling the frame (a cream shirt) is not mistaken for the light and bleached');
   ok(wb.neutral===null,'a photo already in neutral light is left alone');
   ok(wb.extreme&&Math.abs(wb.extreme.r-.85)<1e-9&&Math.abs(wb.extreme.b-1.18)<1e-9,'corrections are capped (at most -15% / +18% per channel)');
@@ -35,17 +35,17 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   await p.evaluate(()=>{setq(0,'type','suit');renderAdd()});
   const c1=await p.evaluate(()=>({step:(document.querySelector('#queue .texslot')||{}).textContent||'',wb:(document.querySelector('#queue .wbnote')||{}).textContent||'',hasWb:!!queue[0].wb}));
   ok(/Step 2 · Fabric close-up/.test(c1.step)&&/Optional/.test(c1.step),'a one-item card asks for the fabric close-up as step 2 (optional)');
-  ok(c1.hasWb&&/corrected for the light/.test(c1.wb)&&/Show original/.test(c1.wb),'the photo was colour-corrected, and the card says so with a Show original switch');
+  ok(c1.hasWb&&/corrected for the light/.test(c1.wb)&&/Show original/.test(c1.wb),'the photo was color-corrected, and the card says so with a Show original switch');
   const before=await p.evaluate(()=>queue[0].photo);await p.click('#queue .wbnote .linkbtn');
   const after=await p.evaluate(()=>({photo:queue[0].photo,txt:document.querySelector('#queue .wbnote').textContent}));
-  ok(after.photo!==before&&/Original colours/.test(after.txt),'Show original puts the uncorrected photo back');await p.click('#queue .wbnote .linkbtn');
+  ok(after.photo!==before&&/Original colors/.test(after.txt),'Show original puts the uncorrected photo back');await p.click('#queue .wbnote .linkbtn');
   await p.click('#queue .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');   // a touch screen: the close-up chooser (ui.js)
   await p.setInputFiles('#cu-take',await file('tex.png',200,180,150));
   await p.waitForFunction(()=>queue[0].texture);
   const c2=await p.evaluate(async()=>{const q=queue[0],im=new Image();im.src=q.texture;await im.decode();const c=document.createElement('canvas');c.width=c.height=4;const x=c.getContext('2d');x.drawImage(im,0,0,4,4);
     const sw=document.querySelector('#queue .swsplit .swtex');
     return {px:[...x.getImageData(1,1,1,1).data].slice(0,3),g:q.wb,split:!!sw&&getComputedStyle(sw).clipPath.includes('50%'),cap:document.querySelector('#queue .tagsw figcaption').textContent,done:!!document.querySelector('#queue .texslot.done')}});
-  ok(c2.split&&/As tagged · Close-up/.test(c2.cap),'the swatch splits: the colour as tagged on the left half, the close-up on the right');
+  ok(c2.split&&/As tagged · Close-up/.test(c2.cap),'the swatch splits: the color as tagged on the left half, the close-up on the right');
   ok(Math.abs(c2.px[2]-150*c2.g.b)<=8&&Math.abs(c2.px[0]-200*c2.g.r)<=8,`the close-up gets the same light correction as the item photo (${c2.px})`);
   ok(c2.done,'once added, step 2 offers Replace and Remove');
   await p.evaluate(()=>{setq(0,'type','shoes')});

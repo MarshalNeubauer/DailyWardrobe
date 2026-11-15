@@ -12,10 +12,10 @@ module.exports=async({ok,chromium,url})=>{
   ok(sw.length>=6&&sw.every(d=>d.svg&&!d.bg.includes('url(')),'every list swatch is drawn, none uses the photo crop');
   const suitSw=sw[0].html;
   const suitHex=await p.evaluate(()=>COLORS[planFor()[key(sel)].top.primaryColor]);
-  ok(suitSw.includes(suitHex)&&!suitSw.includes('data:image'),'the suit swatch uses its tagged grey, not the brown photo crop');
+  ok(suitSw.includes(suitHex)&&!suitSw.includes('data:image'),'the suit swatch uses its tagged gray, not the brown photo crop');
   const shirt=await p.evaluate(()=>{const o=planFor()[key(sel)];return o.shirt.primaryColor});
   const shirtSw=await p.evaluate(()=>{const r=[...document.querySelectorAll('#today .list .row')].find(r=>r.querySelector('.mut').textContent==='Shirt');return r.querySelector('.dot').innerHTML});
-  ok(shirtSw.includes(await p.evaluate(c=>COLORS[c],shirt)),'the shirt swatch uses the shirt\'s tagged colour');
+  ok(shirtSw.includes(await p.evaluate(c=>COLORS[c],shirt)),'the shirt swatch uses the shirt\'s tagged color');
   // colour names with spaces everywhere they are shown
   await p.click('#sbox .month-link');
   const texts=await p.evaluate(()=>{const t=[document.querySelector('#today').innerText];
@@ -23,8 +23,8 @@ module.exports=async({ok,chromium,url})=>{
     show('add');addManual();t.push([...document.querySelectorAll('#queue select option')].map(o=>o.textContent).join(' '));
     t.push(runAnalysis(items,todayDate(),2).cats.map(c=>c.notes.join(' ')+' '+(c.own?c.own.groups.map(g=>g[0]).join(' '):'')+' '+c.recs.map(r=>r.name+' '+r.detail+' '+r.why.join(' ')).join(' ')).join(' '));
     return t.join('\n')});
-  ok(!/lightblue|lightgrey|darkgrey/i.test(texts),'no run-together colour names on Today, in the score, notes, dropdowns or recommendations');
-  ok(/light blue/i.test(texts)&&/dark grey/i.test(texts),'colour names read "light blue", "dark grey"');
+  ok(!/lightblue|lightgrey|darkgrey/i.test(texts),'no run-together color names on Today, in the score, notes, dropdowns or recommendations');
+  ok(/light blue/i.test(texts)&&/dark gray/i.test(texts),'color names read "light blue", "dark gray"');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
 };

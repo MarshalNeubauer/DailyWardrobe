@@ -5,7 +5,7 @@ const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const src=require('./workersrc.js')();
-  ok(/Socks: the colour of a contrasting toe cap/.test(src),'the tagging prompt puts a sock\'s toe cap colour in secondaryColor');
+  ok(/Socks: the color of a contrasting toe cap/.test(src),'the tagging prompt puts a sock\'s toe cap color in secondaryColor');
   const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
   const realFetch=globalThis.fetch;const gens=[],sent=[];
   globalThis.fetch=async(href,init)=>{if(String(href)==='https://api.openai.com/v1/images/generations'){gens.push(JSON.parse(init.body));
@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   try{
     await post({mode:'item',item:'a single black dress sock',key:'c00000000000000a1',bg:'white'});
     await post({mode:'item',item:'a pair of black shoes',key:'c00000000000000a2'});
-    ok(/light warm-grey/.test(gens[0].prompt)&&!/Pure white|#ffffff/.test(gens[0].prompt),'a sock picture is on warm grey, even when an old app asks for white');
+    ok(/light warm-grey/.test(gens[0].prompt)&&!/Pure white|#ffffff/.test(gens[0].prompt),'a sock picture is on warm gray, even when an old app asks for white');
     ok(/light warm-grey/.test(gens[1].prompt)&&!/Pure white/.test(gens[1].prompt),'other items keep the warm-grey backdrop');
     await post({mode:'item',item:'a single navy dress sock',key:'c00000000000000a3',bg:'white',queue:true});
     ok(store.has('render:c00000000000000a3')&&!store.has('job:c00000000000000a3')&&queued.length===0&&gens.length===3,'an old app\'s queue:true is ignored (the queue for pictures is gone): the picture is made at once');
@@ -36,10 +36,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         keys:itemKey(s)!==itemKey(plain),form:itemBody(s),form0:itemBody({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});
     ok(/single black .*dress sock in side profile/.test(a.d)&&/light grey knitted toe cap/.test(a.d)&&/heel stays black/.test(a.d),`the picture description is one sock in profile with its toe cap (${a.d.slice(0,60)}…)`);
     ok(!/toe cap/.test(a.d0)&&/toe and heel the same colour/.test(a.d0)&&a.keys,'a plain sock has no toe cap, and gets its own picture');
-    ok(a.desc==='black, light grey toe'&&a.desc0==='black',`the name says the toe colour (${a.desc})`);
-    ok(a.toe&&!a.toe0,'the drawing shows the toe cap in its colour, and none on a plain sock');
+    ok(a.desc==='black, light gray toe'&&a.desc0==='black',`the name says the toe color (${a.desc})`);
+    ok(a.toe&&!a.toe0,'the drawing shows the toe cap in its color, and none on a plain sock');
     ok(a.traced,'the socks are drawn as the traced pair (Nike product photo), each with its cuff and details clipped inside its own outline');
-    ok(/Toe cap <button[^>]*colbtn/.test(a.form)&&!/Third colour/.test(a.form)&&/Second colour <button[^>]*colbtn/.test(a.form0),'the editor calls a sock\'s secondary colour "Toe cap" and drops the third colour');
+    ok(/Toe cap <button[^>]*colbtn/.test(a.form)&&!/Third color/.test(a.form)&&/Second color <button[^>]*colbtn/.test(a.form0),'the editor calls a sock\'s secondary color "Toe cap" and drops the third color');
     const req=sent.find(b=>b.mode==='item');
     ok(req&&!('bg' in req)&&/toe cap/.test(req.item),'the app no longer asks for a sock picture on white');
     // a sock photo already kept on pure white is toned down to the warm grey of the other tiles, once; a grey one is left alone
@@ -50,12 +50,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {n,n2,bg:await px(renders.cw.img,2,2),sock:await px(renders.cw.img,32,32),same:renders.cg.img===g0,flag:renders.cw.grey&&renders.cg.grey,stored:(await metaGet('render:cw')).grey}});
     const near=(a,b)=>a.every((v,j)=>Math.abs(v-b[j])<=8);
     ok(g.n===1&&g.n2===0&&g.flag&&g.stored,`a kept white-backdrop picture is fixed once and saved (${g.n}, ${g.n2})`);
-    ok(near(g.bg,[220,215,210]),`its white backdrop becomes the tiles' warm grey (${g.bg})`);
-    ok(near(g.sock,[32,32,32]),`the sock itself keeps its colour (${g.sock})`);
-    ok(g.same,'a picture already on grey is left as it is');
+    ok(near(g.bg,[220,215,210]),`its white backdrop becomes the tiles' warm gray (${g.bg})`);
+    ok(near(g.sock,[32,32,32]),`the sock itself keeps its color (${g.sock})`);
+    ok(g.same,'a picture already on gray is left as it is');
     // the Add card says Toe cap too
     const add=await p.evaluate(()=>{show('add');queue=[{id:'q1',manual:true,type:'socks',primaryColor:'navy',secondaryColor:'grey',pattern:'solid'}];renderAdd();return $('#add').textContent});
-    ok(/Toe cap/.test(add)&&!/Third colour/.test(add),'the Add card labels the sock\'s secondary colour "Toe cap"');
+    ok(/Toe cap/.test(add)&&!/Third color/.test(add),'the Add card labels the sock\'s secondary color "Toe cap"');
     // the planner ignores the toe cap (it is hidden in the shoe)
     const pl=await p.evaluate(()=>sockScore(null,null,{type:'socks',primaryColor:'navy',secondaryColor:'lightgrey',pattern:'solid'})===sockScore(null,null,{type:'socks',primaryColor:'navy',pattern:'solid'}));
     ok(pl,'the toe cap does not change how socks are chosen');
