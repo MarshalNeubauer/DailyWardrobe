@@ -576,6 +576,7 @@ html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* 
 #item-view .ptbtn span{max-width:100%;overflow-wrap:anywhere}
 #item-view .ptmore{display:flex;justify-content:flex-end;margin:4px 0 0}
 #item-view .ptmore .ptrm{border-color:transparent;background:none;color:var(--danger);font-size:.875rem;padding:0 8px}
+#item-view .ptmore+.card.ivct{margin-top:4px}
 /* "Color & texture" (option B): the paper line, "True color in 3 steps" above Read color and texture, its cost, the reading's done card */
 #item-view .ivct .wbst{margin:0 0 10px;background:var(--bg)}
 #item-view .ivct .wbsteps{margin:0 0 10px}
