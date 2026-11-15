@@ -41,7 +41,7 @@ function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondar
 function openColPick(src,ref,k){colPick={src,ref,k};const it=colTarget();if(!it){colPick=null;return}
   colPick.cur=k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):it[k])||'none';colPick.sel=colPick.cur;
   colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||!it.photo)?'tex':'photo';
-  renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;
+  renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;colSwipe();
   const x=$('#col-sheet .pick-x');if(x)x.focus({preventScroll:true})}
 /* suits and blazers are shown as their traced figure (SUIT_D, BLAZER_D) in the colour or pattern being looked at, redrawn on every
    tap: in place of the flat swatch without a photo, and as a third view ("Drawing", view 'draw') beside the close-up and the photo */
@@ -51,6 +51,43 @@ const cpFig=it=>!!it;
 function cpViews(it,photo){const v=[];if(it.texture)v.push(['tex','Close-up']);if(photo)v.push(['photo','Whole photo']);if(cpFig(it)&&v.length)v.push(['draw','Drawing']);return v}
 const cpSeg=(vs,view)=>vs.length>1?`<div class="cpseg" role="group" aria-label="Compare with">${vs.map(([v,l])=>`<button type="button" class="${view===v?'on':''}" onclick="colPickView('${v}')" aria-pressed="${view===v}">${l}</button>`).join('')}</div>`:'';
 function closeColPick(){colPick=null;const s=$('#col-sheet'),b=$('#col-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on')}
+/* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
+   down"): the color / pattern sheet with its New color / New pattern states, and the reading sheet. The item sheet's gesture (itemsheet.js,
+   ivDrag) for a sheet that scrolls itself: its sticky top (grabber, title, the photos) is a handle at any time, the rest only while the sheet
+   is scrolled to the top (further down a downward swipe scrolls it back up); decided on the first move of a touch, before the browser
+   scrolls; the sheet follows the finger and the backdrop lightens; let go past a quarter of its height or with a flick and it closes as its
+   × does, sliding away from where it was let go, else it springs back. A mouse, trackpad or Pencil drags it by its top (Pointer Events, a
+   4px dead zone, captured only once it moves so a click on × or a switch still lands); a finger's pointer events are left to the touch
+   listeners. Never from a field, a slider (the New color square and hue bar) or the bottom bar.
+   o: {head: the top's selector, backdrop: its selector, skip: more selectors to leave alone, on(): the sheet is up, close()} ---- */
+const SW_GRAB='<span class="cpgrab" aria-hidden="true"></span>';
+function sheetSwipe(s,o){if(!s||s.dataset.swipe)return;s.dataset.swipe='1';let st=null;
+  const bd=()=>document.querySelector(o.backdrop),dim=d=>String(Math.max(.15,1-d/s.offsetHeight));
+  const put=d=>{s.style.transform=d?`translateY(${d}px)`:'';const b=bd();if(b)b.style.opacity=d?dim(d):''};
+  const can=(el,head)=>o.on()&&!s.classList.contains('cpgoing')&&!el.closest('input,textarea,select,[role=slider],.cpbar,.rdbar'+(o.skip?','+o.skip:''))&&(head||s.scrollTop<=0);
+  const begin=(x,y,ts)=>({x,y,on:false,d:0,ly:y,lt:ts,vy:0});
+  const move=(x,y,ts)=>{const dx=x-st.x,dy=y-st.y;
+    if(!st.on&&st.pid!==undefined&&Math.abs(dx)<4&&Math.abs(dy)<4)return false;
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=true;s.style.transition='none';if(st.pid!==undefined)try{s.setPointerCapture(st.pid)}catch{}}else{st=null;return false}}
+    if(ts>st.lt){st.vy=(y-st.ly)/(ts-st.lt);st.ly=y;st.lt=ts}   // the speed from when each move happened (e.timeStamp), as the item sheet
+    st.d=Math.max(0,dy);put(st.d);return true};
+  // closed: the sheet's own close (its state goes at once), then the sheet slides on from where it was let go
+  const gone=d=>{const b=bd(),op=b&&b.style.opacity?+b.style.opacity:1;s.style.transform='';if(b)b.style.opacity='';s.style.transition='';o.close();
+    if(noMotion())return;s.classList.add('cpgoing');if(b)b.classList.add('cpgoing');
+    const a=s.animate([{transform:`translateY(${d}px)`},{transform:'translateY(102%)'}],{duration:200,easing:'ease-out'});if(b)b.animate([{opacity:op},{opacity:0}],{duration:200});
+    a.finished.catch(()=>{}).then(()=>{s.classList.remove('cpgoing');if(b)b.classList.remove('cpgoing')})};
+  const end=()=>{if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;
+    if(d>s.offsetHeight*.25||(vy>.5&&d>30)){gone(d);return}
+    const b=bd();s.style.transition='';put(0);if(b&&!noMotion())b.animate([{opacity:dim(d)},{opacity:1}],{duration:220})};   // springs back on the sheet's own transition
+  s.addEventListener('touchstart',e=>{const t=e.touches[0];st=e.touches.length>1||!can(e.target,!!e.target.closest(o.head))?null:begin(t.clientX,t.clientY,e.timeStamp)},{passive:true});
+  s.addEventListener('touchmove',e=>{if(!st||st.pid!==undefined)return;const t=e.touches[0];if(move(t.clientX,t.clientY,e.timeStamp))e.preventDefault()},{passive:false});
+  s.addEventListener('touchend',()=>{if(st&&st.pid===undefined)end()},{passive:true});s.addEventListener('touchcancel',()=>{if(st&&st.pid===undefined)end()},{passive:true});
+  if(!window.PointerEvent)return;
+  s.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.button!==0||st||!e.target.closest(o.head)||e.target.closest('button,a,label')||!can(e.target,true))return;st=begin(e.clientX,e.clientY,e.timeStamp);st.pid=e.pointerId});
+  s.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
+  const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{s.releasePointerCapture(e.pointerId)}catch{}end()};
+  s.addEventListener('pointerup',pend);s.addEventListener('pointercancel',pend);s.addEventListener('dragstart',e=>{if(st&&st.pid!==undefined)e.preventDefault()})}   // (a photo in the top would be dragged off as a picture)
+function colSwipe(){const s=$('#col-sheet');sheetSwipe(s,{head:'.cptop',backdrop:'#col-backdrop',on:()=>!!colPick&&s.classList.contains('on'),close:closeColPick})}
 function colPickSel(c){if(!colPick)return;colPick.sel=c;renderColPick(true)}
 function colPickView(v){if(!colPick)return;colPick.view=v;renderColPick(true)}
 async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick,it=colTarget();let v=sel;
@@ -67,12 +104,12 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   const what=view==='tex'?'Your close-up':'Your photo';
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
   const drawn=sel===NEW_COL||sel===cur?it:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
-  el.innerHTML=`<div class="cptop"><div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
+${colAskHtml(it,k,tile,name)}
 <p class="cphelp">${pic?`Tap a color to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a color to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a color to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
 ${COLS_BY[it.type]?`<h4 class="cph">Your colors</h4><div class="cpgrid cnown">${colChoices(it,k).filter(c=>CUSTOM_COL[c]).map(c=>tile(c)).join('')}<button type="button" class="cptile cpnewt" id="cn-open" onclick="openColNew()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New color</span></button></div>`:''}
-${colAskHtml(it,k,tile,name)}
 ${near.length?`<h4 class="cph">Closest to your ${it.meas.src==='closeup'?'close-up':'photo'}</h4><div class="cpgrid cpnear">${near.map(x=>tile(x.c,`<small class="cpd">${dWord(x.d)}</small>`)).join('')}</div>`:''}
 ${k==='primaryColor'?'':`<div class="cpgrid">${tile('none')}</div>`}${groups}
 <div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${esc(sel===NEW_COL?'Add '+name(sel)+' to your colors and use it':sel===cur?'Keep '+name(sel):'Use '+name(sel))}</button></div>`;
@@ -184,12 +221,13 @@ function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it
   const gs=[...PAT_GROUPS.map(()=>[]),[]];for(const p of patChoices(it))gs[patGroupOf(p)].push(p);
   const groups=gs.map((l,g)=>l.length?`<h4 class="cph">${g<PAT_GROUPS.length?PAT_GROUPS[g][1]:'Other'}</h4><div class="cpgrid">${l.map(p=>tile(p)).join('')}</div>`:'').join('');
   const what=view==='tex'?'Your close-up':'Your photo';
-  el.innerHTML=`<div class="cptop"><div class="pick-head"><b id="col-title">Choose the pattern</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">Choose the pattern</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)))}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)),true)}</div><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
+${patAskHtml(it,tile,name,np)}
 <p class="cphelp">Tap a pattern to see it drawn in your item’s colors beside your ${pic?view==='tex'?'close-up':'photo':'item'}.</p>
 <h4 class="cph">Your patterns</h4><div class="cpgrid cnown">${patChoices(it).filter(p=>CUSTOM_PAT[p]).map(p=>tile(p)).join('')}<button type="button" class="cptile cpnewt" id="pn-open" onclick="openPatNew()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New pattern or texture</span></button></div>
-${patAskHtml(it,tile,name,np)}${groups}
+${groups}
 <div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${sel===NEW_COL?'Add '+esc(name(sel))+' to your patterns and use it':sel===cur?'Keep '+esc(name(sel)):'Use '+esc(name(sel))}</button></div>`;
   if(keep)el.scrollTop=y}
 function patAskHtml(it,tile,name,np){const a=colAsk[it.id+'|p'];
@@ -260,7 +298,7 @@ function openPatNew(o={}){if(!colPick)return;const it=colTarget();if(!it)return;
 /* Settings → Your colours & patterns: the sheet with no item, a "For" choice in its place */
 function openCustomNew(kind){const t=kind==='pattern'?'suit':'tie';
   colPick={src:'s',ref:null,k:kind==='pattern'?'pattern':'primaryColor',fake:{id:'_cn',type:t,primaryColor:CN_SAMPLE[t],pattern:'solid'},cur:'none',sel:'none',view:'draw'};
-  $('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');kind==='pattern'?openPatNew({from:'settings'}):openColNew({from:'settings',hex:'#7a3b47'})}
+  $('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');colSwipe();kind==='pattern'?openPatNew({from:'settings'}):openColNew({from:'settings',hex:'#7a3b47'})}
 function cnSetType(t){const nc=colPick&&colPick.newc;if(!nc||colPick.src!=='s')return;const f=colPick.fake;f.type=t;f.primaryColor=CN_SAMPLE[t]||'navy';f.pattern='solid';
   nc.types=nc.kind==='pattern'?(CN_SUITING.includes(t)?CN_SUITING.slice():[t]):groupOf(t);nc.base=null;renderColPick(true)}
 function colNewBack(){const nc=colPick&&colPick.newc;if(!nc)return;if(nc.from==='pick'){colPick.newc=null;renderColPick();const el=$('#col-sheet');if(el)el.scrollTop=0}else closeColPick()}
@@ -349,7 +387,7 @@ ${ex?`<div class="cnbtns">${prefer==='existing'?`<button type="button" class="cp
 <button type="button" class="cnsw" id="cn-accent" role="switch" aria-checked="${!!nc.accent}" onclick="colPick.newc.accent=!colPick.newc.accent;renderColPick(true)"><span>Also for stripes and motifs</span><i class="${nc.accent?'on':''}" aria-hidden="true"></i></button></div>`:'';
   const bar=prefer==='existing'?`<button type="button" class="pri" id="cn-add" data-use="1" onclick="cnUseExisting()">Use ${esc(exName)}</button>`
     :`<button type="button" class="pri" id="cn-add" onclick="colNewAdd()"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add color'}</button>`;
-  el.innerHTML=`<div class="cptop"><div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to colors':'Close'}">‹</button><b id="col-title">New color</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to colors':'Close'}">‹</button><b id="col-title">New color</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${fig}<figcaption>${pic?'Your close-up':`Your ${esc((TYPES[it.type]||'item').toLowerCase())}, drawn`}</figcaption></figure><figure class="cpbig" style="background:${hex}"><figcaption>${esc(name||hex.toUpperCase())}</figcaption></figure></div></div>
 ${src==='s'?`<label class="cnfld cnfor">For<select id="cn-for" onchange="cnSetType(this.value)">${Object.keys(COLS_BY).map(t=>`<option value="${t}"${t===it.type?' selected':''}>${esc(TYPES[t])}</option>`).join('')}</select></label>`:''}
 ${cnAskBox(nc,'colour','Say it as you’d tell a tailor. Claude finds the shade and checks it against your colors.','e.g. faded burgundy like old wine')}
@@ -394,7 +432,7 @@ ${ex&&patChoices(it).includes(ex)?`<div class="cnbtns">${nc.state==='reuse'?`<bu
 <div class="cnfld cnoffer">Offer it for<div class="cnchips">${offer.map(t=>`<button type="button" class="cnchip${nc.types.includes(t)?' on':''}" aria-pressed="${nc.types.includes(t)}" onclick="cnToggleType('${t}')">${esc(TYPES[t])}</button>`).join('')}</div></div></div>`;
   const bar=nc.state==='reuse'&&r?`<button type="button" class="pri" id="cn-add" data-use="1" onclick="cnUseExisting()">Use ${esc(cap1(patName(r.existing)))}</button>`
     :`<button type="button" class="pri" id="cn-add" onclick="colNewAdd()"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add pattern'}</button>`;
-  el.innerHTML=`<div class="cptop"><div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to patterns':'Close'}">‹</button><b id="col-title">New pattern or texture</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to patterns':'Close'}">‹</button><b id="col-title">New pattern or texture</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="Your close-up">`:`<div class="cpdraw">${draw(false)}</div>`}<figcaption>${pic?'Your close-up':`Your ${esc((TYPES[it.type]||'item').toLowerCase())}, drawn`}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${draw(true)}</div><figcaption>${esc(name||'Not set yet')}</figcaption></figure></div></div>
 ${src==='s'?`<label class="cnfld cnfor">For<select id="cn-for" onchange="cnSetType(this.value)">${Object.keys(PATS_BY).map(t=>`<option value="${t}"${t===it.type?' selected':''}>${esc(TYPES[t])}</option>`).join('')}</select></label>`:''}
 ${cnAskBox(nc,'pattern','The weave or pattern in your words. Claude names it, picks how the app plans it, and maps the weave so it can be drawn.','e.g. a small basketweave like a hopsack')}
@@ -430,8 +468,9 @@ function rdCost(){if(!isConnected())return 'Connect in ⚙ Settings first.';
   return `About ${Math.max(1,Math.round(readEstimate()*100))}¢`}
 const rdCostLine=()=>`<small class="rdcost">${esc(rdCost())}</small>`;
 /* the item editor's button: under Edit photos, the same full-width button, its label and no icon (the owner's ask) */
-function rdEditorBtn(i){if(!TEXTURE_TYPES.includes(i.type))return '';const off=rdOff();
-  return `<div class="ivrd"><button type="button" class="ivrdbtn" id="iv-read" onclick="rdStart('e','${i.id}')"${off?' aria-disabled="true"':''}>Read color and texture from close-up</button>${rdCostLine()}</div>${rdDoneHtml('e',i.id,i)}`}
+/* (after: what goes right under it, before the done card: the editor's "True color in 3 steps", paperHint) */
+function rdEditorBtn(i,after=''){if(!TEXTURE_TYPES.includes(i.type))return '';const off=rdOff();
+  return `<div class="ivrd"><button type="button" class="ivrdbtn" id="iv-read" onclick="rdStart('e','${i.id}')"${off?' aria-disabled="true"':''}>Read color and texture from close-up</button>${rdCostLine()}</div>${after}${rdDoneHtml('e',i.id,i)}`}
 /* the Add card's second button, beside Add close-up / Replace close-up (same shape, the plain weight beside the filled Add close-up) */
 const rdAddBtn=(q,label)=>`<button type="button" class="btn rdgo" onclick="rdStart('q','${esc(q.id)}')"${rdOff()?' aria-disabled="true"':''}>${label}</button>`;
 /* a tap: with no close-up the close-up chooser first (mode 'read'; the file window without touch), then the reading */
@@ -488,7 +527,8 @@ function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySe
   if(!s){b=document.createElement('div');b.id='rd-backdrop';b.onclick=()=>rdClose();
     s=document.createElement('div');s.id='rd-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','rd-title');s.tabIndex=-1;document.body.append(b,s);
     window.addEventListener('keydown',e=>{if(!rd||cuOpen||!document.querySelector('#rd-sheet.on'))return;   // Escape closes it (ahead of the item sheet's)
-      if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();rdClose()}else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true)}
+      if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();rdClose()}else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true);
+    sheetSwipe(s,{head:'.rdtop',backdrop:'#rd-backdrop',on:()=>!!rd&&s.classList.contains('on'),close:()=>rdClose()})}   // swiped down it closes as × does
   return {b,s}}
 /* the phone's Back closes it as × does (the Back audit, 2026-11-15: Back closed the item sheet or Add under it and left the sheet up):
    it borrows the Back entry of the page under it, or makes its own (start.js appBorrow 'rd', kept in rdHist while it is up; a reading
