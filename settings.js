@@ -62,7 +62,7 @@ function closeSettings(){const was=settingsOpen();
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
   setLock(false);appDrop('set');   // closed by Done or anything else: its Back entry goes
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
-  if(todayStale){todayStale=false;renderToday()}
+  if(todayStale){todayStale=false;if(typeof keepHome==='function')keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
@@ -174,11 +174,14 @@ function renderSettingsExtras(){
   if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
-  if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.';
+  renderWxLoc();
   if($('#cfg-units'))$('#cfg-units').value=unit();
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
   settingsSummaries();
 }
+/* the weather location's line, its temperatures in the units chosen (setUnits redraws it: it kept °F under a °C setting) */
+function renderWxLoc(){
+  if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.'}
 /* ---- Settings → Outfit pictures: "Painted pictures" (the default) or "Drawing only" (photos.js picsDrawn; settings.pictures, synced).
    For everyone, at the top of the category, not in the Advanced fold; drawn here rather than in index.html, like the other rows made
    from the settings. The line under it says what the choice does ---- */
@@ -197,13 +200,14 @@ async function setPictures(v){const d=v==='drawn';if(d===picsDrawn())return;sett
    from asmEnsure; on "Drawing only" building ahead stops at its next look (asmAhead's stop) */
 function picsSwitched(){refreshToday();if(picsDrawn()||!asmLive())return;
   asmSync();const o=planFor()[key(sel)];if(o&&hasOutfit(o))asmEnsure(o);schedulePrefetch()}
-function setVestMode(v){settings.vestMode=v;saveUserSettings();settingsSummaries()}
+/* (vest, workdays, blazer days and units are drawn on Today too: todayStale redraws it when Settings closes; it stayed stale until a restart, audit 2026-11-14) */
+function setVestMode(v){settings.vestMode=v;saveUserSettings();todayStale=true;settingsSummaries()}
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
 async function setDarkShirts(v){settings.darkShirts=v;await clearLocks();await saveUserSettings();todayStale=true;settingsSummaries()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0)return;settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
-  renderSettingsExtras();clearLocks().then(saveUserSettings)}
-function setUnits(v){settings.units=v;saveUserSettings();settingsSummaries()}
+  cache={};todayStale=true;renderSettingsExtras();clearLocks().then(saveUserSettings)}
+function setUnits(v){settings.units=v;saveUserSettings();todayStale=true;renderWxLoc();settingsSummaries()}
 function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
 function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:'your current location'}),()=>tell('Location permission was denied. Search for your city instead.'))}
@@ -218,6 +222,8 @@ let toastTimer=null;
 function toast(t,ms=2500,act){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.toggle('act',!!act);
   if(act){const b=document.createElement('button');b.type='button';b.textContent=act.label;b.onclick=()=>{e.classList.remove('on','act');clearTimeout(toastTimer);act.fn()};e.append(' ',b)}
   e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('on','act'),ms)}
+/* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
+function toastDrop(){const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act')}
 let refreshing=false;
 async function refreshAll(){
   if(refreshing)return;refreshing=true;const b=$('#refresh-btn');if(b)b.classList.add('spin');

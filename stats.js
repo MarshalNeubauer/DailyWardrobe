@@ -75,9 +75,16 @@ function buildStats(){fitMemo=null;
   const T=todayDate(),wk=d=>Math.floor((di(T)-di(d))/7),trend=Array.from({length:TREND_WEEKS},(_,n)=>({from:new Date(T.getFullYear(),T.getMonth(),T.getDate()-7*(TREND_WEEKS-n)+1),n:0,sum:0,hard:0}));
   for(const w of worn){const a=wk(w.d);if(a<0||a>=TREND_WEEKS)continue;const o=planMonth(w.d.getFullYear(),w.d.getMonth())[w.date];if(!o||!hasOutfit(o))continue;
     const r=rateOutfit(o),t=trend[TREND_WEEKS-1-a];t.n++;t.sum+=r.score;if(r.hard.length)t.hard++}
+  // weeks that ended before the wardrobe existed are left out (six empty "–" weeks read as missing data, audit 2026-11-14)
+  const s0=planStartDay();if(s0)while(trend.length>1&&!trend[0].n&&new Date(trend[0].from.getFullYear(),trend[0].from.getMonth(),trend[0].from.getDate()+6)<s0)trend.shift();
   const tn=trend.reduce((a,t)=>a+t.n,0),wornAvg=tn?Math.round(trend.reduce((a,t)=>a+t.sum,0)/tn):null,wornHard=trend.reduce((a,t)=>a+t.hard,0);
   const planHard=rates.filter(x=>x[2].hard.length).length;
   return {worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned&&!dressOut(r.i.type))}}
+/* a piece as Insights names it: its own name exactly as typed, else its description (Insights showed "Charcoal pinstripe" for the owner's
+   "My charcoal pinstripe", audit 2026-11-14) */
+const statName=i=>itemName(i)||sentence(desc(i)||nm(i)),statName1=i=>itemName(i)||sentence(nm(i)),statName2=i=>itemName(i)||nm(i);   // (statName1/2: with the type, "Navy suit"; statName2 later in a line, not capitalised)
+/* an empty wardrobe's pages (Insights, Packing list, Laundry & cleaning): the way to start, as on the empty Wardrobe */
+const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" onclick="openAdd()">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" onclick="kitSampleLoad()">Try a sample wardrobe</button>':''}</div>`;
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
 const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${typeof phSm==='function'?phSm(i):i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true)}</span>`;
 const GROUP_NAMES={grey:'Grey',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
@@ -85,7 +92,7 @@ const groupName=g=>GROUP_NAMES[g]||colName(g).replace(/^./,c=>c.toUpperCase());
 const groupCol=g=>COLORS[({red:'burgundy',yellow:'paleyellow',beige:'beige',purple:'purple',green:'green'})[g]||g]||'#8b8f96';
 function renderStats(){
   const el=$('#stats');if(!el)return;
-  if(!items.length){el.innerHTML=`<div class="phead"><h2>Insights</h2></div><p class="mut empty">Your wardrobe is empty. Add some items first.</p>`;return}
+  if(!items.length){el.innerHTML=`<div class="phead"><h2>Insights</h2></div><p class="mut empty">Your wardrobe is empty.</p>${emptyAdd()}`;return}
   const S=buildStats(),nPlan=S.plan.length,bar=(n,max,cls='')=>`<span class="st-bar ${cls}"><i style="width:${max?Math.max(2,Math.round(100*n/max)):0}%"></i></span>`;
   const tile=(v,l)=>`<div class="st-tile"><b>${v}</b><small>${l}</small></div>`;
   const first=S.worn.length?S.worn[0].d:null;
@@ -95,23 +102,23 @@ function renderStats(){
     const idle=rs.filter(r=>!r.worn&&!r.planned).length;
     // a folded section holds no rows (and so none of its photos) until it is opened
     return `<details class="st-type" data-type="${t}"${open?' open':''} ontoggle="statsToggle(this)"><summary><b>${TYPES[t]}${rs.length>1&&!/s$/.test(TYPES[t])?'s':''}</b><small class="mut">${rs.length} · ${idle?`${idle} never worn`:'all in use'}</small></summary>
-      <div class="st-rows">${!open?'':rs.map(r=>`<div class="st-row${!r.worn&&!r.planned?' idle':''}">${statPic(r.i)}<div class="st-main"><span class="cap st-nm">${sentence(desc(r.i)||nm(r.i))}</span>
+      <div class="st-rows">${!open?'':rs.map(r=>`<div class="st-row${!r.worn&&!r.planned?' idle':''}">${statPic(r.i)}<div class="st-main"><span class="${titleCls(r.i)} st-nm">${esc(statName(r.i))}</span>
         <span class="st-bars">${bar(r.worn,max,'w')}${bar(r.planned,max,'p')}</span>
         <small class="mut">${r.worn?`worn ${r.worn}×${r.last?' · last '+statDate(r.last):''}`:'not worn yet'} · ${r.planned?`planned ${r.planned}×${r.next?' · next '+statDate(r.next):''}`:'not planned'}</small></div></div>`).join('')}</div></details>`};
   const mix=(title,list)=>!list.length?'':`<div class="st-mix"><small class="mut">${title}</small>${list.slice(0,7).map(([g,n])=>`<div class="st-mixrow"><span class="st-dot" style="background:${groupCol(g)}"></span><span class="st-mixnm">${groupName(g)}</span>${bar(n,list[0][1])}<small class="mut">${Math.round(100*n/nPlan)}%</small></div>`).join('')}</div>`;
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
   const L=settings.learn||{},lp=Object.entries(L.p||{}),li=Object.entries(L.i||{}),byId=id=>items.find(i=>i.id===id);
-  const learned=[...lp.map(([k,v])=>{const [a,b]=k.split('|').map(byId);return a&&b?{k,kind:'p',v,txt:`${nm(a)} with ${nm(b)}`}:null}),...li.map(([k,v])=>{const a=byId(k);return a?{k,kind:'i',v,txt:nm(a)}:null})].filter(Boolean).sort((a,b)=>a.v-b.v);
+  const learned=[...lp.map(([k,v])=>{const [a,b]=k.split('|').map(byId);return a&&b?{k,kind:'p',v,txt:`${statName1(a)} with ${statName2(b)}`}:null}),...li.map(([k,v])=>{const a=byId(k);return a?{k,kind:'i',v,txt:statName1(a)}:null})].filter(Boolean).sort((a,b)=>a.v-b.v);
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}
-  <div class="st-tiles">${tile(items.length,'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${tile(nPlan,`outfits planned, next ${STATS_MONTHS} months`)}${tile(S.looks,'different looks planned')}${tile(nPlan?avgText(S.avg):'–','average outfit score')}${tile(S.unused.length,'items never worn')}</div>
+  <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)}${tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)}${tile(nPlan?avgText(S.avg):'–','average outfit score')}${tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
 
   <section class="card st-card" id="st-unused"><h3>Never worn</h3>
-  ${S.unused.length?`<p class="mut"><small>Not worn so far and not in any outfit for the next ${STATS_MONTHS} months, with the reason.</small></p>${S.unused.map(r=>`<div class="st-row">${statPic(r.i)}<div class="st-main"><span class="cap st-nm">${TYPES[r.i.type]}: ${desc(r.i)||nm(r.i)}</span><small class="mut">${prettyCols(whyUnused(r.i))}</small></div></div>`).join('')}`
+  ${S.unused.length?`<p class="mut"><small>Not worn so far and not in any outfit for the next ${STATS_MONTHS} months, with the reason.</small></p>${S.unused.map(r=>`<div class="st-row">${statPic(r.i)}<div class="st-main"><span class="st-nm">${TYPES[r.i.type]}: <span class="${titleCls(r.i)}">${esc(statName(r.i))}</span></span><small class="mut">${prettyCols(whyUnused(r.i))}</small></div></div>`).join('')}`
     :`<p class="mut"><small>Every item is worn or planned in the next ${STATS_MONTHS} months.</small></p>`}</section>
 
   <section class="card st-card" id="st-trend"><h3>Your scores</h3>
-  ${S.trendDays?`<p class="mut"><small>What you really wore, week by week: the average outfit score of each of the last ${TREND_WEEKS} weeks.</small></p>
-    <div class="st-trend" role="img" aria-label="Average score of the outfits worn in each of the last ${TREND_WEEKS} weeks: ${S.trend.map(t=>t.n?Math.round(t.sum/t.n):'none').join(', ')}">${S.trend.map(t=>{const a=t.n?Math.round(t.sum/t.n):0;
+  ${S.trendDays?`<p class="mut"><small>What you really wore, week by week: the average outfit score of each ${S.trend.length===1?'week':'of the last '+S.trend.length+' weeks'}.</small></p>
+    <div class="st-trend" role="img" aria-label="Average score of the outfits worn in each ${S.trend.length===1?'week':'of the last '+S.trend.length+' weeks'}: ${S.trend.map(t=>t.n?Math.round(t.sum/t.n):'none').join(', ')}">${S.trend.map(t=>{const a=t.n?Math.round(t.sum/t.n):0;
       return `<div class="st-wk${t.n?'':' none'}"><b>${t.n?a:'–'}</b><span class="st-col"><i class="${t.hard?'low':a>=80?'good':'ok'}" style="height:${t.n?Math.max(6,a):0}%"></i></span><small>${statDate(t.from)}</small></div>`}).join('')}</div>
     <p class="mut"><small>Average ${S.wornAvg} over ${S.trendDays} day${S.trendDays===1?'':'s'}${S.wornHard?`; ${S.wornHard} had a real mistake (a score of ${HARD_CAP} or less)`:'; none had a real mistake'}. The plan for the next ${STATS_MONTHS} months averages ${avgText(S.avg)}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.</small></p>`
     :`<p class="mut"><small>Nothing worn in the last ${TREND_WEEKS} weeks yet. The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.</small></p>`}</section>
@@ -128,13 +135,13 @@ function renderStats(){
   ${mix('Jackets',S.jackets)}${mix('Shirts',S.shirts)}${mix('Ties',S.ties)}</section>
 
   <section class="card st-card" id="st-pairs"><h3>Pairings and rest</h3>
-  ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="cap st-nm">${sentence(nm(p.a))} · ${nm(p.b)}</span><b>${p.n}×</b></div>`).join('')}`:''}
+  ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${esc(statName1(p.a))} · ${esc(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
   <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: another pair in that colour would give them a rest.`:'Shoes always get a day off between wears.'}</small></p></section>
 
   ${typeof tagStatsCard==='function'?tagStatsCard():''}
 
   <section class="card st-card" id="st-learn"><h3>What the planner has learned</h3>
-  ${learned.length?`<p class="mut"><small>From your swaps, picks and corrections. Forget one and the planner goes back to its own judgement.</small></p>${learned.map(x=>`<div class="st-learn"><span class="st-tag ${x.v<0?'down':'up'}">${x.v<0?(x.kind==='p'?'Avoids':'Wears less'):(x.kind==='p'?'Prefers':'Wears more')}</span><span class="st-nm">${x.txt.replace(/^./,c=>c.toUpperCase())}</span><button type="button" onclick="forgetLearned('${x.kind}','${x.k}')" aria-label="Forget: ${esc(x.txt)}">Forget</button></div>`).join('')}
+  ${learned.length?`<p class="mut"><small>From your swaps, picks and corrections. Forget one and the planner goes back to its own judgement.</small></p>${learned.map(x=>`<div class="st-learn"><span class="st-tag ${x.v<0?'down':'up'}">${x.v<0?(x.kind==='p'?'Avoids':'Wears less'):(x.kind==='p'?'Prefers':'Wears more')}</span><span class="st-nm">${esc(x.txt)}</span><button type="button" onclick="forgetLearned('${x.kind}','${x.k}')" aria-label="Forget: ${esc(x.txt)}">Forget</button></div>`).join('')}
     <div class="btns"><button type="button" onclick="forgetLearned()">Forget everything</button></div>`
     :'<p class="mut"><small>Nothing yet. When you swap a piece away or choose one yourself, the planner remembers the pairing.</small></p>'}</section>`;
 }

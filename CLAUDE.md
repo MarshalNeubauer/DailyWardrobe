@@ -140,7 +140,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `itemName(i)` / `itemTitle(i)` / `titleCls(i)`: an item's own name (`item.name`), what it is called on screen (the name, else `desc(i)`), and the class for it (`named`: shown as typed; `cap`: a description, capitalised)
 - they are in core.js, not wardrobe.js, because Today is drawn at start-up, which can be before the later scripts have loaded: in wardrobe.js the start-up render threw now and then and the app came up with an empty wardrobe
 - the planner's texts (`desc`, `nm`, `rateOutfit` notes) never use the name
-- `avgText(v)`: an average score with one decimal, rounded down ("99.9"), "100" only when every day scored 100; Stats' "What costs you points" is "Small deductions" and What to buy says "days with a deduction"
+- `avgText(v)`: an average score with one decimal, rounded down ("99.9"), "100" only when every day scored 100; Stats' "What costs you points" is "Small deductions" and What to buy says "days with a warning"
 - the dress code: `settings.dress = {jacket, tie}` (synced; a missing object or key means yes); `wearsJacket()` / `wearsTie()` read it
 - `needsJacket(o)` / `needsTie(o)`: is an outfit without that piece short of one (not on a `casual` day, not when the dress code leaves it out); the score and Today's pieces list use them
 - `dressOut(type)`: an item type the dress code leaves out (tie and tie clip; suit and blazer): not counted as never worn, not suggested
@@ -294,6 +294,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `shopSwipe()` installs the swipe listeners the first time the sheet opens (from `openShop`, once: `shopSwipeOn`), and the grabber is its own element (`<i class="shop-grab">` in the header), so a change to either selects only the tests that open the sheet
 - the sheet and its backdrop slide and fade away on closing (`visibility` switches off after the transition; not `.on` = no pointer events); the handler only sets an inline transform and lets the CSS transition finish from there
 - `renderShop` during a swipe (`shopDrag`) is put off until the finger lifts (`shopStale`): a redraw removes the element the touch started on and its moves stop coming
+- the summary says "N colour combinations" and "N days with a warning" (the planner's notes), not "looks" and "deductions", which meant other things on Insights; a suit idea names the shoes its sample outfits wear (analysis.js)
 - the result is kept on the device (`meta` key `shop`: `{sig, at, res}`) and shown without checking again while `shopSig` is unchanged and it is under a week old; sections appear as the worker finishes them (`{cat}` messages)
 - `shopSig` holds the wardrobe and every setting the planner reads: laundry days, dark shirts (`darkMode()`), jeans with a blazer, holidays, days off, `settings.learn` and the occasions marked from today on (else a change left the check up to a week stale); `|nojacket` / `|notie` stay last
 
@@ -632,6 +633,14 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today goes two columns (outfit left, cards right) only from 600px wide in landscape; upright (the Duo unfolded, a tablet) it stacks outfit, tiles and cards, the picture (`.fig`) the full width from 600px (under 600px it stays at most 390px, so a phone or the folded Duo fits picture and tiles on one screen); `tests/run.js` checks both
 - with a wardrobe that can't dress a day yet, the "Get your first outfit" checklist (`setupToday`, setup.js) is the first thing in the stage, above the figure or the day-off note
 - `goToday()` from the Today tab (the date bar's "↩ Today" / "↩ Next outfit" button is gone, the owner 2026-11-14: `todayBtn` returns ''; `tests/daypieces.test.js`); `newDayCheck()` moves on to today when the app is reopened on a later day
+- a new calendar day (visibilitychange, or a minute timer while the app stays open past midnight) moves Today to `homeDay()` when it showed the old home day or any day now past (`isoKey(sel)<=isoKey(homeDay())`); a coming day the user stepped to stays (the audit's H8: opened on a Friday it still showed Friday on Sunday; `tests/nufix7.test.js`)
+- start-up opens Today on `homeDay()` once the settings are read (start.js), not on the calendar day: a weekend no longer opens on an empty "Saturday isn't a workday" page
+- a Settings change that moves the home day (a workday or day off taken away) moves Today with it when Settings closes (`keepHome`, from `closeSettings` before the redraw)
+- a day before the wardrobe existed (`preWardrobe`: before `planStartDay()`, trimmed from the plan) says "No outfit: your wardrobe starts on …" (`#prewd`), with no score or figure (it showed a red "0 · Incomplete")
+- a past day whose piece was deleted since (`o.gone`) says so under the cards (`goneNote`, `.gonenote`): the drawing can't show it
+- a missing piece's row offers "Add one" (`.addone` → `openAdd()`); nothing says "Add tab" (there is none: `ADD_HINT` "Add one with + Add in the Wardrobe")
+- quick swipes in a row each count (`fly` in today.js: a swipe during the last one's fly-out is added to it, and the day is drawn only when no finger is down: drawing removes the element a touch started on and its moves stop coming); `stepDay(n, from, times)`
+- the picture's pill says "This look last worn …" (`wornBar`): it is the jacket, shirt colour and tie together (`lastWorn`), not the suit's own last wear
 
 #### The pieces list and photos
 
@@ -677,6 +686,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the days are put into the folded box while the app is idle (`monthFillSoon` from `monthLink`, `monthFill`, `data-fill` = month and selected day), so a tap only unfolds it; the folded `#mpanel-in` is `inert`
 - the days drop in one after another with a little bounce (`mcDrop`, easing `cubic-bezier(.34,1.56,.64,1)`, 12 ms apart) while `.mdrop` is on the box, only for the length of an unfold (`monthDrop`; not on a month swiped to, a re-plan or a move); it moves and fades only, so it adds no layout; `tests/monthunfold.test.js`
 - folding plays it backwards (`.mlift`, `mcLift`, back-in easing `cubic-bezier(.36,0,.66,-.56)`): the last day lifts out first, `MONTH_LIFT` (8) ms apart, 280 ms each, a little dip before rising away; the edge starts once about half are gone and the panel's own fade only at the end (fading the whole panel earlier hid the days lifting out: it read as the month just disappearing)
+- a past day marked "✕ Didn't" is a `skip` cell (stack faded, its number struck through, "not worn" in its label), not `worn`; a past workday with no outfit (before the wardrobe) is `past`, not `worn` (styles.css `.mc.skip`)
+- a patterned shirt is named with its colours and pattern ("white & blue stripe shirt", `shirtWords`) in `piecesLine` and `shortRest`
+- the month's drag preview is trimmed like the month (`planWith` → `planTrim`): the days before the wardrobe stayed empty only until a drag
 - the month and Today's strip name a day without a jacket by its trousers ("Grey trousers") instead of "No jacket: grey trousers" when the dress code has no jackets (`shortTop`)
 - every unfold and fold scrolls the page with `pageScroll(to, ms, delay)`: ONE `scrollTo` at the start, and `#today` slides back by what really scrolled (`translateY`, `MONTH_EASE`, same duration and delay, `fill:'backwards'`, held in `#today._ps`; a second call starts from the drawn offset); no script runs per frame
 - why: the browser's smooth scroll kept its own pace (WebKit covered 1,000px in one frame), and a `scrollTo` on every frame from rAF ran out of step with the slide on an iPhone, and the calendar, pieces and score cards juddered; `tests/pagescroll.test.js` checks one scroll event per animation (the rAF version fired about 20)
@@ -723,6 +735,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - background redraws of Today (photos arriving, weather, the start-up plan check, the queue) go through `refreshToday()`: while Settings is open they set `todayStale` and wait for it to close, since `renderToday` closes Settings (it snapped shut when opened right after launch)
 - a sync that brings changes redraws the tab on screen through `syncRedraw` (sync.js): while Settings is open it only marks it (`todayStale`, `viewStale` for the Wardrobe or stats page) and `closeSettings` redraws it
 - only `saveUserSettings()` stamps the settings, and only something the user did should call it
+- workdays, blazer days, the vest and units set `todayStale` too (`toggleDay`, `setVestMode`, `setUnits`), so Today follows when Settings closes; `setUnits` redraws the location line at once (`renderWxLoc`; it kept °F under °C)
+- `toastDrop()` takes away a toast with a button; leaving Add (start.js `show`) drops its "Saved … Undo" (it lay over Today's month card)
 - occasions (`setOccasion` in history.js, `addFormalDay`, `renderFormalUI`)
 - days off (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`); the Days off summary is redrawn by `renderDaysOffUI` and `renderFormalUI` while Settings is open
 - the Schedule summary lists the days from the week's first one (the first day, Sunday first, whose day before isn't a workday): "Sun–Thu"
@@ -908,6 +922,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the next six months are planned a week at a time while the phone is idle (`statsPlan`, `STATS_SLICE` 7 days of the shared simulation per `requestIdleCallback`), started 4 s after start-up and by opening the tab (opening Insights used to freeze a phone 1.3 s)
 - `show('stats')` calls `statsShow`, which draws the page at once when the months are planned (`statsPlanned`; always with `TEST_PLAN`), else the header and "Planning your next 6 months…" (`.st-wait`) and the rest when done; `renderStats()` called directly still plans at once
 - pieces the dress code leaves out are not counted as never worn (`buildStats().unused`)
+- pieces are called by the name the user gave, exactly as typed (`statName`, `statName1`, `statName2`), else their description; the tiles say "1 item", "1 outfit", "different outfits planned" (exact pieces; What to buy counts "colour combinations")
+- 'Your scores' leaves out the weeks that ended before the wardrobe existed (`planStartDay`), so a new wardrobe shows one or two columns, not six empty ones
+- an empty wardrobe's Insights, Packing list and Laundry & cleaning pages offer "Add your first item" and "Try a sample wardrobe" (`emptyAdd`)
 - `whyUnused` reads every jacket's best outfit overall and per shirt and tie from one table built once per page (`fitMemo`, reset in `buildStats`); searching again per unused piece took 94 s at 250 items
 - `whyUnused`: a paused item was taken out of rotation; an item on the way says so, with its arrival date if there is one; a piece away says "It's at the cleaner's" / "It's in the laundry", with the date it joins the outfits again; a dress-code exclusion says so ("Your dress code leaves out ties…")
 - `whyUnused` never says a suiting tie, shirt or pair of trousers "comes up later than six months" (it can't know that); it says the others suit a little better or have rested longer, so it isn't in the next six months' plan
@@ -931,7 +948,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the best set by `packRate` wins: outfit scores, −50 for a hard check, −1000 for an incomplete outfit, −3000 for each piece over the limit
 - the page shows the lighter plan's outfits and list with what it saves (`packSaved`) and the average score before and after; nothing is saved until "Keep this plan" (`packLock` → `packLockDays`, which also saves `rec.kind` for a day that took the other kind)
 - `packLockDays` gives every live day of the trip `rec.lock = lockIds(o)` (the app's own lock only covers 7 days); `packLockState` counts the days whose lock is what the plan shows; the page says Locked / n of m days locked / Not locked; `packRelease` removes the locks
-- `clearLocks()` (a planner setting, an occasion, Re-plan) releases a trip's lock like any other; the page then says Not locked
+- a kept trip's days carry `rec.trip` (`packLockDays`): `clearLocks()` (a planner setting, an occasion) and new planning rules (`replanFuture(true)`) leave them locked, so the packed suitcase stays right; "Start the plan over" (`replanFuture()`) and "Let the plan change again" (`packRelease`) release them (the lock was silently dropped by any Settings change, audit 2026-11-14)
+- a piece that won't be here by the trip's first day (on the way or away being cleaned, `!inRotation(i, first day)`: `packLate`) is left out of the trip's plan (`packLateRecs`: `rec.skip` on a copy of the records, used by Pack lighter too) and the Outfits card says so (`#pk-late`)
 - `packText(t, days, list)` is the plain-text list (title, count line, groups, travel wear, the outfits per day); `packCopy` uses `navigator.clipboard`, falling back to a hidden textarea; Share (`packShare`) only where `navigator.share` exists
 - `tests/pack.test.js`; `PACK_SHOTS=<folder>` saves pictures of the page at 320/390/626px in both themes
 
