@@ -95,8 +95,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/Tie,Tie clip|Tie,/.test(tD.rows)&&!tD.open&&tD.blade,'by default Today lists the tie and draws it');
     ok(/^Suit/.test(tJ.rows)&&!/Tie/.test(tJ.rows)&&!/Add one/.test(tJ.none)&&!/Tie/.test(tJ.chips)&&!/\btie\b/i.test(tJ.sum)&&!/tie/.test(tJ.fixes)&&!/Tie/.test(tJ.stuck),`without ties Today has no tie row, prompt, chip or advice (${tJ.rows})`);
     ok(tJ.open&&!tJ.blade&&!tJ.clip&&tJ.lapels&&/open collar/.test(tJ.label)&&tJ.ids&&!tJ.use,'the jacket is drawn over an open collar with a placket, no tie or clip; the pattern ids stay');
-    ok(!/Suit|Blazer|Tie/.test(tN.rows)&&/^Pants,Shirt/.test(tN.rows)&&!/Add one/.test(tN.none)&&tN.open&&!tN.lapels&&!tN.blade&&/no jacket, open collar/.test(tN.label)&&tN.ids,`without jackets or ties Today lists trousers and a shirt and draws shirt sleeves with an open collar (${tN.rows})`);
-    ok(/^Pants,Shirt,Tie/.test(tT.rows)&&!tT.open&&tT.blade&&!tT.lapels,`without jackets but with ties: shirt sleeves and a tie (${tT.rows})`);
+    ok(!/Suit|Blazer|Tie/.test(tN.rows)&&/^Trousers,Shirt/.test(tN.rows)&&!/Add one/.test(tN.none)&&tN.open&&!tN.lapels&&!tN.blade&&/no jacket, open collar/.test(tN.label)&&tN.ids,`without jackets or ties Today lists trousers and a shirt and draws shirt sleeves with an open collar (${tN.rows})`);
+    ok(/^Trousers,Shirt,Tie/.test(tT.rows)&&!tT.open&&tT.blade&&!tT.lapels,`without jackets but with ties: shirt sleeves and a tie (${tT.rows})`);
     ok(!/No jacket/.test(tN.cell)&&/trousers/i.test(tN.cell)&&tN.stackRects===2&&tJ.stackRects===2&&tD.stackRects===3,`the month's stacks show only what is worn (${tN.cell})`);
     ok(!/Incomplete/.test(tJ.text)&&!/Incomplete/.test(tN.text)&&!/Incomplete/.test(tT.text),'no day reads Incomplete on Today');
     ok(tJ.key!==tJ.keyTie&&/\|-\|/.test(tJ.sig)&&!tJ.nojacket,`a jacket without a tie has its own photo key (${tJ.sig})`);

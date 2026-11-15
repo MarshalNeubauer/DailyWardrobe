@@ -53,7 +53,7 @@ async function lockUpcoming(){
   if(n&&window.scheduleSync)scheduleSync()}
 /* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
 async function clearLocks(){const T=todayDate();let n=0;
-  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}   // (lockOnly: core.js dayWins)
+  for(const r of Object.values(dayRecs))if(r.lock&&!r.trip&&keyDate(r.date)>T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}   // (lockOnly: core.js dayWins; a kept trip, pack.js rec.trip, stays: its suitcase may be packed, audit 2026-11-14)
   if(n&&window.scheduleSync)scheduleSync();return n}
 async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
@@ -169,7 +169,7 @@ async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=d
 const dayChanged=(r,today)=>!!(r.force||r.skip||(!today&&r.ids)||typeof r.vest==='boolean'||(r.off&&(r.off.top||r.off.tie))||r.kind||(!today&&r.vestOn!==undefined)||(!today&&r.auto));
 async function replanFuture(rules){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if((rules?d<=T:d<T)||r.worn===true)continue;
-    if(rules){if(!r.lock&&!r.auto)continue;const keep={...r};delete keep.lock;if(keep.auto){delete keep.auto;delete keep.ids;delete keep.suitDay;delete keep.vestOn}await saveDay(keep,true);n++;continue}
+    if(rules){if((!r.lock||r.trip)&&!r.auto)continue;const keep={...r};if(!r.trip)delete keep.lock;if(keep.auto){delete keep.auto;delete keep.ids;delete keep.suitDay;delete keep.vestOn}await saveDay(keep,true);n++;continue}   // (a kept trip's lock stays)
     const mine=dayChanged(r,+d===+T);if(!mine&&!r.lock&&!(+d===+T&&r.ids))continue;
     const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
   cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}

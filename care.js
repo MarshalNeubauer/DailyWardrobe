@@ -83,7 +83,7 @@ function careLists(){const st=items.filter(i=>!i.order).map(i=>({i,s:careState(i
 /* the Care page */
 function renderCare(){const el=$('#care');if(!el)return;
   const head=`<div class="phead nav"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Laundry &amp; cleaning</h2></div>`;
-  if(!items.length){el.innerHTML=head+'<p class="mut empty">Your wardrobe is empty. Add some items first.</p>';return}
+  if(!items.length){el.innerHTML=head+'<p class="mut empty">Your wardrobe is empty.</p>'+emptyAdd();return}
   const L=careLists(),pic=i=>typeof statPic==='function'?statPic(i):'';
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
   const acts=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" onclick="careSend('${x.id}','${w}')">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" onclick="careCleaned('${x.id}')">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};

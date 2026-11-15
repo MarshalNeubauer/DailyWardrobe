@@ -37,7 +37,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       dayRecs[d]={date:d,force:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,...(o.clip?{clip:o.clip.id}:{}),...(o.watch?{watch:o.watch.id}:{})},vest:o.vest};cache={};
       sel=new Date(2026,10,18);renderToday();const o2=planFor()[key(sel)];return {same:comboKey(o2)===comboKey(o),btn:!!document.querySelector('.render-btn'),cap:(document.querySelector('.fig.photo .lastworn')||{}).textContent||''}});
     ok(other.same&&await photoShown(A.p)&&!other.btn&&calls===0,'another day with the same outfit reuses the photo (no new charge)');
-    ok(/^(Last worn |$)/.test(other.cap)&&!/gpt|Generated/.test(other.cap),`the caption shows when the look was last worn, not the model ("${other.cap}")`);
+    ok(/^(This look last worn |$)/.test(other.cap)&&!/gpt|Generated/.test(other.cap),`the caption shows when the look was last worn, not the model ("${other.cap}")`);
     // a different combination has no photo; changing how a piece looks (colour) makes it a different combination
     ok(await A.p.evaluate(()=>{sel=new Date(2026,10,17);renderToday();return !document.querySelector('.fig.photo')}),'a different outfit is drawn, not given the photo');
     ok(await A.p.evaluate(()=>{const o=planFor()['2026-11-16'],a=comboKey(o),b=comboKey({...o,tie:{...o.tie,primaryColor:'green'}}),c=comboKey({...o,tie:{...o.tie,updated:99}}),d=comboKey({...o,vest:!o.vest});return a!==b&&a===c&&a!==d}),

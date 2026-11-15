@@ -14,12 +14,15 @@ const nextWorkday=d=>{const x=new Date(d);let g=0;do x.setDate(x.getDate()+1);wh
 const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: ${colName(primaryCol(o.bot))} trousers`:`${colName(primaryCol(o.bot))} trousers`.replace(/^./,c=>c.toUpperCase())):'No jacket';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patLabel(t.pattern):'',n=colName(primaryCol(t))+p;
   const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' trousers':''}`};
 const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'check',foulard:'foulard',knit:'knit'})[p]||'';
-const shortRest=o=>[o.shirt&&colName(primaryCol(o.shirt))+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
+/* a shirt in a few words: a striped or checked one with its colours and pattern ("white & blue stripe shirt"; "white shirt" under a picture
+   of blue stripes read as a mistake, audit 2026-11-14), a plain one by its colour */
+const shirtWords=s=>s.pattern&&!['solid','other'].includes(s.pattern)?`${colorDesc(s)} ${patLabel(s.pattern)}`:colName(primaryCol(s));
+const shortRest=o=>[o.shirt&&shirtWords(o.shirt)+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
 /* the outfit in a few words, the same everywhere it is named in one line (Today's pieces card, sharing, the morning reminder):
    "navy suit · white shirt · burgundy stripe tie" (sentence() capitalises it where it starts a line) */
 /* the folded pieces box's line: jacket (or trousers), shirt and tie; a piece the owner named is called by its name, exactly as typed (2026-11-14,
    the owner: "Medium Grey suit", not "mid grey worsted suit"), the others by colour */
-const piecesLine=o=>{const nmd=i=>itemName(i);return [o.top?nmd(o.top)||`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&(nmd(o.bot)||`${colName(primaryCol(o.bot))} trousers`),o.shirt&&(nmd(o.shirt)||`${colName(primaryCol(o.shirt))} shirt`),
+const piecesLine=o=>{const nmd=i=>itemName(i);return [o.top?nmd(o.top)||`${colName(primaryCol(o.top))} ${o.suitDay?'suit':'blazer'}`:o.bot&&(nmd(o.bot)||`${colName(primaryCol(o.bot))} trousers`),o.shirt&&(nmd(o.shirt)||`${shirtWords(o.shirt)} shirt`),
   o.tie&&(nmd(o.tie)||`${colName(primaryCol(o.tie))}${o.tie.pattern&&!['solid','other'].includes(o.tie.pattern)?' '+patLabel(o.tie.pattern):''} tie`)].filter(Boolean).join(' · ')};/* the month plan unfolds in place from the box on Today (no separate page) */
 let monthOpen=false,monthPanel=null;
 const monthPlan=planMonth;
@@ -28,9 +31,12 @@ function monthGridHtml(){
   const w0=typeof weekFirst==='function'?weekFirst():0;   // the week starts on the work week's first day (settings.js weekFirst; audit 2026-11-15)
   for(let k=0;k<(f.getDay()-w0+7)%7;k++)cells.push('<span class="mc blank"></span>');
   for(const d=new Date(f);d.getMonth()===m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),off=offName(d),work=wd&&hasOutfit(o),isT=+d===+T,past=d<T;
-    const label=`${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}: ${work?`${shortTop(o)}, ${shortRest(o)}`:wd?'no outfit recorded':off?'day off: '+off:'day off'}`;
+    // a past day marked "✕ Didn't" is not shown as worn (it was, exactly like one, audit 2026-11-14): faded, its number struck through;
+    // a past workday with no outfit (before the wardrobe existed) is not "worn" either
+    const skip=past&&work&&dayRecs[k]&&dayRecs[k].worn===false;
+    const label=`${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}: ${work?`${skip?'not worn: ':''}${shortTop(o)}, ${shortRest(o)}`:wd?'no outfit recorded':off?'day off: '+off:'day off'}`;
     const mv=work&&!past&&!o.frozen&&!occOf(dayRecs[k]);   // a day whose outfit can be picked up and moved, or a day it can be dropped on
-    cells.push(`<button class="mc ${!wd?'rest':past?'worn':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
+    cells.push(`<button class="mc ${!wd?'rest':skip?'skip':past&&work?'worn':past?'past':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label)}" onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
   // no arrows, hint or legend: a swipe (or a mouse drag) inside the box moves between months (monthDrag); the title is centred; the cells still
   // show worn / today / planned / rest by their own look
   return `<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3></div>

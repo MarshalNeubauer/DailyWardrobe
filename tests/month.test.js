@@ -70,7 +70,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(cap.d==='2026-11-2'&&cap.diff===null,'last worn finds the most recent day with the same look');
     ok(cap.unmarked==='2026-11-2',`a day never marked worn isn't "last worn" (${cap.unmarked})`);
     await p.evaluate(()=>{const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};renderToday()});
-    ok(/^Last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
+    ok(/^This look last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
     // no paid outfit photo is offered at all (the owner: no month batch 2026-11-13; the day's photo retired 2026-11-14)
     await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings('photos')});
     const st=await p.evaluate(()=>({batch:!!document.querySelector('#batch-btn'),fn:typeof startBatch,regen:!!document.querySelector('#regen-btn')}));
