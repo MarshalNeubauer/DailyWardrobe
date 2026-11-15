@@ -48,6 +48,11 @@ as a main colour and as a stripe or motif colour. The owner may also have colour
    not-clothing - anything else (instructions, questions, nonsense).
    For every kind other than colour and several, give hex "#000000", name "", plansAs and existing "none", and
    confidence "low"; the app ignores them.
+   Read words in any language (Arabic, French, Italian...) as their meaning, as if translated first.
+   On a watch, tie clip, cufflinks, belt or shoes, a metal, finish, stone or sole word (steel, pewter, brushed brass,
+   gum sole, crepe sole) is the colour it looks like: kind colour, not material.
+   When the stripe or motif colour is asked, words naming what it colours ("white dots", "red stripe", "a blue
+   overcheck", "navy stitching") give that colour: kind colour, judged on the colour word alone.
 
 2. For a colour, find the shade:
    hex  - the sRGB hex of that colour as the cloth would look in even daylight, on the kind of item given (a "burgundy"
@@ -63,7 +68,9 @@ as a main colour and as a stripe or motif colour. The owner may also have colour
               of item, that is closest to your hex to the eye.
    match    - "existing" when that colour already IS what the owner described: the same colour name or a usual
               synonym (navy blue = navy, sky blue = lightblue, ink, ink navy, ink blue and midnight navy = darknavy, not navy, mushroom = taupe, mustard = gold,
-              butter = paleyellow, camel = tan), or a shade a person would not tell apart from it on cloth. Otherwise
+              butter = paleyellow, camel = tan, lilac = lavender, ivory = cream), or a shade a person would not tell
+              apart from it on cloth. A familiar other name, an abbreviation, a misspelling or a translation of a listed
+              colour is that colour (existing). Otherwise
               "new". A new colour must be worth having: if the owner's words only restate a listed colour, choose
               existing even when your hex differs a little. But when the owner names a cast or tint on a listed colour
               ("charcoal with a hint of brown", "grey with a green cast"), they want that cast: match is "new" and
@@ -73,7 +80,8 @@ as a main colour and as a stripe or motif colour. The owner may also have colour
    in an outfit it shares. Choose by what the colour IS, not by the nearest number: a blue that is dark is still a blue
    (petrol blue plans as steelblue or slate, never charcoal); a brown leather is brown or tan, never rust; a grey with
    "a hint of brown" is the grey; a vivid colour the list has no near shade for takes the list's colour of the same hue
-   (bright green on a suit plans as green). Never an "own..." key.
+   (bright green on a suit plans as green); a metal plans as the list's metal it looks like (pewter and steel as
+   silver or gunmetal), never a cloth grey. Never an "own..." key.
 
 5. fitsType - false when the colour is unusual for this kind of item (neon green for a suit, pastel pink for leather
    shoes); the app still allows it but says so. Otherwise true.
@@ -99,6 +107,8 @@ pattern's STRUCTURE with colour ROLES, never with fixed colours. Your job:
    not-clothing - anything else (instructions, questions, nonsense).
    For every kind other than pattern, give existing and plansAs "none", name "", look.layout "none" with every part
    null, and confidence "low".
+   Read words in any language as their meaning, as if translated first (Italian gessato = a pinstripe); a single word
+   for "plain" or "striped" in any language is a pattern answer (solid, or the item's stripe), not unclear.
 
 2. Reuse before inventing (existing, match):
    existing - the key from THIS item's pattern list, or the owner's own patterns for this kind of item, that names it
@@ -106,7 +116,8 @@ pattern's STRUCTURE with colour ROLES, never with fixed colours. Your job:
    match    - "existing" only when that pattern already names what was described: the same name or a usual synonym
               (pin-point = pinpoint, plaid = check, grenadine = woven on a tie, fil-a-fil = end-on-end, a plain
               "Prince of Wales check" = glen-check). Words about scale, strength or colours alone do not make it new
-              ("faint chalk stripe" = chalk-stripe, "tattersall in navy and red" = tattersall).
+              ("faint chalk stripe" = chalk-stripe, "tattersall in navy and red" = tattersall), and neither does a
+              detail that is already part of the listed pattern's usual look (a dobby with small diamonds is dobby).
               "new" when the words name a variant or a distinct cloth a tailor would name separately, even when an
               existing pattern is its family: hopsack, Bengal stripe, tonal windowpane, Macclesfield neat, Donegal
               tweed (tweed with coloured flecks), pin dot or pin dots (smaller than polka-dot), and a check with an

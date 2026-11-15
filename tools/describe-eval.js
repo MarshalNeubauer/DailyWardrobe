@@ -188,6 +188,10 @@ async function loadFile(file){
 function scoreCase(c,st,a){const e=c.expect,r={},ok=st===200;let d=null;
   if(e.kind)r.kind=ok&&e.kind.includes(a.kind);
   if(e.match)r.match=ok&&(e.match==='either'||a.match===e.match);   // either: not checked (an answer of another kind has no match)
+  // the answer checks (existing, plansAs, hex, fitsType) only apply to an answer that carries them: a colour (or several) in colour
+  // mode, a pattern in pattern mode; another kind the case allows (material, pattern, unclear...) is judged by kind and ask alone
+  const shaped=!ok||(c.what==='colour'?['colour','several'].includes(a.kind):a.kind==='pattern');
+  if(!shaped)return {checks:r,pass:Object.values(r).every(Boolean),dE:null};
   if(e.existing)r.existing=ok&&e.existing.includes(a.existing);
   if(e.plansAs)r.plansAs=ok&&e.plansAs.includes(a.plansAs);
   if(e.hex){d=ok&&/^#[0-9a-f]{6}$/i.test(a.hex||'')?+dE(a.hex,e.hex.near).toFixed(2):null;r.hex=d!=null&&d<=+e.hex.within}
@@ -249,13 +253,17 @@ async function runFile(){
     console.log(`${CASES_FILE}: ${list.length} cases valid (${cnt(c=>[c.what])}); ${list.filter(c=>c.closeup).length} with a close-up${f.custom.colors||f.custom.patterns?`; the file's own colours ${(f.custom.colors||[]).length}, patterns ${(f.custom.patterns||[]).length}`:''}`);
     console.log(`  by type: ${cnt(c=>[c.type])}`);console.log(`  checks: ${chk}`);console.log(`  tags: ${cnt(c=>c.tags)||'none'}`);
     console.log(`  ${list.length*RUNS} calls for --runs ${RUNS}, ${f.warnings.length} warning(s). Dry run: nothing was sent.`);return}
-  const send=await makeSender();
+  // --rescore <answers.json>: score the answers a previous --json run saved, against this case file (no calls, free)
+  const RESCORE=arg('rescore')?new Map(JSON.parse(fs.readFileSync(arg('rescore'),'utf8')).map(o=>[o.id+'#'+o.run,[o.status,o.answer]])):null;
+  const send=RESCORE?null:await makeSender();
   const out=[],imgs=new Map();let capped=null;
   const img=p=>{if(!imgs.has(p)){const ext=p.split('.').pop().toLowerCase();imgs.set(p,`data:image/${ext==='jpg'?'jpeg':ext};base64,`+fs.readFileSync(p).toString('base64'))}return imgs.get(p)};
   outer:for(const c of list)for(let run=1;run<=RUNS;run++){
     const b={what:c.what,text:c.text,type:c.type,field:c.field,custom:f.custom||{},colours:c.colours||{}};
-    if(c.pattern)b.pattern=c.pattern;if(typeof c.wb==='boolean')b.wb=c.wb;if(c.closeup)b.closeup=img(c.closeup);
-    let st=0,a={};try{[st,a]=await send(b)}catch(e){a={error:String(e&&e.message||e)}}
+    if(c.pattern)b.pattern=c.pattern;if(typeof c.wb==='boolean')b.wb=c.wb;if(c.closeup&&!RESCORE)b.closeup=img(c.closeup);
+    let st=0,a={};
+    if(RESCORE){const s=RESCORE.get(c.id+'#'+run);if(!s)continue;[st,a]=s}
+    else try{[st,a]=await send(b)}catch(e){a={error:String(e&&e.message||e)}}
     if(st===429){capped=capNote(out.length,list.length*RUNS,a);break outer}
     const s=scoreCase(c,st,a);out.push({id:c.id,run,status:st,...s,answer:a});
     console.log(`${c.id} #${run} ${st} ${s.pass?'pass':'FAIL: '+why(c,{status:st,checks:s.checks},a,s.dE).join('; ')} · ${ansText(a)}${s.dE!=null?' · ΔE '+s.dE:''}`)}
