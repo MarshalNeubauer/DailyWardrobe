@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	6c07e646671a4ce334e7
+# tested	7a8680db56c3775b416f
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd	shadeRow
@@ -2669,11 +2669,11 @@ deploy.test.js	worker/tag.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTY
 deploy.test.js	wrangler.toml	<any>
 describe.test.js	tools/describe-eval.js	<any>
 describe.test.js	worker.js	<loaded>	corsFor	fetch	serve
-describe.test.js	worker/describe.js	<loaded>	askOf	bandsOf	baseFor	bitmapOf	cleanDesc	cleanDescribeColour	cleanDescribePattern	cleanLook	colWord	colourSchema	dE00	descTables	guessBase	handleDescribe	hexRgb	labHex	num	ownLists	ownerText	patternSchema	perCall	rgbLab	say
+describe.test.js	worker/describe.js	<loaded>	askOf	bandsOf	baseFor	bitmapOf	cleanDesc	cleanDescribeColour	cleanDescribePattern	cleanLook	colWord	colourSchema	dE00	descTables	describeBoth	guessBase	handleDescribe	hexRgb	labHex	num	ownLists	ownerText	patternSchema	perCall	rgbLab	say
 describe.test.js	worker/links.js	<loaded>	readCapped
 describe.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	firstWeek	handleInvites	handleMe	limitBody	ownerOnly	plainFor	plainKind	sameText	sha256Hex	smallBody	spend	unspend	useCount	usedOf	utcDay	whoIs
 describe.test.js	worker/render.js	<loaded>	RenderHub	fetch	hubOf	sget	sput
-describe.test.js	worker/tag.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	orNull	sleep	txt
+describe.test.js	worker/tag.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	lightText	orNull	sleep	txt	wbOf
 display.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 display.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 display.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	needType	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	texSlot	unreadNote	wbNote
