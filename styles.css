@@ -808,6 +808,25 @@ span.pk-tick{cursor:default}
 /* ---- wardrobe ---- */
 /* the Wardrobe's search field with the sort control beside it; an item's name, brand, material and notes; "nothing matches" */
 .wfind{display:flex;gap:8px;align-items:center;margin:0 0 10px}
+/* no header row (2026-11-15, the owner): the title and the item count are for screen readers only (.vh), the search row is the top */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* Add is a round + at the bottom right (#ward-add, in main after the pages), fixed above the tab bar, on the Wardrobe only; gone while
+   anything is over the page (main is inert under Settings, the sheets and the setup; body.iv-on: the item sheet). At the right edge of
+   the content column: main is 560px (1080px from 600px) wide and centered, with 16px padding */
+#wardrobe{padding-bottom:76px}   /* the last row scrolls clear of the button (56 + 16 above the tab bar, less the body's 12, plus 16) */
+#ward-add{display:none;position:fixed;z-index:40;bottom:calc(var(--navh) + 16px);right:max(calc(16px + env(safe-area-inset-right)), calc((100vw - 560px) / 2 + 16px));
+  width:56px;height:56px;padding:0;border:0;border-radius:50%;background:var(--ink);color:var(--bg);place-items:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.24),0 1px 4px rgba(0,0,0,.18);-webkit-tap-highlight-color:transparent}
+#ward-add svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;pointer-events:none}
+#ward-add:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+#ward-add:active{transform:scale(.94)}
+#wardrobe:not([hidden]) ~ #ward-add{display:grid}
+main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
+@media (min-width:600px){#ward-add{right:max(calc(16px + env(safe-area-inset-right)), calc((100vw - 1080px) / 2 + 16px))}}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #ward-add{box-shadow:0 0 0 1px rgba(0,0,0,.35),0 4px 16px rgba(0,0,0,.6),0 1px 4px rgba(0,0,0,.5)}}
+:root[data-theme=dark] #ward-add{box-shadow:0 0 0 1px rgba(0,0,0,.35),0 4px 16px rgba(0,0,0,.6),0 1px 4px rgba(0,0,0,.5)}   /* (the thin dark ring keeps the light circle apart from a white shirt under it) */
+@media (prefers-reduced-motion:no-preference){#wardrobe:not([hidden]) ~ #ward-add{animation:fabIn .22s cubic-bezier(.2,.8,.2,1) backwards}#ward-add{transition:transform .12s}}
+@keyframes fabIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 .wsearch{position:relative;flex:1;min-width:0;display:flex}
 #wardrobe .wsearch input{flex:1;width:100%;padding:0 44px 0 38px;background:var(--card);outline-offset:-2px}
 .wsicon{position:absolute;left:11px;top:50%;width:18px;height:18px;margin-top:-9px;fill:none;stroke:var(--mut);stroke-width:2;stroke-linecap:round;pointer-events:none}
@@ -973,8 +992,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 @keyframes swIn{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
 @keyframes swFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.fig .swlens,.fig .swring{animation:none}.fig .swstack .ovsw,.fig .swstack,.fig .swring{transition:none}}
-/* Wardrobe's + Add, and What to buy while it waits for a bigger wardrobe */
-#wardrobe .phead .padd{flex:none;min-height:40px;padding:0 14px}
+/* What to buy while it waits for a bigger wardrobe */
 .shopbtn.locked{cursor:default;border:1px solid var(--line);background:var(--card);color:var(--ink)}.shopbtn.locked small{white-space:normal}
 #stats .shopbtn{margin:0 0 14px}
 /* ---- colour picker (colpick.js) ---- */
@@ -1196,12 +1214,12 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 /* the folded score list is not read out or reached by Tab (its height is 0, but its checks and fix buttons were still there) */
 #sbox:not(.open) #spanel .mpanel-in{visibility:hidden}
 /* ---- larger text, page zoom, tap targets, dark rings, landscape (new-user audit 2026-11-14) ---- */
-/* tap targets of 44px with the look unchanged: the header's icons (40px), Wardrobe's + Add (40px), text links (26px), a toast's Undo
+/* tap targets of 44px with the look unchanged: the header's icons (40px), text links (26px), a toast's Undo
    (28px), Settings' day buttons (40px) */
-header button,#ward-add,.linkbtn,#toast button,#settings-modal .dtog{position:relative}
-header button::after,#ward-add::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after{content:"";position:absolute}
+header button,.linkbtn,#toast button,#settings-modal .dtog{position:relative}
+header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after{content:"";position:absolute}
 header button::after{inset:-2px}
-#ward-add::after,#settings-modal .dtog::after{inset:-2px 0}
+#settings-modal .dtog::after{inset:-2px 0}
 .linkbtn::after{inset:-9px -2px}
 #toast button::after{inset:-8px -6px}
 /* the gear is drawn (the ⚙ character showed as a lilac colour emoji beside the plain ◐) */
