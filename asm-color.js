@@ -1269,5 +1269,5 @@ async function asmReadGaps(){const list=asmCmGaps().filter(x=>x.r.gap==='reading
   asmOut={};asmTried.clear();refreshToday()}
 /* the item sheet's line when the pictures paint this piece plain or generic (none with "Drawing only": nothing is painted) */
 function asmGapNote(i){if(typeof ASM_ON!=='undefined'&&!ASM_ON||asmDrawn())return '';const z=ASM_CM_ZONE[i.type];if(!z)return '';const r=asmCmRoute(i,z);
-  return r.gap?`<p class="shelp asmgap">Outfit pictures: ${esc(r.why)}.</p>`:''}
+  return r.gap?`<p class="shelp asmgap">Outfit pictures: ${esc(i.photo||i.texture?r.why:r.why.replace('(Read pattern from photo)','(add a photo, then Read pattern from photo)'))}.</p>`:''}   // (no photo: Read pattern from photo isn't offered yet)
 function asmCmSet(v){try{if(v==='off')localStorage.setItem(ASM_CM,'0');else localStorage.removeItem(ASM_CM)}catch{}asmOut={};asmTried.clear();refreshToday()}

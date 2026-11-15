@@ -12,6 +12,22 @@ const colBtn=(src,ref,k,v)=>{const c=v&&COLORS[v]?v:null,r=src==='q'?ref:`'${ref
   return `<button type="button" class="colbtn" data-k="${k}" onclick="openColPick('${src}',${r},'${k}')" aria-haspopup="dialog"><span class="colchip${c?'':' none'}"${c?` style="background:${COLORS[c]}"`:''}></span><span class="colnm">${c?cap1(colName(c)):'None'}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 /* the editor's colour row, labelled as E() labels it */
 const EC=(id,k,v,lab)=>`<label class="colrow">${lab||colLabel(k)} ${colBtn('e',id,k,v)}</label>`;
+/* which colour fields an item shows (2026-11-15, the new-user audit: cufflinks asked for three colours, a bracelet watch's Colour did
+   nothing, coats saved "Tan & brown"): only what something draws or names. The main colour always, but not on a watch on a metal bracelet
+   (on a leather strap it is the strap's: "Strap colour"); a second colour for patterned cloth (its stripe), socks (the toe cap) and
+   sneakers (the sole); a third only for patterned cloth. A field that already holds a colour stays, so it can be cleared. */
+const colHas=v=>!!v&&v!=='none';
+const colShows=(it,k)=>{const t=it&&it.type;if(!t)return true;
+  if(k==='primaryColor')return t!=='watch'||watchOpts(it).band==='leather';
+  if(colHas(it[k]))return true;
+  if(k==='secondaryColor')return FABRIC.includes(t)||t==='socks'||(t==='shoes'&&shoeStyle(it)==='sneaker');
+  return FABRIC.includes(t)};
+const colFieldLabel=(it,k)=>k==='primaryColor'?(it&&it.type==='watch'?'Strap colour':'Colour'):k==='secondaryColor'?(it&&it.type==='socks'?'Toe cap':it&&it.type==='shoes'&&shoeStyle(it)==='sneaker'?'Sole':'Second colour'):'Third colour';
+/* a second or third colour the item can't show is dropped where the item is made (saveCard) or its type changed (sete): an Add card
+   shows only the fields its type uses, a saved item keeps one already set until it is cleared or its type changes */
+function colTidy(it){for(const k of ['secondaryColor','tertiaryColor'])if(colHas(it[k])&&!colShows({...it,[k]:null},k))delete it[k];return it}
+/* the colour rows of the Add card (src 'q', ref its index) and the item sheet (src 'e', ref the item's id) */
+const colRows=(src,ref,it)=>['primaryColor','secondaryColor','tertiaryColor'].filter(k=>src==='q'?colShows({...it,[k]:k==='primaryColor'?it[k]:null},k):colShows(it,k)).map(k=>`<label class="colrow">${colFieldLabel(it,k)} ${colBtn(src,ref,k,k==='primaryColor'?(src==='e'?primaryCol(it):it.primaryColor):it[k]||'none')}</label>`).join('');
 const colTarget=()=>!colPick?null:colPick.src==='q'?queue[colPick.ref]:items.find(x=>x.id===colPick.ref);
 function colChoices(it,k){const cur=k==='primaryColor'?primaryCol(it):it[k];
   return COLOR_OPTS(it.type,cur,k!=='primaryColor').map(x=>x[0]).filter(c=>COLORS[c])}
@@ -50,15 +66,36 @@ function renderColPick(keep){if(colPick&&colPick.k==='pattern')return renderPatP
   const what=view==='tex'?'Your close-up':'Your photo';
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
   const drawn=sel===NEW_COL||sel===cur?it:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
-  el.innerHTML=`<div class="cptop"><div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap colour':k==='primaryColor'?'Choose the colour':'Choose the '+colLabel(k).toLowerCase()}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop"><div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap colour':k==='primaryColor'&&it.type!=='watch'?'Choose the colour':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' colour':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${name(sel)}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
 <p class="cphelp">${pic?`Tap a colour to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a colour to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a colour to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
 ${colAskHtml(it,k,tile,name)}
 ${near.length?`<h4 class="cph">Closest to your ${it.meas.src==='closeup'?'close-up':'photo'}</h4><div class="cpgrid cpnear">${near.map(x=>tile(x.c,`<small class="cpd">${dWord(x.d)}</small>`)).join('')}</div>`:''}
 ${k==='primaryColor'?'':`<div class="cpgrid">${tile('none')}</div>`}${groups}
+${colOwnHtml(it)}
 <div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${sel===NEW_COL?'Add '+name(sel)+' to your colours and use it':sel===cur?'Keep '+name(sel):'Use '+name(sel)}</button></div>`;
   if(keep)el.scrollTop=y}
+/* ---- a colour of your own, by hand (2026-11-15, the new-user audit: an own colour could only be added when Claude offered one, so a
+   sage tie or socks could never be): "A colour of my own" at the end of the list opens a small form in the sheet (colPick.own: name,
+   shade, behaves like); "Add and use" adds it to the owner's colours (addCustomColor: synced, for this kind of item, an accent colour
+   when it is a second or third colour) and sets it like any pick ---- */
+const colBases=()=>Object.keys(COLORS).filter(c=>!CUSTOM_COL[c]&&!SHIRT_ONLY.includes(c)).sort();
+function colOwnOpen(){if(!colPick)return;const it=colTarget();const hex=it&&it.meas&&/^#[0-9a-f]{6}$/i.test(it.meas.hex||'')?it.meas.hex:COLORS[colPick.sel]||COLORS[colPick.cur]||'#888888';
+  colPick.own={name:'',hex,base:colBaseFor(hex),err:''};renderColPick(true);const n=$('#cpown-name');if(n)n.focus()}
+function colOwnHtml(it){const f=colPick&&colPick.own;if(!COLS_BY[it.type])return '';
+  if(!f)return `<div class="cpown"><button type="button" class="cpownbtn" id="cpown-open" onclick="colOwnOpen()">+ A colour of my own</button></div>`;
+  return `<div class="cpown newform" id="cpown"><b>A colour of your own</b>
+  <label>Name <input type="text" id="cpown-name" maxlength="24" value="${esc(f.name)}" placeholder="e.g. Sage" oninput="colPick.own.name=this.value"></label>
+  <label>Shade <input type="color" id="cpown-hex" value="${f.hex}" oninput="colPick.own.hex=this.value"></label>
+  <label>Behaves like <select id="cpown-base" onchange="colPick.own.base=this.value">${colBases().map(c=>`<option value="${c}"${c===f.base?' selected':''}>${esc(cap1(colName(c)))}</option>`).join('')}</select></label>
+  <small class="mut">Your outfits treat it like this colour; the drawings show its own shade. It is offered for ${esc(groupOf(it.type).map(t=>TYPES[t].toLowerCase()).join(', '))}.</small>
+  <p class="mut formerr" id="cpown-err">${esc(f.err||'')}</p>
+  <div class="btns"><button type="button" class="pri" id="cpown-add" onclick="colOwnSave()">Add and use it</button><button type="button" onclick="colPick.own=null;renderColPick(true)">Cancel</button></div></div>`}
+async function colOwnSave(){if(!colPick||!colPick.own)return;const it=colTarget(),f=colPick.own;if(!it)return;
+  let key;try{key=await addCustomColor({name:cap1(String(f.name).trim()),hex:f.hex,base:f.base,types:groupOf(it.type),accent:colPick.k!=='primaryColor'})}
+  catch(e){f.err=e.message||'That could not be added.';const el=$('#cpown-err');if(el)el.textContent=f.err;return}
+  toast(`${cap1(String(f.name).trim())} added to your colours.`);colPick.own=null;colPick.sel=key;await useColPick()}
 /* ---- Ask Claude: the close-up (white-balanced), the sharp photo and the close-up's measurement go to the tagger again, the same
    request as an Add card's tagging from the close-up (refineFromCloseup) or the accuracy check (benchTagOne). The answer is kept
    in memory per item (colAsk, not saved or synced), so the other colour fields show it without asking again; Claude's pick for
@@ -87,6 +124,10 @@ async function colAskRun(){const it=colTarget();if(!it||!it.texture)return;if(!i
    colour, an accent colour too when it is a second or third colour. Not offered when the name is already a colour (a built-in's
    name, or the owner's own under the same key) or the shade can't be told from the listed pick (ΔE00 under 2). */
 const NEW_COL='+new';
+/* is a name already a colour's, built-in or the owner's, as shown or as its key ("Navy", "light blue", "Very dark navy")? Letters only, any
+   case: an own colour named "Navy" in pink was accepted beside the built-in navy (2026-11-15, the new-user audit) */
+const colLetters=t=>String(t||'').toLowerCase().replace(/[^a-z]/g,'');
+const colNameTaken=name=>{const n=colLetters(name);return !!n&&Object.keys(COLORS).some(c=>colLetters(c)===n||colLetters(colName(c))===n||colLetters(c.replace(/^own-?/,''))===n)};
 const colBaseFor=hex=>{const lab=rgbLab(...hexRgb(hex));return Object.keys(COLORS).filter(c=>!CUSTOM_COL[c]&&!SHIRT_ONLY.includes(c)).sort((a,b)=>dE00(lab,labOf(a))-dE00(lab,labOf(b)))[0]};
 function colNewFor(it,k){const a=it&&colAsk[it.id+'|c'],o=a&&a.own&&a.own[k];if(!o||!o.name||ownColKey(o.name).length<5)return null;
   if(COLORS[ownColKey(o.name)]||Object.keys(COLORS).some(c=>colName(c).toLowerCase()===o.name||c===o.name.replace(/\s/g,'')))return null;
@@ -109,6 +150,7 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
   for(const f of ch)it[f]=w[f];delete it.color;
   if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={};renderWardrobe();toast('Saved Claude’s colours.')}
 function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
+  if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // shoes, belts, watches, socks, coats, clips, links have no close-up: no dead-end hint (2026-11-15)
   if(!it.texture)return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>Add a close-up of the fabric${colPick.src==='e'?' (Edit photos)':''} and Claude can read the colours from it.</small></div></div>`;
   if(!a){const cents=typeof benchEstimate==='function'?Math.max(1,Math.round(benchEstimate(1)*100)):1,on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up again and says which colours it is. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}

@@ -211,7 +211,12 @@ const colorDesc = i => {
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
   return cols.map(colName).join(' & ');
 };
-const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+patLabel(i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'?'':' · ')+i.metal:'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'?` · ${i.season} weather`:''):'';
+/* (2026-11-15, the new-user audit) cufflinks are named by their colour and metal ("Light blue · silver"; plain silver links "Silver"), the metal
+   'other' is "gunmetal" in words (it read "Other"), a sneaker's leather "leather" (not "calf"), and a season only for a type that has one */
+const metalWord=m=>m==='other'?'gunmetal':m;
+const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
+const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
+const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${watchOpts(i).dial} dial · ${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+typeWord(i):'none';
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
