@@ -153,7 +153,7 @@ const cardReading=q=>!!(q&&(q.refining||q.patternReading));
 async function saveAll(){if(queue.some(cardReading))return;const n=queue.filter(q=>!q.busy&&!q.err).length;for(let i=queue.length-1;i>=0;i--){const q=queue[i];if(!q.busy&&!q.err)await save(i)}
   multiMsg(`Saved ${n} item${n===1?'':'s'} to your wardrobe.`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
+const setq=(i,k,v)=>{const q=queue[i];q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${i.texture}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${sentence(desc(i))||TYPES[i.type]||''}</b></figcaption>`;
@@ -224,6 +224,7 @@ async function saveCard(i){
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (tagging.js)
   // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
   if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
+  colTidy(it);   // no second or third colour its type can't show (colpick.js)
   if(q.sample)it.sample=true;   // the sample wardrobe (kit.js kitSampleLoad)
   await put(it);items.push(it);
   const copies=[];for(let k=1;k<qtyOf(q);k++){const c=JSON.parse(JSON.stringify(it));c.id=crypto.randomUUID();await put(c);items.push(c);copies.push(c)}   // the same shirt or pair again (qtyRow)
@@ -242,7 +243,7 @@ function renderAdd(){
   if(typeof addGate==='function')addGate();
   if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.busy?`<div class="card"><span class="spin" aria-hidden="true"></span>${q.multiBusy?'Finding every item in the photo… (this can take up to a minute)':'Analyzing photo…'}</div>`:q.err?`<div class="card">That image couldn’t be read. <button onclick="queue.splice(${i},1);renderAdd()">Dismiss</button></div>`:
 `<div class="card">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
-${tagFailNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
+${tagFailNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
 ${FABRIC.includes(q.type)&&q.big?`
 <div class="sw-box">
   <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
@@ -254,10 +255,8 @@ ${FABRIC.includes(q.type)&&q.big?`
   </div>
 </div>`:''}
 <label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>
-<label class="colrow">Colour ${colBtn('q',i,'primaryColor',q.primaryColor)}</label>
-<label class="colrow">${q.type==='socks'?'Toe cap':'Second colour'} ${colBtn('q',i,'secondaryColor',q.secondaryColor||'none')}</label>
-${q.type==='socks'?'':`<label class="colrow">Third colour ${colBtn('q',i,'tertiaryColor',q.tertiaryColor||'none')}</label>`}
-${FABRIC.includes(q.type)?`<label class="colrow">Pattern ${patBtn('q',i,q)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(Object.keys(METAL).map(c=>[c,c]),q.metal,'metal',i)}</label>`:''}
+${colRows('q',i,q)}
+${FABRIC.includes(q.type)?`<label class="colrow">Pattern ${patBtn('q',i,q)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(METAL_OPTS,q.metal,'metal',i)}</label>`:''}
 ${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,q.vest==='yes'?'yes':'no','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
 ${q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:''}${q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:''}${q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:''}
 ${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}

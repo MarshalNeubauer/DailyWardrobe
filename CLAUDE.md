@@ -131,6 +131,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `item.shade` (−6…+6 steps of `SHADE_STEP` 4 L*, `shadeHex`/`shadeFor`/`shadeName`): the owner's darker/lighter for the drawn main colour (`colOf`); the tag, the planner (`planCol`, `lumOf`) and photo keys keep the tagged colour
 - shade is set on the Add card and in the editor (`shadeRow`, `stepShadeQ`/`matchShadeQ`, `stepShadeE`/`matchShadeE` in add.js); "Match close-up" uses the close-up's measured lightness
 - `desc(i)` names a metal only for `METAL_TYPES` (watch, belt, cufflinks): an Add card carries `metal` 'silver' for every type, and a suit's or shoes' caption read "· silver"
+- `desc(i)` names cufflinks by colour and metal ("light blue · gunmetal"; silver or gold links only their metal, `linkFace`), says "gunmetal" for the metal 'other' (`metalWord`), a sneaker's leather "leather" (`leatherWord`), and a season only for `SEASON_TYPES` (2026-11-15, the new-user audit: "Saved: Other.", "calf" sneakers)
 - `MATERIALS_BY`: the materials offered per item type for `item.material` (suit, blazer, pants, shirt, tie, socks, overcoat, raincoat; lower-case names, shown with `cap1`); shoes and belts (their `leather`), watches (band and metal), cufflinks and tie clips have no list
 - a shoe's material by style (`leathersFor`): a sneaker in leather (stored `calf`, shown "Leather"), suede, canvas or knit (`SHOE_TEXTILES`, textured in draw.js `leatherLayers`, finish `textile`); a boot in calf, suede, the grains or cordovan; a loafer in calf, suede, patent or cordovan; oxfords, derbies and belts in every leather
 - the Add card and the item sheet label it "Material" on every pair of shoes, right under Style and above More details / Notes (`leatherLabel`; belts keep "Leather"); a style change to one that can't be in the material makes it plain leather
@@ -363,6 +364,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a tie's read stripes (`v:2` bands) and figures (motif) have no white sheen line: one per repeat, turned with the pattern, it lay almost level and showed as light grey bands across the item sheet's swatch
 - a motif `sett` is drawn as a 2×2-cell tile (two colours alternate like a checkerboard; `corner` figures where four cells meet; `alternate-cells` in every other cell), turned 45° for a diagonal grid; swatch scale from `cr` (cells in the close-up), figure scale from `tr` (cells across the item)
 - a `figure` is drawn from its bitmap, its rows' runs of 1 as rects, at the figure's own proportions; cells are `T` wide and `T*aspect` tall, offset rows shift half a cell, and a figure crossing the tile's edge is drawn again on the other side
+- a plain wool (suit, blazer, trousers with no pattern) on Today's figure (`'fig'`) and in small swatches (`'dot'`) has a fine, faint grain (`FINE_TWILL`: a 1.25 / 1.6 unit tile at .045 / .05), and no grain under a stripe or check there (2026-11-15, the new-user audit: the generic grain, a line every 4.5 units on the figure, read as a diagonal stripe; three testers took a plain navy suit for a striped one; chosen to keep texture below a pattern, as the owner did with the painter's twill ribs and the suit drawing's cloth scale); the drawings and the item sheet's swatch keep the generic grain
+- a windowpane's or a jacket check's small swatch (`'dot'`) is a 7 / 8 unit tile, about two panes across the 16 unit square (at 18 one pane filled it and read as plain)
+- cufflinks with a colour that isn't silver or gold are drawn with an enamel face in it in a metal rim (`.link-face`); a tie clip's swatch is its colour, shiny when it is a metal colour (`swatchSVG`: it read `i.metal`, which clips don't have, so it was always silver)
 - `texTileSmooth` (Today's shirt swatch, the owner's choice "Smooth + thread grain"): 24 px a cell, a wrapping Gaussian (`TEX_SMOOTH_SIG` .32 of a cell) and a narrow smoothstep, so the figures have rounded anti-aliased outlines, plus a faint diagonal thread grain (`TEX_GRAIN` ±3.5%); herringbone and twill readings and every other swatch are unchanged
 
 #### Traced drawings (no photo)
@@ -580,6 +584,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `startCrop` scrolls the item sheet to the top, where the crop frame replaces the picture
 - an item with a photo and a close-up gets a tappable pair (`#ivpair`, class `cmpable`): a tap on the split swatch splits them up (`toggleCompare`, `phEdit.cmp`, class `cmp`): a copy of the drawing (`.cmpdraw`, hidden on the swatch's drawn half) slides over the photo's square and the close-up's clip opens to its whole square; a tap on either square puts them back; the captions switch to "As tagged" / "Close-up"; `tests/compare.test.js`
 - out of rotation: the Rotation card has "Take out of rotation" / "Put back in rotation" (`togglePause`); taking it out releases upcoming days it was pinned to (`force`), the picker and "Suggest another" leave it out (`slotPool`/`swapSlot` in history.js; correcting a past day still offers it), and its grid box is dimmed with an "Out of rotation" tag (`.gi.paused`, `.pausetag`)
+- a type change drops what the new type has no field for (`typeTidy`, `TYPE_FIELDS`; 2026-11-15, the new-user audit: a raincoat made cufflinks was titled "· warm weather"): season, metal, leather, cuffs, vest, kind, style, the watch's options, a material not in its list (a typed Other stays where the type has a list), a pattern reading on a type without patterns, and a colour it can't show (`colTidy`); a new metal type gets silver
+- "Read pattern from photo" is offered only with a photo or close-up; without one the sheet says "Add a photo above to read its pattern from it." (`.nopatpic`), and the Outfit pictures note (`asmGapNote`) says to add a photo first
+- a belt's metal is "Buckle" here as on the Add card; the metal 'other' reads "Gunmetal" in the dropdowns (`METAL_OPTS`, core.js)
+- adding a close-up toasts "Close-up added." (the realistic photos it promised are no longer made)
 
 #### The Wardrobe grid
 
@@ -960,6 +968,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - why that survives a sync: the tombstone stays, and in `mergeState` a tombstone only wins over an item whose stamp is not newer; so the restored item wins on every device, also on one that had already taken the deletion; a delete that is not undone propagates as before
 - `tests/wardrobe.test.js`: search by each field and with a chip, each sort order, the sheet stepping through the filtered list, the fields (sheet, Add card, two synced devices, backup file restored on an empty device), the name in its four places, materials by type, delete / Undo with and without a sync in between, sizes and no sideways scroll at 320 / 390 / 626px in both themes
 - Material (`matRow`, types in `MATERIALS_BY`) sits on the Add card above "More details" and at the end of the item sheet's Details
+- a text field's typing is also kept in `localStorage.ward_pending` `{id,k,v,was,at}` at each keystroke and saved at once on `pagehide` / the page hidden (`wardFlush`; 2026-11-15: a name typed then Safari swiped away within 0.6 s was lost on a kill, a hidden page's timers stop); `wardPendingRestore` (from `safetyStart`, after the first pull) puts a copy left by a kill back when that field still holds `was` (another device's change since wins), and drops it otherwise
+- Delete and Duplicate ignore a second tap while the first runs (`wardOnce`, `wardBusy`, 400 ms after; `wardDelete` → `wardDeleteNow`, `wardDuplicate` → kit.js `kitDuplicate`, one key for Duplicate since the sheet moves to the copy)
 
 ### `colpick.js`
 
@@ -983,6 +993,12 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - "Add <name> to your colours and use it" (`colAddNew`): `addCustomColor` (synced, `settings.custom`) for the item's type group (`groupOf`), behaving like the nearest built-in colour (`colBaseFor`, as `openColForm`), an accent colour too when it was a second or third colour; then set like any colour
 - "Use both colours" / "Use all N colours" (`colAskUseAll`, `.cpall`): shown whenever Claude named more than one colour and any field, the open one included, would change (`colAllDiff`); it takes every colour Claude named, its new ones too (`colAllOf`: each added through `colAddNew`; one already added is the owner's colour of that name), on the Add card and in the editor; the owner wanted to accept all of Claude's colours at once
 - `tests/colpick.test.js`
+- which colour fields show (`colShows`, `colRows`, `colFieldLabel`; 2026-11-15, the new-user audit): the main colour always but on a watch on a metal bracelet (on a leather strap "Strap colour"); a second colour for patterned cloth, socks ("Toe cap") and sneakers ("Sole"); a third only for patterned cloth; in the item sheet a field already holding a colour stays so it can be cleared; the Shade row hides with the main colour
+- `colTidy(it)` drops a second or third colour the type can't show, at Confirm (`saveCard`) and on a type change (`typeTidy`, itemsheet.js)
+- "+ A colour of my own" at the end of every colour list (`colOwnHtml`, `colOwnOpen`, `colOwnSave`, `colPick.own`): name, shade, behaves like (nearest built-in to start); `addCustomColor` for the type's group, an accent when it is a second or third colour, then used like a pick
+- a name already a colour's (built-in or own, by key or as shown, letters only: "Navy", "light blue", "Very dark navy") is refused (`colNameTaken`, checked in `addCustomColor`)
+- no Ask Claude block for a type without a close-up (shoes, belts, watches, socks, coats, clips, links: it said to add a fabric close-up that can't be added)
+- `tests/itemfix.test.js`
 
 ### `care.js`
 
