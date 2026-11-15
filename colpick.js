@@ -9,7 +9,7 @@ function colFamily(c){const [,a,b]=labOf(c),C=Math.hypot(a,b);let h=Math.atan2(b
   return C<9?0:h>=45&&h<100?1:h>=100&&h<200?2:h>=200&&h<290?3:4}
 const colLabel=k=>k==='primaryColor'?'Colour':k==='secondaryColor'?'Second colour':'Third colour';
 const colBtn=(src,ref,k,v)=>{const c=v&&COLORS[v]?v:null,r=src==='q'?ref:`'${ref}'`;
-  return `<button type="button" class="colbtn" data-k="${k}" onclick="openColPick('${src}',${r},'${k}')" aria-haspopup="dialog"><span class="colchip${c?'':' none'}"${c?` style="background:${COLORS[c]}"`:''}></span><span class="colnm">${c?cap1(colName(c)):'None'}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
+  return `<button type="button" class="colbtn" data-k="${k}" onclick="openColPick('${src}',${r},'${k}')" aria-haspopup="dialog"><span class="colchip${c?'':' none'}"${c?` style="background:${COLORS[c]}"`:''}></span><span class="colnm">${c?esc(cap1(colName(c))):'None'}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 /* the editor's colour row, labelled as E() labels it */
 const EC=(id,k,v,lab)=>`<label class="colrow">${lab||colLabel(k)} ${colBtn('e',id,k,v)}</label>`;
 /* which colour fields an item shows (2026-11-15, the new-user audit: cufflinks asked for three colours, a bracelet watch's Colour did
@@ -61,21 +61,21 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   if(colPick&&colPick.k==='pattern')return renderPatPick(keep);const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {k,sel,cur,view}=colPick,y=el.scrollTop;
   const photo=it.photo||(typeof wardPic==='function'?wardPic(it):null),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
   const nc=colNewFor(it,k),name=c=>c==='none'?'None':c===NEW_COL?cap1(nc?nc.name:''):cap1(colName(c)),hex=c=>c===NEW_COL?(nc?nc.hex:'transparent'):COLORS[c]||'transparent';  const near=colNear(it,k),dWord=d=>d<=4?'Very close':d<=8?'Close':'Nearest';
-  const tile=(c,extra='')=>`<button type="button" class="cptile${c===sel?' sel':''}" data-c="${c}" onclick="colPickSel('${c}')" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow">Now</i>':''}</span><span class="cpnm">${name(c)}</span>${extra}</button>`;
+  const tile=(c,extra='')=>`<button type="button" class="cptile${c===sel?' sel':''}" data-c="${c}" onclick="colPickSel('${c}')" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow">Now</i>':''}</span><span class="cpnm">${esc(name(c))}</span>${extra}</button>`;
   const fams=COL_FAMS.map(()=>[]);for(const c of colChoices(it,k))fams[colFamily(c)].push(c);
   const groups=fams.map((l,f)=>l.length?`<h4 class="cph">${COL_FAMS[f]}</h4><div class="cpgrid">${l.sort((a,b)=>labOf(b)[0]-labOf(a)[0]).map(c=>tile(c)).join('')}</div>`:'').join('');
   const what=view==='tex'?'Your close-up':'Your photo';
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
   const drawn=sel===NEW_COL||sel===cur?it:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
   el.innerHTML=`<div class="cptop"><div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap colour':k==='primaryColor'&&it.type!=='watch'?'Choose the colour':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' colour':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
-<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${name(sel)}</figcaption></figure></div>
+<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
 <p class="cphelp">${pic?`Tap a colour to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a colour to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a colour to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
 ${COLS_BY[it.type]?`<h4 class="cph">Your colours</h4><div class="cpgrid cnown">${colChoices(it,k).filter(c=>CUSTOM_COL[c]).map(c=>tile(c)).join('')}<button type="button" class="cptile cpnewt" id="cn-open" onclick="openColNew()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New colour</span></button></div>`:''}
 ${colAskHtml(it,k,tile,name)}
 ${near.length?`<h4 class="cph">Closest to your ${it.meas.src==='closeup'?'close-up':'photo'}</h4><div class="cpgrid cpnear">${near.map(x=>tile(x.c,`<small class="cpd">${dWord(x.d)}</small>`)).join('')}</div>`:''}
 ${k==='primaryColor'?'':`<div class="cpgrid">${tile('none')}</div>`}${groups}
-<div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${sel===NEW_COL?'Add '+name(sel)+' to your colours and use it':sel===cur?'Keep '+name(sel):'Use '+name(sel)}</button></div>`;
+<div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${esc(sel===NEW_COL?'Add '+name(sel)+' to your colours and use it':sel===cur?'Keep '+name(sel):'Use '+name(sel))}</button></div>`;
   if(keep)el.scrollTop=y}
 /* (a colour of your own by hand, "+ A colour of my own" at the end of the list, colOwn*, became the "+ New colour" sheet, 2026-11-15) */
 /* ---- Ask Claude: the close-up (white-balanced), the sharp photo and the close-up's measurement go to the tagger again, the same
@@ -109,13 +109,17 @@ const NEW_COL='+new';
 /* is a name already a colour's, built-in or the owner's, as shown or as its key ("Navy", "light blue", "Very dark navy")? Letters only, any
    case: an own colour named "Navy" in pink was accepted beside the built-in navy (2026-11-15, the new-user audit) */
 const colLetters=t=>String(t||'').toLowerCase().replace(/[^a-z]/g,'');
-const colNameTaken=name=>{const n=colLetters(name);return !!n&&Object.keys(COLORS).some(c=>colLetters(c)===n||colLetters(colName(c))===n||colLetters(c.replace(/^own-?/,''))===n)};
+/* a grey spelled another way ("Gray", "Dark gray", "Light gray", "Mid gray", "Pale grey": COL_ALIAS's greys) is taken too (2026-11-15, the
+   re-audit: "Gray" in pink was accepted beside Grey); other aliases ("Cognac", "Teal") stay free for a shade of one's own */
+const colNameTaken=name=>{const n=colLetters(name),g=n.replace(/gray/g,'grey');if(!n)return false;
+  if(/grey/.test(g)&&(COLORS[g]||COL_ALIAS[n]||COL_ALIAS[g]))return true;
+  return Object.keys(COLORS).some(c=>colLetters(c)===n||colLetters(c)===g||colLetters(colName(c))===n||colLetters(colName(c))===g||colLetters(c.replace(/^own-?/,''))===n)};
 function colNewFor(it,k){const a=it&&colAsk[it.id+'|c'],o=a&&a.own&&a.own[k];if(!o||!o.name||ownColKey(o.name).length<5)return null;
   if(COLORS[ownColKey(o.name)]||Object.keys(COLORS).some(c=>colName(c).toLowerCase()===o.name||c===o.name.replace(/\s/g,'')))return null;
   if(a[k]&&COLORS[a[k]]&&dE00(rgbLab(...hexRgb(o.hex)),labOf(a[k]))<2)return null;
   return o}
-async function colAddNew(it,k,nc){if(!nc)throw new Error('Ask Claude again: its colour was not kept.');const key=ownColKey(nc.name);
-  if(!COLORS[key]){await addCustomColor({name:cap1(nc.name),hex:nc.hex,base:colBaseFor(nc.hex,it.type,k!=='primaryColor'),types:groupOf(it.type),accent:k!=='primaryColor'});toast(`${cap1(nc.name)} added to your colours.`)}
+async function colAddNew(it,k,nc){if(!nc)throw new Error('Ask Claude again: its colour was not kept.');const key=ownColKey(ownNameClean(nc.name));
+  if(!COLORS[key]){const n=cap1(ownNameClean(nc.name,24)),added=await addCustomColor({name:n,hex:nc.hex,base:colBaseFor(nc.hex,it.type,k!=='primaryColor'),types:groupOf(it.type),accent:k!=='primaryColor'});toast(`${n} added to your colours.`);return added}
   return key}
 /* what "Use all" sets in each colour field: Claude's own colour where the app doesn't have it yet (a New chip; colNewFor), else
    its listed pick; null = none */
@@ -159,7 +163,7 @@ const patChoices=it=>{const l=(PATS_BY[it.type]||['solid']).slice(),c=normPat(it
 const patVar=(it,p)=>p===it.pattern?it:{...it,pattern:p,sett:undefined,stripes:undefined,patternSpec:undefined,weave:undefined,swatch:undefined,swSrc:undefined,texture:undefined};
 const patTitle=p=>cap1(patName(p));
 const patBtn=(src,ref,it)=>{const p=normPat(it.type,it.pattern),r=src==='q'?ref:`'${ref}'`;
-  return `<button type="button" class="colbtn patbtn" data-k="pattern" onclick="openColPick('${src}',${r},'pattern')" aria-haspopup="dialog"><span class="colchip patchip">${swatchSVG(patVar(it,p),true)}</span><span class="colnm">${patTitle(p)}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
+  return `<button type="button" class="colbtn patbtn" data-k="pattern" onclick="openColPick('${src}',${r},'pattern')" aria-haspopup="dialog"><span class="colchip patchip">${swatchSVG(patVar(it,p),true)}</span><span class="colnm">${esc(patTitle(p))}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 const EP=(id,it)=>`<label class="colrow">Pattern ${patBtn('e',id,it)}</label>`;
 const PAT_GROUPS=[[['solid'],'Plain'],[['pinstripe','chalk-stripe','stripe','fine-stripe'],'Stripes'],[['glen-check','windowpane','check','gingham','tattersall','tonal-check','houndstooth'],'Checks'],
   [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit'],'Weaves'],[['polka-dot','paisley','foulard'],'Figures']];
@@ -168,9 +172,9 @@ function patNewFor(it){const a=it&&colAsk[it.id+'|p'],o=a&&a.ownPattern;if(!o||o
   if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key))||Object.values(PATS_BY).some(l=>l.some(p=>patName(p).toLowerCase()===o.name)))return null;
   return o}
 const patNewBase=it=>{const a=colAsk[it.id+'|p'];const b=a&&a.pattern?patBase(a.pattern):'solid';return (PATS_BY[it.type]||[]).includes(b)?b:'solid'};
-async function patAddNew(it,o){if(!o)throw new Error('Ask Claude again: its pattern was not kept.');const key=ownPatKey(o.name);
-  if(!CUSTOM_PAT[key]){const g=['suit','blazer','pants'].includes(it.type)?['suit','blazer','pants']:[it.type];
-    await addCustomPattern({name:cap1(o.name),desc:o.description||'',base:patNewBase(it),types:g});toast(`${cap1(o.name)} added to your patterns.`)}
+async function patAddNew(it,o){if(!o)throw new Error('Ask Claude again: its pattern was not kept.');const key=ownPatKey(ownNameClean(o.name));
+  if(!CUSTOM_PAT[key]){const g=['suit','blazer','pants'].includes(it.type)?['suit','blazer','pants']:[it.type],n=cap1(ownNameClean(o.name,24));
+    const added=await addCustomPattern({name:n,desc:o.description||'',base:patNewBase(it),types:g});toast(`${n} added to your patterns.`);return added}
   return key}
 /* without a photo the left side is the item drawn in the pattern being looked at (its shape: a tie, a jacket's panel), beside the large swatch */
 function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {sel,cur,view}=colPick,y=el.scrollTop;
@@ -375,5 +379,6 @@ ${details}
 ${nc.err?`<p class="mut formerr" id="cn-error" role="alert">${esc(nc.err)}</p>`:''}
 <div class="cpbar">${bar}</div>`;
   if(keep)el.scrollTop=y}
+/* (the phone's Back with this sheet up closes only the sheet: colBackFirst in itemsheet.js, registered before the pages' own listeners) */
 window.addEventListener('keydown',e=>{if(!colPick)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(colPick.newc)colNewBack();else closeColPick()}
   else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true);
