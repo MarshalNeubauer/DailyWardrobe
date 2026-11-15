@@ -83,7 +83,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(v.prev&&!v.next&&v.count==='1 of 11','on the first item, previous is switched off');
     await p.tap('#iv-next');await settle(p,400);v=await view();ok(v.ed==='s8'&&v.count==='2 of 11'&&!v.prev,'› goes to the next item');
     const swipe=async(x0,x1,y=420)=>{await T('touchStart',x0,y);for(let k=1;k<=6;k++){await T('touchMove',x0+(x1-x0)*k/6,y+2);await p.waitForTimeout(16)}await T('touchEnd');await settle(p,450)};
-    const sy=await p.evaluate(()=>{const r=document.querySelector('#item-view select').getBoundingClientRect();return Math.round(r.top+r.height/2)});
+    // (the first dropdown brought on screen: the 3-step card under Read color and texture pushes the Details card down, 2026-11-15)
+    const sy=await p.evaluate(()=>{const s=document.querySelector('#item-view select');s.scrollIntoView({block:'center'});const r=s.getBoundingClientRect();return Math.round(r.top+r.height/2)});
     ok(await p.evaluate(y=>!!document.elementFromPoint(310,y).closest('select'),sy),'(the swipe below starts on a dropdown)');
     await swipe(310,90,sy);ok((await view()).ed==='s7','a swipe to the left goes to the next item, even when it starts on a dropdown');
     await swipe(90,310);ok((await view()).ed==='s8','a swipe to the right goes back');
