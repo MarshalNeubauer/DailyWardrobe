@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url})=>{
     // ---- iPhone in Safari
     const IOS='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
     const I=await page({userAgent:IOS,permissions:['clipboard-read','clipboard-write']});
-    await I.p.goto(url+link(A));await I.p.reload();await I.p.waitForFunction(()=>window.appReady);
+    await I.p.goto('about:blank');await I.p.goto(url+link(A));   // a fresh load: a hash change alone is read at once (account.js hashchange)await I.p.waitForFunction(()=>window.appReady);
     await I.p.waitForSelector('#ask-ok',{state:'visible',timeout:10000});
     const guide=await I.p.textContent('#ask-sheet');await I.p.click('#ask-ok');
     await I.p.waitForFunction(()=>/copied/.test(document.querySelector('#toast').textContent));
@@ -50,7 +50,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(/Copy my invitation link/.test(box)&&/Home Screen/.test(box),'Connection says so too, with a button to copy the link');
     ok(I.errs.length===0,'no page errors ('+I.errs.join('; ')+')');
     // on a computer the guide doesn't show
-    const D=await page();await D.p.goto(url+link(A));await D.p.reload();await D.p.waitForFunction(()=>window.appReady&&localStorage.getItem('app_token'));await D.p.waitForTimeout(1500);
+    const D=await page();await D.p.goto('about:blank');await D.p.goto(url+link(A));await D.p.waitForFunction(()=>window.appReady&&localStorage.getItem('app_token'));await D.p.waitForTimeout(1500);
     ok(await D.p.evaluate(()=>!(document.querySelector('#ask-ok')&&document.querySelector('#ask-ok').offsetParent)),'not on a computer');
     // ---- the owner deletes a switched-off tester's data
     const log=[],Ow=await page({},log);

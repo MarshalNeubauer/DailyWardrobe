@@ -12,6 +12,7 @@ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.clas
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
+  if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
   const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
@@ -82,8 +83,20 @@ const unit=()=>settings.units||(/^en-(US|LR|MM)/.test(navigator.language||'')?'F
 const temp=c=>Math.round(unit()==='F'?c*9/5+32:c);
 const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
 function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.code)} ${temp(w.tmax)}°/${temp(w.tmin)}°${(w.pop||0)>=30?` · ☂ ${w.pop}%`:''}`}
+/* another tab of the app (an invitation link tapped twice opens a second one) may have saved the settings since this page read them:
+   each save is announced (BroadcastChannel), and the next save here first merges the stored copy in setting by setting (core.js
+   mergeSettings) instead of writing this page's older copy over it: a stale tab's Skip put back the other tab's old workdays and units
+   (audit 2026-11-14). setSeen: the stored copy's stamp as this page last read or wrote it. Without a word from another tab the save
+   is written at once, as before (a read first delayed the write, and a reload right after a tap lost it) */
+let setSeen=0,setOther=false;
+const setChan=(()=>{try{const c=new BroadcastChannel('dw-settings');c.onmessage=e=>{if(e.data&&+e.data.u>setSeen)setOther=true};return c}catch{return null}})();
 async function saveUserSettings(){stampSettings(settings);cache={};   // only the settings whose value changed get the new stamp (core.js)   // the settings have changed already: the cached plan is stale now, not only once they are stored
-  await metaPut('settings',settings);cache={};if(window.scheduleSync)scheduleSync()}
+  if(setOther){setOther=false;
+    try{const st=await metaGet('settings');
+      if(st&&st.ks&&settings.ks&&(st.updated||0)>setSeen){settings=mergeSettings(st,settings);keySettings(settings);applyCustom(settings.custom);todayStale=true}}
+    catch(e){console.warn('stored settings not read',e)}}
+  setSeen=settings.updated||0;
+  await metaPut('settings',settings);cache={};try{if(setChan)setChan.postMessage({u:setSeen})}catch{}if(window.scheduleSync)scheduleSync()}
 /* ---- Settings: days off. A country's public holidays (each can be unticked if you work that day) and your own days
    off (a single day or a range, e.g. a holiday trip). They are planned like weekends: no outfit, nothing counted as worn. ---- */
 const COUNTRY_CODES='AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WS YE YT ZA ZM ZW'.split(' ');

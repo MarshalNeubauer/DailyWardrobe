@@ -45,6 +45,7 @@ function setSyncStatus(t){if(typeof isTester==='function'&&isTester()&&typeof pl
 /* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
    "Not backed up yet." under a summary saying "Backed up today" (audit 2026-11-13) */
 function showSyncStatus(){const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'';
+  if(typeof inviteOver==='function'&&inviteOver()){el.textContent=ENDED;return}   // not "Backed up …": nothing backs up any more
   // backups paused (the day's saves used up): said, not hidden behind the last backup's time (2026-11-14: the owner saw only "Backed up 10:28"
   // and a Sync now that did nothing)
   if((+localStorage.getItem('sync_pause')||0)>Date.now()){el.textContent=(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.')+(last?` Last backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}.`:'');return}
@@ -75,7 +76,12 @@ const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.st
 const synced=()=>{syncDue=0;localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');showSyncStatus()};
 /* an invitation that was switched off: said once, and the app stops trying (localStorage.invite_ended holds that code) */
 const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and the app keeps working without a connection.';
-function inviteEnded(token){if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);if(typeof tell==='function')tell(ENDED)}
+function inviteEnded(token){if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);if(typeof tell==='function')tell(ENDED);
+  showSyncStatus();if(typeof acctEndedUI==='function')acctEndedUI()}   // what said "Connected" and "backed up" says so too (account.js)
+/* the server's answer means this invitation is over: switched off (403 'invite off'), or, for a tester, deleted (the account deleted
+   on another phone, or its data deleted by the owner: the code is unknown, 403 'forbidden token'). A tester's phone said "Backups aren't
+   available on this server yet" and kept trying. For the owner a refused code is a typing mistake, said as it is. */
+const endedAnswer=(status,j)=>status===403&&!!j&&(j.error==='invite off'||j.error==='forbidden token'&&typeof isTester==='function'&&isTester());
 /* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day */
 const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
 /* why uploads pause until the next UTC day: a tester's own daily backups used up (the server's message), or the server's whole allowance of
@@ -139,7 +145,7 @@ async function syncLite(remote,local,url,token,inline){
   if(p.status===400&&Array.isArray(pr.missing)){pr.missing.forEach(h=>inline.add(h));return {again:{since}}}
   if(p.status===422&&pr.error==='legacy')return {again:{legacy:true}};          // a backup the server can't index: the whole of it
   if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
-  if(p.status===403&&pr.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
+  if(endedAnswer(p.status,pr)){inviteEnded(token);setSyncStatus(ENDED);return false}
   if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
   setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;
   if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
@@ -158,7 +164,7 @@ async function syncOnce(){
       let q=quick?'?v='+encodeURIComponent(mark.v):'';
       if(lite){const s=all?null:since||(last&&last.v);q='?lite=1'+(s?'&since='+encodeURIComponent(s):'')+(quick?'&v='+encodeURIComponent(mark.v):'')}
       const r=await fetch(url+q,{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
-      if(r.status===403&&remote.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);pullDone();return false}
+      if(endedAnswer(r.status,remote)){inviteEnded(token);setSyncStatus(ENDED);pullDone();return false}
       if(r.status===501)pullDone();   // the server keeps no backup (no KV): nothing this device could be behind
       if(!r.ok)throw new Error(remote.message||remote.error||'HTTP '+r.status);
       if(quick&&remote.same){synced();pullDone();return true}
@@ -175,7 +181,7 @@ async function syncOnce(){
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));
       if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
-      if(p.status===403&&pr.error==='invite off'){inviteEnded(token);setSyncStatus(ENDED);return false}
+      if(endedAnswer(p.status,pr)){inviteEnded(token);setSyncStatus(ENDED);return false}
       if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
       setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoring=false;
       if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
@@ -214,7 +220,10 @@ const snapLabel=s=>{const t=new Date(s.saved).toLocaleString(undefined,{weekday:
   return s.id==='before-restore'?`Before the last roll-back (${t})`:/^\d{4}-\d{2}$/.test(s.id)?`Start of ${new Date(s.id+'-02').toLocaleDateString(undefined,{month:'long',year:'numeric'})} (${t})`:t};
 async function loadSnapshots(){const sel=$('#snap-list'),st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';if(!sel||sel.dataset.loaded)return;
   if(!url||!token){st.textContent=NEED_CONN;return}
-  try{const r=await fetch(url+'?snaps=1',{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'HTTP '+r.status);
+  if(typeof inviteOver==='function'&&inviteOver()){st.textContent=ENDED;return}
+  try{const r=await fetch(url+'?snaps=1',{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));
+    if(endedAnswer(r.status,j)){inviteEnded(token);st.textContent=ENDED;return}   // not "Could not list the daily backups: invite off"
+    if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);
     sel.dataset.loaded=1;const list=j.snaps||[];
     sel.innerHTML=`<option value="">${list.length?'Choose a day…':'No daily backups yet'}</option>`+list.map(s=>`<option value="${s.id}">${snapLabel(s)}</option>`).join('');
     st.textContent=list.length?`${list.length} kept. Each is the wardrobe before that day's first change.`:'The first one is kept the next time something changes.'}

@@ -171,9 +171,10 @@ async function kitSampleLoad(){if(items.length&&!kitHasSample()&&!await askConfi
   const ids=await kitSaveCards(cards);if(!ids.length)return;   // (save said why)
   cache={};todayStale=true;show('today');if(typeof goToday==='function')goToday();   // on a weekend, the next workday's outfit
   toast(`A sample wardrobe of ${ids.length} pieces: swipe through the days to see outfits.`,4500)}
-async function kitSampleRemove(){const s=items.filter(i=>i.sample);if(!s.length)return;
-  if(!await askConfirm(`Remove the ${s.length} sample pieces?\n\nYour own clothes stay.`,{ok:'Remove',danger:true}))return;
+async function kitSampleRemove(quiet){const s=items.filter(i=>i.sample);if(!s.length)return;   // quiet: already asked (account.js, connecting with the sample loaded)
+  if(!quiet&&!await askConfirm(`Remove the ${s.length} sample pieces?\n\nYour own clothes stay.`,{ok:'Remove',danger:true}))return;
   for(const it of s)await del(it.id);items=items.filter(i=>!i.sample);if(typeof clearLocks==='function')await clearLocks();cache={};todayStale=true;
+  if(quiet){if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
   show(items.length?'today':'wardrobe');toast('The sample wardrobe is gone.',3000)}
 /* Today, while sample pieces are there */
 function kitSampleBanner(){if(!kitHasSample())return '';const own=items.filter(i=>!i.sample).length;

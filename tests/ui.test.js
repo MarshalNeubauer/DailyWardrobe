@@ -60,12 +60,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
         inside:['#cfg-url','#cfg-token','#asm-group'].every(inAdv),gone:!document.querySelector('#weave-box,#bench-box,#adv-tagging'),out:['#cfg-workdays','#replan-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
-        label:document.querySelector('#adv-connection .adv-head').innerText.replace(/\s+/g,' ')}});
+        label:[...document.querySelector('#adv-connection .adv-t').childNodes].map(n=>n.textContent.trim()).join(' ')}});   // (textContent: not connected, the fold is out of sight)
     ok(adv.ids==='adv-photos,adv-connection'&&adv.shut,'Outfit pictures and Connection each have an Advanced fold, closed when Settings opens (Schedule\'s held only Re-plan, now Start the plan over, for everyone)');
     ok(adv.inside&&adv.gone&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code and the item-photo tools are inside them (shirt weaves and the accuracy check are gone); the everyday controls, Start the plan over among them, are not');
     await p.evaluate(()=>openSettings('connection'));await settle(p,300);
     ok(!(await p.isVisible('#cfg-url'))&&await p.isVisible('#conn-link'),'Connection shows a field for the invite link; the address and code stay folded away');
-    await p.click('#adv-connection .adv-head');
+    await p.click('#conn-own button');   // not connected, the owner's fold shows after "I run the server" (ui.js connOwn)
     const ao=await p.evaluate(()=>({vis:!!document.querySelector('#cfg-url').offsetParent,exp:document.querySelector('#adv-connection .adv-head').getAttribute('aria-expanded'),h:Math.round(document.querySelector('#adv-connection .adv-head').getBoundingClientRect().height),
       labels:[...document.querySelectorAll('#advin-connection label')].map(l=>l.firstChild.textContent.trim()).join()}));
     ok(ao.vis&&ao.exp==='true'&&ao.h>=44&&ao.labels==='Server address,Code',`a tap unfolds it (${ao.labels}; a ${ao.h}px row)`);
