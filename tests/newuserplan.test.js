@@ -15,7 +15,7 @@ module.exports=async({ok,chromium,url})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844},locale:'en-US'})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',added:1,...x});
-      window.fresh=(t='2026-11-15T12:00:00')=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;delete settings.dress;delete settings.location;settings.holidays=null;settings.daysOff=[];settings.laundryDays=1;settings.learn=null;
+      window.fresh=(t='2026-11-15T12:00:00')=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;delete settings.dress;delete settings.location;settings.holidays=null;settings.daysOff=[];settings.laundryDays=1;
         dayRecs={};weather={};climate=null;TODAY_OVERRIDE=t;cache={};sel=todayDate();view={y:sel.getFullYear(),m:sel.getMonth()}};
       window.months=n=>{const T=todayDate(),pl=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(new Date(T.getFullYear(),T.getMonth()+n,0));return Object.entries(pl).filter(([k])=>keyDate(k)>=T)};
       window.week=()=>{const T=todayDate(),out=[];for(let g=0;g<7;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(!isWorkday(d))continue;const o=planMonth(d.getFullYear(),d.getMonth())[key(d)];out.push({k:key(d),dow:d.getDay(),top:o&&o.top&&o.top.id,type:o&&o.top&&o.top.type,tie:o&&o.tie&&o.tie.id,lock:dayRecs[key(d)]&&dayRecs[key(d)].lock})}return out}});
