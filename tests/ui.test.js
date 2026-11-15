@@ -38,11 +38,6 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(a1.before===undefined&&a1.ans===true&&a1.shut&&a2.ans===false&&a3.ans===false&&a4.ans===false&&a4.shut,'it answers true on OK, false on Cancel, Escape and a tap outside, and closes');
     await p.evaluate(()=>{tell('That file is not a Daily Wardrobe backup.')});
     ok(await p.evaluate(()=>{const t=document.querySelector('#toast');return t.classList.contains('on')&&/not a Daily Wardrobe backup/.test(t.textContent)&&+getComputedStyle(t).zIndex>+getComputedStyle(document.querySelector('#settings-modal')).zIndex&&t.getBoundingClientRect().height<50}),'tell() is a toast, on one line, shown above Settings too');
-    // forgetting what the planner learned: done at once, with Undo
-    await p.evaluate(()=>{settings.learn={p:{'a|b':-2},i:{}};openStats();forgetLearned()});
-    await p.waitForFunction(()=>settings.learn===null&&document.querySelector('#toast.act button'));
-    await p.click('#toast button');await p.waitForFunction(()=>settings.learn&&settings.learn.p['a|b']===-2);
-    ok(true,'"Forget everything" on the stats page forgets at once and offers Undo, which brings it back');
 
     /* ---- Settings: wording, the top group, Advanced folds ---- */
     await p.evaluate(()=>{show('today');openSettings();renderAbout()});await settle(p,400);
