@@ -25,14 +25,37 @@ async function recordDays(p){
 /* past workdays the app was not opened on are recorded as planned and count as worn: say so once, with a way to mark them not worn
    (2026-11-15, the audit: back after a week away, every missed workday was silently counted as worn, toward the cleaning counts too) */
 let missedDays=[],missedT=0;
+// the day the app was first used for real (a record it didn't make by itself): the first plan of past days before it is no gap
+const firstReal=()=>{const real=Object.values(dayRecs).filter(r=>r.ids&&!r.auto).map(r=>+keyDate(r.date));return real.length?Math.min(...real):Infinity};
+const missedSpan=ks=>{const n=ks.length,f=d=>shortDate(keyDate(d));return n===1?f(ks[0]):`${f(ks[0])} – ${f(ks[n-1])}`};
 function missedNote(k){missedDays.push(k);clearTimeout(missedT);missedT=setTimeout(missedTell,400)}
-function missedTell(){const real=Object.values(dayRecs).filter(r=>r.ids&&!r.auto).map(r=>+keyDate(r.date)),first=real.length?Math.min(...real):Infinity;
+function missedTell(){const first=firstReal();
   // only days after the app was first used for real (not the first plan of past days)
   const ks=[...new Set(missedDays)].filter(k=>+keyDate(k)>first).sort((a,b)=>keyDate(a)-keyDate(b));missedDays=[];if(!ks.length||typeof toast!=='function')return;
-  const n=ks.length,f=d=>shortDate(keyDate(d)),span=n===1?f(ks[0]):`${f(ks[0])} – ${f(ks[n-1])}`;
-  toast(`${n===1?'A past workday':n+' past workdays'} you didn’t open the app (${span}) ${n===1?'was':'were'} counted as worn, as planned.`,12000,{label:`I didn’t wear ${n===1?'it':'them'}`,fn:()=>missedNotWorn(ks)})}
+  const n=ks.length;
+  toast(`${n===1?'A past workday':n+' past workdays'} you didn’t open the app (${missedSpan(ks)}) ${n===1?'was':'were'} counted as worn, as planned.`,12000,{label:`I didn’t wear ${n===1?'it':'them'}`,fn:()=>missedNotWorn(ks)});
+  // the days were recorded after Today was drawn: put their card in (missedCard) without drawing Today again, which would cut off
+  // an unfolding box or a swipe
+  missedPut()}
+function missedPut(){const h=missedCard(),old=document.querySelector('#missbox');
+  if(old){if(h)old.outerHTML=h;else old.remove();return}
+  const m=h&&document.querySelector('#today #mbox');if(m)m.insertAdjacentHTML('afterend',h)}
 async function missedNotWorn(ks){for(const k of ks){const r=dayRecs[k];if(r&&r.ids&&r.worn!==false)await saveDay({...r,worn:false},true)}
   if(window.scheduleSync)scheduleSync();toast(`Marked as not worn: ${ks.length===1?'that day':'those days'} no longer count${ks.length===1?'s':''} toward rest and cleaning.`,4000);if(typeof refreshToday==='function')refreshToday()}
+/* the missed days also stay on Today as a card (missedCard, under the month) until they are marked not worn or the card is closed
+   (the re-audit, 2026-11-15: the 12-second toast was the only way to undo the batch, gone if the user looked away while the app
+   started): the days the app recorded by itself (rec.auto) in the last MISSED_KEEP days, after it was first used for real, still
+   counted as worn and not corrected by hand; "Keep as worn" hides them on this phone (localStorage missed_ok: the last day it covered) */
+const MISSED_KEEP=30;
+function missedOpen(){const T=todayDate(),first=firstReal();let ok=null;try{ok=localStorage.getItem('missed_ok')}catch{}
+  const okD=ok&&/^\d{4}-\d{1,2}-\d{1,2}$/.test(ok)?+keyDate(ok):-Infinity;
+  return Object.values(dayRecs).filter(r=>{if(!r||!r.auto||!r.ids||r.worn===false||r.edited)return false;const d=keyDate(r.date);return d<T&&+d>first&&+d>okD&&T-d<=MISSED_KEEP*864e5})
+    .map(r=>r.date).sort((a,b)=>keyDate(a)-keyDate(b))}
+function missedCard(){if(typeof homeDay!=='function'||isoKey(sel)!==isoKey(homeDay()))return '';const ks=missedOpen(),n=ks.length;if(!n)return '';
+  return `<section class="mbox missbox" id="missbox" aria-label="Days counted as worn"><p class="misstxt">${n===1?'A workday':n+' workdays'} you didn’t open the app (${esc(missedSpan(ks))}) ${n===1?'counts':'count'} as worn, as planned.</p>`+
+    `<div class="missbtns"><button class="linkbtn" onclick="missedCardNo()">I didn’t wear ${n===1?'it':'them'}</button><button class="linkbtn" onclick="missedCardOk()">Keep as worn</button></div></section>`}
+function missedCardNo(){const ks=missedOpen();if(ks.length)missedNotWorn(ks)}
+function missedCardOk(){const ks=missedOpen();if(ks.length){try{localStorage.setItem('missed_ok',ks[ks.length-1])}catch{}}missedPut()}
 /* ---- the coming week stays as shown ----
    Each workday from today to LOCK_DAYS-1 days on gets rec.lock, the pieces the plan showed for it (not the coat: that follows the
    forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not worn or
