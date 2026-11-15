@@ -176,7 +176,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - every shirt in the wash: `washed` takes the one washed longest ago, not yesterday's white
 - a funeral tie with a motif (dots, paisley, foulard) loses 6 more, so a navy stripe goes before navy dots; a patterned stand-in's note says a plain black tie is right
 - `beltWait(shoes)`: the belt a pair waits for when belts are owned and none matches it ("black smooth leather belt"); named in the Variety line's "same shoes as yesterday", Insights' never-worn reason and its shoes-two-days-running line (stats.js, dress.js)
-- `PLAN_RULES` (13) is bumped to release the week's locks once (picks kept); a bump also clears swaps on future days, so changes that protect picks (`fixedAhead`, `TIE_GAP`) were made without one
+- `PLAN_RULES` (14, for the new-user audit's planner fixes, 2026-11-15) is bumped to release the week's locks once (picks kept); a bump also clears swaps on future days, so changes that protect picks (`fixedAhead`, `TIE_GAP`) were made without one
 - **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js
 - on the next start a bump releases only the week's locks and the app's own recorded pieces on days after today (`checkPlanRules()` → `replanFuture(true)` in history.js); the owner's swaps, skips and vest choices stay, so there is no reason to skip a bump; Settings' "Re-plan upcoming days" also clears them, on demand
 
