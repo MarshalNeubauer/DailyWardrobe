@@ -127,6 +127,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a phone on its side (`orientation:landscape` and height up to 500px): the picker takes the screen's height and shows six pieces across
 - `.score .pts` is `color-mix` of `--mut` and `--ink` (over 4.5:1 in both themes)
 - the folded score list (`#sbox:not(.open) #spanel .mpanel-in`) is `visibility:hidden`, so it isn't read out or reached by Tab
+- the largest text with page zoom (fix round 2, 2026-11-15; 150% text at 268 px): at 340 px and under the tab names (`min(.9375rem, max(15px, 5.6vw))`, with an ellipsis) and the header title (`min(1.3125rem, 7vw)`) shrink with the width, Today's cards grow taller when their titles wrap (`height:auto`, min 76px) and their picture slot is 84px
+- Today's card titles and second lines grow with Larger Text only as far as the width allows (`min(1rem, max(16px, 4.6vw))`, `min(.8125rem, max(13px, 3.75vw))`): never below the default size; "November wear plan" was cut at 150% text on a 402 px phone
+- the item sheet's title wraps onto two lines and the colour/pattern values (`.colnm`) wrap, instead of "Mid grey h…" / "Mid …"
+- a toast breaks a long unbroken name (`overflow-wrap:anywhere`, the button `flex:none`), so its Undo stays on the screen
 
 ### `core.js`
 
@@ -867,6 +871,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the setup, the piece picker and What to buy take the same entry (new-user audit 2026-11-14: Back left the app from all three): `appKind` 'setup' (`setupOpen`, again in `setupGo` after a tap; `setupClose` drops it), 'pick' (`openPicker`/`closePicker`), 'shop' (`openShop`/`closeShop`); a popstate on it goes through `appSheetBack`: the setup steps back one step (on Welcome it stays open) and pushes again, the picker and What to buy close; `tests/backzoom.test.js`
 - an entry asked for while our own step back is on its way, or while the address holds `#invite=` (the entry would carry it and Back would land on it), waits in `appWant` and is made by `appWanted()` when the step back lands (the popstate) or `dropInviteHash` (account.js) runs: Add after the setup's last step, the setup after "Run setup again" in Settings, the setup opened at start-up from an invitation
 - iOS may skip a history entry made without a tap; the setup's entry is pushed again from `setupGo` (a tap) for that, the start-up one can't be checked off the phone
+- a layer over a page borrows the page's entry instead of making a second one (fix round 2, 2026-11-15): `appBorrow(kind)` gives it the entry (or makes its own when none is held, or takes the place of an entry still waiting in `appWant`) and returns whose it was; `appGiveBack(kind, was)` hands it back when the layer closes by a tap (or drops the layer's own entry); closed by Back, the entry is gone, so the layer calls `appPush(was)` to make the page's again
+- kinds 'ask' (a question, ui.js) and 'kit' (the tour, the close-up guide, the Home Screen sheet, the import sheet, kit.js) use it: Back closes the question as Cancel (`askBack`) and the sheet as ✕ (`kitClose(true)`; while an import is being written it stays and its entry is made again), and the page under them (Settings, Add, the item sheet) stays open with its entry; `tests/nufix9.test.js`
+- `appTop`: the latest entry is start.js's, not the item sheet's (a question or the close-up guide opened over the item sheet); the item sheet's listener then leaves that Back alone, and ignores start.js's own step back (`appPend`); when it closes the item it marks the event (`e.dwItem`) so start.js's listener doesn't act on it too
 
 ### `ui.js`
 
@@ -886,6 +893,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `plainErr(message)` turns server set-up errors (`TECH_RE`) into plain words unless the owner is connected; used by `tagFailText`, Several items, the picture batch and a tester's `setSyncStatus` (a raw OPENAI_API_KEY message once reached a new user)
 - dialogs call `layerOpen`/`layerClose` (Settings, picker, What to buy); `layerInert` keeps the page behind inert and returns focus; `layerUp` traps Tab and handles Escape
 - `tests/a11yfix.test.js` covers dialogs, waiting redraws, storage failures, labels, contrast, motion, tap targets
+- a question takes a history entry (`appBorrow('ask')`, start.js) and the phone's Back answers it no (`askBack`), leaving the page under it open (fix round 2, 2026-11-15: Back closed Settings under "Roll back to …?" and left the question over Today)
+- a real tap outside a question within `ASK_SETTLE` (450 ms) of its opening doesn't cancel it: it is the second tap of a double tap on the button that asked (`isTrusted`, so a test's `.click()` still cancels at once)
 
 ### `safety.js`
 
@@ -1029,6 +1038,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - getting started (2026-11-14, the owner's ask after the audit's new-user walkthrough), loaded after setup.js; `tests/kit.test.js`
 - one full-screen sheet (`#kitsheet`, z-index 2000, the page inert while open, Escape closes, ← → step) serves the tour, the close-up guide and the import (`kitOpen`/`kitDraw`/`kitClose`/`kitGo`)
+- the sheet takes a history entry or borrows Add's (`kitHist` → start.js `appBorrow('kit')`, kept in `kit.hist`): the phone's Back closes it like ✕, and Add stays under the import sheet (fix round 2, 2026-11-15: Back left the app from the tour and the Home Screen sheet, and closed Add under the import sheet)
+- the import sheet's paste field scrolls into view under the header when it is focused (`kitPasteShow`, 350 ms later, for the keyboard)
 - the quick tour (`tourOpen(then, lastLabel)`, `TOUR_CARDS`): four cards with drawn pictures: the score, the close-up (white paper along one edge), Shade, patterns; marked seen on close (`localStorage.tour_seen`, `tourSeen`)
 - a first-time person who taps "Add my first item" at the setup's end gets the tour between the setup and Add, its last button "Add my first item" (`setupFinish`); Escape or ✕ also goes on to Add
 - the tour is offered again by "Take the 1-minute tour" on the setup's last step and Today's first-outfit checklist (`kitStartRow`), and Settings → About → "Take the tour" (`#tour-again`)
@@ -1155,6 +1166,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `wardrobe.js`
 
 - the Wardrobe tab's search and sort, the item fields `name` / `brand` / `material` / `notes`, and Delete with Undo (loaded after stats.js; called from `renderWardrobe`, `wardList`, `itemBody` and `rm` in itemsheet.js and `save` in add.js)
+- a grid box's accessible name ends with its tag (`giTag`/`giNote`: Sample, Out of rotation, On the way, at the cleaner's, due for cleaning): the `aria-label` hid the visible tag (re-audit 2026-11-15)
 - search: a field above the type chips (`wardBar`, `#wsearch`, `wardQ`); every word typed must be in the item's name, brand, notes, material, type, colour names or pattern (`wardHay`, `wardMatch`; case and accents ignored); it combines with the type chip and stays when the chip changes
 - typing redraws only the grid and the count (`wardSearch` → `wardRefresh`: `#wslide`, `#wcount`, `#wclear`), never the field, so the focus and the keyboard stay; a full `renderWardrobe` while the field is in use (a sync arriving) puts the focus and the caret back (`wardKeep`/`wardBack`)
 - the header count reads "n items", or "n of m items" when a chip or the search narrows the list (`wardCount`); × in the field clears it (`wardClear`, also Escape)

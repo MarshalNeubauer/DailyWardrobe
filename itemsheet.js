@@ -173,7 +173,7 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
 let itemHist=false,itemBack=false;
 try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
 function histPush(){if(itemHist||itemBack||appPend)return;   // (appPend: a step back that drops Settings' or a stats/packing/care page's entry is on its way; the item gets its entry once it lands)
-try{history.pushState({item:1},'');itemHist=true}catch{}}
+try{history.pushState({item:1},'');itemHist=true;if(typeof appTop!=='undefined')appTop=false}catch{}}
 function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
 /* the phone's Back with the colour or pattern sheet up (colpick.js) closes the sheet only (2026-11-15, the re-audit: Back closed the Add page
    or the item sheet underneath and left the sheet up, and "Use" then changed an item no longer on screen). The step back took the entry of
@@ -181,14 +181,15 @@ function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history
    of the item sheet's and start.js's: a capturing one on window still ran after them in Chromium), stops them, closes the sheet (‹ first on
    a "New" sheet opened from the list, as its own ‹ does) and puts that entry back, so their flags still hold and the next Back closes the
    page. A step back of the app's own (itemBack, appPend) passes untouched. */
-function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof appPend!=='undefined'&&appPend))return;
+function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof appPend!=='undefined'&&appPend))return;
   e.stopImmediatePropagation();const had=itemHist||(typeof appHist!=='undefined'&&appHist);
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();
   if(had)try{history.pushState({cp:1},'')}catch{}}
 addEventListener('popstate',colBackFirst);
-addEventListener('popstate',()=>{
+addEventListener('popstate',e=>{
   if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
-  if(itemHist){itemHist=false;if(editing)closeItem(true)}});
+  if(appPend||appHist&&appTop)return;   // a step back of start.js's own, or its entry over the sheet (a question, the close-up guide): start.js's listener takes it
+  if(itemHist){itemHist=false;e.dwItem=true;if(editing)closeItem(true)}});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
