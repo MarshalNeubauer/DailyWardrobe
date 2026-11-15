@@ -62,7 +62,8 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
     ok(r3.gone&&r3.under&&same(f0,f3)&&f3.len<=f0.len+1,T+`${name}: opened and closed ${reps*2} times (× and Back), the history is as long as before (${fl(f0)} → ${fl(f3)})`)};
   const item=async()=>{await ev(()=>{show('wardrobe');openItem('m1')});await settle(p,450)};
   const itemUp=()=>editing==='m1'&&!!document.querySelector('#item-view.on');
-  const addCard=async()=>{await ev(()=>{show('wardrobe');openAdd();if(!queue.length)addManual();const q=queue[0];q.type='suit';q.primaryColor='deeptaupe';q.pattern='solid';q.texture=items.find(x=>x.id==='m1').texture;renderAdd()});await settle(p,300)};
+  // a card of the list on Add (a photo that couldn't be opened, filled in by hand; "Add without a photo" has its own sheet: npsUp)
+  const addCard=async()=>{await ev(()=>{show('wardrobe');openAdd();if(!queue.length){queue.unshift({id:'bg-card',err:'open'});errToHand('bg-card')}const q=queue[0];q.type='suit';q.primaryColor='deeptaupe';q.pattern='solid';q.texture=items.find(x=>x.id==='m1').texture;renderAdd()});await settle(p,300)};
   const addUp=()=>!document.querySelector('#add').hidden&&queue.length>0;
   const setUp=()=>settingsOpen();
   const today=()=>!document.querySelector('#today').hidden;
@@ -95,6 +96,22 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
   await layer('the import sheet over Add',{base:()=>ev(()=>{show('wardrobe');openAdd()}),open:()=>ev(()=>kitImportOpen()),on:()=>!!kit,x:()=>tap('#kit-cancel'),under:()=>!document.querySelector('#add').hidden});
   await layer('the color sheet over an Add card',{base:addCard,open:()=>tap('#add .colbtn[data-k="primaryColor"]'),on:()=>!!colPick,x:()=>tap('#col-sheet .pick-x'),under:addUp});
   await layer('the reading sheet over an Add card',{base:addCard,open:()=>ev(()=>rdRun('q',queue[0].id)),on:()=>!!document.querySelector('#rd-sheet.on'),x:()=>tap('#rd-sheet .rdx'),under:addUp});
+  // "Add without a photo" (2026-11-15): its sheet over Add, the color sheet and the discard question over it
+  // (on/under run in the page: each names only the page's own globals)
+  const nps=async(change)=>{await ev(()=>{show('wardrobe');openAdd();queue.length=0;renderAdd()});await settle(p,300);await tap('#add-manual');
+    if(change)await ev(()=>{setq(0,'type','tie')})};
+  await layer('the "Add without a photo" sheet over Add',{base:()=>ev(()=>{show('wardrobe');openAdd();queue.length=0;renderAdd()}),open:()=>tap('#add-manual'),on:()=>!!npsId&&!!document.querySelector('#nps-sheet.on'),x:()=>tap('#nps-sheet .nps-x'),under:()=>!document.querySelector('#add').hidden&&!npsId&&!queue.length});
+  await layer('the color sheet over the "Add without a photo" sheet',{base:()=>nps(false),open:()=>tap('#nps-q .colbtn[data-k="primaryColor"]'),on:()=>!!colPick,x:()=>tap('#col-sheet .pick-x'),under:()=>!!npsId&&!!document.querySelector('#nps-sheet.on')&&!document.querySelector('#add').hidden});
+  await layer('"Discard this item?" over the "Add without a photo" sheet',{base:()=>nps(true),open:()=>tap('#nps-sheet .nps-x'),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:()=>!!npsId&&!!document.querySelector('#nps-sheet.on')&&!document.querySelector('#add').hidden&&queue[0].type==='tie'});
+  await step('question > no-photo sheet > Add',async()=>{await home();await nps(true);
+    const stack=()=>ev(()=>[asking?'question':'',npsId?'nophoto':'',!document.querySelector('#add').hidden?'add':''].filter(Boolean).join(' > ')||'none');
+    await tap('#nps-sheet .nps-x');const seen=[await stack()];
+    await back();seen.push(await stack());   // the question closes as Keep editing
+    await back();seen.push(await stack());   // Back on the changed card asks again
+    await tap('#ask-ok');seen.push(await stack());   // Discard
+    await back();seen.push(await stack());
+    ok(seen.join(' | ')==='question > nophoto > add | nophoto > add | question > nophoto > add | add | none',T+`a changed "Add without a photo" card: Back closes the question, asks again, Discard closes the sheet, the next Back leaves Add (${seen.join(' | ')})`);
+    e=await flags();e.q=await ev(()=>queue.length);ok(!e.ah&&!e.ih&&e.q===0,T+`…and leaves no entry and no card behind (${fl(e)}, ${e.q} cards)`)});
   // a card being filled in survives Back off the Add page (as its ‹)
   await step('an Add card being filled in',async()=>{await home();await addCard();await ev(()=>{queue[0].name='Half-typed suit'});await back();
     await ev(()=>openAdd());await settle(p,300);

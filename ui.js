@@ -92,7 +92,8 @@ const LAYER_Q='#ask-sheet.on,#cu-sheet.on,#rd-sheet.on,#col-sheet.on,#pick-sheet
 function layerUp(){const l=[...document.querySelectorAll(LAYER_Q)];if(typeof settingsOpen==='function'&&settingsOpen())l.push(document.querySelector('#settings-modal'));
   const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}   // the top one first (by z-index: questions, colour sheet, sheets, Settings, item sheet)
 function layerInert(){const on=layerUp().length>0||!!document.querySelector('#setup.on,#nostore');
-  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on}
+  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;
+  if(!on&&typeof npsId!=='undefined'&&npsId&&typeof npsInert==='function')npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add.js)
 function layerOpen(el){if(!el)return;if(!layerFrom.has(el))layerFrom.set(el,document.activeElement);if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
   if(!el.contains(document.activeElement))try{el.focus({preventScroll:true})}catch{}}
 function layerClose(el){layerInert();const f=el&&layerFrom.get(el);if(el)layerFrom.delete(el);

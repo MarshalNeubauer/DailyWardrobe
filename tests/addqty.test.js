@@ -6,9 +6,9 @@ module.exports=async({ok,chromium,url})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844}}),p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd();addManual();setq(0,'type','shirt');setq(0,'primaryColor','white')});
-    const s0=await p.evaluate(()=>({row:!!document.querySelector('#queue .qtyrow'),n:document.querySelector('#qty-n-0').textContent,minus:document.querySelector('#qty-m-0').disabled,conf:document.querySelector('#qconf-0').textContent}));
+    const s0=await p.evaluate(()=>({row:!!document.querySelector('#nps-q .qtyrow'),n:document.querySelector('#qty-n-0').textContent,minus:document.querySelector('#qty-m-0').disabled,conf:document.querySelector('#qconf-0').textContent}));
     ok(s0.row&&s0.n==='1'&&s0.minus&&s0.conf==='Confirm','a shirt card has "How many": 1, minus off, Confirm');
-    const box=await p.evaluate(()=>{const b=document.querySelector('#qty-p-0').getBoundingClientRect(),r=document.querySelector('#queue .qtyrow').getBoundingClientRect();return {h:Math.round(b.height),w:Math.round(b.width),fit:r.right<=innerWidth+0.5&&document.documentElement.scrollWidth<=innerWidth}});
+    const box=await p.evaluate(()=>{const b=document.querySelector('#qty-p-0').getBoundingClientRect(),r=document.querySelector('#nps-q .qtyrow').getBoundingClientRect();return {h:Math.round(b.height),w:Math.round(b.width),fit:r.right<=innerWidth+0.5&&document.documentElement.scrollWidth<=innerWidth}});
     ok(box.h>=44&&box.w>=44&&box.fit,`the − and + are ${box.w}×${box.h} px and the row fits the phone`);
     await p.click('#qty-p-0');await p.click('#qty-p-0');
     const s1=await p.evaluate(()=>({n:document.querySelector('#qty-n-0').textContent,minus:document.querySelector('#qty-m-0').disabled,conf:document.querySelector('#qconf-0').textContent,q:queue[0].qty}));
@@ -24,7 +24,7 @@ module.exports=async({ok,chromium,url})=>{
     // the top: 12
     await p.evaluate(()=>{queue[0].qty=11;renderAdd()});await p.click('#qty-p-0');
     ok(await p.evaluate(()=>document.querySelector('#qty-n-0').textContent==='12'&&document.querySelector('#qty-p-0').disabled),'at most 12');
-    // socks too; other types none, and a number set before changing type is ignored
+    // socks too; other types none, and a number set before changing type is ignored (the card Undo brought back is on Add's list)
     await p.evaluate(()=>{setq(0,'type','socks')});ok(await p.evaluate(()=>!!document.querySelector('#queue .qtyrow')&&/pairs/.test(document.querySelector('#queue .qtyl').textContent)),'socks have it ("Identical pairs")');
     await p.evaluate(()=>{setq(0,'type','tie')});ok(await p.evaluate(()=>!document.querySelector('#queue .qtyrow')&&document.querySelector('#qconf-0').textContent==='Confirm'),'a tie has no stepper');
     const n1=await p.evaluate(()=>items.length);await p.click('#qconf-0');await p.waitForFunction(n=>items.length>n,n1);await p.waitForTimeout(200);

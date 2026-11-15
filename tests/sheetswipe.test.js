@@ -5,7 +5,8 @@
 // status bar (`--sat`, the property styles.css reads env(safe-area-inset-top) into) checks that geometry; touches (CDP in
 // Chromium, tests/webkit.js on WebKit) and mouse drags (Pointer Events: an iPad-style trackpad or Pencil, a desktop mouse) on the
 // grabber, the title and the content check the gesture at phone, unfolded-Duo, iPad and landscape sizes.
-// Also the Add page's item card has a × in its top corner that does what its Cancel does (the owner's ask, same day).
+// Also the Add page's item card has a × in its top corner that does what its Cancel does (the owner's ask, same day; a card of the
+// list: "Add without a photo" opens a sheet of its own, tests/addsheet.test.js).
 // SHOTS=<dir> saves screenshots of the × (phone and wide, light and dark) and of the panel under a stand-in status bar.
 module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();const WK=process.env.TEST_BROWSER==='webkit',SHOTS=process.env.SHOTS;
@@ -60,7 +61,10 @@ module.exports=async({ok,chromium,url,settle})=>{
       const ctx=await browser.newContext({viewport:{width:w,height:h},colorScheme:scheme,hasTouch:true,...(WK?{}:{isMobile:true})});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{queue.length=0;show('add')});await settle(p,500);
       const cards=()=>p.evaluate(()=>({q:queue.length,n:document.querySelectorAll('#queue .card').length}));
-      await p.click('text=Add without photo');await settle(p,500);
+      // a card of the list ("Add without a photo" has its own sheet now, with the × in the sheet's header: tests/addsheet.test.js):
+      // a photo that couldn't be opened, filled in by hand
+      const listCard=()=>p.evaluate(()=>{queue.unshift({id:'c'+Date.now(),err:'open'});renderAdd();errToHand(queue[0].id)});
+      await listCard();await settle(p,500);
       const x=await p.evaluate(()=>{const c=document.querySelector('#queue .card'),b=c&&c.querySelector(':scope>.qx');if(!b)return null;const r=b.getBoundingClientRect(),cr=c.getBoundingClientRect(),st=getComputedStyle(b);
         return {w:r.width,h:r.height,right:cr.right-r.right,top:r.top-cr.top,label:b.getAttribute('aria-label'),txt:b.textContent,color:st.color,bg:getComputedStyle(document.body).backgroundColor,hit:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)===b}});
       ok(x&&x.w>=44&&x.h>=44&&x.right<=8&&x.top<=8&&x.label==='Close'&&x.txt==='×'&&x.hit,`${tag}: the item card has a × (Close) in its top right corner, 44px to tap (${JSON.stringify(x)})`);
@@ -68,7 +72,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       if(SHOTS){await p.evaluate(()=>{scrollTo(0,0);const c=document.querySelector('#queue .card');scrollTo(0,c.getBoundingClientRect().top+scrollY-160)});await p.waitForTimeout(200);await p.screenshot({path:`${SHOTS}/add-x-${w}-${scheme}-${WK?'webkit':'chromium'}.png`})}
       await p.click('#queue .card .qx');await settle(p,400);let c=await cards();
       ok(c.q===0&&c.n===0,`${tag}: the × closes the card, as Cancel does`);
-      await p.click('text=Add without photo');await settle(p,400);await p.click('#queue .card button:text-is("Cancel")');await settle(p,400);c=await cards();
+      await listCard();await settle(p,400);await p.click('#queue .card button:text-is("Cancel")');await settle(p,400);c=await cards();
       ok(c.q===0&&c.n===0,`${tag}: (and Cancel still closes it)`);
       ok(!errs.length,`${tag}: no page errors (${errs.join('; ')})`);
       await ctx.close();

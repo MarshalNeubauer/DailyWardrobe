@@ -172,10 +172,11 @@ suite('outfit score',async({page})=>{
 
 suite('add an item without a photo; it persists',async({page})=>{
   // Add is a page of the Wardrobe since the tabs became Today, Wardrobe, Insights (#225): Wardrobe → + Add
-  await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('text=Add without photo');
-  await page.selectOption('#queue .card >> nth=0 >> select[onchange*="\'type\'"]','belt');
-  await page.selectOption('#queue .card >> nth=0 >> select[onchange*="\'leather\'"]','suede');
-  await page.click('#queue .card >> nth=0 >> text=Confirm');
+  // "Add without a photo" opens its card in a sheet over Add (#nps-sheet), Confirm pinned at its bottom (#nps-bar)
+  await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('#add-manual');
+  await page.selectOption('#nps-q .card >> nth=0 >> select[onchange*="\'type\'"]','belt');
+  await page.selectOption('#nps-q .card >> nth=0 >> select[onchange*="\'leather\'"]','suede');
+  await page.click('#nps-bar >> text=Confirm');
   await page.waitForFunction(()=>items.some(i=>i.type==='belt'));await page.waitForTimeout(200);
   await page.reload();await page.waitForFunction(()=>window.appReady);
   const it=await page.evaluate(()=>items.find(i=>i.type==='belt'));

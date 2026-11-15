@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url})=>{
   await p.click('#sbox .month-link');
   const texts=await p.evaluate(()=>{const t=[document.querySelector('#today').innerText];
     sel=new Date(2026,10,16);items.push({id:'x1',type:'shoes',primaryColor:'brown',leather:'suede'});cache={};renderToday();t.push(document.querySelector('#today').innerText);
-    show('add');addManual();t.push([...document.querySelectorAll('#queue select option')].map(o=>o.textContent).join(' '));
+    show('add');addManual();t.push([...document.querySelectorAll('#nps-q select option')].map(o=>o.textContent).join(' '));
     t.push(runAnalysis(items,todayDate(),2).cats.map(c=>c.notes.join(' ')+' '+(c.own?c.own.groups.map(g=>g[0]).join(' '):'')+' '+c.recs.map(r=>r.name+' '+r.detail+' '+r.why.join(' ')).join(' ')).join(' '));
     return t.join('\n')});
   ok(!/lightblue|lightgrey|darkgrey/i.test(texts),'no run-together color names on Today, in the score, notes, dropdowns or recommendations');

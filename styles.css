@@ -601,12 +601,38 @@ left:50%;width:min(600px,94vw);margin-left:calc(min(600px,94vw)/-2);border-radiu
 #add #queue .qcard>.qx{position:absolute;top:2px;right:2px;z-index:1;width:44px;height:44px;min-height:0;padding:0;margin:0;border:0;border-radius:50%;background:none;color:var(--mut);font-size:1.625rem;font-weight:400;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
 #add #queue .qcard>.qx:hover{color:var(--ink)}
 #add #queue .qcard>.multi-h{padding-right:40px}
-#add #queue .card>label,#item-view .card>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:.875rem;font-weight:600}
-#add #queue .card>label select,#item-view .card>label select{flex:0 0 58%;width:58%;max-width:58%}
+#add #queue .card>label,#item-view .card>label,#nps-q .card>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:.875rem;font-weight:600}
+#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select{flex:0 0 58%;width:58%;max-width:58%}
 #add #queue .card>.btns:last-of-type{margin-top:14px}
 #add #queue .card .btns .pri{flex:1}
 #add .texslot{border-radius:12px;padding:12px}
 #add .multi-h{font-size:.875rem}
+/* ---- Add: "Add without a photo" (a long button under the two tiles, the hanger and pencil in the tiles' line style) and its bottom sheet
+   (2026-11-15, the owner's choice: variant A of add-page-mockups) ---- */
+#add .addlong{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;box-sizing:border-box;margin:0 0 12px;padding:14px 12px;min-height:var(--ctl-h);border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+#add .addlong .aic{margin:0;width:28px;height:28px}
+.addlong-t{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.addlong-t b{font-size:1rem;font-weight:700;line-height:1.25}
+.addlong-t small{font-size:.7813rem;font-weight:400;line-height:1.35;opacity:.75}
+.addlong .chev{font-size:1.5rem;line-height:1;color:var(--mut)}
+#nps-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100;opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}#nps-backdrop.on{opacity:1;visibility:visible;transition:opacity .3s}
+#nps-sheet{position:fixed;left:0;right:0;bottom:0;top:var(--ivtop);z-index:1101;display:flex;flex-direction:column;max-width:640px;margin:0 auto;box-sizing:border-box;background:var(--bg);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;box-shadow:0 -10px 30px rgba(0,0,0,.35);overflow:hidden;outline:none;
+  transform:translateY(102%);visibility:hidden;pointer-events:none;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s .3s}   /* it stays visible while it slides away */
+#nps-sheet.on{transform:none;visibility:visible;pointer-events:auto;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+@media (min-width:600px){#nps-sheet{top:max(4vh,var(--ivtop))}}   /* below the status bar on the unfolded foldable (as the item sheet, #460) */
+.nps-head{flex:none;position:relative;display:flex;align-items:center;gap:10px;padding:22px 4px 10px 16px;border-bottom:1px solid var(--line);touch-action:none;cursor:grab}
+.nps-grab{position:absolute;top:7px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:3px;background:color-mix(in srgb,var(--mut) 45%,transparent)}
+#nps-sheet .nps-head .aic{margin:0;width:26px;height:26px;flex:none}
+.nps-ht{flex:1;min-width:0}
+#nps-sheet .nps-ht h2{margin:0;font-size:1.125rem;line-height:1.25;text-align:left}
+#nps-sheet .nps-ht small{display:block;color:var(--mut);font-size:.8125rem;font-weight:400}
+#add .nps-x{flex:none;width:44px;height:44px;min-height:44px;min-width:44px;padding:0;margin:0;border:0;border-radius:50%;background:none;color:var(--ink);font-size:1.125rem;line-height:1;cursor:pointer}
+.nps-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+#add #nps-q .card{position:relative;max-width:600px;margin:0 auto;padding:12px 16px 20px;border:0;border-radius:0;background:none;box-shadow:none}
+.nps-bar{flex:none;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card)}
+#add .nps-bar button{margin:0}#add .nps-bar .pri{flex:1}
+body.nps-on #toast,body.nps-on #busy{bottom:calc(78px + env(safe-area-inset-bottom))}
+@media(prefers-reduced-motion:reduce){#nps-sheet,#nps-sheet.on,#nps-backdrop,#nps-backdrop.on{transition:none}}
 /* Stats: the shared page header, cards with the shared border and radius */
 #stats .phead.nav{display:flex;grid-template-columns:none;margin:4px 0 14px}#stats .phead.nav h2{text-align:left}
 #stats .st-tiles{gap:8px;margin:0 0 12px}
@@ -1234,7 +1260,7 @@ header h1{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Settings' category titles wrap instead of being cut ("Days off & occasi…") */
 #settings-modal .scat-head .mltxt b,.slink .mltxt b{white-space:normal}
 /* the item sheet's and the Add card's fields keep room for their value: 58% of the row, at least 8.5rem (at most 72%) */
-#add #queue .card>label select,#item-view .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select{--fw:max(58%,min(8.5rem,72%));flex-basis:var(--fw);width:var(--fw);max-width:var(--fw)}
+#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select{--fw:max(58%,min(8.5rem,72%));flex-basis:var(--fw);width:var(--fw);max-width:var(--fw)}
 /* a long word in the picker's names breaks instead of being cut ("Mid grey herringbon") */
 .pick-nm{overflow-wrap:break-word}
 /* dark theme: the getting-started checklist's empty rings were --line on the card (about 1.3:1) */
@@ -1279,6 +1305,18 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 #kitsheet .kit-x{min-width:44px;padding:0;border:0;background:none;font-size:1.125rem}
 #kitsheet .btns{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
 #kitsheet .vfile{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+/* the import sheet: a bottom sheet over Add like "Add without a photo" (kit.js kitBs; 2026-11-15, add-page-mockups) */
+#kit-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1999;display:none}#kit-backdrop.on{display:block}
+#kitsheet.kbs{inset:auto;top:var(--ivtop);left:0;right:0;bottom:0;max-width:640px;margin:0 auto;box-sizing:border-box;border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;box-shadow:0 -10px 30px rgba(0,0,0,.35);overflow:hidden}
+#kitsheet.kbs.on{animation:kbsUp .3s cubic-bezier(.2,.8,.2,1)}
+#kitsheet.kbs.going{display:flex;transform:translateY(102%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes kbsUp{from{transform:translateY(102%)}}
+@media (min-width:600px){#kitsheet.kbs{top:max(4vh,var(--ivtop))}}
+#kitsheet.kbs .kit-head{position:relative;padding-top:22px;touch-action:none;cursor:grab}
+.kit-grab{position:absolute;top:7px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:3px;background:color-mix(in srgb,var(--mut) 45%,transparent)}
+.kit-ht{display:flex;align-items:center;gap:10px;min-width:0}
+.kit-hic{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media(prefers-reduced-motion:reduce){#kitsheet.kbs.on{animation:none}#kitsheet.kbs.going{transition:none}}
 .kit-paste{display:block;font-size:.875rem;font-weight:600;margin:0 0 12px}
 .kit-paste textarea{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--field,var(--card));color:var(--ink);font:.875rem/1.4 ui-monospace,Consolas,monospace}
 .kit-err{color:var(--danger)}

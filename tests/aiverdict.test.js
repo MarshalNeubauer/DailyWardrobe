@@ -18,12 +18,12 @@ module.exports=async({ok,chromium,url})=>{
         Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'solid',meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref,src:'closeup',sharp,spread}});
         q.tagAI=ai?aiSignals({type:'suit',primaryColor:ai.col||'navy',pattern:'solid',conf:{type:'high',primaryColor:ai.c,pattern:'high'},altColor:ai.alt||null,altPattern:null},true):null;
         q.measV=colourVerdicts(q);applyMeasured(q);renderAdd();
-        const card=document.querySelector('#queue .card');return {q,col:q.primaryColor,conf:q.measV[0].conf,mode:q.measV[0].mode,
+        const card=document.querySelector('#nps-q .card');return {q,col:q.primaryColor,conf:q.measV[0].conf,mode:q.measV[0].mode,
           auto:card.querySelector('.measauto')?card.querySelector('.measauto').textContent:null,flag:card.querySelector('.measalt')?card.querySelector('.measalt').textContent:null}};
       const pick=({q,...o})=>o,out={};
       out.none=pick(mk(null));                                         // no signals: the measurement alone (0.6: asks)
       let c=mk({c:'low',alt:'charcoal'});out.low=pick(c);               // unsure, runner-up = measured: changed
-      c.q&&document.querySelector('#queue .measauto button').click();const u=queue[0];out.undo={col:u.primaryColor,edited:!!(u.edited&&u.edited.primaryColor)};
+      c.q&&document.querySelector('#nps-q .measauto button').click();const u=queue[0];out.undo={col:u.primaryColor,edited:!!(u.edited&&u.edited.primaryColor)};
       applyMeasured(u);out.undo.again=u.primaryColor;
       out.lowOther=pick(mk({c:'low',alt:'black'}));                     // unsure, but its runner-up is a third colour: only asks
       out.medium=pick(mk({c:'medium',alt:'charcoal'}));                 // medium: as before
@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url})=>{
       out.stale=pick(mk({c:'low',alt:'charcoal',col:'blue'}));          // the field no longer holds Claude's answer: its signals don't count
       const h=mk({c:'low',alt:'charcoal'});queue.length=0;addManual();const hq=queue[0];hq.manual=false;
       Object.assign(hq,{type:'suit',primaryColor:'navy',pattern:'solid',edited:{primaryColor:true},tagAI:h.q.tagAI,meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref:false,src:'closeup',sharp:.3,spread:2}});
-      hq.measV=colourVerdicts(hq);applyMeasured(hq);renderAdd();out.hand={col:hq.primaryColor,notes:!!document.querySelector('#queue .measauto,#queue .measalt')};
+      hq.measV=colourVerdicts(hq);applyMeasured(hq);renderAdd();out.hand={col:hq.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
       out.k={AI_LOW_AUTO,AI_HIGH_FLAG,MEAS_AUTO};queue.length=0;items=keep;renderAdd();return out});
     ok(r.none.mode==='flag'&&r.none.col==='navy'&&r.none.conf>=r.k.AI_LOW_AUTO&&r.none.conf<r.k.MEAS_AUTO,`without Claude's signals a ${r.none.conf} measurement only asks, as before`);
     ok(r.low.col==='charcoal'&&/Changed navy → charcoal \(measured from your close-up; Claude wasn’t sure\)Undo/.test(r.low.auto),`Claude unsure of navy, its runner-up charcoal = measured: changed by itself: "${r.low.auto}"`);
