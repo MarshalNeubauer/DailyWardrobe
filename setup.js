@@ -37,10 +37,12 @@ function setupOpen(again){
   closeSettings();
   setup={at:0,first:!again,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};SETUP_STEPS=setupStepsNow();
   setupInert(true);setupEl().classList.add('on');setupDraw();setupEl().focus({preventScroll:true});
+  if(typeof appPush==='function')appPush('setup');   // the phone's Back steps back through the setup instead of leaving the app (start.js)
 }
 function setupClose(){
   if(setup.watch)clearInterval(setup.watch);setup.watch=null;setup.at=-1;
   const e=$('#setup');if(e){e.classList.remove('on');e.innerHTML=''}setupInert(false);
+  if(typeof appDrop==='function')appDrop('setup');
 }
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
@@ -74,7 +76,8 @@ function setupGo(n){if(n>0&&setupCityOpen()){setup.cityWarned=true;
     setupDraw();const f=$('#su-city');if(f)f.focus({preventScroll:true});return}
   const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true);return}
   if(setup.watch){clearInterval(setup.watch);setup.watch=null}
-  setup.at=at;setup.msg='';setupDraw();const b=$('#setup .su-body');if(b)b.scrollTop=0}
+  setup.at=at;setup.msg='';setupDraw();const b=$('#setup .su-body');if(b)b.scrollTop=0;
+  if(typeof appPush==='function')appPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
 
 /* ---- the steps ---- */
 const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;

@@ -215,7 +215,8 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */
 let toastTimer=null;
-function toast(t,ms=2500,act){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.toggle('act',!!act);
+const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 2026-11-14: gone after 5 s, and Delete has no question)
+function toast(t,ms=2500,act){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.toggle('act',!!act);if(act)ms=Math.max(ms,TOAST_ACT_MS);
   if(act){const b=document.createElement('button');b.type='button';b.textContent=act.label;b.onclick=()=>{e.classList.remove('on','act');clearTimeout(toastTimer);act.fn()};e.append(' ',b)}
   e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('on','act'),ms)}
 let refreshing=false;

@@ -49,6 +49,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - wording: nothing a tester reads says worker, Cloudflare, KV, token or benchmark ("the server", "Connect in ⚙ Settings first.", "it needs an update"); `tests/ui.test.js` reads all of Settings for those words
 - error texts the code tests by pattern: `/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/` in `startItemPics`
 - Privacy: outfit pictures are drawn or painted by the app and never go to OpenAI (the server can no longer make one, 2026-11-14); an item's photo and description go to OpenAI only on a tap of Generate item pictures
+- the header's Settings button is a drawn gear (`svg.hgear`, 1em, `currentColor`; the ⚙ character showed as a lilac colour emoji next to the plain ◐)
 - the user's phone may run the Dark Reader extension; the page opts out via the `darkreader-lock` meta tag; keep it
 
 #### Settings
@@ -117,6 +118,12 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the setup's switches are ink when on, like the dress-code switches in Settings
 - reduced motion: the score's checks, the pieces list's rows and the month's days animate only under `prefers-reduced-motion: no-preference` (their `:not(.instant)` rules outranked the reduce rules), and the cards' arrows (`.score .chev`, `.month-link .chev`) turn at once
 - tap targets (the `/* ---- accessibility ... */` block at the end): Today's day arrows, a piece's ⇄ and − and the Wardrobe's type chips keep their look and take taps over 44px (a `::after` past the box, counted from inside the 1px border); `.linkbtn` has 4px padding above and below (26px)
+- text sizes are in rem (16px = 1rem; `font-size` and `font` shorthands, converted 2026-11-15) so the look at the default size is unchanged; SVG labels (`.kp-*`, `.hp-label`, rules with `fill:`) keep px; Today's slot labels are 4.25rem wide and the worn pill's `--wp` 4.25rem; `tests/backzoom.test.js` refuses a px text size
+- `html{font-size:calc(var(--tscale,1) * 100%)}`: index.html's head sets `--tscale` from the iPhone's Larger Text (`-apple-system-body` size / 17, its default; kept .85–1.5; measured again on `pageshow` and coming back), 1 elsewhere; to try a size, set `--tscale` on `<html>`
+- the block `/* ---- larger text, page zoom, tap targets … */` (new-user audit 2026-11-14): 44px hit areas past the box (`::after`) for the header's buttons, `#ward-add`, `.linkbtn` (9px above and below), a toast's Undo and Settings' day buttons
+- narrow screens (Safari's page zoom: 150% = 268 CSS px on an iPhone 17 Pro) and large text: Today's pieces list is a container (`#today .list`) and below 15rem a row's slot name goes above it (names went one letter per line); Settings' day buttons go 4 + 3 below 16.5rem (`.sgroup:has(>.days)` container); category titles wrap; the item sheet's and Add card's fields are `max(58%, min(8.5rem, 72%))` wide; `.pick-nm` breaks a long word; the header title stays one line with an ellipsis
+- dark theme: the empty checklist rings (`.fr-tick`) are `--mut` (they were `--line`, about 1.3:1)
+- a phone on its side (`orientation:landscape` and height up to 500px): the picker takes the screen's height and shows six pieces across
 - `.score .pts` is `color-mix` of `--mut` and `--ink` (over 4.5:1 in both themes)
 - the folded score list (`#sbox:not(.open) #spanel .mpanel-in`) is `visibility:hidden`, so it isn't read out or reached by Tab
 
@@ -729,6 +736,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - weather: a 16-day forecast; beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in localStorage `wx_norm`, so `dayClimate()` does not fall back to a temperate calendar
 - the city search's results (`findCity`) are escaped (names from Open-Meteo went into the page as HTML)
 - `refreshAll`'s list of pages includes `pack` and `'care'`, so Refresh stays on the Packing list and Laundry & cleaning
+- a toast with an action (Undo) stays at least `TOAST_ACT_MS` (8 s) whatever its caller asks (new-user audit 2026-11-14: 5–6 s, and Delete item has no question)
 
 ### `start.js`
 
@@ -738,6 +746,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the stats, packing and care pages' ‹ (`.pback`) calls `subBack()`: `openStats`/`openPack`/`openCare` call `subOpen()` first, which notes the tab under them, its scroll, and, when Settings was open, its open categories and scrollTop; back restores them (`openSettings()` alone folds everything and scrolls to the top); opened from Today it goes back to Today
 - the phone's Back on those pages and in Settings goes back one level: Settings and those pages share ONE history entry (`appHist`, `appKind` 'set' or 'sub'; `appPush`/`appDrop`); a popstate on it calls `subBack` or closes Settings like Done (`saveSettings`); opening a page from Settings hands the entry on, its ‹ hands it back (`appKeep`); left another way (the ‹, a tab, closing Settings) the entry is taken away with our own `history.back()` (`appPend`, let pass by the popstate); `tests/subback.test.js`
 - the tabs have no Back entries (Back there leaves the app)
+- the setup, the piece picker and What to buy take the same entry (new-user audit 2026-11-14: Back left the app from all three): `appKind` 'setup' (`setupOpen`, again in `setupGo` after a tap; `setupClose` drops it), 'pick' (`openPicker`/`closePicker`), 'shop' (`openShop`/`closeShop`); a popstate on it goes through `appSheetBack`: the setup steps back one step (on Welcome it stays open) and pushes again, the picker and What to buy close; `tests/backzoom.test.js`
+- an entry asked for while our own step back is on its way, or while the address holds `#invite=` (the entry would carry it and Back would land on it), waits in `appWant` and is made by `appWanted()` when the step back lands (the popstate) or `dropInviteHash` (account.js) runs: Add after the setup's last step, the setup after "Run setup again" in Settings, the setup opened at start-up from an invitation
+- iOS may skip a history entry made without a tap; the setup's entry is pushed again from `setupGo` (a tap) for that, the start-up one can't be checked off the phone
 
 ### `ui.js`
 

@@ -20,7 +20,7 @@ function inviteParts(text){const s=String(text||''),h=s.includes('#')?s.slice(s.
   if(!/^https?:$/.test(u.protocol))return null;
   return {code,url:u.href}}
 const inviteLink=code=>{const b=acctBase();return location.origin+location.pathname+'#invite='+code+'&w='+encodeURIComponent(b?b.url:'')};
-function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}}
+function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}if(typeof appWanted==='function')appWanted()}   // (a Back entry that waited for the address to lose the invitation: start.js)
 /* connect from an invitation link -> true when the server accepted the code. Only then are the address and the code stored (a
    link that doesn't work leaves an existing connection alone); the #invite part is dropped from the address bar either way,
    except when the server couldn't be reached, so opening the app again tries once more. */
