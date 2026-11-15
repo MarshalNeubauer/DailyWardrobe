@@ -56,10 +56,12 @@ function setupOpen(again,resume){
   setup={at:0,first:!again,vestSet:!!(resume&&resume.vestSet),q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null,before:again?(resume&&resume.before)||setupBefore():null};SETUP_STEPS=setupStepsNow();
   if(resume){const i=SETUP_STEPS.indexOf(resume.k);if(i>0)setup.at=i}
   setupInert(true);setupEl().classList.add('on');setupDraw();setupSave();setupEl().focus({preventScroll:true});
+  if(typeof appPush==='function')appPush('setup');   // the phone's Back steps back through the setup instead of leaving the app (start.js)
 }
 function setupClose(){
   if(setup.watch)clearInterval(setup.watch);setup.watch=null;setup.at=-1;setupKeep(null);
   const e=$('#setup');if(e){e.classList.remove('on');e.innerHTML=''}setupInert(false);
+  if(typeof appDrop==='function')appDrop('setup');
 }
 /* a double tap on Skip or "Add my first item": the second tap landed on what the setup uncovered (Settings' ⚙ under Skip, the tour's Next
    under "Add my first item"; audit 2026-11-15). A tap at the same spot within SETUP_TAP_MS of the one that closed the setup is dropped */
@@ -110,7 +112,8 @@ function setupGo(n,e){if(n>0&&setupCityOpen()){setup.cityWarned=true;
     setupDraw();const f=$('#su-city');if(f)f.focus({preventScroll:true});return}
   const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true,e);return}
   if(setup.watch){clearInterval(setup.watch);setup.watch=null}
-  setup.at=at;setup.msg='';setupDraw();setupSave();const b=$('#setup .su-body');if(b)b.scrollTop=0}
+  setup.at=at;setup.msg='';setupDraw();setupSave();const b=$('#setup .su-body');if(b)b.scrollTop=0;
+  if(typeof appPush==='function')appPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
 
 /* ---- the steps ---- */
 const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;
