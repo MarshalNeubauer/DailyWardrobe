@@ -145,12 +145,16 @@ function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return nu
     if(f&&HOL_HIJRI[cc]){const p=f.formatToParts(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),12))),v=t=>+((p.find(x=>x.type===t)||{}).value);
       for(const [hm,hd,n] of HOL_HIJRI[cc])if(hm===v('month')&&hd===v('day'))out.push({d:k,n})}}
   return out}
+/* the calendar years from one YYYY-MM-DD to another, both included */
+const holYears=(from,to)=>{const a=+from.slice(0,4),b=+to.slice(0,4),out=[];for(let y=a;y<=b;y++)out.push(y);return out};
 async function fetchHolidays(cc){
   const T=todayDate(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
   const tidy=l=>{const m={};for(const x of l)if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n;return Object.entries(m).sort().map(([d,n])=>({d,n}))};
   const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
   // (a country with its own list isn't in Nager.Date: not asked, which logged a 404 on every start)
-  if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])try{const out=[];for(const y of new Set([+from.slice(0,4),+to.slice(0,4)])){const r=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/${cc}`);if(r.status!==200)continue;
+  // every calendar year the window touches (fix round 2, N6): in December and January it spans three, and asking only the first and last
+  // left out the whole coming year (Sydney planned an outfit on New Year's Day)
+  if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])try{const out=[];for(const y of holYears(from,to)){const r=await fetch(`https://date.nager.at/api/v3/PublicHolidays/${y}/${cc}`);if(r.status!==200)continue;
       out.push(...nagerKeep(await r.json(),cc))}
     if(out.length)return tidy(out)}catch(e){/* unreachable or unknown country: try the worker */}
   const W=workerBase();if(!W){const l=own();if(l)return l;throw new Error(`No holiday list for ${countryName(cc)} until the app is connected: paste your invite link under Connection.`)}
@@ -161,7 +165,11 @@ async function fetchHolidays(cc){
   return tidy((j.holidays||[]).map(h=>({d:h.date,n:h.name})))}
 async function setHolidayCountry(cc,quiet){
   if(!cc){settings.holidays=null;holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI();return}
-  if(!quiet){holidayMsg=`Loading the public holidays of ${countryName(cc)}…`;renderDaysOffUI()}
+  if(!quiet){holidayMsg=`Loading the public holidays of ${countryName(cc)}…`;
+    // (fix round 2) the country is kept the moment it is picked, with no list yet (fetched 0: the next start fetches it, refreshHolidays):
+    // swiped away before the list arrived, the choice was lost
+    if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,list:[],skip:[],fetched:0};saveUserSettings();todayStale=true}
+    renderDaysOffUI()}
   try{const list=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
     settings.holidays={country:cc,list,skip:old.filter(d=>list.some(x=>x.d===d)),fetched:Date.now()};
     holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayStale=true}
@@ -200,7 +208,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   if(box.options.length<2)box.innerHTML='<option value="">No public holidays</option>'+COUNTRY_CODES.map(c=>[countryName(c),c]).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,c])=>`<option value="${c}">${esc(n)}</option>`).join('');
   box.value=cc;
   const tk=isoKey(todayDate()),skip=new Set(h&&h.skip||[]),up=(h&&h.list||[]).filter(x=>x.d>=tk);
-  list.innerHTML=!cc?'':up.length?up.map(x=>{const d=isoToDate(x.d),wk=!settings.workdays.includes(d.getDay());
+  list.innerHTML=!cc||/^Loading /.test(holidayMsg)?'':up.length?up.map(x=>{const d=isoToDate(x.d),wk=!settings.workdays.includes(d.getDay());
     return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} onchange="toggleHoliday('${x.d}',this.checked)"><span class="hd">${yearDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
     :h&&!h.fetched?`<small class="mut">${workerBase()?`No public holiday list for ${esc(countryName(cc))} yet: the app tries again at its next start.`:`The public holidays of ${esc(countryName(cc))} are loaded once the app is connected.`}</small>`   // (setup.js setupHolidays)
     :'<small class="mut">No public holidays in the next year.</small>';
@@ -268,12 +276,13 @@ function picsSwitched(){refreshToday();if(picsDrawn()||!asmLive())return;
 /* (vest, workdays, blazer days and units are drawn on Today too: todayStale redraws it when Settings closes; it stayed stale until a restart, audit 2026-11-14) */
 function setVestMode(v){settings.vestMode=v;saveUserSettings();todayStale=true;settingsSummaries()}
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
-async function setDarkShirts(v){settings.darkShirts=v;await clearLocks();await saveUserSettings();todayStale=true;settingsSummaries()}
+/* (fix round 2) saved before the week's locks are released, as setDress (dress.js): tapped then swiped away within ~100 ms, the change was lost */
+async function setDarkShirts(v){settings.darkShirts=v;todayStale=true;settingsSummaries();await saveUserSettings();await clearLocks()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0){tell('At least one workday is needed: tick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
-  cache={};todayStale=true;renderSettingsExtras();clearLocks().then(saveUserSettings)}
+  cache={};todayStale=true;renderSettingsExtras();return saveUserSettings().then(clearLocks)}
 function setUnits(v){settings.units=v;saveUserSettings();todayStale=true;renderWxLoc();settingsSummaries()}
-function setLocation(loc){settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
+function setLocation(loc){if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
 function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:geoName(p.coords.latitude,p.coords.longitude)}),()=>tell('Location permission was denied. Search for your city instead.'))}
 /* "Use my location" has no place name (Open-Meteo can't look one up): the spot itself, so it doesn't read "your current location" after a trip */
@@ -281,13 +290,21 @@ const geoName=(la,lo)=>`your location (${Math.abs(la).toFixed(2)}° ${la<0?'S':'
 /* the language the city search asks in: a name typed in Arabic (or another script) is looked up in that language, English otherwise */
 function cityLang(q){const s=[[/[؀-ۿ]/,'ar'],[/[֐-׿]/,'he'],[/[Ѐ-ӿ]/,'ru'],[/[Ͱ-Ͽ]/,'el'],[/[฀-๿]/,'th'],[/[가-힯]/,'ko'],[/[぀-ヿ]/,'ja'],[/[一-鿿]/,/^ja/i.test(navigator.language||'')?'ja':'zh']].find(([r])=>r.test(q));return s?s[1]:'en'}
 /* results that read the same ("Dubai, Uttar Pradesh, IN" three times) get their district, and true repeats are dropped */
-function cityList(results){const res=(results||[]).map(c=>({lat:c.latitude,lon:c.longitude,cc:c.country_code||'',name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', '),a2:c.admin2||c.admin3||''}));
+function cityList(results){const res=(results||[]).map(c=>({lat:c.latitude,lon:c.longitude,cc:c.country_code||'',name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', '),a2:c.admin2||c.admin3||'',...(c.alt?{alt:c.alt}:{})}));
   const cnt={};for(const c of res)cnt[c.name]=(cnt[c.name]||0)+1;for(const c of res)if(cnt[c.name]>1&&c.a2)c.name=[c.name.split(', ')[0],c.a2,...c.name.split(', ').slice(1)].join(', ');
   const seen=new Set();return res.filter(c=>{const k=c.name;if(seen.has(k))return false;seen.add(k);return true}).map(c=>{delete c.a2;return c})}
-async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();if(!q)return;
-  try{const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+cityLang(q)+'&name='+encodeURIComponent(q));const j=await r.json();
-    const res=cityList(j.results).slice(0,5);
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}</button>`).join(''):'<small class="mut">No matches.</small>'}
+/* (fix round 2) a name found in another language is stored in English, the app's language (an Arabic search stored "دبي, دبي, AE" and the
+   English summary showed it): each result is asked again by its id in English, the name typed shown beside it; a failed lookup keeps it */
+async function cityEnglish(list,lang){if(lang==='en')return list;
+  return Promise.all(list.map(async c=>{if(!c||c.id==null)return c;
+    try{const r=await fetch('https://geocoding-api.open-meteo.com/v1/get?language=en&id='+encodeURIComponent(c.id));if(r.ok){const e=await r.json();if(e&&e.name)return {...e,alt:e.name!==c.name?c.name:''}}}catch{}
+    return c}))}
+async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();
+  // an empty search clears the last one's results (they stayed, fix round 2)
+  if(!q){window._cities=[];if($('#city-results'))$('#city-results').innerHTML='';return}
+  try{const lang=cityLang(q),r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+lang+'&name='+encodeURIComponent(q));const j=await r.json();
+    const res=cityList(await cityEnglish((j.results||[]).slice(0,8),lang)).slice(0,5);
+    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut">No matches.</small>'}
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */
