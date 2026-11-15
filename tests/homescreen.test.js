@@ -12,10 +12,10 @@ module.exports=async({ok,chromium,url})=>{
     const s0=await p.evaluate(()=>({steps:SETUP_STEPS.join(','),count:document.querySelector('#su-count').textContent}));
     ok(s0.steps==='welcome,home,week,wear,weather,connect,done'&&/of 7/.test(s0.count),`on an iPhone in Safari the setup has a Home Screen step after Welcome (${s0.steps})`);
     await p.click('#su-next');await p.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='home');
-    const h=await p.evaluate(()=>{const t=document.querySelector('#su-step').textContent;return {title:document.querySelector('#su-title').textContent,share:/Tap Share/.test(t)&&/bottom of Safari/.test(t),add:/Add to Home Screen/.test(t),tapAdd:/Tap Add/.test(t),before:/before you set anything up/.test(t),icons:document.querySelectorAll('#su-step .home-ico').length,pic:!!document.querySelector('#su-step .home-pic'),
+    const h=await p.evaluate(()=>{const t=document.querySelector('#su-step').textContent;return {title:document.querySelector('#su-title').textContent,share:/Tap ⋯ at the bottom right of Safari, then Share/.test(t),add:/Add to Home Screen/.test(t),webapp:/Leave Open as Web App on and tap Add/.test(t),n:document.querySelectorAll('#su-step .home-steps li').length,before:/set it up there rather than here/.test(t)&&!/before you set anything up/.test(t),icons:document.querySelectorAll('#su-step .home-ico').length,pic:!!document.querySelector('#su-step .home-pic'),copy:!!document.querySelector('#su-step .home-copy'),
       fit:document.documentElement.scrollWidth<=innerWidth&&[...document.querySelectorAll('#setup.on button')].every(b=>{const r=b.getBoundingClientRect();return r.right<=innerWidth+.5})}});
-    ok(h.title==='Home Screen'&&h.share&&h.add&&h.tapAdd&&h.icons===2&&h.pic,'it shows the three taps (Share at the bottom of Safari, Add to Home Screen, Add) with the Share and Add icons');
-    ok(h.before,'and says to do it before setting anything up (the Home Screen app keeps its own copy)');
+    ok(h.title==='Home Screen'&&h.share&&h.add&&h.webapp&&h.n===4&&h.icons>=2&&h.pic,'it shows the taps as iOS 26 Safari has them (⋯ then Share, Add to Home Screen, Open as Web App on, Add) with the Share and Add icons');
+    ok(h.before&&!h.copy,'not connected: the Home Screen app keeps its own storage, so set it up there; no invitation link to copy');
     ok(h.fit,'it fits the phone');
     await p.click('#su-next');ok(await step(p)==='week','Next carries on with the setup in Safari');
     // Settings → About

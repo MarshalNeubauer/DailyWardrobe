@@ -44,6 +44,16 @@ function packDays(t,plan){const out=[],a=keyDate(t.a),E=di(keyDate(t.b));
   for(const d=new Date(a);di(d)<=E&&out.length<PACK_MAX;d.setDate(d.getDate()+1)){const k=key(d),o=(plan||planMonth(d.getFullYear(),d.getMonth()))[k],wd=isWorkday(d);
     out.push({d:new Date(d),k,o:wd&&hasOutfit(o)?o:null,wd,off:offName(d)})}
   return out}
+/* pieces that won't be here by the trip's first day (bought and on the way, or away being cleaned, with a date after it: inRotation in
+   core.js): they can't go in the suitcase, so the trip is planned without them (a suit still in the post was packed, audit 2026-11-14) */
+const PACK_SLOT={suit:'top',blazer:'top',pants:'bot',tieclip:'clip',cufflinks:'links',overcoat:'coat',raincoat:'coat'};
+const packLate=t=>{const n=di(keyDate(t.a));return items.filter(i=>i.paused&&arriveN(i)!=null&&!inRotation(i,n))};
+/* day records that leave those pieces out of the trip's days (rec.skip), on top of `src` */
+function packLateRecs(days,late,src){const recs={...src};
+  for(const x of days){if(!x.o||x.o.frozen)continue;const r={...(src[x.k]||{date:x.k})},skip={...(r.skip||{})};
+    for(const i of late){const s=PACK_SLOT[i.type]||i.type;skip[s]=[...new Set([...(skip[s]||[]),i.id])]}
+    if(r.lock&&late.some(i=>Object.values(r.lock).includes(i.id)))delete r.lock;r.skip=skip;recs[x.k]=r}
+  return recs}
 const packUses=(days,slot)=>new Set(days.filter(x=>x.o&&x.o[slot]).map(x=>x.o[slot].id)).size;
 
 /* what to pack for these days. wear = ids worn on the travel day (not packed).
@@ -83,9 +93,9 @@ function packSets(tally,n,max){if(!n)return [null];if(tally.length<=n)return [ne
   go(0,[]);return out}
 /* day records that hold the trip's days to these jackets and shoes: every other one is ruled out for the day (rec.skip), and a day
    whose kind of jacket is not among them takes the other kind (rec.kind); the locks are dropped so the days are planned afresh */
-function packLightRecs(days,AJ,AS){const recs={...dayRecs},kinds=AJ?new Set([...AJ.values()].map(i=>i.type)):null,
+function packLightRecs(days,AJ,AS,src=dayRecs){const recs={...src},kinds=AJ?new Set([...AJ.values()].map(i=>i.type)):null,
     out=(type,A)=>items.filter(i=>i.type===type&&!A.has(i.id)).map(i=>i.id);
-  for(const x of days){if(!x.o||x.o.frozen)continue;const r={...(dayRecs[x.k]||{date:x.k})},skip={...(r.skip||{})},f=r.force||{};delete r.lock;
+  for(const x of days){if(!x.o||x.o.frozen)continue;const r={...(src[x.k]||{date:x.k})},skip={...(r.skip||{})},f=r.force||{};delete r.lock;
     if(AJ&&x.o.top&&!f.top){let kind=x.o.suitDay?'suit':'blazer';
       if(!kinds.has(kind)&&!occOf(r)){kind=kind==='suit'?'blazer':'suit';r.kind=kind}
       if(kinds.has(kind))skip.top=[...new Set([...(skip.top||[]),...out(kind,AJ)])]}
@@ -98,16 +108,16 @@ function packRate(days,J,S){let v=0;for(const x of days){if(!x.o)continue;if(!pa
   if(J)v-=3000*Math.max(0,packUses(days,'top')-J);if(S)v-=3000*Math.max(0,packUses(days,'shoes')-S);return v}
 const packAvg=days=>{const l=days.filter(x=>x.o);return l.length?Math.round(l.reduce((s,x)=>s+rateOutfit(x.o).score,0)/l.length):0};
 /* the lighter plan for the trip, or null when no limit is set or the plan is within it already → {days, recs, j, s} */
-function packLight(t,base){const J=t.j,S=t.s,nj=packUses(base,'top'),ns=packUses(base,'shoes');
+function packLight(t,base,src=dayRecs){const J=t.j,S=t.s,nj=packUses(base,'top'),ns=packUses(base,'shoes');
   if(!(J&&nj>J)&&!(S&&ns>S))return null;
-  const sig=[t.a,t.b,J,S].join();if(packMemo&&packMemo.c===cache&&packMemo.recs===dayRecs&&packMemo.sig===sig)return packMemo.res;
+  const sig=[t.a,t.b,J,S,src===dayRecs?'':packLate(t).map(i=>i.id).join('.')].join();if(packMemo&&packMemo.c===cache&&packMemo.recs===dayRecs&&packMemo.sig===sig)return packMemo.res;
   const tj=packTally(base,'top'),jSets=packSets(tj,J,PACK_TRIES),sSets=packSets(packTally(base,'shoes'),S,PACK_TRIES),end=keyDate(t.b);
   // with room for two jackets on a trip with suit days and blazer days, one of each comes first
   if(J>=2&&jSets[0]&&new Set(tj.map(e=>e.i.type)).size>1&&new Set([...jSets[0].values()].map(i=>i.type)).size<2){
     const keep=tj.filter(e=>jSets[0].has(e.i.id)),other=tj.find(e=>e.i.type!==keep[0].i.type),drop=[...keep].reverse().find(e=>!e.pin);
     if(other&&drop)jSets.unshift(new Map(keep.filter(e=>e!==drop).concat(other).map(e=>[e.i.id,e.i])))}
   let best=null;
-  for(const AJ of jSets.slice(0,PACK_TRIES))for(const AS of sSets){const recs=packLightRecs(base,AJ,AS),days=packDays(t,packPlanOf(recs,end)),v=packRate(days,J,S);
+  for(const AJ of jSets.slice(0,PACK_TRIES))for(const AS of sSets){const recs=packLightRecs(base,AJ,AS,src),days=packDays(t,packPlanOf(recs,end)),v=packRate(days,J,S);
     if(!best||v>best.v)best={v,days,recs}}
   const res={days:best.days,recs:best.recs,j:packUses(best.days,'top'),s:packUses(best.days,'shoes')};
   packMemo={c:cache,recs:dayRecs,sig,res};return res}
@@ -122,14 +132,14 @@ function packLockState(days){const live=packLive(days);let n=0;
   for(const x of live){const r=dayRecs[x.k],l=lockIds(x.o);if(r&&r.lock&&Object.keys(l).every(s=>(r.lock[s]||null)===(l[s]||null)))n++}
   return {n,of:live.length}}
 async function packLockDays(days,light){
-  for(const x of packLive(days)){const r={...(dayRecs[x.k]||{date:x.k}),lock:lockIds(x.o)};
+  for(const x of packLive(days)){const r={...(dayRecs[x.k]||{date:x.k}),lock:lockIds(x.o),trip:1};   // trip: a Settings change doesn't release it (history.js clearLocks)
     if(light&&x.o.top&&(r.kind||light[x.k]&&light[x.k].kind))r.kind=x.o.suitDay?'suit':'blazer';   // a day that took the other kind of jacket keeps it
     await saveDay(r,true)}
   if(window.scheduleSync)scheduleSync()}
 async function packLock(){if(!packNow)return;await packLockDays(packNow.days,packNow.light&&packNow.light.recs);const kept=!!packNow.light;renderPack();
   toast(kept?'Lighter plan kept: these outfits now stay as shown.':'These outfits now stay as shown.')}
 async function packRelease(){if(!packNow)return;let n=0;
-  for(const x of packLive(packNow.days)){const r=dayRecs[x.k];if(!r||!r.lock)continue;const c={...r};delete c.lock;await saveDay(c,true);n++}
+  for(const x of packLive(packNow.days)){const r=dayRecs[x.k];if(!r||!r.lock)continue;const c={...r};delete c.lock;delete c.trip;await saveDay(c,true);n++}
   if(n&&window.scheduleSync)scheduleSync();renderPack();toast('Released: the plan can change these days again.')}
 
 /* ---- the trip's settings, ticks and travel wear ---- */
@@ -172,8 +182,9 @@ function openPack(){subOpen();closeSettings();show('pack');scrollTo({top:0})}
 function renderPack(){
   const el=$('#pack');if(!el)return;
   const head=n=>`<div class="phead"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Packing list</h2>${n?`<span class="pcount">${n}</span>`:''}</div>`;
-  if(!items.length){packNow=null;el.innerHTML=head('')+`<p class="mut empty">Your wardrobe is empty. Add some items first.</p>`;return}
-  const t=packTrip(),base=packDays(t),light=packLight(t,base),days=light?light.days:base,mark=packMark(),list=packList(days,mark.w),live=days.filter(x=>x.o),T=new Set(mark.t),W=new Set(mark.w);
+  if(!items.length){packNow=null;el.innerHTML=head('')+`<p class="mut empty">Your wardrobe is empty.</p>${emptyAdd()}`;return}
+  const t=packTrip(),late=packLate(t),base0=packDays(t),lateUsed=late.filter(i=>base0.some(x=>x.o&&SLOTS.some(s=>x.o[s]&&x.o[s].id===i.id))),
+    src=lateUsed.length?packLateRecs(base0,late,dayRecs):dayRecs,base=lateUsed.length?packDays(t,packPlanOf(src,keyDate(t.b))):base0,light=packLight(t,base,src),days=light?light.days:base,mark=packMark(),list=packList(days,mark.w),live=days.filter(x=>x.o),T=new Set(mark.t),W=new Set(mark.w);
   packNow={days,list,light,text:packText(t,days,list)};packLines=[];
   const capSel=(id,which,v,word)=>`<label class="pk-f">${word}<select id="${id}" onchange="packSetCap('${which}',this.value)">${[0,1,2,3,4].map(n=>`<option value="${n}"${n===v?' selected':''}>${n||'No limit'}</option>`).join('')}</select></label>`;
   // pack lighter
@@ -196,7 +207,7 @@ function renderPack(){
   el.innerHTML=head(packDaysTxt(span))+
     `<div class="card pk-card pk-dates"><label class="pk-f">First day<input type="date" id="pk-a" value="${t.a}" onchange="packSetDate('a',this.value)"></label><label class="pk-f">Last day<input type="date" id="pk-b" value="${t.b}" min="${t.a}" onchange="packSetDate('b',this.value)"></label></div>`+
     `<div class="card pk-card" id="pk-lighter"><h3>Pack lighter</h3><p class="mut pk-help">Limit how many jackets (suits and blazers) and pairs of shoes the trip uses.</p><div class="pk-caps">${capSel('pk-j','j',t.j,'Jackets')}${capSel('pk-s','s',t.s,'Pairs of shoes')}</div>${lightTxt}${lightBtns}</div>`+
-    `<div class="card pk-card" id="pk-days"><h3>Outfits${light?' <small class="pk-tag">Lighter plan</small>':''}</h3>${days.map(dayRow).join('')}</div>`+
+    `<div class="card pk-card" id="pk-days"><h3>Outfits${light?' <small class="pk-tag">Lighter plan</small>':''}</h3>${lateUsed.length?`<p class="mut pk-help" id="pk-late">${lateUsed.map(i=>`${esc(packName(i))} ${i.away?'is back':'arrives'} ${esc(packDate(keyDate(i.arrives)))}`).join('; ')}: after you leave, so ${lateUsed.length===1?'it is':'they are'} left out of this trip.</p>`:''}${days.map(dayRow).join('')}</div>`+
     (live.length?`<div class="card pk-card" id="pk-list"><div class="pk-h"><h3>To pack</h3><small class="mut" id="pk-done"></small></div><p class="pk-count" id="pk-count">${esc(packCount(list.counts)||'Nothing left to pack')}</p>`+
       list.groups.map(g=>`<div class="pk-group"><h4>${g.title}</h4>${g.lines.map(line).join('')}</div>`).join('')+
       `<div class="pk-group pk-travel"><h4>Wearing on the way</h4>${list.worn.length?list.worn.map(wornLine).join(''):''}<p class="mut pk-help">${list.worn.length?'Not counted as packed.':'Tap Wear on what you travel in, and it isn’t counted as packed.'}</p>${first?`<button type="button" id="pk-wearday" onclick="packWearDay('${first.k}')">${firstAll?`Pack ${esc(packDate(first.d))}’s outfit instead`:`Travel in ${esc(packDate(first.d))}’s outfit`}</button>`:''}</div>`+

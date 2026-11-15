@@ -82,7 +82,7 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();if(items.length)askPersist();if(typeof addRestore==='function')addRestore()}   // (Add cards not saved before the app was closed: add.js)
+function safetyStart(){pruneTagImgs();if(items.length)askPersist();if(typeof wardPendingRestore==='function')whenPulled(wardPendingRestore);if(typeof addRestore==='function')addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
 let tagWhy='',tagNetLast=false;

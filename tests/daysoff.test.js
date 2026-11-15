@@ -79,7 +79,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // a country Nager lacks comes from the worker
     await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};openSettings('daysoff')});const n0=nager;
     await p.selectOption('#cfg-country','KW');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='KW'&&settings.holidays.list.length>0,null,{timeout:8000});
-    ok(nager>n0&&await p.evaluate(()=>settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&!isWorkday(new Date(2027,1,25))&&settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker');
+    ok(nager===n0&&await p.evaluate(()=>settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&settings.holidays.list.some(h=>/tentative/.test(h.n))&&!isWorkday(new Date(2027,1,25))&&settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker, without asking that source (a 404 on every start)');
     // the list is fetched again after a month, keeping what was unticked
     // (it syncs first, so a device that was away doesn't stamp its old settings over another device's newer ones: syncNow is a stand-in here)
     const again=await p.evaluate(async()=>{await toggleHoliday('2027-02-25',false);settings.holidays={...settings.holidays,fetched:Date.now()-40*864e5,list:settings.holidays.list.slice(0,2)};await metaPut('settings',settings);

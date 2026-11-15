@@ -46,7 +46,12 @@ function texTileSmooth(grid,lo,hi){if(typeof document==='undefined')return null;
 function fabricDef(id,item,role,ctx){
   const b=colOf(item),a=accentOf(item),t3=thirdOf(item),c=t3||a,p=patBase(item.pattern)||'solid',wool=role==='top'||role==='bot';
   const dk='#000',lt='#fff',ink=lum(b)>.5?'#000':'#fff';
-  const twill=`<path d="M-2,2 L2,-2 M0,4 L4,0 M2,6 L6,2" stroke="${ink}" stroke-opacity="${wool?.07:.04}" stroke-width=".6"/>`;
+  /* a plain wool's twill grain. On Today's figure ('fig') and in the small swatches ('dot') the generic grain (a line every 2.8 units, 4.5
+     on the figure) read as a diagonal stripe on a plain suit (2026-11-15, the new-user audit: three testers took their solid navy suit for
+     a striped one): there it is a fine, faint grain (FINE_TWILL: the tile in units, its opacity) and nothing under a stripe or check, as
+     the owner keeps texture below the point where it reads as a pattern (the painter's twill ribs .16 → .06, the suit drawing's cloth at
+     0.28 scale); elsewhere (the drawings, the item sheet's swatch) as before */
+  const fineCtx=ctx==='fig'||ctx==='dot',twill=fineCtx?'':`<path d="M-2,2 L2,-2 M0,4 L4,0 M2,6 L6,2" stroke="${ink}" stroke-opacity="${wool?.07:.04}" stroke-width=".6"/>`;
   const tile=(w,h,body,tf='')=>`<pattern id="${id}" patternUnits="userSpaceOnUse" width="${w}" height="${h}"${tf?` patternTransform="${tf}"`:''}><rect width="${w}" height="${h}" fill="${b}"/>${body}</pattern>`;
   const fine=role==='shirt'||role==='tie';
   /* herringbone: columns of steep twill lines whose slant alternates, with a half-step break at each column edge */
@@ -199,6 +204,8 @@ function fabricDef(id,item,role,ctx){
     case 'glen-check':
       return tile(16,16,`<path d="M0,1 H8 M0,3 H8 M0,5 H8 M0,7 H8 M9,8 V16 M11,8 V16 M13,8 V16 M15,8 V16" stroke="${ink}" stroke-opacity=".18" stroke-width=".8"/><path d="M8,0 L16,8 M10,0 L16,6 M12,0 L16,4 M8,2 L14,8 M8,4 L12,8 M0,8 L8,16 M0,10 L6,16 M0,12 L4,16 M2,8 L8,14 M4,8 L8,12" stroke="${ink}" stroke-opacity=".14" stroke-width=".6"/><rect x="15.4" width=".6" height="16" fill="${a}" opacity=".7"/><rect y="15.4" width="16" height=".6" fill="${c}" opacity=".7"/>`);
     case 'windowpane':
+      // a small swatch shows about two panes (at 18 one pane filled the square and read as plain, 2026-11-15)
+      if(ctx==='dot')return tile(7,7,`<rect width=".6" height="7" fill="${a}" opacity=".85"/><rect width="7" height=".6" fill="${c}" opacity=".85"/>`);
       return tile(18,18,`${twill}<rect width=".7" height="18" fill="${a}" opacity=".8"/><rect width="18" height=".7" fill="${c}" opacity=".8"/>`);
     case 'gingham':
       return tile(6,6,`<rect width="3" height="6" fill="${a}" opacity=".45"/><rect width="6" height="3" fill="${c}" opacity=".45"/>`);
@@ -214,6 +221,7 @@ function fabricDef(id,item,role,ctx){
     case 'check':
       if(role==='shirt')return tile(6,6,`<rect width="3" height="6" fill="${a}" opacity=".45"/><rect width="6" height="3" fill="${c}" opacity=".45"/>`);
       if(role==='tie')return tile(6,6,`<rect width="2" height="6" fill="${a}" opacity=".6"/><rect width="6" height="2" fill="${c}" opacity=".6"/>`,'rotate(45)');
+      if(ctx==='dot')return tile(8,8,`<rect width=".6" height="8" fill="${a}" opacity=".8"/><rect width="8" height=".6" fill="${a}" opacity=".8"/><rect x="4" width=".4" height="8" fill="${c}" opacity=".5"/><rect y="4" width="8" height=".4" fill="${c}" opacity=".5"/>`);
       return tile(16,16,`${twill}<rect width=".7" height="16" fill="${a}" opacity=".75"/><rect width="16" height=".7" fill="${a}" opacity=".75"/><rect x="8" width=".4" height="16" fill="${c}" opacity=".45"/><rect y="8" width="16" height=".4" fill="${c}" opacity=".45"/>`);
     /* --- tie motifs --- */
     case 'polka-dot':{
@@ -229,8 +237,11 @@ function fabricDef(id,item,role,ctx){
       return tile(14,14,`<g transform="translate(4,4)">${drop}</g><g transform="translate(11,11) rotate(180)">${drop}</g>`);
     }
   }
+  if(wool&&fineCtx){const [s,o]=FINE_TWILL[ctx],w=(s*.3).toFixed(3);
+    return tile(s,s,`<path d="M0,${s} L${s},0 M${-s/2},${s/2} L${s/2},${-s/2} M${s/2},${s*1.5} L${s*1.5},${s/2}" stroke="${ink}" stroke-opacity="${o}" stroke-width="${w}"/>`)}
   return wool?tile(4,4,twill):tile(4,4,'');
 }
+const FINE_TWILL={fig:[1.25,.045],dot:[1.6,.05]};
 
 /* ---------- accessory drawings for the wardrobe thumbnails and tiles ----------
    Every function takes an id prefix P so several drawings can live on one page without id clashes. */
@@ -538,8 +549,10 @@ function swatchSVG(i,drawn){
   if(!drawn&&FABRIC.includes(i.type)&&i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type))body=`<image href="${i.swatch}" width="16" height="16" preserveAspectRatio="xMidYMid slice"/>`;
   else if(FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     body=`<defs>${fabricDef(P+'f',i,role,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
-  else{const metal=(i.type==='watch'&&watchOpts(i).band!=='leather')||i.type==='cufflinks'||i.type==='tieclip';
-    const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,c=metal?mM:colOf(i);
+  else{// a bracelet watch and plain metal cufflinks show their metal; a tie clip is its colour (it has no metal field: it was always silver),
+    // shiny when it is a metal colour; enamel cufflinks their face (2026-11-15)
+    const clip=i.type==='tieclip',metal=(i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))||(clip&&!!clipMetal(i));
+    const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,c=metal&&!clip?mM:colOf(i);
     body=`<defs><linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${metal?.45:.15}"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><rect width="16" height="16" fill="${c}"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
   return `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
 }
@@ -997,8 +1010,8 @@ function itemThumb(i,full){
   else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat')g=coatMarks(i,P);   /* the traced topcoat with its model (COAT_D) */
   else if(i.type==='raincoat')g=rainMarks(i,P);   /* the traced raincoat with its model (RAIN_D) */
-  else if(i.type==='cufflinks'){const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver;
-    g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="12" fill="${mM}" stroke="${mD}" stroke-width="1.2"/><circle cx="${x-3}" cy="47" r="4" fill="${mL}"/><circle cx="${x}" cy="50" r="7.5" fill="none" stroke="${mD}" stroke-width=".6"/>`).join('')}
+  else if(i.type==='cufflinks'){const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,f=linkFace(i)&&colOf(i);   // an enamel or stone face in the item's colour, in a metal rim (2026-11-15: the colour asked for was never drawn)
+    g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="12" fill="${mM}" stroke="${mD}" stroke-width="1.2"/>`+(f?`<circle class="link-face" cx="${x}" cy="50" r="8.6" fill="${f}" stroke="${mD}" stroke-width=".6"/><ellipse cx="${x-3}" cy="46.5" rx="3.6" ry="2.2" fill="#fff" opacity=".35"/>`:`<circle cx="${x-3}" cy="47" r="4" fill="${mL}"/><circle cx="${x}" cy="50" r="7.5" fill="none" stroke="${mD}" stroke-width=".6"/>`)).join('')}
   else if(i.type==='tieclip'){const m=colOf(i);   /* its colour: a tie clip has no metal field */g=`<rect x="12" y="45" width="76" height="9" rx="3" fill="${m}" stroke="#000" stroke-opacity=".3"/><rect x="14" y="47" width="72" height="2" rx="1" fill="#fff" opacity=".45"/>`}
   else g=`<rect x="10" y="10" width="80" height="80" rx="8" fill="${colOf(i)}"/>`;
   return `<div class="ph thumb"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${TYPES[i.type]||'Item'}">${g}</svg></div>`;

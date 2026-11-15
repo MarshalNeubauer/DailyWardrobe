@@ -134,7 +134,7 @@ async function handlePattern(req, env, json, who) {
   const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
   const over = await spend(env, who, 'pattern'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000 });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000, signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
   const out = cleanPattern(c.body);
   if (!out.across && !out.motif && !out.texture) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
