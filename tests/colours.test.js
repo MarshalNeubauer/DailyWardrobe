@@ -4,7 +4,7 @@ module.exports=async({ok,chromium,url})=>{
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const NEW={midgrey:'mid gray',steelblue:'steel blue',deepblue:'deep blue',darknavy:'very dark navy',slate:'dark slate blue-gray',wine:'wine',cream:'cream'};
   const r=await p.evaluate(N=>{show('add');addManual();
-    const allOpts=[...document.querySelectorAll('#queue select')].flatMap(s=>[...s.options].map(o=>o.value+'='+o.textContent)).concat(Object.keys(TYPES).flatMap(t=>COLOR_OPTS(t).map(x=>x[0]+'='+x[1])));
+    const allOpts=[...document.querySelectorAll('#nps-q select')].flatMap(s=>[...s.options].map(o=>o.value+'='+o.textContent)).concat(Object.keys(TYPES).flatMap(t=>COLOR_OPTS(t).map(x=>x[0]+'='+x[1])));
     return {opts:allOpts,keys:Object.keys(N).filter(k=>COLORS[k]),alias:['Denim Blue','Wine Red','Light Grey','Navy Blue','Dark Blue','Beige','slate grey','very dark navy','mid gray','deep blue'].map(c=>{const k=normCol(c);return SHIRT_ONLY.includes(k)?SHIRT_FALLBACK[k]:k}),
       pretty:prettyCols('a darknavy shirt with a steelblue tie, slate suit, midgrey pants, deepblue socks'),
       lum:['lightgrey','midgrey','grey'].map(lumOf)}},NEW);

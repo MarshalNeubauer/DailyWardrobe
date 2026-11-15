@@ -40,7 +40,7 @@ module.exports=async({ok,chromium,url})=>{
         turned:chk('suit','pinstripe',{v:2,a:88,bands:B,cross:null,src:'closeup'}),tie:chk('tie','stripe',{v:2,a:-45,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'photo'}),check:chk('suit','windowpane',{v:2,a:0,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'photo'}),
         shirt:settCheck('shirt','stripe',{v:2,a:0,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'closeup'}).s.cross};
       show('add');addManual();const q=queue[0];q.manual=false;Object.assign(q,{type:'suit',primaryColor:'charcoal',secondaryColor:'lightgrey',pattern:'pinstripe',raw:{tex:await ld('tests/fixtures/walk-suit-pinstripe-closeup.jpg')},wb:null});
-      readSett(q);measureCard(q);renderAdd();const card=document.querySelector('#queue .card').textContent;
+      readSett(q);measureCard(q);renderAdd();const card=document.querySelector('#nps-q .card').textContent;
       return {unit,sett:q.sett&&{a:q.sett.a,cross:!!q.sett.cross},rej:q.settReject,sharp:q.meas.sharp,blur:/too blurry to read the weave: retake it\?/.test(card),rejNote:/which isn.t pinstripe: drawn with the simple pattern/.test(card)}});
     ok(pin.unit.cross==='cross'&&pin.unit.level==='level'&&pin.unit.turned===0&&pin.unit.tie===-45&&pin.unit.check===0&&pin.unit.shirt===null,`a pinstripe with crossing lines or read level in the photo is turned down; read level in a close-up it is turned upright; a tie keeps any reading (a plaid tie is often tagged stripe), a windowpane its crossing lines; a shirt's crossing lines are dropped (${JSON.stringify(pin.unit)})`);
     ok(!pin.sett||(!pin.sett.cross&&(((pin.sett.a%180)+180)%180<20||((pin.sett.a%180)+180)%180>160)),`the walkthrough's soft pinstripe close-up gives no windowpane: ${pin.rej?'its reading was turned down ('+pin.rej+')':'upright stripes, no crossing lines'}`);
@@ -58,10 +58,10 @@ module.exports=async({ok,chromium,url})=>{
     const card=await p.evaluate(()=>{const keep=items;const S=(id,c,lab)=>({id,type:'suit',primaryColor:c,pattern:'solid',meas:{lab,ref:true,src:'closeup'}});
       items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];
       const mk=(sharp,ref)=>{queue.length=0;addManual();const q=queue[0];q.manual=false;Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'solid',meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref,src:'closeup',sharp,spread:2}});q.measV=colourVerdicts(q);return q};
-      const out={};let q=mk(.6,true);out.conf=q.measV[0].conf;applyMeasured(q);renderAdd();const el=document.querySelector('#queue .measauto');
+      const out={};let q=mk(.6,true);out.conf=q.measV[0].conf;applyMeasured(q);renderAdd();const el=document.querySelector('#nps-q .measauto');
       out.auto={col:q.primaryColor,txt:el&&el.textContent};el&&el.querySelector('button').click();q=queue[0];out.undo={col:q.primaryColor,edited:!!(q.edited&&q.edited.primaryColor)};applyMeasured(q);out.undo.after=q.primaryColor;
-      q=mk(.3,false);out.flagConf=q.measV[0].conf;applyMeasured(q);renderAdd();const fl=document.querySelector('#queue .measalt');out.flag={col:q.primaryColor,txt:fl&&fl.textContent,mode:q.measV[0].mode};
-      q=mk(.6,true);q.edited={primaryColor:true};applyMeasured(q);renderAdd();out.hand={col:q.primaryColor,notes:!!document.querySelector('#queue .measauto,#queue .measalt')};
+      q=mk(.3,false);out.flagConf=q.measV[0].conf;applyMeasured(q);renderAdd();const fl=document.querySelector('#nps-q .measalt');out.flag={col:q.primaryColor,txt:fl&&fl.textContent,mode:q.measV[0].mode};
+      q=mk(.6,true);q.edited={primaryColor:true};applyMeasured(q);renderAdd();out.hand={col:q.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
       queue.length=0;items=keep;renderAdd();return out});
     ok(card.auto.col==='charcoal'&&/Changed navy → charcoal \(measured from your close-up\)Undo/.test(card.auto.txt),`a confident measurement (${card.conf}) changes the colour and says so: "${card.auto.txt}"`);
     ok(card.undo.col==='navy'&&card.undo.edited&&card.undo.after==='navy','Undo puts the tag back, and it is not changed again');

@@ -125,28 +125,28 @@ async function run(eng,browser,{ok,url,settle}){
     // ---- the Add card
     await p.evaluate(()=>{openAdd();addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()});await settle(p,300);
     for(const theme of ['light','dark']){await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await settle(p,100);
-      e=await p.evaluate(()=>{const c=document.querySelector('#queue .texslot .wbstcard'),r=c&&c.getBoundingClientRect(),cs=c&&getComputedStyle(c);
-        return c&&{h:Math.round(r.height),right:r.right,bg:cs.backgroundColor,ink:cs.color,text:c.textContent,old:!!document.querySelector('#queue .texguide,#queue .texpaper'),fit:document.documentElement.scrollWidth<=390}});
+      e=await p.evaluate(()=>{const c=document.querySelector('#nps-q .texslot .wbstcard'),r=c&&c.getBoundingClientRect(),cs=c&&getComputedStyle(c);
+        return c&&{h:Math.round(r.height),right:r.right,bg:cs.backgroundColor,ink:cs.color,text:c.textContent,old:!!document.querySelector('#nps-q .texguide,#nps-q .texpaper'),fit:document.documentElement.scrollWidth<=390}});
       ok(e&&e.h>=44&&e.right<=390&&e.fit&&!e.old&&e.bg!==e.ink&&/True color in 3 steps/i.test(e.text),T+`${theme}: the Add card's Step 2 shows the 3-step card, not the old sentence and link (${JSON.stringify(e)})`)}
     await p.evaluate(()=>{delete document.documentElement.dataset.theme});
-    await p.click('#queue .wbstcard');await p.waitForSelector('#kitsheet.on');
+    await p.click('#nps-q .wbstcard');await p.waitForSelector('#kitsheet.on');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),T+'the Add card\'s card opens the white-paper tip');
     await p.click('#kitsheet .kit-x');await settle(p,200);
-    e=await p.evaluate(()=>{const b=document.querySelector('#queue .texslot .cubtn');return {t:b&&b.textContent,file:!!document.querySelector('#queue .texslot input[type=file]')}});
+    e=await p.evaluate(()=>{const b=document.querySelector('#nps-q .texslot .cubtn');return {t:b&&b.textContent,file:!!document.querySelector('#nps-q .texslot input[type=file]')}});
     ok(e.t==='Add close-up'&&!e.file,T+'the Add card\'s "Add close-up" is a plain button');
-    await p.click('#queue .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
+    await p.click('#nps-q .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
     ok(s.title==='Fabric close-up'&&!s.rm&&s.cap==='environment',T+'it opens the sheet titled "Fabric close-up"');
     await p.click('#cu-cancel');await closed();
     ok(await p.evaluate(()=>!queue[0].texture),T+'Cancel adds nothing');
-    await p.click('#queue .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');
+    await p.click('#nps-q .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');
     await (await p.$('#cu-take')).setInputFiles(file('add.jpg',F.paper));
-    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#queue .texslot.done'));await settle(p,200);
-    e=await p.evaluate(()=>{const s=document.querySelector('#queue .texslot.done');return {btns:[...s.querySelectorAll('button,label')].map(x=>x.textContent.trim())}});
+    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#nps-q .texslot.done'));await settle(p,200);
+    e=await p.evaluate(()=>{const s=document.querySelector('#nps-q .texslot.done');return {btns:[...s.querySelectorAll('button,label')].map(x=>x.textContent.trim())}});
     ok(e.btns.includes('Replace close-up')&&!e.btns.includes('Remove'),T+`a photo taken there reaches addTexture; the card then offers Replace close-up, with no Remove button of its own (${e.btns.join(', ')})`);
-    await p.click('#queue .texslot.done .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
+    await p.click('#nps-q .texslot.done .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
     ok(s.title==='Replace close-up'&&s.rm==='Remove close-up',T+'the Add card\'s Replace close-up opens the sheet with Remove close-up');
     await p.click('#cu-rm');await closed();
-    ok(await p.evaluate(()=>!queue[0].texture&&!document.querySelector('#queue .texslot.done')),T+'Remove close-up there takes the close-up off the card (dropTexture)');
+    ok(await p.evaluate(()=>!queue[0].texture&&!document.querySelector('#nps-q .texslot.done')),T+'Remove close-up there takes the close-up off the card (dropTexture)');
     ok(!errs.length,T+'no page errors on the touch screen ('+errs.join(' | ')+')');
     await ctx.close()}
   // ================= no touch screen (a computer) =================
@@ -162,9 +162,9 @@ async function run(eng,browser,{ok,url,settle}){
     ok(await p.evaluate(()=>!document.querySelector('#cu-sheet.on')),T+'a file chosen there replaces the close-up with no sheet');
     await p.evaluate(()=>closeItem&&closeItem());await settle(p,300);
     await p.evaluate(F=>{openAdd();addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()},F);await settle(p,300);
-    await (await p.$('#queue .texslot label input[type=file]')).setInputFiles(file('a.jpg',F.paper));
-    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#queue .texslot.done'));await settle(p,200);
-    e=await p.evaluate(()=>[...document.querySelectorAll('#queue .texslot.done button,#queue .texslot.done label')].map(x=>x.textContent.trim()));
+    await (await p.$('#nps-q .texslot label input[type=file]')).setInputFiles(file('a.jpg',F.paper));
+    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#nps-q .texslot.done'));await settle(p,200);
+    e=await p.evaluate(()=>[...document.querySelectorAll('#nps-q .texslot.done button,#nps-q .texslot.done label')].map(x=>x.textContent.trim()));
     ok(e.includes('Replace close-up')&&e.includes('Remove')&&!(await p.evaluate(()=>!!document.querySelector('#cu-sheet.on'))),T+`the Add card without touch: the file window directly, and Remove stays (${e.join(', ')})`);
     ok(!errs.length,T+'no page errors without touch ('+errs.join(' | ')+')');
     await ctx.close()}

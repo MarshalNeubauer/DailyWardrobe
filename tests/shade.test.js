@@ -16,12 +16,12 @@ module.exports=async({ok,chromium,url,settle})=>{
     const card=await p.evaluate(async()=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
       show('add');addManual();const q=queue[0];q.manual=false;q.photo='tests/fixtures/suit-mink.jpg';q.texture='tests/fixtures/suit-mink-closeup.png';q.type='suit';q.primaryColor='deeptaupe';
       q.meas={...measureCloth(await ld(q.texture),null,{}),src:'closeup'};q.meas.near=nearestCols('suit',q.meas.lab,false);renderAdd();
-      const r=document.querySelector('#queue .shaderow');return r&&{txt:r.textContent,match:!!r.querySelector('.chipbtn')}});
+      const r=document.querySelector('#nps-q .shaderow');return r&&{txt:r.textContent,match:!!r.querySelector('.chipbtn')}});
     ok(card&&/Shade.*As tagged/.test(card.txt)&&card.match,'the Add card has a Shade row with − / + and Match close-up');
-    await p.click('#queue .shaderow .shbtn[aria-label="Darker"]');
-    const st=await p.evaluate(()=>({s:queue[0].shade,v:document.querySelector('#queue .shval').textContent,drawn:document.querySelector('#queue .tagsw').innerHTML.includes(colOf(queue[0]))}));
+    await p.click('#nps-q .shaderow .shbtn[aria-label="Darker"]');
+    const st=await p.evaluate(()=>({s:queue[0].shade,v:document.querySelector('#nps-q .shval').textContent,drawn:document.querySelector('#nps-q .tagsw').innerHTML.includes(colOf(queue[0]))}));
     ok(st.s===-1&&st.v==='Darker 1'&&st.drawn,'− makes it one step darker, and the swatch is drawn in the new shade');
-    await p.click('#queue .shaderow .chipbtn');
+    await p.click('#nps-q .shaderow .chipbtn');
     const m=await p.evaluate(()=>({s:queue[0].shade,L:rgbLab(...hexRgb(colOf(queue[0])))[0],meas:queue[0].meas.lab[0]}));
     ok(m.s===-2&&Math.abs(m.L-m.meas)<=2.5,`Match close-up sets the shade from the close-up's lightness (Darker 2: drawn L* ${m.L.toFixed(1)}, close-up ${m.meas})`);
     await p.evaluate(async()=>{queue[0].id='mink';await save(0)});

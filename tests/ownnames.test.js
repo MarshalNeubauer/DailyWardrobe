@@ -73,6 +73,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>history.back());await settle(p,400);
     e=await p.evaluate(()=>({sheet:!!colPick,add:!document.querySelector('#add').hidden}));
     ok(!e.sheet&&e.add,`Back on an Add card's color sheet closes the sheet and stays on Add (${JSON.stringify(e)})`);
+    // (the card is in the "Add without a photo" sheet: the next Back closes that, untouched, so nothing is asked)
+    await p.evaluate(()=>history.back());await settle(p,400);
+    e=await p.evaluate(()=>({nps:!!document.querySelector('#nps-sheet.on'),add:!document.querySelector('#add').hidden,asking:!!asking}));
+    ok(!e.nps&&e.add&&!e.asking,`the next Back closes the "Add without a photo" sheet and stays on Add (${JSON.stringify(e)})`);
     await p.evaluate(()=>history.back());await p.waitForFunction(()=>document.querySelector('#add').hidden,null,{timeout:3000}).catch(()=>{});await settle(p,300);
     ok(await p.evaluate(()=>document.querySelector('#add').hidden&&!document.querySelector('#wardrobe').hidden),'the next Back leaves Add for the Wardrobe');
     // ---- over Settings (Your colours & patterns → + New colour)
