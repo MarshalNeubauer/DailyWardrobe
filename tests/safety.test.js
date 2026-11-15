@@ -38,7 +38,8 @@ module.exports=async({ok,chromium,url,settle})=>{
   /* ---- ask the browser to keep the wardrobe, once, after the first item ---- */
   await p.waitForFunction(()=>window.persistCalls>0,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>window.persistCalls)===1,'after the first item is saved the browser is asked to keep the wardrobe');
-  await p.evaluate(()=>addManual());await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.length===2&&queue.length===0,null,{timeout:5000}).catch(()=>{});
+  // (opened by a tap, as a person does: Confirm sits where the last one was, and a tap there right after a save is taken for its double tap, ADD_CALM)
+  await p.click('#add-manual');await settle(p,400);await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.length===2&&queue.length===0,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>window.persistCalls)===1,'and not again for the next item');
   await p.reload();await p.waitForFunction(()=>window.appReady);await settle(p,300);
   ok(await p.evaluate(()=>window.persistCalls)===0&&await p.evaluate(()=>!!localStorage.getItem('persist_asked')),'nor at the next start');

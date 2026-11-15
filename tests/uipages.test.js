@@ -56,12 +56,14 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(lab==='Type,Color,Second color,Third color','the item card and the Wardrobe editor use the same labels');
     ok(await p.evaluate(()=>[...document.querySelectorAll('#nps-q select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
     // ---- one size for controls, one style for page titles
-    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
+    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.addlong):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
       take(document.querySelector('#add'));openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));closeSettings();
       const titles=[];for(const s of ['add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);
       return {btn:[...out.btn],inp:[...out.inp],titles}});
     ok(sz.btn.every(h=>h===44),`buttons are 44px tall on Add and in Settings (${sz.btn})`);
+    // ("Add without a photo" is a two-line row like the tiles: at least 44 px)
+    ok(await p.evaluate(()=>{show('add');const b=document.querySelector('#add-manual');return !!b&&b.getBoundingClientRect().height>=44}),'the long "Add without a photo" button is at least 44 px tall');
     ok(sz.inp.every(h=>h===44),`inputs and dropdowns are 44px too, so a button beside one lines up (${sz.inp})`);
     ok(new Set(sz.titles).size===1&&sz.titles[0]==='22px','Add and Stats share one page title style');
     // ---- nothing scrolls sideways, on a small phone and on the Duo

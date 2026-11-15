@@ -33,7 +33,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   const npsUp=()=>ev(()=>!!npsId&&!!document.querySelector('#nps-sheet.on'));
   const kitUp=()=>ev(()=>!!kit&&!!document.querySelector('#kitsheet.on.kbs'));
   // the sheet's top edge over the frames after a tap: it rises from below
-  const rise=async(sel,act)=>{await ev(s=>{window._tops=[];const f=()=>{const e=document.querySelector(s);window._tops.push(e?e.getBoundingClientRect().top:NaN);if(window._tops.length<30)requestAnimationFrame(f)};requestAnimationFrame(f)},sel);
+  const rise=async(sel,act)=>{await ev(s=>{window._tops=[];let k=0;const f=()=>{const e=document.querySelector(s),r=e&&e.getBoundingClientRect();if(r&&r.height>0&&getComputedStyle(e).visibility!=='hidden')window._tops.push(r.top);if(++k<40)requestAnimationFrame(f)};requestAnimationFrame(f)},sel);
     await act();await settle(p,400);const t=await ev(()=>window._tops),end=t[t.length-1];return {first:Math.round(Math.max(...t.slice(0,4))),end:Math.round(end)}};
   let e;
 
@@ -50,7 +50,8 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   ok(e.text==='Add without a photo / Pick the type and colors yourself'&&e.lastRow==='add-import Import from a spreadsheet'&&!e.oldRow,T+`its words, and "Other ways to add" ends with "Import from a spreadsheet" (no row for adding without a photo) (${e.text}; ${e.lastRow})`);
 
   // ---- "Add without a photo": opens from below, the card inside, × in the header, Confirm and Cancel pinned
-  const ivtop=await ev(()=>{const d=document.createElement('div');d.style.cssText='position:fixed;top:var(--ivtop)';document.body.append(d);const t=d.getBoundingClientRect().top;d.remove();return t});
+  // where a sheet's top belongs: --ivtop (the status bar, or 36 px) on the phone, never above 4vh on the wide layout (as the item sheet)
+  const ivtop=await ev(W=>{const d=document.createElement('div');d.style.cssText='position:fixed;top:'+(W?'max(4vh,var(--ivtop))':'var(--ivtop)');document.body.append(d);const t=d.getBoundingClientRect().top;d.remove();return t},WIDE);
   let r=await rise('#nps-sheet',()=>p.click('#add-manual'));
   e=await ev(()=>{const s=document.querySelector('#nps-sheet'),R=x=>x.getBoundingClientRect(),sr=R(s),bar=R(document.querySelector('#nps-bar')),x=document.querySelector('#nps-sheet .nps-x');
     const c=document.querySelector('#nps-q .card');return {top:sr.top,w:sr.width,left:sr.left,bottom:sr.bottom,grab:!!s.querySelector('.nps-grab'),title:s.querySelector('#nps-title').textContent,icon:s.querySelectorAll('.nps-head svg.aic path').length,

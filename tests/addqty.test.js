@@ -24,9 +24,9 @@ module.exports=async({ok,chromium,url})=>{
     // the top: 12
     await p.evaluate(()=>{queue[0].qty=11;renderAdd()});await p.click('#qty-p-0');
     ok(await p.evaluate(()=>document.querySelector('#qty-n-0').textContent==='12'&&document.querySelector('#qty-p-0').disabled),'at most 12');
-    // socks too; other types none, and a number set before changing type is ignored
-    await p.evaluate(()=>{setq(0,'type','socks')});ok(await p.evaluate(()=>!!document.querySelector('#nps-q .qtyrow')&&/pairs/.test(document.querySelector('#nps-q .qtyl').textContent)),'socks have it ("Identical pairs")');
-    await p.evaluate(()=>{setq(0,'type','tie')});ok(await p.evaluate(()=>!document.querySelector('#nps-q .qtyrow')&&document.querySelector('#qconf-0').textContent==='Confirm'),'a tie has no stepper');
+    // socks too; other types none, and a number set before changing type is ignored (the card Undo brought back is on Add's list)
+    await p.evaluate(()=>{setq(0,'type','socks')});ok(await p.evaluate(()=>!!document.querySelector('#queue .qtyrow')&&/pairs/.test(document.querySelector('#queue .qtyl').textContent)),'socks have it ("Identical pairs")');
+    await p.evaluate(()=>{setq(0,'type','tie')});ok(await p.evaluate(()=>!document.querySelector('#queue .qtyrow')&&document.querySelector('#qconf-0').textContent==='Confirm'),'a tie has no stepper');
     const n1=await p.evaluate(()=>items.length);await p.click('#qconf-0');await p.waitForFunction(n=>items.length>n,n1);await p.waitForTimeout(200);
     ok(await p.evaluate(n=>items.length===n+1,n1),'and saves one, though 12 was set while it was a shirt');
     ok(!errs.length,'no page errors: '+errs.join(' | '));
