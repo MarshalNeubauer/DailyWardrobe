@@ -145,6 +145,7 @@ async function redetect(id){
 async function setItemArrives(id,v){const it=items.find(x=>x.id===id);if(!it)return;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))it.arrives=v;else delete it.arrives;await put(it);cache={};
   if(await checkArrivals())return renderWardrobe();renderWardrobe()}
 async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;it.paused=!it.paused;if(!it.paused){delete it.paused;delete it.order;delete it.arrives}
+  if(it.sample&&typeof kitEdited==='function'&&!kitEdited(it))it.sampleBase=Date.now();   // out of rotation doesn't make a sample piece his (kit.js kitEdited)
   let n=0;if(it.paused){const T=todayDate();
     for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
