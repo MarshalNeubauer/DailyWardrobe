@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	cf044eb5093519b309e3
-# tested	a5b7119142211ef0ccdf
+# tested	176251bfacff72508fab
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd	shadeRow
@@ -2362,7 +2361,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -2396,7 +2395,7 @@ dblost.test.js	apple-touch-icon.png	<loaded>
 dblost.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
 dblost.test.js	asm-gl.js	<loaded>
 dblost.test.js	asm-watch.js	<loaded>
-dblost.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave
+dblost.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 dblost.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow
 dblost.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar
 dblost.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
@@ -2419,7 +2418,7 @@ dblost.test.js	mq/suit.js	<loaded>
 dblost.test.js	mq/vest.js	<loaded>
 dblost.test.js	pack.js	<loaded>	packShow
 dblost.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	picsDrawn	prefetchRenders	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
-dblost.test.js	planner.js	<loaded>
+dblost.test.js	planner.js	<loaded>	lockStale
 dblost.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 dblost.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	pruneTagImgs	safetyStart	saveFailed	storeErr	storeFailText	storeFailure	storeFull	tagFailNote
 dblost.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
@@ -3525,10 +3524,9 @@ invitefix.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 invitefix.test.js	detect.js	<any>	<loaded>	@	usableSett
 invitefix.test.js	draw.js	<any>	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	swatchSVG
 invitefix.test.js	dress.js	<any>	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-invitefix.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+invitefix.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 invitefix.test.js	icon-192.png	<loaded>
 invitefix.test.js	icon-512.png	<loaded>
-invitefix.test.js	history.js	<any>	<loaded>	adviceFor	checkPlanRules	clearLocks	dayActions	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 invitefix.test.js	index.html	<loaded>
 invitefix.test.js	itemsheet.js	<any>	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	imgOf	itemShown	makeSmall	noMotion	phSigOf	renderItem	smallPhotos
 invitefix.test.js	kit.js	<any>	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitEdited	kitHasSample	kitSampleBanner	kitSampleBusy	kitSampleRemove	kitStartRow	kitTombs	kitTx	kitUserEdit
@@ -5255,7 +5253,7 @@ nufix9.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 nufix9.test.js	detect.js	<loaded>	@	lookOf	ownSett	texPat	tieWeave	usableSett
 nufix9.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 nufix9.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-nufix9.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	idsOf	keyDate	lockIds	lockUpcoming	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+nufix9.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dayChanged	firstReal	idsOf	keyDate	lockIds	lockUpcoming	missedCard	missedNote	missedTell	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 nufix9.test.js	icon-192.png	<loaded>
 nufix9.test.js	icon-512.png	<loaded>
 nufix9.test.js	index.html	<any>	<loaded>
@@ -8261,7 +8259,7 @@ snapshots.test.js	mq/suit.js	<loaded>
 snapshots.test.js	mq/vest.js	<loaded>
 snapshots.test.js	pack.js	<loaded>	packShow
 snapshots.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI
-snapshots.test.js	planner.js	<loaded>	lockStale
+snapshots.test.js	planner.js	<loaded>
 snapshots.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 snapshots.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 snapshots.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit	unitCC	weekFirst
@@ -8777,7 +8775,7 @@ tagging.test.js	apple-touch-icon.png	<loaded>
 tagging.test.js	asm-color.js	<loaded>	asmCmKind	asmCmRoute	asmCuDark	asmCuPatch	asmCuTile	asmCuTile1	asmCuWants	asmCuWrap
 tagging.test.js	asm-gl.js	<loaded>
 tagging.test.js	asm-watch.js	<loaded>
-tagging.test.js	assemble.js	<loaded>	@	renderAsmUI
+tagging.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	renderAsmUI
 tagging.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
 tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHex	cnHsv	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colTarget	colTidy	cpFig	cpSeg	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	avgText	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	labHex	labOf	lum	lumCol	metalWord	mix	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	seasonFit	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
