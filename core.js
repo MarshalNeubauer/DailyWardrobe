@@ -194,7 +194,9 @@ function dayClimate(d){
   if(n&&typeof n.tmax==='number'){const t=n.tmax;return {wx:null,norm:n,season:t>=24?'warm':t<=12?'cold':'mild',rain:false,cold:t<10,veryCold:t<4}}
   // no location: the holiday country (chosen from the phone's time zone at setup) gives a hot climate's usual highs and the hemisphere
   // (2026-11-15, the audit: a Kuwait phone with no location was told in December to get an overcoat, Sydney's January was winter)
-  const cc=!settings.location&&settings.holidays&&settings.holidays.country,ht=cc&&CC_TMAX[cc];
+  // with a location but no usual weather yet (its climate history failed to load: offline at setup, the service busy), the location's
+  // country is used the same way (fix round 3, W1-1-05 = W2-16-03: a Kuwait December was planned as winter, with an overcoat)
+  const L=settings.location,hc=settings.holidays&&settings.holidays.country,cc=L?(L.cc?String(L.cc).toUpperCase():hc):hc,ht=cc&&CC_TMAX[cc];
   if(ht){const t=ht[d.getMonth()];return {wx:null,season:t>=24?'warm':t<=12?'cold':'mild',rain:false,cold:t<10,veryCold:t<4}}
   const south=settings.location?settings.location.lat<0:SOUTH_CC.includes(cc),m=(d.getMonth()+(south?6:0))%12;
   const season=[11,0,1].includes(m)?'cold':[5,6,7].includes(m)?'warm':'mild';
