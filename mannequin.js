@@ -39,8 +39,25 @@ const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .
   + `<circle cx="${x}" cy="${y}" r="${(r * .8).toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="${(r * .18).toFixed(2)}"/>`
   + [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => `<circle cx="${(x + a * r * .27).toFixed(2)}" cy="${(y + b * r * .27).toFixed(2)}" r="${(r * .12).toFixed(2)}" fill="#000" fill-opacity=".35"/>`).join('');
 
+/* the pocket square (2026-11-16, the owner's "square fold, a bit out of the pocket"): the strip above the breast pocket's welt where the
+   painter puts it (asm-pocket.js asmPocketQuad, measured at 2048 on the masters), crisp and straight: the cloth (pocket.def, its print),
+   its contrast edge along the top (pocket.edge), the fold's top edge lit, darker into the pocket's mouth, a slight shadow on the welt
+   under it; '' on a pose with no pocket (the shirt poses) or no square */
+function pocketSvg(pocket, kind, P) {
+  const Q = pocket && typeof asmPocketQuad === 'function' ? asmPocketQuad(kind) : null; if (!Q) return '';
+  const s = VB / 2048, pt = p => `${(p[0] * s).toFixed(2)},${(p[1] * s).toFixed(2)}`, at = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  const poly = (pts, fill, extra = '') => `<polygon points="${pts.map(pt).join(' ')}" fill="${fill}"${extra}/>`, dn = (p, d) => [p[0], p[1] + d];
+  const fill = typeof pocket.def === 'function' ? `url(#${P}pq)` : hex(pocket.color, '#F4F4F2');
+  return `<g class="fig-pocket">${typeof pocket.def === 'function' ? `<defs>${pocket.def(P + 'pq')}<linearGradient id="${P}pqs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".1" stop-color="#fff" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient></defs>` : ''}`
+    + poly([Q.b0, Q.b1, dn(Q.b1, 5), dn(Q.b0, 5)], '#000', ' fill-opacity=".22"')   // its shadow on the welt
+    + poly([Q.t0, Q.t1, Q.b1, Q.b0], fill)
+    + (pocket.edge ? poly([Q.t0, Q.t1, at(Q.t1, Q.b1, .3), at(Q.t0, Q.b0, .3)], hex(pocket.edge, '#1B2A4A')) : '')
+    + poly([Q.t0, Q.t1, Q.b1, Q.b0], `url(#${P}pqs)`)
+    + poly([Q.t0, Q.t1, at(Q.t1, Q.b1, .07), at(Q.t0, Q.b0, .07)], '#fff', ' fill-opacity=".25"')   // the fold's crisp top edge
+    + `<line x1="${(Q.b0[0] * s).toFixed(2)}" y1="${(Q.b0[1] * s).toFixed(2)}" x2="${(Q.b1[0] * s).toFixed(2)}" y2="${(Q.b1[1] * s).toFixed(2)}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/></g>`;
+}
 function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, bot = null, beltColor = null, vest = true, clip = null, shirtColor = '#EEEEEE', bg = '#F5F2EC', idPrefix = 'mq-',
-  ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 }, office = true } = {}) {
+  ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 }, office = true, pocket = null } = {}) {
   const G = mqData(kind); if (!G) return '';
   const P = String(idPrefix).replace(/[^A-Za-z0-9_-]/g, '');
   const u = id => `url(#${P}${id})`;
@@ -58,6 +75,7 @@ function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, bot = null, beltC
   const partId = (p, i) => /^lap[LR]$/.test(p.id) ? P + p.id : `${P}pt${i}`;
   const c = clip && tie && !vest && G.clip ? G.clip : null;   // the painter's rule: no clip on a waistcoat day
   const cc = c && hex(clip.color, '#A9AFB8');
+  const pq = pocketSvg(pocket, kind, P);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB} ${VB}" width="100%" role="img" aria-label="${esc(ariaLabel)}" style="display:block;height:auto">
 <defs>
 ${defs.join('\n')}
@@ -81,7 +99,7 @@ ${G.belt ? `<path class="fig-belt" d="${G.belt}" fill="${hex(beltColor, '#3A2A22
 <path d="${G.glow}" fill="#fff" fill-opacity=".05"/><path d="${G.glow2}" fill="#fff" fill-opacity=".05"/><path d="${G.rim}" fill="#fff" fill-opacity=".04"/>
 <path d="${G.ink}" fill="#000" fill-opacity=".4"/><path d="${G.inkHi}" fill="#fff" fill-opacity=".08"/>
 <g fill="none" stroke="#000" stroke-opacity=".32" stroke-width=".7">${lapels.map(([p, i]) => `<use href="#${partId(p, i)}"/>`).join('')}${G.sleeveEdge ? `<path d="${G.sleeveEdge}"/>` : ''}</g>
-${c ? `<g class="fig-clip" transform="translate(${c.x} ${c.y}) rotate(${c.a})"><rect x="${-c.w / 2 + .4}" y="${-c.h / 2 + .9}" width="${c.w}" height="${c.h}" rx="${c.h / 2}" fill="#000" fill-opacity=".3"/>
+${pq ? pq + '\n' : ''}${c ? `<g class="fig-clip" transform="translate(${c.x} ${c.y}) rotate(${c.a})"><rect x="${-c.w / 2 + .4}" y="${-c.h / 2 + .9}" width="${c.w}" height="${c.h}" rx="${c.h / 2}" fill="#000" fill-opacity=".3"/>
 <rect x="${-c.w / 2}" y="${-c.h / 2}" width="${c.w}" height="${c.h}" rx="${c.h / 2}" fill="${cc}"/><rect x="${-c.w / 2}" y="${-c.h / 2}" width="${c.w}" height="${(c.h * .38).toFixed(2)}" rx="${(c.h * .19).toFixed(2)}" fill="#FFFFFF" fill-opacity=".6"/></g>` : ''}
 <path d="${G.cast}" fill="#000" fill-opacity=".12"/>
 <g class="fig-skin${/-open$/.test(kind) ? ' fig-open' : ''}"><path d="${G.skin[0].d}" fill="${G.skin[0].c}"/><g clip-path="url(#${P}clipSkin)"><g filter="url(#${P}fSkin)">${G.skin.slice(1).map(b => `<path d="${b.d}" fill="${b.c}"/>`).join('')}</g></g></g>

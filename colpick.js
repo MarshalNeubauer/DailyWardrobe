@@ -21,8 +21,8 @@ const colHas=v=>!!v&&v!=='none';
 const colShows=(it,k)=>{const t=it&&it.type;if(!t)return true;
   if(k==='primaryColor')return t!=='watch'||strapBand(it);
   if(colHas(it[k]))return true;
-  if(k==='secondaryColor')return FABRIC.includes(t)||t==='socks'||(t==='shoes'&&shoeStyle(it)==='sneaker');
-  return FABRIC.includes(t)};
+  if(k==='secondaryColor')return hasPat(t)||t==='socks'||(t==='shoes'&&shoeStyle(it)==='sneaker');
+  return hasPat(t)};   // (hasPat: patterned cloth, and a pocket square's print or border)
 const colFieldLabel=(it,k)=>k==='primaryColor'?(it&&it.type==='watch'?'Strap color':'Color'):k==='secondaryColor'?(it&&it.type==='socks'?'Toe cap':it&&it.type==='shoes'&&shoeStyle(it)==='sneaker'?'Sole':'Second color'):'Third color';
 /* a second or third colour the item can't show is dropped where the item is made (saveCard) or its type changed (sete): an Add card
    shows only the fields its type uses, a saved item keeps one already set until it is cleared or its type changes */
@@ -274,7 +274,7 @@ ${np?`<small class="cpnewtx">${esc(cap1(np.name))} isn’t one of your patterns 
    patterns (addCustomColor / addCustomPattern: settings.custom, synced; testers' own too) and sets the field as a pick does. Opened from
    the "Your colours" / "Your patterns" tile of the picker, from the Add card's offer (Claude's newColor / newPattern, a colour measured
    far from every listed one: openColForm / openPatForm, tagging.js) and from Settings (openCustomNew: no item, a "For" choice). ---- */
-const CN_SAMPLE={suit:'navy',blazer:'navy',pants:'charcoal',shirt:'white',tie:'navy',socks:'navy',shoes:'brown',belt:'brown',overcoat:'charcoal',raincoat:'khaki',tieclip:'silver',cufflinks:'silver',watch:'brown'};
+const CN_SAMPLE={suit:'navy',blazer:'navy',pants:'charcoal',shirt:'white',tie:'navy',socks:'navy',shoes:'brown',belt:'brown',overcoat:'charcoal',raincoat:'khaki',pocketsquare:'white',tieclip:'silver',cufflinks:'silver',watch:'brown'};
 const CN_DESC_MAX=120,CN_SUITING=['suit','blazer','pants'];
 const cnHex=h=>/^#[0-9a-f]{6}$/i.test(String(h||'').trim())?String(h).trim().toLowerCase():null;
 const cnHsv=hex=>{const [r,g,b]=hexRgb(hex).map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;

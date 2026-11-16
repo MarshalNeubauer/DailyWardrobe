@@ -566,6 +566,8 @@ function swatchSVG(i,drawn){
   if(!drawn&&FABRIC.includes(i.type)&&i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type))body=`<image href="${i.swatch}" width="16" height="16" preserveAspectRatio="xMidYMid slice"/>`;
   else if(FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     body=`<defs>${fabricDef(P+'f',i,role,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
+  else if(i.type==='pocketsquare'){const e=pocketEdge(i);   // its print, its contrast edge round it (2026-11-16)
+    body=`<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/>${e?`<rect x="1.25" y="1.25" width="13.5" height="13.5" fill="none" stroke="${e}" stroke-width="2.5"/>`:''}<rect width="16" height="16" fill="url(#${P}g)"/>`}
   else{// a bracelet watch and plain metal cufflinks show their metal; a tie clip is its colour (it has no metal field: it was always silver),
     // shiny when it is a metal colour; enamel cufflinks their face (2026-11-15)
     const clip=i.type==='tieclip',metal=(i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i)&&i.metal!=='silk')||(clip&&!!clipMetal(i));
@@ -1008,6 +1010,21 @@ function coatMarks(i,P){const S=COAT_D,c=colOf(i),[r,g,b]=hexRgb(c),dark=(.299*r
     `<path d="${S.hand}" fill="${SK}" stroke="${SKD}" stroke-width=".2"/><path d="${S.handR}" fill="${SK}" stroke="${SKD}" stroke-width=".2"/><path d="${S.handR}" fill="#000" fill-opacity=".15"/><path d="${S.hair}" fill="${HR}"/>`+
     ln(S.ears,SKD,.2,.8)+ln(S.jaw,SKD,.2,.45)+ln(S.brows,'#3a2716',.36)+figEyes(S.eyes,S.lids,S.irises,+S.irisR,P,'#2a1d14')+
     ln(S.nose,SKD,.2,.85)+dots(S.nostrils,.14,'#6f4433')+`<path d="${S.lips}" fill="#b5786a"/>`+ln(S.lipline,'#6e3f35',.18)}
+/* ---------- the pocket square (2026-11-16, the owner: "a square fold, a bit out of the pocket") ----------
+   Its cloth is drawn as a tie's print (dots, paisley, a stripe, a check, a foulard, a woven texture: fabricDef's tie tiles), plus its
+   contrast edge for the pattern 'border' (pocketEdge: the second colour). The thumbnail is the square folded flat for the square ("TV")
+   fold: a crisp straight top edge, the front fold across its lower part, the edge colour along its edges */
+function pocketDef(id,i,ctx){return fabricDef(id,{...i,stripes:null,sett:null},'tie',ctx)}
+const pocketEdge=i=>i&&(patBase(i.pattern)||'solid')==='border'?(i.secondaryColor&&COLORS[i.secondaryColor]?COLORS[i.secondaryColor]:lum(colOf(i))>.6?COLORS.navy:COLORS.white):null;
+function pocketMarks(i,P){const e=pocketEdge(i),c=colOf(i),ln=lum(c)>.55?'#000':'#fff',E=e?`<g fill="${e}"><rect x="16" y="22" width="68" height="4.5"/><rect x="16" y="22" width="4.5" height="58"/><rect x="79.5" y="22" width="4.5" height="58"/><rect x="16" y="75.5" width="68" height="4.5"/></g>`:'';
+  return `<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".25" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".06"/></linearGradient>`+
+    `<linearGradient id="${P}h" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs>`+
+    `<rect x="17.5" y="24" width="68" height="58" rx="1.2" fill="#000" opacity=".16"/>`+   // its soft shadow
+    `<rect class="ps-back" x="16" y="22" width="68" height="58" rx="1.2" fill="url(#${P}f)"/>${E}<rect x="16" y="22" width="68" height="58" rx="1.2" fill="url(#${P}h)"/>`+
+    // the fold: the front layer over the lower part, its crisp top edge lit, the crease's shadow above it
+    `<rect x="16" y="41" width="68" height="2" fill="#000" opacity=".14"/><rect class="ps-front" x="16" y="43" width="68" height="37" rx="1" fill="url(#${P}f)"/>${e?`<g fill="${e}"><rect x="16" y="43" width="4.5" height="37"/><rect x="79.5" y="43" width="4.5" height="37"/><rect x="16" y="75.5" width="68" height="4.5"/></g>`:''}`+
+    `<rect x="16" y="43" width="68" height="37" fill="url(#${P}v)"/><rect x="16" y="43" width="68" height="1.1" fill="#fff" opacity=".35"/><rect x="16" y="22" width="68" height="1" fill="#fff" opacity=".3"/>`+
+    `<rect x="16" y="22" width="68" height="58" rx="1.2" fill="none" stroke="${ln}" stroke-opacity=".18" stroke-width=".5"/>`}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */
@@ -1032,6 +1049,7 @@ function itemThumb(i,full){
     g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="11" fill="${c}" stroke="${d}" stroke-width="1"/><path d="M${x-9},${46} Q${x},${54} ${x+9},${46} M${x-9},${54} Q${x},${46} ${x+9},${54} M${x-4},${41} Q${x+3},${50} ${x-4},${59} M${x+4},${41} Q${x-3},${50} ${x+4},${59}" fill="none" stroke="${d}" stroke-width="1.1" stroke-opacity=".7"/><ellipse cx="${x-3.5}" cy="45.5" rx="3.4" ry="2" fill="${l}" opacity=".6"/>`).join('')}
   else if(i.type==='cufflinks'){const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,f=linkFace(i)&&colOf(i);   // an enamel or stone face in the item's colour, in a metal rim (2026-11-15: the colour asked for was never drawn)
     g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="12" fill="${mM}" stroke="${mD}" stroke-width="1.2"/>`+(f?`<circle class="link-face" cx="${x}" cy="50" r="8.6" fill="${f}" stroke="${mD}" stroke-width=".6"/><ellipse cx="${x-3}" cy="46.5" rx="3.6" ry="2.2" fill="#fff" opacity=".35"/>`:`<circle cx="${x-3}" cy="47" r="4" fill="${mL}"/><circle cx="${x}" cy="50" r="7.5" fill="none" stroke="${mD}" stroke-width=".6"/>`)).join('')}
+  else if(i.type==='pocketsquare')g=full?`<defs>${pocketDef(P+'f',i)}</defs><rect width="100" height="100" fill="url(#${P}f)"/>${pocketEdge(i)?`<rect x="0" y="0" width="100" height="100" fill="none" stroke="${pocketEdge(i)}" stroke-width="16"/>`:''}`:pocketMarks(i,P);   /* folded for the square fold; full: its cloth edge to edge, the edge round it */
   else if(i.type==='tieclip'){const m=colOf(i);   /* its colour: a tie clip has no metal field */g=`<rect x="12" y="45" width="76" height="9" rx="3" fill="${m}" stroke="#000" stroke-opacity=".3"/><rect x="14" y="47" width="72" height="2" rx="1" fill="#fff" opacity=".45"/>`}
   else g=`<rect x="10" y="10" width="80" height="80" rx="8" fill="${colOf(i)}"/>`;
   return `<div class="ph thumb"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${TYPES[i.type]||'Item'}">${g}</svg></div>`;
@@ -1079,7 +1097,10 @@ function figureSvg(o,prefix='fig-'){
   const k=i=>{const s=i&&usableSett(i);return s&&s.bands&&s.bands.length>1&&STRIPE_PATS.includes(patBase(i.pattern))?1.6:1};
   // a plain or fine-weave jacket or trousers in the painter's own cloth, a dark one lifted (figCloth); null: the drawn tile as before
   const P=String(prefix).replace(/[^A-Za-z0-9_-]/g,''),tc=top&&figCloth(top,'jacket',kind,P,'T'),bc=bot&&figCloth(bot,'trousers',kind,P,'B');
-  return outfitMannequinSvg({kind,suit:top?tc||figFabric(top,'top'):shirt,shirt,tie:figFabric(o.tie,'tie'),bot:bot?bc||figFabric(bot,'bot'):{color:'#4A4E55'},
+  // the pocket square (2026-11-16): only with the jacket on, its print at about half the swatch's scale on the 5-unit strip
+  const pocket=o.pocket&&o.top?{def:id=>{let p=pocketDef(id,o.pocket,'dot');const m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';if(m)p=p.replace(m[0],'');
+    return p.replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="scale(.45)${tf?' '+tf:''}"`)},edge:pocketEdge(o.pocket),color:colOf(o.pocket)}:null;
+  return outfitMannequinSvg({kind,pocket,suit:top?tc||figFabric(top,'top'):shirt,shirt,tie:figFabric(o.tie,'tie'),bot:bot?bc||figFabric(bot,'bot'):{color:'#4A4E55'},
     beltColor:o.belt?colOf(o.belt):'#3A2A22',vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):FIG_NO_SHIRT.color,bg:figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:tc?1:k(top),shirt:1,tie:1,bot:bc?1:k(bot)}});
 }
 /* ---------- the painter's own cloth on the mannequin (2026-11-15, the owner approved the mockups in

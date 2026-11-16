@@ -10,14 +10,14 @@
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
 const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];   // the types with a wear limit in Settings
-const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks'];   // what can be sent away
+const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks','pocketsquare'];   // what can be sent away (a pocket square: worn count, laundry; 2026-11-16)
 const CARE_DEF={suit:5,blazer:6,pants:4,shirt:1};   // wears before cleaning; a type not listed is never due
 const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks'};
 const CARE_MAX=10;
 const LAUNDRY_OPTS=[0,1,2,3,5,7];
 const careLimit=t=>{const v=(settings.care||{})[t];return v==null?(CARE_DEF[t]||0):Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};
 const laundryDays=()=>Math.max(0,+(settings.laundryDays??1)||0);
-const careWashed=t=>t==='shirt'||t==='socks';   // washed at home rather than cleaned: the wording, and which way "send" goes
+const careWashed=t=>t==='shirt'||t==='socks'||t==='pocketsquare';   // washed at home rather than cleaned: the wording, and which way "send" goes
 const careWord=t=>careWashed(t)?'washing':'cleaning';
 const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
 const careTimes=n=>n===1?'once':n===2?'twice':n+' times';

@@ -18,7 +18,7 @@ const wardNorm=t=>String(t??'').toLowerCase().normalize('NFD').replace(/\p{M}/gu
 /* everything a search looks through: name, brand, notes, material, the type, the colours' names and the pattern */
 /* (2026-11-15, American English) the British words still find what they used to: "grey" finds the gray pieces, "trousers" the pants */
 /* (2026-11-16) its accents too: a paisley tie with a red accent is found by "red" (core.js accentsOf) */
-const wardHay=i=>{const h=wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),FABRIC.includes(i.type)?patName(i.pattern||'solid'):'',matSyn(i),...accentsOf(i).map(colName)].join(' '));
+const wardHay=i=>{const h=wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),hasPat(i.type)?patName(i.pattern||'solid'):'',matSyn(i),i.type==='pocketsquare'?'hank handkerchief pochette':'',...accentsOf(i).map(colName)].join(' '));   // (a pocket square's other names, 2026-11-16)
   return h+(h.includes('gray')?' grey':'')+(i.type==='pants'?' trousers':'')};
 /* (2026-11-15, the materials audit) a material's other words, from core.js MAT_ALIAS: "fresco" finds tropical wool, "lisle" mercerized
    cotton, "broadcloth" poplin, "nylon" a performance stretch shirt; a stored name off the list finds by the listed one it means ("Merino"
