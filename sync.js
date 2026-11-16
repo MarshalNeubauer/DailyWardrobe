@@ -172,7 +172,12 @@ function syncShare(st){const off=new Set((st.items||[]).filter(i=>!syncOwn(i)).m
   return {...st,items:st.items.filter(i=>!off.has(i.id)),days:(st.days||[]).filter(d=>!names(d))}}
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
-  const got=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token);
+  const raw=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token),got=cleanState(raw);   // (core.js cleanState: records from outside)
+  // records the check left out are not "lacking" here (else every sync asked for everything again): kept per backup in sync_off
+  const gi=new Set(got.items.map(i=>i.id)),gd=new Set(got.days.map(d=>d.date));let off={};try{off=JSON.parse(localStorage.getItem('sync_off')||'{}')||{}}catch{}
+  if(off.url!==url)off={url,i:[],d:[]};
+  const offI=new Set([...(off.i||[]),...raw.items.filter(i=>!(i&&gi.has(i.id))).map(i=>String(i&&i.id))]),offD=new Set([...(off.d||[]),...raw.days.filter(d=>!(d&&gd.has(d.date))).map(d=>String(d&&d.date))]);
+  if(offI.size>(off.i||[]).length||offD.size>(off.d||[]).length)try{localStorage.setItem('sync_off',JSON.stringify({url,i:[...offI].slice(-500),d:[...offD].slice(-500)}))}catch{}
   if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,got);   // a device's first contact with a backup (safety.js): its settings win
   const now=mergeState(await applyMerged(mergeState(local,got),local),got),ix=remote.idx||{i:{},d:{},s:-1},tomb=remote.tombstones||{};
   // everything the backup holds must be here now; when not (storage cleared, a marker from another backup), ask for all of it
@@ -180,13 +185,14 @@ async function syncLite(remote,local,url,token,inline){
   // (a day the backup sent that this device kept its own, older copy of: core.js dayWins, an automatic lock that lost to a change it never
   // saw. Not lacking: it is sent up below, and the worker's merge, by the same rule, keeps it)
   const gotD=new Set((got.days||[]).map(d=>d.date)),keptD=d=>gotD.has(d.date)&&d.date in ix.d&&(d.updated||0)<ix.d[d.date];
-  const lacks=Object.entries(ix.i).some(([id,s])=>!(id in has?has[id]>=s:(now.tombstones[id]||0)>=s))||Object.entries(ix.d).some(([d,u])=>!(d in hasD)||(hasD[d]<u&&!gotD.has(d)))||(ix.s>0&&!(now.settings&&(now.settings.updated||0)>=ix.s));
+  const lacks=Object.entries(ix.i).some(([id,s])=>!offI.has(id)&&!(id in has?has[id]>=s:(now.tombstones[id]||0)>=s))||Object.entries(ix.d).some(([d,u])=>!offD.has(d)&&!(d in hasD)||(hasD[d]<u&&!gotD.has(d)))||(ix.s>0&&!(now.settings&&(now.settings.updated||0)>=ix.s));
   if(lacks&&!remote.all)return {again:{all:true}};
   pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
   const share=syncShare(now);   // (not the sample wardrobe)
   const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
+  Object.assign(up,cleanState({items:up.items,days:up.days,tombstones:up.tombstones}));   // records as the server takes them (core.js cleanState)
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
   if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
@@ -225,10 +231,11 @@ async function syncOnce(){
       if(remote.lite===1){const res=await syncLite(remote,local,url,token,inline);if(!res||res===true)return res;
         const a=res.again;if(a.all)all=true;if(a.since){since=a.since;all=false}if(a.legacy)lite=false;continue}
       if(++full>3)break;
+      if(remote.data)remote.data=cleanState(remote.data);   // records from outside (core.js)
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=syncShare(now);pullDone();   // (out: what is sent, without the sample wardrobe)
+      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=cleanState(syncShare(now));pullDone();   // (out: what is sent, without the sample wardrobe)
       if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
       if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
@@ -268,8 +275,11 @@ async function downloadBackup(){
 async function restoreBackup(file){
   if(!file)return;let data;
   try{data=JSON.parse(await file.text())}catch{tell('That file is not a Daily Wardrobe backup.');return}
-  if(data.app!=='daily-wardrobe'||!Array.isArray(data.items)){tell('That file is not a Daily Wardrobe backup.');return}
+  if(!data||data.app!=='daily-wardrobe'||!Array.isArray(data.items)){tell('That file is not a Daily Wardrobe backup.');return}
+  const n=data.items.length;data=cleanState(data);   // only records of the app's own shape come in (core.js); the rest is said
+  const left=n-data.items.length;
   const local=await localState();await applyMerged(mergeState(local,data),local);
+  if(left){tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}. ${left} item${left===1?' in the file wasn’t':'s in the file weren’t'} a Daily Wardrobe item and ${left===1?'was':'were'} left out.`);showSyncStatus();scheduleSync();return}
   tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}.`);showSyncStatus();scheduleSync();
 }
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
@@ -318,6 +328,7 @@ async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&s
   try{rollSay('Rolling back…',2500);await syncNow();
     const r=await fetch(url+'?snap='+encodeURIComponent(id),{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);
     if(!j.data||!Array.isArray(j.data.items))throw new Error('that backup is empty');
+    j.data=cleanState(j.data);   // records from outside (core.js)
     const local=await localState(),pre=snapPreSetup(local,j.data),next=rollBackState(local,j.data);
     restoring=true;localStorage.setItem('sync_restore',token);   // before the phone's copy changes: a kill from here on still uploads it as a restore
     await applyMerged(mergeState(local,next),local);

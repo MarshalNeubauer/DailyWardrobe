@@ -51,6 +51,35 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
   const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)}));
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
+/* the stored wardrobe at start-up through core.js cleanRecord/cleanDay (fix round 3, W2-13-02): a record stored before the entry check
+   (a crafted Restore file or sync) is shown cleaned, and stored cleaned with its stamp unchanged (nothing to back up; the other phones
+   clean their own copy), only where the check changed it; a record with no usable id or type is left out and taken out of storage.
+   Every original it changes or leaves out is first kept on this phone (meta rec_kept) and the person is told once (recKeptTell).
+   Once per phone (localStorage rec_clean, REC_CLEAN): every record stored since came through the check or was made by the app, and the
+   check reads every photo (a few hundred ms on a large wardrobe). -> {items, days} */
+const REC_CLEAN='1';
+const recSame=(a,b)=>{if(!b)return false;const ka=Object.keys(a),kb=Object.keys(b);if(ka.length!==kb.length)return false;
+  return ka.every(k=>a[k]===b[k]||(a[k]&&typeof a[k]==='object'&&JSON.stringify(a[k])===JSON.stringify(b[k])))};
+function cleanStored(its,days){its=its||[];days=days||[];
+  try{if(localStorage.getItem('rec_clean')===REC_CLEAN)return {items:its,days}}catch{}
+  const ci=its.map(cleanRecord),cd=days.map(cleanDay),same=(a,b)=>!!a&&typeof a==='object'&&recSame(a,b);
+  // nothing is changed in storage before every original the check would change is kept on this phone (meta rec_kept, added to, never
+  // replaced): the stored copy is written only after that, and the person is told once (recKeptTell)
+  const kept=[];its.forEach((it,k)=>{if(!same(it,ci[k]))kept.push({kind:'item',dropped:!ci[k],rec:it})});days.forEach((d,k)=>{if(!same(d,cd[k]))kept.push({kind:'day',dropped:!cd[k],rec:d})});
+  const flag=()=>{try{localStorage.setItem('rec_clean',REC_CLEAN)}catch{}};
+  if(!kept.length){flag();return {items:its,days}}
+  (async()=>{const prev=await metaGet('rec_kept').catch(()=>null);await metaPut('rec_kept',[...(Array.isArray(prev)?prev:[]),...kept.map(x=>({...x,at:Date.now()}))]);
+    const w=[];
+    its.forEach((it,k)=>{const c=ci[k];if(same(it,c))return;const id=it&&it.id;if(id==null||typeof id==='object')return;
+      w.push(atomic('items',id,cur=>cur&&stamp(cur)===stamp(it)?(c&&c.id===id?{put:c}:{del:true}):null))});
+    days.forEach((d,k)=>{const c=cd[k];if(same(d,c))return;const dt=d&&d.date;if(dt==null||typeof dt==='object')return;
+      w.push(atomic('days',dt,cur=>cur&&(cur.updated||0)===(d.updated||0)?(c&&c.date===dt?{put:c}:{del:true}):null))});
+    await Promise.all(w);flag();recKeptTell(kept)})().catch(e=>console.warn('stored records not cleaned',e));
+  return {items:ci.filter(Boolean),days:cd.filter(Boolean)}}
+/* said once, in plain words, whenever the start-up check set something aside (the originals stay in meta rec_kept on this phone) */
+function recKeptTell(kept){const n=kept.filter(x=>x.kind==='item'&&x.dropped).length,f=kept.filter(x=>x.kind==='item'&&!x.dropped).length;if(!n&&!f)return;
+  const t=(n?`${n} item${n===1?'':'s'} in this phone’s storage couldn’t be shown safely and ${n===1?'was':'were'} set aside. `:'')+(f?`Some details of ${f} item${f===1?'':'s'} couldn’t be shown safely and were set aside. `:'')+'Nothing was deleted: the originals are kept on this phone.';
+  const say=()=>typeof toast==='function'?toast(t,12000):setTimeout(say,500);setTimeout(say,1500)}
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
 /* a start-up fix-up saves an item only while it is still the copy on screen: an edit or a sync may have replaced it meanwhile, and saving the
