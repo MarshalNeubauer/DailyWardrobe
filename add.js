@@ -64,7 +64,7 @@ async function addFiles(files,multi){
       const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),...(ac?{signal:ac.signal}:{})});q.abort=null;   // wb: whether the photo was white-balanced (the tagger is told)
       if(q.stopped){delete q.stopped;fill(q,null);q.unread=1;q.tagErr=STOPPED}
       else{fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q)}}
-    }catch(e){console.warn('photo card',e);if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
+    }catch(e){console.warn('photo card',e);if(typeof errNote==='function')errNote(e,'Photo card'+(q.type?' ('+q.type+')':''));if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
     q.busy=0;q.abort=null;
     addKeep();   // the reading kept at once: a kill in the next moment brought the card back as "closed before it was read", and Try again paid again
     renderAdd();if(q===cards[0][0])addShowCard(q.id);   // (the small "Reading" card fitted; the full one grows below the screen)
@@ -370,7 +370,7 @@ async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return 
   if(needType(q)){toast('Choose what it is first: pick its Type.',4000);return false}
   q.saving=1;const b=$('#qconf-'+queue.indexOf(q));if(b)b.disabled=true;
   if(!saveAllOn)await addKeep();   // the card as it is now (a kill right after Confirm brought back How many one lower: the last + waited for the timer)
-  try{return await saveCard(q)}catch(e){console.warn('save failed',e);
+  try{return await saveCard(q)}catch(e){console.warn('save failed',e);if(typeof errNote==='function')errNote(e,'Confirm on Add ('+q.type+')');
     if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
   finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)renderAdd()}}
 async function saveCard(q){
