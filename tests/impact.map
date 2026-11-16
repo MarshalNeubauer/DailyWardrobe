@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	588c4bdedfd2628481f2
-# tested	0b6d96e684d20c2c1340
+# tested	1af1984ad0ae3cd415e1
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -2615,7 +2614,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -7329,7 +7328,7 @@ rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
 rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	workerBase
-rollback.test.js	planner.js	<loaded>
+rollback.test.js	planner.js	<loaded>	lockStale
 rollback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errList	errReport	errSoon	pruneTagImgs	safetyStart
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst	yearDate
@@ -9066,7 +9065,7 @@ snapshots.test.js	mq/suit.js	<loaded>
 snapshots.test.js	mq/vest.js	<loaded>
 snapshots.test.js	pack.js	<loaded>	packShow
 snapshots.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI
-snapshots.test.js	planner.js	<loaded>
+snapshots.test.js	planner.js	<loaded>	lockStale
 snapshots.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 snapshots.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 snapshots.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit	unitCC	weekFirst
@@ -9582,7 +9581,7 @@ tagging.test.js	apple-touch-icon.png	<loaded>
 tagging.test.js	asm-color.js	<loaded>	asmCmKind	asmCmRoute	asmCuDark	asmCuPatch	asmCuTile	asmCuTile1	asmCuWants	asmCuWrap
 tagging.test.js	asm-gl.js	<loaded>
 tagging.test.js	asm-watch.js	<loaded>
-tagging.test.js	assemble.js	<loaded>	@	renderAsmUI
+tagging.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	renderAsmUI
 tagging.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
 tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	avgText	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	labHex	labOf	lum	lumCol	metalWord	mix	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	seasonFit	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
