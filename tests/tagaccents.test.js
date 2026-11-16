@@ -46,7 +46,7 @@ module.exports=async({ok,ROOT})=>{
     const own40=T.cleanCustom({colors:Array.from({length:40},(_,n)=>({key:'own'+'abcdefghijklmnopqrstuvwxyz'[n%26]+(n>=26?'x':'')+'shade',hex:'#123456',name:'x'}))});
     const p40=JSON.stringify(T.tagSchema(own40,true,false,false)).length,f40=JSON.stringify(T.tagSchema(own40,true,true,false)).length;
     ok(plain.length<free.length&&plain.length-noAccS.length<100&&p40<f40,`the plain tag's schema with accents (${plain.length} characters; accents add ${plain.length-noAccS.length}) stays below the freeColors one (${free.length}); with 40 own colours ${p40} < ${f40}`);
-    ok(JSON.stringify(T.cleanAccents(['red','red','gold','blue','green','pink','olive'],['navy'],[]))==='["red","gold","blue","green"]'&&T.cleanAccents(null,[],[]).length===0,'cleanAccents: no repeats, at most 4; null gives []');
+    ok(JSON.stringify(T.cleanAccents(['red','red','gold','blue','green','pink','olive'],['navy'],[]))==='["red","gold","blue","green"]'&&T.cleanAccents(null,[],[]).length===0&&JSON.stringify(T.cleanAccents(['own2tone','OWN2TONE','own9x'],[],['own2tone']))==='["own2tone"]','cleanAccents: no repeats, at most 4; null gives []; an own key with digits (ownkeys.js) is kept');
     // the multi-item tag: each item's accents, cleaned against its own main colours
     answer={items:[{...base,confidence:'high',box:{x:0,y:0,w:400,h:900},accents:['gold','navy','gold','red']},{...base,primaryColor:'gold',confidence:'high',box:{x:500,y:0,w:400,h:900},accents:['gold','green']}]};sent=[];
     j=await post('tag-many',{image:IMG});
