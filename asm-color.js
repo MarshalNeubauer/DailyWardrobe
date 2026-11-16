@@ -16,7 +16,7 @@
                  the worker, until then such a day keeps the earlier way or its drawing)
 
    They are photo records on the worker (asmCmKey, put there by tools/asm-cm-upload.js), downloaded once like the other masters.
-   A phone paints at 2048; the computer's pre-build (npm run assemble) sets ASM_CM_SIZE to 2880 and scales the picture to 2048.
+   A phone paints at 2048; a larger ASM_CM_SIZE (up to the masters' 2880, as some tests set) paints larger and scales to 2048.
    (Settings' switch to turn this off on a phone, localStorage asm_cm = '0', was removed 2026-11-13.) */
 const ASM_CMV=1;   // the colour-coded masters' version: in their keys and every picture's key
 const ASM_CM_KINDS={
@@ -238,7 +238,7 @@ const asmCmWeaveTag=(z,i)=>{if(z==='shirt'&&asmHbShirt(i))return '/hbs'+ASM_HB_S
   if((z!=='jacket'&&z!=='waistcoat')||typeof asmSuitWeave!=='function'||!asmSuitTwill(i))return '';
   const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE+'f'+ASM_HB_FLOAT+'/'+ASM_HB_FLOATL+'o'+ASM_HB_SOFT+'g'+ASM_HB_GRAIN+'n'+ASM_HB_SNAP+'p'+ASM_HB_PBRK:patBase(i.pattern)!=='twill'?'/tw':''};
 /* which painter paints a garment (2026-11-13, the owner's rule: every pattern Claude can tag is either painted or says why not): the one
-   place asmCmJob, the item sheet, Settings' "Painted plain" list, the pre-build's report and tests/asmroute.test.js all ask.
+   place asmCmJob, the item sheet, Settings' "Painted plain" list and tests/asmroute.test.js all ask.
    -> {how, gap, why}: how 'flat' (a plain colour), 'bands' (a jacket's read stripes or checks), 'twill', 'herringbone', 'tweed',
    'tile' (a drawing of its reading or pattern: shirts, read trousers), 'tie' (the tie painter's reading) or 'plain' (a pattern painted
    as its colour); gap '' (painted as it is), 'reading' (painted once its pattern is read: "Read pattern from photo") or 'painter' (no
@@ -267,7 +267,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
     if(b==='knit'||b==='paisley')return {how:b,gap:'',why:''};
     return plain('painter',`no painter for ${pn} ties yet`)}
   return {how:'flat',gap:'',why:''}}
-/* the garments in rotation whose pattern the colour-coded painter paints plain or generic (Settings, the pre-build's report) */
+/* the garments in rotation whose pattern the colour-coded painter paints plain or generic (Settings) */
 const ASM_CM_ZONE={suit:'jacket',blazer:'jacket',pants:'trousers',shirt:'shirt',tie:'tie'};
 const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOut(i.type)).map(i=>({i,r:asmCmRoute(i,ASM_CM_ZONE[i.type])})).filter(x=>x.r.gap);
 /* trousers painted with the suit cloth (a suit's own trousers, or a twill, tweed or small woven figure) are drawn at the shirt master's
@@ -299,8 +299,8 @@ const ASM_CM_BG_SHADOW=.22;   // the figure's soft shadow on the wall behind (mo
    photo is downloaded once and kept). `npm run cm-upload` writes one small record, asmCmMfKey(), signed 'asm/cm-manifest {"keys":
    {<key>: <record date>}}', listing every colour-coded record's date. A device reads it once per worker list (asmListGet: every
    LIST_MS while the app is open, photos.js workerList) or once a session without a list; a photo it holds that is older than the manifest says is
-   dropped and downloaded again, and the dates of a master's records go into its looks' keys (asmCmRev), so the phones and the computer's
-   pre-build agree on a look's key whatever copies they hold. Remembered in localStorage.asm_cm_mf, so a restart finds its kept pictures
+   dropped and downloaded again, and the dates of a master's records go into its looks' keys (asmCmRev), so every device
+   agrees on a look's key whatever copies it holds. Remembered in localStorage.asm_cm_mf, so a restart finds its kept pictures
    before the manifest is read again. No manifest on the worker: the keys are as before and nothing is dropped. */
 const asmCmMfKey=()=>asmCmKey('all','manifest'),ASM_CM_MF='asm_cm_mf',ASM_CM_MF_RE=/^asm\/cm-manifest (\{.*\})$/;
 let asmCmMf=null,asmCmMfAt=null,asmCmMfGetting=null,asmCmMfRetry=0;
@@ -308,8 +308,8 @@ const asmCmMfNow=()=>{if(!asmCmMf){try{asmCmMf=JSON.parse(localStorage.getItem(A
 /* the dates the manifest gives a kind's records (master, masks, parts) and the background, hashed: '' without a manifest */
 const asmCmRev=kind=>{const M=asmCmMfNow().keys,ks=[...asmCmAssets(kind),asmCmBgKey()];return ks.some(k=>M[k])?asmCmHash(ks.map(k=>M[k]||0).join(',')):''};
 /* read the manifest when the worker's list was read again since (or once a session without a list) and drop the photos it outdates;
-   it never asks for the list itself (a list is a scarce request on the worker's plan). force: read it now (the computer's pre-build,
-   once a cycle: one small read) */
+   it never asks for the list itself (a list is a scarce request on the worker's plan). force: read it now (Settings' forced look,
+   asmSync(true): one small read) */
 function asmCmMfGet(force){if(asmCmMfGetting)return asmCmMfGetting;asmCmMfGetting=asmCmMfGet1(force).finally(()=>{asmCmMfGetting=null});return asmCmMfGetting}
 async function asmCmMfGet1(force){const W=workerBase();if(!W||(!force&&Date.now()<asmCmMfRetry))return;const L=asmList,at=L?asmListAt:0;if(!force&&asmCmMfAt===at)return;
   if(!force&&L&&!L.has(asmCmMfKey())){asmCmMfAt=at;return}   // the list says there is none: nothing to ask
@@ -892,9 +892,8 @@ function asmCmAt(T,u,v,o){const x=(u-Math.floor(u))*T.TW-.5,y=(v-Math.floor(v))*
   const ix0=(x0+TW)%TW,ix1=(x0+1+TW)%TW,iy0=(y0+TH)%TH,iy1=(y0+1+TH)%TH;
   for(let q=0;q<3;q++)o[q]+=(c[3*(iy0*TW+ix0)+q]*(1-fx)+c[3*(iy0*TW+ix1)+q]*fx)*(1-fy)+(c[3*(iy1*TW+ix0)+q]*(1-fx)+c[3*(iy1*TW+ix1)+q]*fx)*fy}
 /* the picture: the master with every garment painted, at the job's size, then at 2048 as a JPEG data URL */
-/* the masters' colour-free parts are kept: one on a phone (2048: about 80 MB each), all four on the computer's pre-build (2880),
-   where looks of several masters come one after another and each part took about 10 s to work out again */
-/* (the computer's pre-build, job.diskCache) a master's colour-free part is also saved in this browser's IndexedDB, so a restart reads it
+/* the masters' colour-free parts are kept: one in memory (2048: about 80 MB each) */
+/* (job.diskCache, on unless a job says false) a master's colour-free part is also saved in this browser's IndexedDB, so a restart reads it
    back in a few seconds instead of working it out again (about 15 s a master at 2880). Its key carries the source of the functions that
    make it, so a change to how it is worked out never reads an old one; a master's older parts are deleted when a new one is saved. */
 /* the one rule for random cloth details (2026-11-14, the WebGL port, asm-gl.js): every random detail of the painting goes through asmH32,
@@ -938,7 +937,7 @@ const asmCmPrepCode=()=>[ASM_CM_FOLD_KEEP,ASM_CM_CUFF_PX,ASM_CM_CUFF_STEP,ASM_CM
   asmImg,asmLegsPrep,asmPolyAt,asmSleeveFlow,asmSleeveSegs,asmTubePart,asmTubeRaw,asmTubeTabs];
 /* (2026-11-14) asmData, the image decoder, is not in asmCmPrepCode: the Web Worker swaps in its own (asm-worker.js: createImageBitmap on an
    OffscreenCanvas, the same pixels), so the page and the worker computed different setup keys, and a setup kept or downloaded on the page
-   (the computer's shared setups, asmCmSetupFetch) was never found by the worker that paints. It stays in asmCmCode (pictures' keys are
+   (the shared setups on the worker, asmCmSetupFetch) was never found by the worker that paints. It stays in asmCmCode (pictures' keys are
    made on the page only) */
 const asmCmCodeText=list=>list.map(v=>typeof v==='function'?String(v):JSON.stringify(v,(k,x)=>typeof x==='function'?String(x):x instanceof Set||x instanceof Map?[...x]:ArrayBuffer.isView(x)?Array.from(x):x)).join('|');
 let asmCmSrc=null,asmCmCodeH=null;
@@ -1203,10 +1202,13 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
    with the setup kept, 2.6 s). Three things, none of which touches the functions in the pictures' code fingerprints:
    1. warming: once Today's look is shown and the days ahead are fetched (asmAhead), the masters the coming looks use are downloaded and
       set up in the background, one at a time (asmCmWarm), so a day nobody built paints in about 2.6 s even the first time
-   2. the computer shares each master's setup at the phone's size (npm run assemble: asmCmSetupBlob, uploaded with PUT /blob); a phone
-      that lacks it downloads it (asmCmSetupFetch, in asmCmGet) instead of working it out
-   3. a 2048 copy of each master (the masters are 2880, the computer's size): a phone downloads it instead (asmCmMasterCopy, about half
-      the bytes), kept under the master's own key with the master's date, so keys and setups are the same as from the 2880 master ---- */
+   2. each master's setup at the phone's size on the worker (asmCmSetupBlob, uploaded with PUT /blob); a phone that lacks it downloads
+      it (asmCmSetupFetch, in asmCmGet) instead of working it out
+   3. a 2048 copy of each master (the masters are 2880): a phone downloads it instead (asmCmMasterCopy, about half the bytes), kept
+      under the master's own key with the master's date, so keys and setups are the same as from the 2880 master
+   (2026-11-16) The PC builder that uploaded 2 and 3 was removed: nothing uploads them now. A phone still takes those on the worker while
+   they match (a setup by its disk key, a copy by its master's date); once a master is uploaded again or the painter's setup code
+   changes, they no longer match and the phone downloads the 2880 master and works the setup out itself, as before them ---- */
 /* the master part of a job (asmCmJob's, without the outfit's cloth): enough to work out or read back the master's setup */
 function asmCmBaseJob(kind,size){const K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
@@ -1233,11 +1235,12 @@ function asmCmBlobRead(buf,dk){try{const u=new Uint8Array(buf);if(u.length<8||u[
         if(x.__map)return new Map(x.__map.map(([k,v])=>[dec(k),dec(v)]));if(x.__set)return new Set(x.__set.map(dec));if(x.__num)return Number(x.__num);
         const o={};for(const [k,v] of Object.entries(x))o[k]=dec(v);return o}return x};
     return {meta:dec(h.meta),n:h.n,gz:u.slice(8+len).buffer}}catch(e){console.warn('could not read the shared setup',e);return null}}
-/* (the computer) the kind's setup at the phone's size, packed: {key, bytes} or null */
+/* the kind's setup at the phone's size, packed: {key, bytes} or null (made the shared setup the PC builder uploaded; now only
+   tests/masterspeed.test.js uses it, to put one on its test worker) */
 async function asmCmSetupBlob(kind,size){const job=asmCmBaseJob(kind,size||ASM_SIZE);if(!job)return null;const dk=asmCmDiskKey(job);
   const hit=await asmCmSetup({...job,diskCache:false});const rec=await asmCmPack(hit.P);return rec?{key:asmCmSetupKey(dk),dk,bytes:asmCmBlobOf(dk,rec)}:null}
-/* (a phone) the shared setup for a job this device hasn't set up: downloaded and kept where asmCmSetup reads it. Not on the computer
-   (it paints at 2880 and works out its own); asked once a session per setup */
+/* (a phone) the shared setup for a job this device hasn't set up: downloaded and kept where asmCmSetup reads it. Not when painting
+   larger than a phone (ASM_CM_SIZE over 2048: the setup is for another size); asked once a session per setup */
 const asmCmSetupTried=new Set();
 async function asmCmSetupFetch(job){if(!job||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined'||typeof workerBase!=='function')return false;
   const dk=asmCmDiskKey(job);if(await asmCmDiskGet(dk))return true;const k=asmCmSetupKey(dk);if(asmCmSetupTried.has(k))return false;asmCmSetupTried.add(k);
@@ -1252,7 +1255,7 @@ async function asmCmMasterCopy(kind){const mk=asmCmKey(kind,'master');if(renders
   try{const r=await fetch(W.url+'?key='+asmCmCopyKey(kind),{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return false;const c=await r.json();
     if(!c||c.sig!==asmCmCopySig(t)||!/^data:image\//.test(c.img||''))return false;
     await keepRender(mk,{sig:c.sig,img:c.img,model:c.model||'copy',t},false);return true}catch(e){return false}}
-/* (the computer) a master's 2048 copy for phones: {key, rec} */
+/* a master's 2048 copy for phones: {key, rec} (made the copy the PC builder uploaded; now only tests/masterspeed.test.js uses it) */
 async function asmCmMasterCopyRec(kind){const mk=asmCmKey(kind,'master'),m=renders[mk];if(!m)return null;const d=await asmData(m.img,ASM_SIZE);
   const c=document.createElement('canvas');c.width=d.width;c.height=d.height;c.getContext('2d').putImageData(d,0,0);
   return {key:asmCmCopyKey(kind),rec:{sig:asmCmCopySig(m.t),img:c.toDataURL('image/jpeg',.92),model:'copy',t:m.t}}}
@@ -1266,33 +1269,31 @@ async function asmCmWarm(looks){if(asmCmWarming||(self.ASM_CM_SIZE||ASM_SIZE)>AS
       if(await asmCmDiskGet(asmCmDiskKey(job)))continue;await asmRun({...job,setupOnly:true},false);n++}}
   catch(e){console.warn('warming stopped',e)}finally{asmCmWarming=false}return n}
 
-/* ---- Today: the colour-coded way of asmEnsure / asmPrebuildOne ---- */
-/* a look the computer hasn't built: when this phone first saw it missing, and whether that is long enough ago to paint it here */
+/* ---- Today: the colour-coded way of asmEnsure ---- */
+/* a look with no picture on the worker: when this phone first saw it missing, and whether that is long enough ago to paint it here
+   while building ahead (ASM_PC_WAIT: from when the PC builder, removed 2026-11-16, painted the coming looks; kept as it was) */
 const ASM_PC_WAIT=10*60e3,asmCmMissing=new Map();
 const asmCmLate=k=>{if(!asmCmMissing.has(k))asmCmMissing.set(k,Date.now());return Date.now()-asmCmMissing.get(k)>ASM_PC_WAIT};
 async function asmCmEnsure(o,ahead){const kind=asmCmKind(o);if(!kind)return;if(asmFullWins(o)||asmFor(o))return;const bk='cm|'+comboKey(o);if(asmBusy.has(bk))return;asmBusy.add(bk);
   try{const k=asmOutKey(o),L=await asmListGet(),showIf=()=>{const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()};
-    // (2026-11-13) the computer's picture first, before any of the master's photos: it nearly always has it, and the master, its masks
-    // and parts (2.8 MB, about 7 s on 4G) are only needed to paint here. The list says whether it has it; without a list, ask anyway
+    // (2026-11-13) the worker's picture first, before any of the master's photos: the master, its masks and parts (2.8 MB, about 7 s
+    // on 4G) are only needed to paint here. The list says whether it has it; without a list, ask anyway
     if((!L||L.has(k))&&await asmGetPre(o,!!L)){showIf();return}
-    // not built: while building ahead, left to the computer (it builds changed looks every few minutes) unless it hasn't for
-    // ASM_PC_WAIT (the computer is off); the day on screen is painted here at once
+    // not there: while building ahead, left for ASM_PC_WAIT after this phone first saw it missing; the day on screen is painted here at once
     if(ahead&&L&&!asmCmLate(k))return;
     if(!await asmCmGet(kind)||asmFullWins(o))return;
     const img=await asmPhoto(o,!ahead);if(!img)return;
     await asmKeepOut(k,img,{stamp:asmStamp(o),t:Date.now(),lid:asmLookId(o)});showIf()}
   catch(e){console.warn('could not paint',e)}finally{asmBusy.delete(bk)}}
-async function asmCmPrebuild(o){const kind=asmCmKind(o);if(!kind||!await asmCmGet(kind))return null;
-  const img=await asmPhoto(o,true);return img?{key:asmOutKey(o),sig:asmPreSig(o),img}:null}
-/* Settings → Outfit pictures → Advanced: how far the computer's pre-build (npm run assemble) has got, and "Painted plain".
+/* Settings → Outfit pictures → Advanced: how many coming looks have a picture on the worker, and "Painted plain".
    (2026-11-13: the on/off switch for the colour-coded masters is gone, and so is Photo tagging's "Shirt weaves", whose shirts are in
    "Painted plain" with the other pieces waiting for a reading) */
 function asmCmUI(){const grp=$('#asm-group');if(!grp)return;let b=$('#cm-box');if(!b){b=document.createElement('div');b.id='cm-box';b.className='sgroup';grp.appendChild(b)}
   b.innerHTML=`<div class="slabel">Pictures ahead</div><p class="shelp" id="cm-status" role="status"></p>`;
   asmGapUI();asmCmStatus();if(typeof asmGlUI==='function')asmGlUI(b)}
-/* the workdays of the next ASM_AHEAD days painted on a colour-coded master: how many looks, how many the computer has built (the
-   worker's list, asmListGet: built pictures are uploaded under their look's key) and how many this phone holds; and when the list
-   was read. The worker's list has no dates, so "checked" is when this phone asked, not when the computer last built */
+/* the workdays of the next ASM_AHEAD days painted on a colour-coded master: how many looks, how many have a picture on the
+   worker (its list, asmListGet: the PC builder, removed 2026-11-16, uploaded them under their look's key; the line's wording "built on
+   the computer" is from then) and how many this phone holds; and when the list was read ("checked" is when this phone asked) */
 let asmCmStatusRun=0;
 async function asmCmStatus(){const el=$('#cm-status');if(!el)return;const run=++asmCmStatusRun;
   if(!workerBase()){el.textContent='';return}
