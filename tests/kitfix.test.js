@@ -72,7 +72,7 @@ module.exports=async({ok,chromium,url})=>{
     const m=await open();
     const rd=await m.evaluate(()=>{const R=t=>kitRead(t).rows.map(x=>x.ok?[x.card.type,x.card.primaryColor,x.card.pattern,x.card.trouserKind||x.card.shoeStyle||'',x.card.material||x.card.leather||'',x.probs.join('/')].join(':'):'bad:'+x.why);
       return {col:R('Type,Colour\nShirt,Charcoal grey\nSuit,Medium grey\nShoes,Dark brown\nShirt,Pale blue\nShirt,Sky blue\nTie,Maroon\nSuit,Midnight blue\nBelt,Cognac\nShirt,light-blue\nShirt,Heather grey\n'),
-        typ:R('Type,Colour\nBlazers,Navy\nJackets,Navy\nBelts,Black\nWatches,Silver\nTie clips,Silver\nOvercoats,Navy\nRaincoats,Khaki\nDress shirts,White\nCufflink,Silver\nSweater,Navy\n'),
+        typ:R('Type,Colour\nBlazers,Navy\nJackets,Navy\nBelts,Black\nWatches,Silver\nTie clips,Silver\nOvercoats,Navy\nRaincoats,Khaki\nDress shirts,White\nCufflink,Silver\nScarf,Navy\n'),
         fit:R('Type,Colour\nShoes,Pink\nSuit,Pink\nShirt,Red\n'),
         mat:R('Type,Colour,Material,Kind,Pattern\nSuit,Navy,Wool,,Striped\nShirt,White,Poplin,,Bengal stripe\nTie,Navy,SILK,,Repp\nShoes,Brown,Suede,,\nBelt,Black,Leather,,\nTrousers,Stone,,chinos,\nWatch,Silver,Steel,,\n'),
         empty:R('Type,Colour\n,Navy\nSuit,\n')}});

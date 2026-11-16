@@ -26,7 +26,7 @@ db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if
    (3 pairs of trousers when the dress code has no jackets), 5 shirts, 4 ties (when ties are worn) and 2 pairs of shoes in rotation,
    the button says what is still to add and doesn't open. -> [] when it may run, else the missing counts in words */
 const SHOP_MIN={jacket:3,pants:3,shirt:5,tie:4,shoes:2};
-function shopGate(){const n=t=>items.filter(i=>(Array.isArray(t)?t.includes(i.type):i.type===t)&&inRotation(i)).length,out=[];
+function shopGate(){const n=t=>items.filter(i=>(Array.isArray(t)?t.includes(i.type):i.type===t)&&!isHandPick(i)&&inRotation(i)).length,out=[];
   const need=(have,min,one,many)=>{if(have<min){const k=min-have;out.push(`${k} more ${k===1?one:many}`)}};
   if(wearsJacket())need(n(['suit','blazer']),SHOP_MIN.jacket,'jacket','jackets');else need(n('pants'),SHOP_MIN.pants,'pair of pants','pairs of pants');
   need(n('shirt'),SHOP_MIN.shirt,'shirt','shirts');if(wearsTie())need(n('tie'),SHOP_MIN.tie,'tie','ties');need(n('shoes'),SHOP_MIN.shoes,'pair of shoes','pairs of shoes');

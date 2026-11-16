@@ -325,6 +325,11 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .pick-nm{font-size:.7813rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em}
 .pick-it .fit{font-size:.7188rem;font-weight:600}.fit.best,.fit.good{color:#2f8a57}.fit.ok{color:var(--mut)}.fit.weak{color:#b4532a}
 @media(min-width:600px){.pick-grid{grid-template-columns:repeat(5,1fr)}}
+/* the picker's "Casual · pick by hand" group (history.js handGroup, 2026-11-16) */
+.pick-hand{margin-top:14px;padding-top:10px;border-top:1px solid var(--line,rgba(0,0,0,.12))}
+.pick-hand-h{display:block;font-size:.875rem}
+.pick-hand p{margin:2px 0 8px}
+.fit.hand{color:var(--mut)}
 @media(prefers-reduced-motion:reduce){#pick-sheet{transition:none}}
 /* correcting a past day */
 .pastedit{margin:0}.pastedit.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}

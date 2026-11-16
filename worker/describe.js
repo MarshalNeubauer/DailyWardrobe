@@ -9,7 +9,7 @@
    removed, never more than DESC_MAX characters. A tester's lookups count against the daily describe cap (worker/people.js).
    (An ES module of worker.js, the entry.) */
 import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
-import { ACCENT_READ_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
+import { ACCENT_READ_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_KEYS, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
 import { plainFor, spend, unspend, utcDay } from './people.js';
 
@@ -185,7 +185,7 @@ function descTables() {
   const colour = 'Color keys (key = sRGB hex):\n' + COLOR_LIST.map(k => `${k} ${COLOR_HEX[k]}`).join(', ')
     + '\n(Display names where the key is run together: ' + Object.entries(DISPLAY).map(([k, v]) => `${k} = ${v}`).join(', ') + '.)'
     + '\n\nOffered per kind of item (main color | stripe or motif color):\n' + Object.entries(TYPE_COLORS).map(([t, [p, a]]) => `${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n');
-  const pattern = 'Pattern keys: ' + PATTERN_LIST.join(', ') + '\nOffered per kind of item:\n'
+  const pattern = 'Pattern keys: ' + PATTERN_KEYS.join(', ') + '\nOffered per kind of item:\n'
     + Object.entries(PATTERN_BY_TYPE).map(([t, l]) => `${t}: ${l.join(', ')}`).join('\n');
   descTablesMemo = { colour: DESCRIBE_SYSTEM + '\n\n' + COLOUR_RULES + '\n\n' + colour, pattern: DESCRIBE_SYSTEM + '\n\n' + PATTERN_RULES + '\n\n' + pattern };
   descTablesMemo.both = descTablesMemo.pattern + '\n\n' + BOTH_MATERIAL;
@@ -242,9 +242,9 @@ function patternSchemaOf(own) {
     properties: {
       kind: { type: 'string', enum: ['pattern', 'colour', 'material', 'unclear', 'not-clothing'] },
       match: { type: 'string', enum: ['existing', 'new'] },
-      existing: { type: 'string', enum: [...PATTERN_LIST, ...own.map(p => p.key), 'none'] },
+      existing: { type: 'string', enum: [...PATTERN_KEYS, ...own.map(p => p.key), 'none'] },
       name: { type: 'string' }, description: { type: 'string' },
-      plansAs: { type: 'string', enum: [...PATTERN_LIST, 'none'] },
+      plansAs: { type: 'string', enum: [...PATTERN_KEYS, 'none'] },
       look: { type: 'object', additionalProperties: false, required: ['layout', 'texture', 'across', 'along', 'motif', 'repeatsAcrossItem'],
         properties: { layout: { type: 'string', enum: LAYOUTS }, texture: DTEX, across: DDIR, along: DDIR, motif: DMOTIF, repeatsAcrossItem: { type: 'number' } } },
       colourHint: ASK, confidence: CONF, why: { type: 'string' }, ask: ASK,
@@ -292,7 +292,7 @@ function ownLists(c) {
   const colors = (Array.isArray(c.colors) ? c.colors : []).filter(x => x && KEY_RE.test(x.key) && HEX_RE.test(x.hex || '')).slice(0, 40)
     .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), base: COLOR_LIST.includes(x.base) ? x.base : '', types: types(x.types), accent: !!x.accent }));
   const patterns = (Array.isArray(c.patterns) ? c.patterns : []).filter(x => x && PKEY_RE.test(x.key)).slice(0, 40)
-    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(4), base: PATTERN_LIST.includes(x.base) ? x.base : '', types: types(x.types), desc: txt(x.desc, 160) }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(4), base: PATTERN_KEYS.includes(x.base) ? x.base : '', types: types(x.types), desc: txt(x.desc, 160) }));
   return { colors, patterns };
 }
 function ownerText(what, own) {

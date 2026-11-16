@@ -372,7 +372,9 @@ function outfit(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'
 const casual=day.occ==='casual',occ=OCC[day.occ];if(casual)suitDay=false;   // no jacket and no tie: trousers and a shirt
 // the dress code (settings.dress): without jackets every workday is planned like that occasion, with a tie if ties are worn; without
 // ties none is picked. A formal day, a wedding or a funeral is still dressed in full from what is owned
-const full=day.formal||!!occ,noJ=casual||(!full&&!wearsJacket()),noT=casual||(!full&&!wearsTie());if(noJ&&!casual){suitDay=false;day={...day,nojkt:true}}
+// a casual top picked by hand for the shirt slot (core.js CASUAL_TOPS): the top layer in place of the shirt, so no tie and no tie clip
+const casPick=!!(rec&&rec.force&&rec.force.shirt&&CASUAL_TOPS.includes((items.find(i=>i.id===rec.force.shirt)||{}).type));
+const full=day.formal||!!occ,noJ=casual||(!full&&!wearsJacket()),noT=casual||casPick||(!full&&!wearsTie());if(noJ&&!casual){suitDay=false;day={...day,nojkt:true}}
 // no blazer in the wardrobe on a blazer day (or no suit on a suit day): wear the other kind rather than no jacket
 if(!noJ&&!by(suitDay?'suit':'blazer').length&&by(suitDay?'blazer':'suit').length)suitDay=!suitDay;
 // no jacket of either kind in the wardrobe: trousers, a shirt and a tie rather than a suit day with nothing below the waist
@@ -386,6 +388,10 @@ const rb=i=>Math.min(rest(i),10)*.4+over(i,10)*.01;
 // The lock is dropped as a whole when one of its pieces is gone (deleted, taken out of rotation) or the forecast has turned against
 // it: suede shoes on a rainy day, a cold-weather piece on a warm day.
 const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
+// a piece the planner never plans (core.js isHandPick: a casual top, a cardigan or chore jacket, cargo pants) is worn only when the day's
+// pick names it for its own slot and it is in rotation that day; a casual jacket makes the day a blazer day (odd pants)
+const hp=s=>{const id=force[s],x=id&&items.find(i=>i.id===id);return x&&handPickSlot(x)===s&&inRotation(x,n)?x:null};
+const hpTop=noJ?null:hp('top'),hpShirt=hp('shirt'),hpBotAny=hp('bot');if(hpTop)suitDay=false;const hpBot=suitDay?null:hpBotAny;
 const LT={top:suitDay?'suit':'blazer',bot:suitDay?null:'pants',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tieclip',links:'cufflinks',pocket:'pocketsquare'};
 let lock=rec&&rec.lock||null;
 // the washing cycle (settings.laundryDays, default 1): a shirt worn within that many days is in the wash, so it is left out of the
@@ -397,7 +403,8 @@ const LD=day.formal||(day.occ&&!casual)?0:Math.max(0,+(settings.laundryDays??1)|
   let m=-Infinity;for(const i of l)m=Math.max(m,since(i));return l.filter(i=>since(i)===m)};
 if(lock)for(const sl in LT){const id=lock[sl],t=LT[sl];if(!id||!t||force[sl]||(skip[sl]||[]).includes(id))continue;const x=by(t).find(i=>i.id===id);
   if(!x||(sl==='shoes'&&day.clim.rain&&finish(x.leather)==='suede')||seasonFit(x,day.clim.season)<=-15||(sl==='shirt'&&washing(x)&&by(t).some(i=>!washing(i)))){lock=null;break}}
-const pool=(type,slot)=>{const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
+const pool=(type,slot)=>{const h=slot==='top'?hpTop:slot==='shirt'?hpShirt:slot==='bot'?hpBot:null;if(h)return [h];
+  const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
   const s=skip[slot]||[],l=lock&&lock[slot];if(l&&!s.includes(l)){const x=all.find(i=>i.id===l);if(x)return [x]}
   const left=all.filter(i=>!s.includes(i.id)),any=left.length?left:all;if(slot==='bot'){const ok=any.filter(botFits);return ok.length?ok:any}return slot==='shirt'?washed(any):any};
 // the trousers a day allows: dress trousers only on a formal day, a wedding or a funeral; jeans with a blazer only when the dress code
@@ -480,7 +487,8 @@ const clip=vest||!tie?null:best(clipPool,metalPref);   // the vest holds the tie
 // cufflinks only (and always) with French cuffs
 const french=shirt&&shirt.cuff==='french',links=french?best(pool('cufflinks','links'),metalPref):null;
 // a pocket square only with a jacket (pocketScore): one whose score is at least PS_MIN, or the one picked or locked for the day
-const PQ=top?pool('pocketsquare','pocket'):[],psPinned=p=>force.pocket===p.id||!!(lock&&lock.pocket===p.id);
+const PQ=top&&!hpTop?pool('pocketsquare','pocket'):[],   // (none with a cardigan or chore jacket picked by hand, 2026-11-16)
+psPinned=p=>force.pocket===p.id||!!(lock&&lock.pocket===p.id);
 const psOk=PQ.filter(p=>psPinned(p)||pocketScore(p,top,shirt,tie,day)>=PS_MIN);
 const pocket=psOk.length?best(psOk,p=>pocketScore(p,top,shirt,tie,day)-(rest(p)<=1?PS_AGAIN:0)):null;
 // coat when the forecast (or the season) calls for one: raincoat for rain unless it's very cold, otherwise an overcoat
@@ -510,7 +518,7 @@ if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSea
 const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,pocket,vest:vest&&!!tie,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
 // the suit jacket taken off and other pants picked for the day (force.bot, a pair of pants: Today's ⇄ on the suit's pants, the owner's
 // ask 2026-11-16): those pants are worn and the suit is not
-const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&by('pants').find(i=>i.id===force.bot)||null;
+const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&(by('pants').find(i=>i.id===force.bot)||hpBotAny)||null;
 return takeOff(o,rec&&rec.off,untake,sep&&take(sep))}
 /* Pieces taken off for the day (the owner's ask, 2026-11-13: Today's "Take off" on the jacket or the tie; rec.off = {top, tie}). The
    outfit is planned as usual (the day's other pieces are pinned by force when it is set) and then the piece comes off:
@@ -689,7 +697,7 @@ function frozenOutfit(rec,n,last){
 /* One simulation, resumable: planSim(start).upTo(day) plans every workday from start to that day and can be asked again
    for a later day, continuing where it stopped (the app keeps one for all the months it shows, so stepping to another
    month only plans the days that are new). The wardrobe, history and settings must not change in between: start a new one. */
-function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t&&(!i.paused||arriveN(i)!=null)).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();
+function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t&&!isHandPick(i)&&(!i.paused||arriveN(i)!=null)).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();   // (never a hand-pick piece: core.js isHandPick; outfit() takes one only from the day's pick)
 const hasLinks=by('cufflinks').length>0,W0=wardStart();let prev=[],prev3=null;
 const lockOf=(r,n)=>r&&r.lock&&!lockStale(r,byOn(n))?r.lock:null;   // a day's lock, unless the wardrobe has outgrown it (lockStale)   // prev3: the workday before those two (only its tie is used: tieRepeat)   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
 // jackets already fixed on the next workdays (worn, or picked by the user): the next one's colour group, and the ids of

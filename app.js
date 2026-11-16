@@ -244,7 +244,7 @@ function normTag(parsed,model){
       tertiaryColor:normColFor(parsed.type,parsed.tertiaryColor,true),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
       leather:[...LEATHERS,...SHOE_TEXTILES,...SHOE_NAP,...BELT_MATS].includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
-      trouserKind:['chinos','jeans','dress'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
+      trouserKind:['chinos','jeans','dress','cargo'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
       model:model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
       // the material Claude suggests (2026-11-15, worker cleanMaterial): from the type's list or the person's own (low kept as a guess), or a new one (matTag)

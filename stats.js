@@ -70,7 +70,8 @@ function buildStats(){
   const short=statsShort(),worn=wornDays(),plan=short.length?[]:plannedDays(),W={},P={},last={},next={};
   for(const w of worn)for(const s of SLOTS){const id=w.ids[s];if(!id||(s==='bot'&&w.suitDay))continue;W[id]=(W[id]||0)+1;last[id]=w.d}
   for(const [k,o] of plan)for(const s of SLOTS){const it=o[s];if(!it||(s==='bot'&&o.suitDay))continue;P[it.id]=(P[it.id]||0)+1;if(!next[it.id])next[it.id]=keyDate(k)}
-  const rows=items.map(i=>({i,worn:W[i.id]||0,planned:P[i.id]||0,last:last[i.id]||null,next:next[i.id]||null}));
+  // (a piece picked by hand only is not in the rotation's rows: core.js isHandPick, 2026-11-16)
+  const rows=items.filter(i=>!isHandPick(i)).map(i=>({i,worn:W[i.id]||0,planned:P[i.id]||0,last:last[i.id]||null,next:next[i.id]||null}));
   // what costs points, over the planned days
   const miss={},rates=plan.map(([k,o])=>[k,o,rateOutfit(o)]);
   for(const [,,r] of rates)for(const c of r.checks)if(c.pts<c.max){const m=miss[c.label]||(miss[c.label]={n:0,lost:0,why:{}});m.n++;m.lost+=c.max-c.pts;if(c.why)m.why[c.why]=(m.why[c.why]||0)+1}

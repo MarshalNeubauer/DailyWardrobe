@@ -213,7 +213,7 @@ async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim()
   if(!setupShown())return;setupDraw();if(!ok&&$('#su-link'))$('#su-link').value=t}
 
 /* ---- Today with an empty or too-small wardrobe: what is still needed for a first outfit ---- */
-function setupNeeds(){const d=setupDress(),has=t=>items.some(i=>i.type===t&&inRotation(i)),rows=[];
+function setupNeeds(){const d=setupDress(),has=t=>items.some(i=>i.type===t&&!isHandPick(i)&&inRotation(i)),rows=[];
   if(d.jacket)rows.push({k:'jacket',t:'A suit or a blazer',short:'a suit or blazer',ok:has('suit')||has('blazer')});
   rows.push({k:'shirt',t:'A shirt',short:'a shirt',ok:has('shirt')});
   if(d.tie)rows.push({k:'tie',t:'A tie',short:'a tie',ok:has('tie')});

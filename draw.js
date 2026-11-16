@@ -156,6 +156,7 @@ function fabricDef(id,item,role,ctx){
     const T=role==='tie'?8:role==='shirt'?6:14,Tv=T*(st.r||1);
     return tile(T,Tv,(wool?twill:'')+bandRects(st.v,Tv,T,false,false)+bandRects(st.b,T,Tv,true,true),rot(st.a));
   }
+  if(typeof HANDPICK_TYPES!=='undefined'&&HANDPICK_TYPES.includes(item.type))return casualTile(tile,item,p,ctx,b);   // the casual garments' own cloth (2026-11-16)
   switch(p){
     /* --- stripes --- */
     case 'pinstripe':
@@ -256,6 +257,22 @@ function fabricDef(id,item,role,ctx){
   return wool?tile(4,4,twill):tile(4,4,'');
 }
 const FINE_TWILL={fig:[1.25,.045],dot:[1.6,.05]};
+/* the casual garments' cloth (2026-11-16): sizes in the 100-unit drawing (fabricDef's own tile), a small swatch ('dot') at CASUAL_DOT of
+   them. A sweater, quarter-zip or cardigan shows a faint knit (rows of V stitches); a chore jacket a faint canvas; jersey and fleece are
+   plain. stripe: Breton stripes across, in the second colour (else navy on a light top, off-white on a dark one); heather: light and
+   dark flecks of the main colour; cable: upright twisted ropes a shade lighter, with a purl line between */
+const CASUAL_KNIT=['sweater','qzip','cardigan'],CASUAL_DOT=.55;
+function casualTile(tile,item,p,ctx,b){const k=ctx==='dot'?CASUAL_DOT:1,tf=k!==1?`scale(${k})`:'',lt=mix(b,'#fff',.3),dk=mix(b,'#000',.32),dark=lum(b)<.25;
+  const knit=CASUAL_KNIT.includes(item.type),vs=(w,h)=>{let d='';for(let y=0;y<h-.01;y+=1.4)for(let x=0;x<w-.01;x+=1.6)d+=`M${+x.toFixed(2)},${+y.toFixed(2)} l.8,.9 l.8,-.9 `;
+    return `<path d="${d}" fill="none" stroke="${dark?'#fff':'#000'}" stroke-opacity="${dark?.1:.14}" stroke-width=".32"/>`};
+  if(p==='stripe'){const s=item.secondaryColor&&COLORS[item.secondaryColor]||(lum(b)>.55?COLORS.navy:COLORS.white);return tile(6.4,7,`<rect y="4.2" width="6.4" height="2.6" fill="${s}"/>${knit?vs(6.4,7):''}`,tf)}
+  if(p==='heather'){const F=[[.4,.6,1],[2.6,.2,0],[4.6,1.1,1],[1.5,2,0],[3.6,2.6,1],[5.3,3.1,0],[.3,3.6,0],[2.4,4.2,1],[4.4,4.7,0],[1.2,5.3,1],[3.2,5.8,0],[5.5,5.5,1],[.9,1.3,0],[4,.6,0]];
+    return tile(6.4,6.4,F.map(([x,y,l])=>`<rect x="${x}" y="${y}" width=".9" height=".32" rx=".16" fill="${l?lt:dk}" opacity=".5"/>`).join('')+(knit?vs(6.4,6.4):''),tf)}
+  if(p==='cable'){const rl=mix(b,'#fff',.2),re=mix(b,'#000',.35),rope='M2.2,0 C2.2,1.8 5.8,2.2 5.8,4 C5.8,5.8 2.2,6.2 2.2,8 M5.8,0 C5.8,1.8 2.2,2.2 2.2,4 C2.2,5.8 5.8,6.2 5.8,8';
+    return tile(9.6,8,`<path d="${rope}" fill="none" stroke="${re}" stroke-opacity=".7" stroke-width="2.1"/><path d="${rope}" fill="none" stroke="${rl}" stroke-width="1.3"/><path d="M8.6,0 V8" stroke="${re}" stroke-opacity=".5" stroke-width=".5"/>`,tf)}
+  if(knit)return tile(6.4,5.6,vs(6.4,5.6),tf);
+  if(item.type==='chore')return tile(1.6,1.6,`<rect width=".8" height=".8" fill="${dark?'#fff':'#000'}" opacity=".06"/><rect x=".8" y=".8" width=".8" height=".8" fill="${dark?'#fff':'#000'}" opacity=".06"/>`,tf);
+  return tile(4,4,'',tf)}
 
 /* ---------- accessory drawings for the wardrobe thumbnails and tiles ----------
    Every function takes an id prefix P so several drawings can live on one page without id clashes. */
@@ -564,7 +581,7 @@ let swN=0;
 function swatchSVG(i,drawn){
   const P='sw'+(swN++)+'-';let body;
   if(!drawn&&FABRIC.includes(i.type)&&i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type))body=`<image href="${i.swatch}" width="16" height="16" preserveAspectRatio="xMidYMid slice"/>`;
-  else if(FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
+  else if(FABRIC.includes(i.type)||(typeof HANDPICK_TYPES!=='undefined'&&HANDPICK_TYPES.includes(i.type))){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';   // (the casual garments' stripe, heather or cable too, 2026-11-16)
     body=`<defs>${fabricDef(P+'f',i,role,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
   else if(i.type==='pocketsquare'){const e=pocketEdge(i);   // its print, its contrast edge round it (2026-11-16)
     body=`<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/>${e?`<rect x="1.25" y="1.25" width="13.5" height="13.5" fill="none" stroke="${e}" stroke-width="2.5"/>`:''}<rect width="16" height="16" fill="url(#${P}g)"/><rect width="16" height=".9" fill="#fff" opacity=".35"/><rect y="1.4" width="16" height="1.1" fill="#000" opacity=".1"/><rect y="7.4" width="16" height=".8" fill="#000" opacity=".12"/><rect y="8.2" width="16" height=".5" fill="#fff" opacity=".2"/>`}   // (its folds: the lit top fold, the crease across)
@@ -779,7 +796,15 @@ function pantsMarks(i,P){const S=PANTS_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c
   return tw+ln(S.band,.4)+`<path d="${S.loopl}" fill="${mix(c,'#000',.25)}" stroke="${e}" stroke-width=".3"/><path d="${S.loopr}" fill="${mix(c,'#000',.25)}" stroke="${e}" stroke-width=".3"/><path d="${S.tab}" fill="none" stroke="${e}" stroke-width=".3"/>`+
     `<circle cx="${S.button.split(',')[0]}" cy="${S.button.split(',')[1]}" r=".6" fill="${mix(c,'#000',.6)}" stroke="${hi}" stroke-width=".12"/>`+
     ln(S.fly,.45)+ln(S.pockl,.4)+ln(S.pockr,.4)+ln(S.creasel,.35,.8,hi)+ln(S.creaser,.3,.6,hi)+ln(S.knee,.3,.5)+ln(S.hemr,.3,.5)+
-    (k==='jeans'?`<path d="${S.pockl}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(.7 0)"/><path d="${S.pockr}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(-.7 0)"/>`+[[35.9,18.2],[64.5,18.4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".75" fill="#b87333" stroke="#6e4220" stroke-width=".2"/>`).join(''):'')}
+    (k==='jeans'?`<path d="${S.pockl}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(.7 0)"/><path d="${S.pockr}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(-.7 0)"/>`+[[35.9,18.2],[64.5,18.4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".75" fill="#b87333" stroke="#6e4220" stroke-width=".2"/>`).join(''):'')+
+    (typeof isCargo==='function'&&isCargo(i)?cargoPockets(c,[[33.6,46,8,13],[55.2,46,8.6,13]]):'')}
+/* cargo pants (2026-11-16): a bellows pocket on each thigh, its flap with a snap, the pocket's pleat and a stitched edge, in the drawing's
+   own line colour (the prototype's marks, C:\code\audit-2026-11-13\new-types-trace\tools\drawings.js); [x, y, w, h] each */
+function cargoPockets(c,boxes){const e=mix(c,'#000',.42),d=mix(c,'#000',.12),hi=mix(c,'#fff',.2);
+  return boxes.map(([x,y,w,h])=>`<g class="cargo-pocket"><path d="M${x},${y+2} h${w} v${h-3} q0,1.5 -1.5,1.5 h${-w+3} q-1.5,0 -1.5,-1.5 Z" fill="${d}" stroke="${e}" stroke-width=".35"/>`+
+    `<path d="M${x+.8},${y+3} h${+(w-1.6).toFixed(2)} v${+(h-4.6).toFixed(2)} h${-(w-1.6).toFixed(2)} Z" fill="none" stroke="${hi}" stroke-width=".22" stroke-dasharray=".8 .5"/>`+
+    `<path d="M${x-.4},${y} h${w+.8} v4.2 q-${(w+.8)/2},1.6 -${w+.8},0 Z" fill="${mix(c,'#000',.06)}" stroke="${e}" stroke-width=".35"/>`+
+    `<circle cx="${x+w/2}" cy="${y+3.2}" r=".55" fill="${mix(c,'#000',.55)}"/><path d="M${x+w/2},${y+4.6} v${h-5}" stroke="${e}" stroke-width=".25" stroke-opacity=".6"/></g>`).join('')}
 /* shirt, folded: traced from Brooks Brothers' photo of their black pinpoint oxford dress shirt (ME04469, 2026-11-13, the owner's pick):
    the outline from the photo's pixels (the dark cloth, holes filled; the tie's tip past the hem cut off), the collar's leaves, band,
    shoulder seams, the cuff with its button, the folded sleeve, the pocket and the side fold placed on zoomed crops and snapped to the
@@ -809,6 +834,50 @@ function shirtMarks(i,P){const S=SHIRT_D,c=colOf(i),[r,g,b]=hexRgb(c),dark=(.299
     `<path d="${S.inside}" fill="#000" fill-opacity="${dark?.3:.06}"/>`+ln(S.shadow,sh,1.1,dark?.5:.18)+
     ln(S.collar,e,.42)+ln(S.band,e,.3,.8)+ln(S.seams,e,.3,.75)+ln(S.cuff,e,.4)+ln(S.sleeve,e,.32,.8)+ln(S.pocket,e,.36)+ln(S.hole,e,.35)+
     [S.button,...S.fronts.split(' ')].map(q=>{const [bx,by]=q.split(',').map(Number);return `<circle cx="${bx}" cy="${by}" r="1.25" fill="#e7e4dc" stroke="#9a968c" stroke-width=".2"/>`+[[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]].map(([x,y])=>`<circle cx="${(bx+x).toFixed(2)}" cy="${(by+y).toFixed(2)}" r=".16" fill="#8a867c"/>`).join('')}).join('')}
+/* the casual garments laid flat (2026-11-16, the owner's approved new types), drawn in the folded shirt's manner (shirtMarks): the outline
+   filled with the item's cloth (fabricDef: casualTile) and the shirt's shading, the seams and details in a line a shade off the cloth,
+   lighter on a dark one. One long-sleeved and one short-sleeved body (CASUAL_D.long/short); each type's own details on it: a T-shirt's
+   crew neck and hems; a polo's knit collar, two-button placket and ribbed sleeves; a henley's three-button placket; a sweater's ribbed
+   neck, cuffs and hem; a sweatshirt's V insert; a hoodie's hood, drawstrings and kangaroo pocket; a quarter-zip's stand collar and zip;
+   a cardigan's V front, buttons and pockets; a chore jacket's point collar, buttons and three patch pockets. Paths are drawn for the
+   right-hand side and mirrored (casMir). Box 0..100 */
+const CASUAL_D={long:'M39,12 C44,14.5 56,14.5 61,12 L74,15.5 C77,17 78.5,20 79.5,24 L88,73 L88.6,80.6 L79.6,82 L78.4,74.5 L72.2,38 L72.6,89 C60,90.2 40,90.2 27.4,89 L27.8,38 L21.6,74.5 L20.4,82 L11.4,80.6 L12,73 L20.5,24 C21.5,20 23,17 26,15.5 Z',
+  short:'M39,12 C44,14.5 56,14.5 61,12 L74,15.5 C77,17 79,19 81,22 L87,33 L77.5,38.5 L72.4,33 L72.8,89 C60,90.2 40,90.2 27.2,89 L27.6,33 L22.5,38.5 L13,33 L19,22 C21,19 23,17 26,15.5 Z',
+  arm:'M74,15.5 C72.6,22 72.2,30 72.2,38',armS:'M74,15.5 C73,21 72.5,27 72.4,33',crew:'M39,12 C42,20 58,20 61,12 C56,14.5 44,14.5 39,12 Z',
+  cuff:'M78.8,78.4 L88.3,77.1',cuffTop:'M78.6,75.6 L88.1,74.2',hem:'M27.5,86.4 C40,87.6 60,87.6 72.6,86.4',hemTop:'M27.5,83.6 C40,84.8 60,84.8 72.6,83.6',sleeveS:'M76.6,36.4 L86,31.3'};
+const casMir=d=>d.replace(/(-?\d*\.?\d+),(-?\d*\.?\d+)/g,(m,x,y)=>+(100-x).toFixed(2)+','+y);
+function casualMarks(i,P){const t=i.type,S=CASUAL_D,c=colOf(i),dark=lum(c)<.25,e=dark?mix(c,'#fff',.24):mix(c,'#000',.34),inside=dark?'#000':mix(c,'#000',.5),
+    both=d=>d+' '+casMir(d),ln=(d,w=.4,o=1,col=e)=>`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`,
+    rib=(d,w)=>`<path d="${d}" fill="none" stroke="${e}" stroke-opacity=".38" stroke-width="${w}" stroke-dasharray=".3 .75"/>`,
+    cloth=d=>`<path d="${d}" fill="url(#${P}f)" stroke="${e}" stroke-width=".4" stroke-linejoin="round"/>`,
+    btn=(x,y,r=.95)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${dark?mix(c,'#fff',.35):mix(c,'#fff',.55)}" stroke="${e}" stroke-width=".22"/>`,
+    longT=!['tee','polo'].includes(t),out=longT?S.long:S.short,ribbed=['sweater','sweatshirt','hoodie','qzip','cardigan'].includes(t);
+  let under='',g='';
+  if(t==='hoodie')under=cloth('M37,13.6 C30.6,8.6 32.6,0.8 50,0.6 C67.4,0.8 69.4,8.6 63,13.6 Z')+`<path d="M40.2,13 C37.4,8 40.6,3.4 50,3.2 C59.4,3.4 62.6,8 59.8,13 Z" fill="${inside}" fill-opacity=".35"/>`;
+  // the neck
+  if(t==='tee'||t==='henley'||t==='sweater'||t==='sweatshirt')g+=`<path d="${S.crew}" fill="${inside}" fill-opacity="${dark?.35:.22}"/>`+ln('M39,12 C42,20 58,20 61,12',.4)+(t==='sweater'||t==='sweatshirt'?rib('M38.1,12.4 C41,21.4 59,21.4 61.9,12.4',2.4)+ln('M37.2,12.6 C40.2,22.8 59.8,22.8 62.8,12.6',.35,.9):ln('M37.6,12.6 C40.6,21.6 59.4,21.6 62.4,12.6',.3,.8));
+  if(t==='sweatshirt')g+=ln('M46.8,21.6 L50,26.6 L53.2,21.6',.35);
+  if(t==='henley')g+=`<path d="M48,18.6 L52,18.6 L52,36 L48,36 Z" fill="none" stroke="${e}" stroke-width=".35"/>`+btn(50,22.4)+btn(50,27.6)+btn(50,32.8);
+  if(t==='polo')g+=`<path d="M39,12 C44,14.5 56,14.5 61,12 L50,17.4 Z" fill="${inside}" fill-opacity=".3"/><path d="M48,17.2 L52,17.2 L52,33 L48,33 Z" fill="none" stroke="${e}" stroke-width=".35"/>`+btn(50,21.6)+btn(50,27.6)+
+    cloth(both('M49.6,17.8 L39.4,11 C37,11.8 35,12.6 33.6,13.6 C34.6,17.4 36,21.4 37.6,25.4 Z'))+rib(both('M77.4,36.6 L86.2,31.6'),2.2);
+  if(t==='hoodie')g+=`<path d="M39,12 C42,18 47,22 50,24 C53,22 58,18 61,12 C56,14.5 44,14.5 39,12 Z" fill="${inside}" fill-opacity=".4"/>`+ln('M39,12 C42,18 47,22 50,24 C53,22 58,18 61,12',.45)+
+    ln(both('M53.6,20.4 L54.6,33'),.7,1,'#ece8df')+`<rect x="44.7" y="32.6" width="1.4" height="2.4" rx=".4" fill="#c9c4b8"/><rect x="53.9" y="32.6" width="1.4" height="2.4" rx=".4" fill="#c9c4b8"/>`+
+    ln('M33,66 L37.4,57.4 L62.6,57.4 L67,66 L67,79.4 L33,79.4 Z',.42)+ln('M36,66 L39.4,59.6 M64,66 L60.6,59.6',.3,.6);
+  if(t==='qzip')g+=cloth('M38.6,12.6 L38,5.4 C44,7 56,7 62,5.4 L61.4,12.6 C56,15.2 44,15.2 38.6,12.6 Z')+ln('M38.2,8.6 C44,10.2 56,10.2 61.8,8.6',.3,.6)+`<path d="M50,6.8 L48.6,12.6 L51.4,12.6 Z" fill="${inside}" fill-opacity=".4"/>`+
+    ln('M49.1,12.6 L49.1,34.6 M50.9,12.6 L50.9,34.6',.3)+ln('M50,12.6 L50,34.4',.55,1,'#b8bbc0')+`<rect x="48.9" y="11.6" width="2.2" height="3.6" rx=".6" fill="#c3c6cb" stroke="#6e7277" stroke-width=".2"/>`;
+  if(t==='cardigan')g+=`<path d="M39,12 C44,14.5 56,14.5 61,12 L50,46 Z" fill="${inside}" fill-opacity="${dark?.4:.28}"/>`+rib(both('M60.3,13.2 L51,44.8 L51,88.6'),2)+ln(both('M61.9,13 L52,46 L52,88.8'),.3,.8)+ln('M50,46 L50,88.8',.35)+
+    [51,58.5,66,73.5,81].map(y=>btn(50,y)).join('')+ln(both('M58.5,64 L68.5,64 L68.5,76 L58.5,76 Z'),.35,.85)+rib(both('M58.5,65.2 L68.5,65.2'),2);
+  if(t==='chore')g+=`<path d="M39,12 C44,14.5 56,14.5 61,12 L50,18.8 Z" fill="${inside}" fill-opacity=".4"/>`+cloth(both('M50.2,18.6 L61,11.8 C62.6,14.4 63.2,16.2 63.6,17.8 L57.4,27.4 Z'))+ln('M50.8,18.8 L50.8,89',.4)+
+    [30,42,54,66,78].map(y=>btn(52.8,y,1.05)).join('')+ln('M56.6,31 L67,31 L67,43 L56.6,43 Z M56.6,33.6 L67,33.6',.38)+ln(both('M56.4,56.6 L69.6,56.6 L69.6,73 L56.4,73 Z M56.4,59.4 L69.6,59.4'),.38)+
+    ln(both('M78.4,74.8 L88,73.4'),.38)+btn(84.6,77.2,.8)+btn(15.4,77.2,.8);
+  // sleeves and hems
+  const arm=ln(both(longT?S.arm:S.armS),.32,.75);
+  if(longT&&t!=='chore')g+=(ribbed?rib(both(S.cuff),5)+ln(both(S.cuffTop),.3,.7):ln(both(S.cuffTop),.3,.7));
+  if(t==='tee')g+=ln(both(S.sleeveS),.3,.7);
+  g+=ribbed?rib(S.hem,5)+ln(S.hemTop,.3,.7):t!=='chore'?ln('M27.4,86.6 C40,87.8 60,87.8 72.6,86.6',.3,.7):'';
+  return `<defs>${fabricDef(P+'f',i,CASUAL_JACKETS_D.includes(t)?'top':'shirt')}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".14"/><stop offset=".45" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient></defs>`+
+    under+`<path d="${out}" fill="url(#${P}f)" stroke="${dark?mix(c,'#fff',.15):mix(c,'#000',.4)}" stroke-width=".45" stroke-linejoin="round"/><path d="${out}" fill="url(#${P}s)"/>`+arm+g}
+const CASUAL_JACKETS_D=['cardigan','chore'];
 /* wristwatch, three-quarter view: traced from the owner's item picture of his watch (the realistic product shot made for it, a
    steel chronograph on an integrated bracelet; 2026-11-13, the owner's ask): the outline from the picture's pixels (the plain ground
    flooded from the edges; where it ran into the soft shadow at the lower right and the bottom, points placed on 1.3x crops), the
@@ -1058,6 +1127,7 @@ function itemThumb(i,full){
   else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat')g=coatMarks(i,P);   /* the traced topcoat with its model (COAT_D) */
   else if(i.type==='raincoat')g=rainMarks(i,P);   /* the traced raincoat with its model (RAIN_D) */
+  else if(typeof HANDPICK_TYPES!=='undefined'&&HANDPICK_TYPES.includes(i.type))g=casualMarks(i,P);   /* the casual garments laid flat (CASUAL_D) */
   else if(i.type==='cufflinks'&&i.metal==='silk'){const c=colOf(i),d=mix(c,'#000',.35),l=mix(c,'#fff',.3);   // silk knots (2026-11-15): two knotted balls of cord in its colour, no metal
     g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="11" fill="${c}" stroke="${d}" stroke-width="1"/><path d="M${x-9},${46} Q${x},${54} ${x+9},${46} M${x-9},${54} Q${x},${46} ${x+9},${54} M${x-4},${41} Q${x+3},${50} ${x-4},${59} M${x+4},${41} Q${x-3},${50} ${x+4},${59}" fill="none" stroke="${d}" stroke-width="1.1" stroke-opacity=".7"/><ellipse cx="${x-3.5}" cy="45.5" rx="3.4" ry="2" fill="${l}" opacity=".6"/>`).join('')}
   else if(i.type==='cufflinks'){const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,f=linkFace(i)&&colOf(i);   // an enamel or stone face in the item's colour, in a metal rim (2026-11-15: the colour asked for was never drawn)

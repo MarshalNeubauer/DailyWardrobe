@@ -170,7 +170,7 @@ function itemBody(i){
   const color=cr||shade?ckSec(scope,'color',{mark:'good',title:'Color',sum:ckColSum(i,primaryCol(i))+(i.shade?` · drawn ${esc(shadeName(i.shade).toLowerCase())}`:''),body:cr+accRow('e',id,i)+shade}):'';
   const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${jsq(id)}')`:`redetect('${jsq(id)}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${jsq(id)}')">Use generic</button>`:''}</div></div>`:'';
   const gap=typeof asmGapNote==='function'?asmGapNote(i):'';
-  const pattern=hasPat(i.type)?ckSec(   // (a pocket square too: its pattern, no layout reading)
+  const pattern=hasPat(i.type)?ckSec(   // (a pocket square or a casual garment too: its pattern, no layout reading)
 scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type,i.pattern))))+(usableSett(i)?' · layout read':''),body:EP(id,i)+layout+gap}):'';
   const mat=MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,`setItemField('${jsq(id)}','material',`)}):'';
   const det=E(id,'type',Object.entries(TYPES),i.type)+(METAL_TYPES.includes(i.type)?E(id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):'')+
@@ -464,7 +464,8 @@ function renderWardrobe(){
   closeSettings();if(editing!==phEdit.id)phEdit={id:null,undo:[],crop:null};   // undo lasts while the item stays open
   const wf=wardKeep();
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
-  const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" aria-pressed="${flt===t}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
+  // (2026-11-16) a casual type's chip shows once one is owned (or its chip is the one chosen)
+  const chips=['all',...Object.keys(TYPES).filter(t=>!HANDPICK_TYPES.includes(t)||flt===t||items.some(i=>i.type===t))].map(t=>`<button class="chip ${flt===t?'on':''}" aria-pressed="${flt===t}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=wardFresh();
   keepFocus($('#wardrobe'),()=>{$('#wardrobe').innerHTML=`<h2 class="vh">Wardrobe</h2><span class="vh" id="wcount" role="status">${wardCount(list)}</span>${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>'});   // (the chip or field pressed keeps the focus: W2-19-01)
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}

@@ -87,7 +87,7 @@ async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||
    worn; otherwise (the planner's trade-off with three or more suits: an occasion, the season, the week's lock) nothing (W2-17-06: "Add
    more suits" with three suits owned) */
 function restWarn(o){if(!o||!o.top||!(o.top.rest<COOL))return '';const kind=o.top.type==='suit'?'suit':'blazer',n=o.top.rest,ago=`${n} day${n===1?'':'s'} ago`;
-  const have=items.filter(i=>i.type===o.top.type&&inRotation(i,di(sel))).length;
+  const have=items.filter(i=>i.type===o.top.type&&inRotation(i,di(sel))).length;if(isHandPick(o.top))return '';   // (a casual jacket picked by hand: no rest warning)
   if(have<COOL)return `<p class="warn">This ${kind} was worn ${ago}. Add more ${kind}s to get a ${COOL}-day rest.</p>`;
   const r=dayRecs[key(sel)],mine=o.frozen?!!(r&&r.edited):!!(r&&r.force&&r.force.top===o.top.id);
   return mine?`<p class="warn">You wore this ${kind} ${ago} too.</p>`:''}
@@ -95,7 +95,7 @@ function restWarn(o){if(!o||!o.top||!(o.top.rest<COOL))return '';const kind=o.to
    one or had it taken off; none planned: "Not today" with + to choose one (the picker); with one: ⇄ and − like the jacket and the tie */
 const pocketRow=o=>!!o.top&&!!(o.pocket||(o.off&&o.off.pocket)||items.some(i=>i.type==='pocketsquare'&&(o.frozen||inRotation(i,di(sel)))));
 const pocketNone=o=>`<div class="ritem" id="ri-pocket"><div class="row"><span class="mut">Pocket square</span><span class="mut none">${o.frozen?'None':'Not today'}</span>${canPick(o)?`<button class="swap" onclick="openPicker('pocket')" aria-label="${o.frozen?'Choose the pocket square worn':'Wear a pocket square'}" title="${o.frozen?'Choose':'Choose one'}">${o.frozen?'⇄':'+'}</button>`:''}</div></div>`;
-const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),...(pocketRow(o)?[['Pocket square',o.pocket,'pocket']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
+const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[slotLabel('top',o),o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),[slotLabel('shirt',o),o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),...(pocketRow(o)?[['Pocket square',o.pocket,'pocket']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
   .filter(([l,i,s])=>!(s==='clip'&&!i&&(o.vest||!(o.frozen&&pastEdit===key(sel)))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn, but not on a vest day: the vest holds the tie, W2-17-20)
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie'||s==='pocket')&&!i&&o.off&&o.off[s])return offRow(s,o);if(s==='pocket'&&!i)return pocketNone(o);const open=!!i&&openRow===s;
@@ -157,7 +157,8 @@ function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
 /* a tile under the figure unfolds the item's photo below the tiles, like the pieces list; tap it again (or the photo) to fold it */
 let belowOpen=null;
-const slotLabel=(s,o)=>({top:o.suitDay?'Suit':'Blazer',bot:'Pants',shirt:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks',pocket:'Pocket square'})[s]||s;
+// (2026-11-16) a casual piece picked by hand is called by its type: "T-shirt" in the shirt's row, "Cardigan" in the jacket's
+const slotLabel=(s,o)=>({top:o.top&&CASUAL_JACKETS.includes(o.top.type)?TYPES[o.top.type]:o.suitDay?'Suit':'Blazer',bot:'Pants',shirt:o.shirt&&CASUAL_TOPS.includes(o.shirt.type)?TYPES[o.shirt.type]:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks',pocket:'Pocket square'})[s]||s;
 const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen];if(!i)belowOpen=null;
   return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" onclick="pickPiece(belowOpen)">${i?rowPanel(i):''}</div></div></div>`};
 /* did you wear it: ✗ and ✓ over the picture's bottom corners (today and past days); tapping the chosen one again clears it.

@@ -388,7 +388,7 @@ async function saveCard(q){
   if(q.type==='suit')it.vest=(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no';if(typeof dressNewItem==='function')dressNewItem();
   if(SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all')it.season=q.season;
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
-  if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
+  if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'||q.trouserKind==='cargo'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
   if(q.type==='shoes'&&q.shoeStyle&&q.shoeStyle!=='oxford')it.shoeStyle=q.shoeStyle;
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;else await makeSmall(it);

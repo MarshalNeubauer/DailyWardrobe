@@ -7,7 +7,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   globalThis.fetch=async(href,init)=>{sent=JSON.parse(init.body);return new Response(JSON.stringify({stop_reason:'end_turn',content:[{type:'text',text:'{"type":"tie","primaryColor":"navy","secondaryColor":"none","tertiaryColor":"none","pattern":"solid","metal":null,"leather":null,"dial":null,"band":null,"bezel":null}'}]}),{status:200,headers:{'content-type':'application/json'}})};
   const browser=await chromium.launch();const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
-    await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:'data:image/png;base64,iVBORw0KGgo='})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
+    await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:'data:image/png;base64,iVBORw0KGgo=',types:['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo']})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
     const prompt=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),schema=sent.output_config.format.schema;
     const wTable={};for(const m of prompt.matchAll(/^  (\w+): ([a-z, ]+) \| ([a-z, ]+)$/gm))wTable[m[1]]=[m[2].split(', '),m[3].split(', ')];
     const dial=(prompt.match(/^  watch dial: ([a-z, ]+)$/m)||[])[1];

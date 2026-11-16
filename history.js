@@ -130,7 +130,7 @@ async function careUnlock(id,since){const T=todayDate();
   return hit?clearLocks():0}
 async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
-  const cur=o[slot]&&o[slot].id,pool=items.filter(i=>(slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay))&&inRotation(i,di(sel)));
+  const cur=o[slot]&&o[slot].id,pool=items.filter(i=>(slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay))&&!isHandPick(i)&&inRotation(i,di(sel)));   // (Suggest another never brings a hand-pick piece)
   const suitOff=slot==='bot'&&!!o.offSuit;   // a suit's jacket taken off: its own pants are one more choice
   if(pool.length+(suitOff?1:0)<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to swap.`;renderToday();return}
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
@@ -174,7 +174,10 @@ async function dropLearn(){if(!settings||!('learn' in settings))return;delete se
 /* ---- choosing a piece by hand: a sheet with every item for the slot, best match for the rest of the outfit first ---- */
 let picker=null,pastEdit=null;
 // (with a suit's jacket taken off, the pants picker offers the suit's own pants first: o.offSuit, takeOff in planner.js)
-const slotPool=(slot,o)=>(slot==='bot'&&o.offSuit&&!o.frozen?[o.offSuit]:[]).concat((slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay))).filter(i=>o.frozen||inRotation(i,di(sel))));
+const slotPool=(slot,o)=>(slot==='bot'&&o.offSuit&&!o.frozen?[o.offSuit]:[]).concat((slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay))).filter(i=>!isHandPick(i)&&(o.frozen||inRotation(i,di(sel)))));
+/* the pieces worn only when picked by hand (core.js isHandPick) for this slot: the picker's "Casual · pick by hand" group, never scored,
+   swapped in by Suggest another or planned (2026-11-16, the owner's new casual garments) */
+const handPool=(slot,o)=>items.filter(i=>handPickSlot(i)===slot&&(o.frozen||inRotation(i,di(sel)))).sort((a,b)=>(TYPES[a.type]||'').localeCompare(TYPES[b.type]||'')||(a.id<b.id?-1:1));
 /* the picker ranks and labels each piece by the score the outfit would get with it (W2-17-03, fix round 3: "Best match" lowered the score
    93 → 81, leaving out the belt, variety and rest): a coming day is planned with the pick held in memory only (the record pickItem would
    save, planSim's peek: the pieces that follow it, like the belt after the shoes, are chosen again), a past day being corrected has the
@@ -230,8 +233,8 @@ const pickSub=(i,pool)=>{const t=x=>itemTitle(x)||nm(x),same=pool.filter(x=>t(x)
     `${[...same].sort((a,b)=>(a.added||0)-(b.added||0)||(a.id<b.id?-1:1)).indexOf(i)+1} of ${same.length}`};
 const pluralWord=w=>/^(shoes|pants|socks|cufflinks|jeans|chinos)$/.test(w);   // "Choose shoes", not "Choose a shoes" (W2-17-13)
 const pickPic=i=>i.photo?`<img src="${srcOk(phSm(i))}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true);
-function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=slotPool(slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,o).toLowerCase();
-  if(!o.frozen&&pool.length<2&&!(slot==='pocket'&&!o.pocket&&pool.length)){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}   // (no pocket square today: its + chooses one, the only one too)
+function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=slotPool(slot,o),hand=handPool(slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,{...o,shirt:null,top:null}).toLowerCase();   // (the slot's own word, not a casual piece's: "Choose a shirt")
+  if(!o.frozen&&pool.length+hand.length<2&&!(slot==='pocket'&&!o.pocket&&pool.length)){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
   const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
   const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur,sub=slot==='bot'&&i.type==='suit'?'The suit’s own pants':pickSub(i,pool);
     return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
@@ -239,9 +242,16 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
   $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${pluralWord(label)?label:aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
     <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`${pluralWord(label)?`All the ${label}`:`Every ${label}`} you own, by the score the outfit gets with each, best first.`}</small></p>
     ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another <span aria-hidden="true">↻</span></button>`}</div>`:''}
-    <div class="pick-grid">${scored.map(card).join('')}</div>`;
+    <div class="pick-grid">${scored.map(card).join('')}</div>${handGroup(slot,o,hand,cur)}`;
   picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
   if(typeof layerOpen==='function')layerOpen($('#pick-sheet'));if(typeof appPush==='function')appPush('pick')}   // the phone's Back closes it (start.js)
+/* the picker's "Casual · pick by hand" group (handPool): the casual pieces for the slot, under the usual ones, not scored; a casual top is
+   worn instead of the shirt and the tie comes off that day (core.js needsTie, planner.js outfit) */
+const HAND_NOTE={shirt:'Worn instead of the shirt: no tie that day.',top:'Worn instead of the jacket.',bot:'Worn instead of the pants.'};
+function handGroup(slot,o,hand,cur){if(!hand.length)return '';
+  const card=i=>{const on=i.id===cur,sub=isCargo(i)?'Cargo pants':TYPES[i.type];
+    return `<button class="pick-it hand-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}, ${esc(sub.toLowerCase())}: ${on?'wearing, ':''}picked by hand"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="mut pick-sub">${esc(sub)}</small><small class="fit hand">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}By hand</small></button>`};
+  return `<div class="pick-hand" role="group" aria-labelledby="pick-hand-h"><b id="pick-hand-h" class="pick-hand-h">Casual · pick by hand</b><p class="mut"><small>${HAND_NOTE[slot]||''} Never planned or suggested.</small></p><div class="pick-grid">${hand.map(card).join('')}</div></div>`}
 function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
   if(was&&typeof layerClose==='function')layerClose(s);if(was&&typeof appDrop==='function')appDrop('pick');
   if(typeof syncLaterRun==='function')syncLaterRun('today')}   // a sync's redraw that waited for the picker (sync.js)

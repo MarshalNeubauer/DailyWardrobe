@@ -32,7 +32,14 @@ const ZONES={suit:['jacket','tie','background','skin','shirt','dark','watch'],ve
   'shirt-tie':['trousers','belt','tie','buckle','background','skin','shirt','dark','watch'],'shirt-open':['trousers','belt','buckle','background','skin','shirt','dark','watch'],
   // the open-collar jacket masters (2026-11-13: a jacket taken off the tie): uploaded once their out-<kind> folder exists
   'suit-open':['jacket','background','skin','shirt','dark','watch'],'vest-open':['jacket','waistcoat','background','skin','shirt','dark','watch']};
-const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open']),OPTIONAL=new Set(['suit-open','vest-open']);
+// (2026-11-16) the new garments' masters (asm-kinds.js ASM_NK): the casual tops on the open-shirt master's zones, the cardigan and chore
+// jacket on the open-collar jacket's (the chore jacket's collar as lapels); uploaded once their out-<kind> folder exists
+for(const k of ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip'])ZONES[k]=ZONES['shirt-open'];
+for(const k of ['cardigan','chore'])ZONES[k]=ZONES['suit-open'];
+const NEW_KINDS=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
+const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open','chore']),OPTIONAL=new Set(['suit-open','vest-open',...NEW_KINDS]);
+// (2026-11-16) a master's faded copy for jeans (asm-kinds.js asmJfKey: record 'master-jeans'), when the folder has colormaster-jeans-2880.png
+const JEANS_FILE='colormaster-jeans-2880.png';
 const KINDS=DIR?String(arg('kinds',Object.keys(ZONES).filter(k=>!OPTIONAL.has(k)||fs.existsSync(path.join(DIR,'out-'+k))).join(','))).split(','):[];
 const MF_IMG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';   // (the worker keeps photo records only: the manifest carries a 1x1 picture)
 const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token':TOKEN,'content-type':'application/json',origin:new URL(ORIGIN).origin,...(opt.headers||{})}});
@@ -50,6 +57,7 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
     if(out)for(const c of ['u','v']){const f=path.join(out,'uv-'+c+'.png');if(fs.existsSync(f))files.push(['geo/'+c,f])}
     // (2026-11-14) the light map (asm-color.js asmCmLightKeys: form light, edge glow, collar shadow), when the folder has one: a lossless PNG
     if(out){const f=path.join(out,'light.png');if(fs.existsSync(f))files.push(['light',f])}
+    if(out){const f=path.join(out,JEANS_FILE);if(fs.existsSync(f))files.push(['master-jeans',f,true])}   // the faded master for jeans (a JPEG like the master)
     for(const [name,f,isJpeg] of files){if(!fs.existsSync(f)){console.error('missing '+f);process.exit(2)}
       const key=cmKey(kind,name),sum=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0,16),sig=`asm/cm ${JSON.stringify({kind,name,v:ASM_CMV,sum})}`;
       if(DRY){console.log(`${kind} ${name} -> ${key} (${Math.round(fs.statSync(f).size/1024)} KB file)`);continue}
