@@ -76,7 +76,8 @@ function showSyncStatus(){const sum=$('#sum-backup');if(sum&&typeof backupSummar
   if(last&&!/failed|turn on/i.test(st))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}${/^Syncing/.test(st)?' · syncing…':''}`;
   else el.textContent=st||(syncUrl()?'Not backed up yet.':'Not connected.'+safariWord())}
 /* not connected, in a Safari tab: why the backup file matters (decision 2 for W1-11-04; the setup's Home Screen step said it once) */
-const safariWord=()=>safariTab()?' Safari can clear a website’s data when it isn’t opened for about a week or the phone runs short of space: Download backup now and then keeps a copy in Files.':'';
+const tabBrowser=()=>typeof homeBrowser==='function'?homeBrowser():'Safari';
+const safariWord=()=>safariTab()?` ${tabBrowser()} can clear a website’s data when it isn’t opened for about a week or the phone runs short of space: Download backup now and then keeps a copy in Files.`:'';
 /* ---- the first pull (2026-11-14): a connected device saves nothing at start-up until it has merged the backup once. On the owner's
    phone, two days behind, the week's locks (stamped 07:00) and the one-time photo upgrade (82 items re-saved at 07:45) were written on
    its old copy before it synced; stamped newest, they replaced a pick made on another device and 11 newer tags, and brought back 4
@@ -180,9 +181,9 @@ async function clockFix(){const t=nowMs(),lim=t+CLOCK_AHEAD,st=await localState(
    "(0 of 6 new photos are saved)" (2026-11-15, the audit: the shared ceiling read "your backups") */
 /* in a Safari tab on an iPhone or iPad (kit.js), where Safari may clear a site's data: the pause adds a word about the backup file (W1-11-06) */
 const safariTab=()=>typeof homeIOS==='function'&&homeIOS()&&!homeStandalone();
-const SAFARI_KEEP=' Safari can clear a website’s data, so Download backup in Settings → Backup & sync keeps a copy meanwhile.';
+const SAFARI_KEEP=()=>` ${tabBrowser()} can clear a website’s data, so Download backup in Settings → Backup & sync keeps a copy meanwhile.`;
 const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
-  const after=`Your changes are kept on this phone and back up after ${at||'midnight UTC'}.${safariTab()?SAFARI_KEEP:''}`;
+  const after=`Your changes are kept on this phone and back up after ${at||'midnight UTC'}.${safariTab()?SAFARI_KEEP():''}`;
   if(pr&&pr.error==='kv-limit')return `Today’s backups are used up on the server. ${after}`;
   if(pr&&pr.write)return pr.all?`Today’s room on the server for everyone’s backups is used up. ${after}`:`Today’s room on the server for your backups is used up. ${after}`;
   return (pr&&pr.message)||'Today’s backups are used up.'};
