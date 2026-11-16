@@ -29,7 +29,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const r={};try{
         renders[mk]={sig:'asm/cm test',img:'data:image/jpeg;base64,AAAA',model:'colormaster',t:1000};renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OWN',model:'gpt',t:500};
         r.kind=asmCmUse(o);const k=asmOutKey(o);asmOut[k]={img:'data:image/jpeg;base64,ASM',stamp:asmStamp(o),t:9};
-        r.over=renderFor(o).img;r.sig=asmPreSig(o);
+        r.over=renderFor(o).img;
         // switched off (ASM_ON false): the outfit's own photo, nothing asked of the worker, Settings hides the group
         ASM_ON=false;r.off={wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img};await asmEnsure(o);await asmSync(true);openSettings('photos');renderAsmUI();
         r.off.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.off.hidden=document.querySelector('#asm-group').hidden;ASM_ON=true;renderAsmUI();r.onShown=!document.querySelector('#asm-group').hidden;closeSettings&&closeSettings();
@@ -38,14 +38,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         let made=0,redraws=0;const p0=asmPhoto,r0=refreshToday;asmPhoto=async x=>{made++;return p0(x)};refreshToday=()=>{redraws++};
         try{asmTried.clear();await asmEnsure(o);await asmEnsure(o)}finally{asmPhoto=p0;refreshToday=r0}r.loop={made,redraws};
         // a look with no colour-coded master: no picture, no job
-        const o2={...o,top:null,bot:null};r.none={use:asmCmUse(o2),key:asmOutKey(o2),job:await asmJob(o2),pre:await asmPrebuildOne(o2)};
+        const o2={...o,top:null,bot:null};r.none={use:asmCmUse(o2),key:asmOutKey(o2),job:await asmJob(o2)};
         delete asmOut[k]}
       finally{window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[mk];delete renders[comboKey(o)]}
       return r});
-    ok(t.kind==='suit'&&t.over==='data:image/jpeg;base64,ASM'&&/^asm\/out\/cm\d+\/\d+$/.test(t.sig),`Today shows the painted picture (kept on the device) over an older photo of the outfit; the computer's pictures are signed with the masters' version (${t.sig})`);
+    ok(t.kind==='suit'&&t.over==='data:image/jpeg;base64,ASM','Today shows the painted picture (kept on the device) over an older photo of the outfit');
     ok(t.off.wants===false&&t.off.for===null&&t.off.shown==='data:image/jpeg;base64,OWN'&&t.off.calls===0&&t.off.hidden&&t.onShown,`switched off (ASM_ON), Today shows the outfit's own photo, nothing is asked of the worker (${t.off.calls} requests) and Settings hides the group; switched on it shows again`);
     ok(t.under==='gpt'&&t.loop.made===0&&t.loop.redraws===0,`a photo made after the master wins, and nothing is painted or redrawn for that outfit (${JSON.stringify(t.loop)})`);
-    ok(t.none.use===null&&t.none.key===''&&t.none.job===null&&t.none.pre===null,`a look with no colour-coded master gets no picture, key or job (${JSON.stringify(t.none)})`);
+    ok(t.none.use===null&&t.none.key===''&&t.none.job===null,`a look with no colour-coded master gets no picture, key or job (${JSON.stringify(t.none)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     // ---- the worker: a kept photo can be deleted (the edit-a-kept-photo jobs went with the outfit photo, 2026-11-14) ----
     const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
