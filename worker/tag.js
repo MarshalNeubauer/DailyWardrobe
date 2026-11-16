@@ -26,19 +26,54 @@ const TYPE_COLORS = {
   overcoat: [['black','charcoal','darkgrey','grey','midgrey','navy','darknavy','brown','tan','taupe','olive'], ['black','charcoal','grey','navy','brown','tan','burgundy','green']],
   raincoat: [['khaki','tan','taupe','navy','darknavy','black','charcoal','grey','olive'], ['black','navy','tan','khaki','burgundy','brown']],
 };
+/* ---- the new garments (2026-11-16, the owner's approved casual types: hand-picked on Today, never planned): T-shirt, polo, henley,
+   sweater, sweatshirt, hoodie, quarter-zip, cardigan, chore jacket, and cargo pants (a trouserKind). An older app reads a type it doesn't
+   know as a suit, so the tagger offers each one only to an app that names it in the request's `types` (knownTypes): without it the tag's
+   schema, its rules (TAG_RULES), /tag-many's prompt and the Workers AI prompt are exactly as before (tests/garmentworker.test.js compares
+   them with tests/fixtures/garmentworker-old.json). The lists (colors, patterns, materials) hold the new types always, for /describe,
+   corrections and own colors; only the tag's type list, color table rows, pattern lines, material rows and enums are gated.
+   (The pocket-squares branch gates its type the same way with a flag, knowsPq(body): once both are on main it becomes
+   knownTypes(body).includes('pocketsquare'), its type joins OPT_TYPES, and its PQ_MARK words join promptFor's pieces.) */
+const OPT_TYPES = ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
+const OPT_KINDS = ['cargo'];   // trouserKind values offered only on request
+/* the optional types and kinds the request names (body.types: an array), in this file's order */
+const knownTypes = body => { const t = body && Array.isArray(body.types) ? body.types : []; return [...OPT_TYPES, ...OPT_KINDS].filter(x => t.includes(x)); };
+const CAS_P = ['white','cream','lightgrey','midgrey','grey','charcoal','black','navy','darknavy','blue','lightblue','steelblue','slate','green','olive','khaki','tan','brown','burgundy','wine','red','rust','pink','purple','gold'],
+  CAS_A = ['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','red','burgundy','green','olive','tan','brown','gold','rust','pink'],
+  KNIT_P = ['cream','white','lightgrey','midgrey','grey','charcoal','black','navy','darknavy','blue','steelblue','slate','green','olive','khaki','tan','taupe','brown','burgundy','wine','rust','red','gold'];
+Object.assign(TYPE_COLORS, { tee: [CAS_P, CAS_A], polo: [CAS_P, CAS_A], henley: [CAS_P, CAS_A], sweater: [KNIT_P, CAS_A], sweatshirt: [CAS_P, CAS_A],
+  hoodie: [CAS_P, CAS_A], qzip: [KNIT_P, CAS_A], cardigan: [KNIT_P, CAS_A],
+  chore: [['navy','darknavy','blue','steelblue','olive','green','khaki','tan','stone','brown','rust','black','charcoal','grey','cream'], ['black','brown','navy','cream','white','tan','olive']] });
+/* the tag's words for each new type and kind */
+const OPT_WORDS = { tee: 'tee (T-shirt: short or long sleeves, no collar)', polo: 'polo (knit polo shirt: soft collar, short button placket)',
+  henley: 'henley (collarless knit top with a short button placket)', sweater: 'sweater (pullover knit sweater: crewneck, V-neck or roll neck)',
+  sweatshirt: 'sweatshirt (crewneck fleece or terry sweatshirt)', hoodie: 'hoodie (hooded sweatshirt, pullover or zip)',
+  qzip: 'qzip (quarter-zip pullover: a zip at the neck)', cardigan: 'cardigan (button-front knit cardigan)',
+  chore: 'chore (chore coat or field jacket: an unlined cotton work jacket with patch pockets, no lapel roll like a blazer)' };
+const OPT_PAT_LINES = [
+  [['tee','polo','henley','sweatshirt','hoodie'], 'solid, stripe (horizontal stripes, e.g. a Breton), heather (a mottled, marled mix of light and dark fibers of one color), other'],
+  [['sweater','qzip','cardigan'], 'solid, heather (a mottled, marled mix of light and dark fibers of one color), cable (raised cable-knit ropes), stripe (horizontal stripes), other'],
+  [['chore'], 'solid, other']];
 const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal','black','navy','deepblue','blue','lightblue','green','olive','brown','burgundy','gold'];
-const TYPE_COLOR_TEXT = Object.entries(TYPE_COLORS).map(([t, [p, a]]) => `  ${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n')
+const colorText = known => Object.entries(TYPE_COLORS).filter(([t]) => !OPT_TYPES.includes(t) || known.includes(t)).map(([t, [p, a]]) => `  ${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n')
   + `\n  watch dial: ${DIAL_COLS.join(', ')}`;
-const PROMPT = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
+/* the whole prompt for the request's known optional types (none: as it always was) */
+const promptFor = known => { const types = OPT_TYPES.filter(t => known.includes(t));
+  const pats = OPT_PAT_LINES.map(([ts, l]) => [ts.filter(t => known.includes(t)), l]).filter(([ts]) => ts.length).map(([ts, l]) => `  ${ts.join(', ')}:\n    ${l}\n`).join('');
+  return PROMPT_HEAD + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + PROMPT_PATS + pats + PROMPT_KINDS
+    + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + PROMPT_TAIL; };
+const PROMPT_HEAD = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
 {"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","trouserKind":"...","shoeStyle":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
 
 type — one of:
   suit (suit jacket, or a jacket and trousers of the same cloth), blazer (odd jacket / sport coat), pants (dress trousers),
-  shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks, cufflinks, overcoat (wool topcoat), raincoat (trench or mac)
+  shirt (dress shirt), tie, tieclip, watch, shoes, belt, socks, cufflinks, overcoat (wool topcoat), raincoat (trench or mac)`;
+const PROMPT_COLORS = `
 
 primaryColor — the dominant color of the main fabric (the leather for shoes and belts, the strap or bracelet for watches, the metal
   for tie clips). Use only a color from the item type's own list (main colors, before the |):
-${TYPE_COLOR_TEXT}
+`;
+const PROMPT_PATS = `
   (charcoal is near-black gray; darkgrey sits between charcoal and grey; midgrey is a medium gray, between grey and lightgrey;
   lightgrey is pale gray; steelblue is a dusty, grayed mid blue (denim-like); deepblue is a rich, saturated dark blue, brighter
   than navy; darknavy is navy so dark it is almost black; slate is a dark blue-gray, grayer than navy and bluer than charcoal;
@@ -86,14 +121,16 @@ pattern — pick the closest value from the list for the item's type:
     threads; put the second thread color in secondaryColor), stripe (diagonal/regimental), polka-dot, paisley, check (a visible check),
     tonal-check (a check or glen check woven in two close shades of one color,
     e.g. black on charcoal: subtle, but clearly not a solid; put the lighter shade in secondaryColor), foulard (small repeating geometric motif), knit, other
-  tieclip, watch, shoes, belt, socks, cufflinks, overcoat, raincoat: solid
+`;
+const PROMPT_KINDS = `  tieclip, watch, shoes, belt, socks, cufflinks, overcoat, raincoat: solid
 
 Use "solid" for suits, blazers and trousers whose weave is only visible up close and does not match a listed pattern.
 
 metal — for watch, cufflinks and belt (the buckle; a tie clip has none: its color says it): gold, silver or other (the case and bracelet metal for watches). Otherwise null.
 
 trouserKind — trousers (pants) only, otherwise null: dress (pressed wool or cotton dress trousers with a crease), chinos (casual
-  cotton twill trousers, no crease, often with patch or slanted pockets), jeans (denim with rivets and five pockets).
+  cotton twill trousers, no crease, often with patch or slanted pockets), jeans (denim with rivets and five pockets)`;
+const PROMPT_TAIL = `.
 
 shoeStyle — shoes only, otherwise null: oxford (closed lacing, often a cap toe), derby (open lacing, the quarters sewn on top),
   loafer (no laces: penny, tassel, horsebit), boot (above the ankle: chelsea, chukka, dress boot), sneaker (trainers, any sport or
@@ -107,11 +144,15 @@ dial, band, bezel — watches only, otherwise null:
   dial: the dial color, from the watch dial list above.
   band: bracelet (metal links) or leather (strap).
   bezel: fluted (finely ridged ring around the crystal) or smooth.`;
+const PROMPT = promptFor([]), PROMPT_MEMO = new Map();
+/* the prompt for a request's known types (memoized by them; at most 2^10 variants, in practice the older app's and the current one's) */
+const promptOf = known => { const k = known.join(','); if (!k) return PROMPT; let p = PROMPT_MEMO.get(k); if (!p) { p = promptFor(known); PROMPT_MEMO.set(k, p); } return p; };
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* the field rules alone (from "type —"): Claude answers through structured output, so it gets no JSON template or "no code
    fences" line (those are for Workers AI, which reads PROMPT whole) */
 const TAG_RULES = PROMPT.slice(PROMPT.indexOf('type —'));
+const tagRules = known => { const p = promptOf(known || []); return p.slice(p.indexOf('type —')); };
 const TAG_INTRO = 'Identify the single clothing item in the first photo.\n\n';
 /* how to read the photos' colours, by the app's wb flag: true = it white-balanced them from a white reference, false = sent as the
    camera took them, absent (an older app) = not known. "Photos are white-balanced" in the system prompt and "judge as in daylight"
@@ -128,10 +169,17 @@ const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
   'brown','tan','khaki','taupe','deeptaupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver','rosegold','gunmetal',
   'paleyellow','ivory','beige','lavender','periwinkle','mint','stone','denim'];   // per-type lists: TYPE_COLORS
-const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
+const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat',...OPT_TYPES];
+/* the types a tag may answer: the optional ones only when the request names them (knownTypes) */
+const tagTypes = known => TYPE_LIST.filter(t => !OPT_TYPES.includes(t) || (known || []).includes(t));
+/* the tag's pattern enum (unchanged for an older app); the new garments' 'heather' and 'cable' join it when any of them is known.
+   PATTERN_KEYS is every pattern key (/describe, the material cleaner) */
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
   'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','tonal-check'];
+const OPT_PATTERNS = ['heather','cable'], PATTERN_KEYS = [...PATTERN_LIST, ...OPT_PATTERNS];
+const tagPatterns = known => (known || []).some(t => OPT_TYPES.includes(t)) ? PATTERN_KEYS : PATTERN_LIST;
+const tagKinds = known => ['dress','chinos','jeans', ...OPT_KINDS.filter(k => (known || []).includes(k))];
 /* each colour key's sRGB hex: must match COLORS in core.js (tests/colouraudit.test.js); worker/describe.js tells Claude the shades */
 const COLOR_HEX = { black: '#16161a', charcoal: '#3b3f46', darkgrey: '#5e6269', grey: '#8b8f96', midgrey: '#a2a4a8', lightgrey: '#babdc2', white: '#f6f6f3',
   cream: '#efe4c8', lightblue: '#a9c7e4', blue: '#3f6fb5', steelblue: '#56657f', deepblue: '#26326a', navy: '#1b2a4a', darknavy: '#1c1f2b', slate: '#3a3f4c',
@@ -144,6 +192,8 @@ const SUIT_PATS = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','
 const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
   shirt: ['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','other'],
   tie: ['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'] };
+{ const top = ['solid','stripe','heather','other'], knit = ['solid','heather','cable','stripe','other'];
+  Object.assign(PATTERN_BY_TYPE, { tee: top, polo: top, henley: top, sweater: knit, sweatshirt: top, hoodie: top, qzip: knit, cardigan: knit, chore: ['solid','other'] }); }
 /* what each item type is made of: must match MATERIALS_BY in core.js (tests/materials.test.js) */
 const MATERIALS_BY = {
   suit: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
@@ -153,12 +203,24 @@ const MATERIALS_BY = {
   tie: ['silk','grenadine','shantung','wool','wool blend','cashmere','linen','cotton','polyester'],
   socks: ['cotton','mercerized cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
   overcoat: ['wool','wool blend','melton','cashmere','cashmere blend','tweed','camel hair','loden','alpaca','cotton'],
-  raincoat: ['cotton gabardine','waxed cotton','rubberized cotton','nylon','polyester','waterproof shell'] };
+  raincoat: ['cotton gabardine','waxed cotton','rubberized cotton','nylon','polyester','waterproof shell'],
+  // the new garments (2026-11-16)
+  tee: ['cotton','jersey','pima cotton','slub cotton','cotton blend','linen','merino wool','polyester blend'],
+  polo: ['piqué','cotton','jersey','pima cotton','merino wool','linen','cotton blend','polyester blend'],
+  henley: ['cotton','jersey','waffle knit','slub cotton','cotton blend','merino wool','linen'],
+  sweater: ['merino wool','lambswool','cashmere','cashmere blend','wool','wool blend','shetland wool','alpaca','mohair blend','cotton'],
+  sweatshirt: ['cotton','fleece','french terry','loopback cotton','cotton blend','polyester blend'],
+  hoodie: ['cotton','fleece','french terry','cotton blend','polyester blend','merino wool'],
+  qzip: ['merino wool','lambswool','cashmere','wool','wool blend','cotton','fleece','polyester blend'],
+  cardigan: ['merino wool','lambswool','cashmere','cashmere blend','wool','wool blend','alpaca','cotton'],
+  chore: ['canvas','duck canvas','cotton twill','cotton','denim','moleskin','corduroy','wool','waxed cotton','linen'] };
 /* how well Claude can tell a material from a photo (the materials audit's tiers, 2026-11-15): a cloth plain to see may be high; a good
    bet from the look medium at most, and low without a close-up; a fiber the eye can't tell (wool vs blends, cashmere, cotton vs a
    blend, polyester) low at most; socks always low. The cleaner holds every answer to its tier, whatever Claude said */
-const MAT_SEES = ['linen','seersucker','corduroy','velvet','tweed','flannel','denim','stretch denim','jersey','grenadine','knitted silk','waxed cotton','hopsack'];
-const MAT_LIKELY = ['tropical wool','gabardine','cotton gabardine','mohair blend','silk blend','camel hair','melton','moleskin','cotton','cotton twill','poplin','performance stretch','linen blend','shantung','rubberized cotton','loden'];
+const MAT_SEES = ['linen','seersucker','corduroy','velvet','tweed','flannel','denim','stretch denim','jersey','grenadine','knitted silk','waxed cotton','hopsack',
+  'fleece','waffle knit','piqué','canvas','duck canvas','french terry'];   // (the new garments' plain-to-see cloths, 2026-11-16)
+const MAT_LIKELY = ['tropical wool','gabardine','cotton gabardine','mohair blend','silk blend','camel hair','melton','moleskin','cotton','cotton twill','poplin','performance stretch','linen blend','shantung','rubberized cotton','loden',
+  'slub cotton','loopback cotton','shetland wool'];
 const MAT_LIKELY_BY = { tie: ['silk','wool','cashmere','cotton'] };
 const CONF_RANK = { low: 0, medium: 1, high: 2 }, CONF_NAME = ['low', 'medium', 'high'];
 const matCap = (key, type, closeup) => type === 'socks' ? 0 : MAT_SEES.includes(key) ? 2 : (MAT_LIKELY.includes(key) || (MAT_LIKELY_BY[type] || []).includes(key)) ? (closeup ? 1 : 0) : 0;
@@ -174,7 +236,7 @@ const NOT_MAT_PROSE = /\b(the|a|an|and|or|to|is|are|be|you|your|i|me|my|it|this|
 function notMaterial(key) {
   if (!key || key === 'none') return true;
   if (LEATHERS.includes(key) || NOT_MAT_WORDS.test(key) || NOT_MAT_PROSE.test(key)) return true;
-  if (PATTERN_LIST.some(p => p.replace(/-/g, ' ') === key) || COLOR_LIST.includes(key.replace(/[ -]/g, ''))) return true;
+  if (PATTERN_KEYS.some(p => p.replace(/-/g, ' ') === key) || COLOR_LIST.includes(key.replace(/[ -]/g, ''))) return true;
   return ['royal oxford', 'oxford cloth', 'herringbone twill', 'basketweave', 'basket weave', 'pin point', 'end on end', 'fil a fil', 'satin', 'twill', 'jacquard', 'brocade', 'pique', 'piqué'].includes(key);
 }
 /* one name tidied to the material form, or '' when it is not one: lower case, hyphens and spaces only, never markup or prompt text */
@@ -211,6 +273,7 @@ function cleanMaterial(m, type, pats, closeup, own) {
   let key = String(m.key ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
   const same = (Array.isArray(pats) ? pats : [pats]).filter(Boolean).map(p => String(p).toLowerCase().replace(/-/g, ' '));
   if (same.includes(key) || same.includes(key.replace(/-/g, ' '))) key = 'none';
+  if (key === 'pique' && list.includes('piqué')) key = 'piqué';   // (a polo's piqué written without its accent)
   const asked = CONF_RANK[m.confidence] ?? 0;
   if (key !== 'none' && list.includes(key)) return { key, confidence: CONF_NAME[Math.min(asked, matCap(key, type, !!closeup))], why };
   const name = key === 'none' ? '' : matName(key), mine = name && ((own && own[type]) || []).includes(name);
@@ -219,7 +282,13 @@ function cleanMaterial(m, type, pats, closeup, own) {
   return { key: name, confidence: CONF_NAME[Math.min(asked, cap)], why, ...(mine ? {} : { new: true }) };
 }
 /* the material's rules for Claude (the photo tagger's single item and the close-up reader's pattern half) */
-const MATERIAL_RULES = `material — what the item is made of, from its type's material list below (the owner's own included), or "none":
+/* (2026-11-16) the rules with the material rows of the given types; with any of the new garments, a line on their plain-to-see cloths.
+   MATERIAL_RULES (/describe's close-up reader, every type) has them all; the tag's (materialExtra) only the request's known types */
+const materialRules = types => MATERIAL_RULES_TEXT.replace('@@ROWS@@', types.map(t => `    ${t}: ${MATERIALS_BY[t].join(', ')}`).join('\n'))
+  .replace('@@NEW@@', types.some(t => OPT_TYPES.includes(t)) ? `
+    high also for the casual pieces' plain-to-see cloths: fleece (a brushed, fuzzy face), waffle knit (a grid of small square cells),
+      piqué (a polo's fine honeycomb texture), canvas and duck canvas (a stiff, heavy plain cotton), french terry (loops on the inside);` : '');
+const MATERIAL_RULES_TEXT = `material — what the item is made of, from its type's material list below (the owner's own included), or "none":
   key: one material from the list for the item's type, or "none". "none" is always allowed, and it is the right answer when no listed
     material clearly fits or you cannot tell: never force the nearest one.
     Only when you can clearly tell the cloth is a material that is on no list (for example cupro on a shirt), give its plain name
@@ -228,7 +297,7 @@ const MATERIAL_RULES = `material — what the item is made of, from its type's m
   confidence:
     high only for a cloth that is plain to see: linen (slubs, sharp creases), seersucker (puckered stripes), corduroy (wale ribs),
       velvet (pile sheen), tweed, flannel (fuzzy nap, blurred weave), denim, jersey (knit loops), grenadine (open gauze), waxed cotton,
-      hopsack (basket weave);
+      hopsack (basket weave);@@NEW@@
     medium at most for a good bet from the look, and only with a close-up: tropical wool (open, grainy weave), gabardine, mohair (dry,
       glassy sheen), silk blend (sheen, slubs), camel hair, melton (smooth felted face), moleskin, cotton, poplin, a silk tie,
       performance stretch (sheen, cling);
@@ -238,7 +307,10 @@ const MATERIAL_RULES = `material — what the item is made of, from its type's m
     pattern; the material is the fiber or cloth it is woven in.
   why: one short line for the owner on what you saw.
   Materials per type:
-${Object.entries(MATERIALS_BY).map(([t, l]) => `    ${t}: ${l.join(', ')}`).join('\n')}`;
+@@ROWS@@`;
+const MATERIAL_RULES = materialRules(Object.keys(MATERIALS_BY));
+/* the material rows of the types a tag may answer (the older app's: exactly as before) */
+const matTypes = known => Object.keys(MATERIALS_BY).filter(t => !OPT_TYPES.includes(t) || (known || []).includes(t));
 /* the schema's part: key a plain string for the tagger (one schema for every type: an enum of every type's materials would grow the
    grammar), the type's own list for the reader (its type is known) */
 const materialSchema = list => ({ type: 'object', additionalProperties: false, required: ['key', 'confidence', 'why'],
@@ -249,7 +321,7 @@ const TAG_SCHEMA = {
   type: 'object', additionalProperties: false,
   required: ['type','primaryColor','secondaryColor','tertiaryColor','pattern','metal','leather','dial','band','bezel','trouserKind','shoeStyle'],
   properties: {
-    type: { type: 'string', enum: TYPE_LIST },
+    type: { type: 'string', enum: tagTypes([]) },   // (tagSchema adds the new garments for an app that knows them: knownTypes)
     primaryColor: { type: 'string', enum: COLOR_LIST },
     secondaryColor: { type: 'string', enum: [...COLOR_LIST, 'none'] },
     tertiaryColor: { type: 'string', enum: [...COLOR_LIST, 'none'] },
@@ -316,9 +388,10 @@ ownPattern — the pattern or weave in your own precise words, NOT limited to th
   "prince of wales check with overcheck", "basketweave", "micro houndstooth", "twill with a faint windowpane");
   description: one sentence on how it looks (structure, scale, colors, how strong), for drawing it and for a photo generator;
   fits: true only when the listed pattern you put in "pattern" already names it fully, false when your name says more.`;
-function tagSchema(custom, single, free, freePat) {
-  const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...PATTERN_LIST, ...custom.patterns.map(p => p.key)];
-  const props = { ...TAG_SCHEMA.properties,
+/* known: the request's optional types and kinds (knownTypes; none = the schema as it always was) */
+function tagSchema(custom, single, free, freePat, known = []) {
+  const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...tagPatterns(known), ...custom.patterns.map(p => p.key)];
+  const props = { ...TAG_SCHEMA.properties, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)),
     primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
     tertiaryColor: { type: 'string', enum: [...cols, 'none'] }, pattern: { type: 'string', enum: pats } };
   if (!single) return { ...TAG_SCHEMA, properties: props };
@@ -366,10 +439,11 @@ function cleanAccents(list, main, own) {
   return out;
 }
 /* the single tag's material rules, in the cached prompt after SINGLE_EXTRA (a tag with the picker's extras has no material) */
-const MATERIAL_EXTRA = `
-${MATERIAL_RULES}
+const materialExtra = known => `
+${materialRules(matTypes(known))}
   (For shoes, belts, watches, cufflinks and tie clips the material is always "none": their leather, band and metal have their own fields.)
 ${ACCENT_RULES}`;   // (the accents' rule rides with the material's: both are asked on exactly the plain single tag)
+const MATERIAL_EXTRA = materialExtra([]);
 function customText(custom) {
   let t = '';
   if (custom.colors.length) t += `\n\nColors the owner added (answer with the key, like any listed color, for the item types shown):\n`
@@ -552,7 +626,7 @@ const MULTI_SCHEMA = {
     },
   } } },
 };
-const MULTI_PROMPT = `This photo shows several clothing items, for example dress shirts hanging on a closet rail, suits or blazers on
+const MULTI_HEAD = `This photo shows several clothing items, for example dress shirts hanging on a closet rail, suits or blazers on
 hangers, or trousers hanging or folded. List every distinct item you can see, from left to right.
 
 Rules:
@@ -568,17 +642,20 @@ Rules:
   top-left corner (0-1000 from the left and top edges), w and h the width and height (0-1000).
 
 For each item give these fields:
-` + PROMPT.slice(PROMPT.indexOf('type —')) + '\n\n' + ACCENT_RULES;
+`;
+/* /tag-many's prompt for the request's known types (none: as before) */
+const multiPrompt = known => MULTI_HEAD + tagRules(known) + '\n\n' + ACCENT_RULES;
+const MULTI_PROMPT = multiPrompt([]);
 async function handleTagMany(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
   const text = await req.text();
   if (text.length > 15e6) return json({ error: 'photo too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
-  const custom = cleanCustom(body.custom), base = tagSchema(custom, false);
+  const known = knownTypes(body), custom = cleanCustom(body.custom), base = tagSchema(custom, false, false, false, known);
   const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
     properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium', signal: req.signal });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: known.length ? multiPrompt(known) : MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium', signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
   const ownKeys = custom.colors.map(k => k.key);
@@ -592,7 +669,7 @@ async function handleTagMany(req, env, json, who) {
 }
 
 /* the fallback tagger (no ANTHROPIC_API_KEY): Llama 3.2 Vision on Workers AI, told the JSON shape in the prompt -> {status, body} */
-async function tagWithWorkersAi(env, image) {
+async function tagWithWorkersAi(env, image, known = []) {
   const model = env.MODEL || DEFAULT_MODEL;
   const input = {
     max_tokens: 300,
@@ -600,7 +677,7 @@ async function tagWithWorkersAi(env, image) {
     messages: [
       { role: 'system', content: 'You are a menswear expert who labels clothing photos. You answer with JSON only.' },
       { role: 'user', content: [
-        { type: 'text', text: PROMPT },
+        { type: 'text', text: promptOf(known) },
         { type: 'image_url', image_url: { url: image } },
       ] },
     ],
@@ -625,4 +702,4 @@ async function tagWithWorkersAi(env, image) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };

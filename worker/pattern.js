@@ -1,6 +1,8 @@
 /* Daily Wardrobe worker: POST /pattern: Claude reads a woven pattern from the photo and the close-up as clean data.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { HEX_RE, TYPE_LIST, tagWithClaude, txt, wbOf } from './tag.js';
+// the new garments' keys in words (2026-11-16): "The item is a quarter-zip pullover", not "a qzip"
+const PATTERN_KIND_WORD = { tee: 'T-shirt', qzip: 'quarter-zip pullover', chore: 'chore jacket' };
 import { spend, unspend } from './people.js';
 
 /* POST /pattern {image, closeup, type} -> the woven pattern as clean data, for the app to draw. The pixels of a photo carry noise
@@ -145,7 +147,7 @@ async function handlePattern(req, env, json, who) {
   if (text.length > 20e6) return json({ error: 'photos too large' }, 413);
   let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
   const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
-  const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
+  const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : PATTERN_KIND_WORD[body.type] || body.type}. ` : '';
   const over = await spend(env, who, 'pattern'); if (over) return json(over.body, over.status);
   const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000, signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
