@@ -186,7 +186,7 @@ function setupUnits(v){setUnits(v);setupDraw()}
 async function setupSearch(){const q=(setup.q||'').trim();if(!q&&(setup.cities||setup.cityMsg)){setup.cities=null;setup.cityMsg='';setupDraw();return}if(!q||!$('#cfg-city'))return;
   $('#cfg-city').value=q;window._cities=null;setup.cities=null;setup.cityMsg='Searching…';setupDraw();
   await findCity();if($('#city-results'))$('#city-results').innerHTML='';$('#cfg-city').value='';
-  const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches.';setupDraw()}
+  const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw()}
 function setupPick(i){const c=(setup.cities||[])[i];if(!c)return;setup.cities=null;setup.cityMsg='';setup.q='';setLocation(c);setupDraw()}
 /* useMyLocation answers later (the permission prompt): the step is drawn again once the location has changed */
 function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation();
