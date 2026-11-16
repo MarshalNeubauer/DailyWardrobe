@@ -123,7 +123,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
   // a fresh phone with the worker's list (2026-11-13): a look the computer built is shown from its picture alone, without the master, its
-  // masks or parts; a look nobody built is left to the computer while building ahead, and painted here for the day on screen
+  // masks or parts; a look with no picture there is painted here at once, ahead or on screen (2026-11-16: the PC builder is gone)
   {const browser=await chromium.launch();
     try{const ctx=await browser.newContext({viewport:{width:390,height:844}});const asked=[],served={},fail=new Set();let listed=0;
       await ctx.route(HOST+'**',route=>{const u=new URL(route.request().url()),k=u.searchParams.get('key');if(k)asked.push(k);
@@ -149,7 +149,7 @@ module.exports=async({ok,chromium,url})=>{
       ok(built.use==='suit'&&built.k0!==built.k&&r1.shown&&!r1.master&&a1.length===2&&a1.includes(built.k)&&a1.includes(bgKey),`a look the computer built: only the background (once, it is in every look's key) and the picture are downloaded, not the master, its masks or parts (asked for ${a1.length}: ${a1.map(name).join(', ')})`);
       const r2=await p.evaluate(async()=>{const W=__W,o={shirt:W.shirt2,watch:W.watch,top:W.suit,tie:W.tie};await asmEnsure(o,true);const a=!!asmFor(o);await asmEnsure(o);return {ahead:a,screen:!!asmFor(o),master:!!renders[asmCmKey('suit','master')]}});
       const a2=asked.slice(a1.length);
-      ok(!r2.ahead&&a2.filter(k=>masterKeys.has(k)).length===masterKeys.size&&r2.screen&&r2.master,`a look nobody built: left to the computer while building ahead (nothing downloaded), painted here for the day on screen (${a2.length} records downloaded then)`);
+      ok(r2.ahead&&a2.filter(k=>masterKeys.has(k)).length===masterKeys.size&&r2.screen&&r2.master,`a look with no picture on the server is painted here at once, while building ahead too (no wait for a computer; ${a2.length} records downloaded)`);
       ok(listed<=3,`the worker's list is asked for once per refresh, not per look (${listed} times)`);
       // the earlier assembler's photos (still on the worker) are never downloaded, and Settings has only the colour-coded rows
       const vk=await p.evaluate(()=>asmCmKey('vest','master'));served[vk]=recs.master;const n0=asked.length;

@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a9086af6ea24e264d389
-# tested	a36355bdde5796d9ef30
+# tested	0b6d96e684d20c2c1340
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -671,7 +670,7 @@ asmcolor.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStar
 asmcolor.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
 asmcolor.test.js	analysis.js	<loaded>
 asmcolor.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
-asmcolor.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLate	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSet	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmH32	asmHbShirt	asmLegsPrep	asmLookTag	asmPileKind	asmTieLit	asmTieSheenK	asmWtTag	asmWtWants
+asmcolor.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlobRead	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmFoldW	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMasterCopy	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmOutKey	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSet	asmCmSetup	asmCmSetupFetch	asmCmSetupKey	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmH32	asmHbShirt	asmLegsPrep	asmLookTag	asmPileKind	asmTieLit	asmTieSheenK	asmWtTag	asmWtWants
 asmcolor.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlTry	asmGlUI	asmGlWhy
 asmcolor.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 asmcolor.test.js	asm-worker.js	<any>
@@ -2615,7 +2614,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>	lockStale
+daysoff.test.js	planner.js	<loaded>
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -2649,7 +2648,7 @@ dblost.test.js	apple-touch-icon.png	<loaded>
 dblost.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
 dblost.test.js	asm-gl.js	<loaded>
 dblost.test.js	asm-watch.js	<loaded>
-dblost.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave
+dblost.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 dblost.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow
 dblost.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
 dblost.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	desc	di	dressOut	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	nm	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setHash	setKeys	shadeName	shoeStyle	sockToe	strapBand	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
@@ -2672,7 +2671,7 @@ dblost.test.js	mq/suit.js	<loaded>
 dblost.test.js	mq/vest.js	<loaded>
 dblost.test.js	pack.js	<loaded>	packShow
 dblost.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
-dblost.test.js	planner.js	<loaded>	lockStale
+dblost.test.js	planner.js	<loaded>
 dblost.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 dblost.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errSoon	errWhere	pruneTagImgs	safetyStart	saveFailed	storeErr	storeFailText	storeFailure	storeFull	tagFailNote
 dblost.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
@@ -5261,7 +5260,7 @@ mqcloth.test.js	mq/suit.js	<loaded>
 mqcloth.test.js	mq/vest.js	<loaded>
 mqcloth.test.js	pack.js	<loaded>	packShow
 mqcloth.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
-mqcloth.test.js	planner.js	<loaded>	lockStale
+mqcloth.test.js	planner.js	<loaded>
 mqcloth.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 mqcloth.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 mqcloth.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	unit	unitCC	weekFirst
@@ -7282,7 +7281,7 @@ rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
 rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	workerBase
-rollback.test.js	planner.js	<loaded>	lockStale
+rollback.test.js	planner.js	<loaded>
 rollback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errList	errReport	errSoon	pruneTagImgs	safetyStart
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst	yearDate
@@ -8839,7 +8838,7 @@ shirtweave.test.js	apple-touch-icon.png	<loaded>
 shirtweave.test.js	asm-color.js	<loaded>	asmCmGaps	asmCmKind	asmCmPref	asmCmRoute	asmCmStatus	asmCmUI	asmGapUI	asmReadGaps
 shirtweave.test.js	asm-gl.js	<loaded>	asmGlPref	asmGlStatus	asmGlUI
 shirtweave.test.js	asm-watch.js	<loaded>
-shirtweave.test.js	assemble.js	<loaded>	@	asmCmUse	asmListGet	asmSuitWeave
+shirtweave.test.js	assemble.js	<loaded>	@	asmCmUse	asmSuitWeave
 shirtweave.test.js	care.js	<loaded>	careBadge	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState
 shirtweave.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff
 shirtweave.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	labHex	labOf	lum	metalWord	mix	needsJacket	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
