@@ -86,16 +86,20 @@ function analyzeWardrobe(){
   const redraw=()=>{if(shopOpen)renderShop();const b=$('#shop-btn');if(b)b.outerHTML=shopButton()};
   const finish=res=>{shopWorker=null;shopBusy=null;shopPart=null;shop={sig,at:Date.now(),res};metaPut('shop',shop).catch(()=>{});redraw()};
   const fail=msg=>{shopWorker=null;shopBusy=null;shopPart=null;shopMsg='The check failed: '+msg;redraw()};
-  const progress=(i,n,label)=>{shopBusy={i,n,label:label||''};const el=$('#shop-prog');if(el){el.querySelector('i').style.width=Math.round(100*(i+1)/n)+'%';el.nextElementSibling.textContent=shopBusyText()}};
+  const progress=(i,n,label)=>{shopBusy={i,n,label:label||'',t0:shopBusy&&shopBusy.t0||Date.now()};const el=$('#shop-prog');if(el){el.querySelector('i').style.width=Math.round(100*(i+1)/n)+'%';el.nextElementSibling.textContent=shopBusyText()}};
   const part=cat=>{shopPart=shopPart||{cats:[],top:[],partial:true};shopPart.cats.push(cat);if(shopOpen)renderShop()};
-  shopBusy={i:-1,n:1,label:''};shopPart=null;redraw();
+  shopBusy={i:-1,n:1,label:'',t0:Date.now()};shopPart=null;redraw();
   let w=null;try{w=new Worker('analysis-worker.js')}catch(e){}
   if(w){shopWorker=w;w.onmessage=e=>{const d=e.data;if(w!==shopWorker)return;if(d.progress)progress(...d.progress);else if(d.cat)part(d.cat);else{w.terminate();if(d.error)fail(d.error);else finish(d.done)}};
     w.onerror=()=>{w.terminate();if(w===shopWorker){shopWorker=null;onMain()}};w.postMessage(JSON.parse(JSON.stringify(payload)))}
   else onMain();
   function onMain(){setTimeout(()=>{try{finish(runAnalysis(items,todayDate(),SHOP_WEEKS,progress))}catch(e){fail(String(e&&e.message||e))}},30)}   // where workers aren't available
 }
-const shopBusyText=()=>!shopBusy?'':shopBusy.i<0?'Planning your next six months with what you own…':`Checking ${shopBusy.label?shopBusy.label.toLowerCase()+': ':''}${Math.min(shopBusy.i+1,shopBusy.n)} of ${shopBusy.n}…`;
+const shopBusyText=()=>!shopBusy?'':shopBusy.i<0?'Planning your next six months with what you own…':`Checking ${shopBusy.label?shopBusy.label.toLowerCase()+': ':''}${Math.min(shopBusy.i+1,shopBusy.n)} of ${shopBusy.n}…${shopLeft()}`;
+/* how long is left, from the time each check has taken so far (W2-18-03: a big wardrobe waited most of a minute with no idea how long);
+   said once a few checks are done and more than a few seconds remain */
+const shopLeft=()=>{const b=shopBusy;if(!b||!b.t0||b.i<2)return '';const done=b.i+1,left=Math.max(0,b.n-done),s=(Date.now()-b.t0)/done*left/1000;
+  return s<8?'':s<50?` About ${Math.round(s/5)*5} seconds left.`:` About ${Math.max(1,Math.round(s/60))} minute${Math.round(s/60)>1?'s':''} left.`};
 
 /* ---- the sheet ---- */
 const SHOP_TIER={fix:'Fixes a problem',better:'Better outfits',gap:'Fills a gap',variety:'Adds variety',optional:'Optional'};

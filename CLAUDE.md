@@ -171,6 +171,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `stone` (pale grey-beige chinos, family tan) and `denim` (indigo, family blue) are trouser colours; "stone" doesn't read as khaki
 - one title style: `.cap` doesn't capitalise every word; `sentence(t)` capitalises a generated description's first letter (`itemTitle`, the item sheet, the piece picker, Today's pieces line, Laundry, Stats, What to buy); a name the user typed is shown exactly as typed
 - `itemName(i)` / `itemTitle(i)` / `titleCls(i)`: an item's own name (`item.name`), what it is called on screen (the name, else `desc(i)`), and the class for it (`named`: shown as typed; `cap`: a description, capitalised)
+- a described title carries a shoe's style and a trouser's kind (`styleWord` in `itemTitle`: "Oxblood calf loafers", "White leather sneakers", "Stone chinos"; W2-17-15); oxfords, dress pants and items with no style read as before; `desc` and `nm` are unchanged
 - they are in core.js, not wardrobe.js, because Today is drawn at start-up, which can be before the later scripts have loaded: in wardrobe.js the start-up render threw now and then and the app came up with an empty wardrobe
 - the planner's texts (`desc`, `nm`, `rateOutfit` notes) never use the name
 - `avgText(v)`: an average score with one decimal, rounded down ("99.9"), "100" only when every day scored 100; Stats' "What costs you points" is "Small deductions" and What to buy says "days with a warning"
@@ -221,6 +222,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `PLAN_RULES` (14, for the new-user audit's planner fixes, 2026-11-15) is bumped to release the week's locks once (picks kept); a bump also clears swaps on future days, so changes that protect picks (`fixedAhead`, `TIE_GAP`) were made without one
 - `PLAN_RULES` 15 (fix round 2, 2026-11-15): no real mistake while a clean outfit exists (`clothesHard`, `jacketClean`, unsuiting shoes lose to no belt) and the day before's tie (`TIE_NEXT`)
 - `PLAN_RULES` 16 (materials, 2026-11-15): the new material seasons (tropical wool, cashmere, moleskin, melton, wool ties), nubuck as suede, a canvas belt with suede, two-tone with gold and silver (`metalSame` in `watchFit`, `metalPref`, the Metals score and the notes), silk-knot cufflinks
+- `PLAN_RULES` 18 (fix round 3, 2026-11-16): shoes with a suit, formality wins (`SUIT_SUEDE`, `SHOE_WATCH`), not yesterday's pair (`SHOE_AGAIN`)
 - **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js
 - on the next start a bump releases only the week's locks and the app's own recorded pieces on days after today (`checkPlanRules()` → `replanFuture(true)` in history.js); the owner's swaps, skips and vest choices stay, so there is no reason to skip a bump; Settings' "Re-plan upcoming days" also clears them, on demand
 
@@ -278,6 +280,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - trousers by the day (`botFits` in `outfit()`): a formal day, a wedding or a funeral takes dress trousers; a blazer day takes dress trousers or chinos, and jeans only when `settings.dress.jeans` (Settings → "Jeans with a blazer", off by default, shown while jackets are worn); a day without a jacket takes any kind
 - shoes by their style (`SHOE_FIT` in `shoeScore`, by `shoeCtx`: suit, dress trousers, chinos or jeans): an oxford goes with anything; a derby −4 and a loafer −8 with a suit; boots −60 with a suit, −20 with dress trousers; sneakers −60 with either
 - sneakers come only with chinos or jeans, where a white or neutral pair suits any colour (`SNEAKER_COLS`) and needs no matching belt (`beltFit` 0); `tests/casual.test.js`, `tests/plannerfix.test.js` (figures from the owner's backup over six months of planning, not kept in the repo)
+- with a suit, formality wins (the owner's decision, fix round 3, 2026-11-16, W2-17-02): suede costs `SUIT_SUEDE` (30, was 15) and the watch's strap and metal count `SHOE_WATCH` (half, every day) in the shoe choice; a brown strap and a gold buckle had put suede loafers with a suit on 82 of 101 suit days, now 12 on tester 17's wardrobe (black 48, oxblood 48, suede 27 of 125 workdays; it was 19 / 0 / 106)
+- yesterday's pair costs `SHOE_AGAIN` (25, was 7) when another pair suits: more than the halved strap and metal swing (20), less than no matching belt (30); one pair was worn two days running 87 times in 125 workdays (`tests/fix8r3.test.js`)
 
 #### Occasions and dress code
 - `occOf(rec)`: `formal` stored as `rec.formal`, `wedding` / `funeral` / `casual` as `rec.occasion`; rules in `OCC` and `formalTop`/`formalShirt`/`formalTie`
@@ -319,6 +323,11 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - 'Watch strap': a leather strap against the shoes' leather group; 'Weather' whenever the climate is known: a piece a season off −1, out of season hard
 - `scoreAdvice(o, pool)`: every single swap of shirt, tie, odd trousers, shoes (with their best belt), belt, socks, watch or clip is scored; `fixes` = the best swap per slot that raises the score (up to 3), `best` = the score reached by taking the best swap again and again, `stuck` = the checks no swap improves
 - measured on the owner's wardrobe: planned days 96–100 (80 of 114 at 100) with no hard check, random outfits 79% with a hard check; `tests/scorefix.test.js`
+- with a suit: suede scores 0 of 5 on 'Leather formality' (was 2) and a strap that doesn't match the shoes 4 of 5 (2 on other days), so the score card no longer offers suede loafers as an improvement on black oxfords (fix round 3)
+- the reasons speak a piece's own colour (`spokenCol` = `primaryCol`, an owner's colour by its name through `prettyCols`), never the colour it behaves like (`planCol`): a "Dusty pink" suit was a "tan jacket" (W2-17-04); the rules themselves still read `planCol`
+- the Metals reason names only the pieces worn with a metal (`metalsWhy`: "watch and buckle metals differ" on a vest day, W2-17-10)
+- 'Belt' is left out when no belt in rotation matches the day's shoes (as with no belt at all): a gray belt that suited none of the black shoes took 15 points off every day (W2-14-08); the planner's note still names the belt that would match
+- the funeral note says "No plain black, charcoal or navy suit…: the plainest dark one was chosen" when the suit chosen is dark but patterned (a charcoal glen check), not that there is no dark suit (W2-17-09)
 
 ### `analysis.js`
 
@@ -342,6 +351,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - without jackets `compatBase` has one stand-in jacket, `NOJ` (`{id:'nojacket'}`), with every pair of trousers, scored like the planner's no-jacket day (`clothesScore(null,…)` with `day.nojkt`); `NOJ` is never named or counted as an idle piece
 - without jackets shirt and tie ideas are ranked by the trousers (and shirts or ties) they suit, trouser ideas by the shirts (and ties); trouser candidates are made for every colour (`clothesCandidates`)
 - `tests/dress.test.js` checks the ideas without jackets, with and without ties
+- what is owned (`ownMix`) shows an owner's colour by its own name and swatch, not as the group of the colour it behaves like ("tan / khaki 1" for a Dusty pink suit, W2-17-04)
+- `occasionCheck` (fix round 3, W2-17-09): the metals point once (the Metals check's reason is left out when the planner's note says it), and "Ready" only when the occasion's own check (Formality, Wedding, Funeral) is full ("Ready · 95" next to "Smooth leather shoes suit a wedding")
+- a shoe idea says "A second … pair lets each rest between wears" only when the owned pairs of that colour are planned on a quarter of the days or more; else how often they are planned and how often the new pair would be (it was said of an oxblood pair planned once in 125 days)
 
 ### `shop.js`
 
@@ -357,6 +369,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the summary says "N colour combinations" and "N days with a warning" (the planner's notes), not "looks" and "deductions", which meant other things on Insights; a suit idea names the shoes its sample outfits wear (analysis.js)
 - the result is kept on the device (`meta` key `shop`: `{sig, at, res}`) and shown without checking again while `shopSig` is unchanged and it is under a week old; sections appear as the worker finishes them (`{cat}` messages)
 - `shopSig` holds the wardrobe and every setting the planner reads: laundry days, dark shirts (`darkMode()`), jeans with a blazer, holidays, days off and the occasions marked from today on (else a change left the check up to a week stale); `|nojacket` / `|notie` stay last
+- the progress line says about how long is left once three checks are done and over 8 s remain (`shopLeft`, from `shopBusy.t0`; W2-18-03: a 300-item wardrobe waited 40-60 s with only "5 of 20"); the check itself is no faster
 
 ### `detect.js`
 
@@ -517,6 +530,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - an own pattern may carry `look` (Claude's drawing recipe from /describe: `{layout, tr, tex | across (+ along) | motif}` in colour roles), kept by `addCustomPattern` (`cleanLookApp`) and synced with `settings.custom`; `applyCustom` keeps it on `CUSTOM_PAT`
 - Settings → Your colours & patterns has "+ New colour" / "+ New pattern" (`#cust-newcol`, `#cust-newpat`) and draws each pattern with its look (`swatchSVG` on a sample item)
 - corrections: saving an AI-tagged card records changed fields (`recordTagResult`: `settings.tagFixes`, last 60; `settings.tagStats` counts) and the stats page shows the accuracy (`tagStatsCard`)
+- taking Claude's own suggestion of a new colour or pattern (`q.newColor` / `q.newPattern`, saved as an owner's colour or pattern of that name) is not counted as a correction (W2-17-16)
 
 #### White balance and measuring
 - white balance: `wbRead` (gains, whether a white reference is there, its brightness); a close-up with its own reference (white paper) is corrected and exposure-set from it (`texGains` in add.js), otherwise like its item photo
@@ -826,6 +840,12 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - "Last worn" (`lastWorn` in photos.js, a pill at the picture's bottom right, `wornBar`) counts every earlier day with recorded pieces unless marked "Didn't" (it used to take a ✓); Insights and the cleaning counts still count today only once it is over or recorded worn, as before
 - the swatches on the picture no longer step up on today and past days (`swatchStack(o,false)`): the circles they cleared are gone, so the cleaning banner cuts round the tie swatch on today as on coming days
 - ⇄ beside a piece opens the picker sheet (`openPicker`/`pickItem`: every item for the slot, best match first by `fitOf`; "Suggest another" is the old cycling `swapSlot`)
+- the picker ranks and labels each piece by the score the outfit would get with it (fix round 3, W2-17-03: "Best match" lowered the score 93 → 81): a coming day is planned with the pick in memory only (`pickScores`: the record `pickRec` builds as `pickItem` would, planned by planner.js `planSim(...).peek(k, rec)`, which plans the days before once and then the day alone per piece, putting the rest counts back), a past day being corrected has the piece put in; kept per day, slot and plan (`pickMemo`, until `cache` is replaced); labels by score gap (`fitTag`: 0 Best, up to 4 Good, up to 12 Works); the tests' fixed plan (`TEST_PLAN`) keeps the rule-of-thumb fit (`fitRule`) and its old bands
+- Suggest another never lands on a real mistake while a piece not yet shown makes a clean outfit (`suggestClean`, called from `swapSlot`; W2-17-07: a black shirt under a navy suit at 69 with lavender, in the wash, not yet offered): the best-scoring clean piece outside the cycle is pinned; nothing clean left, the planner's choice stays; browsing suggestions teaches nothing (the learning was removed, owner's decision 4)
+- the picker says "Choose shoes" / "All the shoes you own…" for plural words (`pluralWord`: shoes, pants, socks, cufflinks), and two pieces it would name alike get a second line (`pickSub`: brand, else material, else notes, else "2 of 2" by the order added; W2-17-13, W2-15-09)
+- correcting a vest day shows no tie clip row (today.js `slots`; the vest holds the tie, W2-17-20)
+- Today's short-rest warning (today.js `restWarn`, a jacket worn under `COOL` days ago) says "Add more suits/blazers" only when fewer than `COOL` of that kind are in rotation that day (not paused, not at the cleaner); on a day the owner chose it (a pick, a correction) it says "You wore this suit N days ago too."; otherwise nothing (W2-17-06: "Add more suits" with three owned)
+- the score card's "… pieces were chosen for variety" line is not said on a day the owner changed (`o.overrides`: "These would score higher:"), and says "This day's" on a day other than today (W2-17-08)
 - swaps and picks keep a piece taken off pinned (`keepOff`); Reset and an occasion clear `rec.off`
 - swaps, picks and corrections teach the planner nothing (see "No learning from changes"); a pick or swap shows no message, a correction says "Corrected."
 - a past day can be corrected to what was really worn (`togglePastEdit`/`correctPast`: the record gets `edited`, `worn:true` and the real ids)
@@ -1323,7 +1343,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - pieces are called by the name the user gave, exactly as typed (`statName`, `statName1`, `statName2`), else their description; the tiles say "1 item", "1 outfit", "different outfits planned" (exact pieces; What to buy counts "colour combinations")
 - 'Your scores' leaves out the weeks that ended before the wardrobe existed (`planStartDay`), so a new wardrobe shows one or two columns, not six empty ones
 - an empty wardrobe's Insights, Packing list and Laundry & cleaning pages offer "Add your first item" and "Try a sample wardrobe" (`emptyAdd`)
-- `whyUnused` reads every jacket's best outfit overall and per shirt and tie from one table built once per page (`fitMemo`, reset in `buildStats`); searching again per unused piece took 94 s at 250 items
+- `whyUnused` works out each jacket's best outfit (`allOf`: its `FIT_PANTS` (3) best trousers x its `FIT_SHIRTS` (8) best shirts x every tie) and its best with the one shirt or tie asked about (`withOf`), only for pieces that need a reason, kept in `fitMemo` until the plan cache (`cache`) is replaced, the item count or the settings it reads change (`fitMemoFor`, `fitSettingsSig`); every jacket x trousers x shirt x tie, rebuilt on every `renderStats`, froze Insights 4.5 s at 300 items on opening and on every fold (W2-18-02, fix round 3)
+- unfolding a Wear counts section fills only its rows (`statsToggle` → `statRowsHtml` from `statsLast`, the numbers the page was drawn from, while `cache` and the item count are unchanged), not the whole page; `tests/fix8r3.test.js`
+- Colour balance lists an owner's colour as its own row by its own name ("Dusty pink"), not the group of the colour it behaves like (W2-17-04)
+- 'Your scores' names each week by its first workday on or after the day the wardrobe began (`t.label`): "Nov 13", a Friday before the first day, read as scores from before the app was installed (W2-15-08)
 - `whyUnused`: a paused item was taken out of rotation; an item on the way says so, with its arrival date if there is one; a piece away says "It's at the cleaner's" / "It's in the laundry", with the date it joins the outfits again; a dress-code exclusion says so ("Your dress code leaves out ties…")
 - `whyUnused` never says a suiting tie, shirt or pair of trousers "comes up later than six months" (it can't know that); it says the others suit a little better or have rested longer, so it isn't in the next six months' plan
 - Wear counts: a type the dress code leaves out (`dressOut`: blazers and suits with Jackets off) says "left out by your dress code", never "N never worn" (re-audit 2026-11-15); `tests/nu2fix7.test.js`

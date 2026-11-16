@@ -140,6 +140,7 @@ async function swapSlot(slot){
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   keepOff(force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;notAhead(rec,k);
   if(slot==='belt'&&o.belt&&beltless(k,rec)){swapMsg=BELT_STUCK;renderToday();return}
+  suggestClean(k,o,slot,rec,pool);
   swapMsg='';await saveDay(rec);await unlockClash(k);renderToday();
 }
 /* after a change by hand on a day: when a lock on the next workdays holds the piece the day now has (its tie on any of the next three
@@ -169,8 +170,37 @@ async function dropLearn(){if(!settings||!('learn' in settings))return;delete se
 /* ---- choosing a piece by hand: a sheet with every item for the slot, best match for the rest of the outfit first ---- */
 let picker=null,pastEdit=null;
 const slotPool=(slot,o)=>(slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay))).filter(i=>o.frozen||inRotation(i,di(sel)));
-/* how well a candidate suits the rest of the day's outfit (higher is better), by the planner's own rules */
-function fitOf(slot,o,c){
+/* the picker ranks and labels each piece by the score the outfit would get with it (W2-17-03, fix round 3: "Best match" lowered the score
+   93 → 81, leaving out the belt, variety and rest): a coming day is planned with the pick held in memory only (the record pickItem would
+   save, planSim's peek: the pieces that follow it, like the belt after the shoes, are chosen again), a past day being corrected has the
+   piece put in. Worked out once per day, slot and plan (pickMemo; the plan cache is cleared by any change). The tests' fixed plan
+   (TEST_PLAN) keeps the rule-of-thumb fit (fitRule) */
+let pickMemo={c:null,key:'',v:null};
+const pickRec=(k,o,slot,id)=>{const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
+  for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
+  force[slot]=id;keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);return rec};
+const pickSim=()=>planSim(planStart(sel.getFullYear(),sel.getMonth()));
+function pickScores(slot,o){const k=key(sel),mk=k+'|'+slot+'|'+JSON.stringify(idsOf(o))+'|'+!!o.vest;
+  if(pickMemo.c===cache&&pickMemo.key===mk)return pickMemo.v;
+  const cur=o[slot]&&o[slot].id,v=new Map();let sim=null;
+  for(const c of slotPool(slot,o)){let r;
+    if(c.id===cur)r=rateOutfit(o);
+    else if(o.frozen){const a={...o,[slot]:c};if(slot==='top'){if(c.type==='suit'){a.suitDay=true;a.bot=c}else{if(o.suitDay)a.bot=null;a.suitDay=false}a.vest=false}r=rateOutfit(a)}
+    else{sim=sim||pickSim();r=rateOutfit(sim.peek(k,pickRec(k,o,slot,c.id)))}
+    v.set(c.id,r)}
+  pickMemo={c:cache,key:mk,v};return v}
+/* Suggest another (swapSlot) never brings a real mistake while a piece not yet shown makes a clean outfit (W2-17-07, fix round 3: a black
+   shirt under a navy suit, 69, with lavender not yet offered): when the planner's next choice is a hard one, the best-scoring clean piece
+   not in the cycle yet is pinned instead (it joins the cycle on the next tap); nothing clean left, the planner's choice stays */
+function suggestClean(k,o,slot,rec,pool){if(window.TEST_PLAN||!rec.skip)return;
+  const sim=pickSim(),next=sim.peek(k,rec);if(!rateOutfit(next).hard.length)return;
+  let best=null;for(const c of pool){if(rec.skip[slot].includes(c.id))continue;const r=rateOutfit(sim.peek(k,{...rec,force:{...rec.force,[slot]:c.id}}));
+    if(!r.hard.length&&(!best||r.score>best.s))best={id:c.id,s:r.score}}
+  if(best)rec.force={...rec.force,[slot]:best.id}}
+/* how well a candidate suits the rest of the day's outfit (higher is better): the score it gives (pickScores), or the planner's rules
+   of thumb in the tests' fixed plan */
+function fitOf(slot,o,c){if(window.TEST_PLAN)return fitRule(slot,o,c);const r=pickScores(slot,o).get(c.id);return r?r.score:fitRule(slot,o,c)}
+function fitRule(slot,o,c){
   const day={formal:!!o.formal,clim:o.clim||dayClimate(sel),hasLinks:items.some(i=>i.type==='cufflinks')},suit=slot==='top'?c.type==='suit':o.suitDay,top=slot==='top'?c:o.top,bot=suit?top:slot==='bot'?c:o.bot,legs=suit?top:bot;
   switch(slot){
     case 'top':case 'bot':case 'shirt':case 'tie':return clothesScore(top,bot,slot==='shirt'?c:o.shirt,slot==='tie'?c:o.tie,suit,day)+(slot==='top'?seasonFit(c,day.clim.season)*2+(day.formal?formalTop(c)*2:0):0);
@@ -180,16 +210,24 @@ function fitOf(slot,o,c){
     case 'watch':return watchFit(c,o.shoes,o.belt);
     case 'clip':case 'links':return o.watch&&metalOf(c)!==null?(metalOf(c)===metalOf(o.watch)?6:-4):0}
   return 0}
-const fitTag=gap=>gap<=.5?['best','Best match']:gap<=QWIN?['good','Good match']:gap<=18?['ok','Works']:['weak','Weak match'];
+// gaps in score points (the fixed test plan's rule-of-thumb fit used the same bands)
+const fitTag=gap=>gap<=.5?['best','Best match']:gap<=(window.TEST_PLAN?QWIN:4)?['good','Good match']:gap<=(window.TEST_PLAN?18:12)?['ok','Works']:['weak','Weak match'];
+/* two pieces the picker would name alike ("Navy" twice, W2-15-09): a second line tells them apart, by brand, else material, else notes,
+   else the order they were added in ("2 of 2") */
+const pickSub=(i,pool)=>{const t=x=>itemTitle(x)||nm(x),same=pool.filter(x=>t(x)===t(i));if(same.length<2)return '';
+  const by=f=>{const v=String(f(i)||'').trim();return v&&same.filter(x=>String(f(x)||'').trim()===v).length===1?v:''};
+  return by(x=>x.brand)||by(x=>x.material&&x.material!=='other'?cap1(x.material):'')||by(x=>String(x.notes||'').slice(0,40))||
+    `${[...same].sort((a,b)=>(a.added||0)-(b.added||0)||(a.id<b.id?-1:1)).indexOf(i)+1} of ${same.length}`};
+const pluralWord=w=>/^(shoes|pants|socks|cufflinks|jeans|chinos)$/.test(w);   // "Choose shoes", not "Choose a shoes" (W2-17-13)
 const pickPic=i=>i.photo?`<img src="${srcOk(phSm(i))}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true);
 function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=slotPool(slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,o).toLowerCase();
   if(!o.frozen&&pool.length<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
   const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
-  const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur;
-    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
+  const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur,sub=pickSub(i,pool);
+    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
   const none=o.frozen&&slot!=='top'&&cur?`<button type="button" onclick="pickItem('${slot}','')">None: I didn't wear one</button>`:'';
-  $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
-    <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`Every ${label} you own, the best match for the rest of the outfit first.`}</small></p>
+  $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${pluralWord(label)?label:aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
+    <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`${pluralWord(label)?`All the ${label}`:`Every ${label}`} you own, by the score the outfit gets with each, best first.`}</small></p>
     ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another ↻</button>`}</div>`:''}
     <div class="pick-grid">${scored.map(card).join('')}</div>`;
   picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
@@ -303,7 +341,7 @@ function scoreCard(o){
   const r=window.TEST_PLAN?TEST_PLAN.rate(o):rateOutfit(o),tone=r.hard.length?'low':r.score>=80?'good':r.score>=65?'ok':'low',A=adviceFor(o);
   const sub=scoreOpen?'tap to fold away':'tap for why',fix=A&&A.fixes.length>0;
   const line=r.hard.length?`${r.hard.length} thing${r.hard.length===1?'':'s'} to put right`:fix&&A.best>r.score?`Could be ${A.best} with what you own`:A&&r.score<100?'The best your wardrobe allows':'Outfit score';
-  const fixes=!fix?'':`<div class="sfix" onclick="event.stopPropagation()"><small>${r.hard.length?'These would put it right:':'Today\'s pieces were chosen for variety. These would score higher:'}</small>${A.fixes.map(f=>`<button type="button" class="sfixbtn" onclick="applyFix('${f.slot}','${f.item.id}')" aria-label="Wear the ${esc(desc(f.item)||nm(f.item))} ${esc(slotLabel(f.slot,o).toLowerCase())}: ${f.gain} more points"><span class="dot">${swatchSVG(f.item,true)}</span><span class="cap sfixnm">${sentence(desc(f.item)||nm(f.item))} <span class="mut">${slotLabel(f.slot,o).toLowerCase()}</span></span><b>+${f.gain}</b></button>`).join('')}</div>`;
+  const fixes=!fix?'':`<div class="sfix" onclick="event.stopPropagation()"><small>${r.hard.length?'These would put it right:':o.overrides?'These would score higher:':`${key(sel)===key(todayDate())?'Today’s':'This day’s'} pieces were chosen for variety. These would score higher:`}</small>${A.fixes.map(f=>`<button type="button" class="sfixbtn" onclick="applyFix('${f.slot}','${f.item.id}')" aria-label="Wear the ${esc(desc(f.item)||nm(f.item))} ${esc(slotLabel(f.slot,o).toLowerCase())}: ${f.gain} more points"><span class="dot">${swatchSVG(f.item,true)}</span><span class="cap sfixnm">${sentence(desc(f.item)||nm(f.item))} <span class="mut">${slotLabel(f.slot,o).toLowerCase()}</span></span><b>+${f.gain}</b></button>`).join('')}</div>`;
   // unfolds like the pieces list and the month plan; each check slides in and its bar fills to the points it scored
   return `<section class="mbox score ${tone}${scoreOpen?' open instant':''}" id="sbox"><button class="month-link" onclick="toggleScore()" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="Outfit score ${r.score}, ${r.label}. ${line}. ${scoreOpen?'Fold away':'Show why'}">
     <span class="num" aria-hidden="true">${r.score}</span><span class="lbl" aria-hidden="true"><b>${r.label}</b><small>${line} · ${sub}</small></span><span class="chev" aria-hidden="true">›</span></button>

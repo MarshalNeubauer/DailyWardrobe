@@ -298,7 +298,10 @@ const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
 const itemName=i=>i&&typeof i.name==='string'?i.name.trim():'';
-const itemTitle=i=>itemName(i)||sentence(desc(i));
+const itemTitle=i=>itemName(i)||sentence(desc(i)+styleWord(i));
+/* a shoe's style and a trouser's kind in a described title ("Oxblood calf loafers", "Stone chinos"): they were "Oxblood calf" and "Stone"
+   (W2-17-15); oxfords and dress pants, and items from before styles existed, read as before */
+const styleWord=i=>!i?'':i.type==='shoes'&&i.shoeStyle&&i.shoeStyle!=='oxford'?' '+(({derby:'derbies',loafer:'loafers',boot:'boots',sneaker:'sneakers'})[i.shoeStyle]||''):i.type==='pants'&&(i.trouserKind==='chinos'||i.trouserKind==='jeans')?' '+i.trouserKind:'';
 const titleCls=i=>itemName(i)?'named':'cap';
 /* trousers come in three kinds and shoes in five styles; an item without one is dress trousers or oxfords, which the planner treats
    exactly as before there were kinds and styles (so a wardrobe from before plans the same) */
