@@ -48,8 +48,11 @@ const connRestored=db.then(async()=>{let n=0;
   connReady=true;await connKeep();if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep()});
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
-const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
-  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)}));
+/* a put that throws at once (a full disk in some browsers, a value it can't store) aborts the transaction with that error, not WebKit's
+   "IDBTransaction will abort due to uncaught exception" (W1-11-05) */
+const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out,thrown=null;
+  const q=s.get(key);q.onsuccess=()=>{try{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)}catch(x){thrown=x;try{t.abort()}catch{}}};t.oncomplete=()=>ok(out&&out.value);
+  const fail=txFail(t,no);t.onerror=t.onabort=ev=>{if(!thrown)return fail(ev);try{thrown.dwStore='write'}catch{}no(thrown)}}));
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 /* the stored wardrobe at start-up through core.js cleanRecord/cleanDay (fix round 3, W2-13-02): a record stored before the entry check
    (a crafted Restore file or sync) is shown cleaned, and stored cleaned with its stamp unchanged (nothing to back up; the other phones

@@ -519,7 +519,23 @@ function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);co
     '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap '+(homeBrowser()==='Safari'?'View More':'Edit Actions')+'.</small></span></li>'+
     '<li><span class="home-n">3</span><span>Leave <b>Open as Web App</b> on and tap <b>Add</b>.</span></li>'+
     '<li><span class="home-n">4</span><span>Open Daily Wardrobe from its new icon'+(t?' and paste your invitation link at the setup\'s Connection step.':'.')+'</span></li></ol>'+
-    (t?homeCopyBtn():'')+homeNote()+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
+    (t?homeCopyBtn():'')+homeNote()+homeRisk(pad)+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
+/* (2026-11-16, the owner's decision 2 for W1-11-04) someone using the app in a Safari tab with no connection is told once, here (the
+   setup's Home Screen step, also About's sheet), that Safari can clear it; Backup & sync says it under its status (sync.js safariWord), and
+   safariRemind reminds such a person once there are SAFARI_MIN items that were never backed up */
+function homeRisk(pad){if(typeof isConnected==='function'&&isConnected())return '';
+  return `<p class="su-help home-risk">In a ${homeBrowser()} tab, your ${pad?'iPad':'iPhone'} can clear the app’s data when it isn’t opened for about a week or runs short of space. The Home Screen app isn’t cleared that way, and <b>Download backup</b> in Settings → Backup &amp; sync keeps a copy in Files.</p>`}
+const SAFARI_MIN=10,SAFARI_EVERY=30*864e5;
+/* a Safari-only wardrobe (an iPhone or iPad tab, not connected) of SAFARI_MIN+ items never backed up (no backup ever, no backup file
+   downloaded): a reminder with Download backup, at start-up, at most once every SAFARI_EVERY (localStorage safari_remind) */
+function safariRemind(){try{if(!homeIOS()||homeStandalone()||(typeof isConnected==='function'&&isConnected()))return false;
+  if(items.filter(i=>!i.sample).length<SAFARI_MIN||localStorage.getItem('last_sync')||localStorage.getItem('backup_file_at'))return false;
+  if(Date.now()-(+localStorage.getItem('safari_remind')||0)<SAFARI_EVERY)return false;
+  if(typeof setupShown==='function'&&setupShown())return false;
+  const t=$('#toast');if(t&&t.classList.contains('on')){setTimeout(safariRemind,6000);return false}   // (not over another message)
+  localStorage.setItem('safari_remind',Date.now());
+  toast(`Your ${items.filter(i=>!i.sample).length} items are only in ${homeBrowser()} on this ${homeIPad()?'iPad':'iPhone'}, and ${homeBrowser()} can clear a website’s data. Download a backup to keep a copy in Files.`,12000,{label:'Download backup',fn:downloadBackup});return true}
+  catch{return false}}
 const homeLabel=()=>homeAndroid()?'Install the app':'Add to Home Screen';
 const HOME_CARD={key:'home',get title(){return homeLabel()},pic:()=>'',last:'Got it',get body(){return homeSteps(false)}};
 function homeOpen(){kitOpen([HOME_CARD])}

@@ -140,7 +140,7 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','wipe_seen','theme','wx','wx_norm','sync_mark','sync_join','sync_sd','kit_mine','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','acct_was_owner','invite_ended','sync_pause','sync_pause_msg','clock_skew','clock_told','invite_lost','sync_wait','sync_restore','sync_off','rec_clean','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','home_told','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending','missed_ok'];
+const ABOUT_KEYS=['worker_url','app_token','wipe_seen','theme','wx','wx_norm','sync_mark','sync_join','sync_sd','kit_mine','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','acct_was_owner','invite_ended','sync_pause','sync_pause_msg','clock_skew','clock_told','invite_lost','sync_wait','sync_restore','sync_off','rec_clean','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','home_told','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending','missed_ok','safari_remind','backup_file_at','remake_day'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));
@@ -208,6 +208,9 @@ async function aboutDeleteAccount(keep,resumed){
   // no; and a "Delete everything" resumed after a kill was sent before with that code, which the server knew then, so an unknown code now is
   // that request having gone through. Both read "nothing was deleted" after a kill on a slow server: re-audit 2026-11-15, agent8 #5)
   if(r.status===403&&j&&j.error==='forbidden token'&&(resumed||aboutKeptTester(keep.t)||(typeof isTester!=='function'||isTester())||localStorage.getItem('invite_ended')===keep.t))return {note:'This device was cleared. Your data on the server had already been deleted.'};
+  // the server's saves for the day used up: nothing was deleted there (it now writes its list before the code goes, W1-10-01); said in the
+  // app's words with the local time, not the backup sentence "kept on this device and saved after the daily reset (00:00 UTC)"
+  if(r.status===429&&j&&j.error==='kv-limit'){await back();return {fail:`The server can’t delete anything more today, so nothing was deleted. Try again after ${aboutResetAt()}, or delete from this device only.`}}
   const why=j&&typeof j.message==='string'&&j.message.trim()||(j&&typeof j.error==='string'&&/\s/.test(j.error)&&!ABOUT_CODES.test(j.error.trim())?j.error.trim():'');   // never a code ("forbidden token")
   await back();return {fail:`The server didn’t delete your data${why?' ('+why.replace(/[.!]$/,'')+')':''}, so nothing was deleted. Try again, or delete from this device only.`}}
 /* the code was a tester's, by what account.js remembered for it (acct_role: {tok, role}) */

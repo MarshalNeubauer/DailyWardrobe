@@ -28,7 +28,10 @@ module.exports=async({ok,chromium,url})=>{
     ok(/^Backed up today$/.test(await line({last_sync:String(now),sync_status:null,sync_wait:null,sync_pause:null})),'a backup today says so');
     // (2026-11-15, the audit) not "Backed up today" while changes wait, the day's saves are used up, or the phone is offline
     ok(/^Backed up today · newer changes waiting$/.test(await line({sync_wait:String(now)})),'changes no backup has taken yet are said');
-    ok(/^Paused until tomorrow · last saved today$/.test(await line({sync_pause:String(now+3600e3)})),'a pause after the day\'s saves were used up is said');
+    const tom=new Date();tom.setHours(24,30,0,0);
+    ok(/^Paused until tomorrow · last saved today$/.test(await line({sync_pause:String(+tom)})),'a pause after the day\'s saves were used up is said');
+    // (W1-10-03) the reset later today here (west of UTC) says its time, not tomorrow
+    ok(/^Paused until \d{1,2}:\d{2}\s?[AP]M · last saved today$/.test(await line({sync_pause:String(Date.now()+60e3)})),'a pause that ends later today says when');
     ok(/^Waiting for a connection · last saved today$/.test(await line({sync_pause:null,sync_wait:null,sync_status:'Not backed up: you’re offline. Your changes are kept on this phone and back up when you’re online again.'})),'offline: waiting for a connection, not "failed"');
     await line({sync_status:null});
     ok(/^Backed up Mar 3$/.test(await line({last_sync:String(old),sync_status:null})),'an older one gives its day');

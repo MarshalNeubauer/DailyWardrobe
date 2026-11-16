@@ -72,9 +72,12 @@ function showSyncStatus(){const sum=$('#sum-backup');if(sum&&typeof backupSummar
   const lastTxt=last?` Last backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}.`:'';
   if(syncPaused()){el.textContent=(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.')+lastTxt;return}
   // offline or unreachable: said, with the last backup's time
-  if(syncWaiting(st)||st===WIPED_SYNC){el.textContent=st+lastTxt;return}
+  if(syncWaiting(st)||st===WIPED_SYNC||/^Backing up/.test(st)){el.textContent=st+lastTxt;return}   // (and photos going up in batches: how many are left)
   if(last&&!/failed|turn on/i.test(st))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}${/^Syncing/.test(st)?' · syncing…':''}`;
-  else el.textContent=st||(syncUrl()?'Not backed up yet.':'Not connected.')}
+  else el.textContent=st||(syncUrl()?'Not backed up yet.':'Not connected.'+safariWord())}
+/* not connected, in a Safari tab: why the backup file matters (decision 2 for W1-11-04; the setup's Home Screen step said it once) */
+const tabBrowser=()=>typeof homeBrowser==='function'?homeBrowser():'Safari';
+const safariWord=()=>safariTab()?` ${tabBrowser()} can clear a website’s data when it isn’t opened for about a week or the phone runs short of space: Download backup now and then keeps a copy in Files.`:'';
 /* ---- the first pull (2026-11-14): a connected device saves nothing at start-up until it has merged the backup once. On the owner's
    phone, two days behind, the week's locks (stamped 07:00) and the one-time photo upgrade (82 items re-saved at 07:45) were written on
    its old copy before it synced; stamped newest, they replaced a pick made on another device and 11 newer tags, and brought back 4
@@ -176,11 +179,19 @@ async function clockFix(){const t=nowMs(),lim=t+CLOCK_AHEAD,st=await localState(
    saves for the day (2026-11-14, error 'kv-limit': Cloudflare's 1,000 writes a day), said in words with the local time it resets */
 /* the server's room for new photos used up (pr.write): everyone's (pr.all) or this tester's own, said as such, without the server's
    "(0 of 6 new photos are saved)" (2026-11-15, the audit: the shared ceiling read "your backups") */
+/* in a Safari tab on an iPhone or iPad (kit.js), where Safari may clear a site's data: the pause adds a word about the backup file (W1-11-06) */
+const safariTab=()=>typeof homeIOS==='function'&&homeIOS()&&!homeStandalone();
+const SAFARI_KEEP=()=>` ${tabBrowser()} can clear a website’s data, so Download backup in Settings → Backup & sync keeps a copy meanwhile.`;
 const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
-  const after=`Your changes are kept on this phone and back up after ${at||'midnight UTC'}.`;
+  const after=`Your changes are kept on this phone and back up after ${at||'midnight UTC'}.${safariTab()?SAFARI_KEEP():''}`;
   if(pr&&pr.error==='kv-limit')return `Today’s backups are used up on the server. ${after}`;
   if(pr&&pr.write)return pr.all?`Today’s room on the server for everyone’s backups is used up. ${after}`:`Today’s room on the server for your backups is used up. ${after}`;
   return (pr&&pr.message)||'Today’s backups are used up.'};
+/* what Connection and the setup say about backups: "is backed up", unless backups are paused (W1-10-04, W1-11-06: "✓ Connected … and your
+   wardrobe is backed up" while the server held none of the day's items) */
+function backedUpWords(){const p=+localStorage.getItem('sync_pause')||0;if(p<=Date.now())return 'your wardrobe is backed up';
+  let at='';try{at=new Date(p).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+  return `your wardrobe is backed up, though not right now: backups are paused until ${at||'tomorrow'}, and your newest changes are only on this phone until then`}
 /* ---- the small sync (worker.js syncLiteGet / syncLitePost). A newer worker answers GET /sync?lite=1&since=<the version last agreed
    on> with only the records changed since, with photos as references (dwph:<hash>), every tombstone, and what it holds of each record
    (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,
@@ -215,6 +226,21 @@ async function phIn(recs,local,url,token){
 async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(),photos={};
   for(const s of strs){const h=await phHash(s);by.set(s,h);if(!have.has(h))photos[h]=s}
   return {recs:by.size?phMap(recs,s=>by.has(s)?'dwph:'+by.get(s):s):recs,photos}}
+/* (2026-11-16, the audit's W2-18-01) photos go up in batches: one POST carries at most SYNC_SEND_MAX of photos and records (the worker
+   refuses a body over 48 MB, BACKUP_MAX, and a phone restoring a file onto a new account sent 61 MB at every close, storing nothing).
+   The day records, settings and deletions always go in the first batch (small, and the day's wear is what matters most); items go in
+   their order until the next one's new photos would pass the budget (one item always goes). -> {up: the batch, left: items held back} */
+const SYNC_SEND_MAX=self.SYNC_SEND_TEST||16*1024*1024,SYNC_BATCH_MAX=40;   // (window.SYNC_SEND_TEST before load: a test's smaller budget)
+let syncSendMax=SYNC_SEND_MAX;   // (per sync: the budget, halved after each 413)
+const TOO_BIG_SYNC='Not backed up: an item’s photos are too large for the server. Your changes are kept on this phone; backups try again tomorrow.';
+async function phBatch(up,have,max=SYNC_SEND_MAX){
+  let size=JSON.stringify({...up,items:[]}).length;const pick=[],taken=new Set(have);
+  for(let k=0;k<up.items.length;k++){const it=up.items[k];let add=0;const hs=[];
+    for(const s of phStrings(it,isPh)){const h=await phHash(s);if(!taken.has(h)){hs.push(h);add+=s.length}}
+    const own=JSON.stringify(phMap(it,s=>isPh(s)?'dwph:'+'0'.repeat(20):s)).length;
+    if(pick.length&&size+add+own>max)return {up:{...up,items:pick},left:up.items.length-k};
+    size+=add+own;pick.push(it);for(const h of hs)taken.add(h)}
+  return {up,left:0}}
 /* the sample wardrobe stays on this phone (re-audit 2026-11-15, N7: loaded while connected, it was backed up into the person's real
    wardrobe and showed on his other phones): uploads leave out the sample pieces he hasn't made his (kit.js kitEdited) and the day records
    naming one; Remove the sample rewrites those records (kit.js kitSampleDay) with a new stamp, and they go up then. Applied to what is
@@ -291,10 +317,19 @@ async function syncLite(remote,local,url,token,inline){
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
   if(syncPaused()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
   const have=new Set(remote.ph||[]);for(const h of inline)have.delete(h);
-  const {recs,photos}=await phOut(up,have),t0=Date.now();
+  const batch=await phBatch(up,have,syncSendMax);   // (up is already cleaned: each batch is a part of it)
+  if(batch.left){const n=up.items.length;setSyncStatus(`Backing up: ${n} item${n===1?'':'s'} with photos still to send…`)}
+  const {recs,photos}=await phOut(batch.up,have),t0=Date.now();
   const p=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,baseSaved:remote.saved||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),delta:recs,photos})});
   clockLearn(p,t0,Date.now());const pr=await p.json().catch(()=>({})),since=`${remote.rev||0}:${remote.saved||0}`;
   if(p.status===409)return {again:{since}};                                   // another device saved first: what it saved, then again
+  // too large for the server all the same (a smaller limit than ours): half the size again, down to one item; one item too large pauses
+  // the uploads until tomorrow, said in words, instead of sending it again at every close (W2-18-01: 4 x 61 MB in two closes)
+  if(p.status===413){if(batch.up.items.length>1){syncSendMax=syncSendMax>>1;return {again:{since,batch:true}}}
+    localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',TOO_BIG_SYNC);setSyncStatus(TOO_BIG_SYNC);return false}
+  // a batch went up: the rest from the version it made (the backup now holds those items, so they aren't sent again)
+  // (a roll-back's first batch kept "Before the last roll-back": the later ones are ordinary saves, or each would replace that copy)
+  if(p.ok&&batch.left&&Number.isInteger(pr.rev)){if(restoreWanted())restoreDone();return {again:{since:`${pr.rev}:${pr.saved||0}`,batch:true}}}
   if(p.status===400&&Array.isArray(pr.missing)){pr.missing.forEach(h=>inline.add(h));return {again:{since}}}
   if(p.status===422&&pr.error==='legacy')return {again:{legacy:true}};          // a backup the server can't index: the whole of it
   if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
@@ -311,7 +346,8 @@ async function syncOnce(){
   syncing=true;setSyncStatus('Syncing…');syncJoinMark(token);
   try{
     let lite=SYNC_LITE&&!!(self.crypto&&crypto.subtle),since=null,all=false,full=0;const inline=new Set();
-    for(let attempt=0;attempt<6;attempt++){
+    syncSendMax=SYNC_SEND_MAX;let extra=0;   // (extra: rounds for photo batches, which don't count as retries)
+    for(let attempt=0;attempt<6+extra;attempt++){
       // nothing changed here since the last sync: ask only whether the backup is still that version
       const mark=attempt?null:syncMark(),local=await localState(),quick=!!mark&&stateSig(mergeState(local,{}))===mark.sig,last=syncMark();
       let q=quick?'?v='+encodeURIComponent(mark.v):'';
@@ -325,7 +361,7 @@ async function syncOnce(){
       if(quick&&remote.same){synced();pullDone();return true}
       if(remote.wiped&&syncWiped(remote.wiped)){pullDone();return false}   // deleted on another phone: asked first (nothing merged or sent)
       if(remote.lite===1){const res=await syncLite(remote,local,url,token,inline);if(!res||res===true)return res;
-        const a=res.again;if(a.all)all=true;if(a.since){since=a.since;all=false}if(a.legacy)lite=false;continue}
+        const a=res.again;if(a.all)all=true;if(a.since){since=a.since;all=false}if(a.legacy)lite=false;if(a.batch&&extra<SYNC_BATCH_MAX)extra++;continue}
       if(++full>3)break;
       if(remote.data)remote.data=cleanState(remote.data);   // records from outside (core.js)
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
@@ -337,6 +373,7 @@ async function syncOnce(){
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));
+      if(p.status===413){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',TOO_BIG_SYNC);setSyncStatus(TOO_BIG_SYNC);return false}   // not again at every close
       if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
       if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
       if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
@@ -345,7 +382,11 @@ async function syncOnce(){
       return true;
     }
     throw new Error('another device kept saving at the same time; try again');
-  }catch(e){const n=syncNetText(e);setSyncStatus(n||'Backup failed: '+(e.message||e));return false}
+  }catch(e){
+    // this phone's own storage refused (full, closed): said where it is seen, in the app's words (W1-11-05: a phone joining with full storage
+    // showed an empty Welcome, and only Settings said "Backup failed: IDBTransaction will abort…")
+    if(typeof storeFailure==='function'&&storeFailure(e)){if(typeof saveFailed==='function')saveFailed(e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
+    const n=syncNetText(e);setSyncStatus(n||'Backup failed: '+(e.message||e));return false}
   finally{syncing=false}
 }
 /* after a change: the owner's phone backs up 2.5 s later. A tester's waits until the app goes to the background or closes, or 15
@@ -366,7 +407,8 @@ addEventListener('online',()=>{if(syncWaiting(localStorage.getItem('sync_status'
 async function downloadBackup(){
   const data={app:'daily-wardrobe',version:1,exported:new Date().toISOString(),...await localState()};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
-  a.download=`daily-wardrobe-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  a.download=`daily-wardrobe-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();try{localStorage.setItem('backup_file_at',Date.now())}catch{}   // (kit.js safariRemind: a copy was kept)
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 }
 async function restoreBackup(file){
   if(!file)return;let data;
@@ -382,8 +424,15 @@ async function restoreBackup(file){
   tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}.`);showSyncStatus();scheduleSync();
 }
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
-const snapLabel=s=>{const t=new Date(s.saved).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
-  return s.id==='before-restore'?`Before the last roll-back (${t})`:/^\d{4}-\d{2}$/.test(s.id)?`Start of ${new Date(s.id+'-02').toLocaleDateString(undefined,{month:'long',year:'numeric'})} (${t})`:t};
+/* a copy is named by the day it is for (the wardrobe at that day's start), with how many items it holds when the server says (W2-14-03,
+   W1-6-07: labelled by the time its content was saved, Monday's copy and Sunday's both read "Sun, Nov 15, 7:30 AM", one full, one empty) */
+const snapDay=id=>{const d=new Date(id+'T12:00:00'),y=d.getFullYear()!==new Date().getFullYear();return d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',...(y?{year:'numeric'}:{})})};
+const snapCount=s=>Number.isInteger(s.n)?(s.n?` · ${s.n} item${s.n===1?'':'s'}`:' · empty'):'';
+const snapLabel=s=>{const c=snapCount(s);
+  if(s.id==='before-restore')return `Before the last roll-back (${new Date(s.saved).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})})${c}`;
+  if(/^\d{4}-\d{2}$/.test(s.id))return `Start of ${new Date(s.id+'-02T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'})}${c}`;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s.id))return `${snapDay(s.id)}, start of the day${c}`;
+  return new Date(s.saved).toLocaleString()+c};
 /* the list is read when Settings' Backup opens (settings.js setCatOpen), not only when the dropdown is focused: on an iPhone the tap
    that focuses it opens the picker at once, showing only "Choose a day…" while the list was still on its way (re-audit 2026-11-15).
    Once per page life (each list is a counted server call); one request at a time (snapLoading), and the chosen day is kept */
@@ -397,7 +446,7 @@ async function snapsRead(){const sel=$('#snap-list'),st=$('#snap-status'),url=sy
     if(r.status===429&&j.what==='list'){st.textContent=SNAP_CAP;return}   // the server's words name "photo list checks", which a tester can't connect with this list
     if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);
     sel.dataset.loaded=1;const list=j.snaps||[],was=sel.value;
-    sel.innerHTML=`<option value="">${list.length?'Choose a day…':'No daily backups yet'}</option>`+list.map(s=>`<option value="${s.id}">${snapLabel(s)}</option>`).join('');
+    sel.innerHTML=`<option value="">${list.length?'Choose a day…':'No daily backups yet'}</option>`+list.map(s=>`<option value="${esc(s.id)}"${Number.isInteger(s.n)?` data-n="${s.n}"`:''}>${esc(snapLabel(s))}</option>`).join('');
     if(was&&list.some(s=>s.id===was))sel.value=was;
     st.textContent=list.length?`${list.length} kept. Each is the wardrobe before that day's first change.`:'The first one is kept the next time something changes.'}
   catch(e){st.textContent='Could not list the daily backups: '+errWords(e)}}
@@ -426,8 +475,8 @@ function rollSay(t,ms,act){const st=$('#snap-status');if(st)st.textContent=t;if(
 /* pick: {id, label} rolls back to that copy (the toast's Undo: "Before the last roll-back"); else the day chosen in the list */
 async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&sel.value,url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!id){rollSay('Choose a day first.');return}
-  const label=pick&&pick.label||sel.selectedOptions[0].textContent;
-  if(!await askConfirm(`Roll back to ${label}?\n\nThe wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`,{ok:'Roll back',danger:true}))return;
+  const label=pick&&pick.label||sel.selectedOptions[0].textContent,empty=!pick&&sel.selectedOptions[0].dataset.n==='0';
+  if(!await askConfirm(`Roll back to ${label}?\n\n${empty?'That copy has no items: rolling back to it empties the wardrobe on every device. ':''}The wardrobe, day history and settings on every device become that copy. The current state is kept as “Before the last roll-back”, so this can be undone.`,{ok:'Roll back',danger:true}))return;
   try{rollSay('Rolling back…',2500);await syncNow();
     const r=await fetch(url+'?snap='+encodeURIComponent(id),{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);
     if(!j.data||!Array.isArray(j.data.items))throw new Error('that backup is empty');

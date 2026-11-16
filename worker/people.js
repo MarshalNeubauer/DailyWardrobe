@@ -243,10 +243,12 @@ async function handleInvites(req, env, json, who) {
     const q = new URL(req.url).searchParams, id = q.get('id') || '', v = list.find(x => x.id === id), purge = q.get('purge') === '1';
     if (!v) return json({ error: 'no such invitation' }, 404);
     v.off = true;
-    const hub = hubOf(env, `u:${v.id}:`);
-    if (hub) try { await hub.fetch(purge ? 'https://hub/wipe?off=1' : 'https://hub/off', { method: 'POST' }); } catch (e) { console.log('hub off failed', e && e.message); }
+    // the record first, the hub after it (W1-10-02: with the day's writes used up the hub was told "off" and the record's write then failed:
+    // readings refused, backups still taken, the owner's list still "active" for good); refused here, nothing has changed
     const rec = (await env.WARDROBE.get(`invite:${v.hash}`, 'json')) || { id: v.id, name: v.name, caps: v.caps || null, created: v.created };
     await env.WARDROBE.put(`invite:${v.hash}`, JSON.stringify({ ...rec, off: true }));
+    const hub = hubOf(env, `u:${v.id}:`);
+    if (hub) try { await hub.fetch(purge ? 'https://hub/wipe?off=1' : 'https://hub/off', { method: 'POST' }); } catch (e) { console.log('hub off failed', e && e.message); }
     await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: purge ? list.filter(x => x.id !== v.id) : list }));
     if (!purge) return json({ ok: true });
     await dropPrev(env, v);
@@ -309,14 +311,14 @@ async function handleErrors(req, env, json, who) {
    the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the next part. ---- */
 const WIPED_KEY = 'wiped';   // {at}: when the owner last deleted everything (handleAccount)
 const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:', 'ph:'];
-async function wipeSome(env, ns, budget) {   // -> true once nothing is left
+async function wipeSome(env, ns, budget, st = {}) {   // -> true once nothing is left (st.gone counts the deletions)
   for (const p of ns ? [ns] : OWNER_FAMILIES) {
     for (;;) {
       if (budget < 2) return false;
       const l = await env.WARDROBE.list({ prefix: p, limit: Math.max(1, budget - 1) }); budget--;
       const keys = (l.keys || []).map(k => k.name).filter(n => (ns ? n.startsWith(ns) : !/^(u:|invite|feedback:)/.test(n) && (p.endsWith(':') || n === p || n.startsWith(p + '~')))).slice(0, budget);   // (<key>~<rev>~<i>: a large backup's parts)
       if (!keys.length) break;
-      for (const k of keys) { await env.WARDROBE.delete(k); budget--; }
+      for (const k of keys) { await env.WARDROBE.delete(k); budget--; st.gone = (st.gone || 0) + 1; }
     }
   }
   return true;
@@ -340,23 +342,36 @@ async function handleAccount(req, env, json, who) {
   const b = await smallBody(req, 2000);
   if (!b || b.confirm !== 'delete') return json({ error: 'confirm', message: 'Deleting needs {"confirm":"delete"}.' }, 400);
   const hub = hubOf(env, who.ns);
+  /* (2026-11-16, the audit's W1-10-01: with the day's writes used up the invite was deleted, then the list's write failed, so the app said
+     "nothing was deleted", and its retry, the code now unknown, "already deleted": the backup and photos stayed for good.) The list is
+     written first: refused, nothing has changed and the code still works. Once the code is gone, a failure in the rest goes to the queue,
+     which finishes the wipe later, and the answer is ok: the account is being deleted */
+  const st = { gone: 0 };
   if (who.role === 'tester') {
-    await env.WARDROBE.delete(`invite:${who.hash}`);   // first: the code stops working
     const index = await env.WARDROBE.get(INVITE_INDEX, 'json');
     if (index && Array.isArray(index.list)) await dropPrev(env, index.list.find(v => v.id === who.id));
     if (index && Array.isArray(index.list) && index.list.some(v => v.id === who.id)) await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: index.list.filter(v => v.id !== who.id) }));
-    await dropTesterExtras(env, who.id);
+    await env.WARDROBE.delete(`invite:${who.hash}`); st.gone++;   // then: the code stops working
   }
-  if (!who.ns) await dropPush(env, '');
-  if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
-  // the owner's: when his data was deleted, kept (one small value, never part of a family wipeSome deletes), so his other connected phones
-  // ask before putting their copy back (backup.js syncLiteGet's wiped, sync.js syncWiped; fix round 3, W1-6-01: the other owner phone's
-  // next sync wrote the whole wardrobe back within a minute). A tester's other phones stop at once: the invitation is gone
-  if (!who.ns) try { await env.WARDROBE.put(WIPED_KEY, JSON.stringify({ at: Date.now() })); } catch (e) { console.log('wipe mark not kept', e && e.message); }
-  const done = await wipeSome(env, who.ns, 30);
-  if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
-  return json({ ok: true, ...(done ? {} : { more: true }) });
+  try {
+    if (who.role === 'tester') await dropTesterExtras(env, who.id);
+    if (!who.ns) await dropPush(env, '');
+    if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
+    // the owner's: when his data was deleted, kept (one small value, never part of a family wipeSome deletes), so his other connected phones
+    // ask before putting their copy back (backup.js syncLiteGet's wiped, sync.js syncWiped; fix round 3, W1-6-01)
+    if (!who.ns) try { await env.WARDROBE.put(WIPED_KEY, JSON.stringify({ at: Date.now() })); } catch (e) { console.log('wipe mark not kept', e && e.message); }
+    const done = await wipeSome(env, who.ns, 30, st);
+    if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
+    return json({ ok: true, ...(done ? {} : { more: true }) });
+  } catch (e) {
+    if (!st.gone || !env.RENDER_QUEUE) throw e;   // nothing deleted yet: the refusal as it is
+    console.log('account wipe left to the queue', e && e.message);
+    await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }, { delaySeconds: resetDelay() });
+    return json({ ok: true, later: true });
+  }
 }
+/* seconds until a few minutes after the next 00:00 UTC, when KV's daily allowances start again (a queue delay is at most 12 hours) */
+const resetDelay = (now = Date.now()) => { const d = new Date(now); return Math.min(43200, Math.ceil((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1) - now) / 1000) + 300); };
 /* the queue finishing a deleted account: {wipe: 'owner' | 'u:<id>:', n}; a part per message until nothing is left */
 async function runWipe(msg, env) {
   const w = String(msg.body.wipe), ns = w === 'owner' ? '' : NS_RE.test(w) ? w : null, n = +msg.body.n || 1;
@@ -365,4 +380,4 @@ async function runWipe(msg, env) {
 }
 
 
-export { DAY_KEY, INVITE_INDEX, WIPED_KEY, UID_RE, USE_RE, countWrites, handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };
+export { DAY_KEY, INVITE_INDEX, WIPED_KEY, UID_RE, USE_RE, countWrites, resetDelay, handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };

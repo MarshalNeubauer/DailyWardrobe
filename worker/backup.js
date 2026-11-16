@@ -85,7 +85,9 @@ async function storedResponse(env, key, m, cors, lead, status = 200) {
 const SNAP_DAYS = 30, SNAP_MONTHS = 400, SNAP_DAY = /^\d{4}-\d{2}-\d{2}$/;
 /* oldPv: the version being replaced in its by-reference form, when it was stored with its photos inline (a backup converted at this
    save): its copies are kept small too, their photos already stored */
-async function keepSnapshots(env, m, body, ns = '', oldPv = null) {
+/* n: how many items the copied version holds (the app's backups list says it, W2-14-03); kept in the copy's metadata, no extra write */
+async function keepSnapshots(env, m, body, ns = '', oldPv = null, n = null) {
+  const cnt = Number.isInteger(n) ? { n } : {};
   // the app's own date, unless it is more than a day ahead of the server's (a phone clock a year ahead kept snap:2027-11, the audit's W1-9-07)
   const today = new Date().toISOString().slice(0, 10), near = SNAP_DAY.test(body.day || '') && Date.parse(body.day) - Date.parse(today) <= 864e5;
   const day = near ? body.day : today, month = day.slice(0, 7);
@@ -99,19 +101,19 @@ async function keepSnapshots(env, m, body, ns = '', oldPv = null) {
   if (body.reason === 'restore') todo.push([`${ns}snap:before-restore`, SNAP_DAYS]);
   // -> how many KV writes it made (a tester's are counted, countWrites)
   if (!todo.length) return 0;
-  if (oldPv && m && m.saved) { for (const [k, days] of todo) await env.WARDROBE.put(k, oldPv, { expirationTtl: days * 86400, metadata: pvMeta(m.rev, m.saved) }); return todo.length; }
+  if (oldPv && m && m.saved) { for (const [k, days] of todo) await env.WARDROBE.put(k, oldPv, { expirationTtl: days * 86400, metadata: { ...pvMeta(m.rev, m.saved), ...cnt } }); return todo.length; }
   if (isParted(m)) { if (!m.saved) return 0; for (const [k, days] of todo) await copyStored(env, ns + SYNC_KEY, k, m, { expirationTtl: days * 86400 }); return todo.length * (+m.parts || 1); }
   const cur = await env.WARDROBE.get(ns + SYNC_KEY);
   if (!cur || cur === SYNC_NONE) return 0;                       // nothing stored yet
   let meta = m;
   if (!meta) { try { const o = JSON.parse(cur); meta = { rev: o.rev, saved: o.saved }; } catch { return 0; } }
   if (!meta.saved) return 0;
-  for (const [k, days] of todo) await env.WARDROBE.put(k, cur, { expirationTtl: days * 86400, metadata: { rev: meta.rev, saved: meta.saved, ...(isPv(m) ? { pv: PV } : {}) } });
+  for (const [k, days] of todo) await env.WARDROBE.put(k, cur, { expirationTtl: days * 86400, metadata: { rev: meta.rev, saved: meta.saved, ...(isPv(m) ? { pv: PV } : {}), ...cnt } });
   return todo.length;
 }
 async function listSnapshots(env, ns = '') {
   const l = await env.WARDROBE.list({ prefix: `${ns}snap:` });
-  return (l.keys || []).filter(k => k.metadata && k.metadata.saved).map(k => ({ id: k.name.slice(ns.length + 5), saved: k.metadata.saved, rev: k.metadata.rev }))
+  return (l.keys || []).filter(k => k.metadata && k.metadata.saved).map(k => ({ id: k.name.slice(ns.length + 5), saved: k.metadata.saved, rev: k.metadata.rev, ...(Number.isInteger(k.metadata.n) ? { n: k.metadata.n } : {}) }))
     .sort((a, b) => b.saved - a.saved || b.id.localeCompare(a.id));   // same moment: the later date first
 }
 /* PUT /sync over PART_MAX: the body is never parsed whole (that took more memory than a Worker has). The app sends
@@ -477,7 +479,7 @@ async function syncLitePost(req, env, json, cors, who) {
   if (missing.length) return give(json({ error: 'missing photos', missing }, 400));
   const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow);
   if (w.short) { const x = await w.refuse(); return give(json(x.body, x.status)); }
-  await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv));
+  await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv, m ? arrOf(cur.items).length : null));
   const saved = Date.now();
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src.lite, next, rev + 1), next), meta: pvMeta(rev + 1, saved) }, m);
   return json({ rev: rev + 1, saved });
