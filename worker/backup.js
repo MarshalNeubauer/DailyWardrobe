@@ -1,7 +1,7 @@
 /* Daily Wardrobe worker: the backup: its version, large backups in parts, daily snapshots, the small sync (syncLite) and the write budget.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { PV, asText, isPv, loadAny, phKey, putWhole, pvMeta, pvResponse, pvText, refsOf, scanPhotos, storePhotos } from './photostore.js';
-import { countWrites, limitBody, sha256Hex, spend, spendUpTo, unspend, utcDay } from './people.js';
+import { WIPED_KEY, countWrites, limitBody, sha256Hex, spend, spendUpTo, unspend, utcDay } from './people.js';
 
 const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
 /* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
@@ -32,7 +32,7 @@ async function storedVersion(env, key) {
 /* ---- large backups. KV keeps at most 25 MiB in one value, so a backup over PART_MAX is stored in parts: the first under the
    key itself, whose metadata says {rev, saved, parts: n}, the others as <key>~<rev>~<i>. The parts are written before the key,
    and carry the rev, so a reader never mixes two versions. Each part is one KV write, so a 48 MB backup costs 3 writes a save
-   instead of 1 (and 2 deletes of the version before). Up to PART_MAX nothing changes: one value, as before. The stored text is the same either way: {"rev":…,"saved":…,"data":…}. ---- */
+   instead of 1 (and 2 deletes of the version before). Up to PART_MAX nothing changes: one value, as before. The stored text is the same either way: {"rev":â€¦,"saved":â€¦,"data":â€¦}. ---- */
 const BACKUP_MAX = 48 * 1024 * 1024, PART_MAX = 20 * 1024 * 1024;
 const partKey = (key, rev, i) => `${key}~${rev}~${i}`;
 const isParted = m => !!(m && Number.isInteger(m.parts) && m.parts > 1);
@@ -65,7 +65,7 @@ async function dropParts(env, key, old) {
   for (let i = 1; i < old.parts; i++) try { await env.WARDROBE.delete(partKey(key, old.rev, i)); } catch { }
 }
 /* a stored value as a response: passed through as stored (a parted one streamed), with lead in front of it instead of its
-   opening brace when given ({"error":"conflict", …}) */
+   opening brace when given ({"error":"conflict", â€¦}) */
 async function storedResponse(env, key, m, cors, lead, status = 200) {
   const headers = { ...cors, 'content-type': 'application/json' };
   if (isPv(m)) return pvResponse(env, key, m, cors, lead, status);   // photos by reference: rebuilt whole, as it always was sent
@@ -112,12 +112,12 @@ async function listSnapshots(env, ns = '') {
     .sort((a, b) => b.saved - a.saved || b.id.localeCompare(a.id));   // same moment: the later date first
 }
 /* PUT /sync over PART_MAX: the body is never parsed whole (that took more memory than a Worker has). The app sends
-   {"baseRev":n,"day":"…"[,"reason":"restore"],"data":…} with data last (sync.js), so the leading fields are read from the first
-   bytes, and what follows "data": up to the closing brace is stored as it came, behind {"rev":…,"saved":…,"data":. */
+   {"baseRev":n,"day":"â€¦"[,"reason":"restore"],"data":â€¦} with data last (sync.js), so the leading fields are read from the first
+   bytes, and what follows "data": up to the closing brace is stored as it came, behind {"rev":â€¦,"saved":â€¦,"data":. */
 const BIG_HEAD = /^\{"baseRev":(-?\d+),"day":("(?:[^"\\]|\\.)*")(?:,"reason":"(restore)")?,"data":/;
 async function putParted(env, json, cors, who, all) {
   const ns = who.ns, KEY = ns + SYNC_KEY, h = BIG_HEAD.exec(new TextDecoder().decode(all.subarray(0, 300)));
-  if (!h || all[all.length - 1] !== 0x7d) return json({ error: 'backup too large for this version of the app: update the app (Settings → About)' }, 413);
+  if (!h || all[all.length - 1] !== 0x7d) return json({ error: 'backup too large for this version of the app: update the app (Settings â†’ About)' }, 413);
   const body = { baseRev: +h[1], day: JSON.parse(h[2]), ...(h[3] ? { reason: h[3] } : {}) };
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;
   if (body.baseRev !== rev) return m ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', rev: 0, saved: 0, data: null }, 409);
@@ -141,7 +141,7 @@ async function putParted(env, json, cors, who, all) {
    rev that last changed it) and where each photo's JSON string lies in the data that follows (ph: hash -> [offset, length], characters
    from data's first). The metadata says where the index is (ls, ll; it is written in ASCII, so characters are bytes) and where data
    starts (ds). A newer app asks GET /sync?lite=1&since=<rev>:<saved> for the records changed since that version, without photos, gets
-   the photos it lacks from GET /sync?ph=<hash>,…, and sends only what changed with POST /sync {baseRev, day, reason?, delta, photos}
+   the photos it lacks from GET /sync?ph=<hash>,â€¦, and sends only what changed with POST /sync {baseRev, day, reason?, delta, photos}
    (an older worker answers POST 405, so it is never sent one). The worker builds the new backup from the index, the stored photos'
    text and the new photos, without parsing the photos: one KV write a save, as before. ---- */
 /* (2026-11-15, the owner's option A for KV writes) PH_MIN was 256: every data string, the 128 px swatch too, became its own ph: value, a
@@ -181,35 +181,128 @@ function nextRevs(prev, data, rev) {
   const st = data && data.settings, ps = pd.settings ? pd.settings.updated || 0 : null;
   return { i, d, s: st && (st.updated || 0) === ps && pr.s != null ? pr.s : rev };
 }
-/* core.js mergeState and stateSig, for the worker: the newer stamp wins, a deletion wins over any older edit, ties keep a's */
+/* core.js mergeItem, for the worker (fix round 3, 2026-11-16): an item field by field by its field stamps (fs = {u, b, s}: the stamp of
+   each field changed after b; a copy whose fs.u isn't its stamp counts its one stamp for every field), the result one above both when it
+   took anything from the copy with the older stamp; a deletion wins over a copy whose oldest field is no newer than it (itemBase) */
+const ITEM_META = ['id', 'added', 'updated', 'fs'];
+const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+const fsOk = i => !!(i && i.fs && typeof i.fs === 'object' && i.fs.u === stampOf(i) && i.fs.s && typeof i.fs.s === 'object');
+const fieldStamp = (i, k) => fsOk(i) ? (own(i.fs.s, k) ? +i.fs.s[k] || 0 : +i.fs.b || 0) : stampOf(i);
+const itemBase = i => fsOk(i) ? +i.fs.b || 0 : stampOf(i);
+const sameVal = (x, y) => x === y || (x != null && y != null && typeof x === 'object' && typeof y === 'object' && JSON.stringify(x) === JSON.stringify(y));
+const fsPack = (u, s) => { const v = Object.values(s), b = v.length ? Math.min(...v) : u, o = {}; for (const [k, t] of Object.entries(s)) if (t > b) o[k] = t; return { u, b, s: o }; };
+function mergeItemLite(a, b) {
+  const ua = stampOf(a), ub = stampOf(b), hi = ua >= ub ? a : b;
+  if (a === b || (!fsOk(a) && !fsOk(b))) return hi;
+  const out = {}, s = {}; let mixed = false;
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b), ...(fsOk(a) ? Object.keys(a.fs.s) : []), ...(fsOk(b) ? Object.keys(b.fs.s) : [])])) {
+    if (ITEM_META.includes(k)) continue;
+    const sa = fieldStamp(a, k), sb = fieldStamp(b, k), w = sa === sb ? hi : sa > sb ? a : b;
+    if (w !== hi && !sameVal(w[k], hi[k])) mixed = true;
+    if (w[k] !== undefined) out[k] = w[k]; s[k] = Math.max(sa, sb);
+  }
+  if (!mixed) return hi;
+  const u = Math.max(ua, ub) + 1, added = hi.added ?? (hi === a ? b : a).added;
+  return { id: hi.id, ...(added != null ? { added } : {}), ...out, updated: u, fs: fsPack(u, s) };
+}
+/* core.js dayWins and mergeDay, for the worker (fix round 3): a day field by field, the picks, skips, pieces taken off and recorded slot by
+   slot; a copy without fs counts its one stamp for every field, except the week's lock (lockOnly: its other fields are its base) */
+const dayWins = (o, n) => !o || o === n || !n.lockOnly ? n : ((o.lockOnly ? o.base : o.updated) || 0) > (n.base || 0) ? o : n;
+const DAY_META = ['date', 'updated', 'fs', 'lockOnly', 'base', 'lockAt'], DAY_SUB = ['force', 'skip', 'off', 'ids'];
+function dayFlat(d) {
+  const o = {};
+  for (const k of Object.keys(d || {})) { if (DAY_META.includes(k)) continue; const v = d[k]; if (DAY_SUB.includes(k) && v && typeof v === 'object' && !Array.isArray(v)) { for (const s of Object.keys(v)) o[k + '.' + s] = v[s]; } else o[k] = v; }
+  return o;
+}
+function dayUnflat(o) {
+  const r = {};
+  for (const [k, v] of Object.entries(o)) { const i = k.indexOf('.'), g = i > 0 ? k.slice(0, i) : ''; if (g && DAY_SUB.includes(g)) { if (!r[g] || typeof r[g] !== 'object') r[g] = {}; r[g][k.slice(i + 1)] = v; } else if (!(k in r)) r[k] = v; }
+  return r;
+}
+const dayStamp = (d, k) => fsOk(d) ? fieldStamp(d, k) : d.lockOnly ? (k === 'lock' ? stampOf(d) : +d.base || 0) : stampOf(d);
+function mergeDayLite(a, b) {
+  if (a === b) return a; const ua = a.updated || 0, ub = b.updated || 0;
+  if (!fsOk(a) && !fsOk(b)) return ub > ua ? dayWins(a, b) : dayWins(b, a);
+  const hi = ua >= ub ? a : b, fa = dayFlat(a), fb = dayFlat(b), fh = hi === a ? fa : fb, out = {}, s = {}; let mixed = false, lockW = null;
+  for (const k of new Set([...Object.keys(fa), ...Object.keys(fb), ...(fsOk(a) ? Object.keys(a.fs.s) : []), ...(fsOk(b) ? Object.keys(b.fs.s) : [])])) {
+    const sa = dayStamp(a, k), sb = dayStamp(b, k); let w = sa === sb ? hi : sa > sb ? a : b;
+    if (k === 'lock') { const o = w === a ? b : a; if (w.lockOnly && dayWins(o, w) === o) w = o; lockW = w; }
+    const fw = w === a ? fa : fb; if (w !== hi && !sameVal(fw[k], fh[k])) mixed = true;
+    if (fw[k] !== undefined) out[k] = fw[k]; s[k] = Math.max(sa, sb);
+  }
+  if (!mixed) return hi;
+  const u = Math.max(ua, ub) + 1, r = { date: hi.date, ...dayUnflat(out), updated: u };
+  if (r.lock && lockW && lockW.lockAt != null) r.lockAt = lockW.lockAt; r.fs = fsPack(u, s); return r;
+}
+/* core.js mergeState and stateSig, for the worker: each item field by field (mergeItemLite), a deletion wins over any older edit, ties keep a's */
 function mergeLite(a, b) {
   a = a || {}; b = b || {}; const items = {}, tomb = { ...(a.tombstones || {}) };
   for (const [id, t] of Object.entries(b.tombstones || {})) tomb[id] = Math.max(tomb[id] || 0, +t || 0);
-  for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; if (!cur || stampOf(it) > stampOf(cur)) items[it.id] = it; }
-  for (const id of Object.keys(items)) if (tomb[id] && tomb[id] >= stampOf(items[id])) delete items[id];
+  for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; items[it.id] = cur ? mergeItemLite(cur, it) : it; }
+  for (const id of Object.keys(items)) if (tomb[id] && tomb[id] >= itemBase(items[id])) delete items[id];
   const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
   // (a newer copy that is only the app's lock of the week loses to an older copy changed after the version the lock was built on:
   // core.js dayWins, 2026-11-14)
-  const dayWins = (o, n) => !o || o === n || !n.lockOnly ? n : ((o.lockOnly ? o.base : o.updated) || 0) > (n.base || 0) ? o : n;
-  const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; days[d.date] = !cur || (d.updated || 0) > (cur.updated || 0) ? dayWins(cur, d) : dayWins(d, cur); }
+  const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; days[d.date] = cur ? mergeDayLite(cur, d) : d; }
   const settings = a.settings && b.settings ? mergeSettingsLite(a.settings, b.settings) : (a.settings || b.settings || null);
   return { items: Object.values(items), tombstones: tomb, days: Object.values(days), settings };
 }
 /* core.js mergeSettings, for the worker (2026-11-14): setting by setting by each one's stamp (settings.ks; a copy without it counts its
    one stamp for all), the result one above both when it took anything from the copy with the older overall stamp */
-const SET_META = ['updated', 'ks', 'kh'];
+const SET_META = ['updated', 'ks', 'kh', 'kse', 'khe'];
 const setHashLite = v => { const s = JSON.stringify(v === undefined ? null : v); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
 const setKeysLite = s => Object.keys(s || {}).filter(k => !SET_META.includes(k));
 const setStampLite = (s, k) => s.ks ? (+s.ks[k] || 0) : (s.updated || 0);
+/* core.js SET_SPLIT, setEntries, setJoin, subOk, subStampOf and mergeSplit (fix round 3): own colors and patterns, Care, the dress code,
+   workdays, blazer days, hidden ideas and own days off merged entry by entry by their entry stamps (settings.kse / khe) */
+const SET_SPLIT = { custom: 'custom', care: 'obj', dress: 'obj', workdays: 'set', blazerDays: 'set', shopSkip: 'set', daysOff: 'list' };
+function setEntriesLite(k, v) {
+  const t = SET_SPLIT[k], m = new Map(); if (v == null) return m;
+  if (t === 'obj') { if (typeof v !== 'object' || Array.isArray(v)) return null; for (const e of Object.keys(v)) m.set(e, v[e]); }
+  else if (t === 'set') { if (!Array.isArray(v)) return null; for (const x of v) if (x != null && typeof x !== 'object') m.set(String(x), x); else return null; }
+  else if (t === 'list') { if (!Array.isArray(v)) return null; for (const x of v) { if (!x || typeof x !== 'object' || !x.d) return null; m.set(String(x.d), x); } }
+  else if (t === 'custom') {
+    if (typeof v !== 'object' || Array.isArray(v)) return null;
+    for (const g of Object.keys(v)) { const l = v[g]; if (g !== 'colors' && g !== 'patterns') { m.set('@' + g, l); continue; } if (!Array.isArray(l)) return null; for (const x of l) { if (!x || typeof x !== 'object' || !x.key) return null; m.set(g + '/' + x.key, x); } }
+  } else return null;
+  return m;
+}
+function setJoinLite(k, m) {
+  const t = SET_SPLIT[k], v = [...m.values()];
+  if (t === 'obj') return Object.fromEntries(m);
+  if (t === 'set') return v.every(x => typeof x === 'number') ? v.sort((a, b) => a - b) : v.sort();
+  if (t === 'list') return v.sort((a, b) => String(a.d) < String(b.d) ? -1 : String(a.d) > String(b.d) ? 1 : 0);
+  const o = { colors: [], patterns: [] }; for (const [e, x] of m) { if (e[0] === '@') o[e.slice(1)] = x; else o[e.slice(0, e.indexOf('/'))].push(x); } return o;
+}
+const subOkLite = (s, k) => !!(s && s.kse && s.kse[k] && s.khe && s.khe[k] && s.khe[k]['#'] === setHashLite(s[k]));
+const subStampLite = (s, k, e) => subOkLite(s, k) ? (own(s.kse[k], e) ? +s.kse[k][e] || 0 : +s.kse[k][''] || 0) : setStampLite(s, k);
+function mergeSplitLite(a, b, k, hi) {
+  const ma = setEntriesLite(k, a[k]), mb = setEntriesLite(k, b[k]); if (!ma || !mb) return null;
+  const mh = hi === a ? ma : mb, lo = hi === a ? b : a, ml = hi === a ? mb : ma, m = new Map(), se = {}, he = {}; let mixed = false;
+  const keys = new Set([...mh.keys(), ...ml.keys(), ...Object.keys(subOkLite(a, k) ? a.khe[k] : {}), ...Object.keys(subOkLite(b, k) ? b.khe[k] : {})]); keys.delete('#'); keys.delete('');
+  for (const e of keys) {
+    const xh = subStampLite(hi, k, e), xl = subStampLite(lo, k, e), mw = xl > xh ? ml : mh;
+    if (mw !== mh && (mw.has(e) !== mh.has(e) || (mw.has(e) && setHashLite(mw.get(e)) !== setHashLite(mh.get(e))))) mixed = true;
+    if (mw.has(e)) { m.set(e, mw.get(e)); he[e] = setHashLite(mw.get(e)); } else he[e] = '-';
+    se[e] = Math.max(xh, xl);
+  }
+  const v = mixed ? setJoinLite(k, m) : hi[k], st = Object.values(se), base = st.length ? Math.min(...st) : Math.max(setStampLite(a, k), setStampLite(b, k)), cs = { '': base };
+  for (const [e, x] of Object.entries(se)) if (x > base) cs[e] = x;
+  return { v, mixed, se: cs, he: { ...he, '#': setHashLite(v) } };
+}
 function mergeSettingsLite(a, b) {
   const ua = a.updated || 0, ub = b.updated || 0, hi = ua >= ub ? a : b; if (!a.ks && !b.ks) return hi;
-  const out = {}, ks = {}, kh = {}; let mixed = false;
+  const out = {}, ks = {}, kh = {}, kse = {}, khe = {}; let mixed = false;
   for (const k of new Set([...setKeysLite(a), ...setKeysLite(b), ...Object.keys(a.ks || {}), ...Object.keys(b.ks || {})])) {
-    const sa = setStampLite(a, k), sb = setStampLite(b, k), w = sa === sb ? hi : sa > sb ? a : b;
+    const sa = setStampLite(a, k), sb = setStampLite(b, k);
+    const r = SET_SPLIT[k] && (subOkLite(a, k) || subOkLite(b, k)) && setHashLite(a[k]) !== setHashLite(b[k]) ? mergeSplitLite(a, b, k, hi) : null;
+    if (r) { if (r.mixed) mixed = true; if (r.v !== undefined) out[k] = r.v; ks[k] = Math.max(sa, sb); kh[k] = r.v === undefined ? '-' : setHashLite(r.v); kse[k] = r.se; khe[k] = r.he; continue; }
+    const w = sa === sb ? hi : sa > sb ? a : b;
     if (w !== hi && setHashLite(w[k]) !== setHashLite(hi[k])) mixed = true;
     if (k in w) out[k] = w[k]; ks[k] = Math.max(sa, sb); kh[k] = (w.kh && w.kh[k]) || setHashLite(w[k]);
+    if (SET_SPLIT[k] && subOkLite(w, k)) { kse[k] = w.kse[k]; khe[k] = w.khe[k]; }
   }
-  out.ks = ks; out.kh = kh; out.updated = mixed ? Math.max(ua, ub) + 1 : Math.max(ua, ub);
+  out.ks = ks; out.kh = kh; if (Object.keys(kse).length) { out.kse = kse; out.khe = khe; } out.updated = mixed ? Math.max(ua, ub) + 1 : Math.max(ua, ub);
   return mixed ? out : (hi.ks ? hi : Object.assign(out, { updated: hi.updated || 0 }));
 }
 function liteSig(s) {
@@ -286,9 +379,12 @@ async function syncLiteGet(env, json, cors, ns, q) {
     idx: { i: Object.fromEntries(arrOf(D.items).map(i => [i.id, stampOf(i)])), d: Object.fromEntries(arrOf(D.days).map(d => [d.date, d.updated || 0])), s: D.settings ? D.settings.updated || 0 : -1 },
     ph: Object.keys(src.lite.ph || {}) };
   if (D.settings && newer(R.s)) body.settings = D.settings;
+  // the owner's data deleted with "Delete everything" (people.js handleAccount keeps when): his other phones don't put it back unasked
+  // (fix round 3, W1-6-01). One read, only for the owner and only when the app isn't already up to date
+  if (!ns) { const w = await env.WARDROBE.get(WIPED_KEY, 'json').catch(() => null); if (w && +w.at > 0) body.wiped = +w.at; }
   return json(body);
 }
-/* GET /sync?ph=<hash>,<hash>,… (60 at most): {photos: {hash: photo}} for those the backup holds, cut from its text unparsed */
+/* GET /sync?ph=<hash>,<hash>,â€¦ (60 at most): {photos: {hash: photo}} for those the backup holds, cut from its text unparsed */
 async function syncPhotos(env, json, cors, ns, q) {
   const hs = [...new Set((q.get('ph') || '').split(','))].filter(h => PH_HEX.test(h)).slice(0, 60);
   if (!hs.length) return json({ error: 'no photos asked for' }, 400);
@@ -357,10 +453,10 @@ function writeBudget(env, who) {
   w.refuse = async () => {
     await unspend(env, who, 'write', utcDay(), w.got - w.used);
     if (w.short.status !== 429) return w.short;
-    const message = `Today’s room on the server for your backups is used up (${w.used} of ${w.need} new photos are saved). Your changes are kept on this phone and backed up tomorrow.`;
+    const message = `Todayâ€™s room on the server for your backups is used up (${w.used} of ${w.need} new photos are saved). Your changes are kept on this phone and backed up tomorrow.`;
     return { status: 429, body: { error: 'limit', what: 'backup', write: true, ...(w.short.body.all ? { all: true } : {}), message, detail: message } };
   };
   return w;
 }
 
-export { BACKUP_MAX, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };
+export { BACKUP_MAX, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, mergeLite, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };

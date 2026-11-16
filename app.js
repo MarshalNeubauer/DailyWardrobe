@@ -60,7 +60,9 @@ const stillCur=it=>items.find(x=>x.id===it.id)===it;
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
 const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
 const put=i=>{i.updated=Date.now();if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
-const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
+// the fields changed since the stored copy get the edit's stamp, in the same transaction (core.js itemFields: two phones' changes to
+// different fields of one piece both stay, fix round 3)
+const r=atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
 const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
 
 
