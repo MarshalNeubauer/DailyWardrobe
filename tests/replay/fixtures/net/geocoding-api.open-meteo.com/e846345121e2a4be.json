@@ -1,0 +1,7 @@
+{
+ "url": "https://geocoding-api.open-meteo.com/v1/get?language=en&id=12120076",
+ "status": 200,
+ "type": "application/json; charset=utf-8",
+ "body": "{\"id\":12120076,\"name\":\"Al Kuwayt\",\"latitude\":15.35914,\"longitude\":44.19671,\"elevation\":2257.0,\"feature_code\":\"PPLX\",\"country_code\":\"YE\",\"admin1_id\":6940571,\"timezone\":\"Asia/Aden\",\"country_id\":69543,\"country\":\"Yemen\",\"admin1\":\"Amanat Alasimah\"}",
+ "recorded": "2026-11-16"
+}

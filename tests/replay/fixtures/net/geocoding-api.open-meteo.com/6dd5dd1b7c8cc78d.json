@@ -1,0 +1,7 @@
+{
+ "url": "https://geocoding-api.open-meteo.com/v1/get?language=en&id=285570",
+ "status": 200,
+ "type": "application/json; charset=utf-8",
+ "body": "{\"id\":285570,\"name\":\"Kuwait\",\"latitude\":29.5,\"longitude\":47.75,\"elevation\":79.0,\"feature_code\":\"PCLI\",\"country_code\":\"KW\",\"timezone\":\"Asia/Kuwait\",\"population\":4865298,\"country_id\":285570,\"country\":\"Kuwait\"}",
+ "recorded": "2026-11-16"
+}
