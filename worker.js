@@ -20,7 +20,7 @@
 // Pattern lists must stay in sync with PATS_BY in core.js.
 // The routes live in worker/*.js (ES modules; Wrangler bundles them on deploy). This file is the entry: the route table, serve,
 // CORS and the Worker's handlers (fetch, queue, scheduled). Split into modules on 2026-11-14.
-import { FREE_EXTRA, FREE_PAT_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, wbOf } from './worker/tag.js';
+import { FREE_EXTRA, FREE_PAT_EXTRA, MATERIAL_EXTRA, SINGLE_EXTRA, TAG_INTRO, TAG_RULES, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, wbOf } from './worker/tag.js';
 import { handlePattern } from './worker/pattern.js';
 import { handleDescribe } from './worker/describe.js';
 import { handleFetchImage, readCapped } from './worker/links.js';
@@ -29,7 +29,7 @@ import { noteKvFull } from './worker/items.js';
 import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
-import { handleAccount, handleFeedback, handleInvites, handleMe, plainFor, resetDelay, runWipe, spend, unspend, whoIs } from './worker/people.js';
+import { handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, plainFor, resetDelay, runWipe, spend, unspend, whoIs } from './worker/people.js';
 import { handlePush, sendReminders } from './worker/remind.js';
 export { RenderHub } from './worker/render.js';   // the Durable Object class must be exported by the entry (it counts testers' days)
 
@@ -58,6 +58,8 @@ const ROUTES = {
   'GET /push': [handlePush, UNSET],
   'POST /push': [handlePush, UNSET],
   'POST /feedback': [handleFeedback, UNSET],
+  'GET /errors': [handleErrors, UNSET],
+  'POST /errors': [handleErrors, UNSET],
   'DELETE /account': [handleAccount, UNSET],
 };
 
@@ -70,7 +72,7 @@ async function serve(req, env, cors, allowed, origin) {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
   const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
-  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
+  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}), ...(a.replaced ? { replaced: true } : {}) }, a.status);   // (replaced: a link the owner made anew, people.js)
   const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
   if (route) {
     const a = await whoIs(env, req.headers.get('x-app-token') || '');
@@ -98,7 +100,9 @@ async function serve(req, env, cors, allowed, origin) {
   // The model wants the image as a data URI inside the user message.
   let image = String(body.image || '');
   if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
-  if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
+  // the whole string a picture before anything is spent (fix round 3, W2-13-07: "javascript:alert(1)" became a Claude call)
+  if (!/^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[A-Za-z0-9+/=]+$/.test(image)) return json({ error: 'no image', message: 'That photo couldn’t be read. Try another photo.' }, 400);
+  if (body.closeup != null && body.closeup !== '' && !/^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[A-Za-z0-9+/=]+$/.test(String(body.closeup))) return json({ error: 'no image', message: 'That close-up couldn’t be read. Try another photo.' }, 400);
 
   if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
@@ -108,15 +112,16 @@ async function serve(req, env, cors, allowed, origin) {
     const freePat = body.freePattern === true, free = body.freeColors === true && !freePat;
     // fixed (cached): the rules and the single-item extras; the owner's own (cached next): colours, patterns, corrections; per call:
     // the picker's extras and the measurement
-    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA,
+    // the plain single tag also suggests the material (its rules cached with the others: MATERIAL_EXTRA); the picker's calls don't
+    const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA + (free || freePat ? '' : MATERIAL_EXTRA),
       owner: customText(custom) + correctionsText(body.corrections), text: (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured),
       closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 12000, signal: req.signal });
-    if (c.status === 200) c.body = cleanTag(c.body); else await unspend(env, who, 'tag');
+    if (c.status === 200) c.body = cleanTag(c.body, { closeup: !!cm }); else await unspend(env, who, 'tag');
     return json(c.body, c.status);
   }
   // Workers AI: any answer that is not a tag gives the tester's count back
   const r = await tagWithWorkersAi(env, image);
-  if (r.status !== 200) await unspend(env, who, 'tag');
+  if (r.status !== 200) await unspend(env, who, 'tag'); else r.body = cleanTag(r.body);   // (cleaned as Claude's answer is: W2-13-05)
   return json(r.body, r.status);
 }
 
@@ -130,6 +135,8 @@ function corsFor(req, env) {
     'Access-Control-Allow-Headers': 'content-type,x-app-token',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'Access-Control-Max-Age': '7200',
+    // the server's time on every answer (fix round 3): the app learns its clock's gap from it and stamps by the right time (sync.js clockLearn)
+    'x-now': String(Date.now()), 'Access-Control-Expose-Headers': 'x-now',
     ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
   } };
 }

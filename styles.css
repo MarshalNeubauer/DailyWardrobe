@@ -448,6 +448,8 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .pausetag{display:table;margin:6px 0 0;padding:2px 8px;border-radius:99px;font-size:.6875rem;font-weight:600;background:color-mix(in srgb,var(--mut) 22%,transparent);color:var(--ink)}
 .rotbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .rotnote{margin:4px 0 0}
+/* the open piece was deleted on another phone (itemsheet.js itemSynced) */
+.ivgone{margin:0 0 12px;padding:10px 12px;border:1px solid var(--danger);border-radius:12px;color:var(--ink);background:var(--card);font-size:.875rem}
 /* Add card: bought, on the way (and an optional arrival date) */
 .ordrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 4px}.ordrow .rotbtn{margin:0}
 .ordate,.card .ordate{display:flex;align-items:center;justify-content:flex-start;gap:8px;margin:0}.ordate input{padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
@@ -568,13 +570,20 @@ html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* 
 .ivsec .shelp{margin:0 0 10px}.ivsec .btns{margin:0}
 .ivtags .shaderow{margin:2px 0 6px}
 .ivpat{margin:8px 0 0;padding:12px 0 0;border-top:1px solid var(--line)}
-.ivph{margin:12px 0 0}.ivph .ivphbtn{width:100%;gap:8px}.ivphbtn .ivchev{width:18px;height:18px;transition:transform .3s cubic-bezier(.2,.8,.2,1)}.ivph.open .ivphbtn .ivchev{transform:rotate(180deg)}
-.ivphp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}.ivph.open .ivphp{grid-template-rows:1fr}
-.ivphp>div{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .3s}.ivph.open .ivphp>div{visibility:visible;transition-delay:0s}
-.ivphp .phtools{padding-top:8px}
-@media (prefers-reduced-motion:reduce){.ivphp,.ivphbtn .ivchev{transition:none}}
-#item-view .phtools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}#item-view .phtools :is(button,.btn){padding:0 8px;cursor:pointer}
-#item-view .phtools>:last-child:nth-child(odd){grid-column:1/-1}
+/* the photo tools under the pictures (itemsheet.js photoTools; edit-photos-mockups option B, 2026-11-15): one row of icon-and-label
+   buttons, 58px tall, as many columns as buttons (Replace · Rotate · Crop · Close-up); a label wraps rather than overflows at large text */
+#item-view .phtools{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin:12px 0 0}
+#item-view .phtools .ptbtn{position:relative;flex-direction:column;gap:3px;min-height:3.625rem;padding:6px 4px;font-size:.8125rem;line-height:1.15;cursor:pointer;box-sizing:border-box}
+#item-view .ptbtn svg{flex:none;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#item-view .ptbtn span{max-width:100%;overflow-wrap:anywhere}
+#item-view .ptmore{display:flex;justify-content:flex-end;margin:4px 0 0}
+#item-view .ptmore .ptrm{border-color:transparent;background:none;color:var(--danger);font-size:.875rem;padding:0 8px}
+#item-view .ptmore+.card.ivct{margin-top:4px}
+/* "Color & texture" (option B): the paper line, "True color in 3 steps" above Read color and texture, its cost, the reading's done card */
+#item-view .ivct .wbst{margin:0 0 10px;background:var(--bg)}
+#item-view .ivct .wbsteps{margin:0 0 10px}
+#item-view .ivct .wbstcard{background:var(--bg)}   /* set off from the card they sit in */
+#item-view .ivct .ivrd{margin:0}
 .ivrot .rotbtn{flex:1}.ivrot .ordrow{margin:0 0 10px}.ivrot .ordrow .shelp{flex-basis:100%;margin:0}
 .ivdel{margin:22px 0 0;display:flex}.ivdel button{flex:1}
 .ivbar{flex:none;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card);touch-action:none}
@@ -910,6 +919,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 .acct-inv{padding:10px 0;border-top:1px solid var(--line)}
 .acct-inv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}.acct-inv-top b{font-size:.9375rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct-inv.off b{color:var(--mut)}
+.acct-btns{display:flex;gap:8px;flex:none}   /* New link and Revoke (account.js) */
 .acct-tag{flex:none;font-size:.75rem;font-weight:600;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
 /* ---- ui ---- */
 /* the accent as text: a darker gold on the light theme (4.5:1 on --bg and --card); fills and the dark theme keep --acc */
@@ -963,7 +973,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 /* the owner's tools: only for the owner; a tester never sees the server address and code; not connected, the parts that need the
    server are hidden and one line at the top of their section says what connecting turns on (.conn-off-note) */
 body:not(.owner) #adv-photos{display:none}
-body.tester #adv-connection{display:none}
+body.tester:not(.srv-open) #adv-connection{display:none}   /* a tester's phone that was the owner's shows it after "I run the server" (ui.js renderConnUI, W1-7-02) */
 body.nocon:not(.srv-open) #adv-connection{display:none}   /* not connected: only after "I run the server" (ui.js connOwn) */
 body.nocon .conn-only,.connhide{display:none!important}
 .conn-off-note:empty{display:none}
@@ -1027,6 +1037,12 @@ body.nocon .conn-only,.connhide{display:none!important}
 #col-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1200;display:none}#col-backdrop.on{display:block}
 #col-sheet{position:fixed;left:0;right:0;bottom:0;z-index:1201;background:var(--card);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;max-height:92vh;overflow:auto;padding:0 14px;box-shadow:0 -10px 30px rgba(0,0,0,.35);transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);visibility:hidden;max-width:640px;margin:0 auto;overscroll-behavior:contain}
 #col-sheet.on{transform:none;visibility:visible}
+/* swiping the sheets down (sheetSwipe, colpick.js): the grabber; their top below the status bar (--ivtop, as the item sheet's); while one
+   slides away after the swipe it stays drawn but takes no taps */
+.cpgrab{display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px;cursor:grab}
+#col-sheet.on,#rd-sheet.on{max-height:min(92vh,calc(100vh - var(--ivtop)))}
+:is(#col-sheet,#rd-sheet).cpgoing{visibility:visible;pointer-events:none}
+:is(#col-backdrop,#rd-backdrop).cpgoing{display:block;pointer-events:none}
 @media(prefers-reduced-motion:reduce){#col-sheet{transition:none}}
 .cptop{position:sticky;top:0;z-index:2;background:var(--card);padding:10px 0 10px;border-bottom:1px solid var(--line)}
 .cpcmp{display:grid;grid-template-columns:1fr 1fr;margin:4px 0 0}
@@ -1163,7 +1179,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cnwarm{display:flex;gap:8px;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--acc) 15%,transparent);font-size:0.8125rem;line-height:1.4;color:var(--ink)}
 .cnwarm .wbretake{display:inline-block;margin-top:4px}
 /* ---- "Read color and texture from close-up" (colpick.js rd*; closeup-reading-mockups variant A, 2026-11-15) ---- */
-/* the editor's button under Edit photos: the same full-width page button (the design system's), its label only */
+/* the editor's button in the Color & texture card: the same full-width page button (the design system's), its label only */
 .ivrd{margin:8px 0 0}.ivrd .ivrdbtn{width:100%;gap:8px}
 .ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]{opacity:.55}
 .rdcost{display:block;margin:6px 2px 0;font-size:0.75rem;line-height:1.35;color:var(--mut);text-align:center}

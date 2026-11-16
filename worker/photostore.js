@@ -2,6 +2,7 @@
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { BACKUP_MAX, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget } from './backup.js';
 import { INVITE_INDEX, UID_RE, countWrites, spend, unspend } from './people.js';
+import { picBytesOk, recCheck } from './records.js';
 
 /* ---- photos stored once (2026-11-13). The backup's photos (99% of it) are kept apart, each once, under <ns>ph:<hash> (hash = phHash,
    the value the photo's JSON string, metadata {t: when written}), and the backup itself is {"rev","saved","pv":1,"revs","data"} with
@@ -254,6 +255,9 @@ async function handleSync(req, env, json, cors, who) {
 /* an older app's whole backup (PUT /sync {baseRev, day, reason?, data}), its photos inline: stored by reference like any other save.
    pre: photos already cut out of the body (putParted), hash -> a function giving the photo's JSON string as bytes */
 async function putWhole(env, json, cors, who, body, pre = new Map()) {
+  // records and photos of the app's shape only (records.js; fix round 3, W2-13-02): refused, with the backup count given back
+  const wrong = recCheck(body && body.data) || ([...pre.values()].some(f => !picBytesOk(f())) ? { error: 'bad photo', message: 'The backup was not saved: a photo in it is not a picture.' } : null);
+  if (wrong) { await unspend(env, who, 'backup'); const r = json(wrong, 400); r.refunded = true; return r; }
   const ns = who.ns, KEY = ns + SYNC_KEY, none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env, ns);
   const rev = m ? m.rev : ((await env.WARDROBE.get(KEY, 'json')) || none).rev;
   if ((body.baseRev ?? -1) !== rev) {

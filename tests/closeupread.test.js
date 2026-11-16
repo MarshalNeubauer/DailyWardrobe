@@ -1,6 +1,6 @@
 // "Read color and texture from close-up" (colpick.js rd*; closeup-reading-mockups variant A with the owner's changes, 2026-11-15), on
-// a touch screen in Chromium and WebKit with the worker stubbed (no paid call): the editor's button under Edit photos looks like it
-// (same height, radius, background, full width) and is labeled; with no close-up the close-up chooser comes first, then the reading;
+// a touch screen in Chromium and WebKit with the worker stubbed (no paid call): the editor's button in the Color & texture card, under
+// "True color in 3 steps", is the page's button (height, radius, background, the card's width) and is labeled; with no close-up the close-up chooser comes first, then the reading;
 // the request is what:'both' with the close-up and wb and no words; the result sheet shows the color and the pattern card; Use color,
 // Keep, Use both and Undo (the card on the page and the toast) change exactly what they say; ΔE00 ≤ 3 puts "That's your X" first;
 // the warm-light note with Retake; a tester sees "2 lookups · N of 40 left today" and can't start with 1 left; one half failing
@@ -45,14 +45,14 @@ async function run(eng,browser,{ok,url,settle}){
   const closed=async()=>{await p.waitForFunction(()=>!document.querySelector('#rd-sheet.on'));await settle(p,300)};
   const toast=()=>p.evaluate(()=>(document.querySelector('#toast')||{}).textContent||'');
   let e;
-  // ---- the editor: the button under Edit photos, styled like it
+  // ---- the editor: the button in the Color & texture card (Edit photos option B), right under the 3 steps, a page button like Duplicate
   await p.evaluate(()=>openItem('m1'));await settle(p,400);
-  e=await p.evaluate(()=>{const a=document.querySelector('#ivph .ivphbtn'),b=document.querySelector('#iv-read'),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),ca=getComputedStyle(a),cb=getComputedStyle(b);
-    return {label:b.textContent,icon:!!b.querySelector('svg,img,i'),h:[Math.round(ra.height),Math.round(rb.height)],w:[Math.round(ra.width),Math.round(rb.width)],r:[ca.borderRadius,cb.borderRadius],bg:[ca.backgroundColor,cb.backgroundColor],
-      border:[ca.borderTopColor,cb.borderTopColor],font:[ca.fontSize,cb.fontSize,ca.fontWeight,cb.fontWeight],gap:Math.round(rb.top-ra.bottom),left:[Math.round(ra.left),Math.round(rb.left)],cost:(document.querySelector('.ivrd .rdcost')||{}).textContent}});
+  e=await p.evaluate(()=>{const a=document.querySelector('#iv-dup'),b=document.querySelector('#iv-read'),st=document.querySelector('#ivct .wbsteps'),cd=document.querySelector('#ivct'),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),rs=st.getBoundingClientRect(),rc=cd.getBoundingClientRect(),ca=getComputedStyle(a),cb=getComputedStyle(b);
+    return {label:b.textContent,icon:!!b.querySelector('svg,img,i'),h:[Math.round(ra.height),Math.round(rb.height)],r:[ca.borderRadius,cb.borderRadius],bg:[ca.backgroundColor,cb.backgroundColor],
+      border:[ca.borderTopColor,cb.borderTopColor],font:[ca.fontSize,cb.fontSize,ca.fontWeight,cb.fontWeight],gap:Math.round(rb.top-rs.bottom),full:Math.round(rc.width-rb.width),cost:(document.querySelector('.ivrd .rdcost')||{}).textContent}});
   ok(e.label==='Read color and texture from close-up'&&!e.icon,T+`the editor's button is labeled "${e.label}", with no icon`);
-  ok(e.h[0]===e.h[1]&&e.h[1]>=44&&e.w[0]===e.w[1]&&e.r[0]===e.r[1]&&e.bg[0]===e.bg[1]&&e.border[0]===e.border[1]&&e.font[0]===e.font[1]&&e.font[2]===e.font[3]&&e.left[0]===e.left[1],T+`it looks exactly like Edit photos: height, width, radius, background, border, font (${JSON.stringify(e)})`);
-  ok(e.gap>=0&&e.gap<=16,T+`it sits directly under Edit photos (${e.gap} px below)`);
+  ok(e.h[0]===e.h[1]&&e.h[1]>=44&&e.r[0]===e.r[1]&&e.bg[0]===e.bg[1]&&e.border[0]===e.border[1]&&e.font[0]===e.font[1]&&e.font[2]===e.font[3]&&e.full>=20&&e.full<=40,T+`it is the page's button: height, radius, background, border, font as Duplicate, the card's full width (${JSON.stringify(e)})`);
+  ok(e.gap>=0&&e.gap<=16,T+`it sits directly under "True color in 3 steps" (${e.gap} px below)`);
   ok(/^About \d+¢$/.test(e.cost),T+`the owner sees the cents under it (${e.cost})`);
   // ---- a tap with a close-up: the reading, then both cards; nothing changes yet
   S.sent=[];await p.click('#iv-read');await result();
@@ -71,8 +71,9 @@ async function run(eng,browser,{ok,url,settle}){
   ok(/Color and texture updated\./.test(t1)&&/Undo/.test(t1),T+`the toast says so, with Undo (${t1})`);
   e=await p.evaluate(()=>{const d=document.querySelector('#item-view #rd-done');return d&&{t:d.textContent,h:Math.round(d.querySelector('#rd-undo').getBoundingClientRect().height),fig:!!d.querySelector('svg')}});
   ok(e&&/Mink brown and Steep fine twill set/.test(e.t)&&/Added to your colors and patterns/.test(e.t)&&e.h>=44&&e.fig,T+`a card under the button says what changed, with the new drawing and Undo (${e&&e.t})`);
-  await p.click('#rd-undo');await p.waitForFunction(()=>items.find(x=>x.id==='m1').primaryColor==='deeptaupe');await settle(p,200);
-  e=await item('m1');ok(e.c==='deeptaupe'&&e.p==='solid'&&!e.cols&&!e.pats&&!(await p.$('#rd-done')),T+'Undo puts the color and pattern back and takes out what the reading added');
+  // (each step of the Undo is a save of its own; on WebKit each save takes a while: wait for all of them)
+  await p.click('#rd-undo');await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.primaryColor==='deeptaupe'&&it.pattern==='solid'&&!(settings.custom.colors||[]).length&&!(settings.custom.patterns||[]).length&&!document.querySelector('#rd-done')},null,{timeout:5000}).catch(()=>{});await settle(p,200);
+  e=await item('m1');ok(e.c==='deeptaupe'&&e.p==='solid'&&!e.cols&&!e.pats&&!(await p.$('#rd-done')),T+'Undo puts the color and pattern back and takes out what the reading added '+JSON.stringify(e));
   // Use color only, Keep the pattern, Undo from the toast
   await p.click('#iv-read');await result();
   await p.click('#rd-cuse');await p.waitForSelector('#rd-col.done');

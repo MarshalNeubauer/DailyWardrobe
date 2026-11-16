@@ -26,15 +26,16 @@ module.exports=async({ok,chromium,url})=>{
     await p.waitForSelector('#ask-ok',{state:'visible'});
     const ask=await p.textContent('#ask-sheet');
     await p.click('#ask-cancel');res=await res;
-    ok(/Switch this phone to Bea/.test(ask)&&/everything on this phone is cleared first/.test(ask)&&/setup then starts again/.test(ask)&&!/aren’t backed up/.test(ask)&&res===false&&await p.evaluate(a=>localStorage.getItem('app_token')===a&&items.some(i=>i.id==='mine1'),A),`a phone connected to another wardrobe asks first; Cancel keeps everything as it was ("${ask.replace(/\s+/g,' ').slice(0,90)}…")`);
+    ok(/Switch this phone to Bea/.test(ask)&&/everything on this phone is cleared first/.test(ask)&&/has no wardrobe yet, the setup starts again/.test(ask)&&!/aren’t backed up/.test(ask)&&res===false&&await p.evaluate(a=>localStorage.getItem('app_token')===a&&items.some(i=>i.id==='mine1'),A),`a phone connected to another wardrobe asks first; Cancel keeps everything as it was ("${ask.replace(/\s+/g,' ').slice(0,90)}…")`);
     const nav=p.waitForEvent('load');p.evaluate(l=>connectFromLink(l),link(B)).catch(()=>{});
     await p.waitForSelector('#ask-ok',{state:'visible'});await p.click('#ask-ok');await nav;await p.waitForFunction(()=>window.appReady);
     const after=await p.evaluate(async()=>({tok:localStorage.getItem('app_token'),n:items.length,stored:(await tx('readonly',s=>s.getAll())).length,last:localStorage.getItem('last_sync')}));
     ok(after.tok===B&&after.n===0&&after.stored===0,`"Clear and switch" clears this phone's wardrobe and connects to the new one, so nothing of the old one reaches it (${JSON.stringify(after)})`);
     // a phone connected elsewhere but with nothing of its own switches without asking, forgetting the old account's sync marks
     await p.evaluate(()=>{localStorage.setItem('sync_mark','{"x":1}')});
-    res=await p.evaluate(l=>connectFromLink(l),link(A));
-    ok(res===true&&await p.evaluate(a=>localStorage.getItem('app_token')===a&&!(document.querySelector('#ask-ok')&&document.querySelector('#ask-ok').offsetParent)&&localStorage.getItem('sync_mark')!=='{"x":1}',A),'with nothing on the phone it switches at once, and forgets the old account\'s sync marks');
+    // (fix round 3, W2-13-04) an empty phone is asked too: its connection goes
+    res=p.evaluate(l=>connectFromLink(l),link(A));await p.waitForSelector('#ask-ok',{state:'visible'});const ask2=await p.textContent('#ask-sheet');await p.click('#ask-ok');res=await res;
+    ok(res===true&&/Nothing is stored on it yet/.test(ask2)&&await p.evaluate(a=>localStorage.getItem('app_token')===a&&localStorage.getItem('sync_mark')!=='{"x":1}',A),'with nothing on the phone it asks, says nothing is cleared, switches, and forgets the old account\'s sync marks');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     // ---- iPhone in Safari
     const IOS='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';

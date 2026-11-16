@@ -42,9 +42,9 @@ const careBackText=l=>l.length===1?`Your ${careNoun(l[0])} is back: it's in rota
 function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
   const id=i.id,a=i.away,first=careWashed(i.type)?['laundry','cleaner']:['cleaner','laundry'],lab={cleaner:'Send to the dry cleaner',laundry:'In the laundry'},s=careState(i);
   const body=a?`<p class="shelp carewhere">${a.why==='laundry'?'In the laundry':'At the cleaner\'s'} since ${fmtDay(a.since)}: it is out of your outfits.</p>`+
-      `<div class="ordrow careback"><label class="ordate">Back on (optional) <input type="date" value="${a.back||''}" min="${isoKey(todayDate())}" onchange="careSetBack('${id}',this.value)"></label><small class="mut ordhint">${careBackHint(a.back)}</small></div>`+
-      `<div class="btns"><button type="button" class="pri careitsback" onclick="careBack('${id}')">It's back</button></div>`
-    :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" onclick="careSend('${id}','${w}')">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" onclick="careCleaned('${id}')">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
+      `<div class="ordrow careback"><label class="ordate">Back on (optional) <input type="date" value="${a.back||''}" min="${isoKey(todayDate())}" onchange="careSetBack('${jsq(id)}',this.value)"></label><small class="mut ordhint">${careBackHint(a.back)}</small></div>`+
+      `<div class="btns"><button type="button" class="pri careitsback" onclick="careBack('${jsq(id)}')">It's back</button></div>`
+    :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" onclick="careSend('${jsq(id)}','${w}')">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" onclick="careCleaned('${jsq(id)}')">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
 function careRedraw(){if(typeof remindSoon==='function')remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */const c=$('#care');if(c&&!c.hidden)renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
@@ -86,15 +86,15 @@ function renderCare(){const el=$('#care');if(!el)return;
   if(!items.length){el.innerHTML=head+'<p class="mut empty">Your wardrobe is empty.</p>'+emptyAdd();return}
   const L=careLists(),pic=i=>typeof statPic==='function'?statPic(i):'';
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
-  const acts=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" onclick="careSend('${x.id}','${w}')">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" onclick="careCleaned('${x.id}')">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
-  const card=(id,title,sub,rows)=>`<section class="card care-card" id="${id}"><h3>${title}</h3>${sub?`<p class="shelp">${sub}</p>`:''}${rows}</section>`;
+  const acts=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" onclick="careSend('${jsq(x.id)}','${w}')">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" onclick="careCleaned('${jsq(x.id)}')">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
+  const card=(id,title,sub,rows)=>`<section class="card care-card" id="${esc(id)}"><h3>${title}</h3>${sub?`<p class="shelp">${sub}</p>`:''}${rows}</section>`;
   const quiet=!L.due.length&&!L.near.length;
   el.innerHTML=head+`<p class="psub">What is due for cleaning, counted from the days you wore each piece. Nothing to log: tap only when something goes out or comes back.</p>`+
     (L.due.length?card('care-due','Due for cleaning',`${L.due.length} piece${L.due.length===1?' has':'s have'} reached ${L.due.length===1?'its':'their'} number of wears.`,L.due.map(x=>row(x.i,acts(x.i))).join('')):'')+
     (L.near.length?card('care-near','Nearly due','One more wear and these are due.',L.near.map(x=>row(x.i,acts(x.i))).join('')):'')+
     (quiet?card('care-none','Nothing is due','No suit, blazer or pair of pants has reached its number of wears yet.',''):'')+
     (L.each.length?card('care-each','Washed after every wear','',L.each.map(g=>`<div class="care-row care-group" id="care-each-${g.t}"><div class="care-main"><span class="care-nm">${g.list.length} ${g.list.length===1?careNoun(g.list[0]):(CARE_PLURAL[g.t]||'pieces').toLowerCase()} worn since washing</span><small class="mut">${laundryDays()&&g.t==='shirt'?`A worn shirt is not planned again for ${laundryDays()} day${laundryDays()===1?'':'s'}.`:'Tap when the wash is done, or leave it: nothing depends on it.'}</small></div><div class="care-acts"><button type="button" class="caredone" onclick="careCleanedType('${g.t}')">All washed today</button></div></div>`).join('')):'')+
-    (L.away.length?card('care-away','Away now','Out of your outfits until they are back.',L.away.map(x=>row(x,`<button type="button" class="pri careitsback" onclick="careBack('${x.id}')">It's back</button>`)).join('')):'')+
+    (L.away.length?card('care-away','Away now','Out of your outfits until they are back.',L.away.map(x=>row(x,`<button type="button" class="pri careitsback" onclick="careBack('${jsq(x.id)}')">It's back</button>`)).join('')):'')+
     `<p class="care-foot"><button type="button" class="linkbtn" onclick="openSettings('care')">Change how many wears each piece takes</button></p>`}
 function openCare(){subOpen();closeSettings();show('care');scrollTo({top:0})}
 /* called by show() in app.js for every page: the Care page is a section of its own beside the others */
