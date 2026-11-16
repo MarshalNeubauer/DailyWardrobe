@@ -74,7 +74,7 @@ module.exports=async({ok,chromium,url})=>{
       const later=card();[...document.querySelectorAll('#missbox button')].find(b=>/didn.t wear/i.test(b.textContent)).click();await until(()=>!card());
       const marked=Object.values(dayRecs).filter(r=>r.auto&&r.worn===false).map(r=>r.date).sort((a,b)=>keyDate(a)-keyDate(b));const after=card();
       // another gap, kept as worn: the card goes and stays gone
-      TODAY_OVERRIDE='2026-12-03T08:00:00';cache={};sel=todayDate();renderToday();await until(()=>card());const gap2=card();
+      TODAY_OVERRIDE='2026-12-03T08:00:00';cache={};sel=todayDate();view={y:2026,m:11};/* December's plan: every missed day is recorded before the drawing (fix round 3) */renderToday();await until(()=>card());const gap2=card();
       [...document.querySelectorAll('#missbox button')].find(b=>/keep/i.test(b.textContent)).click();await new Promise(r=>setTimeout(r,400));const kept=card();
       renderToday();const kept2=card();const worn=Object.values(dayRecs).filter(r=>r.auto&&keyDate(r.date)>keyDate('2026-11-26')&&r.worn!==false).length;
       return {first,toastNow,ahead,later,marked,after,gap2,kept,kept2,worn}});

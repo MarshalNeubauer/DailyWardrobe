@@ -58,7 +58,7 @@ async function careRelease(id){const T=todayDate();let n=0;
 async function careSend(id,why,back){const it=items.find(x=>x.id===id);if(!it||it.away||it.paused||!CARE_ABLE.includes(it.type))return;
   const ok=/^\d{4}-\d{2}-\d{2}$/.test(back||'');
   it.away={why:why==='laundry'?'laundry':'cleaner',since:isoKey(todayDate()),back:ok?back:null};it.paused=true;if(ok)it.arrives=back;else delete it.arrives;
-  await careRelease(id);await put(it);cache={};careRedraw();
+  await careRelease(id);if(typeof careUnlock==='function')await careUnlock(id);await put(it);cache={};careRedraw();   // (the week planned again around it: history.js)
   toast(it.away.why==='laundry'?'In the laundry.':'At the cleaner\'s.',5000,{label:'Undo',fn:()=>careUnsend(id)})}
 async function careUnsend(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;delete it.away;delete it.paused;delete it.arrives;await put(it);cache={};careRedraw()}
 /* the day it is back (empty = no date: it waits for "It's back") */
@@ -66,6 +66,7 @@ async function careSetBack(id,v){const it=items.find(x=>x.id===id);if(!it||!it.a
   it.away={...it.away,back:ok?v:null};if(ok)it.arrives=v;else delete it.arrives;await put(it);cache={};await checkArrivals();careRedraw()}
 /* it is back: in rotation again, cleaned today */
 async function careBack(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;
+  if(typeof careUnlock==='function')await careUnlock(null,+keyDate(it.away.since||isoKey(todayDate())));   // the locks made while it was away let go (history.js)
   it.cleaned=isoKey(todayDate());delete it.away;delete it.paused;delete it.arrives;await put(it);cache={};careRedraw();toast('Back in rotation, freshly cleaned.')}
 /* cleaned without being sent away: the count starts again */
 async function careCleaned(id){const it=items.find(x=>x.id===id);if(!it)return;const was=it.cleaned;
