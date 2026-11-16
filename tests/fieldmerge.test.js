@@ -7,7 +7,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const ctx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={itemFields,mergeItem,mergeState,dayFields,mergeDay,keySettings,stampSettings,mergeSettings,stateSig}',ctx);
   const K=ctx.K,J=o=>JSON.parse(JSON.stringify(o));
-  const {mergeLite}=await import(pathToFileURL(path.join(ROOT,'worker','backup.js')).href);
+  const {mergeLite,dropFuture,clampStamps}=await import(pathToFileURL(path.join(ROOT,'worker','backup.js')).href);
+  {// field stamps from a wrong clock (#485's rule): a save carrying one ahead is left out, a stored one is read back at the save time
+    const n=Date.now(),lim=n+6e5,it={id:'z',type:'tie',updated:n,fs:{u:n,b:n-9,s:{name:n+9e9}}},dy={date:'2026-11-16',updated:n,fs:{u:n,b:n-9,s:{'force.tie':n+9e9}}};
+    const set={units:'F',updated:n,ks:{units:n},kh:{},kse:{care:{'':n,tie:n+9e9}},khe:{}};
+    const dr=dropFuture({items:[it],days:[dy],tombstones:{},settings:set},lim),cl=clampStamps({items:[it],days:[dy],tombstones:{},settings:set},n,lim);
+    ok(!dr.items.length&&!dr.days.length&&!dr.settings,'the server leaves out a save whose field or entry stamps are ahead of its clock');
+    ok(cl.items[0].fs.s.name===n&&cl.days[0].fs.s['force.tie']===n&&cl.settings.kse.care.tie===n&&cl.items[0].fs.u===cl.items[0].updated,'and reads stored ones back at the save time, the field stamps still valid');}
   const both=(a,b,f)=>{const x=f(K.mergeState(a,b)),y=f(K.mergeState(b,a)),w=f(mergeLite(J(a),J(b))),v=f(mergeLite(J(b),J(a)));return [x,y,w,v]};
   const same=l=>l.every(x=>JSON.stringify(x)===JSON.stringify(l[0]));
 
