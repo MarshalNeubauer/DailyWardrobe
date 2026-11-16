@@ -18,7 +18,7 @@ COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'ligh
   darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',winered:'wine',merlot:'wine',claret:'wine',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
   yellow:'gold',mustard:'gold',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normColFor=(type,c,accent)=>fitCol(type,normCol(c),accent),
-normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
+normCol=c=>{if(!c)return null;const x=String(c).trim().toLowerCase();if(/^own[a-z0-9]+$/.test(x)&&COLORS[x])return x;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 /* colours each item type really comes in: p = main colour, a = stripe / check / motif colours.
    The tagger is told the same lists (worker.js TYPE_COLORS); a colour outside the list is moved to the closest one in it. */
 const SUITING=['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','deeptaupe','taupe','tan','khaki','olive','green'],
@@ -75,27 +75,48 @@ function dE00(a,b,kL=1){const [L1,a1,b1]=a,[L2,a2,b2]=b,rad=Math.PI/180,C1=Math.
 let CUSTOM_COL={},CUSTOM_PAT={};
 const colBase=c=>CUSTOM_COL[c]?CUSTOM_COL[c].base:c,patBase=p=>CUSTOM_PAT[p]?CUSTOM_PAT[p].base:p;
 const planCol=i=>colBase(primaryCol(i)),patOf=i=>i?patBase(i.pattern):undefined;
-const ownColKey=name=>'own'+String(name||'').toLowerCase().replace(/[^a-z]/g,'').slice(0,28);
-const ownPatKey=name=>'own-'+String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,28);
+/* an own colour's or pattern's key from its name (fix round 3, 2026-11-16, W2-12-03/W2-16-01: they kept only a-z, so an Arabic name gave the
+   key "own" and was refused as "at least two letters", and "Rot 1" / "Rot 2" both became ownrot): accents are dropped (Café → cafe), the
+   Latin letters and digits kept (Arabic-Indic digits as 0-9), and a name with letters outside a-z gets a short hash of the whole name
+   (FNV-1a, base 36) so any script has a key of its own; keys stay ASCII (own[a-z0-9] / own-[a-z0-9-], OWN_COL_RE / OWN_PAT_RE). A Latin
+   name without digits gets the key it always had; stored keys are never derived again (look a name up with ownColFind / ownPatFind) */
+const OWN_COL_RE=/^own[a-z0-9]{1,28}$/,OWN_PAT_RE=/^own-[a-z0-9-]{1,28}$/;
+const ownKeyNorm=s=>String(s==null?'':s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[٠-٩]/g,d=>d.charCodeAt(0)-0x660).replace(/[۰-۹]/g,d=>d.charCodeAt(0)-0x6f0).replace(/ـ/g,'').replace(/\s+/g,' ').trim();
+const ownKeyHash=s=>{let h=0x811c9dc5;for(const ch of s){h^=ch.codePointAt(0);h=Math.imul(h,16777619)>>>0}return h.toString(36)};
+const ownKeyOther=n=>/[^\x00-\x7f]/.test(n.replace(/[^\p{L}\p{N}]/gu,''));   // letters (or digits) outside a-z 0-9 after accents are dropped
+const ownColKey=name=>{const n=ownKeyNorm(name),a=n.replace(/[^a-z0-9]/g,'');return 'own'+(ownKeyOther(n)?a.slice(0,20)+'x'+ownKeyHash(n):a).slice(0,28)};
+const ownPatKey=name=>{const n=ownKeyNorm(name),s=n.replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');return 'own-'+(ownKeyOther(n)?(s.slice(0,19).replace(/-$/,'')+'-'+ownKeyHash(n)).replace(/^-/,''):s).slice(0,28).replace(/-$/,'')};
+/* a name needs two letters or digits, in any script */
+const ownNameShort=name=>[...ownKeyNorm(name).replace(/[^\p{L}\p{N}]/gu,'')].length<2;
+/* the key of the owner's colour or pattern with this name (any case, accents and marks aside), else null */
+const ownColFind=name=>{const n=ownKeyNorm(ownNameClean(name));if(!n)return null;const c=Object.values(CUSTOM_COL).find(x=>ownKeyNorm(x.name)===n);return c?c.key:null};
+const ownPatFind=name=>{const n=ownKeyNorm(ownNameClean(name));if(!n)return null;const p=Object.values(CUSTOM_PAT).find(x=>ownKeyNorm(x.name)===n);return p?p.key:null};
+/* a free key: the name's own, or with 2, 3… after it when an older name took it ("Rot 1" saved before digits counted is ownrot) */
+const ownFreeKey=(key,taken,re)=>{if(!taken(key))return key;for(let k=2;k<100;k++){const x=key.slice(0,(key.startsWith('own-')?32:31)-String(k).length)+k;if(re.test(x)&&!taken(x))return x}return key};
+/* is a pattern name already a built-in pattern's ("Birdseye", "Glen check", "chalk stripe") or one of the owner's? (W1-3-05: the built-in
+   check compared the prefixed key own-birdseye with birdseye, so it never matched) */
+const patLetters=t=>ownKeyNorm(t).replace(/[^\p{L}\p{N}]/gu,'');
+const patNameTaken=name=>{const n=patLetters(name);if(!n)return false;
+  return Object.values(PATS_BY).some(l=>l.some(p=>!CUSTOM_PAT[p]&&patLetters(patLabel(p))===n))||Object.values(CUSTOM_PAT).some(p=>patLetters(p.name)===n)};
 /* what an own colour's or pattern's name may contain (2026-11-15, the re-audit's N4: a name like `<img src=x onerror=…>` went into the page
    as HTML, ran, and synced to every device): letters of any script, digits, spaces and - ’ . , ( ) / +; a straight apostrophe becomes ’ and
    & "and". ownNameBad refuses a typed name with anything else; ownNameClean is applied to every name shown (applyCustom: one arriving by
    sync or saved before this rule too), so no own name can carry < > " ' & or a backtick into the page */
-const OWN_NAME_OK=/^[\p{L}\p{M}\p{N} ’.,()\/+-]*$/u;
+const OWN_NAME_OK=/^[\p{L}\p{M}\p{N} ’.,،()\/+-]*$/u;   // ، the Arabic keyboard's comma (W2-16-02)
 const ownNameTidy=s=>String(s==null?'':s).normalize('NFC').replace(/['‘`´]/g,'’').replace(/\s*&\s*/g,' and ').replace(/\s+/g,' ').trim();
 const ownNameBad=s=>!OWN_NAME_OK.test(ownNameTidy(s));
-const ownNameClean=(s,max=28)=>ownNameTidy(s).replace(/[^\p{L}\p{M}\p{N} ’.,()\/+-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,max);
+const ownNameClean=(s,max=28)=>ownNameTidy(s).replace(/[^\p{L}\p{M}\p{N} ’.,،()\/+-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,max);
 const ownDescClean=s=>String(s==null?'':s).replace(/[<>"'`&]/g,' ').replace(/\s+/g,' ').trim().slice(0,150);
 function applyCustom(cu){
   for(const k of Object.keys(CUSTOM_COL)){delete COLORS[k];delete COLOR_NAMES[k];delete LUMS[k]}
   for(const t of Object.values(COLS_BY)){t.p=t.p.filter(c=>!CUSTOM_COL[c]);t.a=t.a.filter(c=>!CUSTOM_COL[c])}
   for(const t of Object.keys(PATS_BY))PATS_BY[t]=PATS_BY[t].filter(p=>!CUSTOM_PAT[p]);
   CUSTOM_COL={};CUSTOM_PAT={};cu=cu||{};
-  for(let c of cu.colors||[]){if(!/^own[a-z]{1,28}$/.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
+  for(let c of cu.colors||[]){if(!OWN_COL_RE.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
     const name=ownNameClean(c.name)||c.key.slice(3);c={...c,name};
     CUSTOM_COL[c.key]=c;COLORS[c.key]=c.hex.toLowerCase();COLOR_NAMES[c.key]=name.toLowerCase();
     for(const t of c.types||[])if(COLS_BY[t]){COLS_BY[t].p.push(c.key);if(c.accent)COLS_BY[t].a.push(c.key)}}
-  for(let p of cu.patterns||[]){if(!/^own-[a-z0-9-]{1,28}$/.test(p.key))continue;p={...p,name:ownNameClean(p.name)||p.key.slice(4).replace(/-/g,' '),desc:ownDescClean(p.desc)};
+  for(let p of cu.patterns||[]){if(!OWN_PAT_RE.test(p.key))continue;p={...p,name:ownNameClean(p.name)||p.key.slice(4).replace(/-/g,' '),desc:ownDescClean(p.desc)};
     for(const t of p.types||[])if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}
   COLOR_NAME_RE=null}
 const patName=p=>CUSTOM_PAT[p]?String(CUSTOM_PAT[p].name).toLowerCase():patLabel(p);
@@ -109,11 +130,12 @@ function colBaseFor(hex,type,accent){const lab=rgbLab(...hexRgb(hex)),lch=l=>[Ma
   const hd=(a,b)=>{const d=Math.abs(a-b)%360;return d>180?360-d:d},typed=!!(type&&COLS_BY[type]);
   const cand=(typed?colsFor(type,accent):Object.keys(COLORS)).filter(c=>COLORS[c]&&!CUSTOM_COL[c]&&(typed||!SHIRT_ONLY.includes(c))).map(k=>{const l=labOf(k),[c2,h2]=lch(l);return {k,l,c2,h2,d:dE00(lab,l)}});
   if(!cand.length)return null;
-  let pool=C<BASE_GREY?cand.filter(x=>x.c2<Math.max(5,C+3)):cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=BASE_HUE);
-  if(!pool.length&&C>=BASE_GREY)pool=cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=BASE_HUE2);
-  if(!pool.length)pool=cand;
-  const near=pool.filter(x=>Math.abs(x.l[0]-lab[0])<=BASE_L);if(near.length)pool=near;
-  return pool.sort((a,b)=>a.d-b.d)[0].k}
+  // the nearest hue pool holding a colour within BASE_L of its lightness wins over a hue alone (fix round 3, W2-16-12: a dark petrol tie
+  // had only light blue within BASE_HUE and was planned as light blue; within BASE_HUE2 it takes steel blue)
+  const near=p=>p.filter(x=>Math.abs(x.l[0]-lab[0])<=BASE_L),best=p=>p.sort((a,b)=>a.d-b.d)[0].k;
+  const pools=C<BASE_GREY?[cand.filter(x=>x.c2<Math.max(5,C+3))]:[BASE_HUE,BASE_HUE2].map(w=>cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=w));
+  for(const p of pools)if(near(p).length)return best(near(p));
+  const p=pools.find(x=>x.length);return best(p||(near(cand).length?near(cand):cand))}
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
 let items=[];
 /* outfit history (one record per date, see planner.js) and the current date (overridable in tests) */
@@ -253,20 +275,38 @@ const SOUTH_CC=['AU','NZ','ZA','AR','CL','UY','PY','BR','BO','PE','NA','BW','ZW'
    share up each takes the pixels where its own field is highest until it covers its share, so the accents lie over the others and every
    colour covers what it should. The same arguments give the same map (seeded). No DOM: the drawings (draw.js camoTileUrl) and the painter
    (asm-color.js asmCamoTex) share it; kept per arguments (camoMemo) */
-const CAMO_RE=/camo|multicam|\bocp\b|woodland|flecktarn|realtree/i,camoMemo=new Map(),CAMO_OCT=[[3,1],[6,.5],[12,.24],[24,.09]];   // (a 48-cell layer made pixel-step edges; camouflage's are soft and rounded)
+/* (v2, 2026-11-16, the owner's "why does it look like trash": round flat cartoon blobs, three repeats across, washed out) each field is
+   domain-warped (looked up through a slow displacement field, CAMO_WARP of the tile: organic, irregular edges instead of round ones), on a
+   finer lattice (CAMO_OCT: smaller, more numerous blotches), and camoImage softens the edges and adds a faint cloth grain */
+const CAMO_RE=/camo|multicam|\bocp\b|woodland|flecktarn|realtree/i,camoMemo=new Map(),CAMO_OCT=[[5,1],[10,.45],[20,.18],[40,.05]],CAMO_WARP=.09,CAMO_SOFT=.005,CAMO_GRAIN=.035,CAMO_V=2;
 const camoPat=p=>{if(!p)return false;if(patBase(p)==='camouflage')return true;const c=typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[p];return !!c&&CAMO_RE.test((c.name||'')+' '+(c.desc||'')+' '+p)};
 function camoField(N,shares,seed=1){const key=N+'|'+shares.join(',')+'|'+seed;if(camoMemo.has(key))return camoMemo.get(key);
   let s=(Math.imul(seed|0,2654435761)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296;
-  const noise=()=>{const f=new Float32Array(N*N);for(const [G,w] of CAMO_OCT){const L=new Float32Array(G*G);for(let k=0;k<G*G;k++)L[k]=rnd();
+  const noise=oct=>{const f=new Float32Array(N*N);for(const [G,w] of oct){const L=new Float32Array(G*G);for(let k=0;k<G*G;k++)L[k]=rnd();
       for(let y=0;y<N;y++){const gy=y*G/N,y0=Math.floor(gy),ty=gy-y0,sy=ty*ty*(3-2*ty),r0=(y0%G)*G,r1=((y0+1)%G)*G;
         for(let x=0;x<N;x++){const gx=x*G/N,x0=Math.floor(gx),tx=gx-x0,sx=tx*tx*(3-2*tx),c0=x0%G,c1=(x0+1)%G;
           const a=L[r0+c0]+(L[r0+c1]-L[r0+c0])*sx,b=L[r1+c0]+(L[r1+c1]-L[r1+c0])*sx;f[y*N+x]+=w*(a+(b-a)*sy)}}}
     return f};
+  // the slow displacement every field is looked up through (wrapping, so the tile stays seamless)
+  const A=CAMO_WARP*N,wx=noise([[3,1],[6,.4]]),wy=noise([[3,1],[6,.4]]),mod=v=>((v%N)+N)%N;
+  const warped=f=>{const g=new Float32Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const j=y*N+x,X=mod(x+A*(wx[j]-.7)*2),Y=mod(y+A*(wy[j]-.7)*2),x0=Math.floor(X),y0=Math.floor(Y),tx=X-x0,ty=Y-y0,x1=(x0+1)%N,y1=(y0+1)%N;
+      g[j]=(f[y0*N+x0]*(1-tx)+f[y0*N+x1]*tx)*(1-ty)+(f[y1*N+x0]*(1-tx)+f[y1*N+x1]*tx)*ty}return g};
   const n=N*N,idx=new Uint8Array(n),taken=new Uint8Array(n),tot=shares.reduce((a,b)=>a+Math.max(0,+b||0),0)||1;
   const order=shares.map((v,k)=>k).slice(1).sort((a,b)=>shares[a]-shares[b]);   // the smallest share first; the ground (index 0) is what is left
-  for(const k of order){const f=noise(),want=Math.round(n*Math.max(0,+shares[k]||0)/tot),ids=[];for(let j=0;j<n;j++)if(!taken[j])ids.push(j);
+  for(const k of order){const f=warped(noise(CAMO_OCT)),want=Math.round(n*Math.max(0,+shares[k]||0)/tot),ids=[];for(let j=0;j<n;j++)if(!taken[j])ids.push(j);
     ids.sort((a,b)=>f[b]-f[a]);for(let q=0;q<want&&q<ids.length;q++){idx[ids[q]]=k;taken[ids[q]]=1}}
   if(camoMemo.size>16)camoMemo.clear();camoMemo.set(key,idx);return idx}
+/* the camouflage as an N x N sRGB image (Uint8ClampedArray, 3 a pixel): camoField's map in its colours, the edges softened by two wrapping
+   box blurs of CAMO_SOFT of the tile (a blended edge, as printed camouflage has, not a cut-out), and a faint cloth grain (±CAMO_GRAIN,
+   seeded). Shared by the drawings (draw.js camoTileUrl) and the painter (asm-color.js asmCamoTex) */
+function camoImage(N,cols,shares,seed=1){const idx=camoField(N,shares,seed),rgb=cols.map(h=>hexRgb(h)),n=N*N;let a=new Float32Array(3*n),b=new Float32Array(3*n);
+  for(let j=0;j<n;j++){const c=rgb[idx[j]]||rgb[0];a[3*j]=c[0];a[3*j+1]=c[1];a[3*j+2]=c[2]}
+  const r=Math.max(1,Math.round(CAMO_SOFT*N)),blur=(src,dst,dx,dy)=>{const w=2*r+1;for(let y=0;y<N;y++)for(let x=0;x<N;x++){let s0=0,s1=0,s2=0;
+      for(let k=-r;k<=r;k++){const xx=((x+k*dx)%N+N)%N,yy=((y+k*dy)%N+N)%N,j=3*(yy*N+xx);s0+=src[j];s1+=src[j+1];s2+=src[j+2]}const o=3*(y*N+x);dst[o]=s0/w;dst[o+1]=s1/w;dst[o+2]=s2/w}};
+  for(let p=0;p<2;p++){blur(a,b,1,0);blur(b,a,0,1)}
+  let s=(Math.imul((seed|0)+7,2246822519)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296,out=new Uint8ClampedArray(3*n);
+  for(let j=0;j<n;j++){const g=1+CAMO_GRAIN*(rnd()-.5)*2;for(let q=0;q<3;q++)out[3*j+q]=Math.round(a[3*j+q]*g)}
+  return out}
 const MAT_SEASON={flannel:'cold',tweed:'cold',corduroy:'cold',velvet:'cold',cashmere:'cold','cashmere blend':'cold',moleskin:'cold',melton:'cold',
   linen:'warm','linen blend':'warm',seersucker:'warm','tropical wool':'warm'};
 const MAT_SEASON_BY={tie:{wool:'cold'}};
@@ -308,7 +348,7 @@ METAL['two-tone']='#c8b27e';   // (2026-11-15, the owner's option) steel and gol
 const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
 const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
 const desc=i=>i?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${BAND_WORDS[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
-const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+typeWord(i):'none';
+const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patName(i.pattern):'')+' '+typeWord(i):'none';   // an own pattern by its name, not "own basketweave" (W1-1-04)
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
 const itemName=i=>i&&typeof i.name==='string'?i.name.trim():'';
@@ -317,6 +357,12 @@ const itemTitle=i=>itemName(i)||sentence(desc(i)+styleWord(i));
    (W2-17-15); oxfords and dress pants, and items from before styles existed, read as before */
 const styleWord=i=>!i?'':i.type==='shoes'&&i.shoeStyle&&i.shoeStyle!=='oxford'?' '+(({derby:'derbies',loafer:'loafers',boot:'boots',sneaker:'sneakers'})[i.shoeStyle]||''):i.type==='pants'&&(i.trouserKind==='chinos'||i.trouserKind==='jeans')?' '+i.trouserKind:'';
 const titleCls=i=>itemName(i)?'named':'cap';
+/* a right-to-left name (Arabic, Hebrew…) in a line of English keeps its place (fix round 3, W2-16-04/-10: "2 · بدلة كحلي رسمية days", the
+   count jumped to the name's other side): nameHtml escapes it and wraps it in <bdi>, nameIso puts it between the invisible isolates
+   U+2068/U+2069 for plain text (toasts, labels); a name with no right-to-left letter is returned as before */
+const RTL_RE=/[֐-ࣿיִ-﷿ﹰ-ﻼ]/;
+const nameHtml=t=>{t=String(t??'');return RTL_RE.test(t)?`<bdi>${esc(t)}</bdi>`:esc(t)};
+const nameIso=t=>{t=String(t??'');return RTL_RE.test(t)?'⁨'+t+'⁩':t};
 /* trousers come in three kinds and shoes in five styles; an item without one is dress trousers or oxfords, which the planner treats
    exactly as before there were kinds and styles (so a wardrobe from before plans the same) */
 const TROUSER_KINDS=[['dress','Dress pants'],['chinos','Chinos'],['jeans','Jeans']],SHOE_STYLES=[['oxford','Oxford'],['derby','Derby'],['loafer','Loafer'],['boot','Boot'],['sneaker','Sneaker']];
@@ -623,7 +669,7 @@ const recStrict=(v,d=0)=>typeof v==='string'?(REC_HEX.test(v)||REC_WORD.test(v)?
 const REC_PROSE=['weave','patternSpec','tagAI','meas','away'];
 const recProse=(v,d=0,k='')=>typeof v==='string'?(/^hex$/i.test(k)?(REC_HEX.test(v)?v:null):v.replace(/[<>`]/g,'')):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
   Array.isArray(v)?v.map(x=>recProse(x,d+1,k)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([kk])=>REC_WORD.test(kk)).map(([kk,x])=>[kk,recProse(x,d+1,kk)])):null;
-const recCol=c=>c==null||c===''?c:typeof c!=='string'?undefined:COLORS[c]||REC_KEY.test(c)&&/^own/.test(c)?c:normCol(c)||(REC_KEY.test(c)?c:undefined);
+const recCol=c=>c==null||c===''?c:typeof c!=='string'?undefined:/^own/.test(c)?(OWN_COL_RE.test(c)?c:undefined):COLORS[c]?c:normCol(c)||(REC_KEY.test(c)?c:undefined);   // an own colour's key by the one rule (OWN_COL_RE; the server's worker/ownkeys.js is the same)
 const noBidi=s=>String(s==null?'':s).replace(BIDI_RE,'');
 function cleanRecord(it){
   if(!it||typeof it!=='object'||Array.isArray(it)||typeof it.id!=='string'||!ID_RE.test(it.id)||!TYPES[it.type])return null;
@@ -634,7 +680,7 @@ function cleanRecord(it){
     if(REC_COLS.includes(k)){const c=recCol(v);if(c!==undefined)o[k]=c}
     else if(k==='accents'){if(Array.isArray(v))o[k]=v.map(recCol).filter(c=>typeof c==='string'&&c).slice(0,8)}   // colour keys (accentsOf reads at most 4)
     else if(REC_PICS.includes(k)){if(v==null||typeof v==='string'&&(REC_PHOTO.test(v)||/^dwph:[0-9a-f]{20}$/.test(v)))o[k]=v}   // (a backup's own photo reference too)
-    else if(REC_KEYS.includes(k)){if(v==null||typeof v==='string'&&REC_KEY.test(v))o[k]=v}
+    else if(REC_KEYS.includes(k)){if(v==null||typeof v==='string'&&(k==='pattern'&&/^own/.test(v)?OWN_PAT_RE.test(v):REC_KEY.test(v)))o[k]=v}
     else if(REC_NUMS.includes(k)){if(v==null||typeof v==='number'&&isFinite(v))o[k]=v}
     else if(k in REC_TEXT){if(v==null)o[k]=v;else if(typeof v==='string'||typeof v==='number')o[k]=noBidi(v).slice(0,REC_TEXT[k])}
     else if(REC_STRICT.includes(k))o[k]=recStrict(v);

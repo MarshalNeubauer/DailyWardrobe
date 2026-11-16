@@ -70,10 +70,12 @@ module.exports=async({ok,chromium,url})=>{
     s=await p.evaluate(async()=>{const it={id:'cm-acc',type:'pants',primaryColor:'khaki',secondaryColor:'brown',tertiaryColor:'olive',pattern:'camouflage',accents:['cream','black']},plain={...it,id:'cm-plain',accents:undefined};
       const st=usableSett(it),sp=usableSett(plain),url=camoTileUrl(st.camo),im=await new Promise((r,j)=>{const x=new Image();x.onload=()=>r(x);x.onerror=j;x.src=url});
       const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height).data,n=d.length/4;
-      const want=['khaki','brown','olive','cream','black'].map(k=>hexRgb(COLORS[k])),cnt=want.map(()=>0);
+      const want=st.camo.cols.map(h=>hexRgb(h)),cnt=want.map(()=>0);
       for(let k=0;k<d.length;k+=4)want.forEach((w,j)=>{if(Math.abs(d[k]-w[0])+Math.abs(d[k+1]-w[1])+Math.abs(d[k+2]-w[2])<12)cnt[j]++});
-      return {want:['khaki','brown','olive','cream','black'].map(k=>COLORS[k]).join(),cols:st.camo.cols,shares:st.camo.shares,frac:cnt.map(v=>+(v/n).toFixed(3)),pl:sp.camo.cols.length,pl0:sp.camo.cols[0]===colOf(plain),pl1:sp.camo.cols[1]===COLORS.brown,sw:/<image href="data:image\/png/.test(swatchSVG(it,true))}});
-    ok(s.cols.join()===s.want&&s.shares[0]===Math.max(...s.shares)&&s.shares.every((v,k)=>!k||v<=s.shares[k-1]),'a camouflage with 2 accents takes 5 real colours: the ground the largest share, each further one smaller ('+s.shares.join(', ')+')');
+      // the accents' own colours are in it (muted toward the ground like the second and third: lightness kept), the made-up steps are not
+      const Ls=st.camo.cols.map(h=>Math.round(rgbLab(...hexRgb(h))[0])),Lk=k=>Math.round(rgbLab(...hexRgb(COLORS[k]))[0]);
+      return {main:st.camo.cols[0]===colOf(it),distinct:new Set(st.camo.cols).size,hasAcc:['cream','black'].every(k=>Ls.some(x=>Math.abs(x-Lk(k))<=2)),cols:st.camo.cols,shares:st.camo.shares,frac:cnt.map(v=>+(v/n).toFixed(3)),pl:sp.camo.cols.length,pl0:sp.camo.cols[0]===colOf(plain),pl1:JSON.stringify(sp)===JSON.stringify(camoTag({...plain},null)),sw:/<image href="data:image\/png/.test(swatchSVG(it,true))}});
+    ok(s.main&&s.distinct===5&&s.hasAcc&&s.shares[0]===Math.max(...s.shares),'a camouflage with 2 accents takes 5 distinct colours, its accents among them, the ground (main) the largest share ('+s.cols.join(' ')+' · '+s.shares.join(', ')+')');
     ok(s.frac.every(v=>v>.02)&&s.sw,'its swatch draws all 5 distinct colours (share of pixels: '+s.frac.join(', ')+')');
     ok(s.pl===5&&s.pl0&&s.pl1,'one without accents is drawn as before');
     // ---- the close-up reader: a colour half of kind pattern is several colours, not a failure; several offers the main colour and accents

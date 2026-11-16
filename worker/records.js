@@ -1,5 +1,6 @@
 /* Daily Wardrobe worker: kept photo records (render:<key>) and blobs: GET/PUT/DELETE /render, GET/PUT /blob.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
+import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
 import { ownerOnly, spend, spendEach } from './people.js';
 
 /* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced); older ones were per date (90 days) */
@@ -15,7 +16,7 @@ const WORD_RE = /^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u, BAD_CH = /[<>"`]
 const COLS = ['primaryColor', 'secondaryColor', 'tertiaryColor', 'dial'], PICS = ['photo', 'photoSm', 'texture', 'swatch'],
   KEYS = ['pattern', 'swSrc', 'metal', 'leather', 'cuff', 'vest', 'season', 'shoeStyle', 'trouserKind', 'band', 'bezel', 'watchStyle'],
   NUMS = ['added', 'updated', 'shade'], TEXT = ['name', 'brand', 'material', 'notes', 'details', 'patternText'];
-const colOk = c => c == null || c === '' || typeof c === 'string' && (KEY_RE.test(c) || /^[a-z ]{1,30}$/i.test(c));   // (a colour word, "light blue": the app makes it a key)
+const colOk = c => c == null || c === '' || typeof c === 'string' && (/^own/.test(c) ? OWN_COL_RE.test(c) : KEY_RE.test(c) || /^[a-z ]{1,30}$/i.test(c));   // (an own colour's key by the one rule, ownkeys.js)   // (a colour word, "light blue": the app makes it a key)
 const strictOk = (v, d = 0) => typeof v === 'string' ? HEX_RE.test(v) || WORD_RE.test(v) : typeof v === 'number' ? isFinite(v) : v == null || typeof v === 'boolean' ? true : d > 8 ? false
   : Array.isArray(v) ? v.every(x => strictOk(x, d + 1)) : typeof v === 'object' ? Object.entries(v).every(([k, x]) => WORD_RE.test(k) && strictOk(x, d + 1)) : false;
 const freeOk = (v, d = 0) => typeof v === 'string' ? !BAD_CH.test(v) : typeof v === 'number' ? isFinite(v) : v == null || typeof v === 'boolean' ? true : d > 8 ? false
@@ -33,7 +34,7 @@ function itemWrong(it) {
     if (!WORD_RE.test(k) || k === '__proto__') return 'a field name';
     if (COLS.includes(k)) { if (!colOk(v)) return 'a color'; }
     else if (PICS.includes(k)) { if (v != null && !(typeof v === 'string' && (PIC_RE.test(v) || REF_RE.test(v)))) return 'a photo'; }
-    else if (KEYS.includes(k)) { if (v != null && !(typeof v === 'string' && KEY_RE.test(v))) return 'a ' + k; }
+    else if (KEYS.includes(k)) { if (v != null && !(typeof v === 'string' && (k === 'pattern' && /^own/.test(v) ? OWN_PAT_RE.test(v) : KEY_RE.test(v)))) return 'a ' + k; }
     else if (NUMS.includes(k)) { if (v != null && !(typeof v === 'number' && isFinite(v))) return 'a number'; }
     else if (TEXT.includes(k)) { if (v != null && typeof v !== 'string' && typeof v !== 'number') return 'a text field'; }
     else if (k === 'sett') { if (!strictOk(v)) return 'a pattern reading'; }

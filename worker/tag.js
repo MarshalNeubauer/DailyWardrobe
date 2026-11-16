@@ -1,6 +1,7 @@
 /* Daily Wardrobe worker: tagging a photo: the prompt and the JSON schema Claude answers in, the per-request additions (custom colours, corrections,
    the measurement), POST / (tagWithClaude), POST /tag-many, and the Workers AI fallback.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
+import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
 import { spend, unspend } from './people.js';
 
 /* colours each item type really comes in: [main colours, stripe / motif colours]. Must match COLS_BY in core.js. */
@@ -266,15 +267,18 @@ const TAG_SCHEMA = {
    custom: colours and patterns the owner added in the app ({colors:[{key,name,hex,base,types,accent}], patterns:[{key,name,types,base,desc}]})
    extend the enums and the prompt; a single-item tag also asks for confidence, a runner-up, a suggested new colour or pattern
    when nothing listed fits, and a box on plain cloth (the app measures the colour there). */
-const KEY_RE = /^own[a-z]{1,28}$/, PKEY_RE = /^own-[a-z0-9-]{1,28}$/, HEX_RE = /^#[0-9a-f]{6}$/i;
+// own colour and pattern keys: ownkeys.js, the one rule (app core.js OWN_COL_RE / OWN_PAT_RE)
+const KEY_RE = OWN_COL_RE, PKEY_RE = OWN_PAT_RE, HEX_RE = /^#[0-9a-f]{6}$/i;
 const txt = (v, n) => String(v ?? '').replace(/[^\w ,.;:'()\/&-]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+// an own colour's or pattern's name: letters and digits of any script (an Arabic name was emptied by txt), the app's own punctuation
+const ownTxt = (v, n) => String(v ?? '').replace(/[^\p{L}\p{M}\p{N} ,.،'’()\/+-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, n);
 function cleanCustom(c) {
   c = c && typeof c === 'object' ? c : {};
   const types = t => (Array.isArray(t) ? t : []).filter(x => TYPE_LIST.includes(x));
   const colors = (Array.isArray(c.colors) ? c.colors : []).filter(x => x && KEY_RE.test(x.key) && HEX_RE.test(x.hex)).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), types: types(x.types), accent: !!x.accent }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), types: types(x.types), accent: !!x.accent }));
   const patterns = (Array.isArray(c.patterns) ? c.patterns : []).filter(x => x && PKEY_RE.test(x.key)).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(4), types: types(x.types), desc: txt(x.desc, 160) }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(4), types: types(x.types), desc: txt(x.desc, 160) }));
   return { colors, patterns };
 }
 const CONF = { type: 'string', enum: ['high', 'medium', 'low'] };
@@ -355,7 +359,7 @@ function cleanAccents(list, main, own) {
   if (!Array.isArray(list)) return [];
   const ok = new Set([...COLOR_LIST, ...(Array.isArray(own) ? own : [])]), skip = new Set((main || []).filter(Boolean)), out = [];
   for (const v of list.slice(0, 20)) {
-    const k = String(v ?? '').toLowerCase().replace(/gray/g, 'grey').replace(/[^a-z]/g, '');
+    const raw = String(v ?? '').toLowerCase().trim(), k = ok.has(raw) ? raw : raw.replace(/gray/g, 'grey').replace(/[^a-z0-9]/g, '');   // (own keys may hold digits: ownkeys.js)
     if (!ok.has(k) || skip.has(k) || out.includes(k)) continue;
     out.push(k); if (out.length >= ACCENT_MAX) break;
   }
@@ -621,4 +625,4 @@ async function tagWithWorkersAi(env, image) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST,FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };

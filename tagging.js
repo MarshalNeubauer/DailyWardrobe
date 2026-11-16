@@ -490,10 +490,16 @@ const groupOf=t=>COL_GROUPS.find(g=>g.includes(t))||[t];
 /* the Add card's offer of a new colour (Claude's newColor, or a close-up measured over FAR_DE from every listed colour) opens the
    "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline
    forms (newColForm / newPatForm) were removed 2026-11-15: one way to add, the same everywhere */
-function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:q.meas&&q.meas.hex||COLORS[q.primaryColor]})}
+/* the shade the sheet starts on (fix round 3, W2-17-05: Claude's "dusty pink" opened over the tagged cream): a close-up's measurement, else
+   the colour Claude's name says ("dusty pink" → pink, "sky blue" → light blue: the whole name, then its words from the last), else the
+   photo's measurement, else the tagged colour */
+const nameHex=n=>{const w=String(n||'').toLowerCase().split(/[^a-z]+/).filter(Boolean);for(const x of [w.join(''),...w.slice().reverse()]){const k=normCol(x);if(k&&!CUSTOM_COL[k])return COLORS[k]}return null};
+function newColHex(q){const m=q.meas&&q.meas.hex;return q.meas&&q.meas.src==='closeup'&&m||q.newColor&&nameHex(q.newColor.name)||m||COLORS[q.primaryColor]}
+function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:newColHex(q)})}
 const OWN_NAME_MSG='Use only letters, numbers, spaces and - ’ . , ( ) / + in the name.';
-async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownColKey(name);
-  if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a color with that name.');
+async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);
+  if(ownNameShort(name))throw new Error('Give it a name of at least two letters.');if(ownColFind(name)||colNameTaken(name))throw new Error('There is already a color with that name.');
+  const key=ownFreeKey(ownColKey(name),k=>!!COLORS[k]||(settings.custom&&settings.custom.colors||[]).some(c=>c.key===k),OWN_COL_RE);
   if(!/^#[0-9a-f]{6}$/i.test(hex))throw new Error('Pick a shade.');if(!COLORS[base]||CUSTOM_COL[base])throw new Error('Choose what it behaves like.');
   if(!types||!types.length)throw new Error('Choose at least one kind of item.');
   const cu=settings.custom||{};settings.custom={...cu,colors:[...(cu.colors||[]),{key,name,hex:hex.toLowerCase(),base,types,accent:!!accent}]};
@@ -514,8 +520,9 @@ function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.
 /* look: the drawing recipe from "+ New pattern" (worker /describe: {layout, tr, tex | across (+ along) | motif}, roles not colours),
    kept with the pattern (synced) and drawn by detect.js lookSett in each item's colours, the painter too */
 const cleanLookApp=l=>l&&typeof l==='object'&&['texture','stripes','check','windowpane','plaid','motif'].includes(l.layout)&&(Array.isArray(l.tex&&l.tex.grid)||Array.isArray(l.across)||l.motif&&Array.isArray(l.motif.figs))?JSON.parse(JSON.stringify(l)):null;
-async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownPatKey(name);
-  if(key.length<6)throw new Error('Give it a name of at least two letters.');if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key)))throw new Error('There is already a pattern with that name.');
+async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);
+  if(ownNameShort(name))throw new Error('Give it a name of at least two letters.');if(patNameTaken(name))throw new Error('There is already a pattern with that name.');
+  const key=ownFreeKey(ownPatKey(name),k=>!!CUSTOM_PAT[k]||(settings.custom&&settings.custom.patterns||[]).some(p=>p.key===k)||Object.values(PATS_BY).some(l=>l.includes(k)),OWN_PAT_RE);
   types=(types||[]).filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Choose at least one kind of item that has the "drawn like" pattern.');
   const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:ownDescClean(desc),base,types,...(lk?{look:lk}:{})}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
@@ -645,7 +652,7 @@ function missedPattern(q){if(!q||!q.raw||!q.raw.tex||(patBase(q.pattern)||'solid
       if(p&&!(PATS_BY[q.type]||[]).includes(p))p=null}}
   q.missed={c:q.raw.tex,p};return p}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);renderAdd()}
-const settSummary=s=>!s?'generic':s.camo?`camouflage in ${s.camo.cols.length} colors${s.src==='claude+pixels'?', read by Claude with the colors from the photo':s.src==='pixels'?', its colors from the photo':''}`:s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
+const settSummary=s=>!s?'generic':s.camo?`camouflage in its tagged colors${s.src==='claude+pixels'?', laid out as Claude and the photo read it':s.src==='pixels'?', laid out as the photo shows it':''}`:s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
