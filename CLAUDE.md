@@ -272,6 +272,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - measured (Node, desktop): the 149-item audit wardrobe plans 8 months in about 225 ms (was 423); plan hash identical with and without the speed-ups
 
 #### Rest and rotation
+- a piece never worn yet (no `last`) has full rest but creeps only from the day it was `added` (`fresh` in `outfit()`; items without `added` as before): the -1e5 "never" counted as 300 days of creep, so a new suit scored 155 against 74 for one rested six weeks and two new brown suits (brown group) beat `JKT_SAME` on consecutive workdays (the owner, 2026-11-16, 22-23 Nov; now 92, the pair split by a navy suit); `PLAN_RULES` 22; `tests/freshrest.test.js`
 - rest bonuses keep creeping up past their caps (`over(i,from)`: 0.01 a day in `rb`, 0.05 for shirts and trousers, 0.2 for jackets, up to 300 days), so a piece always a point short of another still comes round (on the owner's wardrobe 4 of 11 trousers and 2 of 4 socks were never planned without it)
 - a tie's rest creeps too, capped: `+Math.min(TIE_CREEP_MAX, over(x,30)*TIE_CREEP)` (9, 0.03 a day after 30 days), well under `TIE_GAP`, so a tie still never repeats within three workdays (on the 40-tie audit wardrobe over 12 months: 9 ties never planned before, 0 now; scores unchanged)
 - odd trousers rotate on a long rest (`ptRest`, up to 60 days, since blazer days are weekly) and shoes avoid yesterday's pair when another suits
@@ -291,6 +292,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the very tie of the workday before costs `TIE_NEXT` (20) more (fix round 2, 2026-11-15): with three ties every tie is within three workdays and rest decided, so the day before's tie came back on 33 of 101 workdays (more after a tie swap); now 1; also the next fixed workday's tie (`aheadTie`); `tests/nu2plan.test.js`
 - the same jacket colour group with the same shirt look and tie look as either of the last two workdays is a whole-look repeat (`lookRepeat`)
 - each jacket remembers its last two outfits so its tie and shirt colour vary (`comboRepeat`)
+- the same tie with the same shirt colour group (`shirtGroup`, white and light blue included) on any of the last `PAIR_DAYS` (10) remembered workdays costs `PAIR_GAP` (5), under any jacket (`pairRepeat`, `pairs` in `planSim`, worn days included; the owner, 2026-11-16: a pink shirt and the black-and-pink tie on 15 Nov came back on 24 Nov under another suit, 0.9 points ahead; on his plan to 31 Jan such repeats 6 → 0, average score unchanged); `PLAN_RULES` 23; `tests/pairrepeat.test.js`
 - the next fixed day's colour is avoided, and the suit before a blazer day avoids the colour of the blazer that is due (`fixedAhead`)
 - `fixedAhead` returns the tie and shirt fixed on each of the next 3 workdays (`fx`: sumUps with `w` 0-2 workdays ahead and the day number `n`; picked, moved there, worn or locked; a day marked "Not worn" left out)
 - each fixed tie costs as the last three workdays' do (`aheadTie`): the next workday's as the day before's (`tieRepeat`), two ahead as two back (same tie `TIE_GAP`, colour 2), three ahead as three back (same tie `TIE_GAP`)

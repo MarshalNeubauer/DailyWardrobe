@@ -254,7 +254,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=21;   // 21: pocket squares (2026-11-16): a square with every jacket that has a good one (pocketScore: never the tie's own colour and pattern, an echo of the tie, shirt or jacket, else white; white at a funeral), off with the jacket; 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+const PLAN_RULES=23;   // 23: the same tie with the same shirt colour within 10 workdays, under any jacket, costs PAIR_GAP (pairRepeat, 2026-11-16: a pink shirt and tie on 15 and 24 Nov); 22: a piece never worn yet creeps only from the day it was added (fresh, 2026-11-16: two new brown suits ran back to back); 21: pocket squares (2026-11-16): a square with every jacket that has a good one (pocketScore: never the tie's own colour and pattern, an echo of the tie, shirt or jacket, else white; white at a funeral), off with the jacket; 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -325,6 +325,12 @@ const shirtGroup=i=>{const c=planCol(i);return SHIRT_GROUP[c]||fam(c)},tieGroup=
 const comboRepeat=(sh,x,hist)=>{if(!hist||!hist.length)return 0;const sc=sh?shirtGroup(sh):null;let v=0;
   hist.slice(0,2).forEach((h,n)=>{if(!h)return;if(x&&h.tie===x.id)v+=n?3:7;if(x&&h.tie===x.id&&sc&&h.sc===sc)v+=n?4:8;
     else if(sc&&h.sc===sc&&sc!=='white'&&sc!=='lightblue')v+=n?1:2});return v};
+/* the same tie with the same shirt colour within the last PAIR_DAYS workdays, under any jacket, costs PAIR_GAP (the owner, 2026-11-16:
+   a pink shirt and the black-and-pink tie on 15 Nov came back on 24 Nov under another suit: comboRepeat only knows each jacket's own
+   last two outfits, the other repeats two or three workdays). Every shirt colour, white and light blue too (the owner's manager's choice).
+   pairs: the latest workdays' {tie, sc} (planSim), latest first; measured on the owner's plan to 31 Jan: such repeats 6 → 0, scores unchanged */
+const PAIR_GAP=5,PAIR_DAYS=10;
+const pairRepeat=(sh,x,pairs)=>{if(!sh||!x||!pairs||!pairs.length)return 0;const sc=shirtGroup(sh);return pairs.some(p=>p&&p.tie===x.id&&p.sc===sc)?PAIR_GAP:0};
 /* how a shirt and a tie read at a glance: every dark shirt (black, charcoal, navy, slate, burgundy...) is one "dark shirt" look,
    and black, charcoal, grey and silver ties are one "monochrome" look. Used for repeats, never for matching */
 const shirtLook=sh=>sh?darkShirt(sh)?'dark':shirtGroup(sh):null;
@@ -381,7 +387,10 @@ if(!noJ&&!by(suitDay?'suit':'blazer').length&&by(suitDay?'blazer':'suit').length
 if(!noJ&&suitDay&&!by('suit').length&&!by('blazer').length)suitDay=false;
 // rest: days since the piece was worn. Each rest bonus rises quickly at first (rb: over 10 days; a shirt over 45, trousers over 60) and
 // then keeps creeping up (over()), so a piece that is always one point short of another still comes round instead of never being worn
-const since=i=>n-(last[i.id]??-1e5),rest=i=>Math.min(since(i),60),over=(i,from)=>Math.min(Math.max(0,since(i)-from),300);
+// a piece never worn yet has full rest (it comes round soon) but creeps only from the day it was added (fresh): it counted as rested
+// a year, 63 points over a jacket rested six weeks, so two new brown suits outweighed JKT_SAME and ran back to back (2026-11-16, 22-23 Nov)
+const fresh=i=>{if(last[i.id]!=null||!i.added)return null;const a=new Date(i.added);return n-di(new Date(a.getFullYear(),a.getMonth(),a.getDate()))};
+const since=i=>n-(last[i.id]??-1e5),rest=i=>Math.min(since(i),60),over=(i,from)=>Math.min(Math.max(0,(fresh(i)??since(i))-from),300);
 const rb=i=>Math.min(rest(i),10)*.4+over(i,10)*.01;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something; a day the app has locked (rec.lock:
 // the pieces it showed for one of the coming days) keeps them, so a change on one day doesn't reshuffle the days already shown.
@@ -456,7 +465,7 @@ for(const P of PP)for(const S of SS)for(const X of XX){const {pt}=P,{sh}=S,{x}=X
   const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day)-P.no;   // trousers no shoes of the day suit
   cands.push({q,pt,sh,x,P,S,X});
 }
-const rOf=({pt,sh,x,P,S,X})=>1.5*(P.rb+X.r10)+P.pr+X.r30+S.rs-S.rep-X.rep-(day.ahead?S.ah+X.ah:0)-lookRepeat(top,sh,x,day.prev)-comboRepeat(sh,x,hk);
+const rOf=({pt,sh,x,P,S,X})=>1.5*(P.rb+X.r10)+P.pr+X.r30+S.rs-S.rep-X.rep-(day.ahead?S.ah+X.ah:0)-lookRepeat(top,sh,x,day.prev)-comboRepeat(sh,x,hk)-pairRepeat(sh,x,day.pairs);
 const choose=cs=>{let qmax=-Infinity;for(const c of cs)if(c.q>qmax)qmax=c.q;
   const win=cs.filter(c=>c.q>=qmax-(day.formal||day.occ==='funeral'?FORMAL_QWIN:QWIN));for(const c of win)c.r=rOf(c);
   return win.sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0]};
@@ -722,7 +731,7 @@ const fixedAhead=d=>{const x=new Date(d),ids=[],fx=[];let next=null,soft=null,w=
       const pool=by('blazer');let due=null,dr=-1;for(const j of pool){const rr=di(x)-(last[j.id]??-1e5);if(rr>dr){dr=rr;due=j}}
       if(due)soft={g:jacketGroup(due),c:planCol(due)}}
     w++}return {next,ids,soft,fx}};
-const hist={},remember=o=>{if(!o.top)return;const h=hist[o.top.id]||(hist[o.top.id]=[]);h.unshift({tie:o.tie?o.tie.id:null,sc:o.shirt?shirtGroup(o.shirt):null});h.length=Math.min(h.length,2)};
+const pairs=[],hist={},remember=o=>{pairs.unshift({tie:o.tie?o.tie.id:null,sc:o.shirt?shirtGroup(o.shirt):null});if(pairs.length>PAIR_DAYS)pairs.length=PAIR_DAYS;if(!o.top)return;const h=hist[o.top.id]||(hist[o.top.id]=[]);h.unshift({tie:o.tie?o.tie.id:null,sc:o.shirt?shirtGroup(o.shirt):null});h.length=Math.min(h.length,2)};
 const sumUp=(o,n)=>({jid:o.top?o.top.id:null,jg:o.top?jacketGroup(o.top):null,jc:o.top?planCol(o.top):null,sg:o.shirt?shirtGroup(o.shirt):null,tg:o.tie?tieGroup(o.tie):null,tid:o.tie?o.tie.id:null,sl:shirtLook(o.shirt),tl:tieLook(o.tie),sid:o.shirt?o.shirt.id:null,sh:o.shoes?o.shoes.id:null,n});
 const d=new Date(start);
 // the pool for one day: items in rotation that day (one on its way joins the day after it arrives)
@@ -738,7 +747,7 @@ for(const E=di(end);di(d)<=E;d.setDate(d.getDate()+1)){const w=d.getDay();   // 
 return plan};
 // one workday planned with this record (a day not frozen): the loop above, and peek
 const planDay=(d,rec)=>{const w=d.getDay();if(rec&&rec.lock&&!lockOf(rec,di(d))){rec={...rec};delete rec.lock}
-  const occ=occOf(rec),formal=occ==='formal',lt=rec&&rec.lock&&!(rec.force&&rec.force.top)&&rec.lock.top&&items.find(i=>i.id===rec.lock.top),o=outfit(lt&&!rec.kind&&!(occ==='casual')?lt.type==='suit':rec&&rec.kind?rec.kind==='suit':!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,prev3,ahead:fixedAhead(d),hist});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;o.ctx={prev,prev3,n:di(d)};return o};
+  const occ=occOf(rec),formal=occ==='formal',lt=rec&&rec.lock&&!(rec.force&&rec.force.top)&&rec.lock.top&&items.find(i=>i.id===rec.lock.top),o=outfit(lt&&!rec.kind&&!(occ==='casual')?lt.type==='suit':rec&&rec.kind?rec.kind==='suit':!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,prev3,ahead:fixedAhead(d),hist,pairs});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;o.ctx={prev,prev3,n:di(d)};return o};
 /* peek(k, rec): the outfit day k would get with this record, nothing kept (the piece picker's labels and Suggest another, history.js
    pickScores): the days before k are planned once, then each try plans k alone and puts the rest counts back. A sim that has peeked
    plans on only up to k (use a sim of its own) */
