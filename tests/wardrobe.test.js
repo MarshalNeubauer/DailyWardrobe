@@ -6,7 +6,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     let dialogs=0;p.on('dialog',d=>{dialogs++;d.accept()});
-    await p.goto(url);await p.evaluate(()=>{try{localStorage.removeItem('ward_sort')}catch{}});await p.reload();await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.evaluate(()=>{try{localStorage.removeItem('ward_sort')}catch{}});await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{const I=(id,type,primaryColor,added,x={})=>({id,type,primaryColor,pattern:'solid',added,...x});
       items=[I('be1','belt','black',1,{leather:'calf',metal:'silver'}),I('so1','socks','charcoal',2,{material:'merino wool'}),
         I('ti1','tie','burgundy',3,{pattern:'stripe',secondaryColor:'navy',material:'grenadine',brand:'Marlowe & Finch'}),I('ti2','tie','navy',9),
@@ -99,7 +99,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const sAz=await sortBy('az');
     const names=await p.evaluate(()=>[...document.querySelectorAll('#wardrobe .gi .gimeta b')].map(b=>b.textContent.toLowerCase()));
     ok(names.join('|')===names.slice().sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base',numeric:true})).join('|')&&names.includes('wedding suit')&&sAz.length===12,`A to Z by the title shown, a name included (…${names.slice(-2).join(', ')})`);
-    await p.reload();await p.waitForFunction(()=>window.appReady);
+    await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     ok(await p.evaluate(()=>{show('wardrobe');const s=document.querySelector('#wsort');return (s?s.value:wardSort())==='az'&&/* an empty wardrobe (after the reload) has no sort control */localStorage.getItem('ward_sort')==='az'}),'the sort order is remembered on the device');
     await p.evaluate(()=>{setWardSort('type')});
 
@@ -111,7 +111,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const mats=()=>p.evaluate(()=>{const s=document.querySelector('#item-view .wmat');return s?[...s.options].map(o=>o.textContent):null});
     const mSuit=await mats();
     ok(mSuit&&mSuit[0]==='None'&&mSuit[mSuit.length-1]==='Other'&&['Wool','Flannel','Tweed','Linen','Seersucker','Velvet'].every(m=>mSuit.includes(m))&&!mSuit.includes('Poplin'),`a suit's materials: None, the suit cloths, Other (${mSuit&&mSuit.length} choices)`);
-    ok(await p.evaluate(()=>{const l=[...document.querySelectorAll('#item-view .ivtags>label')].map(x=>x.firstChild.textContent.trim());return l[0]==='Name'&&l[1]==='Brand'&&l.includes('Material')&&l[l.length-1]==='Notes'}),'the Details card has Name and Brand at its top, Material and Notes at its end');
+    // (the checklist redesign, 2026-11-16: Name, Brand and Notes are the "Name & notes" section, Material a section of its own)
+    ok(await p.evaluate(()=>{const l=[...document.querySelectorAll('#item-view [data-ck="names"] .ckb>label')].map(x=>x.firstChild.textContent.trim());return l.join()==='Name,Brand,Notes'&&!!document.querySelector('#item-view [data-ck="material"] .ckb>label select.wmat')}),'the "Name & notes" section has Name, Brand and Notes; Material is a section of its own');
     await p.fill('#item-view .wf-name','Wedding suit');await p.fill('#item-view .wf-brand','Halden');
     await p.selectOption('#item-view .wmat','flannel');await p.waitForFunction(()=>items.find(i=>i.id==='su1').material==='flannel');
     await p.fill('#item-view .wf-notes','Trousers taken in <2cm> & "let out" again');await p.locator('#item-view .wf-notes').blur();
@@ -133,7 +134,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.selectOption('#item-view .wmat','wool');await p.waitForFunction(()=>items.find(i=>i.id==='su1').material==='wool');
     // material options differ by type
     const per={};for(const id of ['sh1','ti1','so1','co1','sx1','wa1']){await p.evaluate(i=>openItem(i),id);per[id]=await mats()}
-    ok(per.sh1.includes('Poplin')&&per.sh1.includes('Oxford')&&!per.sh1.includes('Tweed')&&per.ti1.includes('Silk')&&per.ti1.includes('Grenadine')&&!per.ti1.includes('Poplin')&&per.so1.includes('Merino wool')&&per.co1.includes('Cashmere'),'shirts, ties, socks and coats each offer their own materials');
+    ok(per.sh1.includes('Poplin')&&per.sh1.includes('Performance stretch')&&!per.sh1.includes('Oxford')&&!per.sh1.includes('Twill')&&!per.sh1.includes('Tweed')&&per.ti1.includes('Silk')&&per.ti1.includes('Grenadine')&&!per.ti1.includes('Knitted silk')&&!per.ti1.includes('Poplin')&&per.so1.includes('Merino wool')&&per.co1.includes('Cashmere'),'shirts (fabric only: no weaves), ties (no knitted silk), socks and coats each offer their own materials');
     ok(per.sx1===null&&per.wa1===null&&await p.evaluate(()=>!!document.querySelector('#item-view .wf-name')&&!!document.querySelector('#item-view .wf-notes')),'shoes and watches (leather, band and metal) have no material list, but a name, brand and notes');
     const lists=await p.evaluate(()=>Object.entries(MATERIALS_BY).map(([t,l])=>[t,l.length,new Set(l).size===l.length&&l.every(m=>m===m.toLowerCase()&&m.length<=40),!!TYPES[t]]));
     ok(lists.length>=8&&lists.every(l=>l[1]>=5&&l[2]&&l[3])&&!lists.some(l=>['shoes','belt','watch'].includes(l[0])),`MATERIALS_BY lists materials for ${lists.map(l=>l[0]).join(', ')}`);
@@ -153,26 +154,28 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const texts=await p.evaluate(()=>{const o=planFor()[key(sel)],it=items.find(i=>i.id===window.__top);return {d:desc(it),nm:nm(it),r:JSON.stringify(rateOutfit(o).checks.map(c=>c.why))}});
     ok(/^(navy|charcoal)$/.test(texts.d)&&/^(navy|charcoal) suit$/.test(texts.nm)&&!/Wedding/.test(texts.r),'the planner\'s rule texts and descriptions keep using the color description');
 
-    // ---- the Add card: More details, folded
-    await p.evaluate(()=>{show('add');addManual();setq(0,'type','tie')});
-    const add0=await p.evaluate(()=>({btn:(document.querySelector('#nps-q .morebtn')||{}).textContent,exp:document.querySelector('#nps-q .morebtn').getAttribute('aria-expanded'),open:!!document.querySelector('#nps-q .morein'),
-      labs:[...document.querySelectorAll('#nps-q .card>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join()}));
-    ok(/^More details/.test(add0.btn)&&add0.exp==='false'&&!add0.open&&add0.labs==='Type,Color,Second color,Third color','the Add card has "More details" folded away, after the tags');
-    const h0=await p.evaluate(()=>document.querySelector('#nps-q .card').getBoundingClientRect().height);
-    await p.click('#nps-q .morebtn');await p.waitForSelector('#nps-q .morein');
-    const addM=await p.evaluate(()=>({opts:[...document.querySelector('#nps-q .wmat').options].map(o=>o.textContent),out:!document.querySelector('#nps-q .wmat').closest('.morefold'),above:!!(document.querySelector('#nps-q .wmat').compareDocumentPosition(document.querySelector('#nps-q .morefold'))&Node.DOCUMENT_POSITION_FOLLOWING),inside:!!document.querySelector('#nps-q .morein .wmat')}));
-    ok(addM.opts.includes('Knitted silk')&&!addM.opts.includes('Poplin')&&addM.out&&addM.above&&!addM.inside&&await p.evaluate(h=>document.querySelector('#nps-q .card').getBoundingClientRect().height>h+100,h0),'Material (a tie\'s) is out with the other fields, above More details; unfolded it has Name, Brand and Notes');
-    await p.fill('#nps-q .wf-name','Club tie');await p.fill('#nps-q .wf-brand','Marlowe');await p.fill('#nps-q .wf-notes','A gift');await p.selectOption('#nps-q .wmat','knitted silk');
-    await p.waitForFunction(()=>queue[0].material==='knitted silk'&&queue[0].name==='Club tie');
+    // ---- the Add card: Name, Brand and Notes in "More", a section folded until asked for (the checklist redesign, 2026-11-16; sections
+    // start as the card sets them here, not all open)
+    await p.evaluate(()=>{delete CK_OPEN['*'];show('add');addManual();setq(0,'type','tie')});
+    const sec=k=>`#nps-q [data-ck="${k}"]`,isOpen=k=>p.evaluate(s=>document.querySelector(s).classList.contains('open'),sec(k));
+    const add0=await p.evaluate(()=>{const m=document.querySelector('#nps-q [data-ck="more"]');return {t:m.querySelector('.ckt b').textContent,exp:m.querySelector('.ckh').getAttribute('aria-expanded'),open:m.classList.contains('open'),
+      last:[...document.querySelectorAll('#nps-q .cks')].pop()===m,labs:[...document.querySelectorAll('#nps-q .ckb>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join()}});
+    ok(add0.t==='More'&&add0.exp==='false'&&!add0.open&&add0.last&&add0.labs==='Type,Color,Second color,Third color','the Add card has "More" folded away, after the tags');
+    await p.click(sec('more')+' .ckh');if(!await isOpen('fabric'))await p.click(sec('fabric')+' .ckh');
+    const addM=await p.evaluate(()=>({opts:[...document.querySelector('#nps-q .wmat').options].map(o=>o.textContent),out:!document.querySelector('#nps-q .wmat').closest('[data-ck="more"]'),above:!!(document.querySelector('#nps-q .wmat').compareDocumentPosition(document.querySelector('#nps-q [data-ck="more"]'))&Node.DOCUMENT_POSITION_FOLLOWING),inside:!!document.querySelector('#nps-q [data-ck="more"] .wmat'),
+      fields:['name','brand','notes'].every(k=>!!document.querySelector(`#nps-q [data-ck="more"] .wf-${k}`)&&!!document.querySelector(`#nps-q [data-ck="more"] .wf-${k}`).offsetParent)}));
+    ok(addM.opts.includes('Shantung')&&!addM.opts.includes('Knitted silk')&&!addM.opts.includes('Poplin')&&addM.out&&addM.above&&!addM.inside&&addM.fields,'Material (a tie\'s) is with the other fields, above More; unfolded, More has Name, Brand and Notes');
+    await p.fill('#nps-q .wf-name','Club tie');await p.fill('#nps-q .wf-brand','Marlowe');await p.fill('#nps-q .wf-notes','A gift');await p.selectOption('#nps-q .wmat','shantung');
+    await p.waitForFunction(()=>queue[0].material==='shantung'&&queue[0].name==='Club tie');
     ok(await p.evaluate(()=>document.querySelector('#nps-q .wf-name').value==='Club tie'&&document.querySelector('#nps-q .wf-notes').value==='A gift'),'what was typed stays when the card redraws');
-    await p.click('#nps-q .morebtn');await p.waitForFunction(()=>!document.querySelector('#nps-q .morein'));
-    ok(/3 filled in/.test(await p.textContent('#nps-q .morebtn')),'folded again, it says how many of its own are filled in');
+    await p.click(sec('more')+' .ckh');
+    ok(!await isOpen('more')&&/Name, brand, notes filled in/.test(await p.textContent(sec('more')+' .ckt small')),'folded again, its summary says what of its own is filled in');
     await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.some(i=>i.name==='Club tie'));
     const saved=await p.evaluate(()=>{const i=items.find(x=>x.name==='Club tie');return [i.type,i.brand,i.material,i.notes].join('|')});
-    ok(saved==='tie|Marlowe|knitted silk|A gift',`Confirm saves them with the item (${saved})`);
-    await p.evaluate(()=>{addManual();setq(0,'type','shoes');toggleMore(0)});
+    ok(saved==='tie|Marlowe|shantung|A gift',`Confirm saves them with the item (${saved})`);
+    await p.evaluate(()=>{addManual();setq(0,'type','shoes')});
     ok(await p.evaluate(()=>!document.querySelector('#nps-q .wmat')&&!!document.querySelector('#nps-q .wf-name')),'the Add card offers no material for shoes');
-    await p.evaluate(()=>{queue.length=0;renderAdd()});
+    await p.evaluate(()=>{queue.length=0;renderAdd();CK_OPEN['*']=true});
 
     // ---- Delete: at once, a toast with Undo, everything back
     await p.evaluate(async()=>{const it=items.find(i=>i.id==='su1');Object.assign(it,{name:'Wedding suit',photo:'data:image/png;base64,AAAA',texture:'data:image/png;base64,BBBB',swatch:'data:image/png;base64,CCCC',swSrc:'tex',paused:true,shade:2,secondaryColor:'grey',pattern:'pinstripe',season:'cold',vest:'no',sett:{v:2,a:0,bands:[['#112233',3],['#ffffff',1]]}});await put(it);
@@ -204,7 +207,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // ---- sizes and no sideways scroll, 320 / 390 / 626px, light and dark
     for(const scheme of ['light','dark'])for(const w of [320,390,626]){
       const c=await browser.newContext({viewport:{width:w,height:800},colorScheme:scheme,isMobile:true,hasTouch:true});const q=await c.newPage();
-      await q.goto(url);await q.waitForFunction(()=>window.appReady);
+      await q.goto(url);await q.waitForFunction(()=>window.appReady);await q.evaluate(()=>{CK_OPEN['*']=true});
       await q.evaluate(()=>{const I=(id,type,primaryColor,added,x={})=>({id,type,primaryColor,pattern:'solid',added,...x});
         items=[I('su1','suit','navy',5,{name:'The very long name of a suit that was bought for a wedding in May',brand:'Halden',material:'wool',notes:'n'}),I('sh1','shirt','white',4),I('ti1','tie','burgundy',3),I('sx1','shoes','black',11,{leather:'calf'})];
         settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};flt='all';show('wardrobe')});
@@ -240,7 +243,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const pg=await c.newPage();const er=[];pg.on('pageerror',e=>er.push(e.message));pg.on('dialog',d=>d.accept());
       await pg.goto(url);if(linked){await pg.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await pg.reload()}
-      await pg.waitForFunction(()=>window.appReady);return {c,p:pg,errs:er}};
+      await pg.waitForFunction(()=>window.appReady);await pg.evaluate(()=>{CK_OPEN['*']=true});return {c,p:pg,errs:er}};
     const sync=pg=>pg.evaluate(()=>syncNow());
     const fields=(pg,id)=>pg.evaluate(id=>{const i=items.find(x=>x.id===id);return i?[i.name,i.brand,i.material,i.notes].join('|'):null},id);
     const A=await device(),B=await device();

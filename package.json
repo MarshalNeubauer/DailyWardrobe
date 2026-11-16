@@ -8,7 +8,6 @@
     "test:webkit": "node tests/run.js --webkit",
     "lint": "node tests/lint.js",
     "gaps": "node tests/gaps.js",
-    "assemble": "node tools/asm-prebuild.js",
     "atlas": "node tools/asm-atlas.js",
     "cm-upload": "node tools/asm-cm-upload.js"
   },

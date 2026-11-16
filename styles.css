@@ -448,6 +448,8 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .pausetag{display:table;margin:6px 0 0;padding:2px 8px;border-radius:99px;font-size:.6875rem;font-weight:600;background:color-mix(in srgb,var(--mut) 22%,transparent);color:var(--ink)}
 .rotbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .rotnote{margin:4px 0 0}
+/* the open piece was deleted on another phone (itemsheet.js itemSynced) */
+.ivgone{margin:0 0 12px;padding:10px 12px;border:1px solid var(--danger);border-radius:12px;color:var(--ink);background:var(--card);font-size:.875rem}
 /* Add card: bought, on the way (and an optional arrival date) */
 .ordrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 4px}.ordrow .rotbtn{margin:0}
 .ordate,.card .ordate{display:flex;align-items:center;justify-content:flex-start;gap:8px;margin:0}.ordate input{padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
@@ -568,13 +570,20 @@ html.set-lock,html.set-lock body{overflow:hidden;overscroll-behavior:none}   /* 
 .ivsec .shelp{margin:0 0 10px}.ivsec .btns{margin:0}
 .ivtags .shaderow{margin:2px 0 6px}
 .ivpat{margin:8px 0 0;padding:12px 0 0;border-top:1px solid var(--line)}
-.ivph{margin:12px 0 0}.ivph .ivphbtn{width:100%;gap:8px}.ivphbtn .ivchev{width:18px;height:18px;transition:transform .3s cubic-bezier(.2,.8,.2,1)}.ivph.open .ivphbtn .ivchev{transform:rotate(180deg)}
-.ivphp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}.ivph.open .ivphp{grid-template-rows:1fr}
-.ivphp>div{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .3s}.ivph.open .ivphp>div{visibility:visible;transition-delay:0s}
-.ivphp .phtools{padding-top:8px}
-@media (prefers-reduced-motion:reduce){.ivphp,.ivphbtn .ivchev{transition:none}}
-#item-view .phtools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}#item-view .phtools :is(button,.btn){padding:0 8px;cursor:pointer}
-#item-view .phtools>:last-child:nth-child(odd){grid-column:1/-1}
+/* the photo tools under the pictures (itemsheet.js photoTools; edit-photos-mockups option B, 2026-11-15): one row of icon-and-label
+   buttons, 58px tall, as many columns as buttons (Replace · Rotate · Crop · Close-up); a label wraps rather than overflows at large text */
+#item-view .phtools{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin:12px 0 0}
+#item-view .phtools .ptbtn{position:relative;flex-direction:column;gap:3px;min-height:3.625rem;padding:6px 4px;font-size:.8125rem;line-height:1.15;cursor:pointer;box-sizing:border-box}
+#item-view .ptbtn svg{flex:none;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#item-view .ptbtn span{max-width:100%;overflow-wrap:anywhere}
+#item-view .ptmore{display:flex;justify-content:flex-end;margin:4px 0 0}
+#item-view .ptmore .ptrm{border-color:transparent;background:none;color:var(--danger);font-size:.875rem;padding:0 8px}
+#item-view .ptmore+.card.ivct{margin-top:4px}
+/* "Color & texture" (option B): the paper line, "True color in 3 steps" above Read color and texture, its cost, the reading's done card */
+#item-view .ivct .wbst{margin:0 0 10px;background:var(--bg)}
+#item-view .ivct .wbsteps{margin:0 0 10px}
+#item-view .ivct .wbstcard{background:var(--bg)}   /* set off from the card they sit in */
+#item-view .ivct .ivrd{margin:0}
 .ivrot .rotbtn{flex:1}.ivrot .ordrow{margin:0 0 10px}.ivrot .ordrow .shelp{flex-basis:100%;margin:0}
 .ivdel{margin:22px 0 0;display:flex}.ivdel button{flex:1}
 .ivbar{flex:none;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card);touch-action:none}
@@ -910,6 +919,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 .acct-inv{padding:10px 0;border-top:1px solid var(--line)}
 .acct-inv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}.acct-inv-top b{font-size:.9375rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct-inv.off b{color:var(--mut)}
+.acct-btns{display:flex;gap:8px;flex:none}   /* New link and Revoke (account.js) */
 .acct-tag{flex:none;font-size:.75rem;font-weight:600;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
 /* ---- ui ---- */
 /* the accent as text: a darker gold on the light theme (4.5:1 on --bg and --card); fills and the dark theme keep --acc */
@@ -963,7 +973,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 /* the owner's tools: only for the owner; a tester never sees the server address and code; not connected, the parts that need the
    server are hidden and one line at the top of their section says what connecting turns on (.conn-off-note) */
 body:not(.owner) #adv-photos{display:none}
-body.tester #adv-connection{display:none}
+body.tester:not(.srv-open) #adv-connection{display:none}   /* a tester's phone that was the owner's shows it after "I run the server" (ui.js renderConnUI, W1-7-02) */
 body.nocon:not(.srv-open) #adv-connection{display:none}   /* not connected: only after "I run the server" (ui.js connOwn) */
 body.nocon .conn-only,.connhide{display:none!important}
 .conn-off-note:empty{display:none}
@@ -1027,6 +1037,12 @@ body.nocon .conn-only,.connhide{display:none!important}
 #col-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1200;display:none}#col-backdrop.on{display:block}
 #col-sheet{position:fixed;left:0;right:0;bottom:0;z-index:1201;background:var(--card);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;max-height:92vh;overflow:auto;padding:0 14px;box-shadow:0 -10px 30px rgba(0,0,0,.35);transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);visibility:hidden;max-width:640px;margin:0 auto;overscroll-behavior:contain}
 #col-sheet.on{transform:none;visibility:visible}
+/* swiping the sheets down (sheetSwipe, colpick.js): the grabber; their top below the status bar (--ivtop, as the item sheet's); while one
+   slides away after the swipe it stays drawn but takes no taps */
+.cpgrab{display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px;cursor:grab}
+#col-sheet.on,#rd-sheet.on{max-height:min(92vh,calc(100vh - var(--ivtop)))}
+:is(#col-sheet,#rd-sheet).cpgoing{visibility:visible;pointer-events:none}
+:is(#col-backdrop,#rd-backdrop).cpgoing{display:block;pointer-events:none}
 @media(prefers-reduced-motion:reduce){#col-sheet{transition:none}}
 .cptop{position:sticky;top:0;z-index:2;background:var(--card);padding:10px 0 10px;border-bottom:1px solid var(--line)}
 .cpcmp{display:grid;grid-template-columns:1fr 1fr;margin:4px 0 0}
@@ -1163,7 +1179,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cnwarm{display:flex;gap:8px;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--acc) 15%,transparent);font-size:0.8125rem;line-height:1.4;color:var(--ink)}
 .cnwarm .wbretake{display:inline-block;margin-top:4px}
 /* ---- "Read color and texture from close-up" (colpick.js rd*; closeup-reading-mockups variant A, 2026-11-15) ---- */
-/* the editor's button under Edit photos: the same full-width page button (the design system's), its label only */
+/* the editor's button in the Color & texture card: the same full-width page button (the design system's), its label only */
 .ivrd{margin:8px 0 0}.ivrd .ivrdbtn{width:100%;gap:8px}
 .ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]{opacity:.55}
 .rdcost{display:block;margin:6px 2px 0;font-size:0.75rem;line-height:1.35;color:var(--mut);text-align:center}
@@ -1403,6 +1419,117 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 /* the setup's last step: the tour and sample links one under the other, as links (audit 2026-11-15: an orphan · and bordered buttons with underlined text) */
 #setup .kit-start{flex-direction:column;gap:0}#setup .kit-start>span{display:none}
 #setup .kit-start .linkbtn{border:0;background:none;min-height:44px;padding:0 8px;font-weight:600;font-size:.9375rem;color:var(--acc-ink,var(--acc))}
+/* ---- the checklist of the item sheet and the Add card (checklist.js; 2026-11-16, the owner's approved redesign "2B Checklist"): sections
+   with a status mark and a one-line summary that fold, the close-up beside the drawing, the match bar, the Add card's pinned progress ---- */
+:root{--ck-good:#2a7a4b;--ck-on-good:#fff;--ck-goodbg:#e2efe6;--ck-warn:#94570a;--ck-warnbg:#f9eed3;--ck-gold:#9a7006;--ck-goldbg:#faf2da;--ck-goldln:#ead08a;--ck-ring:#a7b0b6;--ck-shadow:rgba(0,0,0,.16)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--ck-good:#63c58e;--ck-on-good:#0d141b;--ck-goodbg:#132a1e;--ck-warn:#f0b65a;--ck-warnbg:#2b2111;--ck-gold:#e8b83f;--ck-goldbg:#241d0e;--ck-goldln:#5a4614;--ck-ring:#4d5c69;--ck-shadow:rgba(0,0,0,.5)}}
+:root[data-theme=dark]{--ck-good:#63c58e;--ck-on-good:#0d141b;--ck-goodbg:#132a1e;--ck-warn:#f0b65a;--ck-warnbg:#2b2111;--ck-gold:#e8b83f;--ck-goldbg:#241d0e;--ck-goldln:#5a4614;--ck-ring:#4d5c69;--ck-shadow:rgba(0,0,0,.5)}
+.cks{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0 0}
+:is(#item-view,#add) .ckh{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-height:62px;margin:0;padding:10px 12px;border:0;border-radius:14px;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer;box-sizing:border-box}
+.ckt{flex:1;min-width:0;display:flex;flex-direction:column}
+.ckt b{font-size:1.03rem;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.ckt small{display:block;font-size:.84rem;color:var(--mut);line-height:1.35}
+.ckchev{flex:none;width:22px;height:22px;fill:none;stroke:var(--mut);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.cks.open>.ckh .ckchev{transform:rotate(180deg)}
+.ckb{display:none;padding:0 12px 14px}
+.cks.open>.ckb{display:block}
+.ckm{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box}
+.ckm svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ckm b{font-size:.95rem;font-weight:800;line-height:1}
+.ck-good{background:var(--ck-good);color:var(--ck-on-good)}
+.ck-warn{background:var(--ck-warnbg);color:var(--ck-warn);box-shadow:inset 0 0 0 2px var(--ck-warn)}
+.ck-opt,.ck-todo{box-shadow:inset 0 0 0 1.5px var(--ck-ring)}
+.ck-ai{background:var(--ck-goldbg);color:var(--ck-gold);box-shadow:inset 0 0 0 1.5px var(--ck-goldln)}.ck-ai svg{fill:currentColor;stroke:none}
+.ckcn{white-space:nowrap}
+.ckchip{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px;box-shadow:inset 0 0 0 1px var(--swatch-edge)}
+.ckb>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:.875rem;font-weight:600}
+.ckb>label select,.ckb>label>input[type=text]{--fw:max(58%,min(8.5rem,72%));flex:0 0 var(--fw);width:var(--fw);max-width:var(--fw)}
+.ckb .wbst,.ckb .wbstcard{background:var(--bg)}
+.ckb .wbsteps{margin:10px 0 0}
+:is(#item-view,#add) .cklr{display:block;width:100%;min-height:44px;margin:12px 0 0;font-weight:600}
+:is(#item-view,#add) .cklr[aria-pressed=true]{border-color:var(--ck-good);background:var(--ck-goodbg);color:var(--ck-good)}
+.ckadds{display:flex;flex-direction:column;gap:8px;margin:10px 0 0}
+:is(#item-view,#add) .ckadds .btn{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 8px;width:100%;min-height:44px;margin:0;padding:8px 14px;box-sizing:border-box;text-align:center;line-height:1.25}
+.ckreadadd .rdcost{display:inline;margin:0;font-size:.8125rem;font-weight:500;color:inherit;opacity:.75}
+.ckcheap{margin:8px 0 0}
+.ckcu{margin:10px 0 0;flex-wrap:wrap}:is(#item-view,#add) .ckcu .btn{margin:0}:is(#item-view,#add) .ckrm{color:var(--danger)}
+.ckread{margin:10px 0 0}:is(#item-view,#add) .ckread .rdgo{width:100%;margin:0}
+.ckt{align-items:flex-start;text-align:left}
+/* the close-up beside the drawing */
+.cmpw{margin:2px 0 0}
+.cmpv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+:is(#item-view,#add) .cmplv{position:relative;display:block;width:100%;aspect-ratio:1/1;margin:0;padding:0;border:0;border-radius:14px;overflow:hidden;background:#131d2b;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .38s cubic-bezier(.2,.8,.2,1),border-radius .38s}
+.cmplv canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cmp-cu{z-index:3}.cmp-dw{z-index:2}
+:is(#item-view,#add) .cmpv.ovl .cmp-cu{transform:translateX(var(--d,0px));background:transparent;border-top-right-radius:0;border-bottom-right-radius:0}
+:is(#item-view,#add) .cmpv.ovl .cmp-dw{transform:translateX(calc(-1 * var(--d,0px)));border-top-left-radius:0;border-bottom-left-radius:0}
+.cmpv.cmpnow .cmplv{transition:none}
+@media (prefers-reduced-motion:reduce){.cmplv{transition:none}}
+.cmpl{position:absolute;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:rgba(8,13,20,.66);padding:4px 8px;border-radius:6px;line-height:1.2;pointer-events:none;display:inline-flex;gap:4px;align-items:center}
+.cmpl.tl{left:8px;top:8px}.cmpl.tr{right:8px;top:8px}.cmpl.bl{left:8px;bottom:8px}.cmpl.br{right:8px;bottom:8px}
+.cmpl.ok{background:rgba(22,90,52,.88);text-transform:none;letter-spacing:0;font-size:.78rem}
+.cmpl.ok svg{width:13px;height:13px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.cmpl[hidden]{display:none}
+.cmptools{display:flex;gap:8px;margin-top:10px;align-items:center}
+.cmpsp{flex:1}.cmpsp[hidden],.cmpop[hidden]{display:none}
+.cmpop{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:.78rem;color:var(--mut);font-weight:700}
+.cmpop input{flex:1;min-width:0;min-height:44px;margin:0;accent-color:var(--acc)}
+.cmpzm{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none;background:var(--card)}
+:is(#item-view,#add) .cmpzm button{width:44px;height:44px;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;font-size:1.25rem;line-height:1}
+:is(#item-view,#add) .cmpzm button+button{border-left:1px solid var(--line)}
+.cmpbar{position:relative;height:6px;border-radius:3px;margin:16px 2px 4px;background:linear-gradient(90deg,var(--line),var(--ck-good) 42%,var(--ck-good) 58%,var(--line))}
+.cmpbar i{position:absolute;top:-6px;width:4px;height:18px;margin-left:-2px;border-radius:2px;background:var(--ink);transition:left .3s}
+.cmplab{display:flex;justify-content:space-between;font-size:.78rem;color:var(--mut)}
+.cmpmt{margin:4px 0 0;font-weight:700}.cmpwait{font-weight:400;font-size:.8125rem;margin:10px 0 0}
+.cmpmb{display:flex;gap:8px;margin:10px 0 0}
+:is(#item-view,#add) .cmpgo{flex:1;min-height:44px;margin:0;background:var(--acc);color:#101820;border-color:var(--acc);font-weight:600}
+:is(#item-view,#add) .cmpundo{flex:none;min-height:44px;margin:0}
+:is(#item-view,#add) .wbst.cmpwb{margin:8px 0 0;padding:2px 0;border:0;background:none}   /* one line under Match close-up, as in the mockup */
+/* the item sheet: the summary line, the sections, Duplicate and Delete; from 600px a wider panel with two columns */
+.ivsum{display:flex;gap:12px;align-items:center;margin:0 0 4px}
+.ivsumph{flex:none;width:66px;height:80px;border-radius:10px;object-fit:cover;overflow:hidden;background:var(--card);border:1px solid var(--line);box-sizing:border-box}
+.ivsumph .ph.thumb{width:100%;height:100%;max-width:none;margin:0;padding:0;aspect-ratio:auto;background:none}.ivsumph svg{width:100%;height:100%;display:block}
+.ivsumt{flex:1;min-width:0}
+.ivpills{display:flex;flex-wrap:wrap;gap:6px}
+.ivpill{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:13px;font-size:.78rem;font-weight:700;background:color-mix(in srgb,var(--line) 60%,transparent);color:var(--mut);white-space:nowrap}
+.ivpill.good{background:var(--ck-goodbg);color:var(--ck-good)}.ivpill.warn{background:var(--ck-warnbg);color:var(--ck-warn)}
+.ivmeta{margin:4px 0 0;font-size:.8125rem;color:var(--mut);line-height:1.35}
+.ivck .cks .phtools{margin-top:12px}
+.ivck .cks .ivcare{margin:12px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;box-shadow:none}
+.ivck .cks .ivcare h3{margin:0 0 6px;font-size:.9375rem}
+@media (max-width:599.98px){.ivcols{display:flex;flex-direction:column}.ivcl,.ivcr{display:contents}.ivcl>.ivpics{order:1}}
+@media (min-width:600px){.ivck>.ivdup,.ivck>.ivdel{max-width:420px;margin-left:auto;margin-right:auto}}
+@media (min-width:600px){
+  #item-view{width:min(900px,96vw);margin-left:calc(min(900px,96vw)/-2)}
+  .ivin.ivck{max-width:none}
+  .ivcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:start}
+  .ivcr>.cks:first-child{margin-top:0}
+}
+/* the Add card: its title, "N of M checked" pinned at the top of the scroll area (a direct child of the card, so it stays the whole way
+   down; from 600px over both columns), Claude's pattern tiles, the footer line over Confirm */
+#add #queue .qcard.ckcard{background:transparent}
+.ckhd{display:flex;flex-direction:column;padding-right:40px;margin:0 0 4px}
+.ckhd small{font-size:.8125rem;font-weight:600;color:var(--mut);line-height:1.2}.ckhd b{font-size:1.125rem;line-height:1.25;overflow-wrap:anywhere}
+.ckprog{position:sticky;top:4px;z-index:5;display:flex;align-items:center;gap:12px;margin:0 -14px 4px;padding:8px 14px 10px;background:var(--bg);box-shadow:0 8px 8px -8px var(--ck-shadow);font-weight:700;font-size:.9375rem}
+#add #nps-q .ckprog{top:0;margin:-12px -16px 4px;padding:10px 16px}
+.cktrack{flex:1;height:7px;border-radius:4px;background:color-mix(in srgb,var(--line) 80%,transparent);overflow:hidden}
+.cktrack i{display:block;height:100%;background:var(--ck-good);border-radius:4px;transition:width .3s}
+.ckintro .pair{max-width:320px}
+.ckhelp{margin:8px 0 0}
+.ckpts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 6px}
+:is(#item-view,#add) .ckpt{display:flex;flex-direction:column;align-items:stretch;min-height:44px;margin:0;padding:0 0 8px;border:2px solid var(--line);border-radius:12px;background:var(--card);text-align:left;overflow:hidden;color:var(--ink)}
+:is(#item-view,#add) .ckpt[aria-checked=true]{border-color:var(--acc)}
+.ckptsw{display:block;line-height:0}.ckptsw svg{display:block;width:100%;height:auto;aspect-ratio:1.4/1}
+.ckpt b{font-size:.875rem;padding:6px 8px 0;line-height:1.2}.ckpt small{font-size:.75rem;color:var(--mut);padding:0 8px}
+.ckfoot{margin:14px 0 0}.ckfoot .btns{margin:0}#add #queue .ckfoot .btns .pri{flex:1}
+.ckleft{margin:0 0 6px;text-align:center;font-size:.8125rem;color:var(--mut)}
+#add .nps-bar{flex-wrap:wrap}#add .nps-bar .ckleft{flex-basis:100%;margin:0}
+.ckai{display:block;margin:8px 0 0}
+@media (min-width:600px){
+  .ckcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:start}
+  .ckcols>.ckcol:last-child>.cks:first-child{margin-top:0}
+  #add #queue .qcard.ckcard{width:min(calc(100vw - 32px),880px);margin-left:calc(50% - min(50vw - 16px,440px));box-sizing:border-box}
+}
 
 /* ---- right-to-left names, long names (fix round 3, 2026-11-16, W2-16-10, W2-12-02, W2-16-05) ---- */
 /* a typed name keeps its own direction and place in an English line: an Arabic name reads right to left, and the text after it stays after it */

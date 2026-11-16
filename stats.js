@@ -31,12 +31,16 @@ function whyUnused(i){
   if(!wearsJacket()&&typeof dressWhyUnused==='function'){const w=dressWhyUnused(i);if(w)return w}
   const by=t=>items.filter(x=>x.type===t),suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
   const day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0},jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
-  // every jacket's best outfit, overall and with each shirt and each tie: worked out once for the page (fitMemo), not once per unused piece
-  // (a wardrobe of 250 took a minute and a half)
-  const table=()=>fitMemo||(fitMemo=Object.fromEntries(jackets.map(j=>{const t={all:-1e9,shirt:{},tie:{}},pants=j.type==='suit'?[j]:by('pants');
-    for(const pt of pants.length?pants:[null])for(const sh of by('shirt'))for(const x of wearsTie()?by('tie'):[null]){const q=clothesScore(j,pt,sh,x,j.type==='suit',day);if(q>t.all)t.all=q;if(!(q<=t.shirt[sh.id]))t.shirt[sh.id]=q;if(x&&!(q<=t.tie[x.id]))t.tie[x.id]=q}
-    return [j.id,t]})));
-  const gap=(kind,id)=>{const T=table();return Math.min(...jackets.map(j=>T[j.id].all-(T[j.id][kind][id]??-1e9)))};
+  // each jacket's best outfit, and its best with the one shirt or tie asked about, worked out only for the pieces that need a reason and
+  // kept while the plan stays the same (fitMemo: until the plan cache is cleared, so a fold or reopening doesn't work it out again). Every
+  // jacket x trousers x shirt x tie froze Insights for 4.5 s at 300 items, on opening and on every fold (W2-18-02); now a blazer is tried
+  // with its FIT_PANTS best trousers, and its best outfit with its FIT_SHIRTS best shirts (as the planner keeps a shortlist, outfit())
+  const M=fitMemoFor(),tie0=wearsTie()?by('tie'):[null],legs=j=>M.legs[j.id]||(M.legs[j.id]=j.type==='suit'?[j]:topBy(by('pants'),FIT_PANTS,p=>pairScore(j,p)+patternScore([[j,'top'],[p,'bot']])));
+  const best=(j,shs,xs)=>{let b=-1e9;for(const pt of legs(j).length?legs(j):[null])for(const sh of shs)for(const x of xs){const q=clothesScore(j,pt,sh,x,j.type==='suit',day);if(q>b)b=q}return b};
+  const allOf=j=>M.all[j.id]??(M.all[j.id]=best(j,topBy(by('shirt'),FIT_SHIRTS,sh=>shirtScore(j,sh)+patternScore([[j,'top'],[sh,'shirt']])),tie0));
+  const withOf=(kind,id,j)=>{const k=kind+'|'+id+'|'+j.id;if(M.w[k]!==undefined)return M.w[k];const it=items.find(x=>x.id===id);
+    return M.w[k]=kind==='shirt'?best(j,[it],tie0):best(j,by('shirt'),[it])};
+  const gap=(kind,id)=>Math.min(...jackets.map(j=>{const w=withOf(kind,id,j);return Math.max(allOf(j),w)-w}));
   const n=v=>Math.round(v),pts=v=>n(v)===1?'1 point':n(v)+' points';
   switch(i.type){
     case 'pants':{if(!blazerDays)return 'You have no blazer days, so separate pants are never needed.';if(!by('blazer').length)return 'There is no blazer to wear them with.';
@@ -56,8 +60,12 @@ function whyUnused(i){
     case 'overcoat':case 'raincoat':return i.type==='raincoat'?'No rain in the forecast, and days beyond it are planned without rain.':'No day in the next six months is cold enough for a coat.';
     case 'watch':return 'Another watch matches the shoes and buckle better every day.'}
   return 'The planner never needs it.'}
+const FIT_PANTS=3,FIT_SHIRTS=8;
 let fitMemo=null;
-function buildStats(){fitMemo=null;
+const fitMemoFor=()=>fitMemo&&fitMemo.c===cache&&fitMemo.n===items.length&&fitMemo.s===fitSettingsSig()?fitMemo:(fitMemo={c:cache,n:items.length,s:fitSettingsSig(),legs:{},all:{},w:{}});
+const fitSettingsSig=()=>JSON.stringify([settings.workdays,settings.blazerDays,settings.dress,settings.custom,settings.darkShirts]);
+const topBy=(arr,n,f)=>arr.length<=n?arr:arr.map(i=>[f(i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)).slice(0,n).map(x=>x[1]);
+function buildStats(){
   const short=statsShort(),worn=wornDays(),plan=short.length?[]:plannedDays(),W={},P={},last={},next={};
   for(const w of worn)for(const s of SLOTS){const id=w.ids[s];if(!id||(s==='bot'&&w.suitDay))continue;W[id]=(W[id]||0)+1;last[id]=w.d}
   for(const [k,o] of plan)for(const s of SLOTS){const it=o[s];if(!it||(s==='bot'&&o.suitDay))continue;P[it.id]=(P[it.id]||0)+1;if(!next[it.id])next[it.id]=keyDate(k)}
@@ -69,7 +77,9 @@ function buildStats(){fitMemo=null;
   const lowest=[...rates].sort((a,b)=>a[2].score-b[2].score).slice(0,3).filter(x=>x[2].score<90);
   // colours and pairings
   const tally=(f)=>{const t={};for(const [,o] of plan){const k=f(o);if(k)t[k]=(t[k]||0)+1}return Object.entries(t).sort((a,b)=>b[1]-a[1])};
-  const jackets=tally(o=>o.top&&jacketGroup(o.top)),shirts=tally(o=>o.shirt&&shirtGroup(o.shirt)),ties=tally(o=>o.tie&&tieGroup(o.tie));
+  // an owner's color is its own row, by its own name ("Dusty pink"), not the group of the color it behaves like ("Tan", W2-17-04)
+  const own=(i,g)=>CUSTOM_COL[primaryCol(i)]?primaryCol(i):g(i);
+  const jackets=tally(o=>o.top&&own(o.top,jacketGroup)),shirts=tally(o=>o.shirt&&own(o.shirt,shirtGroup)),ties=tally(o=>o.tie&&own(o.tie,tieGroup));
   const pairs=tally(o=>o.top&&o.tie&&o.top.id+'|'+o.tie.id).slice(0,5).map(([k,n])=>{const [a,b]=k.split('|').map(id=>items.find(i=>i.id===id));return {a,b,n}}).filter(p=>p.a&&p.b);
   // rest
   let minRest=null,b2b=0;const lastTop={};plan.forEach(([k,o],n)=>{if(o.top){if(lastTop[o.top.id]!==undefined)minRest=Math.min(minRest??1e9,n-lastTop[o.top.id]);lastTop[o.top.id]=n}
@@ -81,6 +91,9 @@ function buildStats(){fitMemo=null;
     const r=rateOutfit(o),t=trend[TREND_WEEKS-1-a];t.n++;t.sum+=r.score;if(r.hard.length)t.hard++}
   // weeks that ended before the wardrobe existed are left out (six empty "–" weeks read as missing data, audit 2026-11-14)
   const s0=planStartDay();if(s0)while(trend.length>1&&!trend[0].n&&new Date(trend[0].from.getFullYear(),trend[0].from.getMonth(),trend[0].from.getDate()+6)<s0)trend.shift();
+  // each week is named by its first workday on or after the day the wardrobe began: "Nov 13", a Friday before the first day, read as
+  // scores from before the app was installed (W2-15-08)
+  for(const t of trend){t.label=t.from;for(let g=0;g<7;g++){const d=new Date(t.from.getFullYear(),t.from.getMonth(),t.from.getDate()+g);if(d>T)break;if(isWorkday(d)&&(!s0||d>=s0)){t.label=d;break}}}
   const tn=trend.reduce((a,t)=>a+t.n,0),wornAvg=tn?Math.round(trend.reduce((a,t)=>a+t.sum,0)/tn):null,wornHard=trend.reduce((a,t)=>a+t.hard,0);
   const planHard=rates.filter(x=>x[2].hard.length).length;
   return {short,worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned&&!dressOut(r.i.type))}}
@@ -90,27 +103,33 @@ const statName=i=>itemName(i)||sentence(desc(i)||nm(i)),statName1=i=>itemName(i)
 /* an empty wardrobe's pages (Insights, Packing list, Laundry & cleaning): the way to start, as on the empty Wardrobe */
 const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" onclick="openAdd()">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" onclick="kitSampleLoad()">Try a sample wardrobe</button>':''}</div>`;
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
-const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${typeof phSm==='function'?phSm(i):i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true)}</span>`;
+const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${typeof phSm==='function'?phSm(i):i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true)}</span>`;
 const GROUP_NAMES={grey:'Gray',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
 const groupName=g=>GROUP_NAMES[g]||colName(g).replace(/^./,c=>c.toUpperCase());
 const groupCol=g=>COLORS[({red:'burgundy',yellow:'paleyellow',beige:'beige',purple:'purple',green:'green'})[g]||g]||'#8b8f96';
+const statBar=(n,max,cls='')=>`<span class="st-bar ${cls}"><i style="width:${max?Math.max(2,Math.round(100*n/max)):0}%"></i></span>`;
+const statTypeRows=(S,t)=>S.rows.filter(r=>r.i.type===t).sort((a,b)=>(b.worn+b.planned)-(a.worn+a.planned)||(a.i.id<b.i.id?-1:1));
+/* one Wear counts section's rows: drawn when the section is open, or filled in when it is unfolded (statsToggle) */
+function statRowsHtml(S,t){const rs=statTypeRows(S,t),max=Math.max(1,...rs.map(r=>Math.max(r.worn,r.planned))),bar=statBar;
+  return rs.map(r=>`<div class="st-row${!r.worn&&!r.planned?' idle':''}">${statPic(r.i)}<div class="st-main"><span class="${titleCls(r.i)} st-nm">${esc(statName(r.i))}</span>
+        <span class="st-bars">${bar(r.worn,max,'w')}${bar(r.planned,max,'p')}</span>
+        <small class="mut">${r.worn?`worn ${r.worn}×${r.last?' · last '+statDate(r.last):''}`:'not worn yet'} · ${r.planned?`planned ${r.planned}×${r.next?' · next '+statDate(r.next):''}`:'not planned'}</small></div></div>`).join('')}
+let statsLast=null;   // the numbers the page was last drawn from, with the plan they came from (a fold fills its rows from them)
 function renderStats(){
   const el=$('#stats');if(!el)return;
   if(!items.length){el.innerHTML=`<div class="phead"><h2>Insights</h2></div><p class="mut empty">Your wardrobe is empty.</p>${emptyAdd()}`;return}
-  const S=buildStats(),nPlan=S.plan.length,bar=(n,max,cls='')=>`<span class="st-bar ${cls}"><i style="width:${max?Math.max(2,Math.round(100*n/max)):0}%"></i></span>`;
+  const S=buildStats(),nPlan=S.plan.length,bar=statBar;statsLast={S,c:cache,n:items.length};
   const tile=(v,l)=>`<div class="st-tile"><b>${v}</b><small>${l}</small></div>`;
   const first=S.worn.length?S.worn[0].d:null;
   // wear counts, one foldable section per type
   const types=Object.keys(TYPES).filter(t=>items.some(i=>i.type===t));
-  const sect=t=>{const rs=S.rows.filter(r=>r.i.type===t).sort((a,b)=>(b.worn+b.planned)-(a.worn+a.planned)||(a.i.id<b.i.id?-1:1)),max=Math.max(1,...rs.map(r=>Math.max(r.worn,r.planned))),open=statsOpen[t]??(statsOpen[t]=t==='suit');
+  const sect=t=>{const rs=statTypeRows(S,t),open=statsOpen[t]??(statsOpen[t]=t==='suit');
     // a type the dress code leaves out (blazers with jackets off) isn't "never worn": it isn't asked for (re-audit 2026-11-15)
     const out=dressOut(t),idle=out||S.short.length?0:rs.filter(r=>!r.worn&&!r.planned).length;
     // a folded section holds no rows (and so none of its photos) until it is opened
     return `<details class="st-type" data-type="${t}"${open?' open':''} ontoggle="statsToggle(this)"><summary><b>${TYPES[t]}${rs.length>1&&!/s$/.test(TYPES[t])?'s':''}</b><small class="mut">${rs.length} · ${out?'left out by your dress code':S.short.length?'nothing planned yet':idle?`${idle} never worn`:'all in use'}</small></summary>
-      <div class="st-rows">${!open?'':rs.map(r=>`<div class="st-row${!r.worn&&!r.planned?' idle':''}">${statPic(r.i)}<div class="st-main"><span class="${titleCls(r.i)} st-nm">${esc(statName(r.i))}</span>
-        <span class="st-bars">${bar(r.worn,max,'w')}${bar(r.planned,max,'p')}</span>
-        <small class="mut">${r.worn?`worn ${r.worn}×${r.last?' · last '+statDate(r.last):''}`:'not worn yet'} · ${r.planned?`planned ${r.planned}×${r.next?' · next '+statDate(r.next):''}`:'not planned'}</small></div></div>`).join('')}</div></details>`};
-  const mix=(title,list)=>!list.length?'':`<div class="st-mix"><small class="mut">${title}</small>${list.slice(0,7).map(([g,n])=>`<div class="st-mixrow"><span class="st-dot" style="background:${groupCol(g)}"></span><span class="st-mixnm">${groupName(g)}</span>${bar(n,list[0][1])}<small class="mut">${Math.round(100*n/nPlan)}%</small></div>`).join('')}</div>`;
+      <div class="st-rows">${!open?'':statRowsHtml(S,t)}</div></details>`};
+  const mix=(title,list)=>!list.length?'':`<div class="st-mix"><small class="mut">${title}</small>${list.slice(0,7).map(([g,n])=>`<div class="st-mixrow"><span class="st-dot" style="background:${groupCol(g)}"></span><span class="st-mixnm">${esc(groupName(g))}</span>${bar(n,list[0][1])}<small class="mut">${Math.round(100*n/nPlan)}%</small></div>`).join('')}</div>`;
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
   const planLine=S.short.length?'':` The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.`;
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}
@@ -124,7 +143,7 @@ function renderStats(){
   <section class="card st-card" id="st-trend"><h3>Your scores</h3>
   ${S.trendDays?`<p class="mut"><small>What you really wore, week by week: the average outfit score of each ${S.trend.length===1?'week':'of the last '+S.trend.length+' weeks'}.</small></p>
     <div class="st-trend" role="img" aria-label="Average score of the outfits worn in each ${S.trend.length===1?'week':'of the last '+S.trend.length+' weeks'}: ${S.trend.map(t=>t.n?Math.round(t.sum/t.n):'none').join(', ')}">${S.trend.map(t=>{const a=t.n?Math.round(t.sum/t.n):0;
-      return `<div class="st-wk${t.n?'':' none'}"><b>${t.n?a:'–'}</b><span class="st-col"><i class="${t.hard?'low':a>=80?'good':'ok'}" style="height:${t.n?Math.max(6,a):0}%"></i></span><small>${statDate(t.from)}</small></div>`}).join('')}</div>
+      return `<div class="st-wk${t.n?'':' none'}"><b>${t.n?a:'–'}</b><span class="st-col"><i class="${t.hard?'low':a>=80?'good':'ok'}" style="height:${t.n?Math.max(6,a):0}%"></i></span><small>${statDate(t.label||t.from)}</small></div>`}).join('')}</div>
     <p class="mut"><small>Average ${S.wornAvg} over ${S.trendDays} day${S.trendDays===1?'':'s'}${S.wornHard?`; ${S.wornHard} had a real mistake (a score of ${HARD_CAP} or less)`:'; none had a real mistake'}.${planLine}</small></p>`
     :`<p class="mut"><small>Nothing worn in the last ${TREND_WEEKS} weeks yet.${planLine}</small></p>`}</section>
 
@@ -145,7 +164,11 @@ ${S.short.length?'':`
 
   ${typeof tagStatsCard==='function'?tagStatsCard():''}`;
 }
-function statsToggle(d){const t=d.dataset.type;if(statsOpen[t]===d.open)return;statsOpen[t]=d.open;if(d.open&&!d.querySelector('.st-row')){const y=scrollY;renderStats();scrollTo(0,y)}}
+/* unfolding a section fills in only its rows, from the numbers the page was drawn from while the plan is the same (it re-drew the whole
+   page, W2-18-02); after a change it draws the page again */
+function statsToggle(d){const t=d.dataset.type;if(statsOpen[t]===d.open)return;statsOpen[t]=d.open;if(!d.open||d.querySelector('.st-row'))return;
+  const L=statsLast,box=d.querySelector('.st-rows');if(L&&L.c===cache&&L.n===items.length&&box){box.innerHTML=statRowsHtml(L.S,t);return}
+  const y=scrollY;renderStats();scrollTo(0,y)}
 function openStats(){closeSettings();show('stats');scrollTo({top:0})}   // Insights is a tab now (it was a page opened from Settings)
 /* ---- the next six months are planned a week at a time while the phone is idle (statsPlan), not all at once when Insights opens: that
    froze a phone for 1.3 s (audit 2026-11-13). Opening the tab (statsShow, from show()) draws the page at once when they are planned,

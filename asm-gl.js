@@ -5,7 +5,7 @@
 
    Covered (stage 1; later stages extend asmGlWhy, the one coverage rule, and the shader):
      - the suit master ('suit') with the cloth look and lighting on (job.look !== false), a background picture (job.bg), at a phone's
-       size or smaller (job.size <= ASM_SIZE; since stage 6 up to ASM_GL_MAX, the computer's 2880 pre-build on its graphics card)
+       size or smaller (job.size <= ASM_SIZE; since stage 6 up to ASM_GL_MAX, the masters' 2880)
      - the jacket a solid colour, or a plain one- or two-colour twill (asmTwillTex: not herringbone, linen or tweed); dark cloths take the
        full look (ASM_CM_LOOK), lighter ones the folds' lighting, as on the CPU
      - (stage 2) a jacket read in bands (asmSuitTex: pinstripes, chalk stripes, windowpanes, checks in one or two colours): its tile uploaded
@@ -39,11 +39,11 @@ const ASM_GL_CUFFS=15;   // (stage 4) turned shirt parts (P.cuffAng not 0) the s
 /* (stage 4) the master's turned shirt parts (asmCmPrep's P.cuff / P.cuffAng: a cuff's weave runs along the arm): each part's index into a
    short table of the turned ones (0 = upright: the front, a small part, no part) and the table's cos and sin, worked out here in float64 */
 function asmGlCuffs(P){const ix=new Uint8Array(256),cs=[1,0];let n=0;if(P.cuff)P.cuffAng.forEach((a,i)=>{if(a&&i<255){n++;if(n<=ASM_GL_CUFFS){ix[i]=n;cs.push(Math.cos(a),Math.sin(a))}}});return {ix,cs,n}}
-/* (stage 6) the largest picture painted on the chip: the PC's pre-build paints at 2880 (ASM_CM_SIZE, scaled to 2048 after, as on the CPU)
-   on the graphics card, one context; about 440 MB of textures there (twice 2048's, the solved positions as
+/* (stage 6) the largest picture painted on the chip: 2880, the masters' size (ASM_CM_SIZE, scaled to 2048 after, as on the CPU; the PC
+   builder, removed 2026-11-16, painted there on its graphics card; tests/asmgl.test.js with ASMGL_SIZE=2880 does), one context; about 440 MB of textures there (twice 2048's, the solved positions as
    floats); a chip whose MAX_TEXTURE_SIZE is under the size has no context (asmGlContext) and the CPU paints */
 const ASM_GL_MAX=2880;
-let asmGlNot='';   // (stage 6) why the last asmGlTry returned null ('' after a picture): the worker adds it to a CPU picture (glWhy) for the builder's log
+let asmGlNot='';   // (stage 6) why the last asmGlTry returned null ('' after a picture), for debugging
 const ASM_GL_RETRY_MS=60e3;  // after a lost context, the CPU paints this long before the graphics chip is tried again
 const ASM_GL='asm_gl';   // localStorage: '0' = this phone paints every picture on the processor (Settings → Outfit pictures → Advanced)
 const asmGlPref=()=>{try{return localStorage.getItem(ASM_GL)!=='0'}catch{return true}};
@@ -572,7 +572,7 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   const o=new Uint8Array(4*S*S);gl.readPixels(0,0,S,S,gl.RGBA,gl.UNSIGNED_BYTE,o);return new Uint8ClampedArray(o.buffer)}
 /* asmCmBuild's first step: the look on the graphics chip -> {url, gl:true, ms}, or null (not covered, no WebGL2, a lost context: the CPU
    paints it). hit is asmCmSetup's (the master's setup and solved positions) */
-/* the finished pixels (S x S, RGBA) -> the picture's JPEG: over a phone's size (the PC's 2880) scaled to 2048 exactly as asmCmBuild scales
+/* the finished pixels (S x S, RGBA) -> the picture's JPEG: over a phone's size (2880) scaled to 2048 exactly as asmCmBuild scales
    the CPU's picture */
 async function asmGlEncode(o,S){let img=new ImageData(o,S,S);
   if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
@@ -589,10 +589,7 @@ async function asmGlTry(job,hit){const P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;cons
     if(P.A.shirt)asmCmButtons(o,P,[0,2,4].map(k=>L[parseInt(hx.slice(k,k+2),16)||0]),L,gam);   // the shirt's buttons, drawn (ASM_CM_BTN), as on the CPU
     if(job.bar&&P.A.tie){const tm=new Uint8Array(N);for(let k=0;k<N;k++)tm[k]=P.A.tie[k]>127?1:0;asmBarDraw(o,tm,S,job.bar,null)}
     asmCmFinish(o,hit);   // the figure seated in the room (asm-color.js ASM_CM_FIN), as on the CPU
-    // (stage 6) over a phone's size (the PC's 2880) scaled to 2048 exactly as asmCmBuild scales the CPU's picture
-    // (2026-11-14, the PC pre-build) job.raw: the finished pixels as they are, for another worker to shrink and encode (asmGlEncode) while
-    // the chip paints the next look
-    if(job.raw)return {px:o,S,gl:true,ms,renderer:G.renderer};
+    // (stage 6) over a phone's size (2880) scaled to 2048 exactly as asmCmBuild scales the CPU's picture
     return {url:await asmGlEncode(o,S),gl:true,ms,renderer:G.renderer}}
   catch(e){console.warn('asm-gl: painting on the processor instead',e);asmGlNot='graphics error: '+String(e&&e.message||e).slice(0,200);asmGlLost(G.gl);return null}}
 /* ---- Settings → Outfit pictures → Advanced (owner only): "Graphics-chip painting", this phone's switch, and how the last picture

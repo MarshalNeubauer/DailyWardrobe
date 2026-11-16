@@ -4,7 +4,7 @@
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   const open=async(w=390)=>{const ctx=await browser.newContext({viewport:{width:w,height:844}});const p=await ctx.newPage();p.errs=[];
-    p.on('pageerror',e=>p.errs.push(e.message));p.on('dialog',d=>d.accept());await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    p.on('pageerror',e=>p.errs.push(e.message));p.on('dialog',d=>d.accept());await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{if(typeof setupClose==='function'&&document.querySelector('#setup.on'))setupClose()});return p};
   const fits=p=>p.evaluate(()=>{const s=document.querySelector('#kitsheet'),out=[...s.querySelectorAll('button,label,textarea,li,svg')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&(r.left<-0.5||r.right>innerWidth+0.5)});
     return document.documentElement.scrollWidth<=innerWidth&&!out.length});
@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('main').inert&&tourSeen()),'Escape closes it, the page usable again, and it is marked seen');
     /* ---- the close-up guide, from the Add card's close-up step ---- */
     await p.evaluate(()=>{openAdd();addManual()});
-    ok(await p.evaluate(()=>{const c=document.querySelector('#nps-q .texslot .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#nps-q .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
+    ok(await p.evaluate(()=>{const c=document.querySelector('#nps-q [data-ck="tex"] .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#nps-q .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
     await p.click('#nps-q .wbstcard');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),'the card opens the short white-paper tip');
     await p.click('#kitsheet .kit-body .linkbtn');await p.waitForFunction(()=>document.querySelector('#kit-title').textContent==='A good close-up');

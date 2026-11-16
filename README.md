@@ -63,50 +63,13 @@ Two parts, no build step.
 
 Secrets are set once in the Cloudflare dashboard (or `wrangler secret put NAME`) and never live in this repository. `.github/workflows/deploy-worker.yml` deploys the worker whenever a merge to `main` changes it; for that the repository needs the secret `CLOUDFLARE_API_TOKEN` and the variables `CLOUDFLARE_ACCOUNT_ID` and `WARDROBE_KV_ID`. Until they are set the workflow skips and the worker is deployed by hand (`npx wrangler deploy`).
 
-The owner connects their own device under Settings → Connection with the server's address and `APP_TOKEN`, and sends each tester an invite link.
-
-## Pre-building the assembled outfit pictures
-
-An assembled outfit picture is painted on a color-coded master photo (one per kind of dress), from each garment's color and pattern. A phone can do that itself, but it takes a few seconds a look. A computer can paint every look ahead of time and upload it, so phones only download the finished picture.
-
-**When:** after the masters are uploaded (`npm run cm-upload`, below), and again after a release that changes how pictures are painted: a look's key carries the painter's code, so changed looks get new keys. The owner's computer runs it in a loop (`--watch`), which does this by itself.
-
-**How**, in PowerShell from the repository folder (after `npm install` and `npx playwright install chromium`, as for the tests):
-
-```
-$env:DW_WORKER='https://<your worker>.workers.dev/'; $env:DW_TOKEN='<APP_TOKEN>'; npm run assemble
-```
-
-Options go after `--`, e.g. `npm run assemble -- --dry --days 60`:
-
-| Option | What it does |
-| --- | --- |
-| `--days N` | how far ahead to plan (default 120) |
-| `--jobs N` | how many pictures are painted at once (default half the computer's logical cores, at most 16) |
-| `--profile FOLDER` | keep the browser's data there between runs (wardrobe, masters, each master's worked-out part, the record of uploads), so the next run starts warm |
-| `--watch M` | keep running: every M minutes (default 5) rebuild only what changed; ends with code 10 when `main` moves on GitHub |
-| `--save FOLDER` | keep a copy of every picture there |
-| `--worker URL` | the server's address, instead of `DW_WORKER` |
-| `--dry` | build and report, upload nothing |
-| `--origin URL` | the app's address, if it isn't `https://marshalneubauer.github.io/DailyWardrobe/` |
-
-**What it does:**
-1. It runs the app in a headless browser, connected as the owner.
-2. It loads the wardrobe from the backup. The backup is never written.
-3. It builds the picture of every look in the coming workdays with the same code a phone runs, from the same photos.
-4. It uploads each picture to the server under its look's key. A look whose picture on the server is already current is skipped, so a second run uploads nothing.
-
-**On a phone:**
-- It asks for a look's picture before downloading a master, and uses it.
-- If nothing was uploaded for the look (a swap, a new look), the phone paints it itself.
-
-**Costs:**
-- Each upload is one write on the server's storage. The free plan allows 1,000 a day for everything, and this computer uploads at most 300 a day (`tools/upload-budget.js`).
-- The code (`DW_TOKEN`) is only read from the environment: never put it in a file in the repository.
+The owner connects their own device under Settings → Connection with the server's address and `APP_TOKEN`, and sends each tester an invite link. Invite links open only on the app's own server: if you host the worker yourself, put its address in `APP_SERVERS` in account.js, or links to it are refused. A tester who lost the link gets a new one from the owner's list (Settings → Connection → New link); it opens the same wardrobe.
 
 ## The color-coded masters and the master atlas
 
-Two more scripts for the computer, with `DW_WORKER` and `DW_TOKEN` set as for `npm run assemble`:
+An assembled outfit picture is painted on a color-coded master photo (one per kind of dress), from each garment's color and pattern. Each phone paints its own looks, on its graphics chip where it can (about 90 ms a look) or on the processor.
+
+Two scripts for the computer, in PowerShell from the repository folder (after `npm install` and `npx playwright install chromium`, as for the tests), with the server's address and code in the environment: `$env:DW_WORKER='https://<your worker>.workers.dev/'; $env:DW_TOKEN='<APP_TOKEN>'`. The code is only read from the environment: never put it in a file in the repository. Each upload is one write on the server's storage (the free plan allows 1,000 a day for everything), and this computer uploads at most 300 a day (`tools/upload-budget.js`).
 
 - `npm run cm-upload -- --dir <folder>` puts the color-coded masters (each kind's master, zone masks, sleeve and lapel masks, from the folder `colormaster.js` writes) on the server under the keys the app asks for. `--kinds suit,vest` limits it to some kinds, `--bg <file>` uploads the background behind every master (alone, or with the masters), `--dry` says what would go up. A record already there with the same signature is not written again.
 - `npm run atlas` measures every pixel of the masters once and writes the full atlas for work on the computer to `--out` (default `./atlas`, which git ignores); it uploads nothing. `--parts <folder>` adds finer SAM part pictures, `--origin` as above. Run it again after a master or a mask is made again. `node tools/atlas.js <folder> list` reads it back.
@@ -124,6 +87,6 @@ npm run lint        # ESLint over every script (the push check runs it on the ch
 npm run gaps        # the functions and CSS rules no test reaches, from tests/impact.map
 ```
 
-On Windows, in PowerShell, `npm` may be blocked by the script policy (`npm.ps1 cannot be loaded`): type `npm.cmd` instead (`npm.cmd test`, `npm.cmd run assemble`), or run the scripts with `node` directly (`node tests/run.js --changed`).
+On Windows, in PowerShell, `npm` may be blocked by the script policy (`npm.ps1 cannot be loaded`): type `npm.cmd` instead (`npm.cmd test`, `npm.cmd run cm-upload`), or run the scripts with `node` directly (`node tests/run.js --changed`).
 
 The tests serve the repository locally, drive the app in headless Chromium at phone sizes, and run `worker.js` with mocked bindings: nothing touches a real server. `npm test` compares the branch with `origin/main` and uses `tests/impact.map` (what each test uses) to pick the tests; commit the map with the change. Before a push, `.githooks/pre-push` (switched on by the first test run) refuses it while the map has uncommitted changes, while the branch changed app files without a `CACHE` in `sw.js` above `main`'s, or while ESLint finds a name that doesn't exist in a changed script. `CLAUDE.md` describes every file and the working rules in detail.

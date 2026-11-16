@@ -5,7 +5,7 @@ module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const core=await p.evaluate(()=>{const L=h=>rgbLab(...hexRgb(h))[0],it={id:'x',type:'suit',primaryColor:'deeptaupe',pattern:'solid'};
       return {base:L(colOf(it)),dark:L(colOf({...it,shade:-2})),light:L(colOf({...it,shade:3})),tag:primaryCol({...it,shade:-2}),lum:lumOf('deeptaupe'),
         key:comboKey({suitDay:true,top:it})===comboKey({suitDay:true,top:{...it,shade:-2}}),name:[shadeName(0),shadeName(-2),shadeName(1)].join('|')}});
@@ -16,12 +16,12 @@ module.exports=async({ok,chromium,url,settle})=>{
     const card=await p.evaluate(async()=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
       show('add');addManual();const q=queue[0];q.manual=false;q.photo='tests/fixtures/suit-mink.jpg';q.texture='tests/fixtures/suit-mink-closeup.png';q.type='suit';q.primaryColor='deeptaupe';
       q.meas={...measureCloth(await ld(q.texture),null,{}),src:'closeup'};q.meas.near=nearestCols('suit',q.meas.lab,false);renderAdd();
-      const r=document.querySelector('#nps-q .shaderow');return r&&{txt:r.textContent,match:!!r.querySelector('.chipbtn')}});
-    ok(card&&/Shade.*As tagged/.test(card.txt)&&card.match,'the Add card has a Shade row with − / + and Match close-up');
+      const r=document.querySelector('#nps-q .shaderow');return r&&{txt:r.textContent,match:!!document.querySelector('#nps-q [data-ck="tex"] .cmpgo')}});   // (the checklist redesign, 2026-11-16: Match close-up is in Texture match, under the comparison)
+    ok(card&&/Shade.*As tagged/.test(card.txt)&&card.match,'the Add card has a Shade row with − / +, and Match close-up in Texture match');
     await p.click('#nps-q .shaderow .shbtn[aria-label="Darker"]');
     const st=await p.evaluate(()=>({s:queue[0].shade,v:document.querySelector('#nps-q .shval').textContent,drawn:document.querySelector('#nps-q .tagsw').innerHTML.includes(colOf(queue[0]))}));
     ok(st.s===-1&&st.v==='Darker 1'&&st.drawn,'− makes it one step darker, and the swatch is drawn in the new shade');
-    await p.click('#nps-q .shaderow .chipbtn');
+    await p.click('#nps-q [data-ck="tex"] .cmpgo');
     const m=await p.evaluate(()=>({s:queue[0].shade,L:rgbLab(...hexRgb(colOf(queue[0])))[0],meas:queue[0].meas.lab[0]}));
     ok(m.s===-2&&Math.abs(m.L-m.meas)<=2.5,`Match close-up sets the shade from the close-up's lightness (Darker 2: drawn L* ${m.L.toFixed(1)}, close-up ${m.meas})`);
     await p.evaluate(async()=>{queue[0].id='mink';await save(0)});
@@ -31,7 +31,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(/Darker 2/.test(await p.textContent('#item-view .shaderow')),'the open item shows its shade');
     await p.click('#item-view .shaderow .shbtn[aria-label="Lighter"]');await p.waitForFunction(()=>items.find(i=>i.id==='mink').shade===-1);
     await p.evaluate(()=>{const it=items.find(i=>i.id==='mink');delete it.meas});   // the close-up measured afresh from the item's own picture
-    await p.click('#item-view .shaderow .chipbtn');await p.waitForFunction(()=>items.find(i=>i.id==='mink').shade===-2,null,{timeout:5000}).catch(()=>{});
+    await p.click('#item-view #ivct .cmpgo');await p.waitForFunction(()=>items.find(i=>i.id==='mink').shade===-2,null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>items.find(i=>i.id==='mink').shade===-2),'in the editor, + steps it and Match close-up measures the saved close-up again');
     // the planner reads the tag, not the shade
     ok(await p.evaluate(()=>{const it=items.find(i=>i.id==='mink');return planCol(it)==='deeptaupe'&&lumOf(primaryCol(it))===lumOf('deeptaupe')}),'the planner still reads the tagged colour');

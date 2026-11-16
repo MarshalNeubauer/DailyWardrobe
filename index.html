@@ -131,7 +131,7 @@
 <div class="mpanel" id="sp-about"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel" id="about-ver">Version</div><p class="shelp" id="about-status" role="status"></p>
 <div class="sactions"><button type="button" id="about-check" onclick="checkForUpdate(true)">Check for updates</button><button type="button" class="pri" id="about-update" hidden onclick="updateNow()">Update</button></div></div>
-<div class="sgroup"><div class="slabel">Feedback</div><p class="shelp conn-off-note" id="fb-conn" data-what="Sending feedback"></p><div class="conn-only"><p class="shelp" id="fb-help">What works, what doesn’t, what is missing: it goes to the person who invited you.</p>
+<div class="sgroup"><div class="slabel">Feedback</div><p class="shelp conn-off-note" id="fb-conn" data-what="Sending feedback"></p><div class="conn-only"><p class="shelp" id="fb-help">What works, what doesn’t, what is missing: it goes to the person who invited you. When something goes wrong in the app, this phone also tells them what broke and where, so it can be fixed: never your photos or your wardrobe.</p>
 <textarea id="fb-text" class="about-text" rows="4" maxlength="4000" placeholder="Your feedback" aria-label="Your feedback"></textarea>
 <div class="sactions"><button type="button" class="pri" id="fb-send" onclick="sendFeedback()">Send</button></div>
 <p class="shelp about-note" id="fb-status" role="status"></p>
@@ -142,7 +142,7 @@
 <p class="shelp about-note" id="del-status" role="status"></p></div>
 <div class="sgroup"><details class="about-fold" id="about-privacy"><summary>Privacy</summary>
 <p>Your wardrobe lives on this device and, once you are connected, in your own backup on the server.</p>
-<p>The server is run by the person who invited you. They can see everything kept there: your backup, your photos and the feedback you send, with your name. It runs on Cloudflare, and the app itself is served by GitHub Pages; both keep the usual short logs of visits.</p>
+<p>The server is run by the person who invited you. They can see everything kept there: your backup, your photos and the feedback you send, with your name. It runs with a cloud hosting company, and the app itself is served by GitHub Pages; both keep the usual short logs of visits.</p>
 <p>The photos of your items are sent to Anthropic to be read (type, color, pattern). Outfit pictures are drawn or painted by the app itself and never go to OpenAI; only when you tap Generate item pictures are an item's photo and description sent to OpenAI to make its product picture.</p>
 <p>Your weather location (the city you search for, or your phone’s position if you use it) is sent to Open-Meteo for the forecast. Public holidays come from Nager.Date, or Google’s holiday calendars for some countries; only the country is sent.</p>
 <p>Nothing else leaves your phone. Delete my data, above, removes it from the server too.</p></details></div>
@@ -179,6 +179,7 @@
 <script src="pack.js"></script>
 <script src="wardrobe.js"></script>
 <script src="colpick.js"></script>
+<script src="checklist.js"></script>
 <script src="care.js"></script>
 <script src="shop.js"></script>
 <script src="sync.js"></script>

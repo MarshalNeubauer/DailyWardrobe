@@ -11,6 +11,7 @@ module.exports=async({ok,chromium,url,settle})=>{
   {const tag=await import(pathToFileURL(path.join(__dirname,'..','worker','tag.js')).href);
     const c=tag.cleanCustom({colors:[{key:'ownxk3j2a1',name:'بترولي غامق ٢',hex:'#1f4e5a',types:['tie']},{key:'ownrot1',name:'Rot 1',hex:'#aa2233',types:['tie']}],patterns:[{key:'own-1abcd',name:'سدو كويتي',types:['tie']}]});
     ok(c.colors.length===2&&c.colors[0].name==='بترولي غامق ٢'&&c.colors[1].key==='ownrot1'&&c.patterns[0].name==='سدو كويتي',`the worker keeps keys with digits and Arabic names (${JSON.stringify(c)})`)}
+  const ok2=await import(pathToFileURL(path.join(__dirname,'..','worker','ownkeys.js')).href);
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:402,height:874},isMobile:true,hasTouch:true});
@@ -36,6 +37,16 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(/^own-[a-z0-9-]+$/.test(e.pat)&&e.patOn&&/already a pattern/.test(e.patDup),`an Arabic pattern name is added (${e.pat}), and refused twice`);
     ok(/already a pattern/.test(e.bird)&&/already a pattern/.test(e.glen),`a built-in pattern's name is refused (${e.bird} | ${e.glen})`);
     ok(e.keysOk,'every stored key is ASCII and matches OWN_COL_RE / OWN_PAT_RE');
+    // ---- one key rule: the app's (applyCustom, cleanRecord) is the server's (worker/ownkeys.js: tag, describe, the backup's record check)
+    e=await p.evaluate(({ar,pat})=>({col:String(OWN_COL_RE),pat:String(OWN_PAT_RE),keep:cleanRecord({id:'r1',type:'tie',primaryColor:ar,secondaryColor:'ownrot1',pattern:pat}),
+      drop:cleanRecord({id:'r2',type:'tie',primaryColor:'ownبني',secondaryColor:'own_x',pattern:'own-بني'})}),{ar:e.ar,pat:e.pat});
+    ok(e.col===String(ok2.OWN_COL_RE)&&e.pat===String(ok2.OWN_PAT_RE),`the app and the server have one own-key rule (${e.col} ${e.pat})`);
+    ok(e.keep.primaryColor&&e.keep.secondaryColor==='ownrot1'&&/^own-/.test(e.keep.pattern)&&e.drop.primaryColor===undefined&&e.drop.secondaryColor===undefined&&e.drop.pattern===undefined,
+      `cleanRecord keeps own keys of the rule and drops others (${JSON.stringify(e.keep)} | ${JSON.stringify(e.drop)})`);
+    {const rec=await import(pathToFileURL(path.join(__dirname,'..','worker','records.js')).href);const chk=rec.recCheck||rec.itemWrong;
+      if(typeof chk==='function'){const good=chk({items:[{id:'r1',type:'tie',primaryColor:'ownrot1',pattern:'own-1abcd'}]}),bad=chk({items:[{id:'r2',type:'tie',primaryColor:'ownبني'}]});
+        ok(!good&&!!bad,`the server's record check takes keys of the rule and refuses others (${good} | ${bad})`)}
+      else ok(true,'(records.js exports no check to call: '+Object.keys(rec).join(',')+')')}
     // ---- an own pattern by its name in the lines the planner writes (W1-1-04)
     e=await p.evaluate(()=>{settings.custom.patterns.push({key:'own-basketweave',name:'Basketweave',desc:'',base:'woven',types:['tie']});applyCustom(settings.custom);
       const t={id:'tw',type:'tie',primaryColor:'taupe',pattern:'own-basketweave'};return {nm:nm(t),line:piecesLine({top:{type:'suit',primaryColor:'navy',pattern:'solid'},suitDay:true,tie:t})}});

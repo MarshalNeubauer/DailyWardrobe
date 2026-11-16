@@ -60,11 +60,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(JSON.stringify(s.workdays)==='[0,1,2,3]'&&s.location&&s.location.name==='Kuwait City',`the backup keeps both phones' changes (${JSON.stringify([s.workdays,s.location&&s.location.name])})`);
     ok(JSON.stringify(sa)==='{"w":[0,1,2,3],"l":"Kuwait City"}'&&JSON.stringify(sb)===JSON.stringify(sa),`and both phones end with both (${JSON.stringify([sa,sb])})`);
     // the same setting on both: the later save wins
-    await A.evaluate(async()=>{settings.blazerDays=[1];await saveUserSettings()});await new Promise(r=>setTimeout(r,20));
-    await B.evaluate(async()=>{settings.blazerDays=[3];await saveUserSettings()});
+    // (blazer days merge day by day since fix round 3: core.js SET_SPLIT; the laundry days are one value)
+    await A.evaluate(async()=>{settings.laundryDays=2;await saveUserSettings()});await new Promise(r=>setTimeout(r,20));
+    await B.evaluate(async()=>{settings.laundryDays=3;await saveUserSettings()});
     await sync(A);await sync(B);await sync(A);
-    const bd=JSON.stringify([backup().blazerDays,await A.evaluate(()=>settings.blazerDays),await B.evaluate(()=>settings.blazerDays)]);
-    ok(bd==='[[3],[3],[3]]','the same setting changed on both phones: the later change wins everywhere '+bd);
+    const bd=JSON.stringify([backup().laundryDays,await A.evaluate(()=>settings.laundryDays),await B.evaluate(()=>settings.laundryDays)]);
+    ok(bd==='[3,3,3]','the same setting changed on both phones: the later change wins everywhere '+bd);
     ok(!A.errs.length&&!B.errs.length,'no page errors: '+[...A.errs,...B.errs].join(' | '));
   }finally{await browser.close()}
 };
