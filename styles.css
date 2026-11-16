@@ -1566,5 +1566,8 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 #add .addfor{margin-top:-4px;color:var(--ink)}#add .addfor[hidden]{display:none}
 /* "Your colors" / "Your patterns" with none of one's own: the heading and a small "+ New" button on one line (W2-14-02) */
 #col-sheet .cpownh{display:inline-block;margin-right:10px}#col-sheet .cnown.cnslim{display:inline-flex;grid-template-columns:none;vertical-align:middle;margin:6px 0}
+/* the Ask Claude hint with no close-up (nothing to tap) flows as one quiet paragraph; with larger text the photo and swatch at the top are shorter, 7px for each px of text over 16 (W2-14-02) */
+#col-sheet .cpask.cpaskhint{display:block;padding:8px 12px;margin:8px 0 2px}#col-sheet .cpaskhint .cpasktx b,#col-sheet .cpaskhint .cpasktx small{display:inline;font-size:.8125rem}
+#col-sheet .cpcmp figure{aspect-ratio:auto;height:clamp(84px,calc((min(100vw,640px) - 30px)*.39 - (1rem - 16px)*7),calc((min(100vw,640px) - 30px)*.39))}
 #col-sheet .cpnewl{min-height:44px;margin:0;padding:0 14px;border:1px dashed var(--fline,var(--line));border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:.875rem;font-weight:600;cursor:pointer}
 .kit-lead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:.9375rem;line-height:1.4}

@@ -184,7 +184,7 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
   if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={};renderWardrobe();toast('Saved Claude’s colors.')}
 function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // shoes, belts, watches, socks, coats, clips, links have no close-up: no dead-end hint (2026-11-15)
-  if(!it.texture)return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>Add a close-up of the fabric${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can read the colors from it.</small></div></div>`;
+  if(!it.texture)return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>Add a close-up${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can read the colors.</small></div></div>`;
   if(!a){const cents=typeof benchEstimate==='function'?Math.max(1,Math.round(benchEstimate(1)*100)):1,on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up again and says which colors it is. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
@@ -244,7 +244,7 @@ ${ownH}${groups}
 <div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${sel===NEW_COL?'Add '+esc(name(sel))+' to your patterns and use it':sel===cur?'Keep '+esc(name(sel)):'Use '+esc(name(sel))}</button></div>`;
   if(keep)el.scrollTop=y}
 function patAskHtml(it,tile,name,np){const a=colAsk[it.id+'|p'];
-  if(!it.texture)return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>Add a close-up of the fabric${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can name the pattern from it.</small></div></div>`;
+  if(!it.texture)return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>Add a close-up${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can name the pattern.</small></div></div>`;
   if(!a){const cents=typeof benchEstimate==='function'?Math.max(1,Math.round(benchEstimate(1)*100)):1,on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up and names the pattern, even one the app doesn’t have yet. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
