@@ -69,7 +69,7 @@ function plainFor(body, p) {
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
 const DEFAULT_CAPS = { tag: 40, pattern: 10, item: 20, describe: 40 };   // describe: POST /describe, a colour or pattern described in words (2026-11-15, the owner: 40 a day)
-const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30 };
+const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30, errors: 20 };
 /* write: every KV write a tester causes (each new photo a backup stores, the backup itself and its daily copies, uploads, deletes,
    feedback, reminders, item pictures), so no one tester can use up the free plan's 1,000 writes a day; a backup whose
    new photos pass it stores what fits and is refused (429, what 'backup': the app tries again tomorrow and the stored photos are not
@@ -78,8 +78,8 @@ const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200,
 /* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { describe: 'color and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
-const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const CAP_WORDS = { describe: 'color and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks', errors: 'error reports' };
+const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list|errors)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
@@ -110,7 +110,7 @@ async function useCount(env, id, what, n, cap, day) {
    {"item":20}) changes any of them. */
 /* write: 450 of the free plan's 1,000 KV writes a day for every tester together, so the owner (backups, the PC's picture uploads,
    the reminders, the clean-up) always has more than half; list: 150 of its 1,000 lists */
-const ALL_CAPS = { tag: 150, pattern: 40, describe: 150, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150 }, ALL_ID = 'all';
+const ALL_CAPS = { tag: 150, pattern: 40, describe: 150, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150, errors: 100 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };
@@ -278,6 +278,29 @@ async function handleFeedback(req, env, json, who) {
   await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: items.slice(-FEEDBACK_MAX) }), { expirationTtl: FEEDBACK_MS / 1000 });
   return json({ ok: true });
 }
+/* ---- error reports (2026-11-16, the owner: a tester's very first item failed and nothing showed why; her phone's error log only came
+   with feedback). POST /errors {errs:[{t, m, at, v, w}]} from a tester's phone (safety.js errSend): what broke, where in the code, the
+   app version and the page; never photos or wardrobe data. At most ERR_BATCH a report, ERRORS a day per tester (EXTRA_CAPS.errors),
+   each report one KV write. GET /errors (owner) -> {items:[{t, name, m, at, v, w, got}]}, newest first. One document, errors:log: the last
+   ERR_DAYS days, ERR_KEEP reports at most. ---- */
+const ERRORS_KEY = 'errors:log', ERR_DAYS = 30, ERR_KEEP = 400, ERR_BATCH = 10;
+async function handleErrors(req, env, json, who) {
+  if (!env.WARDROBE) return json(NO_KV, 501);
+  const log = (await env.WARDROBE.get(ERRORS_KEY, 'json')) || { items: [] }, now = Date.now();
+  const items = (Array.isArray(log.items) ? log.items : []).filter(m => m && now - m.got < ERR_DAYS * 86400000);
+  if (req.method === 'GET') {
+    const no = ownerOnly(who, json); if (no) return no;
+    return json({ items: items.slice().sort((a, b) => b.t - a.t) });
+  }
+  const b = await smallBody(req, 20000), list = Array.isArray(b && b.errs) ? b.errs.slice(0, ERR_BATCH) : [];
+  const s = (v, n) => String(v ?? '').replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, n);
+  const clean = list.map(e => e && typeof e === 'object' ? { t: Math.min(now, Math.max(now - 7 * 86400000, +e.t || now)), m: s(e.m, 300), at: s(e.at, 200), v: s(e.v, 40), w: s(e.w, 40) } : null).filter(e => e && e.m);
+  if (!clean.length) return json({ error: 'empty' }, 400);
+  const over = await spendEach(env, who, [['errors', 1], ['write', 1]]); if (over) return json(over.body, over.status);
+  for (const e of clean) items.push({ ...e, id: who.id, name: who.name, got: now });
+  await env.WARDROBE.put(ERRORS_KEY, JSON.stringify({ items: items.slice(-ERR_KEEP) }), { expirationTtl: ERR_DAYS * 86400 });
+  return json({ ok: true, n: clean.length });
+}
 
 /* ---- DELETE /account {confirm:'delete'} -> {ok:true}: everything kept for the caller is deleted, and nothing of anyone else's.
    A tester: every key under u:<id>:, the day's count, the invitation (the code stops working at once) and their feedback.
@@ -307,7 +330,9 @@ async function dropTesterExtras(env, id) {
   await dropPush(env, `u:${id}:`);
   const log = await env.WARDROBE.get(FEEDBACK_KEY, 'json');
   if (log && Array.isArray(log.items) && log.items.some(m => m.id === id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== id) }), { expirationTtl: FEEDBACK_MS / 1000 });
-  const use = `use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
+  const er = await env.WARDROBE.get(ERRORS_KEY, 'json');   // their error reports go with the account too
+  if (er && Array.isArray(er.items) && er.items.some(m => m.id === id)) await env.WARDROBE.put(ERRORS_KEY, JSON.stringify({ items: er.items.filter(m => m.id !== id) }), { expirationTtl: ERR_DAYS * 86400 });
+  const use =`use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
 }
 async function handleAccount(req, env, json, who) {
   if (!env.WARDROBE) return json(NO_KV, 501);
@@ -335,4 +360,4 @@ async function runWipe(msg, env) {
 }
 
 
-export { DAY_KEY, INVITE_INDEX, UID_RE, USE_RE, countWrites, handleAccount, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };
+export { DAY_KEY, INVITE_INDEX, UID_RE, USE_RE, countWrites, handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };

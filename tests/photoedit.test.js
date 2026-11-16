@@ -1,5 +1,5 @@
 // Wardrobe editor photo tools: replace the photo (the item, its tags and the plan stay), rotate a quarter turn, zoom & crop
-// to a square, undo while the editor is open.
+// to a square, undo from each change's toast (Edit photos option B: the row under the photo, no fold).
 const fs=require('fs'),path=require('path'),os=require('os');
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -14,19 +14,17 @@ module.exports=async({ok,chromium,url})=>{
     const before=await p.evaluate(()=>({plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0}).sort())}));
     const dims=()=>p.evaluate(()=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);
       const px=(a,b)=>[...x.getImageData(Math.floor(a*im.width),Math.floor(b*im.height),1,1).data].slice(0,3).map(v=>v>128?1:0).join('');r({w:im.width,h:im.height,tl:px(.1,.1),tr:px(.9,.1),bl:px(.1,.9)})};im.src=items[0].photo}));
-    ok(await p.evaluate(()=>/Replace photo/.test(document.querySelector('.phtools').textContent)&&/Rotate/.test(document.querySelector('.phtools').textContent)&&/Zoom/.test(document.querySelector('.phtools').textContent)),'an opened item offers Replace photo, Rotate and Zoom & crop');
-    ok(await p.evaluate(()=>{const f=document.querySelector('#ivph'),t=document.querySelector('.phtools');return !f.classList.contains('open')&&getComputedStyle(t.parentElement).visibility==='hidden'&&t.parentElement.getBoundingClientRect().height<1}),'the photo tools are folded away under Edit photos, right below the photo');
-    await p.click('#ivph .ivphbtn');await p.waitForFunction(()=>document.querySelector('.phtools').parentElement.getBoundingClientRect().height>80);
-    ok(await p.evaluate(()=>{const h=document.querySelector('#item-view .pair').getBoundingClientRect(),t=document.querySelector('.phtools').getBoundingClientRect();return document.querySelector('#ivph .ivphbtn').getAttribute('aria-expanded')==='true'&&t.top>h.bottom&&t.top-h.bottom<90&&h.top>=0}),'Edit photos unfolds them beside the photo they change');
+    ok(await p.evaluate(()=>{const t=document.querySelector('#item-view .phtools').textContent;return /Replace/.test(t)&&/Rotate/.test(t)&&/Crop/.test(t)}),'an opened item offers Replace, Rotate and Crop');
+    ok(await p.evaluate(()=>{const h=document.querySelector('#item-view .pair').getBoundingClientRect(),t=document.querySelector('#item-view .phtools').getBoundingClientRect();return !document.querySelector('#ivph,.ivphbtn')&&t.height>=44&&t.top>h.bottom&&t.top-h.bottom<90&&h.top>=0}),'the photo tools are a row right under the photo they change, not folded');
     // rotate: 300x200 red|blue becomes 200x300 red on top
-    await p.click('.phtools >> text=Rotate');await p.waitForFunction(()=>!/^data:image\/png/.test(items[0].photo));
+    await p.click('#item-view .pt-rotate');await p.waitForFunction(()=>!/^data:image\/png/.test(items[0].photo));
     let d=await dims();ok(d.w===200&&d.h===300&&d.tl==='100'&&d.bl==='001','Rotate turns the photo a quarter clockwise');
-    ok(await p.evaluate(()=>document.querySelector('#ivph').classList.contains('open')),'the tools stay unfolded after a change');
-    // undo
-    await p.click('.phtools >> text=Undo');await p.waitForFunction(()=>/^data:image\/png/.test(items[0].photo));
-    d=await dims();ok(d.w===300&&d.h===200,'Undo brings the previous photo back');
+    ok(await p.evaluate(()=>/Photo rotated\./.test(document.querySelector('#toast.on').textContent)),'"Photo rotated." in a toast');
+    // undo: in the toast
+    await p.click('#toast button >> text=Undo');await p.waitForFunction(()=>/^data:image\/png/.test(items[0].photo));
+    d=await dims();ok(d.w===300&&d.h===200,'the toast’s Undo brings the previous photo back');
     // zoom & crop: zoom 2x, drag right (shows more of the left = red), apply -> square, all red
-    await p.click('.phtools >> text=Zoom');await p.waitForSelector('#cropbox');await p.waitForTimeout(100);
+    await p.click('#item-view .pt-crop');await p.waitForSelector('#cropbox');await p.waitForTimeout(100);
     await p.evaluate(()=>{const r=document.querySelector('.cropzoom input');r.value=2;r.dispatchEvent(new Event('input'))});
     const bx=await p.evaluate(()=>{const b=document.querySelector('#cropbox').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}});
     await p.mouse.move(bx.x,bx.y);await p.mouse.down();await p.mouse.move(bx.x+150,bx.y,{steps:5});await p.mouse.up();

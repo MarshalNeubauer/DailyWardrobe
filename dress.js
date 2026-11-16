@@ -68,4 +68,5 @@ function dressNewItem(){if(settings.vestDef||vestMigrating||items.some(legacyVes
    they don't have is dropped from memory too; then the suits that came in are looked at */
 function dressSynced(m){
   if(m&&m.settings){if(!m.settings.vestDef)delete settings.vestDef;if(!m.settings.dress)delete settings.dress}
-  if(!vestMigrating)migrateVests(true)}
+  if(!vestMigrating)migrateVests(true);
+  if(typeof matMigrate==='function'&&m&&(m.items||[]).some(matRenameTo))matMigrate()}   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)

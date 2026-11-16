@@ -70,7 +70,8 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 function cropSwatch(canvas,zoom=1,cx=.5,cy=.5,light){
   const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/(Number(zoom)||1)),o=document.createElement('canvas');o.width=o.height=128;
   const sx=Math.max(0,Math.min(canvas.width-sampleSize,(Number(cx)||.5)*canvas.width-sampleSize/2)),sy=Math.max(0,Math.min(canvas.height-sampleSize,(Number(cy)||.5)*canvas.height-sampleSize/2));
-  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(deadCanvas(o))return null;   // drawn black: no swatch (callers keep the one they had)
+  const g=o.getContext('2d');if(!g)return null;   // a phone out of picture memory gives no context: no swatch, the item still saves (2026-11-16)
+  g.drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(deadCanvas(o))return null;   // drawn black: no swatch (callers keep the one they had)
   if(light)matchLight(o,light);return o.toDataURL('image/jpeg',SW_Q)}
 /* a small JPEG (2026-11-15, the owner's option A for the server's writes): a 128 px PNG of cloth was about 38 KB, too big to keep in
    the backup's own text, so every new item cost one more server write for its swatch; as a JPEG it is a few KB, under sync.js PH_MIN,
@@ -193,6 +194,8 @@ async function ask(c,extra){
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
 const ownColorsOf=o=>{const f=c=>c&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&/[a-z]{2}/i.test(c.name||'')?{name:String(c.name).toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim().slice(0,24),hex:c.hex.toLowerCase()}:null;
   return o&&typeof o==='object'&&f(o.primary)?{primaryColor:f(o.primary),secondaryColor:f(o.secondary),tertiaryColor:f(o.tertiary)}:null};
+const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typeof m==='object'?String(m.key||'').toLowerCase().trim():'';
+  return k&&k!=='none'&&(MATERIALS_BY[t]||[]).includes(k)&&(m.confidence==='high'||m.confidence==='medium')?{key:k,conf:m.confidence,why:String(m.why||'').replace(/\s+/g,' ').trim().slice(0,160)}:null};
 function normTag(parsed,model){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
@@ -201,10 +204,12 @@ function normTag(parsed,model){
       secondaryColor:normColFor(parsed.type,parsed.secondaryColor,true),
       tertiaryColor:normColFor(parsed.type,parsed.tertiaryColor,true),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
-      leather:[...LEATHERS,...SHOE_TEXTILES].includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
+      leather:[...LEATHERS,...SHOE_TEXTILES,...SHOE_NAP,...BELT_MATS].includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
       trouserKind:['chinos','jeans','dress'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
       model:model||'',
-      dial:normCol(parsed.dial),band:['bracelet','leather'].includes(parsed.band)?parsed.band:null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
+      dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
+      // the material Claude suggests (2026-11-15, worker cleanMaterial): only one from the type's list, and only when sure enough (high or medium)
+      material:matTag(parsed),bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
       // how sure it was, its runner-up, and what it would add when nothing listed fits (single-item tags)
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,
       altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
