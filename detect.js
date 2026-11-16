@@ -32,14 +32,21 @@ const usableSett=i=>{const o=ownSett(i);return o&&o.camo?camoTag(i,o):settToTag(
    to the main colour, which is always the ground (the largest share). Seeded by the reading, else the item; kept per item, colours and
    reading (lookMemo) */
 const CAMO_TR=2,CAMO_RANK=[.08,.32,.26,.2,.14],CAMO_LIGHT_MAX=.12,CAMO_DARK_MAX=.18,CAMO_MUTE=.3;
-function camoTag(i,rd){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),key=JSON.stringify(['camo',CAMO_V,i.id,main,sec,th,rd&&rd.camo]);
+/* (2026-11-16, the owner: a camouflage is drawn in ALL its colours) with accents (core.js accentsOf) the tags are the main colour, its second
+   and third, then the accents most visible first (muted like the second and third), made up to five with the darker and lighter steps.
+   Without a reading the shares go by that order (CAMO_ACC_SHARES: the ground the largest, each further colour smaller), not by lightness;
+   a reading's shares still go by lightness rank. An item without accents is drawn exactly as before */
+const CAMO_ACC_SHARES={5:[.38,.24,.16,.12,.1],6:[.34,.22,.15,.12,.09,.08],7:[.32,.2,.14,.11,.09,.08,.06]};
+function camoTag(i,rd){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),acc=accentsOf(i).map(c=>COLORS[c]),key=JSON.stringify(['camo',CAMO_V,i.id,main,sec,th,rd&&rd.camo,...(acc.length?[acc]:[])]);
   if(lookMemo.has(key))return lookMemo.get(key);
   const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]),L=h=>rgbLab(...hexRgb(h))[0];
   // printed camouflage's colours sit on one cloth and read as related: each accent is taken CAMO_MUTE of the way toward the main colour's
   // hue and chroma (a* b*), its lightness kept (the app's "green" #2f6b4a drew a bright teal where MultiCam has a dusty sage)
   const mute=h=>{const c=rgbLab(...hexRgb(h));return labHex([c[0],c[1]+(lab[1]-c[1])*CAMO_MUTE,c[2]+(lab[2]-c[2])*CAMO_MUTE])};
-  const tags=[main,mute(sec||step(-14)),mute(th||step(12)),step(-24),step(20)].map((h,k)=>({h,k,L:L(h)})).sort((a,b)=>b.L-a.L),n=tags.length;   // lightest first
-  let sh=CAMO_RANK.slice();
+  let list=[main,mute(sec||step(-14)),mute(th||step(12)),step(-24),step(20)];
+  if(acc.length){list=[main,...[sec,th].filter(Boolean).map(mute),...acc.map(mute)];for(const d of [-24,20,-14,12])if(list.length<5)list.push(step(d))}
+  const tags=list.map((h,k)=>({h,k,L:L(h)})).sort((a,b)=>b.L-a.L),n=tags.length;   // lightest first
+  let sh=acc.length?tags.map(x=>CAMO_ACC_SHARES[n][x.k]):CAMO_RANK.slice();   // (with accents: by the item's order, not lightness)
   if(rd&&rd.camo&&rd.camo.cols&&rd.camo.cols.length>1){const rc=rd.camo.cols.map((h,q)=>({L:L(h),s:+rd.camo.shares[q]||0})).sort((a,b)=>b.L-a.L),m=rc.length;
     sh=new Array(n).fill(0);rc.forEach((c,q)=>{sh[Math.min(n-1,Math.floor(q*n/m))]+=c.s})}
   const mi=tags.findIndex(t=>t.k===0),cap=(q,mx)=>{if(sh[q]>mx&&q!==mi){sh[mi]+=sh[q]-mx;sh[q]=mx}};cap(0,CAMO_LIGHT_MAX);cap(n-1,CAMO_DARK_MAX);

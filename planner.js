@@ -61,8 +61,14 @@ function tieScore(t,sh,x){
   // accent colours: echoing the shirt or jacket ties the outfit together
   const echo=[...colsOf(sh),...colsOf(t)];
   if(acc.some(c=>echo.includes(c)))v+=3;
+  else if(accFams(x).some(c=>echo.includes(c))||acc.some(c=>accFams(sh).includes(c)||accFams(t).includes(c)))v+=ACC_ECHO;   // an accent's echo, weaker
   return v;
 }
+/* (2026-11-16, accents: core.js accentsOf) an item's accents as colour families. They count where colours are matched, always weaker than
+   the three main colours: a tie whose accent echoes the shirt or jacket (or whose second colour echoes one of theirs) +ACC_ECHO where a
+   second or third colour's echo is +3; cufflinks picking up a tie's accent ENAMEL_MINOR, between a tone (ENAMEL_TONE) and a clash */
+const ACC_ECHO=1;
+const accFams=i=>i&&i.accents?accentsOf(i).map(c=>fam(colBase(c))):[];
 /* trousers for an odd jacket */
 function pairScore(t,p){
   if(!t)return 0;const tc=pcol(t),pc=pcol(p);let v=0;
@@ -182,9 +188,9 @@ const metalSame=(a,b)=>a===b||(a==='two-tone'&&(b==='gold'||b==='silver'))||(b==
    "keep gold off", also on a day with his gold watch: his buckles are silver); one picked by hand stays */
 const CLIP_OFF=['gold','other'];
 const clipAllowed=(c,watch,belt)=>{const m=metalOf(c);return !CLIP_OFF.includes(m)||(!!watch&&metalOf(watch)===m&&!!belt&&metalOf(belt)===m)};
-const ENAMEL_ACCENT=11,ENAMEL_TONE=8,ENAMEL_CLASH=-5,ENAMEL_NEAR={red:['burgundy'],burgundy:['red'],blue:['navy'],navy:['blue']};
+const ENAMEL_ACCENT=11,ENAMEL_TONE=8,ENAMEL_MINOR=4,ENAMEL_CLASH=-5,ENAMEL_NEAR={red:['burgundy'],burgundy:['red'],blue:['navy'],navy:['blue']};
 const enamelPref=(c,tie)=>{if(!tie)return 0;const f=fam(colBase(planCol(c))),t=colsOf(tie);if(!t.length)return 0;
-  if(t.slice(1).includes(f))return ENAMEL_ACCENT;if(t[0]===f||(ENAMEL_NEAR[f]||[]).includes(t[0]))return ENAMEL_TONE;return ENAMEL_CLASH};
+  if(t.slice(1).includes(f))return ENAMEL_ACCENT;if(t[0]===f||(ENAMEL_NEAR[f]||[]).includes(t[0]))return ENAMEL_TONE;return accFams(tie).includes(f)?ENAMEL_MINOR:ENAMEL_CLASH};
 function beltFit(shoe,belt){
   if(shoeStyle(shoe)==='sneaker')return 0;   // sneakers don't call for a matching belt: any belt will do
   if(leatherGroup(planCol(belt))!==leatherGroup(planCol(shoe)))return null;
@@ -220,7 +226,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=19;   // 19: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+const PLAN_RULES=20;   // 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it

@@ -111,6 +111,7 @@ function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta')
 function kitFail(e){console.warn('save failed',e);if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
 /* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
 function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
+  {const a=accentsOf(c);if(a.length)it.accents=a}   // an import's "Also has" colours
   if(METAL_TYPES.includes(c.type))it.metal=c.metal||'silver';
   if(c.type==='shirt')it.cuff=c.cuff==='french'?'french':'button';
   if(c.type==='suit')it.vest=c.vest==='yes'?'yes':'no';
@@ -159,6 +160,7 @@ async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;
 const KIT_COLS={type:['type','category','item type','type of item','kind of item','clothing type','clothing','clothes','garment','piece','article','what','item','النوع','الصنف','القطعه'],
   primaryColor:['colour','color','colours','colors','main colour','main color','primary colour','primary color','colour 1','color 1','اللون','الالوان'],
   secondaryColor:['second colour','second color','secondary colour','secondary color','colour 2','color 2'],tertiaryColor:['third colour','third color','colour 3','color 3'],
+  accents:['also has','accent colors','accent colours','accent color','accent colour','accents','other colors','other colours','more colors','more colours'],   // (2026-11-16) up to 4 more colours, in one cell
   pattern:['pattern','patterns','print'],name:['name','label','nickname','الاسم'],brand:['brand','maker','make','الماركه'],material:['material','fabric','cloth'],notes:['notes','note','comments','comment','remarks','ملاحظات'],
   desc:['description','desc','details','detail','item description','style description','item'],qty:['qty','quantity','count','how many','amount','pieces','units','no of pieces'],
   vest:['vest','waistcoat','three-piece','3-piece'],cuff:['cuffs','cuff'],kind:['kind','trouser kind','trousers kind','fit'],style:['style','shoe style'],leather:['leather'],season:['season'],metal:['metal','buckle','metal colour','metal color','case']};
@@ -290,6 +292,10 @@ function kitRow(c,line){const probs=[],given=new Set();
   let pattern='solid';if(FABRIC.includes(type)){if(c.pattern){const p=kitPattern(c.pattern,type);if(p===undefined)probs.push(`pattern “${c.pattern}” read as plain`);else{pattern=p;given.add('pattern')}}
     else{const f=dpat||[c.notes,c.name,c.type].filter(Boolean).map(s=>kitPatWords(kitWords(s),type)).find(Boolean);if(f){pattern=f.p;given.add('pattern')}}}
   const card={id:crypto.randomUUID(),manual:true,type,primaryColor:col,secondaryColor:c2||null,tertiaryColor:c3||null,pattern,metal:mtl?mtl.k:'silver',leather:'calf'};
+  // an "Also has" column (accents, 2026-11-16): its colours in one cell ("red, gold"), the item's own three left out, at most 4 (a new
+  // piece only: a re-import's update of a piece he has leaves its accents, KIT_UPD)
+  if(c.accents){const ks=[];for(const w of String(c.accents).split(/\s*(?:,|\/|&|\+|;|\band\b)\s*/i).filter(Boolean)){const x=kitColour(w);if(x)ks.push(x.k);else if(x===undefined)probs.push(`also-has color “${w}” left out`)}
+    const a=accentsFor(card,ks);if(a.length)card.accents=a;if(new Set(ks.filter(k=>![col,c2,c3].includes(k))).size>a.length)probs.push(`only ${a.length===1?'one also-has color':`${a.length} also-has colors`} kept`)}
   // a Metal (or Buckle) column for watches, belts and cufflinks
   if(METAL_TYPES.includes(type)&&c.metal){const x=kitMetal(c.metal);if(x){card.metal=x.k;given.add('metal');if(x.read)probs.push(`metal “${c.metal}” read as ${metalWord(x.k)}`)}else probs.push(`metal “${c.metal}” left out`)}
   const yes=s=>/^(y|yes|true|1|x|matching|with)/i.test(String(s).trim());

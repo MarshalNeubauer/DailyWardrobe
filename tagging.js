@@ -438,6 +438,9 @@ function refineApply(q,ai,hint,k){
   for(const key of TAG_FIELDS){if(key==='type'||(q.edited&&q.edited[key])||f[key]===q[key])continue;
     if(key==='primaryColor'&&refineContradicts(q,f[key])){q.refineKept={c:f[key]};continue}   // the close-up's own measurement says otherwise: kept, and said
     prev[key]=q[key];changes.push(`${fieldLabel[key]} ${valName(key,q[key])} → ${valName(key,f[key])}`);q[key]=f[key]}
+  // the colours beyond the three (accents, 2026-11-16): the close-up's reading replaces Claude's first, never ones set by hand
+  if(Array.isArray(ai.accents)&&!(q.edited&&q.edited.accents)){const a=accentsFor(q,ai.accents),was=accentsOf(q),w=l=>l.length?l.map(c=>colName(c).toLowerCase()).join(', '):'none';
+    if(a.join()!==was.join()){prev.accents=q.accents;changes.push(`also has ${w(was)} → ${w(a)}`);if(a.length)q.accents=a;else delete q.accents}}
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();

@@ -21,8 +21,15 @@ function ckToggle(b,on){const s=b&&b.closest('.cks');if(!s)return;if(on===undefi
   s.classList.toggle('open',on);b.setAttribute('aria-expanded',String(on));CK_OPEN[s.dataset.scope+'|'+s.dataset.ck]=on;if(on)cmpMount(s)}
 /* the colors as a summary: a small chip of each and its name ("● Navy · ● white stripes") */
 const ckChip=c=>COLORS[c]?`<span class="ckchip" style="background:${COLORS[c]}"></span>`:'';
-function ckColSum(it,main){const a=[main,it.secondaryColor,it.tertiaryColor].filter(c=>c&&COLORS[c]);
-  return a.map((c,k)=>`<span class="ckcn">${ckChip(c)}${esc(k?colName(c).toLowerCase():cap1(colName(c)))}</span>`).join(' · ')}
+function ckColSum(it,main){const a=[main,it.secondaryColor,it.tertiaryColor].filter(c=>c&&COLORS[c]),x=accentsOf(it);
+  return a.map((c,k)=>`<span class="ckcn">${ckChip(c)}${esc(k?colName(c).toLowerCase():cap1(colName(c)))}</span>`).join(' · ')+(x.length?`<span class="ckcn ckalso"> · also ${esc(x.map(c=>colName(c).toLowerCase()).join(', '))}</span>`:'')}
+/* "Also has" under the colour rows (2026-11-16, accents: core.js accentsOf): a chip for each with × to take it off, and "Add a color" (the
+   colour sheet, colpick.js accChoices) while there are fewer than ACCENT_MAX. On patterned cloth, or any item that has some. src 'q' (the
+   Add card, ref its index) or 'e' (the item sheet, ref its id) */
+function accRow(src,ref,it){const a=accentsOf(it);if(!a.length&&!FABRIC.includes(it.type))return '';const r=src==='q'?ref:`'${jsq(ref)}'`;
+  const chip=c=>`<span class="accchip" data-c="${esc(c)}">${ckChip(c)}<span>${esc(cap1(colName(c)))}</span><button type="button" class="accx" aria-label="Remove ${esc(colName(c).toLowerCase())}" onclick="accDel('${src}',${r},'${jsq(c)}')">×</button></span>`;
+  return `<div class="accrow" role="group" aria-label="Also has"><span class="acclab">Also has</span><span class="accchips">${a.map(chip).join('')}`+
+    `${a.length<ACCENT_MAX?`<button type="button" class="accadd" onclick="openColPick('${src}',${r},'accents')" aria-haspopup="dialog">+ Add a color</button>`:''}</span></div>`}
 /* how sure Claude was, in words */
 const ckSure=c=>c==='high'?'Claude is sure':c==='medium'?'Claude is fairly sure':c==='low'?'Claude isn’t sure':'';
 
