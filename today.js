@@ -356,7 +356,10 @@ function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;
   if(listOpen)boxUnfold(box);else{revealRun++;boxFold(box,'#ipanel .list>*')}}
 function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
-  const p=planFor();
+  const p=planFor(),snapped=!!(cache.snap&&p===cache[cache.snap]);
+  // the day records are written before the drawing (recordDays puts them in memory at once, then saves): the missed days it records count
+  // in this drawing's "last worn" and cleaning frame (fix round 3, W2-14-12: they changed a moment after opening)
+  if(!snapped&&items.length&&typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||''):`<a href="#" class="wxl" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
@@ -370,10 +373,8 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();wxFit();
-  if(cache.snap&&p===cache[cache.snap]){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
-  else if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
-    else if(!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (drawn again once the backup is merged, and recorded then)
-  }
+  if(snapped){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
+  else if(items.length&&!(typeof pulledYet==='function'&&pulledYet())&&!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (recorded above when pulled; else drawn again once the backup is merged, and recorded then)
 }
 
 /* a swipe to another day folds whatever is open (score, pieces list and its rows, a below-the-waist photo, the month) and zooms

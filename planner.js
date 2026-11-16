@@ -257,6 +257,12 @@ const NO_SHOES=40;
 const LOCK_THIN=3,LOCK_TYPES=['suit','blazer','pants','shirt','tie','shoes','belt'];
 const lockStale=(rec,pool)=>{const at=rec&&rec.lock&&+rec.lockAt;if(!at)return false;
   return LOCK_TYPES.some(t=>{let old=0,nu=false;for(const i of pool(t)){if((+i.added||0)>at)nu=true;else old++}return nu&&old<LOCK_THIN})};
+/* a day's recorded pieces written ahead of the day by a hand pick or "Suggest another" of an earlier version (fix round 3, W2-17-01):
+   they were the outfit from before the change, and once the day was past without the app being opened on it they stood as worn in place
+   of the pick. Told apart by the record: a pick or swap (force, skip) last saved before the day began, not corrected (edited), not marked
+   worn by hand and not recorded by the app afterwards (auto). Such pieces are not the day's: it is planned from its picks and recorded
+   again (history.js recordDays) */
+const idsAhead=r=>{if(!(r&&r.ids&&(r.force||r.skip)&&!r.edited&&!r.auto&&r.worn!==true))return false;const [y,m,d]=String(r.date).split('-').map(Number);return typeof r.updated==='number'&&r.updated<+new Date(y,m-1,d)};   // (no stamp: a hand-made record, kept)
 /* the day the wardrobe began: the first item's `added` (null when an item has none, from before it existed). The simulation doesn't plan
    the days before it: their made-up outfits counted as worn ("This suit was worn 1 day ago" on a new wardrobe, the first outfit marked
    down for "the same shirt as two workdays ago", the audit) */
@@ -620,10 +626,10 @@ const fixedAhead=d=>{const x=new Date(d),ids=[],fx=[];let next=null,soft=null,w=
     // as the last three workdays' are (fx: sumUps with w and n, see aheadTie/aheadShirt), so a day planned afresh doesn't take the tie
     // or shirt already fixed a day or three later (2026-11-13: an outfit moved from Nov 23 to Nov 24, and Nov 23 took the same black
     // tie and check shirt; the audit: a tie swapped today took a tie locked two or three workdays later)
-    const lk=lockOf(r,di(x));
-    if(r&&r.worn!==false){const pk=s=>r.force&&r.force[s]||((x<T||r.worn===true)&&r.ids&&r.ids[s])||(lk&&lk[s]),ti=pk('tie')&&items.find(i=>i.id===pk('tie')),si=pk('shirt')&&items.find(i=>i.id===pk('shirt'));
+    const lk=lockOf(r,di(x)),rids=r&&r.ids&&(x<T||r.worn===true)&&!idsAhead(r)?r.ids:null;
+    if(r&&r.worn!==false){const pk=s=>r.force&&r.force[s]||(rids&&rids[s])||(lk&&lk[s]),ti=pk('tie')&&items.find(i=>i.id===pk('tie')),si=pk('shirt')&&items.find(i=>i.id===pk('shirt'));
       if(ti||si)fx.push({tid:ti?ti.id:null,tg:ti?tieGroup(ti):null,tl:ti?tieLook(ti):null,sg:si?shirtGroup(si):null,sl:si?shirtLook(si):null,sid:si?si.id:null,w,n:di(x)})}
-    const id=r&&(r.force&&r.force.top||(r.ids&&(x<T||r.worn===true)&&r.ids.top)||(lk&&lk.top)),it=id&&items.find(i=>i.id===id);
+    const id=r&&(r.force&&r.force.top||(rids&&rids.top)||(lk&&lk.top)),it=id&&items.find(i=>i.id===id);
     if(it){ids.push(it.id);if(!w)next={g:jacketGroup(it),c:planCol(it)}}
     // an occasion coming up (funeral, wedding, formal): the one suit that is clearly right for it is kept for that day
     else if(occOf(r)&&occOf(r)!=='casual'){const oc=occOf(r),sc=j=>oc==='formal'?formalTop(j):OCC[oc].top(j,dayClimate(x).season),ranked=by('suit').map(j=>[sc(j),j]).sort((a,b)=>b[0]-a[0]);
@@ -643,7 +649,7 @@ const upTo0=end=>{
 for(const E=di(end);di(d)<=E;d.setDate(d.getDate()+1)){const w=d.getDay();   // (day numbers: where the clocks change at midnight, the date after it sits at 01:00)
  if(!isWorkday(d))continue;   // weekends, public holidays and days off
   const k=key(d);let rec=dayRecs[k];
-  if(rec&&rec.ids&&(d<T||rec.worn===true)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false&&(plan[k].top||!wearsJacket())){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k])}continue}   // (a day without a jacket leaves the jacket history alone; a day marked "Not worn" is not the previous workday for repeats either)
+  if(rec&&rec.ids&&(d<T||rec.worn===true)&&!idsAhead(rec)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false&&(plan[k].top||!wearsJacket())){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k])}continue}   // (a day without a jacket leaves the jacket history alone; a day marked "Not worn" is not the previous workday for repeats either)
   if(W0&&d<W0&&d<T)continue;   // before the wardrobe began (wardStart): nothing was worn then
   if(rec&&rec.noOutfit&&d<T)continue;   // a past day dressed only from the sample wardrobe, since removed (kit.js kitSampleDay): no outfit recorded
   if(rec&&rec.lock&&!lockOf(rec,di(d))){rec={...rec};delete rec.lock}
