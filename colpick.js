@@ -30,8 +30,17 @@ function colTidy(it){for(const k of ['secondaryColor','tertiaryColor'])if(colHas
 /* the colour rows of the Add card (src 'q', ref its index) and the item sheet (src 'e', ref the item's id) */
 const colRows=(src,ref,it)=>['primaryColor','secondaryColor','tertiaryColor'].filter(k=>src==='q'?colShows({...it,[k]:k==='primaryColor'?it[k]:null},k):colShows(it,k)).map(k=>`<label class="colrow">${colFieldLabel(it,k)} ${colBtn(src,ref,k,k==='primaryColor'?(src==='e'?primaryCol(it):it.primaryColor):it[k]||'none',colFieldLabel(it,k))}</label>`).join('');
 const colTarget=()=>!colPick?null:colPick.src==='s'?colPick.fake:colPick.src==='q'?queue[colPick.ref]:items.find(x=>x.id===colPick.ref);
-function colChoices(it,k){const cur=k==='primaryColor'?primaryCol(it):it[k];
+function colChoices(it,k){if(k==='accents')return accChoices(it);const cur=k==='primaryColor'?primaryCol(it):it[k];
   return COLOR_OPTS(it.type,cur,k!=='primaryColor').map(x=>x[0]).filter(c=>COLORS[c])}
+/* ---- "Also has" (2026-11-16, accents: core.js accentsOf): "Add a color" opens this sheet with k 'accents' (no current colour, no None,
+   no Ask Claude, no New color: a new shade is added from a main colour's sheet first); "Add …" puts the colour picked at the end of the
+   item's accents (accSet: Add card or item). Every colour is offered, the owner's own included, but the item's three and its accents ---- */
+const accChoices=it=>{const main=[primaryCol(it),it.secondaryColor,it.tertiaryColor],have=accentsOf(it);return Object.keys(COLORS).filter(c=>!main.includes(c)&&!have.includes(c)&&c!=='cnprev')};   // (cnprev: a preview's stand-in, never a colour)
+const accItem=(src,ref)=>src==='q'?queue[ref]:items.find(x=>x.id===ref);
+async function accSet(src,ref,list){const it=accItem(src,ref);if(!it)return;const a=accentsFor(it,list);if(a.length)it.accents=a;else delete it.accents;
+  if(src==='q'){it.edited={...it.edited,accents:true};it.checked={...it.checked,colors:1};queueMicrotask(addKeep);renderAdd();return}
+  await put(it);cache={};renderWardrobe()}
+function accDel(src,ref,c){const it=accItem(src,ref);if(it)return accSet(src,ref,accentsOf(it).filter(x=>x!==c))}
 /* the three colours nearest the measured cloth (main colour only) */
 /* (2026-11-14) a patterned cloth's colours one by one: its ground for the main colour, its stripe for the second (measureParts); with no
    such reading a patterned cloth offers none (the whole picture's median of a white/blue stripe is grey: "Use grey" made it worse) */
@@ -40,8 +49,8 @@ function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondar
   const lab=parts?parts[k==='primaryColor'?0:1].lab:m.lab;
   try{return nearestCols(it.type,lab,m.ref,{kL:measKL(m),skip:it.id,accent:k!=='primaryColor'}).filter(x=>COLORS[x.c])}catch(e){return []}}
 function openColPick(src,ref,k){colPick={src,ref,k,from:document.activeElement};const it=colTarget();if(!it){colPick=null;return}
-  colPick.cur=k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):it[k])||'none';colPick.sel=colPick.cur;
-  colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||!it.photo)?'tex':'photo';
+  colPick.cur=k==='accents'?'':k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):it[k])||'none';colPick.sel=colPick.cur;   // (accents: nothing picked yet)
+  colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||k==='accents'||!it.photo)?'tex':'photo';
   renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;colSwipe();if(typeof layerInert==='function')layerInert();   // the item sheet under it out of reach (W2-19-03)
   const x=$('#col-sheet .pick-x');if(x)x.focus({preventScroll:true})}
 /* suits and blazers are shown as their traced figure (SUIT_D, BLAZER_D) in the colour or pattern being looked at, redrawn on every
@@ -97,13 +106,14 @@ function colSwipe(){const s=$('#col-sheet');cpSheetSwipe(s,{head:'.cptop',backdr
 function colPickSel(c){if(!colPick)return;colPick.sel=c;renderColPick(true)}
 function colPickView(v){if(!colPick)return;colPick.view=v;renderColPick(true)}
 async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick,it=colTarget();let v=sel;
+  if(k==='accents'){if(!sel||!COLORS[sel]||!it)return;closeColPick();await accSet(src,ref,[...accentsOf(it),sel]);return}   // "Also has": added at the end
   if(sel===NEW_COL){try{v=k==='pattern'?await patAddNew(it,patNewFor(it)):await colAddNew(it,k,colNewFor(it,k))}catch(e){toast(e.message||'That could not be added.');return}}
   closeColPick();if(v===cur)return;
   if(src==='q')setq(ref,k,v);else await sete(ref,k,v)}
 function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='pattern'?renderPatNew(keep):renderColNew(keep);
   if(colPick&&colPick.k==='pattern')return renderPatPick(keep);const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {k,sel,cur,view}=colPick,y=el.scrollTop;
   const photo=it.photo||(typeof wardPic==='function'?wardPic(it):null),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
-  const nc=colNewFor(it,k),name=c=>c==='none'?'None':c===NEW_COL?cap1(nc?nc.name:''):cap1(colName(c)),hex=c=>c===NEW_COL?(nc?nc.hex:'transparent'):COLORS[c]||'transparent';  const near=colNear(it,k),dWord=d=>d<=4?'Very close':d<=8?'Close':'Nearest';
+  const acc=k==='accents',nc=acc?null:colNewFor(it,k),name=c=>!c?'':c==='none'?'None':c===NEW_COL?cap1(nc?nc.name:''):cap1(colName(c)),hex=c=>c===NEW_COL?(nc?nc.hex:'transparent'):COLORS[c]||'transparent';  const near=colNear(it,k),dWord=d=>d<=4?'Very close':d<=8?'Close':'Nearest';
   const tile=(c,extra='')=>`<button type="button" class="cptile${c===sel?' sel':''}" data-c="${c}" onclick="colPickSel('${c}')" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(c))}</span>${c===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   const fams=COL_FAMS.map(()=>[]);for(const c of colChoices(it,k))fams[colFamily(c)].push(c);
   const groups=fams.map((l,f)=>l.length?`<h4 class="cph">${COL_FAMS[f]}</h4><div class="cpgrid">${l.sort((a,b)=>labOf(b)[0]-labOf(a)[0]).map(c=>tile(c)).join('')}</div>`:'').join('');
@@ -114,16 +124,16 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
     ownH=!COLS_BY[it.type]?'':mine.length?`<h4 class="cph">Your colors</h4><div class="cpgrid cnown">${mine.map(c=>tile(c)).join('')}<button type="button" class="cptile cpnewt" id="cn-open" onclick="openColNew()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New color</span></button></div>`
       :`<h4 class="cph cpownh">Your colors</h4><div class="cpgrid cnown cnslim"><button type="button" class="cpnewl" id="cn-open" onclick="openColNew()"><span aria-hidden="true">+</span> New color</button></div>`;
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
-  const drawn=sel===NEW_COL||sel===cur?it:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
-  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  const drawn=sel===NEW_COL||sel===cur?it:acc?{...it,accents:[...accentsOf(it),sel]}:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${acc?'Add a color it also has':k==='secondaryColor'&&it.type==='socks'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
-${colAskHtml(it,k,tile,name)}
-<p class="cphelp">${pic?`Tap a color to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a color to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a color to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
-${ownH}
+${acc?'':colAskHtml(it,k,tile,name)}
+<p class="cphelp">${acc?`Pick a further color you can see in the pattern, beyond its main ${it.tertiaryColor?'three':'colors'}: a speck or a logo doesn’t count.`:pic?`Tap a color to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a color to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a color to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
+${acc?'':ownH}
 ${near.length?`<h4 class="cph">Closest to your ${it.meas.src==='closeup'?'close-up':'photo'}</h4><div class="cpgrid cpnear">${near.map(x=>tile(x.c,`<small class="cpd">${dWord(x.d)}</small>`)).join('')}</div>`:''}
-${k==='primaryColor'?'':`<div class="cpgrid">${tile('none')}</div>`}${groups}
-<div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${esc(sel===NEW_COL?'Add '+name(sel)+' to your colors and use it':sel===cur?'Keep '+name(sel):'Use '+name(sel))}</button></div>`;
+${k==='primaryColor'||acc?'':`<div class="cpgrid">${tile('none')}</div>`}${groups}
+<div class="cpbar">${acc?`<button type="button" class="pri" id="acc-use" onclick="useColPick()"${sel?'':' disabled'}>${sel?esc('Add '+name(sel)):'Pick a color'}</button>`:`<button type="button" class="pri" onclick="useColPick()">${esc(sel===NEW_COL?'Add '+name(sel)+' to your colors and use it':sel===cur?'Keep '+name(sel):'Use '+name(sel))}</button>`}</div>`;
   if(keep)el.scrollTop=y}
 /* (a colour of your own by hand, "+ A colour of my own" at the end of the list, colOwn*, became the "+ New colour" sheet, 2026-11-15) */
 /* ---- Ask Claude: the close-up (white-balanced), the sharp photo and the close-up's measurement go to the tagger again, the same
@@ -509,7 +519,7 @@ async function rdRun(src,id){const it=rdItem(src,id);if(!it||!it.texture)return;
   if(r&&r.ok&&typeof acct==='object'&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
   if(r&&r.status===429){me.state='limit';me.limit=j.message||'Today’s color and pattern lookups are used up. They start again at midnight UTC.'}
   else if(!r||!r.ok||!j.colour||!j.pattern){me.state='err';me.detail=showCost()&&(j.detail||j.message)||''}
-  else{const now=rdItem(src,id)||it;me.state='result';me.c=rdColOf(j.colour);me.p=rdPatOf(now,j.pattern);me.m=rdMatOf(now,j.pattern&&j.pattern.material)}
+  else{const now=rdItem(src,id)||it;me.state='result';me.c=rdColOf(j.colour);me.p=rdPatOf(now,j.pattern);me.m=rdMatOf(now,j.pattern&&j.pattern.material);me.a=rdAccOf(now,j.colour)}
   rdRender(true);rdRefresh(src,id)}
 /* the material (2026-11-15, the materials audit; the worker's pattern half gives it, held to its tier): a third card only when Claude is
    high or medium on one of the type's materials that the item doesn't already have; null otherwise (low, "none", an older worker) */
@@ -523,7 +533,10 @@ function rdMatOf(it,m){const l=matsFor(it.type);if(!m||m.error||!l||!m.key||m.ke
    a guess or a new material never (adding or a guess is always its own tap) */
 const rdMatMain=(it,x)=>x.cur||x.guess||x.isNew?null:'use';
 /* the halves, as the New color / New pattern sheets read them: {na} when it failed or isn't cloth */
-function rdColOf(c){if(!c||c.error)return {na:'fail'};if(c.kind!=='colour'&&c.kind!=='several')return {na:c.kind==='not-clothing'?'cloth':'fail'};
+/* (2026-11-16, the owner's camouflage: "Claude couldn't read the color" on patterned cloth) a colour half that says pattern, material or
+   unclear is not a failure: it is a cloth of several colours (na 'several': "This cloth has several colors", its colours offered as Also
+   has, rdAccOf); the failure text is for a real error, and "not a close-up of cloth" for not-clothing */
+function rdColOf(c){if(!c||c.error)return {na:'fail'};if(c.kind!=='colour'&&c.kind!=='several')return {na:c.kind==='not-clothing'?'cloth':'several'};
   const hex=cnHex(c.hex);if(!hex)return {na:'fail'};const ex=c.existing&&COLORS[c.existing]?c.existing:null,d=+c.dE||0;
   return {r:c,hex,name:cap1(String(c.name||'').trim())||cap1(colName(c.plansAs||'grey'))+' tone',ex,d,dup:!!ex&&d<=3,done:null}}
 function rdPatOf(it,p){if(!p||p.error)return {na:'fail'};if(p.kind!=='pattern')return {na:p.kind==='not-clothing'?'cloth':'fail'};
@@ -534,7 +547,7 @@ const rdPatBase=(it,x)=>cnPatBase(it,{base:null,res:x.r});
 /* each card's main action: Claude's new one, or the one already had when it is the same to the eye (ΔE00 ≤ 3, as the New color sheet), null when that is the item's already */
 const rdColMain=(it,x)=>x.dup?(x.ex===primaryCol(it)?null:'existing'):'new';
 const rdPatMain=(it,x)=>x.reuse?(x.ex===normPat(it.type,it.pattern)?null:'existing'):'new';
-const rdActName=(it,me,[h,a])=>h==='m'?me.m.name:h==='c'?(a==='existing'?cap1(colName(me.c.ex)):me.c.name):(a==='existing'?cap1(patName(me.p.ex)):me.p.name);
+const rdActName=(it,me,[h,a])=>h==='a'?'these colors':h==='m'?me.m.name:h==='c'?(a==='existing'?cap1(colName(me.c.ex)):me.c.name):(a==='existing'?cap1(patName(me.p.ex)):me.p.name);
 /* the item drawn in a shade and/or pattern not added yet (stand-in keys, as cnDrawn / cnWithPat), taken out again */
 function rdDraw(it,o,sw){const P='cnprev',PP='own-cnprev';let x={...it,photo:undefined,texture:undefined,swatch:undefined,swSrc:undefined};
   try{if(o.hex){COLORS[P]=o.hex;delete LUMS[P];x={...x,primaryColor:P,color:undefined,shade:0}}else if(o.col)x={...x,primaryColor:o.col,color:undefined,shade:0};
@@ -572,6 +585,7 @@ function rdLightNote(it,me){const s=me.sent;if(!s||s.wb!==false)return '';
   return s.warm?`<div class="cnwarm" id="rd-warm" role="note"><span aria-hidden="true">☀︎</span><span>Taken in warm light — the color may be yellower than the cloth; add white paper for a truer color.<br>${rdRetakeHtml(it)}</span></div>`
     :`<p class="cnwhy cnnopaper" id="rd-warm">No white paper in the close-up, so this shade is Claude’s best guess from the photo as taken. ${rdRetakeHtml(it)}</p>`}
 function rdNaCard(it,h,x){const what=h==='c'?'color':'weave';
+  if(x.na==='several')return `<div class="rdcard na" id="rd-col"><span class="cneyebrow">Color</span><p class="cnwhy" id="rd-several"><b>This cloth has several colors.</b> Claude didn’t name one main color, so ${esc(cap1(colName(primaryCol(it))))} stays${rd&&rd.a?'; the colors it saw are under Also has':''}.</p></div>`;
   return `<div class="rdcard na" id="${h==='c'?'rd-col':'rd-pat'}"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><p class="cnwhy">${x.na==='cloth'?`That doesn’t look like a close-up of cloth. ${rdRetakeHtml(it)}`:`Claude couldn’t read the ${what} this time.`}</p></div>`}
 function rdDoneCard(it,h,x){const id=h==='c'?'rd-col':'rd-pat',cur=h==='c'?cap1(colName(primaryCol(it))):cap1(patName(normPat(it.type,it.pattern)));
   const sw=h==='c'?`<span class="cnresw rdsm" style="background:${COLORS[primaryCol(it)]||'transparent'}"></span>`:`<span class="cnresw cnresp rdsm">${swatchSVG(it,true)}</span>`;
@@ -614,10 +628,22 @@ function rdMatCard(it,me){const x=me.m;if(!x)return '';
 <div class="rdbtns">${keepB}<button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','use']])">Use ${esc(x.key)}</button></div></div>`;
   return `<div class="rdcard" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">${esc(x.r.confidence)} confidence</span></span><b>${yours?`Yours: ${esc(yours)} · Claude: ${esc(x.name)}`:`Material: ${esc(x.name)}`}</b>${yours?'<small>Use switches it to Claude’s; Use all keeps yours.</small>':''}</span></div>${why}
 <div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-mkeep" onclick="rdKeep('m')">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button><button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','use']])">Use ${esc(x.name)}</button></div></div>`}
-const RD_HALVES=['c','p','m'];
-const rdMain=(it,me,h)=>h==='c'?rdColMain(it,me.c):h==='p'?rdPatMain(it,me.p):rdMatMain(it,me.m);
+/* the colours beyond the three (accents, 2026-11-16: the colour half's accents, the worker's cleaned list): a fourth card "Also has" with
+   Keep / Use these; its Use is part of Use all (like the material's, it only adds what the item doesn't say yet). null when Claude saw none,
+   or exactly the item's own already */
+function rdAccOf(it,c){if(!c||c.error||!Array.isArray(c.accents))return null;const list=accentsFor(it,c.accents),cur=accentsOf(it);
+  return !list.length||list.join()===cur.join()?null:{list,cur,done:null}}
+const rdAccWords=l=>l.map(c=>colName(c).toLowerCase()).join(', ');
+function rdAccCard(it,me){const x=me.a;if(!x)return '';
+  if(x.done)return `<div class="rdcard done" id="rd-acc"><span class="rddtx"><span class="cneyebrow">Also has</span><b>${x.done==='keep'?(x.cur.length?`Kept ${esc(rdAccWords(x.cur))}`:'Left out'):`Also has ${esc(rdAccWords(x.list))} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('a')">Change</button>`:`<button type="button" class="rdlink" id="rd-acc-undo" onclick="rdUndo('a')">Undo</button>`}</div>`;
+  return `<div class="rdcard" id="rd-acc"><div class="cnreshd"><span><span class="cneyebrow">Also has</span><b>${esc(cap1(rdAccWords(x.list)))}</b><small>Further colors Claude sees in the pattern${x.cur.length?`; the item says ${esc(rdAccWords(x.cur))} now`:''}.</small></span></div>
+<div class="accchips rdacc">${x.list.map(c=>`<span class="accchip">${ckChip(c)}<span>${esc(cap1(colName(c)))}</span></span>`).join('')}</div>
+<div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-akeep" onclick="rdKeep('a')">${x.cur.length?'Keep the item’s':'Leave out'}</button><button type="button" class="cpaskbtn" id="rd-ause" onclick="rdUse([['a','use']])">Use these</button></div></div>`}
+async function rdSetAcc(src,id,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i>=0)await accSet('q',i,v)}else await accSet('e',id,v)}
+const RD_HALVES=['c','p','m','a'];
+const rdMain=(it,me,h)=>h==='c'?rdColMain(it,me.c):h==='p'?rdPatMain(it,me.p):h==='a'?'use':rdMatMain(it,me.m);
 function rdBar(it,me){const left=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done),acts=left.map(h=>[h,rdMain(it,me,h)]).filter(a=>a[1]);
-  const lab=acts.length===3?'Use all':acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,acts[0]))}`:left.length?'Keep as it is':'Done';
+  const lab=acts.length>=3?'Use all':acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,acts[0]))}`:left.length?'Keep as it is':'Done';
   return `<div class="rdbar"><button type="button" class="pri" id="rd-both" onclick="rdBoth()"${me.applying?' disabled':''}>${lab}</button>${left.length?'<small>Nothing changes until you tap. You can undo it after.</small>':''}</div>`}
 function rdRender(top){const me=rd;if(!me)return;const {s}=rdEls(),it=rdItem(me.src,me.id);if(!it){rdClose();return}
   const y=s.scrollTop,pr=paperNow(it),res=me.state==='result';
@@ -629,7 +655,7 @@ function rdRender(top){const me=rd;if(!me)return;const {s}=rdEls(),it=rdItem(me.
 <div class="rdbar"><button type="button" class="ghost" id="rd-stop" onclick="rdClose()">Stop</button><small>Stopping changes nothing. · <span id="rd-cost">${esc(rdCost())}</span></small></div>`;
   else if(me.state==='limit')body=`<div class="cnlim" id="rd-limit" role="status"><span aria-hidden="true">⏳</span><span><b>${esc(me.limit)}</b>You can still set the color and pattern yourself.</span></div><div class="rdbar"><button type="button" class="pri" onclick="rdClose()">Close</button></div>`;
   else if(me.state==='err')body=`<div class="cnres cnerr" id="rd-err"><div class="cpasktx"><b>Claude couldn’t answer</b><small>The color and weave couldn’t be read just now. Try again later, or set them yourself.${me.detail?` (${esc(me.detail)})`:''}</small></div><div class="cnbtns"><button type="button" class="cpaskbtn" onclick="rdRun(rd.src,rd.id)">Try again</button></div></div><div class="rdbar"><button type="button" class="ghost" onclick="rdClose()">Close</button></div>`;
-  else body=rdColCard(it,me)+rdPatCard(it,me)+rdMatCard(it,me)+rdBar(it,me);
+  else body=rdColCard(it,me)+rdAccCard(it,me)+rdPatCard(it,me)+rdMatCard(it,me)+rdBar(it,me);
   s.innerHTML=head+body;s.scrollTop=top?0:y}
 function rdKeep(h){const me=rd;if(!me||!me[h])return;me[h].done='keep';rdAfter()}
 function rdChange(h){const me=rd;if(!me||!me[h])return;me[h].done=null;rdRender()}
@@ -645,12 +671,13 @@ async function rdAddPat(it,x){const base=rdPatBase(it,x),types=CN_SUITING.includ
 const rdPick=(it,fields)=>Object.fromEntries(fields.map(k=>[k,it[k]==null?it[k]:JSON.parse(JSON.stringify(it[k]))]));
 async function rdSet(src,id,k,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;const q=queue[i];if(k==='primaryColor')q.newColor=null;else q.newPattern=null;setq(i,k,v)}else await sete(id,k,v)}
 async function rdUse(parts){const me=rd;if(!me||me.state!=='result'||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;me.applying=true;
-  try{for(const [h,how] of parts){const x=me[h];if(!x||x.na||x.done)continue;const now=rdItem(me.src,me.id)||it,prev=rdPick(now,h==='c'?RD_COLF:h==='m'?['material']:RD_PATF);let v,added=false,name;
-      if(h==='m'){v=x.key;name=x.name;if(x.isNew){const had=matsFor(now.type).includes(v);if(!await addOwnMaterial(now.type,v))throw new Error('That material couldn’t be added.');added=!had}await rdSetMat(me.src,me.id,v)}
+  try{for(const [h,how] of parts){const x=me[h];if(!x||x.na||x.done)continue;const now=rdItem(me.src,me.id)||it,prev=rdPick(now,h==='c'?RD_COLF:h==='m'?['material']:h==='a'?['accents']:RD_PATF);let v,added=false,name;
+      if(h==='a'){v=x.list;name='also '+rdAccWords(x.list);await rdSetAcc(me.src,me.id,v)}
+      else if(h==='m'){v=x.key;name=x.name;if(x.isNew){const had=matsFor(now.type).includes(v);if(!await addOwnMaterial(now.type,v))throw new Error('That material couldn’t be added.');added=!had}await rdSetMat(me.src,me.id,v)}
       else{if(how==='existing'){v=x.ex;name=h==='c'?cap1(colName(v)):cap1(patName(v))}else{const a=h==='c'?await rdAddCol(now,x):await rdAddPat(now,x);v=a.key;added=a.added;name=x.name}
         await rdSet(me.src,me.id,h==='c'?'primaryColor':'pattern',v)}
       x.done='used';x.usedName=name;
-      if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null,m:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':h==='m'?'materials':'patterns',type:now.type}}}
+      if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null,m:null,a:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':h==='m'?'materials':h==='a'?'accents':'patterns',type:now.type}}}
   catch(e){me.applying=false;toast(e.message||'That could not be set.');rdRender();return}
   me.applying=false;rdAfter()}
 /* the material set by the reading: the Add card's field (setQField: it then counts as chosen) or the item's (setItemField) */
@@ -663,18 +690,19 @@ async function rdBoth(){const me=rd;if(!me||me.applying)return;const it=rdItem(m
 function rdAfter(){const me=rd;if(!me)return;const left=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done);
   if(left.length){rdRender();rdRefresh(me.src,me.id);return}
   const L=rdLast&&rdLast.run===me.run?rdLast:null;rdClose();
-  const ch=L?[L.c&&'color',L.p&&'texture',L.m&&'material'].filter(Boolean):[];
+  const ch=L?[L.c&&'color',L.a&&'also-has colors',L.p&&'texture',L.m&&'material'].filter(Boolean):[];
   if(ch.length)toast(cap1(ch.length>1?ch.slice(0,-1).join(', ')+' and '+ch.at(-1):ch[0])+' updated.',4000,{label:'Undo',fn:rdUndoAll})}
 /* Undo: the fields as they were, and a color or pattern this reading added taken out again when nothing else uses it */
 async function rdRestore(src,id,half){const it=rdItem(src,id);
   if(it){for(const [k,v] of Object.entries(half.prev)){if(v===undefined)delete it[k];else it[k]=v}
     if(src==='q'){if(it.texCanvas)generateSwatch(it);if(typeof addKeep==='function')queueMicrotask(addKeep)}else{if(it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={}}}
+  if(half.kind==='accents')return;
   if(half.kind==='materials'){if(half.added&&![...items,...queue].some(x=>x&&x.type===half.type&&x.material===half.added))await removeOwnMaterial(half.type,half.added);return}   // (an own material this reading added)
   if(half.added&&![...items,...queue].some(x=>x&&[x.primaryColor,x.secondaryColor,x.tertiaryColor,x.pattern].includes(half.added)))await removeCustom(half.kind,half.added)}
 async function rdUndo(h){const L=rdLast;if(!L||!L[h])return;const half=L[h];L[h]=null;await rdRestore(L.src,L.id,half);
-  if(rd&&rd.run===L.run&&rd[h])rd[h].done=null;if(!L.c&&!L.p&&!L.m&&rdLast===L)rdLast=null;rdRefresh(L.src,L.id);if(rd)rdRender()}
-async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['m','p','c'])if(L[h])await rdUndo(h);toast('Put back as it was.')}
+  if(rd&&rd.run===L.run&&rd[h])rd[h].done=null;if(!L.c&&!L.p&&!L.m&&!L.a&&rdLast===L)rdLast=null;rdRefresh(L.src,L.id);if(rd)rdRender()}
+async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['a','m','p','c'])if(L[h])await rdUndo(h);toast('Put back as it was.')}
 /* the card left on the page after a reading set something: the new drawing, what changed, Undo */
-function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p&&!L.m)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
-  const names=[L.c&&L.c.name,L.p&&L.p.name,L.m&&L.m.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns',L.m&&L.m.added&&'materials'].filter(Boolean);
+function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p&&!L.m&&!L.a)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
+  const names=[L.c&&L.c.name,L.a&&L.a.name,L.p&&L.p.name,L.m&&L.m.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns',L.m&&L.m.added&&'materials'].filter(Boolean);
   return `<div class="rddone" id="rd-done" role="status"><span class="rddraw" aria-hidden="true">${itemThumb({...it,photo:undefined})}</span><span class="rddtx"><b>${esc(names.join(' and '))} set</b>${add.length?`<small>Added to your ${add.join(' and ')}.</small>`:''}</span><button type="button" class="rdlink" id="rd-undo" onclick="rdUndoAll()">Undo</button></div>`}

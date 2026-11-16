@@ -55,6 +55,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(e.pi&&e.pi.type==='camo'&&e.pi.scale===3&&e.pis.scale===3,'the planner counts camouflage as a bold, large pattern of its own kind');
     ok(e.formal,'a camouflage suit is kept off a formal day, further than a windowpane');
     ok(e.pats,'camouflage is a pattern of suits, blazers, pants and shirts');
+    // a uniform (the owner, 2026-11-16: "the military requires you to wear both together"): a camouflage shirt and pants are one pattern
+    e=await p.evaluate(()=>{const sh={id:'u1',type:'shirt',primaryColor:'khaki',secondaryColor:'brown',pattern:'camouflage'},pt={id:'u2',type:'pants',primaryColor:'khaki',secondaryColor:'olive',pattern:'camouflage'},
+        wsh={id:'u3',type:'shirt',primaryColor:'white',pattern:'solid'},npt={id:'u4',type:'pants',primaryColor:'navy',pattern:'solid'},day={clim:{season:'mild',rain:false,cold:false},nojkt:true,hasLinks:false};
+      const r=rateOutfit({top:null,bot:pt,shirt:sh,tie:null,shoes:null,suitDay:false});
+      return {ps:patternScore([[null,'top'],[pt,'bot'],[sh,'shirt']]),hard:clothesHard(null,pt,sh,null,false,day,()=>true),pat:(r.checks.find(c=>c.label==='Patterns')||{}).pts,same:!!r.checks.find(c=>/same color/.test(c.why||'')),
+        together:clothesScore(null,pt,sh,null,false,day),split1:clothesScore(null,pt,wsh,null,false,day),split2:clothesScore(null,npt,sh,null,false,day),suit:clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,sh,null,true,day)-clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,wsh,null,true,day),
+        three:patsOf([[pt,'bot'],[sh,'shirt'],[{type:'tie',pattern:'stripe',primaryColor:'navy'},'tie']]).length}});
+    ok(e.ps===0&&!e.hard&&(e.pat==null||e.pat===10)&&!e.same&&e.three===2,'a camouflage shirt with camouflage pants is one pattern, no clash or same-color mark ('+JSON.stringify(e)+')');
+    ok(e.together>e.split1&&e.together>e.split2,'a camouflage shirt and pants are planned together: either with a plain piece scores lower');
+    ok(e.suit<=-30,'a camouflage shirt under a plain suit costs the uniform split ('+e.suit+')');
     // the owner's camouflage shirt (2026-11-16): no photo, a close-up, no reading of its own: the item sheet opened on nothing (it described
     // i.sett), so it couldn't be opened or deleted
     e=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=240;const x=c.getContext('2d');x.fillStyle='#81613c';x.fillRect(0,0,240,240);x.fillStyle='#3f2600';x.fillRect(40,40,120,80);

@@ -381,6 +381,7 @@ async function saveCard(q){
   generateSwatch(q);
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:nowMs()};
   if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
+  {const a=accentsOf(q);if(a.length)it.accents=a}   // its colours beyond the three (core.js accentsOf)
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
@@ -454,7 +455,7 @@ function plainCard(q,i){return `<div class="card qcard" data-q="${esc(q.id)}"><b
    "Looks right" (Texture match "Fine as is"); a field changed by hand checks its section too. Sections Claude was unsure about get "!" and
    open first. Confirm is never blocked by unchecked parts ("2 left to check · you can still confirm"), only while Claude reads (confBtn). */
 const CK_FIELD={type:'type',primaryColor:'colors',secondaryColor:'colors',tertiaryColor:'colors',pattern:'pattern',metal:'fabric',cuff:'fabric',vest:'fabric',season:'fabric',
-  trouserKind:'fabric',shoeStyle:'fabric',leather:'fabric',dial:'fabric',band:'fabric',bezel:'fabric',watchStyle:'fabric',material:'fabric'};
+  trouserKind:'fabric',shoeStyle:'fabric',leather:'fabric',dial:'fabric',band:'fabric',bezel:'fabric',watchStyle:'fabric',material:'fabric',accents:'colors'};
 /* ---- the material's extras under the Add card's Material (2026-11-16, the owner's approved design): Claude's new material offered
    ("Add cupro as a material": tagging.js matOffer), the note once added, and Claude's low-confidence guess with "Use wool" (matGuessUse).
    MAT_ASK: the types whose material matters for planning; empty, Fabric & fit is "!" (worth a look; Confirm still works) */
@@ -496,7 +497,7 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
   // Colors
   const rows=colRows('q',i,q),shade=COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!tex&&!!(q.meas&&q.meas.src==='closeup')):'';
   if(rows||shade){const cw=unsure(c.primaryColor)||(!man&&(!!q.newColor||Object.keys(q.auto||{}).length>0||(q.measV||[]).some(v=>v.mode==='flag'&&!(q.edited&&q.edited[v.f]))));
-    out.push({k:'colors',n:!!rows,warn:cw,mark:chk.colors?'good':cw?'warn':'todo',title:'Colors',sum:ckColSum(q,q.primaryColor)+(ckSure(c.primaryColor)&&!man?' · '+ckSure(c.primaryColor):''),body:rows+shade+(rows?ckLr(q,i,'colors'):'')})}
+    out.push({k:'colors',n:!!rows,warn:cw,mark:chk.colors?'good':cw?'warn':'todo',title:'Colors',sum:ckColSum(q,q.primaryColor)+(ckSure(c.primaryColor)&&!man?' · '+ckSure(c.primaryColor):''),body:rows+accRow('q',i,q)+shade+(rows?ckLr(q,i,'colors'):'')})}
   // Pattern: Claude's pick and its second choice drawn in the item's colors, then every pattern (the picker)
   if(fab){const p=normPat(q.type,q.pattern),ai=q.aiTag&&q.aiTag.pattern,alt=q.altPattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?q.altPattern:null,pw=unsure(c.pattern)||(!man&&!!q.newPattern);
     const tiles=[];if(!man){const first=ai&&(PATS_BY[q.type]||[]).includes(ai)?ai:p;tiles.push([first,'Claude’s pick']);if(alt&&alt!==first)tiles.push([alt,'Claude’s 2nd']);if(!tiles.some(t=>t[0]===p))tiles.push([p,'Your choice'])}
