@@ -13,7 +13,8 @@ const phSm=i=>i&&i.photo?(i.photoSm&&i.phSig===phSigOf(i.photo)?i.photoSm:i.phot
 const phSigOf=u=>u?u.length+':'+u.slice(-48):'';
 async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.photoSm;delete it.photoSm;delete it.phSig;return had}
   const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
-  try{const im=await imgOf(it.photo);it.photoSm=Math.max(im.naturalWidth,im.naturalHeight)<=PH_SM?it.photo:shrink(im,PH_SM).toDataURL('image/jpeg',.82);it.phSig=sig;return true}catch{return false}}
+  try{const im=await imgOf(it.photo);let sm=it.photo;if(Math.max(im.naturalWidth,im.naturalHeight)>PH_SM){const c=shrink(im,PH_SM);if(deadCanvas(c))return false;sm=c.toDataURL('image/jpeg',.82)}   // drawn black: keep the old copy
+    it.photoSm=sm;it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
 async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
@@ -44,7 +45,9 @@ function paperLine(i){if(!i.texture||!TEXTURE_TYPES.includes(i.type)||phEdit.pap
   return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
     :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${paperRetake(i.id,'replaceTexture')}</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
-async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
+/* a new photo or close-up the browser drew pure black is refused with DEAD_MSG (app.js), nothing saved: crop, rotate and replace all
+   come through here (2026-11-15) */
+async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;if(url&&await deadPic(url)){toast(DEAD_MSG,8000);return false}phEdit.undo.push({k,v:it[k]||null});if(phEdit.undo.length>10)phEdit.undo.shift();
   if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();if(msg)toast(msg)}
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
@@ -53,18 +56,18 @@ async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
   if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
   const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q),tex=shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),cur=items.find(x=>x.id===id);
   if(cur){await paperOf({texture:tex,photo:cur.photo,photoSm:cur.photoSm,phSig:cur.phSig});if(phEdit.id===id)phEdit.paper=texSig(tex)}   // the paper line under the photos (paperLine)
-  await setTexture(id,tex,'Close-up added.');   // (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
+  if(await setTexture(id,tex,'Close-up added.')===false)return;   // drawn black (setPic): nothing saved, no sharp copy kept. (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
   const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);if(it)delete it.pbox;   // the pattern's box was on the old picture
-  await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.');const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tagging.js), signed with the new photo
+  if(await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),'Photo replaced. The item’s tags and your plan are unchanged.')===false)return;const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tagging.js), signed with the new photo
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo),c=document.createElement('canvas');
   c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);
   // the kept sharp copy turns with it, and the pattern's box (thousandths of the picture) with the copy
   const sharp=typeof tagImgOf==='function'?await tagImgOf(id,it):null,b=it.pbox;
-  if(b)it.pbox={x:1000-(b.y+b.h),y:b.x,w:b.h,h:b.w};
-  await setPhoto(id,c.toDataURL('image/jpeg',.9));
+  const pb=it.pbox;if(b)it.pbox={x:1000-(b.y+b.h),y:b.x,w:b.h,h:b.w};
+  if(await setPhoto(id,c.toDataURL('image/jpeg',.9))===false){it.pbox=pb;return}   // drawn black: the box stays as it was
   if(sharp)try{const si=await imgOf(sharp),sc=document.createElement('canvas');sc.width=si.naturalHeight;sc.height=si.naturalWidth;const sx=sc.getContext('2d');sx.translate(sc.width,0);sx.rotate(Math.PI/2);sx.drawImage(si,0,0);await keepTagImg(id,sc.toDataURL('image/jpeg',TAG_Q),it.photo)}catch(e){console.warn('sharp copy not turned',e)}}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
   if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
@@ -102,7 +105,7 @@ function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const b
 async function applyCrop(id){const it=items.find(x=>x.id===id),g=cropGeom();if(!it||!g)return;
   const im=await cropSource(it),f=(im.naturalWidth||im.width)/phEdit.crop.w;   // the frame is measured on the photo; f scales it to the source
   const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
-  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;await setPhoto(id,c.toDataURL('image/jpeg',.9));
+  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);phEdit.crop=null;if(await setPhoto(id,c.toDataURL('image/jpeg',.9))===false){renderWardrobe();return}   // drawn black: nothing saved
   if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with its tools folded under it, then a
    card for the tags, one for rotation, and Delete on its own at the very end */
