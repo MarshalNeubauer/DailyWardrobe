@@ -353,7 +353,7 @@ async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.pa
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
 /* what the Saved toast calls the item: its own name, else its colours with what it is ("Grey suit", "Navy tie", "Gold watch · white dial
    · bracelet"; it said "Saved: Grey." for a suit and "Saved: Navy." for a tie and for socks) */
-function savedTitle(it){const nm=itemName(it);if(nm)return nm;const d=String(desc(it)||'').trim(),t=(TYPES[it.type]||'item').toLowerCase();
+function savedTitle(it){const nm=itemName(it);if(nm)return nameIso(nm);const d=String(desc(it)||'').trim(),t=(TYPES[it.type]||'item').toLowerCase();
   if(!d)return sentence(t);const k=d.indexOf(' · ');return sentence(k<0?`${d} ${t}`:`${d.slice(0,k)} ${t}${d.slice(k)}`)}
 /* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
 const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
