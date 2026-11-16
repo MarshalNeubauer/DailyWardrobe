@@ -475,8 +475,11 @@ async function removeCustom(kind,key){const cu=settings.custom||{};settings.cust
    and the latest 20 go with every tagging request; the counts give the accuracy on the stats page ---- */
 async function recordTagResult(q,it){if(!q.ai||!q.aiTag)return;const st={n:0,wrong:{},...(settings.tagStats||{})};st.wrong={...st.wrong};st.n++;
   const fixes=[...(settings.tagFixes||[])];
+  // taking Claude's own suggestion of a new color or pattern (newColor / newPattern, added as the owner's) is not a correction (W2-17-16)
+  const claudes=(f,to)=>{const s=f==='primaryColor'?q.newColor:f==='pattern'?q.newPattern:null,nm=s&&String(s.name||'').trim().toLowerCase(),own=f==='pattern'?CUSTOM_PAT[to]:CUSTOM_COL[to];
+    return !!(nm&&own&&String(own.name||'').trim().toLowerCase()===nm)};
   for(const f of ['type','primaryColor','secondaryColor','pattern']){const from=q.aiTag[f]||'none',to=it[f]||'none';if(f==='pattern'&&!FABRIC.includes(it.type))continue;
-    if(from!==to){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
+    if(from!==to&&!claudes(f,to)){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
   settings.tagStats=st;settings.tagFixes=fixes.slice(-60);await saveUserSettings()}
 function tagStatsCard(){const st=settings.tagStats||{n:0,wrong:{}},fx=(settings.tagFixes||[]).slice(-8).reverse();
   const pct=f=>st.n?Math.round(100*(1-(st.wrong[f]||0)/st.n)):null;
