@@ -6,6 +6,7 @@
     "test": "node tests/run.js --changed",
     "test:all": "node tests/run.js",
     "test:webkit": "node tests/run.js --webkit",
+    "test:replay": "node tests/replay/run.js",
     "lint": "node tests/lint.js",
     "gaps": "node tests/gaps.js",
     "atlas": "node tools/asm-atlas.js",

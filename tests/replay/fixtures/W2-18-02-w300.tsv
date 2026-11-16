@@ -1,0 +1,301 @@
+Type	Colour	Second colour	Pattern	Name	Brand
+Suit	Grey		solid	Suit 1	Suitsupply
+Suit	Steel blue		solid	Suit 2	Brioni
+Suit	Olive		solid	Suit 3	Crockett & Jones
+Suit	Mid grey		solid	Suit 4	Hackett
+Suit	Dark slate blue-grey		pinstripe	Suit 5	Hackett
+Suit	Green		solid	Suit 6	Brioni
+Suit	Light grey		solid	Suit 7	Crockett & Jones
+Suit	Brown		solid	Suit 8	Loake
+Suit	Cream	Rust	windowpane	Suit 9	Zegna
+Suit	Navy		nailhead	Suit 10	Hackett
+Suit	Deep taupe	Grey	glen check	Suit 11	Charles Tyrwhitt
+Suit	Black		solid	Suit 12	Charles Tyrwhitt
+Suit	Very dark navy		houndstooth	Suit 13	Zegna
+Suit	Taupe		solid	Suit 14	
+Suit	Charcoal		pinstripe	Suit 15	Brioni
+Suit	Deep blue		solid	Suit 16	T.M. Lewin
+Suit	Tan		solid	Suit 17	Crockett & Jones
+Suit	Dark grey		solid	Suit 18	T.M. Lewin
+Suit	Blue		solid	Suit 19	Suitsupply
+Suit	Khaki		solid	Suit 20	Loake
+Suit	Grey		solid	Suit 21	Zegna
+Suit	Steel blue		solid	Suit 22	Charles Tyrwhitt
+Suit	Olive		solid	Suit 23	Loake
+Suit	Mid grey		solid	Suit 24	
+Suit	Dark slate blue-grey		solid	Suit 25	Zegna
+Suit	Green		solid	Suit 26	Drake’s
+Suit	Light grey		solid	Suit 27	Hackett
+Suit	Brown		solid	Suit 28	Hackett
+Suit	Cream		solid	Suit 29	Charles Tyrwhitt
+Suit	Navy		solid	Suit 30	T.M. Lewin
+Suit	Deep taupe		solid	Suit 31	Suitsupply
+Suit	Black		solid	Suit 32	Suitsupply
+Suit	Very dark navy		solid	Suit 33	Loake
+Suit	Taupe		solid	Suit 34	Suitsupply
+Suit	Charcoal		solid	Suit 35	Charles Tyrwhitt
+Suit	Deep blue	Blue	chalk stripe	Suit 36	
+Suit	Tan	Burgundy	birdseye	Suit 37	Drake’s
+Suit	Dark grey		solid	Suit 38	Zegna
+Suit	Blue		solid	Suit 39	Charles Tyrwhitt
+Blazer	Grey		solid	Blazer 1	Charles Tyrwhitt
+Blazer	Steel blue		solid	Blazer 2	Drake’s
+Blazer	Olive		solid	Blazer 3	Hackett
+Blazer	Charcoal		solid	Blazer 4	Brioni
+Blazer	Deep blue		solid	Blazer 5	
+Blazer	Tan	Grey	windowpane	Blazer 6	Charles Tyrwhitt
+Blazer	Rust		tweed	Blazer 7	
+Blazer	Navy		solid	Blazer 8	Zegna
+Blazer	Deep taupe		solid	Blazer 9	T.M. Lewin
+Blazer	Burgundy		solid	Blazer 10	Zegna
+Blazer	Mid grey		solid	Blazer 11	Brioni
+Blazer	Dark slate blue-grey		solid	Blazer 12	Loake
+Blazer	Green	Cream	nailhead	Blazer 13	Loake
+Blazer	Dark grey		solid	Blazer 14	Drake’s
+Blazer	Blue		solid	Blazer 15	Suitsupply
+Blazer	Khaki		solid	Blazer 16	
+Blazer	Black		solid	Blazer 17	T.M. Lewin
+Blazer	Very dark navy		solid	Blazer 18	Charles Tyrwhitt
+Blazer	Taupe		solid	Blazer 19	Suitsupply
+Blazer	Wine		solid	Blazer 20	Charles Tyrwhitt
+Blazer	Light grey		solid	Blazer 21	
+Trousers	Grey	Light grey	nailhead	Trousers 1	
+Trousers	Steel blue	White	sharkskin	Trousers 2	T.M. Lewin
+Trousers	Olive		solid	Trousers 3	Loake
+Trousers	Charcoal	Deep blue	sharkskin	Trousers 4	Suitsupply
+Trousers	Deep blue	Tan	twill	Trousers 5	Loake
+Trousers	Tan		solid	Trousers 6	T.M. Lewin
+Trousers	Denim		solid	Trousers 7	Loake
+Trousers	Navy		solid	Trousers 8	Crockett & Jones
+Trousers	Deep taupe		solid	Trousers 9	T.M. Lewin
+Trousers	Light blue		solid	Trousers 10	Loake
+Trousers	Mid grey		solid	Trousers 11	Charles Tyrwhitt
+Trousers	Dark slate blue-grey		sharkskin	Trousers 12	Brioni
+Trousers	Green		solid	Trousers 13	Drake’s
+Trousers	Dark grey		solid	Trousers 14	Charles Tyrwhitt
+Trousers	Blue	Olive	chalk stripe	Trousers 15	Zegna
+Trousers	Khaki		pinstripe	Trousers 16	Hackett
+Trousers	Black		solid	Trousers 17	Brioni
+Trousers	Very dark navy		solid	Trousers 18	Suitsupply
+Trousers	Taupe		solid	Trousers 19	Drake’s
+Trousers	Stone	Rust	pinstripe	Trousers 20	
+Trousers	Light grey		solid	Trousers 21	T.M. Lewin
+Trousers	Brown		solid	Trousers 22	Brioni
+Trousers	Cream		solid	Trousers 23	T.M. Lewin
+Trousers	Grey		solid	Trousers 24	T.M. Lewin
+Trousers	Steel blue		solid	Trousers 25	Brioni
+Trousers	Olive	Navy	herringbone	Trousers 26	Brioni
+Trousers	Charcoal		solid	Trousers 27	Brioni
+Trousers	Deep blue		solid	Trousers 28	Crockett & Jones
+Trousers	Tan	Light blue	windowpane	Trousers 29	Brioni
+Trousers	Denim	Burgundy	herringbone	Trousers 30	Brioni
+Shirt	Pale yellow		solid	Shirt 1	Loake
+Shirt	Blue		solid	Shirt 2	T.M. Lewin
+Shirt	Navy		solid	Shirt 3	Loake
+Shirt	Pale yellow		textured	Shirt 4	Suitsupply
+Shirt	Blue		check	Shirt 5	Zegna
+Shirt	Navy		solid	Shirt 6	
+Shirt	Pale yellow		pinpoint	Shirt 7	T.M. Lewin
+Shirt	Blue	Steel blue	check	Shirt 8	Hackett
+Shirt	Navy		solid	Shirt 9	Drake’s
+Shirt	Pale yellow		twill	Shirt 10	Suitsupply
+Shirt	Blue	Charcoal	woven	Shirt 11	Brioni
+Shirt	Navy		solid	Shirt 12	Brioni
+Shirt	Pale yellow		solid	Shirt 13	Suitsupply
+Shirt	Blue		solid	Shirt 14	Suitsupply
+Shirt	Navy		solid	Shirt 15	Loake
+Shirt	Pale yellow		solid	Shirt 16	
+Shirt	Blue		solid	Shirt 17	Brioni
+Shirt	Navy		solid	Shirt 18	Hackett
+Shirt	Pale yellow		solid	Shirt 19	Loake
+Shirt	Blue		solid	Shirt 20	Hackett
+Shirt	Navy		chambray	Shirt 21	
+Shirt	Pale yellow	Grey	pinpoint	Shirt 22	Loake
+Shirt	Blue		solid	Shirt 23	Crockett & Jones
+Shirt	Navy		solid	Shirt 24	Charles Tyrwhitt
+Shirt	Pale yellow		solid	Shirt 25	Crockett & Jones
+Shirt	Blue		royal oxford	Shirt 26	Loake
+Shirt	Navy		solid	Shirt 27	Brioni
+Shirt	Pale yellow	Steel blue	textured	Shirt 28	Charles Tyrwhitt
+Shirt	Blue		stripe	Shirt 29	T.M. Lewin
+Shirt	Navy	Light grey	tattersall	Shirt 30	Charles Tyrwhitt
+Shirt	Pale yellow		solid	Shirt 31	T.M. Lewin
+Shirt	Blue		solid	Shirt 32	Hackett
+Shirt	Navy		solid	Shirt 33	Drake’s
+Shirt	Pale yellow	Green	oxford	Shirt 34	Suitsupply
+Shirt	Blue		solid	Shirt 35	Crockett & Jones
+Shirt	Navy		solid	Shirt 36	Suitsupply
+Shirt	Pale yellow	Black	end on end	Shirt 37	Drake’s
+Shirt	Blue		solid	Shirt 38	
+Shirt	Navy		dobby	Shirt 39	Charles Tyrwhitt
+Shirt	Pale yellow	Steel blue	houndstooth	Shirt 40	Brioni
+Shirt	Blue		solid	Shirt 41	Zegna
+Shirt	Navy		end on end	Shirt 42	Crockett & Jones
+Shirt	Pale yellow		solid	Shirt 43	T.M. Lewin
+Shirt	Blue		fine texture	Shirt 44	Brioni
+Shirt	Navy		solid	Shirt 45	Suitsupply
+Shirt	Pale yellow	Mint	chambray	Shirt 46	Loake
+Shirt	Blue		solid	Shirt 47	Charles Tyrwhitt
+Shirt	Navy		fine texture	Shirt 48	
+Shirt	Pale yellow		solid	Shirt 49	
+Shirt	Blue		solid	Shirt 50	Drake’s
+Shirt	Navy		solid	Shirt 51	Charles Tyrwhitt
+Shirt	Pale yellow	Light grey	stripe	Shirt 52	Suitsupply
+Shirt	Blue		solid	Shirt 53	T.M. Lewin
+Shirt	Navy	Charcoal	oxford	Shirt 54	Crockett & Jones
+Shirt	Pale yellow		solid	Shirt 55	Drake’s
+Shirt	Blue	White	textured	Shirt 56	T.M. Lewin
+Shirt	Navy	Very dark navy	oxford	Shirt 57	
+Shirt	Pale yellow		solid	Shirt 58	Drake’s
+Shirt	Blue		solid	Shirt 59	Zegna
+Shirt	Navy		gingham	Shirt 60	Loake
+Shirt	Pale yellow		solid	Shirt 61	Brioni
+Shirt	Blue		check	Shirt 62	Crockett & Jones
+Shirt	Navy		textured	Shirt 63	Drake’s
+Shirt	Pale yellow	Red	fine stripe	Shirt 64	Drake’s
+Shirt	Blue		solid	Shirt 65	Loake
+Shirt	Navy		solid	Shirt 66	Suitsupply
+Shirt	Pale yellow		solid	Shirt 67	
+Shirt	Blue		solid	Shirt 68	Loake
+Shirt	Navy		woven	Shirt 69	Suitsupply
+Shirt	Pale yellow		solid	Shirt 70	Loake
+Shirt	Blue		chambray	Shirt 71	T.M. Lewin
+Shirt	Navy		solid	Shirt 72	Suitsupply
+Shirt	Pale yellow		solid	Shirt 73	Hackett
+Shirt	Blue		solid	Shirt 74	Brioni
+Shirt	Navy		textured	Shirt 75	Crockett & Jones
+Shirt	Pale yellow		gingham	Shirt 76	T.M. Lewin
+Shirt	Blue		solid	Shirt 77	Hackett
+Shirt	Navy		solid	Shirt 78	Brioni
+Shirt	Pale yellow		solid	Shirt 79	T.M. Lewin
+Shirt	Blue		solid	Shirt 80	
+Shirt	Navy		solid	Shirt 81	T.M. Lewin
+Tie	Blue		solid	Tie 1	Loake
+Tie	Silver		solid	Tie 2	Charles Tyrwhitt
+Tie	Green		solid	Tie 3	Suitsupply
+Tie	Navy	Silver	check	Tie 4	Brioni
+Tie	Black		solid	Tie 5	
+Tie	Pink		solid	Tie 6	Suitsupply
+Tie	Gold		solid	Tie 7	T.M. Lewin
+Tie	Steel blue		solid	Tie 8	Charles Tyrwhitt
+Tie	Burgundy	Green	foulard	Tie 9	Suitsupply
+Tie	Olive		solid	Tie 10	Charles Tyrwhitt
+Tie	Very dark navy		stripe	Tie 11	Brioni
+Tie	Charcoal		solid	Tie 12	Charles Tyrwhitt
+Tie	Purple		solid	Tie 13	Crockett & Jones
+Tie	Rust	Purple	paisley	Tie 14	Charles Tyrwhitt
+Tie	Light blue		solid	Tie 15	T.M. Lewin
+Tie	Wine		solid	Tie 16	Charles Tyrwhitt
+Tie	Brown		solid	Tie 17	Hackett
+Tie	Deep blue		solid	Tie 18	Hackett
+Tie	Grey		foulard	Tie 19	Charles Tyrwhitt
+Tie	Lavender		solid	Tie 20	Loake
+Tie	Cream	Brown	foulard	Tie 21	Hackett
+Tie	Dark slate blue-grey		tonal check	Tie 22	Suitsupply
+Tie	Red		solid	Tie 23	Brioni
+Tie	Tan	Black	tonal check	Tie 24	
+Tie	Blue		solid	Tie 25	
+Tie	Silver		tonal check	Tie 26	Suitsupply
+Tie	Green	Wine	foulard	Tie 27	
+Tie	Navy		solid	Tie 28	Crockett & Jones
+Tie	Black		solid	Tie 29	Drake’s
+Tie	Pink		solid	Tie 30	Hackett
+Tie	Gold		tonal check	Tie 31	Suitsupply
+Tie	Steel blue	Pink	polka dot	Tie 32	T.M. Lewin
+Tie	Burgundy		tonal check	Tie 33	Zegna
+Tie	Olive		solid	Tie 34	Charles Tyrwhitt
+Tie	Very dark navy		solid	Tie 35	Suitsupply
+Tie	Charcoal	Pink	stripe	Tie 36	Drake’s
+Tie	Purple		solid	Tie 37	Suitsupply
+Tie	Rust		solid	Tie 38	Hackett
+Tie	Light blue		polka dot	Tie 39	Charles Tyrwhitt
+Tie	Wine		solid	Tie 40	Brioni
+Tie	Brown		stripe	Tie 41	Charles Tyrwhitt
+Tie	Deep blue		knit	Tie 42	Charles Tyrwhitt
+Tie	Grey		solid	Tie 43	Drake’s
+Tie	Lavender		check	Tie 44	T.M. Lewin
+Tie	Cream		solid	Tie 45	
+Tie	Dark slate blue-grey		solid	Tie 46	Charles Tyrwhitt
+Tie	Red	Light grey	tonal check	Tie 47	Charles Tyrwhitt
+Tie	Tan		solid	Tie 48	Crockett & Jones
+Tie	Blue		check	Tie 49	Hackett
+Tie	Silver		solid	Tie 50	T.M. Lewin
+Tie	Green	Green	tonal check	Tie 51	Loake
+Tie	Navy		solid	Tie 52	Zegna
+Tie	Black		knit	Tie 53	Charles Tyrwhitt
+Tie	Pink		solid	Tie 54	Brioni
+Tie	Gold		polka dot	Tie 55	Loake
+Tie	Steel blue		solid	Tie 56	Brioni
+Tie	Burgundy		paisley	Tie 57	T.M. Lewin
+Tie	Olive		solid	Tie 58	T.M. Lewin
+Tie	Very dark navy	Grey	tonal check	Tie 59	Hackett
+Tie	Charcoal		solid	Tie 60	
+Tie	Purple		solid	Tie 61	T.M. Lewin
+Tie	Rust		solid	Tie 62	Brioni
+Tie	Light blue		solid	Tie 63	Hackett
+Tie	Wine		solid	Tie 64	Brioni
+Tie	Brown		solid	Tie 65	Crockett & Jones
+Tie	Deep blue		solid	Tie 66	Charles Tyrwhitt
+Tie	Grey		woven	Tie 67	
+Tie	Lavender		solid	Tie 68	Brioni
+Tie	Cream	Charcoal	woven	Tie 69	Crockett & Jones
+Shoes	Oxblood			Shoes 1	
+Shoes	Black			Shoes 2	Loake
+Shoes	Taupe			Shoes 3	Drake’s
+Shoes	Burgundy			Shoes 4	Suitsupply
+Shoes	Brown			Shoes 5	Crockett & Jones
+Shoes	White			Shoes 6	Suitsupply
+Shoes	Navy			Shoes 7	Brioni
+Shoes	Tan			Shoes 8	Hackett
+Shoes	Cream			Shoes 9	Hackett
+Shoes	Grey			Shoes 10	Loake
+Shoes	Oxblood			Shoes 11	Charles Tyrwhitt
+Shoes	Black			Shoes 12	Hackett
+Shoes	Taupe			Shoes 13	Drake’s
+Shoes	Burgundy			Shoes 14	Drake’s
+Shoes	Brown			Shoes 15	T.M. Lewin
+Shoes	White			Shoes 16	Drake’s
+Shoes	Navy			Shoes 17	T.M. Lewin
+Shoes	Tan			Shoes 18	T.M. Lewin
+Shoes	Cream			Shoes 19	Charles Tyrwhitt
+Shoes	Grey			Shoes 20	Loake
+Shoes	Oxblood			Shoes 21	Crockett & Jones
+Shoes	Black			Shoes 22	Loake
+Shoes	Taupe			Shoes 23	Charles Tyrwhitt
+Shoes	Burgundy			Shoes 24	Hackett
+Belt	Oxblood			Belt 1	Drake’s
+Belt	Tan			Belt 2	Crockett & Jones
+Belt	Brown			Belt 3	Suitsupply
+Belt	Black			Belt 4	Zegna
+Belt	Taupe			Belt 5	Suitsupply
+Belt	Grey			Belt 6	Suitsupply
+Belt	Navy			Belt 7	Hackett
+Belt	Burgundy			Belt 8	Loake
+Belt	Oxblood			Belt 9	Suitsupply
+Belt	Tan			Belt 10	
+Belt	Brown			Belt 11	T.M. Lewin
+Belt	Black			Belt 12	Hackett
+Socks	Grey			Socks 1	Zegna
+Socks	Dark slate blue-grey			Socks 2	Hackett
+Socks	Burgundy			Socks 3	T.M. Lewin
+Socks	Black			Socks 4	Zegna
+Socks	Deep blue			Socks 5	Suitsupply
+Socks	Khaki			Socks 6	Loake
+Socks	Purple			Socks 7	Crockett & Jones
+Socks	Mid grey			Socks 8	
+Socks	Brown			Socks 9	Crockett & Jones
+Socks	Wine			Socks 10	Drake’s
+Socks	Charcoal			Socks 11	Drake’s
+Socks	Blue			Socks 12	Charles Tyrwhitt
+Watch	Oxblood			Watch 1	Crockett & Jones
+Watch	Brown			Watch 2	T.M. Lewin
+Watch	Gold			Watch 3	Hackett
+Watch	Green			Watch 4	T.M. Lewin
+Watch	Navy			Watch 5	Crockett & Jones
+Watch	Tan			Watch 6	T.M. Lewin
+Overcoat	Grey			Overcoat 1	T.M. Lewin
+Overcoat	Olive			Overcoat 2	Brioni
+Overcoat	Very dark navy			Overcoat 3	Crockett & Jones
+Overcoat	Dark grey			Overcoat 4	Hackett
+Overcoat	Taupe			Overcoat 5	
+Overcoat	Navy			Overcoat 6	Crockett & Jones
