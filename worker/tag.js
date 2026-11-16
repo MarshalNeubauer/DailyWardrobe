@@ -147,7 +147,7 @@ const MATERIALS_BY = {
   suit: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
   blazer: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','camel hair','hopsack','silk blend','jersey','corduroy','velvet','polyester blend'],
   pants: ['wool','wool blend','tropical wool','flannel','gabardine','cotton','cotton twill','denim','stretch denim','linen','linen blend','seersucker','moleskin','corduroy','tweed','polyester blend'],
-  shirt: ['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker'],
+  shirt: ['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker','polyester','polyester blend','silk','rayon','modal','lyocell','bamboo','wool','jersey','denim','corduroy'],
   tie: ['silk','grenadine','shantung','wool','wool blend','cashmere','linen','cotton','polyester'],
   socks: ['cotton','mercerized cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
   overcoat: ['wool','wool blend','melton','cashmere','cashmere blend','tweed','camel hair','loden','alpaca','cotton'],
@@ -184,8 +184,8 @@ const MATERIAL_RULES = `material — what the item is made of, from its type's m
     medium at most for a good bet from the look, and only with a close-up: tropical wool (open, grainy weave), gabardine, mohair (dry,
       glassy sheen), silk blend (sheen, slubs), camel hair, melton (smooth felted face), moleskin, cotton, poplin, a silk tie,
       performance stretch (sheen, cling);
-    low for a fiber the eye cannot tell: wool vs wool blend vs polyester blend, cashmere vs wool, cotton vs cotton blend, every sock
-      fiber, mercerized cotton, alpaca. Without a close-up, any fiber is low.
+    low for a fiber the eye cannot tell: wool vs wool blend vs polyester blend, cashmere vs wool, cotton vs cotton blend, a shirt's
+      polyester, silk, rayon, modal, lyocell, bamboo or wool, every sock fiber, mercerized cotton, alpaca. Without a close-up, any fiber is low.
   Never give the pattern or weave as the material: a herringbone, twill, oxford, pinpoint, end-on-end, chambray or dobby look is the
     pattern; the material is the fiber or cloth it is woven in.
   why: one short line for the owner on what you saw.
