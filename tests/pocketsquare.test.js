@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         care:CARE_ABLE.includes('pocketsquare')&&careWashed('pocketsquare'),pack:PACK_TITLE.pocketsquare}});
     ok(t.name==='Pocket square'&&t.order&&t.cols==='white'&&t.pats==='solid,border,polka-dot,paisley,stripe,check,foulard,woven,other'&&t.mats==='silk,linen,cotton,wool,silk blend,polyester',`the type "Pocket square" after the tie clip, white first, its patterns (border too) and materials (${t.pats}; ${t.mats})`);
     ok(t.slot&&t.alias==='border,polka-dot,check,border'&&t.hasPat,`a slot "pocket"; pattern words read (${t.alias}); it has a pattern and colours to pick (hasPat)`);
-    ok(t.tag==='pocketsquare,border,navy,linen'&&t.flag==='["pocketsquare"]',`a tag answers a pocket square, and the app asks for the type (types: ${t.flag})`);
+    ok(t.tag==='pocketsquare,border,navy,linen'&&JSON.parse(t.flag)[0]==='pocketsquare',`a tag answers a pocket square, and the app asks for the type (types: ${t.flag})`);
     ok(t.dress&&t.cols2&&/border/.test(t.desc)&&/pocket square$/.test(t.nm),`without jackets it is left out by the dress code; second and third colours shown; named "${t.nm}"`);
     ok(t.search&&t.care&&t.pack==='Pocket squares','the Wardrobe search finds it as pocket square, hank, handkerchief, pochette, its pattern, material and colours; it can go to the laundry; the packing list has it');
     // the spreadsheet import's words
