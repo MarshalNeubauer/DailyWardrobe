@@ -179,7 +179,7 @@ async function fetchHolidays(cc){
 /* the holidays already past, kept for good (fix round 3, W1-8-01: the monthly refresh replaced the list with one starting a month back,
    and every older holiday turned into a workday "you didn't open the app", counted as worn, toward cleaning and Insights): they were days
    off when they came, so they stay days off whatever list or country comes next; Settings lists only the coming ones */
-function holPast(){const h=settings.holidays,T=isoKey(typeof trueToday==='function'?trueToday():todayDate());   // (the corrected date: core.js)if(!h)return {list:[],skip:[]};
+function holPast(){const h=settings.holidays,T=isoKey(typeof trueToday==='function'?trueToday():todayDate());/* (the corrected date: core.js) */if(!h)return {list:[],skip:[]};
   const list=(h.list||[]).filter(x=>x&&x.d<T);return {list,skip:(h.skip||[]).filter(d=>d<T&&list.some(x=>x.d===d))}}
 async function setHolidayCountry(cc,quiet){
   // "No public holidays": none from now on; the past ones stay (country '': nothing is fetched)
