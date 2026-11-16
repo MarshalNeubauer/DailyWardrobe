@@ -272,6 +272,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - measured (Node, desktop): the 149-item audit wardrobe plans 8 months in about 225 ms (was 423); plan hash identical with and without the speed-ups
 
 #### Rest and rotation
+- a piece never worn yet (no `last`) has full rest but creeps only from the day it was `added` (`fresh` in `outfit()`; items without `added` as before): the -1e5 "never" counted as 300 days of creep, so a new suit scored 155 against 74 for one rested six weeks and two new brown suits (brown group) beat `JKT_SAME` on consecutive workdays (the owner, 2026-11-16, 22-23 Nov; now 92, the pair split by a navy suit); `PLAN_RULES` 22; `tests/freshrest.test.js`
 - rest bonuses keep creeping up past their caps (`over(i,from)`: 0.01 a day in `rb`, 0.05 for shirts and trousers, 0.2 for jackets, up to 300 days), so a piece always a point short of another still comes round (on the owner's wardrobe 4 of 11 trousers and 2 of 4 socks were never planned without it)
 - a tie's rest creeps too, capped: `+Math.min(TIE_CREEP_MAX, over(x,30)*TIE_CREEP)` (9, 0.03 a day after 30 days), well under `TIE_GAP`, so a tie still never repeats within three workdays (on the 40-tie audit wardrobe over 12 months: 9 ties never planned before, 0 now; scores unchanged)
 - odd trousers rotate on a long rest (`ptRest`, up to 60 days, since blazer days are weekly) and shoes avoid yesterday's pair when another suits
